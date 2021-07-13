@@ -139,6 +139,42 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
     end
   end
 
+  describe 'query for epics by subscribed' do
+    let_it_be(:subscribed_epic) { create(:epic, group: group) }
+    let_it_be(:unsubscribed_epic) { create(:epic, group: group) }
+    let_it_be(:regular_epic) { create(:epic, group: group) }
+    let_it_be(:subscription) { create(:subscription, subscribable: subscribed_epic, user: user, subscribed: true) }
+    let_it_be(:unsubscription) { create(:subscription, subscribable: unsubscribed_epic, user: user, subscribed: false) }
+
+    it 'filters to subscribed epics' do
+      post_graphql(epics_query(group, subscribed: true), current_user: user)
+
+      expect_epics_response([subscribed_epic], node_path: node_path)
+    end
+
+    it 'filters to unsubscribed epics' do
+      post_graphql(epics_query(group, subscribed: false), current_user: user)
+
+      expect_epics_response([unsubscribed_epic], node_path: node_path)
+    end
+
+    it 'does not filter out subscribed epics' do
+      post_graphql(epics_query(group), current_user: user)
+
+      expect_epics_response([subscribed_epic, unsubscribed_epic, regular_epic], node_path: node_path)
+    end
+
+    context 'when filter_subscriptions feature flag disabled' do
+      it 'does not filter out subscribed epics' do
+        stub_feature_flags(filter_subscriptions: false)
+
+        post_graphql(epics_query(group, subscribed: true), current_user: user)
+
+        expect_epics_response([subscribed_epic, unsubscribed_epic, regular_epic], node_path: node_path)
+      end
+    end
+  end
+
   context 'when query for epics with events' do
     let_it_be(:epic) { create(:epic, group: group) }
 

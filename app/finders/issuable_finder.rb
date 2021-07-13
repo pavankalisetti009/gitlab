@@ -66,12 +66,13 @@ class IssuableFinder
         author_username
         crm_contact_id
         crm_organization_id
+        in
         label_name
         milestone_title
         release_tag
         my_reaction_emoji
         search
-        in
+        subscribed
       ]
     end
 
@@ -145,6 +146,7 @@ class IssuableFinder
     items = by_label(items)
     items = by_my_reaction_emoji(items)
     items = by_crm_contact(items)
+    items = by_subscribed(items)
     by_crm_organization(items)
   end
 
@@ -496,6 +498,12 @@ class IssuableFinder
     return items unless can_filter_by_crm_organization?
 
     Issuables::CrmOrganizationFilter.new(params: original_params).filter(items)
+  end
+
+  def by_subscribed(items)
+    return items if params[:subscribed].nil? || !current_user
+
+    params[:subscribed] ? items.subscribed(current_user) : items.unsubscribed(current_user)
   end
 
   def can_filter_by_crm_contact?

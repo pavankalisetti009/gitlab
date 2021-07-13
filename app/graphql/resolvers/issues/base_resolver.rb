@@ -76,6 +76,11 @@ module Resolvers
       argument :or, Types::Issues::UnionedIssueFilterInputType,
         description: 'List of arguments with inclusive OR.',
         required: false
+      argument :subscribed, GraphQL::Types::Boolean,
+        description: 'Issues the current user is subscribed to. Is ignored if ' \
+                     '`filter_subscriptions` feature flag is disabled.',
+        alpha: { milestone: '17.0' },
+        required: false
       argument :types, [Types::IssueTypeEnum],
         as: :issue_types,
         description: 'Filter issues by the given issue types.',
@@ -118,11 +123,20 @@ module Resolvers
 
       private
 
+      def filter_subscriptions_enabled?
+        if respond_to?(:resource_parent, true)
+          ::Feature.enabled?(:filter_subscriptions, resource_parent)
+        else
+          ::Feature.enabled?(:filter_subscriptions) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- no resource
+        end
+      end
+
       def prepare_finder_params(args)
         params = super(args)
         params[:not] = params[:not].to_h if params[:not]
         params[:or] = params[:or].to_h if params[:or]
         params[:iids] ||= [params.delete(:iid)].compact if params[:iid]
+        params.delete(:subscribed) unless filter_subscriptions_enabled?
 
         rewrite_param_name(params[:or], :author_usernames, :author_username)
         rewrite_param_name(params[:or], :label_names, :label_name)

@@ -16,6 +16,7 @@ module ResolvesMergeRequests
       args[:include_subgroups] = true
     end
 
+    args.delete(:subscribed) unless filter_subscriptions_enabled?
     rewrite_param_name(args, :reviewer_wildcard_id, :reviewer_id)
     rewrite_param_name(args, :assignee_wildcard_id, :assignee_id)
 
@@ -71,6 +72,10 @@ module ResolvesMergeRequests
       suggested_reviewers: [:predictions],
       diff_stats: [latest_merge_request_diff: [:merge_request_diff_commits]]
     }
+  end
+
+  def filter_subscriptions_enabled?
+    ::Feature.enabled?(:filter_subscriptions, mr_parent)
   end
 end
 

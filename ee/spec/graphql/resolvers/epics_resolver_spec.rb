@@ -176,6 +176,8 @@ RSpec.describe Resolvers::EpicsResolver, feature_category: :portfolio_management
         end
       end
 
+      # subscribed filtering handled in request spec, ee/spec/requests/api/graphql/epics/epics_spec.rb
+
       context 'with sort' do
         let!(:epic3) { create(:epic, group: group, title: 'third', description: 'text 2', start_date: 30.days.ago, end_date: 30.days.from_now) }
         let!(:epic4) { create(:epic, group: group, title: 'forth created', description: 'four', start_date: 40.days.ago, end_date: 40.days.from_now) }

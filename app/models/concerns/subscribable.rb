@@ -12,6 +12,9 @@ module Subscribable
 
   included do
     has_many :subscriptions, dependent: :destroy, as: :subscribable # rubocop:disable Cop/ActiveRecordDependent
+
+    scope :subscribed, ->(user) { joins(:subscriptions).where(subscriptions: { user_id: user.id, subscribed: true }) }
+    scope :unsubscribed, ->(user) { joins(:subscriptions).where(subscriptions: { user_id: user.id, subscribed: false }) }
   end
 
   def subscribed?(user, project = nil)

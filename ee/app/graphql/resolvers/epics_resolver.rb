@@ -56,6 +56,12 @@ module Resolvers
       required: false,
       description: 'Filter by reaction emoji applied by the current user.'
 
+    argument :subscribed, GraphQL::Types::Boolean,
+      description: 'Epics the current user is subscribed to. Is ignored if ' \
+        '`filter_subscriptions` feature flag is disabled.',
+      alpha: { milestone: '17.0' },
+      required: false
+
     argument :created_after, Types::TimeType,
       required: false,
       description: 'Epics created after this date.'
@@ -127,6 +133,10 @@ module Resolvers
       group.licensed_feature_available?(:epics)
     end
 
+    def filter_subscriptions_enabled?
+      ::Feature.enabled?(:filter_subscriptions, resource_parent)
+    end
+
     def transform_args(args)
       transformed = args.dup
       transformed[:group_id] = group
@@ -139,6 +149,7 @@ module Resolvers
       params = transform_args(args)
       params[:not] = params[:not].to_h if params[:not]
       params[:or] = params[:or].to_h if params[:or]
+      params.delete(:subscribed) unless filter_subscriptions_enabled?
 
       rewrite_param_name(params[:or], :author_usernames, :author_username)
       rewrite_param_name(params[:or], :label_names, :label_name)
