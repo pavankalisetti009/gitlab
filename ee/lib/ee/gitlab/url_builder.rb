@@ -11,11 +11,11 @@ module EE
         override :build
         def build(object, **options)
           case object.itself
-          when Epic
+          when ::Epic
             instance.group_epic_url(object.group, object, **options)
           when ::Boards::EpicBoard
             instance.group_epic_board_url(object.group, object, **options)
-          when Iteration
+          when ::Iteration
             instance.iteration_url(object, **options)
           when ::Vulnerability
             instance.project_security_vulnerability_url(object.project, object, **options)
