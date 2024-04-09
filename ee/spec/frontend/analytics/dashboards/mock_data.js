@@ -80,7 +80,7 @@ export const MOCK_DASHBOARD_TABLE_FIELDS = [
     label: 'Metric',
     thClass: 'gl-w-1/4',
   },
-  ...MOCK_TABLE_TIME_PERIODS.slice(0, -1),
+  ...MOCK_TABLE_TIME_PERIODS.slice(0, -1).reverse(),
   {
     key: 'chart',
     label: 'Past 6 Months',

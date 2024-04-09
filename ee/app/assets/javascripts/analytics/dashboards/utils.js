@@ -309,7 +309,7 @@ export const generateDashboardTableFields = (now) => {
       label: __('Metric'),
       thClass: 'gl-w-1/4',
     },
-    ...generateDateRanges(now).slice(0, -1),
+    ...generateDateRanges(now).slice(0, -1).reverse(),
     {
       key: 'chart',
       label: s__('DORA4Metrics|Past 6 Months'),
