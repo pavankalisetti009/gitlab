@@ -24,6 +24,16 @@ module Types
       field :event_type_filters, [GraphQL::Types::String],
         null: false,
         description: 'List of event type filters added for streaming.'
+
+      field :secret_token, GraphQL::Types::String,
+        null: false,
+        description: 'Secret token for the destination, will be non-empty value only for http category.'
+
+      def secret_token
+        return object.secret_token if object.http?
+
+        ""
+      end
     end
   end
 end

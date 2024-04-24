@@ -7,8 +7,6 @@ RSpec.describe 'List audit event streaming destinations for the instance', featu
 
   let_it_be(:admin) { create(:admin) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:destination_1) { create(:audit_events_instance_external_streaming_destination) }
-  let_it_be(:destination_2) { create(:audit_events_instance_external_streaming_destination) }
 
   let(:path) { %i[audit_events_instance_streaming_destinations nodes] }
 
@@ -33,27 +31,57 @@ RSpec.describe 'List audit event streaming destinations for the instance', featu
       end
 
       context 'when user is instance admin' do
-        it 'returns the instance audit event streaming destinations', :aggregate_failures do
-          post_graphql(query, current_user: admin)
+        context 'when destination category is http' do
+          let!(:http_destination) { create(:audit_events_instance_external_streaming_destination) }
+          let!(:http_destination_2) { create(:audit_events_instance_external_streaming_destination) }
 
-          expect(graphql_data_at(*path)).to contain_exactly(
-            a_hash_including(
-              'config' => destination_1.config,
-              'name' => destination_1.name,
-              'category' => destination_1.category
-            ),
-            a_hash_including(
-              'config' => destination_2.config,
-              'name' => destination_2.name,
-              'category' => destination_2.category
-            )
-          )
+          it 'returns the instance audit event streaming destinations with secret token', :aggregate_failures do
+            post_graphql(query, current_user: admin)
 
-          expect(graphql_data_at(*path))
-            .to contain_exactly(
-              hash_not_including('secretAccessKey'),
-              hash_not_including('secretAccessKey')
+            expect(graphql_data_at(*path)).to contain_exactly(
+              a_hash_including(
+                'config' => http_destination.config,
+                'name' => http_destination.name,
+                'category' => http_destination.category,
+                'secretToken' => http_destination.secret_token
+              ),
+              a_hash_including(
+                'config' => http_destination_2.config,
+                'name' => http_destination_2.name,
+                'category' => http_destination_2.category,
+                'secretToken' => http_destination_2.secret_token
+              )
             )
+          end
+        end
+
+        context 'when destination category is aws or gcp' do
+          let!(:aws_destination) do
+            create(:audit_events_instance_external_streaming_destination, :aws, secret_token: 'some_random_string')
+          end
+
+          let!(:gcp_destination) do
+            create(:audit_events_instance_external_streaming_destination, :gcp)
+          end
+
+          it 'returns the instance audit event streaming destinations with an empty secret token',
+            :aggregate_failures do
+            post_graphql(query, current_user: admin)
+            expect(graphql_data_at(*path)).to contain_exactly(
+              a_hash_including(
+                'config' => aws_destination.config,
+                'name' => aws_destination.name,
+                'category' => aws_destination.category,
+                'secretToken' => ""
+              ),
+              a_hash_including(
+                'config' => gcp_destination.config,
+                'name' => gcp_destination.name,
+                'category' => gcp_destination.category,
+                'secretToken' => ""
+              )
+            )
+          end
         end
       end
 

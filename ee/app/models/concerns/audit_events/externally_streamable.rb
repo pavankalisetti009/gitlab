@@ -9,6 +9,7 @@ module AuditEvents
 
     included do
       before_validation :assign_default_name
+      before_validation :assign_secret_token_for_http
       before_validation :assign_default_log_id, if: :gcp?
 
       enum category: {
@@ -26,7 +27,7 @@ module AuditEvents
         json_schema: { filename: 'audit_events_aws_external_streaming_destination_config' }, if: :aws?
       validates :config, presence: true,
         json_schema: { filename: 'audit_events_gcp_external_streaming_destination_config' }, if: :gcp?
-      validates :secret_token, presence: true
+      validates :secret_token, presence: true, unless: :http?
 
       validates_with AuditEvents::HttpDestinationValidator, if: :http?
       validates_with AuditEvents::AwsDestinationValidator, if: :aws?
@@ -59,6 +60,12 @@ module AuditEvents
 
       def assign_default_log_id
         config["logIdName"] = "audit-events" if config["logIdName"].blank?
+      end
+
+      def assign_secret_token_for_http
+        return unless http?
+
+        self.secret_token ||= SecureRandom.base64(18)
       end
     end
   end

@@ -20,7 +20,7 @@ module Mutations
             description: 'Destination category.'
 
           argument :secret_token, GraphQL::Types::String,
-            required: true,
+            required: false,
             description: 'Secret token.'
 
           field :external_audit_event_destination, ::Types::AuditEvents::Instance::StreamingDestinationType,
@@ -28,6 +28,12 @@ module Mutations
             description: 'Destination created.'
 
           def resolve(secret_token: nil, name: nil, category: nil, config: nil)
+            unless validate_secret_token(category, secret_token)
+              return {
+                errors: ["Secret token is required for category"]
+              }
+            end
+
             destination = ::AuditEvents::Instance::ExternalStreamingDestination.new(secret_token: secret_token,
               name: name,
               config: config,
@@ -40,6 +46,12 @@ module Mutations
               external_audit_event_destination: (destination if destination.persisted?),
               errors: Array(destination.errors)
             }
+          end
+
+          private
+
+          def validate_secret_token(category, secret_token)
+            category == 'http' || secret_token.present?
           end
         end
       end

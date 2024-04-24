@@ -55,6 +55,19 @@ RSpec.describe AuditEvents::Group::ExternalStreamingDestination, feature_categor
         expect(destination.errors.full_messages).to include('Group must not be a subgroup. Use a top-level group.')
       end
     end
+
+    context 'for uniqueness of config url for http destinations' do
+      let_it_be(:destination1) { create(:audit_events_group_external_streaming_destination) }
+
+      it 'returns error if destination with same url exists' do
+        destination2 = build(:audit_events_group_external_streaming_destination, group: destination1.group,
+          config: destination1.config)
+
+        expect(destination2).to be_invalid
+        expect(destination2.errors.full_messages)
+          .to include('Config url already taken.')
+      end
+    end
   end
 
   it_behaves_like 'includes Limitable concern' do

@@ -24,7 +24,7 @@ module Mutations
             description: 'Group path.'
 
           argument :secret_token, GraphQL::Types::String,
-            required: true,
+            required: false,
             description: 'Secret token.'
 
           field :external_audit_event_destination, ::Types::AuditEvents::Group::StreamingDestinationType,
@@ -33,6 +33,13 @@ module Mutations
 
           def resolve(group_path:, secret_token: nil, name: nil, category: nil, config: nil)
             group = authorized_find!(group_path)
+
+            unless validate_secret_token(category, secret_token)
+              return {
+                errors: ["Secret token is required for category"]
+              }
+            end
+
             destination = ::AuditEvents::Group::ExternalStreamingDestination.new(group: group,
               secret_token: secret_token,
               name: name,
@@ -52,6 +59,10 @@ module Mutations
 
           def find_object(group_path)
             ::Group.find_by_full_path(group_path)
+          end
+
+          def validate_secret_token(category, secret_token)
+            category == 'http' || secret_token.present?
           end
         end
       end

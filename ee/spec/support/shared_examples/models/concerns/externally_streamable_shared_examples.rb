@@ -3,7 +3,6 @@
 RSpec.shared_examples 'includes ExternallyStreamable concern' do
   describe 'validations' do
     it { is_expected.to validate_presence_of(:config) }
-    it { is_expected.to validate_presence_of(:secret_token) }
     it { is_expected.to validate_presence_of(:category) }
     it { is_expected.to be_a(AuditEvents::ExternallyStreamable) }
     it { is_expected.to validate_length_of(:name).is_at_most(72) }
@@ -23,6 +22,75 @@ RSpec.shared_examples 'includes ExternallyStreamable concern' do
 
       it 'is invalid' do
         expect { destination.category = 'invalid' }.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'for secret_token' do
+      context 'when secret_token is empty' do
+        context 'when category is http' do
+          it 'secret token is present' do
+            destination1 = build(model_factory_name, category: 'http', secret_token: nil)
+
+            expect(destination1).to be_valid
+            expect(destination1.secret_token).to be_present
+          end
+        end
+
+        context 'when category is not http' do
+          it 'destination is invalid' do
+            destination1 = build(model_factory_name, :aws, secret_token: nil)
+
+            expect(destination1).to be_invalid
+            expect(destination1.secret_token).to be_nil
+          end
+        end
+
+        context 'when category is nil' do
+          it 'destination is invalid' do
+            destination1 = build(model_factory_name, category: nil, secret_token: nil)
+            expect(destination1).to be_invalid
+            expect(destination1.secret_token).to be_nil
+          end
+        end
+      end
+
+      context 'when secret_token is not empty' do
+        context 'when category is http' do
+          context 'when given secret_token is invalid' do
+            it 'destination is invalid' do
+              destination1 = build(model_factory_name, category: 'http', secret_token: 'invalid')
+
+              expect(destination1).to be_invalid
+              expect(destination1.errors)
+                .to match_array(['Secret token should have length between 16 to 24 characters.'])
+            end
+          end
+
+          context 'when given secret_token is valid' do
+            it 'destination is valid' do
+              destination1 = build(model_factory_name, category: 'http', secret_token: 'valid_secure_token_123')
+
+              expect(destination1).to be_valid
+              expect(destination1.secret_token).to eq('valid_secure_token_123')
+            end
+          end
+        end
+
+        context 'when category is not http' do
+          it 'secret_token is present' do
+            destination1 = build(model_factory_name, :aws, secret_token: 'random_aws_token')
+
+            expect(destination1).to be_valid
+            expect(destination1.secret_token).to eq('random_aws_token')
+          end
+        end
+
+        context 'when category is nil' do
+          it 'destination is invalid' do
+            destination1 = build(model_factory_name, category: nil, secret_token: 'random_secret_token')
+            expect(destination1).to be_invalid
+          end
+        end
       end
     end
 
