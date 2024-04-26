@@ -1,7 +1,7 @@
 import { GlDuoChat, GlExperimentBadge, GlEmptyState } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
-import VueApollo from 'vue-apollo';
 import { RouterLinkStub as RouterLink } from '@vue/test-utils';
+import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { getMarkdown } from '~/rest_api';
@@ -21,12 +21,19 @@ import {
   getLatestAiAgentResponse,
   getLatestAiAgentNotFoundResponse,
 } from 'ee_jest/ml/ai_agents/graphql/mocks';
+import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 
 Vue.use(VueApollo);
 
 jest.mock('~/rest_api');
 
-describe('ee/ml/ai_agents/views/show_agent', () => {
+const skipReason = new SkipReason({
+  name: 'ee/ml/ai_agents/views/show_agent',
+  reason: 'CPU pegged at 100%',
+  issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/458410',
+});
+
+describeSkipVue3(skipReason, () => {
   let wrapper;
   let latestAiAgentResponseMock;
 
