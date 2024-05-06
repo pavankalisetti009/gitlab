@@ -5,7 +5,7 @@ module Mutations
     class Base < ::Mutations::BaseMutation
       include Mutations::ResolvesIssuable
 
-      argument :iid, GraphQL::Types::ID,
+      argument :iid, GraphQL::Types::ID, # rubocop:disable Graphql/IDType -- Legacy argument using ID type kept for backwards compatibility
         required: true,
         description: "IID of the epic to mutate."
 

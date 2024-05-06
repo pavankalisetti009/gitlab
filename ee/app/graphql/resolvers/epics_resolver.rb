@@ -6,7 +6,7 @@ module Resolvers
     include SearchArguments
     include LooksAhead
 
-    argument :iid, GraphQL::Types::ID,
+    argument :iid, GraphQL::Types::ID, # rubocop:disable Graphql/IDType -- Legacy argument using ID type kept for backwards compatibility
       required: false,
       description: 'IID of the epic, e.g., "1".'
 
