@@ -7,11 +7,15 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingDetails from 'ee/tracing/details/tracing_details.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import * as urlUtility from '~/lib/utils/url_utility';
+import { visitUrl } from '~/lib/utils/url_utility';
 import { mapTraceToSpanTrees } from 'ee/tracing/trace_utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
 jest.mock('~/alert');
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn(),
+}));
 jest.mock('ee/tracing/trace_utils');
 
 describe('TracingDetails', () => {
@@ -53,9 +57,6 @@ describe('TracingDetails', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   beforeEach(() => {
-    jest.spyOn(urlUtility, 'visitUrl');
-    jest.spyOn(urlUtility, 'isSafeURL').mockReturnValue(true);
-
     observabilityClientMock = createMockClient();
   });
 
@@ -192,7 +193,7 @@ describe('TracingDetails', () => {
     });
 
     it('redirects to tracingIndexUrl', () => {
-      expect(urlUtility.visitUrl).toHaveBeenCalledWith(props.tracingIndexUrl);
+      expect(visitUrl).toHaveBeenCalledWith(props.tracingIndexUrl);
     });
   });
 

@@ -1,5 +1,5 @@
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { isAbsolute, isSafeURL } from '~/lib/utils/url_utility';
+import { isAbsolute, isValidURL } from '~/lib/utils/url_utility';
 import {
   REGEXES,
   SUPPORTED_IDENTIFIER_TYPE_CWE,
@@ -22,7 +22,7 @@ export const getAddRelatedIssueRequestParams = (reference, defaultProjectId) => 
     [, issueId] = REGEXES.ISSUE_FORMAT.exec(reference);
   }
   // If the reference is an absolute URL and matches the issues URL format, parse out the project and issue.
-  else if (isSafeURL(reference) && isAbsolute(reference)) {
+  else if (isValidURL(reference) && isAbsolute(reference)) {
     const { pathname } = new URL(reference);
 
     if (REGEXES.LINK_FORMAT.test(pathname)) {

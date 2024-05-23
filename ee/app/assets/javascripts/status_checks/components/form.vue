@@ -4,7 +4,7 @@ import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { isEqual, isNumber } from 'lodash';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import ProtectedBranchesSelector from 'ee/vue_shared/components/branches_selector/protected_branches_selector.vue';
-import { isSafeURL } from '~/lib/utils/url_utility';
+import { isValidURL } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { ALL_BRANCHES } from 'ee/vue_shared/components/branches_selector/constants';
 import { EMPTY_STATUS_CHECK, NAME_TAKEN_SERVER_ERROR, URL_TAKEN_SERVER_ERROR } from '../constants';
@@ -46,7 +46,7 @@ export default {
   },
   computed: {
     isValid() {
-      return this.isValidName && this.isValidUrl && this.isValidBranches;
+      return this.isValidName && this.isValidURL && this.isValidBranches;
     },
     isValidBranches() {
       return this.branches.every((branch) => isEqual(branch, ALL_BRANCHES) || isNumber(branch?.id));
@@ -54,8 +54,8 @@ export default {
     isValidName() {
       return Boolean(this.name);
     },
-    isValidUrl() {
-      return Boolean(this.url) && isSafeURL(this.url);
+    isValidURL() {
+      return Boolean(this.url) && isValidURL(this.url);
     },
     branchesState() {
       return !this.showValidation || this.isValidBranches;
@@ -69,7 +69,7 @@ export default {
     urlState() {
       return (
         !this.showValidation ||
-        (this.isValidUrl && !this.serverValidationErrors.includes(URL_TAKEN_SERVER_ERROR))
+        (this.isValidURL && !this.serverValidationErrors.includes(URL_TAKEN_SERVER_ERROR))
       );
     },
     invalidNameMessage() {
