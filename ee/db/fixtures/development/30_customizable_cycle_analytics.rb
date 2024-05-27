@@ -4,6 +4,7 @@ require './spec/support/sidekiq_middleware'
 require 'active_support/testing/time_helpers'
 require './spec/support/helpers/cycle_analytics_helpers'
 require './ee/db/seeds/shared/dora_metrics' if Gitlab.ee?
+require './db/fixtures/development/03_project'
 
 # Usage:
 #
@@ -192,12 +193,7 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
       }
 
       issue =
-        Issues::CreateService.new(
-          container: @project,
-          current_user: project.team.users.sample,
-          params: issue_params,
-          perform_spam_check: false
-        ).execute[:issue]
+        Issue.create!(project: @project, **issue_params, author: project.team.users.sample)
 
       # Required because seeds run in a transaction and these are now
       # created in an `after_commit` hook.
@@ -230,22 +226,22 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
   end
 
   def create_vsm_project!
-    namespace = FactoryBot.create(
-      :group,
+    group = Group.new(
       name: "Value Stream Management Group #{suffix}",
       path: "vsmg-#{suffix}"
     )
-    project = FactoryBot.create(
-      :project,
-      :repository,
-      name: "Value Stream Management Project #{suffix}",
-      path: "vsmp-#{suffix}",
-      creator: user,
-      namespace: namespace
-    )
+    group.description = FFaker::Lorem.sentence
+    group.save!
+    group.add_owner(user)
+    group.create_namespace_settings
 
-    project.create_repository
-    project
+    # Manually update group traversal_ids to allow policy authorizations to work
+    # before transaction is commited.
+    group.update!(traversal_ids: [group.id])
+
+    Gitlab::Seeder::Projects.create_real_project!(project_path: "vsmp-#{suffix}", group_path: group.path)
+
+    group.projects.last
   end
 
   def create_custom_value_stream_for!(parent)
