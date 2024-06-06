@@ -719,6 +719,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
                   "geo_proxy_fetch_direct_to_primary" => true,
                   "geo_proxy_fetch_direct_to_primary_with_options" => true,
                   "geo_proxy_fetch_ssh_direct_to_primary" => true,
+                  "geo_proxy_push_ssh_direct_to_primary" => true,
                   "request_headers" => include('Authorization')
                 }
               }
@@ -816,6 +817,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
                 "geo_proxy_fetch_direct_to_primary" => true,
                 "geo_proxy_fetch_direct_to_primary_with_options" => true,
                 "geo_proxy_fetch_ssh_direct_to_primary" => true,
+                "geo_proxy_push_ssh_direct_to_primary" => true,
                 "request_headers" => include('Authorization')
               }
             }
@@ -842,6 +844,7 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
                 "geo_proxy_fetch_direct_to_primary" => true,
                 "geo_proxy_fetch_direct_to_primary_with_options" => true,
                 "geo_proxy_fetch_ssh_direct_to_primary" => true,
+                "geo_proxy_push_ssh_direct_to_primary" => true,
                 "request_headers" => include('Authorization')
               }
             }
