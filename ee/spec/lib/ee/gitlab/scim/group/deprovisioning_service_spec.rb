@@ -15,6 +15,51 @@ RSpec.describe ::EE::Gitlab::Scim::Group::DeprovisioningService, feature_categor
         create(:group_member, group: group, user: user, access_level: GroupMember::REPORTER)
       end
 
+      context 'when auditing' do
+        let(:request_ip_address) { '192.168.188.69' }
+        let(:sign_in_ip) { '175.29.19.1' }
+
+        before do
+          allow(::Gitlab::RequestContext.instance).to receive(:client_ip).and_return(request_ip_address)
+          user.update! current_sign_in_ip: sign_in_ip
+        end
+
+        around do |example|
+          RequestStore.begin!
+          example.run
+          RequestStore.end!
+          RequestStore.clear!
+        end
+
+        def destroy_audits
+          AuditEvent.where %q("details" LIKE '%:event_name: member_destroyed%')
+        end
+
+        context 'without admin_audit_log enabled' do
+          before do
+            stub_licensed_features(admin_audit_log: false)
+          end
+
+          it 'audits the access removal without an IP address' do
+            expect { service.execute }.to change { destroy_audits.count }.by(1)
+
+            expect(destroy_audits.last.ip_address).to be_nil
+          end
+        end
+
+        context 'with admin_audit_log enabled' do
+          before do
+            stub_licensed_features(admin_audit_log: true)
+          end
+
+          it "audits the access removal with the request's IP address" do
+            expect { service.execute }.to change { destroy_audits.count }.by(1)
+
+            expect(destroy_audits.last.ip_address).to eq(request_ip_address)
+          end
+        end
+      end
+
       it 'deactivates scim identity' do
         expect { service.execute }.to change { identity.active }.from(true).to(false)
       end
