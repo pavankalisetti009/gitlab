@@ -84,7 +84,7 @@ RSpec.describe OmniAuth::Strategies::Jwt do
         }
       end
 
-      it 'raises error' do
+      it 'raises error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463692' do
         expect { subject.decoded }.to raise_error(OmniAuth::Strategies::Jwt::ClaimInvalid)
       end
     end
