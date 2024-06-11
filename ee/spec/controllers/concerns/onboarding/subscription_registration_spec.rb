@@ -31,6 +31,14 @@ RSpec.describe Onboarding::SubscriptionRegistration, type: :undefined, feature_c
     it { is_expected.not_to be_eligible_for_iterable_trigger }
   end
 
+  describe '.continue_full_onboarding?' do
+    it { is_expected.not_to be_continue_full_onboarding }
+  end
+
+  describe '.convert_to_automatic_trial?' do
+    it { is_expected.not_to be_convert_to_automatic_trial }
+  end
+
   describe '.show_joining_project?' do
     it { is_expected.to be_show_joining_project }
   end
@@ -53,5 +61,9 @@ RSpec.describe Onboarding::SubscriptionRegistration, type: :undefined, feature_c
 
   describe '.preserve_stored_location?' do
     it { is_expected.to be_preserve_stored_location }
+  end
+
+  describe '.ignore_oauth_in_welcome_submit_text?' do
+    it { is_expected.to be_ignore_oauth_in_welcome_submit_text }
   end
 end

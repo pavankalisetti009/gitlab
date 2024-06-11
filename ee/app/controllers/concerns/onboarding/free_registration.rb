@@ -37,6 +37,14 @@ module Onboarding
       true
     end
 
+    def self.continue_full_onboarding?
+      true
+    end
+
+    def self.convert_to_automatic_trial?
+      true
+    end
+
     def self.show_joining_project?
       true
     end
@@ -62,6 +70,10 @@ module Onboarding
     end
 
     def self.preserve_stored_location?
+      false
+    end
+
+    def self.ignore_oauth_in_welcome_submit_text?
       false
     end
   end
