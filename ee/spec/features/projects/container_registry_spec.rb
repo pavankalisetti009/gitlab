@@ -56,36 +56,6 @@ RSpec.describe 'Container Registry', :js, feature_category: :container_registry 
     end
   end
 
-  context 'when container_for_registry feature flag is disabled' do
-    before do
-      stub_feature_flags(container_scanning_for_registry_flag: false)
-    end
-
-    context 'when container registry config enabled' do
-      before do
-        stub_container_registry_config(enabled: true)
-      end
-
-      it 'has container scanning for registry metadata' do
-        visit_container_registry
-
-        expect(page).to have_no_content s_('ContainerRegistry|Container Scanning for Registry: Off')
-      end
-    end
-
-    context 'when container registry config disabled' do
-      before do
-        stub_container_registry_config(enabled: false)
-      end
-
-      it 'does not have container scanning for registry metadata' do
-        visit_container_registry
-
-        expect(page).to have_no_content s_('ContainerRegistry|Container Scanning for Registry: Off')
-      end
-    end
-  end
-
   def visit_container_registry
     visit project_container_registry_index_path(project)
   end

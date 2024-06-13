@@ -1,7 +1,6 @@
 <script>
 import { GlSkeletonLoader, GlIcon, GlPopover, GlLink } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { fetchPolicies } from '~/lib/graphql';
 import getProjectContainerScanning from '../../graphql/queries/get_project_container_scanning.query.graphql';
 
@@ -12,7 +11,6 @@ export default {
     GlPopover,
     GlLink,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['config'],
   apollo: {
     containerScanningData: {
@@ -41,15 +39,12 @@ export default {
         ? s__('ContainerRegistry|Container Scanning for Registry: On')
         : s__('ContainerRegistry|Container Scanning for Registry: Off');
     },
-    isEmpty() {
-      return !this.glFeatures.containerScanningForRegistryFlag;
-    },
   },
 };
 </script>
 
 <template>
-  <div v-if="!isEmpty" class="gl-inline-flex gl-items-center">
+  <div class="gl-inline-flex gl-items-center">
     <gl-skeleton-loader v-if="$apollo.queries.containerScanningData.loading" :lines="1" />
     <template v-if="isMetaVisible">
       <div id="popover-target" data-testid="container-scanning-metadata">

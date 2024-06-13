@@ -15,7 +15,6 @@ module EE
       private
 
       def publish_internal_event
-        return unless ::Feature.enabled?(:container_scanning_for_registry_flag, project)
         return unless action_push?
         return unless project
 

@@ -912,11 +912,7 @@ module EE
         enable :enable_pre_receive_secret_detection
       end
 
-      condition(:container_scanning_for_registry_available) do
-        ::Feature.enabled?(:container_scanning_for_registry_flag, @subject)
-      end
-
-      rule { container_scanning_for_registry_available & can?(:maintainer_access) }.policy do
+      rule { can?(:maintainer_access) }.policy do
         enable :enable_container_scanning_for_registry
       end
 

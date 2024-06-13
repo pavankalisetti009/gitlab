@@ -51,19 +51,5 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
       expect(feature['meta_info_path']).to be_nil
       expect(feature['security_features']).not_to be_empty
     end
-
-    context 'when feature flag `container_scanning_for_registry` is disabled' do
-      before do
-        stub_feature_flags(container_scanning_for_registry_flag: false)
-      end
-
-      it 'does not includes container_scanning_for_registry feature information' do
-        feature = Gitlab::Json.parse(html_data[:features]).find do |scan|
-          scan['type'] == 'container_scanning_for_registry'
-        end
-
-        expect(feature).to be_nil
-      end
-    end
   end
 end

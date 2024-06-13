@@ -1,9 +1,0 @@
----
-name: container_scanning_for_registry_flag
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/442890
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147537
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/443827
-milestone: '17.0'
-group: group::composition analysis
-type: wip
-default_enabled: false

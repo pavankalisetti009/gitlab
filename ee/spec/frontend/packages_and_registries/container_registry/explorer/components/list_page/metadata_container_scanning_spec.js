@@ -26,9 +26,6 @@ describe('Metadata Container Scanning', () => {
     },
     requestHandlers,
     containerScanningForRegistryMock,
-    glFeatures = {
-      containerScanningForRegistryFlag: true,
-    },
   } = {}) => {
     Vue.use(VueApollo);
 
@@ -62,7 +59,6 @@ describe('Metadata Container Scanning', () => {
       provide() {
         return {
           config,
-          glFeatures,
         };
       },
     });
@@ -135,7 +131,7 @@ describe('Metadata Container Scanning', () => {
       graphQLProjectContainerScanningForRegistryHiddenMock.data.project
         .containerScanningForRegistry;
 
-    mountComponent({ requestHandlers, containerScanningForRegistryMock, glFeatures: {} });
+    mountComponent({ requestHandlers, containerScanningForRegistryMock });
 
     await waitForApolloRequestRender();
 
