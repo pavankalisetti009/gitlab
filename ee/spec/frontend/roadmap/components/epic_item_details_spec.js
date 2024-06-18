@@ -167,7 +167,7 @@ describe('EpicItemDetails', () => {
       describe('when epic has no child epics', () => {
         beforeEach(() => {
           const epic = createMockEpic({
-            hasChildren: false,
+            hasChildrenWithinTimeframe: false,
             descendantCounts: {
               openedEpics: 0,
               closedEpics: 0,
@@ -189,7 +189,7 @@ describe('EpicItemDetails', () => {
         let epic;
         beforeEach(() => {
           epic = createMockEpic({
-            hasChildren: true,
+            hasChildrenWithinTimeframe: true,
             children: {
               edges: [mockFormattedChildEpic1],
             },
