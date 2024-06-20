@@ -2291,9 +2291,6 @@ msgstr ""
 msgid "API key"
 msgstr ""
 
-msgid "API?"
-msgstr ""
-
 msgid "APIFuzzing|$VARIABLE_WITH_PASSWORD"
 msgstr ""
 
@@ -4736,7 +4733,7 @@ msgstr ""
 msgid "Admin|Settings"
 msgstr ""
 
-msgid "Admin|Spam Logs"
+msgid "Admin|Spam logs"
 msgstr ""
 
 msgid "Admin|Subscription"
@@ -43465,7 +43462,7 @@ msgstr ""
 msgid "Rebase source branch on the target branch."
 msgstr ""
 
-msgid "Recaptcha verified?"
+msgid "Recaptcha verified"
 msgstr ""
 
 msgid "Receive any notifications from GitLab."
@@ -50966,7 +50963,7 @@ msgstr ""
 msgid "Source Branch"
 msgstr ""
 
-msgid "Source IP"
+msgid "Source IP:"
 msgstr ""
 
 msgid "Source branch"
@@ -51077,13 +51074,13 @@ msgstr ""
 msgid "Spam Check API key"
 msgstr ""
 
-msgid "Spam Logs"
-msgstr ""
-
 msgid "Spam and Anti-bot Protection"
 msgstr ""
 
 msgid "Spam log successfully submitted as ham."
+msgstr ""
+
+msgid "Spam logs"
 msgstr ""
 
 msgid "Specific branches"
@@ -57351,9 +57348,6 @@ msgid "User OAuth applications"
 msgstr ""
 
 msgid "User Settings"
-msgstr ""
-
-msgid "User Status"
 msgstr ""
 
 msgid "User and IP rate limits"
