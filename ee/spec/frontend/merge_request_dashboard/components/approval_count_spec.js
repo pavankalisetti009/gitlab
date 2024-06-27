@@ -61,9 +61,9 @@ describe('Merge request dashboard approval count FOSS component', () => {
 
     it.each`
       approved | approvalsRequired | approvalsLeft | tooltipTitle
-      ${false} | ${1}              | ${1}          | ${'0 of 1 Approvals'}
-      ${false} | ${1}              | ${0}          | ${'1 of 1 Approvals'}
-      ${true}  | ${1}              | ${0}          | ${'Approved'}
+      ${false} | ${1}              | ${1}          | ${'0/1'}
+      ${false} | ${1}              | ${0}          | ${'1/1'}
+      ${true}  | ${1}              | ${0}          | ${'1/1'}
     `(
       'renders badge with correct tooltip title',
       ({ approved, approvalsRequired, approvalsLeft, tooltipTitle }) => {
