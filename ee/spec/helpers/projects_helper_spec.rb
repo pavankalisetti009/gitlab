@@ -518,6 +518,8 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   describe '#marked_for_removal_message' do
     subject { helper.marked_for_removal_message(project) }
 
+    let(:deletion_date) { helper.permanent_deletion_date_formatted(project, Time.now.utc) }
+
     before do
       allow(project).to receive(:feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(feature_available)
     end
@@ -526,8 +528,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:feature_available) { true }
 
       specify do
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
-        expect(subject).to eq "This action deletes <code>#{project.path_with_namespace}</code> on #{deletion_date} and everything this project contains."
+        deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
+
+        expect(subject).to eq "This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on <strong>#{deletion_date}</strong>."
       end
     end
 
@@ -535,8 +538,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
       let(:feature_available) { false }
 
       specify do
-        deletion_date = helper.permanent_deletion_date_formatted(project, Time.now.utc)
-        expect(subject).to eq "This action deletes <code>#{project.path_with_namespace}</code> on #{deletion_date} and everything this project contains. <strong>There is no going back.</strong>"
+        expect(subject).to eq "This project is scheduled for deletion on <strong>#{deletion_date}</strong>. This action will permanently delete this project, including all its resources, <strong>immediately</strong>. This action cannot be undone."
       end
     end
   end
