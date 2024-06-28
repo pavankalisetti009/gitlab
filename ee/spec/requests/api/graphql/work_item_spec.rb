@@ -153,7 +153,12 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             widgets {
               type
               ... on WorkItemWidgetWeight {
+                widgetDefinition {
+                  editable
+                  rollUp
+                }
                 weight
+                rollUpWeight
               }
             }
           GRAPHQL
@@ -172,7 +177,12 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               'widgets' => include(
                 hash_including(
                   'type' => 'WEIGHT',
-                  'weight' => work_item.weight
+                  'widgetDefinition' => {
+                    'editable' => true,
+                    'rollUp' => false
+                  },
+                  'weight' => work_item.weight,
+                  'rollUpWeight' => nil
                 )
               )
             )
