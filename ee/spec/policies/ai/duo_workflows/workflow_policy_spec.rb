@@ -1,0 +1,48 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow do
+  subject(:policy) { described_class.new(current_user, workflow) }
+
+  let_it_be(:workflow) { create(:duo_workflows_workflow) }
+  let_it_be(:guest) { create(:user, guest_of: workflow.project) }
+  let_it_be(:developer) { create(:user, developer_of: workflow.project) }
+  let(:current_user) { guest }
+
+  describe "read_duo_workflow" do
+    context "when start_duo_workflows FF is disabled" do
+      before do
+        stub_feature_flags(start_duo_workflows: false)
+      end
+
+      it { is_expected.to be_disallowed(:read_duo_workflow) }
+    end
+
+    context "when  start_duo_workflows FF is enabled" do
+      before do
+        stub_feature_flags(start_duo_workflows: true)
+      end
+
+      context "when user is guest" do
+        it { is_expected.to be_disallowed(:read_duo_workflow) }
+      end
+
+      context "when user is developer" do
+        let(:current_user) { developer }
+
+        context "when user is not workflow owner" do
+          it { is_expected.to be_disallowed(:read_duo_workflow) }
+        end
+
+        context "when user is workflow owner" do
+          before do
+            workflow.update!(user: current_user)
+          end
+
+          it { is_expected.to be_allowed(:read_duo_workflow) }
+        end
+      end
+    end
+  end
+end
