@@ -13,7 +13,8 @@
 # rubocop:disable Rails/Output -- this is a seed script
 class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildren -- this is a seed script
   CODE_PUSH_SAMPLE = 10
-  AI_EVENT_COUNT_SAMPLE = 5
+  CS_EVENT_COUNT_SAMPLE = 5
+  CHAT_EVENT_COUNT_SAMPLE = 2
   TIME_PERIOD_DAYS = 90
 
   attr_reader :project
@@ -51,7 +52,7 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
         )
       end
 
-      AI_EVENT_COUNT_SAMPLE.times do
+      CS_EVENT_COUNT_SAMPLE.times do
         Ai::CodeSuggestionsUsage.new(
           user: user,
           event: 'code_suggestion_shown_in_ide',
@@ -63,6 +64,13 @@ class Gitlab::Seeder::AiUsageStats # rubocop:disable Style/ClassAndModuleChildre
           user: user,
           event: 'code_suggestion_accepted_in_ide',
           timestamp: rand(TIME_PERIOD_DAYS).days.ago + 2.seconds).store
+      end
+
+      CHAT_EVENT_COUNT_SAMPLE.times do
+        Ai::DuoChatEvent.new(
+          user: user,
+          event: 'request_duo_chat_response',
+          timestamp: rand(TIME_PERIOD_DAYS).days.ago).store
       end
     end
   end

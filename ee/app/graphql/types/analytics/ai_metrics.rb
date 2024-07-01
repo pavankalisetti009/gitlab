@@ -16,6 +16,9 @@ module Types
       field :code_suggestions_shown_count, GraphQL::Types::Int,
         description: 'Total count of code suggestions shown to code contributors.',
         null: true
+      field :duo_chat_contributors_count, GraphQL::Types::Int,
+        description: 'Number of contributors who used GitLab Duo Chat features.',
+        null: true
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end

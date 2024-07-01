@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_category: :value_stream_management do
+RSpec.describe Analytics::AiAnalytics::DuoChatUsageService, feature_category: :value_stream_management do
   subject(:service_response) do
     described_class.new(current_user, namespace: container, from: from, to: to).execute
   end
@@ -23,7 +23,7 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
     allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
   end
 
-  shared_examples 'common ai usage rate service' do
+  shared_examples 'common chat usage service' do
     context 'when the clickhouse is not available for analytics' do
       before do
         allow(Gitlab::ClickHouse).to receive(:enabled_for_analytics?).with(container).and_return(false)
@@ -45,10 +45,8 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
         it 'returns 0' do
           expect(service_response).to be_success
           expect(service_response.payload).to eq({
-            code_contributors_count: 0,
-            code_suggestions_contributors_count: 0,
-            code_suggestions_accepted_count: 0,
-            code_suggestions_shown_count: 0
+            contributors_count: 0,
+            duo_chat_contributors_count: 0
           })
         end
       end
@@ -59,9 +57,9 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
             namespace: container,
             from: from,
             to: to,
-            fields: %i[code_contributors_count]).execute
+            fields: %i[duo_chat_contributors_count]).execute
 
-          expect(response.payload).to match(code_contributors_count: 0)
+          expect(response.payload).to match(duo_chat_contributors_count: 0)
         end
       end
 
@@ -80,33 +78,29 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
 
       context 'with data' do
         before do
-          clickhouse_fixture(:code_suggestion_usages, [
-            { user_id: user1.id, event: 2, timestamp: to - 3.days }, # shown
-            { user_id: user1.id, event: 3, timestamp: to - 3.days + 1.second }, # accepted
-            { user_id: user1.id, event: 2, timestamp: to - 4.days }, # shown
-            { user_id: user2.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: user2.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: stranger_user.id, event: 2, timestamp: to - 2.days }, # shown
-            { user_id: stranger_user.id, event: 3, timestamp: to - 2.days + 1.second }, # accepted
-            { user_id: user3.id, event: 2, timestamp: to + 2.days }, # shown
-            { user_id: user3.id, event: 2, timestamp: from - 2.days } # shown
+          clickhouse_fixture(:duo_chat_events, [
+            { user_id: user1.id, event: 1, timestamp: to - 3.days },
+            { user_id: user1.id, event: 1, timestamp: to - 4.days },
+            { user_id: user2.id, event: 1, timestamp: to - 2.days },
+            { user_id: user2.id, event: 1, timestamp: to - 2.days },
+            { user_id: stranger_user.id, event: 1, timestamp: to - 2.days },
+            { user_id: user3.id, event: 1, timestamp: to + 2.days },
+            { user_id: user3.id, event: 1, timestamp: from - 2.days }
           ])
 
           insert_events_into_click_house([
-            build_stubbed(:event, :pushed, project: project, author: user1, created_at: to - 1.day),
-            build_stubbed(:event, :pushed, project: project, author: user1, created_at: to - 2.days),
-            build_stubbed(:event, :pushed, project: project, author: user2, created_at: to - 1.day),
-            build_stubbed(:event, :pushed, project: project, author: user3, created_at: to - 1.day)
+            build_stubbed(:event, :commented, project: project, author: user1, created_at: to - 1.day),
+            build_stubbed(:event, :commented, project: project, author: user1, created_at: to - 2.days),
+            build_stubbed(:event, :commented, project: project, author: user2, created_at: to - 1.day),
+            build_stubbed(:event, :commented, project: project, author: user3, created_at: to - 1.day)
           ])
         end
 
-        it 'returns matched code contributors AI usage stats' do
+        it 'returns matched contributors duo chat usage stats' do
           expect(service_response).to be_success
           expect(service_response.payload).to match(
-            code_contributors_count: 3,
-            code_suggestions_contributors_count: 2,
-            code_suggestions_accepted_count: 1,
-            code_suggestions_shown_count: 4
+            contributors_count: 3,
+            duo_chat_contributors_count: 2
           )
         end
       end
@@ -116,12 +110,12 @@ RSpec.describe Analytics::AiAnalytics::CodeSuggestionUsageService, feature_categ
   context 'for group' do
     let_it_be(:container) { group }
 
-    it_behaves_like 'common ai usage rate service'
+    it_behaves_like 'common chat usage service'
   end
 
   context 'for project' do
     let_it_be(:container) { project.project_namespace.reload }
 
-    it_behaves_like 'common ai usage rate service'
+    it_behaves_like 'common chat usage service'
   end
 end
