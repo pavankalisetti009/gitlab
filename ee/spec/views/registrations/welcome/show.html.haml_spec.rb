@@ -3,13 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
-  let(:invite?) { false }
-  let(:trial?) { false }
+  let(:hide_setup_for_company_field?) { false }
+  let(:show_joining_project?) { true }
+  let(:show_opt_in_to_email?) { true }
   let(:onboarding_status) do
     instance_double(
       ::Onboarding::Status,
-      invite?: invite?, enabled?: true, subscription?: false, trial?: trial?, oauth?: false,
+      hide_setup_for_company_field?: hide_setup_for_company_field?,
       setup_for_company_label_text: '_text_',
+      show_joining_project?: show_joining_project?,
+      show_opt_in_to_email?: show_opt_in_to_email?,
       welcome_submit_button_text: '_button_text_'
     )
   end
@@ -47,8 +50,8 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
     end
   end
 
-  context 'when it is an invite' do
-    let(:invite?) { true }
+  context 'when setup for company field should be hidden' do
+    let(:hide_setup_for_company_field?) { true }
 
     it 'does not have setup_for_company label' do
       is_expected.not_to have_selector('label[for="user_setup_for_company"]')
@@ -57,25 +60,29 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
     it 'has a hidden input for setup_for_company' do
       is_expected.to have_field('user[setup_for_company]', type: :hidden)
     end
+  end
+
+  context 'when not showing joining project' do
+    let(:show_joining_project?) { false }
 
     it 'does not have the joining_project fields' do
       is_expected.not_to have_selector('#joining_project_true')
     end
+  end
+
+  context 'when not showing opt in to email' do
+    let(:show_opt_in_to_email?) { false }
 
     it 'does not have opt in to email field' do
       is_expected.not_to have_selector('input[name="user[onboarding_status_email_opt_in]"]')
     end
   end
 
-  context 'when it is a trial' do
-    let(:trial?) { true }
+  context 'when setup for company field is not hidden' do
+    let(:hide_setup_for_company_field?) { false }
 
     it 'has setup_for_company label' do
       is_expected.to have_selector('label[for="user_setup_for_company"]')
-    end
-
-    it 'does not have the joining_project fields' do
-      is_expected.not_to have_selector('#joining_project_true')
     end
   end
 end
