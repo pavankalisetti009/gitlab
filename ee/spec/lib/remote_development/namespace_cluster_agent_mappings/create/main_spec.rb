@@ -106,9 +106,9 @@ RSpec.describe RemoteDevelopment::NamespaceClusterAgentMappings::Create::Main, :
           "when an unmatched error is returned, an exception is raised",
           {
             step_class: RemoteDevelopment::NamespaceClusterAgentMappings::Create::ClusterAgentValidator,
-            returned_message: lazy { Class.new(RemoteDevelopment::Message).new(err_message_content) }
+            returned_message: lazy { Class.new(Gitlab::Fp::Message).new(err_message_content) }
           },
-          RemoteDevelopment::UnmatchedResultError,
+          Gitlab::Fp::UnmatchedResultError,
         ]
       ]
     end

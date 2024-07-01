@@ -260,7 +260,7 @@ Although the functional patterns above are used when they provide benefits, we o
 
 When we need to pass data around, we encapsulate it in objects. This may be a standard libary class such as `Hash` or `String`, or it may be a custom class which we create.
 
-The custom classes are a form of the ["Value Object](https://thoughtbot.com/blog/value-object-semantics-in-ruby) pattern. Currently, `RemoteDevelopment::Message` is the only example of this (NOTE: `error.rb` is also one, but it is being deprecated in favor of `Message`).
+The custom classes are a form of the ["Value Object](https://thoughtbot.com/blog/value-object-semantics-in-ruby) pattern. Currently, `Gitlab::Fp::Message` is the only example of this (NOTE: `error.rb` is also one, but it is being deprecated in favor of `Message`).
 
 For these custom value object classes, the `#==` method should be implemented.
 
@@ -399,7 +399,7 @@ class CommonService
   def self.execute(domain_main_class:, domain_main_class_args:)
     main_class_method = retrieve_single_public_singleton_method(domain_main_class)
 
-    settings = ::RemoteDevelopment::Settings.get_all_settings
+      settings = ::RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
     logger = RemoteDevelopment::Logger.build
 
     response_hash = domain_main_class.singleton_method(main_class_method).call(
@@ -435,7 +435,7 @@ class Main
     in { ok: WorkspaceUpdateSuccessful => message }
       { status: :success, payload: message.content }
     else
-      raise UnmatchedResultError.new(result: result)
+      raise Gitlab::Fp::UnmatchedResultError.new(result: result)
     end
   end
 end
@@ -700,9 +700,11 @@ via an ENV var, add a new entry in `lib/remote_development/settings/default_sett
 
 ### Reading settings
 
-To read a single setting, use `RemoteDevelopment::Settings.get_single_setting(:setting_name)`
+To read a single setting, use `RemoteDevelopment::Settings.get_single_setting(:setting_name)`,
+which returns the setting value.
 
-To read all settings, use `RemoteDevelopment::Settings.get_all_settings`
+To read multiple settings, use `RemoteDevelopment::Settings.get([:setting_1, :setting_2])`,
+which returns a Hash of settings, e.g.: `{ setting_1: "one", setting_2: 2 }`.
 
 NOTE: A setting _MUST_ have an entry defined in `lib/remote_development/settings/default_settings.rb`
 to be read, but the default value can be `nil`. This will likely be the case when you want to use

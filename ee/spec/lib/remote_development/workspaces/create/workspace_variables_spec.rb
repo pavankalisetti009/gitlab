@@ -12,7 +12,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::WorkspaceVariables, :rd_
   let(:workspace_id) { 1 }
   let(:vscode_extensions_gallery_service_url) { "https://open-vsx.org/vscode/gallery" }
   let(:vscode_extensions_gallery_item_url) { "https://open-vsx.org/vscode/item" }
-  let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}" }
+  let(:vscode_extensions_gallery_resource_url_template) { "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}" }
   let(:git_credential_store_script) do
     <<~SH.chomp
       #!/bin/sh
@@ -163,12 +163,10 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::WorkspaceVariables, :rd_
       user_name: user_name,
       user_email: user_email,
       workspace_id: workspace_id,
-      settings: {
-        vscode_extensions_gallery: {
-          service_url: vscode_extensions_gallery_service_url,
-          item_url: vscode_extensions_gallery_item_url,
-          resource_url_template: vscode_extensions_gallery_resource_url_template
-        }
+      vscode_extensions_gallery: {
+        service_url: vscode_extensions_gallery_service_url,
+        item_url: vscode_extensions_gallery_item_url,
+        resource_url_template: vscode_extensions_gallery_resource_url_template
       },
       variables: [
         {

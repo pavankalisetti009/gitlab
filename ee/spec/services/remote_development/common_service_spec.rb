@@ -40,7 +40,8 @@ RSpec.describe ::RemoteDevelopment::CommonService, :rd_fast, feature_category: :
   describe '#execute' do
     before do
       domain_main_class.send(:response_hash=, response_hash)
-      allow(RemoteDevelopment::Settings).to receive(:get_all_settings).and_return(settings)
+      allow(RemoteDevelopment::Settings)
+        .to receive(:get).with(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys).and_return(settings)
       allow(RemoteDevelopment::Logger).to receive(:build).and_return(logger)
     end
 

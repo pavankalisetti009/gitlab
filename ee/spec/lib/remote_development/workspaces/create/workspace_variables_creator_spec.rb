@@ -10,7 +10,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::WorkspaceVariablesCreato
   let_it_be(:user) { create(:user) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let_it_be(:workspace) { create(:workspace, user: user, personal_access_token: personal_access_token) }
-  let(:settings) { { some_setting: "context" } }
+  let(:vscode_extensions_gallery) { { some_key: "some-value" } }
   let(:user_provided_variables) { [{ key: "VAR1", value: "value 1" }, { key: "VAR2", value: "value 2" }] }
   let(:returned_workspace_variables) do
     [
@@ -37,7 +37,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::WorkspaceVariablesCreato
       user_name: user.name,
       user_email: user.email,
       workspace_id: workspace.id,
-      settings: settings,
+      vscode_extensions_gallery: vscode_extensions_gallery,
       variables: user_provided_variables
     }
   end
@@ -47,7 +47,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::WorkspaceVariablesCreato
       workspace: workspace,
       personal_access_token: personal_access_token,
       current_user: user,
-      settings: settings,
+      vscode_extensions_gallery: vscode_extensions_gallery,
       params: {
         variables: user_provided_variables
       }
