@@ -23,11 +23,29 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
     expect(page).to have_selector(".protected-environments-settings")
   end
 
-  it 'shows all subgroups of the organization in the creation form' do
-    click_button('Protect an environment')
-    within('.js-new-protected-environment') do
-      click_button('Select groups')
+  it 'shows environment tiers in the creation form' do
+    within_testid('new-protected-environment') do
+      click_button('Protect an environment')
+      expect(page).to have_content('Select environment tier')
+    end
+  end
 
+  it 'shows all subgroups of the organization in the deployers select after selecting a tier' do
+    select_environment_tier
+
+    within_testid('create-deployer-dropdown') do
+      click_button('Select users')
+      expect(page).to have_content(developer_group.name)
+      expect(page).to have_content(operator_group.name)
+      expect(page).not_to have_content(unrelated_group.name)
+    end
+  end
+
+  it 'shows all subgroups of the organization in the approvers select after selecting a tier' do
+    select_environment_tier
+
+    within_testid('create-approver-dropdown') do
+      click_button('Select users')
       expect(page).to have_content(developer_group.name)
       expect(page).to have_content(operator_group.name)
       expect(page).not_to have_content(unrelated_group.name)
@@ -35,28 +53,19 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
   end
 
   it 'allows to create a group-level protected environment' do
-    click_button('Protect an environment')
-    within('.js-new-protected-environment') do
-      select('staging')
-      click_button('Select groups')
+    select_environment_tier
+
+    within_testid('create-deployer-dropdown') do
+      click_button('Select users')
       click_button('operator-group')
-      find('#allowed-users-label').click # Close the access level dropdown
-      click_on('Protect')
     end
 
-    click_button('Protect an environment')
-    within('.js-protected-environments-list') do
-      expect(page).to have_content('staging')
-      click_button('1 group')
+    click_on('Protect')
 
-      within('.gl-dropdown-contents li:nth-child(2)') do
-        expect(page).to have_selector('.gl-dropdown-item-check-icon', visible: true)
-        expect(page).to have_content('operator-group')
-      end
-      within('.gl-dropdown-contents li:nth-child(3)') do
-        expect(page).to have_selector('.gl-dropdown-item-check-icon', visible: false)
-        expect(page).to have_content('developer-group')
-      end
+    wait_for_requests
+    click_button('staging')
+    within_testid('protected-environment-staging-deployers') do
+      expect(page).to have_content('operator-group')
     end
   end
 
@@ -69,8 +78,11 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
 
     it 'shows search box without throwing an error' do
       visit group_settings_ci_cd_path(public_organization)
-      click_button('Protect an environment')
-      click_button('Select groups')
+      select_environment_tier
+
+      within_testid('create-deployer-dropdown') do
+        click_button('Select users')
+      end
 
       within('.gl-dropdown-inner') { find('.gl-search-box-by-type') }
     end
@@ -92,43 +104,38 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
     end
 
     it 'allows user to change the allowed groups' do
-      within('.js-protected-environments-list') do
+      within_testid('protected-environments-list') do
         expect(page).to have_content('production')
-        click_button('1 group')
+        click_button('production')
+        click_button('Add deployment rules')
+        wait_for_requests
 
-        within('.gl-dropdown-contents') do
-          click_button('operator-group')                  # Unselect operator-group
-          click_button('developer-group')                 # Select developer-group
+        click_button('Select users')
+        click_button('developer-group')                 # Select developer-group
+        click_button('1 group')                         # Close the access level dropdown
+
+        click_button('Save')
+        wait_for_requests
+
+        within("[data-testid='protected-environment-production-deployers'] > div:nth-child(2)") do
+          click_button('Delete deployer rule') # Unselect operator-group
+          wait_for_requests
         end
 
-        find('.js-protected-environment-edit-form').click # Close the access level dropdown to update
-      end
-
-      visit group_settings_ci_cd_path(organization)       # Reload
-
-      within('.js-protected-environments-list') do
-        expect(page).to have_content('production')
-        click_button('1 group')
-
-        within('.gl-dropdown-contents li:nth-child(2)') do
-          expect(page).to have_selector('.gl-dropdown-item-check-icon', visible: false)
-          expect(page).to have_content('operator-group')
-        end
-        within('.gl-dropdown-contents li:nth-child(3)') do
-          expect(page).to have_selector('.gl-dropdown-item-check-icon', visible: true)
-          expect(page).to have_content('developer-group')
-        end
+        expect(page).to have_content('developer-group')
+        expect(page).not_to have_content('operator-group')
       end
     end
 
     it 'allows user to destroy the entry' do
-      within('.js-protected-environment-edit-form') do
+      within_testid('protected-environments-list') do
+        click_button('production')
         click_on('Unprotect')
       end
 
       find('.js-modal-action-primary').click
 
-      within('.js-protected-environments-list') do
+      within_testid('protected-environments-list') do
         expect(page).not_to have_content('production')
       end
     end
@@ -151,6 +158,15 @@ RSpec.describe 'Protected Environments', :js, feature_category: :environment_man
 
     it 'does not show the Protected Environments settings' do
       expect(page).not_to have_selector(".protected-environments-settings")
+    end
+  end
+
+  def select_environment_tier
+    within_testid('new-protected-environment') do
+      click_button('Protect an environment')
+
+      click_button('Select environment tier')
+      find_by_testid('listbox-item-staging').click
     end
   end
 end
