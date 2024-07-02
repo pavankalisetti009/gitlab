@@ -2,42 +2,43 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Loading usage overvierw for a group', feature_category: :value_stream_management do
+RSpec.describe 'Loading usage overview for a project', feature_category: :value_stream_management do
   include GraphqlHelpers
 
   let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be(:metric) do
-    create(:value_stream_dashboard_count, metric: :projects, count: 5, namespace: group, recorded_at: '2023-01-20')
+    create(:value_stream_dashboard_count, metric: :issues, count: 10, namespace: project.project_namespace,
+      recorded_at: '2024-06-20')
   end
 
   let(:params) do
     {
-      identifier: :PROJECTS,
+      identifier: :ISSUES,
       timeframe: {
-        start: '2023-01-01',
-        end: '2023-01-31'
+        start: '2024-06-01',
+        end: '2024-06-30'
       }
     }
   end
 
   def query
-    fields = %i[count]
-    graphql_query_for("group", { "fullPath" => group.full_path },
-      query_graphql_field("valueStreamDashboardUsageOverview", params, fields)
+    graphql_query_for("project", { "fullPath" => project.full_path },
+      query_graphql_field("valueStreamDashboardUsageOverview", params, %i[count])
     )
   end
 
   context 'when the feature is available' do
     before do
-      stub_licensed_features(group_level_analytics_dashboard: true)
+      stub_licensed_features(combined_project_analytics_dashboards: true)
     end
 
     it 'does return the count' do
       post_graphql(query, current_user: user)
 
       expect(response).to have_gitlab_http_status(:success)
-      expect(graphql_data.dig('group', 'valueStreamDashboardUsageOverview', 'count')).to eq(5)
+      expect(graphql_data.dig('project', 'valueStreamDashboardUsageOverview', 'count')).to eq(10)
     end
   end
 
@@ -53,7 +54,7 @@ RSpec.describe 'Loading usage overvierw for a group', feature_category: :value_s
     end
 
     before do
-      stub_licensed_features(group_level_analytics_dashboard: true)
+      stub_licensed_features(combined_project_analytics_dashboards: true)
       allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(false)
     end
 
@@ -72,7 +73,7 @@ RSpec.describe 'Loading usage overvierw for a group', feature_category: :value_s
     it 'returns nil response' do
       post_graphql(query, current_user: user)
 
-      expect(graphql_data.dig('group', 'valueStreamDashboardUsageOverview')).to eq(nil)
+      expect(graphql_data.dig('project', 'valueStreamDashboardUsageOverview')).to eq(nil)
     end
   end
 end

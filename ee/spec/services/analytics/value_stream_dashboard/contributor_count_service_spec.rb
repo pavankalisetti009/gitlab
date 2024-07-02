@@ -10,10 +10,11 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
   let_it_be(:to) { Date.new(2022, 6, 10) }
 
   let(:current_user) { user }
+  let(:namespace) { group }
 
   subject(:service_response) do
     described_class.new(
-      group: group,
+      namespace: namespace,
       current_user: current_user,
       from: from,
       to: to
@@ -32,7 +33,7 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
     it 'returns service error' do
       expect(service_response).to be_error
 
-      message = s_('VsdContributorCount|the ClickHouse data store is not available for this group')
+      message = s_('VsdContributorCount|the ClickHouse data store is not available for this namespace')
       expect(service_response.message).to eq(message)
     end
   end
@@ -60,6 +61,58 @@ RSpec.describe Analytics::ValueStreamDashboard::ContributorCountService, :freeze
     end
 
     it 'returns service error' do
+      expect(service_response).to be_error
+
+      message = s_('404|Not found')
+      expect(service_response.message).to eq(message)
+    end
+  end
+
+  context 'when a project namespace is given' do
+    let_it_be(:project) { create(:project, namespace: group) }
+
+    let(:namespace) { project.reload.project_namespace }
+    let(:path) { "#{group.id}/#{namespace.id}/" }
+
+    context 'when data present', :click_house do
+      before do
+        allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+        stub_licensed_features(combined_project_analytics_dashboards: true)
+
+        clickhouse_fixture(:events, [
+          # push event
+          { id: 1, path: path, author_id: 100, target_id: 0, target_type: '', action: 5,
+            created_at: from + 5.days, updated_at: from + 5.days },
+          # issue creation event, different user
+          { id: 2, path: path, author_id: 200, target_id: 0, target_type: 'Issue', action: 1,
+            created_at: from + 9.days, updated_at: from + 9.days }
+        ])
+      end
+
+      it 'returns distinct contributor count from ClickHouse' do
+        expect(service_response).to be_success
+        expect(service_response.payload[:count]).to eq(2)
+      end
+    end
+
+    context 'when the user is not authorized', :click_house do
+      it 'returns service error' do
+        allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+
+        expect(service_response).to be_error
+
+        message = s_('404|Not found')
+        expect(service_response.message).to eq(message)
+      end
+    end
+  end
+
+  context 'when user namespace is given', :click_house do
+    let(:namespace) { create(:namespace, owner: user) }
+
+    it 'returns service error' do
+      allow(::Gitlab::ClickHouse).to receive(:enabled_for_analytics?).and_return(true)
+
       expect(service_response).to be_error
 
       message = s_('404|Not found')
