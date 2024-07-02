@@ -38378,6 +38378,9 @@ msgstr ""
 msgid "Personal projects limit:"
 msgstr ""
 
+msgid "Personal/project/group access token expiration"
+msgstr ""
+
 msgid "PersonalProject|Learn to move a project to a group"
 msgstr ""
 
@@ -59809,6 +59812,9 @@ msgid "When all the merge checks for this merge request pass, it will %{linkStar
 msgstr ""
 
 msgid "When enabled, SSH keys with no expiry date or an invalid expiration date are no longer accepted. Leave blank for no limit."
+msgstr ""
+
+msgid "When enabled, a user will be required to enter in an expiration date when creating an access token. Changes will not affect existing token expiration dates."
 msgstr ""
 
 msgid "When enabled, cleanup policies execute faster but put more load on Redis."
