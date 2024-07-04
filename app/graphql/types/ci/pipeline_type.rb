@@ -248,7 +248,7 @@ module Types
         variables = object.variables
         return variables if Ability.allowed?(current_user, :read_pipeline_variable, pipeline)
 
-        variables.map { |variable| { key: variable.key, value: nil } }
+        variables.each { |variable| variable.value = nil }
       end
 
       alias_method :pipeline, :object

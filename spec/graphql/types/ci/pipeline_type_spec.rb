@@ -44,8 +44,11 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
               startedAt
               manualVariables {
                 nodes {
+                  id
                   key
                   value
+                  raw
+                  variableType
                 }
               }
             }
@@ -67,7 +70,10 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
       let(:user_access_level) { :owner }
 
       it 'returns the manual variables' do
-        expect(manual_variables).to match_array([{ 'key' => 'TRIGGER_KEY_1', 'value' => 'TRIGGER_VALUE_1' }])
+        expect(manual_variables.size).to eq(1)
+        expect(manual_variables.first['key']).to eq('TRIGGER_KEY_1')
+        expect(manual_variables.first['value']).to eq('TRIGGER_VALUE_1')
+        expect(manual_variables.first.keys).to match_array(%w[id key value raw variableType])
       end
     end
 
@@ -75,7 +81,10 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
       let(:user_access_level) { :developer }
 
       it 'returns the manual variables with nil values' do
-        expect(manual_variables).to match_array([{ 'key' => 'TRIGGER_KEY_1', 'value' => nil }])
+        expect(manual_variables.size).to eq(1)
+        expect(manual_variables.first['key']).to eq('TRIGGER_KEY_1')
+        expect(manual_variables.first['value']).to eq(nil)
+        expect(manual_variables.first.keys).to match_array(%w[id key value raw variableType])
       end
     end
   end
