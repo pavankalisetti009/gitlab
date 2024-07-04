@@ -305,7 +305,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
           stub_feature_flags(group_protected_branches: true, allow_protected_branches_for_group: true)
         end
 
-        it 'returns a collection of all protected branches belonging to the project and the group', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470326' do
+        it 'returns a collection of all protected branches belonging to the project and the group' do
           expect(subject).to contain_exactly(*protected_branches, *group_protected_branches)
         end
       end
