@@ -342,7 +342,7 @@ RSpec.describe Integrations::Github, feature_category: :integrations do
 
   describe '#testable?' do
     it 'is false if there are no pipelines' do
-      project.ci_pipelines.delete_all
+      project.ci_pipelines.destroy_all # rubocop:disable Cop/DestroyAll -- cannot delete due to not-null constraint
 
       expect(subject).not_to be_testable
     end
