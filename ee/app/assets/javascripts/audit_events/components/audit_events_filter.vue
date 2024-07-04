@@ -71,7 +71,7 @@ export default {
       :close-button-title="__('Close')"
       :available-tokens="enabledTokens"
       :view-only="viewOnly"
-      class="gl-h-32 gl-w-full"
+      class="gl-w-full"
       @submit="onSubmit"
       @input="onInput"
     />

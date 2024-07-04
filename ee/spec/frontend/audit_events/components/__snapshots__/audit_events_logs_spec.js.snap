@@ -2,28 +2,21 @@
 
 exports[`AuditEventsLog when initialized matches the snapshot 1`] = `
 <div>
-  <header>
-    <div
-      class="gl-display-flex gl-flex-direction-row gl-justify-content-end gl-my-5"
-    >
-      <audit-events-export-button-stub
-        exporthref="http://example.com/audit_log_reports.csv?created_after=2020-01-01&created_before=2020-02-02"
-      />
-    </div>
-  </header>
   <div
-    class="gl-pb-0 row-content-block second-block"
+    class="gl-border-t-0 row-content-block"
   >
     <div
-      class="gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row!"
+      class="gl-flex gl-flex-col gl-gap-3 gl-mb-3 md:gl-flex-row"
     >
       <audit-events-filter-stub
-        class="gl-mb-5 gl-mr-5"
         filtertokenoptions="[object Object],[object Object],[object Object],[object Object]"
         value="[object Object]"
       />
       <sorting-field-stub
         sortby="created_asc"
+      />
+      <audit-events-export-button-stub
+        exporthref="http://example.com/audit_log_reports.csv?created_after=2020-01-01&created_before=2020-02-02"
       />
     </div>
     <date-range-field-stub

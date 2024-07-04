@@ -56,23 +56,19 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-lg-flex-direction-row gl-flex-direction-column">
-    <date-range-buttons
-      :date-range="defaultDateRange"
-      class="gl-lg-pr-5 gl-mb-5"
-      @input="onInput"
-    />
+  <div class="gl-flex gl-gap-3 gl-flex-col md:gl-flex-row gl-mb-3">
+    <date-range-buttons :date-range="defaultDateRange" @input="onInput" />
     <gl-daterange-picker
-      class="daterange-picker gl-display-flex gl-pl-0 gl-flex-direction-column gl-lg-flex-direction-row"
+      class="daterange-picker md:gl-flex"
       :default-start-date="defaultStartDate"
       :default-end-date="defaultEndDate"
       :default-max-date="$options.CURRENT_DATE"
       :max-date-range="$options.MAX_DATE_RANGE"
       :same-day-selection="true"
       :tooltip="$options.i18n.dateRangeTooltip"
-      start-picker-class="gl-mb-5 gl-md-pr-3 gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row gl-lg-align-items-flex-end"
-      end-picker-class="gl-mb-5 gl-md-mr-3 gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row gl-lg-align-items-flex-end"
-      date-range-indicator-class="gl-mb-5 gl-whitespace-nowrap"
+      start-picker-class="md:gl-flex lg:gl-items-end"
+      end-picker-class="md:gl-flex lg:gl-items-end"
+      date-range-indicator-class="gl-whitespace-nowrap"
       @input="onInput"
     >
       <template #default="{ daysSelected }">

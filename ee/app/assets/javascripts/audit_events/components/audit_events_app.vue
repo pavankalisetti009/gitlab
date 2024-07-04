@@ -38,7 +38,7 @@ export default {
 <template>
   <gl-tabs
     v-if="showTabs"
-    content-class="gl-pt-5"
+    content-class="gl-pt-0"
     :sync-active-tab-with-query-params="true"
     data-testid="audit-events-tabs"
   >
