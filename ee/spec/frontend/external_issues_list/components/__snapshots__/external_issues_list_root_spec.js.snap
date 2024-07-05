@@ -30,7 +30,7 @@ exports[`ExternalIssuesListRoot error handling when request fails displays error
 `;
 
 exports[`ExternalIssuesListRoot when request succeeds renders issuable-list component with correct props 1`] = `
-Object {
+{
   "activeIssuable": null,
   "currentPage": 1,
   "currentTab": "opened",
@@ -39,16 +39,16 @@ Object {
   "hasNextPage": false,
   "hasPreviousPage": false,
   "hasScopedLabelsFeature": false,
-  "initialFilterValue": Array [],
+  "initialFilterValue": [],
   "initialSortBy": "created_desc",
   "isGridView": false,
   "isManualOrdering": false,
   "issuableSymbol": "#",
-  "issuables": Array [
-    Object {
+  "issuables": [
+    {
       "__typename": "JiraIssue",
-      "assignees": Array [
-        Object {
+      "assignees": [
+        {
           "__typename": "UserCore",
           "avatarUrl": null,
           "id": "user-2",
@@ -56,7 +56,7 @@ Object {
           "webUrl": "https://gitlab-jira.atlassian.net/people/1920938475",
         },
       ],
-      "author": Object {
+      "author": {
         "__typename": "UserCore",
         "avatarUrl": null,
         "id": 0,
@@ -68,8 +68,8 @@ Object {
       "externalTracker": "jira",
       "gitlabWebUrl": "",
       "id": "IG-31596",
-      "labels": Array [
-        Object {
+      "labels": [
+        {
           "__typename": "Label",
           "color": "#0052CC",
           "id": "label-1",
@@ -79,7 +79,7 @@ Object {
         },
       ],
       "projectId": 1,
-      "references": Object {
+      "references": {
         "relative": "IG-31596",
       },
       "status": "Selected for Development",
@@ -87,10 +87,10 @@ Object {
       "updatedAt": "2020-10-20T07:01:45.865Z",
       "webUrl": "https://gitlab-jira.atlassian.net/browse/IG-31596",
     },
-    Object {
+    {
       "__typename": "JiraIssue",
-      "assignees": Array [],
-      "author": Object {
+      "assignees": [],
+      "author": {
         "__typename": "UserCore",
         "avatarUrl": null,
         "id": 1,
@@ -102,9 +102,9 @@ Object {
       "externalTracker": "jira",
       "gitlabWebUrl": "",
       "id": "IG-31595",
-      "labels": Array [],
+      "labels": [],
       "projectId": 1,
-      "references": Object {
+      "references": {
         "relative": "IG-31595",
       },
       "status": "Backlog",
@@ -112,10 +112,10 @@ Object {
       "updatedAt": "2020-03-19T14:31:50.677Z",
       "webUrl": "https://gitlab-jira.atlassian.net/browse/IG-31595",
     },
-    Object {
+    {
       "__typename": "JiraIssue",
-      "assignees": Array [],
-      "author": Object {
+      "assignees": [],
+      "author": {
         "__typename": "UserCore",
         "avatarUrl": null,
         "id": 2,
@@ -127,9 +127,9 @@ Object {
       "externalTracker": "jira",
       "gitlabWebUrl": "",
       "id": "IG-31594",
-      "labels": Array [],
+      "labels": [],
       "projectId": 1,
-      "references": Object {
+      "references": {
         "relative": "IG-31594",
       },
       "status": "Backlog",
@@ -146,13 +146,13 @@ Object {
   "previousPage": 0,
   "recentSearchesStorageKey": "jira_issues",
   "searchInputPlaceholder": "Search Jira issues",
-  "searchTokens": Array [
-    Object {
-      "defaultLabels": Array [],
+  "searchTokens": [
+    {
+      "defaultLabels": [],
       "fetchLabels": [Function],
       "icon": "labels",
-      "operators": Array [
-        Object {
+      "operators": [
+        {
           "description": "is",
           "value": "=",
         },
@@ -170,18 +170,18 @@ Object {
   "showPageSizeSelector": false,
   "showPaginationControls": true,
   "showWorkItemTypeIcon": false,
-  "sortOptions": Array [
-    Object {
+  "sortOptions": [
+    {
       "id": 1,
-      "sortDirection": Object {
+      "sortDirection": {
         "ascending": "created_asc",
         "descending": "created_desc",
       },
       "title": "Created date",
     },
-    Object {
+    {
       "id": 2,
-      "sortDirection": Object {
+      "sortDirection": {
         "ascending": "updated_asc",
         "descending": "updated_desc",
       },
@@ -190,20 +190,20 @@ Object {
   ],
   "syncFilterAndSort": false,
   "tabCounts": null,
-  "tabs": Array [
-    Object {
+  "tabs": [
+    {
       "id": "state-opened",
       "name": "opened",
       "title": "Open",
       "titleTooltip": "Filter by issues that are currently opened.",
     },
-    Object {
+    {
       "id": "state-closed",
       "name": "closed",
       "title": "Closed",
       "titleTooltip": "Filter by issues that are currently closed.",
     },
-    Object {
+    {
       "id": "state-all",
       "name": "all",
       "title": "All",
@@ -212,7 +212,7 @@ Object {
   ],
   "totalItems": 3,
   "truncateCounts": false,
-  "urlParams": Object {
+  "urlParams": {
     "assignee_username": undefined,
     "author_username": undefined,
     "labels[]": undefined,

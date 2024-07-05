@@ -1,43 +1,43 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AI impact Dashboard utils generateDateRanges returns the expected date ranges in a leap year 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 2019-10-31T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Oct",
     "start": 2019-10-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2019-11-30T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Nov",
     "start": 2019-11-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2019-12-31T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Dec",
     "start": 2019-12-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-01-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "Jan",
     "start": 2020-01-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-02-29T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Feb",
     "start": 2020-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-03-31T00:00:00.000Z,
     "key": "this-month",
     "label": "Mar",
@@ -48,43 +48,43 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateDateRanges returns the expected date ranges on the first of the month 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 2021-02-28T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Feb",
     "start": 2021-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-03-31T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Mar",
     "start": 2021-03-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-04-30T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Apr",
     "start": 2021-04-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-05-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "May",
     "start": 2021-05-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-06-30T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Jun",
     "start": 2021-06-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-07-01T00:00:00.000Z,
     "key": "this-month",
     "label": "Jul",
@@ -95,43 +95,43 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateDateRanges returns the expected date ranges on the last of the month 1`] = `
-Array [
-  Object {
+[
+  {
     "end": 2020-10-31T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Oct",
     "start": 2020-10-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-11-30T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Nov",
     "start": 2020-11-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-12-31T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Dec",
     "start": 2020-12-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-01-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "Jan",
     "start": 2021-01-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-02-28T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Feb",
     "start": 2021-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-03-31T00:00:00.000Z,
     "key": "this-month",
     "label": "Mar",
@@ -142,45 +142,45 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateSkeletonTableData returns the skeleton based on the table fields 1`] = `
-Array [
-  Object {
+[
+  {
     "invertTrendColor": true,
-    "metric": Object {
+    "metric": {
       "identifier": "cycle_time",
       "value": "Cycle time",
     },
   },
-  Object {
+  {
     "invertTrendColor": true,
-    "metric": Object {
+    "metric": {
       "identifier": "lead_time",
       "value": "Lead time",
     },
   },
-  Object {
+  {
     "invertTrendColor": undefined,
-    "metric": Object {
+    "metric": {
       "identifier": "deployment_frequency",
       "value": "Deployment frequency",
     },
   },
-  Object {
+  {
     "invertTrendColor": true,
-    "metric": Object {
+    "metric": {
       "identifier": "change_failure_rate",
       "value": "Change failure rate",
     },
   },
-  Object {
+  {
     "invertTrendColor": true,
-    "metric": Object {
+    "metric": {
       "identifier": "vulnerability_critical",
       "value": "Critical vulnerabilities over time",
     },
   },
-  Object {
+  {
     "invertTrendColor": undefined,
-    "metric": Object {
+    "metric": {
       "identifier": "code_suggestions_usage_rate",
       "value": "Code Suggestions usage",
     },
@@ -189,55 +189,55 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateTableColumns returns the expected table fields in a leap year 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "metric",
     "label": "Metric",
     "thClass": "gl-w-2/10",
   },
-  Object {
+  {
     "end": 2019-10-31T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Oct",
     "start": 2019-10-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2019-11-30T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Nov",
     "start": 2019-11-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2019-12-31T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Dec",
     "start": 2019-12-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-01-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "Jan",
     "start": 2020-01-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-02-29T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Feb",
     "start": 2020-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-03-31T00:00:00.000Z,
     "key": "this-month",
     "label": "Mar",
     "start": 2020-03-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
@@ -247,55 +247,55 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateTableColumns returns the expected table fields on the first of the month 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "metric",
     "label": "Metric",
     "thClass": "gl-w-2/10",
   },
-  Object {
+  {
     "end": 2021-02-28T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Feb",
     "start": 2021-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-03-31T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Mar",
     "start": 2021-03-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-04-30T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Apr",
     "start": 2021-04-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-05-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "May",
     "start": 2021-05-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-06-30T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Jun",
     "start": 2021-06-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-07-01T00:00:00.000Z,
     "key": "this-month",
     "label": "Jul",
     "start": 2021-07-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
@@ -305,55 +305,55 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateTableColumns returns the expected table fields on the last of the month 1`] = `
-Array [
-  Object {
+[
+  {
     "key": "metric",
     "label": "Metric",
     "thClass": "gl-w-2/10",
   },
-  Object {
+  {
     "end": 2020-10-31T23:59:59.000Z,
     "key": "5-months-ago",
     "label": "Oct",
     "start": 2020-10-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-11-30T23:59:59.000Z,
     "key": "4-months-ago",
     "label": "Nov",
     "start": 2020-11-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2020-12-31T23:59:59.000Z,
     "key": "3-months-ago",
     "label": "Dec",
     "start": 2020-12-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-01-31T23:59:59.000Z,
     "key": "2-months-ago",
     "label": "Jan",
     "start": 2021-01-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-02-28T23:59:59.000Z,
     "key": "1-months-ago",
     "label": "Feb",
     "start": 2021-02-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "end": 2021-03-31T00:00:00.000Z,
     "key": "this-month",
     "label": "Mar",
     "start": 2021-03-01T00:00:00.000Z,
     "thClass": "gl-w-1/10",
   },
-  Object {
+  {
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
@@ -363,93 +363,93 @@ Array [
 `;
 
 exports[`AI impact Dashboard utils generateTableRows returns the data formatted as a table row 1`] = `
-Object {
-  "change_failure_rate": Object {
-    "1-months-ago": Object {
+{
+  "change_failure_rate": {
+    "1-months-ago": {
       "tooltip": undefined,
       "value": "7.5%",
     },
-    "2-months-ago": Object {
+    "2-months-ago": {
       "tooltip": undefined,
       "value": "0.0%",
     },
-    "3-months-ago": Object {
+    "3-months-ago": {
       "tooltip": undefined,
       "value": "0.0%",
     },
-    "4-months-ago": Object {
+    "4-months-ago": {
       "tooltip": undefined,
       "value": "5.6%",
     },
-    "5-months-ago": Object {
+    "5-months-ago": {
       "tooltip": undefined,
       "value": "8.9%",
     },
-    "change": Object {
+    "change": {
       "tooltip": undefined,
       "value": -0.15730337078651688,
     },
-    "this-month": Object {
+    "this-month": {
       "tooltip": undefined,
       "value": "4.0%",
     },
   },
-  "code_suggestions_usage_rate": Object {
-    "1-months-ago": Object {
+  "code_suggestions_usage_rate": {
+    "1-months-ago": {
       "tooltip": "5/10",
       "value": "50.0%",
     },
-    "2-months-ago": Object {
+    "2-months-ago": {
       "tooltip": "10/11",
       "value": "90.9%",
     },
-    "3-months-ago": Object {
+    "3-months-ago": {
       "tooltip": "2/10",
       "value": "20.0%",
     },
-    "4-months-ago": Object {
+    "4-months-ago": {
       "tooltip": "10/10",
       "value": "100.0%",
     },
-    "5-months-ago": Object {
+    "5-months-ago": {
       "tooltip": "0/0",
       "value": "0.0%",
     },
-    "change": Object {
+    "change": {
       "tooltip": "No change",
       "value": 0,
     },
-    "this-month": Object {
+    "this-month": {
       "tooltip": "8/9",
       "value": "88.9%",
     },
   },
-  "deployment_frequency": Object {
-    "1-months-ago": Object {
+  "deployment_frequency": {
+    "1-months-ago": {
       "tooltip": undefined,
       "value": "-",
     },
-    "2-months-ago": Object {
+    "2-months-ago": {
       "tooltip": undefined,
       "value": "30.0/d",
     },
-    "3-months-ago": Object {
+    "3-months-ago": {
       "tooltip": undefined,
       "value": "0.0/d",
     },
-    "4-months-ago": Object {
+    "4-months-ago": {
       "tooltip": undefined,
       "value": "15.0/d",
     },
-    "5-months-ago": Object {
+    "5-months-ago": {
       "tooltip": undefined,
       "value": "10.0/d",
     },
-    "change": Object {
+    "change": {
       "tooltip": "No data available",
       "value": "n/a",
     },
-    "this-month": Object {
+    "this-month": {
       "tooltip": undefined,
       "value": "30.0/d",
     },
