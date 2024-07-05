@@ -87,7 +87,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         it 'applies the quick action' do
           expect do
             update_work_item
-          end.to change(work_item, :description).to(' ¯\＿(ツ)＿/¯')
+          end.to change(work_item, :description).to('¯\＿(ツ)＿/¯')
         end
       end
     end
