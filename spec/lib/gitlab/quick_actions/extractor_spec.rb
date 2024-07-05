@@ -336,6 +336,7 @@ RSpec.describe Gitlab::QuickActions::Extractor, feature_category: :team_planning
     context 'does not extract commands inside' do
       where(:description, :text) do
         'block HTML tags'               | "Hello\r\n<div>\r\nText\r\n/close\r\n/assign @user\r\n</div>\r\n\r\nWorld"
+        'raw HTML with sourcepos'       | "<p data-sourcepos=\"0:1-2:10\">\r\n/close\r\n</p>"
         'inline html on seperated rows' | "Text\r\n<b>\r\n/close\r\n</b>"
         'HTML comments'                 | "<!--\n/assign @user\n-->"
         'blockquotes'                   | "> Text\r\n/reopen"
