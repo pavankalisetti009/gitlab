@@ -53,6 +53,7 @@ class CommitStatus < Ci::ApplicationRecord
   validates :name, presence: true, unless: :importing?
   validates :ci_stage, presence: true, on: :create, unless: :importing?, if: -> { Feature.enabled?(:ci_remove_ensure_stage_service, project) }
   validates :ref, :target_url, :description, length: { maximum: 255 }
+  validates :project, presence: true, on: :create
 
   alias_attribute :author, :user
   alias_attribute :pipeline_id, :commit_id
