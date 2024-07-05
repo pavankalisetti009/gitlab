@@ -13,6 +13,8 @@ module Sbom
       container_scanning_for_registry: 2
     }.merge(DEFAULT_SOURCES)
 
+    belongs_to :organization, class_name: 'Organizations::Organization'
+
     validates :source_type, presence: true
     validates :source, presence: true, json_schema: { filename: 'sbom_source' }
 

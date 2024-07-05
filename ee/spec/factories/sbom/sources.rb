@@ -2,6 +2,8 @@
 
 FactoryBot.define do
   factory :sbom_source, class: 'Sbom::Source' do
+    association :organization, factory: :organization
+
     source_type { :dependency_scanning }
 
     transient do

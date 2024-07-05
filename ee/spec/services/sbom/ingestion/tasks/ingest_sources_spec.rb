@@ -6,6 +6,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :depende
   describe '#execute' do
     let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
 
+    let!(:organization) { create(:organization, :default) }
     let(:report_source) { create(:ci_reports_sbom_source) }
     let(:occurrence_maps) { create_list(:sbom_occurrence_map, 4, report_source: report_source) }
 
@@ -27,7 +28,9 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :depende
 
     context 'when source already exists' do
       let!(:existing_source) do
-        create(:sbom_source, **occurrence_maps.first.to_h.slice(:source_type, :source))
+        create(:sbom_source,
+          **occurrence_maps.first.to_h.slice(:source_type, :source),
+          organization_id: organization.id)
       end
 
       it 'does not create a new record for the existing source' do
@@ -55,6 +58,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :depende
       let(:occurrence_maps) { [] }
 
       specify { expect { ingest_sources }.not_to raise_error }
+    end
+
+    describe 'attributes' do
+      let(:ingested_source) { Sbom::Source.last }
+
+      it 'sets the correct attributes for the source' do
+        ingest_sources
+
+        expect(ingested_source.attributes).to include(
+          'source_type' => report_source.source_type.to_s,
+          'source' => report_source.data,
+          'organization_id' => organization.id
+        )
+      end
     end
   end
 end
