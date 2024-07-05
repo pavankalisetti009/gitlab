@@ -15,8 +15,8 @@ RSpec.describe Gitlab::QuickActions::Extractor, feature_category: :team_planning
       command(:power) {}
       command(:noop_command)
       substitution(:substitution) { 'foo' }
-      substitution :shrug do |comment|
-        "#{comment} SHRUG"
+      substitution :shrug do
+        "SHRUG"
       end
     end.command_definitions
   end
@@ -241,15 +241,15 @@ RSpec.describe Gitlab::QuickActions::Extractor, feature_category: :team_planning
       msg, commands = extractor.extract_commands(msg)
 
       expect(commands).to eq [['reopen'], ['shrug', 'this is great?']]
-      expect(msg).to eq "hello\nworld\nthis is great? SHRUG"
+      expect(msg).to eq "hello\nworld\nSHRUG"
     end
 
     it 'extracts and performs multiple substitution commands' do
-      msg = %(hello\nworld\n/reopen\n/shrug this is great?\n/shrug meh)
+      msg = %(hello\nworld\n/reopen\n/shrug this is great?\n/shrug)
       msg, commands = extractor.extract_commands(msg)
 
-      expect(commands).to eq [['reopen'], ['shrug', 'this is great?'], %w[shrug meh]]
-      expect(msg).to eq "hello\nworld\nthis is great? SHRUG\nmeh SHRUG"
+      expect(commands).to eq [['reopen'], ['shrug', 'this is great?'], ['shrug']]
+      expect(msg).to eq "hello\nworld\nSHRUG\nSHRUG"
     end
 
     it 'does not extract substitution command in inline code' do
@@ -265,7 +265,7 @@ RSpec.describe Gitlab::QuickActions::Extractor, feature_category: :team_planning
       msg, commands = extractor.extract_commands(msg)
 
       expect(commands).to eq [['reopen'], ['shrug', 'this is great?']]
-      expect(msg).to eq "hello\nworld\nthis is great? SHRUG"
+      expect(msg).to eq "hello\nworld\nSHRUG"
     end
 
     it 'extracts and performs substitution commands with comments' do
