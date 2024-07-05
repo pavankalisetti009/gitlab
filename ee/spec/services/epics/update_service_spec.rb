@@ -651,6 +651,13 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
           end
         end
       end
+
+      it_behaves_like 'issuable record does not run quick actions when not editing description' do
+        let(:label) { create(:group_label, group: group) }
+        let(:assignee) { create(:user, maintainer_of: group) }
+        let(:epic) { create(:epic, group: group, description: old_description) }
+        let(:updated_issuable) { update_epic(params) }
+      end
     end
 
     context 'when updating parent' do
