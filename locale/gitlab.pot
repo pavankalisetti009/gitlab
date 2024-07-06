@@ -1054,6 +1054,9 @@ msgid_plural "%{no_of_days} days"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%{numOfSteps} steps across %{numOfFiles} files"
+msgstr ""
+
 msgid "%{numberOfSelectedTags} tags"
 msgstr ""
 
@@ -34752,6 +34755,9 @@ msgstr ""
 msgid "Next scan"
 msgstr ""
 
+msgid "Next step"
+msgstr ""
+
 msgid "Next unresolved thread"
 msgstr ""
 
@@ -40048,6 +40054,9 @@ msgid "Previous design"
 msgstr ""
 
 msgid "Previous file in diff"
+msgstr ""
+
+msgid "Previous step"
 msgstr ""
 
 msgid "Previous unresolved thread"
@@ -58948,6 +58957,12 @@ msgstr ""
 msgid "Vulnerability|%{scannerName} (version %{scannerVersion})"
 msgstr ""
 
+msgid "Vulnerability|A 'sink' is where untrusted data is used in a potentially risky way, such as in SQL queries or HTML output. Sink points are monitored to prevent security vulnerabilities in the software."
+msgstr ""
+
+msgid "Vulnerability|A 'source' refers to untrusted inputs like user data or external data sources. These inputs can introduce security risks into the software system and are monitored to prevent vulnerabilities."
+msgstr ""
+
 msgid "Vulnerability|A solution is available for this vulnerability"
 msgstr ""
 
@@ -58982,6 +58997,9 @@ msgid "Vulnerability|Code Review"
 msgstr ""
 
 msgid "Vulnerability|Code flow"
+msgstr ""
+
+msgid "Vulnerability|Code flow helps trace and flag risky data ('tainted data') as it moves through your software. Vulnerabilities are detected by pinpointing how untrusted inputs, like user data or network traffic, are utilized. This technique finds and fixes data handling flaws, securing software from injection and cross-site scripting attacks."
 msgstr ""
 
 msgid "Vulnerability|Comments"
@@ -59137,6 +59155,9 @@ msgstr ""
 msgid "Vulnerability|Status:"
 msgstr ""
 
+msgid "Vulnerability|Steps"
+msgstr ""
+
 msgid "Vulnerability|The scanner determined this vulnerability to be a false positive. Verify the evaluation before changing its status. %{linkStart}Learn more about false positive detection.%{linkEnd}"
 msgstr ""
 
@@ -59176,7 +59197,13 @@ msgstr ""
 msgid "Vulnerability|Warning: possible secrets detected"
 msgstr ""
 
+msgid "Vulnerability|What is code flow?"
+msgstr ""
+
 msgid "Vulnerability|You can also %{message}."
+msgstr ""
+
+msgid "Vulnerability|code area"
 msgstr ""
 
 msgid "Vulnerability|code_flow"
