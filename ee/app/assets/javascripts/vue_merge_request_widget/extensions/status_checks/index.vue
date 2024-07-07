@@ -133,6 +133,7 @@ export default {
           mergeRequestId: this.mr.iid,
           externalStatusCheckId: statusCheck.id,
         });
+        this.startPolling();
       } catch (err) {
         if (err?.response?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY) {
           this.collapsedData = await this.fetchStatusChecks();
