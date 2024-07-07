@@ -10,7 +10,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   include_context "with remote development shared fixtures"
 
   let(:agent_admin_user) { create(:user, name: "Agent Admin User") }
-  let(:user) { create(:user, name: "User") }
+  let(:user) { create(:user, name: "Workspaces User", email: "workspaces-user@example.org") }
   let(:current_user) { user }
   let(:common_parent_namespace_name) { "common-parent-group" }
   let(:common_parent_namespace) { create(:group, name: common_parent_namespace_name, owners: agent_admin_user) }
@@ -47,11 +47,35 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   let(:expected_processed_devfile) { YAML.safe_load(expected_processed_devfile_yaml).to_h }
   let(:editor) { "webide" }
   let(:workspace_root) { "/projects" }
-  let(:variables) do
+  let(:user_provided_variables) do
     [
-      { key: "VAR1", value: "value 1", type: "ENVIRONMENT" },
-      { key: "VAR2", value: "value 2", type: "ENVIRONMENT" }
+      { key: "VAR1", value: "value 1", type: :environment },
+      { key: "VAR2", value: "value 2", type: :environment }
     ]
+  end
+
+  let(:expected_static_variables) do
+    # rubocop:disable Layout/LineLength -- keep them on one line for easier readability and editability
+    [
+      { key: "GIT_CONFIG_COUNT", type: :environment, value: "3" },
+      { key: "GIT_CONFIG_KEY_0", type: :environment, value: "credential.helper" },
+      { key: "GIT_CONFIG_KEY_1", type: :environment, value: "user.name" },
+      { key: "GIT_CONFIG_KEY_2", type: :environment, value: "user.email" },
+      { key: "GIT_CONFIG_VALUE_0", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
+      { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
+      { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
+      { key: "GL_GIT_CREDENTIAL_STORE_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
+      { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
+      { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{agent.remote_development_agent_config.dns_zone}" },
+      { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
+      { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
+      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Workspaces::Create::WorkspaceVariables::GIT_CREDENTIAL_STORE_SCRIPT },
+      { key: "gl_token", type: :file, value: /glpat-.+/ }
+    ]
+    # rubocop:enable Layout/LineLength
   end
 
   let(:workspace_project) do
@@ -85,7 +109,9 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       project_id: workspace_project.to_global_id.to_s,
       devfile_ref: devfile_ref,
       devfile_path: devfile_path,
-      variables: variables
+      variables: user_provided_variables.each_with_object([]) do |variable, arr|
+        arr << variable.merge(type: variable[:type].to_s.upcase)
+      end
     }
   end
 
@@ -146,15 +172,28 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     actual_processed_devfile = YAML.safe_load(workspace.processed_devfile).to_h
     expect(actual_processed_devfile.fetch("components")).to eq(expected_processed_devfile.fetch("components"))
     expect(actual_processed_devfile).to eq(expected_processed_devfile)
-    variables.each do |variable|
-      expect(
-        RemoteDevelopment::WorkspaceVariable.where(
-          workspace: workspace,
-          key: variable[:key],
-          variable_type: RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES_FOR_GRAPHQL[variable[:type]]
-        ).first&.value
-      ).to eq(variable[:value])
-    end
+
+    all_expected_vars = (expected_static_variables + user_provided_variables).sort_by { |v| v[:key] }
+    # NOTE: We convert the actual records into hashes and sort them as a hash rather than ordering in
+    #       ActiveRecord, to account for platform- or db-specific sorting differences.
+    types = RemoteDevelopment::Enums::Workspace::WORKSPACE_VARIABLE_TYPES
+    all_actual_vars =
+      RemoteDevelopment::WorkspaceVariable
+        .where(workspace: workspace)
+        .map { |v| { key: v.key, type: types.invert[v.variable_type], value: v.value } }
+        .sort_by { |v| v[:key] }
+
+    # Check just keys first, to get an easy failure message if a new key has been added
+    expect(all_actual_vars.pluck(:key)).to match_array(all_expected_vars.pluck(:key))
+
+    # Then check the full attributes for all vars except gl_token, which must be compared as a regex
+    expected_without_regexes = all_expected_vars.reject { |v| v[:key] == "gl_token" }
+    actual_without_regexes = all_actual_vars.reject { |v| v[:key] == "gl_token" }
+    expect(expected_without_regexes).to match(actual_without_regexes)
+
+    expected_gl_token_value = expected_static_variables.find { |var| var[:key] == "gl_token" }[:value]
+    actual_gl_token_value = all_actual_vars.find { |var| var[:key] == "gl_token" }[:value]
+    expect(actual_gl_token_value).to match(expected_gl_token_value)
 
     workspace
   end
@@ -220,7 +259,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     response_json
   end
 
-  it "successfully exercises the full lifecycle of a workspace" do
+  it "successfully exercises the full lifecycle of a workspace", :unlimited_max_formatted_output_length do
     # CREATE THE MAPPING VIA GRAPHQL API, SO WE HAVE PROPER AUTHORIZATION
     do_create_mapping
 
