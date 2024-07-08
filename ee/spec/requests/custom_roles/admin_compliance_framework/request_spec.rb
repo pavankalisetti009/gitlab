@@ -4,9 +4,9 @@ require 'spec_helper'
 
 RSpec.describe 'User with admin_compliance_framework custom role', feature_category: :compliance_management do
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group, reload: true) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_compliance_framework: true) }
+  let_it_be(:role) { create(:member_role, :guest, :admin_compliance_framework, namespace: group) }
   let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: current_user, group: group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: group) }
   let(:compliance_features) do
@@ -26,6 +26,14 @@ RSpec.describe 'User with admin_compliance_framework custom role', feature_categ
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response).to render_template(:edit)
+    end
+
+    it 'cannot update the group', :aggregate_failures do
+      expect do
+        put group_path(group), params: { group: { name: 'new-name' } }
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end.to not_change { group.reload.name }
     end
   end
 
