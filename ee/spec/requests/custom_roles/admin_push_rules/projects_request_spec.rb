@@ -25,6 +25,22 @@ RSpec.describe 'User with admin_push_rules custom role', feature_category: :sour
         expect(response.body).to include('Push rules')
       end
     end
+
+    describe '#create_deploy_token' do
+      context 'when user does not have permission to create a deploy token' do
+        let(:params) do
+          { deploy_token: { name: 'name', expires_at: 1.day.from_now.to_datetime.to_s, read_repository: '1' } }
+        end
+
+        it 'returns 404' do
+          expect do
+            post create_deploy_token_project_settings_repository_path(project, params: params, format: :json)
+          end.not_to change { project.deploy_tokens.count }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
   end
 
   describe Projects::PushRulesController do
