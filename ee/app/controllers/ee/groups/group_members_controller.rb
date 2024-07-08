@@ -13,7 +13,7 @@ module EE
 
         override :admin_not_required_endpoints
         def admin_not_required_endpoints
-          super.concat(%i[update override export_csv])
+          super.concat(%i[update override export_csv ban])
         end
       end
 
@@ -21,6 +21,7 @@ module EE
         # This before_action needs to be redefined so we can use the new values
         # from `admin_not_required_endpoints`.
         before_action :authorize_admin_group_member!, except: admin_not_required_endpoints
+        before_action :authorize_ban_group_member!, only: [:ban]
         before_action :authorize_update_group_member!, only: [:update, :override]
 
         before_action do
@@ -133,6 +134,10 @@ module EE
         unless can?(current_user, :admin_group_member, group) || can?(current_user, :override_group_member, group)
           render_403
         end
+      end
+
+      def authorize_ban_group_member!
+        render_403 unless can?(current_user, :ban_group_member, group)
       end
 
       def override_params
