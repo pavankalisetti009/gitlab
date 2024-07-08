@@ -27,7 +27,7 @@ module Gitlab
       Error = Class.new(StandardError)
 
       def self.rails_environment!
-        require APP_PATH
+        require File.join(GITLAB_PATH, 'config/application')
 
         Rails.application.require_environment!
         Rails.application.autoloaders

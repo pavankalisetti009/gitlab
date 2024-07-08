@@ -5,7 +5,7 @@ $:.unshift File.expand_path("../../lib", __FILE__)
 
 # We require APP_PATH when the rails environment is required only,
 # this allows for faster CLI execution when rails is not needed
-APP_PATH = File.expand_path('../config/application', __dir__)
+GITLAB_PATH = File.expand_path('../', __dir__)
 
 require_relative '../config/boot'
 

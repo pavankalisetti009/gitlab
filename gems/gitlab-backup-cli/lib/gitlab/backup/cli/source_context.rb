@@ -76,6 +76,14 @@ module Gitlab
           @env ||= ActiveSupport::EnvironmentInquirer.new(
             ENV["RAILS_ENV"].presence || ENV["RACK_ENV"].presence || "development")
         end
+
+        private
+
+        def gitlab_basedir
+          return GITLAB_PATH if GITLAB_PATH
+
+          raise ::Gitlab::Backup::Cli::Error, 'GITLAB_PATH is missing'
+        end
       end
     end
   end
