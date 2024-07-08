@@ -19,7 +19,6 @@ describe('DependenciesActions component', () => {
 
   const objectBasicProp = {
     namespaceType: 'project',
-    belowGroupLimit: true,
   };
 
   const factory = ({ propsData, provide } = {}) => {
@@ -88,32 +87,6 @@ describe('DependenciesActions component', () => {
 
     it('renders a filtered-search input', () => {
       expect(wrapper.findComponent(GroupDependenciesFilteredSearch).exists()).toBe(true);
-    });
-
-    describe('with the "belowGroupLimit" set to false', () => {
-      beforeEach(async () => {
-        factory({
-          propsData: { namespace },
-          provide: {
-            namespaceType: 'group',
-            belowGroupLimit: false,
-          },
-        });
-        store.state[namespace].endpoint = `${TEST_HOST}/dependencies.json`;
-        await nextTick();
-      });
-
-      it('does not dispatch the "license" action', () => {
-        findSorting()
-          .props('sortOptions')
-          .forEach((option) => {
-            emitSortByChange(option.value);
-          });
-
-        expect(store.dispatch.mock.calls).not.toEqual(
-          expect.arrayContaining([[`${namespace}/setSortField`, 'license']]),
-        );
-      });
     });
   });
 
