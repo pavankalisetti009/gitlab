@@ -79,9 +79,13 @@ module Gitlab
         private
 
         def gitlab_basepath
-          return GITLAB_PATH if GITLAB_PATH
+          return Pathname.new(GITLAB_PATH) if GITLAB_PATH
 
           raise ::Gitlab::Backup::Cli::Error, 'GITLAB_PATH is missing'
+        end
+
+        def gitlab_config
+          @gitlab_config ||= Gitlab::Backup::Cli::GitlabConfig.new(gitlab_basepath.join('config/gitlab.yml'))
         end
       end
     end
