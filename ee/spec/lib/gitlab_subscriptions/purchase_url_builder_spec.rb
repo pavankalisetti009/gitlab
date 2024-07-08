@@ -11,40 +11,67 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
       described_class.new(current_user: current_user, plan_id: 'plan-id', namespace: namespace)
     end
 
-    context 'when the migrate_purchase_flows_for_existing_customers feature is disabled' do
+    context 'when both migration feature flags are disabled' do
       it 'returns false' do
         stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
+        stub_feature_flags(migrate_purchase_flows_for_new_customers: false)
 
         expect(builder.customers_dot_flow?).to eq false
       end
     end
 
-    context 'when the migrate_purchase_flows_for_existing_customers feature is enabled' do
+    context 'when the user has a valid billing account' do
       before do
-        stub_feature_flags(migrate_purchase_flows_for_existing_customers: true)
+        allow(Gitlab::SubscriptionPortal::Client).to receive(:get_billing_account_details).and_return({
+          success: true, billing_account_details: { "billingAccount" => { "zuoraAccountName" => "sample-account" } }
+        })
       end
 
-      context 'when the user does not have a valid billing account' do
+      context 'when the migrate_purchase_flows_for_existing_customers feature is enabled' do
         before do
-          allow(Gitlab::SubscriptionPortal::Client).to receive(:get_billing_account_details).and_return({
-            success: true, billing_account_details: { "billingAccount" => { "zuoraAccountName" => nil } }
-          })
+          stub_feature_flags(migrate_purchase_flows_for_existing_customers: true)
+        end
+
+        it 'returns true' do
+          expect(builder.customers_dot_flow?).to eq true
+        end
+      end
+
+      context 'when the migrate_purchase_flows_for_existing_customers feature is disabled' do
+        before do
+          stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
         end
 
         it 'returns false' do
           expect(builder.customers_dot_flow?).to eq false
         end
       end
+    end
 
-      context 'when the user has a valid billing account' do
+    context 'when the user does not have a valid billing account' do
+      before do
+        allow(Gitlab::SubscriptionPortal::Client).to receive(:get_billing_account_details).and_return({
+          success: true, billing_account_details: { "billingAccount" => { "zuoraAccountName" => nil } }
+        })
+      end
+
+      context 'when the migrate_purchase_flows_for_new_customers is enabled' do
         before do
-          allow(Gitlab::SubscriptionPortal::Client).to receive(:get_billing_account_details).and_return({
-            success: true, billing_account_details: { "billingAccount" => { "zuoraAccountName" => "sample-account" } }
-          })
+          stub_feature_flags(migrate_purchase_flows_for_new_customers: true)
         end
 
         it 'returns true' do
           expect(builder.customers_dot_flow?).to eq true
+        end
+      end
+
+      context 'when the migrate_purchase_flows_for_new_customers is disabled' do
+        before do
+          stub_feature_flags(migrate_purchase_flows_for_new_customers: false)
+        end
+
+        it 'returns false' do
+          expect(builder.customers_dot_flow?).to eq false
         end
       end
     end
@@ -56,9 +83,10 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
     let_it_be(:user) { create(:user) }
     let_it_be(:namespace) { create(:group) }
 
-    context 'when the migrate_purchase_flows_for_existing_customers feature is disabled' do
+    context 'when not eligible to be redirected to the CustomersDot purchase flow' do
       before do
         stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
+        stub_feature_flags(migrate_purchase_flows_for_new_customers: false)
       end
 
       context 'when the gitlab purchase flow supports this namespace' do
@@ -103,7 +131,7 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
       end
     end
 
-    context 'when the migrate_purchase_flows_for_existing_customers feature is enabled' do
+    context 'when eligible to be redirected to the CustomersDot purchase flow' do
       subject(:builder) { described_class.new(current_user: user, plan_id: 'plan-id', namespace: namespace) }
 
       before do
