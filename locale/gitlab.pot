@@ -62808,6 +62808,9 @@ msgstr ""
 msgid "WorkItem|Show all ancestors"
 msgstr ""
 
+msgid "WorkItem|Show closed items"
+msgstr ""
+
 msgid "WorkItem|Show labels"
 msgstr ""
 

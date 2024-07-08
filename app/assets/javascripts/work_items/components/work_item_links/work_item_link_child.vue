@@ -74,6 +74,10 @@ export default {
       required: false,
       default: () => {},
     },
+    displayableChildrenFunction: {
+      type: Function,
+      required: true,
+    },
   },
   data() {
     return {
@@ -194,6 +198,9 @@ export default {
     showChildrenDropzone() {
       return !this.hasChildren && this.draggedItemTypeIsAllowed;
     },
+    displayableChildren() {
+      return this.displayableChildrenFunction(this.children);
+    },
   },
   methods: {
     toggleItem() {
@@ -281,7 +288,7 @@ export default {
         :work-item-id="issuableGid"
         :work-item-iid="childItem.iid"
         :work-item-type="workItemType"
-        :children="children"
+        :children="displayableChildren"
         :parent="childItem"
         :show-labels="showLabels"
         :full-path="workItemFullPath"
@@ -290,6 +297,7 @@ export default {
         :has-indirect-children="hasIndirectChildren"
         :dragged-item-type="draggedItemType"
         :allowed-children-by-type="allowedChildrenByType"
+        :displayable-children-function="displayableChildrenFunction"
         @drag="$emit('drag', $event)"
         @drop="$emit('drop')"
         @removeChild="$emit('removeChild', childItem)"

@@ -17,8 +17,8 @@ import {
   removeHierarchyChild,
   optimisticUserPermissions,
 } from '../../graphql/cache_utils';
-import toggleHierarchyTreeChildMutation from '../../graphql/client/toggle_hierarchy_tree_child.mutation.graphql';
 import moveWorkItem from '../../graphql/move_work_item.mutation.graphql';
+import toggleHierarchyTreeChildMutation from '../../graphql/client/toggle_hierarchy_tree_child.mutation.graphql';
 import updateWorkItemMutation from '../../graphql/update_work_item.mutation.graphql';
 import workItemByIidQuery from '../../graphql/work_item_by_iid.query.graphql';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
@@ -95,6 +95,11 @@ export default {
       required: false,
       default: null,
     },
+    displayableChildrenFunction: {
+      type: Function,
+      required: false,
+      default: (children) => children,
+    },
   },
   data() {
     return {
@@ -134,6 +139,9 @@ export default {
     },
     apolloClient() {
       return this.$apollo.provider.clients.defaultClient;
+    },
+    displayableChildren() {
+      return this.displayableChildrenFunction(this.children);
     },
   },
   mounted() {
@@ -520,7 +528,7 @@ export default {
     @end="handleDragOnEnd"
   >
     <work-item-link-child
-      v-for="child in children"
+      v-for="child in displayableChildren"
       :key="child.id"
       :can-update="canUpdate"
       :issuable-gid="child.id"
@@ -536,6 +544,7 @@ export default {
       :is-top-level="isTopLevel"
       :data-child-title="child.title"
       :data-child-type="child.workItemType.name"
+      :displayable-children-function="displayableChildrenFunction"
       class="!gl-border-x-0 !gl-border-b-1 !gl-border-t-0 !gl-border-solid !gl-pb-2 last:!gl-border-b-0 last:!gl-pb-0"
       @drag="$emit('drag', $event)"
       @drop="$emit('drop')"

@@ -4,6 +4,7 @@ import { GlAlert, GlLoadingIcon } from '@gitlab/ui';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import { createMockDirective } from 'helpers/vue_mock_directive';
 import waitForPromises from 'helpers/wait_for_promises';
 
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
@@ -67,6 +68,9 @@ describe('WorkItemRelationships', () => {
       },
       stubs: {
         CrudComponent,
+      },
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
       },
     });
 
@@ -255,6 +259,17 @@ describe('WorkItemRelationships', () => {
         expect(findLinkedItemsCountBadge().attributes('aria-label')).toBe(ariaLabel);
       },
     );
+
+    it('toggles `showClosed` when `toggle-show-closed` is emitted', async () => {
+      await createComponent();
+      expect(findMoreActions().props('showClosed')).toBe(true);
+
+      await findMoreActions().vm.$emit('toggle-show-closed');
+      expect(findMoreActions().props('showClosed')).toBe(false);
+
+      await findMoreActions().vm.$emit('toggle-show-closed');
+      expect(findMoreActions().props('showClosed')).toBe(true);
+    });
   });
 
   it('updates linked item relationship type in UI', async () => {

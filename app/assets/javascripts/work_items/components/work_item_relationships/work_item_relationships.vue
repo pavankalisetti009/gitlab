@@ -18,6 +18,7 @@ import {
   LINKED_CATEGORIES_MAP,
   LINKED_ITEMS_ANCHOR,
   WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
+  STATE_CLOSED,
   sprintfWorkItem,
 } from '../../constants';
 
@@ -116,6 +117,7 @@ export default {
       widgetName: LINKED_ITEMS_ANCHOR,
       defaultShowLabels: true,
       showLabels: true,
+      showClosed: true,
       linkedWorkItems: [],
       showLabelsLocalStorageKey: WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
     };
@@ -128,7 +130,7 @@ export default {
       return this.linkedWorkItems.map((item) => item.workItem.id);
     },
     linkedWorkItemsCount() {
-      return this.linkedWorkItems.length;
+      return this.displayableLinks(this.linkedWorkItems).length;
     },
     isEmptyRelatedWorkItems() {
       return !this.error && this.linkedWorkItems.length === 0;
@@ -261,6 +263,12 @@ export default {
         this.error = this.$options.i18n.removeLinkedItemErrorMessage;
       }
     },
+    displayableLinks(items) {
+      return items.filter((item) => {
+        const { state } = item.workItem;
+        return state !== STATE_CLOSED || (state === STATE_CLOSED && this.showClosed);
+      });
+    },
   },
   i18n: {
     title: s__('WorkItem|Linked items'),
@@ -312,8 +320,10 @@ export default {
         :full-path="workItemFullPath"
         :work-item-type="workItemType"
         :show-labels="showLabels"
+        :show-closed="showClosed"
         :show-view-roadmap-action="false"
         @toggle-show-labels="toggleShowLabels"
+        @toggle-show-closed="showClosed = !showClosed"
       />
     </template>
 
@@ -343,10 +353,10 @@ export default {
       </gl-alert>
 
       <work-item-relationship-list
-        v-if="linksBlocks.length"
+        v-if="displayableLinks(linksBlocks).length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="linksBlocks"
+        :linked-items="displayableLinks(linksBlocks)"
         :relationship-type="$options.linkedCategories.BLOCKS"
         :heading="$options.i18n.blockingTitle"
         :can-update="canAdminWorkItemLink"
@@ -363,10 +373,10 @@ export default {
         @updateLinkedItem="updateLinkedItem"
       />
       <work-item-relationship-list
-        v-if="linksIsBlockedBy.length"
+        v-if="displayableLinks(linksIsBlockedBy).length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="linksIsBlockedBy"
+        :linked-items="displayableLinks(linksIsBlockedBy)"
         :relationship-type="$options.linkedCategories.IS_BLOCKED_BY"
         :heading="$options.i18n.blockedByTitle"
         :can-update="canAdminWorkItemLink"
@@ -383,10 +393,10 @@ export default {
         @updateLinkedItem="updateLinkedItem"
       />
       <work-item-relationship-list
-        v-if="linksRelatesTo.length"
+        v-if="displayableLinks(linksRelatesTo).length"
         :parent-work-item-id="workItemId"
         :parent-work-item-iid="workItemIid"
-        :linked-items="linksRelatesTo"
+        :linked-items="displayableLinks(linksRelatesTo)"
         :relationship-type="$options.linkedCategories.RELATES_TO"
         :heading="$options.i18n.relatedToTitle"
         :can-update="canAdminWorkItemLink"

@@ -17,6 +17,7 @@ import {
   WORK_ITEM_TYPE_VALUE_EPIC,
   WIDGET_TYPE_HIERARCHY,
   INJECTION_LINK_CHILD_PREVENT_ROUTER_NAVIGATION,
+  STATE_CLOSED,
 } from '../../constants';
 import {
   findHierarchyWidgets,
@@ -118,6 +119,7 @@ export default {
       widgetName: CHILD_ITEMS_ANCHOR,
       defaultShowLabels: true,
       showLabels: true,
+      showClosed: true,
       fetchNextPageInProgress: false,
       workItem: {},
       disableContent: false,
@@ -319,6 +321,15 @@ export default {
         }
       }
     },
+    displayableChildrenFunction() {
+      const { showClosed } = this;
+
+      return (children) => {
+        return children.filter(
+          (item) => item.state !== STATE_CLOSED || (item.state === STATE_CLOSED && showClosed),
+        );
+      };
+    },
   },
 };
 </script>
@@ -366,8 +377,10 @@ export default {
         :full-path="fullPath"
         :work-item-type="workItemType"
         :show-labels="showLabels"
+        :show-closed="showClosed"
         show-view-roadmap-action
         @toggle-show-labels="toggleShowLabels"
+        @toggle-show-closed="showClosed = !showClosed"
       />
     </template>
 
@@ -415,6 +428,7 @@ export default {
           :has-indirect-children="hasIndirectChildren"
           :allowed-children-by-type="allowedChildrenByType"
           :dragged-item-type="draggedItemType"
+          :displayable-children-function="displayableChildrenFunction()"
           @drag="draggedItemType = $event"
           @drop="draggedItemType = null"
           @error="error = $event"

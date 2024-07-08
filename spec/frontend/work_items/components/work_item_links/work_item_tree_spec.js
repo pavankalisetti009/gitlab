@@ -324,23 +324,26 @@ describe('WorkItemTree', () => {
       expect(findMoreActions().props('showViewRoadmapAction')).toBe(true);
     });
 
-    it('toggles `showLabels` when `toggle-show-labels` is emitted', async () => {
-      await createComponent();
+    it.each`
+      toggleName      | toggleEvent
+      ${'showLabels'} | ${'toggle-show-labels'}
+      ${'showClosed'} | ${'toggle-show-closed'}
+    `(
+      'toggles `$toggleName` when `$toggleEvent` is emitted',
+      async ({ toggleName, toggleEvent }) => {
+        await createComponent();
 
-      expect(findWorkItemLinkChildrenWrapper().props('showLabels')).toBe(true);
+        expect(findMoreActions().props(toggleName)).toBe(true);
 
-      findMoreActions().vm.$emit('toggle-show-labels');
+        await findMoreActions().vm.$emit(toggleEvent);
 
-      await nextTick();
+        expect(findMoreActions().props(toggleName)).toBe(false);
 
-      expect(findWorkItemLinkChildrenWrapper().props('showLabels')).toBe(false);
+        await findMoreActions().vm.$emit(toggleEvent);
 
-      findMoreActions().vm.$emit('toggle-show-labels');
-
-      await nextTick();
-
-      expect(findWorkItemLinkChildrenWrapper().props('showLabels')).toBe(true);
-    });
+        expect(findMoreActions().props(toggleName)).toBe(true);
+      },
+    );
 
     it('calls saveShowLabelsToLocalStorage on toggle', () => {
       findMoreActions().vm.$emit('toggle-show-labels');

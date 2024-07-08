@@ -61,6 +61,7 @@ describe('WorkItemLinkChild', () => {
     workItemTreeQueryHandler = getWorkItemTreeQueryHandler,
     isExpanded = false,
     showTaskWeight = false,
+    displayableChildrenFunction = (children) => children,
     props = {},
   } = {}) => {
     const mockApollo = createMockApollo([[getWorkItemTreeQuery, workItemTreeQueryHandler]], {
@@ -87,6 +88,7 @@ describe('WorkItemLinkChild', () => {
         workItemType,
         workItemFullPath,
         showTaskWeight,
+        displayableChildrenFunction,
         ...props,
       },
       stubs: {
@@ -238,6 +240,21 @@ describe('WorkItemLinkChild', () => {
           expect(findWorkItemLinkChildContents().props('showWeight')).toEqual(showWeight);
         },
       );
+    });
+
+    it('filters children given the displayableChildrenFunction', async () => {
+      createComponent({
+        childItem: workItemObjectiveWithChild,
+        workItemType: WORK_ITEM_TYPE_VALUE_OBJECTIVE,
+        isExpanded: true,
+        displayableChildrenFunction: () => [],
+      });
+      await findExpandButton().vm.$emit('click');
+
+      await waitForPromises();
+
+      expect(findTreeChildren().exists()).toBe(true);
+      expect(findTreeChildren().props('children')).toHaveLength(0);
     });
 
     describe('pagination', () => {
