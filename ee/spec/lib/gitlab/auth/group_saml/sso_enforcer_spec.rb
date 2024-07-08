@@ -496,18 +496,6 @@ RSpec.describe Gitlab::Auth::GroupSaml::SsoEnforcer, feature_category: :system_a
           expect(described_class.access_restricted?(user: another_user, resource: project)).to eq(true)
           expect(described_class.access_restricted?(user: user, resource: project)).to eq(false)
         end
-
-        context 'when fix_sso_enforcement_for_web_activity FF is disabled' do
-          before do
-            stub_feature_flags(fix_sso_enforcement_for_web_activity: false)
-          end
-
-          # This is the root cause of https://gitlab.com/gitlab-org/gitlab/-/issues/467267
-          it 'applies to all users', :aggregate_failures do
-            expect(described_class.access_restricted?(user: another_user, resource: project)).to eq(true)
-            expect(described_class.access_restricted?(user: user, resource: project)).to eq(true)
-          end
-        end
       end
     end
   end
