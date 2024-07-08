@@ -1,7 +1,7 @@
-export const groupOrProjectWorkItemTypesQueryResponse = {
+export const namespaceWorkItemTypesQueryResponse = {
   data: {
     workspace: {
-      id: 'gid://gitlab/WorkItem/1',
+      id: 'gid://gitlab/Namespaces/1',
       workItemTypes: {
         nodes: [
           { id: 'gid://gitlab/WorkItems::Type/1', name: 'Issue' },

@@ -2,8 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlFormSelect } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import projectWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/project_work_item_types.query.graphql.json';
-import groupWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/group_work_item_types.query.graphql.json';
+import namespaceWorkItemTypesQueryResponse from 'test_fixtures/graphql/work_items/namespace_work_item_types.query.graphql.json';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CreateWorkItem from '~/work_items/components/create_work_item.vue';
@@ -11,8 +10,7 @@ import WorkItemHealthStatus from 'ee/work_items/components/work_item_health_stat
 import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
-import groupWorkItemTypesQuery from '~/work_items/graphql/group_work_item_types.query.graphql';
-import projectWorkItemTypesQuery from '~/work_items/graphql/project_work_item_types.query.graphql';
+import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
 import groupWorkItemByIidQuery from '~/work_items/graphql/group_work_item_by_iid.query.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -58,15 +56,9 @@ describe('Create work item component', () => {
     );
 
     mockApollo.clients.defaultClient.cache.writeQuery({
-      query: isGroup ? groupWorkItemTypesQuery : projectWorkItemTypesQuery,
+      query: namespaceWorkItemTypesQuery,
       variables: { fullPath: 'full-path', name: workItemTypeName },
-      data: isGroup
-        ? {
-            ...groupWorkItemTypesQueryResponse.data,
-          }
-        : {
-            ...projectWorkItemTypesQueryResponse.data,
-          },
+      data: namespaceWorkItemTypesQueryResponse.data,
     });
 
     wrapper = shallowMount(CreateWorkItem, {
