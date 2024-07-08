@@ -13,8 +13,9 @@ module Gitlab
         end
 
         def backup_basedir
-          # TODO: decouple from Rails codebase, load from gitlab.yml file
-          Rails.root.join('tmp/backups')
+          path = gitlab_config[env]['backup']['path']
+
+          absolute_path(path)
         end
 
         # CI Builds basepath
@@ -77,6 +78,17 @@ module Gitlab
         end
 
         private
+
+        # Return a fullpath for a given path
+        #
+        # When the path is already a full one return itself as a Pathname
+        # otherwise uses gitlab_basepath as its base
+        # @param [String|Pathname] path
+        # @return [Pathname]
+        def absolute_path(path)
+          # Joins with gitlab_basepath when relative, otherwise return full path
+          Pathname(File.expand_path(path, gitlab_basepath))
+        end
 
         def gitlab_basepath
           return Pathname.new(GITLAB_PATH) if GITLAB_PATH
