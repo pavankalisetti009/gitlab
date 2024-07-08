@@ -14,8 +14,8 @@ module EE
       before_action :check_subscription!, only: [:destroy]
 
       # for general settings certain features can be enabled via custom roles
-      skip_before_action :authorize_admin_group!, only: [:edit, :update]
-      before_action :authorize_view_edit_page!, only: [:edit, :update]
+      skip_before_action :authorize_admin_group!, only: [:edit]
+      before_action :authorize_view_edit_page!, only: [:edit]
 
       before_action do
         push_frontend_feature_flag(:saas_user_caps_auto_approve_pending_users_on_cap_increase, @group)
