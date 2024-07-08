@@ -9,8 +9,7 @@ module Gitlab
       # automatically discovered from the current machine
       class SourceContext
         def gitlab_version
-          # TODO: decouple from Rails codebase
-          Gitlab::VERSION
+          File.read(gitlab_basepath.join("VERSION")).strip.freeze
         end
 
         def backup_basedir
@@ -79,7 +78,7 @@ module Gitlab
 
         private
 
-        def gitlab_basedir
+        def gitlab_basepath
           return GITLAB_PATH if GITLAB_PATH
 
           raise ::Gitlab::Backup::Cli::Error, 'GITLAB_PATH is missing'
