@@ -71,11 +71,11 @@ export default {
     isLast(index) {
       return index === this.environments.length - 1;
     },
-    isFirst(index) {
-      return index === 0;
-    },
     toggleCollapse({ name }) {
-      this.$set(this.expanded, name, !this.expanded[name]);
+      this.expanded = {
+        ...this.expanded,
+        [name]: !this.expanded[name],
+      };
     },
     isExpanded({ name }) {
       return this.expanded[name];
