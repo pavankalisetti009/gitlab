@@ -4,7 +4,7 @@ module WorkItems
   module UnifiedAssociations
     module NotesExtension
       def load_target
-        return super unless proxy_association.owner.notes_unification_enabled?
+        return super unless proxy_association.owner.unified_associations?
 
         proxy_association.target = scope.to_a unless proxy_association.loaded?
 
@@ -22,7 +22,7 @@ module WorkItems
       end
 
       def find(*args)
-        return super unless proxy_association.owner.notes_unification_enabled?
+        return super unless proxy_association.owner.unified_associations?
         return super if block_given?
 
         scope.find(*args)
