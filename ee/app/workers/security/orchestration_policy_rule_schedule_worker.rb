@@ -17,7 +17,11 @@ module Security
       Security::OrchestrationPolicyRuleSchedule.with_configuration_and_project_or_namespace.with_owner.with_security_policy_bots.runnable_schedules.find_in_batches do |schedules|
         schedules.each do |schedule|
           with_context(project: schedule.security_orchestration_policy_configuration.project, user: schedule.owner) do
-            if schedule.security_orchestration_policy_configuration.project?
+            config = schedule.security_orchestration_policy_configuration
+
+            next unless security_policy_feature_available?(config)
+
+            if config.project?
               schedule_rules(schedule)
             else
               Security::OrchestrationPolicyRuleScheduleNamespaceWorker.perform_async(schedule.id)
@@ -28,6 +32,13 @@ module Security
     end
 
     private
+
+    def security_policy_feature_available?(config)
+      return false unless config
+
+      actor = config.project? ? config.project : config.namespace
+      actor.licensed_feature_available?(:security_orchestration_policies)
+    end
 
     def schedule_rules(schedule)
       project = schedule.security_orchestration_policy_configuration.project
