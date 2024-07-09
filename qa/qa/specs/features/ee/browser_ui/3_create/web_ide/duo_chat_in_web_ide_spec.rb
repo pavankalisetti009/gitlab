@@ -14,7 +14,7 @@ module QA
                 expect(duo_chat).to be_empty_state
 
                 duo_chat.send_duo_chat_prompt('hi')
-                expect(duo_chat.has_response?(expected_response)).to be_truthy,
+                expect(duo_chat).to have_response(expected_response),
                   "Expected '#{expected_response}' within Duo Chat response."
               end
             end

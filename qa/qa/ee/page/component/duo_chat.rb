@@ -34,6 +34,12 @@ module QA
           def number_of_messages
             find_all('.duo-chat-message').size
           end
+
+          def close
+            within_element('chat-header') do
+              click_element('close-icon')
+            end
+          end
         end
       end
     end
