@@ -158,7 +158,9 @@ export default {
     },
     updateApproverInheritance(approver, groupInheritanceType) {
       const i = this.approverInfo.indexOf(approver);
-      this.$set(this.approverInfo, i, { ...approver, groupInheritanceType });
+      const copy = [...this.approverInfo];
+      copy[i] = { ...approver, groupInheritanceType };
+      this.approverInfo = copy;
       this.emitApprovalRules();
     },
     removeApprover({ type, id }) {
