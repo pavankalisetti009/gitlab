@@ -27,7 +27,7 @@ module Sbom
     attr_reader :project_id
 
     def lease_key
-      "sync_sbom_occurrences_traversal_ids:projects:#{project_id}"
+      Sbom::Ingestion.project_lease_key(project_id)
     end
 
     def project

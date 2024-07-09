@@ -49,7 +49,7 @@ RSpec.describe Sbom::SyncTraversalIdsService, feature_category: :dependency_mana
 
         let_it_be(:other_project) { create(:project) }
 
-        let(:lease_key) { "sync_sbom_occurrences_traversal_ids:projects:#{project.id}" }
+        let(:lease_key) { Sbom::Ingestion.project_lease_key(project_id) }
         let(:lease_ttl) { 5.minutes }
 
         before do

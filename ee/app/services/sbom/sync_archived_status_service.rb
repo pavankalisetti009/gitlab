@@ -34,7 +34,7 @@ module Sbom
     strong_memoize_attr :project
 
     def lease_key
-      "sync_sbom_occurrences_archived:projects:#{project_id}"
+      Sbom::Ingestion.project_lease_key(project_id)
     end
   end
 end

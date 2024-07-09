@@ -3,6 +3,11 @@
 module Sbom
   module Ingestion
     class IngestReportsService
+      include Gitlab::ExclusiveLeaseHelpers
+
+      LEASE_TTL = 30.minutes.freeze
+      LEASE_TRY_AFTER = 10.seconds.freeze
+
       def self.execute(pipeline)
         new(pipeline).execute
       end
@@ -12,15 +17,17 @@ module Sbom
       end
 
       def execute
-        ingest_reports.then do |ingested_ids|
-          delete_not_present_occurrences(ingested_ids)
+        in_lock(lease_key, ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER) do
+          ingest_reports.then do |ingested_ids|
+            delete_not_present_occurrences(ingested_ids)
 
-          if ingested_ids.present? && Feature.enabled?(:dependency_scanning_using_sbom_reports, project)
-            publish_ingested_sbom_event
+            if ingested_ids.present? && Feature.enabled?(:dependency_scanning_using_sbom_reports, project)
+              publish_ingested_sbom_event
+            end
           end
-        end
 
-        project.set_latest_ingested_sbom_pipeline_id(pipeline.id)
+          project.set_latest_ingested_sbom_pipeline_id(pipeline.id)
+        end
       end
 
       private
@@ -53,6 +60,10 @@ module Sbom
         Gitlab::EventStore.publish(
           Sbom::SbomIngestedEvent.new(data: { pipeline_id: pipeline.id })
         )
+      end
+
+      def lease_key
+        Sbom::Ingestion.project_lease_key(project.id)
       end
     end
   end
