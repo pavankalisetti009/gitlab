@@ -12,6 +12,7 @@ import { mount, shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import IterationReportIssues from 'ee/iterations/components/iteration_report_issues.vue';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
+import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
 
 describe('Iterations report issues', () => {
   let wrapper;
@@ -119,12 +120,15 @@ describe('Iterations report issues', () => {
         assignees: assignees.slice(0, i),
         labels,
         weight: i,
+        type: 'ISSUE',
       }));
 
     const findIssues = () => wrapper.findAll('table tbody tr');
     const findAssigneesForIssue = (index) => findIssues().at(index).findAllComponents(GlAvatar);
     const findLabelsForIssue = (index) => findIssues().at(index).findAllComponents(GlLabel);
     const findWeightsForIssue = (index) => findIssues().at(index).findAll('td').at(1);
+    const findWorkItemTypeIconForIssue = (index) =>
+      findIssues().at(index).findComponent(WorkItemTypeIcon);
 
     describe('issue_list', () => {
       beforeEach(() => {
@@ -147,6 +151,12 @@ describe('Iterations report issues', () => {
       it('shows issue list in table', () => {
         expect(findGlTable().exists()).toBe(true);
         expect(findIssues()).toHaveLength(issues.length);
+      });
+
+      it('shows work item type icon for each issue, with the correct workItemType prop passed', () => {
+        const workItemTypeIconForFirstIssue = findWorkItemTypeIconForIssue(0);
+        expect(workItemTypeIconForFirstIssue.exists()).toBe(true);
+        expect(workItemTypeIconForFirstIssue.props().workItemType).toBe('ISSUE');
       });
 
       it('shows labels', () => {

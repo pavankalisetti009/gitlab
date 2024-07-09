@@ -16,6 +16,7 @@ import { STATUS_OPEN, WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/consta
 import { isScopedLabel } from '~/lib/utils/common_utils';
 import { __, n__, sprintf } from '~/locale';
 import { DEFAULT_PAGE_SIZE } from '~/vue_shared/issuable/list/constants';
+import WorkItemTypeIcon from '~/work_items/components/work_item_type_icon.vue';
 import iterationIssuesQuery from '../queries/iteration_issues.query.graphql';
 import iterationIssuesWithLabelFilterQuery from '../queries/iteration_issues_with_label_filter.query.graphql';
 
@@ -58,6 +59,7 @@ export default {
     GlPagination,
     GlSkeletonLoader,
     GlTable,
+    WorkItemTypeIcon,
   },
   apollo: {
     issues: {
@@ -270,8 +272,9 @@ export default {
       :tbody-tr-class="tbodyTrClass"
       data-testid="iteration-issues-container"
     >
-      <template #cell(title)="{ item: { iid, labels, title, webUrl } }">
-        <div class="gl-truncate">
+      <template #cell(title)="{ item: { iid, labels, title, webUrl, type } }">
+        <div>
+          <work-item-type-icon :work-item-type="type" show-tooltip-on-hover />
           <gl-link
             class="gl-text-gray-900 gl-font-bold"
             :href="webUrl"
@@ -283,7 +286,7 @@ export default {
         </div>
         <!-- TODO: add references.relative (project name) -->
         <!-- Depends on https://gitlab.com/gitlab-org/gitlab/-/issues/222763 -->
-        <div class="gl-text-secondary">#{{ iid }}</div>
+        <div class="gl-text-subtle gl-mt-2">#{{ iid }}</div>
         <div role="group" :aria-label="__('Labels')">
           <gl-label
             v-for="l in labels"
