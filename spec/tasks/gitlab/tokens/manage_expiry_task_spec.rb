@@ -56,47 +56,36 @@ RSpec.describe 'Tasks::Gitlab::Tokens::ManageExpiryTask', feature_category: :sys
   end
 
   describe '.extend_expiration_date' do
-    context 'with no max personal access token lifetime set' do
-      it 'extends the expiration date for selected tokens' do
-        new_date = expires_at + 1.day
-        default_date = expires_at + 365.days
-        prompt = instance_double(TTY::Prompt)
+    it 'extends the expiration date for selected tokens' do
+      new_date = expires_at + 1.day
+      prompt = instance_double(TTY::Prompt)
 
-        expect(task).to receive(:prompt_expiration_date_selection).and_return(expires_at)
-        expect(TTY::Prompt).to receive(:new).and_return(prompt)
-        expect(prompt).to receive(:ask).with(anything, default: default_date).and_return(new_date.to_s)
-        expect(prompt).to receive(:yes?).and_return(true)
-        expect(task).to receive(:update_tokens_with_expiration).with(expires_at, new_date).and_call_original
+      allow(task).to receive(:prompt_expiration_date_selection).and_return(expires_at)
+      allow(TTY::Prompt).to receive(:new).and_return(prompt)
+      allow(prompt).to receive(:ask).and_return(new_date.to_s)
+      allow(prompt).to receive(:yes?).and_return(true)
+      expect(task).to receive(:update_tokens_with_expiration).with(expires_at, new_date).and_call_original
 
-        expect { task.send(:extend_expiration_date) }.to output(/Updated 2 tokens!/).to_stdout
+      expect { task.send(:extend_expiration_date) }.to output(/Updated 2 tokens!/).to_stdout
 
-        expect(personal_access_token1.reload.expires_at).to eq(new_date)
-        expect(personal_access_token2.reload.expires_at).to eq(new_date)
-      end
+      expect(personal_access_token1.reload.expires_at).to eq(new_date)
+      expect(personal_access_token2.reload.expires_at).to eq(new_date)
     end
+  end
 
-    context 'with max personal access token token lifetime set' do
-      before do
-        stub_application_setting(max_personal_access_token_lifetime: 30)
-      end
+  describe '.remove_expiration_date' do
+    it 'removes the expiration date for selected tokens' do
+      prompt = instance_double(TTY::Prompt)
 
-      it 'asks with the max_personal_access_token_lifetime default' do
-        new_date = expires_at + 29.days
-        default_date = expires_at + 30.days
-        prompt = instance_double(TTY::Prompt)
+      allow(task).to receive(:prompt_expiration_date_selection).and_return(expires_at)
+      allow(TTY::Prompt).to receive(:new).and_return(prompt)
+      allow(prompt).to receive(:yes?).and_return(true)
+      expect(task).to receive(:update_tokens_with_expiration).with(expires_at, nil).and_call_original
 
-        expect(task).to receive(:prompt_expiration_date_selection).and_return(expires_at)
-        expect(TTY::Prompt).to receive(:new).and_return(prompt)
-        expect(prompt).to receive(:ask).with(anything, default: default_date).and_return(new_date.to_s)
+      expect { task.send(:remove_expiration_date) }.to output(/Updated 2 tokens!/).to_stdout
 
-        expect(prompt).to receive(:yes?).and_return(true)
-        expect(task).to receive(:update_tokens_with_expiration).with(expires_at, new_date).and_call_original
-
-        expect { task.send(:extend_expiration_date) }.to output(/Updated 2 tokens!/).to_stdout
-
-        expect(personal_access_token1.reload.expires_at).to eq(new_date)
-        expect(personal_access_token2.reload.expires_at).to eq(new_date)
-      end
+      expect(personal_access_token1.reload.expires_at).to be_nil
+      expect(personal_access_token2.reload.expires_at).to be_nil
     end
   end
 end

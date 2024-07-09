@@ -82,7 +82,8 @@ module Tasks
             menu.enum "."
 
             menu.choice "Extend expiration date", 1
-            menu.choice "Quit", 2
+            menu.choice "Remove expiration date", 2
+            menu.choice "Quit", 3
           end
 
           case user_choice
@@ -90,6 +91,9 @@ module Tasks
             extend_expiration_date
             true
           when 2
+            remove_expiration_date
+            true
+          when 3
             false
           end
         end
@@ -97,7 +101,7 @@ module Tasks
         def extend_expiration_date
           old_date = prompt_expiration_date_selection
 
-          return unless old_date.is_a?(Date)
+          return unless old_date
 
           prompt = TTY::Prompt.new
 
@@ -123,6 +127,24 @@ module Tasks
           end
         rescue Date::Error
           puts "Invalid date, aborting..."
+        end
+
+        def remove_expiration_date
+          old_date = prompt_expiration_date_selection
+
+          return unless old_date
+
+          prompt = TTY::Prompt.new
+
+          puts ""
+          puts "WARNING: This will remove the expiration for tokens that expire on #{old_date}."
+          confirmed = prompt.yes?("This will affect #{token_count(old_date)} tokens. Are you sure?", default: false)
+
+          if confirmed
+            update_tokens_with_expiration(old_date, nil)
+          else
+            puts "Aborting!"
+          end
         end
 
         def update_tokens_with_expiration(old_date, new_date)
