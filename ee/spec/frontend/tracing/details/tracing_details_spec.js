@@ -104,7 +104,7 @@ describe('TracingDetails', () => {
       expect(header.props('incomplete')).toBe(mockTree.incomplete);
       expect(header.props('trace')).toEqual(mockTrace);
       expect(header.props('logsLink')).toBe(
-        `${LOGS_INDEX_URL}?traceId=test-trace-id&search=&date_range=30d`,
+        `${LOGS_INDEX_URL}?traceId[]=test-trace-id&search=&date_range=30d`,
       );
     });
 

@@ -59,7 +59,9 @@ export default {
           dateRange: validatedDateRangeQuery(TIME_RANGE_OPTIONS_VALUES.ONE_MONTH),
         }),
         getNormalizedURL(this.logsIndexUrl),
-        true,
+        true, // clearParams
+        true, // railsArraySyntax
+        true, // decodeParams
       );
     },
   },
