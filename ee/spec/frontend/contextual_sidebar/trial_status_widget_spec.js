@@ -1,7 +1,8 @@
-import { GlLink, GlButton } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { WIDGET } from 'ee/contextual_sidebar/components/constants';
 import TrialStatusWidget from 'ee/contextual_sidebar/components/trial_status_widget.vue';
+import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { __ } from '~/locale';
 
@@ -13,7 +14,6 @@ describe('TrialStatusWidget component', () => {
   const trialDaysUsed = 10;
   const trialDuration = 30;
 
-  const findGlLink = () => wrapper.findComponent(GlLink);
   const findLearnAboutFeaturesBtn = () => wrapper.findByTestId('learn-about-features-btn');
 
   const createComponent = (providers = {}) => {
@@ -32,6 +32,7 @@ describe('TrialStatusWidget component', () => {
   };
 
   beforeEach(() => {
+    useMockLocationHelper();
     trackingSpy = mockTracking(undefined, undefined, jest.spyOn);
   });
 
@@ -63,31 +64,7 @@ describe('TrialStatusWidget component', () => {
     });
 
     it('renders without an id', () => {
-      expect(findGlLink().attributes('id')).toBe(undefined);
-    });
-
-    describe('tracks when the widget menu is clicked', () => {
-      it('tracks with correct information when namespace is in an active trial', async () => {
-        const { category, label } = trackingEvents.activeTrialOptions;
-        await wrapper.findByTestId('trial-widget-menu').trigger('click');
-
-        expect(trackingSpy).toHaveBeenCalledWith(category, trackingEvents.action, {
-          category,
-          label,
-        });
-      });
-
-      it('tracks with correct information when namespace is not in an active trial', async () => {
-        wrapper = createComponent({ percentageComplete: 110 });
-
-        const { category, label } = trackingEvents.trialEndedOptions;
-        await wrapper.findByTestId('trial-widget-menu').trigger('click');
-
-        expect(trackingSpy).toHaveBeenCalledWith(category, trackingEvents.action, {
-          category,
-          label,
-        });
-      });
+      expect(wrapper.attributes('id')).toBe(undefined);
     });
 
     it('does not render Trial twice if the plan name includes "Trial"', () => {
@@ -121,7 +98,7 @@ describe('TrialStatusWidget component', () => {
     });
 
     it('renders with the given id', () => {
-      expect(findGlLink().attributes('id')).toBe('some-id');
+      expect(wrapper.attributes('id')).toBe('some-id');
     });
   });
 
