@@ -132,12 +132,12 @@ RSpec.describe Ci::FinishedBuildChSyncEvent, type: :model, feature_category: :fl
     describe 'the behavior of the strategy' do
       it 'moves records to new partitions as time passes', :freeze_time do
         # We start with partition 1
-        expect(partitioning_strategy.current_partitions.map(&:value)).to eq([1])
+        expect(partitioning_strategy.current_partitions.map(&:value)).to contain_exactly(1)
 
         # it's not a day old yet so no new partitions are created
         partition_manager.sync_partitions
 
-        expect(partitioning_strategy.current_partitions.map(&:value)).to eq([1])
+        expect(partitioning_strategy.current_partitions.map(&:value)).to contain_exactly(1)
 
         # add one record so the next partition will be created
         described_class.create!(build_id: 1, build_finished_at: Time.current)
@@ -148,19 +148,18 @@ RSpec.describe Ci::FinishedBuildChSyncEvent, type: :model, feature_category: :fl
         # a new partition is created
         partition_manager.sync_partitions
 
-        expect(partitioning_strategy.current_partitions.map(&:value)).to eq([1, 2])
+        expect(partitioning_strategy.current_partitions.map(&:value)).to contain_exactly(1, 2)
 
         # and we can insert to the new partition
         expect { described_class.create!(build_id: 5, build_finished_at: Time.current) }.not_to raise_error
 
         # after processing old records
-        described_class.for_partition(1).update_all(processed: true)
-        described_class.for_partition(2).update_all(processed: true)
+        described_class.for_partition([1, 2]).update_all(processed: true)
 
         partition_manager.sync_partitions
 
         # the old one is removed
-        expect(partitioning_strategy.current_partitions.map(&:value)).to eq([2])
+        expect(partitioning_strategy.current_partitions.map(&:value)).to contain_exactly(2)
 
         # and we only have the newly created partition left.
         expect(described_class.count).to eq(1)
