@@ -8,6 +8,9 @@ module Gitlab
       # Any specific information from the GitLab installation will be
       # automatically discovered from the current machine
       class SourceContext
+        # Defaults defined in `config/initializers/1_settings.rb`
+        DEFAULT_CI_BUILDS_PATH = 'builds/'
+
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
         end
@@ -20,8 +23,9 @@ module Gitlab
 
         # CI Builds basepath
         def ci_builds_path
-          # TODO: Use configuration solver
-          Settings.gitlab_ci.builds_path
+          path = gitlab_config.dig(env, 'gitlab_ci', 'builds_path') || DEFAULT_CI_BUILDS_PATH
+
+          absolute_path(path)
         end
 
         # Job Artifacts basepath

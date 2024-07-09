@@ -43,6 +43,32 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
     end
   end
 
+  describe '#ci_builds_path' do
+    context 'with a missing configuration value' do
+      it 'returns the default value in full path' do
+        use_gitlab_config_fixture('gitlab-missingconfigs.yml')
+
+        expect(context.ci_builds_path).to eq(fake_gitlab_basepath.join('builds'))
+      end
+    end
+
+    context 'with a relative path configured in gitlab.yml' do
+      it 'returns a full path based on gitlab basepath' do
+        use_gitlab_config_fixture('gitlab-relativepaths.yml')
+
+        expect(context.ci_builds_path).to eq(fake_gitlab_basepath.join('tests/builds'))
+      end
+    end
+
+    context 'with a full path configured in gitlab.yml' do
+      it 'returns a full path as configured in gitlab.yml' do
+        use_gitlab_config_fixture('gitlab.yml')
+
+        expect(context.ci_builds_path).to eq(Pathname('/tmp/gitlab/full/builds'))
+      end
+    end
+  end
+
   def use_gitlab_config_fixture(fixture)
     gitlab_yml_fixture = fixtures_path.join(fixture)
     FileUtils.copy(gitlab_yml_fixture, fake_gitlab_basepath.join('config/gitlab.yml'))
