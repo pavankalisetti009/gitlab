@@ -90,6 +90,7 @@ module Sbom
     end
 
     scope :unarchived, -> { where(archived: false) }
+    scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
     scope :by_project_ids, ->(project_ids) { where(project_id: project_ids) }
     scope :by_uuids, ->(uuids) { where(uuid: uuids) }
     scope :for_namespace_and_descendants, ->(namespace) do
