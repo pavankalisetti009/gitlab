@@ -266,6 +266,11 @@ module Types
     def text_color
       object.text_color if Feature.enabled?(:epic_color_highlight, object.group)
     end
+
+    # preloading target for events
+    def events
+      object.events.with_target
+    end
   end
 end
 

@@ -13,6 +13,7 @@ module WorkItems
       include ::WorkItems::UnifiedAssociations::ResourceStateEvents
       include ::WorkItems::UnifiedAssociations::DescriptionVersions
       include ::WorkItems::UnifiedAssociations::Subscriptions
+      include ::WorkItems::UnifiedAssociations::Events
 
       # this overrides the scope in Issuable by removing the labels association from it as labels are now preloaded
       # by loading labels for epic and for epic work item

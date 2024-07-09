@@ -68,7 +68,6 @@ module EE
       belongs_to :due_date_sourcing_epic, class_name: 'Epic'
       belongs_to :parent, class_name: "Epic"
       has_many :children, class_name: "Epic", foreign_key: :parent_id
-      has_many :events, as: :target, dependent: :delete_all # rubocop:disable Cop/ActiveRecordDependent
       belongs_to :work_item, foreign_key: 'issue_id', inverse_of: :synced_epic, dependent: :destroy
       belongs_to :sync_object, foreign_key: 'issue_id', class_name: 'WorkItem', inverse_of: :sync_object
 
