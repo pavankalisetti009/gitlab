@@ -29,7 +29,7 @@ module EE
         # - labels writes delegated from epic to epic work item: https://gitlab.com/gitlab-org/gitlab/-/issues/465725
         # - back-fill epic label links to work item label links: https://gitlab.com/groups/gitlab-org/-/epics/13021
         return super unless %w[Epic WorkItem].include?(target_model.name)
-        return super unless group&.epic_and_work_item_labels_unification_enabled?
+        return super unless group&.epic_and_work_item_associations_unification_enabled?
 
         multi_target_label_links_query(base_target_model, label_ids)
       end

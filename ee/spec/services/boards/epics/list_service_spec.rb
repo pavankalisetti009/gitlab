@@ -60,7 +60,7 @@ RSpec.describe Boards::Epics::ListService, feature_category: :team_planning do
 
       context 'when label unification is disabled' do
         before do
-          stub_feature_flags(epic_and_work_item_labels_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it_behaves_like 'items list service' do
