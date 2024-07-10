@@ -10,8 +10,8 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::ExplainVulnerability,
             feature_category: :vulnerability_management,
             execute_method: ::Llm::ExplainVulnerabilityService,
-            maturity: :experimental,
-            self_managed: false,
+            maturity: :ga,
+            self_managed: true,
             internal: false
           },
           resolve_vulnerability: {
@@ -19,8 +19,8 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::Vulnerabilities::ResolveVulnerability,
             feature_category: :vulnerability_management,
             execute_method: ::Llm::ResolveVulnerabilityService,
-            maturity: :experimental,
-            self_managed: false,
+            maturity: :ga,
+            self_managed: true,
             internal: false
           },
           summarize_comments: {

@@ -267,7 +267,6 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       let(:expected_options) { { include_source_code: true, user_agent: 'user-agent' } }
 
       it_behaves_like 'an AI action'
-      it_behaves_like 'an AI action when feature flag disabled'
     end
   end
 end
