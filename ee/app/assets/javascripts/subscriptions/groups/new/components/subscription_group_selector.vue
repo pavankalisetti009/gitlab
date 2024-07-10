@@ -14,7 +14,6 @@ import { formValidators } from '@gitlab/ui/dist/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
 import { visitUrl } from '~/lib/utils/url_utility';
-import axios from '~/lib/utils/axios_utils';
 import { slugify } from '~/lib/utils/text_utility';
 import { getGroupPathAvailability } from '~/rest_api';
 import { subscriptionsCreateGroup } from 'ee_else_ce/rest_api';
@@ -196,10 +195,14 @@ export default {
 
         const { errors, message } = error?.response?.data || {};
 
-        if (errors?.name && errors?.name.length) {
+        if (errors?.name?.length) {
           // We'll add inline form validation for group name in https://gitlab.com/gitlab-org/gitlab/-/issues/468597
           this.errorMessage = sprintf(s__('SubscriptionGroupsNew|Group name %{error}'), {
             error: errors.name[0],
+          });
+        } else if (errors?.path?.length) {
+          this.errorMessage = sprintf(s__('SubscriptionGroupsNew|Group URL %{error}'), {
+            error: errors.path[0],
           });
         } else if (message) {
           this.errorMessage = message;
@@ -238,13 +241,9 @@ export default {
         if (exists && suggests.length) {
           const [suggestedSlug] = suggests;
           this.groupSlug = suggestedSlug;
-          this.errorMessage = null;
-        } else if (exists && !suggests.length) {
-          this.errorMessage = this.$options.i18n.errors.unableToSuggestPathError;
         }
       } catch (e) {
-        if (axios.isCancel(e)) return;
-        this.errorMessage = this.$options.i18n.errors.errorWhileCheckingPathError;
+        // Do nothing as path is not provided by the user and path related errors are handled in group creation request
       }
     },
     navigateToPurchaseFlow(groupId) {
@@ -290,12 +289,6 @@ export default {
     errors: {
       problemCreatingGroupError: __(
         'An error occurred while creating the group. Please try again.',
-      ),
-      unableToSuggestPathError: s__(
-        'ProjectsNew|Unable to suggest a path. Please refresh and try again.',
-      ),
-      errorWhileCheckingPathError: s__(
-        'ProjectsNew|An error occurred while checking group path. Please refresh and try again.',
       ),
     },
     accordion: {

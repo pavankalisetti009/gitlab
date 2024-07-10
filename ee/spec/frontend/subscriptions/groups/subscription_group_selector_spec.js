@@ -42,6 +42,7 @@ describe('SubscriptionGroupSelector component', () => {
   const closeMock = jest.fn();
 
   const groupNameErrorMessage = `can contain only letters, digits, emoji, '_', '.', dash, space, parenthesis. It must start with letter, digit, emoji or '_'`;
+  const groupPathErrorMessage = `has already been taken`;
 
   const findAccordion = () => wrapper.findComponent(GlAccordion);
   const findAccordionItem = () => wrapper.findComponent(GlAccordionItem);
@@ -325,10 +326,8 @@ describe('SubscriptionGroupSelector component', () => {
           await changeGroupName('test group');
         });
 
-        it('shows an error message', () => {
-          expect(findErrorAlert().text()).toBe(
-            'Unable to suggest a path. Please refresh and try again.',
-          );
+        it('does not show an error message', () => {
+          expect(findErrorAlert().exists()).toBe(false);
         });
       });
 
@@ -340,10 +339,8 @@ describe('SubscriptionGroupSelector component', () => {
           await changeGroupName('test group');
         });
 
-        it('shows an error message', () => {
-          expect(findErrorAlert().text()).toBe(
-            'An error occurred while checking group path. Please refresh and try again.',
-          );
+        it('does not show an error message', () => {
+          expect(findErrorAlert().exists()).toBe(false);
         });
       });
 
@@ -437,6 +434,31 @@ describe('SubscriptionGroupSelector component', () => {
 
         it('shows an error message', () => {
           expect(findErrorAlert().text()).toBe(`Group name ${groupNameErrorMessage}`);
+        });
+      });
+
+      describe('when there is an error with path', () => {
+        beforeEach(async () => {
+          subscriptionsCreateGroup.mockRejectedValueOnce({
+            response: {
+              data: {
+                errors: {
+                  path: [groupPathErrorMessage],
+                },
+              },
+            },
+          });
+
+          await submitForm();
+          await waitForPromises();
+        });
+
+        it('does not redirect to purchase page', () => {
+          expect(visitUrl).not.toHaveBeenCalled();
+        });
+
+        it('shows an error message', () => {
+          expect(findErrorAlert().text()).toBe(`Group URL ${groupPathErrorMessage}`);
         });
       });
 
