@@ -40,8 +40,7 @@ module Preloaders
 
       value_list = Arel::Nodes::ValuesList.new(sql_values_array)
 
-      permissions = MemberRole.all_customizable_project_permissions
-
+      permissions = all_permissions
       permission_select = permissions.map { |p| "bool_or(custom_permissions.#{p}) AS #{p}" }.join(', ')
       permission_condition = permissions.map do |permission|
         "member_roles.permissions @> ('{\"#{permission}\":true}')::jsonb"
@@ -101,6 +100,12 @@ module Preloaders
 
     def resource_key
       "member_roles_in_projects:user:#{user.id}"
+    end
+
+    def all_permissions
+      MemberRole
+        .all_customizable_project_permissions
+        .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
 
     attr_reader :projects, :user

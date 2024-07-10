@@ -60,6 +60,17 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
           it 'returns the group_id with a value array that includes the ability' do
             expect(result[group.id]).to match_array(expected_abilities)
           end
+
+          context "when `#{ability}` is disabled" do
+            before do
+              allow(::MemberRole).to receive(:permission_enabled?)
+                .and_call_original
+              allow(::MemberRole).to receive(:permission_enabled?)
+                .with(ability, user).and_return(false)
+            end
+
+            it { expect(result[group.id]).to match_array(ability_requirements(ability)) }
+          end
         end
       end
 
