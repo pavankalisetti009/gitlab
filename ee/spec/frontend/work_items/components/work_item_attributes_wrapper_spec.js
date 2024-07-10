@@ -9,7 +9,7 @@ import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { workItemResponseFactory, epicType } from 'jest/work_items/mock_data';
+import { workItemResponseFactory, epicType, issueType } from 'jest/work_items/mock_data';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemAttributesWrapper from '~/work_items/components/work_item_attributes_wrapper.vue';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
@@ -112,13 +112,21 @@ describe('EE WorkItemAttributesWrapper component', () => {
       });
     });
 
-    it('renders WorkItemWeight', async () => {
-      createComponent();
+    it.each`
+      workItemType | typeName   | description          | expected
+      ${epicType}  | ${`Epic`}  | ${'does not render'} | ${false}
+      ${issueType} | ${`Issue`} | ${'renders'}         | ${true}
+    `(
+      '$description WorkItemWeight when workItemType is $typeName',
+      async ({ workItemType, expected }) => {
+        const response = workItemResponseFactory({ weightWidgetPresent: true, workItemType });
+        createComponent({ workItem: response.data.workItem });
 
-      await waitForPromises();
+        await waitForPromises();
 
-      expect(findWorkItemWeight().exists()).toBe(true);
-    });
+        expect(findWorkItemWeight().exists()).toBe(expected);
+      },
+    );
 
     it('emits an error event to the wrapper', async () => {
       const response = workItemResponseFactory({ weightWidgetPresent: true });
