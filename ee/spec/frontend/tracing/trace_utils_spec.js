@@ -1,11 +1,12 @@
-import { times } from 'lodash';
 import {
   mapTraceToSpanTrees,
   durationNanoToMs,
   formatDurationMs,
   formatTraceDuration,
   assignColorToServices,
+  SPANS_LIMIT,
 } from 'ee/tracing/trace_utils';
+import { createMockTrace } from './mock_data';
 
 describe('trace_utils', () => {
   describe('durationNanoToMs', () => {
@@ -47,16 +48,7 @@ describe('trace_utils', () => {
 
   describe('assignColorToService', () => {
     it('should assign the right palette', () => {
-      const trace = { duration_nane: 100000, spans: [] };
-      trace.spans = times(31).map((i) => ({
-        timestamp: '2023-08-07T15:03:32.199806Z',
-        span_id: `SPAN-${i}`,
-        trace_id: 'fake-trace',
-        service_name: `service-${i}`,
-        operation: 'op',
-        duration_nano: 100000,
-        parent_span_id: '',
-      }));
+      const trace = createMockTrace(31);
 
       expect(assignColorToServices(trace)).toEqual({
         'service-0': 'gl-bg-data-viz-blue-500',
@@ -123,6 +115,7 @@ describe('trace_utils', () => {
 
       expect(mapTraceToSpanTrees(trace)).toEqual({
         incomplete: false,
+        pruned: false,
         roots: [
           {
             duration_ms: secsToMs(10),
@@ -182,6 +175,7 @@ describe('trace_utils', () => {
         }),
       ).toEqual({
         incomplete: true,
+        pruned: false,
         roots: [
           {
             duration_ms: secsToMs(9),
@@ -231,6 +225,7 @@ describe('trace_utils', () => {
         }),
       ).toEqual({
         incomplete: true,
+        pruned: false,
         roots: [
           {
             duration_ms: secsToMs(10),
@@ -276,6 +271,16 @@ describe('trace_utils', () => {
           },
         ],
       });
+    });
+
+    it('should prune the spans list if there are more than SPANS_LIMIT spans', () => {
+      const trace = createMockTrace(SPANS_LIMIT + 1);
+
+      const { roots, pruned } = mapTraceToSpanTrees(trace);
+
+      expect(pruned).toBe(true);
+      expect(roots.length).toBe(1);
+      expect(roots[0].children.length).toBe(SPANS_LIMIT - 1);
     });
   });
 });

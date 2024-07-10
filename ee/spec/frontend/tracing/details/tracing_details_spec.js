@@ -1,4 +1,4 @@
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlAlert, GlSprintf } from '@gitlab/ui';
 import TracingChart from 'ee/tracing/details/tracing_chart.vue';
 import TracingHeader from 'ee/tracing/details/tracing_header.vue';
 import TracingDrawer from 'ee/tracing/details/tracing_drawer.vue';
@@ -43,6 +43,9 @@ describe('TracingDetails', () => {
         ...props,
         observabilityClient: observabilityClientMock,
       },
+      stubs: {
+        GlSprintf,
+      },
     });
     await waitForPromises();
   };
@@ -75,7 +78,8 @@ describe('TracingDetails', () => {
       traceId: 'test-trace-id',
       spans: [{ span_id: 'span-1' }, { span_id: 'span-2' }],
     };
-    const mockTree = { roots: [{ span_id: 'span-1' }], incomplete: true };
+    const mockTree = { roots: [{ span_id: 'span-1' }], incomplete: true, pruned: true };
+
     beforeEach(async () => {
       observabilityClientMock.isObservabilityEnabled.mockResolvedValueOnce(true);
       observabilityClientMock.fetchTrace.mockResolvedValueOnce(mockTrace);
@@ -159,6 +163,23 @@ describe('TracingDetails', () => {
         expect(findTraceChart().props('selectedSpanId')).toBeNull();
         await selectSpan();
         expect(findTraceChart().props('selectedSpanId')).toBe('span-1');
+      });
+    });
+
+    describe('pruning warning', () => {
+      const findAlert = () => wrapper.findComponent(GlAlert);
+      it('shows a warning if the trace is pruned', () => {
+        expect(findAlert().text()).toBe(
+          'This trace has 2 spans. For performance reasons, we only show the first 2000 spans.',
+        );
+      });
+
+      it('does not show a warning if the trace is not pruned', async () => {
+        mapTraceToSpanTrees.mockReturnValue({ ...mockTree, pruned: false });
+
+        await mountComponent();
+
+        expect(findAlert().exists()).toBe(false);
       });
     });
   });

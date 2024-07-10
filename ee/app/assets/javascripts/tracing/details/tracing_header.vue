@@ -80,7 +80,7 @@ export default {
         :header-class="$options.HEADER_CLASS"
       >
         <template #header>
-          {{ __('Trace start') }}
+          {{ s__('Tracing|Trace start') }}
         </template>
 
         <template #default>
@@ -96,7 +96,7 @@ export default {
         :header-class="$options.HEADER_CLASS"
       >
         <template #header>
-          {{ __('Duration') }}
+          {{ s__('Tracing|Duration') }}
         </template>
 
         <template #default>
@@ -111,7 +111,7 @@ export default {
         :header-class="$options.HEADER_CLASS"
       >
         <template #header>
-          {{ __('Total spans') }}
+          {{ s__('Tracing|Total spans') }}
         </template>
 
         <template #default>
