@@ -10,14 +10,10 @@ class BackfillNullProjectBuildRecords < Gitlab::Database::Migration[2.2]
   def up
     builds_model = define_batchable_model('p_ci_builds')
 
-    builds_model.where(project_id: nil).each_batch(column: :id) do |relation|
-      connection.execute(
-        <<~SQL
-          UPDATE p_ci_builds
-          SET project_id = (SELECT p.project_id FROM ci_pipelines p WHERE p.id = p_ci_builds.commit_id)
-          WHERE id in (#{relation.select(:id).to_sql})
-        SQL
-      )
+    builds_model.where(project_id: nil).each_batch(column: :id) do |batch|
+      batch
+        .where('p_ci_builds.commit_id = ci_pipelines.id')
+        .update_all('project_id = ci_pipelines.project_id FROM ci_pipelines')
     end
 
     builds_model.where(project_id: nil).delete_all
