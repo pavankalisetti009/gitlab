@@ -52,6 +52,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - explain_vulnerability
           - generate_commit_message
           - generate_cube_query
+          - glab_ask_git_command
           - resolve_vulnerability
           - review_merge_request
           - semantic_search_issue
@@ -64,6 +65,12 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       duo_enterprise:
         unit_primitives:
           - explain_vulnerability
+  glab_ask_git_command:
+    backend: 'gitlab-ai-gateway'
+    bundled_with:
+      duo_enterprise:
+        unit_primitives:
+          - glab_ask_git_command
   resolve_vulnerability:
     backend: 'gitlab-ai-gateway'
     bundled_with:

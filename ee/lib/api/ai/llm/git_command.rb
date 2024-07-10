@@ -22,18 +22,22 @@ module API
             response = ::Llm::GitCommandService.new(current_user, current_user, declared_params).execute
 
             if response.success?
-              config = response.payload
+              if Feature.enabled?(:move_git_service_to_ai_gateway, current_user)
+                response.payload
+              else
+                config = response.payload
 
-              workhorse_headers = Gitlab::Workhorse.send_url(
-                config[:url],
-                body: config[:body],
-                headers: config[:headers].transform_values { |v| [v] },
-                method: "POST"
-              )
+                workhorse_headers = Gitlab::Workhorse.send_url(
+                  config[:url],
+                  body: config[:body],
+                  headers: config[:headers].transform_values { |v| [v] },
+                  method: "POST"
+                )
 
-              header(*workhorse_headers)
-              status :ok
-              body ''
+                header(*workhorse_headers)
+                status :ok
+                body ''
+              end
             else
               bad_request!(response.message)
             end

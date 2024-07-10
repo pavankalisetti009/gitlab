@@ -38,6 +38,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           explain_vulnerability
           generate_commit_message
           generate_cube_query
+          glab_ask_git_command
           resolve_vulnerability
           review_merge_request
           semantic_search_issue
@@ -72,6 +73,14 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
       }
     end
 
+    let_it_be(:glab_ask_git_command_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          glab_ask_git_command
+        ]
+      }
+    end
+
     include_examples 'access data reader' do
       let_it_be(:available_service_data_class) { CloudConnector::SelfSigned::AvailableServiceData }
       let_it_be(:arguments_map) do
@@ -83,6 +92,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           resolve_vulnerability: [nil, resolve_vulnerability_bundled_with, backend],
           self_hosted_models: [self_hosted_models_cut_off_date, self_hosted_models_bundled_with, backend],
           generate_commit_message: [nil, generate_commit_message_bundled_with, backend],
+          glab_ask_git_command: [nil, glab_ask_git_command_bundled_with, backend],
           explain_vulnerability: [nil, explain_vulnerability_bundled_with,
             backend]
         }
