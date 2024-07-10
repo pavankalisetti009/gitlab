@@ -336,7 +336,27 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           index = zkt_enabled_namespace2.indices.last
           expect(index).not_to be_nil
           expect(index.namespace_id).to eq zkt_enabled_namespace2.root_namespace_id
-          expect(index).to be_ready
+          expect(index).to be_pending
+        end
+
+        context 'when feature flag zoekt_initial_indexing_task is disabled' do
+          before do
+            stub_feature_flags(zoekt_initial_indexing_task: false)
+          end
+
+          it 'creates a record of Search::Zoekt::Index with state ready' do
+            expect(zkt_enabled_namespace.indices).to be_empty
+            expect(zkt_enabled_namespace2.indices).to be_empty
+            expect(Search::Zoekt::Node).to receive(:online).and_call_original
+            expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
+                                                     'message' => "RootStorageStatistics isn't available",
+                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace.id }
+            )
+            expect { execute_task }.to change { Search::Zoekt::Index.count }.by(1)
+            expect(zkt_enabled_namespace.indices).to be_empty
+            index = zkt_enabled_namespace2.indices.last
+            expect(index).to be_ready
+          end
         end
 
         it 'assigns the index to a replica' do

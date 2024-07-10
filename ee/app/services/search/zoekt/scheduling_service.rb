@@ -218,16 +218,13 @@ module Search
             node = nodes.max_by { |n| n.total_bytes - n.used_bytes }
 
             if (node.used_bytes + space_required) <= node.total_bytes * WATERMARK_LIMIT_LOW
-              # TODO: Once we have the task which moves pending to ready then remove the state attribute from here
-              # https://gitlab.com/gitlab-org/gitlab/-/issues/439042
-
               zoekt_index = Search::Zoekt::Index.new(
                 namespace_id: zoekt_enabled_namespace.root_namespace_id,
                 zoekt_node_id: node.id,
                 zoekt_enabled_namespace: zoekt_enabled_namespace,
-                state: :ready,
                 replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace)
               )
+              zoekt_index.state = :ready if Feature.disabled?(:zoekt_initial_indexing_task)
               zoekt_indices << zoekt_index
               node.used_bytes += space_required
             else
