@@ -249,6 +249,9 @@ This feature is available for testing, but not ready for production use.
 Permanently delete sensitive or confidential information that was accidentally committed, ensuring
 it's no longer accessible in your repository's history.
 
+Alternatively, to replace strings with `***REMOVED***`, see
+[Redact text](../../../topics/git/undo.md#redact-text).
+
 Prerequisites:
 
 - You must have the Owner role for the instance.
