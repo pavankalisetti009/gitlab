@@ -16,7 +16,6 @@ class SubscriptionsController < ApplicationController
   # this point and becomes true only after the user completes the verification
   # process.
   before_action :authenticate_user!, except: :new, unless: :identity_verification_request?
-  before_action :ensure_registered!, only: :new
 
   before_action :load_eligible_groups, only: :new
 
@@ -24,7 +23,13 @@ class SubscriptionsController < ApplicationController
   urgency :low
 
   def new
-    @namespace = get_namespace
+    ensure_registered! unless current_user.present?
+
+    @namespace =
+      if params[:namespace_id]
+        namespace_id = params[:namespace_id].to_i
+        @eligible_groups.find { |n| n.id == namespace_id }
+      end
 
     purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
       current_user: current_user,
@@ -238,18 +243,9 @@ class SubscriptionsController < ApplicationController
   end
 
   def ensure_registered!
-    return if current_user.present?
-
     store_location_for(:user, request.fullpath)
 
     redirect_to new_user_registration_path
-  end
-
-  def get_namespace
-    return if params[:namespace_id].blank?
-
-    namespace_id = params[:namespace_id].to_i
-    @eligible_groups.find { |n| n.id == namespace_id }
   end
 
   def identity_verification_request?
