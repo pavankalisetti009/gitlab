@@ -7,10 +7,12 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleWorker, feature_category
     let_it_be(:project) { create(:project) }
     let_it_be(:security_orchestration_policy_configuration) { create(:security_orchestration_policy_configuration, project: project) }
     let_it_be(:schedule) { create(:security_orchestration_policy_rule_schedule, security_orchestration_policy_configuration: security_orchestration_policy_configuration) }
+    let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
 
     subject(:worker) { described_class.new }
 
     before do
+      stub_licensed_features(security_orchestration_policies: true)
       allow(Security::OrchestrationConfigurationCreateBotWorker).to receive(:perform_async)
     end
 
@@ -20,19 +22,65 @@ RSpec.describe Security::OrchestrationPolicyRuleScheduleWorker, feature_category
       end
 
       context 'when schedule is created for security orchestration policy configuration in project' do
-        it 'creates async new policy bot user only when it is missing for the project' do
-          expect(Security::OrchestrationConfigurationCreateBotWorker).to receive(:perform_async).with(project.id, nil)
-          expect { worker.perform }.not_to change { User.count }
+        context 'when policy bot user is missing for the project' do
+          context 'when feature is not licensed' do
+            before do
+              stub_licensed_features(security_orchestration_policies: false)
+            end
+
+            it 'does not create new policy bot user' do
+              expect(Security::OrchestrationConfigurationCreateBotWorker).not_to receive(:perform_async)
+
+              worker.perform
+            end
+          end
+
+          context 'when feature is licensed' do
+            it 'creates async new policy bot user' do
+              expect(Security::OrchestrationConfigurationCreateBotWorker).to receive(:perform_async).with(project.id, nil)
+              expect { worker.perform }.not_to change { User.count }
+            end
+
+            it 'does not invoke the rule schedule worker' do
+              expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async)
+
+              worker.perform
+            end
+
+            it 'does not update next run at value' do
+              expect { worker.perform }.not_to change { schedule.reload.next_run_at }
+            end
+          end
         end
 
-        it 'does not invoke the rule schedule worker when there is no security policy bot' do
-          expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async)
+        context 'when policy bot user exists for the project' do
+          before do
+            create(:project_member, user: security_policy_bot, project: project)
+          end
 
-          worker.perform
-        end
+          context 'when feature is licensed' do
+            it 'invokes the rule schedule worker' do
+              expect(Security::ScanExecutionPolicies::RuleScheduleWorker).to receive(:perform_async)
 
-        it 'does not update next run at value' do
-          expect { worker.perform }.not_to change { schedule.reload.next_run_at }
+              worker.perform
+            end
+          end
+
+          context 'when feature is not licensed' do
+            before do
+              stub_licensed_features(security_orchestration_policies: false)
+            end
+
+            it 'does not invoke the rule schedule worker' do
+              expect(Security::ScanExecutionPolicies::RuleScheduleWorker).not_to receive(:perform_async)
+
+              worker.perform
+            end
+
+            it 'does not update next run at value' do
+              expect { worker.perform }.not_to change { schedule.reload.next_run_at }
+            end
+          end
         end
 
         context 'when project is marked for deletion' do
