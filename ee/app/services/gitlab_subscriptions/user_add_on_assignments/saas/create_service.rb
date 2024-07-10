@@ -30,7 +30,11 @@ module GitlabSubscriptions
         end
 
         def should_trigger_duo_pro_iterable?(response)
-          response.success? && add_on_purchase.add_on.code_suggestions? && !user_already_assigned?
+          response.success? && duo_pro_or_enterprise? && !user_already_assigned?
+        end
+
+        def duo_pro_or_enterprise?
+          add_on_purchase.add_on.code_suggestions? || add_on_purchase.add_on.duo_enterprise?
         end
 
         def create_iterable_trigger
