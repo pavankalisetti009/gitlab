@@ -21,4 +21,7 @@ fragment Car on MergeTrainCar {
     name
     webPath
   }
+  userPermissions {
+    deleteMergeTrainCar
+  }
 }
