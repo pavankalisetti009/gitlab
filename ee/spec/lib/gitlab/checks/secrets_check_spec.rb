@@ -137,9 +137,7 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
             stub_licensed_features(pre_receive_secret_detection: true)
           end
 
-          it 'skips the check' do
-            expect(secrets_check.validate!).to be_nil
-          end
+          it_behaves_like 'scan detected secrets'
         end
       end
     end

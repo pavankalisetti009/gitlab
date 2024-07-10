@@ -92,18 +92,13 @@ module Gitlab
 
       private
 
-      # As the pre-receive feature moves to Beta,
-      # we are restricting to Dedicated and select
-      # GitLab.com projects. For progress, follow
-      # https://gitlab.com/groups/gitlab-org/-/epics/12729
       def run_pre_receive_secret_detection?
         Gitlab::CurrentSettings.current_application_settings.pre_receive_secret_detection_enabled &&
-          (enabled_for_gitlabcom_project? || enabled_for_dedicated_project?)
+          (enabled_for_non_dedicated_project? || enabled_for_dedicated_project?)
       end
 
-      def enabled_for_gitlabcom_project?
-        ::Gitlab::Saas.feature_available?(:beta_rollout_pre_receive_secret_detection) &&
-          ::Feature.enabled?(:pre_receive_secret_detection_push_check, project) &&
+      def enabled_for_non_dedicated_project?
+        ::Feature.enabled?(:pre_receive_secret_detection_push_check, project) &&
           project.security_setting&.pre_receive_secret_detection_enabled
       end
 
