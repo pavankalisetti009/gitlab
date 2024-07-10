@@ -14,5 +14,14 @@
           = _('Licensed to:')
           %strong= @license.licensee_name
           = "(#{@license.licensee_email})"
+        %span.gl-ml-5
+          = _('Type:')
+          - case @license.license_type
+          - when 'online_cloud'
+            %strong= _('Online license')
+          - when 'offline_cloud'
+            %strong= _('Offline license')
+          - when 'legacy_license'
+            %strong= _('Legacy license')
     %div
       = link_button_to _('View details'), admin_subscription_path

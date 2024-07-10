@@ -36119,6 +36119,9 @@ msgstr ""
 msgid "Offline"
 msgstr ""
 
+msgid "Offline license"
+msgstr ""
+
 msgid "Oh no!"
 msgstr ""
 
@@ -36565,6 +36568,9 @@ msgid "One or more of your personal access tokens have expired."
 msgstr ""
 
 msgid "One or more of your personal access tokens will expire in %{days_to_expire} days or less:"
+msgstr ""
+
+msgid "Online license"
 msgstr ""
 
 msgid "Only %{workspaceType} members with %{permissions} can view or be notified about this %{issuableType}."
@@ -56167,6 +56173,9 @@ msgid "Type changed successfully."
 msgstr ""
 
 msgid "Type to search"
+msgstr ""
+
+msgid "Type:"
 msgstr ""
 
 msgid "URL"
