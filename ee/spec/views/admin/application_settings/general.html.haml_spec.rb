@@ -126,6 +126,7 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
     before do
       allow(::Gitlab).to receive(:org_or_com?).and_return(gitlab_org_or_com?)
       stub_licensed_features(ai_chat: false)
+      stub_feature_flags(ai_settings_vue_admin: false)
     end
 
     shared_examples 'does not render AI Beta features toggle' do
@@ -216,6 +217,7 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
       it 'sets entire ai-powered menu section visibility correctly' do
         allow(::Gitlab).to receive(:org_or_com?).and_return(false)
         stub_licensed_features(ai_chat: ai_chat_available)
+        stub_feature_flags(ai_settings_vue_admin: false)
 
         travel_to(current_date) do
           render

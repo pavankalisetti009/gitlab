@@ -17,6 +17,12 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
 
       it { is_expected.to include 'https://about.gitlab.com/handbook/legal/testing-agreement/' }
     end
+
+    describe '#ai_settings_helper_data' do
+      subject { helper.ai_settings_helper_data }
+
+      it { is_expected.to eq(data: {}) }
+    end
   end
 
   describe '#admin_display_ai_powered_chat_settings?', :freeze_time, feature_category: :duo_chat do
@@ -24,7 +30,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
     let(:past) { Time.current - 1.second }
     let(:future) { Time.current + 1.second }
     let(:duo_chat_service_data) do
-      CloudConnector::SelfManaged::AvailableServiceData.new(:duo_chat, duo_chat_cut_off_date,  %w[duo_pro])
+      CloudConnector::SelfManaged::AvailableServiceData.new(:duo_chat, duo_chat_cut_off_date, %w[duo_pro])
     end
 
     before do
