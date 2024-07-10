@@ -155,7 +155,7 @@ describe('ee/security_dashboard/components/shared/filtered_search/tokens/project
     });
 
     it.each([
-      { active: true, expectedValue: null },
+      { active: true, expectedValue: { data: null } },
       { active: false, expectedValue: { data: [] } },
     ])(
       'passes "$expectedValue" to the search-token when the dropdown is open: "$active"',
@@ -167,9 +167,7 @@ describe('ee/security_dashboard/components/shared/filtered_search/tokens/project
           },
         });
 
-        expect(findFilteredSearchToken().props('value')).toEqual(
-          expect.objectContaining(expectedValue),
-        );
+        expect(findFilteredSearchToken().props('value')).toEqual(expectedValue);
       },
     );
   });

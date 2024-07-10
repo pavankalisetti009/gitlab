@@ -116,7 +116,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
     );
 
     it.each([
-      { active: true, expectedValue: null },
+      { active: true, expectedValue: { data: null } },
       { active: false, expectedValue: { data: [] } },
     ])(
       'passes "$expectedValue" to the search-token when the dropdown is open: "$active"',
@@ -128,9 +128,7 @@ describe('ee/dependencies/components/filtered_search/tokens/license_token.vue', 
           },
         });
 
-        expect(findFilteredSearchToken().props('value')).toEqual(
-          expect.objectContaining(expectedValue),
-        );
+        expect(findFilteredSearchToken().props('value')).toEqual(expectedValue);
       },
     );
   });

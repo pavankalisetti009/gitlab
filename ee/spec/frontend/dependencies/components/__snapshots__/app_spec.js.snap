@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DependenciesApp component on creation given the dependency list job has not yet run shows only the empty state 1`] = `
-Object {
+{
   "compact": false,
-  "contentClass": Array [],
+  "contentClass": [],
   "description": null,
   "invertInDarkMode": true,
   "primaryButtonLink": null,
@@ -17,9 +17,9 @@ Object {
 `;
 
 exports[`DependenciesApp component on creation given there are no dependencies detected shows only the empty state 1`] = `
-Object {
+{
   "compact": false,
-  "contentClass": Array [],
+  "contentClass": [],
   "description": null,
   "invertInDarkMode": true,
   "primaryButtonLink": null,

@@ -8,7 +8,7 @@ exports[`DeleteRotationModal renders delete rotation modal layout 1`] = `
     data-testid="slot-default"
   >
     <gl-sprintf-stub
-      message="Are you sure you want to delete the \\"%{deleteRotation}\\" rotation? This action cannot be undone."
+      message="Are you sure you want to delete the "%{deleteRotation}" rotation? This action cannot be undone."
     />
   </div>
 </div>

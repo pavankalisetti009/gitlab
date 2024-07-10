@@ -176,21 +176,21 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
 `;
 
 exports[`DevopsAdoptionOverviewChart default state computes the correct series data 1`] = `
-Array [
-  Object {
-    "data": Array [
+[
+  {
+    "data": [
       1,
     ],
     "name": "Dev",
   },
-  Object {
-    "data": Array [
+  {
+    "data": [
       4,
     ],
     "name": "Sec",
   },
-  Object {
-    "data": Array [
+  {
+    "data": [
       2,
     ],
     "name": "Ops",
