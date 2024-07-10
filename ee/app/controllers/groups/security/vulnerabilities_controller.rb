@@ -14,6 +14,7 @@ module Groups
       before_action do
         push_frontend_feature_flag(:group_level_vulnerability_report_grouping, @group)
         push_frontend_feature_flag(:vulnerability_owasp_top_10_group, @group)
+        push_frontend_feature_flag(:owasp_top_10_null_filtering, @group)
       end
 
       def index

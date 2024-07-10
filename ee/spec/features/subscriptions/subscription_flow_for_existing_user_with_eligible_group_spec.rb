@@ -20,6 +20,10 @@ RSpec.describe 'Subscription flow for existing user with eligible group', :js, f
     stub_invoice_preview('null', premium_plan[:id])
     stub_get_billing_account(has_billing_account: has_billing_account)
 
+    allow_next_instance_of(GitlabSubscriptions::PurchaseUrlBuilder) do |instance|
+      allow(instance).to receive(:customers_dot_flow?).and_return(false)
+    end
+
     sign_in(user)
   end
 

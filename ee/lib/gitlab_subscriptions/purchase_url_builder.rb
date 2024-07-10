@@ -10,7 +10,7 @@ module GitlabSubscriptions
 
     def customers_dot_flow?
       Feature.enabled?(:migrate_purchase_flows_for_existing_customers, current_user) &&
-        namespace.present? && valid_billing_account?
+        valid_billing_account?
     end
 
     def build(params = {})
@@ -26,9 +26,12 @@ module GitlabSubscriptions
     attr_reader :current_user, :plan_id, :namespace
 
     def customers_dot_purchase_flow_url(params)
-      query = params.merge({ plan_id: plan_id, gl_namespace_id: namespace.id }).compact
-
-      Gitlab::Utils.add_url_parameters(Gitlab::Routing.url_helpers.subscription_portal_new_subscription_url, query)
+      if namespace.blank?
+        Gitlab::Routing.url_helpers.new_subscriptions_group_path(plan_id: plan_id)
+      else
+        query = params.merge({ plan_id: plan_id, gl_namespace_id: namespace.id }).compact
+        Gitlab::Utils.add_url_parameters(Gitlab::Routing.url_helpers.subscription_portal_new_subscription_url, query)
+      end
     end
 
     def gitlab_purchase_flow_url(params)

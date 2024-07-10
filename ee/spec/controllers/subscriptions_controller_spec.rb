@@ -71,14 +71,6 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             expect(assigns(:namespace)).to eq(owned_group)
           end
         end
-
-        context 'when eligible to be redirected to the CustomersDot purchase flow' do
-          before do
-            allow(service).to receive(:customers_dot_flow?).and_return(true)
-          end
-
-          it { is_expected.to redirect_to(redirect_path) }
-        end
       end
 
       context 'when there are no eligible groups for the subscription' do
@@ -106,6 +98,14 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
 
           expect(assigns(:eligible_groups)).to eq []
         end
+      end
+
+      context 'when eligible to be redirected to the CustomersDot purchase flow' do
+        before do
+          allow(service).to receive(:customers_dot_flow?).and_return(true)
+        end
+
+        it { is_expected.to redirect_to(redirect_path) }
       end
     end
   end
