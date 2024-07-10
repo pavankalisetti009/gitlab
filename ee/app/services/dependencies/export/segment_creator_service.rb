@@ -3,7 +3,7 @@
 module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an existing module
   module Export
     class SegmentCreatorService
-      SEGMENTED_EXPORT_WORKERS = 5
+      SEGMENTED_EXPORT_WORKERS = 20
       BATCH_SIZE = 25_000
 
       def self.execute(...)
