@@ -50,7 +50,7 @@ module Gitlab
             ].freeze
 
             SLASH_COMMANDS = {
-              '/rca' => {
+              '/troubleshoot' => {
                 description: 'Troubleshoot a job based on the logs.',
                 instruction: 'Troubleshoot the job log.',
                 instruction_with_input: "Troubleshoot the job log. Input: %<input>s."
