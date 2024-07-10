@@ -213,12 +213,14 @@ $badge-height: $gl-spacing-scale-7;
 .billing-plan-card {
   width: 308px;
 
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-card-header {
     border-top-right-radius: $gl-spacing-scale-3;
     border-top-left-radius: $gl-spacing-scale-3;
     height: 28px;
   }
 
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-card-body {
     min-height: 288px;
   }

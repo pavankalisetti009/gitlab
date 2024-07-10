@@ -469,6 +469,7 @@ html.group-epics-roadmap-html {
 }
 
 .milestone-item-type {
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-icon {
     padding-right: $gl-spacing-scale-1;
   }
