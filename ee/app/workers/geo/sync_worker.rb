@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 module Geo
+  # Enqueued by RegistrySyncWorker and RepositoryRegistrySyncWorker
+  # to perform syncs. These syncs are distinct from Geo update events
+  # because these syncs do not begin by marking the registry pending.
   class SyncWorker
     include ApplicationWorker
     include GeoQueue
