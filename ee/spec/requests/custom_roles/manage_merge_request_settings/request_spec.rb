@@ -7,9 +7,9 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group, reload: true) { create(:group) }
   let_it_be(:project) { create(:project, :repository, namespace: group) }
-  let_it_be_with_reload(:role) { create(:member_role, :guest, namespace: group, manage_merge_request_settings: true) }
+  let_it_be_with_reload(:role) { create(:member_role, :guest, :manage_merge_request_settings, namespace: group) }
   let_it_be(:membership) { create(:group_member, :guest, user: user, source: group, member_role: role) }
 
   before do
@@ -31,6 +31,14 @@ RSpec.describe 'User with manage_merge_request_settings custom role', feature_ca
           expect(response).to have_gitlab_http_status(:ok)
           expect(response.body).to have_text(_('Merge requests'))
         end
+      end
+
+      it 'cannot update the group', :aggregate_failures do
+        expect do
+          put group_path(group), params: { group: { name: 'new-name' } }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end.to not_change { group.reload.name }
       end
     end
 

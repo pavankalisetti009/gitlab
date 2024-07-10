@@ -6,14 +6,26 @@ RSpec.describe 'User with manage_deploy_tokens custom role', feature_category: :
   include ApiHelpers
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:group) { create(:group) }
+  let_it_be(:group, reload: true) { create(:group) }
   let_it_be(:project) { create(:project, :repository, namespace: group) }
-  let_it_be_with_reload(:role) { create(:member_role, :guest, namespace: group, manage_deploy_tokens: true) }
+  let_it_be_with_reload(:role) { create(:member_role, :guest, :manage_deploy_tokens, namespace: group) }
 
   before do
     stub_licensed_features(custom_roles: true)
 
     sign_in(user)
+  end
+
+  describe GroupsController do
+    let_it_be(:membership) { create(:group_member, :guest, user: user, source: group, member_role: role) }
+
+    it 'cannot update the group', :aggregate_failures do
+      expect do
+        put group_path(group), params: { group: { name: 'new-name' } }
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end.to not_change { group.reload.name }
+    end
   end
 
   describe 'manage project deploy tokens' do

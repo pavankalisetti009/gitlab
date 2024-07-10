@@ -9,7 +9,8 @@ module EE
 
         prepended do
           skip_before_action :authorize_admin_project!, only: [:show, :create_deploy_token]
-          before_action :authorize_view_repository_settings!, only: [:show, :create_deploy_token]
+          before_action :authorize_view_repository_settings!, only: :show
+          before_action :authorize_create_deploy_token!, only: :create_deploy_token
           before_action :push_rule, only: :show
         end
 
