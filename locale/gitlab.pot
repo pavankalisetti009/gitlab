@@ -48061,6 +48061,9 @@ msgstr ""
 msgid "SecurityOrchestration|Requires no approvals if any of the following occur:"
 msgstr ""
 
+msgid "SecurityOrchestration|Resolved"
+msgstr ""
+
 msgid "SecurityOrchestration|Roles"
 msgstr ""
 
@@ -48188,6 +48191,9 @@ msgid "SecurityOrchestration|Summary of syntax changes:"
 msgstr ""
 
 msgid "SecurityOrchestration|The following branches do not exist on this development project: %{branches}. Please review all protected branches to ensure the values are accurate before updating this policy."
+msgstr ""
+
+msgid "SecurityOrchestration|Then automatically set the status of these vulnerabilities to %{type}."
 msgstr ""
 
 msgid "SecurityOrchestration|There are no exception branches yet."
