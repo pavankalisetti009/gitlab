@@ -8,3 +8,5 @@ export const DEFAULT_CURSOR = {
 };
 
 export const POLL_INTERVAL = 10000;
+
+export const MODAL_ID = 'remove-from-train';

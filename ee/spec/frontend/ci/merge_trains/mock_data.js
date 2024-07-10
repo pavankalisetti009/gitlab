@@ -1,11 +1,12 @@
 // Fixture located at ee/spec/frontend/fixtures/merge_trains.rb
 import activeTrain from 'test_fixtures/ee/graphql/merge_trains/active_merge_trains.json';
 import mergedTrain from 'test_fixtures/ee/graphql/merge_trains/completed_merge_trains.json';
+import trainWitoutPermissions from 'test_fixtures/ee/graphql/merge_trains/active_merge_trains_guest.json';
 
 // built with fixture data but manual pageInfo
 // inserted for testing pagination and avoiding the need
 // to create multiple cars on a train in fixtures
-const trainWithPagination = {
+export const trainWithPagination = {
   data: {
     project: {
       id: 'gid://gitlab/Project/2',
@@ -29,7 +30,7 @@ const trainWithPagination = {
   },
 };
 
-const emptyTrain = {
+export const emptyTrain = {
   data: {
     project: {
       id: 'gid://gitlab/Project/20',
@@ -40,4 +41,20 @@ const emptyTrain = {
   },
 };
 
-export { activeTrain, mergedTrain, trainWithPagination, emptyTrain };
+export const deleteCarSuccess = {
+  data: {
+    mergeTrainsDeleteCar: {
+      errors: [],
+    },
+  },
+};
+
+export const deleteCarFailure = {
+  data: {
+    mergeTrainsDeleteCar: {
+      errors: ['New error'],
+    },
+  },
+};
+
+export { activeTrain, mergedTrain, trainWitoutPermissions };

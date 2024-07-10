@@ -38899,7 +38899,13 @@ msgstr ""
 msgid "Pipelines|An error occurred while trying to fetch the completed merge train."
 msgstr ""
 
+msgid "Pipelines|An error occurred while trying to remove the car from the train."
+msgstr ""
+
 msgid "Pipelines|An error occurred while updating the trigger token. Please try again."
+msgstr ""
+
+msgid "Pipelines|Are you sure you want to remove the merge request %{title} from the merge train?"
 msgstr ""
 
 msgid "Pipelines|Are you sure you want to run this pipeline?"
@@ -39026,6 +39032,12 @@ msgid "Pipelines|Ready to set up CI/CD for your project?"
 msgstr ""
 
 msgid "Pipelines|Rebasing creates a pipeline that runs code originating from a forked project merge request. Consequently there are potential security implications, such as the exposure of CI variables."
+msgstr ""
+
+msgid "Pipelines|Remove from merge train"
+msgstr ""
+
+msgid "Pipelines|Removing the merge request from the merge train will restart the pipelines for all merge requests queued after it. For more information, see the %{linkStart}documentation.%{linkEnd}"
 msgstr ""
 
 msgid "Pipelines|Retry %{jobName} Job"

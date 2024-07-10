@@ -10,8 +10,15 @@ import MergeTrainBranchSelector from 'ee/ci/merge_trains/components/merge_train_
 import MergeTrainTabs from 'ee/ci/merge_trains/components/merge_train_tabs.vue';
 import getActiveMergeTrainsQuery from 'ee/ci/merge_trains/graphql/queries/get_active_merge_trains.query.graphql';
 import getCompletedMergeTrainsQuery from 'ee/ci/merge_trains/graphql/queries/get_completed_merge_trains.query.graphql';
+import deleteCarMutation from 'ee/ci/merge_trains/graphql/mutations/delete_car.mutation.graphql';
 import { POLL_INTERVAL } from 'ee/ci/merge_trains/constants';
-import { activeTrain, mergedTrain, emptyTrain } from './mock_data';
+import {
+  activeTrain,
+  mergedTrain,
+  emptyTrain,
+  deleteCarSuccess,
+  deleteCarFailure,
+} from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -23,11 +30,16 @@ describe('MergeTrainsApp', () => {
   const activeTrainsHandler = jest.fn().mockResolvedValue(activeTrain);
   const mergedTrainsHandler = jest.fn().mockResolvedValue(mergedTrain);
   const emptyTrainsHandler = jest.fn().mockResolvedValue(emptyTrain);
+  const deleteCarHandler = jest.fn().mockResolvedValue(deleteCarSuccess);
+  const deleteCarFailureHandler = jest.fn().mockResolvedValue(deleteCarFailure);
   const errorHandler = jest.fn().mockRejectedValue(new Error('GraphQL error'));
+
+  const carId = 'gid://gitlab/MergeTrains::Car/66';
 
   const defaultHandlers = [
     [getActiveMergeTrainsQuery, activeTrainsHandler],
     [getCompletedMergeTrainsQuery, mergedTrainsHandler],
+    [deleteCarMutation, deleteCarHandler],
   ];
 
   const createMockApolloProvider = (handlers) => {
@@ -184,7 +196,7 @@ describe('MergeTrainsApp', () => {
     });
   });
 
-  describe('errors', () => {
+  describe('query errors', () => {
     it('shows query error for completed merge trains', async () => {
       createComponent([
         [getActiveMergeTrainsQuery, activeTrainsHandler],
@@ -242,6 +254,39 @@ describe('MergeTrainsApp', () => {
 
       expect(activeTrainsHandler).toHaveBeenCalledTimes(3);
       expect(mergedTrainsHandler).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('delete merge train car', () => {
+    it('calls mutation with carId', async () => {
+      createComponent();
+
+      await waitForPromises();
+
+      expect(activeTrainsHandler).toHaveBeenCalledTimes(1);
+
+      findActiveTable().vm.$emit('deleteCar', carId);
+
+      expect(deleteCarHandler).toHaveBeenCalledWith({ input: { carId } });
+      expect(activeTrainsHandler).toHaveBeenCalledTimes(2);
+    });
+
+    it('shows mutation error for delete car failure', async () => {
+      createComponent([
+        [getActiveMergeTrainsQuery, activeTrainsHandler],
+        [getCompletedMergeTrainsQuery, mergedTrainsHandler],
+        [deleteCarMutation, deleteCarFailureHandler],
+      ]);
+
+      await waitForPromises();
+
+      findActiveTable().vm.$emit('deleteCar', carId);
+
+      await waitForPromises();
+
+      expect(createAlert).toHaveBeenCalledWith({
+        message: 'New error',
+      });
     });
   });
 });

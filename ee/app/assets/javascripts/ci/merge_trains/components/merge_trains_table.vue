@@ -1,13 +1,15 @@
 <script>
-import { GlKeysetPagination, GlLink, GlTable } from '@gitlab/ui';
+import { GlButton, GlKeysetPagination, GlLink, GlTable, GlModalDirective } from '@gitlab/ui';
 import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, sprintf } from '~/locale';
-import { CARS_PER_PAGE } from '../constants';
+import { CARS_PER_PAGE, MODAL_ID } from '../constants';
+import DeleteCarModalConfirmation from './delete_car_modal_confirmation.vue';
 
 export default {
   name: 'MergeTrainsTable',
+  MODAL_ID,
   fields: [
     {
       key: 'mr',
@@ -25,10 +27,15 @@ export default {
   ],
   components: {
     CiIcon,
+    GlButton,
     GlKeysetPagination,
     GlLink,
     GlTable,
+    DeleteCarModalConfirmation,
     UserAvatarLink,
+  },
+  directives: {
+    GlModal: GlModalDirective,
   },
   props: {
     train: {
@@ -39,10 +46,19 @@ export default {
       type: Object,
       required: true,
     },
+    // used in conjunction with userPermissions to ensure
+    // the remove car button is only showed for active cars
+    isActiveTab: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
       items: [],
+      carToRemoveId: null,
+      mergeRequestTitle: '',
     };
   },
   computed: {
@@ -78,6 +94,10 @@ export default {
         before: item,
       });
     },
+    setData(data) {
+      this.carToRemoveId = data.id;
+      this.mergeRequestTitle = data?.mergeRequest?.title || '';
+    },
   },
 };
 </script>
@@ -108,6 +128,16 @@ export default {
           />
         </div>
       </template>
+      <template #cell(actions)="{ item }">
+        <gl-button
+          v-if="item.userPermissions.deleteMergeTrainCar && isActiveTab"
+          v-gl-modal="$options.MODAL_ID"
+          icon="close"
+          :aria-label="__('Close')"
+          data-testid="remove-car-button"
+          @click="setData(item)"
+        />
+      </template>
     </gl-table>
     <div class="gl-flex gl-justify-content-center gl-mt-5">
       <gl-keyset-pagination
@@ -117,5 +147,10 @@ export default {
         @next="nextPage"
       />
     </div>
+
+    <delete-car-modal-confirmation
+      :merge-request-title="mergeRequestTitle"
+      @removeCarConfirmed="$emit('deleteCar', carToRemoveId)"
+    />
   </div>
 </template>

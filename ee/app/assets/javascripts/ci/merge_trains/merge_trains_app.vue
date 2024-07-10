@@ -9,6 +9,7 @@ import MergeTrainsTable from './components/merge_trains_table.vue';
 import MergeTrainsEmptyState from './components/merge_trains_empty_state.vue';
 import getActiveMergeTrains from './graphql/queries/get_active_merge_trains.query.graphql';
 import getCompletedMergeTrains from './graphql/queries/get_completed_merge_trains.query.graphql';
+import deleteCarMutation from './graphql/mutations/delete_car.mutation.graphql';
 import { DEFAULT_CURSOR, POLL_INTERVAL } from './constants';
 
 const ACTIVE_TAB_INDEX = 0;
@@ -116,6 +117,33 @@ export default {
         this.$apollo.queries.activeMergeTrains.stopPolling();
       }
     },
+    async deleteMergeTrainCar(carId) {
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteCarMutation,
+          variables: {
+            input: {
+              carId,
+            },
+          },
+        });
+
+        if (data.mergeTrainsDeleteCar?.errors?.length) {
+          const { errors } = data.mergeTrainsDeleteCar;
+          const errorMessage = errors[0];
+
+          createAlert({ message: errorMessage });
+        } else {
+          this.$apollo.queries.activeMergeTrains.refetch();
+        }
+      } catch {
+        createAlert({
+          message: s__(
+            'Pipelines|An error occurred while trying to remove the car from the train.',
+          ),
+        });
+      }
+    },
   },
 };
 </script>
@@ -146,8 +174,10 @@ export default {
             v-if="hasActiveCars"
             :train="activeMergeTrains.train"
             :cursor="activeCursor"
+            is-active-tab
             data-testid="active-merge-trains-table"
             @pageChange="activeCursor = $event"
+            @deleteCar="deleteMergeTrainCar"
           />
 
           <merge-trains-empty-state
