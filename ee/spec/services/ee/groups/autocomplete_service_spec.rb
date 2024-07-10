@@ -16,6 +16,23 @@ RSpec.describe Groups::AutocompleteService, feature_category: :groups_and_projec
     expect(labels.map(&extract_title)).to match_array(expected_labels.map(&extract_title))
   end
 
+  describe '#issues' do
+    let_it_be(:group_issue) { create(:work_item, :group_level, namespace: group) }
+    let_it_be(:epic_work_item) { create(:work_item, :epic, :group_level, namespace: group) }
+
+    context 'when licensed feature epics is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'includes epic work item icon in list' do
+        issues = subject.issues.map(&:icon_name)
+
+        expect(issues).to include('issue-type-issue', 'issue-type-epic')
+      end
+    end
+  end
+
   describe '#labels_as_hash' do
     let!(:label1) { create(:group_label, group: group) }
     let!(:label2) { create(:group_label, group: group) }
