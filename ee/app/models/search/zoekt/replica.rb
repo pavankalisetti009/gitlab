@@ -18,6 +18,8 @@ module Search
 
       validate :project_can_not_assigned_to_same_replica_unless_index_is_reallocating
 
+      scope :for_namespace, ->(id) { where(namespace_id: id) }
+
       def self.for_enabled_namespace!(zoekt_enabled_namespace)
         zoekt_enabled_namespace.replicas.first_or_create!(namespace_id: zoekt_enabled_namespace.root_namespace_id)
       end

@@ -18,7 +18,11 @@ module Search
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id
 
-        Index.for_root_namespace_id_with_search_enabled(root_namespace_id).ready.exists?
+        if search_with_replica?(container, root_namespace_id)
+          Replica.ready.for_namespace(root_namespace_id).exists?
+        else
+          Index.for_root_namespace_id_with_search_enabled(root_namespace_id).ready.exists?
+        end
       end
 
       def index?(container)
@@ -89,6 +93,12 @@ module Search
         else
           raise ArgumentError, "#{container.class} class is not supported"
         end
+      end
+
+      def search_with_replica?(container, root_namespace_id)
+        return false if container.is_a? Project
+
+        Feature.enabled?(:zoekt_search_with_replica, Namespace.actor_from_id(root_namespace_id))
       end
     end
   end

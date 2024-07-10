@@ -502,21 +502,51 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
           zoekt_ensure_project_indexed!(project)
         end
 
-        it 'sets group search information for logging' do
-          expect(Gitlab::Instrumentation::GlobalSearchApi).to receive(:set_information).with(
-            type: 'zoekt',
-            level: 'group',
-            scope: 'blobs',
-            search_duration_s: a_kind_of(Numeric)
-          )
+        context 'when feature flag zoekt_search_with_replica is disabled' do
+          before do
+            stub_feature_flags(zoekt_search_with_replica: false)
+          end
 
-          get api(endpoint, user), params: { scope: 'blobs', search: 'folder' }
+          it 'sets group search information for logging' do
+            expect(Gitlab::Instrumentation::GlobalSearchApi).to receive(:set_information).with(
+              type: 'zoekt',
+              level: 'group',
+              scope: 'blobs',
+              search_duration_s: a_kind_of(Numeric)
+            )
+
+            get api(endpoint, user), params: { scope: 'blobs', search: 'folder' }
+          end
         end
 
-        it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 3 do
+        context 'when all the replicas are in ready state' do
           before do
-            stub_feature_flags(zoekt_exact_search: false) # We will decide for APIs later during rolling out
-            get api(endpoint, user), params: { scope: 'blobs', search: 'file:README' }
+            group.zoekt_enabled_namespace.replicas.update_all(state: :ready)
+          end
+
+          it 'sets group search information for logging' do
+            expect(Gitlab::Instrumentation::GlobalSearchApi).to receive(:set_information).with(
+              type: 'zoekt',
+              level: 'group',
+              scope: 'blobs',
+              search_duration_s: a_kind_of(Numeric)
+            )
+
+            get api(endpoint, user), params: { scope: 'blobs', search: 'folder' }
+          end
+        end
+
+        context 'when feature flag zoekt_search_api is disabled', :elastic, :sidekiq_inline do
+          before do
+            project.repository.index_commits_and_blobs
+            ensure_elasticsearch_index!
+          end
+
+          it_behaves_like 'response is correct', schema: 'public_api/v4/blobs', size: 3 do
+            before do
+              stub_feature_flags(zoekt_search_api: false) # We will decide for APIs later during rolling out
+              get api(endpoint, user), params: { scope: 'blobs', search: 'Issue' }
+            end
           end
         end
       end

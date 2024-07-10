@@ -44,6 +44,7 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :elastic, :zo
     project1.add_maintainer(user)
     project2.add_maintainer(user)
     group.add_owner(user)
+    group.zoekt_enabled_namespace.replicas.update_all(state: :ready)
 
     sign_in(user)
 
@@ -68,7 +69,7 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :elastic, :zo
     allow(Ability).to receive(:allowed?).and_call_original
     expect(Ability).to receive(:allowed?).with(anything, :read_blob, anything).twice.and_return(false)
 
-    submit_search("username_regex")
+    submit_search('username_regex')
     select_search_scope('Code')
 
     expect(page).not_to have_selector('.file-content .blob-content')

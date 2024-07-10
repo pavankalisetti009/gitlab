@@ -122,6 +122,10 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
         end
 
         context 'when searching a group' do
+          before do
+            project.group.zoekt_enabled_namespace.replicas.update_all(state: :ready)
+          end
+
           it 'allows access via a custom role' do
             get search_path, params: {
               group_id: project.group.id,
