@@ -1720,7 +1720,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when labels are fetched just from the epic itself' do
         before do
-          stub_feature_flags(epic_and_work_item_labels_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it 'returns only epic labels' do
@@ -1731,7 +1731,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when labels are fetched from the epic and epic work item' do
         before do
-          stub_feature_flags(epic_and_work_item_labels_unification: true)
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
         end
 
         it 'returns epic and epic work item labels' do

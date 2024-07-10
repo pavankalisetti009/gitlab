@@ -10,7 +10,7 @@ module WorkItems
         has_many :own_labels, through: :own_label_links
         has_many :labels, through: :label_links do
           def load_target
-            return super unless proxy_association.owner.labels_unification_enabled?
+            return super unless proxy_association.owner.unified_associations?
 
             proxy_association.target = scope.to_a unless proxy_association.loaded?
 
@@ -19,14 +19,14 @@ module WorkItems
           end
 
           def find(*args)
-            return super unless proxy_association.owner.labels_unification_enabled?
+            return super unless proxy_association.owner.unified_associations?
             return super if block_given?
 
             scope.find(*args)
           end
 
           def replace(other_array)
-            return super unless proxy_association.owner.labels_unification_enabled?
+            return super unless proxy_association.owner.unified_associations?
 
             to_be_removed = proxy_association.target - other_array
             to_be_added = other_array - proxy_association.target
@@ -59,7 +59,7 @@ module WorkItems
         end
 
         def labels=(array)
-          if !try(:sync_object) || !labels_unification_enabled?
+          if !try(:sync_object) || !unified_associations?
             super
 
             return
@@ -69,7 +69,7 @@ module WorkItems
         end
 
         def label_ids=(array)
-          if !try(:sync_object) || !labels_unification_enabled?
+          if !try(:sync_object) || !unified_associations?
             super
 
             return
@@ -79,13 +79,13 @@ module WorkItems
         end
 
         def label_ids
-          return super if !try(:sync_object) || !labels_unification_enabled?
+          return super if !try(:sync_object) || !unified_associations?
 
           lazy_labels.itself.pluck(:id) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- few labels
         end
 
         def lazy_labels
-          return labels unless labels_unification_enabled?
+          return labels unless unified_associations?
 
           BatchLoader.for(batched_object).batch(cache: false) do |ids, loader, _args|
             objects_relation = self.class.id_in(ids.map(&:first).flat_map(&:first))

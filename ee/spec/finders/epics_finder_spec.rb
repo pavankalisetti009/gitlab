@@ -726,7 +726,7 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
 
             subject(:filtered_epics) { epics(params.merge(filtering_params)) }
 
-            context 'when epic_and_work_item_labels_unification FF is enabled' do
+            context 'when epic_and_work_item_associations_unification FF is enabled' do
               context 'when searching by NONE' do
                 let(:filtering_params) { { label_name: ['None'] } }
 
@@ -794,9 +794,9 @@ RSpec.describe EpicsFinder, feature_category: :team_planning do
               end
             end
 
-            context 'when epic_and_work_item_labels_unification FF is disabled' do
+            context 'when epic_and_work_item_associations_unification FF is disabled' do
               before do
-                stub_feature_flags(epic_and_work_item_labels_unification: false)
+                stub_feature_flags(epic_and_work_item_associations_unification: false)
               end
 
               context 'when searching by NONE' do

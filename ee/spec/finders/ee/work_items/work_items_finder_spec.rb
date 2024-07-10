@@ -66,7 +66,7 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
         epic_work_item2.labels << label5
       end
 
-      context 'when epic_and_work_item_labels_unification FF is enabled' do
+      context 'when epic_and_work_item_associations_unification FF is enabled' do
         context 'when searching by NONE' do
           let(:filtering_params) { { label_name: ['None'] } }
 
@@ -131,9 +131,9 @@ RSpec.describe WorkItems::WorkItemsFinder, feature_category: :team_planning do
         end
       end
 
-      context 'when epic_and_work_item_labels_unification FF is disabled' do
+      context 'when epic_and_work_item_associations_unification FF is disabled' do
         before do
-          stub_feature_flags(epic_and_work_item_labels_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         context 'when searching by NONE' do

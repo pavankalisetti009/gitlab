@@ -39,10 +39,6 @@ module WorkItems
         container&.epic_and_work_item_associations_unification_enabled? && try(:sync_object)
       end
 
-      def labels_unification_enabled?
-        unified_associations? && container&.epic_and_work_item_labels_unification_enabled?
-      end
-
       def notes_unification_enabled?
         unified_associations? && container&.epic_and_work_item_notes_unification_enabled?
       end
