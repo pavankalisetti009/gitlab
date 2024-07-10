@@ -208,5 +208,12 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::Saas::CreateService, f
 
       it_behaves_like 'does not create an iterable trigger'
     end
+
+    context 'with a Duo Enterprise add-on purchase' do
+      let(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
+
+      it_behaves_like 'success response'
+    end
   end
 end
