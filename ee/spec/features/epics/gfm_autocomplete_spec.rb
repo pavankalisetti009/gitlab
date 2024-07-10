@@ -53,7 +53,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
           fill_in 'Comment', with: '#'
 
-          expect_resources(shown: [issue_1, issue_2])
+          expect_resources(shown: [issue_1, issue_2, epic.work_item])
         end
       end
 
