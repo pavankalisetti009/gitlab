@@ -82,7 +82,13 @@ module Users
     end
 
     def require_unverified_user!
-      redirect_to success_signup_identity_verification_path if @user.signup_identity_verified?
+      return unless @user.signup_identity_verified?
+
+      if html_request?
+        redirect_to success_signup_identity_verification_path
+      else
+        head :ok
+      end
     end
 
     def find_verification_user
