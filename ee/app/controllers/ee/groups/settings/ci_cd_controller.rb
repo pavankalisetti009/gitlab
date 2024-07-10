@@ -39,6 +39,11 @@ module EE
           super
 
           gon.push(current_group_id: group.id)
+          gon.push(deploy_access_levels: environment_dropdown.roles_hash)
+        end
+
+        def environment_dropdown
+          @environment_dropdown ||= ProtectedEnvironments::EnvironmentDropdownService
         end
       end
     end
