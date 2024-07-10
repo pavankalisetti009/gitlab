@@ -4,8 +4,6 @@ module Users
   module IdentityVerificationHelper
     include RecaptchaHelper
 
-    RESTRICTED_COUNTRY_CODES = %w[CN HK MO].freeze
-
     def signup_identity_verification_data(user)
       build_data(user, path_helper: method(:signup_iv_action_path))
     end
@@ -38,7 +36,7 @@ module Users
     def restricted_country?(country_code, namespace = nil)
       return false unless ::Feature.enabled?(:prevent_registration_from_china, namespace, type: :gitlab_com_derisk)
 
-      RESTRICTED_COUNTRY_CODES.include?(country_code)
+      ComplianceManagement::Pipl::COVERED_COUNTRY_CODES.include?(country_code)
     end
 
     private
