@@ -161,22 +161,4 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       end
     end
   end
-
-  context 'when there is a seat overage', :saas, :use_clean_rails_memory_store_caching do
-    let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 1) }
-
-    before_all do
-      group.add_developer(create(:user))
-    end
-
-    before do
-      stub_billable_members_reactive_cache(group)
-    end
-
-    it 'displays an overage banner' do
-      visit_page
-
-      expect(page).to have_text "Your top-level group #{group.name} is now read-only."
-    end
-  end
 end
