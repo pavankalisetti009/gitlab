@@ -58608,7 +58608,7 @@ msgstr ""
 msgid "Visual Studio Code (SSH)"
 msgstr ""
 
-msgid "VsdContributorCount|the ClickHouse data store is not available for this group"
+msgid "VsdContributorCount|the ClickHouse data store is not available for this namespace"
 msgstr ""
 
 msgid "Vulnerabilities"

@@ -29525,6 +29525,23 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projecttimelogsstarttime"></a>`startTime` | [`Time`](#time) | List timelogs within a time range where the logged time is equal to or after startTime. |
 | <a id="projecttimelogsusername"></a>`username` | [`String`](#string) | List timelogs for a user. |
 
+##### `Project.valueStreamDashboardUsageOverview`
+
+Aggregated usage counts within the project.
+
+DETAILS:
+**Introduced** in GitLab 17.2.
+**Status**: Experiment.
+
+Returns [`ValueStreamDashboardCount`](#valuestreamdashboardcount).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectvaluestreamdashboardusageoverviewidentifier"></a>`identifier` | [`ValueStreamDashboardProjectLevelMetric!`](#valuestreamdashboardprojectlevelmetric) | Type of counts to retrieve. |
+| <a id="projectvaluestreamdashboardusageoverviewtimeframe"></a>`timeframe` | [`Timeframe!`](#timeframe) | Counts recorded during this time frame, usually from beginning of the month until the end of the month (the system runs monthly aggregations). |
+
 ##### `Project.valueStreams`
 
 Value streams available to the project.
@@ -36319,6 +36336,17 @@ Possible identifier types for a measurement.
 | <a id="valuestreamdashboardmetricpipelines"></a>`PIPELINES` | Pipeline count. |
 | <a id="valuestreamdashboardmetricprojects"></a>`PROJECTS` | Project count. |
 | <a id="valuestreamdashboardmetricusers"></a>`USERS` | User count. |
+
+### `ValueStreamDashboardProjectLevelMetric`
+
+Possible identifier types for project-level measurement.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="valuestreamdashboardprojectlevelmetriccontributors"></a>`CONTRIBUTORS` | Contributor count. EXPERIMENTAL: Only available on the SaaS version of GitLab when the ClickHouse database backend is enabled. |
+| <a id="valuestreamdashboardprojectlevelmetricissues"></a>`ISSUES` | Issue count. |
+| <a id="valuestreamdashboardprojectlevelmetricmerge_requests"></a>`MERGE_REQUESTS` | Merge request count. |
+| <a id="valuestreamdashboardprojectlevelmetricpipelines"></a>`PIPELINES` | Pipeline count. |
 
 ### `ValueStreamStageEvent`
 

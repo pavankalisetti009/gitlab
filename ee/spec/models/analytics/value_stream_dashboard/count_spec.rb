@@ -104,6 +104,14 @@ RSpec.describe Analytics::ValueStreamDashboard::Count, feature_category: :value_
           expect(count).to eq(1)
         end
       end
+
+      context 'when querying a project namespace' do
+        let(:group_to_aggregate) { project1.project_namespace }
+
+        it 'returns count scoped to the project namespace' do
+          expect(count).to eq(2)
+        end
+      end
     end
 
     context 'when requesting direct_members counts' do

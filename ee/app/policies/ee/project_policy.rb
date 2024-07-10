@@ -692,6 +692,8 @@ module EE
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 
+      rule { combined_project_analytics_dashboards_enabled & can?(:read_cycle_analytics) }.enable :read_project_level_value_stream_dashboard_overview_counts
+
       rule { can?(:read_project) & requirements_available }.enable :read_requirement
 
       rule { requirements_available & (reporter | admin) }.policy do
