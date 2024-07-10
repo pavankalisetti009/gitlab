@@ -119,36 +119,10 @@ RSpec.describe 'Project navbar', :js, feature_category: :navigation do
       before do
         allow(::Gitlab::FIPS).to receive(:enabled?).and_return(true)
         stub_licensed_features(security_dashboard: true, security_on_demand_scans: true)
+        visit project_path(project)
       end
 
-      context 'when browser based on demand scan feature flag is enabled' do
-        before do
-          stub_feature_flags(dast_ods_browser_based_scanner: true)
-
-          visit project_path(project)
-        end
-
-        it_behaves_like 'verified navigation bar'
-      end
-
-      context 'when browser based on demand scan feature flag is disabled' do
-        let(:nav_sub_items) do
-          [
-            _('Security dashboard'),
-            _('Vulnerability report'),
-            _('Audit events'),
-            _('Security configuration')
-          ]
-        end
-
-        before do
-          stub_feature_flags(dast_ods_browser_based_scanner: false)
-
-          visit project_path(project)
-        end
-
-        it_behaves_like 'verified navigation bar'
-      end
+      it_behaves_like 'verified navigation bar'
     end
   end
 

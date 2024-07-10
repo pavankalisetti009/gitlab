@@ -103,7 +103,6 @@ describe('DastSiteProfileForm', () => {
         {},
         {
           propsData: defaultProps,
-          provide: { glFeatures: { dastOdsBrowserBasedScanner: false } },
         },
         {
           apolloProvider,
@@ -256,6 +255,15 @@ describe('DastSiteProfileForm', () => {
       expect(findBaseDastProfileForm().props('mutationVariables').excludedUrls).toEqual([]);
     });
 
+    it('shows the correct request headers tooltip text and link', () => {
+      expect(findRequestHeadersTooltip().text()).toContain(
+        'Headers may appear in vulnerability reports',
+      );
+      expect(findRequestHeadersTooltipHref()).toEqual(
+        '/help/user/application_security/dast/browser_based#available-cicd-variables',
+      );
+    });
+
     describe('when target type is API', () => {
       const getScanMethodOption = (index) => {
         return findScanMethodInput().findAll('option').at(index);
@@ -401,48 +409,6 @@ describe('DastSiteProfileForm', () => {
 
     it('should disable the profile name field', () => {
       expect(findProfileNameInput().attributes('disabled')).toBeDefined();
-    });
-  });
-
-  describe('when on-demand browser based scans feature flag is disabled', () => {
-    beforeEach(async () => {
-      createComponent({
-        provide: { glFeatures: { dastOdsBrowserBasedScanner: false } },
-        propsData: {
-          profile: siteProfileWithSecrets,
-        },
-      });
-      await waitForPromises();
-    });
-
-    it('shows the correct request headers tooltip text and link', () => {
-      expect(findRequestHeadersTooltip().text()).toContain(
-        'Headers will appear in vulnerability reports. Only some headers are automatically masked',
-      );
-      expect(findRequestHeadersTooltipHref()).toEqual(
-        '/help/user/application_security/dast/proxy-based#hide-sensitive-information',
-      );
-    });
-  });
-
-  describe('when on-demand browser based scans feature flag is enabled', () => {
-    beforeEach(async () => {
-      createComponent({
-        provide: { glFeatures: { dastOdsBrowserBasedScanner: true } },
-        propsData: {
-          profile: siteProfileWithSecrets,
-        },
-      });
-      await waitForPromises();
-    });
-
-    it('shows the correct request headers tooltip text and link', () => {
-      expect(findRequestHeadersTooltip().text()).toContain(
-        'Headers may appear in vulnerability reports',
-      );
-      expect(findRequestHeadersTooltipHref()).toEqual(
-        '/help/user/application_security/dast/browser_based#available-cicd-variables',
-      );
     });
   });
 });

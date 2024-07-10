@@ -38,20 +38,6 @@ RSpec.describe Projects::OnDemandScansController,
 
           expect(response).to have_gitlab_http_status(:ok)
         end
-
-        context "if FIPS mode is enabled" do
-          before do
-            stub_licensed_features(security_on_demand_scans: true)
-          end
-
-          it "can access page if browser based feature flag is enabled" do
-            stub_feature_flags(dast_ods_browser_based_scanner: true)
-            allow(::Gitlab::FIPS).to receive(:enabled?).and_return(true)
-            get path
-
-            expect(response).to have_gitlab_http_status(:ok)
-          end
-        end
       end
 
       context 'user not authorized' do
@@ -81,20 +67,6 @@ RSpec.describe Projects::OnDemandScansController,
         get path
 
         expect(response).to have_gitlab_http_status(:not_found)
-      end
-
-      context "if FIPS mode is enabled" do
-        before do
-          stub_licensed_features(security_on_demand_scans: true)
-        end
-
-        it "sees a 404 if browser based feature flag is disabled" do
-          stub_feature_flags(dast_ods_browser_based_scanner: false)
-          allow(::Gitlab::FIPS).to receive(:enabled?).and_return(true)
-          get path
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
       end
     end
   end

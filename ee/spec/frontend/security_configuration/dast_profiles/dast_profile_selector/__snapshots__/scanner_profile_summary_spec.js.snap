@@ -22,11 +22,6 @@ exports[`DastScannerProfileSummary renders properly 1`] = `
     value="10 seconds"
   />
   <summary-cell-stub
-    data-testid="summary-cell-ajax-spider"
-    label="AJAX spider"
-    value="Off"
-  />
-  <summary-cell-stub
     label="Debug messages"
     value="Hide debug messages"
   />

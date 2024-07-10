@@ -1262,9 +1262,7 @@ module EE
 
     override :on_demand_dast_available?
     def on_demand_dast_available?
-      return super unless feature_available?(:security_on_demand_scans)
-
-      ::Gitlab::FIPS.enabled? ? ::Feature.enabled?(:dast_ods_browser_based_scanner, self) : true
+      feature_available?(:security_on_demand_scans)
     end
 
     override :supports_saved_replies?

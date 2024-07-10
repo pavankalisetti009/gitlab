@@ -27,20 +27,12 @@ class DastScannerProfile < ApplicationRecord
 
   def ci_variables(dast_site_profile: nil)
     ::Gitlab::Ci::Variables::Collection.new.tap do |variables|
-      variables.append(key: 'DAST_SPIDER_MINS', value: String(spider_timeout)) if spider_timeout
       variables.append(key: 'DAST_TARGET_AVAILABILITY_TIMEOUT', value: String(target_timeout)) if target_timeout
-
-      unless Feature.enabled?(:dast_ods_browser_based_scanner, project)
-        variables.append(key: 'DAST_USE_AJAX_SPIDER', value: String(use_ajax_spider))
-      end
 
       variables.append(key: 'DAST_DEBUG', value: String(show_debug_messages))
       variables.append(key: 'DAST_FULL_SCAN_ENABLED', value: String(active?))
       variables.append(key: 'DAST_BROWSER_CRAWL_TIMEOUT', value: "#{String(spider_timeout)}m") if spider_timeout
-
-      if Feature.enabled?(:dast_ods_browser_based_scanner, project)
-        variables.append(key: 'DAST_BROWSER_SCAN', value: 'true')
-      end
+      variables.append(key: 'DAST_BROWSER_SCAN', value: 'true')
 
       next unless dast_site_profile&.api?
 

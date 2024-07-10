@@ -177,21 +177,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
           allow(Ability).to receive(:allowed?).with(user, :read_on_demand_dast_scan, project).and_return(true)
         end
 
-        context 'when browser based on demand scan feature is enabled' do
-          before do
-            stub_feature_flags(dast_ods_browser_based_scanner: true)
-          end
-
-          it { is_expected.not_to be_nil }
-        end
-
-        context 'when browser based on demand scan feature is disabled' do
-          before do
-            stub_feature_flags(dast_ods_browser_based_scanner: false)
-          end
-
-          it { is_expected.to be_nil }
-        end
+        it { is_expected.not_to be_nil }
       end
     end
 

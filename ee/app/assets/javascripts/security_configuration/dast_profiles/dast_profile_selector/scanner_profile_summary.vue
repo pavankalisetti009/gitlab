@@ -54,12 +54,6 @@ export default {
         :value="n__('%d second', '%d seconds', profile.targetTimeout || 0)"
       />
       <summary-cell
-        v-if="!glFeatures.dastOdsBrowserBasedScanner"
-        data-testid="summary-cell-ajax-spider"
-        :label="s__('DastProfiles|AJAX spider')"
-        :value="profile.useAjaxSpider ? __('On') : __('Off')"
-      />
-      <summary-cell
         :label="s__('DastProfiles|Debug messages')"
         :value="
           profile.showDebugMessages
