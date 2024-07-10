@@ -131,13 +131,13 @@ module Gitlab
             self_managed: false,
             internal: true
           },
-          ai_git_command: {
+          glab_ask_git_command: {
             service_class: nil,
             prompt_class: nil,
             feature_category: :source_code_management,
             execute_method: ::Llm::GitCommandService,
             maturity: false,
-            self_managed: false,
+            self_managed: true,
             internal: true
           }
         }.freeze

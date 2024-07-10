@@ -69,6 +69,26 @@ module EE
         self_hosted_models.free_access? || self_hosted_models.allowed_for?(@user)
       end
 
+      condition(:glab_ask_git_command_enabled) do
+        ::Feature.enabled?(:move_git_service_to_ai_gateway, @user)
+      end
+
+      condition(:user_allowed_to_use_glab_ask_git_command) do
+        next true if glab_ask_git_command_data.allowed_for?(@user)
+
+        next false unless glab_ask_git_command_data.free_access?
+
+        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
+          user.any_group_with_ai_available?
+        else
+          ::License.feature_available?(:glab_ask_git_command)
+        end
+      end
+
+      rule { glab_ask_git_command_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
+        enable :access_glab_ask_git_command
+      end
+
       condition(:duo_chat_enabled) do
         next true if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas)
         next false unless ::License.feature_available?(:ai_chat)
@@ -220,6 +240,10 @@ module EE
 
     def generate_commit_message_data
       CloudConnector::AvailableServices.find_by_name(:generate_commit_message)
+    end
+
+    def glab_ask_git_command_data
+      CloudConnector::AvailableServices.find_by_name(:glab_ask_git_command)
     end
 
     def duo_chat_free_access_was_cut_off?
