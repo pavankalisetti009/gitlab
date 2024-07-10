@@ -390,6 +390,13 @@ module EE
           null: true,
           resolver_method: :object
 
+        field :value_stream_dashboard_usage_overview,
+          ::Types::Analytics::ValueStreamDashboard::CountType,
+          null: true,
+          resolver: ::Resolvers::Projects::Analytics::ValueStreamDashboard::CountResolver,
+          description: 'Aggregated usage counts within the project',
+          alpha: { milestone: '17.2' }
+
         field :marked_for_deletion_on, ::Types::TimeType,
           null: true,
           description: 'Date when project was scheduled to be deleted.',

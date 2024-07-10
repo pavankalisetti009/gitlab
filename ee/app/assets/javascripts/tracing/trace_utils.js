@@ -92,6 +92,8 @@ function setNodeStartTs(node, root) {
   node.children.forEach((child) => setNodeStartTs(child, root));
 }
 
+export const SPANS_LIMIT = 2000;
+
 export function mapTraceToSpanTrees(trace) {
   const nodes = {};
 
@@ -105,7 +107,10 @@ export function mapTraceToSpanTrees(trace) {
     hasError: span.status_code === 'STATUS_CODE_ERROR',
   });
 
-  trace.spans.forEach((s) => {
+  const pruned = trace.spans.length > SPANS_LIMIT;
+  const prunedSpansList = trace.spans.slice(0, SPANS_LIMIT);
+
+  prunedSpansList.forEach((s) => {
     nodes[s.span_id] = spanToNode(s);
   });
 
@@ -113,7 +118,9 @@ export function mapTraceToSpanTrees(trace) {
 
   let incomplete = false;
 
-  trace.spans.forEach((s) => {
+  // spans are ordered by timestamp, so pruning the list by selecting the first SPANS_LIMIT spans
+  // should not produce incorrect trees
+  prunedSpansList.forEach((s) => {
     const node = nodes[s.span_id];
     const parentId = s.parent_span_id;
     if (nodes[parentId]) {
@@ -141,5 +148,5 @@ export function mapTraceToSpanTrees(trace) {
     // and use the first root's timestamp as baseline for the other trees
     roots.forEach((root) => setNodeStartTs(root, roots[0]));
   }
-  return { roots, incomplete };
+  return { roots, incomplete, pruned };
 }

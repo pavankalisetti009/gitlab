@@ -23,8 +23,8 @@ module Analytics
           .where(arel_table[:recorded_at].lteq(to))
       }
 
-      def self.aggregate_for_period(group, metric, from, to)
-        namespace_query = "(#{descendant_namespace_ids_for(group, metric).to_sql}) AS ids(id)"
+      def self.aggregate_for_period(namespace, metric, from, to)
+        namespace_query = "(#{descendant_namespace_ids_for(namespace, metric).to_sql}) AS ids(id)"
 
         lateral_query = for_period(metric, from, to)
           .where('ids.id = value_stream_dashboard_counts.namespace_id')
@@ -38,15 +38,17 @@ module Analytics
           .pick(Arel.sql("SUM(counts.count) OVER (), MAX(counts.recorded_at) OVER ()"))
       end
 
-      def self.descendant_namespace_ids_for(group, metric)
+      def self.descendant_namespace_ids_for(namespace, metric)
+        return Namespace.where(id: namespace.id) if namespace.is_a?(Namespaces::ProjectNamespace)
+
         metric_namespace_class = Analytics::ValueStreamDashboard::TopLevelGroupCounterService::COUNTS_TO_COLLECT
           .fetch(metric)
           .fetch(:namespace_class)
 
         if metric_namespace_class == Group
-          group_ids(group, metric)
+          group_ids(namespace, metric)
         elsif metric_namespace_class == Namespaces::ProjectNamespace
-          group.all_projects.select(:project_namespace_id)
+          namespace.all_projects.select(:project_namespace_id)
         else
           Group.none
         end

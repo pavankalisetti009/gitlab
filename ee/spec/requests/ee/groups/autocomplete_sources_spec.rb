@@ -19,8 +19,8 @@ RSpec.describe 'groups autocomplete', feature_category: :groups_and_projects do
     let_it_be(:test_case) { create(:quality_test_case, project: project) }
 
     where(:issue_types, :expected) do
-      nil         | :test_case
-      ''          | :test_case
+      nil         | [:test_case, :epic]
+      ''          | [:test_case, :epic]
       'invalid'   | []
       'test_case' | :test_case
     end

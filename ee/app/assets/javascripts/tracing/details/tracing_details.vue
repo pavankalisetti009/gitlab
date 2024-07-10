@@ -1,5 +1,5 @@
 <script>
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlAlert, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
@@ -7,7 +7,7 @@ import { visitUrl, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utilit
 import { logsQueryFromAttributes } from 'ee/logs/list/filter_bar/filters';
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
 import { validatedDateRangeQuery } from '~/observability/utils';
-import { mapTraceToSpanTrees } from '../trace_utils';
+import { mapTraceToSpanTrees, SPANS_LIMIT } from '../trace_utils';
 import { VIEW_TRACING_DETAILS_PAGE } from '../events';
 import TracingChart from './tracing_chart.vue';
 import TracingHeader from './tracing_header.vue';
@@ -16,12 +16,17 @@ import TracingDrawer from './tracing_drawer.vue';
 export default {
   i18n: {
     error: s__('Tracing|Error: Failed to load trace details. Try reloading the page.'),
+    prunedWarning: s__(
+      'Tracing|This trace has %{totalSpans} spans. For performance reasons, we only show the first %{spansLimit} spans.',
+    ),
   },
   components: {
     GlLoadingIcon,
     TracingChart,
     TracingHeader,
     TracingDrawer,
+    GlAlert,
+    GlSprintf,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -49,6 +54,7 @@ export default {
       loading: false,
       isDrawerOpen: false,
       selectedSpan: null,
+      isTracePruned: false,
     };
   },
   computed: {
@@ -99,6 +105,7 @@ export default {
         // freezing object removes reactivity and lowers memory consumption for large objects
         this.trace = Object.freeze(trace);
         this.spanTrees = Object.freeze(mapTraceToSpanTrees(this.trace));
+        this.isTracePruned = this.spanTrees.pruned;
       } catch (e) {
         createAlert({
           message: this.$options.i18n.error,
@@ -124,6 +131,7 @@ export default {
       this.isDrawerOpen = false;
     },
   },
+  SPANS_LIMIT,
 };
 </script>
 
@@ -134,6 +142,14 @@ export default {
 
   <div v-else-if="trace" data-testid="trace-details" class="gl-mx-7">
     <tracing-header :trace="trace" :incomplete="spanTrees.incomplete" :logs-link="logsLink" />
+
+    <gl-alert v-if="isTracePruned" variant="warning">
+      <gl-sprintf :message="$options.i18n.prunedWarning">
+        <template #totalSpans>{{ trace.spans.length }}</template>
+        <template #spansLimit>{{ $options.SPANS_LIMIT }}</template>
+      </gl-sprintf>
+    </gl-alert>
+
     <tracing-chart
       :span-trees="spanTrees.roots"
       :trace="trace"

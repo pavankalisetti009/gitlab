@@ -15,6 +15,7 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :ci_queueing_history,
       :current_license,
       :devops_adoption_enabled_namespaces,
+      :duo_workflow_events,
       :epic_board_list,
       :explain_vulnerability_prompt,
       :geo_node,

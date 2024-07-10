@@ -107,6 +107,11 @@ module EE
           alpha: { milestone: '16.1' },
           description: 'Find GitLab Duo Chat messages.'
 
+        field :duo_workflow_events, ::Types::Ai::DuoWorkflows::WorkflowEventType.connection_type,
+          resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowEventsResolver,
+          alpha: { milestone: '17.2' },
+          description: 'List the events for a Duo Workflow'
+
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,

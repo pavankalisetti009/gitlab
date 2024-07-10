@@ -55600,9 +55600,6 @@ msgstr ""
 msgid "Total memory (GB)"
 msgstr ""
 
-msgid "Total spans"
-msgstr ""
-
 msgid "Total test time for all commits/merges"
 msgstr ""
 
@@ -55628,9 +55625,6 @@ msgid "TotalRefCountIndicator|1000+"
 msgstr ""
 
 msgid "Trace Details"
-msgstr ""
-
-msgid "Trace start"
 msgstr ""
 
 msgid "Tracing"
@@ -55744,6 +55738,9 @@ msgstr ""
 msgid "Tracing|Status"
 msgstr ""
 
+msgid "Tracing|This trace has %{totalSpans} spans. For performance reasons, we only show the first %{spansLimit} spans."
+msgstr ""
+
 msgid "Tracing|Time range"
 msgstr ""
 
@@ -55759,7 +55756,13 @@ msgstr ""
 msgid "Tracing|Toggle child spans"
 msgstr ""
 
+msgid "Tracing|Total spans"
+msgstr ""
+
 msgid "Tracing|Trace ID"
+msgstr ""
+
+msgid "Tracing|Trace start"
 msgstr ""
 
 msgid "Tracing|Traces"
@@ -58605,7 +58608,7 @@ msgstr ""
 msgid "Visual Studio Code (SSH)"
 msgstr ""
 
-msgid "VsdContributorCount|the ClickHouse data store is not available for this group"
+msgid "VsdContributorCount|the ClickHouse data store is not available for this namespace"
 msgstr ""
 
 msgid "Vulnerabilities"

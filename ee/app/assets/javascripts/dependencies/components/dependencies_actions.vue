@@ -2,7 +2,6 @@
 import { GlSorting } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
-import { omit } from 'lodash';
 import { __ } from '~/locale';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import GroupDependenciesFilteredSearch from 'ee/dependencies/components/filtered_search/group_dependencies_filtered_search.vue';
@@ -12,7 +11,6 @@ import {
   SORT_FIELDS_PROJECT,
   SORT_FIELDS_GROUP,
   SORT_ASCENDING,
-  SORT_FIELD_LICENSE,
 } from '../store/modules/list/constants';
 
 export default {
@@ -24,7 +22,7 @@ export default {
     GlSorting,
     GroupDependenciesFilteredSearch,
   },
-  inject: ['namespaceType', 'belowGroupLimit'],
+  inject: ['namespaceType'],
   props: {
     namespace: {
       type: String,
@@ -49,11 +47,7 @@ export default {
       return this.sortFields[this.sortField];
     },
     sortFields() {
-      const groupFields = this.belowGroupLimit
-        ? SORT_FIELDS_GROUP
-        : omit(SORT_FIELDS_GROUP, SORT_FIELD_LICENSE);
-
-      return this.isProjectNamespace ? SORT_FIELDS_PROJECT : groupFields;
+      return this.isProjectNamespace ? SORT_FIELDS_PROJECT : SORT_FIELDS_GROUP;
     },
     sortOptions() {
       return Object.keys(this.sortFields).map((key) => ({

@@ -63,7 +63,7 @@ RSpec.describe 'Loading usage overvierw for a group', feature_category: :value_s
       expect(response).to have_gitlab_http_status(:success)
 
       error = Gitlab::Json.parse(response.body)['errors'].first
-      message = s_('VsdContributorCount|the ClickHouse data store is not available for this group')
+      message = s_('VsdContributorCount|the ClickHouse data store is not available for this namespace')
       expect(error['message']).to eq(message)
     end
   end

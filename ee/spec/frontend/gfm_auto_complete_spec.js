@@ -4,6 +4,9 @@ import { TEST_HOST } from 'helpers/test_constants';
 import GfmAutoComplete from '~/gfm_auto_complete';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import { iterationsMock } from 'ee_jest/gfm_auto_complete/mock_data';
+import { ISSUABLE_EPIC } from '~/work_items/constants';
+
+const mockSpriteIcons = '/icons.svg';
 
 describe('GfmAutoCompleteEE', () => {
   const dataSources = {
@@ -12,6 +15,10 @@ describe('GfmAutoCompleteEE', () => {
   };
 
   let instance;
+
+  beforeEach(() => {
+    window.gon = { sprite_icons: mockSpriteIcons };
+  });
 
   it('should have enableMap', () => {
     instance = new GfmAutoCompleteEE(dataSources);
@@ -37,6 +44,17 @@ describe('GfmAutoCompleteEE', () => {
           reference: 'foo&42',
         }),
       ).toBe('<li><small>foo&amp;42</small> Another Epic</li>');
+    });
+
+    it('should include the epic svg image when iconName is provided', () => {
+      const expectedHtml = `<li><svg class="gl-text-secondary s16 gl-mr-2"><use xlink:href="/icons.svg#epic" /></svg><small>5</small> Some Work Item Epic</li>`;
+      expect(
+        GfmAutoComplete.Issues.templateFunction({
+          id: 5,
+          title: 'Some Work Item Epic',
+          iconName: ISSUABLE_EPIC,
+        }),
+      ).toBe(expectedHtml);
     });
   });
 

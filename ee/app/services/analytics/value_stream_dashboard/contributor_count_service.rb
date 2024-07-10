@@ -11,34 +11,45 @@ module Analytics
         SELECT
           argMax(author_id, contributions.updated_at) AS author_id
         FROM contributions
-          WHERE startsWith("contributions"."path", {group_path:String})
+          WHERE startsWith("contributions"."path", {namespace_path:String})
           AND "contributions"."created_at" >= {from:Date}
           AND "contributions"."created_at" <= {to:Date}
         GROUP BY id
       ) contributions
       SQL
 
-      def initialize(group:, current_user:, from:, to:)
-        @group = group
+      def initialize(namespace:, current_user:, from:, to:)
+        @namespace = namespace
         @current_user = current_user
         @from = from
         @to = to
       end
 
       def execute
-        return feature_unavailable_error unless Gitlab::ClickHouse.enabled_for_analytics?(group)
-        return not_authorized_error unless can?(current_user, :read_group_analytics_dashboards, group)
+        return feature_unavailable_error unless Gitlab::ClickHouse.enabled_for_analytics?(namespace)
+        return not_authorized_error unless authorized?
 
         ServiceResponse.success(payload: { count: contributor_count })
       end
 
       private
 
-      attr_reader :group, :current_user, :from, :to
+      attr_reader :namespace, :current_user, :from, :to
+
+      def authorized?
+        case namespace
+        when Namespaces::ProjectNamespace
+          can?(current_user, :read_project_level_value_stream_dashboard_overview_counts, namespace.project)
+        when Group
+          can?(current_user, :read_group_analytics_dashboards, namespace)
+        else
+          false
+        end
+      end
 
       def feature_unavailable_error
         ServiceResponse.error(
-          message: s_('VsdContributorCount|the ClickHouse data store is not available for this group')
+          message: s_('VsdContributorCount|the ClickHouse data store is not available for this namespace')
         )
       end
 
@@ -51,8 +62,8 @@ module Analytics
         ClickHouse::Client.select(query, :main).first['contributor_count']
       end
 
-      def group_path
-        @group_path ||= "#{group.traversal_ids.join('/')}/"
+      def namespace_path
+        @namespace_path ||= "#{namespace.traversal_ids.join('/')}/"
       end
 
       def format_date(date)
@@ -61,7 +72,7 @@ module Analytics
 
       def placeholders
         {
-          group_path: group_path,
+          namespace_path: namespace_path,
           from: format_date(from),
           to: format_date(to)
         }
