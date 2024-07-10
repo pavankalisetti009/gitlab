@@ -25871,9 +25871,6 @@ msgstr ""
 msgid "GroupsTree|Options"
 msgstr ""
 
-msgid "GroupsTree|Search by name"
-msgstr ""
-
 msgid "Groups|An error occurred updating this group. Please try again."
 msgstr ""
 
