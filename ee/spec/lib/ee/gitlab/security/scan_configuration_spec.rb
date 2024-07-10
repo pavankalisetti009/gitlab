@@ -181,28 +181,13 @@ RSpec.describe ::Gitlab::Security::ScanConfiguration, feature_category: :dynamic
 
     context 'with type dast' do
       context 'when feature is available' do
-        using RSpec::Parameterized::TableSyntax
         let(:type) { :dast }
 
         before do
           stub_licensed_features(security_on_demand_scans: true)
         end
 
-        where(:fips, :browser_based_ff, :on_demand_available) do
-          false | true | true
-          false | false | true
-          true | true | true
-          true | false | false
-        end
-
-        with_them do
-          it do
-            expect(::Gitlab::FIPS).to receive(:enabled?).and_return(fips)
-            stub_feature_flags(dast_ods_browser_based_scanner: browser_based_ff)
-
-            is_expected.to eq(on_demand_available)
-          end
-        end
+        it { is_expected.to be_truthy }
       end
 
       context 'when feature is not available' do

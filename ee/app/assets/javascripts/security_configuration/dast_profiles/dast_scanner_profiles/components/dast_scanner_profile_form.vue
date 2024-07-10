@@ -257,21 +257,6 @@ export default {
       </div>
 
       <div class="row gl-mt-5">
-        <gl-form-group
-          v-if="!glFeatures.dastOdsBrowserBasedScanner"
-          data-testid="ajax-spider-toggle"
-          class="gl-mb-0"
-          :class="{ 'col-md-6': !stacked, 'col-md-12': stacked, 'gl-mb-4': stacked }"
-        >
-          <template #label>
-            {{ s__('DastProfiles|AJAX spider') }}
-            <tooltip-icon :title="i18n.tooltips.ajaxSpider" />
-          </template>
-          <gl-form-checkbox v-model="form.fields.useAjaxSpider.value">{{
-            s__('DastProfiles|Turn on AJAX spider')
-          }}</gl-form-checkbox>
-        </gl-form-group>
-
         <gl-form-group class="gl-mb-0" :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }">
           <template #label>
             {{ s__('DastProfiles|Debug messages') }}

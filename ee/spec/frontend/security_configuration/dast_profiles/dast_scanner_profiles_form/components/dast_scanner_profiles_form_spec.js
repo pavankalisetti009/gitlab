@@ -39,7 +39,6 @@ describe('DastScannerProfileForm', () => {
   const findSpiderTimeoutInput = () => wrapper.findByTestId('spider-timeout-input');
   const findTargetTimeoutInput = () => wrapper.findByTestId('target-timeout-input');
   const findScanType = () => wrapper.findByTestId('scan-type-option');
-  const findAjaxSpiderToggle = () => wrapper.findByTestId('ajax-spider-toggle');
 
   const setFieldValue = async (field, value) => {
     await field.find('input').setValue(value);
@@ -55,7 +54,6 @@ describe('DastScannerProfileForm', () => {
           {},
           {
             propsData: defaultProps,
-            provide: { glFeatures: { dastOdsBrowserBasedScanner: false } },
             mocks: {
               $apollo: {
                 mutate: jest.fn(),
@@ -196,27 +194,6 @@ describe('DastScannerProfileForm', () => {
 
     it('should disable the profile name field', () => {
       expect(findProfileNameInput().attributes('disabled')).toBeDefined();
-    });
-  });
-
-  describe('when on-demand browser based scans feature flag is enabled', () => {
-    beforeEach(() => {
-      createComponent({
-        provide: { glFeatures: { dastOdsBrowserBasedScanner: true } },
-      });
-    });
-
-    it('hides the AJAX Spider configuration option', () => {
-      expect(findAjaxSpiderToggle().exists()).toBe(false);
-    });
-  });
-
-  describe('when on-demand browser based scans feature flag is disabled', () => {
-    beforeEach(() => {
-      createComponent();
-    });
-    it('shows the AJAX Spider configuration option', () => {
-      expect(findAjaxSpiderToggle().exists()).toBe(true);
     });
   });
 });

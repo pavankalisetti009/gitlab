@@ -4520,15 +4520,9 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     subject(:on_demand_dast_available?) { project.on_demand_dast_available? }
 
-    where(:feature_available, :fips, :browser_based_ff, :on_demand_available) do
-      false | false | true | false
-      false | false | false | false
-      false | true | true | false
-      false | true | false | false
-      true | false | true | true
-      true | false | false | true
-      true | true | true | true
-      true | true | false | false
+    where(:feature_available, :on_demand_available) do
+      false | false
+      true | true
     end
     with_them do
       context "when feature is #{params[:feature_available] ? 'allowed' : 'disallowed'}" do
@@ -4537,9 +4531,6 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         end
 
         it do
-          allow(::Gitlab::FIPS).to receive(:enabled?).and_return(fips)
-          stub_feature_flags(dast_ods_browser_based_scanner: browser_based_ff)
-
           is_expected.to eq(on_demand_available)
         end
       end

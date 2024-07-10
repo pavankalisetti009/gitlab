@@ -16698,9 +16698,6 @@ msgstr ""
 msgid "DastProfiles|A site profile defines the attributes and configuration details of your deployed application, website, or API. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
-msgid "DastProfiles|AJAX spider"
-msgstr ""
-
 msgid "DastProfiles|API"
 msgstr ""
 
@@ -16810,9 +16807,6 @@ msgid "DastProfiles|Excluded paths"
 msgstr ""
 
 msgid "DastProfiles|Excluded paths (optional)"
-msgstr ""
-
-msgid "DastProfiles|Headers will appear in vulnerability reports. %{linkStart}Only some headers are automatically masked%{linkEnd}."
 msgstr ""
 
 msgid "DastProfiles|Hide debug messages"
@@ -16966,9 +16960,6 @@ msgid "DastProfiles|This scanner profile is currently being used by a policy. To
 msgstr ""
 
 msgid "DastProfiles|This site profile is currently being used by a policy. To make edits you must remove it from the active policy."
-msgstr ""
-
-msgid "DastProfiles|Turn on AJAX spider"
 msgstr ""
 
 msgid "DastProfiles|URL"

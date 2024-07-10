@@ -3897,13 +3897,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     let(:current_user) { owner }
     let(:permissions) { [:read_on_demand_dast_scan, :create_on_demand_dast_scan, :edit_on_demand_dast_scan] }
 
-    where(:feature_available, :fips_enabled, :browser_based_ff_enabled, :allowed) do
-      false | false | false | false
-      false | false | true | false
-      true | false | false | true
-      true | false | true | true
-      true | true | false | false
-      true | true | true | true
+    where(:feature_available, :allowed) do
+      false | false
+      true | true
     end
 
     with_them do
@@ -3912,23 +3908,11 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           stub_licensed_features(security_on_demand_scans: feature_available)
         end
 
-        describe "when FIPS is #{params[:fips_enabled] ? 'enabled' : 'disabled'}" do
-          before do
-            allow(::Gitlab::FIPS).to receive(:enabled?).and_return(fips_enabled)
-          end
-
-          describe "when browser based on demand scan feature flag is #{params[:browser_based_ff_enabled] ? 'enabled' : 'disabled'}" do
-            before do
-              stub_feature_flags(dast_ods_browser_based_scanner: browser_based_ff_enabled)
-            end
-
-            it "on demand scan permissions are #{params[:allowed] ? 'allowed' : 'disallowed'}" do
-              if allowed
-                expect_allowed(*permissions)
-              else
-                expect_disallowed(*permissions)
-              end
-            end
+        it "on demand scan permissions are #{params[:allowed] ? 'allowed' : 'disallowed'}" do
+          if allowed
+            expect_allowed(*permissions)
+          else
+            expect_disallowed(*permissions)
           end
         end
       end
