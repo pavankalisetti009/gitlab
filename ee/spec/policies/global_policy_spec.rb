@@ -837,32 +837,58 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   describe 'access_generate_commit_message' do
     let(:policy) { :access_generate_commit_message }
 
-    where(:flag_enabled, :licensed, :free_access, :any_group_with_ai_available, :allowed_for,
-      :enabled_for_user) do
-      false | false | false | false | false | be_disallowed(:access_generate_commit_message)
-      true  | false | false | false | false | be_disallowed(:access_generate_commit_message)
-      true  | true  | true  | false | false | be_disallowed(:access_generate_commit_message)
-      true  | true  | false | false | false | be_disallowed(:access_generate_commit_message)
-      true  | true  | false | false | true  | be_allowed(:access_generate_commit_message)
-      true  | true  | true  | true  | false | be_allowed(:access_generate_commit_message)
-    end
-
-    with_them do
-      before do
-        stub_licensed_features(generate_commit_message: licensed)
-        stub_feature_flags(generate_commit_message_flag: flag_enabled)
-
-        service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
-        allow(CloudConnector::AvailableServices).to receive(:find_by_name)
-                                                      .with(:generate_commit_message)
-                                                      .and_return(service_data)
-        allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
-        allow(service_data).to receive(:free_access?).and_return(free_access)
-        allow(current_user).to receive(:any_group_with_ai_available?)
-                                   .and_return(any_group_with_ai_available)
+    context 'for self-managed' do
+      where(:flag_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
+        false | false | false | false | be_disallowed(:access_generate_commit_message)
+        true  | false | false | false | be_disallowed(:access_generate_commit_message)
+        true  | true  | false | false | be_disallowed(:access_generate_commit_message)
+        true  | true  | false | true  | be_allowed(:access_generate_commit_message)
+        true  | true  | true  | false | be_allowed(:access_generate_commit_message)
       end
 
-      it { is_expected.to enabled_for_user }
+      with_them do
+        before do
+          stub_licensed_features(generate_commit_message: licensed)
+          stub_feature_flags(generate_commit_message_flag: flag_enabled)
+
+          service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
+          allow(CloudConnector::AvailableServices).to receive(:find_by_name)
+                                                        .with(:generate_commit_message)
+                                                        .and_return(service_data)
+          allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
+          allow(service_data).to receive(:free_access?).and_return(free_access)
+        end
+
+        it { is_expected.to enabled_for_user }
+      end
+
+      context 'for SaaS', :saas do
+        where(:flag_enabled, :free_access, :any_group_with_ai_available, :allowed_for, :enabled_for_user) do
+          false | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | true  | false | false | be_disallowed(:access_generate_commit_message)
+          true  | false | false | false | be_disallowed(:access_generate_commit_message)
+          true  | false | false | true  | be_allowed(:access_generate_commit_message)
+          true  | true  | true  | false | be_allowed(:access_generate_commit_message)
+        end
+
+        with_them do
+          before do
+            stub_feature_flags(generate_commit_message_flag: flag_enabled)
+
+            service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:generate_commit_message, nil, nil)
+            allow(CloudConnector::AvailableServices).to receive(:find_by_name)
+                                                          .with(:generate_commit_message)
+                                                          .and_return(service_data)
+            allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
+            allow(service_data).to receive(:free_access?).and_return(free_access)
+            allow(current_user).to receive(:any_group_with_ai_available?)
+                                     .and_return(any_group_with_ai_available)
+          end
+
+          it { is_expected.to enabled_for_user }
+        end
+      end
     end
   end
 end

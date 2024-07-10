@@ -24,8 +24,11 @@ module Subscriptions
     end
 
     def create
+      name = group_params[:name]
+      path = Namespace.clean_path(group_params[:path] || name)
+
       response = Groups::CreateService.new(
-        current_user, name: group_params[:name], path: group_params[:path], organization_id: Current.organization_id
+        current_user, name: name, path: path, organization_id: Current.organization_id
       ).execute
 
       if response.success?

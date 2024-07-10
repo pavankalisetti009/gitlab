@@ -16,7 +16,7 @@ module API
           end
 
           def authorize_run_workflows!(project)
-            return if can?(current_user, :start_duo_workflows, project)
+            return if can?(current_user, :duo_workflow, project)
 
             forbidden!
           end

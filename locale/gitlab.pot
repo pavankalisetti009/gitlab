@@ -25871,9 +25871,6 @@ msgstr ""
 msgid "GroupsTree|Options"
 msgstr ""
 
-msgid "GroupsTree|Search by name"
-msgstr ""
-
 msgid "Groups|An error occurred updating this group. Please try again."
 msgstr ""
 
@@ -45247,6 +45244,9 @@ msgstr ""
 msgid "Runners|A runner configuration is where you configure runners based on your requirements. Each runner in this table represents a %{linkStart}single runner entry%{linkEnd} in the %{codeStart}config.toml%{codeEnd}. Multiple runners can be linked to the same configuration. When there are multiple runners in a configuration, the one that contacted GitLab most recently displays here."
 msgstr ""
 
+msgid "Runners|Active"
+msgstr ""
+
 msgid "Runners|Active runners"
 msgstr ""
 
@@ -45911,9 +45911,6 @@ msgid "Runners|Runners are the agents that run your CI/CD jobs."
 msgstr ""
 
 msgid "Runners|Runners performance"
-msgstr ""
-
-msgid "Runners|Running"
 msgstr ""
 
 msgid "Runners|Running Jobs"
@@ -51662,6 +51659,9 @@ msgid "SubscriptionBanner|Export license usage file"
 msgstr ""
 
 msgid "SubscriptionBanner|Upload new license"
+msgstr ""
+
+msgid "SubscriptionGroupsNew|Group URL %{error}"
 msgstr ""
 
 msgid "SubscriptionGroupsNew|Group name %{error}"
