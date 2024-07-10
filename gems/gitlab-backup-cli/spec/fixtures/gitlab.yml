@@ -38,7 +38,7 @@ test:
         aws_secret_access_key: AWS_SECRET_ACCESS_KEY
         region: us-east-1
   artifacts:
-    path: tmp/tests/artifacts
+    path: /tmp/gitlab/full/artifacts
     enabled: true
     # The location where build artifacts are stored (default: shared/artifacts).
     # path: shared/artifacts

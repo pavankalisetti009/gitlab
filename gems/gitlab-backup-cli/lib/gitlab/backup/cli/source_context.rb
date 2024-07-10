@@ -10,6 +10,7 @@ module Gitlab
       class SourceContext
         # Defaults defined in `config/initializers/1_settings.rb`
         DEFAULT_CI_BUILDS_PATH = 'builds/'
+        DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -30,8 +31,11 @@ module Gitlab
 
         # Job Artifacts basepath
         def ci_job_artifacts_path
-          # TODO: Use configuration solver
-          JobArtifactUploader.root
+          path = gitlab_config.dig(env, 'artifacts', 'path') ||
+            gitlab_config.dig(env, 'artifacts', 'storage_path') ||
+            gitlab_shared_path.join(DEFAULT_JOBS_ARTIFACTS_PATH)
+
+          absolute_path(path)
         end
 
         # CI Secure Files basepath
@@ -82,6 +86,17 @@ module Gitlab
         end
 
         private
+
+        # Fallback shared folder path
+        # We use this to determine the storage location when everything else fails
+        def gitlab_shared_path
+          shared_path = gitlab_config.dig(env, 'shared', 'path')
+
+          return Pathname(shared_path) if shared_path.present?
+
+          raise Gitlab::Backup::Cli::Error,
+            "GitLab configuration file: `gitlab.yml` is missing 'shared.path' configuration"
+        end
 
         # Return a fullpath for a given path
         #

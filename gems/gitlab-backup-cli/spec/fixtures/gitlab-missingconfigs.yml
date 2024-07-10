@@ -5,3 +5,5 @@
 test:
   gravatar:
     enabled: true
+  shared:
+    path: 'test-shared'
