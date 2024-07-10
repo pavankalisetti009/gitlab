@@ -56865,10 +56865,10 @@ msgstr ""
 msgid "Usage"
 msgstr ""
 
-msgid "Usage Trends"
+msgid "Usage statistics"
 msgstr ""
 
-msgid "Usage statistics"
+msgid "Usage trends"
 msgstr ""
 
 msgid "UsageQuotas|(of %{totalStorageSize})"
