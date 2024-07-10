@@ -239,6 +239,7 @@ When using repository cleanup, note:
 ## Remove blobs
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/450701) in GitLab 17.1 [with a flag](../../../administration/feature_flags.md) named `rewrite_history_ui`. Disabled by default.
+> - [Enabled on GitLab.com](https://gitlab.com/gitlab-org/gitlab/-/issues/462999) in GitLab 17.2.
 
 FLAG:
 The availability of this feature is controlled by a feature flag.
