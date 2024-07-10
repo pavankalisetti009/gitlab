@@ -39,6 +39,8 @@ module CodeSuggestions
       def prompt
         model_name = feature_setting.self_hosted_model.model.to_sym
         case model_name
+        when :codellama
+          CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages.new(params)
         when :mistral, :mixtral, :codegemma, :codestral
           CodeSuggestions::Prompts::CodeGeneration::MistralMessages.new(params)
         else

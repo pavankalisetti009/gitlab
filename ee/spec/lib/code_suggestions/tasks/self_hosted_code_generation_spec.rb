@@ -134,6 +134,20 @@ RSpec.describe CodeSuggestions::Tasks::SelfHostedCodeGeneration, feature_categor
       end
     end
 
+    where(:model_name) do
+      %w[codellama]
+    end
+
+    with_them do
+      it 'returns an instance of CodellamaMessages' do
+        expect(
+          CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages
+        ).to receive(:new).with(any_args).and_call_original
+
+        task.body
+      end
+    end
+
     context 'when model name is unknown' do
       let(:self_hosted_model) { create(:ai_self_hosted_model) }
 
