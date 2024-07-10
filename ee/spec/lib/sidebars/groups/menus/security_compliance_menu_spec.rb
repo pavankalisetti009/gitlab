@@ -180,7 +180,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       end
     end
 
-    describe 'Audit Events' do
+    describe 'Audit events' do
       let(:item_id) { :audit_events }
 
       context 'when audit_events feature is enabled' do

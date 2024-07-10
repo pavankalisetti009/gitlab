@@ -4,7 +4,7 @@ module AuditEvents
   class AuditEventStreamingWorker
     include ApplicationWorker
 
-    # Audit Events contains a unique ID so the ingesting system should
+    # Audit events contains a unique ID so the ingesting system should
     # attempt to deduplicate based on this to allow this job to be idempotent.
     idempotent!
     worker_has_external_dependencies!

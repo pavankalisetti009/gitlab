@@ -116,7 +116,7 @@ RSpec.describe Members::InviteService, :aggregate_failures, :saas, feature_categ
       end
 
       context 'when there are valid members created' do
-        it 'creates Audit Events' do
+        it 'creates audit events' do
           expect { result }.to change { AuditEvent.count }.by(2)
         end
       end
@@ -124,7 +124,7 @@ RSpec.describe Members::InviteService, :aggregate_failures, :saas, feature_categ
       context 'when there are some invalid members' do
         let(:params) { { email: %w[_bogus_ email2@example.org] } }
 
-        it 'only creates Audit Events for valid members' do
+        it 'only creates audit events for valid members' do
           expect { result }.to change { AuditEvent.count }.by(1)
         end
       end

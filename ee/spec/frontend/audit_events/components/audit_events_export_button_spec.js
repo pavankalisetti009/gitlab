@@ -23,12 +23,12 @@ describe('AuditEventsExportButton component', () => {
     wrapper = createComponent();
   });
 
-  describe('Audit Events CSV export button', () => {
+  describe('Audit events CSV export button', () => {
     it('matches the snapshot', () => {
       expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders the Audit Events CSV export button', () => {
+    it('renders the audit events CSV export button', () => {
       expect(findExportButton().exists()).toBe(true);
     });
 

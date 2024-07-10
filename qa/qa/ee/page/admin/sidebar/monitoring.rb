@@ -7,7 +7,7 @@ module QA
         module Sidebar
           module Monitoring
             def go_to_monitoring_audit_events
-              open_monitoring_submenu("Audit Events")
+              open_monitoring_submenu("Audit events")
             end
 
             private

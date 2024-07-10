@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Groups > Audit Events', :js, feature_category: :audit_events do
+RSpec.describe 'Groups > Audit events', :js, feature_category: :audit_events do
   include Features::MembersHelpers
   include ListboxHelpers
 

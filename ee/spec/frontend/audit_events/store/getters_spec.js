@@ -1,7 +1,7 @@
 import * as getters from 'ee/audit_events/store/getters';
 import createState from 'ee/audit_events/store/state';
 
-describe('Audit Events getters', () => {
+describe('Audit events getters', () => {
   describe('buildExportHref', () => {
     const exportUrl = 'https://example.com/audit_reports.csv';
 

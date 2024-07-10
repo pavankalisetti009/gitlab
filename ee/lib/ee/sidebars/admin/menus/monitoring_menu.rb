@@ -24,7 +24,7 @@ module EE
             end
 
             ::Sidebars::MenuItem.new(
-              title: _('Audit Events'),
+              title: _('Audit events'),
               link: admin_audit_logs_path,
               active_routes: { path: 'admin/audit_logs#index' },
               item_id: :audit_logs,
