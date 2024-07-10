@@ -15,7 +15,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(namespace_level_work_items: false)
+    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
 
     sign_in(user)
   end
@@ -196,22 +196,27 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
         it_behaves_like 'epic list'
       end
 
-      context 'when namespace_level_work_items is enabled' do
-        let_it_be(:epic_work_item_1) { create(:work_item, :epic, namespace: group, title: "WorkItem Epic 1") }
-        let_it_be(:epic_work_item_2) { create(:work_item, :epic, namespace: group, title: "WorkItem Epic 2") }
-
-        before do
-          stub_feature_flags(namespace_level_work_items: true)
+      context 'when work_item_epics is enabled' do
+        let_it_be(:epic_work_item_1) do
+          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 1")
         end
 
-        it 'renders work item epics', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/455260' do
+        let_it_be(:epic_work_item_2) do
+          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 2")
+        end
+
+        before do
+          stub_feature_flags(work_item_epics: true)
+        end
+
+        it 'renders work item epics' do
           visit group_epics_path(group)
 
           page.within('.issuable-list-container') do
             expect(page).to have_selector('.gl-tabs')
             expect(page).to have_selector('.vue-filtered-search-bar-container')
-            # We create a synced epic work item for each epic. We therefore expect 6 epics
-            # (4 legacy epics and their synced work item + 2 work item epics)
+            # We create a synced epic work item for each epic and legacy epic for each WI epic.
+            # We therefore expect 6 epics (4 legacy epics and their synced work item + 2 work item epics)
             expect(page.find('.issuable-list')).to have_selector('li.issue', count: 6)
             expect(page.find('.issuable-list')).to have_content(epic_work_item_1.title)
             expect(page.find('.issuable-list')).to have_content(epic_work_item_2.title)

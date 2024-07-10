@@ -3836,4 +3836,56 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#namespace_work_items_enabled?' do
+    let_it_be(:group) { create(:group) }
+
+    subject { group.namespace_work_items_enabled? }
+
+    context 'when namespace_level_work_items and work_item_epics feature flags are enabled' do
+      before do
+        stub_feature_flags(work_item_epics: true, namespace_level_work_items: true)
+      end
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when namespace_level_work_items is disabled and work_item_epics is enabled' do
+      before do
+        stub_feature_flags(work_item_epics: true, namespace_level_work_items: false)
+      end
+
+      context 'when epics are available' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when epics are not available' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+
+    context 'when namespace_level_work_items is enabled and work_item_epics is disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
+      end
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when namespace_level_work_items and work_item_epics feature flags are disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+  end
 end

@@ -20,6 +20,7 @@ class Groups::EpicsController < Groups::ApplicationController
     push_frontend_feature_flag(:preserve_unchanged_markdown, @group)
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
     push_frontend_feature_flag(:namespace_level_work_items, @group)
+    push_force_frontend_feature_flag(:namespace_level_work_items, @group&.namespace_work_items_enabled?)
   end
 
   feature_category :portfolio_management
