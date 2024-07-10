@@ -92,7 +92,7 @@ export default {
 
         actionButtons.push({
           text: __('Retry'),
-          onClick: () => this.fetchStatusChecks(),
+          onClick: () => this.startPolling(),
           loading: isLoading,
           disabled: isLoading,
         });
@@ -144,6 +144,8 @@ export default {
       }
     },
     startPolling() {
+      this.stopPolling();
+
       this.poll = new Poll({
         resource: {
           fetchData: () => this.fetchStatusChecks(),
