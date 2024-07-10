@@ -184,12 +184,30 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
     end
 
     describe 'labels' do
+      let_it_be(:label) { create(:label, project: authorized_project, title: 'My Label') }
+
       it 'does not include labels filter by default' do
         assert_names_in_query(build, without: %w[filters:label_ids])
       end
 
       context 'when labels option is provided' do
-        let(:options) { base_options.merge(labels: [1]) }
+        let(:options) { base_options.merge(labels: [label.id]) }
+
+        it 'applies label filters' do
+          assert_names_in_query(build, with: %w[filters:label_ids])
+        end
+      end
+
+      context 'when label_name option is provided' do
+        let(:options) { base_options.merge(label_name: [label.name]) }
+
+        it 'applies label filters' do
+          assert_names_in_query(build, with: %w[filters:label_ids])
+        end
+      end
+
+      context 'when both labels and label_name options are provided' do
+        let(:options) { base_options.merge(labels: [label.id], label_name: [label.name]) }
 
         it 'applies label filters' do
           assert_names_in_query(build, with: %w[filters:label_ids])
