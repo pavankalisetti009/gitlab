@@ -126,7 +126,7 @@ describe('TracingTable', () => {
   it('sets the correct variant when a trace is highlighted', () => {
     mountComponent({ highlightedTraceId: 'trace-2' });
 
-    expect(getRow(1).classes()).toContain('gl-bg-t-gray-a-08');
-    expect(getRow(0).classes()).not.toContain('gl-bg-t-gray-a-08');
+    expect(getRow(1).classes()).toContain('gl-bg-alpha-dark-8');
+    expect(getRow(0).classes()).not.toContain('gl-bg-alpha-dark-8');
   });
 });
