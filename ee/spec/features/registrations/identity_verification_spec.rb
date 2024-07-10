@@ -15,6 +15,10 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       telesign_customer_xid: 'customer_id',
       telesign_api_key: 'private_key'
     )
+
+    allow_next_instance_of(GitlabSubscriptions::PurchaseUrlBuilder) do |instance|
+      allow(instance).to receive(:customers_dot_flow?).and_return(false)
+    end
   end
 
   let(:user_email) { 'onboardinguser@example.com' }

@@ -36,14 +36,6 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
         end
       end
 
-      context 'when a namespace is not provided' do
-        let(:namespace) { nil }
-
-        it 'returns false' do
-          expect(builder.customers_dot_flow?).to eq false
-        end
-      end
-
       context 'when the user has a valid billing account' do
         before do
           allow(Gitlab::SubscriptionPortal::Client).to receive(:get_billing_account_details).and_return({
@@ -132,6 +124,14 @@ RSpec.describe GitlabSubscriptions::PurchaseUrlBuilder, feature_category: :subsc
             "plan_id=plan-id&source=source"
 
           expect(builder.build(source: 'source')).to eq expected_url
+        end
+      end
+
+      context 'when we do not pass the namespace' do
+        let(:namespace) { nil }
+
+        it 'generates the new subscriptions group path' do
+          expect(builder.build).to eq "/-/subscriptions/groups/new?plan_id=plan-id"
         end
       end
     end

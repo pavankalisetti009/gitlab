@@ -22,6 +22,10 @@ RSpec.describe 'Subscriptions Content Security Policy', feature_category: :subsc
 
     sign_in(create(:user))
 
+    allow_next_instance_of(GitlabSubscriptions::PurchaseUrlBuilder) do |instance|
+      allow(instance).to receive(:customers_dot_flow?).and_return(false)
+    end
+
     visit new_subscriptions_path
   end
 

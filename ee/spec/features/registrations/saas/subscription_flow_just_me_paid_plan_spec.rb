@@ -12,6 +12,10 @@ RSpec.describe 'Subscription flow for user picking just me for paid plan', :js, 
 
   with_them do
     it 'registers the user, processes subscription purchase and creates a group' do
+      allow_next_instance_of(GitlabSubscriptions::PurchaseUrlBuilder) do |instance|
+        allow(instance).to receive(:customers_dot_flow?).and_return(false)
+      end
+
       has_billing_account = false
       stub_get_billing_account(has_billing_account: has_billing_account)
       sign_up_method.call
