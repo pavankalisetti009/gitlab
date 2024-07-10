@@ -33,10 +33,10 @@ module QA
           repository.clone
           repository.configure_identity('GitLab QA', 'root@gitlab.com')
           repository.commit_file("new-file", reverse_token_prefix.reverse + test_token, "Add token file")
+          result = repository.push_changes(raise_on_failure: false)
+
           # rubocop:disable Layout/LineLength -- Long regular expression to capture the error from the git commit
-          expect do
-            repository.push_changes
-          end.to raise_error.with_message(%r{.*(PUSH BLOCKED: Secrets detected in code changes )[\s\S]*(Secret push protection found the following secrets in commit)[\s\S]*(GitLab Personal Access Token)[\s\S]*(To push your changes you must remove the identified secrets.)})
+          expect(result).to match(%r{.*(PUSH BLOCKED: Secrets detected in code changes )[\s\S]*(Secret push protection found the following secrets in commit)[\s\S]*(GitLab Personal Access Token)[\s\S]*(To push your changes you must remove the identified secrets.)})
           # rubocop:enable Layout/LineLength
         end
       end
