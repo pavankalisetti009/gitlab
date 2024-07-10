@@ -58,6 +58,17 @@ RSpec.describe Preloaders::UserMemberRolesInProjectsPreloader, feature_category:
               expect(result[project.id]).to match_array(expected_abilities)
             end
 
+            context "when the `#{ability}` is disabled" do
+              before do
+                allow(::MemberRole).to receive(:permission_enabled?)
+                  .and_call_original
+                allow(::MemberRole).to receive(:permission_enabled?)
+                  .with(ability, user).and_return(false)
+              end
+
+              it { expect(result[project.id]).to match_array(ability_requirements(ability)) }
+            end
+
             context 'when saas', :saas do
               let_it_be(:subscription) do
                 create(:gitlab_subscription, namespace: group, hosted_plan: create(:ultimate_plan))
