@@ -4,6 +4,8 @@ module Gitlab
   module Llm
     module Chain
       class ResponseModifier < Gitlab::Llm::BaseResponseModifier
+        attr_reader :ai_response
+
         def initialize(answer)
           @ai_response = answer
         end
