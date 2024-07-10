@@ -199,21 +199,23 @@ module EE
         enable :access_git
       end
 
-      condition(:generate_commit_message_licensed) do
-        next false unless ::Feature.enabled?(:generate_commit_message_flag, @user)
-
-        ::License.feature_available?(:generate_commit_message)
+      condition(:generate_commit_message_enabled) do
+        ::Feature.enabled?(:generate_commit_message_flag, @user)
       end
 
       condition(:user_allowed_to_use_generate_commit_message) do
-        if generate_commit_message_data.free_access?
+        next true if generate_commit_message_data.allowed_for?(@user)
+
+        next false unless generate_commit_message_data.free_access?
+
+        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
           user.any_group_with_ai_available?
         else
-          generate_commit_message_data.allowed_for?(@user)
+          ::License.feature_available?(:generate_commit_message)
         end
       end
 
-      rule { generate_commit_message_licensed & user_allowed_to_use_generate_commit_message }.policy do
+      rule { generate_commit_message_enabled & user_allowed_to_use_generate_commit_message }.policy do
         enable :access_generate_commit_message
       end
     end
