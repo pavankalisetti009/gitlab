@@ -8,7 +8,7 @@ module Mutations
 
         include Mutations::ResolvesGroup
 
-        authorize :read_group_compliance_dashboard
+        authorize :read_compliance_dashboard
 
         argument :group_path, GraphQL::Types::ID,
           required: true,

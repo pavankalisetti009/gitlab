@@ -11,7 +11,7 @@ module Resolvers
         type ::Types::Projects::ComplianceStandards::AdherenceInputType.connection_type, null: true
         description 'Compliance standards adherence for a project.'
 
-        authorize :read_group_compliance_dashboard
+        authorize :read_compliance_adherence_report
         authorizes_object!
 
         argument :filters, Types::Projects::ComplianceStandards::AdherenceInputType,

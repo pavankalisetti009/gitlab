@@ -111,7 +111,7 @@ module Sidebars
 
         def group_level_compliance_dashboard_available?
           context.group.licensed_feature_available?(:group_level_compliance_dashboard) &&
-            can?(context.current_user, :read_group_compliance_dashboard, context.group)
+            can?(context.current_user, :read_compliance_dashboard, context.group)
         end
 
         def credentials_menu_item

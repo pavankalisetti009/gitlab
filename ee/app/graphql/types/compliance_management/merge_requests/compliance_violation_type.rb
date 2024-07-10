@@ -7,7 +7,7 @@ module Types
         graphql_name 'ComplianceViolation'
         description 'Compliance violation associated with a merged merge request.'
 
-        authorize :read_group_compliance_dashboard
+        authorize :read_compliance_violations_report
 
         field :id, GraphQL::Types::ID,
           null: false, description: 'Compliance violation ID.'

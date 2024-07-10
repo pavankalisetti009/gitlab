@@ -6,7 +6,7 @@ module Groups
       include Groups::SecurityFeaturesHelper
 
       before_action do
-        render_404 unless can?(current_user, :read_group_compliance_violations_report, group)
+        render_404 unless can?(current_user, :read_compliance_violations_report, group)
       end
 
       feature_category :compliance_management
