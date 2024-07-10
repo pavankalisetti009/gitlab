@@ -20,7 +20,7 @@ class Projects::PushRulesController < Projects::ApplicationController
     ).execute
 
     if service_response.success?
-      flash[:notice] = _('Push Rules updated successfully.')
+      flash[:notice] = _('Push rules updated successfully.')
     else
       flash[:alert] = service_response.message
     end

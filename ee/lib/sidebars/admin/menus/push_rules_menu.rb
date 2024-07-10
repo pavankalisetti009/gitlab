@@ -11,7 +11,7 @@ module Sidebars
 
         override :title
         def title
-          s_('Admin|Push Rules')
+          s_('Admin|Push rules')
         end
 
         override :sprite_icon

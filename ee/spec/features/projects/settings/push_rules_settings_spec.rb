@@ -40,7 +40,7 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :code_rev
       end
 
       it 'hides push rule settings' do
-        expect(page).not_to have_content('Push Rules')
+        expect(page).not_to have_content('Push rules')
       end
     end
   end
