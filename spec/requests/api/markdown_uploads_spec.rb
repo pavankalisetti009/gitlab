@@ -92,9 +92,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
   end
 
   describe "GET /projects/:id/uploads" do
-    let_it_be(:upload_1) { create(:upload, :issuable_upload, model: project) }
-    let_it_be(:upload_2) { create(:upload, :issuable_upload, model: project) }
-    let_it_be(:upload_3) { create(:upload, :issuable_upload, model: project) }
+    let_it_be(:uploads) { create_list(:upload, 3, :issuable_upload, model: project) }
     let_it_be(:other_upload) { create(:upload, :issuable_upload, model: create(:project)) }
 
     let(:path) { "/projects/#{project.id}/uploads" }
@@ -102,7 +100,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
     it 'returns uploads ordered by created_at' do
       get api(path, project_maintainer)
 
-      expect_paginated_array_response(upload_3.id, upload_2.id, upload_1.id)
+      expect_paginated_array_response(uploads.reverse.map(&:id))
     end
 
     it_behaves_like 'a request from an unauthorized user'
@@ -137,7 +135,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
       expect(response).to have_gitlab_http_status(:no_content)
     end
 
-    it 'returns an error when upload fails' do
+    it 'returns an error when deletion fails' do
       expect_next_instance_of(Banzai::UploadsFinder) do |finder|
         expect(finder).to receive(:find).with(upload.id).and_return(upload)
       end
@@ -153,9 +151,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
   end
 
   describe "GET /groups/:id/uploads" do
-    let_it_be(:upload_1) { create(:upload, :namespace_upload, model: group) }
-    let_it_be(:upload_2) { create(:upload, :namespace_upload, model: group) }
-    let_it_be(:upload_3) { create(:upload, :namespace_upload, model: group) }
+    let_it_be(:uploads) { create_list(:upload, 3, :namespace_upload, model: group) }
     let_it_be(:other_upload) { create(:upload, :namespace_upload, model: create(:group)) }
 
     let(:path) { "/groups/#{group.id}/uploads" }
@@ -163,7 +159,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
     it 'returns uploads ordered by created_at' do
       get api(path, group_maintainer)
 
-      expect_paginated_array_response(upload_3.id, upload_2.id, upload_1.id)
+      expect_paginated_array_response(uploads.reverse.map(&:id))
     end
 
     it_behaves_like 'a request from an unauthorized user'
@@ -198,7 +194,7 @@ RSpec.describe API::MarkdownUploads, feature_category: :team_planning do
       expect(response).to have_gitlab_http_status(:no_content)
     end
 
-    it 'returns an error when upload fails' do
+    it 'returns an error when deletion fails' do
       expect_next_instance_of(Banzai::UploadsFinder) do |finder|
         expect(finder).to receive(:find).with(upload.id).and_return(upload)
       end
