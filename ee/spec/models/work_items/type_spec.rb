@@ -65,6 +65,62 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
     end
   end
 
+  describe '.allowed_group_level_types' do
+    let_it_be(:group) { create(:group) }
+
+    subject { described_class.allowed_group_level_types(group) }
+
+    context 'when epic license is available' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'returns supported types at group level' do
+        is_expected.to contain_exactly(*described_class.base_types.keys)
+      end
+
+      context 'when create_group_level_work_items is disabled and work_item_epics is enabled' do
+        before do
+          stub_feature_flags(create_group_level_work_items: false, work_item_epics: true)
+        end
+
+        it { is_expected.to contain_exactly('epic') }
+      end
+
+      context 'when create_group_level_work_items is enabled and work_item_epics is disabled' do
+        before do
+          stub_feature_flags(create_group_level_work_items: true, work_item_epics: false)
+        end
+
+        it { is_expected.to contain_exactly(*described_class.base_types.keys.excluding('epic')) }
+      end
+
+      context 'when create_group_level_work_items is disabled and work_item_epics is disabled' do
+        before do
+          stub_feature_flags(create_group_level_work_items: false, work_item_epics: false)
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
+
+    context 'when epic license is not available' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it { is_expected.to contain_exactly(*described_class.base_types.keys.excluding('epic')) }
+
+      context 'when create_group_level_work_items is disabled' do
+        before do
+          stub_feature_flags(create_group_level_work_items: false, work_item_epics: false)
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
+  end
+
   def feature_hash
     available_features = licensed_features - disabled_features
 

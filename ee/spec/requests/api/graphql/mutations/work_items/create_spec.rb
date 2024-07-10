@@ -531,6 +531,89 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
           end
         end
       end
+
+      context 'with feature flag checks' do
+        let(:fields) do
+          <<~FIELDS
+            workItem {
+              workItemType {
+                name
+              }
+            }
+            errors
+          FIELDS
+        end
+
+        context 'when type is not Epic' do
+          let(:input) do
+            { title: "task WI", workItemTypeId: WorkItems::Type.default_by_type(:task).to_gid.to_s }
+          end
+
+          context 'when the create_group_level_work_items feature flag is disabled' do
+            before do
+              stub_feature_flags(create_group_level_work_items: false)
+            end
+
+            it_behaves_like 'a mutation that returns top-level errors', errors: [
+              Mutations::WorkItems::Create::DISABLED_FF_ERROR
+            ]
+          end
+
+          context 'when the work_item_epics feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics: false)
+            end
+
+            it 'creates the work item' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { WorkItem.count }.by(1)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(type_response).to include({ 'name' => 'Task' })
+            end
+          end
+        end
+
+        context 'when type is Epic' do
+          let(:input) do
+            { title: "epic WI", workItemTypeId: WorkItems::Type.default_by_type(:epic).to_gid.to_s }
+          end
+
+          context 'when epics licensed feature is available' do
+            before do
+              stub_licensed_features(epics: true)
+            end
+
+            it 'creates the work item epic' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { WorkItem.count }.by(1)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(type_response).to include({ 'name' => 'Epic' })
+            end
+
+            context 'when the work_item_epics feature flag is disabled' do
+              before do
+                stub_feature_flags(work_item_epics: false)
+              end
+
+              it_behaves_like 'a mutation that returns top-level errors',
+                errors: ['Epic type is not available for the given group']
+            end
+          end
+
+          context 'when epics licensed feature is not available' do
+            before do
+              stub_licensed_features(epics: false)
+            end
+
+            it_behaves_like 'a mutation that returns top-level errors',
+              errors: ['Epic type is not available for the given group']
+          end
+        end
+      end
     end
   end
 end

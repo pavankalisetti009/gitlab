@@ -278,6 +278,11 @@ module EE
       licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
     end
 
+    override :namespace_work_items_enabled?
+    def namespace_work_items_enabled?
+      super || (::Feature.enabled?(:work_item_epics, self, type: :beta) && licensed_feature_available?(:epics))
+    end
+
     class_methods do
       def groups_user_can(groups, user, action, same_root: false)
         # If :use_traversal_ids is enabled we can use filter optmization
