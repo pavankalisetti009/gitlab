@@ -41680,6 +41680,9 @@ msgstr ""
 msgid "ProjectSettings|Git Large File Storage (LFS)"
 msgstr ""
 
+msgid "ProjectSettings|GitLab Duo"
+msgstr ""
+
 msgid "ProjectSettings|Global"
 msgstr ""
 
@@ -41963,6 +41966,9 @@ msgid "ProjectSettings|Transfer project"
 msgstr ""
 
 msgid "ProjectSettings|Upstream project"
+msgstr ""
+
+msgid "ProjectSettings|Use AI-powered features in this project."
 msgstr ""
 
 msgid "ProjectSettings|Used for every new merge request."

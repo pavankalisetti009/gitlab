@@ -389,6 +389,26 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
       expect(project.project_setting.cve_id_request_enabled).to eq(true)
     end
 
+    it 'updates duo_features_enabled' do
+      project.project_setting.duo_features_enabled = false
+      project.project_setting.save!
+
+      params = {
+        project_setting_attributes: {
+          duo_features_enabled: true
+        }
+      }
+      put :update,
+        params: {
+          namespace_id: project.namespace,
+          id: project,
+          project: params
+        }
+      project.reload
+
+      expect(project.project_setting.duo_features_enabled).to eq(true)
+    end
+
     context 'when merge_pipelines_enabled param is specified' do
       let(:params) { { merge_pipelines_enabled: true } }
 
