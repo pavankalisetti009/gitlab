@@ -229,6 +229,26 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
               assert_named_queries('filters:label_ids')
             end
           end
+
+          context 'when label_name option is provided' do
+            let(:options) { base_options.merge(label_name: [label.name]) }
+
+            it 'filters the labels in the query' do
+              result.response
+
+              assert_named_queries('filters:label_ids')
+            end
+          end
+
+          context 'when label and label_name option is provided' do
+            let(:options) { base_options.merge(label: [label.id], label_name: [label.name]) }
+
+            it 'filters the labels in the query' do
+              result.response
+
+              assert_named_queries('filters:label_ids')
+            end
+          end
         end
 
         describe 'archived filter' do

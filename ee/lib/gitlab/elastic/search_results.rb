@@ -308,7 +308,7 @@ module Gitlab
         when :merge_requests
           base_options.merge(filters.slice(:order_by, :sort, :state, :include_archived))
         when :issues
-          base_options.merge(filters.slice(:order_by, :sort, :confidential, :state, :labels, :include_archived))
+          base_options.merge(filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived))
         when :milestones
           # Must pass 'issues' and 'merge_requests' to check
           # if any of the features is available for projects in ApplicationClassProxy#project_ids_query

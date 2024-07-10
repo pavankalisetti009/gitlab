@@ -9,7 +9,7 @@ module EE
 
       override :filters
       def filters
-        super.merge(language: params[:language], labels: params[:labels])
+        super.merge(language: params[:language], labels: params[:labels], label_name: params[:label_name])
       end
     end
   end

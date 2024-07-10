@@ -141,10 +141,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
   end
 
   describe '#by_label_ids' do
+    let_it_be(:label_title) { 'My label' }
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    # project label must be defined first or the title cannot match
+    let_it_be(:project_label) { create(:label, project: project, title: label_title) }
+    let_it_be(:group_label) { create(:group_label, group: group, title: label_title) }
+
     subject(:by_label_ids) { described_class.by_label_ids(query_hash: query_hash, options: options) }
 
     context 'when options[:labels] is provided' do
-      let(:options) { { labels: [1] } }
+      let(:options) { { labels: [project_label.id] } }
 
       it 'adds the label_ids filter to query_hash' do
         expected_filter = [
@@ -152,7 +159,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             terms_set: {
               label_ids: {
                 _name: 'filters:label_ids',
-                terms: [1],
+                terms: [project_label.id],
                 minimum_should_match_script: {
                   source: 'params.num_terms'
                 }
@@ -174,16 +181,183 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when options[:aggregation] is true' do
-        let(:options) { { labels: [1], aggregation: true } }
+        let(:options) { { labels: [project_label.id], aggregation: true } }
 
         it_behaves_like 'does not modify the query_hash'
       end
     end
 
-    context 'when options[:labels] is not provided' do
+    context 'when neither label option is provided' do
       let(:options) { {} }
 
       it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:label_name] is provided' do
+      let(:options) { { label_name: [label_title] } }
+
+      it 'adds the label_ids filter to query_hash' do
+        expected_filter = [
+          bool: {
+            must: [{
+              terms: {
+                _name: 'filters:label_ids',
+                label_ids: contain_exactly(group_label.id, project_label.id)
+              }
+            }]
+          }
+        ]
+
+        expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+        expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+      end
+
+      context 'when multiple label names are provided' do
+        let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
+        let(:options) { { label_name: [label_title, another_label.title] } }
+
+        it 'adds the label_ids filter to query_hash' do
+          expected_filter = [
+            bool: {
+              must: contain_exactly(
+                {
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(group_label.id, project_label.id)
+                  }
+                },
+                {
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(another_label.id)
+                  }
+                }
+              )
+            }
+          ]
+
+          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'when options[:group_ids] is provided' do
+        let(:options) { { label_name: [label_title], group_ids: [group.id] } }
+
+        it 'adds the label_ids filter to query_hash' do
+          expected_filter = [
+            bool: {
+              must: [{
+                terms: {
+                  _name: 'filters:label_ids',
+                  label_ids: contain_exactly(group_label.id, project_label.id)
+                }
+              }]
+            }
+          ]
+
+          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+        end
+
+        context 'when options[:project_ids] is provided' do
+          let(:options) do
+            { label_name: [label_title], group_id: [group.id], project_ids: [project.id] }
+          end
+
+          it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: [{
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(group_label.id, project_label.id)
+                  }
+                }]
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+      end
+
+      context 'when options[:project_ids] is provided' do
+        let(:options) { { label_name: [label_title], project_ids: [project.id] } }
+
+        it 'adds the label_ids filter to query_hash' do
+          expected_filter = [
+            bool: {
+              must: [{
+                terms: {
+                  _name: 'filters:label_ids',
+                  label_ids: contain_exactly(group_label.id, project_label.id)
+                }
+              }]
+            }
+          ]
+
+          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'when options[:count_only] is true' do
+        let(:options) { { label_name: [label_title], count_only: true } }
+
+        it_behaves_like 'does not modify the query_hash'
+      end
+
+      context 'when options[:aggregation] is true' do
+        let(:options) { { label_name: [label_title], aggregation: true } }
+
+        it_behaves_like 'does not modify the query_hash'
+      end
+    end
+
+    context 'when options[:labels] and options[:label_name] are provided' do
+      let(:options) { { labels: [project_label.id], label_name: [label_title] } }
+
+      it 'uses label_name option and adds the label_ids filter to query_hash' do
+        expected_filter = [
+          bool: {
+            must: [{
+              terms: {
+                _name: 'filters:label_ids',
+                label_ids: contain_exactly(group_label.id, project_label.id)
+              }
+            }]
+          }
+        ]
+
+        expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+        expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+        expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+      end
+
+      context 'when options[:count_only] is true' do
+        let(:options) { { label_name: [label_title], count_only: true } }
+
+        it_behaves_like 'does not modify the query_hash'
+      end
+
+      context 'when options[:aggregation] is true' do
+        let(:options) { { label_name: [label_title], aggregation: true } }
+
+        it_behaves_like 'does not modify the query_hash'
+      end
     end
   end
 
@@ -234,7 +408,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             ] } }
           ]
 
-          expect(by_confidentiality.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_confidentiality.dig(:query, :bool, :filter)).to match(expected_filter)
           expect(by_confidentiality.dig(:query, :bool, :must)).to be_empty
           expect(by_confidentiality.dig(:query, :bool, :must_not)).to be_empty
           expect(by_confidentiality.dig(:query, :bool, :should)).to be_empty
