@@ -62,18 +62,6 @@ RSpec.describe Vulnerabilities::Identifier, feature_category: :vulnerability_man
     end
   end
 
-  describe '.select_primary_finding_vulnerability_ids' do
-    let!(:identifier) { create(:vulnerabilities_identifier) }
-    let!(:primary_finding) { create(:vulnerabilities_finding, primary_identifier_id: identifier.id) }
-
-    subject { described_class.select_primary_finding_vulnerability_ids.map(&:vulnerability_id) }
-
-    it 'selects the primary finding vulnerability ids' do
-      is_expected.not_to be_empty
-      is_expected.to match_array(identifier.primary_findings.map(&:vulnerability_id))
-    end
-  end
-
   describe '.with_fingerprint' do
     let(:fingerprint) { 'f5724386167705667ae25a1390c0a516020690ba' }
 

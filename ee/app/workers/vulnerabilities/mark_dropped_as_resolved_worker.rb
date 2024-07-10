@@ -5,6 +5,8 @@ module Vulnerabilities
   class MarkDroppedAsResolvedWorker
     include ApplicationWorker
 
+    VULNERABILITY_IDENTIFIERS_BATCH_SIZE = 250
+
     data_consistency :delayed
     idempotent!
     deduplicate :until_executing, including_scheduled: true
@@ -14,50 +16,54 @@ module Vulnerabilities
     loggable_arguments 1
 
     def perform(_, dropped_identifier_ids)
-      vulnerability_ids = vulnerability_ids_for(dropped_identifier_ids)
-      vulnerabilities = resolvable_vulnerabilities(vulnerability_ids)
+      resolvable_vulnerabilities(dropped_identifier_ids) do |vulnerabilities|
+        next unless vulnerabilities.present?
 
-      resolve_vulnerabilities(vulnerabilities)
+        # rubocop:disable CodeReuse/ActiveRecord -- `update_all` changes the result of the query, so grab the ids first to do the system notes
+        vulnerability_ids = vulnerabilities.pluck(:id)
+        # rubocop:enable CodeReuse/ActiveRecord
+
+        current_time = Time.zone.now
+
+        state_transitions = build_state_transitions(vulnerabilities, current_time)
+
+        ::Vulnerability.transaction do
+          vulnerabilities.update_all(
+            resolved_by_id: Users::Internal.security_bot.id,
+            resolved_at: current_time,
+            updated_at: current_time,
+            state: :resolved)
+
+          Vulnerabilities::StateTransition.bulk_insert!(state_transitions)
+        end
+
+        create_system_notes(Vulnerability.by_ids(vulnerability_ids))
+      end
     end
 
     private
 
-    def vulnerability_ids_for(identifier_ids)
-      ::Vulnerabilities::Identifier.id_in(identifier_ids)
-      .order(:id) # rubocop:disable CodeReuse/ActiveRecord -- unusual order call is very specific to this query
-      .select_primary_finding_vulnerability_ids
-      .map(&:vulnerability_id)
-    end
+    def resolvable_vulnerabilities(identifier_ids)
+      # rubocop:disable CodeReuse/ActiveRecord -- unusual order, pluck and where calls is very specific to this query
+      order = Gitlab::Pagination::Keyset::Order.build([
+        Gitlab::Pagination::Keyset::ColumnOrderDefinition.new(
+          attribute_name: 'vulnerability_id',
+          order_expression: Vulnerabilities::Finding.arel_table[:vulnerability_id].asc,
+          nullable: :not_nullable
+        )
+      ])
 
-    def resolvable_vulnerabilities(vulnerability_ids)
-      return [] unless vulnerability_ids.present?
+      identifier_ids.each do |identifier_id|
+        scope = Vulnerabilities::Finding.where(primary_identifier_id: identifier_id).order(order)
 
-      ::Vulnerability.with_states(:detected)
-      .with_resolution(true)
-      .by_ids(vulnerability_ids)
-    end
+        Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
+                                            .each_batch(of: VULNERABILITY_IDENTIFIERS_BATCH_SIZE) do |records|
+          vulnerability_ids = records.map(&:vulnerability_id)
 
-    def resolve_vulnerabilities(vulnerabilities)
-      return unless vulnerabilities.present?
-
-      current_time = Time.zone.now
-
-      state_transitions = build_state_transitions(vulnerabilities, current_time)
-      # rubocop:disable CodeReuse/ActiveRecord -- `update_all` changes the result of the query, preventing the system note update
-      vuln_ids_to_be_updated = vulnerabilities.pluck(:id)
-      # rubocop:enable CodeReuse/ActiveRecord
-
-      ::Vulnerability.transaction do
-        vulnerabilities.update_all(
-          resolved_by_id: Users::Internal.security_bot.id,
-          resolved_at: current_time,
-          updated_at: current_time,
-          state: :resolved)
-
-        Vulnerabilities::StateTransition.bulk_insert!(state_transitions)
+          yield ::Vulnerability.id_in(vulnerability_ids).with_states(:detected).with_resolution(true)
+        end
       end
-
-      create_system_notes(Vulnerability.by_ids(vuln_ids_to_be_updated))
+      # rubocop:enable CodeReuse/ActiveRecord
     end
 
     def build_state_transitions(vulnerabilities, current_time)
