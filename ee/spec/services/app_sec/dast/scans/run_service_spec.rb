@@ -14,7 +14,6 @@ RSpec.describe AppSec::Dast::Scans::RunService, feature_category: :dynamic_appli
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
-    stub_feature_flags(dast_ods_browser_based_scanner: false)
   end
 
   describe '#execute' do
@@ -136,11 +135,6 @@ RSpec.describe AppSec::Dast::Scans::RunService, feature_category: :dynamic_appli
             public: true,
             masked: false
           }, {
-            key: 'DAST_SPIDER_MINS',
-            value: String(dast_scanner_profile.spider_timeout),
-            public: true,
-            masked: false
-          }, {
             key: 'DAST_TARGET_AVAILABILITY_TIMEOUT',
             value: String(dast_scanner_profile.target_timeout),
             public: true,
@@ -158,11 +152,6 @@ RSpec.describe AppSec::Dast::Scans::RunService, feature_category: :dynamic_appli
           }, {
             key: 'DAST_SUBMIT_FIELD',
             value: dast_site_profile.auth_submit_field,
-            public: true,
-            masked: false
-          }, {
-            key: 'DAST_USE_AJAX_SPIDER',
-            value: String(dast_scanner_profile.use_ajax_spider?),
             public: true,
             masked: false
           }, {

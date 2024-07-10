@@ -28,7 +28,6 @@ import {
   REDACTED_REQUEST_HEADERS,
   TARGET_TYPES,
   SCAN_METHODS,
-  DAST_PROXY_DOC_PATH_BASE,
   I18N_DAST_URL_CHANGE_WARNING,
   DAST_BROWSER_BASED_DOC_PATH_BASE,
 } from '../constants';
@@ -42,9 +41,6 @@ export default {
   }),
   DAST_API_DOC_GRAPHQL_PATH: helpPagePath(DAST_API_DOC_PATH_BASE, {
     anchor: 'graphql-schema',
-  }),
-  DAST_PROXY_MASKING_PATH: helpPagePath(DAST_PROXY_DOC_PATH_BASE, {
-    anchor: 'hide-sensitive-information',
   }),
   DAST_BROWSER_AVAILABLE_VARIABLES_PATH: helpPagePath(DAST_BROWSER_BASED_DOC_PATH_BASE, {
     anchor: 'available-cicd-variables',
@@ -162,11 +158,9 @@ export default {
             ? s__('DastProfiles|API endpoint URL')
             : s__('DastProfiles|Target URL'),
         },
-        requestHeadersTooltip: this.glFeatures.dastOdsBrowserBasedScanner
-          ? s__('DastProfiles|%{linkStart}Headers may appear in vulnerability reports%{linkEnd}.')
-          : s__(
-              'DastProfiles|Headers will appear in vulnerability reports. %{linkStart}Only some headers are automatically masked%{linkEnd}.',
-            ),
+        requestHeadersTooltip: s__(
+          'DastProfiles|%{linkStart}Headers may appear in vulnerability reports%{linkEnd}.',
+        ),
       };
     },
     parsedExcludedUrls() {
@@ -203,9 +197,7 @@ export default {
       return !this.form.state || (this.isAuthEnabled && !this.authSection.state);
     },
     dastRequestHeadersHelpPath() {
-      return this.glFeatures.dastOdsBrowserBasedScanner
-        ? this.$options.DAST_BROWSER_AVAILABLE_VARIABLES_PATH
-        : this.$options.DAST_PROXY_MASKING_PATH;
+      return this.$options.DAST_BROWSER_AVAILABLE_VARIABLES_PATH;
     },
     mutationVariables() {
       const { profileName, targetUrl, targetType, requestHeaders, scanMethod, scanFilePath } =

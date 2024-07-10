@@ -3,6 +3,7 @@
 module EE
   module WorkItems
     module Type
+      extend ActiveSupport::Concern
       extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
 
@@ -18,6 +19,22 @@ module EE
         okrs: ::WorkItems::Widgets::Progress,
         epic_colors: ::WorkItems::Widgets::Color
       }.freeze
+
+      class_methods do
+        extend ::Gitlab::Utils::Override
+
+        override :allowed_group_level_types
+        def allowed_group_level_types(resource_parent)
+          allowed_types = super
+
+          if ::Feature.enabled?(:work_item_epics, resource_parent, type: :beta) &&
+              resource_parent.licensed_feature_available?(:epics)
+            allowed_types << 'epic'
+          end
+
+          allowed_types
+        end
+      end
 
       override :widgets
       def widgets(resource_parent)

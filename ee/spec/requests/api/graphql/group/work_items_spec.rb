@@ -186,6 +186,35 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     end
   end
 
+  context 'when work_item_epics feature flag is disabled' do
+    context 'when namespace_level_work_items feature flag is enabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
+      end
+
+      it 'returns namespace level work items' do
+        post_graphql(query, current_user: current_user)
+
+        work_items = graphql_data_at(:group, :workItems, :nodes)
+
+        expect(work_items.size).to eq(1)
+        expect(work_items[0]['workItemType']['name']).to eq('Epic')
+      end
+    end
+
+    context 'when namespace_level_work_items feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+      end
+
+      it 'does not return namespace level work items' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data_at(:group, :workItems)).to be_nil
+      end
+    end
+  end
+
   def query(params = item_filter_params)
     graphql_query_for(
       'group',

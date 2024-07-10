@@ -81,30 +81,6 @@ RSpec.shared_examples 'a dast on-demand scan policy' do
 
         it { is_expected.to be_disallowed(*policies) }
       end
-
-      context 'when FIPS mode is enabled' do
-        context 'when browser based feature flag is disabled' do
-          before do
-            stub_feature_flags(dast_ods_browser_based_scanner: false)
-          end
-
-          it 'is disallowed' do
-            expect(::Gitlab::FIPS).to receive(:enabled?).and_return(true)
-            is_expected.to be_disallowed(*policies)
-          end
-        end
-
-        context 'when browser based feature flag is enabled' do
-          before do
-            stub_feature_flags(dast_ods_browser_based_scanner: true)
-          end
-
-          it 'is allowed' do
-            expect(::Gitlab::FIPS).to receive(:enabled?).and_return(true)
-            is_expected.to be_allowed(*policies)
-          end
-        end
-      end
     end
   end
 end
