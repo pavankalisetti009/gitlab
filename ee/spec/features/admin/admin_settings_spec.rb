@@ -59,10 +59,11 @@ RSpec.describe 'Admin updates EE-only settings' do
 
     before do
       stub_licensed_features(elastic_search: elastic_search_license)
-      visit advanced_search_admin_application_settings_path
     end
 
     it 'changes elasticsearch settings' do
+      visit advanced_search_admin_application_settings_path
+
       within_testid('elasticsearch-settings') do
         check 'Elasticsearch indexing'
         check 'Search with Elasticsearch enabled'
@@ -117,6 +118,8 @@ RSpec.describe 'Admin updates EE-only settings' do
       project = create(:project)
       namespace = create(:namespace)
 
+      visit advanced_search_admin_application_settings_path
+
       within_testid('elasticsearch-settings') do
         expect(page).not_to have_content('Namespaces to index')
         expect(page).not_to have_content('Projects to index')
@@ -150,10 +153,10 @@ RSpec.describe 'Admin updates EE-only settings' do
       namespace = create(:elasticsearch_indexed_namespace).namespace
       project = create(:elasticsearch_indexed_project).project
 
-      visit advanced_search_admin_application_settings_path
-
       expect(ElasticsearchIndexedNamespace.count).to be > 0
       expect(ElasticsearchIndexedProject.count).to be > 0
+
+      visit advanced_search_admin_application_settings_path
 
       within_testid('elasticsearch-settings') do
         expect(page).to have_content('Namespaces to index')
@@ -176,6 +179,8 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
 
     it 'zero-downtime reindexing shows popup', :js do
+      visit advanced_search_admin_application_settings_path
+
       within_testid('elasticsearch-reindexing-settings') do
         expect(page).to have_content 'Trigger cluster reindexing'
         click_button 'Trigger cluster reindexing'
@@ -188,6 +193,8 @@ RSpec.describe 'Admin updates EE-only settings' do
       let(:elastic_search_license) { false }
 
       it 'cannot access the page' do
+        visit advanced_search_admin_application_settings_path
+
         expect(page).not_to have_content("Advanced Search with Elasticsearch")
       end
     end

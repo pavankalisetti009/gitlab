@@ -66,8 +66,8 @@ export default {
     },
     rowClass(item, type) {
       if (!item || type !== 'row') return '';
-      if (item.trace_id === this.highlightedTraceId) return 'gl-bg-t-gray-a-08';
-      return 'gl-hover-bg-t-gray-a-08';
+      if (item.trace_id === this.highlightedTraceId) return 'gl-bg-alpha-dark-8';
+      return 'hover:gl-bg-alpha-dark-8';
     },
     matchesBadgeContent(item) {
       const spans = n__('Tracing|%d span', 'Tracing|%d spans', item.total_spans);

@@ -21,7 +21,13 @@ module Users
     end
 
     def require_unverified_user!
-      redirect_to redirect_path if @user.identity_verified?
+      return unless @user.identity_verified?
+
+      if html_request?
+        redirect_to redirect_path
+      else
+        head :ok
+      end
     end
 
     def required_params

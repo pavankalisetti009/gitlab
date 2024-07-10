@@ -44,6 +44,7 @@ RSpec.describe 'admin/dashboard/index.html.haml' do
       expect(rendered).to have_content _('Plan:')
       expect(rendered).to have_content s_('Subscriptions|End date:')
       expect(rendered).to have_content _('Licensed to:')
+      expect(rendered).to have_content _('Type:')
       expect(rendered).to have_link _('View details'), href: admin_subscription_path
     end
 

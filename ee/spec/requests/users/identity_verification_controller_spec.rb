@@ -20,26 +20,32 @@ RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessio
   shared_examples 'it redirects to root_path when user is already verified' do
     let_it_be_with_reload(:user) { create(:user) }
 
-    subject do
-      do_request
-
-      response
-    end
-
     before do
       allow(user).to receive(:identity_verified?).and_call_original
 
       create(:phone_number_validation, :validated, user: user)
+
+      do_request
     end
 
-    it { is_expected.to redirect_to(root_path) }
+    shared_examples 'handles the request based on content type' do
+      it 'handles the request as expected' do
+        if request.format.html?
+          expect(response).to redirect_to(root_path)
+        else
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+    end
+
+    it_behaves_like 'handles the request based on content type'
 
     context 'when identity_verification saas feature is not available' do
       before do
         stub_saas_features(identity_verification: false)
       end
 
-      it { is_expected.to redirect_to(root_path) }
+      it_behaves_like 'handles the request based on content type'
     end
 
     context 'when opt_in_identity_verification feature flag is disabled' do
@@ -47,7 +53,7 @@ RSpec.describe Users::IdentityVerificationController, :clean_gitlab_redis_sessio
         stub_feature_flags(opt_in_identity_verification: false)
       end
 
-      it { is_expected.to redirect_to(root_path) }
+      it_behaves_like 'handles the request based on content type'
     end
   end
 

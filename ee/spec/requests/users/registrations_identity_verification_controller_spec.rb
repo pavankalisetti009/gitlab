@@ -88,7 +88,13 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
     context 'when session contains a `verification_user_id` from a confirmed user' do
       let_it_be(:user) { confirmed_user }
 
-      it { is_expected.to redirect_to(success_signup_identity_verification_path) }
+      it 'handles the request as expected' do
+        if request.format.html?
+          expect(response).to redirect_to(success_signup_identity_verification_path)
+        else
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
     end
 
     context 'when session contains a `verification_user_id` from an unconfirmed user' do
