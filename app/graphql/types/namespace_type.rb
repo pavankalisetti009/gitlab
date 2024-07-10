@@ -102,7 +102,7 @@ module Types
     markdown_field :description_html, null: true
 
     def achievements_path
-      return unless Feature.enabled?(:achievements)
+      return unless Feature.enabled?(:achievements, object)
 
       ::Gitlab::Routing.url_helpers.group_achievements_path(object) if object.is_a?(Group)
     end
