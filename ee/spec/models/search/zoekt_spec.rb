@@ -72,22 +72,28 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
           it { is_expected.to eq(search) }
         end
 
-        context 'when passed a namespace' do
-          let(:container) { group }
+        context 'when feature flag zoekt_search_with_replica is disabled' do
+          before do
+            stub_feature_flags(zoekt_search_with_replica: false)
+          end
 
-          it { is_expected.to eq(search) }
-        end
+          context 'when passed a namespace' do
+            let(:container) { group }
 
-        context 'when passed a subgroup' do
-          let(:container) { subgroup }
+            it { is_expected.to eq(search) }
+          end
 
-          it { is_expected.to eq(search) }
-        end
+          context 'when passed a subgroup' do
+            let(:container) { subgroup }
 
-        context 'when passed a root namespace id' do
-          let(:container) { group.id }
+            it { is_expected.to eq(search) }
+          end
 
-          it { is_expected.to eq(search) }
+          context 'when passed a root namespace id' do
+            let(:container) { group.id }
+
+            it { is_expected.to eq(search) }
+          end
         end
       end
     end
@@ -100,6 +106,26 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
       end
 
       it { is_expected.to eq(false) }
+    end
+
+    context 'when container is namespace' do
+      let(:container) { group }
+
+      context 'and there is no replica with ready state' do
+        before do
+          enabled_namespace.replicas.update_all(state: :pending)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+
+      context 'and there is at-least one replica with the ready state' do
+        before do
+          enabled_namespace.replicas.first.ready!
+        end
+
+        it { is_expected.to eq(true) }
+      end
     end
 
     context 'when Zoekt::EnabledNamespace not found' do

@@ -16,6 +16,11 @@ module EE
         group
       end
 
+      override :zoekt_node_id
+      def zoekt_node_id
+        super if ::Feature.disabled?(:zoekt_search_with_replica, ::Namespace.actor_from_id(root_ancestor.id))
+      end
+
       override :zoekt_filters
       def zoekt_filters
         super.merge(include_archived: params[:include_archived], include_forked: params[:include_forked])

@@ -81,6 +81,29 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
   end
 
+  describe '#zoekt_node_id' do
+    let(:scope) { 'blobs' }
+    let_it_be(:node) { create(:zoekt_node) }
+    let_it_be(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: group.root_ancestor) }
+    let_it_be(:root_id) { group.root_ancestor.id }
+
+    before do
+      create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: node, namespace_id: root_id)
+    end
+
+    subject { described_class.new(user, group, scope: scope).zoekt_node_id }
+
+    it { is_expected.to be nil }
+
+    context 'when feature flag zoekt_search_with_replica is disabled' do
+      before do
+        stub_feature_flags(zoekt_search_with_replica: false)
+      end
+
+      it { is_expected.to eq(node.id) }
+    end
+  end
+
   context 'when searching with Zoekt', :zoekt_settings_enabled do
     let(:service) do
       described_class.new(user, group, search: 'foobar', scope: scope,
@@ -117,10 +140,28 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
         stub_ee_application_setting(elasticsearch_search: false, elasticsearch_indexing: false)
       end
 
-      it 'returns a Search::Zoekt::SearchResults' do
-        expect(service.use_zoekt?).to eq(true)
-        expect(service.zoekt_searchable_scope).to eq(group)
-        expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
+      context 'when feature flag zoekt_search_with_replica is disabled' do
+        before do
+          stub_feature_flags(zoekt_search_with_replica: false)
+        end
+
+        it 'returns a Search::Zoekt::SearchResults' do
+          expect(service.use_zoekt?).to eq(true)
+          expect(service.zoekt_searchable_scope).to eq(group)
+          expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
+        end
+      end
+
+      context 'and all replicas are in ready state' do
+        before do
+          group.zoekt_enabled_namespace.replicas.update_all(state: :ready)
+        end
+
+        it 'returns a Search::Zoekt::SearchResults' do
+          expect(service.use_zoekt?).to eq(true)
+          expect(service.zoekt_searchable_scope).to eq(group)
+          expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
+        end
       end
     end
 

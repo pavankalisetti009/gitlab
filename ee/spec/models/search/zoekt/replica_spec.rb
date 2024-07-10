@@ -86,4 +86,16 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
       end
     end
   end
+
+  describe 'scopes' do
+    describe '.for_namespace' do
+      before do
+        create(:zoekt_replica)
+      end
+
+      it 'returns replicas for the given namespace' do
+        expect(described_class.for_namespace(namespace.id).pluck(:namespace_id).uniq).to contain_exactly(namespace.id)
+      end
+    end
+  end
 end
