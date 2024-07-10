@@ -37148,6 +37148,9 @@ msgstr ""
 msgid "Owasp|A9:2017 Using Components with Known Vulnerabilities"
 msgstr ""
 
+msgid "Owasp|Non-OWASP Top 10"
+msgstr ""
+
 msgid "Owned by %{image_tag}"
 msgstr ""
 
