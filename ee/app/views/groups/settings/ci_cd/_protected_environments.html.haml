@@ -1,4 +1,5 @@
 - expanded = expanded_by_default?
+- add_page_specific_style 'page_bundles/ci_cd_settings'
 
 - if @group.licensed_feature_available?(:protected_environments)
   %section.protected-environments-settings.settings.no-animate#js-protected-environments-settings{ class: ('expanded' if expanded) }
@@ -10,4 +11,8 @@
       %p.gl-text-secondary
         = s_('ProtectedEnvironment|Only specified groups can execute deployments in protected environments.')
     .settings-content
-      = render partial: 'groups/protected_environments/environments_list'
+      #js-protected-environments{ data: { entity_id: @group.id,
+                                  entity_type: 'groups',
+                                  tiers: @tiers.keys.to_json,
+                                  api_link: help_page_path('api/protected_environments'),
+                                  docs_link: help_page_path('ci/environments/deployment_approvals', anchor: 'add-multiple-approval-rules') } }
