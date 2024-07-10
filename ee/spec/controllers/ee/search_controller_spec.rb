@@ -286,15 +286,31 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
   end
 
   describe '#append_info_to_payload' do
+    let(:use_elasticsearch) { true }
+
     before do
       allow_next_instance_of(SearchService) do |service|
         allow(service).to receive(:use_elasticsearch?).and_return use_elasticsearch
       end
     end
 
-    context 'when using elasticsearch' do
-      let(:use_elasticsearch) { true }
+    it 'appends search metadata for logging' do
+      expect(controller).to receive(:append_info_to_payload).and_wrap_original do |method, payload|
+        method.call(payload)
 
+        expect(payload[:metadata]['meta.search.filters.source_branch']).to eq('branch-foo')
+        expect(payload[:metadata]['meta.search.filters.not_source_branch']).to eq('branch-bar')
+      end
+
+      get :show, params: {
+        scope: 'issues',
+        search: 'hello world',
+        source_branch: 'branch-foo',
+        not: { source_branch: 'branch-bar' }
+      }
+    end
+
+    context 'when using elasticsearch' do
       it 'appends the type of search used as advanced' do
         expect(controller).to receive(:append_info_to_payload).and_wrap_original do |method, payload|
           method.call(payload)

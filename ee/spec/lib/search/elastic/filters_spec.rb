@@ -12,6 +12,77 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  describe '#by_source_branch' do
+    subject(:by_source_branch) { described_class.by_source_branch(query_hash: query_hash, options: options) }
+
+    context 'when options[:source_branch] and options[:not_source_branch] are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:source_branch] and options[:not_source_branch] are both provided' do
+      let(:options) { { source_branch: 'branch-1', not_source_branch: 'branch-2' } }
+
+      it 'adds the source branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { source_branch: { _name: 'filters:source_branch', value: 'branch-1' } } },
+              { bool: {
+                must_not: {
+                  term: { source_branch: { _name: 'filters:not_source_branch', value: 'branch-2' } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_source_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_source_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:source_branch] is provided' do
+      let(:options) { { source_branch: 'foo-bar-branch' } }
+
+      it 'adds the source branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { source_branch: { _name: 'filters:source_branch', value: 'foo-bar-branch' } } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_source_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_source_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:not_source_branch] is provided' do
+      let(:options) { { not_source_branch: 'hello-branch' } }
+
+      it 'adds the source branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should:
+              [{ bool: {
+                must_not: {
+                  term: { source_branch: { _name: 'filters:not_source_branch', value: 'hello-branch' } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_source_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_source_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_source_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
   describe '#by_not_hidden' do
     subject(:by_not_hidden) { described_class.by_not_hidden(query_hash: query_hash, options: options) }
 

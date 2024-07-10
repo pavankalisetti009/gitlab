@@ -306,7 +306,8 @@ module Gitlab
         when :projects, :notes, :commits
           base_options.merge(filters.slice(:include_archived))
         when :merge_requests
-          base_options.merge(filters.slice(:order_by, :sort, :state, :include_archived))
+          base_options
+            .merge(filters.slice(:order_by, :sort, :state, :include_archived, :source_branch, :not_source_branch))
         when :issues
           base_options.merge(filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived))
         when :milestones

@@ -100,6 +100,13 @@ module EE
       end
     end
 
+    override :payload_metadata
+    def payload_metadata
+      super.merge(
+        'meta.search.filters.source_branch' => filter_params[:source_branch],
+        'meta.search.filters.not_source_branch' => filter_params.dig(:not, :source_branch))
+    end
+
     # rubocop:disable Gitlab/ModuleWithInstanceVariables
     def no_results_for_group_or_project_blobs_advanced_search?
       return false unless @scope == 'blobs'
@@ -117,5 +124,10 @@ module EE
       end
     end
     # rubocop:enable Gitlab/ModuleWithInstanceVariables
+
+    override :filter_params
+    def filter_params
+      super.merge(params.permit(:source_branch, not: :source_branch))
+    end
   end
 end
