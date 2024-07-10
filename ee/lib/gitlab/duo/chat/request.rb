@@ -17,12 +17,14 @@ module Gitlab
           query = substitute(data_row.query, resource)
 
           response = query_chat(query, db_record)
+          parse_tools_used = parse_tools_used(response)
 
           {
             ref: data_row.ref,
             query: query,
             resource: resource,
-            response: response.response_body
+            response: response.response_body,
+            tools_used: parse_tools_used
           }
         end
 
@@ -59,6 +61,14 @@ module Gitlab
 
           ::Gitlab::Duo::Chat::Completions.new(@owner, resource: db_record)
                                           .execute(safe_params: data)
+        end
+
+        def parse_tools_used(response)
+          tools_used = response&.ai_response&.context&.tools_used
+
+          return unless tools_used.is_a?(Array)
+
+          tools_used
         end
       end
     end
