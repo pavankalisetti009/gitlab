@@ -1,5 +1,6 @@
 import cronstrue from 'cronstrue/i18n';
 import { getPreferredLocales, sprintf, n__, s__, __ } from '~/locale';
+import { isScanningReport } from '../../utils';
 import {
   ACTIONS,
   BRANCH_TYPE_KEY,
@@ -51,12 +52,18 @@ const humanizeCriteria = (scanner, originalActions) => {
     });
   }
 
+  const SCANNER_HUMANIZED_TEMPLATE = s__(
+    'SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:',
+  );
+
+  const SCANNER_HUMANIZED_TEMPLATE_ALT = s__(
+    'SecurityOrchestration|Run %{scannerStart}%{scanner}%{scannerEnd} with the following options:',
+  );
+
   return {
     message: sprintf(
-      s__(
-        'SecurityOrchestration|Run %{scannerStart}%{scanner}%{scannerEnd} with the following options:',
-      ),
-      { scanner },
+      isScanningReport(scanner) ? SCANNER_HUMANIZED_TEMPLATE_ALT : SCANNER_HUMANIZED_TEMPLATE,
+      { scanner: createHumanizedScanners([scanner])[0] },
     ),
     criteriaList,
   };
@@ -236,10 +243,9 @@ export const humanizeActions = (actions) => {
     return acc;
   }, {});
 
-  const humanizedActions = Object.entries(scanners).map(([scanner, scannerActions]) => {
-    const humanizedScanner = createHumanizedScanners([scanner])[0];
-    return humanizeCriteria(humanizedScanner, scannerActions);
-  });
+  const humanizedActions = Object.entries(scanners).map(([scanner, scannerActions]) =>
+    humanizeCriteria(scanner, scannerActions),
+  );
 
   return humanizedActions;
 };

@@ -17,11 +17,11 @@ exports[`DetailsDrawer component default policy renders the correct policy actio
     <div
       class="gl-mb-3"
     >
-      Run
+      Run a
       <strong>
         DAST
       </strong>
-      with the following options:
+      scan with the following options:
       <ul>
         <li
           class="gl-mt-3"
@@ -87,11 +87,11 @@ exports[`DetailsDrawer component multiple action policy renders the correct poli
     <div
       class="gl-mb-3"
     >
-      Run
+      Run a
       <strong>
         Secret Detection
       </strong>
-      with the following options:
+      scan with the following options:
       <ul>
         <li
           class="gl-mt-3"
@@ -108,11 +108,11 @@ exports[`DetailsDrawer component multiple action policy renders the correct poli
     <div
       class="gl-mb-3"
     >
-      Run
+      Run a
       <strong>
         SAST
       </strong>
-      with the following options:
+      scan with the following options:
       <ul>
         <li
           class="gl-mt-3"
@@ -186,11 +186,11 @@ exports[`DetailsDrawer component policy with tags and CI variables renders the c
     <div
       class="gl-mb-3"
     >
-      Run
+      Run a
       <strong>
         Secret Detection
       </strong>
-      with the following options:
+      scan with the following options:
       <ul>
         <li
           class="gl-mt-3"
@@ -260,11 +260,11 @@ exports[`DetailsDrawer component policy with unsupported attributes renders the 
     <div
       class="gl-mb-3"
     >
-      Run
+      Run a
       <strong>
         SAST
       </strong>
-      with the following options:
+      scan with the following options:
       <ul>
         <li
           class="gl-mt-3"

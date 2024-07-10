@@ -11,6 +11,7 @@ import {
   policyScopeProjects,
   isProject,
   isGroup,
+  isScanningReport,
 } from 'ee/security_orchestration/components/utils';
 import {
   EXCLUDING,
@@ -193,5 +194,16 @@ describe(isGroup, () => {
     ${undefined}               | ${false}
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(isGroup(input)).toEqual(output);
+  });
+});
+
+describe(isScanningReport, () => {
+  it.each`
+    input                    | output
+    ${'container_scanning'}  | ${true}
+    ${'dependency_scanning'} | ${true}
+    ${'sast'}                | ${false}
+  `('returns `$output` when passed `$input`', ({ input, output }) => {
+    expect(isScanningReport(input)).toEqual(output);
   });
 });
