@@ -95,21 +95,104 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
     end
 
     describe '.show_breadcrumbs_entry_point' do
-      where(:ai_features_enabled_for_user, :result) do
+      let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
+      let(:allowed) { true }
+
+      before do
+        allow(described_class).to receive(:chat_enabled?).with(user)
+          .and_return(ai_features_enabled_for_user)
+        allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive(:user).with(user: user)
+          .and_return(authorizer_response)
+      end
+
+      where(:ai_features_enabled_for_user, :allowed, :result) do
         [
-          [true, true],
-          [false, false]
+          [true, true, true],
+          [true, false, false],
+          [false, false, false],
+          [false, true, false]
         ]
       end
 
       with_them do
-        before do
-          allow(described_class).to receive(:enabled_for?).with(user: user, container: nil)
-            .and_return(ai_features_enabled_for_user)
-        end
-
         it 'returns correct result' do
           expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(result)
+        end
+      end
+
+      context 'when duo_chat_disabled_button flag disabled' do
+        where(:ai_features_enabled_for_user, :result) do
+          [
+            [true, true],
+            [false, false]
+          ]
+        end
+
+        with_them do
+          before do
+            stub_feature_flags(duo_chat_disabled_button: false)
+            allow(described_class).to receive(:enabled_for?).with(user: user, container: nil)
+              .and_return(ai_features_enabled_for_user)
+          end
+
+          it 'returns correct result' do
+            expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(result)
+          end
+        end
+      end
+    end
+
+    describe '.chat_disabled_reason' do
+      let(:authorizer_response) { instance_double(Gitlab::Llm::Utils::Authorizer::Response, allowed?: allowed) }
+      let(:container) { build_stubbed(:group) }
+
+      before do
+        allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer)
+          .to receive(:container).with(container: container, user: user)
+          .and_return(authorizer_response)
+      end
+
+      context 'when chat is allowed' do
+        let(:allowed) { true }
+
+        it 'returns nil' do
+          expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
+        end
+      end
+
+      context 'when chat is not allowed' do
+        let(:allowed) { false }
+
+        context 'with a group' do
+          it 'returns group' do
+            expect(described_class.chat_disabled_reason(user: user, container: container)).to be(:group)
+          end
+        end
+
+        context 'with a project' do
+          let(:container) { build_stubbed(:project) }
+
+          it 'returns project' do
+            expect(described_class.chat_disabled_reason(user: user, container: container)).to be(:project)
+          end
+        end
+
+        context 'without a container' do
+          let(:container) { nil }
+
+          it 'returns nil' do
+            expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
+          end
+        end
+
+        context 'when duo_chat_disabled_button flag is disabled' do
+          before do
+            stub_feature_flags(duo_chat_disabled_button: false)
+          end
+
+          it 'returns nil' do
+            expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
+          end
         end
       end
     end

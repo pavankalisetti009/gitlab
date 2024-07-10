@@ -12,9 +12,7 @@ module Gitlab
       RECORD_LIMIT = 4
 
       def self.enabled_for?(user:, container: nil)
-        return false unless Feature.enabled?(:ai_duo_chat_switch, type: :ops)
-
-        return false unless user
+        return false unless chat_enabled?(user)
 
         authorizer_response = if container
                                 Gitlab::Llm::Chain::Utils::ChatAuthorizer.container(container: container, user: user)
@@ -26,7 +24,27 @@ module Gitlab
       end
 
       def self.show_breadcrumbs_entry_point?(user:, container: nil)
-        enabled_for?(user: user, container: container)
+        return enabled_for?(user: user, container: container) unless Feature.enabled?(:duo_chat_disabled_button)
+        return false unless chat_enabled?(user)
+
+        Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
+      end
+
+      def self.chat_disabled_reason(user:, container: nil)
+        return unless Feature.enabled?(:duo_chat_disabled_button)
+        return unless container
+
+        authorizer_response = Gitlab::Llm::Chain::Utils::ChatAuthorizer.container(container: container, user: user)
+        return if authorizer_response.allowed?
+
+        container.is_a?(Group) ? :group : :project
+      end
+
+      def self.chat_enabled?(user)
+        return false unless Feature.enabled?(:ai_duo_chat_switch, type: :ops)
+        return false unless user
+
+        true
       end
 
       def initialize(current_user:, question:, logger: nil, tracking_context: {})
