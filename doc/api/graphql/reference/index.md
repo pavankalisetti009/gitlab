@@ -343,6 +343,26 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="querydevopsadoptionenablednamespacesdisplaynamespaceid"></a>`displayNamespaceId` | [`NamespaceID`](#namespaceid) | Filter by display namespace. |
 
+### `Query.duoWorkflowEvents`
+
+List the events for a Duo Workflow.
+
+DETAILS:
+**Introduced** in GitLab 17.2.
+**Status**: Experiment.
+
+Returns [`DuoWorkflowEventConnection!`](#duoworkfloweventconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="queryduoworkfloweventsworkflowid"></a>`workflowId` | [`AiDuoWorkflowsWorkflowID!`](#aiduoworkflowsworkflowid) | Array of request IDs to fetch. |
+
 ### `Query.echo`
 
 Testing endpoint to validate the API with.
@@ -12490,6 +12510,29 @@ The edge type for [`DoraPerformanceScoreCount`](#doraperformancescorecount).
 | <a id="doraperformancescorecountedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="doraperformancescorecountedgenode"></a>`node` | [`DoraPerformanceScoreCount`](#doraperformancescorecount) | The item at the end of the edge. |
 
+#### `DuoWorkflowEventConnection`
+
+The connection type for [`DuoWorkflowEvent`](#duoworkflowevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="duoworkfloweventconnectionedges"></a>`edges` | [`[DuoWorkflowEventEdge]`](#duoworkfloweventedge) | A list of edges. |
+| <a id="duoworkfloweventconnectionnodes"></a>`nodes` | [`[DuoWorkflowEvent]`](#duoworkflowevent) | A list of nodes. |
+| <a id="duoworkfloweventconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `DuoWorkflowEventEdge`
+
+The edge type for [`DuoWorkflowEvent`](#duoworkflowevent).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="duoworkfloweventedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="duoworkfloweventedgenode"></a>`node` | [`DuoWorkflowEvent`](#duoworkflowevent) | The item at the end of the edge. |
+
 #### `EgressNodeConnection`
 
 The connection type for [`EgressNode`](#egressnode).
@@ -20662,6 +20705,20 @@ Aggregated DORA score counts for projects for the last complete month.
 | <a id="doraperformancescorecountmediumprojectscount"></a>`mediumProjectsCount` | [`Int`](#int) | Number of projects that score "medium" on the metric. |
 | <a id="doraperformancescorecountmetricname"></a>`metricName` | [`String!`](#string) | Name of the DORA metric. |
 | <a id="doraperformancescorecountnodataprojectscount"></a>`noDataProjectsCount` | [`Int`](#int) | Number of projects with no data for the metric. |
+
+### `DuoWorkflowEvent`
+
+Events that describe the history and progress of a Duo Workflow.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="duoworkfloweventcheckpoint"></a>`checkpoint` | [`JsonString`](#jsonstring) | Checkpoint of the event. |
+| <a id="duoworkfloweventerrors"></a>`errors` | [`[String!]`](#string) | Message errors. |
+| <a id="duoworkfloweventmetadata"></a>`metadata` | [`JsonString`](#jsonstring) | Metadata associated with the event. |
+| <a id="duoworkfloweventparenttimestamp"></a>`parentTimestamp` | [`Time`](#time) | Time of the parent event. |
+| <a id="duoworkfloweventtimestamp"></a>`timestamp` | [`Time`](#time) | Time of the event. |
 
 ### `EgressNode`
 
@@ -36637,6 +36694,12 @@ An example `AiAgentID` is: `"gid://gitlab/Ai::Agent/1"`.
 A `AiAgentVersionID` is a global ID. It is encoded as a string.
 
 An example `AiAgentVersionID` is: `"gid://gitlab/Ai::AgentVersion/1"`.
+
+### `AiDuoWorkflowsWorkflowID`
+
+A `AiDuoWorkflowsWorkflowID` is a global ID. It is encoded as a string.
+
+An example `AiDuoWorkflowsWorkflowID` is: `"gid://gitlab/Ai::DuoWorkflows::Workflow/1"`.
 
 ### `AiModelID`
 
