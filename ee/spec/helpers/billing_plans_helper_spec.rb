@@ -282,6 +282,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
 
     before do
       stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
+      stub_feature_flags(migrate_purchase_flows_for_new_customers: false)
     end
 
     it 'builds correct gitlab url with some source' do

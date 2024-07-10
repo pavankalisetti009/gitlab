@@ -9,8 +9,14 @@ module GitlabSubscriptions
     end
 
     def customers_dot_flow?
-      Feature.enabled?(:migrate_purchase_flows_for_existing_customers, current_user) &&
-        valid_billing_account?
+      migrate_new_customers = Feature.enabled?(:migrate_purchase_flows_for_new_customers, current_user)
+      migrate_existing_customers = Feature.enabled?(:migrate_purchase_flows_for_existing_customers, current_user)
+
+      return false unless migrate_new_customers || migrate_existing_customers
+
+      return migrate_existing_customers if valid_billing_account?
+
+      migrate_new_customers
     end
 
     def build(params = {})
