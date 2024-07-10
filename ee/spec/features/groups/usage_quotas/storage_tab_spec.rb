@@ -19,6 +19,7 @@ RSpec.describe 'Groups > Usage Quotas > Storage tab', :js, :saas, feature_catego
 
     stub_feature_flags(limited_access_modal: false)
     stub_application_setting(check_namespace_plan: true)
+    create(:callout, user: user, feature_name: :duo_chat_callout, dismissed_at: Time.current)
 
     sign_in(user)
   end
