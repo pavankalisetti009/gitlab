@@ -36,7 +36,7 @@ class GroupHook < WebHook
   belongs_to :group
 
   def pluralized_name
-    _('Group Hooks')
+    s_('Webhooks|Group hooks')
   end
 
   override :application_context

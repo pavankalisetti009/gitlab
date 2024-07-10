@@ -13,7 +13,7 @@ RSpec.describe 'groups/hooks/edit' do
   end
 
   it 'renders the edit group hook section' do
-    expect(rendered).to have_text('Edit Group Hook')
+    expect(rendered).to have_text('Edit group hook')
   end
 
   it 'renders the recent events section' do

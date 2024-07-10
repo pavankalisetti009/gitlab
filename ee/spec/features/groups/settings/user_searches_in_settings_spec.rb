@@ -16,6 +16,6 @@ RSpec.describe 'User searches group settings', :js, feature_category: :groups_an
       visit group_hooks_path(group)
     end
 
-    it_behaves_like 'can highlight results', 'Group Hooks'
+    it_behaves_like 'can highlight results', 'Group hooks'
   end
 end
