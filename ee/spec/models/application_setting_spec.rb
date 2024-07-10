@@ -722,6 +722,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
   describe '#elasticsearch_config', feature_category: :global_search do
     it 'places all elasticsearch configuration values into a hash' do
+      allow(Rails.env).to receive(:test?).and_return(false)
+
       setting.update!(
         elasticsearch_url: 'http://example.com:9200',
         elasticsearch_username: 'foo',
@@ -751,6 +753,13 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       )
 
       expect(setting.elasticsearch_config).not_to include(:client_request_timeout)
+    end
+
+    context 'when in test environment' do
+      it 'uses the ELASTIC_REQUEST_TIMEOUT value instead of the database default' do
+        expect(setting.elasticsearch_config)
+          .to include(client_request_timeout: described_class::ELASTIC_REQUEST_TIMEOUT)
+      end
     end
 
     context 'limiting namespaces and projects' do

@@ -13,6 +13,7 @@ module EE
       EMAIL_ADDITIONAL_TEXT_CHARACTER_LIMIT = 10_000
       DEFAULT_NUMBER_OF_DAYS_BEFORE_REMOVAL = 7
       MASK_PASSWORD = '*****'
+      ELASTIC_REQUEST_TIMEOUT = 30
 
       belongs_to :file_template_project, class_name: "Project"
 
@@ -419,6 +420,8 @@ module EE
     end
 
     def elasticsearch_config
+      client_request_timeout = Rails.env.test? ? ELASTIC_REQUEST_TIMEOUT : elasticsearch_client_request_timeout
+
       {
         url: elasticsearch_url_with_credentials,
         aws: elasticsearch_aws,
@@ -427,7 +430,7 @@ module EE
         aws_region: elasticsearch_aws_region,
         max_bulk_size_bytes: elasticsearch_max_bulk_size_mb.megabytes,
         max_bulk_concurrency: elasticsearch_max_bulk_concurrency,
-        client_request_timeout: (elasticsearch_client_request_timeout if elasticsearch_client_request_timeout > 0)
+        client_request_timeout: (client_request_timeout if client_request_timeout > 0)
       }.compact
     end
 
