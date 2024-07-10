@@ -143,7 +143,7 @@ module EE
           ::Types::ComplianceManagement::MergeRequests::ComplianceViolationType.connection_type,
           null: true,
           description: 'Compliance violations reported on merge requests merged within the group.',
-          resolver: ::Resolvers::ComplianceManagement::MergeRequests::ComplianceViolationResolver,
+          resolver: ::Resolvers::ComplianceManagement::MergeRequests::GroupComplianceViolationResolver,
           authorize: :read_compliance_violations_report
 
         field :allow_stale_runner_pruning,

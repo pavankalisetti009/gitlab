@@ -56,6 +56,13 @@ module EE
           description: 'Compliance frameworks associated with the project.',
           null: true
 
+        field :merge_request_violations,
+          ::Types::ComplianceManagement::MergeRequests::ComplianceViolationType.connection_type,
+          null: true,
+          description: 'Compliance violations reported on merge requests merged within the project.',
+          resolver: ::Resolvers::ComplianceManagement::MergeRequests::ProjectComplianceViolationResolver,
+          authorize: :read_compliance_violations_report
+
         field :security_dashboard_path, GraphQL::Types::String,
           description: "Path to project's security dashboard.",
           null: true

@@ -19,9 +19,10 @@ module ComplianceManagement
       include FinderMethods
       include MergedAtFilter
 
-      def initialize(current_user:, group:, params: {})
+      def initialize(current_user:, project_or_group:, params: {})
         @current_user = current_user
-        @group = group
+        @project = project_or_group.is_a?(Project) ? project_or_group : nil
+        @group =  project_or_group.is_a?(Group) ? project_or_group : project.group
         @params = params
       end
 
@@ -38,10 +39,12 @@ module ComplianceManagement
 
       private
 
-      attr_reader :current_user, :group, :params
+      attr_reader :current_user, :project, :group, :params
 
       def array_scope
-        if params[:project_ids].present?
+        if project
+          Project.id_in(project.id).select(:id)
+        elsif params[:project_ids].present?
           group.all_projects.id_in(params[:project_ids]).select(:id)
         else
           group.all_projects.select(:id)
@@ -61,7 +64,7 @@ module ComplianceManagement
       end
 
       def allowed?
-        Ability.allowed?(current_user, :read_compliance_violations_report, group)
+        Ability.allowed?(current_user, :read_compliance_violations_report, project || group)
       end
     end
   end

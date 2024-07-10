@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ComplianceViolationInput'] do
+RSpec.describe GitlabSchema.types['ComplianceViolationInput'], feature_category: :compliance_management do
   let(:arguments) do
     %w[projectIds mergedBefore mergedAfter targetBranch]
   end
