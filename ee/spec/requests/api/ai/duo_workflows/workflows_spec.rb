@@ -34,7 +34,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
 
     context 'when the duo_workflows feature flag is disabled for the user' do
       before do
-        stub_feature_flags(duo_workflow: false)
+        stub_feature_flags(start_duo_workflows: false)
       end
 
       it 'is forbidden' do

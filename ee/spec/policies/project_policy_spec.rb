@@ -4075,23 +4075,23 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
-  describe 'duo_workflow' do
-    where(:duo_workflow_feature_flag, :current_user, :match_expected_result) do
-      true  | ref(:owner)      | be_allowed(:duo_workflow)
-      true  | ref(:maintainer) | be_allowed(:duo_workflow)
-      true  | ref(:developer)  | be_allowed(:duo_workflow)
-      true  | ref(:guest)      | be_disallowed(:duo_workflow)
-      true  | ref(:non_member) | be_disallowed(:duo_workflow)
-      false | ref(:owner)      | be_disallowed(:duo_workflow)
-      false | ref(:maintainer) | be_disallowed(:duo_workflow)
-      false | ref(:developer)  | be_disallowed(:duo_workflow)
-      false | ref(:guest)      | be_disallowed(:duo_workflow)
-      false | ref(:non_member) | be_disallowed(:duo_workflow)
+  describe 'start_duo_workflows' do
+    where(:start_duo_workflows_feature_flag, :current_user, :match_expected_result) do
+      true  | ref(:owner)      | be_allowed(:start_duo_workflows)
+      true  | ref(:maintainer) | be_allowed(:start_duo_workflows)
+      true  | ref(:developer)  | be_allowed(:start_duo_workflows)
+      true  | ref(:guest)      | be_disallowed(:start_duo_workflows)
+      true  | ref(:non_member) | be_disallowed(:start_duo_workflows)
+      false | ref(:owner)      | be_disallowed(:start_duo_workflows)
+      false | ref(:maintainer) | be_disallowed(:start_duo_workflows)
+      false | ref(:developer)  | be_disallowed(:start_duo_workflows)
+      false | ref(:guest)      | be_disallowed(:start_duo_workflows)
+      false | ref(:non_member) | be_disallowed(:start_duo_workflows)
     end
 
     with_them do
       before do
-        stub_feature_flags(duo_workflow: duo_workflow_feature_flag)
+        stub_feature_flags(start_duo_workflows: start_duo_workflows_feature_flag)
       end
 
       it { is_expected.to match_expected_result }
