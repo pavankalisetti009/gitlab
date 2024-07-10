@@ -51664,6 +51664,9 @@ msgstr ""
 msgid "SubscriptionBanner|Upload new license"
 msgstr ""
 
+msgid "SubscriptionGroupsNew|Group URL %{error}"
+msgstr ""
+
 msgid "SubscriptionGroupsNew|Group name %{error}"
 msgstr ""
 

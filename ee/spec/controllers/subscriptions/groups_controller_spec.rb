@@ -135,8 +135,35 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
       end
 
       context 'with valid params' do
-        it 'creates a new group' do
-          expect { post :create, params: { group: { name: 'Test Group', path: 'test-path' } } }
+        it 'creates a new group when no path is provided' do
+          expect { post :create, params: { group: { name: 'Test Group' } } }
+            .to change { user.groups.count }
+            .from(0)
+            .to(1)
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to eq('id' => user.groups.last.id)
+          expect(user.groups.last.name).to eq('Test Group')
+        end
+
+        it 'creates a new group when path is provided' do
+          expect { post :create, params: { group: { name: 'Test Group', path: 'test-group123' } } }
+            .to change { user.groups.count }
+                  .from(0)
+                  .to(1)
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response).to eq('id' => user.groups.last.id)
+          expect(user.groups.last.name).to eq('Test Group')
+          expect(user.groups.last.path).to eq('test-group123')
+        end
+      end
+
+      context 'when a namespace already exists with the same name' do
+        it 'creates the group with a different path' do
+          create(:group, name: 'Test Group', path: 'test-group')
+
+          expect { post :create, params: { group: { name: 'Test Group' } } }
             .to change { user.groups.count }
             .from(0)
             .to(1)
@@ -153,8 +180,7 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
           expect(response).to have_gitlab_http_status(:unprocessable_entity)
           expect(json_response).to match(
             'errors' => {
-              "name" => array_including("can't be blank"),
-              "path" => array_including("can't be blank")
+              "name" => array_including("can't be blank")
             }
           )
         end
