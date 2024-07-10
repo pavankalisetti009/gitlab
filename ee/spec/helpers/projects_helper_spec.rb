@@ -583,7 +583,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   describe '#project_permissions_settings' do
     using RSpec::Parameterized::TableSyntax
 
-    let(:expected_settings) { { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10 } }
+    let(:expected_settings) { { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10, duoFeaturesEnabled: true } }
 
     subject { helper.project_permissions_settings(project) }
 
@@ -610,7 +610,7 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     using RSpec::Parameterized::TableSyntax
 
     let(:user) { instance_double(User, can_admin_all_resources?: false) }
-    let(:expected_data) { { requirementsAvailable: false } }
+    let(:expected_data) { { requirementsAvailable: false, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false } }
 
     subject { helper.project_permissions_panel_data(project) }
 

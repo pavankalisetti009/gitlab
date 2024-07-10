@@ -1291,6 +1291,10 @@ module EE
       !!require_reauthentication_to_approve
     end
 
+    def licensed_ai_features_available?
+      licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
+    end
+
     private
 
     def latest_ingested_sbom_pipeline_id_redis_key

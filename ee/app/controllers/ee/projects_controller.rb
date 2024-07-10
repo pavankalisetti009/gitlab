@@ -19,6 +19,7 @@ module EE
 
       before_action do
         push_licensed_feature(:remote_development)
+        push_frontend_feature_flag(:ai_settings_vue_project, project)
       end
 
       feature_category :groups_and_projects, [:restore]
@@ -98,6 +99,7 @@ module EE
       attributes = %i[
         prevent_merge_without_jira_issue
         cve_id_request_enabled
+        duo_features_enabled
         product_analytics_data_collector_host
         cube_api_base_url
         cube_api_key

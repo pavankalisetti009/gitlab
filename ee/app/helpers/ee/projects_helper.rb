@@ -15,7 +15,8 @@ module EE
     def project_permissions_settings(project)
       super.merge({
         requirementsAccessLevel: project.requirements_access_level,
-        cveIdRequestEnabled: (project.public? && project.project_setting.cve_id_request_enabled?)
+        cveIdRequestEnabled: (project.public? && project.project_setting.cve_id_request_enabled?),
+        duoFeaturesEnabled: (project.project_setting.duo_features_enabled?)
       })
     end
 
@@ -23,6 +24,8 @@ module EE
     def project_permissions_panel_data(project)
       super.merge({
         requirementsAvailable: project.feature_available?(:requirements),
+        licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
+        duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         requestCveAvailable: ::Gitlab.com?,
         cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request')
       })
