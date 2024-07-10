@@ -16,6 +16,7 @@ module Search
       urgency :throttled
       idempotent!
       pause_control :zoekt
+      concurrency_limit -> { 100 if Feature.enabled?(:zoekt_delete_project_worker_concurrency) } # rubocop:disable Gitlab/FeatureFlagWithoutActor -- global flags
 
       def perform(root_namespace_id, project_id, node_id = nil)
         return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
