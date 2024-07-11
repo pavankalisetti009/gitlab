@@ -89,6 +89,8 @@ module QA
         # base attributes check
         expect(work_item_epic.inspect).to eq(legacy_epic.inspect)
         expect(work_item_epic.epic_author).to eq(legacy_epic.epic_author)
+        expect(work_item_epic.epic_iid).to eq(legacy_epic.epic_iid)
+        expect(work_item_epic.epic_namespace_id).to eq(legacy_epic.epic_group_id)
 
         # variable dates check
         legacy_epic.epic_dates.each do |attribute, legacy_epic_value|
