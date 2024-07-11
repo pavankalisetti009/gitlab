@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :elastic, :zoekt_settings_enabled, feature_category: :global_search do
+RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :zoekt_settings_enabled, feature_category: :global_search do
   include ListboxHelpers
 
   let_it_be(:user) { create(:user) }
@@ -31,10 +31,6 @@ RSpec.describe 'Zoekt search', :zoekt, :js, :disable_rate_limiter, :elastic, :zo
   end
 
   before do
-    # Necessary as group scoped code search is
-    # not available without Elasticsearch enabled
-    # even though it's using Zoekt.
-    stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     stub_feature_flags(zoekt_cross_namespace_search: false)
 
     zoekt_ensure_project_indexed!(project1)

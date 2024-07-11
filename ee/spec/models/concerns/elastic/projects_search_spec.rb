@@ -84,7 +84,6 @@ RSpec.describe Elastic::ProjectsSearch, feature_category: :global_search do
   describe '#maintain_elasticsearch_destroy' do
     it 'calls delete worker' do
       expect(ElasticDeleteProjectWorker).to receive(:perform_async)
-      expect(Search::Zoekt).to receive(:delete_async)
 
       subject.maintain_elasticsearch_destroy
     end
