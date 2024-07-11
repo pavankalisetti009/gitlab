@@ -47,6 +47,40 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
             expect(response.success?).to be_truthy
             expect(response[:users].map(&:id)).to match_array(user_ids)
           end
+
+          context 'when cached values exists', :use_clean_rails_memory_store_caching do
+            let(:user_ids) { User.where(username: expected_assigned_users).map(&:id) }
+            let(:expected_assigned_users) do
+              %w[guest_of_namespace_1 guest_of_namespace_2]
+            end
+
+            let(:cache_key_1) do
+              format(GitlabSubscriptions::UserAddOnAssignment::USER_ADD_ON_ASSIGNMENT_CACHE_KEY,
+                user_id: user_ids.first)
+            end
+
+            let(:cache_key_2) do
+              format(GitlabSubscriptions::UserAddOnAssignment::USER_ADD_ON_ASSIGNMENT_CACHE_KEY, user_id: user_ids.last)
+            end
+
+            before_all do
+              namespace.add_guest(create(:user, username: 'guest_of_namespace_1'))
+              namespace.add_guest(create(:user, username: 'guest_of_namespace_2'))
+            end
+
+            before do
+              Rails.cache.write(cache_key_1, double)
+              Rails.cache.write(cache_key_2, double)
+            end
+
+            it 'clears cache after assignment' do
+              response = bulk_assign
+              expect(response.success?).to be_truthy
+
+              expect(Rails.cache.read(cache_key_1)).to be_nil
+              expect(Rails.cache.read(cache_key_2)).to be_nil
+            end
+          end
         end
 
         context 'when users are not members' do
