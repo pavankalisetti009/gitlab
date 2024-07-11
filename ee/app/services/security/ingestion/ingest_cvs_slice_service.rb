@@ -4,6 +4,7 @@ module Security
   module Ingestion
     class IngestCvsSliceService < IngestSliceBaseService
       TASKS = %i[
+        IngestCvsSecurityScanners
         IngestIdentifiers
         IngestFindings
         IngestVulnerabilities
