@@ -36,6 +36,19 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION assign_p_ci_job_annotations_id_value() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."id" IS NOT NULL THEN
+  RAISE WARNING 'Manually assigning ids is not allowed, the value will be ignored';
+END IF;
+NEW."id" := nextval('p_ci_job_annotations_id_seq'::regclass);
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION assign_p_ci_job_artifacts_id_value() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -31596,6 +31609,8 @@ ALTER INDEX p_ci_builds_token_encrypted_partition_id_idx ATTACH PARTITION unique
 CREATE TRIGGER assign_p_ci_builds_execution_configs_id_trigger BEFORE INSERT ON p_ci_builds_execution_configs FOR EACH ROW EXECUTE FUNCTION assign_p_ci_builds_execution_configs_id_value();
 
 CREATE TRIGGER assign_p_ci_builds_id_trigger BEFORE INSERT ON p_ci_builds FOR EACH ROW EXECUTE FUNCTION assign_p_ci_builds_id_value();
+
+CREATE TRIGGER assign_p_ci_job_annotations_id_trigger BEFORE INSERT ON p_ci_job_annotations FOR EACH ROW EXECUTE FUNCTION assign_p_ci_job_annotations_id_value();
 
 CREATE TRIGGER assign_p_ci_job_artifacts_id_trigger BEFORE INSERT ON p_ci_job_artifacts FOR EACH ROW EXECUTE FUNCTION assign_p_ci_job_artifacts_id_value();
 
