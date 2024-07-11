@@ -10,6 +10,7 @@ export const populateWorkspacesWithProjectDetails = (workspaces, projects) => {
     };
   });
 };
+
 export const fetchProjectsDetails = async (apollo, workspaces) => {
   const projectIds = workspaces.map(({ projectId }) => projectId);
 

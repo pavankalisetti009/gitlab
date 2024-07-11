@@ -1,3 +1,4 @@
+import { GlToast } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
@@ -8,6 +9,7 @@ import App from './pages/app.vue';
 import createRouter from './router/index';
 
 Vue.use(VueApollo);
+Vue.use(GlToast);
 
 const createApolloProvider = () => {
   const defaultClient = createDefaultClient();

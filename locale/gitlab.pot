@@ -51371,6 +51371,9 @@ msgstr ""
 msgid "Status checks must pass."
 msgstr ""
 
+msgid "Status not supported"
+msgstr ""
+
 msgid "Status was retried."
 msgstr ""
 
@@ -60586,10 +60589,16 @@ msgstr ""
 msgid "Workspaces"
 msgstr ""
 
+msgid "Workspaces|%{workspaceName} has been terminated."
+msgstr ""
+
 msgid "Workspaces|A devfile defines the development environment for a GitLab project. A workspace must have a valid devfile in the Git reference you use."
 msgstr ""
 
 msgid "Workspaces|A workspace is a virtual sandbox environment for your code in GitLab."
+msgstr ""
+
+msgid "Workspaces|Active"
 msgstr ""
 
 msgid "Workspaces|Agents connect workspaces to your Kubernetes cluster. To create a workspace with an allowed agent, group members must have at least the Developer role."
@@ -60680,6 +60689,12 @@ msgid "Workspaces|Learn more."
 msgstr ""
 
 msgid "Workspaces|New workspace"
+msgstr ""
+
+msgid "Workspaces|No active workspaces. Create a workspace to get started."
+msgstr ""
+
+msgid "Workspaces|No terminated workspaces to show."
 msgstr ""
 
 msgid "Workspaces|Path to devfile"

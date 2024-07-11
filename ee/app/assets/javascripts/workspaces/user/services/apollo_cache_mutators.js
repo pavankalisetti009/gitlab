@@ -1,12 +1,18 @@
 import produce from 'immer';
-import userWorkspacesListQuery from '../../common/graphql/queries/user_workspaces_list.query.graphql';
+import userWorkspacesTabListQuery from '../../common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import { WORKSPACES_LIST_PAGE_SIZE } from '../constants';
 
 export const addWorkspace = (store, workspace) => {
   store.updateQuery(
     {
-      query: userWorkspacesListQuery,
-      variables: { after: null, before: null, first: WORKSPACES_LIST_PAGE_SIZE },
+      query: userWorkspacesTabListQuery,
+      variables: {
+        first: WORKSPACES_LIST_PAGE_SIZE,
+        activeAfter: null,
+        activeBefore: null,
+        terminatedAfter: null,
+        terminatedBefore: null,
+      },
     },
     (sourceData) =>
       produce(sourceData, (draftData) => {
@@ -15,7 +21,7 @@ export const addWorkspace = (store, workspace) => {
           return;
         }
 
-        draftData.currentUser.workspaces.nodes.unshift(workspace);
+        draftData.currentUser.activeWorkspaces.nodes.unshift(workspace);
       }),
   );
 };
