@@ -60283,10 +60283,10 @@ msgstr ""
 msgid "WorkItem|Link items together to show that they're related or that one is blocking others."
 msgstr ""
 
-msgid "WorkItem|Linked Items"
+msgid "WorkItem|Linked item removed"
 msgstr ""
 
-msgid "WorkItem|Linked item removed"
+msgid "WorkItem|Linked items"
 msgstr ""
 
 msgid "WorkItem|Magenta"
