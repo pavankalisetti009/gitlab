@@ -33616,9 +33616,6 @@ msgstr ""
 msgid "MlModelRegistry|Deleting this model version will delete the associated artifacts."
 msgstr ""
 
-msgid "MlModelRegistry|Details"
-msgstr ""
-
 msgid "MlModelRegistry|Drop or %{linkStart}select%{linkEnd} artifact to attach"
 msgstr ""
 
@@ -33707,6 +33704,9 @@ msgid "MlModelRegistry|May not contain spaces."
 msgstr ""
 
 msgid "MlModelRegistry|Metadata"
+msgstr ""
+
+msgid "MlModelRegistry|Model card"
 msgstr ""
 
 msgid "MlModelRegistry|Model deleted successfully"
