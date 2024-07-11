@@ -22914,7 +22914,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Group.projects`
 
-Projects within this namespace.
+Projects within this namespace. Returns projects from the parent group if namespace is project.
 
 Returns [`ProjectConnection!`](#projectconnection).
 
@@ -22931,6 +22931,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="groupprojectshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only the projects which have vulnerabilities. |
 | <a id="groupprojectsids"></a>`ids` | [`[ID!]`](#id) | Filter projects by IDs. |
 | <a id="groupprojectsincludearchived"></a>`includeArchived` | [`Boolean`](#boolean) | Include also archived projects. |
+| <a id="groupprojectsincludesiblingprojects"></a>`includeSiblingProjects` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 17.2. **Status**: Experiment. Include also projects from parent group. |
 | <a id="groupprojectsincludesubgroups"></a>`includeSubgroups` | [`Boolean`](#boolean) | Include also subgroup projects. |
 | <a id="groupprojectsnotaimedfordeletion"></a>`notAimedForDeletion` | [`Boolean`](#boolean) | Include projects that are not aimed for deletion. |
 | <a id="groupprojectssbomcomponentid"></a>`sbomComponentId` | [`ID`](#id) | Return only the projects related to the specified SBOM component. |
@@ -26603,7 +26604,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 ##### `Namespace.projects`
 
-Projects within this namespace.
+Projects within this namespace. Returns projects from the parent group if namespace is project.
 
 Returns [`ProjectConnection!`](#projectconnection).
 
@@ -26620,6 +26621,7 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="namespaceprojectshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only the projects which have vulnerabilities. |
 | <a id="namespaceprojectsids"></a>`ids` | [`[ID!]`](#id) | Filter projects by IDs. |
 | <a id="namespaceprojectsincludearchived"></a>`includeArchived` | [`Boolean`](#boolean) | Include also archived projects. |
+| <a id="namespaceprojectsincludesiblingprojects"></a>`includeSiblingProjects` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 17.2. **Status**: Experiment. Include also projects from parent group. |
 | <a id="namespaceprojectsincludesubgroups"></a>`includeSubgroups` | [`Boolean`](#boolean) | Include also subgroup projects. |
 | <a id="namespaceprojectsnotaimedfordeletion"></a>`notAimedForDeletion` | [`Boolean`](#boolean) | Include projects that are not aimed for deletion. |
 | <a id="namespaceprojectssbomcomponentid"></a>`sbomComponentId` | [`ID`](#id) | Return only the projects related to the specified SBOM component. |
@@ -26696,6 +26698,26 @@ Returns [`WorkItem`](#workitem).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="namespaceworkitemiid"></a>`iid` | [`String!`](#string) | IID of the work item. |
+
+##### `Namespace.workItemTypes`
+
+Work item types available to the namespace.
+
+DETAILS:
+**Introduced** in GitLab 17.2.
+**Status**: Experiment.
+
+Returns [`WorkItemTypeConnection`](#workitemtypeconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="namespaceworkitemtypesname"></a>`name` | [`IssueType`](#issuetype) | Filter work item types by the given name. |
 
 ### `NamespaceBan`
 
