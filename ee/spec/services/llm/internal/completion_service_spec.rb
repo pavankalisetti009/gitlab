@@ -211,8 +211,9 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
     context 'when user can not read the resource' do
       it 'does not call Gitlab::Llm::CompletionsFactory.completion!' do
         expect(Gitlab::Llm::CompletionsFactory).not_to receive(:completion!)
+        expect(Gitlab::ErrorTracking).to receive(:track_and_raise_for_dev_exception)
 
-        execute
+        expect(execute).to eq(nil)
       end
     end
   end
