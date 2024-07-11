@@ -16242,6 +16242,9 @@ msgstr ""
 msgid "CycleAnalyticsEvent|Merge request merged"
 msgstr ""
 
+msgid "CycleAnalyticsEvent|Merge request reviewer first assigned"
+msgstr ""
+
 msgid "CycleAnalyticsStage|Code"
 msgstr ""
 
