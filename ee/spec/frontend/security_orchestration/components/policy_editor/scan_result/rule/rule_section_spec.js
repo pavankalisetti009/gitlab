@@ -65,6 +65,7 @@ describe('RuleSection', () => {
   const findEmptyScanRuleBuilder = () => wrapper.findComponent(DefaultRuleBuilder);
   const findSecurityScanRule = () => wrapper.findComponent(SecurityScanRuleBuilder);
   const findLicenseScanRule = () => wrapper.findComponent(LicenseScanRuleBuilder);
+  const findRuleSeparator = () => wrapper.find('[data-testid="rule-separator"]');
 
   describe('when a rule type is selected', () => {
     it.each`
@@ -164,6 +165,25 @@ describe('RuleSection', () => {
 
       expect(findAlert().exists()).toBe(true);
       expect(findAlert().text()).toBe(error);
+    });
+  });
+
+  describe('rule separator', () => {
+    it('should display RULE_OR_LABEL when not the first rule', () => {
+      factory({
+        propsData: { initRule: licenseScanBuildRule(), index: 1 },
+      });
+
+      expect(findRuleSeparator().exists()).toBe(true);
+      expect(findRuleSeparator().text()).toBe(wrapper.vm.$options.RULE_OR_LABEL);
+    });
+
+    it('should not display RULE_OR_LABEL for the first rule', () => {
+      factory({
+        propsData: { initRule: licenseScanBuildRule(), index: 0 },
+      });
+
+      expect(findRuleSeparator().exists()).toBe(false);
     });
   });
 });

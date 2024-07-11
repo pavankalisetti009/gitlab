@@ -1,12 +1,14 @@
 <script>
 import { GlAlert, GlSprintf } from '@gitlab/ui';
 import { ANY_MERGE_REQUEST, SCAN_FINDING, LICENSE_FINDING } from '../lib';
+import { RULE_OR_LABEL } from '../../constants';
 import AnyMergeRequestRuleBuilder from './any_merge_request_rule_builder.vue';
 import SecurityScanRuleBuilder from './security_scan_rule_builder.vue';
 import LicenseScanRuleBuilder from './license_scan_rule_builder.vue';
 import DefaultRuleBuilder from './default_rule_builder.vue';
 
 export default {
+  RULE_OR_LABEL,
   components: {
     GlAlert,
     GlSprintf,
@@ -64,6 +66,9 @@ export default {
     isEmptyRule() {
       return this.initRule.type === '';
     },
+    isFirstRule() {
+      return this.index === 0;
+    },
   },
   methods: {
     removeRule() {
@@ -98,6 +103,10 @@ export default {
         </template>
       </gl-sprintf>
     </gl-alert>
+
+    <div v-if="!isFirstRule" class="gl-text-gray-500 gl-mb-4 gl-ml-5" data-testid="rule-separator">
+      {{ $options.RULE_OR_LABEL }}
+    </div>
 
     <default-rule-builder
       v-if="isEmptyRule"
