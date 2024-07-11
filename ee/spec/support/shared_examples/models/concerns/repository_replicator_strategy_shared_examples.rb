@@ -35,68 +35,74 @@ RSpec.shared_examples 'a repository replicator' do
   end
 
   describe '#geo_handle_after_update' do
-    it 'creates a Geo::Event' do
-      model_record
-
-      expect do
-        replicator.geo_handle_after_update
-      end.to change { ::Geo::Event.count }.by(1)
-
-      expect(::Geo::Event.last.attributes).to include(
-        "replicable_name" => replicator.replicable_name, "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_UPDATED, "payload" => { "model_record_id" => replicator.model_record.id })
-    end
-
-    it 'calls #before_verifiable_update' do
-      expect(replicator).to receive(:before_verifiable_update)
-
-      replicator.geo_handle_after_update
-    end
-
-    context 'when replication feature flag is disabled' do
+    context 'on a Geo primary' do
       before do
-        stub_feature_flags(replicator.replication_enabled_feature_key => false)
+        stub_current_geo_node(primary)
       end
 
-      it 'does not call #before_verifiable_update' do
-        expect(replicator).not_to receive(:before_verifiable_update)
+      it 'creates a Geo::Event' do
+        model_record
+
+        expect do
+          replicator.geo_handle_after_update
+        end.to change { ::Geo::Event.count }.by(1)
+
+        expect(::Geo::Event.last.attributes).to include(
+          "replicable_name" => replicator.replicable_name, "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_UPDATED, "payload" => { "model_record_id" => replicator.model_record.id })
+      end
+
+      it 'calls #before_verifiable_update' do
+        expect(replicator).to receive(:before_verifiable_update)
 
         replicator.geo_handle_after_update
       end
 
-      it 'does not publish' do
-        expect(replicator).not_to receive(:publish)
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags(replicator.replication_enabled_feature_key => false)
+        end
 
-        replicator.geo_handle_after_update
+        it 'does not publish' do
+          expect do
+            replicator.geo_handle_after_update
+          end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
+        end
+      end
+    end
+
+    context 'on a Geo secondary' do
+      before do
+        stub_current_geo_node(secondary)
+      end
+
+      it 'does not create an event' do
+        expect do
+          replicator.geo_handle_after_update
+        end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
       end
     end
   end
 
   describe '#geo_handle_after_create' do
-    it 'creates a Geo::Event' do
-      model_record.save!
-
-      expect do
-        replicator.geo_handle_after_create
-      end.to change { ::Geo::Event.count }.by(1)
-
-      expect(::Geo::Event.last.attributes).to include(
-        "replicable_name" => replicator.replicable_name,
-        "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_CREATED,
-        "payload" => {
-          "model_record_id" => replicator.model_record.id
-        }
-      )
-    end
-
-    it 'does not call #before_verifiable_update' do
-      expect(replicator).not_to receive(:before_verifiable_update)
-
-      replicator.geo_handle_after_create
-    end
-
-    context 'when replication feature flag is disabled' do
+    context 'on a Geo primary' do
       before do
-        stub_feature_flags(replicator.replication_enabled_feature_key => false)
+        stub_current_geo_node(primary)
+      end
+
+      it 'creates a Geo::Event' do
+        model_record.save!
+
+        expect do
+          replicator.geo_handle_after_create
+        end.to change { ::Geo::Event.count }.by(1)
+
+        expect(::Geo::Event.last.attributes).to include(
+          "replicable_name" => replicator.replicable_name,
+          "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_CREATED,
+          "payload" => {
+            "model_record_id" => replicator.model_record.id
+          }
+        )
       end
 
       it 'does not call #before_verifiable_update' do
@@ -105,36 +111,72 @@ RSpec.shared_examples 'a repository replicator' do
         replicator.geo_handle_after_create
       end
 
-      it 'does not publish' do
-        expect(replicator).not_to receive(:publish)
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags(replicator.replication_enabled_feature_key => false)
+        end
 
-        replicator.geo_handle_after_create
+        it 'does not publish' do
+          expect do
+            replicator.geo_handle_after_create
+          end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
+        end
+      end
+    end
+
+    context 'on a Geo secondary' do
+      before do
+        stub_current_geo_node(secondary)
+      end
+
+      it 'does not create an event' do
+        expect do
+          replicator.geo_handle_after_create
+        end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
       end
     end
   end
 
   describe '#geo_handle_after_destroy' do
-    it 'creates a Geo::Event' do
-      model_record
-
-      expect do
-        replicator.geo_handle_after_destroy
-      end.to change { ::Geo::Event.count }.by(1)
-
-      expect(::Geo::Event.last.attributes).to include(
-        "replicable_name" => replicator.replicable_name, "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_DELETED)
-      expect(::Geo::Event.last.payload).to include({ "model_record_id" => replicator.model_record.id })
-    end
-
-    context 'when replication feature flag is disabled' do
+    context 'on a Geo primary' do
       before do
-        stub_feature_flags("geo_#{replicator.replicable_name}_replication": false)
+        stub_current_geo_node(primary)
       end
 
-      it 'does not publish' do
-        expect(replicator).not_to receive(:publish)
+      it 'creates a Geo::Event' do
+        model_record
 
-        replicator.geo_handle_after_destroy
+        expect do
+          replicator.geo_handle_after_destroy
+        end.to change { ::Geo::Event.count }.by(1)
+
+        expect(::Geo::Event.last.attributes).to include(
+          "replicable_name" => replicator.replicable_name, "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_DELETED)
+        expect(::Geo::Event.last.payload).to include({ "model_record_id" => replicator.model_record.id })
+      end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags("geo_#{replicator.replicable_name}_replication": false)
+        end
+
+        it 'does not publish' do
+          expect do
+            replicator.geo_handle_after_destroy
+          end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
+        end
+      end
+    end
+
+    context 'on a Geo secondary' do
+      before do
+        stub_current_geo_node(secondary)
+      end
+
+      it 'does not create an event' do
+        expect do
+          replicator.geo_handle_after_destroy
+        end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
       end
     end
   end

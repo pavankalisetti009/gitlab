@@ -11,10 +11,5 @@ module Geo
     def self.model
       ::LfsObject
     end
-
-    override :verification_feature_flag_enabled?
-    def self.verification_feature_flag_enabled?
-      true
-    end
   end
 end

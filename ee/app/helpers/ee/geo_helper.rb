@@ -59,7 +59,15 @@ module EE
     end
 
     def enabled_replicator_classes
+      replication_enabled_replicator_classes | verification_enabled_replicator_classes
+    end
+
+    def replication_enabled_replicator_classes
       ::Gitlab::Geo.enabled_replicator_classes
+    end
+
+    def verification_enabled_replicator_classes
+      ::Gitlab::Geo.verification_enabled_replicator_classes
     end
 
     def geo_filter_nav_options(replicable_controller, replicable_name)

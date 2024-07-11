@@ -16,15 +16,6 @@ module Geo
       git_access_class.error_message(:no_repo)
     end
 
-    override :verification_feature_flag_enabled?
-    def self.verification_feature_flag_enabled?
-      # We are adding verification at the same time as replication, so we
-      # don't need to toggle verification separately from replication. When
-      # the replication feature flag is off, then verification is also off
-      # (see `VerifiableReplicator.verification_enabled?`)
-      true
-    end
-
     override :housekeeping_model_record
     def housekeeping_model_record
       # The Repositories::HousekeepingService and Wikis::GitGarbageCollectWorker

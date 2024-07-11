@@ -17,11 +17,6 @@ module Geo
     class << self
       extend ::Gitlab::Utils::Override
 
-      override :verification_feature_flag_enabled?
-      def verification_feature_flag_enabled?
-        true
-      end
-
       def model
         ::ContainerRepository
       end
@@ -31,7 +26,8 @@ module Geo
       # it's enabled in the config file Gitlab.config.geo.registry_replication.enabled
       #
       # rubocop:disable Style/IfUnlessModifier
-      def enabled?
+      override :replication_enabled?
+      def replication_enabled?
         if ::Gitlab::Geo.secondary?
           return super && Geo::ContainerRepositoryRegistry.replication_enabled?
         end

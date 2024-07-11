@@ -4,9 +4,13 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
   include GraphqlHelpers
   include EE::GeoHelpers
 
-  describe '#resolve' do
-    let_it_be(:secondary) { create(:geo_node) }
+  let_it_be(:secondary) { create(:geo_node) }
 
+  before do
+    stub_current_geo_node(secondary)
+  end
+
+  describe '#resolve' do
     # rubocop:disable Rails/SaveBang
     let(:replicator_class) { Gitlab::Geo::Replicator.for_class_name(described_class.name) }
     let(:factory_traits) { replicator_class.verification_enabled? ? [:synced, :verification_succeeded] : [:synced] }
@@ -20,10 +24,6 @@ RSpec.shared_examples_for 'a Geo registries resolver' do |registry_factory_name|
     let(:gql_context) { { current_user: current_user } }
 
     context 'when the parent object is the current node' do
-      before do
-        stub_current_geo_node(secondary)
-      end
-
       context 'when the user has permission to view Geo data' do
         let_it_be(:current_user) { create(:admin) }
 

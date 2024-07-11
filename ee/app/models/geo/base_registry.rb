@@ -24,10 +24,6 @@ class Geo::BaseRegistry < Geo::TrackingBase
     where.not(self::MODEL_FOREIGN_KEY => ids)
   end
 
-  def self.replication_enabled?
-    true
-  end
-
   def self.ordered_by_id
     order(:id)
   end

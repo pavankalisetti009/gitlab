@@ -26,7 +26,7 @@ module Geo::ReplicableRegistry
     end
 
     def registry_consistency_worker_enabled?
-      replicator_class.enabled?
+      replicator_class.replication_enabled?
     end
 
     # Fail syncs for records which started syncing a long time ago

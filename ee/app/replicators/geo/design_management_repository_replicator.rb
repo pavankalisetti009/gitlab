@@ -16,11 +16,6 @@ module Geo
       git_access_class.error_message(:no_repo)
     end
 
-    override :verification_feature_flag_enabled?
-    def self.verification_feature_flag_enabled?
-      true
-    end
-
     override :housekeeping_enabled?
     def self.housekeeping_enabled?
       false

@@ -396,20 +396,20 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
         end
 
         context 'primary node' do
-          it 'calls replicator.handle_after_checksum_succeeded' do
+          it 'calls replicator.geo_handle_after_checksum_succeeded' do
             stub_current_geo_node(primary_node)
 
-            expect(subject.replicator).to receive(:handle_after_checksum_succeeded)
+            expect(subject.replicator).to receive(:geo_handle_after_checksum_succeeded)
 
             subject.verification_succeeded_with_checksum!('abc123', Time.current)
           end
         end
 
         context 'secondary node' do
-          it 'does not call replicator.handle_after_checksum_succeeded' do
+          it 'does not call replicator.geo_handle_after_checksum_succeeded' do
             stub_current_geo_node(secondary_node)
 
-            expect(subject.replicator).not_to receive(:handle_after_checksum_succeeded)
+            expect(subject.replicator).not_to receive(:geo_handle_after_checksum_succeeded)
 
             subject.verification_succeeded_with_checksum!('abc123', Time.current)
           end

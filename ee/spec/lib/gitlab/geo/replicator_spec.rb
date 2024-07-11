@@ -18,6 +18,7 @@ RSpec.describe Gitlab::Geo::Replicator, feature_category: :geo_replication do
 
   before do
     stub_dummy_replicator_class
+    stub_dummy_replication_feature_flag
   end
 
   context 'event DSL' do

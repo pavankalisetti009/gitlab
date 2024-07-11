@@ -168,12 +168,8 @@ module Gitlab
         end
       end
 
-      def self.enabled?
+      def self.replication_enabled?
         Feature.enabled?(replication_enabled_feature_key, type: :ops)
-      end
-
-      def self.disabled?
-        !enabled?
       end
 
       # @example Given `Geo::PackageFileRegistryFinder`, this returns
@@ -246,6 +242,7 @@ module Gitlab
       # @param [Symbol] event_name
       # @param [Hash] event_data
       def publish(event_name, **event_data)
+        return unless should_publish_replication_event?
         raise ArgumentError, "Unsupported event: '#{event_name}'" unless self.class.event_supported?(event_name)
 
         create_event_with(
@@ -300,29 +297,23 @@ module Gitlab
       end
 
       def geo_handle_after_create
-        return false unless Gitlab::Geo.primary?
-        return unless self.class.enabled?
+        return unless Gitlab::Geo.primary?
 
         publish(:created, **created_params)
-
         after_verifiable_update if respond_to?(:after_verifiable_update)
       end
 
       def geo_handle_after_destroy
-        return false unless Gitlab::Geo.primary?
-        return unless self.class.enabled?
+        return unless Gitlab::Geo.primary?
 
         publish(:deleted, **deleted_params)
       end
 
       def geo_handle_after_update
-        return false unless Gitlab::Geo.primary?
-        return unless self.class.enabled?
+        return unless Gitlab::Geo.primary?
 
         before_verifiable_update if respond_to?(:before_verifiable_update)
-
         publish(:updated, **updated_params)
-
         after_verifiable_update if respond_to?(:after_verifiable_update)
       end
 
@@ -356,6 +347,10 @@ module Gitlab
       strong_memoize_attr :resource_exists?
 
       protected
+
+      def should_publish_replication_event?
+        self.class.replication_enabled?
+      end
 
       # Store an event on the database
       #

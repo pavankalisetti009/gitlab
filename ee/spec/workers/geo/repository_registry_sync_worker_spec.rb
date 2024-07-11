@@ -37,6 +37,10 @@ RSpec.describe Geo::RepositoryRegistrySyncWorker, :geo, feature_category: :geo_r
       end
 
       context 'when container repository replication is disabled' do
+        before do
+          stub_registry_replication_config(enabled: false)
+        end
+
         it 'returns 1' do
           expect(described_class.new.send(:max_capacity)).to eq(1)
         end
@@ -59,6 +63,10 @@ RSpec.describe Geo::RepositoryRegistrySyncWorker, :geo, feature_category: :geo_r
       end
 
       context 'when container repository replication is disabled' do
+        before do
+          stub_registry_replication_config(enabled: false)
+        end
+
         it 'returns only 1/10 of repos_max_capacity based capacity' do
           expect(described_class.new.send(:max_capacity)).to eq(2)
         end
