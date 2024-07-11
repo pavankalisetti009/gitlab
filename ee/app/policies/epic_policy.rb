@@ -23,6 +23,8 @@ class EpicPolicy < BasePolicy
   end
 
   condition(:summarize_notes_enabled, scope: :subject) do
+    next false unless @user
+
     next true if summarize_comments_service.allowed_for?(@user)
 
     next false unless summarize_comments_service.free_access?
