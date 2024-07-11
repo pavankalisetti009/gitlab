@@ -1755,7 +1755,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when notes are fetched just from the epic itself' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it 'returns only epic notes' do
@@ -1768,7 +1768,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when notes are fetched from the epic and epic work item' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: true)
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
         end
 
         it 'returns epic and epic work item notes' do
@@ -1796,7 +1796,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when label resource events are fetched just from the epic itself' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it 'returns only epic label events' do
@@ -1809,7 +1809,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when label resource events are fetched from the epic and epic work item' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: true)
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
         end
 
         it 'returns epic and epic work item label events' do
@@ -1835,7 +1835,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when state resource events are fetched just from the epic itself' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it 'returns only epic state events' do
@@ -1848,7 +1848,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when state resource events are fetched from the epic and epic work item' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: true)
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
         end
 
         it 'returns epic and epic work item state events' do
@@ -1874,7 +1874,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when description versions are fetched just from the epic itself' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: false)
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
         end
 
         it 'returns only epic notes' do
@@ -1887,7 +1887,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
       context 'when notes are fetched from the epic and epic work item' do
         before do
-          stub_feature_flags(epic_and_work_item_notes_unification: true)
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
         end
 
         it 'returns epic and epic work item notes' do

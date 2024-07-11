@@ -74,9 +74,9 @@ RSpec.describe Resolvers::UserNotesCountResolver, feature_category: :team_planni
               expect(subject).to eq(3 + 5)
             end
 
-            context 'when epic_and_work_item_notes_unification FF is disabled' do
+            context 'when epic_and_work_item_associations_unification FF is disabled' do
               before do
-                stub_feature_flags(epic_and_work_item_notes_unification: false)
+                stub_feature_flags(epic_and_work_item_associations_unification: false)
               end
 
               it 'returns the number of notes for the issue' do

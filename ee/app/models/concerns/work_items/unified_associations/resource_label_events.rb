@@ -11,7 +11,7 @@ module WorkItems
           foreign_key: "#{base_class.name.underscore}_id"
         has_many :resource_label_events, foreign_key: "#{base_class.name.underscore}_id" do
           def load_target
-            return super unless proxy_association.owner.notes_unification_enabled?
+            return super unless proxy_association.owner.unified_associations?
 
             proxy_association.target = scope.to_a unless proxy_association.loaded?
 
@@ -30,7 +30,7 @@ module WorkItems
           end
 
           def find(*args)
-            return super unless proxy_association.owner.notes_unification_enabled?
+            return super unless proxy_association.owner.unified_associations?
             return super if block_given?
 
             scope.find(*args)
