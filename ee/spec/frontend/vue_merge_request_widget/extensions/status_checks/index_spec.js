@@ -267,7 +267,7 @@ describe('Status checks extension', () => {
         expect(actionButton.find('[aria-label="Loading"]').exists()).toBe(true);
       });
 
-      it('should refetch the status checks when retry was successful', async () => {
+      it('should poll the status checks when retry was successful', async () => {
         jest
           .spyOn(StatusCheckRetryApi, 'mrStatusCheckRetry')
           .mockResolvedValue({ response: { status: HTTP_STATUS_OK, data: {} } });
@@ -278,6 +278,12 @@ describe('Status checks extension', () => {
 
         expect(mock.history.get.length).toBe(1);
         expect(mock.history.get[0].url).toBe(getChecksEndpoint);
+
+        jest.advanceTimersByTime(POLL_INTERVAL_MS * 2);
+        await waitForPromises();
+
+        expect(mock.history.get.length).toBe(2);
+        expect(mock.history.get[1].url).toBe(getChecksEndpoint);
       });
 
       it('should refetch the status checks when retried status check is already approved', async () => {

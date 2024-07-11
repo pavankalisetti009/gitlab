@@ -92,7 +92,7 @@ export default {
 
         actionButtons.push({
           text: __('Retry'),
-          onClick: () => this.fetchStatusChecks(),
+          onClick: () => this.startPolling(),
           loading: isLoading,
           disabled: isLoading,
         });
@@ -133,6 +133,7 @@ export default {
           mergeRequestId: this.mr.iid,
           externalStatusCheckId: statusCheck.id,
         });
+        this.startPolling();
       } catch (err) {
         if (err?.response?.status === HTTP_STATUS_UNPROCESSABLE_ENTITY) {
           this.collapsedData = await this.fetchStatusChecks();
@@ -143,6 +144,8 @@ export default {
       }
     },
     startPolling() {
+      this.stopPolling();
+
       this.poll = new Poll({
         resource: {
           fetchData: () => this.fetchStatusChecks(),
