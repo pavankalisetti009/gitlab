@@ -41,7 +41,7 @@ module Mutations
           @add_on_purchase = authorized_find!(id: add_on_purchase_id)
           @user_to_be_assigned = ::Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(user_id))
 
-          raise_resource_not_available_error! unless feature_enabled? && add_on_purchase&.active? && user_to_be_assigned
+          raise_resource_not_available_error! unless add_on_purchase&.active? && user_to_be_assigned
 
           super
         end
@@ -49,10 +49,6 @@ module Mutations
         private
 
         attr_reader :add_on_purchase, :user_to_be_assigned
-
-        def feature_enabled?
-          gitlab_duo_available?
-        end
 
         def create_user_add_on_service
           service_class = if gitlab_com_subscription?

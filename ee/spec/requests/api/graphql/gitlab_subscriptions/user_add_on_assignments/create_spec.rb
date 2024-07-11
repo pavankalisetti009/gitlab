@@ -290,14 +290,6 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     it_behaves_like 'validates the query'
     it_behaves_like 'success response'
 
-    context 'with feature flag disabled' do
-      before do
-        stub_feature_flags(self_managed_code_suggestions: false)
-      end
-
-      it_behaves_like 'empty response'
-    end
-
     context 'when current_user is not an admin' do
       let(:current_user) { create(:user) }
 

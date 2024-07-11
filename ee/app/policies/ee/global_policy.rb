@@ -126,7 +126,6 @@ module EE
       end
 
       condition(:user_allowed_to_manage_ai_settings) do
-        next false unless ::Feature.enabled?(:self_managed_code_suggestions) # Can be removed post-rollout
         next false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
 
         ::License.current&.paid? # Replace with license :ai_self_hosted_model for GA

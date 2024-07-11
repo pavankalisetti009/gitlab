@@ -22,8 +22,6 @@ module Resolvers
         def resolve(add_on_type:, search: nil)
           authorize!
 
-          return [] unless gitlab_duo_available?
-
           users = ::GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(
             add_on_type: add_on_type,
             search_term: search

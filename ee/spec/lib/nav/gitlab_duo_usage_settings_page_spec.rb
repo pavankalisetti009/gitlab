@@ -43,10 +43,10 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
         stub_licensed_features(code_suggestions: true)
         stub_saas_features(gitlab_com_subscriptions: true)
         allow(group).to receive(:has_free_or_no_subscription?) { has_free_or_no_subscription? }
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group_with_duo_pro)
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group_with_duo_pro_trial)
       end
 
-      where(:has_free_or_no_subscription?, :group_with_duo_pro, :result) do
+      where(:has_free_or_no_subscription?, :group_with_duo_pro_trial, :result) do
         true  | ref(:another_group) | false
         false | ref(:another_group) | true
         true  | ref(:group)         | true
@@ -70,7 +70,6 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
       before do
         stub_licensed_features(code_suggestions: true)
         stub_saas_features(gitlab_com_subscriptions: false)
-        stub_feature_flags(self_managed_code_suggestions: true)
       end
 
       it { expect(show_gitlab_duo_usage_app?(group)).to be_falsy }

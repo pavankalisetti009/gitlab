@@ -12,8 +12,13 @@ module Nav
 
     def show_gitlab_duo_usage_app?(group)
       gitlab_com_subscription? &&
-        gitlab_duo_available? &&
-        (!group.has_free_or_no_subscription? || group.subscription_add_on_purchases.active.for_gitlab_duo_pro.any?) &&
+        (
+          !group.has_free_or_no_subscription? ||
+          # group has Duo Pro add-on trial on a Free tier
+          group.subscription_add_on_purchases.active.for_gitlab_duo_pro.any?
+        ) &&
+        # Guard this feature for EE users only https://docs.gitlab.com/ee/development/ee_features.html#guard-your-ee-feature
+        # This is to prevent it showing up in CE and free EE
         License.feature_available?(:code_suggestions)
     end
   end

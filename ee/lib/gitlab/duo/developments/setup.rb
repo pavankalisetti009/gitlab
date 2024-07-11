@@ -169,7 +169,6 @@ module Gitlab
           puts "Enabling feature flags...."
 
           ::Feature.enable(:summarize_my_code_review)
-          ::Feature.enable(:self_managed_code_suggestions)
           ::Feature.enable(:gitlab_com_duo_pro_bulk_user_assignment)
           ::Feature.enable(:enable_hamilton_in_user_preferences)
           ::Feature.enable(:code_suggestions_direct_completions)

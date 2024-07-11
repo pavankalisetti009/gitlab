@@ -34,18 +34,6 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
       end
     end
 
-    context 'when self_managed_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(self_managed_code_suggestions: false)
-      end
-
-      it 'returns 404' do
-        perform_request
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
-    end
-
     context 'when current licences is not paid' do
       before do
         allow(License).to receive_message_chain(:current, :paid?).and_return(false)

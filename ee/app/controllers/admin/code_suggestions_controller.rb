@@ -33,7 +33,7 @@ module Admin
     end
 
     def ensure_feature_available!
-      render_404 unless !gitlab_com_subscription? && License.current&.paid? && gitlab_duo_available?
+      render_404 unless !gitlab_com_subscription? && License.current&.paid?
     end
   end
 end

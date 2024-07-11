@@ -16,18 +16,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ScheduleBulkRefreshUserAssig
       end
     end
 
-    context 'when feature flag self_managed_code_suggestions is disabled' do
-      before do
-        stub_feature_flags(self_managed_code_suggestions: false)
-      end
-
-      it 'does not schedule the worker to perform with capacity' do
-        expect(worker_class).not_to receive(:perform_with_capacity)
-
-        subject.perform
-      end
-    end
-
     context 'when on SaaS (GitLab.com)', :saas do
       it 'schedules the worker to perform with capacity' do
         expect(worker_class).to receive(:perform_with_capacity).once
