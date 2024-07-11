@@ -29,7 +29,7 @@ module Gitlab
             feature_category: :ai_abstraction_layer,
             execute_method: ::Llm::GenerateSummaryService,
             maturity: :experimental,
-            self_managed: false,
+            self_managed: true,
             internal: false
           },
           summarize_review: {

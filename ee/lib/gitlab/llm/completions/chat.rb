@@ -21,7 +21,8 @@ module Gitlab
           ::Gitlab::Llm::Chain::Tools::WriteTests,
           ::Gitlab::Llm::Chain::Tools::RefactorCode,
           ::Gitlab::Llm::Chain::Tools::ExplainVulnerability,
-          ::Gitlab::Llm::Chain::Tools::TroubleshootJob
+          ::Gitlab::Llm::Chain::Tools::TroubleshootJob,
+          ::Gitlab::Llm::Chain::Tools::SummarizeComments
         ].freeze
 
         # @param [Gitlab::Llm::AiMessage] prompt_message - user question

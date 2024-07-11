@@ -9,7 +9,7 @@ module Gitlab
             class Anthropic
               include Concerns::AnthropicPrompt
 
-              OUTPUT_TOKEN_LIMIT = 8000
+              OUTPUT_TOKEN_LIMIT = 2048
 
               def self.prompt(options)
                 base_prompt = Utils::Prompt.no_role_text(

@@ -214,8 +214,8 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     end
 
     context 'when summarize_comments input is set' do
-      let(:input) { { summarize_comments: { resource_id: resource_id } } }
-      let(:expected_method) { :summarize_comments }
+      let(:input) { { generate_description: { resource_id: resource_id } } }
+      let(:expected_method) { :generate_description }
       let(:expected_options) { { user_agent: "user-agent" } }
 
       it_behaves_like 'an AI action'
@@ -223,8 +223,8 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
     end
 
     context 'when client_subscription_id input is set' do
-      let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
-      let(:expected_method) { :summarize_comments }
+      let(:input) { { generate_description: { resource_id: resource_id }, client_subscription_id: 'id' } }
+      let(:expected_method) { :generate_description }
       let(:expected_options) { { client_subscription_id: 'id', user_agent: 'user-agent' } }
 
       it_behaves_like 'an AI action'

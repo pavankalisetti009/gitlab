@@ -23,6 +23,18 @@ class EpicPolicy < BasePolicy
   end
 
   condition(:summarize_notes_enabled, scope: :subject) do
+    next true if summarize_comments_service.allowed_for?(@user)
+
+    next false unless summarize_comments_service.free_access?
+
+    if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
+      @user.any_group_with_ai_available?
+    else
+      ::License.feature_available?(:ai_features)
+    end
+  end
+
+  condition(:summarize_notes_allowed) do
     ::Gitlab::Llm::FeatureAuthorizer.new(
       container: subject.group,
       feature_name: :summarize_comments
@@ -112,7 +124,7 @@ class EpicPolicy < BasePolicy
     enable :mark_note_as_internal
   end
 
-  rule { summarize_notes_enabled & can?(:read_epic) }.policy do
+  rule { summarize_notes_enabled & summarize_notes_allowed & can?(:read_epic) }.policy do
     enable :summarize_comments
   end
 
@@ -123,5 +135,9 @@ class EpicPolicy < BasePolicy
 
   rule { can?(:read_epic_relation) & subepics_available }.policy do
     enable :create_epic_tree_relation
+  end
+
+  def summarize_comments_service
+    CloudConnector::AvailableServices.find_by_name(:summarize_comments)
   end
 end
