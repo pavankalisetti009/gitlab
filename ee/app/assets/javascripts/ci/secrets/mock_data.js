@@ -11,6 +11,7 @@ const mockSecretsData = [
     expiration: '2026-03-11T01:33:06.258Z',
     description: 'This is the runner-token-window secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[0].value,
+    status: 'enabled',
   },
   {
     name: 'product/client-tokens',
@@ -21,6 +22,7 @@ const mockSecretsData = [
     expiration: '2026-01-22T08:04:26.024Z',
     description: 'This is the product/client-tokens secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[2].value,
+    status: 'disabled',
   },
   {
     name: 'product/server-tokens',
@@ -31,6 +33,7 @@ const mockSecretsData = [
     expiration: '2025-01-24T08:04:26.024Z',
     description: 'This is the product/server-tokens secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[1].value,
+    status: 'expiring',
   },
   {
     name: 'security-token-project2',
@@ -41,6 +44,7 @@ const mockSecretsData = [
     expiration: '2026-01-19T11:59:43.516Z',
     description: 'This is the security-token-project2 secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[0].value,
+    status: 'expired',
   },
   {
     name: 'personal-tokens',
@@ -51,6 +55,7 @@ const mockSecretsData = [
     expiration: '2026-01-17T05:51:54.602Z',
     description: 'This is the personal-tokens secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[2].value,
+    status: 'enabled',
   },
   {
     name: 'token-deployment',
@@ -61,6 +66,7 @@ const mockSecretsData = [
     expiration: '2026-01-15T17:12:33.882Z',
     description: 'This is the token-deployment secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[2].value,
+    status: 'expiring',
   },
   {
     name: 'runner-token-mac',
@@ -71,6 +77,7 @@ const mockSecretsData = [
     expiration: '2025-01-15T16:35:38.326Z',
     description: 'This is the runner-token-mac secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[0].value,
+    status: 'enabled',
   },
   {
     name: 'aws-db-prod-credentials',
@@ -81,6 +88,7 @@ const mockSecretsData = [
     expiration: '2026-01-04T10:37:41.135Z',
     description: 'This is the aws-db-prod-credentials secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[1].value,
+    status: 'disabled',
   },
   {
     name: 'runner-token-linux',
@@ -91,6 +99,7 @@ const mockSecretsData = [
     expiration: '2025-01-14T18:52:56.258Z',
     description: 'This is the runner-token-linux secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[0].value,
+    status: 'enabled',
   },
   {
     name: 'SSH-KEY-1',
@@ -101,6 +110,7 @@ const mockSecretsData = [
     expiration: '2025-11-30T01:29:14.394Z',
     description: 'This is the SSH-KEY-1 secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[1].value,
+    status: 'enabled',
   },
   {
     name: 'group-ID',
@@ -111,6 +121,7 @@ const mockSecretsData = [
     expiration: '2025-01-21T17:34:33.544Z',
     description: 'This is the group-ID secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[1].value,
+    status: 'expiring',
   },
   {
     name: 'security-token-project1',
@@ -121,6 +132,7 @@ const mockSecretsData = [
     expiration: '2025-01-21T17:34:33.544Z',
     description: 'This is the security-token-project1 secret.',
     rotationPeriod: ROTATION_PERIOD_OPTIONS[2].value,
+    status: 'enabled',
   },
 ];
 /* eslint-enable @gitlab/require-i18n-strings */

@@ -29,6 +29,30 @@ export const ROTATION_PERIOD_THREE_MONTHS = {
   value: '180',
   text: __('Every three months'),
 };
+
+export const SECRET_STATUS = {
+  disabled: {
+    icon: 'status-failed',
+    text: __('Disabled'),
+    variant: 'neutral',
+  },
+  enabled: {
+    icon: 'status-active',
+    text: __('Enabled'),
+    variant: 'success',
+  },
+  expiring: {
+    icon: 'status-alert',
+    text: __('Expiring soon'),
+    variant: 'warning',
+  },
+  expired: {
+    icon: 'status-cancelled',
+    text: __('Expired'),
+    variant: 'danger',
+  },
+};
+
 export const ROTATION_PERIOD_OPTIONS = [
   ROTATION_PERIOD_TWO_WEEKS,
   ROTATION_PERIOD_MONTH,
