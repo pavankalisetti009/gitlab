@@ -13,4 +13,5 @@ fragment License on CurrentLicense {
   billableUsersCount
   maximumUserCount
   usersOverLicenseCount
+  trial
 }

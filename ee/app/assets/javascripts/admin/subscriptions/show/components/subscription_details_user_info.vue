@@ -1,44 +1,16 @@
 <script>
 import { GlCard, GlLink, GlSprintf } from '@gitlab/ui';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import { n__, __ } from '~/locale';
+import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
-export const billableUsersURL = helpPagePath('subscriptions/self_managed/index', {
-  anchor: 'billable-users',
-});
-export const trueUpURL = `${PROMO_URL}/pricing/licensing-faq/#what-does-users-over-license-mean`;
-
-export const usersInSubscriptionUnlimited = __('Unlimited');
-
-export const i18n = Object.freeze({
-  billableUsersTitle: __('Billable users'),
-  maximumUsersTitle: __('Maximum users'),
-  usersOverSubscriptionTitle: __('Users over subscription'),
-  billableUsersText: __(
-    'This is the number of %{billableUsersLinkStart}billable users%{billableUsersLinkEnd} on your installation, and this is the minimum number you need to purchase when you renew your license.',
-  ),
-  maximumUsersText: __(
-    'This is the highest peak of users on your installation since the license started.',
-  ),
-  usersInSubscriptionText: __(
-    `Users with a Guest role or those who don't belong to a Project or Group will not use a seat from your license.`,
-  ),
-  usersOverSubscriptionText: __(
-    `You'll be charged for %{trueUpLinkStart}users over license%{trueUpLinkEnd} on a quarterly or annual basis, depending on the terms of your agreement.`,
-  ),
-});
-
 export default {
-  links: {
-    billableUsersURL,
-    trueUpURL,
-  },
   name: 'SubscriptionDetailsUserInfo',
   components: {
     GlCard,
     GlLink,
     GlSprintf,
+    HelpPageLink,
   },
   props: {
     subscription: {
@@ -48,7 +20,7 @@ export default {
   },
   computed: {
     usersInSubscription() {
-      return this.subscription.usersInLicenseCount ?? usersInSubscriptionUnlimited;
+      return this.subscription.usersInLicenseCount ?? __('Unlimited');
     },
     billableUsers() {
       return this.subscription.billableUsersCount;
@@ -58,6 +30,17 @@ export default {
     },
     usersOverSubscription() {
       return this.subscription.usersOverLicenseCount;
+    },
+    usersOverSubscriptionText() {
+      if (this.subscription.trial) {
+        return __(
+          "You are using a trial license. When you use a paid subscription, you'll be charged for %{trueUpLinkStart}users over license%{trueUpLinkEnd}.",
+        );
+      }
+
+      return __(
+        "You'll be charged for %{trueUpLinkStart}users over license%{trueUpLinkEnd} on a quarterly or annual basis, depending on the terms of your agreement.",
+      );
     },
     isUsersInSubscriptionVisible() {
       return this.subscription.plan === 'ultimate';
@@ -74,7 +57,7 @@ export default {
       return __('Users in subscription');
     },
   },
-  i18n,
+  trueUpURL: `${PROMO_URL}/pricing/licensing-faq/#what-does-users-over-license-mean`,
 };
 </script>
 
@@ -86,23 +69,33 @@ export default {
         <h2 class="!gl-mt-0" data-testid="users-in-subscription">{{ usersInSubscription }}</h2>
       </header>
       <div v-if="isUsersInSubscriptionVisible" data-testid="users-in-subscription-desc">
-        {{ $options.i18n.usersInSubscriptionText }}
+        {{
+          __(
+            `Users with a Guest role or those who don't belong to a Project or Group will not use a seat from your license.`,
+          )
+        }}
       </div>
     </gl-card>
 
     <gl-card data-testid="billable-users">
       <header>
         <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
-          {{ $options.i18n.billableUsersTitle }}
+          {{ __('Billable users') }}
         </h5>
         <h2 class="!gl-mt-0" data-testid="billable-users-count">{{ billableUsers }}</h2>
       </header>
       <div>
-        <gl-sprintf :message="$options.i18n.billableUsersText">
+        <gl-sprintf
+          :message="
+            __(
+              'This is the number of %{billableUsersLinkStart}billable users%{billableUsersLinkEnd} on your installation, and this is the minimum number you need to purchase when you renew your license.',
+            )
+          "
+        >
           <template #billableUsersLink="{ content }">
-            <gl-link :href="$options.links.billableUsersURL" target="_blank">
+            <help-page-link href="subscriptions/self_managed/index#billable-users">
               {{ content }}
-            </gl-link>
+            </help-page-link>
           </template>
         </gl-sprintf>
       </div>
@@ -111,24 +104,28 @@ export default {
     <gl-card data-testid="maximum-users">
       <header>
         <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
-          {{ $options.i18n.maximumUsersTitle }}
+          {{ __('Maximum users') }}
         </h5>
         <h2 class="!gl-mt-0">{{ maximumUsers }}</h2>
       </header>
-      <div>{{ $options.i18n.maximumUsersText }}</div>
+      <div>
+        {{
+          __('This is the highest peak of users on your installation since the license started.')
+        }}
+      </div>
     </gl-card>
 
     <gl-card data-testid="users-over-license">
       <header>
         <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
-          {{ $options.i18n.usersOverSubscriptionTitle }}
+          {{ __('Users over subscription') }}
         </h5>
         <h2 class="!gl-mt-0">{{ usersOverSubscription }}</h2>
       </header>
       <div>
-        <gl-sprintf :message="$options.i18n.usersOverSubscriptionText">
+        <gl-sprintf :message="usersOverSubscriptionText">
           <template #trueUpLink="{ content }">
-            <gl-link :href="$options.links.trueUpURL">{{ content }}</gl-link>
+            <gl-link :href="$options.trueUpURL">{{ content }}</gl-link>
           </template>
         </gl-sprintf>
       </div>
