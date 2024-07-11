@@ -6,8 +6,9 @@ RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_
   feature_category: :global_search do
   include ListboxHelpers
 
-  let_it_be(:user) { create(:user) }
-
+  let(:user) { create(:user) }
+  let(:wiki) { create(:project_wiki, project: project) }
+  let(:group_wiki) { create(:group_wiki, group: group) }
   let(:group) { create(:group) }
   let(:project) { create(:project, :repository, :wiki_repo, namespace: group) }
 
@@ -22,104 +23,52 @@ RSpec.describe 'Group elastic search', :js, :elastic, :sidekiq_inline, :disable_
 
   before do
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
-
+    create(:issue, project: project, title: 'chosen issue title')
+    project.repository.index_commits_and_blobs
+    stub_licensed_features(epics: true, group_wikis: true)
+    create(:epic, group: group, title: 'chosen epic title')
+    Sidekiq::Worker.skipping_transaction_check do
+      [group_wiki, wiki].each do |w|
+        w.create_page('test.md', '# term')
+        w.index_wiki_blobs
+      end
+    end
+    ensure_elasticsearch_index!
     project.add_maintainer(user)
-    group.add_owner(user)
 
     sign_in(user)
-
     visit(search_path)
-
     wait_for_requests
-
     choose_group(group)
   end
 
-  describe 'issue search' do
-    before do
-      create(:issue, project: project, title: 'chosen issue title')
+  it 'finds all the scopes', :allowed_to_be_slow do
+    # issues
+    submit_search('chosen')
+    select_search_scope('Issues')
+    expect(page).to have_content('chosen issue title')
 
-      ensure_elasticsearch_index!
-    end
+    # epics
+    submit_search('chosen')
+    select_search_scope('Epics')
+    expect(page).to have_content('chosen epic title')
 
-    it 'finds the issue' do
-      submit_search('chosen')
-      select_search_scope('Issues')
+    # blobs
+    submit_search('def')
+    select_search_scope('Code')
+    expect(page).to have_selector('.file-content .code')
+    expect(page).to have_button('Copy file path')
 
-      expect(page).to have_content('chosen issue title')
-    end
-  end
+    # commits
+    submit_search('add')
+    select_search_scope('Commits')
+    expect(page).to have_selector('.commit-list > .commit')
 
-  describe 'blob search' do
-    before do
-      project.repository.index_commits_and_blobs
-
-      ensure_elasticsearch_index!
-    end
-
-    it 'finds files' do
-      submit_search('def')
-      select_search_scope('Code')
-
-      expect(page).to have_selector('.file-content .code')
-      expect(page).to have_button('Copy file path')
-    end
-  end
-
-  describe 'wiki search' do
-    include WikiHelpers
-    let(:wiki) { ProjectWiki.new(project, user) }
-    let(:group_wiki) { create(:group_wiki, group: group) }
-
-    before do
-      stub_group_wikis(true)
-      Sidekiq::Worker.skipping_transaction_check do
-        [group_wiki, wiki].each do |w|
-          w.create_page('test.md', '# term')
-          w.index_wiki_blobs
-        end
-      end
-      ensure_elasticsearch_index!
-    end
-
-    it 'finds Project and Group wiki pages' do
-      submit_search('term')
-      select_search_scope('Wiki')
-
-      expect(page).to have_selector('.search-result-row .description', text: 'term').twice
-      expect(page).to have_link('test').twice
-    end
-  end
-
-  describe 'epic search' do
-    before do
-      stub_licensed_features(epics: true)
-
-      create(:epic, group: group, title: 'chosen epic title')
-
-      ensure_elasticsearch_index!
-    end
-
-    it 'finds the epic' do
-      submit_search('chosen')
-      select_search_scope('Epics')
-
-      expect(page).to have_content('chosen epic title')
-    end
-  end
-
-  describe 'commit search' do
-    before do
-      project.repository.index_commits_and_blobs
-      ensure_elasticsearch_index!
-    end
-
-    it 'finds commits' do
-      submit_search('add')
-      select_search_scope('Commits')
-
-      expect(page).to have_selector('.commit-list > .commit')
-    end
+    # wikis
+    submit_search('term')
+    select_search_scope('Wiki')
+    expect(page).to have_selector('.search-result-row .description', text: 'term').twice
+    expect(page).to have_link('test').twice
   end
 end
 
