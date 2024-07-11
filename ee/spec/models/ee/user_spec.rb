@@ -1217,7 +1217,7 @@ RSpec.describe User, feature_category: :system_access do
         AND
         "users"."user_type" IN \(0, 6, 4, 13\)
         AND
-        "users"."user_type" IN \(0, 4, 5, 15\)'.squish
+        "users"."user_type" IN \(0, 4, 5, 15, 17\)'.squish
       end
 
       it 'validates the sql matches the specific index we have' do
@@ -1244,7 +1244,7 @@ RSpec.describe User, feature_category: :system_access do
         AND
         "users"."user_type" IN \(0, 6, 4, 13\)
         AND
-        "users"."user_type" IN \(0, 4, 5, 15\)
+        "users"."user_type" IN \(0, 4, 5, 15, 17\)
         AND
         \(EXISTS \(SELECT 1 FROM "members"
            LEFT OUTER JOIN "member_roles" ON "member_roles"."id" = "members"."member_role_id"
@@ -1903,6 +1903,14 @@ RSpec.describe User, feature_category: :system_access do
 
         context 'when the user is a service account' do
           let(:user) { create(:user, :service_account) }
+
+          it 'returns false' do
+            expect(user.using_license_seat?).to eq(false)
+          end
+        end
+
+        context 'when the user is an import user' do
+          let(:user) { create(:user, :import_user) }
 
           it 'returns false' do
             expect(user.using_license_seat?).to eq(false)
