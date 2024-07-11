@@ -43,19 +43,8 @@ module CloudConnector
         # Permit self-signed tokens in development for testing purposes.
         return true if Rails.env.development?
 
-        # Identifies whether AI Gateway is self-hosted by the customer
-        # Currently, it's controlled by a feature flag, env var and a deadline until the proper solution is implemented
-        #
-        # The set of AI features is controlled by:
-        #
-        # - For SM that are using Cloud Connector: by CDot
-        # - For GitLab.com and SM with self-hosted AI Gateway: by ee/config/cloud_connector/access_data.yml file
-        #
-        # Unlike for GitLab.com, we cannot control the availability of the features for offline SM customers if
-        # they do not upgrade regularly. This is why we introduce a cut-off date to make the features unavailable if the
-        # customers do not upgrade.
-        ::Feature.enabled?(:ai_custom_model) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
-          Date.today < Ai::SelfHostedModel::CUTOFF_DATE
+        # Use self-signed tokens if customers are using self-hosted models
+        ::Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
       end
       # rubocop:enable Gitlab/AvoidGitlabInstanceChecks
     end
