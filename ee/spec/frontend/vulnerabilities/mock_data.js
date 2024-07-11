@@ -152,3 +152,61 @@ export const MUTATION_AI_ACTION_GLOBAL_ERROR = jest.fn().mockResolvedValue({
 export const MUTATION_AI_ACTION_ERROR = jest.fn().mockResolvedValue({
   data: { aiAction: { errors: ['mutation ai action error'] } },
 });
+
+export const TEST_ALL_BLOBS_INFO_GRAPHQL_SUCCESS_RESPONSE = {
+  data: {
+    project: {
+      __typename: 'Project',
+      id: '1',
+      repository: {
+        __typename: 'Repository',
+        empty: false,
+        blobs: {
+          __typename: 'RepositoryBlobConnection',
+          nodes: [
+            {
+              __typename: 'RepositoryBlob',
+              id: '2',
+              webPath: 'src/url/test.java',
+              name: 'test.java',
+              size: '10271',
+              rawSize: '10271',
+              rawTextBlob: '{\n  "newArray": [],\n }',
+              fileType: null,
+              language: 'java',
+              path: 'src/url/test.java',
+              blamePath: 'src/url/test.java',
+              editBlobPath: 'src/url/test.java',
+              gitpodBlobUrl: null,
+              ideEditPath: 'src/url/test.java',
+              forkAndEditPath: 'test.java&namespace_key=1',
+              ideForkAndEditPath: 'src%2Furl%2Ftest.java&namespace_key=1',
+              codeNavigationPath: null,
+              projectBlobPathRoot: 'd474dea0d13ca8ed94fd6b8ac0431998cc6d04e0',
+              forkAndViewPath: 'src%2Furl%2Ftest.java&namespace_key=1',
+              environmentFormattedExternalUrl: null,
+              environmentExternalUrlForRouteMap: null,
+              canModifyBlob: false,
+              canCurrentUserPushToBranch: false,
+              archived: false,
+              storedExternally: null,
+              externalStorage: null,
+              externalStorageUrl: null,
+              rawPath: 'src/url/test.java',
+              replacePath: 'src/url/test.java',
+              pipelineEditorPath: null,
+              simpleViewer: {
+                fileType: 'text',
+                tooLarge: false,
+                type: 'simple',
+                renderError: null,
+                __typename: 'BlobViewer',
+              },
+              richViewer: null,
+            },
+          ],
+        },
+      },
+    },
+  },
+};
