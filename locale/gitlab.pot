@@ -23820,7 +23820,7 @@ msgstr ""
 msgid "GitLab username"
 msgstr ""
 
-msgid "GitLab uses %{linkStart}Sidekiq%{linkEnd} to process background jobs"
+msgid "GitLab uses %{link_start}Sidekiq%{link_end} to process background jobs"
 msgstr ""
 
 msgid "GitLab version"
