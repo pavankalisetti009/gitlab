@@ -1,14 +1,13 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription } from 'mock-apollo-client';
-import { GlBadge, GlIcon, GlSkeletonLoader } from '@gitlab/ui';
+import { GlIcon, GlSkeletonLoader } from '@gitlab/ui';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import AiSummary from 'ee/notes/components/ai_summary.vue';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
-import { i18n } from 'ee/ai/constants';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
@@ -31,7 +30,6 @@ describe('AiSummary component', () => {
 
   const findMarkdownRef = () => wrapper.findComponent({ ref: 'markdown' });
   const findSkeleton = () => wrapper.findComponent(GlSkeletonLoader);
-  const findBadge = () => wrapper.findComponent(GlBadge);
   const findIcon = (name) =>
     wrapper.findAllComponents(GlIcon).filter((icon) => icon.props().name === name);
   const findCopyButton = () => wrapper.find('[data-testid="copy-ai-summary"]');
@@ -212,7 +210,6 @@ describe('AiSummary component', () => {
 
       it('shows "AI-generated summary"', () => {
         expect(findIcon('tanuki-ai').exists()).toBe(true);
-        expect(findBadge().text()).toBe(i18n.EXPERIMENT_BADGE);
         expect(wrapper.text()).toContain('AI-generated summary');
       });
 

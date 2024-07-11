@@ -1,6 +1,5 @@
 <script>
 import {
-  GlBadge,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
   GlIcon,
@@ -22,7 +21,6 @@ import { concatStreamedChunks } from 'ee/ai/utils';
 
 export default {
   components: {
-    GlBadge,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
     GlIcon,
@@ -160,7 +158,6 @@ export default {
       <div class="gl-display-flex gl-align-items-center gl-gap-3">
         <gl-icon name="tanuki-ai" class="gl-text-purple-600" />
         <h5 class="gl-my-0">{{ __('AI-generated summary') }}</h5>
-        <gl-badge variant="neutral">{{ __('Experiment') }}</gl-badge>
         <gl-disclosure-dropdown
           icon="ellipsis_v"
           category="tertiary"
