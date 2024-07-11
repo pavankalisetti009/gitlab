@@ -144,8 +144,6 @@ In this example:
 
 ### `include`
 
-> - [Moved](https://gitlab.com/gitlab-org/gitlab-foss/-/issues/42861) to GitLab Free in 11.4.
-
 Use `include` to include external YAML files in your CI/CD configuration.
 You can split one long `.gitlab-ci.yml` file into multiple files to increase readability,
 or reduce duplication of the same configuration in multiple places.
@@ -1447,12 +1445,11 @@ job:
 
 #### `artifacts:public`
 
-> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/223273) in GitLab 13.8 [with a flag](../../user/feature_flags.md) named `non_public_artifacts`, disabled by default.
 > - [Updated](https://gitlab.com/gitlab-org/gitlab/-/issues/322454) in GitLab 15.10. Artifacts created with `artifacts:public` before 15.10 are not guaranteed to remain private after this update.
 > - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/294503) in GitLab 16.7. Feature flag `non_public_artifacts` removed.
 
 NOTE:
-`artifacts:public` is now superceded by [`artifacts:access`](#artifactsaccess) which
+`artifacts:public` is now superseded by [`artifacts:access`](#artifactsaccess) which
 has more options.
 
 Use `artifacts:public` to determine whether the job artifacts should be
@@ -5306,8 +5303,6 @@ successfully complete before starting.
 
 #### `trigger:forward`
 
-> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/213729) in GitLab 14.9 [with a flag](../../administration/feature_flags.md) named `ci_trigger_forward_variables`. Disabled by default.
-> - [Enabled on GitLab.com and self-managed](https://gitlab.com/gitlab-org/gitlab/-/issues/355572) in GitLab 14.10.
 > - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/355572) in GitLab 15.1. [Feature flag `ci_trigger_forward_variables`](https://gitlab.com/gitlab-org/gitlab/-/issues/355572) removed.
 
 Use `trigger:forward` to specify what to forward to the downstream pipeline. You can control
