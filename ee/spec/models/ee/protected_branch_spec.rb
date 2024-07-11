@@ -8,6 +8,11 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
   let(:project) { subject.project }
   let(:user) { create(:user) }
 
+  it_behaves_like 'protected ref with ee access levels for', :merge
+  it_behaves_like 'protected ref with ee access levels for', :push
+  it_behaves_like 'protected ref with access levels for', :unprotect
+  it_behaves_like 'protected ref with ee access levels for', :unprotect
+
   describe 'associations' do
     it { is_expected.to have_many(:unprotect_access_levels).inverse_of(:protected_branch) }
     it { is_expected.to have_many(:required_code_owners_sections).class_name('ProtectedBranch::RequiredCodeOwnersSection') }
@@ -225,9 +230,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
     subject { described_class.branch_requires_code_owner_approval?(project, branch_name) }
 
     context 'when there are no match branches' do
-      it 'return false' do
-        expect(subject).to eq(false)
-      end
+      it { is_expected.to eq(false) }
     end
 
     context 'when `code_owner_approval_required_available?` of project is false' do
@@ -235,9 +238,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
         allow(project).to receive(:code_owner_approval_required_available?).and_return(false)
       end
 
-      it 'return false' do
-        expect(subject).to eq(false)
-      end
+      it { is_expected.to eq(false) }
     end
 
     context 'when there are matched branches' do
@@ -262,7 +263,7 @@ RSpec.describe ProtectedBranch, feature_category: :source_code_management do
           create(:protected_branch, name: branch_name, code_owner_approval_required: code_owner_approval_required, **params)
         end
 
-        it { expect(subject).to eq(result) }
+        it { is_expected.to eq(result) }
       end
     end
   end
