@@ -61,7 +61,7 @@ export default {
       fetchPolicy: fetchPolicies.NETWORK_ONLY,
       variables() {
         return {
-          fullPath: this.rootAncestor.path,
+          fullPath: this.groupPath,
           search: this.searchString,
           ...this.cursor,
           [this.cursor.before ? 'last' : 'first']: FRAMEWORK_LIMIT,

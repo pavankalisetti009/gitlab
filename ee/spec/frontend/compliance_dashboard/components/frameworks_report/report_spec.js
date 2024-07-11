@@ -168,10 +168,10 @@ describe('ComplianceFrameworksReport component', () => {
       );
     });
 
-    it('fetches the list of frameworks from root ancestor', () => {
+    it('fetches the list of frameworks from current group', () => {
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
         ...defaultPagination(),
-        fullPath: rootPath,
+        fullPath: subgroupPath,
       });
     });
   });

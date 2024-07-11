@@ -2,10 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe 'getting a list of compliance frameworks for a root namespace', feature_category: :compliance_management do
+RSpec.describe 'getting a list of compliance frameworks for a namespace', feature_category: :compliance_management do
   include GraphqlHelpers
 
   let_it_be(:namespace) { create(:group) }
+  let_it_be(:subgroup) { create(:group, parent: namespace) }
   let_it_be(:compliance_framework_1) { create(:compliance_framework, namespace: namespace, name: 'Test1') }
   let_it_be(:compliance_framework_2) { create(:compliance_framework, namespace: namespace, name: 'Test2') }
   let_it_be(:current_user) { create(:user) }
@@ -18,9 +19,12 @@ RSpec.describe 'getting a list of compliance frameworks for a root namespace', f
     )
   end
 
-  context 'when authenticated as the namespace owner' do
+  before do
+    stub_licensed_features(custom_compliance_frameworks: true)
+  end
+
+  context 'when authenticated as the top-level namespace owner' do
     before do
-      stub_licensed_features(custom_compliance_frameworks: true)
       namespace.add_owner(current_user)
     end
 
@@ -308,12 +312,45 @@ RSpec.describe 'getting a list of compliance frameworks for a root namespace', f
   end
 
   context 'when authenticated as a different user' do
-    let(:current_user) { build(:user) }
+    let_it_be(:current_user) { create(:user) }
 
-    it "does not return the namespaces compliance frameworks" do
-      post_graphql(query, current_user: current_user)
+    context('when querying a top-level namespace') do
+      it "does not return the namespaces compliance frameworks" do
+        post_graphql(query, current_user: current_user)
 
-      expect(graphql_data_at(*path)).to be_nil
+        expect(graphql_data_at(*path)).to be_nil
+      end
+    end
+
+    context('when querying a subgroup') do
+      let(:query) do
+        graphql_query_for(
+          :namespace, { full_path: subgroup.full_path }, query_nodes(:compliance_frameworks)
+        )
+      end
+
+      context('when user is an owner') do
+        before do
+          subgroup.add_owner(current_user)
+        end
+
+        it "returns frameworks of top-level namespace" do
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_data_at(*path)).to contain_exactly(
+            a_graphql_entity_for(compliance_framework_1),
+            a_graphql_entity_for(compliance_framework_2)
+          )
+        end
+      end
+
+      context('when user is not an owner') do
+        it "does not return the namespaces compliance frameworks" do
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_data_at(*path)).to be_nil
+        end
+      end
     end
   end
 

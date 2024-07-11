@@ -25,9 +25,8 @@ module Resolvers
       def resolve(id: nil, ids: nil, search: nil)
         ids = [id] if ids.nil? || id.present?
         model_ids = ids.map { |single_id| single_id&.model_id }
-
         BatchLoader::GraphQL
-          .for(object.id)
+          .for(object.root_ancestor.id)
           .batch(key: [:framework_id, model_ids], default_value: []) do |namespace_ids, loader|
           by_namespace_id = namespace_ids.index_with { |_namespace_id| model_ids }
 
