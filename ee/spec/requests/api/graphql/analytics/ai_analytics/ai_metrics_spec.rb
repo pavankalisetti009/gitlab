@@ -13,14 +13,22 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
   end
 
   let(:filter_params) { {} }
+  let(:expected_filters) { {} }
 
   shared_examples 'common ai metrics' do
     let(:fields) do
-      %w[codeSuggestionsContributorsCount codeContributorsCount codeSuggestionsShownCount codeSuggestionsAcceptedCount]
+      %w[codeSuggestionsContributorsCount codeContributorsCount codeSuggestionsShownCount codeSuggestionsAcceptedCount
+        duoChatContributorsCount]
     end
 
+    let(:from) { '2024-05-01'.to_date }
+    let(:to) { '2024-05-31'.to_date }
+    let(:filter_params) { { startDate: from, endDate: to } }
+    let(:expected_filters) { { from: from, to: to } }
+
     before do
-      allow_next_instance_of(::Analytics::AiAnalytics::CodeSuggestionUsageService) do |instance|
+      allow_next_instance_of(::Analytics::AiAnalytics::CodeSuggestionUsageService,
+        current_user, hash_including(expected_filters)) do |instance|
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
           code_contributors_count: 10,
           code_suggestions_contributors_count: 3,
@@ -29,15 +37,23 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         }))
       end
 
+      allow_next_instance_of(::Analytics::AiAnalytics::DuoChatUsageService,
+        current_user, hash_including(expected_filters)) do |instance|
+        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
+          duo_chat_contributors_count: 8
+        }))
+      end
+
       post_graphql(query, current_user: current_user)
     end
 
-    it 'returns code suggestion metric' do
+    it 'returns all metrics' do
       expect(ai_metrics).to eq({
         'codeSuggestionsContributorsCount' => 3,
         'codeContributorsCount' => 10,
         'codeSuggestionsShownCount' => 5,
-        'codeSuggestionsAcceptedCount' => 2
+        'codeSuggestionsAcceptedCount' => 2,
+        'duoChatContributorsCount' => 8
       })
     end
 

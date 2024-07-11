@@ -2,59 +2,36 @@
 
 module Analytics
   module AiAnalytics
-    class CodeSuggestionUsageService
+    class DuoChatUsageService
       QUERY = <<~SQL
         -- cte to load code contributors
-        WITH code_contributors AS (
+        WITH contributors AS (
           SELECT DISTINCT author_id
           FROM contributions
           WHERE startsWith(path, {traversal_path:String})
           AND "contributions"."created_at" >= {from:Date}
           AND "contributions"."created_at" <= {to:Date}
-          AND "contributions"."action" = 5
         )
         SELECT %{fields}
       SQL
       private_constant :QUERY
 
-      CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM code_contributors"
-      private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
+      CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM contributors"
+      private_constant :CONTRIBUTORS_COUNT_QUERY
 
-      CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL
+      DUO_CHAT_CONTRIBUTORS_COUNT_QUERY = <<~SQL
         SELECT COUNT(DISTINCT user_id)
-          FROM code_suggestion_daily_usages
-          WHERE user_id IN (SELECT author_id FROM code_contributors)
-          AND timestamp >= {from:Date}
-          AND timestamp <= {to:Date}
+          FROM duo_chat_daily_events
+          WHERE user_id IN (SELECT author_id FROM contributors)
+          AND date >= {from:Date}
+          AND date <= {to:Date}
+          AND event = 1
       SQL
-      private_constant :CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY
-
-      CODE_SUGGESTIONS_SHOWN_COUNT_QUERY = <<~SQL.freeze
-        SELECT SUM(occurrences)
-        FROM code_suggestion_daily_events
-        WHERE user_id IN (SELECT author_id FROM code_contributors)
-        AND date >= {from:Date}
-        AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionsUsage::EVENTS['code_suggestion_shown_in_ide']}
-      SQL
-      private_constant :CODE_SUGGESTIONS_SHOWN_COUNT_QUERY
-
-      CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY = <<~SQL.freeze
-        SELECT SUM(occurrences)
-        FROM code_suggestion_daily_events
-        WHERE user_id IN (SELECT author_id FROM code_contributors)
-        AND date >= {from:Date}
-        AND date <= {to:Date}
-        AND event = #{::Ai::CodeSuggestionsUsage::EVENTS['code_suggestion_accepted_in_ide']}
-      SQL
-      private_constant :CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
+      private_constant :DUO_CHAT_CONTRIBUTORS_COUNT_QUERY
 
       FIELDS_SUBQUERIES = {
-        code_contributors_count: CODE_CONTRIBUTORS_COUNT_QUERY,
-        code_suggestions_contributors_count: CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY,
-        code_suggestions_shown_count: CODE_SUGGESTIONS_SHOWN_COUNT_QUERY,
-        code_suggestions_accepted_count: CODE_SUGGESTIONS_ACCEPTED_COUNT_QUERY
-
+        contributors_count: CONTRIBUTORS_COUNT_QUERY,
+        duo_chat_contributors_count: DUO_CHAT_CONTRIBUTORS_COUNT_QUERY
       }.freeze
       private_constant :FIELDS_SUBQUERIES
 
