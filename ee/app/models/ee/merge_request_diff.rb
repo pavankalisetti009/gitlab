@@ -16,7 +16,6 @@ module EE
       with_replicator ::Geo::MergeRequestDiffReplicator
 
       has_one :merge_request_diff_detail, autosave: false, inverse_of: :merge_request_diff
-      has_many :merge_request_review_llm_summaries, class_name: 'MergeRequest::ReviewLlmSummary'
 
       after_save :save_verification_details
 
