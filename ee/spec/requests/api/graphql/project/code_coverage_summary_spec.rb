@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Getting code coverage summary in a project', feature_category: :build_artifacts do
+RSpec.describe 'Getting code coverage summary in a project', feature_category: :code_testing do
   include GraphqlHelpers
 
   let(:project) { create(:project, :repository, :public) }
