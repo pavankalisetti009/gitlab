@@ -13226,6 +13226,21 @@ CREATE TABLE namespace_details (
     pending_delete boolean DEFAULT false NOT NULL
 );
 
+CREATE TABLE namespace_import_users (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    namespace_id bigint NOT NULL
+);
+
+CREATE SEQUENCE namespace_import_users_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE namespace_import_users_id_seq OWNED BY namespace_import_users.id;
+
 CREATE TABLE namespace_ldap_settings (
     namespace_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -21072,6 +21087,8 @@ ALTER TABLE ONLY namespace_bans ALTER COLUMN id SET DEFAULT nextval('namespace_b
 
 ALTER TABLE ONLY namespace_commit_emails ALTER COLUMN id SET DEFAULT nextval('namespace_commit_emails_id_seq'::regclass);
 
+ALTER TABLE ONLY namespace_import_users ALTER COLUMN id SET DEFAULT nextval('namespace_import_users_id_seq'::regclass);
+
 ALTER TABLE ONLY namespace_statistics ALTER COLUMN id SET DEFAULT nextval('namespace_statistics_id_seq'::regclass);
 
 ALTER TABLE ONLY namespaces ALTER COLUMN id SET DEFAULT nextval('namespaces_id_seq'::regclass);
@@ -23394,6 +23411,9 @@ ALTER TABLE ONLY namespace_commit_emails
 
 ALTER TABLE ONLY namespace_details
     ADD CONSTRAINT namespace_details_pkey PRIMARY KEY (namespace_id);
+
+ALTER TABLE ONLY namespace_import_users
+    ADD CONSTRAINT namespace_import_users_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY namespace_ldap_settings
     ADD CONSTRAINT namespace_ldap_settings_pkey PRIMARY KEY (namespace_id);
@@ -28021,6 +28041,10 @@ CREATE INDEX index_namespace_commit_emails_on_namespace_id ON namespace_commit_e
 CREATE UNIQUE INDEX index_namespace_commit_emails_on_user_id_and_namespace_id ON namespace_commit_emails USING btree (user_id, namespace_id);
 
 CREATE INDEX index_namespace_details_on_creator_id ON namespace_details USING btree (creator_id);
+
+CREATE UNIQUE INDEX index_namespace_import_users_on_namespace_id ON namespace_import_users USING btree (namespace_id);
+
+CREATE UNIQUE INDEX index_namespace_import_users_on_user_id ON namespace_import_users USING btree (user_id);
 
 CREATE UNIQUE INDEX index_namespace_root_storage_statistics_on_namespace_id ON namespace_root_storage_statistics USING btree (namespace_id);
 
@@ -32713,6 +32737,9 @@ ALTER TABLE ONLY merge_request_assignment_events
 ALTER TABLE ONLY bulk_import_entities
     ADD CONSTRAINT fk_a44ff95be5 FOREIGN KEY (parent_id) REFERENCES bulk_import_entities(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY namespace_import_users
+    ADD CONSTRAINT fk_a49233ca5d FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY abuse_report_user_mentions
     ADD CONSTRAINT fk_a4bd02b7df FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE;
 
@@ -32841,6 +32868,9 @@ ALTER TABLE ONLY issue_assignees
 
 ALTER TABLE ONLY agent_project_authorizations
     ADD CONSTRAINT fk_b7fe9b4777 FOREIGN KEY (agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY namespace_import_users
+    ADD CONSTRAINT fk_b82be3e1f3 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY namespace_commit_emails
     ADD CONSTRAINT fk_b8d89d555e FOREIGN KEY (email_id) REFERENCES emails(id) ON DELETE CASCADE;
