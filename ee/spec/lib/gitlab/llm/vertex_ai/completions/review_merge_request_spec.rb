@@ -7,6 +7,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
   let(:options) { {} }
   let(:response_modifier) { double }
+  let(:create_note_allowed?) { true }
   let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
   let_it_be(:user) { create(:user) }
   let_it_be(:merge_request) { create(:merge_request) }
@@ -58,6 +59,11 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
     allow(merge_request)
       .to receive(:ai_reviewable_diff_files)
       .and_return(ai_reviewable_diff_files)
+
+    allow(Ability)
+      .to receive(:allowed?)
+      .with(user, :create_note, merge_request)
+      .and_return(create_note_allowed?)
   end
 
   describe '#execute' do
@@ -164,11 +170,26 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
         expect(DraftNote).to receive(:new).with(new_file_draft_note_params).and_return(draft_note_1)
         expect(DraftNote).to receive(:new).with(updated_file_draft_note_params).and_return(draft_note_2)
         expect(DraftNote).to receive(:bulk_insert!).with([draft_note_1, draft_note_2], batch_size: 20)
-        expect_next_instance_of(DraftNotes::PublishService, merge_request, duo_code_review_bot) do |svc|
-          expect(svc).to receive(:execute)
+        expect_next_instance_of(
+          DraftNotes::PublishService,
+          merge_request,
+          duo_code_review_bot
+        ) do |svc|
+          expect(svc).to receive(:execute).with(executing_user: user)
         end
 
         completion.execute
+      end
+
+      context 'when user is not allowed to create notes' do
+        let(:create_note_allowed?) { false }
+
+        it 'does not publish review' do
+          expect(DraftNote).not_to receive(:bulk_insert!)
+          expect(DraftNotes::PublishService).not_to receive(:new)
+
+          completion.execute
+        end
       end
 
       context 'when draft notes limit is reached' do
@@ -198,8 +219,12 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
 
           expect(DraftNote).to receive(:new).with(new_file_draft_note_params).and_return(draft_note_1)
           expect(DraftNote).to receive(:bulk_insert!).with([draft_note_1], batch_size: 20)
-          expect_next_instance_of(DraftNotes::PublishService, merge_request, duo_code_review_bot) do |svc|
-            expect(svc).to receive(:execute)
+          expect_next_instance_of(
+            DraftNotes::PublishService,
+            merge_request,
+            duo_code_review_bot
+          ) do |svc|
+            expect(svc).to receive(:execute).with(executing_user: user)
           end
 
           completion.execute
