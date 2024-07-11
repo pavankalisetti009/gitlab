@@ -396,6 +396,26 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         expect(described_class.requiring_assigned_users_refresh(1).size).to eq 1
       end
     end
+
+    describe '.find_by_namespace_and_add_on' do
+      subject(:find_by_namespace_and_add_on) { described_class.find_by_namespace_and_add_on }
+
+      let(:namespace) { create(:group) }
+
+      let(:add_on_1) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let(:add_on_2) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+      let!(:add_on_purchase_1) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_1) }
+      let!(:add_on_purchase_2) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on_1) }
+
+      let!(:add_on_purchase_3) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_2) }
+      let!(:add_on_purchase_4) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on_2) }
+
+      it 'filters by namespace and add-on' do
+        expect(described_class.find_by_namespace_and_add_on(nil, add_on_1)).to eq add_on_purchase_1
+        expect(described_class.find_by_namespace_and_add_on(namespace, add_on_1)).to eq add_on_purchase_2
+      end
+    end
   end
 
   describe '.uniq_add_on_names' do

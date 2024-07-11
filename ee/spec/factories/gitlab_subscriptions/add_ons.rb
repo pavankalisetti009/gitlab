@@ -5,6 +5,11 @@ FactoryBot.define do
     name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
     description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
 
+    trait :code_suggestions do
+      name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
+      description { GitlabSubscriptions::AddOn.descriptions[:code_suggestions] }
+    end
+
     trait :gitlab_duo_pro do
       name { GitlabSubscriptions::AddOn.names[:code_suggestions] }
     end
