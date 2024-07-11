@@ -87,8 +87,9 @@ module Gitlab
 
         private
 
-        # Fallback shared folder path
+        # Return the shared path used as a fallback base location to each blob type
         # We use this to determine the storage location when everything else fails
+        # @return [Pathname]
         def gitlab_shared_path
           shared_path = gitlab_config.dig(env, 'shared', 'path')
 
@@ -109,6 +110,8 @@ module Gitlab
           Pathname(File.expand_path(path, gitlab_basepath))
         end
 
+        # Return the GitLab base directory
+        # @return [Pathname]
         def gitlab_basepath
           return Pathname.new(GITLAB_PATH) if GITLAB_PATH
 

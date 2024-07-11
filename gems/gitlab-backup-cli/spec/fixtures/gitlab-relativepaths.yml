@@ -9,6 +9,8 @@ test:
     enabled: true
   gitlab_ci:
     builds_path: tests/builds
+  shared:
+    path: 'shared-tests'
   external_diffs:
     enabled: false
     # Diffs may be `always` external (the default), or they can be made external

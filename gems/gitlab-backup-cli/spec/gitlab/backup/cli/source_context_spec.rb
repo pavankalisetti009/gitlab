@@ -95,6 +95,33 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
     end
   end
 
+  describe '#gitlab_shared_path' do
+    context 'with shared path not configured in gitlab.yml' do
+      it 'raises an error' do
+        FileUtils.touch(fake_gitlab_basepath.join('config/gitlab.yml'))
+
+        expect { context.send(:gitlab_shared_path) }.to raise_error(::Gitlab::Backup::Cli::Error)
+                                                          .with_message(/missing 'shared.path'/)
+      end
+    end
+
+    context 'with shared path configured in gitlab.yml' do
+      it 'returns a relative path' do
+        use_gitlab_config_fixture('gitlab-relativepaths.yml')
+
+        expect(context.send(:gitlab_shared_path)).to eq(Pathname('shared-tests'))
+      end
+    end
+
+    context 'with a full path configured in gitlab.yml' do
+      it 'returns a full path as configured in gitlab.yml' do
+        use_gitlab_config_fixture('gitlab.yml')
+
+        expect(context.send(:gitlab_shared_path)).to eq(Pathname('/tmp/gitlab/full/shared'))
+      end
+    end
+  end
+
   def use_gitlab_config_fixture(fixture)
     gitlab_yml_fixture = fixtures_path.join(fixture)
     FileUtils.copy(gitlab_yml_fixture, fake_gitlab_basepath.join('config/gitlab.yml'))
