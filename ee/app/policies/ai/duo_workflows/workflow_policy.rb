@@ -4,7 +4,7 @@ module Ai
   module DuoWorkflows
     class WorkflowPolicy < BasePolicy
       condition(:can_use_duo_workflows_in_project) do
-        can?(:start_duo_workflows, @subject.project)
+        can?(:duo_workflow, @subject.project)
       end
 
       condition(:is_workflow_owner) do
