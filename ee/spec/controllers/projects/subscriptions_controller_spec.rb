@@ -70,7 +70,7 @@ RSpec.describe Projects::SubscriptionsController, feature_category: :continuous_
               it 'sets the flash' do
                 post_create
 
-                expect(controller).to set_flash[:alert].to(['Maximum number of ci project subscriptions (2) exceeded'])
+                expect(controller).to set_flash[:alert].to('Maximum number of ci project subscriptions (2) exceeded')
               end
 
               it 'redirects to ci_cd settings' do
@@ -93,7 +93,7 @@ RSpec.describe Projects::SubscriptionsController, feature_category: :continuous_
             it 'sets the flash' do
               post_create
 
-              expect(controller).to set_flash[:alert].to(['Upstream project needs to be public'])
+              expect(controller).to set_flash[:alert].to('Upstream project needs to be public')
             end
 
             it 'redirects to ci_cd settings' do
