@@ -3,6 +3,7 @@
 module EE
   module ApplicationSettingsHelper
     extend ::Gitlab::Utils::Override
+    include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
     override :visible_attributes
     def visible_attributes
@@ -182,14 +183,24 @@ module EE
 
     override :signup_form_data
     def signup_form_data
-      return super unless ::License.feature_available?(:password_complexity)
+      form_data = super
 
-      super.merge({
-        password_uppercase_required: @application_setting[:password_uppercase_required].to_s,
-        password_lowercase_required: @application_setting[:password_lowercase_required].to_s,
-        password_number_required: @application_setting[:password_number_required].to_s,
-        password_symbol_required: @application_setting[:password_symbol_required].to_s
-      })
+      if ::License.feature_available?(:password_complexity)
+        form_data.merge!({
+          password_uppercase_required: @application_setting[:password_uppercase_required].to_s,
+          password_lowercase_required: @application_setting[:password_lowercase_required].to_s,
+          password_number_required: @application_setting[:password_number_required].to_s,
+          password_symbol_required: @application_setting[:password_symbol_required].to_s
+        })
+      end
+
+      promotion_management_available = promotion_management_available?
+      form_data[:promotion_management_available] = promotion_management_available.to_s
+      if promotion_management_available
+        form_data[:enable_member_promotion_management] = @application_setting[:enable_member_promotion_management].to_s
+      end
+
+      form_data
     end
 
     def deletion_protection_data

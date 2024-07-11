@@ -131,6 +131,40 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for licensed features'
     end
 
+    context 'Sign-up restrictions' do
+      context 'Seat controls' do
+        context 'Member promotion management' do
+          let(:settings) do
+            { enable_member_promotion_management: true }
+          end
+
+          let(:promotion_management_available) { true }
+
+          before do
+            allow(controller).to receive(:promotion_management_available?).and_return(promotion_management_available)
+          end
+
+          context 'with promotion management available' do
+            it 'updates the setting' do
+              put :update, params: { application_setting: settings }
+
+              expect(ApplicationSetting.current.enable_member_promotion_management).to eq(true)
+            end
+          end
+
+          context 'with promotion management unavailable' do
+            let(:promotion_management_available) { false }
+
+            it 'does not update the setting' do
+              put :update, params: { application_setting: settings }
+
+              expect(ApplicationSetting.current.enable_member_promotion_management).to eq(false)
+            end
+          end
+        end
+      end
+    end
+
     context 'updating password complexity settings' do
       let(:settings) do
         { password_number_required: true,

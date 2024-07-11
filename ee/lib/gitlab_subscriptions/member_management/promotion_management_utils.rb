@@ -8,6 +8,13 @@ module GitlabSubscriptions
 
       def promotion_management_applicable?
         return false unless promotion_management_active?
+        return false unless promotion_management_available?
+
+        true
+      end
+
+      def promotion_management_available?
+        return false unless promotion_management_feature_enabled?
         return false if gitlab_com_subscription?
         return false unless exclude_guests?
 
@@ -22,9 +29,11 @@ module GitlabSubscriptions
 
       private
 
-      def promotion_management_active?
-        return false unless ::Feature.enabled?(:member_promotion_management, type: :wip)
+      def promotion_management_feature_enabled?
+        ::Feature.enabled?(:member_promotion_management, type: :wip)
+      end
 
+      def promotion_management_active?
         ::Gitlab::CurrentSettings.enable_member_promotion_management?
       end
 

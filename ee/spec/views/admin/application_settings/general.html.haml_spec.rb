@@ -101,6 +101,14 @@ RSpec.describe 'admin/application_settings/general.html.haml' do
   end
 
   describe 'sign-up restrictions' do
+    it 'includes signup_form_data' do
+      allow(view).to receive(:signup_form_data).and_return({ the_answer: '42' })
+
+      render
+
+      expect(rendered).to match 'data-the-answer="42"'
+    end
+
     it 'does not render complexity setting attributes' do
       render
 

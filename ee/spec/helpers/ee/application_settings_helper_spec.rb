@@ -102,6 +102,35 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
   end
 
+  describe '.signup_form_data' do
+    let_it_be(:application_setting) { build(:application_setting) }
+    let(:promotion_management_available) { true }
+
+    before do
+      allow(helper).to receive(:promotion_management_available?).and_return(promotion_management_available)
+      application_setting.enable_member_promotion_management = true
+      helper.instance_variable_set(:@application_setting, application_setting)
+    end
+
+    subject { helper.signup_form_data }
+
+    describe 'Promotion management' do
+      it 'sets promotion_management_available and enable_member_promotion_management values' do
+        is_expected.to match(hash_including({
+          promotion_management_available: promotion_management_available.to_s,
+          enable_member_promotion_management: true.to_s
+        }))
+      end
+
+      context 'when promotion management is unavailable' do
+        let(:promotion_management_available) { false }
+
+        it { is_expected.to match(hash_including({ promotion_management_available: promotion_management_available.to_s })) }
+        it { is_expected.to match(hash_excluding(:enable_member_promotion_management)) }
+      end
+    end
+  end
+
   describe '.deletion_protection_data' do
     let_it_be(:application_setting) { build(:application_setting) }
 

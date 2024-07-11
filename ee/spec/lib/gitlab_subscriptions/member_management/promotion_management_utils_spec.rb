@@ -59,6 +59,36 @@ RSpec.describe GitlabSubscriptions::MemberManagement::PromotionManagementUtils, 
     end
   end
 
+  describe '#promotion_management_available?' do
+    context 'when self-managed' do
+      it 'returns true' do
+        expect(promotion_management_applicable?).to be true
+      end
+
+      context 'when feature is disabled' do
+        let(:feature_enabled) { false }
+
+        it 'returns false' do
+          expect(promotion_management_applicable?).to be false
+        end
+      end
+
+      context 'when guests are not excluded' do
+        let(:plan_type) { License::STARTER_PLAN }
+
+        it 'returns false' do
+          expect(promotion_management_applicable?).to be false
+        end
+      end
+    end
+
+    context 'when on saas', :saas do
+      it 'returns false' do
+        expect(promotion_management_applicable?).to be false
+      end
+    end
+  end
+
   describe '#promotion_management_required_for_role?', :aggregate_failures do
     let_it_be(:access_level) { ::Gitlab::Access::DEVELOPER }
     let(:billable_role_change_value) { true }
