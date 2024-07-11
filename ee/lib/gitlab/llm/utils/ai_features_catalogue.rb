@@ -64,8 +64,8 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::GenerateCommitMessage,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::GenerateCommitMessageService,
-            maturity: :experimental,
-            self_managed: false,
+            maturity: :ga,
+            self_managed: true,
             internal: false
           },
           analyze_ci_job_failure: {
