@@ -52,6 +52,7 @@ module API
             def respond_with(package_file:)
               result = ::DependencyProxy::Packages::VerifyPackageFileEtagService.new(
                 remote_url: remote_package_file_url,
+                headers: remote_url_headers,
                 package_file: package_file
               ).execute
 
