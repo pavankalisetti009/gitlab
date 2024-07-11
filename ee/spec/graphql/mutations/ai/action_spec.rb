@@ -231,6 +231,15 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       it_behaves_like 'an AI action when feature flag disabled'
     end
 
+    context 'when platform_origin input is set' do
+      let(:input) { { generate_description: { resource_id: resource_id }, platform_origin: 'vs_code_extension' } }
+      let(:expected_method) { :generate_description }
+      let(:expected_options) { { user_agent: 'user-agent', platform_origin: 'vs_code_extension' } }
+
+      it_behaves_like 'an AI action'
+      it_behaves_like 'an AI action when feature flag disabled'
+    end
+
     context 'when input is set for feature in self-managed' do
       let(:input) { { summarize_comments: { resource_id: resource_id }, client_subscription_id: 'id' } }
       let(:expected_method) { :summarize_comments }

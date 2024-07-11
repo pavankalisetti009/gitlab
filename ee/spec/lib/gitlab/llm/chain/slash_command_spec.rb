@@ -27,43 +27,42 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
     end
 
     context 'when request comes from the Web' do
-      let(:user_agent) { 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)' }
       let(:message) do
-        build(:ai_chat_message, user: instance_double(User), resource: nil, request_id: 'uuid', content: content,
-          user_agent: user_agent, referer_url: referer_url)
+        build(:ai_chat_message, user: instance_double(User), resource: nil, request_id: 'uuid', content: content)
       end
 
-      let(:referer_url) { 'http://example.com/project' }
-
-      it 'returns web as client source' do
+      it 'returns web as platform_origin' do
         is_expected
           .to be_an_instance_of(described_class)
-          .and have_attributes(client_source: 'web')
-      end
-
-      context 'when request comes from the Web IDE' do
-        let(:referer_url) { "#{Gitlab.config.gitlab.base_url}/-/ide/project" }
-
-        it 'returns webide as client source' do
-          is_expected
-            .to be_an_instance_of(described_class)
-            .and have_attributes(client_source: 'webide')
-        end
+          .and have_attributes(platform_origin: 'web')
       end
     end
 
-    context 'when request comes from VS Code' do
-      let(:message) do
-        build(:ai_chat_message, user: instance_double(User), resource: nil, request_id: 'uuid', content: content,
-          user_agent: user_agent)
+    context 'when request comes from VS Code extension' do
+      context 'with platform_origin attribute' do
+        let(:message) do
+          build(:ai_chat_message, user: instance_double(User), content: content, platform_origin: 'vs_code_extension')
+        end
+
+        it 'returns vs_code_extension as platform origin' do
+          is_expected
+            .to be_an_instance_of(described_class)
+            .and have_attributes(platform_origin: 'vs_code_extension')
+        end
       end
 
-      let(:user_agent) { 'vs-code-gitlab-workflow/3.11.1 VSCode/1.52.1 Node.js/12.14.1 (darwin; x64)' }
+      context 'with user agent attribute' do
+        let(:message) do
+          build(:ai_chat_message, user: instance_double(User), content: content, user_agent: user_agent)
+        end
 
-      it 'returns vscode as client source' do
-        is_expected
-          .to be_an_instance_of(described_class)
-          .and have_attributes(client_source: 'vscode')
+        let(:user_agent) { 'vs-code-gitlab-workflow/3.11.1 VSCode/1.52.1 Node.js/12.14.1 (darwin; x64)' }
+
+        it 'returns vs_code_extension as platform origin' do
+          is_expected
+            .to be_an_instance_of(described_class)
+            .and have_attributes(platform_origin: 'vs_code_extension')
+        end
       end
     end
   end

@@ -13,7 +13,7 @@ module Gitlab
       ATTRIBUTES_LIST = [
         :id, :request_id, :content, :role, :timestamp, :errors, :extras,
         :user, :ai_action, :client_subscription_id, :type, :chunk_id, :context,
-        :agent_version_id, :referer_url
+        :agent_version_id, :referer_url, :platform_origin
       ].freeze
 
       SLASH_COMMAND_TOOLS = [

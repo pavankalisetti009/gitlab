@@ -40,13 +40,13 @@ RSpec.shared_examples 'slash command tool' do
     end
   end
 
-  shared_examples 'user input blank for IDE' do |client_source|
-    let(:client_source) { client_source }
+  shared_examples 'user input blank for IDE' do |platform_origin|
+    let(:platform_origin) { platform_origin }
 
     context 'when user input is not present' do
       let(:user_input) { nil }
       let(:input_blank_message) do
-        "Your request does not seems to contain code to #{described_class::ACTION}. " \
+        "Your request does not seem to contain code to #{described_class::ACTION}. " \
           "To #{described_class::HUMAN_NAME.downcase} select the lines of code in your editor " \
           "and then type the command #{command.name} in the chat. " \
           "You may add additional instructions after this comment. If you have no code to select, " \
@@ -80,21 +80,21 @@ RSpec.shared_examples 'slash command tool' do
     let(:instruction) { 'command instruction' }
     let(:command_prompt_options) { { instruction: instruction } }
     let(:user_input) { 'something' }
-    let(:client_source) { nil }
+    let(:platform_origin) { nil }
     let(:command) do
       Gitlab::Llm::Chain::SlashCommand.new(
         name: command_name,
         command_options: command_prompt_options,
         user_input: user_input,
-        client_source: client_source,
+        platform_origin: platform_origin,
         tool: nil)
     end
 
     it_behaves_like 'prompt is called with command options'
 
     context 'when user input is blank' do
-      context 'with web client source' do
-        let(:client_source) { 'web' }
+      context 'with web platform origin' do
+        let(:platform_origin) { 'web' }
 
         it_behaves_like 'prompt is called with command options'
 
@@ -111,12 +111,8 @@ RSpec.shared_examples 'slash command tool' do
         end
       end
 
-      context 'with VS Code client source' do
-        it_behaves_like 'user input blank for IDE', 'vscode'
-      end
-
-      context 'with Web IDE client source' do
-        it_behaves_like 'user input blank for IDE', 'webide'
+      context 'with VS Code extension client platform origin' do
+        it_behaves_like 'user input blank for IDE', 'vs_code_extension'
       end
     end
   end
