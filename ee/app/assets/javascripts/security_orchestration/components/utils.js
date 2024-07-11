@@ -4,6 +4,10 @@ import {
   INCLUDING,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
+import {
+  REPORT_TYPE_DEPENDENCY_SCANNING,
+  REPORT_TYPE_CONTAINER_SCANNING,
+} from '~/vue_shared/security_reports/constants';
 
 export const isPolicyInherited = (source) => source?.inherited === true;
 
@@ -119,3 +123,11 @@ export const isProject = (namespaceType) => namespaceType === NAMESPACE_TYPES.PR
  * @returns {boolean}
  */
 export const isGroup = (namespaceType) => namespaceType === NAMESPACE_TYPES.GROUP;
+
+/**
+ * Returns if scanner has "scanning" in it
+ * @param {string} scanner
+ * @returns {boolean}
+ */
+export const isScanningReport = (scanner) =>
+  [REPORT_TYPE_CONTAINER_SCANNING, REPORT_TYPE_DEPENDENCY_SCANNING].includes(scanner);

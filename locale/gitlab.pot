@@ -48137,6 +48137,9 @@ msgstr ""
 msgid "SecurityOrchestration|Run %{scannerStart}%{scanner}%{scannerEnd} with the following options:"
 msgstr ""
 
+msgid "SecurityOrchestration|Run a %{scannerStart}%{scanner}%{scannerEnd} scan with the following options:"
+msgstr ""
+
 msgid "SecurityOrchestration|Run a DAST scan with Scan Profile A and Site Profile A when a pipeline run against the main branch."
 msgstr ""
 

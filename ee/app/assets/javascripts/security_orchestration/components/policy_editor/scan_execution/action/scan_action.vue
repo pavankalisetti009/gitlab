@@ -2,13 +2,9 @@
 import { isEmpty } from 'lodash';
 import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import {
-  REPORT_TYPE_DAST,
-  REPORT_TYPE_DEPENDENCY_SCANNING,
-  REPORT_TYPE_CONTAINER_SCANNING,
-} from '~/vue_shared/security_reports/constants';
+import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { isProject, isGroup } from 'ee/security_orchestration/components/utils';
+import { isProject, isGroup, isScanningReport } from 'ee/security_orchestration/components/utils';
 import SectionLayout from '../../section_layout.vue';
 import { ACTION_AND_LABEL, RULE_MODE_SCANNERS } from '../../constants';
 import ScanFilterSelector from '../../scan_filter_selector.vue';
@@ -118,12 +114,9 @@ export default {
       return this.initAction.tags || [];
     },
     scannerHumanizedMessage() {
-      const isScanningReport = [
-        REPORT_TYPE_CONTAINER_SCANNING,
-        REPORT_TYPE_DEPENDENCY_SCANNING,
-      ].includes(this.selectedScanner);
-
-      return isScanningReport ? SCANNER_HUMANIZED_TEMPLATE_ALT : SCANNER_HUMANIZED_TEMPLATE;
+      return isScanningReport(this.selectedScanner)
+        ? SCANNER_HUMANIZED_TEMPLATE_ALT
+        : SCANNER_HUMANIZED_TEMPLATE;
     },
   },
   methods: {
