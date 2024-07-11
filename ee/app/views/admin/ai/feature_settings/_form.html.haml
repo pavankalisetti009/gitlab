@@ -3,7 +3,7 @@
 - feature_name = feature.titleize
 - provider_field_name = 'feature_setting[provider]'
 
-= gitlab_ui_form_for @feature_setting, as: :feature_setting, url: url, html: { class: 'label-form js-quick-submit js-requires-input' } do |f|
+= gitlab_ui_form_for @feature_setting, as: :feature_setting, url: url, html: { class: 'label-form js-quick-submit' } do |f|
   = form_errors(@feature_setting)
 
   = f.hidden_field :feature, value: feature

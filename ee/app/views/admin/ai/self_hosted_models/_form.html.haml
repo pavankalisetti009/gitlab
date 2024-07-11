@@ -1,7 +1,7 @@
 - add_page_specific_style 'page_bundles/labels'
 - select_options = Ai::SelfHostedModel.models.map { |name, _| [name.capitalize, name] }
 
-= gitlab_ui_form_for @self_hosted_model, as: :self_hosted_model, url: url, html: { class: 'label-form js-quick-submit js-requires-input' } do |f|
+= gitlab_ui_form_for @self_hosted_model, as: :self_hosted_model, url: url, html: { class: 'label-form js-quick-submit' } do |f|
   = form_errors(@self_hosted_model)
 
   .form-group
