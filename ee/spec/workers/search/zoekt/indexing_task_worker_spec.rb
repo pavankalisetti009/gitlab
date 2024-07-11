@@ -5,11 +5,24 @@ require 'spec_helper'
 RSpec.describe Search::Zoekt::IndexingTaskWorker, feature_category: :global_search do
   it_behaves_like 'worker with data consistency', described_class, data_consistency: :delayed
 
-  describe '#perform' do
+  describe '#perform', :zoekt_settings_enabled do
     subject(:perform_worker) { described_class.new.perform(*job_args) }
 
     let_it_be(:project) { create(:project) }
     let_it_be(:job_args) { [project.id, 'index_repo', { 'node_id' => 1, 'force' => false, 'delay' => 3 }] }
+
+    context 'when zoekt settings is disabled' do
+      before do
+        stub_ee_application_setting(zoekt_indexing_enabled: false)
+      end
+
+      it_behaves_like 'an idempotent worker' do
+        it 'does not call the IndexingTaskService service' do
+          expect(Search::Zoekt::IndexingTaskService).not_to receive(:execute)
+          perform_worker
+        end
+      end
+    end
 
     context 'when license zoekt_code_search is not available' do
       before do
