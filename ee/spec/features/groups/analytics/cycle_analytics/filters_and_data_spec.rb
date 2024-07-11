@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Group value stream analytics filters and data', :js, feature_category: :value_stream_management do
   include CycleAnalyticsHelpers
+  include ListboxHelpers
 
   let_it_be(:group) { create(:group, :with_organization) }
   let_it_be(:user) { create(:user) }
@@ -59,6 +60,15 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
 
   def group_vsd_link(target_group)
     "#{group_analytics_dashboards_path(target_group)}/value_streams_dashboard"
+  end
+
+  def select_predefined_date_range(label)
+    page.within(predefined_date_ranges_dropdown_selector) do
+      toggle_listbox
+      select_listbox_item(label, exact_text: true)
+    end
+
+    wait_for_requests
   end
 
   before do
@@ -320,6 +330,52 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
 
       it_behaves_like 'value streams dashboard link' do
         let(:target_group) { sub_group }
+      end
+    end
+  end
+
+  context 'with a predefined date range', :js, :freeze_time do
+    using RSpec::Parameterized::TableSyntax
+
+    # add an additional date outside of the predefined start dates for testing purposes
+    start_event_dates = [1.week.ago, 30.days.ago, 90.days.ago, 180.days.ago, 200.days.ago]
+
+    start_event_dates.each_with_index do |date, i|
+      let_it_be(:"issue_#{i}") do
+        create(:issue, title: "New Issue #{i}", project: project).tap do |issue|
+          issue.update!(created_at: date.middle_of_day)
+          issue.metrics.update!(first_associated_with_milestone_at: date + 5.days)
+        end
+      end
+    end
+
+    let_it_be(:value_stream) { create(:cycle_analytics_value_stream, namespace: group) }
+
+    where(:predefined_date_range, :expected_events_count) do
+      _('Last week')     | 1
+      _('Last 30 days')  | 2
+      _('Last 90 days')  | 3
+      _('Last 180 days') | 4
+    end
+
+    with_them do
+      before do
+        Gitlab::Analytics::CycleAnalytics::DefaultStages.all.map do |params|
+          group.cycle_analytics_stages.create!(params.merge(value_stream: value_stream))
+        end
+
+        create_value_stream_aggregation(group)
+
+        select_group(group)
+        select_stage('Issue')
+        select_predefined_date_range(predefined_date_range)
+      end
+
+      context 'stage table' do
+        it 'displays the correct number of events when a predefined date range is selected' do
+          expect(page).to have_selector('[data-testid="vsa-stage-table"]')
+          expect(page.all('[data-testid="vsa-stage-event"]').length).to eq(expected_events_count)
+        end
       end
     end
   end
