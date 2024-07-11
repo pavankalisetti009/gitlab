@@ -24,7 +24,7 @@ RSpec
   it 'ee/merge_requests/merge_request_with_multiple_assignees_feature.html' do
     stub_licensed_features(multiple_merge_request_assignees: true)
 
-    get :show, params: {
+    get :edit, params: {
       namespace_id: project.namespace.to_param,
       project_id: project,
       id: merge_request.to_param

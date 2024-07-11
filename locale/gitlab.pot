@@ -21002,9 +21002,6 @@ msgstr ""
 msgid "Error occurred when fetching sidebar data"
 msgstr ""
 
-msgid "Error occurred when saving assignees"
-msgstr ""
-
 msgid "Error occurred when saving reviewers"
 msgstr ""
 
