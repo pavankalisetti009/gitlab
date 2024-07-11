@@ -135,7 +135,7 @@ RSpec.describe "Code owner approvals reset after merging to source branch", :js,
         context 'and the other merge request is not related to code owners' do
           let(:other_merge_request) { textfile_change_merge_request }
 
-          it 'is ready to merge' do
+          it 'is ready to merge', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446246' do
             visit project_merge_request_path(project, merge_request)
 
             wait_for_all_requests
