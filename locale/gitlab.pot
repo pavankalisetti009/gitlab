@@ -3431,6 +3431,11 @@ msgstr ""
 msgid "Adds a Zoom meeting."
 msgstr ""
 
+msgid "Adds a label."
+msgid_plural "Adds %d labels."
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Adds a resource link"
 msgstr ""
 
@@ -44147,6 +44152,11 @@ msgstr ""
 msgid "Removes %{reviewer_text} %{reviewer_references}."
 msgstr ""
 
+msgid "Removes a label."
+msgid_plural "Removes %d labels."
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "Removes all labels."
 msgstr ""
 
@@ -44248,6 +44258,11 @@ msgstr ""
 
 msgid "Replaced all labels with %{label_references} %{label_text}."
 msgstr ""
+
+msgid "Replaces all labels with %d label."
+msgid_plural "Replaces all labels with %d labels."
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "Replaces the clone URL root."
 msgstr ""
