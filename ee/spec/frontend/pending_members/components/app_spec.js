@@ -50,7 +50,7 @@ describe('PendingMembersApp', () => {
     wrapper = shallowMountExtended(PendingMembersApp, {
       stubs,
       apolloProvider: mockApollo,
-      provide: { namespaceName: 'name', namespaceId: '1', userCapSet },
+      provide: { namespacePath: 'name', namespaceId: '1', userCapSet },
     });
   };
 
@@ -215,7 +215,7 @@ describe('PendingMembersApp', () => {
         {
           id: 'gid://gitlab/GroupMember/98',
           namespaceId: '1',
-          namespaceName: 'name',
+          namespacePath: 'name',
         },
         expect.any(Object),
         expect.any(Object),

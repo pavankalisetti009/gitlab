@@ -13,13 +13,13 @@ export default (containerId = 'js-pending-members-app') => {
     return false;
   }
 
-  const { namespaceId, namespaceName, userCapSet } = el.dataset;
+  const { namespaceId, namespacePath, userCapSet } = el.dataset;
 
   return new Vue({
     el,
     apolloProvider,
     provide: {
-      namespaceName,
+      namespacePath,
       namespaceId,
       userCapSet: parseBoolean(userCapSet),
     },
