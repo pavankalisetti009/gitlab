@@ -194,11 +194,22 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
       context 'when requirement is not met' do
         it 'creates a validation error' do
           member_role.base_access_level = Gitlab::Access::GUEST
-          member_role.admin_vulnerability = true
+          member_role.read_code = false
+          member_role.manage_merge_request_settings = true
 
           expect(member_role).not_to be_valid
           expect(member_role.errors[:base])
-            .to include(s_("MemberRole|Read vulnerability has to be enabled in order to enable Admin vulnerability"))
+            .to include(s_("MemberRole|Read code has to be enabled in order to enable Manage merge request settings"))
+        end
+      end
+
+      context 'when requirement is met via base access level' do
+        it 'is valid' do
+          member_role.base_access_level = Gitlab::Access::REPORTER
+          member_role.read_code = false
+          member_role.manage_merge_request_settings = true
+
+          expect(member_role).to be_valid
         end
       end
     end

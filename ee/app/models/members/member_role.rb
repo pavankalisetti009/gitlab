@@ -162,6 +162,8 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
       next unless requirements.present? # skipping permissions that have no requirements
 
       requirements.each do |requirement|
+        available_from = self.class.all_customizable_permissions[requirement.to_sym][:available_from_access_level]
+        next if available_from && base_access_level >= available_from
         next if self[requirement] # the requirement is met
 
         errors.add(:base,
