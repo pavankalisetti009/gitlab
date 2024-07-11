@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlBadge, GlModal, GlModalDirective, GlSkeletonLoader, GlLink } from '@gitlab/ui';
+import { GlButton, GlModal, GlModalDirective, GlSkeletonLoader, GlLink } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -37,7 +37,6 @@ export default {
   },
   components: {
     GlButton,
-    GlBadge,
     GlModal,
     GlSkeletonLoader,
     GlLink,
@@ -126,9 +125,6 @@ export default {
     >
       {{ __('Generate commit message') }}
     </gl-button>
-    <gl-badge class="gl-ml-2">
-      {{ __('Experiment') }}
-    </gl-badge>
     <gl-modal
       ref="modal"
       :aria-label="__('Commit message')"
@@ -139,9 +135,6 @@ export default {
     >
       <template #modal-title>
         {{ __('Commit message') }}
-        <gl-badge class="gl-ml-2">
-          {{ __('Experiment') }}
-        </gl-badge>
       </template>
       <gl-skeleton-loader v-if="loadingCommitMessage" :width="250" :lines="4" />
       <template v-else>
