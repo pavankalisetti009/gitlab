@@ -15,14 +15,15 @@ module API
         DIGESTS_FORMATS = %w[sha1 md5].freeze
 
         helpers do
-          delegate :from_maven_upstream, to: :dependency_proxy_setting
+          delegate :url_from_maven_upstream, :headers_from_maven_upstream, to: :dependency_proxy_setting
+          alias_method :remote_url_headers, :headers_from_maven_upstream
 
           def project
             authorized_user_project(action: :read_package)
           end
 
           def remote_package_file_url
-            from_maven_upstream(path: declared_params[:path], file_name: declared_params[:file_name])
+            url_from_maven_upstream(path: declared_params[:path], file_name: declared_params[:file_name])
           end
 
           def respond_digest(digest)

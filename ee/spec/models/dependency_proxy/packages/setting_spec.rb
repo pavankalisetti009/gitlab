@@ -156,17 +156,47 @@ RSpec.describe DependencyProxy::Packages::Setting, type: :model, feature_categor
     it { is_expected.to contain_exactly(enabled_setting) }
   end
 
-  describe '#from_maven_upstream' do
+  describe '#url_from_maven_upstream' do
     let(:setting) { build_stubbed(:dependency_proxy_packages_setting, :maven) }
 
-    subject { setting.from_maven_upstream(path: 'path', file_name: 'file.pom') }
+    subject { setting.url_from_maven_upstream(path: 'path', file_name: 'file.pom') }
 
-    it { is_expected.to eq('http://user:password@local.test/maven/path/file.pom') }
+    it { is_expected.to eq('http://local.test/maven/path/file.pom') }
 
     context 'when maven_external_registry_url ends with a slash' do
       let(:setting) { super().tap { |s| s.maven_external_registry_url = 'http://local.test/maven/' } }
 
-      it { is_expected.to eq('http://user:password@local.test/maven/path/file.pom') }
+      it { is_expected.to eq('http://local.test/maven/path/file.pom') }
+    end
+  end
+
+  describe '#headers_from_maven_upstream' do
+    let(:setting) do
+      build_stubbed(
+        :dependency_proxy_packages_setting,
+        :maven,
+        maven_external_registry_username: nil,
+        maven_external_registry_password: nil
+      )
+    end
+
+    subject { setting.headers_from_maven_upstream }
+
+    it { is_expected.to eq({}) }
+
+    context 'with username and password set' do
+      let(:setting) do
+        super().tap do |s|
+          s.maven_external_registry_username = 'user'
+          s.maven_external_registry_password = 'password'
+        end
+      end
+
+      let(:expected_authorization) do
+        ActionController::HttpAuthentication::Basic.encode_credentials('user', 'password')
+      end
+
+      it { is_expected.to eq(Authorization: expected_authorization) }
     end
   end
 end

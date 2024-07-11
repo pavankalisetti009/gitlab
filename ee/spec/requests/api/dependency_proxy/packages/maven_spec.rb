@@ -116,6 +116,12 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
       shared_examples 'a user pulling files' do
         let(:using_a_deploy_token) { false }
 
+        authorization_header = {
+          'Authorization' => [
+            ActionController::HttpAuthentication::Basic.encode_credentials('user', 'password')
+          ]
+        }
+
         shared_examples 'tracking an internal event' do |from_cache: false|
           it 'tracks an internal event' do
             event_name = if from_cache
@@ -134,12 +140,30 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
         end
 
         shared_examples 'returning a workhorse sendurl response' do
-          it_behaves_like 'returning a workhorse sendurl response with', headers: {}
+          it_behaves_like 'returning a workhorse sendurl response with', headers: authorization_header do
+            before do
+              dependency_proxy_setting.update!(
+                maven_external_registry_username: 'user',
+                maven_external_registry_password: 'password'
+              )
+            end
+          end
+
           it_behaves_like 'tracking an internal event', from_cache: false
         end
 
         shared_examples 'returning a workhorse senddependency response' do
-          it_behaves_like 'returning a workhorse senddependency response with', headers: nil, upload_method: 'PUT'
+          it_behaves_like 'returning a workhorse senddependency response with',
+            headers: authorization_header,
+            upload_method: 'PUT' do
+            before do
+              dependency_proxy_setting.update!(
+                maven_external_registry_username: 'user',
+                maven_external_registry_password: 'password'
+              )
+            end
+          end
+
           it_behaves_like 'tracking an internal event', from_cache: false
         end
 
@@ -430,6 +454,31 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
             a_string_matching(%r{sandbox.test/#{path}/#{file_name}}),
             a_hash_including(:upload_config)
           )
+        end
+      end
+
+      context 'with a username and password set and pulling existing file' do
+        let_it_be(:package) { create(:maven_package, project: project) }
+
+        let(:package_file) { package.package_files.find { |f| f.file_name.end_with?('.pom') } }
+        let(:path) { package.maven_metadatum.path }
+        let(:file_name) { package_file.file_name }
+
+        it 'sets the correct headers in the verify package file etag service' do
+          service_double = instance_double(
+            ::DependencyProxy::Packages::VerifyPackageFileEtagService,
+            execute: ServiceResponse.success
+          )
+          expect(::DependencyProxy::Packages::VerifyPackageFileEtagService).to receive(:new)
+            .with(
+              remote_url: dependency_proxy_setting.url_from_maven_upstream(path: path, file_name: file_name),
+              package_file: an_instance_of(Packages::PackageFile),
+              headers: dependency_proxy_setting.headers_from_maven_upstream
+            ).and_return(service_double)
+
+          api_request
+
+          expect(response).to have_gitlab_http_status(:ok)
         end
       end
 
