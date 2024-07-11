@@ -46,6 +46,10 @@ module GitlabSubscriptions
         .limit(limit)
     end
 
+    def self.find_by_namespace_and_add_on(namespace, add_on)
+      find_by(namespace: namespace, add_on: add_on)
+    end
+
     def self.next_candidate_requiring_assigned_users_refresh
       requiring_assigned_users_refresh(1)
         .order('last_assigned_users_refreshed_at ASC NULLS FIRST')

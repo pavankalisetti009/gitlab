@@ -72,7 +72,7 @@ class SyncSeatLinkRequestWorker
   end
 
   def update_code_suggestions_add_on_purchase
-    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionCodeSuggestionsService.new.execute
+    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::CodeSuggestions.new.execute
   end
 
   def update_reconciliation!(response)
