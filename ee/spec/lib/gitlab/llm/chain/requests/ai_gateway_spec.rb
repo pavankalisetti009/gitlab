@@ -230,8 +230,11 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     context 'when request is sent for a new ReAct Duo Chat prompt' do
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
-
       let(:prompt) { { prompt: user_prompt, options: options } }
+
+      let(:model_metadata) do
+        { api_key: "test_token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
+      end
 
       let(:options) do
         {
@@ -239,7 +242,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           single_action_agent: true,
           conversation: "{:role=>:user, :content=>\"previous question\"}",
           current_resource_type: "issue",
-          current_resource_content: "string"
+          current_resource_content: "string",
+          model_metadata: model_metadata
         }
       end
 
@@ -256,7 +260,8 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
               type: "issue",
               content: "string"
             }
-          }
+          },
+          model_metadata: model_metadata
         }
       end
 

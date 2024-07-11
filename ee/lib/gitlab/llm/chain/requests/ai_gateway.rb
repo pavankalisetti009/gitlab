@@ -145,8 +145,9 @@ module Gitlab
 
             {
               prompt: prompt,
-              options: option_params
-            }
+              options: option_params,
+              model_metadata: options[:model_metadata]
+            }.compact
           end
 
           def payload_params(options)
