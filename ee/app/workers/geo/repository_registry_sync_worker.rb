@@ -13,7 +13,9 @@ module Geo
 
       # Transition-period-solution, see
       # https://gitlab.com/gitlab-org/gitlab/-/issues/372444#note_1087132645c
-      capacity += current_node.container_repositories_max_capacity if ::Geo::ContainerRepositoryReplicator.enabled?
+      if ::Geo::ContainerRepositoryReplicator.replication_enabled?
+        capacity += current_node.container_repositories_max_capacity
+      end
 
       capacity
     end

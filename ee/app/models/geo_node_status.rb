@@ -374,7 +374,7 @@ class GeoNodeStatus < ApplicationRecord
 
   def load_primary_verification_data
     Gitlab::Geo::REPLICATOR_CLASSES.each do |replicator|
-      next unless replicator.verification_feature_flag_enabled?
+      next unless replicator.verification_enabled?
 
       public_send("#{replicator.replicable_name_plural}_checksummed_count=", replicator.checksummed_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_checksum_failed_count=", replicator.checksum_failed_count) # rubocop:disable GitlabSecurity/PublicSend

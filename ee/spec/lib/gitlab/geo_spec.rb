@@ -687,27 +687,124 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
   end
 
   describe '.verification_enabled_replicator_classes' do
-    it 'returns an Array of replicator classes' do
-      result = described_class.verification_enabled_replicator_classes
-
-      expect(result).to be_an(Array)
-      expect(result).to include(Geo::PackageFileReplicator)
-    end
-
-    context 'when replication is disabled' do
+    context 'on a Geo primary site' do
       before do
-        stub_feature_flags(geo_package_file_replication: false)
+        stub_primary_site
       end
 
-      it 'does not return the replicator class' do
-        expect(described_class.verification_enabled_replicator_classes).not_to include(Geo::PackageFileReplicator)
+      it 'returns an Array of replicator classes' do
+        result = described_class.verification_enabled_replicator_classes
+
+        expect(result).to be_an(Array)
+        expect(result).to include(Geo::PackageFileReplicator)
+      end
+
+      context 'when replication feature flag is enabled' do
+        before do
+          stub_feature_flags(geo_package_file_replication: true)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: true)
+
+            expect(described_class.verification_enabled_replicator_classes).to include(Geo::PackageFileReplicator)
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'returns the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: false)
+
+            expect(described_class.verification_enabled_replicator_classes).to include(Geo::PackageFileReplicator)
+          end
+        end
+      end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags(geo_package_file_replication: false)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: true)
+
+            expect(described_class.verification_enabled_replicator_classes).to include(Geo::PackageFileReplicator)
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'does not return the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: false)
+
+            expect(described_class.verification_enabled_replicator_classes).not_to include(Geo::PackageFileReplicator)
+          end
+        end
+      end
+    end
+
+    context 'on a Geo secondary site' do
+      before do
+        stub_secondary_site
+      end
+
+      it 'returns an Array of replicator classes' do
+        result = described_class.verification_enabled_replicator_classes
+
+        expect(result).to be_an(Array)
+        expect(result).to include(Geo::PackageFileReplicator)
+      end
+
+      context 'when replication feature flag is enabled' do
+        before do
+          stub_feature_flags(geo_package_file_replication: true)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: true)
+
+            expect(described_class.verification_enabled_replicator_classes).to include(Geo::PackageFileReplicator)
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'returns the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: true)
+
+            expect(described_class.verification_enabled_replicator_classes).to include(Geo::PackageFileReplicator)
+          end
+        end
+      end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags(geo_package_file_replication: false)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'does not return the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: false)
+
+            expect(described_class.verification_enabled_replicator_classes).not_to include(Geo::PackageFileReplicator)
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'does not return the replicator class' do
+            stub_feature_flags(geo_package_file_force_primary_checksumming: false)
+
+            expect(described_class.verification_enabled_replicator_classes).not_to include(Geo::PackageFileReplicator)
+          end
+        end
       end
     end
   end
 
   describe '.verification_max_capacity_per_replicator_class' do
     let(:verification_max_capacity) { 12 }
-    let(:node) { double('node', verification_max_capacity: verification_max_capacity, secondary?: true) }
+    let(:node) { double('node', verification_max_capacity: verification_max_capacity, primary?: false, secondary?: true) }
 
     before do
       stub_current_geo_node(node)

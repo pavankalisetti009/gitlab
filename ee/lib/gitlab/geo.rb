@@ -278,7 +278,7 @@ module Gitlab
     end
 
     def self.enabled_replicator_classes
-      REPLICATOR_CLASSES.select(&:enabled?)
+      REPLICATOR_CLASSES.select(&:replication_enabled?)
     end
 
     def self.blob_replicator_classes

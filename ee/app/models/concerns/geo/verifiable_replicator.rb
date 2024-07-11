@@ -30,14 +30,11 @@ module Geo
         :reverify_batch,
         to: :verification_query_class
 
-      # If replication is disabled, then so is verification.
       override :verification_enabled?
       def verification_enabled?
-        enabled? && verification_feature_flag_enabled?
-      end
+        return primary_checksumming_enabled? if ::Gitlab::Geo.primary?
+        return secondary_verification_enabled? if ::Gitlab::Geo.secondary?
 
-      # Override this to check a feature flag
-      def verification_feature_flag_enabled?
         false
       end
 
@@ -46,7 +43,6 @@ module Geo
         return false unless verification_enabled?
 
         ::Geo::VerificationBatchWorker.perform_with_capacity(replicable_name)
-
         ::Geo::VerificationTimeoutWorker.perform_async(replicable_name)
 
         # Secondaries don't need to run this since they will receive an event for each
@@ -214,10 +210,36 @@ module Geo
           registry_class.verification_not_disabled.count
         end
       end
+
+      private
+
+      def primary_checksumming_enabled?
+        # If replication is enabled on the primary, then the
+        # verification must be enabled. This way, we can verify
+        # the data on the secondary sites.
+        return true if replication_enabled?
+
+        force_primary_checksumming_enabled?
+      end
+
+      def secondary_verification_enabled?
+        # If replication is disabled on the primary, then the
+        # verification is also disabled on the secondary since
+        # it will not have the data to verify.
+        replication_enabled?
+      end
+
+      def force_primary_checksumming_enabled?
+        Feature.enabled?(force_primary_checksumming_feature_key, type: :ops) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Verification is instance wide
+      end
+
+      def force_primary_checksumming_feature_key
+        :"geo_#{replicable_name}_force_primary_checksumming"
+      end
     end
 
-    def handle_after_checksum_succeeded
-      return false unless Gitlab::Geo.primary?
+    def geo_handle_after_checksum_succeeded
+      return unless Gitlab::Geo.primary?
       return unless self.class.verification_enabled?
 
       publish(:checksum_succeeded, **event_params)

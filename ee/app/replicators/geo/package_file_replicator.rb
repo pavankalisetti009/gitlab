@@ -8,11 +8,6 @@ module Geo
       ::Packages::PackageFile
     end
 
-    override :verification_feature_flag_enabled?
-    def self.verification_feature_flag_enabled?
-      true
-    end
-
     def carrierwave_uploader
       model_record.file
     end

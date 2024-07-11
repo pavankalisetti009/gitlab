@@ -71,35 +71,105 @@ RSpec.shared_examples 'a verifiable replicator' do
   end
 
   describe '.verification_enabled?' do
-    context 'when replication is enabled' do
+    let(:replicable_name) { described_class.replicable_name }
+
+    context 'on a Geo primary site' do
       before do
-        expect(described_class).to receive(:enabled?).and_return(true)
+        stub_primary_site
       end
 
-      context 'when verification_feature_flag_enabled? returns true' do
-        it 'returns true' do
-          allow(described_class).to receive(:verification_feature_flag_enabled?).and_return(true)
+      context 'when replication feature flag is enabled' do
+        before do
+          stub_feature_flags("geo_#{replicable_name}_replication" => true)
+        end
 
-          expect(described_class.verification_enabled?).to be_truthy
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns true' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => true)
+
+            expect(described_class.verification_enabled?).to be_truthy
+          end
+        end
+
+        context 'when the force primary checksumming feature flag is disabled' do
+          it 'returns true' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => false)
+
+            expect(described_class.verification_enabled?).to be_truthy
+          end
         end
       end
 
-      context 'when verification_feature_flag_enabled? returns false' do
-        it 'returns false' do
-          allow(described_class).to receive(:verification_feature_flag_enabled?).and_return(false)
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags("geo_#{replicable_name}_replication" => false)
+        end
 
-          expect(described_class.verification_enabled?).to be_falsey
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns true' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => true)
+
+            expect(described_class.verification_enabled?).to be_truthy
+          end
+        end
+
+        context 'when the force primary checksumming feature flag is disabled' do
+          it 'returns false' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => false)
+
+            expect(described_class.verification_enabled?).to be_falsey
+          end
         end
       end
     end
 
-    context 'when replication is disabled' do
+    context 'on a Geo secondary site' do
       before do
-        expect(described_class).to receive(:enabled?).and_return(false)
+        stub_secondary_site
       end
 
-      it 'returns false' do
-        expect(described_class.verification_enabled?).to be_falsey
+      context 'when replication feature flag is enabled' do
+        before do
+          stub_feature_flags("geo_#{replicable_name}_replication" => true)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns true' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => true)
+
+            expect(described_class.verification_enabled?).to be_truthy
+          end
+        end
+
+        context 'when the force primary checksumming feature flag is disabled' do
+          it 'returns true' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => false)
+
+            expect(described_class.verification_enabled?).to be_truthy
+          end
+        end
+      end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags("geo_#{replicable_name}_replication" => false)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'returns false' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => true)
+
+            expect(described_class.verification_enabled?).to be_falsey
+          end
+        end
+
+        context 'when the force primary checksumming feature flag is disabled' do
+          it 'returns false' do
+            stub_feature_flags("geo_#{replicable_name}_force_primary_checksumming" => false)
+
+            expect(described_class.verification_enabled?).to be_falsey
+          end
+        end
       end
     end
   end
@@ -577,7 +647,7 @@ RSpec.shared_examples 'a verifiable replicator' do
     end
   end
 
-  describe '#handle_after_checksum_succeeded' do
+  describe '#geo_handle_after_checksum_succeeded' do
     context 'on a Geo primary' do
       before do
         stub_primary_node
@@ -586,7 +656,7 @@ RSpec.shared_examples 'a verifiable replicator' do
       it 'creates checksum_succeeded event' do
         model_record
 
-        expect { replicator.handle_after_checksum_succeeded }.to change { ::Geo::Event.count }.by(1)
+        expect { replicator.geo_handle_after_checksum_succeeded }.to change { ::Geo::Event.count }.by(1)
         expect(::Geo::Event.last.event_name).to eq 'checksum_succeeded'
       end
 
@@ -596,6 +666,18 @@ RSpec.shared_examples 'a verifiable replicator' do
         expect { model_record.verification_succeeded_with_checksum!('abc123', Time.current) }.to change { ::Geo::Event.count }.by(1)
         expect(::Geo::Event.last.event_name).to eq 'checksum_succeeded'
       end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags("geo_#{replicator.replicable_name}_replication": false)
+        end
+
+        it 'does not publish' do
+          expect do
+            replicator.geo_handle_after_checksum_succeeded
+          end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
+        end
+      end
     end
 
     context 'on a Geo secondary' do
@@ -604,7 +686,9 @@ RSpec.shared_examples 'a verifiable replicator' do
       end
 
       it 'does not create an event' do
-        expect { replicator.handle_after_checksum_succeeded }.not_to change { ::Geo::Event.count }
+        expect do
+          replicator.geo_handle_after_checksum_succeeded
+        end.not_to change { ::Geo::Event.where("replicable_name" => replicator.replicable_name).count }
       end
     end
   end

@@ -15,15 +15,17 @@ module EE
       allow(GeoNode).to receive(:current_node_name).and_return(name)
     end
 
-    def stub_primary_node
+    def stub_primary_site
       allow(::Gitlab::Geo).to receive(:primary?).and_return(true)
       allow(::Gitlab::Geo).to receive(:secondary?).and_return(false)
     end
+    alias_method :stub_primary_node, :stub_primary_site
 
-    def stub_secondary_node
+    def stub_secondary_site
       allow(::Gitlab::Geo).to receive(:primary?).and_return(false)
       allow(::Gitlab::Geo).to receive(:secondary?).and_return(true)
     end
+    alias_method :stub_secondary_node, :stub_secondary_site
 
     def stub_proxied_request
       allow(::Gitlab::Geo).to receive(:proxied_request?).and_return(true)
@@ -95,11 +97,7 @@ module EE
           model_class.constantize
         end
 
-        def handle_after_create_commit
-          true
-        end
-
-        def handle_after_checksum_succeeded
+        def geo_handle_after_checksum_succeeded
           true
         end
 
@@ -137,7 +135,7 @@ module EE
 
     def stub_dummy_replication_feature_flag(replicator_class: 'Geo::DummyReplicator', enabled: true)
       replicator = Object.const_get(replicator_class, false)
-      allow(replicator).to receive(:enabled?).and_return(enabled)
+      allow(replicator).to receive(:replication_enabled?).and_return(enabled)
     end
 
     # Example:

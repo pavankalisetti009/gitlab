@@ -221,7 +221,8 @@ class GeoNode < ApplicationRecord
   def geo_replication_details_url
     return unless self.secondary?
 
-    replicator_class = ::Gitlab::Geo.enabled_replicator_classes.first
+    replicator_class =
+      ::Gitlab::Geo.enabled_replicator_classes.first || ::Gitlab::Geo.verification_enabled_replicator_classes.first
 
     # redirect to the replicables for the first SSF data type
     Gitlab::Routing.url_helpers.site_replicables_admin_geo_node_url(

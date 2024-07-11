@@ -284,7 +284,7 @@ module Geo
 
       return unless Gitlab::Geo.primary?
 
-      self.replicator.handle_after_checksum_succeeded
+      self.replicator.geo_handle_after_checksum_succeeded
     end
 
     # Convenience method to update failure message and transition to failed
