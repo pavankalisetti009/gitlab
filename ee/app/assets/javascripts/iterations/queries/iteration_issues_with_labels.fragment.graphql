@@ -18,6 +18,7 @@ fragment IterationIssuesWithLabels on IssueConnection {
     title
     webUrl
     state
+    type
     assignees {
       nodes {
         ...User
