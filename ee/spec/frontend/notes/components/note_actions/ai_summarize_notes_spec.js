@@ -96,7 +96,7 @@ describe('AiSummarizeNotes component', () => {
         });
 
         it('shows error if no response within timeout limit', async () => {
-          jest.advanceTimersByTime();
+          jest.advanceTimersByTime(LONGER_THAN_MAX_REQUEST_TIMEOUT);
           await nextTick();
 
           expect(createAlert).toHaveBeenCalledWith(
@@ -166,7 +166,7 @@ describe('AiSummarizeNotes component', () => {
         });
 
         it('shows error if no response within timeout limit', async () => {
-          jest.advanceTimersByTime();
+          jest.advanceTimersByTime(LONGER_THAN_MAX_REQUEST_TIMEOUT);
           await nextTick();
 
           expect(createAlert).toHaveBeenCalledWith(
