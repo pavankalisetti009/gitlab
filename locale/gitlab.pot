@@ -32976,9 +32976,6 @@ msgstr ""
 msgid "Merges this merge request immediately."
 msgstr ""
 
-msgid "Merging immediately isn't recommended as it may negatively impact the existing merge train. Read the %{docsLinkStart}documentation%{docsLinkEnd} for more information."
-msgstr ""
-
 msgid "Mermaid diagram"
 msgstr ""
 
@@ -63506,10 +63503,13 @@ msgstr ""
 msgid "mrWidget|Merged by"
 msgstr ""
 
-msgid "mrWidget|Merging immediately is not recommended. The merged changes could cause pipeline failures on the target branch, and the changes will not be validated against the commits being added by the merge requests currently in the merge train. Read the %{linkStart}documentation%{linkEnd} for more information."
+msgid "mrWidget|Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{docsLinkStart}What are the risks?%{docsLinkEnd}"
 msgstr ""
 
-msgid "mrWidget|Merging immediately isn't recommended as it may negatively impact the existing merge train. Read the %{linkStart}documentation%{linkEnd} for more information."
+msgid "mrWidget|Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{docsLinkStart}What are the risks?%{docsLinkEnd}."
+msgstr ""
+
+msgid "mrWidget|Merging immediately is not recommended. The merged changes could cause pipeline failures on the target branch, and the changes will not be validated against the commits being added by the merge requests currently in the merge train. Read the %{linkStart}documentation%{linkEnd} for more information."
 msgstr ""
 
 msgid "mrWidget|Migrate to GitLab CI/CD from Jenkins"
