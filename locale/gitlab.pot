@@ -21872,6 +21872,9 @@ msgstr ""
 msgid "Failed to apply commands."
 msgstr ""
 
+msgid "Failed to approve the current merge request."
+msgstr ""
+
 msgid "Failed to archive a design. Please try again."
 msgid_plural "Failed to archive designs. Please try again."
 msgstr[0] ""
