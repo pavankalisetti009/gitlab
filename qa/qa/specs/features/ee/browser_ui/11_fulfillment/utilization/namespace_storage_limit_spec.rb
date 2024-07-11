@@ -4,21 +4,15 @@ module QA
   RSpec.describe 'Fulfillment', :requires_admin,
     only: { subdomain: :staging },
     feature_flag: { name: 'namespace_storage_limit', scope: :group },
-    product_group: :utilization,
-    quarantine: {
-      type: :flaky,
-      issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/438822"
-    } do
+    product_group: :utilization do
     describe 'Utilization' do
       include Runtime::Fixtures
 
       let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:executor) { "qa-runner-#{Faker::Alphanumeric.alphanumeric(number: 8)}" }
-
       let(:group) do
         Resource::Sandbox.init do |resource|
           resource.api_client = admin_api_client
-          resource.path = "quality-e2e-tests"
+          resource.path = available_group_path
         end.reload!
       end
 
@@ -29,19 +23,8 @@ module QA
         )
       end
 
-      let!(:runner) do
-        create(:project_runner,
-          name: executor,
-          tags: [executor],
-          project: project)
-      end
-
       let(:application_settings_endpoint) do
         QA::Runtime::API::Request.new(admin_api_client, '/application/settings').url
-      end
-
-      let(:plan_limits_endpoint) do
-        QA::Runtime::API::Request.new(admin_api_client, '/application/plan_limits').url
       end
 
       let(:storage_warning_message) do
@@ -53,20 +36,14 @@ module QA
         "#{group.name} is now read-only. Your ability to write new data to this namespace is restricted."
       end
 
+      let(:project_test_data) { ['DO NOT MODIFY - Large Project', 'Test Limit'] }
+
       before do
         Flow::Login.sign_in
 
         Runtime::Feature.enable(:namespace_storage_limit, group: group)
         Runtime::Feature.enable(:namespace_storage_limit_show_preenforcement_banner, group: group)
         Runtime::Feature.enable(:reduce_aggregation_schedule_lease, group: group)
-
-        put application_settings_endpoint, { namespace_aggregation_schedule_lease_duration_in_seconds: 1 }
-        put plan_limits_endpoint, {
-          plan_name: 'free',
-          notification_limit: 9216,
-          enforcement_limit: 10240,
-          storage_limit: 10240
-        }
 
         group.visit!
 
@@ -80,44 +57,33 @@ module QA
             file_path: 'file.txt',
             content: '1' * 512
           }])
+
+        put application_settings_endpoint, { namespace_aggregation_schedule_lease_duration_in_seconds: 30 }
       end
 
       after do
         put application_settings_endpoint, { namespace_aggregation_schedule_lease_duration_in_seconds: 300 }
-        put plan_limits_endpoint, {
-          plan_name: 'free',
-          notification_limit: 5120,
-          enforcement_limit: 5120,
-          storage_limit: 5120
-        }
-
-        runner.remove_via_api!
 
         begin
           # This is important to have here to revert the namespace back to full-access mode and have it be ready for
           # the next test run
           project.remove_via_api!
-        rescue QA::Resource::Errors::ResourceNotDeletedError
-          # The error is expected for the other test if that test passes because the project would already be deleted
-          # as part of the test steps but this can serve as a backup in case something goes wrong and the project
-          # doesn't get deleted
+        rescue QA::Resource::Errors::ResourceNotDeletedError => e
+          # If the error message is because the project doesn't exist, that is expected. If the test passes, the project
+          # will already have been deleted as part of the test steps already and this is just a fallback in case
+          # something goes wrong and the project doesn't get deleted. Meanwhile, if the error message is something else,
+          # we want it to raise the error and fail the test.
+          raise e unless e.message.include?('404 Project Not Found')
         end
       end
 
       context 'when namespace storage usage hits the limit' do
         it(
-          'puts the namespace into read-only mode',
-          testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/437114'
-        ) do
-          expect_storage_limit_message(storage_limit_reached_message, 'Alert for storage limit exceeded not shown')
-        end
-      end
-
-      context 'when namespace storage usage goes back down below the limit' do
-        it(
-          'reverts the namespace back to full-access mode',
+          'puts the namespace into read-only mode and reverts back to full-access mode after making space',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/437807'
         ) do
+          expect_storage_limit_message(storage_limit_reached_message, 'Alert for storage limit exceeded not shown')
+
           project.remove_via_api!
           group.visit!
 
@@ -131,11 +97,36 @@ module QA
             max_duration: 300,
             sleep_interval: 10,
             retry_on_exception: true,
+            reload_page: page,
             message: error_message) do
-            page.refresh
             expect(storage_limit_alert.storage_limit_message).to have_content(message)
           end
         end
+      end
+
+      # Guide on how to create a group for this test with the necessary test data can be found in this runbook:
+      # https://gitlab.com/gitlab-org/quality/runbooks/-/blob/main/storage-limit-test-data-setup/index.md
+      def available_group_path
+        group_paths = %i[
+          quality-e2e-tests
+          quality-e2e-tests-2
+          quality-e2e-tests-3
+          quality-e2e-tests-4
+          quality-e2e-tests-5
+        ]
+
+        group_paths.each do |group_path|
+          current_group = Resource::Sandbox.init do |resource|
+            resource.api_client = admin_api_client
+            resource.path = group_path
+          end.reload!
+
+          extra_projects = current_group.projects.select { |project| project_test_data.exclude?(project.name) }
+
+          return group_path.to_s if extra_projects.empty?
+        end
+
+        raise "All groups are all either currently in use or has old data that needs to be cleared"
       end
     end
   end
