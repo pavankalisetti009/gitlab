@@ -78,6 +78,29 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
     end
 
+    context 'when job names are not unique' do
+      let(:config) do
+        { rspec: { stage: 'test', script: 'rspec' } }
+      end
+
+      before do
+        run_chain
+      end
+
+      it 'propagates the error to the pipeline' do
+        expect(pipeline.errors[:base])
+          .to contain_exactly('Pipeline execution policy error: job names must be unique (rspec)')
+      end
+
+      it 'breaks the processing chain' do
+        expect(step.break?).to be true
+      end
+
+      it 'does not save the pipeline' do
+        expect(pipeline).not_to be_persisted
+      end
+    end
+
     context 'when there is no project CI configuration' do
       let(:config) { nil }
 

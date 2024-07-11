@@ -186,6 +186,26 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  context 'when policy and project job names are not unique' do
+    let(:project_ci_yaml) do
+      <<~YAML
+        namespace_policy_job:
+          stage: test
+          script:
+            - echo 'duplicate'
+      YAML
+    end
+
+    it 'responds with error', :aggregate_failures do
+      expect(execute).to be_error
+      expect(execute.payload).to be_persisted
+      expect(execute.payload.errors.full_messages)
+        .to contain_exactly(
+          'Pipeline execution policy error: job names must be unique (namespace_policy_job)'
+        )
+    end
+  end
+
   context 'when any policy contains `override_project_ci` strategy' do
     let(:project_policy) do
       build(:pipeline_execution_policy, :override_project_ci,
