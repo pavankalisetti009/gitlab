@@ -7,12 +7,15 @@ module Sbom
     include IgnorableColumns
 
     belongs_to :component, optional: false
-    belongs_to :source_package
     belongs_to :component_version
     belongs_to :project, optional: false
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
     belongs_to :source
-    belongs_to :source_package, optional: true
+    belongs_to :source_package, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::SourcePackage
+      -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
+      },
+      optional: true
 
     has_many :occurrences_vulnerabilities,
       class_name: 'Sbom::OccurrencesVulnerability',
@@ -107,6 +110,7 @@ module Sbom
 
     scope :filter_by_source_packages, ->(source_packages) do
       where(source_package: source_packages)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
     end
 
     scope :filter_by_component_names, ->(component_names) do
