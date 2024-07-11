@@ -79,7 +79,8 @@ RSpec.describe GroupWikiRepository, :geo do
             expect(subgroup_wiki_repository.in_replicables_for_current_secondary?).to be true
           end
 
-          it 'returns false for group wiki repositories not in an included shard' do
+          it 'returns false for group wiki repositories not in an included shard',
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471635' do
             expect(broken_wiki_repository.in_replicables_for_current_secondary?).to be false
           end
         end
