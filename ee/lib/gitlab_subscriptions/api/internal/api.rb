@@ -11,6 +11,7 @@ module GitlabSubscriptions
         mount ::GitlabSubscriptions::API::Internal::Subscriptions
         mount ::GitlabSubscriptions::API::Internal::Users
         mount ::GitlabSubscriptions::API::Internal::Members
+        mount ::GitlabSubscriptions::API::Internal::UpcomingReconciliations
       end
     end
   end
