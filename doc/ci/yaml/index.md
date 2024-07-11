@@ -4038,9 +4038,9 @@ using variables.
 
 Use `rules` to include or exclude jobs in pipelines.
 
-Rules are evaluated when the pipeline is created, and evaluated *in order*
-until the first match. When a match is found, the job is either included or excluded from the pipeline,
-depending on the configuration.
+Rules are evaluated when the pipeline is created, and evaluated *in order*. When a match is found,
+no more rules are checked and the job is either included or excluded from the pipeline
+depending on the configuration. If no rules match, the job is not added to the pipeline.
 
 `rules` accepts an array of rules. Each rules must have at least one of:
 
@@ -4077,11 +4077,13 @@ Use `rules:if` clauses to specify when to add a job to a pipeline:
 
 - If an `if` statement is true, add the job to the pipeline.
 - If an `if` statement is true, but it's combined with `when: never`, do not add the job to the pipeline.
-- If an `if` statement is false, do not add the job to the pipeline, then check the next `rules` item (if any more exist).
+- If an `if` statement is false, check the next `rules` item (if any more exist).
 
-`if` clauses are evaluated based on the values of [CI/CD variables](../variables/index.md)
-or [predefined CI/CD variables](../variables/predefined_variables.md), with
-[some exceptions](../variables/where_variables_can_be_used.md#gitlab-ciyml-file).
+`if` clauses are evaluated:
+
+- Based on the values of [CI/CD variables](../variables/index.md) or [predefined CI/CD variables](../variables/predefined_variables.md),
+  with [some exceptions](../variables/where_variables_can_be_used.md#gitlab-ciyml-file).
+- In order, following [`rules` execution flow](#rules).
 
 **Keyword type**: Job-specific and pipeline-specific. You can use it as part of a job
 to configure the job behavior, or with [`workflow`](#workflow) to configure the pipeline behavior.
