@@ -4,6 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::Tasks::IngestSourcePackages, feature_category: :dependency_management do
   describe '#execute' do
+    let!(:organization) { create(:organization, :default) }
+
     let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
     let_it_be(:occurrence_maps) { build_list(:sbom_occurrence_map, 2, :with_source_package) }
 
@@ -19,7 +21,10 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSourcePackages, feature_category: :
     context 'when there is existing source package' do
       before do
         map = occurrence_maps.first.to_h
-        create(:sbom_source_package, name: map[:source_package_name], purl_type: map[:purl_type])
+        create(:sbom_source_package,
+          name: map[:source_package_name],
+          purl_type: map[:purl_type],
+          organization_id: pipeline.project.namespace.organization_id)
       end
 
       it 'does not create a new record for the existing source package' do
@@ -52,6 +57,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSourcePackages, feature_category: :
       it 'maps source package id with correct occurrence_maps' do
         expect { ingest_source_package.execute }.to change { Sbom::SourcePackage.count }.by(3)
         expect(occurrence_maps).to all(have_attributes(source_package_id: Integer))
+      end
+    end
+
+    describe 'attributes' do
+      let(:ingested_source_package) { Sbom::SourcePackage.last }
+
+      it 'sets the correct attributes for the source package' do
+        ingest_source_package.execute
+
+        expect(ingested_source_package.attributes).to include(
+          'name' => occurrence_maps.last.source_package_name,
+          'purl_type' => occurrence_maps.last.purl_type,
+          'organization_id' => pipeline.project.namespace.organization_id
+        )
       end
     end
   end

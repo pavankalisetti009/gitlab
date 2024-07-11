@@ -4,10 +4,10 @@ module Sbom
   module Ingestion
     module Tasks
       class IngestSourcePackages < Base
-        SOURCE_PACKAGE_ATTRIBUTES = %i[name purl_type].freeze
+        SOURCE_PACKAGE_ATTRIBUTES = %i[name purl_type organization_id].freeze
 
         self.model = Sbom::SourcePackage
-        self.unique_by = SOURCE_PACKAGE_ATTRIBUTES
+        self.unique_by = SOURCE_PACKAGE_ATTRIBUTES.freeze
         self.uses = ([:id] + SOURCE_PACKAGE_ATTRIBUTES).freeze
 
         private
@@ -22,7 +22,8 @@ module Sbom
           insertable_maps.map do |occurrence_map|
             {
               name: occurrence_map.source_package_name,
-              purl_type: occurrence_map.purl_type
+              purl_type: occurrence_map.purl_type,
+              organization_id: organization_id
             }
           end
         end
@@ -32,7 +33,11 @@ module Sbom
         end
 
         def grouping_key_for_map(map)
-          [map.source_package_name, map.purl_type]
+          [map.source_package_name, map.purl_type, organization_id]
+        end
+
+        def organization_id
+          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
         end
       end
     end
