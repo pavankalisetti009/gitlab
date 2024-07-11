@@ -44,7 +44,7 @@ export default {
         </gl-button>
       </div>
 
-      <div data-testid="select-escalation-policy" class="hide-collapsed gl-line-height-14">
+      <div data-testid="select-escalation-policy" class="hide-collapsed gl-line-height-1">
         <span class="gl-text-gray-500">
           {{ $options.i18n.none }}
         </span>
