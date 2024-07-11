@@ -18,6 +18,10 @@ module Mutations
         required: false,
         description: 'Client generated ID that can be subscribed to, to receive a response for the mutation.'
 
+      argument :platform_origin, GraphQL::Types::String,
+        required: false,
+        description: 'Specifies the origin platform of the request.'
+
       # We need to re-declare the `errors` because we want to allow ai_features token to work for this
       field :errors, [GraphQL::Types::String],
         null: false,
@@ -90,7 +94,7 @@ module Mutations
       end
 
       def extract_method_params!(attributes)
-        options = attributes.extract!(:client_subscription_id)
+        options = attributes.extract!(:client_subscription_id, :platform_origin)
         methods = methods(attributes.transform_values(&:to_h))
 
         # At this point, we only have one method since we filtered it in `#ready?`

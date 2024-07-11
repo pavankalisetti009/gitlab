@@ -90,13 +90,13 @@ module Gitlab
           def input_blank_for_ide?
             return unless command
 
-            SlashCommand::IDE_SOURCES.include?(command.client_source) &&
+            SlashCommand::VS_CODE_EXTENSION == command.platform_origin &&
               command.user_input.blank? &&
               context.current_file[:selected_text].blank?
           end
 
           def input_blank_message(command)
-            content = format(s_("AI|Your request does not seems to contain code to %{action}. " \
+            content = format(s_("AI|Your request does not seem to contain code to %{action}. " \
               "To %{human_name} select the lines of code in your editor " \
               "and then type the command %{command_name} in the chat. " \
               "You may add additional instructions after this comment. If you have no code to select, " \
