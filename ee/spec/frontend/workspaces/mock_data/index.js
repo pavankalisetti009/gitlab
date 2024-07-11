@@ -79,6 +79,130 @@ export const USER_WORKSPACES_LIST_QUERY_RESULT = {
   },
 };
 
+export const USER_WORKSPACES_TAB_LIST_QUERY_RESULT = {
+  data: {
+    currentUser: {
+      id: 1,
+      activeWorkspaces: {
+        nodes: [
+          {
+            __typename: 'Workspace',
+            id: 'gid://gitlab/RemoteDevelopment::Workspace/2',
+            name: 'workspace-1-1-idmi02',
+            namespace: 'gl-rd-ns-1-1-idmi02',
+            desiredState: 'Stopped',
+            actualState: 'CreationRequested',
+            url: 'https://8000-workspace-1-1-idmi02.workspaces.localdev.me?tkn=password',
+            devfileRef: 'main',
+            devfilePath: '.devfile.yaml',
+            devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
+            projectId: 'gid://gitlab/Project/1',
+            createdAt: '2023-04-29T18:24:34Z',
+            maxHoursBeforeTermination: 120,
+          },
+          {
+            __typename: 'Workspace',
+            id: 'gid://gitlab/RemoteDevelopment::Workspace/1',
+            name: 'workspace-1-1-rfu27q',
+            namespace: 'gl-rd-ns-1-1-rfu27q',
+            desiredState: 'Running',
+            actualState: 'Running',
+            url: 'https://8000-workspace-1-1-rfu27q.workspaces.localdev.me?tkn=password',
+            devfileRef: 'main',
+            devfilePath: '.devfile.yaml',
+            devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
+            projectId: 'gid://gitlab/Project/1',
+            createdAt: '2023-05-01T18:24:34Z',
+            maxHoursBeforeTermination: 120,
+          },
+        ],
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      },
+      terminatedWorkspaces: {
+        nodes: [
+          {
+            __typename: 'Workspace',
+            id: 'gid://gitlab/RemoteDevelopment::Workspace/4',
+            name: 'workspace-1-1-iawi02',
+            namespace: 'gl-rd-ns-1-1-iawi02',
+            desiredState: 'Terminated',
+            actualState: 'Terminated',
+            url: 'https://8000-workspace-1-1-idmi02.workspaces.localdev.me?tkn=password',
+            devfileRef: 'main',
+            devfilePath: '.devfile.yaml',
+            devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
+            projectId: 'gid://gitlab/Project/1',
+            createdAt: '2023-04-29T18:24:34Z',
+            maxHoursBeforeTermination: 120,
+          },
+          {
+            __typename: 'Workspace',
+            id: 'gid://gitlab/RemoteDevelopment::Workspace/3',
+            name: 'workspace-1-1-rsl27q',
+            namespace: 'gl-rd-ns-1-1-rsl27q',
+            desiredState: 'Terminated',
+            actualState: 'Terminated',
+            url: 'https://8000-workspace-1-1-rfu27q.workspaces.localdev.me?tkn=password',
+            devfileRef: 'main',
+            devfilePath: '.devfile.yaml',
+            devfileWebUrl: 'http://gdk.test:3000/gitlab-org/gitlab-shell/-/blob/main/.devfile.yaml',
+            projectId: 'gid://gitlab/Project/1',
+            createdAt: '2023-05-01T18:24:34Z',
+            maxHoursBeforeTermination: 120,
+          },
+        ],
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      },
+    },
+  },
+};
+
+export const GET_WORKSPACE_STATE_QUERY_RESULT = {
+  data: {
+    workspace: {
+      id: '1',
+      name: 'workspace-1-1-rfu27q',
+      actualState: 'Running',
+    },
+  },
+};
+
+export const USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT = {
+  data: {
+    currentUser: {
+      id: 1,
+      activeWorkspaces: {
+        nodes: [],
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      },
+      terminatedWorkspaces: {
+        nodes: [],
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
+          startCursor: null,
+          endCursor: null,
+        },
+      },
+    },
+  },
+};
+
 export const USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT = {
   data: {
     currentUser: {

@@ -3,7 +3,7 @@ import VueRouter from 'vue-router';
 import VueApollo from 'vue-apollo';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import getProjectsDetailsQuery from 'ee/workspaces/common/graphql/queries/get_projects_details.query.graphql';
-import userWorkspacesListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_list.query.graphql';
+import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import App from 'ee/workspaces/user/pages/app.vue';
 import WorkspacesList from 'ee/workspaces/user/pages/list.vue';
 import createRouter from 'ee/workspaces/user/router/index';
@@ -12,7 +12,7 @@ import { ROUTES } from 'ee/workspaces/user/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import {
   GET_PROJECTS_DETAILS_QUERY_RESULT,
-  USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT,
+  USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
 } from '../../mock_data';
 
 Vue.use(VueRouter);
@@ -42,8 +42,8 @@ describe('workspaces/router/index.js', () => {
       router,
       apolloProvider: createMockApollo([
         [
-          userWorkspacesListQuery,
-          jest.fn().mockResolvedValue(USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT),
+          userWorkspacesTabListQuery,
+          jest.fn().mockResolvedValue(USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT),
         ],
         [
           getProjectsDetailsQuery,

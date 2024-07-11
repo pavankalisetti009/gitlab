@@ -26,6 +26,8 @@ module QA
           end
 
           def create_workspace(agent, project)
+            existing_workspaces = get_workspaces_list
+
             if has_empty_workspace?
               click_element('new-workspace-button', skip_finished_loading_check: true)
             else
@@ -38,7 +40,22 @@ module QA
               new.add_new_variable('VAR1', 'value 1')
               new.save_workspace
             end
-            Support::WaitForRequests.wait_for_requests(skip_finished_loading_check: true)
+
+            Support::Waiter.wait_until(max_duration: 5, raise_on_failure: false) do
+              get_workspaces_list.length > existing_workspaces.length
+            end
+
+            updated_workspaces = get_workspaces_list
+
+            workspace_name = (updated_workspaces - existing_workspaces).fetch(0, '').to_s
+
+            raise "Workspace name is empty" if workspace_name == ''
+
+            workspace_name
+          end
+
+          def click_terminated_tab
+            find('a[role="tab"]', text: "Terminated", exact_text: true).click
           end
 
           def get_workspaces_list

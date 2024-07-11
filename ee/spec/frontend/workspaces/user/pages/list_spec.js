@@ -1,22 +1,25 @@
 import { mount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { GlAlert, GlButton, GlLink, GlSkeletonLoader } from '@gitlab/ui';
+import { GlAlert, GlButton, GlLink, GlSkeletonLoader, GlTabs } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import WorkspaceEmptyState from 'ee/workspaces/common/components/workspaces_list/empty_state.vue';
-import WorkspacesTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
-import WorkspacesListPagination from 'ee/workspaces/common/components/workspaces_list/workspaces_list_pagination.vue';
-import userWorkspacesListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_list.query.graphql';
+import WorkspaceTab from 'ee/workspaces/common/components/workspace_tab.vue';
+import WorkspaceTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
+import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import getProjectsDetailsQuery from 'ee/workspaces/common/graphql/queries/get_projects_details.query.graphql';
-import { populateWorkspacesWithProjectDetails } from 'ee/workspaces/common/services/utils';
+import getWorkspaceStateQuery from 'ee/workspaces/common/graphql/queries/get_workspace_state.query.graphql';
 import List from 'ee/workspaces/user/pages/list.vue';
 import { ROUTES } from 'ee/workspaces/user/constants';
+import { WORKSPACE_STATES } from 'ee/workspaces/common/constants';
+import MonitorTerminatingWorkspace from 'ee/workspaces/common/components/monitor_terminating_workspace.vue';
 import {
-  USER_WORKSPACES_LIST_QUERY_RESULT,
-  USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT,
+  USER_WORKSPACES_TAB_LIST_QUERY_RESULT,
+  USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
   GET_PROJECTS_DETAILS_QUERY_RESULT,
+  GET_WORKSPACE_STATE_QUERY_RESULT,
 } from '../../mock_data';
 
 jest.mock('~/lib/logger');
@@ -28,22 +31,24 @@ const SVG_PATH = '/assets/illustrations/empty_states/empty_workspaces.svg';
 describe('workspaces/user/pages/list.vue', () => {
   let wrapper;
   let mockApollo;
-  let userWorkspacesListQueryHandler;
+  let userWorkspacesTabListQueryHandler;
   let getProjectsDetailsQueryHandler;
+  let getWorkspaceStateQueryHandler;
 
   const buildMockApollo = () => {
-    userWorkspacesListQueryHandler = jest
+    userWorkspacesTabListQueryHandler = jest
       .fn()
-      .mockResolvedValueOnce(USER_WORKSPACES_LIST_QUERY_RESULT);
-    getProjectsDetailsQueryHandler = jest
-      .fn()
-      .mockResolvedValueOnce(GET_PROJECTS_DETAILS_QUERY_RESULT);
+      .mockResolvedValue(USER_WORKSPACES_TAB_LIST_QUERY_RESULT);
+    getProjectsDetailsQueryHandler = jest.fn().mockResolvedValue(GET_PROJECTS_DETAILS_QUERY_RESULT);
+    getWorkspaceStateQueryHandler = jest.fn().mockResolvedValue(GET_WORKSPACE_STATE_QUERY_RESULT);
 
     mockApollo = createMockApollo([
-      [userWorkspacesListQuery, userWorkspacesListQueryHandler],
+      [userWorkspacesTabListQuery, userWorkspacesTabListQueryHandler],
       [getProjectsDetailsQuery, getProjectsDetailsQueryHandler],
+      [getWorkspaceStateQuery, getWorkspaceStateQueryHandler],
     ]);
   };
+
   const createWrapper = () => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = mount(List, {
@@ -55,9 +60,11 @@ describe('workspaces/user/pages/list.vue', () => {
   };
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findHelpLink = () => wrapper.findComponent(GlLink);
-  const findTable = () => wrapper.findComponent(WorkspacesTable);
-  const findPagination = () => wrapper.findComponent(WorkspacesListPagination);
+  const findTabContainer = () => wrapper.findComponent(GlTabs);
+  const findTabs = () => wrapper.findAllComponents(WorkspaceTab);
+  const findTable = () => wrapper.findComponent(WorkspaceTable);
   const findNewWorkspaceButton = () => wrapper.findComponent(GlButton);
+
   const findAllConfirmButtons = () =>
     wrapper.findAllComponents(GlButton).filter((button) => button.props().variant === 'confirm');
 
@@ -67,8 +74,10 @@ describe('workspaces/user/pages/list.vue', () => {
 
   describe('when no workspaces are available', () => {
     beforeEach(async () => {
-      userWorkspacesListQueryHandler.mockReset();
-      userWorkspacesListQueryHandler.mockResolvedValueOnce(USER_WORKSPACES_LIST_QUERY_EMPTY_RESULT);
+      userWorkspacesTabListQueryHandler.mockReset();
+      userWorkspacesTabListQueryHandler.mockResolvedValueOnce(
+        USER_WORKSPACES_TAB_LIST_QUERY_EMPTY_RESULT,
+      );
 
       createWrapper();
       await waitForPromises();
@@ -82,12 +91,11 @@ describe('workspaces/user/pages/list.vue', () => {
       expect(findAllConfirmButtons().length).toBe(1);
     });
 
-    it('does not render the workspaces table', () => {
-      expect(findTable().exists()).toBe(false);
-    });
-
-    it('does not render the workspaces pagination', () => {
-      expect(findPagination().exists()).toBe(false);
+    it('does not render the workspace tabs', () => {
+      const tabContainer = findTabContainer();
+      const tabs = findTabs();
+      expect(tabContainer.exists()).toBe(false);
+      expect(tabs.exists()).toBe(false);
     });
   });
 
@@ -102,21 +110,17 @@ describe('workspaces/user/pages/list.vue', () => {
       await waitForPromises();
     });
 
-    it('renders table', () => {
-      expect(findTable().exists()).toBe(true);
-    });
+    it('renders the workspace tabs', () => {
+      const tabContainer = findTabContainer();
+      const tabs = findTabs();
 
-    it('renders pagination', () => {
-      expect(findPagination().exists()).toBe(true);
-    });
+      expect(tabContainer.exists()).toBe(true);
+      expect(tabContainer.props('syncActiveTabWithQueryParams')).toBe(true);
 
-    it('provides workspaces data to the workspaces table', () => {
-      expect(findTable(wrapper).props('workspaces')).toEqual(
-        populateWorkspacesWithProjectDetails(
-          USER_WORKSPACES_LIST_QUERY_RESULT.data.currentUser.workspaces.nodes,
-          GET_PROJECTS_DETAILS_QUERY_RESULT.data.projects.nodes,
-        ),
-      );
+      expect(tabs.exists()).toBe(true);
+      expect(tabs).toHaveLength(2);
+      expect(tabs.at(0).props('tabName')).toEqual('active');
+      expect(tabs.at(1).props('tabName')).toEqual('terminated');
     });
 
     it('does not call log error', () => {
@@ -125,25 +129,6 @@ describe('workspaces/user/pages/list.vue', () => {
 
     it('does not show alert', () => {
       expect(findAlert(wrapper).exists()).toBe(false);
-    });
-
-    describe('when pagination component emits input event', () => {
-      it('refetches workspaces starting at the specified cursor', async () => {
-        const pageVariables = { after: 'end', first: 10 };
-
-        createWrapper();
-
-        await waitForPromises();
-
-        expect(userWorkspacesListQueryHandler).toHaveBeenCalledTimes(1);
-
-        findPagination().vm.$emit('input', pageVariables);
-
-        await waitForPromises();
-
-        expect(userWorkspacesListQueryHandler).toHaveBeenCalledTimes(2);
-        expect(userWorkspacesListQueryHandler).toHaveBeenLastCalledWith(pageVariables);
-      });
     });
   });
 
@@ -176,10 +161,58 @@ describe('workspaces/user/pages/list.vue', () => {
     });
   });
 
+  describe('when workspace tab emits onPaginationInput event', () => {
+    const EXPECTED_ACTIVE_WORKSPACES_PAGINATION_VARIABLES = {
+      first: 10,
+      activeAfter: 'end',
+      activeBefore: null,
+      terminatedAfter: null,
+      terminatedBefore: null,
+    };
+    const EXPECTED_TERMINATED_WORKSPACES_PAGINATION_VARIABLES = {
+      first: 10,
+      terminatedAfter: 'end',
+      activeAfter: null,
+      activeBefore: null,
+      terminatedBefore: null,
+    };
+
+    it.each`
+      tabName         | tabIdx | expectedPaginationVariables
+      ${'active'}     | ${0}   | ${EXPECTED_ACTIVE_WORKSPACES_PAGINATION_VARIABLES}
+      ${'terminated'} | ${1}   | ${EXPECTED_TERMINATED_WORKSPACES_PAGINATION_VARIABLES}
+    `(
+      'correctly sets pagination variables for $tabName tab',
+      async ({ tabName, tabIdx, expectedPaginationVariables }) => {
+        const pageVariables = { after: 'end', first: 10 };
+
+        createWrapper();
+
+        await waitForPromises();
+
+        expect(userWorkspacesTabListQueryHandler).toHaveBeenCalledTimes(1);
+
+        const workspaceTab = findTabs().at(tabIdx);
+
+        workspaceTab.vm.$emit('onPaginationInput', {
+          tab: tabName,
+          paginationVariables: pageVariables,
+        });
+
+        await nextTick();
+
+        expect(userWorkspacesTabListQueryHandler).toHaveBeenCalledTimes(2);
+        expect(userWorkspacesTabListQueryHandler).toHaveBeenLastCalledWith(
+          expectedPaginationVariables,
+        );
+      },
+    );
+  });
+
   describe.each`
-    query                | queryHandlerFactory
-    ${'userWorkspaces'}  | ${() => userWorkspacesListQueryHandler}
-    ${'projectsDetails'} | ${() => getProjectsDetailsQueryHandler}
+    query                      | queryHandlerFactory
+    ${'userWorkspacesTabList'} | ${() => userWorkspacesTabListQueryHandler}
+    ${'projectsDetails'}       | ${() => getProjectsDetailsQueryHandler}
   `('when $query query fails', ({ queryHandlerFactory }) => {
     const ERROR = new Error('Something bad!');
 
@@ -191,10 +224,6 @@ describe('workspaces/user/pages/list.vue', () => {
 
       createWrapper();
       await waitForPromises();
-    });
-
-    it('does not render table', () => {
-      expect(findTable().exists()).toBe(false);
     });
 
     it('logs error', () => {
@@ -222,6 +251,7 @@ describe('workspaces/user/pages/list.vue', () => {
 
       await waitForPromises();
     });
+
     it('displays a link button that navigates to the create workspace page', () => {
       expect(findNewWorkspaceButton().attributes().to).toBe(ROUTES.new);
       expect(findNewWorkspaceButton().text()).toMatch(/New workspace/);
@@ -229,6 +259,61 @@ describe('workspaces/user/pages/list.vue', () => {
 
     it('displays a link that navigates to the workspaces help page', () => {
       expect(findHelpLink().attributes().href).toContain('user/workspace/index.md');
+    });
+  });
+
+  describe('terminating workspaces', () => {
+    const MOCK_PAGE_INFO = {
+      hasNextPage: false,
+      hasPreviousPage: true,
+      startCursor: 'start',
+      endCursor: 'end',
+    };
+
+    const mockActiveWorkspaces =
+      USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser.activeWorkspaces.nodes;
+
+    const createMockTerminatingWorkspace = (id) => ({
+      ...mockActiveWorkspaces[0],
+      id,
+      name: id,
+      namespace: id,
+      desiredState: WORKSPACE_STATES.terminated,
+    });
+
+    const createMockWorkspaceQueryResult = (workspaces) => ({
+      data: {
+        currentUser: {
+          ...USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser,
+          activeWorkspaces: {
+            ...USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser.activeWorkspaces,
+            nodes: [...workspaces],
+            pageInfo: {
+              ...USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser.activeWorkspaces.pageInfo,
+              ...MOCK_PAGE_INFO,
+            },
+          },
+        },
+      },
+    });
+
+    beforeEach(async () => {
+      const mockTerminatingWorkspacesQueryResult = createMockWorkspaceQueryResult([
+        createMockTerminatingWorkspace('test1'),
+        createMockTerminatingWorkspace('test2'),
+        ...mockActiveWorkspaces,
+      ]);
+      userWorkspacesTabListQueryHandler.mockReset();
+      userWorkspacesTabListQueryHandler.mockResolvedValueOnce(mockTerminatingWorkspacesQueryResult);
+      createWrapper();
+      await waitForPromises();
+    });
+
+    it('renders correct amount of MonitorTerminatingWorkspace components', () => {
+      const monitorTerminatingWorkspaceComponents = wrapper.findAllComponents(
+        MonitorTerminatingWorkspace,
+      );
+      expect(monitorTerminatingWorkspaceComponents).toHaveLength(2);
     });
   });
 });

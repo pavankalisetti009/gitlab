@@ -31,11 +31,11 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { logError } from '~/lib/logger';
 import { createAlert } from '~/alert';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import userWorkspacesListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_list.query.graphql';
+import userWorkspacesTabListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_tab_list.query.graphql';
 import workspaceCreateMutation from 'ee/workspaces/user/graphql/mutations/workspace_create.mutation.graphql';
 import {
   GET_PROJECT_DETAILS_QUERY_RESULT,
-  USER_WORKSPACES_LIST_QUERY_RESULT,
+  USER_WORKSPACES_TAB_LIST_QUERY_RESULT,
   WORKSPACE_CREATE_MUTATION_RESULT,
   WORKSPACE_QUERY_RESULT,
 } from '../../mock_data';
@@ -74,32 +74,37 @@ describe('workspaces/user/pages/create.vue', () => {
   const readCachedWorkspaces = () => {
     const apolloClient = mockApollo.clients.defaultClient;
     const result = apolloClient.readQuery({
-      query: userWorkspacesListQuery,
+      query: userWorkspacesTabListQuery,
       variables: {
-        before: null,
-        after: null,
+        activeBefore: null,
+        activeAfter: null,
+        terminatedBefore: null,
+        terminatedAfter: null,
         first: WORKSPACES_LIST_PAGE_SIZE,
       },
     });
 
-    return result?.currentUser.workspaces.nodes;
+    return result?.currentUser.activeWorkspaces.nodes;
   };
 
   const writeCachedWorkspaces = (workspaces) => {
     const apolloClient = mockApollo.clients.defaultClient;
     apolloClient.writeQuery({
-      query: userWorkspacesListQuery,
+      query: userWorkspacesTabListQuery,
       variables: {
-        before: null,
-        after: null,
+        activeBefore: null,
+        activeAfter: null,
+        terminatedBefore: null,
+        terminatedAfter: null,
         first: WORKSPACES_LIST_PAGE_SIZE,
       },
       data: {
         currentUser: {
-          ...USER_WORKSPACES_LIST_QUERY_RESULT.data.currentUser,
-          workspaces: {
+          ...USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser,
+          activeWorkspaces: {
             nodes: workspaces,
-            pageInfo: USER_WORKSPACES_LIST_QUERY_RESULT.data.currentUser.workspaces.pageInfo,
+            pageInfo:
+              USER_WORKSPACES_TAB_LIST_QUERY_RESULT.data.currentUser.activeWorkspaces.pageInfo,
           },
         },
       },
@@ -425,6 +430,7 @@ describe('workspaces/user/pages/create.vue', () => {
 
         it('when workspaces are previously cached, updates cache', async () => {
           const originalWorkspace = WORKSPACE_QUERY_RESULT.data.workspace;
+
           writeCachedWorkspaces([originalWorkspace]);
 
           await submitCreateWorkspaceForm();

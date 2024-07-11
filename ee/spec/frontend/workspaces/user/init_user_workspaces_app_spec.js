@@ -1,5 +1,5 @@
 import { escape } from 'lodash';
-import { GlEmptyState } from '@gitlab/ui';
+
 import { createWrapper } from '@vue/test-utils';
 import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import { initUserWorkspacesApp } from 'ee/workspaces/user/init_user_workspaces_app';
@@ -33,10 +33,6 @@ describe('ee/workspaces/init_user_workspaces_app', () => {
 
     it('creates router', () => {
       expect(wrapper.vm.$router.options.base).toBe('/aaa');
-    });
-
-    it('renders empty state', () => {
-      expect(wrapper.findComponent(GlEmptyState).props('svgPath')).toBe('/bbb');
     });
 
     it('renders list component', () => {

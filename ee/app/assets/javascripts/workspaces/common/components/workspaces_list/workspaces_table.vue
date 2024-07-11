@@ -18,6 +18,51 @@ export const i18n = {
   },
 };
 
+const tableFields = [
+  {
+    key: 'status',
+    /*
+     * The status and action columns in this table
+     * do not have a label in the table header. We
+     * use this zero-width unicode character because
+     * using an empty string breaks the table alignment
+     * in mobile views.
+     */
+    label: '\u200b',
+    thClass: 'gl-w-2/20',
+  },
+  {
+    key: 'name',
+    label: i18n.tableColumnHeaders.name,
+    thClass: 'gl-w-4/20',
+  },
+  {
+    key: 'created',
+    label: i18n.tableColumnHeaders.created,
+    thClass: 'gl-w-2/20',
+  },
+  {
+    key: 'terminates',
+    label: i18n.tableColumnHeaders.terminates,
+    thClass: 'gl-w-2/20',
+  },
+  {
+    key: 'devfile',
+    label: i18n.tableColumnHeaders.devfile,
+    thClass: 'gl-w-3/20',
+  },
+  {
+    key: 'preview',
+    label: i18n.tableColumnHeaders.preview,
+    thClass: 'gl-w-4/20',
+  },
+  {
+    key: 'actions',
+    label: '\u200b',
+    thClass: 'gl-w-3/20',
+  },
+];
+
 export default {
   components: {
     GlTableLite,
@@ -35,19 +80,32 @@ export default {
       type: Array,
       required: true,
     },
-  },
-  data() {
-    return {
-      transitionProps: {
-        name: 'fade',
-        delay: 200,
-        duration: 300,
-      },
-    };
+    tabsMode: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    transitionProps: {
+      type: Object,
+      required: false,
+      default: undefined,
+    },
   },
   computed: {
     sortedWorkspaces() {
       return [...this.workspaces].sort(this.sortWorkspacesByTerminatedState);
+    },
+    tableFields() {
+      return this.tabsMode
+        ? tableFields.map((tableField) => ({
+            ...tableField,
+            // eslint-disable-next-line @gitlab/require-i18n-strings
+            thClass: `${tableField.thClass} gl-border-t-0!`,
+          }))
+        : tableFields;
+    },
+    tableClasses() {
+      return this.tabsMode ? 'gl-mb-5' : 'gl-my-5';
     },
   },
   methods: {
@@ -84,50 +142,6 @@ export default {
       return workspace.actualState === WORKSPACE_STATES.terminated;
     },
   },
-  fields: [
-    {
-      key: 'status',
-      /*
-       * The status and action columns in this table
-       * do not have a label in the table header. We
-       * use this zero-width unicode character because
-       * using an empty string breaks the table alignment
-       * in mobile views.
-       */
-      label: '\u200b',
-      thClass: 'gl-w-1/20',
-    },
-    {
-      key: 'name',
-      label: i18n.tableColumnHeaders.name,
-      thClass: 'gl-w-4/20',
-    },
-    {
-      key: 'created',
-      label: i18n.tableColumnHeaders.created,
-      thClass: 'gl-w-2/20',
-    },
-    {
-      key: 'terminates',
-      label: i18n.tableColumnHeaders.terminates,
-      thClass: 'gl-w-2/20',
-    },
-    {
-      key: 'devfile',
-      label: i18n.tableColumnHeaders.devfile,
-      thClass: 'gl-w-4/20',
-    },
-    {
-      key: 'preview',
-      label: i18n.tableColumnHeaders.preview,
-      thClass: 'gl-w-4/20',
-    },
-    {
-      key: 'actions',
-      label: '\u200b',
-      thClass: 'gl-w-4/20',
-    },
-  ],
   i18n,
   WORKSPACE_STATES,
 };
@@ -139,9 +153,11 @@ export default {
   >
     <template #default="{ update }">
       <gl-table-lite
-        :items="sortedWorkspaces"
+        fixed
         stacked="sm"
-        :fields="$options.fields"
+        :items="sortedWorkspaces"
+        :fields="tableFields"
+        :class="tableClasses"
         :tbody-transition-props="transitionProps"
         primary-key="name"
         :tbody-tr-attr="(item) => ({ 'data-testid': item.name })"
