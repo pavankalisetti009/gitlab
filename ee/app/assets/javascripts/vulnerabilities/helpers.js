@@ -101,3 +101,14 @@ export const isSupportedIdentifier = (externalType) => {
     externalType === SUPPORTED_IDENTIFIER_TYPE_OWASP
   );
 };
+
+export const getRefFromBlobPath = (path) => {
+  // Matches the 40-character hex string of the Git SHA in the blob path, for example:
+  // "/group/project/-/blob/cdeda7ae724a332e008d17245209d5edd9ba6499/src/file.js"
+  // will match "cdeda7ae724a332e008d17245209d5edd9ba6499".
+  if (typeof path === 'string') {
+    const match = path.match(/blob\/([a-f0-9]{40})/);
+    return match ? match[1] : '';
+  }
+  return '';
+};
