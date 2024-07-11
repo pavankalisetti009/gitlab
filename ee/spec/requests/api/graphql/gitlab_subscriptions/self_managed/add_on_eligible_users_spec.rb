@@ -91,18 +91,6 @@ RSpec.describe 'Query.selfManagedAddOnEligibleUsers', feature_category: :seat_co
       create(:gitlab_subscription_user_add_on_assignment, user: active_user, add_on_purchase: add_on_purchase)
     end
 
-    context 'when the :self_managed_code_suggestions FF is disabled' do
-      before do
-        stub_feature_flags(self_managed_code_suggestions: false)
-      end
-
-      it 'returns an empty collection' do
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_data_at(:self_managed_add_on_eligible_users, :nodes)).to match_array([])
-      end
-    end
-
     context 'when there are search args' do
       let(:query) do
         graphql_query_for(

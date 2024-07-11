@@ -95,36 +95,15 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
           stub_saas_features(gitlab_com_subscriptions: false)
         end
 
-        context 'when self_managed_code_suggestions feature flag is enabled' do
-          before do
-            stub_feature_flags(self_managed_code_suggestions: true)
-          end
-
-          it_behaves_like 'renders the activation form'
-        end
-
-        context 'when self_managed_code_suggestions feature flag is disabled' do
-          before do
-            stub_feature_flags(self_managed_code_suggestions: false)
-          end
-
-          it_behaves_like 'hides code suggestions path'
-        end
+        it_behaves_like 'renders the activation form'
       end
 
       context 'when instance is SaaS' do
-        where(:self_managed_code_suggestions) do
-          [true, false]
+        before do
+          stub_saas_features(gitlab_com_subscriptions: true)
         end
 
-        with_them do
-          before do
-            stub_saas_features(gitlab_com_subscriptions: true)
-            stub_feature_flags(self_managed_code_suggestions: self_managed_code_suggestions)
-          end
-
-          it_behaves_like 'hides code suggestions path'
-        end
+        it_behaves_like 'hides code suggestions path'
       end
 
       context 'when the instance has a non-paid license' do

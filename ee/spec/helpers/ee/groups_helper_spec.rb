@@ -545,7 +545,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         before do
           stub_licensed_features(code_suggestions: true)
           stub_saas_features(gitlab_com_subscriptions: false)
-          stub_feature_flags(self_managed_code_suggestions: true)
         end
 
         it { expect(helper.show_usage_quotas_tab?(group, :code_suggestions)).to be_falsy }

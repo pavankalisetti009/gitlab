@@ -812,14 +812,6 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
         it { is_expected.to be_disallowed(:manage_ai_settings) }
       end
 
-      context 'when the self_managed_code_suggestions FF is disabled', :enable_admin_mode do
-        before do
-          stub_feature_flags(self_managed_code_suggestions: false)
-        end
-
-        it { is_expected.to be_disallowed(:manage_ai_settings) }
-      end
-
       context 'when instance is in SASS mode', :enable_admin_mode do
         before do
           stub_saas_features(gitlab_com_subscriptions: true)

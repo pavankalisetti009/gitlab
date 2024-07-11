@@ -58,7 +58,7 @@ module Admin
 
       def feature_available?
         return false if gitlab_com_subscription?
-        return false unless License.current&.paid? && gitlab_duo_available?
+        return false unless License.current&.paid?
         return false unless Feature.enabled?(:ai_custom_model) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
 
         true
