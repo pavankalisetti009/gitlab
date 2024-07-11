@@ -13,6 +13,18 @@ module EE
     prepended do
       with_scope :subject
       condition(:summarize_notes_enabled) do
+        next true if summarize_comments_service.allowed_for?(@user)
+
+        next false unless summarize_comments_service.free_access?
+
+        if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
+          @user.any_group_with_ai_available?
+        else
+          ::License.feature_available?(:ai_features)
+        end
+      end
+
+      condition(:summarize_notes_allowed) do
         ::Gitlab::Llm::FeatureAuthorizer.new(
           container: subject_container,
           feature_name: :summarize_comments
@@ -43,7 +55,7 @@ module EE
       end
 
       rule do
-        summarize_notes_enabled & can?(:read_issue)
+        summarize_notes_enabled & summarize_notes_allowed & can?(:read_issue)
       end.enable :summarize_comments
 
       rule { relations_for_non_members_available & ~member_or_support_bot }.policy do
@@ -53,6 +65,10 @@ module EE
       rule { ~can_edit_synced_epic_work_item }.policy do
         prevent(*synced_work_item_disallowed_abilities)
       end
+    end
+
+    def summarize_comments_service
+      CloudConnector::AvailableServices.find_by_name(:summarize_comments)
     end
   end
 end

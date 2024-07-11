@@ -51,7 +51,7 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
         allow(GraphqlTriggers).to receive(:ai_completion_response)
         expect(Gitlab::Llm::Chain::GitlabContext).to receive(:new).and_return(context)
 
-        expect_next_instance_of(Gitlab::Llm::Chain::Tools::SummarizeComments::Executor) do |instance|
+        expect_next_instance_of(Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld) do |instance|
           expect(instance).to receive(:execute).and_yield("ai").and_yield("").and_yield(" response").and_return(answer)
         end
 

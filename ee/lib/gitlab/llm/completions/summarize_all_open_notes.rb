@@ -17,7 +17,7 @@ module Gitlab
 
           streamed_answer = Gitlab::Llm::Chain::StreamedAnswer.new
 
-          answer = ::Gitlab::Llm::Chain::Tools::SummarizeComments::Executor.new(
+          answer = ::Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld.new(
             context: context, options: { raw_ai_response: true }
           ).execute do |content|
             chunk = streamed_answer.next_chunk(content)

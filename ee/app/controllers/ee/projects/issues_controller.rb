@@ -28,6 +28,10 @@ module EE
           if can?(current_user, :summarize_comments, issue)
             push_licensed_feature(:summarize_comments, project)
           end
+
+          push_frontend_feature_flag(:summarize_notes_with_duo, current_user)
+
+          push_frontend_ability(ability: :summarize_comments, resource: issue, user: current_user)
         end
 
         before_action :redirect_if_test_case, only: [:show]

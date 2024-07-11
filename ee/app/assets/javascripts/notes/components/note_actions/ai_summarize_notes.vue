@@ -2,9 +2,12 @@
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import { MAX_REQUEST_TIMEOUT } from 'ee/notes/constants';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
+import { helpCenterState } from '~/super_sidebar/constants';
 
 export default {
   components: {
@@ -13,6 +16,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: ['summarizeClientSubscriptionId'],
   props: {
     resourceGlobalId: {
@@ -44,20 +48,35 @@ export default {
         return;
       }
 
+      let mutation;
+      let variables;
+
+      if (this.glFeatures.summarizeNotesWithDuo) {
+        mutation = chatMutation;
+        variables = {
+          question: '/summarize_comments',
+          resourceId: this.resourceGlobalId,
+        };
+        helpCenterState.showTanukiBotChatDrawer = true;
+      } else {
+        mutation = aiActionMutation;
+        variables = {
+          input: {
+            summarizeComments: { resourceId: this.resourceGlobalId },
+            clientSubscriptionId: this.summarizeClientSubscriptionId,
+          },
+        };
+        this.$parent.$emit('set-ai-loading', true);
+      }
+
       this.errorAlert?.dismiss();
 
-      this.$parent.$emit('set-ai-loading', true);
       this.timeout = window.setTimeout(this.handleError, MAX_REQUEST_TIMEOUT);
 
       this.$apollo
         .mutate({
-          mutation: aiActionMutation,
-          variables: {
-            input: {
-              summarizeComments: { resourceId: this.resourceGlobalId },
-              clientSubscriptionId: this.summarizeClientSubscriptionId,
-            },
-          },
+          mutation,
+          variables,
         })
         .then(({ data: { aiAction } }) => {
           const errors = aiAction?.errors || [];

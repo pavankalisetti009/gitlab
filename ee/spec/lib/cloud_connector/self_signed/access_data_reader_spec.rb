@@ -81,6 +81,14 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
       }
     end
 
+    let_it_be(:summarize_comments_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          summarize_comments
+        ]
+      }
+    end
+
     include_examples 'access data reader' do
       let_it_be(:available_service_data_class) { CloudConnector::SelfSigned::AvailableServiceData }
       let_it_be(:arguments_map) do
@@ -94,7 +102,8 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           generate_commit_message: [nil, generate_commit_message_bundled_with, backend],
           glab_ask_git_command: [nil, glab_ask_git_command_bundled_with, backend],
           explain_vulnerability: [nil, explain_vulnerability_bundled_with,
-            backend]
+            backend],
+          summarize_comments: [nil, summarize_comments_bundled_with, backend]
         }
       end
     end

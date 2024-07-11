@@ -5,19 +5,20 @@ module Gitlab
     module Chain
       module Tools
         module SummarizeComments
-          class Executor < Tool
+          class Executor < SlashCommandTool
             include Concerns::AiDependent
+            include Gitlab::Utils::StrongMemoize
 
             NAME = "SummarizeComments"
             DESCRIPTION = "This tool is useful when you need to create a summary of all notes, " \
                           "comments or discussions on a given, identified resource."
             EXAMPLE =
               <<~PROMPT
-                  Question: Please summarize the http://gitlab.example/ai/test/-/issues/1 issue in the bullet points
-                  Picked tools: First: "IssueReader" tool, second: "SummarizeComments" tool.
-                  Reason: There is issue identifier in the question, so you need to use "IssueReader" tool.
-                  Once the issue is identified, you should use "SummarizeComments" tool to summarize the issue.
-                  For the final answer, please rewrite it into the bullet points.
+                Question: Please summarize the http://gitlab.example/ai/test/-/issues/1 issue in the bullet points
+                Picked tools: First: "IssueReader" tool, second: "SummarizeComments" tool.
+                Reason: There is issue identifier in the question, so you need to use "IssueReader" tool.
+                Once the issue is identified, you should use "SummarizeComments" tool to summarize the issue.
+                For the final answer, please rewrite it into the bullet points.
               PROMPT
 
             PROVIDER_PROMPT_CLASSES = {
@@ -49,39 +50,39 @@ module Gitlab
               )
             ].freeze
 
-            def perform(&block)
-              notes = NotesFinder.new(context.current_user, target: resource).execute.by_humans
+            SLASH_COMMANDS = {
+              '/summarize_comments' => {
+                description: 'Summarize issue comments.',
+                instruction: 'Summarize issue comments.',
+                instruction_with_input: "Summary of issue comments. Input: %<input>s."
+              }
+            }.freeze
 
-              content = if notes.exists?
-                          notes_content = notes_to_summarize(notes) # rubocop: disable CodeReuse/ActiveRecord
-                          options[:notes_content] = notes_content
-
-                          if options[:raw_ai_response]
-                            request(&block)
-                          else
-                            build_answer(resource, request)
-                          end
-                        else
-                          "#{resource_name} ##{resource.iid} has no comments to be summarized."
-                        end
-
-              logger.info_or_debug(context.current_user, message: "Answer", class: self.class.to_s, content: content)
-
-              ::Gitlab::Llm::Chain::Answer.new(
-                status: :ok, context: context, content: content, tool: nil, is_final: false
-              )
+            def self.slash_commands
+              SLASH_COMMANDS
             end
+
+            def perform
+              error_message = if disabled?
+                                _('This feature is not enabled yet.')
+                              elsif !notes.any?
+                                _("This resource has no comments to summarize")
+                              end
+
+              return error_with_message(error_message) if error_message
+
+              super
+            end
+
             traceable :perform, run_type: 'tool'
 
             private
 
-            def notes_to_summarize(notes)
+            def notes_to_summarize
               notes_content = +""
               input_content_limit = provider_prompt_class::MAX_CHARACTERS - PROMPT_TEMPLATE.size
               notes.each_batch do |batch|
                 batch.pluck(:id, :note).each do |note| # rubocop: disable CodeReuse/ActiveRecord
-                  input_content_limit = provider_prompt_class::MAX_CHARACTERS
-
                   break notes_content if notes_content.size + note[1].size >= input_content_limit
 
                   notes_content << (format("<comment>%<note>s</comment>", note: note[1]))
@@ -91,41 +92,52 @@ module Gitlab
               notes_content
             end
 
+            def notes
+              NotesFinder.new(context.current_user, target: resource).execute.by_humans
+            end
+            strong_memoize_attr :notes
+
+            def command_options
+              {
+                notes_content: notes_to_summarize
+              }
+            end
+
             def can_summarize?
+              ability = Ability.allowed?(context.current_user, :summarize_comments, context.resource)
               logger.info_or_debug(context.current_user, message: "Supported Issuable Typees Ability Allowed",
-                content: Ability.allowed?(context.current_user, :summarize_comments, context.resource))
+                content: ability)
 
               ::Llm::GenerateSummaryService::SUPPORTED_ISSUABLE_TYPES.include?(resource.to_ability_name) &&
-                Ability.allowed?(context.current_user, :summarize_comments, context.resource)
+                ability
             end
 
             def authorize
-              can_summarize? && ::Gitlab::Llm::Utils::Authorizer
-                                  .resource(resource: context.resource, user: context.current_user).allowed?
+              can_summarize? && Utils::ChatAuthorizer.context(context: context).allowed?
             end
 
-            def build_answer(resource, ai_response)
-              [
-                "Here is the summary for #{resource_name} ##{resource.iid} comments:",
-                ai_response.to_s
-              ].join("\n")
-            end
-
-            def already_used_answer
-              content = "You already have the summary of the notes, comments, discussions for the " \
-                        "#{resource_name} ##{resource.iid} in your context, read carefully."
-
-              ::Gitlab::Llm::Chain::Answer.new(
-                status: :not_executed, context: context, content: content, tool: nil, is_final: false
-              )
+            def disabled?
+              Feature.disabled?(:summarize_notes_with_duo, context.current_user)
             end
 
             def resource
               @resource ||= context.resource
             end
 
-            def resource_name
-              @resource_name ||= resource.to_ability_name.humanize
+            def unit_primitive
+              'summarize_comments'
+            end
+
+            def ai_request
+              ::Gitlab::Llm::Chain::Requests::AiGateway.new(context.current_user, service_name: :summarize_comments,
+                tracking_context: tracking_context)
+            end
+
+            def tracking_context
+              {
+                request_id: context.request_id,
+                action: unit_primitive
+              }
             end
           end
         end

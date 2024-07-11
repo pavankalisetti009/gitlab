@@ -17,20 +17,27 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     end
   end
 
-  let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
-
   subject { described_class.new(user, issue) }
-
-  before do
-    allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
-  end
 
   def permissions(user, issue)
     described_class.new(user, issue)
   end
 
   describe 'summarize_comments' do
+    let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
+
+    before do
+      allow(::CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
+        :free_access?).and_return(cloud_connector_free_access)
+      allow(::CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
+        :allowed_for?).and_return(cloud_connector_user_access)
+      allow(::Gitlab::Llm::FeatureAuthorizer).to receive(:new).and_return(authorizer)
+    end
+
     context "when feature is authorized" do
+      let(:cloud_connector_free_access) { true }
+      let(:cloud_connector_user_access) { true }
+
       before do
         allow(authorizer).to receive(:allowed?).and_return(true)
       end
@@ -41,6 +48,14 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
         end
 
         it { is_expected.to be_allowed(:summarize_comments) }
+
+        context 'when feature is not enabled' do
+          before do
+            allow(authorizer).to receive(:allowed?).and_return(false)
+          end
+
+          it { is_expected.to be_disallowed(:summarize_comments) }
+        end
       end
 
       context 'when user cannot read issue' do
@@ -49,12 +64,48 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     end
 
     context "when feature is not authorized" do
+      let(:cloud_connector_free_access) { false }
+      let(:cloud_connector_user_access) { false }
+
       before do
         project.add_guest(user)
-        allow(authorizer).to receive(:allowed?).and_return(false)
+        allow(authorizer).to receive(:allowed?).and_return(true)
       end
 
       it { is_expected.to be_disallowed(:summarize_comments) }
+    end
+
+    context 'when instance is on the correct plan' do
+      let(:cloud_connector_free_access) { true }
+      let(:cloud_connector_user_access) { false }
+
+      before do
+        project.add_guest(user)
+        stub_licensed_features(ai_features: true)
+        allow(authorizer).to receive(:allowed?).and_return(true)
+      end
+
+      it { is_expected.to be_allowed(:summarize_comments) }
+    end
+
+    context "on saas", :saas do
+      let(:cloud_connector_free_access) { true }
+      let(:cloud_connector_user_access) { false }
+
+      before do
+        project.add_guest(user)
+        allow(authorizer).to receive(:allowed?).and_return(true)
+      end
+
+      it { is_expected.to be_disallowed(:summarize_comments) }
+
+      context 'if user is in the group that enables AI features' do
+        before do
+          allow(user).to receive(:any_group_with_ai_available?).and_return(true)
+        end
+
+        it { is_expected.to be_allowed(:summarize_comments) }
+      end
     end
   end
 
