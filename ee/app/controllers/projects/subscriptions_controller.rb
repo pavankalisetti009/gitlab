@@ -19,7 +19,7 @@ class Projects::SubscriptionsController < Projects::ApplicationController
     if subscription.persisted?
       flash[:notice] = _('Subscription successfully created.')
     else
-      flash[:alert] = subscription.errors.full_messages
+      flash[:alert] = subscription.errors.full_messages.join(", ")
     end
 
     redirect_to project_settings_ci_cd_path(project)
