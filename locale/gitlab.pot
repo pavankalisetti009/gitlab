@@ -38538,6 +38538,9 @@ msgstr ""
 msgid "PipelineEditor|Git push event to the default branch"
 msgstr ""
 
+msgid "PipelineEditor|Lint CI/CD sample"
+msgstr ""
+
 msgid "PipelineEditor|Other pipeline sources are not available yet."
 msgstr ""
 
@@ -38932,9 +38935,6 @@ msgid "Pipelines|Build with confidence"
 msgstr ""
 
 msgid "Pipelines|By revoking a trigger token you will break any processes making use of it. Are you sure?"
-msgstr ""
-
-msgid "Pipelines|CI lint"
 msgstr ""
 
 msgid "Pipelines|Child pipeline (%{linkStart}parent%{linkEnd})"
