@@ -46,7 +46,7 @@ module Ci
             reason: :insufficient_permissions)
         end
 
-        data = ClickHouse::Client.select(clickhouse_query, :main)
+        data = ::ClickHouse::Client.select(clickhouse_query, :main)
         ServiceResponse.success(payload: data)
       end
 
@@ -76,7 +76,7 @@ module Ci
           ORDER BY #{order_list}
         SQL
 
-        ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: placeholders)
+        ::ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: placeholders)
       end
 
       def table_name

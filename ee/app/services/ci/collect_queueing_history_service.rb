@@ -30,7 +30,7 @@ module Ci
           message: "At least one of #{ALLOWED_PERCENTILES.join(', ')} percentiles should be requested")
       end
 
-      result = ClickHouse::Client.select(clickhouse_query, :main)
+      result = ::ClickHouse::Client.select(clickhouse_query, :main)
       ServiceResponse.success(payload: result)
     end
 
@@ -48,7 +48,7 @@ module Ci
         ORDER BY started_at_bucket;
       SQL
 
-      ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: placeholders)
+      ::ClickHouse::Client::Query.new(raw_query: raw_query, placeholders: placeholders)
     end
 
     def from_table
