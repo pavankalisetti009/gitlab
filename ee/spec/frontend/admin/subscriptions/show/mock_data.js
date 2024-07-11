@@ -16,6 +16,7 @@ export const license = {
     type: subscriptionTypes.ONLINE_CLOUD,
     usersInLicenseCount: '10',
     usersOverLicenseCount: '0',
+    trial: false,
   },
   ULTIMATE_FUTURE_DATED: {
     activatedAt: '2021-03-16',
@@ -32,6 +33,7 @@ export const license = {
     type: subscriptionTypes.ONLINE_CLOUD,
     usersInLicenseCount: '10',
     usersOverLicenseCount: '0',
+    trial: false,
   },
 };
 
@@ -164,6 +166,7 @@ export const activateLicenseMutationResponse = {
           billableUsersCount: 50,
           maximumUserCount: 50,
           usersOverLicenseCount: 0,
+          trial: false,
         },
         futureSubscriptions: [],
         errors: [],
