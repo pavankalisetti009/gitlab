@@ -82,13 +82,23 @@ module Gitlab
 
           def publish_draft_notes
             return if @draft_notes_params.empty?
+            return unless Ability.allowed?(user, :create_note, merge_request)
 
             draft_notes = @draft_notes_params.map do |draft_note_params|
               DraftNote.new(draft_note_params)
             end
 
             DraftNote.bulk_insert!(draft_notes, batch_size: 20)
-            DraftNotes::PublishService.new(merge_request, Users::Internal.duo_code_review_bot).execute
+
+            # We set `executing_user` as the user who executed the duo code
+            # review action as we only want to publish duo code review bot's review
+            # if the executing user is allowed to create notes on the MR.
+            DraftNotes::PublishService
+              .new(
+                merge_request,
+                Users::Internal.duo_code_review_bot
+              )
+              .execute(executing_user: user)
           end
         end
       end
