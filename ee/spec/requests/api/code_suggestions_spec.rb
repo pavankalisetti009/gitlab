@@ -845,18 +845,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         it_behaves_like 'user request with code suggestions allowed'
       end
 
-      context 'when code_suggestions_direct_completions flag is disabled' do
-        before do
-          stub_feature_flags(code_suggestions_direct_completions: false)
-        end
-
-        it 'returns not_found' do
-          post_api
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
-      end
-
       context 'when disabled_direct_code_suggestions setting is true' do
         before do
           allow(Gitlab::CurrentSettings).to receive(:disabled_direct_code_suggestions).and_return(true)

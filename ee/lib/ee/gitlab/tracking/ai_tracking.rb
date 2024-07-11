@@ -24,9 +24,9 @@ module EE
         end
 
         override :track_via_code_suggestions?
-        def track_via_code_suggestions?(event_name, user)
+        def track_via_code_suggestions?(event_name, _user)
           event_name.to_s == 'code_suggestions_requested' &&
-            ::Feature.disabled?(:code_suggestions_direct_completions, user)
+            ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
         end
       end
     end
