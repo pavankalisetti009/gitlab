@@ -112,21 +112,16 @@ module EE
       can?(current_user, :read_security_orchestration_policies, project)
     end
 
-    def permanent_delete_message(project)
-      message = _('This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} and everything this project contains. %{strongOpen}There is no going back.%{strongClose}')
-      ERB::Util.html_escape(message) % remove_message_data(project)
-    end
-
     def marked_for_removal_message(project)
       date = permanent_deletion_date_formatted(project, Time.now.utc)
 
-      message = if project.feature_available?(:adjourned_deletion_for_projects_and_groups)
-                  _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains.")
+      message = if project.feature_available?(:adjourned_deletion_for_projects_and_groups) && !project.marked_for_deletion?
+                  _("This action will place this project, including all its resources, in a pending deletion state for %{deletion_adjourned_period} days, and delete it permanently on %{strongOpen}%{date}%{strongClose}.")
                 else
-                  _("This action deletes %{codeOpen}%{project_path_with_namespace}%{codeClose} on %{date} and everything this project contains. %{strongOpen}There is no going back.%{strongClose}")
+                  _("This project is scheduled for deletion on %{strongOpen}%{date}%{strongClose}. This action will permanently delete this project, including all its resources, %{strongOpen}immediately%{strongClose}. This action cannot be undone.")
                 end
 
-      ERB::Util.html_escape(message) % remove_message_data(project).merge(date: date)
+      ERB::Util.html_escape(message) % remove_message_data.merge(date: date, deletion_adjourned_period: deletion_adjourned_period)
     end
 
     def permanent_deletion_date_formatted(project, date)
@@ -375,14 +370,10 @@ module EE
 
     private
 
-    def remove_message_data(project)
+    def remove_message_data
       {
-        project_path_with_namespace: project.path_with_namespace,
-        project: project.path,
         strongOpen: '<strong>'.html_safe,
-        strongClose: '</strong>'.html_safe,
-        codeOpen: '<code>'.html_safe,
-        codeClose: '</code>'.html_safe
+        strongClose: '</strong>'.html_safe
       }
     end
 

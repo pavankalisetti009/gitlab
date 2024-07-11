@@ -11,13 +11,13 @@
   = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card' }, header_options: { class: 'gl-new-card-header gl-flex-direction-column' }, body_options: { class: 'gl-new-card-body gl-bg-red-50 gl-px-5 gl-py-4' }) do |c|
     - c.with_header do
       .gl-new-card-title-wrapper
-        %h4.gl-new-card-title.danger-title= _('Delete this project')
+        %h4.gl-new-card-title.danger-title= _('Delete project')
 
     - c.with_body do
       - if delayed_deletion && can_delay_project_deletions
         = render 'projects/settings/marked_for_removal'
       - else
-        %p= permanent_delete_message(project)
+        %p= _("This action will permanently delete this project, including all its resources.")
 
       - if delayed_deletion && project.feature_available?(:adjourned_deletion_for_projects_and_groups)
         #js-project-delayed-delete-button{ data: { restore_help_path: restore_help_path, delayed_deletion_date: delayed_date, form_path: project_path(project), confirm_phrase: delete_confirm_phrase(project), is_fork: project.forked?.to_s, issues_count: number_with_delimiter(issues_count), merge_requests_count: number_with_delimiter(merge_requests_count), forks_count: number_with_delimiter(forks_count), stars_count: number_with_delimiter(project.star_count) } }
