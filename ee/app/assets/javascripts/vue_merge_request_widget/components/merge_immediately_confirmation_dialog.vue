@@ -1,6 +1,6 @@
 <script>
 import { GlModal, GlButton, GlSprintf, GlLink } from '@gitlab/ui';
-import { __ } from '~/locale';
+import { s__ } from '~/locale';
 
 export default {
   name: 'MergeImmediatelyConfirmationDialog',
@@ -18,8 +18,8 @@ export default {
   },
   computed: {
     bodyText() {
-      return __(
-        "Merging immediately isn't recommended as it may negatively impact the existing merge train. Read the %{docsLinkStart}documentation%{docsLinkEnd} for more information.",
+      return s__(
+        "mrWidget|Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. %{docsLinkStart}What are the risks?%{docsLinkEnd}",
       );
     },
   },

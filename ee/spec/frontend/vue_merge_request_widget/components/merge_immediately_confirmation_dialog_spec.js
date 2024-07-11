@@ -21,7 +21,7 @@ describe('MergeImmediatelyConfirmationDialog', () => {
 
   it('should render informational text explaining why merging immediately can be dangerous', () => {
     expect(trimText(wrapper.text())).toContain(
-      "Merging immediately isn't recommended as it may negatively impact the existing merge train. Read the documentation for more information. Are you sure you want to merge immediately?",
+      "Merging immediately is not recommended because your changes won't be validated by the merge train, and any running merge train pipelines will be restarted. What are the risks? Are you sure you want to merge immediately?",
     );
   });
 
@@ -30,6 +30,6 @@ describe('MergeImmediatelyConfirmationDialog', () => {
 
     expect(docsLink.exists()).toBe(true);
     expect(docsLink.attributes('href')).toBe(docsUrl);
-    expect(trimText(docsLink.text())).toBe('documentation');
+    expect(trimText(docsLink.text())).toBe('What are the risks?');
   });
 });
