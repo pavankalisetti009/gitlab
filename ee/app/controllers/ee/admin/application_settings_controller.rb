@@ -5,6 +5,7 @@ module EE
     module ApplicationSettingsController
       extend ::Gitlab::Utils::Override
       extend ActiveSupport::Concern
+      include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
       UNINDEXED_PROJECT_DISPLAY_LIMIT = 50
 
@@ -173,6 +174,10 @@ module EE
 
         if License.feature_available?(:disable_private_profiles) && ::Feature.enabled?(:disallow_private_profiles)
           attrs << :make_profile_private
+        end
+
+        if promotion_management_available?
+          attrs << :enable_member_promotion_management
         end
 
         attrs << :new_user_signups_cap
