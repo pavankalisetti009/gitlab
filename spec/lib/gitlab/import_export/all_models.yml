@@ -361,6 +361,7 @@ ci_pipelines:
 - build_trace_chunks
 - pipeline_metadata
 - build_execution_configs
+- project_mirror
 pipeline_metadata:
 - project
 - pipeline
