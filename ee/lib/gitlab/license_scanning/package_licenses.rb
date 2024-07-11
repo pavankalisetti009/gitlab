@@ -16,7 +16,6 @@ module Gitlab
         # facilitate faster lookups by avoiding an O(n^2) search against the components array
         @component_data = Hash.new { |h, k| h[k] = [] }
         @all_records = {}
-        @cached_licenses = []
       end
 
       def self.url_for(spdx_id)
@@ -59,7 +58,7 @@ module Gitlab
 
       private
 
-      attr_reader :components, :component_data, :all_records, :cached_licenses
+      attr_reader :components, :component_data, :all_records
 
       def component_key(name:, version:, purl_type:)
         "#{name}/#{version}/#{purl_type}"
