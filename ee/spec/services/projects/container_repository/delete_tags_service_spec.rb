@@ -17,7 +17,7 @@ RSpec.describe Projects::ContainerRepository::DeleteTagsService, feature_categor
       project.add_developer(user)
     end
 
-    include_examples 'audit event logging' do
+    context 'with audit event logging' do
       let(:operation) { subject.execute(repository) }
       let(:event_type) { 'container_repository_tags_deleted' }
       let(:fail_condition!) do
@@ -43,6 +43,17 @@ RSpec.describe Projects::ContainerRepository::DeleteTagsService, feature_categor
             target_type: repository.class.to_s
           }
         }
+      end
+
+      it_behaves_like 'audit event logging'
+
+      context 'without user' do
+        let_it_be(:user) { nil }
+        let(:params) { { tags: tags, container_expiration_policy: true } }
+
+        let(:author) { ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)') }
+
+        it_behaves_like 'audit event logging'
       end
     end
   end
