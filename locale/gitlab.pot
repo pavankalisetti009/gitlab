@@ -2705,7 +2705,7 @@ msgstr ""
 msgid "Access to '%{classification_label}' not allowed"
 msgstr ""
 
-msgid "AccessDropdown|Deploy Keys"
+msgid "AccessDropdown|Deploy keys"
 msgstr ""
 
 msgid "AccessDropdown|Groups"
@@ -4699,7 +4699,7 @@ msgstr ""
 msgid "Admin|Credentials"
 msgstr ""
 
-msgid "Admin|Deploy Keys"
+msgid "Admin|Deploy keys"
 msgstr ""
 
 msgid "Admin|Features"
@@ -17898,9 +17898,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "Deploy Key"
-msgstr ""
-
-msgid "Deploy Keys"
 msgstr ""
 
 msgid "Deploy Token"
@@ -34541,9 +34538,6 @@ msgid "New Application"
 msgstr ""
 
 msgid "New Branch"
-msgstr ""
-
-msgid "New Deploy Key"
 msgstr ""
 
 msgid "New Epic"

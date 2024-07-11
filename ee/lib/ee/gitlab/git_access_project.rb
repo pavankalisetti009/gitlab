@@ -45,7 +45,7 @@ module EE
 
       # Verify that enabled_git_access_protocol is ssh_certificates and the
       # actor is either User or Key
-      # Deploy Keys are allowed anyway
+      # Deploy keys are allowed anyway
       def enforced_ssh_certificates?
         return false if ::Feature.disabled?(:enforce_ssh_certificates_via_settings, namespace.root_ancestor)
         return false unless namespace.root_ancestor.enforce_ssh_certificates?
