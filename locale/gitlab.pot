@@ -38457,13 +38457,10 @@ msgstr ""
 msgid "PipelineCharts|CI/CD Analytics"
 msgstr ""
 
-msgid "PipelineCharts|Failed pipelines"
+msgid "PipelineCharts|Failure rate"
 msgstr ""
 
-msgid "PipelineCharts|Success ratio"
-msgstr ""
-
-msgid "PipelineCharts|Successful pipelines"
+msgid "PipelineCharts|Success rate"
 msgstr ""
 
 msgid "PipelineCharts|There was an error parsing the data for the charts."
@@ -39312,9 +39309,6 @@ msgstr ""
 msgid "Pipeline|Running"
 msgstr ""
 
-msgid "Pipeline|See details"
-msgstr ""
-
 msgid "Pipeline|Skipped"
 msgstr ""
 
@@ -39379,6 +39373,9 @@ msgid "Pipeline|Variable"
 msgstr ""
 
 msgid "Pipeline|Variables"
+msgstr ""
+
+msgid "Pipeline|View all"
 msgstr ""
 
 msgid "Pipeline|View commit"
