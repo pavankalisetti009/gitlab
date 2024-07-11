@@ -33,6 +33,9 @@
         - [Domain layer code examples](#domain-layer-code-examples)
     - [Passing information along the ROP chain](#passing-information-along-the-rop-chain)
 - [Enforcement of patterns](#enforcement-of-patterns)
+- [Testing ROP main classes](#Testing-ROP-main-classes)
+    - [Matcher API](#matcher-api)
+    - [Matcher internals](#matcher-internals)
 - [Benefits](#benefits)
 - [Differences from standard GitLab patterns](#differences-from-standard-gitlab-patterns)
 - [Remote Development Settings](#remote-development-settings)
@@ -492,6 +495,119 @@ In some cases, we do also enforce these patterns via specs. The `spec/support/ma
 In the future, we may also add linter or static analysis enforcement (e.g. `rubocop` rules) for these patterns.
 
 This multi
+
+## Testing ROP main classes
+
+The ROP main class called by the service layer depends on ROP step classes chained together to execute functionality. Testing the ROP main class which mainly entails asserting the right
+`ok_result`/`error` value is returned, leads to the developer having to mock the behaviour of ROP step class methods to arrive at expected results. This process is tedious and error prone.
+To improve the ROP main class testing experience, we have implemented an Rspec matcher to handle setting up tests for ROP main classes.
+
+### Matcher API
+
+The matcher [`invoke_rop_steps`](https://gitlab.com/gitlab-org/gitlab/-/blob/master/spec/support/matchers/invoke_rop_steps.rb) exposes an API defined as follows:
+
+```ruby
+# using the matcher to test the success path
+ expect do
+        rop_class.main(context_passed_along_steps)
+      end
+        .to invoke_rop_steps(rop_steps)
+              .from_main_class(rop_class)
+              .with_context_passed_along_steps(context_passed_along_steps)
+              .with_ok_result_for_step(step_class_with_ok_reuslt) # specify ok result step
+              .and_return_expected_value(expected_response)
+
+# using the matcher to test error paths
+  expect do
+         rop_class.main(context_passed_along_steps)
+      end
+        .to invoke_rop_steps(rop_steps)
+              .from_main_class(rop_class)
+              .with_context_passed_along_steps(context_passed_along_steps)
+              .with_err_result_for_step(step_class_with_ok_reuslt) # specify error step
+              .and_return_expected_value(expected_response)
+```
+
+#### Matcher entry
+
+The block provided to the `expect` clause when called, should trigger an ROP main class method e.g: `RemoteDevelopment::Workspaces::Create::Main.main`.
+
+The `invoke_rop_steps` method is the entry into the matcher. It accepts as a parameter, a list of the ROP step classes and their `Result` passing method (a `map` or `and_then`). e.g:
+
+```ruby
+      let(:rop_steps) do
+            [
+                [RemoteDevelopment::Workspaces::Create::VolumeComponentInjector, :map],
+                [RemoteDevelopment::Workspaces::Create::Creator, :and_then]
+            ]
+      end
+```
+
+It expects the array to specify step classes in the same order as the chain of the ROP main class being tested. It returns a `match` block that will be configured by matcher chain methods.
+
+#### Matcher chain methods
+
+- `from_main_class` sets up an expectation for the ROP main class method being tested to be called. It validates the passed argument is a ruby `Class`.
+- `with_context_passed_along_steps` sets the context value that will be propagated through the chain. It validates that a `Hash` was passed.
+- `with_ok_result_for_step` is applicable only to the success path and specifies what ROP main class step is expected to return the `ok_result` and the expected return message e.g:
+
+    ```ruby
+          ...
+          with_ok_result_for_step(
+                    {
+                      step_class: RemoteDevelopment::Workspaces::Create::Creator,
+                      returned_message: RemoteDevelopment::Messages::WorkspaceCreateSuccessful.new(ok_message_content)
+                    }
+                  )
+    ```
+
+  It validates the step_class is a ruby `Class` and the returned message is of type `RemoteDevelopment::Message`.
+
+
+- `with_err_result_for_step` is applicable only to the error path and specifies what ROP main class step is expected to return the `error` and the expected return message e.g:
+
+    ```ruby
+         ...
+         with_err_result_for_step(
+                    {
+                      step_class: RemoteDevelopment::Workspaces::Create::Authorizer,
+                      returned_message: RemoteDevelopment::Messages::Unauthorized.new(err_message_content)
+                    }
+                  )
+    ```
+
+  It validates the step_class is a ruby `Class` and the returned message is of type `RemoteDevelopment::Message`.
+
+
+- `and_return_expected_value` sets up an expectation to match the output of calling the ROP main class method in the block provided. It validates the expected return value is either a `Hash`, `Result` or a subclass of `RuntimeError`.
+
+For a comprehensive view of how the matcher is used in a test suite, see [RemoteDevelopment::Workspaces::Create::Main](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/workspaces/create/main.rb) and its associated spec file [main_spec.rb](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/spec/lib/remote_development/workspaces/create/main_spec.rb).
+
+### Matcher internals
+
+The ROP matcher is implemented using [Rspec matcher DSL](https://rspec.info/documentation/3.0/rspec-expectations/RSpec/Matchers#:~:text=(a_user_who_is_an_admin)-,Custom%20Matchers,-When%20you%20find). On a high level, the matcher can be separated into the main matcher entry method which returns the `match`
+block that the `expect` clause will be called with, and the chain methods which provide an expressive way for the caller to configure the variables the returned `match` block is dependent on. Both kinds of methods implement validations and to some extent automatic method mocking behaviour.
+
+The automatic method mocking behaviour involves determining for each ROP step class and main class, what method would be called. We determine this by using metaprogramming to get a list of public methods of the ROP main class
+and ROP step classes while filtering for globally mixed-in/inherited ruby/rails/gem methods. This works because these ROP classes as part of the ROP pattern contract are meant to have only one explicitly defined public method (and they currently all do).
+Breaking this rule by having more than one public method would cause an exception to be raised and the test to fail.
+
+The matcher chain methods behave as explained in the API description above. They use their arguments to configure the `match` block.
+
+The matcher entry method is `invoke_rop_steps`. This method returns a `match` block that should be called with an `expect` clause whose argument is a block that in turn calls the tested class' ROP main method.
+The match block returned by `invoke_rop_steps` depends on the chain methods being called to configure it. It performs validations to ensure these chain methods were actually called by verifying the variables it expects the chain methods to populate are not `nil`.
+It also verifies that the array of ROP steps passed contains a list of tuples whose pair are a ruby `Class` and a `Symbol` type that is a valid result passing method (a `map` or `and_then`).
+
+After validation, the match block builds a hash in `build_expected_rop_steps` for each ROP step using the variables populated. This hash defines the return value on calling the public method of classes in the array of ROP steps provided. For example, if a class was specified in
+the matcher chain method to return an `error` with a specific message, its returned value on calling its main public method is set to that, and likewise in the case of an `ok_result`. We ignore configuring for
+other classes in the chain after an error is registered, since their public methods would never be called as the error result would just be propagated down the chain. For non `error`/`ok_result` returning steps, we use the
+information provided in the `rop_steps` tuple to determine if we want to return a `Result` or a context `Hash`. If the step expects to be called by a `map`, we would need to return a context `Hash` and for an `and_then` a `Result` type.
+
+For the final configuration step in `setup_mock_expectations_for_steps`, we setup expectations for each relevant ROP step class with information from the hash built earlier. We enforce ordering on the expectations to ensure chain methods are triggered in the order specified by the `rop_steps` array
+(which should mirror the chain in the ROP main class being tested).
+
+Finally, we call the passed block that in turn calls the ROP main class method being tested. We then use the `expected_return_value_matcher` configured in the `and_return_expected_value` matcher chain method to
+assert the expected return value.
 
 ## Benefits
 
