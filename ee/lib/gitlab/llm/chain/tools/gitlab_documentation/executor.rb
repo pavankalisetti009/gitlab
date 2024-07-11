@@ -31,7 +31,7 @@ module Gitlab
               logger.info(message: "Calling TanukiBot", class: self.class.to_s)
               streamed_answer = StreamedDocumentationAnswer.new
 
-              response_modifier = Gitlab::Llm::TanukiBot.new(
+              response_modifier = ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion.new(
                 current_user: context.current_user,
                 question: options[:input],
                 tracking_context: { action: 'chat_documentation' }
