@@ -215,6 +215,7 @@ module EE
         mount_mutation ::Mutations::Ai::SelfHostedModels::Delete,
           alpha: { milestone: '17.2' }
         mount_mutation ::Mutations::MergeTrains::Cars::Delete, alpha: { milestone: '17.2' }
+        mount_mutation ::Mutations::Projects::UpdateComplianceFrameworks
 
         prepend(Types::DeprecatedMutations)
       end

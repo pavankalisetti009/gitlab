@@ -22887,6 +22887,9 @@ msgstr ""
 msgid "ForksDivergence|View merge request"
 msgstr ""
 
+msgid "Framework id(s) %{missing_ids} are invalid."
+msgstr ""
+
 msgid "Framework successfully deleted"
 msgstr ""
 
@@ -34970,6 +34973,9 @@ msgid "No milestone"
 msgstr ""
 
 msgid "No more seats in subscription"
+msgstr ""
+
+msgid "No more than %{max_frameworks} compliance frameworks can be updated at the same time."
 msgstr ""
 
 msgid "No more than %{max_issues} issues can be updated at the same time"

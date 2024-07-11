@@ -7927,6 +7927,28 @@ Input type: `projectTextReplaceInput`
 | <a id="mutationprojecttextreplaceclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationprojecttextreplaceerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 
+### `Mutation.projectUpdateComplianceFrameworks`
+
+Update compliance frameworks for a project.
+
+Input type: `ProjectUpdateComplianceFrameworksInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectupdatecomplianceframeworksclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectupdatecomplianceframeworkscomplianceframeworkids"></a>`complianceFrameworkIds` | [`[ComplianceManagementFrameworkID!]!`](#compliancemanagementframeworkid) | IDs of the compliance framework to update for the project. |
+| <a id="mutationprojectupdatecomplianceframeworksprojectid"></a>`projectId` | [`ProjectID!`](#projectid) | ID of the project to change the compliance framework of. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationprojectupdatecomplianceframeworksclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationprojectupdatecomplianceframeworkserrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationprojectupdatecomplianceframeworksproject"></a>`project` | [`Project`](#project) | Project after mutation. |
+
 ### `Mutation.prometheusIntegrationCreate`
 
 Input type: `PrometheusIntegrationCreateInput`

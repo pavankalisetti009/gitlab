@@ -99,7 +99,7 @@ domains:
     feature_categories:
       - code_suggestions
 
-  Compliance:
+  ComplianceManagement:
     description:
     feature_categories:
       - compliance_management
