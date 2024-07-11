@@ -104,6 +104,7 @@ module EE
           end
         end
 
+        # rubocop:disable Metrics/AbcSize -- Disabled temporarily to roll out a time critical bugfix
         def root_groups_for_cluster_agents(cluster_agent_ids:)
           agents_by_id = ClusterAgent.id_in(cluster_agent_ids).index_by(&:id)
 
@@ -112,11 +113,13 @@ module EE
           project_namespaces_by_id =
             Namespace.id_in(projects_by_id.values.map(&:project_namespace_id)).index_by(&:id)
 
+          root_namespace_ids = project_namespaces_by_id.values.map do |project_namespace|
+            project_namespace.traversal_ids[0]
+          end
+
           root_group_namespaces_by_id =
             Namespace
-              .id_in(
-                project_namespaces_by_id.values.map(&:traversal_ids)[0] # pluck the root namespace from traversal ids
-              )
+              .id_in(root_namespace_ids)
               .where(type: 'Group')
               .index_by(&:id)
 
@@ -140,6 +143,7 @@ module EE
             hash[cluster_agent_id] = root_namespace_id if root_group_namespaces_by_id.has_key?(root_namespace_id)
           end
         end
+        # rubocop:enable Metrics/AbcSize
       end
     end
   end
