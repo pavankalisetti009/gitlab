@@ -39357,6 +39357,18 @@ msgstr ""
 msgid "Pipeline|Test coverage"
 msgstr ""
 
+msgid "Pipeline|There was a problem canceling the job."
+msgstr ""
+
+msgid "Pipeline|There was a problem running the job again."
+msgstr ""
+
+msgid "Pipeline|There was a problem running the job."
+msgstr ""
+
+msgid "Pipeline|There was a problem unscheduling the job."
+msgstr ""
+
 msgid "Pipeline|This change will decrease the overall test coverage if merged."
 msgstr ""
 
@@ -44988,12 +45000,6 @@ msgstr ""
 msgid "Retry migration"
 msgstr ""
 
-msgid "Retry this job"
-msgstr ""
-
-msgid "Retry this job in order to create the necessary resources."
-msgstr ""
-
 msgid "Retry verification"
 msgstr ""
 
@@ -45177,6 +45183,12 @@ msgid "Run pipeline"
 msgstr ""
 
 msgid "Run tests against your code live using the Web Terminal"
+msgstr ""
+
+msgid "Run this job again"
+msgstr ""
+
+msgid "Run this job again in order to create the necessary resources."
 msgstr ""
 
 msgid "Run untagged jobs"
