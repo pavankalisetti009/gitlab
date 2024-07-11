@@ -62,6 +62,7 @@ export const pendingMembersResponse = {
             invited: true,
             avatarUrl:
               'https://www.gravatar.com/avatar/f642d140d8eca76c2a0e20cd7827dbe182681638b310e4dcb729640e0281175b?s=80&d=identicon',
+            webUrl: 'https://gitlab.com/pending_1',
             approved: true,
             name: 'John Doe',
             __typename: 'PendingGroupMember',
@@ -72,6 +73,7 @@ export const pendingMembersResponse = {
             invited: true,
             avatarUrl:
               'https://www.gravatar.com/avatar/26ff88e0fdba111305d7a8a018ed41554c413a44c8bd4c6666e3e20126bf1f4a?s=80&d=identicon',
+            webUrl: 'https://gitlab.com/pending_3',
             approved: false,
             name: 'Admin',
             __typename: 'PendingGroupMember',
@@ -82,6 +84,7 @@ export const pendingMembersResponse = {
             invited: true,
             avatarUrl:
               'https://www.gravatar.com/avatar/26ff88e0fdba111305d7a8a018ed41554c413a44c8bd4c6666e3e20126bf1f4a?s=80&d=identicon',
+            webUrl: 'https://gitlab.com/pending_4',
             approved: false,
             name: 'Jane Doe',
             __typename: 'PendingGroupMember',
