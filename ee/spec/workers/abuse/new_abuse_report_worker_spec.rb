@@ -7,18 +7,12 @@ RSpec.describe Abuse::NewAbuseReportWorker, :saas, feature_category: :instance_r
   let_it_be(:reporter) { create(:user) }
   let_it_be(:abuse_report) { create(:abuse_report, user: user, reporter: reporter) }
   let_it_be(:job_args) { [abuse_report.id] }
-  let_it_be(:user_custom_attributes) do
-    {
-      user_id: user.id,
-      key: UserCustomAttribute::AUTO_BANNED_BY_ABUSE_REPORT_ID,
-      value: abuse_report.id
-    }
-  end
 
   shared_examples 'bans user' do
     it 'bans the user' do
-      expect(user).to receive(:ban!).and_call_original
-      expect(UserCustomAttribute).to receive(:upsert_custom_attributes).with([user_custom_attributes]).and_call_original
+      expect(user).not_to be_banned
+
+      allow(Gitlab::AppLogger).to receive(:info)
       expect(Gitlab::AppLogger).to receive(:info).with(
         message: "User ban",
         user_id: user.id,
@@ -26,10 +20,13 @@ RSpec.describe Abuse::NewAbuseReportWorker, :saas, feature_category: :instance_r
         abuse_report_id: abuse_report.id,
         reason: "Automatic ban triggered by abuse report for #{abuse_report.category}."
       )
+
       worker.perform(*job_args)
 
       expect(user).to be_banned
-      expect(user.custom_attributes.by_key(UserCustomAttribute::AUTO_BANNED_BY_ABUSE_REPORT_ID).first).not_to be_nil
+      expect(
+        user.custom_attributes.by_key(UserCustomAttribute::AUTO_BANNED_BY_ABUSE_REPORT_ID).first.value
+      ).to eq(abuse_report.id.to_s)
     end
   end
 

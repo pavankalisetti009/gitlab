@@ -25,7 +25,8 @@ module Abuse
       return unless bannable_user?
 
       ApplicationRecord.transaction do
-        UserCustomAttribute.set_banned_by_abuse_report(abuse_report) if user.ban!
+        Users::AutoBanService.new(user: user, reason: abuse_report.category).execute!
+        UserCustomAttribute.set_banned_by_abuse_report(abuse_report)
       end
 
       log_event
