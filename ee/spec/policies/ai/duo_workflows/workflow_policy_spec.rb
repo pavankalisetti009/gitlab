@@ -11,17 +11,17 @@ RSpec.describe Ai::DuoWorkflows::WorkflowPolicy, feature_category: :duo_workflow
   let(:current_user) { guest }
 
   describe "read_duo_workflow" do
-    context "when start_duo_workflows FF is disabled" do
+    context "when duo_workflow FF is disabled" do
       before do
-        stub_feature_flags(start_duo_workflows: false)
+        stub_feature_flags(duo_workflow: false)
       end
 
       it { is_expected.to be_disallowed(:read_duo_workflow) }
     end
 
-    context "when  start_duo_workflows FF is enabled" do
+    context "when  duo_workflow FF is enabled" do
       before do
-        stub_feature_flags(start_duo_workflows: true)
+        stub_feature_flags(duo_workflow: true)
       end
 
       context "when user is guest" do
