@@ -11,7 +11,7 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
   describe '#export_segment' do
     let_it_be(:sbom_occurrence) { create(:sbom_occurrence, traversal_ids: group.traversal_ids) }
 
-    let(:export_part) do
+    let!(:export_part) do
       create(:dependency_list_export_part,
         dependency_list_export: export,
         start_id: sbom_occurrence.id,
@@ -40,6 +40,23 @@ RSpec.describe Dependencies::Export::SegmentedExportService, feature_category: :
         'licenses' => sbom_occurrence.licenses,
         'location' => sbom_occurrence.location.stringify_keys
       })
+    end
+
+    context 'when there are multiple SBOM occurrences related to export part' do
+      let(:other_sbom_occurrence) { create(:sbom_occurrence, traversal_ids: group.traversal_ids) }
+      let(:other_service_object) { described_class.new(export) }
+      let!(:other_export_part) do
+        create(:dependency_list_export_part,
+          dependency_list_export: export,
+          start_id: sbom_occurrence.id,
+          end_id: other_sbom_occurrence.id)
+      end
+
+      it 'does not cause N+1 query issue' do
+        control = ActiveRecord::QueryRecorder.new { export_segment }
+
+        expect { other_service_object.export_segment(other_export_part) }.not_to exceed_query_limit(control)
+      end
     end
 
     context 'when an error happens' do
