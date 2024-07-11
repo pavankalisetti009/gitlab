@@ -22,7 +22,7 @@ module EE
 
           audit_context = {
             name: "container_repository_tags_deleted",
-            author: current_user,
+            author: current_user || ::Gitlab::Audit::UnauthenticatedAuthor.new(name: '(System)'),
             scope: project,
             target: repository,
             message: message
