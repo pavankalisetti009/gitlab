@@ -128,7 +128,7 @@ export default {
         .mutate({
           mutation: chatMutation,
           variables: {
-            question: '/rca',
+            question: '/troubleshoot',
             resourceId: this.jobGid,
           },
         })
