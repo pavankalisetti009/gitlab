@@ -93,7 +93,8 @@ RSpec.describe CodeSuggestions::Tasks::SelfHostedCodeCompletion, feature_categor
     where(:model_name, :class_name) do
       [
         [:codegemma, CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages],
-        [:codestral, CodeSuggestions::Prompts::CodeCompletion::CodestralMessages]
+        [:codestral, CodeSuggestions::Prompts::CodeCompletion::CodestralMessages],
+        ['codellama:code', CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages]
       ]
     end
 

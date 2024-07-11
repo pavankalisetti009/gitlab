@@ -42,6 +42,8 @@ module CodeSuggestions
           CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages.new(params)
         when :codestral
           CodeSuggestions::Prompts::CodeCompletion::CodestralMessages.new(params)
+        when :'codellama:code'
+          CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages.new(params)
         else
           raise "Unknown model: #{model_name}"
         end
