@@ -15,12 +15,16 @@ module EE
         module Chain
           module PipelineExecutionPolicies
             module MergeJobs
+              include ::Gitlab::Ci::Pipeline::Chain::Helpers
+
               def perform!
                 return if ::Feature.disabled?(:pipeline_execution_policy_type, project.group)
                 return if command.execution_policy_mode? || command.pipeline_execution_policies.blank?
 
                 clear_project_pipeline
                 merge_policy_jobs
+              rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::DuplicateJobNameError => e
+                error("Pipeline execution policy error: #{e.message}", failure_reason: :config_error)
               end
 
               def break?

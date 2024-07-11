@@ -54,12 +54,12 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger, feat
         ]
       end
 
-      it 'injects both jobs to the correct stage', :aggregate_failures do
-        execute
-
-        test_stage = pipeline.stages.find { |stage| stage.name == 'test' }
-        expect(test_stage.statuses.size).to eq(3)
-        expect(test_stage.statuses.map(&:name)).to contain_exactly('rake', 'rspec', 'rspec')
+      it 'raises error' do
+        expect { execute }
+          .to raise_error(
+            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::DuplicateJobNameError,
+            "job names must be unique (rspec)"
+          )
       end
     end
 
@@ -71,12 +71,12 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger, feat
         ]
       end
 
-      it 'injects the jobs while keeping the project job', :aggregate_failures do
-        execute
-
-        test_stage = pipeline.stages.find { |stage| stage.name == 'test' }
-        expect(test_stage.statuses.size).to eq(3)
-        expect(test_stage.statuses.map(&:name)).to contain_exactly('rake', 'rake', 'rspec')
+      it 'raises error' do
+        expect { execute }
+          .to raise_error(
+            Gitlab::Ci::Pipeline::PipelineExecutionPolicies::DuplicateJobNameError,
+            "job names must be unique (rake)"
+          )
       end
     end
   end

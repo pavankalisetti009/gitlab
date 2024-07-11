@@ -10,6 +10,8 @@ module Gitlab
   module Ci
     module Pipeline
       module PipelineExecutionPolicies
+        DuplicateJobNameError = Class.new(StandardError)
+
         class JobsMerger
           include ::Gitlab::Utils::StrongMemoize
 
@@ -24,6 +26,8 @@ module Gitlab
             pipeline_execution_policies.each do |policy_pipeline_config|
               inject_jobs_from(policy_pipeline_config)
             end
+
+            enforce_job_name_uniqueness!
           end
 
           private
@@ -79,6 +83,15 @@ module Gitlab
               stage.assign_attributes(pipeline: pipeline, position: position)
               pipeline.stages << stage
             end
+          end
+
+          def enforce_job_name_uniqueness!
+            job_names = pipeline.stages.flat_map { |stage| stage.statuses.map(&:name) }
+            duplicate_names = job_names.tally.select { |_, count| count > 1 }.keys
+
+            return if duplicate_names.blank?
+
+            raise DuplicateJobNameError, "job names must be unique (#{duplicate_names.join(', ')})"
           end
         end
       end
