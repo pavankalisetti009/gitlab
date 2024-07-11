@@ -38,7 +38,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
       end
 
       it 'responds with the message from TanukiBot' do
-        expect_next_instance_of(Gitlab::Llm::TanukiBot, **expected_params) do |instance|
+        expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, **expected_params) do |instance|
           expect(instance).to receive(:execute).and_return(response).and_yield('In').and_yield('your')
         end
 
@@ -60,7 +60,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
         end
 
         it 'calls the stream_response_handler with the chunks' do
-          expect_next_instance_of(Gitlab::Llm::TanukiBot, **expected_params) do |instance|
+          expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, **expected_params) do |instance|
             expect(instance).to receive(:execute).and_return(response).and_yield('In').and_yield('your')
           end
 
@@ -82,7 +82,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
         let(:response) { Gitlab::Llm::ResponseModifiers::EmptyResponseModifier.new(message) }
 
         it 'responds with the message from TanukiBot' do
-          expect_next_instance_of(Gitlab::Llm::TanukiBot, expected_params) do |instance|
+          expect_next_instance_of(::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, expected_params) do |instance|
             expect(instance).to receive(:execute).and_return(response)
           end
 
