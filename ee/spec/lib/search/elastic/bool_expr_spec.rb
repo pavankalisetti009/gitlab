@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Gitlab::Elastic::BoolExpr, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::BoolExpr, feature_category: :global_search do
   subject(:bool_expr) { described_class.new }
 
   it 'sets defaults', :aggregate_failures do

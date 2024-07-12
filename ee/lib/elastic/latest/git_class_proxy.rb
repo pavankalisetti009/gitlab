@@ -109,7 +109,7 @@ module Elastic
         fields = %w[message^10 sha^5 author.name^2 author.email^2 committer.name committer.email]
         query_with_prefix = query.split(/\s+/).map { |s| s.gsub(SHA_REGEX) { |sha| "#{sha}*" } }.join(' ')
 
-        bool_expr = ::Gitlab::Elastic::BoolExpr.new
+        bool_expr = ::Search::Elastic::BoolExpr.new
 
         options[:no_join_project] = true
         options[:index_name] = Elastic::Latest::CommitConfig.index_name
@@ -284,7 +284,7 @@ module Elastic
           filter :blob, field: :oid
         end
 
-        bool_expr = ::Gitlab::Elastic::BoolExpr.new
+        bool_expr = ::Search::Elastic::BoolExpr.new
         count_or_aggregation_query = count_only || aggregation
         query_hash = {
           query: { bool: bool_expr },
