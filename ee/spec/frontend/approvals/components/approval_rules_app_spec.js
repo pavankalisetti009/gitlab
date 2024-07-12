@@ -291,6 +291,10 @@ describe('EE Approvals App', () => {
   });
 
   describe('when isBranchRulesEdit is set to `true`', () => {
+    beforeEach(() => {
+      store.state.settings.allowMultiRule = true;
+    });
+
     it('does not call fetchRules', async () => {
       factory({ isBranchRulesEdit: true });
 

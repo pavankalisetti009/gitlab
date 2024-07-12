@@ -12,7 +12,7 @@ describe('Rule Input', () => {
   let wrapper;
   let store;
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, editBranchRules = true) => {
     wrapper = mount(RuleInput, {
       propsData: {
         rule: {
@@ -24,7 +24,7 @@ describe('Rule Input', () => {
       store: new Vuex.Store(store),
       provide: {
         glFeatures: {
-          editBranchRules: true,
+          editBranchRules,
         },
       },
     });
@@ -57,7 +57,7 @@ describe('Rule Input', () => {
     expect(findInput().attributes().disabled).toBeDefined();
   });
 
-  it('is disabled when settings can edit', () => {
+  it('is not disabled when settings can edit', () => {
     createComponent();
 
     expect(findInput().attributes().disabled).not.toBeDefined();
@@ -88,5 +88,28 @@ describe('Rule Input', () => {
 
     await nextTick();
     expect(action).toHaveBeenCalledWith(expect.anything(), { approvalsRequired: 10, id: 5 });
+  });
+
+  describe('on Branch rule details page', () => {
+    it('is disabled when can edit settings is false', () => {
+      store.state.settings.canEdit = false;
+      createComponent({ isBranchRulesEdit: true }, true);
+
+      expect(findInput().attributes().disabled).toBeDefined();
+    });
+
+    it('is not disabled when can edit settings is true', () => {
+      createComponent({ isBranchRulesEdit: true }, true);
+
+      expect(findInput().attributes().disabled).not.toBeDefined();
+    });
+
+    describe('when editBranchRules feature flag is disabled', () => {
+      it('is disabled despite can edit settings', () => {
+        createComponent({ isBranchRulesEdit: true }, false);
+
+        expect(findInput().attributes().disabled).toBeDefined();
+      });
+    });
   });
 });

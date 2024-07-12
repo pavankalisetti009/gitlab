@@ -113,13 +113,12 @@ export default {
       );
     },
     canEdit(rule) {
-      if (this.isBranchRulesEdit) {
-        return this.glFeatures.editBranchRules;
-      }
-
       const { canEdit, allowMultiRule } = this.settings;
+      const canEditRuleCounter = canEdit && (!allowMultiRule || !rule.hasSource);
 
-      return canEdit && (!allowMultiRule || !rule.hasSource);
+      return this.isBranchRulesEdit
+        ? this.glFeatures.editBranchRules && canEditRuleCounter
+        : canEditRuleCounter;
     },
   },
 };

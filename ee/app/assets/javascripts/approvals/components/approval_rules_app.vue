@@ -51,11 +51,11 @@ export default {
       return this.isMrEdit || this.isBranchRulesEdit ? this.rules.length : this.pagination.total;
     },
     canAddApprovalRule() {
-      if (this.isBranchRulesEdit) {
-        return this.glFeatures.editBranchRules;
-      }
+      const canEditAndAllowMultiRule = this.settings.canEdit && this.settings.allowMultiRule;
 
-      return this.settings.canEdit && this.settings.allowMultiRule;
+      return this.isBranchRulesEdit
+        ? this.glFeatures.editBranchRules && canEditAndAllowMultiRule
+        : canEditAndAllowMultiRule;
     },
   },
   mounted() {

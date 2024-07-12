@@ -24,11 +24,6 @@ export default {
       type: Object,
       required: true,
     },
-    isMrEdit: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
     isBranchRulesEdit: {
       type: Boolean,
       default: false,
@@ -44,7 +39,7 @@ export default {
       return this.rule.minApprovalsRequired || 0;
     },
     isDisabled() {
-      return this.isBranchRulesEdit ? !this.glFeatures.editBranchRules : !this.settings.canEdit;
+      return (this.isBranchRulesEdit && !this.glFeatures.editBranchRules) || !this.settings.canEdit;
     },
   },
   created() {
