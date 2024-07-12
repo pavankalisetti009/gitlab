@@ -58,11 +58,7 @@ module CloudConnector
     end
 
     def add_on_purchases_assigned_to(user)
-      cache_key = format(GitlabSubscriptions::UserAddOnAssignment::USER_ADD_ON_ASSIGNMENT_CACHE_KEY, user_id: user.id)
-
-      Rails.cache.fetch(cache_key) do
-        add_on_purchases.assigned_to_user(user)
-      end
+      add_on_purchases.assigned_to_user(user)
     end
 
     def add_on_purchases(namespace = nil)
