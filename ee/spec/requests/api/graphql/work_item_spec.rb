@@ -158,7 +158,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                   rollUp
                 }
                 weight
-                rollUpWeight
+                rolledUpWeight
               }
             }
           GRAPHQL
@@ -182,7 +182,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                     'rollUp' => false
                   },
                   'weight' => work_item.weight,
-                  'rollUpWeight' => nil
+                  'rolledUpWeight' => nil
                 )
               )
             )
