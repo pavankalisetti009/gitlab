@@ -14,7 +14,7 @@ module AuditEvents
         .then { |params| filter_by_author(params) }
     end
 
-    # This is an interim change until we have proper API support within Audit Events
+    # This is an interim change until we have proper API support within audit events
     def transform_author_entity_type(params)
       return params unless params[:entity_type] == 'Author'
 

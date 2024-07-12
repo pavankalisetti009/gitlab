@@ -7343,9 +7343,6 @@ msgstr ""
 msgid "Attempted to update the pipeline trigger token but failed"
 msgstr ""
 
-msgid "Audit Events"
-msgstr ""
-
 msgid "Audit events"
 msgstr ""
 
@@ -42668,10 +42665,10 @@ msgstr ""
 msgid "Promotions|Upgrade your plan to activate Advanced Search."
 msgstr ""
 
-msgid "Promotions|Upgrade your plan to activate Audit Events."
+msgid "Promotions|Upgrade your plan to activate Group Webhooks."
 msgstr ""
 
-msgid "Promotions|Upgrade your plan to activate Group Webhooks."
+msgid "Promotions|Upgrade your plan to activate audit events."
 msgstr ""
 
 msgid "Promotions|Upgrade your plan to improve merge requests."

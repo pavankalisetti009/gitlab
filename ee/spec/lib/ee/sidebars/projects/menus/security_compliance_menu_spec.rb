@@ -217,7 +217,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       end
     end
 
-    describe 'Audit Events' do
+    describe 'Audit events' do
       let(:item_id) { :audit_events }
 
       context 'when user can access audit events' do

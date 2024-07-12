@@ -43,7 +43,7 @@ import {
   instanceAmazonS3DestinationCreateMutationPopulator,
 } from '../mock_data';
 
-describe('Audit Events GraphQL cache updates', () => {
+describe('Audit events GraphQL cache updates', () => {
   const GROUP1_PATH = 'group-1';
   const GROUP2_PATH = 'group-2';
   const GROUP_NOT_IN_CACHE = 'other-group';

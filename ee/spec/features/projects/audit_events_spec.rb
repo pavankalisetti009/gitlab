@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Projects > Audit Events', :js, feature_category: :audit_events do
+RSpec.describe 'Projects > Audit events', :js, feature_category: :audit_events do
   include Features::MembersHelpers
   include ListboxHelpers
 
@@ -29,7 +29,7 @@ RSpec.describe 'Projects > Audit Events', :js, feature_category: :audit_events d
       expect(reqs.first.status_code).to eq(404)
     end
 
-    it 'does not have Audit Events button in head nav bar' do
+    it 'does not have audit events button in head nav bar' do
       visit edit_project_path(project)
 
       expect(page).not_to have_link('Audit events')
@@ -56,7 +56,7 @@ RSpec.describe 'Projects > Audit Events', :js, feature_category: :audit_events d
       expect(reqs.first.status_code).to eq(200)
     end
 
-    it 'has Audit Events button in head nav bar' do
+    it 'has audit events button in head nav bar' do
       visit project_audit_events_path(project)
 
       expect(page).to have_link('Audit events')
@@ -69,7 +69,7 @@ RSpec.describe 'Projects > Audit Events', :js, feature_category: :audit_events d
     end
   end
 
-  it 'has Audit Events button in head nav bar' do
+  it 'has audit events button in head nav bar' do
     visit project_audit_events_path(project)
 
     expect(page).to have_link('Audit events')
