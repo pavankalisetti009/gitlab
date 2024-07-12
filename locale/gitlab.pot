@@ -26132,7 +26132,7 @@ msgstr ""
 msgid "Health"
 msgstr ""
 
-msgid "Health Check"
+msgid "Health check"
 msgstr ""
 
 msgid "Health information can be retrieved from the following endpoints. More information is available"
