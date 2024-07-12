@@ -20,10 +20,10 @@ class Groups::Analytics::CiCdAnalyticsController < Groups::Analytics::Applicatio
     conditions: -> { should_track_ci_cd_lead_time? }
   track_event :show,
     name: 'g_analytics_ci_cd_time_to_restore_service',
-    conditions: -> { should_track_ci_cd_time_to_restore_service? }
+    conditions: -> { should_track_visit_ci_cd_time_to_restore_service_tab? }
   track_event :show,
     name: 'g_analytics_ci_cd_change_failure_rate',
-    conditions: -> { should_track_ci_cd_change_failure_rate? }
+    conditions: -> { should_track_visit_ci_cd_change_failure_tab? }
 
   def show
   end
@@ -40,11 +40,11 @@ class Groups::Analytics::CiCdAnalyticsController < Groups::Analytics::Applicatio
     params[:tab] == 'lead-time'
   end
 
-  def should_track_ci_cd_time_to_restore_service?
+  def should_track_visit_ci_cd_time_to_restore_service_tab?
     params[:tab] == 'time-to-restore-service'
   end
 
-  def should_track_ci_cd_change_failure_rate?
+  def should_track_visit_ci_cd_change_failure_tab?
     params[:tab] == 'change-failure-rate'
   end
 end
