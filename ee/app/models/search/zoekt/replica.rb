@@ -21,7 +21,14 @@ module Search
       scope :for_namespace, ->(id) { where(namespace_id: id) }
 
       def self.for_enabled_namespace!(zoekt_enabled_namespace)
-        zoekt_enabled_namespace.replicas.first_or_create!(namespace_id: zoekt_enabled_namespace.root_namespace_id)
+        params = {
+          namespace_id: zoekt_enabled_namespace.root_namespace_id,
+          zoekt_enabled_namespace_id: zoekt_enabled_namespace.id
+        }
+
+        where(namespace_id: params[:namespace_id]).first || create!(params)
+      rescue ActiveRecord::RecordInvalid => invalid
+        retry if invalid.record&.errors&.of_kind?(:namespace_id, :taken)
       end
 
       private
