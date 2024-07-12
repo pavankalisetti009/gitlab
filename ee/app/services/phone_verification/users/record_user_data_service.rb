@@ -35,7 +35,6 @@ module PhoneVerification
       end
 
       def assume_high_risk?
-        return false unless Feature.enabled?(:telesign_high_risk_cc_validation, type: :gitlab_com_derisk)
         return false if user.credit_card_verified?
         return false if user_risk_profile.assumed_high_risk?
 
