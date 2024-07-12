@@ -110,7 +110,7 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
           stub_licensed_features(summarize_comments: true)
         end
 
-        it 'does not push licensed feature' do
+        it 'does not push licensed feature', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471993' do
           get_show
 
           expect(response.body).not_to have_pushed_licensed_features(summarizeComments: true)
