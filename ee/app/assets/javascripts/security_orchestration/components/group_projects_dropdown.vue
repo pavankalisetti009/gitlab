@@ -4,12 +4,14 @@ import { debounce, uniqBy } from 'lodash';
 import produce from 'immer';
 import { __ } from '~/locale';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
+import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
 export default {
   i18n: {
     projectDropdownHeader: __('Select projects'),
+    groupDropdownHeader: __('Select groups'),
     selectAllLabel: __('Select all'),
     clearAllLabel: __('Clear all'),
   },
@@ -18,6 +20,32 @@ export default {
     GlCollapsibleListbox,
   },
   apollo: {
+    groups: {
+      query: getGroups,
+      variables() {
+        return {
+          fullPath: this.groupFullPath,
+          search: this.searchTerm,
+        };
+      },
+      update(data) {
+        /**
+         * It is important to preserve all groups that have been loaded
+         * otherwise after performing backend search and selecting found item
+         * selection is overwritten
+         */
+        return uniqBy([...this.groups, ...data.group.descendantGroups.nodes], 'id');
+      },
+      result({ data }) {
+        this.pageInfo = data?.group?.descendantGroups?.pageInfo || {};
+      },
+      error() {
+        this.$emit('groups-query-error');
+      },
+      skip() {
+        return !this.groupsOnly;
+      },
+    },
     projects: {
       query: getGroupProjects,
       variables() {
@@ -35,10 +63,13 @@ export default {
         return uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
       },
       result({ data }) {
-        this.projectsPageInfo = data?.group?.projects?.pageInfo || {};
+        this.pageInfo = data?.group?.projects?.pageInfo || {};
       },
       error() {
         this.$emit('projects-query-error');
+      },
+      skip() {
+        return this.groupsOnly;
       },
     },
   },
@@ -72,35 +103,53 @@ export default {
       required: false,
       default: false,
     },
+    groupsOnly: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
-      projectsPageInfo: {},
+      pageInfo: {},
       searchTerm: '',
       projects: [],
+      groups: [],
     };
   },
   computed: {
-    formattedSelectedProjectsIds() {
+    itemsQuery() {
+      return this.$apollo.queries[this.groupsOnly ? 'groups' : 'projects'];
+    },
+
+    items() {
+      return this.groupsOnly ? this.groups : this.projects;
+    },
+    headerText() {
+      return this.groupsOnly
+        ? this.$options.i18n.groupDropdownHeader
+        : this.$options.i18n.projectDropdownHeader;
+    },
+    formattedSelectedIds() {
       return this.multiple ? this.selected : [this.selected];
     },
-    existingFormattedSelectedProjectsIds() {
+    existingFormattedSelectedIds() {
       if (this.multiple) {
-        return this.selected.filter((id) => this.projectsIds.includes(id));
+        return this.selected.filter((id) => this.itemsIds.includes(id));
       }
 
       return this.selected;
     },
     dropdownPlaceholder() {
       return renderMultiSelectText({
-        selected: this.formattedSelectedProjectsIds,
-        items: this.projectItems,
-        itemTypeName: __('projects'),
+        selected: this.formattedSelectedIds,
+        items: this.labelItems,
+        itemTypeName: this.groupsOnly ? __('groups') : __('projects'),
         useAllSelected: !this.hasNextPage,
       });
     },
     loading() {
-      return this.$apollo.queries.projects.loading;
+      return this.itemsQuery.loading;
     },
     searching() {
       return this.loading && this.searchUsed && !this.hasNextPage;
@@ -109,21 +158,21 @@ export default {
       return this.searchTerm !== '';
     },
     hasNextPage() {
-      return this.projectsPageInfo.hasNextPage;
+      return this.pageInfo.hasNextPage;
     },
-    projectItems() {
-      return this.projects?.reduce((acc, { id, name }) => {
+    labelItems() {
+      return this.items?.reduce((acc, { id, name }) => {
         acc[id] = name;
         return acc;
       }, {});
     },
-    projectListBoxItems() {
-      return this.projects
+    listBoxItems() {
+      return this.items
         .map(({ id, name }) => ({ text: name, value: id }))
         .filter(({ text }) => text.toLowerCase().includes(this.searchTerm.toLowerCase()));
     },
-    projectsIds() {
-      return this.projects.map(({ id }) => id);
+    itemsIds() {
+      return this.items.map(({ id }) => id);
     },
     resetButtonLabel() {
       return this.multiple ? this.$options.i18n.clearAllLabel : '';
@@ -142,19 +191,29 @@ export default {
     this.debouncedSearch.cancel();
   },
   methods: {
-    async fetchMoreGroupProjects() {
-      this.$apollo.queries.projects
+    fetchMoreItems() {
+      const { groupsOnly } = this;
+      const variables = {
+        after: this.pageInfo.endCursor,
+        fullPath: this.groupFullPath,
+      };
+
+      this.itemsQuery
         .fetchMore({
-          variables: {
-            fullPath: this.groupFullPath,
-            after: this.projectsPageInfo.endCursor,
-          },
+          variables,
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
-              draftData.group.projects.nodes = [
-                ...previousResult.group.projects.nodes,
-                ...draftData.group.projects.nodes,
-              ];
+              if (groupsOnly) {
+                draftData.group.descendantGroups.nodes = [
+                  ...previousResult.group.descendantGroups.nodes,
+                  ...draftData.group.descendantGroups.nodes,
+                ];
+              } else {
+                draftData.group.projects.nodes = [
+                  ...previousResult.group.projects.nodes,
+                  ...draftData.group.projects.nodes,
+                ];
+              }
             });
           },
         })
@@ -165,10 +224,10 @@ export default {
     setSearchTerm(searchTerm = '') {
       this.searchTerm = searchTerm.trim();
     },
-    selectProjects(selected) {
+    selectItems(selected) {
       const ids = this.multiple ? selected : [selected];
-      const selectedProjects = this.projects.filter(({ id }) => ids.includes(id));
-      const payload = this.multiple ? selectedProjects : selectedProjects[0];
+      const selectedItems = this.items.filter(({ id }) => ids.includes(id));
+      const payload = this.multiple ? selectedItems : selectedItems[0];
       this.$emit('select', payload);
     },
   },
@@ -186,20 +245,20 @@ export default {
     :disabled="disabled"
     :multiple="multiple"
     :loading="loading"
-    :header-text="$options.i18n.projectDropdownHeader"
+    :header-text="headerText"
     :infinite-scroll="hasNextPage"
     :infinite-scroll-loading="loading"
     :reset-button-label="resetButtonLabel"
     :show-select-all-button-label="$options.i18n.selectAllLabel"
     :searching="searching"
-    :selected="existingFormattedSelectedProjectsIds"
+    :selected="existingFormattedSelectedIds"
     :placement="placement"
-    :items="projectListBoxItems"
+    :items="listBoxItems"
     :toggle-text="dropdownPlaceholder"
-    @bottom-reached="fetchMoreGroupProjects"
+    @bottom-reached="fetchMoreItems"
     @search="debouncedSearch"
-    @reset="selectProjects([])"
-    @select="selectProjects"
-    @select-all="selectProjects(projectsIds)"
+    @reset="selectItems([])"
+    @select="selectItems"
+    @select-all="selectItems(itemsIds)"
   />
 </template>
