@@ -47,12 +47,13 @@ RSpec.configure do |config|
   end
 
   config.around(:example, :with_cloud_connector) do |example|
-    create(:cloud_connector_access)
+    cloud_connector_access = create(:cloud_connector_access)
     CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
     CloudConnector::AvailableServices.clear_memoization(:available_services)
 
     example.run
-
+  ensure
+    cloud_connector_access.destroy!
     CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
     CloudConnector::AvailableServices.clear_memoization(:available_services)
   end

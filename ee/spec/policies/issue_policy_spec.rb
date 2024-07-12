@@ -37,6 +37,14 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       it { is_expected.to be_disallowed(:summarize_comments) }
     end
 
+    context 'when feature is not available' do
+      it 'does not allow' do
+        expect(::CloudConnector::AvailableServices).to receive(:find_by_name).with(:summarize_comments).and_return(nil)
+
+        is_expected.to be_disallowed(:summarize_comments)
+      end
+    end
+
     context 'when user is logged in' do
       before do
         allow(::CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,

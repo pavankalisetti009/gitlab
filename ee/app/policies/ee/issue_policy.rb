@@ -13,7 +13,7 @@ module EE
     prepended do
       with_scope :subject
       condition(:summarize_notes_enabled) do
-        next false unless @user
+        next false unless @user && summarize_comments_service
 
         next true if summarize_comments_service.allowed_for?(@user)
 
