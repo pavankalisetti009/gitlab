@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Gitlab
+module Search
   module Elastic
     BoolExpr = Struct.new(:must, :must_not, :should, :filter, :minimum_should_match) do # rubocop:disable Lint/StructNewOverride -- existing implementation
       def initialize

@@ -13,7 +13,7 @@ module Search
         include Search::Elastic::Concerns::RateLimiter
 
         def by_iid(iid:, doc_type:)
-          bool_expr = Gitlab::Elastic::BoolExpr.new
+          bool_expr = ::Search::Elastic::BoolExpr.new
           bool_expr.filter = [
             { term: { iid: { _name: context.name(doc_type, :related, :iid), value: iid } } },
             { term: { type: { _name: context.name(:doc, :is_a, doc_type), value: doc_type } } }
@@ -30,10 +30,10 @@ module Search
           fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(fields)
           fields = remove_fields_boost(fields) if options[:count_only]
 
-          bool_expr = Gitlab::Elastic::BoolExpr.new
+          bool_expr = ::Search::Elastic::BoolExpr.new
 
           if query.present?
-            bool_expr = Gitlab::Elastic::BoolExpr.new
+            bool_expr = ::Search::Elastic::BoolExpr.new
             unless options[:no_join_project]
               bool_expr.filter << {
                 term: {
@@ -45,7 +45,7 @@ module Search
               }
             end
 
-            multi_match_bool = Gitlab::Elastic::BoolExpr.new
+            multi_match_bool = ::Search::Elastic::BoolExpr.new
             multi_match_bool.should << multi_match_query(fields, query, options.merge(operator: :or))
             multi_match_bool.should << multi_match_query(fields, query, options.merge(operator: :and))
             multi_match_bool.should << multi_match_phrase_query(fields, query, options)
@@ -72,7 +72,7 @@ module Search
           fields = ::Elastic::Latest::CustomLanguageAnalyzers.add_custom_analyzers_fields(fields)
           fields = remove_fields_boost(fields) if options[:count_only]
 
-          bool_expr = Gitlab::Elastic::BoolExpr.new
+          bool_expr = ::Search::Elastic::BoolExpr.new
           if query.present?
             unless options[:no_join_project]
               bool_expr.filter << {
