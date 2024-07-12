@@ -26,6 +26,25 @@ module GitlabSubscriptions
                 present user, with: Entities::Internal::User
               end
             end
+
+            resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
+              before do
+                @namespace = find_namespace(params[:namespace_id])
+
+                not_found!('Namespace') unless @namespace.present?
+              end
+
+              desc 'Returns the permissions that the user has in this namespace' do
+                success Entities::Internal::Namespaces::UserPermissions
+              end
+              get ":namespace_id/user_permissions/:user_id" do
+                user = User.find_by_id(params[:user_id])
+
+                not_found!('User') unless user.present?
+
+                present :edit_billing, user.can?(:edit_billing, @namespace)
+              end
+            end
           end
         end
       end
