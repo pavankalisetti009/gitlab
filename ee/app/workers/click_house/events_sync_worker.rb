@@ -8,7 +8,6 @@ module ClickHouse
     idempotent!
     queue_namespace :cronjob
     data_consistency :delayed
-    worker_has_external_dependencies! # the worker interacts with a ClickHouse database
     feature_category :value_stream_management
 
     def perform

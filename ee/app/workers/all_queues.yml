@@ -1149,7 +1149,7 @@
 - :name: click_house_ci_finished_builds_sync
   :worker_name: ClickHouse::CiFinishedBuildsSyncWorker
   :feature_category: :fleet_visibility
-  :has_external_dependencies: false
+  :has_external_dependencies: true
   :urgency: :throttled
   :resource_boundary: :unknown
   :weight: 1

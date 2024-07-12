@@ -8,7 +8,6 @@ module ClickHouse
     idempotent!
     queue_namespace :click_house_buffer_sync
     data_consistency :delayed
-    worker_has_external_dependencies! # the worker interacts with a ClickHouse database
     feature_category :database
     loggable_arguments 0
 
