@@ -255,7 +255,7 @@ module EE
           secret_detection_token_revocation_url: nil,
           secret_detection_token_revocation_token: nil,
           secret_detection_revocation_token_types_url: nil,
-          security_policy_scheduled_scans_max_concurrency: 100,
+          security_policy_scheduled_scans_max_concurrency: 10000,
           max_number_of_repository_downloads: 0,
           max_number_of_repository_downloads_within_time_period: 0,
           git_rate_limit_users_allowlist: [],
