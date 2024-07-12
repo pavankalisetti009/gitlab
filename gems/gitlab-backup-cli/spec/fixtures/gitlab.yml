@@ -61,6 +61,9 @@ test:
         aws_access_key_id: AWS_ACCESS_KEY_ID
         aws_secret_access_key: AWS_SECRET_ACCESS_KEY
         region: us-east-1
+  packages:
+    enabled: true
+    storage_path: /tmp/gitlab/full/packages
 
   terraform_state:
     enabled: true
