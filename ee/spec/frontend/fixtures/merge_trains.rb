@@ -47,7 +47,7 @@ RSpec.describe "GraphQL Merge Trains", '(JavaScript fixtures)', type: :request, 
     let(:train_car) { merge_request.merge_train_car }
 
     before do
-      train_car.update!(pipeline: create(:ci_pipeline, project: train_car.project))
+      train_car.update!(pipeline: create(:ci_pipeline, project: train_car.project), merged_at: 5.days.ago)
     end
 
     it "ee/graphql/merge_trains/completed_merge_trains.json" do

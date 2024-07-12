@@ -32955,6 +32955,9 @@ msgstr ""
 msgid "Merged"
 msgstr ""
 
+msgid "Merged %{timeAgo} by"
+msgstr ""
+
 msgid "Merged as assignee (1 week ago)"
 msgstr ""
 

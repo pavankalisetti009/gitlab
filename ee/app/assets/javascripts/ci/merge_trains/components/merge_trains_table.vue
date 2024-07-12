@@ -73,8 +73,16 @@ export default {
     },
   },
   methods: {
-    buildTimeAgoString(createdAt) {
-      const timeAgo = getTimeago().format(createdAt);
+    buildTimeAgoString({ createdAt, mergedAt }) {
+      let timeAgo;
+
+      if (mergedAt) {
+        timeAgo = getTimeago().format(mergedAt);
+
+        return sprintf(__('Merged %{timeAgo} by'), { timeAgo });
+      }
+
+      timeAgo = getTimeago().format(createdAt);
 
       return sprintf(__('Added %{timeAgo} by'), { timeAgo });
     },
@@ -115,8 +123,8 @@ export default {
           {{ item.mergeRequest.title }}
         </gl-link>
         <div class="gl-ml-3 gl-inline-block">
-          <span data-testid="added-to-train-text">
-            {{ buildTimeAgoString(item.createdAt) }}
+          <span data-testid="timeago-train-text">
+            {{ buildTimeAgoString(item) }}
           </span>
           <user-avatar-link
             :link-href="item.user.webPath"
