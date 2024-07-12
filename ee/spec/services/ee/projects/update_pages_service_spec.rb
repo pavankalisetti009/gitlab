@@ -4,10 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Projects::UpdatePagesService, feature_category: :pages do
   let_it_be(:project) { create(:project) }
+  let_it_be(:user) { create(:user) }
 
   let(:path_prefix) { nil }
   let(:build_options) { { pages: { path_prefix: path_prefix } } }
-  let(:build) { create(:ci_build, :pages, project: project, options: build_options) }
+  let(:build) { create(:ci_build, :pages, project: project, user: user, options: build_options) }
 
   subject(:service) { described_class.new(project, build) }
 
@@ -34,6 +35,12 @@ RSpec.describe Projects::UpdatePagesService, feature_category: :pages do
         expect { expect(service.execute).to include(status: :error) }
           .not_to change { project.pages_deployments.count }
       end
+
+      it_behaves_like 'internal event not tracked' do
+        let(:event) { 'create_pages_extra_deployment' }
+
+        subject(:track_event) { service.execute }
+      end
     end
 
     context 'and pages_multiple_versions is enabled for project' do
@@ -49,6 +56,14 @@ RSpec.describe Projects::UpdatePagesService, feature_category: :pages do
           .to change { project.pages_deployments.count }.by(1)
 
         expect(project.pages_deployments.last.path_prefix).to eq('path-prefix')
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'create_pages_extra_deployment' }
+        let(:category) { 'Projects::UpdatePagesService' }
+        let(:namespace) { project.namespace }
+
+        subject(:track_event) { service.execute }
       end
     end
   end
