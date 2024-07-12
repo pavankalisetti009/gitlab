@@ -61,6 +61,25 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
           expect(finding).to be_valid
         end
+
+        it 'is valid when details contains code_flows' do
+          finding.details = {
+            "code_flows" => {
+              "items" => [
+                [
+                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "source", "type" => "code-flow-node" },
+                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 9, "line_start" => 9, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 4, "line_start" => 4, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "sink", "type" => "code-flow-node" }
+                ]
+              ],
+              "name" => "code_flows",
+              "type" => "code-flows"
+            }
+          }
+          expect(finding).to be_valid
+        end
       end
 
       context 'when value for details field is invalid' do
@@ -69,6 +88,46 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
 
           expect(finding).to be_invalid
           expect(finding.errors.full_messages).to eq(["Details must be a valid json schema"])
+        end
+
+        subject { finding }
+
+        context 'when details contains code flows' do
+          let(:details) do
+            {
+              "code_flows" => {
+                "items" => items,
+                "name" => "code_flows",
+                "type" => "code-flows"
+              }
+            }
+          end
+
+          before do
+            finding.details = details
+          end
+
+          context 'when items contains invalid node_type' do
+            let(:items) do
+              [
+                [
+                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "unknown", "type" => "code-flow-node" }
+                ]
+              ]
+            end
+
+            it { is_expected.to be_invalid }
+          end
+
+          context 'when items contains an empty flows array' do
+            let(:items) do
+              [
+                []
+              ]
+            end
+
+            it { is_expected.to be_invalid }
+          end
         end
       end
     end
