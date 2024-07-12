@@ -40,7 +40,7 @@ module Gitlab
           group_full_path: group.full_path,
           ip_address: address,
           allowed: allowed,
-          globally_allowed: globally_configured_ip_ranges.present?
+          global_allowlist_in_use: globally_configured_ip_ranges.present?
         )
 
         allowed
