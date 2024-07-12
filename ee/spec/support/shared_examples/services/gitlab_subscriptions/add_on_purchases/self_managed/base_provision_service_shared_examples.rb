@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'call service to handle the provision of code suggestions' do
-  it 'calls the service to handle the provision of code suggestions' do
+RSpec.shared_examples 'call runner to handle the provision of add-ons' do
+  it 'calls the runner to handle the provision of add-ons' do
     expect_next_instance_of(
-      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::CodeSuggestions
-    ) do |service|
-      expect(service).to receive(:execute).and_call_original
+      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServicesRunner
+    ) do |runner|
+      expect(runner).to receive(:execute).once.and_call_original
     end
 
     subject

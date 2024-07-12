@@ -113,7 +113,7 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
     end
 
     context 'when new license does not contain a code suggestions add-on purchase' do
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
     end
 
     context 'when new license contains a code suggestions add-on purchase' do
@@ -125,7 +125,7 @@ RSpec.describe GitlabSubscriptions::ActivateService, feature_category: :plan_pro
         ).export
       end
 
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
 
       it 'triggers SeatLinkData sync' do
         expect_next_instance_of(::Gitlab::SeatLinkData, refresh_token: true) do |sync_link_data|

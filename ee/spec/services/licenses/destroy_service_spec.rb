@@ -32,14 +32,14 @@ RSpec.describe Licenses::DestroyService, feature_category: :plan_provisioning do
   context 'when admin mode is enabled', :enable_admin_mode do
     it_behaves_like 'license destroy'
     it_behaves_like 'clear future subscriptions application setting'
-    it_behaves_like 'call service to handle the provision of code suggestions'
+    it_behaves_like 'call runner to handle the provision of add-ons'
 
     context 'with cloud license' do
       let(:license) { create(:license, cloud_licensing_enabled: true, plan: License::ULTIMATE_PLAN) }
 
       it_behaves_like 'license destroy'
       it_behaves_like 'clear future subscriptions application setting'
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
     end
 
     context 'with an active license that is not the current one' do
@@ -50,7 +50,7 @@ RSpec.describe Licenses::DestroyService, feature_category: :plan_provisioning do
       end
 
       it_behaves_like 'license destroy'
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
 
       it 'does not clear the future_subscriptions application setting' do
         expect(Gitlab::CurrentSettings.current_application_settings).not_to receive(:update)
