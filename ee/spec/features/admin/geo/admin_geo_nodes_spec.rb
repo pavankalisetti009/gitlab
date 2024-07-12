@@ -20,7 +20,7 @@ RSpec.describe 'Admin Geo Sites', :js, :geo, feature_category: :geo_replication 
   def expect_breadcrumb(text)
     breadcrumbs = page.all(:css, '.gl-breadcrumb-list > li')
     expect(breadcrumbs.length).to eq(3)
-    expect(breadcrumbs[0].text).to eq('Admin Area')
+    expect(breadcrumbs[0].text).to eq('Admin area')
     expect(breadcrumbs[1].text).to eq('Geo Sites')
     expect(breadcrumbs[2].text).to eq(text)
   end

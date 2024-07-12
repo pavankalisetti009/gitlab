@@ -20,10 +20,10 @@ class ApplicationSetting < MainClusterwide::ApplicationRecord
 
   INSTANCE_REVIEW_MIN_USERS = 50
   GRAFANA_URL_ERROR_MESSAGE = 'Please check your Grafana URL setting in ' \
-    'Admin Area > Settings > Metrics and profiling > Metrics - Grafana'
+    'Admin area > Settings > Metrics and profiling > Metrics - Grafana'
 
   KROKI_URL_ERROR_MESSAGE = 'Please check your Kroki URL setting in ' \
-    'Admin Area > Settings > General > Kroki'
+    'Admin area > Settings > General > Kroki'
 
   # Validate URIs in this model according to the current value of the `deny_all_requests_except_allowed` property,
   # rather than the persisted value.

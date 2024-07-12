@@ -20,7 +20,7 @@ RSpec.describe 'gitlab:nav:dump_structure', :silence_stdout, :enable_admin_mode,
       "generated_at" => an_instance_of(String),
       "commit_sha" => an_instance_of(String),
       "contexts" => a_collection_including(a_hash_including({
-        "title" => "Admin Area",
+        "title" => "Admin area",
         "items" => a_collection_including(a_hash_including({
           "id" => "admin_settings_menu",
           "title" => "Settings",
