@@ -6,6 +6,6 @@
 - if feature_available
   .gl-mt-3.js-search-settings-section
     = render 'shared/web_hooks/title_and_docs', hook: @hook
-    = render 'shared/web_hooks/index', hooks: @hooks, hook_class: @hook.class, partial: 'shared/web_hooks/form', url: polymorphic_path([@group, :hooks])
+    = render 'shared/web_hooks/index', hooks: @hooks, title: @hook.pluralized_name, partial: 'shared/web_hooks/form', url: polymorphic_path([@group, :hooks])
 - elsif show_promotions?
   = render 'shared/promotions/promote_group_webhooks'
