@@ -56,11 +56,16 @@ module QA
             closedAt
             description
             id
+            iid
+            namespace {
+              id
+            }
             state
             title
             widgets {
               ... on WorkItemWidgetRolledupDates
               {
+                type
                 dueDate
                 dueDateFixed
                 dueDateIsFixed
@@ -70,6 +75,7 @@ module QA
               }
               ... on WorkItemWidgetLabels
               {
+                type
                 labels
                 {
                   nodes
@@ -80,11 +86,13 @@ module QA
               }
               ... on WorkItemWidgetAwardEmoji
               {
+                type
                 upvotes
                 downvotes
               }
               ... on WorkItemWidgetColor
               {
+                type
                 color
                 textColor
               }
@@ -156,6 +164,30 @@ module QA
           )
         end
 
+        # Return iid for comparing work item epics with legacy epics
+        # Can be removed after migration to work item epics is complete
+        #
+        # @return [Hash]
+        def epic_iid
+          reload! if api_response.nil?
+
+          api_resource[:iid] = api_resource[:iid].to_i
+
+          api_resource.slice(:iid)
+        end
+
+        # Return namespace id for comparing work item epics with legacy epics
+        # Can be removed after migration to work item epics is complete
+        #
+        # @return [Hash]
+        def epic_namespace_id
+          reload! if api_response.nil?
+
+          api_resource[:group_id] = api_resource.dig(:namespace, :id).split('/').last.to_i
+
+          api_resource.slice(:group_id)
+        end
+
         protected
 
         # rubocop:disable Metrics/AbcSize -- temp comparable for epic to work items migration
@@ -166,17 +198,17 @@ module QA
           reload! unless api_response.nil?
 
           api_resource[:state] = convert_graphql_state_to_legacy_state(api_resource[:state])
-          api_resource[:labels] = api_resource.dig(:widgets, 3, :labels, :nodes)
-          api_resource[:upvotes] = api_resource.dig(:widgets, 9, :upvotes)
-          api_resource[:downvotes] = api_resource.dig(:widgets, 9, :downvotes)
-          api_resource[:start_date] = api_resource.dig(:widgets, 12, :start_date)
-          api_resource[:due_date] = api_resource.dig(:widgets, 12, :due_date)
-          api_resource[:start_date_is_fixed] = api_resource.dig(:widgets, 12, :start_date_is_fixed)
-          api_resource[:start_date_fixed] = api_resource.dig(:widgets, 12, :start_date_fixed)
-          api_resource[:due_date_is_fixed] = api_resource.dig(:widgets, 12, :due_date_is_fixed)
-          api_resource[:due_date_fixed] = api_resource.dig(:widgets, 12, :due_date_fixed)
-          api_resource[:color] = api_resource.dig(:widgets, 15, :color)
-          api_resource[:text_color] = api_resource.dig(:widgets, 15, :text_color)
+          api_resource[:labels] = get_widget('LABELS')&.dig(:labels, :nodes)
+          api_resource[:upvotes] = get_widget('AWARD_EMOJI')&.dig(:upvotes)
+          api_resource[:downvotes] = get_widget('AWARD_EMOJI')&.dig(:downvotes)
+          api_resource[:start_date] = get_widget('ROLLEDUP_DATES')&.dig(:start_date)
+          api_resource[:due_date] = get_widget('ROLLEDUP_DATES')&.dig(:due_date)
+          api_resource[:start_date_is_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:start_date_is_fixed)
+          api_resource[:start_date_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:start_date_fixed)
+          api_resource[:due_date_is_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:due_date_is_fixed)
+          api_resource[:due_date_fixed] = get_widget('ROLLEDUP_DATES')&.dig(:due_date_fixed)
+          api_resource[:color] = get_widget('COLOR')&.dig(:color)
+          api_resource[:text_color] = get_widget('COLOR')&.dig(:text_color)
 
           api_resource.slice(
             :title,
@@ -205,6 +237,10 @@ module QA
           when 'CLOSE'
             'closed'
           end
+        end
+
+        def get_widget(type)
+          api_resource[:widgets].find { |widget| widget[:type] == type }
         end
       end
     end
