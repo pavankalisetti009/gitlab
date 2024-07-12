@@ -1,5 +1,5 @@
 <script>
-import { GlPagination, GlTable } from '@gitlab/ui';
+import { GlPagination, GlTable, GlEmptyState } from '@gitlab/ui';
 
 import { getParameterValues, setUrlParams } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
@@ -16,6 +16,7 @@ export default {
     HtmlTableCell,
     GlTable,
     GlPagination,
+    GlEmptyState,
     UrlTableCell,
     UserDate,
   },
@@ -37,7 +38,7 @@ export default {
     };
   },
   computed: {
-    displayPagination() {
+    displayTable() {
       return this.events.length > 0;
     },
     prevPage() {
@@ -89,8 +90,14 @@ export default {
 </script>
 
 <template>
-  <div class="audit-log-table" data-testid="audit-log-table">
-    <gl-table class="gl-mt-5" :fields="$options.fields" :items="events" show-empty stacked="md">
+  <div v-if="displayTable" class="audit-log-table" data-testid="audit-log-table">
+    <gl-table
+      class="gl-table-no-top-border"
+      :fields="$options.fields"
+      :items="events"
+      show-empty
+      stacked="md"
+    >
       <template #cell(author)="{ value: { url, name } }">
         <url-table-cell :url="url" :name="name" />
       </template>
@@ -105,7 +112,6 @@ export default {
       </template>
     </gl-table>
     <gl-pagination
-      v-if="displayPagination"
       v-model="page"
       :prev-page="prevPage"
       :next-page="nextPage"
@@ -114,4 +120,10 @@ export default {
       class="gl-w-full"
     />
   </div>
+  <gl-empty-state
+    v-else
+    :svg-path="'/assets/illustrations/empty-state/empty-activity-md.svg'"
+    :title="__('Sorry, your filter produced no results')"
+    :description="__('To widen your search, change or remove filters above.')"
+  />
 </template>

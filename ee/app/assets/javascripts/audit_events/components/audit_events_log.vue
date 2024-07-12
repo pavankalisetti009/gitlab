@@ -47,22 +47,17 @@ export default {
 
 <template>
   <div>
-    <header v-if="hasExportUrl">
-      <div class="gl-my-5 gl-display-flex gl-flex-direction-row gl-justify-content-end">
-        <audit-events-export-button :export-href="exportHref" />
-      </div>
-    </header>
-    <div class="row-content-block second-block gl-pb-0">
-      <div class="gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row!">
+    <div class="row-content-block gl-border-t-0">
+      <div class="gl-flex gl-gap-3 gl-flex-col md:gl-flex-row gl-mb-3">
         <audit-events-filter
           :filter-token-options="filterTokenOptions"
           :value="filterValue"
           :view-only="filterViewOnly"
-          class="gl-mr-5 gl-mb-5"
           @selected="setFilterValue"
           @submit="searchForAuditEvents"
         />
         <sorting-field :sort-by="sortBy" @selected="setSortBy" />
+        <audit-events-export-button v-if="hasExportUrl" :export-href="exportHref" />
       </div>
       <date-range-field :start-date="startDate" :end-date="endDate" @selected="setDateRange" />
     </div>

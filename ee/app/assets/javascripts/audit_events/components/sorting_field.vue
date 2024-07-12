@@ -46,7 +46,7 @@ export default {
 
 <template>
   <gl-collapsible-listbox
-    class="gl-display-flex gl-mb-5"
+    toggle-class="gl-flex-grow"
     is-check-centered
     :items="sortingItems"
     :header-text="$options.i18n.sorting_title"

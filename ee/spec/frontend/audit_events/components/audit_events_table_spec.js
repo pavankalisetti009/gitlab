@@ -1,4 +1,4 @@
-import { GlPagination, GlTable } from '@gitlab/ui';
+import { GlPagination, GlTable, GlEmptyState } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 
 import { nextTick } from 'vue';
@@ -22,13 +22,7 @@ describe('AuditEventsTable component', () => {
   };
 
   const getCell = (trIdx, tdIdx) => {
-    return wrapper
-      .findComponent(GlTable)
-      .find('tbody')
-      .findAll('tr')
-      .at(trIdx)
-      .findAll('td')
-      .at(tdIdx);
+    return wrapper.findComponent(GlTable).findAll('tr').at(trIdx).findAll('td').at(tdIdx);
   };
 
   beforeEach(() => {
@@ -37,15 +31,17 @@ describe('AuditEventsTable component', () => {
     wrapper = createComponent();
   });
 
-  describe('Table behaviour', () => {
-    it('should show', () => {
-      expect(getCell(0, 1).text()).toBe('User');
-    });
-
+  describe('Empty behaviour', () => {
     it('should show the empty state if there is no data', async () => {
       wrapper.setProps({ events: [] });
       await nextTick();
-      expect(getCell(0, 0).text()).toBe('There are no records to show');
+      expect(wrapper.findComponent(GlEmptyState).exists()).toBe(true);
+    });
+  });
+
+  describe('Table behaviour', () => {
+    it('should show', () => {
+      expect(getCell(1, 0).text()).toBe('User');
     });
   });
 
