@@ -1686,6 +1686,24 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: members_groups_base_memberships_export
+  :worker_name: Members::Groups::BaseMembershipsExportWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
+- :name: members_groups_export_detailed_memberships
+  :worker_name: Members::Groups::ExportDetailedMembershipsWorker
+  :feature_category: :compliance_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: false
+  :tags: []
 - :name: merge_request_reset_approvals
   :worker_name: MergeRequestResetApprovalsWorker
   :feature_category: :source_code_management
