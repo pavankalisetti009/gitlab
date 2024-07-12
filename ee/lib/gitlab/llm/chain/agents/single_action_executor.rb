@@ -104,12 +104,26 @@ module Gitlab
             { prompt: user_input, options: prompt_options }
           end
 
+          def model_metadata_params
+            return unless chat_feature_setting&.self_hosted?
+
+            self_hosted_model = chat_feature_setting.self_hosted_model
+
+            {
+              provider: :openai, # for self-hosted models we support Messages API format at the moment
+              name: self_hosted_model.model,
+              endpoint: self_hosted_model.endpoint,
+              api_key: self_hosted_model.api_token
+            }
+          end
+
           def prompt_options
             @options = {
               agent_scratchpad: @agent_scratchpad,
               conversation: conversation,
               current_resource_type: current_resource_type,
               current_resource_content: current_resource_content,
+              model_metadata: model_metadata_params,
               single_action_agent: true
             }
           end
@@ -144,6 +158,10 @@ module Gitlab
             context.current_page_short_description
           rescue ArgumentError
             nil
+          end
+
+          def chat_feature_setting
+            ::Ai::FeatureSetting.find_by_feature(:duo_chat)
           end
         end
       end

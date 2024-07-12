@@ -87,7 +87,8 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
               conversation: "",
               single_action_agent: true,
               current_resource_type: "issue",
-              current_resource_content: "issue description"
+              current_resource_content: "issue description",
+              model_metadata: nil
             }
           },
           { unit_primitive: nil }
@@ -148,7 +149,37 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
               conversation: "",
               single_action_agent: true,
               current_resource_type: nil,
-              current_resource_content: nil
+              current_resource_content: nil,
+              model_metadata: nil
+            }
+          },
+          { unit_primitive: nil }
+        )
+
+        agent.execute
+      end
+    end
+
+    context 'when Duo chat is self-hosted' do
+      let_it_be(:self_hosted_model) { create(:ai_self_hosted_model, api_token: 'test_token') }
+      let_it_be(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
+
+      it 'sends the self-hosted model metadata' do
+        expect(ai_request_double).to receive(:request).with(
+          {
+            prompt: user_input,
+            options: {
+              agent_scratchpad: [],
+              conversation: "",
+              single_action_agent: true,
+              current_resource_type: nil,
+              current_resource_content: nil,
+              model_metadata: {
+                api_key: "test_token",
+                endpoint: "http://localhost:11434/v1",
+                name: "mistral",
+                provider: :openai
+              }
             }
           },
           { unit_primitive: nil }
