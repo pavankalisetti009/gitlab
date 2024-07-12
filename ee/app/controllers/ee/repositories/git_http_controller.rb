@@ -44,6 +44,20 @@ module EE
         end
       end
 
+      # This is reached on a primary for a request orignating on a secondary
+      # only when the repository on the secondary is out of date with that on
+      # the primary
+      override :ssh_receive_pack
+      def ssh_receive_pack
+        return super unless geo?
+
+        raise ::Gitlab::GitAccess::ForbiddenError, 'Cannot push to secondary.' unless ::Gitlab::Geo.primary?
+
+        set_workhorse_internal_api_content_type
+
+        render json: ::Gitlab::Workhorse.git_http_ok(repository, repo_type, user, :git_receive_pack, show_all_refs: geo_request?, need_audit: need_git_audit_event?)
+      end
+
       # Git push over HTTP
       override :git_receive_pack
       def git_receive_pack
