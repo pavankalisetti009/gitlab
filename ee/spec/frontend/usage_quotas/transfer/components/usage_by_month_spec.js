@@ -5,12 +5,6 @@ import waitForPromises from 'helpers/wait_for_promises';
 import UsageByMonth from 'ee/usage_quotas/transfer/components/usage_by_month.vue';
 import { USAGE_BY_MONTH_HEADER } from 'ee/usage_quotas/constants';
 
-jest.mock('~/lib/utils/icon_utils', () => ({
-  getSvgIconPathContent: jest
-    .fn()
-    .mockImplementation((name) => Promise.resolve(`${name}-svg-path-mock`)),
-}));
-
 describe('UsageByMonth', () => {
   let wrapper;
 
@@ -73,20 +67,7 @@ describe('UsageByMonth', () => {
             axisLabel: { formatter: expect.any(Function) },
           },
           toolbox: {
-            feature: {
-              dataZoom: {
-                icon: {
-                  zoom: 'path://marquee-selection-svg-path-mock',
-                  back: 'path://redo-svg-path-mock',
-                },
-              },
-              restore: {
-                icon: 'path://repeat-svg-path-mock',
-              },
-              saveAsImage: {
-                icon: 'path://download-svg-path-mock',
-              },
-            },
+            show: true,
           },
         },
       });
