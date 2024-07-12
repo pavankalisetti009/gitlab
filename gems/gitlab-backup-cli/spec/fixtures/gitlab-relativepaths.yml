@@ -30,7 +30,7 @@ test:
   lfs:
     enabled: false
     # The location where LFS objects are stored (default: shared/lfs-objects).
-    # storage_path: shared/lfs-objects
+    storage_path: tmp/tests/lfs-objects
     object_store:
       enabled: false
       remote_directory: lfs-objects # The bucket name

@@ -12,6 +12,7 @@ module Gitlab
         DEFAULT_CI_BUILDS_PATH = 'builds/'
         DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts/'
         DEFAULT_SECURE_FILES_PATH = 'ci_secure_files/'
+        DEFAULT_CI_LFS_PATH = 'lfs-objects/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -49,8 +50,10 @@ module Gitlab
 
         # CI LFS basepath
         def ci_lfs_path
-          # TODO: Use configuration solver
-          Settings.lfs.storage_path
+          path = gitlab_config.dig(env, 'lfs', 'storage_path') ||
+            gitlab_shared_path.join(DEFAULT_CI_LFS_PATH)
+
+          absolute_path(path)
         end
 
         # Packages basepath
