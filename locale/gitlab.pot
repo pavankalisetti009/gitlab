@@ -2761,6 +2761,9 @@ msgstr ""
 msgid "AccessTokens|Keep this token secret. Anyone who has it can read activity and issue RSS feeds or your calendar feed as if they were you. If that happens, %{linkStart}reset this token%{linkEnd}."
 msgstr ""
 
+msgid "AccessTokens|Personal / project / group access token expiration"
+msgstr ""
+
 msgid "AccessTokens|Personal Access Tokens"
 msgstr ""
 
@@ -2783,6 +2786,9 @@ msgid "AccessTokens|They are the only accepted password when you have Two-Factor
 msgstr ""
 
 msgid "AccessTokens|Token name"
+msgstr ""
+
+msgid "AccessTokens|When enabled, a user will be required to enter in an expiration date when creating an access token. Changes will not affect existing token expiration dates. This setting overrides the group-level %{link_start}service account token expiration%{link_end} setting."
 msgstr ""
 
 msgid "AccessTokens|You can also use personal access tokens to authenticate against Git over HTTP."
@@ -38378,9 +38384,6 @@ msgstr ""
 msgid "Personal projects limit:"
 msgstr ""
 
-msgid "Personal/project/group access token expiration"
-msgstr ""
-
 msgid "PersonalProject|Learn to move a project to a group"
 msgstr ""
 
@@ -59812,9 +59815,6 @@ msgid "When all the merge checks for this merge request pass, it will %{linkStar
 msgstr ""
 
 msgid "When enabled, SSH keys with no expiry date or an invalid expiration date are no longer accepted. Leave blank for no limit."
-msgstr ""
-
-msgid "When enabled, a user will be required to enter in an expiration date when creating an access token. Changes will not affect existing token expiration dates."
 msgstr ""
 
 msgid "When enabled, cleanup policies execute faster but put more load on Redis."
