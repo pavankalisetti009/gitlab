@@ -236,7 +236,7 @@ describe('Edit Framework Form', () => {
       expect(showDeleteModal).toHaveBeenCalled();
     });
 
-    it('invokes delete process and navigates back on success removal', async () => {
+    describe('Delete mutation', () => {
       let resolveDeleteFrameworkMutation;
       const deleteFrameworkMutationFn = jest.fn().mockImplementation(
         () =>
@@ -244,26 +244,43 @@ describe('Edit Framework Form', () => {
             resolveDeleteFrameworkMutation = resolve;
           }),
       );
-      wrapper = createComponent(shallowMountExtended, {
-        requestHandlers: [
-          [
-            getComplianceFrameworkQuery,
-            () => ({ ...createComplianceFrameworksReportResponse(), default: true }),
+      beforeEach(async () => {
+        wrapper = createComponent(shallowMountExtended, {
+          requestHandlers: [
+            [
+              getComplianceFrameworkQuery,
+              () => ({ ...createComplianceFrameworksReportResponse(), default: true }),
+            ],
+            [deleteComplianceFrameworkMutation, deleteFrameworkMutationFn],
           ],
-          [deleteComplianceFrameworkMutation, deleteFrameworkMutationFn],
-        ],
+        });
+        await waitForPromises();
+
+        findDeleteModal().vm.$emit('delete');
+        await waitForPromises();
       });
-      await waitForPromises();
 
-      findDeleteModal().vm.$emit('delete');
-      await waitForPromises();
+      it('invokes delete process and navigates back on success removal', async () => {
+        expect(deleteFrameworkMutationFn).toHaveBeenCalled();
 
-      expect(deleteFrameworkMutationFn).toHaveBeenCalled();
+        resolveDeleteFrameworkMutation({ data: { destroyComplianceFramework: { errors: [] } } });
+        await waitForPromises();
 
-      resolveDeleteFrameworkMutation({ data: { destroyComplianceFramework: { errors: [] } } });
-      await waitForPromises();
+        expect(routerBack).toHaveBeenCalled();
+      });
 
-      expect(routerBack).toHaveBeenCalled();
+      it('invokes delete process and displays alert when mutation failed', async () => {
+        const errorMessage = 'something went wrong';
+
+        expect(deleteFrameworkMutationFn).toHaveBeenCalled();
+
+        resolveDeleteFrameworkMutation({
+          data: { destroyComplianceFramework: { errors: [errorMessage] } },
+        });
+        await waitForPromises();
+
+        expect(findError().text()).toBe(errorMessage);
+      });
     });
   });
 
