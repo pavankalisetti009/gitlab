@@ -18,7 +18,7 @@ module Llm
         return unless ai_action_enabled?(prompt_message)
 
         with_tracking(prompt_message.ai_action) do
-          raise('unauthorized') unless resource_authorized?(prompt_message)
+          prompt_message.context.assign_attributes(resource: nil) unless resource_authorized?(prompt_message)
 
           log_perform(prompt_message)
 
@@ -33,7 +33,7 @@ module Llm
         end
       rescue StandardError => e
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(
-          e, { user_id: prompt_message.user&.id, resource: prompt_message.resource }
+          e, { user_id: prompt_message.user&.id, resource: prompt_message.resource.to_gid }
         )
         nil
       end

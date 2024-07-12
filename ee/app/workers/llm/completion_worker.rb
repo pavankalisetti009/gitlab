@@ -43,9 +43,7 @@ module Llm
 
       # set warden to ensure SsoEnforcer#in_context_of_user_web_activity? returns true
       session = Gitlab::Session.current
-      if Feature.enabled?(:duo_chat_set_warden, ai_prompt_message.user) &&
-          session && !session.key?('warden.user.user.key')
-
+      if session && !session.key?('warden.user.user.key')
         session['warden.user.user.key'] = User.serialize_into_session(ai_prompt_message.user)
       end
 
