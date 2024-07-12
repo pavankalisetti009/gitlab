@@ -5137,7 +5137,7 @@ It is now considered deprecated, and will be removed in GitLab 15.0.
 
 <div class="deprecation breaking-change" data-milestone="15.0">
 
-### Querying Usage Trends via the `instanceStatisticsMeasurements` GraphQL node
+### Querying usage trends via the `instanceStatisticsMeasurements` GraphQL node
 
 <div class="deprecation-notes">
 - Announced in GitLab <span class="milestone">14.8</span>
