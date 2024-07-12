@@ -31,7 +31,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Prompts::Anthropic, f
 
           Think step by step and try to determine why the job failed and explain it so that
           any Software engineer could understand the root cause of the failure.
-          Please provide an example fix under the heading "Example Fix".
+          Please provide an example fix under the heading "Example Fix". The header
+          "Example Fix" should be set with a section heading of level 4.
           Any code blocks in response should be formatted in markdown.
       PROMPT
 
