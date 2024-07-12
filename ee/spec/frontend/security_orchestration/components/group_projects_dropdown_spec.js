@@ -2,10 +2,11 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
+import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
 
@@ -23,9 +24,17 @@ describe('GroupProjectsDropdown', () => {
       repository: { rootRef: 'main' },
     }));
 
+  const generateMockGroups = (ids) =>
+    ids.map((id) => ({
+      id: convertToGraphQLId(TYPENAME_GROUP, id),
+      name: `${id}`,
+    }));
+
   const defaultNodes = generateMockNode([1, 2]);
+  const defaultGroups = generateMockGroups([1, 2]);
 
   const defaultNodesIds = defaultNodes.map(({ id }) => id);
+  const defaultGroupIds = defaultGroups.map(({ id }) => id);
 
   const mapItems = (items) => items.map(({ id, name }) => ({ value: id, text: name }));
 
@@ -37,8 +46,24 @@ describe('GroupProjectsDropdown', () => {
     endCursor: null,
   };
 
-  const mockApolloHandlers = (nodes = defaultNodes, hasNextPage = false) => {
+  const mockApolloHandlers = (
+    nodes = defaultNodes,
+    hasNextPage = false,
+    groups = defaultGroups,
+  ) => {
     return {
+      getGroups: jest.fn().mockResolvedValue({
+        data: {
+          group: {
+            id: '1',
+            name: 'gitlab-policies',
+            descendantGroups: {
+              nodes: groups,
+              pageInfo: { ...defaultPageInfo, hasNextPage },
+            },
+          },
+        },
+      }),
       getGroupProjects: jest.fn().mockResolvedValue({
         data: {
           id: 1,
@@ -58,7 +83,10 @@ describe('GroupProjectsDropdown', () => {
     Vue.use(VueApollo);
 
     requestHandlers = handlers;
-    return createMockApollo([[getGroupProjects, requestHandlers.getGroupProjects]]);
+    return createMockApollo([
+      [getGroupProjects, requestHandlers.getGroupProjects],
+      [getGroups, requestHandlers.getGroups],
+    ]);
   };
 
   const createComponent = ({
@@ -78,77 +106,107 @@ describe('GroupProjectsDropdown', () => {
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
 
-  beforeEach(() => {
-    createComponent();
-  });
-
-  it('should render loading state', () => {
-    expect(findDropdown().props('loading')).toBe(true);
-  });
-
-  it('should load group projects', async () => {
-    await waitForPromises();
-    expect(findDropdown().props('loading')).toBe(false);
-    expect(findDropdown().props('items')).toEqual(mapItems(defaultNodes));
-  });
-
-  it('should select projects', async () => {
-    const [{ id }] = defaultNodes;
-
-    await waitForPromises();
-    findDropdown().vm.$emit('select', [id]);
-    expect(wrapper.emitted('select')).toEqual([[[defaultNodes[0]]]]);
-  });
-
-  it('renders default text when loading', () => {
-    expect(findDropdown().props('toggleText')).toBe('Select projects');
-  });
-
-  it('should select full projects with full id format', async () => {
-    createComponent({
-      propsData: {
-        useShortIdFormat: false,
-      },
-    });
-
-    const [{ id }] = defaultNodes;
-
-    await waitForPromises();
-    findDropdown().vm.$emit('select', [id]);
-    expect(wrapper.emitted('select')).toEqual([[[defaultNodes[0]]]]);
-  });
-
-  describe('selected projects', () => {
+  describe.each`
+    groupsOnly | items            | expectedText
+    ${false}   | ${defaultNodes}  | ${'Select projects'}
+    ${true}    | ${defaultGroups} | ${'Select groups'}
+  `('selection', ({ groupsOnly, items, expectedText }) => {
     beforeEach(() => {
       createComponent({
         propsData: {
-          selected: defaultNodesIds,
+          groupsOnly,
         },
       });
     });
 
-    it('should be possible to preselect projects', async () => {
-      await waitForPromises();
-      expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
+    it('should render loading state', () => {
+      expect(findDropdown().props('loading')).toBe(true);
     });
 
-    it('renders all projects selected text when', async () => {
+    it('should load items', async () => {
       await waitForPromises();
-      expect(findDropdown().props('toggleText')).toBe('All projects');
+      expect(findDropdown().props('loading')).toBe(false);
+      expect(findDropdown().props('items')).toEqual(mapItems(items));
+    });
+
+    it('should select items', async () => {
+      const [{ id }] = items;
+
+      await waitForPromises();
+      findDropdown().vm.$emit('select', [id]);
+      expect(wrapper.emitted('select')).toEqual([[[items[0]]]]);
+    });
+
+    it('renders default text when loading', () => {
+      expect(findDropdown().props('toggleText')).toBe(expectedText);
     });
   });
 
-  describe('selected projects that does not exist', () => {
-    it('renders default placeholder when selected projects do not exist', async () => {
+  it.each`
+    groupsOnly | items
+    ${false}   | ${defaultNodes}
+    ${true}    | ${defaultGroups}
+  `('should select full items with full id format', async ({ groupsOnly, items }) => {
+    createComponent({
+      propsData: {
+        useShortIdFormat: false,
+        groupsOnly,
+      },
+    });
+
+    const [{ id }] = items;
+
+    await waitForPromises();
+    findDropdown().vm.$emit('select', [id]);
+    expect(wrapper.emitted('select')).toEqual([[[items[0]]]]);
+  });
+
+  describe.each`
+    groupsOnly | ids                | expectedText
+    ${false}   | ${defaultNodesIds} | ${'All projects'}
+    ${true}    | ${defaultGroupIds} | ${'All groups'}
+  `('selected items', ({ groupsOnly, ids, expectedText }) => {
+    const type = groupsOnly ? 'groups' : 'projects';
+
+    beforeEach(() => {
       createComponent({
         propsData: {
-          selected: ['one', 'two'],
+          selected: ids,
+          groupsOnly,
         },
       });
-
-      await waitForPromises();
-      expect(findDropdown().props('toggleText')).toBe('Select projects');
     });
+
+    it(`should be possible to preselect ${type}`, async () => {
+      await waitForPromises();
+      expect(findDropdown().props('selected')).toEqual(ids);
+    });
+
+    it(`renders all ${type} selected text when`, async () => {
+      await waitForPromises();
+      expect(findDropdown().props('toggleText')).toBe(expectedText);
+    });
+  });
+
+  describe('selected items that does not exist', () => {
+    it.each`
+      groupsOnly | expectedText
+      ${false}   | ${'Select projects'}
+      ${true}    | ${'Select groups'}
+    `(
+      'renders default placeholder when selected projects do not exist',
+      async ({ groupsOnly, expectedText }) => {
+        createComponent({
+          propsData: {
+            selected: ['one', 'two'],
+            groupsOnly,
+          },
+        });
+
+        await waitForPromises();
+        expect(findDropdown().props('toggleText')).toBe(expectedText);
+      },
+    );
 
     it('filters selected projects that does not exist', async () => {
       createComponent({
@@ -165,80 +223,137 @@ describe('GroupProjectsDropdown', () => {
     });
   });
 
-  describe('select single project', () => {
+  describe.each`
+    type         | groupsOnly | ids                | items            | handlers
+    ${'project'} | ${false}   | ${defaultNodesIds} | ${defaultNodes}  | ${mockApolloHandlers()}
+    ${'group'}   | ${true}    | ${defaultGroupIds} | ${defaultGroups} | ${mockApolloHandlers([], false, defaultGroups)}
+  `('select single $type', ({ type, groupsOnly, ids, items, handlers }) => {
     it('support single selection mode', async () => {
       createComponent({
         propsData: {
           multiple: false,
+          groupsOnly,
         },
+        handlers,
       });
 
       await waitForPromises();
 
-      findDropdown().vm.$emit('select', defaultNodesIds[0]);
-      expect(wrapper.emitted('select')).toEqual([[defaultNodes[0]]]);
+      findDropdown().vm.$emit('select', ids[0]);
+      expect(wrapper.emitted('select')).toEqual([[items[0]]]);
     });
 
-    it('should render single selected project', async () => {
+    it(`should render single selected ${type}`, async () => {
       createComponent({
         propsData: {
           multiple: false,
-          selected: defaultNodesIds[0],
+          selected: ids[0],
+          groupsOnly,
         },
+        handlers,
       });
 
       await waitForPromises();
 
-      expect(findDropdown().props('selected')).toEqual(defaultNodesIds[0]);
+      expect(findDropdown().props('selected')).toEqual(ids[0]);
     });
   });
 
   describe('when there is more than a page of projects', () => {
     describe('when bottom reached on scrolling', () => {
-      it('makes a query to fetch more projects', async () => {
-        createComponent({ handlers: mockApolloHandlers([], true) });
-        await waitForPromises();
-
-        findDropdown().vm.$emit('bottom-reached');
-        expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(2);
-      });
-
-      it.each`
-        hasNextPage | expectedText
-        ${true}     | ${'1, 2'}
-        ${false}    | ${'All projects'}
-      `(
-        'selects all projects only when all projects loaded',
-        async ({ hasNextPage, expectedText }) => {
+      describe('groups', () => {
+        it('makes a query to fetch more groups', async () => {
           createComponent({
-            propsData: {
-              selected: defaultNodesIds,
-            },
-            handlers: mockApolloHandlers(defaultNodes, hasNextPage),
+            propsData: { groupsOnly: true },
+            handlers: mockApolloHandlers([], true, []),
           });
-
           await waitForPromises();
 
-          expect(findDropdown().props('toggleText')).toBe(expectedText);
-        },
-      );
+          findDropdown().vm.$emit('bottom-reached');
+          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
+          expect(requestHandlers.getGroups).toHaveBeenCalledTimes(2);
+        });
+
+        it.each`
+          hasNextPage | expectedText
+          ${true}     | ${'1, 2'}
+          ${false}    | ${'All groups'}
+        `(
+          'selects all groups only when all groups loaded',
+          async ({ hasNextPage, expectedText }) => {
+            createComponent({
+              propsData: {
+                selected: defaultGroupIds,
+                groupsOnly: true,
+              },
+              handlers: mockApolloHandlers([], hasNextPage, defaultGroups),
+            });
+
+            await waitForPromises();
+
+            expect(findDropdown().props('toggleText')).toBe(expectedText);
+          },
+        );
+      });
+
+      describe('projects', () => {
+        it('makes a query to fetch more projects', async () => {
+          createComponent({ handlers: mockApolloHandlers([], true) });
+          await waitForPromises();
+
+          findDropdown().vm.$emit('bottom-reached');
+          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(2);
+          expect(requestHandlers.getGroups).toHaveBeenCalledTimes(0);
+        });
+
+        it.each`
+          hasNextPage | expectedText
+          ${true}     | ${'1, 2'}
+          ${false}    | ${'All projects'}
+        `(
+          'selects all projects only when all projects loaded',
+          async ({ hasNextPage, expectedText }) => {
+            createComponent({
+              propsData: {
+                selected: defaultNodesIds,
+              },
+              handlers: mockApolloHandlers(defaultNodes, hasNextPage),
+            });
+
+            await waitForPromises();
+
+            expect(findDropdown().props('toggleText')).toBe(expectedText);
+          },
+        );
+      });
 
       describe('when the fetch query throws an error', () => {
-        it('emits an error event', async () => {
+        it.each`
+          groupsOnly | event
+          ${false}   | ${'projects-query-error'}
+          ${true}    | ${'groups-query-error'}
+        `('emits an error event', async ({ groupsOnly, event }) => {
           createComponent({
+            propsData: {
+              groupsOnly,
+            },
             handlers: {
               getGroupProjects: jest.fn().mockRejectedValue({}),
             },
           });
           await waitForPromises();
-          expect(wrapper.emitted('projects-query-error')).toHaveLength(1);
+          expect(wrapper.emitted(event)).toHaveLength(1);
         });
       });
     });
 
     describe('when a query is loading a new page of projects', () => {
-      it('should render the loading spinner', async () => {
-        createComponent({ handlers: mockApolloHandlers([], true) });
+      it.each`
+        groupsOnly | handlers
+        ${false}   | ${mockApolloHandlers([], true)}
+        ${true}    | ${mockApolloHandlers([], true, [])}
+      `('should render the loading spinner', async ({ groupsOnly, handlers }) => {
+        createComponent({ propsData: { groupsOnly }, handlers });
         await waitForPromises();
 
         findDropdown().vm.$emit('bottom-reached');
@@ -250,25 +365,31 @@ describe('GroupProjectsDropdown', () => {
   });
 
   describe('full id format', () => {
-    it('should render selected ids in full format', async () => {
+    it.each`
+      groupsOnly | ids
+      ${false}   | ${defaultNodesIds}
+      ${true}    | ${defaultGroupIds}
+    `('should render selected ids in full format', async ({ groupsOnly, ids }) => {
       createComponent({
         propsData: {
-          selected: defaultNodesIds,
+          selected: ids,
           useShortIdFormat: false,
+          groupsOnly,
         },
       });
 
       await waitForPromises();
 
-      expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
+      expect(findDropdown().props('selected')).toEqual(ids);
     });
   });
 
   describe('validation', () => {
-    it('renders default dropdown when validation passes', () => {
+    it.each([false, true])('renders default dropdown when validation passes', (groupsOnly) => {
       createComponent({
         propsData: {
           state: true,
+          groupsOnly,
         },
       });
 
@@ -276,8 +397,12 @@ describe('GroupProjectsDropdown', () => {
       expect(findDropdown().props('category')).toEqual('primary');
     });
 
-    it('renders danger dropdown when validation passes', () => {
-      createComponent();
+    it.each([false, true])('renders danger dropdown when validation passes', (groupsOnly) => {
+      createComponent({
+        propsData: {
+          groupsOnly,
+        },
+      });
 
       expect(findDropdown().props('variant')).toEqual('danger');
       expect(findDropdown().props('category')).toEqual('secondary');
@@ -285,55 +410,107 @@ describe('GroupProjectsDropdown', () => {
   });
 
   describe('select all', () => {
-    it('selects all projects', async () => {
-      createComponent();
-      await waitForPromises();
+    describe.each(['groups', 'projects'])('items', (itemType) => {
+      it(`selects all ${itemType}`, async () => {
+        const groupsOnly = itemType === 'groups';
+        const nodes = groupsOnly ? defaultGroups : defaultNodes;
 
-      findDropdown().vm.$emit('select-all');
+        createComponent({
+          propsData: {
+            groupsOnly,
+          },
+        });
+        await waitForPromises();
 
-      expect(wrapper.emitted('select')).toEqual([[defaultNodes]]);
-    });
+        findDropdown().vm.$emit('select-all');
 
-    it('resets all projects', async () => {
-      createComponent();
-      await waitForPromises();
+        expect(wrapper.emitted('select')).toEqual([[nodes]]);
+      });
 
-      findDropdown().vm.$emit('reset');
+      it('resets all groups', async () => {
+        createComponent({
+          propsData: {
+            groupsOnly: true,
+          },
+        });
 
-      expect(wrapper.emitted('select')).toEqual([[[]]]);
+        await waitForPromises();
+
+        findDropdown().vm.$emit('reset');
+
+        expect(wrapper.emitted('select')).toEqual([[[]]]);
+      });
     });
   });
 
   describe('selection after search', () => {
-    it('should add projects to existing selection after search', async () => {
-      const moreNodes = generateMockNode([1, 2, 3, 44, 444, 4444]);
-      createComponent({
-        propsData: {
-          selected: defaultNodesIds,
-        },
-        handlers: mockApolloHandlers(moreNodes),
-        stubs: {
-          GlCollapsibleListbox,
-        },
+    describe('groups', () => {
+      it('should add projects to existing selection after search', async () => {
+        const moreNodes = generateMockGroups([1, 2, 3, 44, 444, 4444]);
+        createComponent({
+          propsData: {
+            selected: defaultGroupIds,
+            groupsOnly: true,
+          },
+          handlers: mockApolloHandlers([], false, moreNodes),
+          stubs: {
+            GlCollapsibleListbox,
+          },
+        });
+
+        await waitForPromises();
+
+        expect(findDropdown().props('selected')).toEqual(defaultGroupIds);
+
+        findDropdown().vm.$emit('search', '4');
+        await waitForPromises();
+
+        expect(requestHandlers.getGroups).toHaveBeenCalledWith({
+          search: '4',
+          fullPath: GROUP_FULL_PATH,
+        });
+        expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
+
+        await waitForPromises();
+
+        await wrapper.findByTestId(`listbox-item-${moreNodes[3].id}`).vm.$emit('select', true);
+
+        expect(wrapper.emitted('select')).toEqual([[[...defaultGroups, moreNodes[3]]]]);
       });
+    });
 
-      await waitForPromises();
+    describe('projects', () => {
+      it('should add projects to existing selection after search', async () => {
+        const moreNodes = generateMockNode([1, 2, 3, 44, 444, 4444]);
+        createComponent({
+          propsData: {
+            selected: defaultNodesIds,
+          },
+          handlers: mockApolloHandlers(moreNodes),
+          stubs: {
+            GlCollapsibleListbox,
+          },
+        });
 
-      expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
+        await waitForPromises();
 
-      findDropdown().vm.$emit('search', '4');
-      await waitForPromises();
+        expect(findDropdown().props('selected')).toEqual(defaultNodesIds);
 
-      expect(requestHandlers.getGroupProjects).toHaveBeenCalledWith({
-        fullPath: GROUP_FULL_PATH,
-        projectIds: null,
-        search: '4',
+        findDropdown().vm.$emit('search', '4');
+        await waitForPromises();
+
+        expect(requestHandlers.getGroups).toHaveBeenCalledTimes(0);
+        expect(requestHandlers.getGroupProjects).toHaveBeenCalledWith({
+          fullPath: GROUP_FULL_PATH,
+          projectIds: null,
+          search: '4',
+        });
+
+        await waitForPromises();
+        await wrapper.findByTestId(`listbox-item-${moreNodes[3].id}`).vm.$emit('select', true);
+
+        expect(wrapper.emitted('select')).toEqual([[[...defaultNodes, moreNodes[3]]]]);
       });
-
-      await waitForPromises();
-      await wrapper.findByTestId(`listbox-item-${moreNodes[3].id}`).vm.$emit('select', true);
-
-      expect(wrapper.emitted('select')).toEqual([[[...defaultNodes, moreNodes[3]]]]);
     });
   });
 });
