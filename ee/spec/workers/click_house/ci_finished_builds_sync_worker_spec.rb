@@ -38,7 +38,7 @@ RSpec.describe ClickHouse::CiFinishedBuildsSyncWorker, :click_house, :freeze_tim
       expect { perform }.to change { ci_finished_builds_row_count }.by(::Ci::Build.finished.count)
     end
 
-    context 'when an error is reported from service' do
+    context 'when ClickHouse is not configured' do
       before do
         allow(Gitlab::ClickHouse).to receive(:configured?).and_return(false)
       end
