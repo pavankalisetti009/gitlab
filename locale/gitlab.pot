@@ -48617,7 +48617,22 @@ msgstr ""
 msgid "SecurityReports|Confirm dismissal"
 msgstr ""
 
+msgid "SecurityReports|Container Scanning for Registry scans the latest tag of each image for vulnerabilities. %{linkStart}How do I enable Container Scanning for Registry?%{linkEnd}"
+msgstr ""
+
+msgid "SecurityReports|Container Scanning for Registry scans the latest tag of each image. It scans for vulnerabilities in the container %{linkStart}registry%{linkEnd} when an image or database is updated."
+msgstr ""
+
+msgid "SecurityReports|Container Scanning for registry is active"
+msgstr ""
+
 msgid "SecurityReports|Container registry vulnerabilities"
+msgstr ""
+
+msgid "SecurityReports|Container scanning for registry is not enabled"
+msgstr ""
+
+msgid "SecurityReports|Container scanning for registry scans the latest tag of each image. It scans for vulnerabilities in the container registry when an image or database is updated."
 msgstr ""
 
 msgid "SecurityReports|Create Jira issue"
