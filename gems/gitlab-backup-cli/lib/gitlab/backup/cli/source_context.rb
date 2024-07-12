@@ -14,6 +14,7 @@ module Gitlab
         DEFAULT_SECURE_FILES_PATH = 'ci_secure_files/'
         DEFAULT_CI_LFS_PATH = 'lfs-objects/'
         DEFAULT_PACKAGES = 'packages/'
+        DEFAULT_PAGES = 'pages/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -67,8 +68,10 @@ module Gitlab
 
         # GitLab Pages basepath
         def pages_path
-          # TODO: Use configuration solver
-          Gitlab.config.pages.path
+          path = gitlab_config.dig(env, 'pages', 'path') ||
+            gitlab_shared_path.join(DEFAULT_PAGES)
+
+          absolute_path(path)
         end
 
         # Registry basepath

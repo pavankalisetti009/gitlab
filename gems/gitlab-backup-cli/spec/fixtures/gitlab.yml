@@ -119,7 +119,7 @@ test:
     # your system username you use to run GitLab
     # user: YOUR_USERNAME
   pages:
-    path: tmp/tests/pages
+    path: /tmp/gitlab/full/pages
     object_store:
       enabled: false
       remote_directory: pages # The bucket name
@@ -130,7 +130,7 @@ test:
         region: us-east-1
     local_store:
       enabled: true
-      path: tmp/tests/pages
+      path: /tmp/gitlab/full/pages
   repositories:
     storages:
       default:
