@@ -74,9 +74,7 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
 
     context 'with a modal to confirm removal' do
       before do
-        within user_to_remove_row do
-          click_button 'Remove user'
-        end
+        remove_user(maintainer)
       end
 
       it 'has disabled the remove button' do
@@ -110,18 +108,11 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
 
     context 'when removing the user' do
       before do
-        within user_to_remove_row do
-          click_button 'Remove user'
-        end
+        remove_user(maintainer)
       end
 
       it 'shows a flash message' do
-        within billable_member_modal_selector do
-          find('input').fill_in(with: maintainer.username)
-          find('input').send_keys(:tab)
-
-          click_button('Remove user')
-        end
+        confirm_remove_user(maintainer)
 
         wait_for_all_requests
 
@@ -173,6 +164,57 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
         end
 
         expect(page).to have_content('Cannot remove user')
+      end
+    end
+
+    context 'with max seats and seats owed calculated' do
+      let_it_be(:gitlab_subscription) do
+        create(:gitlab_subscription, :ultimate, seats: 1, namespace: group)
+      end
+
+      let_it_be(:guest) { create(:user) }
+
+      before do
+        group.add_guest(guest)
+
+        refresh_subscription_seats
+
+        page.refresh
+        wait_for_requests
+      end
+
+      it 'correctly updates seat counts on user removal' do
+        expect(page).to have_content('4 / 1 Seats in use / Seats in subscription')
+        expect(page.text).to include('4 Max seats used')
+        expect(page.text).to include('3 Seats owed')
+
+        within member_table_selector do
+          expect(page.text).to include(user.name)
+          expect(page.text).to include(maintainer.name)
+          expect(page.text).to include(user_from_sub_group.name)
+          expect(page.text).to include(shared_group_developer.name)
+          expect(page.text).not_to include(guest.name)
+        end
+
+        remove_user(maintainer)
+        confirm_remove_user(maintainer)
+
+        refresh_subscription_seats
+
+        page.refresh
+        wait_for_requests
+
+        expect(page).to have_content('3 / 1 Seats in use / Seats in subscription')
+        expect(page.text).to include('4 Max seats used')
+        expect(page.text).to include('3 Seats owed')
+
+        within member_table_selector do
+          expect(page.text).to include(user.name)
+          expect(page.text).to include(user_from_sub_group.name)
+          expect(page.text).to include(shared_group_developer.name)
+          expect(page.text).not_to include(maintainer.name)
+          expect(page.text).not_to include(guest.name)
+        end
       end
     end
   end
@@ -247,16 +289,8 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
         expect(all('tbody tr').count).to eq(3)
       end
 
-      within user_to_remove_row do
-        click_button 'Remove user'
-      end
-
-      within billable_member_modal_selector do
-        find('input').fill_in(with: maintainer.username)
-        find('input').send_keys(:tab)
-
-        click_button('Remove user')
-      end
+      remove_user(maintainer)
+      confirm_remove_user(maintainer)
 
       wait_for_all_requests
 
@@ -385,9 +419,25 @@ RSpec.describe 'Groups > Usage Quotas > Seats tab', :js, :saas, feature_category
     '[data-testid="subscription-users"]'
   end
 
-  def user_to_remove_row
+  def remove_user(user)
     within member_table_selector do
-      find('tr', text: maintainer.name)
+      within find('tr', text: user.name) do
+        click_button 'Remove user'
+      end
     end
+  end
+
+  def confirm_remove_user(user)
+    within billable_member_modal_selector do
+      find('input').fill_in(with: user.username)
+      find('input').send_keys(:tab)
+
+      click_button('Remove user')
+    end
+  end
+
+  def refresh_subscription_seats
+    gitlab_subscription.refresh_seat_attributes
+    gitlab_subscription.save!
   end
 end
