@@ -51,6 +51,7 @@ describe('WorkItemColor component', () => {
       propsData: {
         canUpdate,
         workItem,
+        fullPath: 'gitlab-org/gitlab',
       },
       stubs,
     });

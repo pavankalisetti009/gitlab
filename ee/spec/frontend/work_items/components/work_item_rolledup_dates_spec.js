@@ -66,6 +66,7 @@ describe('WorkItemRolledupDates component', () => {
         startDateInherited,
         workItemType: 'Epic',
         workItem: updateWorkItemMutationResponse.data.workItemUpdate.workItem,
+        fullPath: 'gitlab-org/gitlab',
       },
       provide: {
         isGroup: false,
