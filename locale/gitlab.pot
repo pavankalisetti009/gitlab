@@ -36097,6 +36097,9 @@ msgstr ""
 msgid "Observability|Failed to load observability usage data."
 msgstr ""
 
+msgid "Observability|Filter data by month:"
+msgstr ""
+
 msgid "Observability|Get started with GitLab Observability"
 msgstr ""
 
@@ -36143,9 +36146,6 @@ msgid "Observability|To widen your search, change or remove filters above"
 msgstr ""
 
 msgid "Observability|Tracing, Metrics & Logs"
-msgstr ""
-
-msgid "Observability|Usage breakdown"
 msgstr ""
 
 msgid "Observability|View our %{docsLink} for further instructions on how to use these features."
@@ -56930,6 +56930,9 @@ msgid "Upvotes"
 msgstr ""
 
 msgid "Usage"
+msgstr ""
+
+msgid "Usage breakdown"
 msgstr ""
 
 msgid "Usage statistics"

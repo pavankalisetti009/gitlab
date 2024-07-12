@@ -8,7 +8,7 @@ import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
 
 export default {
   i18n: {
-    title: s__('Observability|Usage breakdown'),
+    title: __('Usage breakdown'),
     subtitle: s__('Observability|Includes Logs, Traces and Metrics. %{learnMoreLink}'),
     learnMoreLinkText: __('Learn more.'),
     eventsTotal: s__('Observability|%{events} events'),
