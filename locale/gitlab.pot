@@ -57773,6 +57773,9 @@ msgstr ""
 msgid "UserMapping|There was a problem reassigning placeholder user."
 msgstr ""
 
+msgid "UserMapping|There was a problem resending notification email."
+msgstr ""
+
 msgid "UserMapping|To learn more about reassignments, %{link_start}visit the docs%{link_end}. If you don't recognize this request, you can safely ignore this email or %{report_link_start}report abuse%{report_link_end}."
 msgstr ""
 
