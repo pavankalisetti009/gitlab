@@ -29,8 +29,6 @@ module GitlabSubscriptions
             upsert_data,
             unique_by: %i[add_on_purchase_id user_id]
           )
-
-          clear_user_add_on_assigment_cache!(eligible_user_ids)
         end
 
         ::Onboarding::CreateIterableTriggersWorker.perform_async(namespace.id, eligible_user_ids)
@@ -46,16 +44,6 @@ module GitlabSubscriptions
       private
 
       attr_reader :add_on_purchase, :user_ids
-
-      def clear_user_add_on_assigment_cache!(eligible_user_ids)
-        cache_keys = eligible_user_ids.map do |user_id|
-          format(GitlabSubscriptions::UserAddOnAssignment::USER_ADD_ON_ASSIGNMENT_CACHE_KEY, user_id: user_id)
-        end
-
-        Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
-          Rails.cache.delete_multi(cache_keys)
-        end
-      end
 
       def invalid_user_id_present
         Gitlab::AppLogger.error(log_events(type: 'error',
