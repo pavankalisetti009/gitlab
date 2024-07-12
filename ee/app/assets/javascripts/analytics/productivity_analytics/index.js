@@ -6,6 +6,7 @@ import DateRange from '~/analytics/shared/components/daterange.vue';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import createDefaultClient from '~/lib/graphql';
 import { queryToObject } from '~/lib/utils/url_utility';
+import { stripTimezoneFromISODate } from '~/lib/utils/datetime/date_format_utility';
 import { buildGroupFromDataset, buildProjectFromDataset } from '../shared/utils';
 import ProductivityAnalyticsApp from './components/app.vue';
 import FilterDropdowns from './components/filter_dropdowns.vue';
@@ -31,8 +32,9 @@ export default () => {
 
   const { mergedAfter, mergedBefore } = container.dataset;
 
-  const mergedAfterDate = new Date(mergedAfter);
-  const mergedBeforeDate = new Date(mergedBefore);
+  // Since these dates are in UTC and will be used to populate the date range picker and their related URL query parameters, we're ignoring the time zone's offset here to prevent unwanted time zone conversions upon refreshing the page
+  const mergedAfterDate = new Date(stripTimezoneFromISODate(mergedAfter));
+  const mergedBeforeDate = new Date(stripTimezoneFromISODate(mergedBefore));
 
   const { endpoint, emptyStateSvgPath, noAccessSvgPath } = appContainer.dataset;
   const minDate = timeframeContainer.dataset.startDate
