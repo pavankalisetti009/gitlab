@@ -20,7 +20,7 @@ module Gitlab
         updated_by_id
       ].freeze
 
-      ALLOWED_TIME_RANGE_S = 1.second
+      ALLOWED_TIME_RANGE_S = 5.seconds
 
       # strict_equal: true
       #   We expect that a work item is fully synced with the epic, including all relations.

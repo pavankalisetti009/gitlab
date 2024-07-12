@@ -13,6 +13,7 @@ module WorkItems
       epic, work_item = find_epic_and_work_item_from_event(event)
 
       return unless epic.present? && work_item.present?
+      return if epic.imported_from != "none" && !event.data[:force_validation_sync]
 
       mismatching_attributes = Gitlab::EpicWorkItemSync::Diff.new(epic, work_item).attributes
 
