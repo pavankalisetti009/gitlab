@@ -87,6 +87,46 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
     end
   end
 
+  describe '.for_enabled_namespace!' do
+    context 'when a replica exists for that namespace' do
+      it 'returns that replica' do
+        expect(described_class.for_enabled_namespace!(zoekt_enabled_namespace)).to eq(zoekt_replica)
+      end
+    end
+
+    context 'when a replica does not exist for that namespace' do
+      it 'returns a new replica that is associated with that namespaces' do
+        another_namespace = create(:group)
+        another_enabled_namespace = create(:zoekt_enabled_namespace, namespace: another_namespace)
+
+        replica = described_class.for_enabled_namespace!(another_enabled_namespace)
+        expect(replica.zoekt_enabled_namespace).to eq(another_enabled_namespace)
+        expect(replica.namespace_id).to eq(another_namespace.id)
+      end
+
+      context 'and a uniqueness conflict occurs' do
+        it 'retries the method again' do
+          raise_exception = true
+
+          expect(described_class).to receive(:where).with(namespace_id: namespace.id).twice do
+            if raise_exception
+              raise_exception = false
+              raise ActiveRecord::RecordInvalid.new(
+                described_class.new.tap do |r|
+                  r.errors.add(:namespace_id, :taken)
+                end
+              ), "Record is invalid"
+            else
+              zoekt_enabled_namespace.replicas
+            end
+          end
+
+          expect(described_class.for_enabled_namespace!(zoekt_enabled_namespace)).to eq(zoekt_replica)
+        end
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.for_namespace' do
       before do
