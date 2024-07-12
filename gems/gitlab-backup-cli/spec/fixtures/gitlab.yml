@@ -76,7 +76,7 @@ test:
 
   ci_secure_files:
     enabled: true
-    storage_path: tmp/tests/ci_secure_files
+    storage_path: /tmp/gitlab/full/ci_secure_files
     object_store:
       enabled: false
       remote_directory: ci-secure-files

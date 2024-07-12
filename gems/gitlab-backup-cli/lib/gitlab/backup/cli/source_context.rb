@@ -11,6 +11,7 @@ module Gitlab
         # Defaults defined in `config/initializers/1_settings.rb`
         DEFAULT_CI_BUILDS_PATH = 'builds/'
         DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts/'
+        DEFAULT_SECURE_FILES_PATH = 'ci_secure_files/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -40,8 +41,10 @@ module Gitlab
 
         # CI Secure Files basepath
         def ci_secure_files_path
-          # TODO: Use configuration solver
-          Settings.ci_secure_files.storage_path
+          path = gitlab_config.dig(env, 'ci_secure_files', 'storage_path') ||
+            gitlab_shared_path.join(DEFAULT_SECURE_FILES_PATH)
+
+          absolute_path(path)
         end
 
         # CI LFS basepath
