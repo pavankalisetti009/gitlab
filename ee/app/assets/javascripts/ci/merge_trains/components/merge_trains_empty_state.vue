@@ -33,19 +33,21 @@ export default {
 <template>
   <gl-empty-state :title="s__('Pipelines|No merge trains')" :svg-path="$options.MergeTrainSvg">
     <template #description>
-      <gl-sprintf :message="$options.message">
-        <template #branch>
-          <code>{{ branch }}</code>
-        </template>
-        <template #projectName>
-          <code>{{ projectName }}</code>
-        </template>
-        <template #link="{ content }">
-          <gl-link :href="$options.docsLink">
-            {{ content }}
-          </gl-link>
-        </template>
-      </gl-sprintf>
+      <div class="gl-leading-20">
+        <gl-sprintf :message="$options.message">
+          <template #branch>
+            <code>{{ branch }}</code>
+          </template>
+          <template #projectName>
+            <code>{{ projectName }}</code>
+          </template>
+          <template #link="{ content }">
+            <gl-link :href="$options.docsLink">
+              {{ content }}
+            </gl-link>
+          </template>
+        </gl-sprintf>
+      </div>
     </template>
   </gl-empty-state>
 </template>

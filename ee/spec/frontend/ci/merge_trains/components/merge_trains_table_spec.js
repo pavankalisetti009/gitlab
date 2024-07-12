@@ -4,7 +4,12 @@ import MergeTrainsTable from 'ee/ci/merge_trains/components/merge_trains_table.v
 import CiIcon from '~/vue_shared/components/ci_icon/ci_icon.vue';
 import UserAvatarLink from '~/vue_shared/components/user_avatar/user_avatar_link.vue';
 import { DEFAULT_CURSOR } from 'ee/ci/merge_trains/constants';
-import { activeTrain, trainWithPagination, trainWitoutPermissions } from '../mock_data';
+import {
+  activeTrain,
+  mergedTrain,
+  trainWithPagination,
+  trainWitoutPermissions,
+} from '../mock_data';
 
 describe('MergeTrainsTable', () => {
   let wrapper;
@@ -29,7 +34,7 @@ describe('MergeTrainsTable', () => {
   const findMrLink = () => wrapper.findComponent(GlLink);
   const findUserAvatar = () => wrapper.findComponent(UserAvatarLink);
   const findKeysetPagination = () => wrapper.findComponent(GlKeysetPagination);
-  const findAddedToTrainText = () => wrapper.findByTestId('added-to-train-text');
+  const findTimeAgoTrainText = () => wrapper.findByTestId('timeago-train-text');
   const findRemoveButton = () => wrapper.findByTestId('remove-car-button');
 
   describe('defaults', () => {
@@ -55,7 +60,8 @@ describe('MergeTrainsTable', () => {
     });
 
     it('displays added to train text', () => {
-      expect(findAddedToTrainText().exists()).toBe(true);
+      expect(findTimeAgoTrainText().text()).toContain('Added');
+      expect(findTimeAgoTrainText().exists()).toBe(true);
     });
 
     it('displays user avatar', () => {
@@ -72,6 +78,18 @@ describe('MergeTrainsTable', () => {
 
     it('does not display pagination', () => {
       expect(findKeysetPagination().exists()).toBe(false);
+    });
+  });
+
+  describe('with merged cars', () => {
+    it('displays merged by text', () => {
+      createComponent({
+        train: mergedTrain.data.project.mergeTrains.nodes[0],
+        cursor: DEFAULT_CURSOR,
+      });
+
+      expect(findTimeAgoTrainText().text()).toContain('Merged');
+      expect(findTimeAgoTrainText().exists()).toBe(true);
     });
   });
 

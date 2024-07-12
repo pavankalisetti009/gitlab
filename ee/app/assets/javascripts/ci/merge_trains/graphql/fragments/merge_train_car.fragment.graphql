@@ -1,6 +1,7 @@
 fragment Car on MergeTrainCar {
   id
   createdAt
+  mergedAt
   mergeRequest {
     id
     title
