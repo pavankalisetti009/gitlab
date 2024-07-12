@@ -5,10 +5,14 @@ module GitlabSubscriptions
     class DuoProStatusWidgetPresenter < Gitlab::View::Presenter::Simple
       include Gitlab::Utils::StrongMemoize
 
+      EXPIRED_DUO_PRO_TRIAL_WIDGET = 'expired_duo_pro_trial_widget'
+
       presents ::Namespace, as: :namespace
 
       def eligible_for_widget?
-        GitlabSubscriptions::Trials::DuoProStatus.new(add_on_purchase: duo_pro_trial_add_on_purchase).show?
+        GitlabSubscriptions::Trials::DuoProStatus.new(add_on_purchase: duo_pro_trial_add_on_purchase).show? &&
+          active_or_feature_enabled? &&
+          !user_dismissed_widget?
       end
 
       def attributes
@@ -26,7 +30,10 @@ module GitlabSubscriptions
           widget_url: group_add_ons_discover_duo_pro_path(namespace),
           trial_days_used: trial_status.days_used,
           trial_duration: trial_status.duration,
-          percentage_complete: trial_status.percentage_complete
+          percentage_complete: trial_status.percentage_complete,
+          group_id: namespace.id,
+          feature_id: EXPIRED_DUO_PRO_TRIAL_WIDGET,
+          dismiss_endpoint: group_callouts_path
         }
       end
 
@@ -49,6 +56,15 @@ module GitlabSubscriptions
         GitlabSubscriptions::TrialStatus.new(starts_on, duo_pro_trial_add_on_purchase.expires_on)
       end
       strong_memoize_attr :trial_status
+
+      def user_dismissed_widget?
+        user.dismissed_callout_for_group?(feature_name: EXPIRED_DUO_PRO_TRIAL_WIDGET, group: namespace)
+      end
+
+      def active_or_feature_enabled?
+        Date.current <= duo_pro_trial_add_on_purchase.expires_on ||
+          Feature.enabled?(:duo_pro_trial_expired_widget, user)
+      end
     end
   end
 end

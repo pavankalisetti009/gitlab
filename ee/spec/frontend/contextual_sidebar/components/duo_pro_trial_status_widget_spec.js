@@ -1,4 +1,4 @@
-import { GlLink } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DuoProTrialStatusWidget from 'ee/contextual_sidebar/components/duo_pro_trial_status_widget.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
@@ -8,9 +8,10 @@ describe('DuoProTrialStatusWidget component', () => {
   let trackingSpy;
 
   const trialDaysUsed = 10;
-  const trialDuration = 30;
+  const trialDuration = 60;
 
-  const findGlLink = () => wrapper.findComponent(GlLink);
+  const findRootElement = () => wrapper.findByTestId('duo-pro-trial-widget-root-element');
+  const findGlButton = () => wrapper.findComponent(GlButton);
 
   const createComponent = (providers = {}) => {
     return shallowMountExtended(DuoProTrialStatusWidget, {
@@ -19,6 +20,9 @@ describe('DuoProTrialStatusWidget component', () => {
         trialDuration,
         percentageComplete: 10,
         widgetUrl: 'some/widget/path',
+        groupId: 1,
+        featureId: 'expired_duo_pro_trial_widget',
+        dismissEndpoint: 'some/dismiss/endpoint',
         ...providers,
       },
     });
@@ -50,7 +54,7 @@ describe('DuoProTrialStatusWidget component', () => {
     });
 
     it('renders without an id', () => {
-      expect(findGlLink().attributes('id')).toBe(undefined);
+      expect(findRootElement().attributes('id')).toBe(undefined);
     });
 
     describe('tracks when the widget menu is clicked', () => {
@@ -62,18 +66,87 @@ describe('DuoProTrialStatusWidget component', () => {
           label: 'duo_pro_trial',
         });
       });
+
+      it('tracks with correct information when namespace is with an expired trial', async () => {
+        wrapper = createComponent({ percentageComplete: 110 });
+
+        await wrapper.findByTestId('duo-pro-trial-widget-menu').trigger('click');
+
+        expect(trackingSpy).toHaveBeenCalledWith('trial_ended_widget', 'click_link', {
+          category: 'trial_ended_widget',
+          label: 'duo_pro_trial',
+        });
+      });
     });
 
     it('shows the expected day 1 text', () => {
       wrapper = createComponent({ trialDaysUsed: 1 });
 
-      expect(wrapper.text()).toMatchInterpolatedText('GitLab Duo Pro Trial Day 1/30');
+      expect(wrapper.text()).toMatchInterpolatedText('GitLab Duo Pro Trial Day 1/60');
     });
 
     it('shows the expected last day text', () => {
-      wrapper = createComponent({ trialDaysUsed: 30 });
+      wrapper = createComponent({ trialDaysUsed: 60 });
 
-      expect(wrapper.text()).toMatchInterpolatedText('GitLab Duo Pro Trial Day 30/30');
+      expect(wrapper.text()).toMatchInterpolatedText('GitLab Duo Pro Trial Day 60/60');
+    });
+
+    it('does not render the dismiss button', () => {
+      wrapper = createComponent();
+
+      expect(findGlButton().exists()).toBe(false);
+    });
+
+    describe('dismissible class', () => {
+      it('adds the class', () => {
+        expect(findRootElement().attributes('class')).toContain('js-expired-duo-pro-trial-widget');
+      });
+
+      describe('when groupId is empty', () => {
+        it('does not add the class', () => {
+          wrapper = createComponent({ groupId: null });
+
+          expect(findRootElement().attributes('class')).not.toContain(
+            'js-expired-duo-pro-trial-widget',
+          );
+        });
+      });
+
+      describe('when featureId is empty', () => {
+        it('does not add the class', () => {
+          wrapper = createComponent({ featureId: null });
+
+          expect(findRootElement().attributes('class')).not.toContain(
+            'js-expired-duo-pro-trial-widget',
+          );
+        });
+      });
+
+      describe('when dismissEndpoint is empty', () => {
+        it('does not add the class', () => {
+          wrapper = createComponent({ dismissEndpoint: null });
+
+          expect(findRootElement().attributes('class')).not.toContain(
+            'js-expired-duo-pro-trial-widget',
+          );
+        });
+      });
+    });
+
+    describe('when an expired trial', () => {
+      beforeEach(() => {
+        wrapper = createComponent({ percentageComplete: 110 });
+      });
+
+      it('shows correct title and body', () => {
+        expect(wrapper.text()).toMatchInterpolatedText(
+          'Your 60-day trial has ended Looking to do more with AI? Learn about GitLab Duo',
+        );
+      });
+
+      it('renders the dismiss button', () => {
+        expect(findGlButton().exists()).toBe(true);
+      });
     });
   });
 
@@ -83,7 +156,7 @@ describe('DuoProTrialStatusWidget component', () => {
     });
 
     it('renders with the given id', () => {
-      expect(findGlLink().attributes('id')).toBe('some-id');
+      expect(findRootElement().attributes('id')).toBe('some-id');
     });
   });
 });

@@ -2,11 +2,15 @@ import { GlPopover } from '@gitlab/ui';
 import { GlBreakpointInstance } from '@gitlab/ui/dist/utils';
 import { nextTick } from 'vue';
 import timezoneMock from 'timezone-mock';
-import { DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY } from 'ee/contextual_sidebar/components/constants';
 import DuoProTrialStatusPopover from 'ee/contextual_sidebar/components/duo_pro_trial_status_popover.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
+
+import {
+  DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
+  DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
+} from 'ee/contextual_sidebar/components/constants';
 
 describe('DuoProTrialStatusPopover component', () => {
   let wrapper;
@@ -20,11 +24,9 @@ describe('DuoProTrialStatusPopover component', () => {
   const handRaiseLeadBtn = () => wrapper.findComponent(HandRaiseLeadButton);
 
   const expectTracking = ({ action, ...options } = {}) => {
-    return expect(trackingSpy).toHaveBeenCalledWith(
-      DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
-      action,
-      { category: DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY, ...options },
-    );
+    const category = options.category || DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY;
+
+    return expect(trackingSpy).toHaveBeenCalledWith(category, action, { category, ...options });
   };
 
   const createComponent = ({ providers = {}, mountFn = shallowMountExtended, stubs = {} } = {}) => {
@@ -64,6 +66,12 @@ describe('DuoProTrialStatusPopover component', () => {
 
       expect(wrapper.text()).toContain("You've got 60 days left in your GitLab Duo Pro trial");
     });
+
+    it('correctly displays with an expired trial', () => {
+      createComponent({ providers: { daysRemaining: -5 }, mountFn: mountExtended });
+
+      expect(wrapper.text()).toContain('You no longer have access to GitLab Duo Pro features');
+    });
   });
 
   describe('popover css classes', () => {
@@ -77,6 +85,14 @@ describe('DuoProTrialStatusPopover component', () => {
       createComponent({ providers: { daysRemaining: 5 }, mountFn: mountExtended });
 
       expect(wrapper.text()).toContain('To continue using features in GitLab Duo Pro');
+    });
+
+    it('displays correct message with an expired trial', () => {
+      createComponent({ providers: { daysRemaining: -5 }, mountFn: mountExtended });
+
+      expect(wrapper.text()).toContain(
+        'To regain access to features like Code Suggestions and Chat',
+      );
     });
   });
 
@@ -103,31 +119,83 @@ describe('DuoProTrialStatusPopover component', () => {
       });
     });
 
-    it('sets correct attributes to the learn more about features button', () => {
-      expect(findLearnAboutFeaturesBtn().attributes('href')).toBe('add_ons/discover_duo_pro');
-      expect(findLearnAboutFeaturesBtn().attributes('target')).toBe(undefined);
+    it('sets correct tracking props with an expired trial', () => {
+      createComponent({ providers: { daysRemaining: -5 } });
+
+      expect(handRaiseLeadBtn().props()).toMatchObject({
+        ctaTracking: {
+          category: DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
+          action: 'click_button',
+          label: 'contact_sales',
+        },
+      });
     });
 
-    it('tracks when the purchase now button is clicked', () => {
+    describe('purchase now button', () => {
       const options = {
         action: 'click_button',
         label: 'purchase_now',
       };
 
-      findPurchaseNowBtn().vm.$emit('click');
+      it('tracks when the button is clicked', () => {
+        findPurchaseNowBtn().vm.$emit('click');
 
-      expectTracking(options);
+        expectTracking(options);
+      });
+
+      describe('with an expired trial', () => {
+        it('tracks when the button is clicked', () => {
+          createComponent({ providers: { daysRemaining: -5 } });
+
+          findPurchaseNowBtn().vm.$emit('click');
+
+          expectTracking({ ...options, category: DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY });
+        });
+      });
     });
 
-    it('tracks when the learn about button is clicked', () => {
+    describe('learn about button', () => {
       const options = {
         action: 'click_button',
         label: 'learn_about_features',
       };
 
-      findLearnAboutFeaturesBtn().vm.$emit('click');
+      it('tracks when the button is clicked', () => {
+        findLearnAboutFeaturesBtn().vm.$emit('click');
 
-      expectTracking(options);
+        expectTracking(options);
+      });
+
+      it('renders the button label', () => {
+        expect(findLearnAboutFeaturesBtn().text()).toBe('Learn about features');
+      });
+
+      it('sets correct attributes', () => {
+        const learnAboutFeatures = findLearnAboutFeaturesBtn();
+
+        expect(learnAboutFeatures.attributes('href')).toBe('add_ons/discover_duo_pro');
+        expect(learnAboutFeatures.attributes('target')).toBe(undefined);
+      });
+
+      describe('with an expired trial', () => {
+        beforeEach(() => {
+          createComponent({ providers: { daysRemaining: -5 } });
+        });
+
+        it('tracks when the button is clicked', () => {
+          findLearnAboutFeaturesBtn().vm.$emit('click');
+
+          expectTracking({
+            ...options,
+            category: DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
+            label: 'learn_about_duo_pro',
+          });
+        });
+
+        it('renders the button label', () => {
+          expect(findLearnAboutFeaturesBtn().text()).toBe('Learn about GitLab Duo');
+        });
+      });
     });
   });
 
