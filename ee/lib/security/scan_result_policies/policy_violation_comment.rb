@@ -121,7 +121,7 @@ Several factors can lead to a violation or required approval in your merge reque
 
           #{message}#{links}
 
-          #{format('Learn more about [Security and Compliance policies](%{url}).',
+          #{format('Learn more about [Security and compliance policies](%{url}).',
             url: help_page_url('user/application_security/policies/index'))}
         MARKDOWN
       end

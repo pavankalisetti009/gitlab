@@ -12,7 +12,7 @@ RSpec.describe Projects::OnDemandScansController,
   let(:user) { create(:user) }
 
   shared_examples 'on-demand scans page' do
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { get path }
 
       before_request do

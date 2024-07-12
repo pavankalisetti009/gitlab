@@ -18,7 +18,7 @@ RSpec.describe Projects::Security::SastConfigurationController,
 
     render_views
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { request }
 
       before_request do

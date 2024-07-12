@@ -15,7 +15,7 @@ RSpec.describe Projects::Security::DastProfilesController,
       login_as(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { get project_security_configuration_profile_library_path(project) }
 
       before_request do

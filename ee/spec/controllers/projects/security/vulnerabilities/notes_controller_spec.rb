@@ -25,7 +25,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
       sign_in(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { view_all_notes }
     end
 
@@ -66,7 +66,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
       sign_in(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { create_note }
     end
 
@@ -171,7 +171,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
       sign_in(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { update_note }
     end
 
@@ -220,7 +220,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
       sign_in(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { delete_note }
     end
 
@@ -270,7 +270,7 @@ RSpec.describe Projects::Security::Vulnerabilities::NotesController, feature_cat
       project.add_developer(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { toggle_award_emoji }
     end
 

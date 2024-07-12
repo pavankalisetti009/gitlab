@@ -26,7 +26,7 @@ module Sidebars
 
         override :title
         def title
-          renderable_items.any? ? _('Security and Compliance') : _('Security')
+          renderable_items.any? ? _('Security and compliance') : _('Security')
         end
 
         override :sprite_icon
