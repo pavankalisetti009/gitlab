@@ -193,9 +193,11 @@ variables:
   RSPEC_MATCHING_TESTS_FOSS_PATH: rspec/matching_tests-foss.txt
   RSPEC_MATCHING_TESTS_PATH: rspec/matching_tests.txt
   RSPEC_PACKED_TESTS_MAPPING_PATH: crystalball/packed-mapping.json
+  RSPEC_PACKED_TESTS_MAPPING_ALT_PATH: crystalball/packed-mapping-alt.json
   RSPEC_PREDICTIVE_PIPELINE_TEMPLATE_YML: .gitlab/ci/rails/rspec-predictive.gitlab-ci.yml.erb
   RSPEC_PROFILING_FOLDER_PATH: rspec/profiling
   RSPEC_TESTS_MAPPING_PATH: crystalball/mapping.json
+  RSPEC_TESTS_MAPPING_ALT_PATH: crystalball/mapping-alt.json
   RSPEC_VIEWS_INCLUDING_PARTIALS_PATH: rspec/views_including_partials.txt
   RSPEC_AUTO_EXPLAIN_LOG_PATH: auto_explain/auto_explain.ndjson.gz
   TMP_TEST_FOLDER: "${CI_PROJECT_DIR}/tmp/tests"
