@@ -25,6 +25,10 @@ RSpec.shared_context 'with work item types request context EE' do
         ... on WorkItemWidgetDefinitionLabels {
           allowsScopedLabels
         }
+        ... on WorkItemWidgetDefinitionWeight {
+          editable
+          rollUp
+        }
       }
     GRAPHQL
   end
@@ -36,6 +40,10 @@ RSpec.shared_context 'with work item types request context EE' do
       },
       labels: {
         'allowsScopedLabels' => false
+      },
+      weight: {
+        'editable' => be_boolean,
+        'rollUp' => be_boolean
       }
     }
 

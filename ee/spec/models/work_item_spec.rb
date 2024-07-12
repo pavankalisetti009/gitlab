@@ -62,7 +62,11 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
   end
 
   describe '#widgets' do
-    subject { build(:work_item).widgets }
+    subject(:widgets) { build(:work_item).widgets }
+
+    it 'instantiates widgets with their widget definition' do
+      expect(widgets.map(&:widget_definition)).to all(be_instance_of(WorkItems::WidgetDefinition))
+    end
 
     context 'for weight widget' do
       context 'when issuable weights is licensed' do
