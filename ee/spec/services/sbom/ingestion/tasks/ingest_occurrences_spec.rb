@@ -131,8 +131,9 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
     end
 
     context 'when there is an existing occurrence' do
+      let(:occurrence_map) { occurrence_maps.first }
+
       let!(:existing_occurrence) do
-        occurrence_map = occurrence_maps.first
         attributes = {
           project_id: project.id,
           pipeline_id: pipeline.id,
@@ -141,7 +142,18 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
           source_id: occurrence_map.source_id,
           source_package_id: occurrence_map.source_package_id,
           commit_sha: pipeline.sha,
-          licenses: [],
+          licenses: [
+            {
+              'spdx_identifier' => 'Apache-2.0',
+              'name' => 'Apache 2.0 License',
+              'url' => 'https://spdx.org/licenses/Apache-2.0.html'
+            },
+            {
+              'spdx_identifier' => 'MIT',
+              'name' => 'MIT',
+              'url' => 'https://spdx.org/licenses/MIT.html'
+            }
+          ],
           component_name: occurrence_map.name,
           input_file_path: occurrence_map.input_file_path,
           highest_severity: occurrence_map.highest_severity,
@@ -152,6 +164,16 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         }
 
         create(:sbom_occurrence, **attributes)
+      end
+
+      before do
+        default_licenses = ["MIT", "Apache-2.0"]
+        component = occurrence_map.report_component
+
+        create(:pm_package, name: component.name, purl_type: component.purl&.type,
+          lowest_version: component.version, highest_version: component.version,
+          default_license_names: default_licenses
+        )
       end
 
       it 'does not create a new record for the existing version' do
