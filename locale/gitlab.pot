@@ -23882,9 +23882,6 @@ msgstr ""
 msgid "GitLabPages|Force HTTPS (requires valid certificates)"
 msgstr ""
 
-msgid "GitLabPages|GitLab Pages are disabled for this project. You can enable them on your project's %{strong_start}Settings &gt; General &gt; Visibility%{strong_end} page."
-msgstr ""
-
 msgid "GitLabPages|Maximum size (MB)"
 msgstr ""
 
