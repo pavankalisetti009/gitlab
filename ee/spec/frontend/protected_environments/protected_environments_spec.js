@@ -1,4 +1,4 @@
-import { GlBadge, GlModal } from '@gitlab/ui';
+import { GlBadge, GlModal, GlCollapse } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
@@ -101,6 +101,8 @@ describe('ee/protected_environments/protected_environments.vue', () => {
   const findEnvironmentButton = (name) => wrapper.findByRole('button', { name });
   const findPagination = () => wrapper.findComponent(Pagination);
   const findAddButton = () => wrapper.findByTestId('new-environment-button');
+  const findAllCollapse = () => wrapper.findAllComponents(GlCollapse);
+  const findAllToggleButtons = () => wrapper.findAllByTestId('protected-environment-item-toggle');
   const findAddForm = () => wrapper.findComponent(CreateProtectedEnvironment);
 
   describe('header', () => {
@@ -210,6 +212,18 @@ describe('ee/protected_environments/protected_environments.vue', () => {
 
       expect(setPageMock).toHaveBeenCalledWith(expect.any(Object), 2);
     });
+  });
+
+  it('toggles environment collapse section', async () => {
+    createComponent();
+
+    expect(findAllCollapse().at(0).props('visible')).toBe(false);
+
+    await findAllToggleButtons().at(0).trigger('click');
+    expect(findAllCollapse().at(0).props('visible')).toBe(true);
+
+    await findAllToggleButtons().at(0).trigger('click');
+    expect(findAllCollapse().at(0).props('visible')).toBe(false);
   });
 
   describe('add form', () => {
