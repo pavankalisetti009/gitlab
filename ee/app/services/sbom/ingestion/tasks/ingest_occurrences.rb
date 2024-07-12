@@ -99,7 +99,7 @@ module Sbom
             compared_attributes -= PIPELINE_ATTRIBUTES_KEYS
           end
 
-          stable_new_attributes = new_attributes.slice(*compared_attributes)
+          stable_new_attributes = new_attributes.deep_symbolize_keys.slice(*compared_attributes)
           stable_existing_attributes = existing_occurrence.attributes.deep_symbolize_keys.slice(*compared_attributes)
 
           stable_new_attributes != stable_existing_attributes
