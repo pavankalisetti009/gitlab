@@ -77,6 +77,10 @@ describe('TracingListFilteredSearch', () => {
       expect(findDateRangeFilter().props('selected')).toEqual(dateRange);
     });
 
+    it('sets the dateTimeRangePickerState prop to true', () => {
+      expect(findDateRangeFilter().props('dateTimeRangePickerState')).toBe(true);
+    });
+
     describe('if date range is larger than 12h', () => {
       beforeEach(async () => {
         await findDateRangeFilter().vm.$emit('onDateRangeSelected', {
@@ -102,6 +106,10 @@ describe('TracingListFilteredSearch', () => {
 
         expect(findAlert().exists()).toBe(false);
         expect(wrapper.emitted('filter')).toHaveLength(1);
+      });
+
+      it('sets the dateTimeRangePickerState prop to false', () => {
+        expect(findDateRangeFilter().props('dateTimeRangePickerState')).toBe(false);
       });
     });
   });

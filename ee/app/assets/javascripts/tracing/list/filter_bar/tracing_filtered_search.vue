@@ -194,6 +194,7 @@ export default {
         :max-date-range="2"
         :default-min-date="defaultMinDate"
         :date-options="$options.PERIOD_FILTER_OPTIONS"
+        :date-time-range-picker-state="dateRangeValid"
         @onDateRangeSelected="onDateRangeSelected"
       />
 
