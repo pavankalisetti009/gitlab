@@ -140,8 +140,8 @@ export default {
   },
 
   methods: {
-    setError(error, userFriendlyText) {
-      this.isSaving = false;
+    setError(error, userFriendlyText, loadingProp = 'isSaving') {
+      this[loadingProp] = false;
       this.errorMessage = userFriendlyText;
       Sentry.captureException(error);
     },
@@ -211,8 +211,7 @@ export default {
         }
         this.$router.back();
       } catch (error) {
-        this.fetchError = error;
-        Sentry.captureException(error);
+        this.setError(new Error(error), error, 'isDeleting');
       }
     },
 
