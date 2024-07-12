@@ -34423,6 +34423,9 @@ msgstr ""
 msgid "Navigation|%{title} removed from pinned items"
 msgstr ""
 
+msgid "Navigation|Admin"
+msgstr ""
+
 msgid "Navigation|Admin area"
 msgstr ""
 
