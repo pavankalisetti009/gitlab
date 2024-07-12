@@ -43,8 +43,10 @@ module Gitlab
 
                   Think step by step and try to determine why the job failed and explain it so that
                   any Software engineer could understand the root cause of the failure.
+                  Add a heading where the explanation of the failure is under a section heading
+                  of H4 with the name "Root cause of failure".
                   Please provide an example fix under the heading "Example Fix". The header
-                  "Example Fix" should be set with a section heading of level 4.
+                  "Example Fix" should be set with a section heading of H4.
                   Any code blocks in response should be formatted in markdown.
                 PROMPT
               )
