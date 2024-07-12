@@ -75,18 +75,6 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
           expect(Gitlab::Session.current).to eq(nil)
         end
       end
-
-      it 'does nothing if duo_chat_set_warden is disabled' do
-        stub_feature_flags(duo_chat_set_warden: false)
-
-        expect_completion_service_call
-
-        Gitlab::Session.with_session(session) do
-          subject
-
-          expect(Gitlab::Session.current).not_to have_key('warden.user.user.key')
-        end
-      end
     end
   end
 
