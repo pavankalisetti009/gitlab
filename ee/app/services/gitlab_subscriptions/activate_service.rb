@@ -22,7 +22,7 @@ module GitlabSubscriptions
 
       if license.save
         save_future_subscriptions(response[:future_subscriptions])
-        update_code_suggestions_add_on_purchase
+        update_add_on_purchases
         sync_service_token
 
         {
@@ -71,8 +71,8 @@ module GitlabSubscriptions
       end
     end
 
-    def update_code_suggestions_add_on_purchase
-      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::CodeSuggestions.new.execute
+    def update_add_on_purchases
+      ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServicesRunner.new.execute
     end
   end
 end

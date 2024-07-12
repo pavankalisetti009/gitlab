@@ -32,7 +32,7 @@ class SyncSeatLinkRequestWorker
       reset_license!(response['license']) if response['license']
 
       save_future_subscriptions(response)
-      update_code_suggestions_add_on_purchase
+      update_add_on_purchases
       update_reconciliation!(response)
       ::CloudConnector::SyncServiceTokenWorker.perform_async if refresh_token
     else
@@ -71,8 +71,8 @@ class SyncSeatLinkRequestWorker
     "Seat Link request failed! Code:#{response.code} Body:#{response.body}"
   end
 
-  def update_code_suggestions_add_on_purchase
-    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::CodeSuggestions.new.execute
+  def update_add_on_purchases
+    ::GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServicesRunner.new.execute
   end
 
   def update_reconciliation!(response)

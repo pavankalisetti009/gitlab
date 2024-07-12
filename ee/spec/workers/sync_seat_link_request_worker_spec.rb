@@ -231,7 +231,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     end
 
     context 'when new license does not contain a code suggestions add-on purchase' do
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
     end
 
     context 'when new license contains a code suggestions add-on purchase' do
@@ -245,7 +245,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
       let(:body) { { success: true, license: license_key }.to_json }
 
-      it_behaves_like 'call service to handle the provision of code suggestions'
+      it_behaves_like 'call runner to handle the provision of add-ons'
     end
 
     context 'when the response does not contain reconciliation dates' do
