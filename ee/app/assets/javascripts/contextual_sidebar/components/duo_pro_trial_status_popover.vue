@@ -10,9 +10,13 @@ import {
   RESIZE_EVENT,
   RESIZE_EVENT_DEBOUNCE_MS,
   DUO_PRO_TRIAL_POPOVER_CONTENT,
+  DUO_PRO_TRIAL_EXPIRED_POPOVER_TITLE,
+  DUO_PRO_TRIAL_EXPIRED_POPOVER_CONTENT,
   DUO_PRO_TRIAL_POPOVER_LEARN_TITLE,
+  DUO_PRO_TRIAL_LEARN_ABOUT_BUTTON_TITLE,
   DUO_PRO_TRIAL_POPOVER_PURCHASE_TITLE,
   DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
+  DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
   POPOVER_HIDE_DELAY,
 } from './constants';
 
@@ -23,7 +27,7 @@ export default {
     GlPopover,
     GlSprintf,
   },
-  mixins: [Tracking.mixin({ category: DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY })],
+  mixins: [Tracking.mixin()],
   inject: {
     daysRemaining: {
       type: Number,
@@ -55,8 +59,8 @@ export default {
       disabled: false,
     };
   },
+  popoverContentExpiredTrial: DUO_PRO_TRIAL_EXPIRED_POPOVER_CONTENT,
   purchaseNowTitle: DUO_PRO_TRIAL_POPOVER_PURCHASE_TITLE,
-  learnAboutButtonTitle: DUO_PRO_TRIAL_POPOVER_LEARN_TITLE,
   hideDelay: { hide: POPOVER_HIDE_DELAY },
   popoverClasses: ['gl-p-2'],
   handRaiseLeadAttributes: {
@@ -68,16 +72,18 @@ export default {
     'data-testid': 'duo-pro-trial-popover-hand-raise-lead-button',
     href: '#',
   },
-  handRaiseLeadBtnTracking: {
-    category: DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
-    action: 'click_button',
-    label: 'contact_sales',
-  },
   computed: {
+    isTrialActive() {
+      return this.daysRemaining >= 0;
+    },
     formattedTrialEndDate() {
       return formatDate(this.trialEndDate, 'mmmm d', true);
     },
     popoverTitle() {
+      if (!this.isTrialActive) {
+        return DUO_PRO_TRIAL_EXPIRED_POPOVER_TITLE;
+      }
+
       const i18nPopoverTitle = n__(
         "DuoProTrial|You've got %{daysRemaining} day left in your GitLab Duo Pro trial",
         "DuoProTrial|You've got %{daysRemaining} days left in your GitLab Duo Pro trial",
@@ -93,6 +99,23 @@ export default {
         trialEndDate: this.formattedTrialEndDate,
       });
     },
+    learnAboutButtonTitle() {
+      return this.isTrialActive
+        ? DUO_PRO_TRIAL_POPOVER_LEARN_TITLE
+        : DUO_PRO_TRIAL_LEARN_ABOUT_BUTTON_TITLE;
+    },
+    trialPopoverCategory() {
+      return this.isTrialActive
+        ? DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY
+        : DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY;
+    },
+    handRaiseLeadBtnTracking() {
+      return {
+        category: this.trialPopoverCategory,
+        action: 'click_button',
+        label: 'contact_sales',
+      };
+    },
   },
   created() {
     this.debouncedResize = debounce(() => this.updateDisabledState(), RESIZE_EVENT_DEBOUNCE_MS);
@@ -105,17 +128,22 @@ export default {
     window.removeEventListener(RESIZE_EVENT, this.debouncedResize);
   },
   methods: {
+    trackPageAction(action, options) {
+      this.track(action, { category: this.trialPopoverCategory, ...options });
+    },
     purchaseAction() {
-      this.track('click_button', { label: 'purchase_now' });
+      this.trackPageAction('click_button', { label: 'purchase_now' });
     },
     learnAction() {
-      this.track('click_button', { label: 'learn_about_features' });
+      const label = this.isTrialActive ? 'learn_about_features' : 'learn_about_duo_pro';
+
+      this.trackPageAction('click_button', { label });
     },
     updateDisabledState() {
       this.disabled = ['xs', 'sm'].includes(bp.getBreakpointSize());
     },
     onShown() {
-      this.track('render_popover');
+      this.trackPageAction('render_popover');
     },
   },
 };
@@ -135,16 +163,18 @@ export default {
     @shown="onShown"
   >
     <template #title>
-      <div>
-        {{ popoverTitle }}
-      </div>
+      {{ popoverTitle }}
     </template>
 
-    <gl-sprintf :message="popoverContent">
+    <gl-sprintf v-if="isTrialActive" :message="popoverContent">
       <template #strong="{ content }">
         <strong>{{ content }}</strong>
       </template>
     </gl-sprintf>
+
+    <div v-else>
+      <p>{{ $options.popoverContentExpiredTrial }}</p>
+    </div>
 
     <div class="gl-mt-5">
       <gl-button
@@ -154,7 +184,6 @@ export default {
         class="gl-mb-3"
         block
         data-testid="purchase-now-btn"
-        :title="$options.purchaseNowTitle"
         @click="purchaseAction"
       >
         <span class="gl-text-sm">{{ $options.purchaseNowTitle }}</span>
@@ -163,7 +192,7 @@ export default {
       <hand-raise-lead-button
         :button-attributes="$options.handRaiseLeadAttributes"
         glm-content="duo-pro-trial-status-show-group"
-        :cta-tracking="$options.handRaiseLeadBtnTracking"
+        :cta-tracking="handRaiseLeadBtnTracking"
       />
 
       <gl-button
@@ -174,10 +203,9 @@ export default {
         class="gl-mt-3"
         block
         data-testid="learn-about-features-btn"
-        :title="$options.learnAboutButtonTitle"
         @click="learnAction"
       >
-        <span class="gl-text-sm">{{ $options.learnAboutButtonTitle }}</span>
+        <span class="gl-text-sm">{{ learnAboutButtonTitle }}</span>
       </gl-button>
     </div>
   </gl-popover>

@@ -1,47 +1,56 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DuoProTrialStatusWidget component without the optional containerId prop matches the snapshot for namespace in active trial 1`] = `
-<gl-link-stub
-  href="some/widget/path"
-  title="GitLab Duo Pro Trial"
+<div
+  class="!gl-items-start js-expired-duo-pro-trial-widget"
+  data-dismiss-endpoint="some/dismiss/endpoint"
+  data-feature-id="expired_duo_pro_trial_widget"
+  data-group-id="1"
+  data-testid="duo-pro-trial-widget-root-element"
 >
-  <div
-    class="gl-align-items-stretch gl-display-flex gl-flex-direction-column gl-w-full"
-    data-testid="duo-pro-trial-widget-menu"
+  <gl-link-stub
+    class="!gl-no-underline !gl-text-gray-900 gl-mt-2"
+    href="some/widget/path"
   >
     <div
-      class="gl-display-flex gl-w-full"
+      class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
+      data-testid="duo-pro-trial-widget-menu"
     >
-      <span
-        class="gl-mr-3 nav-icon-container svg-container"
-      >
-        <img
-          alt=""
-          class="svg"
-          src="file-mock"
-          width="16"
-        />
-      </span>
-      <span
-        class="gl-flex-grow-1 nav-item-name"
-      >
-        GitLab Duo Pro Trial
-      </span>
-      <span
-        class="gl-font-sm gl-mr-auto gl-overflow-hidden gl-whitespace-nowrap"
-      >
-        Day 10/30
-      </span>
+      <div>
+        <div
+          class="gl-flex gl-w-full"
+        >
+          <span
+            class="gl-mr-3 nav-icon-container svg-container"
+          >
+            <img
+              class="svg"
+              src="file-mock"
+              width="16"
+            />
+          </span>
+          <span
+            class="gl-grow nav-item-name"
+          >
+            GitLab Duo Pro Trial
+          </span>
+          <span
+            class="gl-mr-auto gl-overflow-hidden gl-text-sm gl-whitespace-nowrap"
+          >
+            Day 10/60
+          </span>
+        </div>
+        <div
+          class="gl-flex gl-items-stretch gl-mt-2"
+        >
+          <gl-progress-bar-stub
+            aria-hidden="true"
+            class="gl-grow"
+            value="10"
+          />
+        </div>
+      </div>
     </div>
-    <div
-      class="gl-align-items-stretch gl-display-flex gl-mt-2"
-    >
-      <gl-progress-bar-stub
-        aria-hidden="true"
-        class="gl-flex-grow-1"
-        value="10"
-      />
-    </div>
-  </div>
-</gl-link-stub>
+  </gl-link-stub>
+</div>
 `;

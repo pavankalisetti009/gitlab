@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: :acquisition do
+  include SubscriptionPortalHelpers
   include Features::HandRaiseLeadHelpers
 
   let_it_be(:user) { create(:user, :with_namespace, organization: 'YMCA') }
@@ -47,9 +48,42 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
       end
     end
 
+    context 'on the first day of expired trial' do
+      before do
+        stub_signing_key
+        stub_application_setting(check_namespace_plan: true)
+        stub_subscription_permissions_data(group.id)
+        stub_licensed_features(code_suggestions: true)
+        stub_feature_flags(duo_pro_trial_expired_widget: true)
+      end
+
+      it 'shows expired widget and dismisses it' do
+        travel_to(61.days.from_now) do
+          visit group_usage_quotas_path(group)
+
+          expect_widget_title_to_be('Your 60-day trial has ended')
+
+          dismiss_widget
+
+          expect(page).not_to have_content('Your 60-day trial has ended')
+
+          visit group_add_ons_discover_duo_pro_path(group)
+
+          expect(page).to have_content('Discover Duo Pro')
+          expect(page).not_to have_content('Your 60-day trial has ended')
+        end
+      end
+    end
+
     def expect_widget_title_to_be(widget_title)
       within_testid(widget_menu_selector) do
         expect(page).to have_content(widget_title)
+      end
+    end
+
+    def dismiss_widget
+      within_testid(widget_root_element) do
+        find_by_testid('close-icon').click
       end
     end
   end
@@ -110,5 +144,9 @@ RSpec.describe 'Duo Pro Trial Widget in Sidebar', :saas, :js, feature_category: 
 
   def widget_menu_selector
     'duo-pro-trial-widget-menu'
+  end
+
+  def widget_root_element
+    'duo-pro-trial-widget-root-element'
   end
 end

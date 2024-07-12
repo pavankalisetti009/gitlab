@@ -7,8 +7,7 @@ RSpec.describe 'Groups > Add Ons > Discover Duo Pro > Hand Raise Lead', :js, :sa
 
   let_it_be(:user) { create(:user, :with_namespace, organization: 'GitLab') }
   let_it_be(:group) do
-    create(:group_with_plan, plan: :ultimate_trial_plan, trial_starts_on: Date.today, trial_ends_on: Date.tomorrow,
-      owners: user)
+    create(:group_with_plan, trial_starts_on: 41.days.ago, trial_ends_on: 11.days.ago, owners: user)
   end
 
   let_it_be(:add_on_purchase) do

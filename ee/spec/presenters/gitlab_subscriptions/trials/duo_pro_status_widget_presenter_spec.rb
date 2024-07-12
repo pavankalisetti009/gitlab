@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, feature_category: :acquisition do
+  include Rails.application.routes.url_helpers
+
   let(:user) { build(:user) }
   let(:group) { build(:group) }
   let(:add_on_purchase) do
@@ -30,7 +32,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
             ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group),
           trial_days_used: 1,
           trial_duration: 60,
-          percentage_complete: 1.67
+          percentage_complete: 1.67,
+          group_id: group.id,
+          feature_id: described_class::EXPIRED_DUO_PRO_TRIAL_WIDGET,
+          dismiss_endpoint: group_callouts_path
         }
         duo_pro_trial_status_popover_data_attrs = {
           days_remaining: 60,
@@ -60,6 +65,46 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
       let(:root_group) { build(:group) }
 
       it { is_expected.to be(false) }
+    end
+
+    context 'when the widget is dismissed' do
+      before do
+        allow(user).to receive(:dismissed_callout_for_group?).and_return(true)
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'with duo_pro_trial_expired_widget feature flag' do
+      before do
+        stub_feature_flags(duo_pro_trial_expired_widget: false)
+      end
+
+      it { is_expected.to be(true) }
+
+      context 'when the widget is expired' do
+        before do
+          add_on_purchase.expires_on = 5.days.ago
+        end
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when duo_pro_trial_expired_widget is enabled' do
+        before do
+          stub_feature_flags(duo_pro_trial_expired_widget: true)
+        end
+
+        it { is_expected.to be(true) }
+
+        context 'when the widget is expired' do
+          before do
+            add_on_purchase.expires_on = 5.days.ago
+          end
+
+          it { is_expected.to be(true) }
+        end
+      end
     end
   end
 end
