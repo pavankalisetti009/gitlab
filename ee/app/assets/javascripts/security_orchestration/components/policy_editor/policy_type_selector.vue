@@ -18,7 +18,7 @@ const i18n = {
     'SecurityOrchestration|Use a merge request approval policy to create rules that check for security vulnerabilities and license compliance before merging a merge request.',
   ),
   scanResultPolicyExample: s__(
-    'SecurityOrchestration|If any scanner finds a newly detected critical vulnerability in an open merge request targeting the main branch, then require two approvals from any two members of the application security team are required.',
+    'SecurityOrchestration|If any scanner finds a newly detected critical vulnerability in an open merge request targeting the main branch, then require two approvals from any two members of the application security team.',
   ),
   scanExecutionPolicyTitle: s__('SecurityOrchestration|Scan execution policy'),
   scanExecutionPolicyDesc: s__(
