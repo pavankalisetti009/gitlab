@@ -59,6 +59,7 @@ describe('WorkItemHealthStatus component', () => {
         workItemId,
         workItemIid: '1',
         workItemType,
+        fullPath: 'gitlab-org/gitlab',
       },
       provide: {
         hasIssuableHealthStatusFeature,
