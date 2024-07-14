@@ -38,8 +38,10 @@ export default {
     minInputValue() {
       return this.rule.minApprovalsRequired || 0;
     },
-    isDisabled() {
-      return (this.isBranchRulesEdit && !this.glFeatures.editBranchRules) || !this.settings.canEdit;
+    isEnabled() {
+      return this.isBranchRulesEdit
+        ? this.glFeatures.editBranchRules && this.settings.canEdit
+        : this.settings.canEdit;
     },
   },
   created() {
@@ -74,7 +76,7 @@ export default {
     <gl-form-input
       :id="uniqueInputId"
       :value="rule.approvalsRequired"
-      :disabled="isDisabled"
+      :disabled="!isEnabled"
       class="gl-ml-auto md:gl-mr-auto gl-w-10 -gl-my-3"
       type="number"
       name="approvals-number-field"
