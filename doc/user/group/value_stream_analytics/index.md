@@ -32,6 +32,8 @@ Value stream analytics helps businesses:
 
 Value stream analytics is available for projects and groups.
 
+For a click-through demo, see [the Value Stream Management product tour](https://gitlab.navattic.com/vsm).
+
 ## Feature availability
 
 Value stream analytics offers different features at the project and group level for FOSS and licensed versions.
