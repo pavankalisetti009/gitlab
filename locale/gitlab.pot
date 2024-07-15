@@ -36166,6 +36166,9 @@ msgstr ""
 msgid "Observability|Tracing, Metrics & Logs"
 msgstr ""
 
+msgid "Observability|Usage by day"
+msgstr ""
+
 msgid "Observability|View our %{docsLink} for further instructions on how to use these features."
 msgstr ""
 

@@ -1,8 +1,10 @@
 import { GlSprintf } from '@gitlab/ui';
 import ObservabilityUsageBreakdown from 'ee/usage_quotas/observability/components/observability_usage_breakdown.vue';
+import ObservabilityUsageSectionedBar from 'ee/usage_quotas/observability/components/observability_usage_sectioned_bar.vue';
+import ObservabilityUsageChart from 'ee/usage_quotas/observability/components/observability_usage_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
-import { mockData } from './mock_data';
+import { mockData, mockEventsData, mockStorageData } from './mock_data';
 
 describe('ObservabilityUsageBreakdown', () => {
   let wrapper;
@@ -24,50 +26,64 @@ describe('ObservabilityUsageBreakdown', () => {
   });
 
   const findSectionedStorageUsage = () => wrapper.findByTestId('sectioned-storage-usage');
-  const findTotalStorageUsage = () => wrapper.findByTestId('total-storage-usage');
   const findSectionedEventsUsage = () => wrapper.findByTestId('sectioned-events-usage');
-  const findTotalEventsUsage = () => wrapper.findByTestId('total-events-usage');
+  const findStorageUsageChart = () => wrapper.findByTestId('storage-usage-chart');
+  const findEventsUsageChart = () => wrapper.findByTestId('events-usage-chart');
 
   it('renders a title and subtitle', () => {
-    expect(wrapper.find('h4').text()).toBe('Usage breakdown');
+    expect(wrapper.find('h3').text()).toBe('Usage breakdown');
     expect(wrapper.find('p').text()).toBe('Includes Logs, Traces and Metrics. Learn more.');
   });
 
-  it('renders the total storage usage', () => {
-    expect(findTotalStorageUsage().text()).toBe('57.1 KiB');
+  it('renders ObservabilityUsageSectionedBar', () => {
+    expect(wrapper.findAllComponents(ObservabilityUsageSectionedBar).length).toBe(2);
   });
 
   it('renders the sectioned storage usage', () => {
-    expect(findSectionedStorageUsage().props('sections')).toEqual([
-      { formattedValue: '14.65 KiB', id: 'metrics', label: 'metrics', value: 15000 },
-      { formattedValue: '14.65 KiB', id: 'logs', label: 'logs', value: 15000 },
-      { formattedValue: '27.81 KiB', id: 'tracing', label: 'tracing', value: 28476 },
-    ]);
-  });
-
-  it('renders the total events usage', () => {
-    expect(findTotalEventsUsage().text()).toBe('132 events');
+    expect(findSectionedStorageUsage().props('usageData')).toEqual(mockStorageData);
   });
 
   it('renders the sectioned events usage', () => {
-    expect(findSectionedEventsUsage().props('sections')).toEqual([
-      { formattedValue: 40, id: 'metrics', label: 'metrics', value: 40 },
-      { formattedValue: 32, id: 'logs', label: 'logs', value: 32 },
-      { formattedValue: 60, id: 'tracing', label: 'tracing', value: 60 },
-    ]);
+    expect(findSectionedEventsUsage().props('usageData')).toEqual(mockEventsData);
   });
 
-  it('does not render events usage if missing', () => {
-    mountComponent({ ...mockData, events: {} });
-
-    expect(findTotalEventsUsage().exists()).toBe(false);
-    expect(findSectionedEventsUsage().exists()).toBe(false);
+  it('renders ObservabilityUsageChart', () => {
+    expect(wrapper.findAllComponents(ObservabilityUsageChart).length).toBe(2);
   });
 
-  it('does not render storage usage if missing', () => {
-    mountComponent({ ...mockData, storage: {} });
+  it('renders storage usage chart', () => {
+    expect(findStorageUsageChart().props('usageData')).toEqual(mockStorageData);
+  });
 
-    expect(findTotalStorageUsage().exists()).toBe(false);
-    expect(findSectionedStorageUsage().exists()).toBe(false);
+  it('renders events usage chart', () => {
+    expect(findEventsUsageChart().props('usageData')).toEqual(mockEventsData);
+  });
+
+  describe('if events data is missing', () => {
+    beforeEach(() => {
+      mountComponent({ ...mockData, events: {} });
+    });
+
+    it('does not render SectionedEventsUsage', () => {
+      expect(findSectionedEventsUsage().exists()).toBe(false);
+    });
+
+    it('does not render EventsUsageChart', () => {
+      expect(findEventsUsageChart().exists()).toBe(false);
+    });
+  });
+
+  describe('if storage data is missing', () => {
+    beforeEach(() => {
+      mountComponent({ ...mockData, storage: {} });
+    });
+
+    it('does not render SectionedStorageUsage', () => {
+      expect(findSectionedStorageUsage().exists()).toBe(false);
+    });
+
+    it('does not render EventsUsageChart', () => {
+      expect(findStorageUsageChart().exists()).toBe(false);
+    });
   });
 });
