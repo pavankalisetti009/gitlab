@@ -44,7 +44,9 @@ export const SETTINGS_HUMANIZED_STRINGS = {
   [PREVENT_APPROVAL_BY_AUTHOR]: s__("ScanResultPolicy|Prevent approval by merge request's author"),
   [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: s__('ScanResultPolicy|Prevent approval by commit author'),
   [REMOVE_APPROVALS_WITH_NEW_COMMIT]: s__('ScanResultPolicy|Remove all approvals with new commit'),
-  [REQUIRE_PASSWORD_TO_APPROVE]: s__("ScanResultPolicy|Require the user's password to approve"),
+  [REQUIRE_PASSWORD_TO_APPROVE]: s__(
+    'ScanResultPolicy|Require user re-authentication (password or SAML) to approve',
+  ),
 };
 
 export const SETTINGS_TOOLTIP = {
