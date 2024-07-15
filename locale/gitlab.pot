@@ -52154,6 +52154,9 @@ msgstr ""
 msgid "SuperSonics|I agree that my use of the GitLab Software is subject to the Subscription Agreement located at the %{linkStart}Terms of Service%{linkEnd}, unless otherwise agreed to in writing with GitLab."
 msgstr ""
 
+msgid "SuperSonics|Instance subscription"
+msgstr ""
+
 msgid "SuperSonics|Learn how to %{linkStart}activate your subscription%{linkEnd}."
 msgstr ""
 
@@ -52245,9 +52248,6 @@ msgid "SuperSonics|Your current GitLab installation has %{userCount} active %{us
 msgstr ""
 
 msgid "SuperSonics|Your future dated license was successfully added"
-msgstr ""
-
-msgid "SuperSonics|Your subscription"
 msgstr ""
 
 msgid "SuperSonics|Your subscription cannot be located"
