@@ -5,7 +5,7 @@ class ElasticAssociationIndexerWorker # rubocop:disable Scalability/IdempotentWo
   prepend Elastic::IndexingControl
   prepend ::Geo::SkipSecondary
 
-  data_consistency :always
+  data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- legacy setting, must investigate before changing
 
   sidekiq_options retry: 3
 
@@ -17,8 +17,8 @@ class ElasticAssociationIndexerWorker # rubocop:disable Scalability/IdempotentWo
     return unless Gitlab::CurrentSettings.elasticsearch_indexing?
 
     klass = class_name.constantize
-    object = klass.find(id)
-    return unless object.use_elasticsearch?
+    object = klass.find_by_id(id)
+    return unless object&.use_elasticsearch?
 
     Elastic::ProcessBookkeepingService.maintain_indexed_associations(object, indexed_associations)
   end
