@@ -6961,9 +6961,6 @@ msgstr ""
 msgid "Are you sure you want to continue?"
 msgstr ""
 
-msgid "Are you sure you want to delete %{group_name}?"
-msgstr ""
-
 msgid "Are you sure you want to delete %{name}?"
 msgstr ""
 
