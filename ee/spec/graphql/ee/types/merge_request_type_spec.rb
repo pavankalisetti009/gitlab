@@ -7,7 +7,7 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
 
   it 'exposes the expected fields' do
     expect(described_class).to have_graphql_fields(
-      :approvals_required, :merge_trains_count, :merge_train_index,
+      :approvals_required, :merge_train_car, :merge_trains_count, :merge_train_index,
       :approval_state, :finding_reports_comparer
     ).at_least
   end
@@ -32,6 +32,27 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
 
     before do
       allow(project).to receive(:merge_trains_enabled?).and_return(true)
+    end
+  end
+
+  describe '#merge_train_car', feature_category: :merge_trains do
+    subject(:associated_merge_train_car) { resolve_field(:merge_train_car, merge_request, current_user: current_user) }
+
+    context 'when merge trains are disabled' do
+      include_context 'with a merge train'
+
+      it 'is null' do
+        expect(associated_merge_train_car).to be_nil
+      end
+    end
+
+    context 'when merge trains are enabled' do
+      include_context 'with a merge train and merge trains enabled'
+
+      it 'returns a merge train car belonging to the merge request' do
+        expect(associated_merge_train_car).to be_an_instance_of MergeTrains::Car
+        expect(associated_merge_train_car.id).to eq merge_request.merge_train_car.id
+      end
     end
   end
 

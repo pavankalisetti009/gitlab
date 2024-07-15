@@ -13,6 +13,11 @@ module EE
         field :approvals_required, GraphQL::Types::Int,
           null: true, description: 'Number of approvals required.'
 
+        field :merge_train_car, ::Types::MergeTrains::CarType,
+          null: true,
+          alpha: { milestone: '17.2' },
+          description: 'Represents the merge request in a merge train.'
+
         field :merge_trains_count, GraphQL::Types::Int,
           null: true,
           description: 'Number of merge requests in the merge train.'
@@ -71,14 +76,20 @@ module EE
           resolver: ::Resolvers::SecurityOrchestration::PolicyViolationsResolver
       end
 
+      def merge_train_car
+        return unless merge_trains_enabled
+
+        object.merge_train_car
+      end
+
       def merge_trains_count
-        return unless object.target_project.merge_trains_enabled?
+        return unless merge_trains_enabled
 
         object.merge_train.car_count
       end
 
       def merge_train_index
-        return unless object.target_project.merge_trains_enabled?
+        return unless merge_trains_enabled
 
         object.merge_train_car&.index
       end
@@ -113,6 +124,10 @@ module EE
         ::Gitlab::Graphql::Lazy.new do
           yield
         end
+      end
+
+      def merge_trains_enabled
+        @merge_trains_enabled ||= object.target_project.merge_trains_enabled?
       end
     end
   end
