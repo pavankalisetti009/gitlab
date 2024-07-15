@@ -18,6 +18,12 @@ module Types
       field :value, GraphQL::Types::String,
         null: true,
         description: 'Value of the variable.'
+
+      def value
+        return unless Ability.allowed?(current_user, :read_pipeline_variable, object.pipeline)
+
+        object.value
+      end
     end
     # rubocop: enable Graphql/AuthorizeTypes
   end
