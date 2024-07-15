@@ -225,6 +225,32 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
     end
   end
 
+  describe '#terraform_state_path' do
+    context 'with a missing configuration value' do
+      it 'returns the default value in full path' do
+        use_gitlab_config_fixture('gitlab-missingconfigs.yml')
+
+        expect(context.terraform_state_path).to eq(fake_gitlab_basepath.join('test-shared/terraform_state'))
+      end
+    end
+
+    context 'with a relative path configured in gitlab.yml' do
+      it 'returns a full path based on gitlab basepath' do
+        use_gitlab_config_fixture('gitlab-relativepaths.yml')
+
+        expect(context.terraform_state_path).to eq(fake_gitlab_basepath.join('tmp/tests/terraform_state'))
+      end
+    end
+
+    context 'with a full path configured in gitlab.yml' do
+      it 'returns a full path as configured in gitlab.yml' do
+        use_gitlab_config_fixture('gitlab.yml')
+
+        expect(context.terraform_state_path).to eq(Pathname('/tmp/gitlab/full/terraform_state'))
+      end
+    end
+  end
+
   describe '#gitlab_shared_path' do
     context 'with shared path not configured in gitlab.yml' do
       it 'raises an error' do

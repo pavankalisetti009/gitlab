@@ -67,7 +67,7 @@ test:
 
   terraform_state:
     enabled: true
-    storage_path: tmp/tests/terraform_state
+    storage_path: /tmp/gitlab/full/terraform_state
     object_store:
       enabled: false
       remote_directory: terraform

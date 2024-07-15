@@ -16,6 +16,7 @@ module Gitlab
         DEFAULT_PACKAGES = 'packages/'
         DEFAULT_PAGES = 'pages/'
         DEFAULT_REGISTRY_PATH = 'registry/'
+        DEFAULT_TERRAFORM_STATE_PATH = 'terraform_state/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -85,8 +86,10 @@ module Gitlab
 
         # Terraform State basepath
         def terraform_state_path
-          # TODO: Use configuration solver
-          Settings.terraform_state.storage_path
+          path = gitlab_config.dig(env, 'terraform_state', 'storage_path') ||
+            gitlab_shared_path.join(DEFAULT_TERRAFORM_STATE_PATH)
+
+          absolute_path(path)
         end
 
         # Upload basepath
