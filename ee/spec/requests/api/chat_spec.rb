@@ -16,6 +16,7 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
   let_it_be(:group) { create(:group_with_plan, :public, plan: :ultimate_plan) }
   let_it_be(:project) { create(:project, :repository,  group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
+  let_it_be(:merge_request) { create(:merge_request, source_project: project) }
 
   let(:current_user) { nil }
   let(:headers) { {} }
@@ -194,6 +195,20 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
           before do
             stub_licensed_features(epics: true)
           end
+
+          it 'sends resource to the chat' do
+            expect(chat_message).to receive(:save!)
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
+        context 'with a merge request' do
+          let(:resource) { merge_request }
+          let(:params) { { content: content, resource_type: "merge_request", resource_id: resource.id } }
 
           it 'sends resource to the chat' do
             expect(chat_message).to receive(:save!)

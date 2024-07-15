@@ -8,7 +8,7 @@ module API
 
     allow_access_with_scope :ai_features
 
-    AVAILABLE_RESOURCES = %w[issue epic group project].freeze
+    AVAILABLE_RESOURCES = %w[issue epic group project merge_request].freeze
 
     before do
       authenticate!
