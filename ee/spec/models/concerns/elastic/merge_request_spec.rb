@@ -41,7 +41,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
   end
 
   describe 'json' do
-    let_it_be(:merge_request) { create :merge_request }
+    let_it_be(:label) { create(:label) }
+    let_it_be(:merge_request) { create(:labeled_merge_request, labels: [label]) }
 
     let(:expected_hash) do
       merge_request.attributes.extract!(
@@ -58,7 +59,8 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
         'source_project_id',
         'target_project_id',
         'author_id'
-      ).merge({ 'state' => merge_request.state,
+      ).merge(
+        'state' => merge_request.state,
         'type' => merge_request.es_type,
         'merge_requests_access_level' => ProjectFeature::ENABLED,
         'visibility_level' => Gitlab::VisibilityLevel::INTERNAL,
@@ -66,7 +68,9 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
         'hidden' => merge_request.author.banned?,
         'archived' => merge_request.target_project.archived?,
         'schema_version' => Elastic::Latest::MergeRequestInstanceProxy::SCHEMA_VERSION,
-        'hashed_root_namespace_id' => merge_request.target_project.namespace.hashed_root_namespace_id })
+        'hashed_root_namespace_id' => merge_request.target_project.namespace.hashed_root_namespace_id,
+        'label_ids' => [label.id.to_s]
+      )
     end
 
     before do
@@ -75,7 +79,12 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
 
     it 'does not include schema_version if add_schema_version_to_merge_request is not finished' do
       set_elasticsearch_migration_to :add_schema_version_to_merge_request, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('schema_version'))
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('schema_version', 'label_ids'))
+    end
+
+    it 'does not include label_ids if add_label_ids_to_merge_request is not finished' do
+      set_elasticsearch_migration_to :add_label_ids_to_merge_request, including: false
+      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids'))
     end
 
     it 'returns json with all needed elements' do

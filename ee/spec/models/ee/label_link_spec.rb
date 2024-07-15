@@ -31,6 +31,18 @@ RSpec.describe LabelLink, feature_category: :global_search do
           label.destroy!
         end
       end
+
+      context 'for merge requests' do
+        let_it_be(:merge_request) { create(:labeled_merge_request, labels: [label]) }
+        let_it_be(:merge_request2) { create(:labeled_merge_request, labels: [label]) }
+        let_it_be(:merge_request3) { create(:labeled_merge_request, labels: [label2]) }
+
+        it 'synchronizes elasticsearch only for merge requests which have deleted label attached' do
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(merge_request).once
+          expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(merge_request2).once
+          label.destroy!
+        end
+      end
     end
   end
 end
