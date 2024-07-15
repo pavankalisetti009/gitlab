@@ -592,7 +592,33 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         context 'when correct framework id is passed' do
           subject { described_class.compliance_framework_id_in(framework_1.id) }
 
-          it { is_expected.to eq([project_with_framework_1]) }
+          it { is_expected.to contain_exactly(project_with_framework_1) }
+        end
+
+        context 'when correct framework ids are passed' do
+          subject { described_class.compliance_framework_id_in([framework_1.id, framework_2.id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_1, project_with_framework_2) }
+        end
+
+        context 'when one framework id is valid and another is non existing' do
+          subject { described_class.compliance_framework_id_in([framework_1.id, non_existing_record_id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_1) }
+        end
+
+        context 'when a project has more than one frameworks and both are used as filters' do
+          let_it_be(:framework_settings_3) { create(:compliance_framework_project_setting, project: project_with_framework_1, compliance_management_framework: framework_2) }
+
+          subject { described_class.compliance_framework_id_in([framework_1.id, framework_2.id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_1, project_with_framework_2) }
+        end
+
+        context 'when same framework id is passed multiple times' do
+          subject { described_class.compliance_framework_id_in([framework_1.id, framework_2.id, framework_1.id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_1, project_with_framework_2) }
         end
 
         context 'when nil is passed as framework id' do
@@ -613,6 +639,26 @@ RSpec.describe Project, feature_category: :groups_and_projects do
           subject { described_class.compliance_framework_id_not_in(framework_1.id) }
 
           it { is_expected.to contain_exactly(project_with_framework_2, project_without_framework) }
+        end
+
+        context 'when a valid framework ids are passed' do
+          subject { described_class.compliance_framework_id_not_in([framework_1.id, framework_2.id]) }
+
+          it { is_expected.to contain_exactly(project_without_framework) }
+        end
+
+        context 'when one framework id is valid and another is non existing' do
+          subject { described_class.compliance_framework_id_not_in([framework_1.id, non_existing_record_id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_2, project_without_framework) }
+        end
+
+        context 'when a project has multiple compliance frameworks' do
+          let_it_be(:framework_settings_1) { create(:compliance_framework_project_setting, project: project_with_framework_1, compliance_management_framework: framework_2) }
+
+          subject { described_class.compliance_framework_id_not_in([framework_2.id]) }
+
+          it { is_expected.to contain_exactly(project_with_framework_1, project_without_framework) }
         end
 
         context 'when nil is passed as framework id' do

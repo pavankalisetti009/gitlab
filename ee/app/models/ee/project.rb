@@ -314,12 +314,12 @@ module EE
       scope :with_project_setting, -> { includes(:project_setting) }
 
       scope :compliance_framework_id_in, ->(ids) do
-        joins(:compliance_framework_settings).where(compliance_framework_settings: { framework_id: ids })
+        joins(:compliance_framework_settings).where(compliance_framework_settings: { framework_id: ids }).distinct
       end
 
       scope :compliance_framework_id_not_in, ->(ids) do
         left_outer_joins(:compliance_framework_settings).where.not(compliance_framework_settings: { framework_id: ids }).or(
-          left_outer_joins(:compliance_framework_settings).where(compliance_framework_settings: { framework_id: nil }))
+          left_outer_joins(:compliance_framework_settings).where(compliance_framework_settings: { framework_id: nil })).distinct
       end
 
       scope :missing_compliance_framework, -> { where.missing(:compliance_framework_settings) }
