@@ -277,6 +277,26 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
     end
   end
 
+  describe '#env' do
+    it 'returns content from RAILS_ENV when its defined' do
+      stub_const('ENV', { 'RAILS_ENV' => 'railstest', 'RACK_ENV' => 'racktest' })
+
+      expect(context.env).to eq('railstest')
+    end
+
+    it 'returns content from RACK_ENV when its the next one defined' do
+      stub_const('ENV', { 'RACK_ENV' => 'racktest' })
+
+      expect(context.env).to eq('racktest')
+    end
+
+    it 'returns the default value when no other ENV is defined' do
+      stub_const('ENV', {})
+
+      expect(context.env).to eq('development')
+    end
+  end
+
   describe '#gitlab_shared_path' do
     context 'with shared path not configured in gitlab.yml' do
       it 'raises an error' do
