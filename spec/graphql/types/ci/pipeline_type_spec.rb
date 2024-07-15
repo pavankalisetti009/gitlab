@@ -33,6 +33,7 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
     let_it_be(:user) { create(:user) }
     let_it_be(:project) { create(:project, :repository) }
     let_it_be(:pipeline) { create(:ci_pipeline, project: project) }
+    let_it_be(:variable) { create(:ci_pipeline_variable, pipeline: pipeline, key: 'KEY_1', value: 'VALUE_1') }
     let(:query) do
       %(
         {
@@ -47,8 +48,6 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
                   id
                   key
                   value
-                  raw
-                  variableType
                 }
               }
             }
@@ -63,7 +62,6 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
 
     before do
       project.add_role(user, user_access_level) # rubocop:disable RSpec/BeforeAllRoleAssignment -- need dynamic settings `user_access_level`
-      create(:ci_pipeline_variable, pipeline: pipeline, key: 'TRIGGER_KEY_1', value: 'TRIGGER_VALUE_1')
     end
 
     context 'when user has access to read variables' do
@@ -71,9 +69,9 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
 
       it 'returns the manual variables' do
         expect(manual_variables.size).to eq(1)
-        expect(manual_variables.first['key']).to eq('TRIGGER_KEY_1')
-        expect(manual_variables.first['value']).to eq('TRIGGER_VALUE_1')
-        expect(manual_variables.first.keys).to match_array(%w[id key value raw variableType])
+        expect(manual_variables.first['key']).to eq(variable.key)
+        expect(manual_variables.first['value']).to eq(variable.value)
+        expect(manual_variables.first.keys).to match_array(%w[id key value])
       end
     end
 
@@ -82,9 +80,9 @@ RSpec.describe Types::Ci::PipelineType, feature_category: :continuous_integratio
 
       it 'returns the manual variables with nil values' do
         expect(manual_variables.size).to eq(1)
-        expect(manual_variables.first['key']).to eq('TRIGGER_KEY_1')
+        expect(manual_variables.first['key']).to eq(variable.key)
         expect(manual_variables.first['value']).to eq(nil)
-        expect(manual_variables.first.keys).to match_array(%w[id key value raw variableType])
+        expect(manual_variables.first.keys).to match_array(%w[id key value])
       end
     end
   end

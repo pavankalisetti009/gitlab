@@ -206,7 +206,7 @@ module Types
 
       field :trigger, GraphQL::Types::Boolean, method: :trigger?, null: false, description: "If the pipeline was created by a Trigger request."
 
-      field :manual_variables, ManualVariableType.connection_type, null: true, description: 'CI/CD variables added to a manual pipeline.'
+      field :manual_variables, PipelineManualVariableType.connection_type, null: true, description: 'CI/CD variables added to a manual pipeline.'
 
       def commit
         BatchLoader::GraphQL.wrap(object.commit)
@@ -245,10 +245,13 @@ module Types
       end
 
       def manual_variables
-        variables = object.variables
-        return variables if Ability.allowed?(current_user, :read_pipeline_variable, pipeline)
-
-        variables.each { |variable| variable.value = nil }
+        object.variables.map do |variable|
+          ::Ci::PipelineVariable.new(
+            id: variable.id,
+            key: variable.key,
+            value: Ability.allowed?(current_user, :read_pipeline_variable, pipeline) ? variable.value : nil
+          )
+        end
       end
 
       alias_method :pipeline, :object
