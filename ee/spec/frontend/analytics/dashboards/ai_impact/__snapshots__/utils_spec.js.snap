@@ -386,7 +386,6 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
       "value": "8.9%",
     },
     "change": {
-      "tooltip": undefined,
       "value": -0.15730337078651688,
     },
     "this-month": {
@@ -416,8 +415,8 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
       "value": "0.0%",
     },
     "change": {
-      "tooltip": "No change",
-      "value": 0,
+      "tooltip": "Value can't be calculated due to division by zero.",
+      "value": "n/a",
     },
     "this-month": {
       "tooltip": "8/9",
@@ -446,7 +445,7 @@ exports[`AI impact Dashboard utils generateTableRows returns the data formatted 
       "value": "10.0/d",
     },
     "change": {
-      "tooltip": "No data available",
+      "tooltip": "Value can't be calculated due to insufficient data.",
       "value": "n/a",
     },
     "this-month": {

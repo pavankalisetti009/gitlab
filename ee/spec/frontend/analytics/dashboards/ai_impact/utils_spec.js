@@ -2,6 +2,7 @@ import {
   generateDateRanges,
   generateTableColumns,
   generateSkeletonTableData,
+  calculateChange,
   generateTableRows,
   calculateCodeSuggestionsUsageRate,
   getRestrictedTableMetrics,
@@ -41,6 +42,31 @@ describe('AI impact Dashboard utils', () => {
     it('returns the skeleton based on the table fields', () => {
       expect(generateSkeletonTableData()).toMatchSnapshot();
     });
+  });
+
+  describe('calculateChange', () => {
+    it.each`
+      current      | previous     | value    | tooltip
+      ${0}         | ${10}        | ${-1}    | ${undefined}
+      ${0}         | ${-10}       | ${1}     | ${undefined}
+      ${100}       | ${200}       | ${-0.5}  | ${undefined}
+      ${0}         | ${0}         | ${0}     | ${'No change'}
+      ${'0.0'}     | ${'0.0'}     | ${0}     | ${'No change'}
+      ${10}        | ${10}        | ${0}     | ${'No change'}
+      ${10}        | ${0}         | ${'n/a'} | ${"Value can't be calculated due to division by zero."}
+      ${undefined} | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${null}      | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${'-'}       | ${100}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${100}       | ${undefined} | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${100}       | ${null}      | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${100}       | ${'-'}       | ${'n/a'} | ${"Value can't be calculated due to insufficient data."}
+      ${'-'}       | ${'-'}       | ${'n/a'} | ${'No data available'}
+    `(
+      '($current, $previous) returns { value: $value, tooltip: `$tooltip` }',
+      ({ current, previous, value, tooltip }) => {
+        expect(calculateChange(current, previous)).toEqual({ value, tooltip });
+      },
+    );
   });
 
   describe('generateTableRows', () => {
