@@ -251,6 +251,32 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
     end
   end
 
+  describe '#upload_path' do
+    context 'with a missing configuration value' do
+      it 'returns the default value in full path' do
+        use_gitlab_config_fixture('gitlab-missingconfigs.yml')
+
+        expect(context.upload_path).to eq(fake_gitlab_basepath.join('public/uploads'))
+      end
+    end
+
+    context 'with a relative path configured in gitlab.yml' do
+      it 'returns a full path based on gitlab basepath' do
+        use_gitlab_config_fixture('gitlab-relativepaths.yml')
+
+        expect(context.upload_path).to eq(fake_gitlab_basepath.join('tmp/tests/public/uploads'))
+      end
+    end
+
+    context 'with a full path configured in gitlab.yml' do
+      it 'returns a full path as configured in gitlab.yml' do
+        use_gitlab_config_fixture('gitlab.yml')
+
+        expect(context.upload_path).to eq(Pathname('/tmp/gitlab/full/public/uploads'))
+      end
+    end
+  end
+
   describe '#gitlab_shared_path' do
     context 'with shared path not configured in gitlab.yml' do
       it 'raises an error' do

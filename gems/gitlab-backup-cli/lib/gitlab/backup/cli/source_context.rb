@@ -17,6 +17,7 @@ module Gitlab
         DEFAULT_PAGES = 'pages/'
         DEFAULT_REGISTRY_PATH = 'registry/'
         DEFAULT_TERRAFORM_STATE_PATH = 'terraform_state/'
+        DEFAULT_UPLOADS_PATH = 'public/' # based on GitLab's root folder
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -94,8 +95,10 @@ module Gitlab
 
         # Upload basepath
         def upload_path
-          # TODO: Use configuration solver
-          File.join(Gitlab.config.uploads.storage_path, 'uploads')
+          path = gitlab_config.dig(env, 'uploads', 'storage_path') ||
+            gitlab_basepath.join(DEFAULT_UPLOADS_PATH)
+
+          absolute_path(path).join('uploads')
         end
 
         def env
