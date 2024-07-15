@@ -275,7 +275,7 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
     context 'when there is an alias' do
       include_context 'with an existing index and alias'
 
-      it 'raises an error' do
+      it 'raises an error', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/457794' do
         expect { helper.create_empty_index }.to raise_error(/Index under '.+' already exists/)
       end
 
