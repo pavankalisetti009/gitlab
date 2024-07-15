@@ -1,4 +1,4 @@
-import { GlTableLite, GlLabel, GlPagination } from '@gitlab/ui';
+import { GlBadge, GlTableLite, GlLabel, GlPagination } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { RouterLinkStub } from '@vue/test-utils';
@@ -34,7 +34,9 @@ describe('SecretsTable component', () => {
   const findSecretDetailsLink = () => wrapper.findByTestId('secret-details-link');
   const findSecretLabels = () => findSecretsTableRows().at(0).findAllComponents(GlLabel);
   const findSecretLastAccessed = () => wrapper.findByTestId('secret-last-accessed');
+  const findSecretExpires = () => wrapper.findByTestId('secret-expiration');
   const findSecretCreatedAt = () => wrapper.findByTestId('secret-created-at');
+  const findSecretStatus = (index) => wrapper.findAllComponents(GlBadge).at(index);
   const findSecretActionsCell = () => wrapper.findComponent(SecretActionsCell);
   const findPagination = () => wrapper.findComponent(GlPagination);
 
@@ -119,8 +121,24 @@ describe('SecretsTable component', () => {
       expect(findSecretLastAccessed().props('time')).toBe(secret.lastAccessed);
     });
 
+    it('shows when the secret expires', () => {
+      expect(findSecretExpires().props('date')).toBe(secret.expiration);
+    });
+
     it('shows when the secret was created', () => {
       expect(findSecretCreatedAt().props('date')).toBe(secret.createdAt);
+    });
+
+    it.each`
+      index | text               | variant      | icon
+      ${0}  | ${'Enabled'}       | ${'success'} | ${'status-active'}
+      ${1}  | ${'Disabled'}      | ${'neutral'} | ${'status-failed'}
+      ${2}  | ${'Expiring soon'} | ${'warning'} | ${'status-alert'}
+      ${3}  | ${'Expired'}       | ${'danger'}  | ${'status-cancelled'}
+    `('shows $text secret status', ({ index, text, variant, icon }) => {
+      expect(findSecretStatus(index).text()).toBe(text);
+      expect(findSecretStatus(index).props('variant')).toBe(variant);
+      expect(findSecretStatus(index).props('icon')).toBe(icon);
     });
 
     it('passes correct props to actions cell', () => {

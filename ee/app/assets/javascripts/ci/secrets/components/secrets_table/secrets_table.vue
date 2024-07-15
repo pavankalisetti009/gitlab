@@ -1,26 +1,35 @@
 <script>
-import { GlButton, GlCard, GlTableLite, GlSprintf, GlLabel, GlPagination } from '@gitlab/ui';
+import {
+  GlBadge,
+  GlButton,
+  GlCard,
+  GlTableLite,
+  GlSprintf,
+  GlLabel,
+  GlPagination,
+} from '@gitlab/ui';
 import { updateHistory, getParameterByName, setUrlParams } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
-import { LONG_DATE_FORMAT_WITH_TZ } from '~/vue_shared/constants';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
 import getSecretsQuery from '../../graphql/queries/client/get_secrets.query.graphql';
 import {
-  NEW_ROUTE_NAME,
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
-  SCOPED_LABEL_COLOR,
-  UNSCOPED_LABEL_COLOR,
   INITIAL_PAGE,
+  NEW_ROUTE_NAME,
   PAGE_SIZE,
+  SCOPED_LABEL_COLOR,
+  SECRET_STATUS,
+  UNSCOPED_LABEL_COLOR,
 } from '../../constants';
 import SecretActionsCell from './secret_actions_cell.vue';
 
 export default {
   name: 'SecretsTable',
   components: {
+    GlBadge,
     GlButton,
     GlCard,
     GlTableLite,
@@ -118,11 +127,19 @@ export default {
     },
     {
       key: 'lastAccessed',
-      label: s__('Secrets|Last accessed'),
+      label: s__('Secrets|Last used'),
+    },
+    {
+      key: 'expiration',
+      label: s__('Secrets|Expires'),
     },
     {
       key: 'createdAt',
       label: s__('Secrets|Created'),
+    },
+    {
+      key: 'status',
+      label: s__('Secrets|Status'),
     },
     {
       key: 'actions',
@@ -130,10 +147,10 @@ export default {
       tdClass: 'gl-text-right gl-p-3!',
     },
   ],
-  LONG_DATE_FORMAT_WITH_TZ,
   NEW_ROUTE_NAME,
   PAGE_SIZE,
   SCOPED_LABEL_COLOR,
+  SECRET_STATUS,
 };
 </script>
 <template>
@@ -189,12 +206,19 @@ export default {
         <template #cell(lastAccessed)="{ item: { lastAccessed } }">
           <time-ago :time="lastAccessed" data-testid="secret-last-accessed" />
         </template>
+        <template #cell(expiration)="{ item: { expiration } }">
+          <user-date :date="expiration" data-testid="secret-expiration" />
+        </template>
         <template #cell(createdAt)="{ item: { createdAt } }">
-          <user-date
-            :date="createdAt"
-            :date-format="$options.LONG_DATE_FORMAT_WITH_TZ"
-            data-testid="secret-created-at"
-          />
+          <user-date :date="createdAt" data-testid="secret-created-at" />
+        </template>
+        <template #cell(status)="{ item: { status } }">
+          <gl-badge
+            :icon="$options.SECRET_STATUS[status].icon"
+            :variant="$options.SECRET_STATUS[status].variant"
+          >
+            {{ $options.SECRET_STATUS[status].text }}
+          </gl-badge>
         </template>
         <template #cell(actions)="{ item: { id } }">
           <secret-actions-cell :details-route="getEditRoute(id)" />
