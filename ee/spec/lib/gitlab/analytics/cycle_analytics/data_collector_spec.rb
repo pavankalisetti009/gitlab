@@ -486,6 +486,23 @@ RSpec.describe Gitlab::Analytics::CycleAnalytics::DataCollector, feature_categor
         it_behaves_like 'custom Value Stream Analytics Stage'
       end
 
+      context 'between first reviewer assigned at time and merged at time' do
+        let(:start_event_identifier) { :merge_request_reviewer_first_assigned }
+        let(:end_event_identifier) { :merge_request_merged }
+
+        def create_data_for_start_event(example_class)
+          create(:merge_request, :unique_branches, :opened, source_project: example_class.project).tap do |mr|
+            mr.metrics.update!(reviewer_first_assigned_at: Time.current)
+          end
+        end
+
+        def create_data_for_end_event(mr, example_class)
+          mr.metrics.update!(merged_at: Time.current)
+        end
+
+        it_behaves_like 'custom Value Stream Analytics Stage'
+      end
+
       context 'between merge request merrged time and first deployed to production at time' do
         let(:start_event_identifier) { :merge_request_merged }
         let(:end_event_identifier) { :merge_request_first_deployed_to_production }
