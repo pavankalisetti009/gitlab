@@ -16,10 +16,6 @@ RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rai
   let_it_be(:developer) { create(:user, developer_of: group) }
   let_it_be(:subgroup_owner) { create(:user, owner_of: subgroup) }
 
-  before do
-    stub_feature_flags(ramon: false)
-  end
-
   context 'with an exceeded user cap' do
     before do
       allow(Gitlab).to receive(:com?).and_return(true)

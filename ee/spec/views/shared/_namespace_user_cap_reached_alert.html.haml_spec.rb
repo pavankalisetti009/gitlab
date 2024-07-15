@@ -18,8 +18,6 @@ RSpec.describe 'shared/namespace_user_cap_reached_alert', :use_clean_rails_memor
     allow(Gitlab).to receive(:com?).and_return(true)
     stub_cache(group)
     stub_cache(other_group)
-
-    stub_feature_flags(ramon: false)
   end
 
   it 'renders a link to pending user approvals' do

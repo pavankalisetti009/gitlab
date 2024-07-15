@@ -407,10 +407,6 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       group.add_developer(create(:user))
     end
 
-    before do
-      stub_feature_flags(ramon: false)
-    end
-
     context 'when the user cap has not been reached' do
       before do
         group.namespace_settings.update!(new_user_signups_cap: 10)
@@ -572,8 +568,6 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     let(:root_ancestor) { group }
 
     before do
-      stub_feature_flags(ramon: false)
-
       allow(root_ancestor).to receive(:user_cap_reached?).and_return(user_cap_reached)
     end
 
