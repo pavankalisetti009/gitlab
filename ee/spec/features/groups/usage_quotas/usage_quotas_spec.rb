@@ -11,8 +11,6 @@ RSpec.describe 'Groups > Usage Quotas', :js, :saas, feature_category: :consumabl
   end
 
   before do
-    stub_feature_flags(ramon: false)
-
     group.add_owner(user)
     sign_in(user)
   end
