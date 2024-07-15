@@ -38,23 +38,23 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
         end
       end
 
-      context 'when updated_at is within a 1 second range' do
+      context 'when updated_at is within a 5 second range' do
         let_it_be(:updated_at) { Time.current }
 
         before do
           epic.update!(updated_at: updated_at)
-          work_item.update!(updated_at: updated_at + 0.9.seconds)
+          work_item.update!(updated_at: updated_at + 4.9.seconds)
         end
 
         it { is_expected.to be_empty }
       end
 
-      context 'when updated_at exceeds 1 second difference' do
+      context 'when updated_at exceeds 5 second difference' do
         let_it_be(:updated_at) { Time.current }
 
         before do
           epic.update!(updated_at: updated_at)
-          work_item.update!(updated_at: updated_at + 1.second)
+          work_item.update!(updated_at: updated_at + 5.seconds)
         end
 
         it { is_expected.to include("updated_at") }

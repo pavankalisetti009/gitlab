@@ -37,6 +37,15 @@ module BulkImports
 
         handle_parent_link(epic)
 
+        # force sync validation now, as we skip the epic create event triggered from ::Epics::CreateService
+        # when it comes from import because it triggers false positives for sync validation because
+        # work_item_parent_link is added a after epic is created leading to mismatch on parent_id
+        epic.run_after_commit_or_now do
+          ::Gitlab::EventStore.publish(
+            ::Epics::EpicCreatedEvent.new(data: { id: epic.id, group_id: epic.group_id, force_validation_sync: true })
+          )
+        end
+
         epic
       end
 
