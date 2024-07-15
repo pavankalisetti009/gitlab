@@ -23,7 +23,7 @@ class SubscriptionsController < ApplicationController
   urgency :low
 
   def new
-    ensure_registered! unless current_user.present?
+    return ensure_registered! unless current_user.present?
 
     @namespace =
       if params[:namespace_id]
@@ -53,7 +53,7 @@ class SubscriptionsController < ApplicationController
     @account_id = result[:account_id]
     @active_subscription = result[:active_subscription]
 
-    render_404 if @group.nil?
+    return render_404 if @group.nil?
 
     purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
       current_user: current_user,
@@ -77,7 +77,7 @@ class SubscriptionsController < ApplicationController
     @account_id = result[:account_id]
     @active_subscription = result[:active_subscription]
 
-    render_404 if @group.nil?
+    return render_404 if @group.nil?
 
     purchase_url_builder = GitlabSubscriptions::PurchaseUrlBuilder.new(
       current_user: current_user,
