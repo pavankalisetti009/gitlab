@@ -29,7 +29,7 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
     before do
       group.add_owner(user)
 
-      stub_feature_flags(display_work_item_epic_issue_sidebar: false)
+      stub_feature_flags(work_item_epics: false)
 
       sign_in user
     end
@@ -162,7 +162,7 @@ RSpec.describe 'Epic in issue sidebar', :js, feature_category: :team_planning do
     before do
       group.add_owner(user)
       stub_licensed_features(epics: true)
-      stub_feature_flags(display_work_item_epic_issue_sidebar: true)
+      stub_feature_flags(work_item_epics: true)
 
       sign_in(user)
 
