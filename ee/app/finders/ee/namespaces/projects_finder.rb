@@ -30,18 +30,24 @@ module EE
 
       def with_compliance_framework(collection)
         filter_id = params.dig(:compliance_framework_filters, :id)
+        filter_ids = params.dig(:compliance_framework_filters, :ids) || []
 
-        return collection if filter_id.nil?
+        filter_ids << filter_id unless filter_id.nil?
 
-        collection.compliance_framework_id_in(filter_id)
+        return collection if filter_ids.blank?
+
+        collection.compliance_framework_id_in(filter_ids)
       end
 
       def by_negated_compliance_framework_filters(collection)
         filter_id = params.dig(:compliance_framework_filters, :not, :id)
+        filter_ids = params.dig(:compliance_framework_filters, :not, :ids) || []
 
-        return collection if filter_id.nil?
+        filter_ids << filter_id unless filter_id.nil?
 
-        collection.compliance_framework_id_not_in(filter_id)
+        return collection if filter_ids.blank?
+
+        collection.compliance_framework_id_not_in(filter_ids)
       end
 
       def by_compliance_framework_presence(collection)

@@ -27,11 +27,13 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
   describe '#execute' do
     context 'when compliance framework is present' do
       let_it_be(:framework_1) { create(:compliance_framework, namespace: namespace, name: "Test1") }
+      let_it_be(:framework_1_id) { framework_1.id }
       let_it_be(:framework_settings_1) do
         create(:compliance_framework_project_setting, project: project_1, compliance_management_framework: framework_1)
       end
 
       let_it_be(:framework_2) { create(:compliance_framework, namespace: namespace, name: "Test2") }
+      let_it_be(:framework_2_id) { framework_2.id }
       let_it_be(:framework_settings_2) do
         create(:compliance_framework_project_setting, project: project_2, compliance_management_framework: framework_2)
       end
@@ -39,14 +41,20 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
       let_it_be(:other_namespace) { create(:group, :public) }
       let_it_be(:other_project) { create(:project, :public, group: other_namespace) }
       let_it_be(:other_framework) { create(:compliance_framework, namespace: other_namespace) }
+      let_it_be(:other_framework_id) { other_framework.id }
       let_it_be(:other_framework_settings) do
         create(:compliance_framework_project_setting, project: other_project,
           compliance_management_framework: other_framework)
       end
 
+      let_it_be_with_reload(:project_without_framework) do
+        create(:project, :public, group: namespace, path: 'project-without-framework',
+          name: 'Project without framework')
+      end
+
       context 'when no filters are present' do
         it 'returns all projects' do
-          expect(projects).to contain_exactly(project_1, project_2)
+          expect(projects).to contain_exactly(project_1, project_2, project_without_framework)
         end
       end
 
@@ -81,7 +89,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:framework_id) { nil }
 
           it 'returns all projects' do
-            expect(projects).to contain_exactly(project_1, project_2)
+            expect(projects).to contain_exactly(project_1, project_2, project_without_framework)
           end
         end
       end
@@ -93,7 +101,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:framework_id) { framework_1.id }
 
           it "returns projects where compliance framework id is not framework's id or nil" do
-            expect(projects).to contain_exactly(project_2)
+            expect(projects).to contain_exactly(project_2, project_without_framework)
           end
         end
 
@@ -101,7 +109,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:framework_id) { other_framework.id }
 
           it 'returns all projects' do
-            expect(projects).to contain_exactly(project_1, project_2)
+            expect(projects).to contain_exactly(project_1, project_2, project_without_framework)
           end
         end
 
@@ -109,7 +117,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:framework_id) { non_existing_record_id }
 
           it 'returns all projects' do
-            expect(projects).to contain_exactly(project_1, project_2)
+            expect(projects).to contain_exactly(project_1, project_2, project_without_framework)
           end
         end
 
@@ -117,7 +125,7 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
           let(:framework_id) { nil }
 
           it 'returns all projects' do
-            expect(projects).to contain_exactly(project_1, project_2)
+            expect(projects).to contain_exactly(project_1, project_2, project_without_framework)
           end
         end
       end
@@ -155,10 +163,6 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
 
         context "when presence filter is 'none'" do
           let(:params) { { compliance_framework_filters: { presence_filter: 'none' } } }
-          let_it_be(:project_without_framework) do
-            create(:project, :public, group: namespace, path: 'project-without-framework',
-              name: 'Project without framework')
-          end
 
           it 'returns projects without a compliance framework' do
             expect(projects).to contain_exactly(project_without_framework)
@@ -171,6 +175,66 @@ RSpec.describe Namespaces::ProjectsFinder, feature_category: :groups_and_project
 
         it 'raises an ArgumentError' do
           expect { projects }.to raise_error(ArgumentError, "The presence filter is not supported: 'invalid'")
+        end
+      end
+
+      context 'when compliance framework ids is passed' do
+        # rubocop:disable Layout/LineLength -- Required for formatting of table
+        where(:framework_ids, :output) do
+          [ref(:framework_1_id), ref(:framework_2_id)] | [ref(:project_1), ref(:project_2)]
+          [ref(:other_framework_id)]                   | []
+          [ref(:non_existing_record_id)]               | []
+          []                                           | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+          nil                                          | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+        end
+        # rubocop:enable Layout/LineLength
+
+        with_them do
+          let(:params) { { compliance_framework_filters: { ids: framework_ids } } }
+
+          it 'returns related projects' do
+            expect(projects).to match_array(output)
+          end
+        end
+      end
+
+      context 'when negated compliance framework ids is passed' do
+        # rubocop:disable Layout/LineLength -- Required for formatting of table
+        where(:framework_ids, :output) do
+          [ref(:framework_1_id), ref(:framework_2_id)] | [ref(:project_without_framework)]
+          [ref(:framework_1_id)]                       | [ref(:project_2), ref(:project_without_framework)]
+          [ref(:other_framework_id)]                   | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+          [ref(:non_existing_record_id)]               | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+          []                                           | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+          nil                                          | [ref(:project_1), ref(:project_2), ref(:project_without_framework)]
+        end
+        # rubocop:enable Layout/LineLength
+
+        with_them do
+          let(:params) { { compliance_framework_filters: { not: { ids: framework_ids } } } }
+
+          it 'returns related projects' do
+            expect(projects).to match_array(output)
+          end
+        end
+      end
+
+      context 'when combination of framework id, ids and negations are passed together' do
+        # rubocop:disable Layout/LineLength -- Required for formatting of table
+        where(:filters, :output) do
+          { id: ref(:framework_1_id), ids: [ref(:framework_1_id), ref(:framework_2_id)] }                                   | [ref(:project_1), ref(:project_2)]
+          { ids: [ref(:framework_1_id), ref(:framework_2_id)], not: { id: ref(:framework_1_id) } }                          | [ref(:project_2)]
+          { ids: [ref(:framework_1_id), ref(:framework_2_id)], not: { ids: [ref(:framework_1_id), ref(:framework_2_id)] } } | []
+          { not: { id: ref(:framework_1_id), ids: [ref(:framework_2_id)] } }                                                | [ref(:project_without_framework)]
+        end
+        # rubocop:enable Layout/LineLength
+
+        with_them do
+          let(:params) { { compliance_framework_filters: filters } }
+
+          it 'returns related projects' do
+            expect(projects).to match_array(output)
+          end
         end
       end
     end
