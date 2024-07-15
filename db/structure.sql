@@ -21239,8 +21239,6 @@ ALTER TABLE ONLY p_catalog_resource_sync_events ALTER COLUMN id SET DEFAULT next
 
 ALTER TABLE ONLY p_ci_builds_metadata ALTER COLUMN id SET DEFAULT nextval('ci_builds_metadata_id_seq'::regclass);
 
-ALTER TABLE ONLY p_ci_job_annotations ALTER COLUMN id SET DEFAULT nextval('p_ci_job_annotations_id_seq'::regclass);
-
 ALTER TABLE ONLY packages_build_infos ALTER COLUMN id SET DEFAULT nextval('packages_build_infos_id_seq'::regclass);
 
 ALTER TABLE ONLY packages_composer_cache_files ALTER COLUMN id SET DEFAULT nextval('packages_composer_cache_files_id_seq'::regclass);
