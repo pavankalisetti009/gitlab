@@ -140,7 +140,7 @@ function mountSidebarCveIdRequest(store) {
 
 function mountSidebarEpicWidget() {
   const el = document.querySelector('.js-sidebar-epic-widget-root');
-  const displayWorkItemEpicIssueSidebar = window.gon?.features?.displayWorkItemEpicIssueSidebar;
+  const workItemEpics = window.gon?.features?.workItemEpics;
 
   if (!el) {
     return null;
@@ -164,7 +164,7 @@ function mountSidebarEpicWidget() {
           issueId,
           issuableType: TYPE_ISSUE,
           issuableAttribute: IssuableAttributeType.Epic,
-          showWorkItemEpics: displayWorkItemEpicIssueSidebar,
+          showWorkItemEpics: workItemEpics,
         },
       }),
   });

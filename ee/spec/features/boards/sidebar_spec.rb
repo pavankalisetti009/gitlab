@@ -31,7 +31,7 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(multiple_issue_assignees: true)
-    stub_feature_flags(display_work_item_epic_issue_sidebar: false)
+    stub_feature_flags(work_item_epics: false)
 
     project.add_maintainer(user)
     project.team.add_developer(user2)
