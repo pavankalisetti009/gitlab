@@ -1,4 +1,5 @@
-import { __, sprintf } from '~/locale';
+import { isNil } from 'lodash';
+import { __, s__, sprintf } from '~/locale';
 import {
   getStartOfDay,
   dateAtFirstDayOfMonth,
@@ -89,6 +90,44 @@ export const generateSkeletonTableData = (excludeMetrics = []) =>
       invertTrendColor,
     }));
 
+export const calculateChange = (current, previous) => {
+  const isInvalid = (value) => isNil(value) || value === '-';
+
+  if (isInvalid(current) && isInvalid(previous)) {
+    return { value: __('n/a'), tooltip: __('No data available') };
+  }
+
+  if (isInvalid(current) || isInvalid(previous)) {
+    return {
+      value: __('n/a'),
+      tooltip: s__("AiImpactAnalytics|Value can't be calculated due to insufficient data."),
+    };
+  }
+
+  if (Number(previous) === 0 && Number(current) === 0) {
+    return { value: 0, tooltip: __('No change') };
+  }
+
+  if (Number(previous) === 0) {
+    return {
+      value: __('n/a'),
+      tooltip: s__("AiImpactAnalytics|Value can't be calculated due to division by zero."),
+    };
+  }
+
+  // Either 100% or -100%, depending on the previous value
+  if (Number(current) === 0) {
+    return { value: -Math.sign(previous) };
+  }
+
+  const value = percentChange({ current, previous });
+  if (value === 0) {
+    return { value, tooltip: __('No change') };
+  }
+
+  return { value };
+};
+
 /**
  * Takes N time periods for a single metric and generates the row for the table.
  *
@@ -110,24 +149,9 @@ const buildTableRow = ({ identifier, units, timePeriods }) => {
 
   const firstMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(1));
   const lastMonth = timePeriods.find((timePeriod) => timePeriod.key === getColumnKeyForMonth(5));
+  const change = calculateChange(firstMonth[identifier]?.value, lastMonth[identifier]?.value);
 
-  let changeValue = __('n/a');
-  let tooltip = __('No data available');
-  if (firstMonth[identifier]?.value !== '-' && lastMonth[identifier]?.value !== '-') {
-    const current = firstMonth[identifier].value;
-    const previous = lastMonth[identifier].value;
-
-    changeValue = percentChange({ current, previous });
-    tooltip = changeValue === 0 ? __('No change') : undefined;
-  }
-
-  return {
-    ...row,
-    change: {
-      value: changeValue,
-      tooltip,
-    },
-  };
+  return { ...row, change };
 };
 
 /**
