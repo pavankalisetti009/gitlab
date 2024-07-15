@@ -1191,6 +1191,24 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: compliance_management_pipl_update_user_country_access_logs
+  :worker_name: ComplianceManagement::Pipl::UpdateUserCountryAccessLogsWorker
+  :feature_category: :instance_resiliency
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: compliance_management_pipl_user_paid_status_check
+  :worker_name: ComplianceManagement::Pipl::UserPaidStatusCheckWorker
+  :feature_category: :instance_resiliency
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: compliance_management_project_framework_export_mailer
   :worker_name: ComplianceManagement::ProjectFrameworkExportMailerWorker
   :feature_category: :compliance_management
