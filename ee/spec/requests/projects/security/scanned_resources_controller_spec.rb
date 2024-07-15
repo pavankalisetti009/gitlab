@@ -21,7 +21,7 @@ RSpec.describe Projects::Security::ScannedResourcesController, type: :request, f
       login_as(user)
     end
 
-    include_context '"Security and Compliance" permissions' do
+    include_context '"Security and compliance" permissions' do
       let(:valid_request) { request }
 
       before_request do

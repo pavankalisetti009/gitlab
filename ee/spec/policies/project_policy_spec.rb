@@ -677,7 +677,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         project.project_feature.update!(security_and_compliance_access_level: access_level)
       end
 
-      context 'when "Security and Compliance" is disabled' do
+      context 'when "Security and compliance" is disabled' do
         let(:access_level) { Featurable::DISABLED }
 
         it { is_expected.to be_disallowed(:access_security_and_compliance) }
@@ -685,7 +685,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
         it { is_expected.to be_disallowed(:read_vulnerability) }
       end
 
-      context 'when "Security and Compliance" is enabled' do
+      context 'when "Security and compliance" is enabled' do
         let(:access_level) { Featurable::PRIVATE }
 
         it { is_expected.to be_allowed(:access_security_and_compliance) }

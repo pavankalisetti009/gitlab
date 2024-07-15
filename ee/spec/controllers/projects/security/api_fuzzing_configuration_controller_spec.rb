@@ -10,7 +10,7 @@ RSpec.describe Projects::Security::ApiFuzzingConfigurationController, feature_ca
 
   subject(:request) { get :show, params: { namespace_id: project.namespace, project_id: project } }
 
-  include_context '"Security and Compliance" permissions' do
+  include_context '"Security and compliance" permissions' do
     let(:valid_request) { request }
 
     before_request do

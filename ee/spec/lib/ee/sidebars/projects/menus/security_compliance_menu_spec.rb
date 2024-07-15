@@ -101,7 +101,7 @@ RSpec.describe Sidebars::Projects::Menus::SecurityComplianceMenu, feature_catego
       end
     end
 
-    describe 'Discover Security and Compliance' do
+    describe 'Discover Security and compliance' do
       let(:item_id) { :discover_project_security }
 
       context 'when show_discover_project_security is true' do

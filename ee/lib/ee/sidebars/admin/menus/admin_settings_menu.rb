@@ -72,7 +72,7 @@ module EE
             end
 
             ::Sidebars::MenuItem.new(
-              title: _('Security and Compliance'),
+              title: _('Security and compliance'),
               link: security_and_compliance_admin_application_settings_path,
               active_routes: { path: 'admin/application_settings#security_and_compliance' },
               item_id: :admin_security_and_compliance,
