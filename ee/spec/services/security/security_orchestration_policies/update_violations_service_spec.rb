@@ -47,6 +47,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
         expect(violated_policies).to contain_exactly(policy_b)
       end
 
+      it 'stores the correct status' do
+        service.add_violation(policy_b.id, { uuid: { newly_detected: [123] } })
+        service.execute
+
+        expect(last_violation.status).to eq("completed")
+        expect(last_violation).to be_valid
+      end
+
       it 'can persist violation data' do
         service.add_violation(policy_b.id, { uuid: { newly_detected: [123] } })
         service.execute
@@ -78,6 +86,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
             { 'violations' => { 'scan_finding' => { 'uuids' => { 'newly_detected' => [123] } } },
               'errors' => [{ 'error' => 'SCAN_REMOVED', 'missing_scans' => ['sast'] }] }
           )
+        expect(last_violation).to be_valid
+      end
+
+      it 'stores the correct status' do
+        service.add_error(policy_a.id, :scan_removed, missing_scans: ['sast'])
+        service.execute
+
+        expect(last_violation.status).to eq("completed")
         expect(last_violation).to be_valid
       end
 
@@ -129,6 +145,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::UpdateViolationsService,
     it 'adds violation data into the correct structure' do
       expect(violation_data)
         .to eq({ violations: { scan_finding: { uuid: { newly_detected: [123] } } } })
+    end
+
+    it 'stores the correct status' do
+      service.add_error(policy_a.id, :scan_removed, missing_scans: ['sast'])
+      service.execute
+
+      expect(last_violation.status).to eq("completed")
+      expect(last_violation).to be_valid
     end
 
     context 'when other data is present' do

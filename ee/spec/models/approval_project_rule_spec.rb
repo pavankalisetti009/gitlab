@@ -520,7 +520,8 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
           expect(attrs).to include(
             "scan_result_policy_id" => scan_result_policy_read.id,
             "merge_request_id" => merge_request.id,
-            "project_id" => project.id)
+            "project_id" => project.id,
+            "status" => "running")
         end
       end
 
