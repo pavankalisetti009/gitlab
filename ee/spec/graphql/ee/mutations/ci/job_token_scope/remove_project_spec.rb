@@ -69,14 +69,11 @@ RSpec.describe Mutations::Ci::JobTokenScope::RemoveProject, feature_category: :c
 
       context 'and service returns an error' do
         it 'does not log an audit event' do
-          expect(::Ci::JobTokenScope::RemoveProjectService).to receive(:new).with(
-            project,
-            current_user
-          ).and_return(service)
-          expect(service)
-            .to receive(:execute)
-            .with(target_project, :inbound)
-            .and_return(ServiceResponse.error(message: 'The error message'))
+          expect_next_instance_of(::Ci::JobTokenScope::RemoveProjectService) do |service|
+            expect(service)
+             .to receive(:validate_edit!)
+            .and_raise(::Ci::JobTokenScope::EditScopeValidations::ValidationError)
+          end
 
           expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
 
