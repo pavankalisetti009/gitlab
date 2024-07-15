@@ -12,6 +12,13 @@ module EE
         super
       end
 
+      override :execute!
+      def execute!
+        send_truth_data
+
+        super
+      end
+
       private
 
       def send_truth_data
