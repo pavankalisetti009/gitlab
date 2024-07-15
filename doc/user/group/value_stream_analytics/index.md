@@ -314,6 +314,9 @@ The table shows a list of related workflow items for the selected stage. Based o
 - Issues
 - Merge requests
 
+NOTE:
+The end date for each predefined date range is the current day, and is included in the number of days selected. For example, the start date for `Last 30 days` is 29 days prior to the current day for a total of 30 days.
+
 ### Data filters
 
 You can filter value stream analytics to view data that matches specific criteria. The following filters are supported:
