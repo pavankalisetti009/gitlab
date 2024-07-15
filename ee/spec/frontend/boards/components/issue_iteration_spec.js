@@ -23,7 +23,7 @@ describe('IssueIteration', () => {
   it('shows the iteration period', () => {
     mountIssueIteration(mockIteration);
 
-    expect(findBody().text()).toContain('Oct 5, 2021 - Oct 10, 2021');
+    expect(findBody().text()).toContain('Oct 5 - Oct 10, 2021');
   });
 
   describe('tooltip info', () => {
@@ -50,7 +50,7 @@ describe('IssueIteration', () => {
     it('shows the iteration period', () => {
       mountIssueIteration(mockIteration);
 
-      expect(findPeriod().text()).toContain('Oct 5, 2021 - Oct 10, 2021');
+      expect(findPeriod().text()).toContain('Oct 5 - Oct 10, 2021');
     });
   });
 });

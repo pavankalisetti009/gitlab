@@ -478,7 +478,7 @@ export default {
             <template v-else-if="hasIterationSelection">
               <gl-icon class="gl-flex-shrink-0" name="iteration" />
               <span class="gl-text-truncate">{{
-                selectedItem.title || getIterationPeriod(selectedItem)
+                selectedItem.title || getIterationPeriod(selectedItem, null, true)
               }}</span>
             </template>
 

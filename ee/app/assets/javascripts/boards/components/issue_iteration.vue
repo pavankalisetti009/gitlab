@@ -15,7 +15,7 @@ export default {
   },
   computed: {
     iterationPeriod() {
-      return getIterationPeriod(this.iteration);
+      return getIterationPeriod(this.iteration, true);
     },
     showIterationCadenceTitle() {
       return this.iteration.iterationCadence?.title !== undefined;

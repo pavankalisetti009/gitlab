@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User views iteration cadences', :js, feature_category: :team_planning do
+  include Features::IterationHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:subgroup) { create(:group, parent: group) }
@@ -28,7 +30,7 @@ RSpec.describe 'User views iteration cadences', :js, feature_category: :team_pla
 
     click_button cadence.title
 
-    expect(page).to have_content(iteration_in_cadence.period)
+    expect(page).to have_content(iteration_period_display(iteration_in_cadence))
     expect(page).not_to have_content(subgroup_cadence.title)
     expect(page).not_to have_content(iteration_in_other_cadence.period)
     expect(page).not_to have_content(closed_iteration_in_cadence.period)
@@ -40,7 +42,7 @@ RSpec.describe 'User views iteration cadences', :js, feature_category: :team_pla
     click_button cadence.title
 
     expect(page).not_to have_content(iteration_in_cadence.period)
-    expect(page).to have_content(closed_iteration_in_cadence.period)
+    expect(page).to have_content(iteration_period_display(closed_iteration_in_cadence))
   end
 
   it 'shows inherited cadences in subgroup', :aggregate_failures do

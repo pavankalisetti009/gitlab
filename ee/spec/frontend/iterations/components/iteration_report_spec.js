@@ -13,6 +13,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
 import IterationTitle from 'ee/iterations/components/iteration_title.vue';
 import { getIterationPeriod } from 'ee/iterations/utils';
+import { formatDate } from '~/lib/utils/datetime_utility';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import {
   mockIterationNode,
@@ -269,12 +270,12 @@ describe('Iterations report', () => {
       });
 
       it('shows status and date in header', () => {
-        const startDate = IterationReport.methods.formatDate(mockIterationNode.startDate);
-        const dueDate = IterationReport.methods.formatDate(mockIterationNode.startDate);
+        const shortStartDate = formatDate(mockIterationNode.startDate, 'mmm d');
+        const dueDate = formatDate(mockIterationNode.dueDate, 'mmm d, yyyy');
         expect(wrapper.findComponent(TimeboxStatusBadge).props('state')).toContain(
           mockIterationNode.state,
         );
-        expect(findTopbar().text()).toContain(startDate);
+        expect(findTopbar().text()).toContain(shortStartDate);
         expect(findTopbar().text()).toContain(dueDate);
       });
 

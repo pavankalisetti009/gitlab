@@ -30,14 +30,14 @@ module QA
               end
             end
 
-            def assign_iteration(iteration_period)
+            def assign_iteration(iteration_period, expected_link_text)
               within_element('iteration-container') do
                 click_element('edit-button')
                 click_on(iteration_period.to_s)
               end
 
               wait_until(reload: false) do
-                has_element?('iteration-container', text: iteration_period, wait: 0)
+                has_element?('iteration-link', text: expected_link_text, wait: 0)
               end
 
               refresh
