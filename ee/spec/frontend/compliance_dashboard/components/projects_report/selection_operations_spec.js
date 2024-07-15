@@ -29,7 +29,7 @@ describe('SelectionOperations component', () => {
   const createComponent = (props) => {
     wrapper = mount(SelectionOperations, {
       propsData: {
-        rootAncestorPath: 'group-path',
+        groupPath: 'group-path',
         ...props,
       },
       stubs: {

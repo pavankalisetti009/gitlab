@@ -286,7 +286,7 @@ export default {
     </gl-modal>
     <selection-operations
       :selection="selectedRows"
-      :root-ancestor-path="rootAncestorPath"
+      :group-path="groupPath"
       :is-apply-in-progress="isApplyInProgress"
       :is-framework-creating-enabled="isFrameworkEditingEnabled"
       :default-framework="preselectedFrameworkForBulkOperation"
@@ -336,7 +336,7 @@ export default {
         <gl-loading-icon v-if="hasPendingSingleOperation(id)" size="sm" inline />
         <framework-selection-box
           v-else-if="!complianceFrameworks.length"
-          :root-ancestor-path="rootAncestorPath"
+          :group-path="groupPath"
           :is-framework-creating-enabled="isFrameworkEditingEnabled"
           @select="
             applySingleItemOperation({

@@ -12,7 +12,7 @@ describe('ComplianceFrameworksFilters', () => {
     wrapper = mount(ComplianceFrameworksFilters, {
       propsData: {
         value: [],
-        rootAncestorPath: 'my-group-path',
+        groupPath: 'my-group-path',
         ...props,
       },
       stubs: {
@@ -28,7 +28,11 @@ describe('ComplianceFrameworksFilters', () => {
 
     it('renders a Filtered Search component with correct props', () => {
       expect(findFilteredSearch().exists()).toBe(true);
-      expect(wrapper.props('rootAncestorPath')).toBe('my-group-path');
+      expect(
+        findFilteredSearch()
+          .props('availableTokens')
+          .find((token) => token.entityType === 'framework').groupPath,
+      ).toBe('my-group-path');
     });
 
     it('emits a "submit" event with the filters when Filtered Search component is submitted', () => {
