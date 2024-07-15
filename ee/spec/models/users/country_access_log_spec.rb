@@ -29,4 +29,30 @@ RSpec.describe Users::CountryAccessLog, :saas, feature_category: :instance_resil
       let_it_be(:model) { create(:country_access_log, user: parent) }
     end
   end
+
+  describe 'scopes' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:from_cn) { create(:country_access_log, user: user, access_count: 0) }
+    let_it_be(:from_hk) do
+      create(:country_access_log, country_code: 'HK', user: user, first_access_at: 7.months.ago, access_count: 1)
+    end
+
+    describe '.from_country_code' do
+      it 'returns records with country_code in given country codes' do
+        expect(described_class.from_country_code(%w[CN])).to match_array [from_cn]
+      end
+    end
+
+    describe '.with_access' do
+      it 'returns records with access_count > 0' do
+        expect(described_class.with_access).to match_array [from_hk]
+      end
+    end
+
+    describe '.first_access_before' do
+      it 'returns records with first_access < the given timestamp' do
+        expect(described_class.first_access_before(6.months.ago)).to match_array [from_hk]
+      end
+    end
+  end
 end

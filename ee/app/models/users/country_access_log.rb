@@ -12,5 +12,9 @@ module Users
     validates :access_count, numericality: { greater_than_or_equal_to: 0 }, presence: true
     validates :first_access_at, presence: true, if: -> { access_count.try(:>, 0) }
     validates :last_access_at, presence: true, if: -> { access_count.try(:>, 0) }
+
+    scope :from_country_code, ->(country_code) { where(country_code: country_code) }
+    scope :with_access, -> { where('access_count > ?', 0) }
+    scope :first_access_before, ->(timestamp) { where('first_access_at < ?', timestamp) }
   end
 end
