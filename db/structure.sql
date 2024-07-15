@@ -17224,7 +17224,8 @@ CREATE TABLE scan_result_policy_violations (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     violation_data jsonb,
-    approval_policy_rule_id bigint
+    approval_policy_rule_id bigint,
+    status smallint DEFAULT 1 NOT NULL
 );
 
 CREATE SEQUENCE scan_result_policy_violations_id_seq

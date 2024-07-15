@@ -109,6 +109,7 @@ class ApprovalProjectRule < ApplicationRecord
       Security::ScanResultPolicyViolation.upsert_all(
         [merge_request_id: merge_request.id,
          scan_result_policy_id: rule.scan_result_policy_id,
+         status: Security::ScanResultPolicyViolation.statuses[:running],
          project_id: merge_request.project_id],
         unique_by: %w[scan_result_policy_id merge_request_id])
 

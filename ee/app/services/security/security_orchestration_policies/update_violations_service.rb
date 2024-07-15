@@ -60,7 +60,7 @@ module Security
       def create_violations
         attrs = violated_policy_ids.map do |id|
           { scan_result_policy_id: id, merge_request_id: merge_request.id, project_id: merge_request.project_id,
-            violation_data: violation_data[id] }
+            violation_data: violation_data[id], status: ScanResultPolicyViolation.statuses[:completed] }
         end
         return unless attrs.any?
 
