@@ -198,7 +198,7 @@ RSpec.describe 'Issue Sidebar', feature_category: :team_planning do
 
         within_testid('select-iteration') do
           expect(page).to have_text(iteration_cadence.title)
-          expect(page).to have_text(iteration.period)
+          expect(page).to have_text(iteration_period_display_no_year(iteration))
         end
 
         find_and_click_edit_iteration

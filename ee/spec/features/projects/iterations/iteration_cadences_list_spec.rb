@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User views project iteration cadences', :js, feature_category: :team_planning do
+  include Features::IterationHelpers
+
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -27,14 +29,14 @@ RSpec.describe 'User views project iteration cadences', :js, feature_category: :
       expect(page).to have_title('Iteration cadences')
       expect(page).to have_content(cadence.title)
       expect(page).to have_content(other_cadence.title)
-      expect(page).not_to have_content(iteration_in_cadence.period)
-      expect(page).not_to have_content(iteration_in_other_cadence.period)
+      expect(page).not_to have_content(iteration_period_display(iteration_in_cadence))
+      expect(page).not_to have_content(iteration_period_display(iteration_in_other_cadence))
 
       click_button cadence.title
 
-      expect(page).to have_content(iteration_in_cadence.period)
-      expect(page).not_to have_content(iteration_in_other_cadence.period)
-      expect(page).not_to have_content(closed_iteration_in_cadence.period)
+      expect(page).to have_content(iteration_period_display(iteration_in_cadence))
+      expect(page).not_to have_content(iteration_period_display(iteration_in_other_cadence))
+      expect(page).not_to have_content(iteration_period_display(closed_iteration_in_cadence))
       expect(page).not_to have_link('New iteration cadence')
     end
   end

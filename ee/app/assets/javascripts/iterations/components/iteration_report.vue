@@ -5,7 +5,6 @@ import BurnCharts from 'ee/burndown_chart/components/burn_charts.vue';
 import { TYPENAME_ITERATION } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { WORKSPACE_GROUP } from '~/issues/constants';
-import { formatDate } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
 import deleteIteration from '../queries/destroy_iteration.mutation.graphql';
 import query from '../queries/iteration.query.graphql';
@@ -127,9 +126,6 @@ export default {
     },
   },
   methods: {
-    formatDate(date) {
-      return formatDate(date, 'mmm d, yyyy', true);
-    },
     showModal() {
       this.$refs.modal.show();
     },

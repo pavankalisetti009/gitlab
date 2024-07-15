@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User creates iteration in a cadence', :js, feature_category: :team_planning do
+  include Features::IterationHelpers
+
   let_it_be(:now) { Time.zone.now }
   let_it_be(:group) { create(:group) }
   let_it_be(:user) { create(:group_member, :maintainer, user: create(:user), group: group).user }
@@ -34,8 +36,7 @@ RSpec.describe 'User creates iteration in a cadence', :js, feature_category: :te
     aggregate_failures do
       expect(page).to have_content(title)
       expect(page).to have_content(desc)
-      expect(page).to have_content(start_date.strftime('%b %-d, %Y'))
-      expect(page).to have_content(due_date.strftime('%b %-d, %Y'))
+      expect(page).to have_content(iteration_period_display(iteration))
       expect(page).to have_current_path(group_iteration_cadence_iteration_path(group, iteration_cadence_id: cadence.id, id: iteration.id))
     end
   end

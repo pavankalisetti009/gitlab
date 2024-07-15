@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
+  include Features::IterationHelpers
+
   let_it_be(:now) { Time.zone.now }
   let_it_be(:group) { create(:group) }
   let_it_be(:sub_group) { create(:group, :private, parent: group) }
@@ -37,7 +39,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
         aggregate_failures 'expect title, description, and dates' do
           expect(page).to have_content(iteration.title)
           expect(page).to have_content(iteration.description)
-          expect(page).to have_content(iteration.period)
+          expect(page).to have_content(iteration_period_display(iteration))
         end
 
         aggregate_failures 'expect summary information' do
@@ -97,7 +99,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
 
           click_button manual_cadence.title
 
-          expect(page).not_to have_content(iteration.period)
+          expect(page).not_to have_content(iteration_period_display(iteration))
         end
       end
 

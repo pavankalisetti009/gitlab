@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'User views iteration', feature_category: :team_planning do
+  include Features::IterationHelpers
+
   let_it_be(:now) { Time.zone.now }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
@@ -23,8 +25,7 @@ RSpec.describe 'User views iteration', feature_category: :team_planning do
         aggregate_failures 'shows iteration info and dates' do
           expect(page).to have_content(iteration.title)
           expect(page).to have_content(iteration.description)
-          expect(page).to have_content(iteration.start_date.strftime('%b %-d, %Y'))
-          expect(page).to have_content(iteration.due_date.strftime('%b %-d, %Y'))
+          expect(page).to have_content(iteration_period_display(iteration))
         end
 
         aggregate_failures 'shows correct summary information' do

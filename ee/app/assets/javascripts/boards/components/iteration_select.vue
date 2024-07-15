@@ -185,8 +185,8 @@ export default {
     },
     iterationOptionText(iteration) {
       return iteration.title
-        ? `${iteration.title}: ${getIterationPeriod(iteration)}`
-        : getIterationPeriod(iteration);
+        ? `${iteration.title}: ${getIterationPeriod(iteration, null, true)}`
+        : getIterationPeriod(iteration, null, true);
     },
     isSelected(option) {
       const isIterationSelected = this.selected && option.id && this.selected.id === option.id;
