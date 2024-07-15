@@ -10,7 +10,10 @@ module Sbom
     belongs_to :component_version
     belongs_to :project, optional: false
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
-    belongs_to :source
+    belongs_to :source, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::Source
+      -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
+      }
     belongs_to :source_package, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::SourcePackage
       -> {
         allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
@@ -120,6 +123,7 @@ module Sbom
 
     scope :filter_by_source_types, ->(source_types) do
       left_outer_joins(:source).where(sbom_sources: { source_type: source_types })
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
     end
 
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
@@ -143,12 +147,12 @@ module Sbom
     end
     scope :with_project_route, -> { includes(project: :route).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/420046") }
     scope :with_project_namespace, -> { includes(project: [namespace: :route]) }
-    scope :with_source, -> { includes(:source) }
+    scope :with_source, -> { includes(:source).allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins') }
     scope :with_version, -> { includes(:component_version) }
     scope :with_pipeline_project_and_namespace, -> { preload(pipeline: { project: :namespace }) }
     scope :with_vulnerabilities, -> { preload(:vulnerabilities) }
     scope :with_component_source_version_and_project, -> do
-      includes(:component, :source, :component_version, :project)
+      includes(:component, :source, :component_version, :project).allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
     end
     scope :filter_by_non_nil_component_version, -> { where.not(component_version: nil) }
 
