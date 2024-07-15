@@ -187,14 +187,6 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
         expect(record.risk_score).to eq risk_score
       end
 
-      context 'when telesign_high_risk_cc_validation feature flag is disabled' do
-        before do
-          stub_feature_flags(telesign_high_risk_cc_validation: false)
-        end
-
-        it_behaves_like 'it returns a success response'
-      end
-
       context 'when the user is already assumed high risk' do
         before do
           ::IdentityVerification::UserRiskProfile.new(user).assume_high_risk!(reason: 'High Risk')
