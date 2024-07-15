@@ -196,6 +196,15 @@ module EE
               ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
               ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
               ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
+            ],
+            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt => [
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
+              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved
             ]
           }.freeze
 
