@@ -7,6 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { useFakeDate } from 'helpers/fake_date';
+import { mockData } from './mock_data';
 
 jest.mock('~/alert');
 
@@ -17,8 +18,7 @@ describe('ObservabilityUsageQuota', () => {
   let observabilityClientMock;
 
   const mockUsageData = {
-    events: {},
-    storage: {},
+    ...mockData,
   };
   const mountComponent = async () => {
     wrapper = shallowMountExtended(ObservabilityUsageQuota, {
