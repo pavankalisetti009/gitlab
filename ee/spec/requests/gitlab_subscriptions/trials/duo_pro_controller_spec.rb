@@ -166,12 +166,14 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
           post_create
 
           expires_on = 60.days.from_now.strftime('%Y-%m-%d')
-          msg = "You have successfully created a trial subscription for GitLab Duo Pro. It will expire on #{expires_on}"
-          expect(flash[:success]).to include(msg)
-
-          expect(flash[:success]).to include(
-            'To get started, enable the GitLab Duo Pro add-on for team members on this page by ' \
-            'turning on the toggle for each team member. The subscription may take a minute to sync'
+          expect(flash[:success]).to eq(
+            format(s_(
+              'DuoProTrial|Congratulations, your free GitLab Duo Pro trial is activated and will expire on ' \
+                '%{exp_date}. The new license might take a minute to show on the page. To give members access to new ' \
+                'GitLab Duo Pro features, <a target="_blank" rel="noopener noreferrer" ' \
+                'href="/help/subscriptions/subscription-add-ons#assign-gitlab-duo-pro-seats">assign them</a> ' \
+                'to GitLab Duo Pro seats.'
+            ), exp_date: expires_on)
           )
         end
       end

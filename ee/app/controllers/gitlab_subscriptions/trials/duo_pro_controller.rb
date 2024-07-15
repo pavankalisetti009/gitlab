@@ -105,15 +105,19 @@ module GitlabSubscriptions
       end
 
       def success_flash_message
+        assign_doc_url = helpers.help_page_path('subscriptions/subscription-add-ons',
+          anchor: 'assign-gitlab-duo-pro-seats')
+        assign_link = helpers.link_to('', assign_doc_url, target: '_blank', rel: 'noopener noreferrer')
+        assign_link_pair = tag_pair(assign_link, :assign_link_start, :assign_link_end)
         safe_format(
           s_(
-            'DuoProTrial|You have successfully created a trial subscription for GitLab Duo Pro. ' \
-            'It will expire on %{exp_date}.%{new_line}To get started, enable the GitLab Duo Pro ' \
-            'add-on for team members on this page by turning on the toggle for each team member. ' \
-            "The subscription may take a minute to sync, so refresh the page if it's not visible yet."
+            'DuoProTrial|Congratulations, your free GitLab Duo Pro trial is activated and will ' \
+            'expire on %{exp_date}. The new license might take a minute to show on the page. ' \
+            'To give members access to new GitLab Duo Pro features, ' \
+            '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Pro seats.'
           ),
-          exp_date: GitlabSubscriptions::Trials::DuoPro::DURATION.from_now.strftime('%Y-%m-%d'),
-          new_line: helpers.tag.br
+          assign_link_pair,
+          exp_date: GitlabSubscriptions::Trials::DuoPro::DURATION.from_now.strftime('%Y-%m-%d')
         )
       end
     end
