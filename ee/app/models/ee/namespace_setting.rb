@@ -32,6 +32,7 @@ module EE
       validate :experiment_features_allowed
 
       before_save :set_prevent_sharing_groups_outside_hierarchy
+      before_save :set_seat_control
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? }
 
       delegate :root_ancestor, to: :namespace
@@ -104,6 +105,14 @@ module EE
         if user_cap_enabled? || (namespace.block_seat_overages? && prevent_sharing_groups_outside_hierarchy_changed?)
           self.prevent_sharing_groups_outside_hierarchy = true
         end
+      end
+
+      def set_seat_control
+        self.seat_control = if user_cap_enabled?
+                              :user_cap
+                            else
+                              :off
+                            end
       end
 
       def disable_project_sharing!
