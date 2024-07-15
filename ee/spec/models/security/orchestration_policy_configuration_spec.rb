@@ -581,7 +581,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           "root is missing required keys: scan_result_policy",
           "root is missing required keys: approval_policy",
           "root is missing required keys: pipeline_execution_policy",
-          "root is missing required keys: ci_component_source_policy")
+          "root is missing required keys: ci_component_sources_policy")
       end
     end
 
