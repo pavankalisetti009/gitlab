@@ -41,6 +41,7 @@ module Elastic
         indexes :visibility_level, type: :integer
         indexes :merge_requests_access_level, type: :integer
         indexes :upvotes, type: :integer
+        indexes :label_ids, type: :keyword
 
         indexes :hashed_root_namespace_id, type: :integer
         indexes :schema_version, type: :short

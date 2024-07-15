@@ -4,7 +4,7 @@ module EE
   module LabelLink
     extend ActiveSupport::Concern
 
-    LABEL_INDEXED_MODELS = %w[Epic Issue].freeze
+    LABEL_INDEXED_MODELS = %w[Epic Issue MergeRequest].freeze
 
     prepended do
       after_destroy :maintain_target_elasticsearch!
