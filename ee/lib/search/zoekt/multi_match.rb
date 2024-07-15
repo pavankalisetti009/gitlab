@@ -59,12 +59,7 @@ module Search
 
           if generate_chunk
             chunk = { lines: {}, match_count_in_chunk: 0 }
-            # Generate lines before the match for the context
-            # It is conditional because we don't want to run this for the first line of code or
-            # difference between current matched line and previous matched line is less than CONTEXT_LINES_COUNT
-            if show_previous_blobs?(match[:LineNumber], linematches, count_idx)
-              generate_context_blobs(match, chunk, :before)
-            end
+            generate_context_blobs(match, chunk, :before)
           end
 
           chunk[:lines][match[:LineNumber]] = {
@@ -88,13 +83,10 @@ module Search
         [chunks, limited_match_count_per_file]
       end
 
-      def show_previous_blobs?(line_number, line_matches, idx)
-        line_number != 1 &&
-          (line_number - line_matches[idx.pred][:LineNumber]).abs > Gitlab::Search::Zoekt::Client::CONTEXT_LINES_COUNT
-      end
-
       def generate_context_blobs(match, chunk, context)
         context_encoded_string = if context == :before
+                                   return if match[:LineNumber] == 1 # There is no before context if first line is match
+
                                    match[:Before]
                                  else
                                    match[:After]
