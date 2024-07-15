@@ -202,17 +202,6 @@ RSpec.describe ContainerRegistry::Event do
               .not_to publish_event(::ContainerRegistry::ImagePushedEvent)
           end
         end
-
-        context 'when feature flag `container_scanning_for_registry` is disabled' do
-          before do
-            stub_feature_flags(container_scanning_for_registry_flag: false)
-          end
-
-          it 'does not publish an event' do
-            expect { handle! }
-              .not_to publish_event(::ContainerRegistry::ImagePushedEvent)
-          end
-        end
       end
 
       context 'when action is not push' do

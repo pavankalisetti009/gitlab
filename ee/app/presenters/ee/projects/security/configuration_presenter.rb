@@ -25,10 +25,7 @@ module EE
 
         override :features
         def features
-          return super << scan(:container_scanning_for_registry, configured: container_scanning_for_registry_enabled) if
-            ::Feature.enabled?(:container_scanning_for_registry_flag, project)
-
-          super
+          super << scan(:container_scanning_for_registry, configured: container_scanning_for_registry_enabled)
         end
       end
     end
