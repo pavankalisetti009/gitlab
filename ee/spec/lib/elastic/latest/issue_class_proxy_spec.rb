@@ -9,9 +9,9 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
 
   subject(:proxy) { described_class.new(Issue, use_separate_indices: true) }
 
-  let!(:group) { create(:group) }
-  let!(:project) { create(:project, :public, group: group) }
-  let!(:user) { create(:user, developer_of: project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be_with_reload(:project) { create(:project, :public, group: group) }
+  let_it_be(:user) { create(:user, developer_of: project) }
   let!(:label) { create(:label, project: project) }
   let!(:issue) { create(:labeled_issue, title: 'test', project: project, labels: [label]) }
   let(:query) { 'test' }
