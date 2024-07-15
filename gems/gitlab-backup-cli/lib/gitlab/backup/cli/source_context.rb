@@ -15,6 +15,7 @@ module Gitlab
         DEFAULT_CI_LFS_PATH = 'lfs-objects/'
         DEFAULT_PACKAGES = 'packages/'
         DEFAULT_PAGES = 'pages/'
+        DEFAULT_REGISTRY_PATH = 'registry/'
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
@@ -76,8 +77,10 @@ module Gitlab
 
         # Registry basepath
         def registry_path
-          # TODO: Use configuration solver
-          Settings.registry.path
+          path = gitlab_config.dig(env, 'registry', 'path') ||
+            gitlab_shared_path.join(DEFAULT_REGISTRY_PATH)
+
+          absolute_path(path)
         end
 
         # Terraform State basepath

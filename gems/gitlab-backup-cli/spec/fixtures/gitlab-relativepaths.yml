@@ -89,6 +89,10 @@ test:
         aws_secret_access_key: AWS_SECRET_ACCESS_KEY
         region: us-east-1
 
+  registry:
+    enabled: true
+    path: tmp/tests/registry
+
   gitlab:
     host: localhost
     port: 80
