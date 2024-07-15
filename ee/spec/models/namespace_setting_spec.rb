@@ -333,7 +333,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       group.namespace_settings.update!(new_user_signups_cap: user_cap)
     end
 
-    context 'when updating a group with a user cap' do
+    context 'when setting a user cap' do
       let(:user_cap) { nil }
 
       it 'also sets share_with_group_lock and prevent_sharing_groups_outside_hierarchy to true' do
@@ -361,6 +361,15 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(descendent.reload.share_with_group_lock).to be_truthy
         expect(desc_settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
       end
+
+      it 'sets seat control to user cap' do
+        expect(settings.seat_control).to eq('off')
+
+        settings.update!(new_user_signups_cap: 10)
+        group.reload
+
+        expect(settings.seat_control).to eq('user_cap')
+      end
     end
 
     context 'when removing a user cap from namespace settings' do
@@ -374,6 +383,33 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
         expect(group.reload.share_with_group_lock).to be_truthy
         expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
+      end
+
+      it 'sets seat control to off' do
+        expect(settings.seat_control).to eq('user_cap')
+
+        settings.update!(new_user_signups_cap: nil)
+        group.reload
+
+        expect(settings.seat_control).to eq('off')
+      end
+    end
+
+    context 'when the user cap is set and seat control is set to off' do
+      let(:user_cap) { 10 }
+
+      before do
+        settings.update_columns(seat_control: 'off')
+      end
+
+      it 'updates the seat control to user cap when another setting is changed' do
+        expect(settings.new_user_signups_cap).to eq(user_cap)
+        expect(settings.seat_control).to eq('off')
+
+        settings.update!(only_allow_merge_if_pipeline_succeeds: true)
+        group.reload
+
+        expect(settings.seat_control).to eq('user_cap')
       end
     end
   end
