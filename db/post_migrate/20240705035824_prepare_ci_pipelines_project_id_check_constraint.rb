@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class PrepareCiPipelinesProjectIdCheckConstraint < Gitlab::Database::Migration[2.2]
-  milestone '17.2'
+  milestone '17.3'
 
   CONSTRAINT_NAME = 'check_2ba2a044b9'
 
