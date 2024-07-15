@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sbom
-  class Source < ApplicationRecord
+  class Source < Gitlab::Database::SecApplicationRecord
     include ::Sbom::SourceHelper
 
     DEFAULT_SOURCES = {
