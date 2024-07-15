@@ -86,18 +86,20 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
   end
 
   describe '#remove_group_message' do
-    subject { helper.remove_group_message(group) }
+    let(:delayed_deletion_message) { "The contents of this group, its subgroups and projects will be permanently deleted after" }
+    let(:permanent_deletion_message) { ["You are about to delete the group #{group.name}", "After you delete a group, you <strong>cannot</strong> restore it or its components."] }
+
+    subject { helper.remove_group_message(group, false) }
 
     shared_examples 'permanent deletion message' do
       it 'returns the message related to permanent deletion' do
-        expect(subject).to include("You are about to delete the group #{group.name}")
-        expect(subject).to include("After you delete a group, you <strong>cannot</strong> restore it or its components.")
+        expect(subject).to include(*permanent_deletion_message)
       end
     end
 
     shared_examples 'delayed deletion message' do
       it 'returns the message related to delayed deletion' do
-        expect(subject).to include("The contents of this group, its subgroups and projects will be permanently deleted after")
+        expect(subject).to include(delayed_deletion_message)
       end
     end
 
@@ -139,6 +141,21 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         end
 
         it_behaves_like 'permanent deletion message'
+      end
+
+      context "group has not been marked for deletion" do
+        let(:group) { build(:group) }
+
+        context "'permanently_remove' argument is set to 'true'" do
+          it "displays permanent deletion message" do
+            allow(group).to receive(:licensed_feature_available?).with(:adjourned_deletion_for_projects_and_groups).and_return(true)
+            allow(group).to receive(:marked_for_deletion?).and_return(false)
+            allow(group).to receive(:adjourned_deletion?).and_return(true)
+
+            expect(subject).to include(delayed_deletion_message)
+            expect(helper.remove_group_message(group, true)).to include(*permanent_deletion_message)
+          end
+        end
       end
     end
 

@@ -32,7 +32,8 @@ module EE
     end
 
     override :remove_group_message
-    def remove_group_message(group)
+    def remove_group_message(group, permanently_remove)
+      return super if permanently_remove
       return super unless group.licensed_feature_available?(:adjourned_deletion_for_projects_and_groups)
       return super if group.marked_for_deletion?
       return super unless group.adjourned_deletion?
