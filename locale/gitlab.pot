@@ -4732,7 +4732,7 @@ msgstr ""
 msgid "Admin|Overview"
 msgstr ""
 
-msgid "Admin|Push Rules"
+msgid "Admin|Push rules"
 msgstr ""
 
 msgid "Admin|Quarterly reconciliation will occur on %{qrtlyDate}"
@@ -42641,10 +42641,10 @@ msgstr ""
 msgid "Promotions|Not now, thanks!"
 msgstr ""
 
-msgid "Promotions|Push Rules"
+msgid "Promotions|Push rules"
 msgstr ""
 
-msgid "Promotions|Push Rules are defined per project so you can have different rules applied to different projects depends on your needs."
+msgid "Promotions|Push rules are defined per project so you can have different rules applied to different projects depends on your needs."
 msgstr ""
 
 msgid "Promotions|Repository Mirroring"
@@ -43257,12 +43257,6 @@ msgstr ""
 msgid "Push Rule updated successfully."
 msgstr ""
 
-msgid "Push Rules"
-msgstr ""
-
-msgid "Push Rules updated successfully."
-msgstr ""
-
 msgid "Push an existing Git repository"
 msgstr ""
 
@@ -43285,6 +43279,12 @@ msgid "Push mirrors will only sync LFS objects if LFS is %{docs_link_start}enabl
 msgstr ""
 
 msgid "Push project from command line"
+msgstr ""
+
+msgid "Push rules"
+msgstr ""
+
+msgid "Push rules updated successfully."
 msgstr ""
 
 msgid "Push the source branch up to GitLab."
