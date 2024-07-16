@@ -1,4 +1,4 @@
-import { GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon, GlCard } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
@@ -70,6 +70,7 @@ describe('ResourceLinksBlock', () => {
   const findLinkTextInput = () => wrapper.findByTestId('link-text-input');
   const findLinkValueInput = () => wrapper.findByTestId('link-value-input');
   const findSubmitButton = () => wrapper.findByTestId('add-button');
+  const findToggleLinksButton = () => wrapper.findByTestId('toggle-links');
   const findEmptyMessage = () => wrapper.findByTestId('empty');
 
   const clickFirstDeleteButton = async () => {
@@ -316,6 +317,51 @@ describe('ResourceLinksBlock', () => {
           expect(createAlert).toHaveBeenCalledWith(expectedAlertArgs);
         },
       );
+    });
+  });
+
+  describe('when collapsed', () => {
+    beforeEach(() => {
+      mountComponent();
+    });
+
+    it('the widget wrapper has the "is-collapsed" CSS class', async () => {
+      findToggleLinksButton().vm.$emit('click');
+      await nextTick();
+
+      expect(wrapper.findComponent(GlCard).classes()).toContain('is-collapsed');
+    });
+
+    it('the toggle links button has the correct "aria-expanded" attribute value', async () => {
+      const toggleLinksButton = findToggleLinksButton();
+
+      toggleLinksButton.vm.$emit('click');
+      await nextTick();
+
+      expect(toggleLinksButton.attributes('aria-expanded')).toBe('false');
+    });
+  });
+
+  describe('when expanded', () => {
+    beforeEach(() => {
+      mountComponent();
+    });
+
+    it('the widget wrapper does not have the "is-collapsed" CSS class', () => {
+      expect(wrapper.findComponent(GlCard).classes()).not.toContain('is-collapsed');
+    });
+
+    it('the toggle links button has the correct "aria-expanded" attribute value', () => {
+      expect(findToggleLinksButton().attributes('aria-expanded')).toBe('true');
+    });
+  });
+
+  describe('"aria-controls" attribute', () => {
+    it('is set and identifies the correct element', () => {
+      mountComponent();
+
+      expect(findToggleLinksButton().attributes('aria-controls')).toBe('resource-links-card');
+      expect(wrapper.findComponent(GlCard).attributes('id')).toBe('resource-links-card');
     });
   });
 });
