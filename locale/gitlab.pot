@@ -19503,6 +19503,15 @@ msgstr ""
 msgid "DuoChat|What is a fork?"
 msgstr ""
 
+msgid "DuoCodeReview|Hey :wave: I'm starting to review your merge request and I will let you know when I'm finished."
+msgstr ""
+
+msgid "DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:"
+msgstr ""
+
+msgid "DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later."
+msgstr ""
+
 msgid "DuoProDiscover|Ship software faster and more securely with AI integrated into your entire DevSecOps lifecycle."
 msgstr ""
 
