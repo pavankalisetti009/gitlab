@@ -28,6 +28,7 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+  ariaControlsId: 'resource-links-card',
   props: {
     issuableId: {
       type: Number,
@@ -219,10 +220,11 @@ export default {
 <template>
   <div id="resource-links">
     <gl-card
+      :id="$options.ariaControlsId"
       class="gl-new-card"
+      :class="{ 'is-collapsed': !isOpen }"
       header-class="gl-new-card-header"
       body-class="gl-new-card-body"
-      :aria-expanded="isOpen.toString()"
     >
       <template #header>
         <div class="gl-new-card-title-wrapper">
@@ -257,6 +259,8 @@ export default {
             size="small"
             :icon="toggleIcon"
             :aria-label="toggleLabel"
+            :aria-expanded="isOpen.toString()"
+            :aria-controls="$options.ariaControlsId"
             data-testid="toggle-links"
             @click="handleToggle"
           />
