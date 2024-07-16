@@ -26174,7 +26174,7 @@ msgstr ""
 msgid "HealthCheck|Access token"
 msgstr ""
 
-msgid "HealthCheck|Health information can be retrieved from the following endpoints. More information is available in the %{linkStart}Health Check documentation%{linkEnd}."
+msgid "HealthCheck|Health information can be retrieved from the following endpoints. More information is available in the %{linkStart}health check documentation%{linkEnd}."
 msgstr ""
 
 msgid "HealthCheck|Healthy"
