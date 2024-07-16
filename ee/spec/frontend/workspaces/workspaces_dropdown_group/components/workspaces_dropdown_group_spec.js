@@ -1,15 +1,13 @@
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
-import { GlLoadingIcon, GlAlert, GlDisclosureDropdownGroup } from '@gitlab/ui';
+import { GlLoadingIcon, GlAlert, GlDisclosureDropdownGroup, GlSprintf } from '@gitlab/ui';
 import { logError } from '~/lib/logger';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import WorkspacesDropdownGroup, {
-  i18n,
-} from 'ee/workspaces/dropdown_group/components/workspaces_dropdown_group.vue';
+import WorkspacesDropdownGroup from 'ee/workspaces/dropdown_group/components/workspaces_dropdown_group.vue';
 import WorkspaceDropdownItem from 'ee/workspaces/dropdown_group/components/workspace_dropdown_item.vue';
 import userWorkspacesListQuery from 'ee/workspaces/common/graphql/queries/user_workspaces_list.query.graphql';
 import {
@@ -67,6 +65,7 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
       },
       stubs: {
         UpdateWorkspaceMutation: UpdateWorkspaceMutationStub,
+        GlSprintf,
       },
     });
   };
@@ -268,7 +267,15 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
     });
 
     it('displays "no workspaces support" message', () => {
-      expect(wrapper.text()).toContain(i18n.noWorkspacesSupportMessage);
+      expect(wrapper.text()).toContain(
+        'No agents available to create workspaces. Please consult Workspaces documentation',
+      );
+    });
+
+    it('shows a link to the troubleshooting page', () => {
+      expect(wrapper.findByTestId('workspaces-troubleshooting-doc-link').attributes('href')).toBe(
+        '/help/user/workspace/configuration.html#troubleshooting',
+      );
     });
   });
 
@@ -286,7 +293,9 @@ describe('workspaces/dropdown_group/components/workspaces_dropdown_group.vue', (
     });
 
     it('does not display "no workspaces support" message', () => {
-      expect(wrapper.text()).not.toContain(i18n.noWorkspacesSupportMessage);
+      expect(wrapper.text()).not.toContain(
+        'No agents available to create workspaces. Please consult Workspaces documentation',
+      );
     });
   });
 });
