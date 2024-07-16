@@ -46,10 +46,10 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
 
       it 'renders the marked for removal message' do
         freeze_time do
-          deletion_adjourned_period = ::Gitlab::CurrentSettings.deletion_adjourned_period
-          deletion_date = (Time.now.utc + deletion_adjourned_period.days).strftime('%F')
+          deletion_date = (Time.now.utc + ::Gitlab::CurrentSettings.deletion_adjourned_period.days).strftime('%F')
 
-          expect(page).to have_content("This action will place this project, including all its resources, in a pending deletion state for #{deletion_adjourned_period} days, and delete it permanently on #{deletion_date}.")
+          expect(page).to have_content("This action deletes #{project.path_with_namespace} on #{deletion_date} and everything this project contains.")
+
           click_button "Delete project"
 
           expect(page).to have_content("This project can be restored until #{deletion_date}.")
@@ -67,7 +67,7 @@ RSpec.describe 'Project', :js, feature_category: :groups_and_projects do
       end
 
       it 'renders the permanently delete message' do
-        expect(page).to have_content("This action will permanently delete this project, including all its resources.")
+        expect(page).to have_content("This action deletes #{project.path_with_namespace} and everything this project contains. There is no going back.")
 
         click_button "Delete project"
 

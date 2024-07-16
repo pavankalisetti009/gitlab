@@ -13,7 +13,6 @@ describe('Project delayed delete modal', () => {
   const defaultProps = {
     delayedDeletionDate: '2020-12-12',
     confirmPhrase: 'foo',
-    buttonText: 'Delete project',
     formPath: 'some/path',
     restoreHelpPath: 'recovery/help/path',
     isFork: false,
@@ -57,7 +56,6 @@ describe('Project delayed delete modal', () => {
     it('passes confirmPhrase and formPath props to the shared delete button', () => {
       expect(findSharedDeleteButton().props()).toEqual({
         confirmPhrase: defaultProps.confirmPhrase,
-        buttonText: defaultProps.buttonText,
         forksCount: defaultProps.forksCount,
         formPath: defaultProps.formPath,
         isFork: defaultProps.isFork,
