@@ -11302,6 +11302,9 @@ msgstr ""
 msgid "CiCdAnalytics|Date range: %{range}"
 msgstr ""
 
+msgid "CiStatusLabel|Failed"
+msgstr ""
+
 msgid "CiStatusLabel|canceled"
 msgstr ""
 
