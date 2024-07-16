@@ -27,6 +27,7 @@ module Security
           ci_configuration.each do |_, job_configuration|
             apply_variables!(job_configuration, variables)
             apply_tags!(job_configuration, @action[:tags])
+            apply_defaults!(job_configuration)
             remove_extends!(job_configuration)
             remove_rule_to_disable_job!(job_configuration, ci_variables)
           end
@@ -65,6 +66,11 @@ module Security
           return if tags.blank?
 
           job_configuration[:tags] = tags
+        end
+
+        def apply_defaults!(job_configuration)
+          job_configuration[:before_script] ||= []
+          job_configuration[:after_script] ||= []
         end
 
         def remove_extends!(job_configuration)
