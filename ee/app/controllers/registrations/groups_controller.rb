@@ -86,6 +86,9 @@ module Registrations
     end
 
     def track_project_registration_submission(project)
+      experiment(:project_templates_during_registration, user: current_user).track(:assignment,
+        namespace: project.namespace)
+
       experiment_project_templates_during_registration(
         project,
         :successfully_submitted_form,

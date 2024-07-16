@@ -187,6 +187,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
 
         it 'tracks submission event' do
           expect(experiment).to receive(:publish)
+          expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
           expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
 
           expect(experiment).not_to receive(:track).with(
@@ -202,6 +203,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
 
           it 'tracks submission event' do
             expect(experiment).to receive(:publish)
+            expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
             expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
 
             expect(experiment).to receive(:track).with(
@@ -220,6 +222,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
 
           it 'tracks submission event' do
             expect(experiment).to receive(:publish)
+            expect(experiment).to receive(:track).with(:assignment, namespace: an_instance_of(Group))
             expect(experiment).to receive(:track).with(:successfully_submitted_form, label: 'trial_registration')
 
             post_create
@@ -259,6 +262,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
 
           it 'does not track submission event' do
             expect(experiment).to receive(:publish)
+            expect(experiment).not_to receive(:track).with(:assignment, namespace: an_instance_of(Group))
             expect(experiment).not_to receive(:track).with(:successfully_submitted_form, label: 'free_registration')
 
             post_create
