@@ -263,6 +263,12 @@ describe('workspaces/user/pages/create.vue', () => {
     it('does not display max hours before termination field', () => {
       expect(findMaxHoursBeforeTerminationField().exists()).toBe(false);
     });
+
+    it('shows a link to the troubleshooting page', () => {
+      expect(wrapper.findByTestId('workspaces-troubleshooting-doc-link').attributes('href')).toBe(
+        '/help/user/workspace/configuration.html#troubleshooting',
+      );
+    });
   });
 
   describe('when a project has cluster agents', () => {

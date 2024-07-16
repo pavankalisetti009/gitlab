@@ -12,6 +12,7 @@ import {
   GlPopover,
   GlTooltipDirective,
   GlLink,
+  GlSprintf,
 } from '@gitlab/ui';
 import { omit } from 'lodash';
 import { s__, __ } from '~/locale';
@@ -61,7 +62,7 @@ export const i18n = {
   invalidProjectAlert: {
     title: s__("Workspaces|You can't create a workspace for this project"),
     noAgentsContent: s__(
-      'Workspaces|You must have access to a cluster agent. An administrator can configure an agent for the project or group.',
+      'Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting.',
     ),
     noDevFileContent: s__(
       'Workspaces|To create a workspace, add a devfile to this project. A devfile is a configuration file for your workspace.',
@@ -78,6 +79,9 @@ export const i18n = {
 };
 
 export const devfileHelpPath = helpPagePath('user/workspace/index.md#devfile');
+export const workspacesTroubleshootingDocsPath = helpPagePath('user/workspace/configuration.html', {
+  anchor: 'troubleshooting',
+});
 
 export default {
   components: {
@@ -91,6 +95,7 @@ export default {
     GlIcon,
     GlPopover,
     GlLink,
+    GlSprintf,
     RefSelector,
     SearchProjectsListbox,
     GetProjectDetailsQuery,
@@ -254,6 +259,7 @@ export default {
   ROUTES,
   PROJECT_VISIBILITY,
   devfileHelpPath,
+  workspacesTroubleshootingDocsPath,
 };
 </script>
 <template>
@@ -292,7 +298,16 @@ export default {
           variant="danger"
           :dismissible="false"
         >
-          {{ $options.i18n.invalidProjectAlert.noAgentsContent }}
+          <gl-sprintf :message="$options.i18n.invalidProjectAlert.noAgentsContent">
+            <template #link="{ content }">
+              <gl-link
+                :href="$options.workspacesTroubleshootingDocsPath"
+                data-testid="workspaces-troubleshooting-doc-link"
+                target="_blank"
+                >{{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
         </gl-alert>
       </gl-form-group>
       <template v-if="!emptyAgents">

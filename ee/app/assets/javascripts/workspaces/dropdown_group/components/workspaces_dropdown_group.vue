@@ -1,5 +1,12 @@
 <script>
-import { GlAlert, GlButton, GlDisclosureDropdownGroup, GlLoadingIcon } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlButton,
+  GlDisclosureDropdownGroup,
+  GlLoadingIcon,
+  GlSprintf,
+  GlLink,
+} from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { logError } from '~/lib/logger';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -21,10 +28,15 @@ export const i18n = {
     'Workspaces|A workspace is a virtual sandbox environment for your code in GitLab.',
   ),
   loadingWorkspacesFailedMessage: s__('Workspaces|Could not load workspaces'),
-  noWorkspacesSupportMessage: __('To set up this feature, contact your administrator.'),
+  noWorkspacesSupportMessage: __(
+    'No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting.',
+  ),
 };
 
 const workspacesHelpPath = helpPagePath('user/workspace/index.md');
+const workspacesTroubleshootingDocsPath = helpPagePath('user/workspace/configuration.html', {
+  anchor: 'troubleshooting',
+});
 
 export default {
   components: {
@@ -32,6 +44,8 @@ export default {
     GlButton,
     GlDisclosureDropdownGroup,
     GlLoadingIcon,
+    GlLink,
+    GlSprintf,
     WorkspaceDropdownItem,
     UpdateWorkspaceMutation,
   },
@@ -122,6 +136,7 @@ export default {
   },
   i18n,
   workspacesHelpPath,
+  workspacesTroubleshootingDocsPath,
 };
 </script>
 <template>
@@ -173,7 +188,16 @@ export default {
               {{ $options.i18n.noWorkspacesMessage }}
             </p>
             <p v-if="!supportsWorkspaces" class="gl-mb-0 gl-mt-2 gl-font-sm gl-text-secondary">
-              {{ $options.i18n.noWorkspacesSupportMessage }}
+              <gl-sprintf :message="$options.i18n.noWorkspacesSupportMessage">
+                <template #link="{ content }">
+                  <gl-link
+                    :href="$options.workspacesTroubleshootingDocsPath"
+                    data-testid="workspaces-troubleshooting-doc-link"
+                    target="_blank"
+                    >{{ content }}
+                  </gl-link>
+                </template>
+              </gl-sprintf>
             </p>
           </div>
           <div
