@@ -2,7 +2,7 @@
 
 module Vulnerabilities
   class Export
-    class Part < ApplicationRecord
+    class Part < Gitlab::Database::SecApplicationRecord
       include FileStoreMounter
 
       self.table_name = "vulnerability_export_parts"
