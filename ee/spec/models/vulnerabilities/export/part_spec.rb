@@ -28,4 +28,11 @@ RSpec.describe Vulnerabilities::Export::Part, type: :model, feature_category: :v
       expect(export_part.file.read).to eq("Hello World!")
     end
   end
+
+  context 'with loose foreign key on vulnerability_export_parts.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:vulnerability_export_part, organization: parent) }
+    end
+  end
 end
