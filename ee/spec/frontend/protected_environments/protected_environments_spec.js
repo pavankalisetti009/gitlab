@@ -100,7 +100,7 @@ describe('ee/protected_environments/protected_environments.vue', () => {
 
   const findEnvironmentButton = (name) => wrapper.findByRole('button', { name });
   const findPagination = () => wrapper.findComponent(Pagination);
-  const findAddButton = () => wrapper.findByTestId('new-environment-button');
+  const findAddButton = () => wrapper.findByTestId('crud-form-toggle');
   const findAllCollapse = () => wrapper.findAllComponents(GlCollapse);
   const findAllToggleButtons = () => wrapper.findAllByTestId('protected-environment-item-toggle');
   const findAddForm = () => wrapper.findComponent(CreateProtectedEnvironment);
@@ -109,19 +109,15 @@ describe('ee/protected_environments/protected_environments.vue', () => {
     it('shows a header with the title protected environments', async () => {
       await createComponent();
 
-      expect(
-        wrapper
-          .findByRole('heading', {
-            name: s__('ProtectedEnvironments|Protected environments'),
-          })
-          .exists(),
-      ).toBe(true);
+      expect(wrapper.findByTestId('crud-title').text()).toContain(
+        s__('ProtectedEnvironments|Protected environments'),
+      );
     });
 
     it('shows a header counting the number of protected environments', async () => {
       await createComponent();
 
-      expect(wrapper.findByTestId('protected-environments-count').text()).toContain('1');
+      expect(wrapper.findByTestId('crud-count').text()).toContain('1');
     });
   });
 
