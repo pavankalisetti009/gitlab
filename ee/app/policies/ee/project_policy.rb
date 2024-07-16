@@ -253,22 +253,10 @@ module EE
         project.project_feature&.private?(:merge_requests)
       end
 
-      condition(:tracing_enabled) do
-        # Can be enabled for all projects in root namespace. Maintains backward
-        # compatibility by falling back to checking against project
-        (::Feature.enabled?(:observability_tracing,
-          @subject.root_namespace) || ::Feature.enabled?(:observability_tracing, @subject)) &&
-          @subject.licensed_feature_available?(:tracing)
-      end
-
-      condition(:observability_metrics_enabled) do
-        ::Feature.enabled?(:observability_metrics, @subject.root_namespace) &&
-          @subject.licensed_feature_available?(:metrics_observability)
-      end
-
-      condition(:observability_logs_enabled) do
-        ::Feature.enabled?(:observability_logs, @subject.root_namespace, type: :wip) &&
-          @subject.licensed_feature_available?(:logs_observability)
+      condition(:observability_enabled) do
+        # temporarily checking :observability_tracing for backward compability until all existing users have the new FF enabled
+        (::Feature.enabled?(:observability_tracing, @subject.root_namespace) || ::Feature.enabled?(:observability_features, @subject.root_namespace)) &&
+          @subject.licensed_feature_available?(:observability)
       end
 
       # We are overriding the already defined condition in CE version
@@ -840,28 +828,8 @@ module EE
         (maintainer | owner | admin) & pages_multiple_versions_available
       end.enable :pages_multiple_versions
 
-      rule { can?(:reporter_access) & tracing_enabled }.policy do
-        enable :read_tracing
-      end
-
-      rule { can?(:developer_access) & tracing_enabled }.policy do
-        enable :write_tracing
-      end
-
-      rule { can?(:reporter_access) & observability_metrics_enabled }.policy do
-        enable :read_observability_metrics
-      end
-
-      rule { can?(:developer_access) & observability_metrics_enabled }.policy do
-        enable :write_observability_metrics
-      end
-
-      rule { can?(:reporter_access) & observability_logs_enabled }.policy do
-        enable :read_observability_logs
-      end
-
-      rule { can?(:developer_access) & observability_logs_enabled }.policy do
-        enable :write_observability_logs
+      rule { can?(:reporter_access) & observability_enabled }.policy do
+        enable :read_observability
       end
 
       rule { ci_cancellation_maintainers_only & ~can?(:maintainer_access) }.policy do

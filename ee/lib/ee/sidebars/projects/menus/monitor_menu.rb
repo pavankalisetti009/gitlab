@@ -51,7 +51,7 @@ module EE
           end
 
           def tracing_menu_item
-            unless can?(context.current_user, :read_tracing, context.project)
+            unless can?(context.current_user, :read_observability, context.project)
               return ::Sidebars::NilMenuItem.new(item_id: :tracing)
             end
 
@@ -65,7 +65,7 @@ module EE
           end
 
           def metrics_menu_item
-            unless can?(context.current_user, :read_observability_metrics, context.project)
+            unless can?(context.current_user, :read_observability, context.project)
               return ::Sidebars::NilMenuItem.new(item_id: :metrics)
             end
 
@@ -79,7 +79,7 @@ module EE
           end
 
           def logs_menu_item
-            unless can?(context.current_user, :read_observability_logs, context.project)
+            unless can?(context.current_user, :read_observability, context.project)
               return ::Sidebars::NilMenuItem.new(item_id: :logs)
             end
 

@@ -6,7 +6,7 @@ module Projects
 
     feature_category :tracing
 
-    before_action :authorize_read_tracing!
+    before_action :authorize_read_observability!
 
     def index; end
 

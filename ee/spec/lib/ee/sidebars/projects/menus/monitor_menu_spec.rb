@@ -48,7 +48,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       let(:role) { :reporter }
 
       before do
-        stub_licensed_features(tracing: true)
+        stub_licensed_features(observability: true)
         stub_member_access_level(project, role => user)
       end
 
@@ -56,6 +56,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when feature flag is disabled' do
         before do
+          stub_feature_flags(observability_features: false)
           stub_feature_flags(observability_tracing: false)
         end
 
@@ -64,7 +65,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when unlicensed' do
         before do
-          stub_licensed_features(tracing: false)
+          stub_licensed_features(observability: false)
         end
 
         it { is_expected.to be_nil }
@@ -83,7 +84,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       let(:role) { :reporter }
 
       before do
-        stub_licensed_features(metrics_observability: true)
+        stub_licensed_features(observability: true)
         stub_member_access_level(project, role => user)
       end
 
@@ -91,7 +92,8 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when feature flag is disabled' do
         before do
-          stub_feature_flags(observability_metrics: false)
+          stub_feature_flags(observability_features: false)
+          stub_feature_flags(observability_tracing: false)
         end
 
         it { is_expected.to be_nil }
@@ -99,7 +101,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when unlicensed' do
         before do
-          stub_licensed_features(metrics_observability: false)
+          stub_licensed_features(observability: false)
         end
 
         it { is_expected.to be_nil }
@@ -118,7 +120,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       let(:role) { :reporter }
 
       before do
-        stub_licensed_features(logs_observability: true)
+        stub_licensed_features(observability: true)
         stub_member_access_level(project, role => user)
       end
 
@@ -126,7 +128,8 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when feature flag is disabled' do
         before do
-          stub_feature_flags(observability_logs: false)
+          stub_feature_flags(observability_features: false)
+          stub_feature_flags(observability_tracing: false)
         end
 
         it { is_expected.to be_nil }
@@ -134,7 +137,7 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
 
       describe 'when unlicensed' do
         before do
-          stub_licensed_features(logs_observability: false)
+          stub_licensed_features(observability: false)
         end
 
         it { is_expected.to be_nil }

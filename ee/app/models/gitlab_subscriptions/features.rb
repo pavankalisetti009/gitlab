@@ -134,8 +134,6 @@ module GitlabSubscriptions
       admin_merge_request_approvers_rules
       merge_trains
       metrics_reports
-      metrics_observability
-      logs_observability
       multiple_alert_http_integrations
       multiple_approval_rules
       multiple_group_issue_boards
@@ -262,7 +260,7 @@ module GitlabSubscriptions
       status_page
       suggested_reviewers
       subepics
-      tracing
+      observability
       unique_project_download_limit
       vulnerability_finding_signatures
       container_scanning_for_registry

@@ -7,7 +7,7 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
   let(:path) { nil }
-  let(:observability_tracing_ff) { true }
+  let(:observability_ff) { true }
   let(:expected_api_config) do
     {
       oauthUrl: Gitlab::Observability.oauth_url,
@@ -31,8 +31,9 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
   end
 
   before do
-    stub_licensed_features(tracing: true)
-    stub_feature_flags(observability_tracing: observability_tracing_ff)
+    stub_licensed_features(observability: true)
+    stub_feature_flags(observability_tracing: observability_ff)
+    stub_feature_flags(observability_features: observability_ff)
     sign_in(user)
   end
 
@@ -65,7 +66,7 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
       end
 
       context 'when feature is disabled' do
-        let(:observability_tracing_ff) { false }
+        let(:observability_ff) { false }
 
         it 'returns 404' do
           expect(subject).to have_gitlab_http_status(:not_found)

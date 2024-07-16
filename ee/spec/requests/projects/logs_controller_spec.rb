@@ -7,7 +7,7 @@ RSpec.describe Projects::LogsController, feature_category: :metrics do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
   let(:path) { nil }
-  let(:observability_logs_ff) { true }
+  let(:observability_ff) { true }
   let(:expected_api_config) do
     {
       oauthUrl: Gitlab::Observability.oauth_url,
@@ -31,8 +31,9 @@ RSpec.describe Projects::LogsController, feature_category: :metrics do
   end
 
   before do
-    stub_licensed_features(logs_observability: true)
-    stub_feature_flags(observability_logs: observability_logs_ff)
+    stub_licensed_features(observability: true)
+    stub_feature_flags(observability_features: observability_ff)
+    stub_feature_flags(observability_tracing: observability_ff)
     sign_in(user)
   end
 
@@ -65,7 +66,7 @@ RSpec.describe Projects::LogsController, feature_category: :metrics do
       end
 
       context 'when feature is disabled' do
-        let(:observability_logs_ff) { false }
+        let(:observability_ff) { false }
 
         it 'returns 404' do
           expect(html_response).to have_gitlab_http_status(:not_found)
