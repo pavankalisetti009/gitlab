@@ -18,7 +18,9 @@ module QA
 
         project.visit!
         Page::Project::Show.perform(&:open_web_ide!)
-        Page::Project::WebIDE::VSCode.perform(&:wait_for_ide_to_load)
+        Page::Project::WebIDE::VSCode.perform do |ide|
+          ide.wait_for_ide_to_load(file_name)
+        end
       end
 
       shared_examples 'a code generation suggestion' do |testcase|
