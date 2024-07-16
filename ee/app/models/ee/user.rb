@@ -723,23 +723,6 @@ module EE
       ::Group.where(id: contributed_group_ids).not_aimed_for_deletion
     end
 
-    override :ci_owned_runners
-    def ci_owned_runners
-      ::Ci::Runner.from_union([
-        super,
-        ::Ci::Runner.belonging_to_group(groups_permitted_to(:admin_runners)),
-        ::Ci::Runner.belonging_to_project(projects_permitted_to(:admin_runners))
-      ])
-    end
-
-    def groups_permitted_to(permission)
-      ::Authz::Group.new(self).permitted_to(permission, to_relation: false)
-    end
-
-    def projects_permitted_to(permission)
-      ::Authz::Project.new(self).permitted_to(permission, to_relation: false)
-    end
-
     protected
 
     override :password_required?

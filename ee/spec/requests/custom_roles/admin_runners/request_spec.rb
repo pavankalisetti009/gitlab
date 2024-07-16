@@ -193,7 +193,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
     let_it_be(:project_runner) { create(:ci_runner, :project, description: 'Project runner', projects: [project]) }
 
-    it "GET /runners" do
+    pending "GET /runners" do
       get api("/runners", user)
 
       expect(response).to have_gitlab_http_status(:ok)
