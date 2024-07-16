@@ -99,7 +99,7 @@ module API
         use :push_rule_params
       end
       put ":id/push_rule" do
-        not_found!('Push Rule') unless user_project.push_rule
+        not_found!('Push rule') unless user_project.push_rule
         create_or_update_push_rule
       end
 
@@ -110,7 +110,7 @@ module API
       end
       delete ":id/push_rule" do
         push_rule = user_project.push_rule
-        not_found!('Push Rule') unless push_rule
+        not_found!('Push rule') unless push_rule
 
         push_rule.destroy
 

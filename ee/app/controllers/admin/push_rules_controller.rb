@@ -17,7 +17,7 @@ class Admin::PushRulesController < Admin::ApplicationController
 
     if @push_rule.valid?
       link_push_rule_to_application_settings
-      redirect_to admin_push_rule_path, notice: _('Push Rule updated successfully.')
+      redirect_to admin_push_rule_path, notice: _('Push rule updated successfully.')
     else
       render :show
     end

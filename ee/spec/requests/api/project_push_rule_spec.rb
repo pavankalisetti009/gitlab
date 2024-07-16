@@ -468,7 +468,7 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', api: true, feature_categ
 
           expect(response).to have_gitlab_http_status(:not_found)
           expect(json_response).to be_an Hash
-          expect(json_response['message']).to eq('404 Push Rule Not Found')
+          expect(json_response['message']).to eq('404 Push rule Not Found')
         end
       end
 
