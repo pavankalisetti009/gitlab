@@ -6,6 +6,34 @@ module Search
       class << self
         include ::Elastic::Latest::QueryContext::Aware
 
+        def by_source_branch(query_hash:, options:)
+          source_branch = options[:source_branch]
+          not_source_branch = options[:not_source_branch]
+
+          return query_hash unless source_branch || not_source_branch
+
+          context.name(:filters) do
+            should = []
+            if source_branch
+              should << { term: { source_branch: { _name: context.name(:source_branch), value: source_branch } } }
+            end
+
+            if not_source_branch
+              should << {
+                bool: {
+                  must_not: {
+                    term: { source_branch: { _name: context.name(:not_source_branch), value: not_source_branch } }
+                  }
+                }
+              }
+            end
+
+            add_filter(query_hash, :query, :bool, :filter) do
+              { bool: { should: should, minimum_should_match: 1 } }
+            end
+          end
+        end
+
         def by_not_hidden(query_hash:, options:)
           user = options[:current_user]
           return query_hash if user&.can_admin_all_resources?
