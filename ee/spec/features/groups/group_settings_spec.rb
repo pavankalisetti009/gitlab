@@ -727,7 +727,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
   end
 
   def save_permissions_group
-    page.within('.gs-permissions') do
+    within_testid('permissions-settings') do
       click_button 'Save changes'
     end
   end
