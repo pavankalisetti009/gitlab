@@ -73,22 +73,22 @@ module Arkose
     end
 
     def success(message: 'sent arkose truth data')
-      log_result(message: message, status: 'success')
+      log_result(message: message, result: 'success')
 
       ServiceResponse.success
     end
 
     def error(message)
-      log_result(message: message, status: 'failure')
+      log_result(message: message, result: 'failure')
 
       ServiceResponse.error(message: message)
     end
 
-    def log_result(message:, status:)
+    def log_result(message:, result:)
       Gitlab::AppLogger.info(
         message: message,
         event: 'Arkose truth data',
-        status: status,
+        result: result,
         username: user.username,
         arkose_session: arkose_session || 'none',
         arkose_risk_band: arkose_risk_band || 'none',

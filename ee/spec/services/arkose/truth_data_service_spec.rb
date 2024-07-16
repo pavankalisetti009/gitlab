@@ -41,7 +41,7 @@ RSpec.describe Arkose::TruthDataService, feature_category: :instance_resiliency 
 
     shared_examples 'short circuits the API request' do
       let(:log_message) { 'truth data is not applicable for user' }
-      let(:status) { 'success' }
+      let(:result) { 'success' }
 
       it { is_expected.to be_success }
 
@@ -56,7 +56,7 @@ RSpec.describe Arkose::TruthDataService, feature_category: :instance_resiliency 
 
     shared_examples 'successful API request' do
       let(:log_message) { 'sent arkose truth data' }
-      let(:status) { 'success' }
+      let(:result) { 'success' }
 
       it { is_expected.to be_success }
 
@@ -74,7 +74,7 @@ RSpec.describe Arkose::TruthDataService, feature_category: :instance_resiliency 
         expect(Gitlab::AppLogger).to receive(:info).with(
           message: log_message,
           event: 'Arkose truth data',
-          status: status,
+          result: result,
           username: user.username,
           arkose_session: session_token,
           arkose_risk_band: arkose_risk_band,
@@ -117,7 +117,7 @@ RSpec.describe Arkose::TruthDataService, feature_category: :instance_resiliency 
       context 'when the client API call fails' do
         let(:client_api_status_code) { 500 }
         let(:log_message) { 'Unable to send truth data. Response code: 500' }
-        let(:status) { 'failure' }
+        let(:result) { 'failure' }
 
         it 'is unsuccessful' do
           result = execute
@@ -131,7 +131,7 @@ RSpec.describe Arkose::TruthDataService, feature_category: :instance_resiliency 
 
       context 'when the authorization service fails' do
         let(:log_message) { 'oops' }
-        let(:status) { 'failure' }
+        let(:result) { 'failure' }
 
         before do
           allow(Arkose::TruthDataAuthorizationService).to receive(:execute).and_return(
