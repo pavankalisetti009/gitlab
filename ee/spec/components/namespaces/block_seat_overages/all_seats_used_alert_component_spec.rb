@@ -67,6 +67,12 @@ RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, type: 
           it { is_expected.to be false }
         end
 
+        describe 'with more billable members than seats' do
+          let(:billable_members_count) { 3 }
+
+          it { is_expected.to be true }
+        end
+
         describe 'when namespace is personal' do
           let_it_be(:namespace) { build(:user).namespace }
 

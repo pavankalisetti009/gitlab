@@ -40,8 +40,7 @@ module Namespaces
 
         return false if billable_members_count.blank?
 
-        # We use `==` here because there is another banner for seat overage
-        subscription.seats == billable_members_count
+        subscription.seats <= billable_members_count
       end
 
       def user_dismissed_alert?
