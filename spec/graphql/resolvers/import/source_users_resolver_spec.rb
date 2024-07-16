@@ -37,6 +37,20 @@ RSpec.describe Resolvers::Import::SourceUsersResolver, feature_category: :import
 
       it { expect(resolve_import_source_users).to be_empty }
     end
+
+    describe 'arguments' do
+      let(:args) { { search: 'search', statuses: ['AWAITING_APPROVAL'], sort: 'STATUS_ASC' } }
+
+      it 'calls Import::SourceUsersFinder with the expected arguments' do
+        expected_args = { search: 'search', statuses: [1], sort: :status_asc }
+
+        expect_next_instance_of(::Import::SourceUsersFinder, group, current_user, expected_args) do |finder|
+          expect(finder).to receive(:execute)
+        end
+
+        resolve_import_source_users
+      end
+    end
   end
 
   def resolve_import_source_users

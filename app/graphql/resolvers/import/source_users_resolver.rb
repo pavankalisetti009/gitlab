@@ -11,6 +11,19 @@ module Resolvers
 
       type Types::Import::SourceUserType.connection_type, null: true
 
+      argument :statuses, [::Types::Import::SourceUserStatusEnum],
+        required: false,
+        description: 'Filter mapping of users on source instance to users on destination instance by status.'
+
+      argument :search, GraphQL::Types::String,
+        required: false,
+        description: 'Query to search mappings by name or username of users on source instance.'
+
+      argument :sort, Types::Import::SourceUserSortEnum,
+        description: 'Sort mapping of users on source instance to users on destination instance by the criteria.',
+        required: false,
+        default_value: :source_name_asc
+
       alias_method :namespace, :object
 
       def resolve_with_lookahead(**args)
