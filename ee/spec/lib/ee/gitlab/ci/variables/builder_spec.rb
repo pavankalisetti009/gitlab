@@ -31,9 +31,12 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
   describe '#scoped_variables' do
     let(:environment_name) { job.expanded_environment_name }
     let(:dependencies) { true }
+    let(:job_attributes) { {} }
 
     subject(:scoped_variables) do
-      builder.scoped_variables(job, environment: environment_name, dependencies: dependencies)
+      builder.scoped_variables(job,
+        environment: environment_name, dependencies: dependencies, job_attributes: job_attributes
+      )
     end
 
     it { is_expected.to be_instance_of(Gitlab::Ci::Variables::Collection) }
@@ -181,6 +184,40 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
               'M' => '13', 'N' => '14',
               'O' => '14', 'P' => '15',
               'Q' => '16', 'R' => '16')
+          end
+        end
+
+        # When removing ci_variables_optimization_for_yaml_and_node;
+        # - this test should be removed
+        # - `allow(job).to receive(:yaml_variables)` should be removed
+        context 'when job_attributes are provided' do
+          let(:job_attributes) do
+            { yaml_variables: [var('G', 7), var('H', 7)] }
+          end
+
+          it 'does not call yaml_variables on the job' do
+            expect(job).not_to receive(:yaml_variables)
+            scoped_variables
+          end
+
+          it 're-applies yaml_variables with the highest precedence' do
+            expect(scoped_variables.to_runner_variables).to eq(
+              [var('A', 1), var('B', 1),
+                var('B', 2), var('C', 2),
+                var('C', 3), var('D', 3),
+                var('D', 4), var('E', 4),
+                var('E', 5), var('F', 5),
+                var('G', 7), var('H', 7),
+                var('H', 8), var('I', 8),
+                var('I', 9), var('J', 9),
+                var('J', 10), var('K', 10),
+                var('K', 11), var('L', 11),
+                var('L', 12), var('M', 12),
+                var('M', 13), var('N', 13),
+                var('N', 14), var('O', 14),
+                var('P', 15), var('Q', 15),
+                var('Q', 16), var('R', 16),
+                var('G', 7), var('H', 7)])
           end
         end
       end
