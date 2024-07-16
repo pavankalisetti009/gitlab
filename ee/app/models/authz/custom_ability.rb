@@ -52,11 +52,17 @@ module Authz
     end
 
     def abilities_for_projects(user, projects)
-      ::Authz::Project.new(user, scope: projects).permitted
+      ::Preloaders::UserMemberRolesInProjectsPreloader.new(
+        projects: projects,
+        user: user
+      ).execute
     end
 
     def abilities_for_groups(user, groups)
-      ::Authz::Group.new(user, scope: groups).permitted
+      ::Preloaders::UserMemberRolesInGroupsPreloader.new(
+        groups: groups,
+        user: user
+      ).execute
     end
 
     def abilities_for(user, resource)
