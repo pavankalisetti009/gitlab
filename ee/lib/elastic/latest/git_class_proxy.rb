@@ -44,10 +44,7 @@ module Elastic
       def abilities_for(projects, user)
         return {} if user.blank?
 
-        ::Preloaders::UserMemberRolesInProjectsPreloader.new(
-          projects: projects,
-          user: user
-        ).execute
+        ::Authz::Project.new(user, scope: projects).permitted
       end
 
       def filter_ids_by_ability(project_ids, user, abilities)

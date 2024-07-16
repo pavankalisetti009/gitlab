@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Authz::CustomAbility, feature_category: :system_access do
+RSpec.describe Authz::CustomAbility, feature_category: :permissions do
   describe '.allowed?', :request_store do
     using RSpec::Parameterized::TableSyntax
 
