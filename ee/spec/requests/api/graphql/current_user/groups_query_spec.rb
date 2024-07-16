@@ -33,7 +33,7 @@ RSpec.describe 'Query current user groups', feature_category: :groups_and_projec
       create(:group, :private, maintainers: current_user, organization: organization)
       create(:group, :private, parent: private_maintainer_group, organization: organization)
 
-      another_root = create(:group, :private, name: 'root-3', path: 'root-3')
+      another_root = create(:group, :private, name: 'root-3', path: 'root-3', organization: organization)
       create(:group, :private, parent: another_root, maintainers: current_user, organization: organization)
 
       expect { post_graphql(query, current_user: current_user) }.not_to exceed_query_limit(control)

@@ -6,7 +6,6 @@ RSpec.describe ApprovalRules::GroupFinder, feature_category: :source_code_manage
   let_it_be_with_reload(:rule) { create(:approval_project_rule) }
   let_it_be(:user) { create(:user) }
   let_it_be(:organization) { create(:organization) }
-
   let_it_be(:public_group) { create(:group, name: 'public_group', organization: organization) }
   let_it_be(:private_inaccessible_group) do
     create(:group, :private, name: 'private_inaccessible_group', organization: organization)
@@ -17,7 +16,8 @@ RSpec.describe ApprovalRules::GroupFinder, feature_category: :source_code_manage
   end
 
   let_it_be(:private_accessible_subgroup) do
-    create(:group, :private, parent: private_accessible_group, name: 'private_accessible_subgroup')
+    create(:group, :private, parent: private_accessible_group, name: 'private_accessible_subgroup',
+      organization: organization)
   end
 
   let_it_be(:private_shared_group) do

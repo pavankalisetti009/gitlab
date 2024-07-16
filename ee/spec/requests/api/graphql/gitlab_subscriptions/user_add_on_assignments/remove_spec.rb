@@ -8,7 +8,12 @@ RSpec.describe 'UserAddOnAssignmentRemove', feature_category: :seat_cost_managem
   let_it_be(:current_user) { create(:user) }
   let_it_be(:organization) { create(:organization) }
   let_it_be(:namespace) { create(:group, organization: organization) }
-  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace) }
+  let_it_be(:namespace_1) { create(:group, organization: organization) }
+  let_it_be(:namespace_2) { create(:group, organization: organization) }
+  let_it_be(:add_on_purchase) do
+    create(:gitlab_subscription_add_on_purchase, namespace: namespace, organization: organization)
+  end
+
   let_it_be(:remove_user) { create(:user) }
 
   let(:user_id) { global_id_of(remove_user) }
@@ -61,8 +66,13 @@ RSpec.describe 'UserAddOnAssignmentRemove', feature_category: :seat_cost_managem
   end
 
   shared_examples 'efficient mutation request' do
-    let(:additional_purchase_1) { create(:gitlab_subscription_add_on_purchase, add_on: add_on_purchase.add_on) }
-    let(:additional_purchase_2) { create(:gitlab_subscription_add_on_purchase, add_on: add_on_purchase.add_on) }
+    let(:additional_purchase_1) do
+      create(:gitlab_subscription_add_on_purchase, add_on: add_on_purchase.add_on, namespace: namespace_1)
+    end
+
+    let(:additional_purchase_2) do
+      create(:gitlab_subscription_add_on_purchase, add_on: add_on_purchase.add_on, namespace: namespace_2)
+    end
 
     let(:queried_purchase_ids) do
       prepare_variables([

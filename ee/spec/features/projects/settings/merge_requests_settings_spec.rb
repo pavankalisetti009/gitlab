@@ -4,7 +4,7 @@ require 'spec_helper'
 RSpec.describe 'Project settings > [EE] Merge Requests', :js, feature_category: :code_review_workflow do
   include GitlabRoutingHelper
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:user) { create(:user, :with_namespace) }
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :public, namespace: user.namespace, path: 'gitlab', name: 'sample', group: group) }
   let_it_be(:group_member) { create(:user) }
