@@ -196,8 +196,8 @@ describe('ProjectsTable component', () => {
       expect(wrapper.findComponent(SelectionOperations).props().selection[0]).toBe(projects[0]);
     });
 
-    it('passes root ancestor path to selection operations component', () => {
-      expect(wrapper.findComponent(SelectionOperations).props().rootAncestorPath).toBe(groupPath);
+    it('passes group path to selection operations component', () => {
+      expect(wrapper.findComponent(SelectionOperations).props().groupPath).toBe(groupPath);
     });
 
     it.each(Object.keys(projects))('has the correct data for row %s', (idx) => {

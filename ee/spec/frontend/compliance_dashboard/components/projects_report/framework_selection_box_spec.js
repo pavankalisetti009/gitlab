@@ -39,7 +39,7 @@ describe('FrameworkSelectionBox component', () => {
     wrapper = mount(FrameworkSelectionBox, {
       apolloProvider,
       propsData: {
-        rootAncestorPath: 'group-path',
+        groupPath: 'group-path',
         isFrameworkCreatingEnabled: true,
         ...props,
       },

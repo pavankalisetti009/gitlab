@@ -17,7 +17,7 @@ export default {
     event: 'select',
   },
   props: {
-    rootAncestorPath: {
+    groupPath: {
       type: String,
       required: true,
     },
@@ -51,7 +51,7 @@ export default {
     frameworks: {
       query: getComplianceFrameworkQuery,
       variables() {
-        return { fullPath: this.rootAncestorPath };
+        return { fullPath: this.groupPath };
       },
       update(data) {
         return data.namespace.complianceFrameworks.nodes;

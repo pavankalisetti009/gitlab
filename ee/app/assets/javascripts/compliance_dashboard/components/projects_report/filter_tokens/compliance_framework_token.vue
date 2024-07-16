@@ -25,7 +25,7 @@ export default {
       query: getComplianceFrameworkQuery,
       variables() {
         return {
-          fullPath: this.config.rootAncestorPath,
+          fullPath: this.config.groupPath,
         };
       },
       update(data) {

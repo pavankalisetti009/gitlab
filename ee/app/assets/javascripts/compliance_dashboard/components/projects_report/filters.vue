@@ -20,7 +20,7 @@ export default {
       required: false,
       default: () => [],
     },
-    rootAncestorPath: {
+    groupPath: {
       type: String,
       required: true,
     },
@@ -40,7 +40,7 @@ export default {
           type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
           entityType: 'framework',
           token: ComplianceFrameworkToken,
-          rootAncestorPath: this.rootAncestorPath,
+          groupPath: this.groupPath,
         },
         {
           unique: true,

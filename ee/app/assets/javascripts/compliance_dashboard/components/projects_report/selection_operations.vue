@@ -22,7 +22,7 @@ export default {
       required: false,
       default: false,
     },
-    rootAncestorPath: {
+    groupPath: {
       type: String,
       required: true,
     },
@@ -166,7 +166,7 @@ export default {
         v-model="selectedFramework"
         data-testid="choose-framework"
         :disabled="!hasSelection"
-        :root-ancestor-path="rootAncestorPath"
+        :group-path="groupPath"
         :is-framework-creating-enabled="isFrameworkCreatingEnabled"
         @create="$emit('create')"
       />

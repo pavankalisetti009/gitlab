@@ -185,7 +185,7 @@ export default {
   <section>
     <filters
       :value="filters"
-      :root-ancestor-path="rootAncestorPath"
+      :group-path="groupPath"
       :error="hasQueryError"
       :show-update-popover="shouldShowUpdatePopover"
       @update-popover-hidden="shouldShowUpdatePopover = false"
