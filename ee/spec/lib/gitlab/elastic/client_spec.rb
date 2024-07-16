@@ -180,7 +180,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
       context 'when aws sdk provides credentials' do
         let(:credentials) { double(:aws_credentials, set?: true) }
 
-        it 'return the credentials' do
+        it 'return the credentials', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468573' do
           expect(creds).to eq(credentials)
         end
       end
