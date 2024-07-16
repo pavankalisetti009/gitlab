@@ -4210,4 +4210,42 @@ RSpec.describe User, feature_category: :system_access do
       it { is_expected.to be_truthy }
     end
   end
+
+  describe '#ci_owned_runners' do
+    subject(:runners) { user.ci_owned_runners }
+
+    let_it_be(:user, reload: true) { create(:user) }
+    let_it_be(:group) { create(:group, name: "group") }
+    let_it_be(:subgroup) { create(:group, parent: group, name: "subgroup") }
+    let_it_be(:project) { create(:project, group: subgroup, name: "project") }
+    let_it_be(:role) { create(:member_role, :guest, :admin_runners, namespace: group) }
+
+    let_it_be(:group_runner) { create(:ci_runner, :group, groups: [group]) }
+    let_it_be(:subgroup_runner) { create(:ci_runner, :group, groups: [subgroup]) }
+    let_it_be(:project_runner) { create(:ci_runner, :project, projects: [project]) }
+
+    before do
+      stub_licensed_features(custom_roles: true)
+    end
+
+    it { expect(runners).to be_empty }
+
+    context 'when the user has the `admin_runners` permission via a custom role on a root group' do
+      let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
+
+      it { expect(runners).to match_array([group_runner, subgroup_runner, project_runner]) }
+    end
+
+    context 'when the user has the `admin_runners` permission via a custom role on a sub group' do
+      let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: subgroup) }
+
+      it { expect(runners).to match_array([subgroup_runner, project_runner]) }
+    end
+
+    context 'when the user has the `admin_runners` permission via a custom role on a project' do
+      let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
+
+      it { expect(runners).to match_array([project_runner]) }
+    end
+  end
 end
