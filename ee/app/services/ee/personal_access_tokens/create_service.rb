@@ -35,11 +35,9 @@ module EE
       def pat_expiration
         return params[:expires_at] if params[:expires_at].present?
 
-        if EE::Gitlab::PersonalAccessTokens::ServiceAccountTokenValidator.new(target_user).expiry_enforced?
-          return max_expiry_date
-        end
+        return unless EE::Gitlab::PersonalAccessTokens::ServiceAccountTokenValidator.new(target_user).expiry_enforced?
 
-        super
+        max_expiry_date
       end
 
       override :creation_permitted?

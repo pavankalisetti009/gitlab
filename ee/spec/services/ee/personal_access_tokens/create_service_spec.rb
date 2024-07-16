@@ -115,7 +115,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
 
                 where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
                   true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
-                  true | false | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                  true | false | nil
                   false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
                   false | false | nil
                 end
@@ -167,7 +167,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
                 context 'when saas', :saas, :enable_admin_mode do
                   where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
                     true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
-                    true | false | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                    true | false | nil
                     false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
                     false | false | nil
                   end

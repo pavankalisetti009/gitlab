@@ -147,7 +147,7 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
 
           where(:require_token_expiry, :require_token_expiry_for_service_accounts, :is_valid) do
             true | true | false
-            true | false | false
+            true | false | true
             false | true | false
             false | false | true
           end
@@ -169,7 +169,7 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
 
           where(:require_token_expiry, :require_token_expiry_for_service_accounts, :is_valid) do
             true | true | false
-            true | false | false
+            true | false | true
             false | true | false
             false | false | true
           end

@@ -76,7 +76,7 @@ module EE
     end
 
     def allow_expires_at_to_be_empty?
-      super && !EE::Gitlab::PersonalAccessTokens::ServiceAccountTokenValidator.new(user).expiry_enforced?
+      !EE::Gitlab::PersonalAccessTokens::ServiceAccountTokenValidator.new(user).expiry_enforced?
     end
 
     def expires_at_before_max_expiry_date
