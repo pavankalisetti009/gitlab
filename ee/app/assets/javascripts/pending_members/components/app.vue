@@ -64,7 +64,7 @@ export default {
         count,
       ),
   },
-  inject: ['namespaceName', 'namespaceId', 'userCapSet'],
+  inject: ['namespacePath', 'namespaceId', 'userCapSet'],
   data() {
     return {
       hasError: false,
@@ -84,7 +84,7 @@ export default {
       query: pendingMembersQuery,
       variables() {
         return {
-          groupPath: this.namespaceName,
+          groupPath: this.namespacePath,
           ...this.cursor,
         };
       },
@@ -188,7 +188,7 @@ export default {
           mutation: approvePendingGroupMemberMutation,
           variables: {
             namespaceId: this.namespaceId,
-            namespaceName: this.namespaceName,
+            namespacePath: this.namespacePath,
             id,
           },
           refetchQueries: [pendingMembersQuery],
