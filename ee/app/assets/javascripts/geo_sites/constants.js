@@ -4,8 +4,8 @@ import { __, s__ } from '~/locale';
 export const GEO_INFO_URL = helpPagePath('administration/geo/index.md');
 
 export const HELP_SITE_HEALTH_URL = helpPagePath(
-  'administration/geo/replication/troubleshooting.html',
-  { anchor: 'check-the-health-of-the-secondary-site' },
+  'administration/geo/replication/troubleshooting/common.html',
+  { anchor: 'check-the-health-of-the-geo-sites' },
 );
 
 export const GEO_TROUBLESHOOTING_URL = helpPagePath(
