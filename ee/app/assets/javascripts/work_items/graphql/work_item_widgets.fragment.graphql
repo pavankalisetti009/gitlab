@@ -3,6 +3,7 @@
 #import "~/work_items/graphql/milestone.fragment.graphql"
 #import "~/work_items/graphql/timelog.fragment.graphql"
 #import "./work_item_metadata_widgets.fragment.graphql"
+#import "./work_item_metadata_widgets_extras.fragment.graphql"
 #import "./rolledup_dates.fragment.graphql"
 
 fragment WorkItemWidgets on WorkItemWidget {
@@ -144,6 +145,7 @@ fragment WorkItemWidgets on WorkItemWidget {
           reference(full: true)
           widgets {
             ...WorkItemMetadataWidgets
+            ...WorkItemMetadataWidgetsExtras
           }
         }
       }

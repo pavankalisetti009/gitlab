@@ -1,7 +1,6 @@
 #import "~/graphql_shared/fragments/label.fragment.graphql"
 #import "~/graphql_shared/fragments/user.fragment.graphql"
 #import "~/work_items/graphql/milestone.fragment.graphql"
-#import "./rolledup_dates.fragment.graphql"
 
 fragment WorkItemMetadataWidgets on WorkItemWidget {
   type
@@ -9,27 +8,12 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
     dueDate
     startDate
   }
-  ...RolledupDatesFragment
   ... on WorkItemWidgetWeight {
     weight
     rolledUpWeight
     widgetDefinition {
       editable
       rollUp
-    }
-  }
-  ... on WorkItemWidgetIteration {
-    iteration {
-      description
-      id
-      iid
-      title
-      startDate
-      dueDate
-      updatedAt
-      iterationCadence {
-        title
-      }
     }
   }
   ... on WorkItemWidgetProgress {
@@ -58,17 +42,6 @@ fragment WorkItemMetadataWidgets on WorkItemWidget {
     labels {
       nodes {
         ...Label
-      }
-    }
-  }
-  ... on WorkItemWidgetNotifications {
-    subscribed
-  }
-
-  ... on WorkItemWidgetCurrentUserTodos {
-    currentUserTodos(state: pending) {
-      nodes {
-        id
       }
     }
   }
