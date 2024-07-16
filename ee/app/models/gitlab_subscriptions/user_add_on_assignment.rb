@@ -4,15 +4,11 @@ module GitlabSubscriptions
   class UserAddOnAssignment < ApplicationRecord
     include EachBatch
 
-    USER_ADD_ON_ASSIGNMENT_CACHE_KEY = 'addon-assignments:user-%{user_id}'
-
     belongs_to :user, inverse_of: :assigned_add_ons
     belongs_to :add_on_purchase, class_name: 'GitlabSubscriptions::AddOnPurchase', inverse_of: :assigned_users
 
     validates :user, :add_on_purchase, presence: true
     validates :add_on_purchase_id, uniqueness: { scope: :user_id }
-
-    after_save :clear_user_add_on_assigment_cache!
 
     scope :by_user, ->(user) { where(user: user) }
     scope :for_user_ids, ->(user_ids) { where(user_id: user_ids) }
@@ -33,12 +29,6 @@ module GitlabSubscriptions
 
     def self.pluck_user_ids
       pluck(:user_id)
-    end
-
-    def clear_user_add_on_assigment_cache!
-      cache_key = format(USER_ADD_ON_ASSIGNMENT_CACHE_KEY, user_id: user.id)
-
-      Rails.cache.delete(cache_key)
     end
   end
 end
