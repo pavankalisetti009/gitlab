@@ -39,7 +39,7 @@ export default {
     },
     {
       key: 'actions',
-      label: '',
+      label: __('Actions'),
     },
   ],
 };
@@ -67,11 +67,17 @@ export default {
         <user-date :date="user.lastActivityOn" />
       </template>
 
+      <template #head(actions)="{ label }">
+        <span class="gl-sr-only">{{ label }}</span>
+      </template>
+
       <template #cell(actions)="{ item: { user } }">
-        <gl-button @click="$emit('reject', user.id)">{{ __('Reject') }}</gl-button>
-        <gl-button variant="confirm" @click="$emit('approve', user.id)">{{
-          __('Approve')
-        }}</gl-button>
+        <div class="gl-flex gl-gap-3 gl-items-center">
+          <gl-button @click="$emit('reject', user.id)">{{ __('Reject') }}</gl-button>
+          <gl-button variant="confirm" @click="$emit('approve', user.id)">{{
+            __('Approve')
+          }}</gl-button>
+        </div>
       </template>
     </gl-table>
   </div>
