@@ -140,7 +140,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
 
         let(:epic) { create(:epic, group: group, title: epic_title, description: markdown) }
 
-        it 'syncs the updates to the work item' do
+        it 'syncs the updates to the work item', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468470' do
           visit group_epic_path(group, epic)
 
           expect(page).to have_selector('ul.task-list',      count: 1)
