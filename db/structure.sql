@@ -1149,6 +1149,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_49862b4b3035() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."group_id" IS NULL THEN
+  SELECT "group_id"
+  INTO NEW."group_id"
+  FROM "approval_group_rules"
+  WHERE "approval_group_rules"."id" = NEW."approval_group_rule_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_49e070da6320() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -5926,7 +5942,8 @@ ALTER SEQUENCE approval_group_rules_id_seq OWNED BY approval_group_rules.id;
 CREATE TABLE approval_group_rules_protected_branches (
     id bigint NOT NULL,
     approval_group_rule_id bigint NOT NULL,
-    protected_branch_id bigint NOT NULL
+    protected_branch_id bigint NOT NULL,
+    group_id bigint
 );
 
 CREATE SEQUENCE approval_group_rules_protected_branches_id_seq
@@ -26173,6 +26190,8 @@ CREATE INDEX index_approval_group_rules_on_approval_policy_rule_id ON approval_g
 
 CREATE INDEX index_approval_group_rules_on_scan_result_policy_id ON approval_group_rules USING btree (scan_result_policy_id);
 
+CREATE INDEX index_approval_group_rules_protected_branches_on_group_id ON approval_group_rules_protected_branches USING btree (group_id);
+
 CREATE INDEX index_approval_group_rules_users_on_group_id ON approval_group_rules_users USING btree (group_id);
 
 CREATE INDEX index_approval_group_rules_users_on_user_id ON approval_group_rules_users USING btree (user_id);
@@ -31813,6 +31832,8 @@ CREATE TRIGGER trigger_43484cb41aca BEFORE INSERT OR UPDATE ON wiki_repository_s
 
 CREATE TRIGGER trigger_44558add1625 BEFORE INSERT OR UPDATE ON merge_request_assignees FOR EACH ROW EXECUTE FUNCTION trigger_44558add1625();
 
+CREATE TRIGGER trigger_49862b4b3035 BEFORE INSERT OR UPDATE ON approval_group_rules_protected_branches FOR EACH ROW EXECUTE FUNCTION trigger_49862b4b3035();
+
 CREATE TRIGGER trigger_49e070da6320 BEFORE INSERT OR UPDATE ON packages_dependency_links FOR EACH ROW EXECUTE FUNCTION trigger_49e070da6320();
 
 CREATE TRIGGER trigger_4ad9a52a6614 BEFORE INSERT OR UPDATE ON sbom_occurrences_vulnerabilities FOR EACH ROW EXECUTE FUNCTION trigger_4ad9a52a6614();
@@ -32408,6 +32429,9 @@ ALTER TABLE ONLY vulnerability_reads
 
 ALTER TABLE ONLY approval_group_rules_groups
     ADD CONSTRAINT fk_50edc8134e FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY approval_group_rules_protected_branches
+    ADD CONSTRAINT fk_514003db08 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY alert_management_alerts
     ADD CONSTRAINT fk_51ab4b6089 FOREIGN KEY (prometheus_alert_id) REFERENCES prometheus_alerts(id) ON DELETE CASCADE;
