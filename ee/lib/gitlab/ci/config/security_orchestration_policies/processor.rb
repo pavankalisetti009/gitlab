@@ -5,15 +5,13 @@ module Gitlab
     class Config
       module SecurityOrchestrationPolicies
         class Processor
+          include Gitlab::Utils::StrongMemoize
+
           DEFAULT_ON_DEMAND_STAGE = 'dast'
           DEFAULT_SECURITY_JOB_STAGE = 'test'
 
           DEFAULT_BUILD_STAGE = 'build'
           DEFAULT_SCAN_POLICY_STAGE = 'scan-policies'
-          DEFAULT_POLICY_PRE_STAGE = '.pipeline-policy-pre'
-          DEFAULT_POLICY_TEST_STAGE = '.pipeline-policy-test'
-          DEFAULT_POLICY_POST_STAGE = '.pipeline-policy-post'
-          RESERVED_STAGES = [DEFAULT_POLICY_PRE_STAGE, DEFAULT_POLICY_TEST_STAGE, DEFAULT_POLICY_POST_STAGE].freeze
           DEFAULT_STAGES = Gitlab::Ci::Config::Entry::Stages.default
 
           def initialize(config, context, ref, source)
@@ -33,15 +31,6 @@ module Gitlab
             @config[:workflow] = { rules: [{ when: 'always' }] } if @config.empty?
 
             merged_config = @config.deep_merge(merged_security_policy_config)
-
-            if custom_scan_actions_enabled? && active_scan_custom_actions.any?
-              merged_config = clean_up_reserved_stages_jobs(merged_config)
-
-              merged_config = merged_config.deep_merge(scan_custom_actions[:pipeline_scan])
-
-              merged_config[:stages] = insert_custom_scan_stages(merged_config[:stages])
-            end
-
             merged_config[:stages] = cleanup_stages(merged_config[:stages])
             merged_config.delete(:stages) if merged_config[:stages].blank?
 
@@ -53,15 +42,6 @@ module Gitlab
           private
 
           attr_reader :project, :ref, :context
-
-          def custom_scan_actions_enabled?
-            return false if project.group.nil?
-
-            Feature.enabled?(
-              :compliance_pipeline_in_policies,
-              project
-            ) && project.group.namespace_settings.toggle_security_policy_custom_ci?
-          end
 
           def cleanup_stages(stages)
             stages.uniq!
@@ -92,12 +72,6 @@ module Gitlab
             @scan_templates ||= ::Security::SecurityOrchestrationPolicies::ScanPipelineService
               .new(context)
               .execute(active_scan_template_actions)
-          end
-
-          def scan_custom_actions
-            @scan_custom_actions ||= ::Security::SecurityOrchestrationPolicies::ScanPipelineService
-              .new(context, custom_ci_yaml_allowed: true)
-              .execute(active_scan_custom_actions)
           end
 
           ## Add `dast` to the end of stages if `dast` is not in stages already
@@ -140,22 +114,6 @@ module Gitlab
             end
           end
 
-          def clean_up_reserved_stages_jobs(config)
-            jobs_to_reject = config.except(*Config::Entry::Root.reserved_nodes_names).select do |_, content|
-              RESERVED_STAGES.include?(content[:stage])
-            end.keys
-
-            config.except(*jobs_to_reject)
-          end
-
-          def insert_custom_scan_stages(config_stages)
-            config_stages.append(DEFAULT_POLICY_POST_STAGE)
-
-            insert_stage_after_or_prepend(config_stages, DEFAULT_POLICY_TEST_STAGE, %w[test build .pre])
-
-            config_stages.unshift(DEFAULT_POLICY_PRE_STAGE)
-          end
-
           def insert_stage_after_or_prepend(stages, insert_stage_name, after_stages)
             stage_index = after_stages.filter_map { |stage| stages.index(stage) }.max
 
@@ -177,27 +135,14 @@ module Gitlab
           end
 
           def active_scan_template_actions
-            @active_scan_template_actions ||= active_scan_actions.reject { |action| action[:scan] == 'custom' }
-          end
-
-          def active_scan_custom_actions
-            @active_scan_custom_actions ||= active_scan_actions.select { |action| action[:scan] == 'custom' }
-          end
-
-          def active_scan_actions
-            scan_actions do |configuration|
-              configuration.active_policies_pipeline_scan_actions_for_project(ref, project)
-            end
-          end
-
-          def scan_actions
             return [] if valid_security_orchestration_policy_configurations.blank?
 
             valid_security_orchestration_policy_configurations
-              .flat_map do |security_orchestration_policy_configuration|
-                yield(security_orchestration_policy_configuration)
+              .flat_map do |configuration|
+                configuration.active_policies_pipeline_scan_actions_for_project(ref, project)
               end.compact.uniq
           end
+          strong_memoize_attr :active_scan_template_actions
 
           def observe_processing_duration(duration)
             ::Gitlab::Ci::Pipeline::Metrics

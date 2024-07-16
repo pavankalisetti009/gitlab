@@ -77,14 +77,9 @@ module EE::SecurityOrchestrationHelper
     end
   end
 
-  def custom_ci_toggle_enabled?(container)
-    if container.is_a?(::Project)
-      return false unless container.group
-
-      container.group.namespace_settings.toggle_security_policy_custom_ci?
-    else
-      container.namespace_settings.toggle_security_policy_custom_ci?
-    end
+  def custom_ci_toggle_enabled?(_container)
+    # TODO: Remove when code is removed from frontend: https://gitlab.com/gitlab-org/gitlab/-/issues/473243
+    false
   end
 
   def security_policies_path(container)
