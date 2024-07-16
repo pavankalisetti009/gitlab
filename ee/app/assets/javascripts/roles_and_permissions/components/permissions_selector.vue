@@ -9,7 +9,7 @@ export const FIELDS = [
   { key: 'checkbox', label: '' },
   { key: 'name', label: s__('MemberRole|Permission') },
   { key: 'description', label: s__('MemberRole|Description') },
-];
+].map((field) => ({ ...field, class: 'gl-pt-6! gl-pb-6!' }));
 
 export default {
   i18n: {
@@ -211,12 +211,17 @@ export default {
           :disabled="isLoadingPermissions"
           :checked="isAllPermissionsSelected"
           :indeterminate="isSomePermissionsSelected"
+          class="gl-min-h-0"
           @change="toggleAllPermissions"
         />
       </template>
 
       <template #cell(checkbox)="{ item }">
-        <gl-form-checkbox :checked="isSelected(item)" @change="updatePermissions(item)" />
+        <gl-form-checkbox
+          :checked="isSelected(item)"
+          class="gl-min-h-0"
+          @change="updatePermissions(item)"
+        />
       </template>
 
       <template #cell(name)="{ item }">
