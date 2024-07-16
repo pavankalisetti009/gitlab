@@ -8,6 +8,8 @@ module Gitlab
           DRAFT_NOTES_COUNT_LIMIT = 50
 
           def execute
+            create_progress_note
+
             # Initialize ivar that will be populated as AI review diff hunks
             @draft_notes_params = []
             mr_diff_refs = merge_request.diff_refs
@@ -18,14 +20,13 @@ module Gitlab
               diff_file.diff_lines_by_hunk.each do |hunk|
                 break if draft_notes_limit_reached?
 
-                prompt = generate_prompt(diff_file, hunk)
+                review_prompt = generate_review_prompt(diff_file, hunk)
 
-                next unless prompt.present?
+                next unless review_prompt.present?
 
-                response = response_for(user, prompt)
-                response_modifier = ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+                response = review_response_for(user, review_prompt)
 
-                build_draft_note_params(response_modifier, diff_file, hunk, mr_diff_refs)
+                build_draft_note_params(response, diff_file, hunk, mr_diff_refs)
               end
             end
 
@@ -34,21 +35,37 @@ module Gitlab
 
           private
 
+          def review_bot
+            Users::Internal.duo_code_review_bot
+          end
+
           def merge_request
             resource
           end
 
-          def generate_prompt(diff_file, hunk)
+          def generate_review_prompt(diff_file, hunk)
             ai_prompt_class.new(diff_file, hunk).to_prompt
           end
 
-          def response_for(user, prompt)
-            ::Gitlab::Llm::VertexAi::Client
+          def review_response_for(user, prompt)
+            response = ::Gitlab::Llm::VertexAi::Client
               .new(user, unit_primitive: 'review_merge_request', tracking_context: tracking_context)
               .chat(
                 content: prompt,
                 parameters: ::Gitlab::Llm::VertexAi::Configuration.payload_parameters(temperature: 0)
               )
+
+            ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+          end
+
+          def summary_response_for(user, draft_notes)
+            summary_prompt = Gitlab::Llm::Templates::SummarizeReview.new(draft_notes).to_prompt
+
+            response = ::Gitlab::Llm::VertexAi::Client
+              .new(user, unit_primitive: 'summarize_review', tracking_context: tracking_context)
+              .text(content: summary_prompt)
+
+            ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
           end
 
           def draft_notes_limit_reached?
@@ -64,7 +81,7 @@ module Gitlab
 
             @draft_notes_params << {
               merge_request: merge_request,
-              author: Users::Internal.duo_code_review_bot,
+              author: review_bot,
               note: response_modifier.response_body,
               position: {
                 base_sha: diff_refs.base_sha,
@@ -80,8 +97,44 @@ module Gitlab
             }
           end
 
+          def create_progress_note
+            @progress_note = Notes::CreateService.new(
+              merge_request.project,
+              review_bot,
+              noteable: merge_request,
+              note: s_("DuoCodeReview|Hey :wave: I'm starting to review your merge request and " \
+                "I will let you know when I'm finished.")
+            ).execute
+          end
+
+          def update_progress_note_with_review_summary(draft_notes)
+            summary_note = if draft_notes.blank?
+                             s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
+                           else
+                             response = summary_response_for(user, draft_notes)
+
+                             if response.errors.any? || response.response_body.blank?
+                               s_("DuoCodeReview|I have encountered some issues while I was reviewing. " \
+                                 "Please try again later.")
+                             else
+                               response.response_body
+                             end
+                           end
+
+            Notes::UpdateService.new(
+              merge_request.project,
+              review_bot,
+              note: summary_note
+            ).execute(@progress_note)
+          end
+
           def publish_draft_notes
-            return if @draft_notes_params.empty?
+            if @draft_notes_params.empty?
+              update_progress_note_with_review_summary([])
+
+              return
+            end
+
             return unless Ability.allowed?(user, :create_note, merge_request)
 
             draft_notes = @draft_notes_params.map do |draft_note_params|
@@ -96,9 +149,10 @@ module Gitlab
             DraftNotes::PublishService
               .new(
                 merge_request,
-                Users::Internal.duo_code_review_bot
-              )
-              .execute(executing_user: user)
+                review_bot
+              ).execute(executing_user: user)
+
+            update_progress_note_with_review_summary(draft_notes)
           end
         end
       end
