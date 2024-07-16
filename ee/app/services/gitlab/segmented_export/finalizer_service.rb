@@ -13,7 +13,9 @@ module Gitlab
       end
 
       def execute
-        if can_be_finalized?
+        if export.timed_out?
+          fail_and_cleanup_export
+        elsif can_be_finalized?
           finalize_export
         elsif needs_to_be_rescheduled?
           reschedule_finalization_work
@@ -23,6 +25,11 @@ module Gitlab
       private
 
       attr_reader :export
+
+      def fail_and_cleanup_export
+        export.failed!
+        export.schedule_for_deletion
+      end
 
       def can_be_finalized?
         all_export_parts_present? && export.running?

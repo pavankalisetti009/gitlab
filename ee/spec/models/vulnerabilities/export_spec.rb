@@ -258,4 +258,36 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
       expect(export.file.read).to eq("Hello World!")
     end
   end
+
+  describe '#schedule_export_deletion' do
+    let(:export) { create(:vulnerability_export) }
+
+    subject(:schedule_export_deletion) { export.schedule_export_deletion }
+
+    it 'schedules the export deletion' do
+      expect(VulnerabilityExports::ExportDeletionWorker).to receive(:perform_in).with(1.hour, export.id)
+
+      schedule_export_deletion
+    end
+  end
+
+  describe '#timed_out?' do
+    let(:created_at) { (Vulnerabilities::Export::MAX_EXPORT_DURATION - 1.hour).ago }
+    let(:export) do
+      create(:vulnerability_export,
+        created_at: created_at)
+    end
+
+    subject { export.timed_out? }
+
+    context 'when the export has not been running for too long' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when the export has been running for too long' do
+      let(:created_at) { (Vulnerabilities::Export::MAX_EXPORT_DURATION + 1.hour).ago }
+
+      it { is_expected.to be_truthy }
+    end
+  end
 end
