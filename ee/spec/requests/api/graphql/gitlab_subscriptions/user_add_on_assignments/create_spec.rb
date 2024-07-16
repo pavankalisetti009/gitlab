@@ -116,6 +116,7 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     end
   end
 
+  let_it_be(:organization) { create(:organization) }
   let(:requested_fields) do
     <<-GQL
   errors
@@ -156,10 +157,8 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
 
   let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
   let_it_be(:assignee_user) { create(:user) }
-
   let(:user_id) { global_id_of(assignee_user) }
   let(:add_on_purchase_id) { global_id_of(add_on_purchase) }
-
   let(:input) do
     {
       user_id: user_id,
@@ -175,7 +174,8 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     end
 
     let_it_be(:current_user) { create(:user) }
-    let_it_be(:namespace) { create(:group) }
+    let_it_be(:namespace) { create(:group, organization: organization) }
+    let_it_be(:namespace_1) { create(:group, organization: organization) }
     let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
 
     before_all do
@@ -267,7 +267,10 @@ RSpec.describe 'UserAddOnAssignmentCreate', feature_category: :seat_cost_managem
     end
 
     context 'when there are multiple add-on assignments for the user' do
-      let_it_be(:additional_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: add_on) }
+      let_it_be(:additional_purchase) do
+        create(:gitlab_subscription_add_on_purchase, add_on: add_on, namespace: namespace_1)
+      end
+
       let(:queried_purchase_ids) { prepare_variables([add_on_purchase_id, global_id_of(additional_purchase)]) }
 
       before_all do

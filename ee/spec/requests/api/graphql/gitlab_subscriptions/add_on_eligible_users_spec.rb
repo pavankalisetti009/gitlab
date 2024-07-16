@@ -6,9 +6,12 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:user) }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:group) { create(:group, organization: organization) }
+  let_it_be(:group_1) { create(:group, organization: organization) }
   let_it_be(:gitlab_duo_pro) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
 
-  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro) }
+  let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro, namespace: group) }
   let(:query_add_on_purchase_ids) { [global_id_of(add_on_purchase)] }
 
   let(:query_fields) do
@@ -265,7 +268,9 @@ RSpec.describe 'Query.namespace.addOnEligibleUsers', feature_category: :seat_cos
     end
 
     context 'when selecting for multiple add on purchases' do
-      let(:other_add_on_purchase) { create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro) }
+      let(:other_add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro, namespace: group_1)
+      end
 
       let(:query_add_on_purchase_ids) do
         [global_id_of(add_on_purchase), global_id_of(other_add_on_purchase)]
