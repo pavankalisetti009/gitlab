@@ -4,7 +4,7 @@ $draft-actions-left-margin: 40px + $gl-padding;
   margin: 0;
 
   .referenced-commands.draft-note-commands {
-    color: $gray-500;
+    color: var(--gl-text-color-subtle);
     font-size: $label-font-size;
   }
 
@@ -17,20 +17,7 @@ $draft-actions-left-margin: 40px + $gl-padding;
   }
 }
 
-button[disabled] {
-  &,
-  &:focus,
-  &:hover {
-    // stylelint-disable-next-line gitlab/no-gl-class
-    .gl-badge {
-      background: $gray-100;
-      color: $gray-500;
-    }
-  }
-}
-
 .diff-file:not(.discussion-wrapper) .note.draft-note {
-  background: $orange-50;
   margin: 0 -1px;
   border-radius: 3px;
 
@@ -45,7 +32,6 @@ button[disabled] {
 
 .diff-file.discussion-wrapper .note.draft-note {
   .timeline-entry-inner {
-    border-bottom: 1px solid $border-color;
     border-bottom-left-radius: $gl-border-radius-base;
     border-bottom-right-radius: $gl-border-radius-base;
     background-color: $orange-50 !important;
@@ -75,7 +61,7 @@ button[disabled] {
 }
 
 .referenced-commands.draft-note-commands {
-  color: $gray-500;
+  color: var(--gl-text-color-subtle);
   background-color: transparent;
   border: 0;
   padding: $gl-padding-8 0 0;
