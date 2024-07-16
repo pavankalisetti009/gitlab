@@ -20,7 +20,7 @@ RSpec.describe 'Analytics (JavaScript fixtures)', :sidekiq_inline do
         create(:labeled_issue, created_at: i.days.ago, project: create(:project, group: group), labels: [labels[2]])
       end
 
-      stub_licensed_features(type_of_work_analytics: true)
+      stub_licensed_features(type_of_work_analytics: true, cycle_analytics_for_groups: true)
 
       group.add_maintainer(user)
 
