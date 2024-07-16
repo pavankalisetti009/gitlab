@@ -5,8 +5,15 @@ module Sbom
     include Gitlab::ExclusiveLeaseHelpers
 
     BATCH_SIZE = 100
-    LEASE_TTL = 5.minutes
-    LEASE_TRY_AFTER = 3.seconds
+
+    # Typical job finishes in a few seconds
+    LEASE_TTL = 1.minute
+
+    # This may be waiting on an SBoM ingestion job.
+    # 10 retries at 6 seconds each will allow 95% of jobs to acquire a lease
+    # without raising FailedToObtainLockError. When waiting for exceptionally long jobs,
+    # we'll allow the job to raise and be retried by sidekiq.
+    LEASE_TRY_AFTER = 6.seconds
 
     def self.execute(project_id)
       new(project_id).execute

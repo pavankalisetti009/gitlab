@@ -5,8 +5,14 @@ module Sbom
     class IngestReportsService
       include Gitlab::ExclusiveLeaseHelpers
 
-      LEASE_TTL = 30.minutes.freeze
-      LEASE_TRY_AFTER = 10.seconds.freeze
+      # Typical job finishes in 1-2 minutes, but has been observed
+      # to take up to 20 minutes in the worst case.
+      LEASE_TTL = 30.minutes
+
+      # 10 retries at 6 seconds each will allow 95% of jobs to acquire a lease
+      # without raising FailedToObtainLockError. When waiting for exceptionally long jobs,
+      # we'll allow the job to raise and be retried by sidekiq.
+      LEASE_TRY_AFTER = 6.seconds
 
       def self.execute(pipeline)
         new(pipeline).execute

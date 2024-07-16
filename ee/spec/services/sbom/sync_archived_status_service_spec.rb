@@ -30,10 +30,11 @@ RSpec.describe Sbom::SyncArchivedStatusService, feature_category: :dependency_ma
     let_it_be(:other_project) { create(:project) }
 
     let(:lease_key) { Sbom::Ingestion.project_lease_key(project_id) }
-    let(:lease_ttl) { 1.hour }
 
     before do
-      stub_exclusive_lease_taken(lease_key, timeout: lease_ttl)
+      # Speed up retries to avoid long-running tests
+      stub_const("#{described_class}::LEASE_TRY_AFTER", 0.01)
+      stub_exclusive_lease_taken(lease_key)
     end
 
     it 'does not permit parallel execution on the same project' do
