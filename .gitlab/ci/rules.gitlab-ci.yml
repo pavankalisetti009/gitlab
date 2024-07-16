@@ -1767,6 +1767,7 @@
     - <<: *if-dot-com-gitlab-org-schedule
       variables:
         KNAPSACK_GENERATE_REPORT: "true"
+        PROCESS_TEST_RESULTS: "true"
         QA_SAVE_TEST_METRICS: "true"
         QA_EXPORT_TEST_METRICS: "false"
       allow_failure: true
