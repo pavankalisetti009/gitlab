@@ -27,7 +27,7 @@ module QA
           "gid://gitlab/AuditEvents::ExternalAuditEventDestination/#{id}"
         end
 
-        # Get Audit Event Destination
+        # Get audit event destination
         #
         # @return [Hash]
         def api_get
@@ -75,7 +75,7 @@ module QA
           )
         end
 
-        # Graphql mutation to create an Audit Event Destination
+        # Graphql mutation to create an audit event destination
         #
         # @return [String]
         def api_post_body
@@ -97,7 +97,7 @@ module QA
           GQL
         end
 
-        # Graphql mutation to delete an Audit Event Destination
+        # Graphql mutation to delete an audit event destination
         #
         # @return [String]
         def api_delete_body

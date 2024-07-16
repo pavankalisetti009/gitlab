@@ -42,21 +42,21 @@ module QA
           "gid://gitlab/AuditEvents::InstanceExternalAuditEventDestination/#{id}"
         end
 
-        # The path to get an Instance Audit Event Destination via the GraphQL API
+        # The path to get an instance audit event destination via the GraphQL API
         #
         # @return [String]
         def api_get_path
           "/graphql"
         end
 
-        # The path to create an Instance Audit Event Destination via the GraphQL API (same as the GET path)
+        # The path to create an instance audit event destination via the GraphQL API (same as the GET path)
         #
         # @return [String]
         def api_post_path
           api_get_path
         end
 
-        # Graphql mutation to create an Instance Audit Event Destination
+        # Graphql mutation to create an instance audit event destination
         #
         # @return [String]
         def api_post_body
@@ -74,14 +74,14 @@ module QA
           GQL
         end
 
-        # The path to delete an Instance Audit Event Destination via the GraphQL API (same as the GET path)
+        # The path to delete an instance audit event destination via the GraphQL API (same as the GET path)
         #
         # @return [String]
         def api_delete_path
           api_get_path
         end
 
-        # Graphql mutation to delete an Instance Audit Event Destination
+        # Graphql mutation to delete an instance audit event destination
         #
         # @return [String]
         def api_delete_body
