@@ -14,7 +14,9 @@ module EE
           labels: params[:labels],
           label_name: params[:label_name],
           source_branch: params[:source_branch],
-          not_source_branch: params[:not_source_branch]
+          not_source_branch: params[:not_source_branch],
+          author_username: params[:author_username],
+          not_author_username: params[:not_author_username]
         )
       end
     end

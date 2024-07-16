@@ -104,7 +104,9 @@ module EE
     def payload_metadata
       super.merge(
         'meta.search.filters.source_branch' => filter_params[:source_branch],
-        'meta.search.filters.not_source_branch' => filter_params.dig(:not, :source_branch))
+        'meta.search.filters.not_source_branch' => filter_params.dig(:not, :source_branch),
+        'meta.search.filters.author_username' => filter_params[:author_username],
+        'meta.search.filters.not_author_username' => filter_params.dig(:not, :author_username))
     end
 
     # rubocop:disable Gitlab/ModuleWithInstanceVariables
@@ -127,7 +129,7 @@ module EE
 
     override :filter_params
     def filter_params
-      super.merge(params.permit(:source_branch, not: :source_branch))
+      super.merge(params.permit(:source_branch, :author_username, not: [:source_branch, :author_username]))
     end
   end
 end

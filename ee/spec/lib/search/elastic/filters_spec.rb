@@ -83,6 +83,80 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
+  describe '#by_author' do
+    let_it_be(:included_user) { create(:user) }
+    let_it_be(:excluded_user) { create(:user) }
+
+    subject(:by_author) { described_class.by_author(query_hash: query_hash, options: options) }
+
+    context 'when options[:author_username] and options[:not_author_username] are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:author_username] and options[:not_author_username] are both provided' do
+      let(:options) { { author_username: included_user.username, not_author_username: excluded_user.username } }
+
+      it 'adds the author filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { author_id: { _name: 'filters:author', value: included_user.id } } },
+              { bool: {
+                must_not: {
+                  term: { author_id: { _name: 'filters:not_author', value: excluded_user.id } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_author.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_author.dig(:query, :bool, :must)).to be_empty
+        expect(by_author.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_author.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:author_username] is provided' do
+      let(:options) { { author_username: included_user.username } }
+
+      it 'adds the author filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { author_id: { _name: 'filters:author', value: included_user.id } } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_author.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_author.dig(:query, :bool, :must)).to be_empty
+        expect(by_author.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_author.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:not_author_username] is provided' do
+      let(:options) { { not_author_username: excluded_user.username } }
+
+      it 'adds the author filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should:
+              [{ bool: {
+                must_not: {
+                  term: { author_id: { _name: 'filters:not_author', value: excluded_user.id } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_author.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_author.dig(:query, :bool, :must)).to be_empty
+        expect(by_author.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_author.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
   describe '#by_not_hidden' do
     subject(:by_not_hidden) { described_class.by_not_hidden(query_hash: query_hash, options: options) }
 

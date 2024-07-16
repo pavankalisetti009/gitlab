@@ -34,6 +34,39 @@ module Search
           end
         end
 
+        def by_author(query_hash:, options:)
+          author_username = options[:author_username]
+          not_author_username = options[:not_author_username]
+
+          return query_hash unless author_username || not_author_username
+
+          included_user = User.find_by_username(author_username)
+          excluded_user = User.find_by_username(not_author_username)
+
+          return query_hash unless included_user || excluded_user
+
+          context.name(:filters) do
+            should = []
+            if included_user
+              should << { term: { author_id: { _name: context.name(:author), value: included_user.id } } }
+            end
+
+            if excluded_user
+              should << {
+                bool: {
+                  must_not: {
+                    term: { author_id: { _name: context.name(:not_author), value: excluded_user.id } }
+                  }
+                }
+              }
+            end
+
+            add_filter(query_hash, :query, :bool, :filter) do
+              { bool: { should: should, minimum_should_match: 1 } }
+            end
+          end
+        end
+
         def by_not_hidden(query_hash:, options:)
           user = options[:current_user]
           return query_hash if user&.can_admin_all_resources?

@@ -298,15 +298,21 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       expect(controller).to receive(:append_info_to_payload).and_wrap_original do |method, payload|
         method.call(payload)
 
-        expect(payload[:metadata]['meta.search.filters.source_branch']).to eq('branch-foo')
-        expect(payload[:metadata]['meta.search.filters.not_source_branch']).to eq('branch-bar')
+        expect(payload[:metadata]['meta.search.filters.source_branch']).to eq('included-branch')
+        expect(payload[:metadata]['meta.search.filters.not_source_branch']).to eq('excluded-branch')
+        expect(payload[:metadata]['meta.search.filters.author_username']).to eq('included-username')
+        expect(payload[:metadata]['meta.search.filters.not_author_username']).to eq('excluded-username')
       end
 
       get :show, params: {
         scope: 'issues',
         search: 'hello world',
-        source_branch: 'branch-foo',
-        not: { source_branch: 'branch-bar' }
+        source_branch: 'included-branch',
+        author_username: 'included-username',
+        not: {
+          source_branch: 'excluded-branch',
+          author_username: 'excluded-username'
+        }
       }
     end
 
