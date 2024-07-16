@@ -139,7 +139,7 @@ module Gitlab
         related_epic_issues = epic.unauthorized_related_epics
 
         related_epic_issue_ids = related_epic_issues.map(&:issue_id)
-        related_work_item_ids = work_item.related_issues(authorize: false).filter(&:epic_work_item?).map(&:id)
+        related_work_item_ids = work_item.related_issues(authorize: false).joins(:sync_object).map(&:id) # rubocop:disable CodeReuse/ActiveRecord -- this is to be removed once epic sync is done.
 
         return if related_work_item_ids.sort == related_epic_issue_ids.sort
 
