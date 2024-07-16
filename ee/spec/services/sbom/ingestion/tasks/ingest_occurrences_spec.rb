@@ -193,16 +193,6 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
         it 'does not update existing records' do
           expect { ingest_occurrences }.not_to change { existing_occurrence.reload.updated_at }
         end
-
-        context 'when skip_sbom_occurrences_update_on_pipeline_id_change is disabled' do
-          before do
-            stub_feature_flags(skip_sbom_occurrences_update_on_pipeline_id_change: false)
-          end
-
-          it 'updates existing existing records' do
-            expect { ingest_occurrences }.to change { existing_occurrence.reload.updated_at }
-          end
-        end
       end
 
       context 'when attributes not related to the pipeline have been changed' do
