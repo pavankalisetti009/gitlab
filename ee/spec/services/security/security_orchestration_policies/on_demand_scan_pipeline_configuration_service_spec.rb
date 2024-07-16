@@ -69,6 +69,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
           },
           allow_failure: true,
           script: ['/analyze'],
+          before_script: [],
+          after_script: [],
           artifacts: { access: 'developer', reports: { dast: 'gl-dast-report.json' } },
           dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
           rules: [

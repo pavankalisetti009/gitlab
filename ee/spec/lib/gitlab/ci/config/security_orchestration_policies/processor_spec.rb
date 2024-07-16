@@ -292,6 +292,8 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
               },
               allow_failure: true,
               script: ['/analyze'],
+              before_script: [],
+              after_script: [],
               artifacts: {
                 access: 'developer',
                 reports: {
@@ -322,6 +324,8 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
             hash_including(
               rules: [{ if: '$CI_COMMIT_BRANCH' }],
               script: ["/analyzer run"],
+              before_script: [],
+              after_script: [],
               stage: scan_policy_stage,
               image: '$SECURE_ANALYZERS_PREFIX/secrets:$SECRETS_ANALYZER_VERSION$SECRET_DETECTION_IMAGE_SUFFIX',
               services: [],
@@ -352,6 +356,8 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
             hash_including(
               artifacts: { access: 'developer', reports: { sast: 'gl-sast-report.json' } },
               script: ['/analyzer run'],
+              before_script: [],
+              after_script: [],
               image: { name: '$SAST_ANALYZER_IMAGE' },
               rules: [
                 { if: '$CI_COMMIT_BRANCH', exists:
