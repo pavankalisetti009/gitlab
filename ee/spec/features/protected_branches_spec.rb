@@ -260,7 +260,7 @@ RSpec.describe 'Protected Branches', :js, :disable_rate_limiter, feature_categor
     end
 
     include_examples 'Deploy keys with protected branches' do
-      let(:all_dropdown_sections) { ['Roles', 'Users', 'Deploy Keys'] }
+      let(:all_dropdown_sections) { ['Roles', 'Users', 'Deploy keys'] }
     end
   end
 
