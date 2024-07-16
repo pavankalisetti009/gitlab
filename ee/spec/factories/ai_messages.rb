@@ -57,10 +57,6 @@ FactoryBot.define do
       ai_action { :resolve_vulnerability }
     end
 
-    trait :fill_in_merge_request_template do
-      ai_action { :fill_in_merge_request_template }
-    end
-
     trait :summarize_new_merge_request do
       ai_action { :summarize_new_merge_request }
     end
