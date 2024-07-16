@@ -294,7 +294,7 @@ export default {
           class="gl-p-5 gl-border-0 gl-border-b-1! gl-border-gray-100 gl-border-solid gl-display-flex gl-justify-content-space-between"
           data-testid="pending-members"
         >
-          <gl-avatar-link target="blank" :href="item.avatarUrl" :alt="item.name">
+          <gl-avatar-link target="blank" :href="item.webUrl" :alt="item.name">
             <gl-avatar-labeled
               :src="item.avatarUrl"
               :size="$options.avatarSize"
