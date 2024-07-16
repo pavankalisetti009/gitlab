@@ -18,9 +18,7 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     context 'when add_root_namespace_id_to_work_item migration is not complete' do
       before do
-        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:add_root_namespace_id_to_work_item)
-          .and_return(false)
+        set_elasticsearch_migration_to :add_root_namespace_id_to_work_item, including: false
       end
 
       it 'serializes the project_namespace work_item as a hash' do
