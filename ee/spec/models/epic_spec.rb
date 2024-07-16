@@ -1904,6 +1904,47 @@ RSpec.describe Epic, feature_category: :portfolio_management do
         end
       end
     end
+
+    context 'with events' do
+      let_it_be(:epic) { create(:epic, group: group) }
+      let_it_be(:work_item) { epic.work_item }
+      let_it_be(:epic_event) { create(:event, :created, group: group, project: nil, target: epic) }
+
+      let_it_be(:epic_work_item_event1) do
+        create(:event, :closed, group: group, project: nil, target_id: work_item.id, target_type: 'WorkItem')
+      end
+
+      let_it_be(:epic_work_item_event2) do
+        create(:event, :reopened, group: group, project: nil, target_id: work_item.id, target_type: 'Issue')
+      end
+
+      context 'when events are fetched just from the epic itself' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
+        end
+
+        it 'returns only own events' do
+          expect(epic.reload.events).to match_array([epic_event])
+          expect(work_item.reload.events).to match_array([epic_work_item_event1, epic_work_item_event2])
+          expect(epic.reload.own_events).to match_array([epic_event])
+          expect(work_item.reload.own_events).to match_array([epic_work_item_event1, epic_work_item_event2])
+        end
+      end
+
+      context 'when events are fetched from the epic and epic work item' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: true)
+        end
+
+        it 'returns epic and epic work item events' do
+          expect(epic.reload.events).to match_array([epic_event, epic_work_item_event1, epic_work_item_event2])
+          expect(work_item.reload.events).to match_array([epic_event, epic_work_item_event1, epic_work_item_event2])
+
+          expect(epic.reload.own_events).to match_array([epic_event])
+          expect(work_item.reload.own_events).to match_array([epic_work_item_event1, epic_work_item_event2])
+        end
+      end
+    end
   end
 
   context 'with subscriptions' do

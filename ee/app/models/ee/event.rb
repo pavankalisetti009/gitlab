@@ -10,7 +10,7 @@ module EE
       scope :merge_requests, -> { where(target_type: 'MergeRequest') }
       scope :totals_by_author, -> { group(:author_id).count }
       scope :totals_by_author_target_type_action, -> { group(:author_id, :target_type, :action).count }
-      scope :epics, -> { where(target_type: 'Epic') }
+      scope :epics, -> { where(target_type: %w[Epic WorkItem]).where(project_id: nil) }
       scope :for_projects_after, ->(projects, date) { where(project: projects, created_at: date..) }
 
       scope :epic_contributions, -> do
