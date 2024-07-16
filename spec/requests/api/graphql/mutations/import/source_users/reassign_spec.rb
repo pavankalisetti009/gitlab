@@ -44,6 +44,8 @@ RSpec.describe 'Reassign an import source user', feature_category: :importers do
     end
 
     it 'reassign import source user', :aggregate_failures do
+      expect(Notify).to receive_message_chain(:import_source_user_reassign, :deliver_now)
+
       post_graphql_mutation(mutation, current_user: current_user)
 
       import_source_user = mutation_response['importSourceUser']
