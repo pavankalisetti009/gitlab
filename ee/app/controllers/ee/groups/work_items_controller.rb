@@ -4,6 +4,7 @@ module EE
   module Groups
     module WorkItemsController
       extend ActiveSupport::Concern
+      extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
 
       prepended do
@@ -20,6 +21,11 @@ module EE
       end
 
       private
+
+      override :namespace_work_items_enabled?
+      def namespace_work_items_enabled?
+        super && ::Feature.enabled?(:work_item_epics_rollout, current_user)
+      end
 
       def issuable
         ::WorkItem.find_by_namespace_and_iid!(group, params[:iid])

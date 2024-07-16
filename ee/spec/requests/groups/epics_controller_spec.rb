@@ -12,6 +12,46 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
     sign_in(user)
   end
 
+  describe 'GET #index' do
+    subject(:get_index) { get group_epics_path(group) }
+
+    context 'when work_item_epics_rollout enabled' do
+      before do
+        stub_feature_flags(work_item_epics_rollout: user, namespace_level_work_items: false, work_item_epics: true)
+      end
+
+      it 'renders with feature flag enabled' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
+      end
+    end
+
+    context 'when work_item_epics_rollout disabled' do
+      before do
+        stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
+      end
+
+      it 'renders with feature flag disabled' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: false)
+      end
+    end
+
+    context 'when work_item_epics disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+      end
+
+      it 'returns not found' do
+        get_index
+
+        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: false)
+      end
+    end
+  end
+
   describe 'GET #show' do
     context 'for summarize notes feature' do
       before do
