@@ -6,7 +6,7 @@ module Projects
 
     feature_category :metrics
 
-    before_action :authorize_read_observability_logs!
+    before_action :authorize_read_observability!
 
     def index; end
   end
