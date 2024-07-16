@@ -138,7 +138,7 @@ module Users
     strong_memoize_attr :onboarding_status
 
     def set_redirect_url
-      @redirect_url = if onboarding_status.subscription?
+      @redirect_url = if onboarding_status.read_from_stored_user_location?
                         # Since we need this value to stay in the stored_location_for(user) in order for
                         # us to be properly redirected for subscription signups.
                         onboarding_status.stored_user_location

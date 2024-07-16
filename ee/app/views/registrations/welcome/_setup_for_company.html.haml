@@ -1,6 +1,4 @@
-- return unless onboarding_status.enabled?
-
-- if onboarding_status.invite?
+- if onboarding_status.hide_setup_for_company_field?
   = f.hidden_field :setup_for_company, value: true
 - else
   .row

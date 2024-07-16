@@ -15,6 +15,14 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     it { is_expected.to delegate_method(:product_interaction).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_label_text).to(:registration_type) }
     it { is_expected.to delegate_method(:redirect_to_company_form?).to(:registration_type) }
+    it { is_expected.to delegate_method(:eligible_for_iterable_trigger?).to(:registration_type) }
+    it { is_expected.to delegate_method(:show_opt_in_to_email?).to(:registration_type) }
+    it { is_expected.to delegate_method(:show_joining_project?).to(:registration_type) }
+    it { is_expected.to delegate_method(:hide_setup_for_company_field?).to(:registration_type) }
+    it { is_expected.to delegate_method(:pre_parsed_email_opt_in?).to(:registration_type) }
+    it { is_expected.to delegate_method(:apply_trial?).to(:registration_type) }
+    it { is_expected.to delegate_method(:read_from_stored_user_location?).to(:registration_type) }
+    it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
   end
 
   describe '.enabled?' do
@@ -389,43 +397,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       let(:session) { { 'user_return_to' => ::Gitlab::Routing.url_helpers.new_subscriptions_path } }
 
       it { is_expected.to eq('subscription_registration') }
-    end
-  end
-
-  describe '#eligible_for_iterable_trigger?' do
-    let(:params) { {} }
-    let(:current_user) { nil }
-    let(:instance) { described_class.new(params, nil, current_user) }
-
-    subject { instance.eligible_for_iterable_trigger? }
-
-    where(
-      trial?: [true, false],
-      invite?: [true, false],
-      redirect_to_company_form?: [true, false],
-      continue_full_onboarding?: [true, false]
-    )
-
-    with_them do
-      let(:expected_result) do
-        (!trial? && invite?) || (!trial? && !redirect_to_company_form? && continue_full_onboarding?)
-      end
-
-      before do
-        allow(instance).to receive(:trial?).and_return(trial?)
-        allow(instance).to receive(:invite?).and_return(invite?)
-        allow(instance).to receive(:redirect_to_company_form?).and_return(redirect_to_company_form?)
-        allow(instance).to receive(:continue_full_onboarding?).and_return(continue_full_onboarding?)
-      end
-
-      it { is_expected.to eq(expected_result) }
-    end
-
-    context 'when setup_for_company is true and a user registration is an invite' do
-      let(:params) { { user: { setup_for_company: true } } }
-      let(:current_user) { build_stubbed(:user, onboarding_status_registration_type: 'invite') }
-
-      it { is_expected.to eq(true) }
     end
   end
 

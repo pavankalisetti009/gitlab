@@ -1,6 +1,4 @@
-- return unless onboarding_status.enabled?
-- return if onboarding_status.trial?
-- return if onboarding_status.invite?
+- return unless onboarding_status.show_joining_project?
 
 .row
   .form-group.col-sm-12

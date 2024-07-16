@@ -21,7 +21,7 @@ module Registrations
 
       experiment(:phone_verification_for_low_risk_users, user: user).track(:assignment, namespace: group)
 
-      apply_trial if onboarding_status.trial?
+      apply_trial if onboarding_status.apply_trial?
     end
 
     def modified_group_params

@@ -34,7 +34,10 @@ module EE
       # translation delegations
       delegate :setup_for_company_label_text, to: :registration_type
       # predicate delegations
-      delegate :redirect_to_company_form?, to: :registration_type
+      delegate :redirect_to_company_form?, :eligible_for_iterable_trigger?, to: :registration_type
+      delegate :show_opt_in_to_email?, :show_joining_project?, :apply_trial?, to: :registration_type
+      delegate :hide_setup_for_company_field?, :pre_parsed_email_opt_in?, to: :registration_type
+      delegate :read_from_stored_user_location?, :preserve_stored_location?, to: :registration_type
 
       def initialize(*)
         super
@@ -122,20 +125,6 @@ module EE
 
       def initial_trial?
         user.onboarding_status_initial_registration_type == REGISTRATION_TYPE[:trial]
-      end
-
-      def eligible_for_iterable_trigger?
-        return false if trial?
-        # The invite check coming first matters now in the case of a welcome form with company params
-        # being received when the user is really an invite.
-        # This covers the case for user being added to a group after they register, but
-        # before they finish the welcome step.
-        return true if invite?
-        # skip company page because it already sends request to CustomersDot
-        return false if redirect_to_company_form?
-
-        # regular registration
-        continue_full_onboarding?
       end
 
       def stored_user_location

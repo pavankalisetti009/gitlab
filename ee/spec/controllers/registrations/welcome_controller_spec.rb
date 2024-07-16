@@ -357,12 +357,12 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           context 'for email opt_in' do
             using RSpec::Parameterized::TableSyntax
 
-            let(:invite?) { true }
+            let(:pre_parsed_email_opt_in?) { true }
             let(:setup_for_company?) { false }
 
             before do
               allow_next_instance_of(::Onboarding::Status) do |instance|
-                allow(instance).to receive(:invite?).and_return(invite?)
+                allow(instance).to receive(:pre_parsed_email_opt_in?).and_return(pre_parsed_email_opt_in?)
                 allow(instance).to receive(:setup_for_company?).and_return(setup_for_company?)
               end
             end
@@ -378,7 +378,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
             end
 
             with_them do
-              context 'for an invite' do
+              context 'for pre-parsing the email opt in' do
                 specify do
                   patch_update
                   user.reset
@@ -387,8 +387,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 end
               end
 
-              context 'for a non-invite' do
-                let(:invite?) { false }
+              context 'for not pre-parsing the email opt in' do
+                let(:pre_parsed_email_opt_in?) { false }
 
                 context 'when setup_for_company is true' do
                   let(:setup_for_company?) { true }

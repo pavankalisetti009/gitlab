@@ -53,7 +53,7 @@ module EE
         # that was set on initial redirect from the SubscriptionsController#new and super will wipe that out.
         # Then the RegistrationsIdentityVerificationController#success will get
         # whatever is set in super instead of the subscription path we desire.
-        super unless onboarding_status.subscription?
+        super unless onboarding_status.preserve_stored_location?
       else
         super
       end

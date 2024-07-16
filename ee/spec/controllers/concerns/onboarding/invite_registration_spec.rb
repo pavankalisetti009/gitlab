@@ -26,4 +26,32 @@ RSpec.describe Onboarding::InviteRegistration, type: :undefined, feature_categor
   describe '.redirect_to_company_form?' do
     it { is_expected.not_to be_redirect_to_company_form }
   end
+
+  describe '.eligible_for_iterable_trigger?' do
+    it { is_expected.to be_eligible_for_iterable_trigger }
+  end
+
+  describe '.show_joining_project?' do
+    it { is_expected.not_to be_show_joining_project }
+  end
+
+  describe '.show_opt_in_to_email?' do
+    it { is_expected.not_to be_show_opt_in_to_email }
+  end
+
+  describe '.hide_setup_for_company_field?' do
+    it { is_expected.to be_hide_setup_for_company_field }
+  end
+
+  describe '.pre_parsed_email_opt_in?' do
+    it { is_expected.to be_pre_parsed_email_opt_in }
+  end
+
+  describe '.read_from_stored_user_location?' do
+    it { is_expected.not_to be_read_from_stored_user_location }
+  end
+
+  describe '.preserve_stored_location?' do
+    it { is_expected.not_to be_preserve_stored_location }
+  end
 end

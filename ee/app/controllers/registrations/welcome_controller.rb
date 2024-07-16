@@ -125,7 +125,8 @@ module Registrations
     end
 
     def parsed_opt_in
-      return false if onboarding_status.invite? # order matters here as invites are treated differently
+      # order matters here registration types are treated differently
+      return false if onboarding_status.pre_parsed_email_opt_in?
       # The below would override DOM setting, but DOM is interwoven with JS to hide the opt in checkbox if
       # setup for company is toggled, so this is where this is a bit complex to think about
       return true if onboarding_status.setup_for_company?

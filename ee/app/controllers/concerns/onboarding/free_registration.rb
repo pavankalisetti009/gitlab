@@ -32,5 +32,37 @@ module Onboarding
     def self.redirect_to_company_form?
       false
     end
+
+    def self.eligible_for_iterable_trigger?
+      true
+    end
+
+    def self.show_joining_project?
+      true
+    end
+
+    def self.show_opt_in_to_email?
+      true
+    end
+
+    def self.hide_setup_for_company_field?
+      false
+    end
+
+    def self.pre_parsed_email_opt_in?
+      false
+    end
+
+    def self.apply_trial?
+      false
+    end
+
+    def self.read_from_stored_user_location?
+      false
+    end
+
+    def self.preserve_stored_location?
+      false
+    end
   end
 end
