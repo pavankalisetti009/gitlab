@@ -73,9 +73,9 @@ RSpec.describe 'Reassign an import source user', feature_category: :importers do
     it_behaves_like 'a mutation that returns a top-level access error'
   end
 
-  context 'when feature flag `bulk_import_user_mapping`` disabled' do
+  context 'when feature flag `importer_user_mapping`` disabled' do
     before do
-      stub_feature_flags(bulk_import_user_mapping: false)
+      stub_feature_flags(importer_user_mapping: false)
     end
 
     it 'returns a resource not available error' do
@@ -83,7 +83,7 @@ RSpec.describe 'Reassign an import source user', feature_category: :importers do
 
       expect(graphql_errors).to contain_exactly(
         hash_including(
-          'message' => '`bulk_import_user_mapping` feature flag is disabled.'
+          'message' => '`importer_user_mapping` feature flag is disabled.'
         )
       )
     end

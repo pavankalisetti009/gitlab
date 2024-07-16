@@ -30,9 +30,9 @@ RSpec.describe Resolvers::Import::SourceUsersResolver, feature_category: :import
       it { expect(resolve_import_source_users).to eq(nil) }
     end
 
-    context 'when `bulk_import_user_mapping` feature flag is diabled' do
+    context 'when `importer_user_mapping` feature flag is diabled' do
       before do
-        stub_feature_flags(bulk_import_user_mapping: false)
+        stub_feature_flags(importer_user_mapping: false)
       end
 
       it { expect(resolve_import_source_users).to be_empty }
