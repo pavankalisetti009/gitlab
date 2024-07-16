@@ -15,6 +15,7 @@ import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_ba
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
 import IssuableItem from '~/vue_shared/issuable/list/components/issuable_item.vue';
 import { issuableListTabs } from '~/vue_shared/issuable/list/constants';
+import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 
 Vue.use(VueApollo);
 
@@ -336,5 +337,24 @@ describe('EpicsListRoot', () => {
 
       expect(getIssuableList().props('nextPage')).toBeNull();
     });
+  });
+
+  it('refetches the list if a new work item is created', async () => {
+    createComponent({
+      provide: {
+        ...mockProvide,
+        glFeatures: {
+          namespaceLevelWorkItems: true,
+        },
+      },
+    });
+    await waitForPromises();
+
+    expect(requestHandler).toHaveBeenCalledTimes(1);
+
+    wrapper.findComponent(CreateWorkItemModal).vm.$emit('workItemCreated');
+    await waitForPromises();
+
+    expect(requestHandler).toHaveBeenCalledTimes(2);
   });
 });
