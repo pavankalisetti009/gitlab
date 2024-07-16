@@ -1,0 +1,57 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
+  let_it_be(:group) { create(:group, :private) }
+  let_it_be(:current_user) { create(:user, developer_of: group) }
+  let_it_be(:work_item) { create(:work_item, :group_level, namespace: group) }
+
+  describe 'GET /groups/:group/-/work_items/:iid' do
+    let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
+
+    subject(:show) { get group_work_item_path(group, work_item.iid) }
+
+    before do
+      sign_in(current_user)
+      stub_licensed_features(epics: true)
+    end
+
+    context 'when work_item_epics_rollout enabled' do
+      before do
+        stub_feature_flags(work_item_epics_rollout: current_user, namespace_level_work_items: false)
+      end
+
+      it 'renders show' do
+        show
+
+        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'when work_item_epics_rollout disabled' do
+      before do
+        stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
+      end
+
+      it 'returns not found' do
+        show
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when work_item_epics disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+      end
+
+      it 'returns not found' do
+        show
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
+end
