@@ -164,6 +164,8 @@ InitializerConnections.raise_if_new_database_connection do
           as: :remote,
           to: 'web_ide/remote_ide#index',
           constraints: { remote_host: %r{[^/?]+} }
+
+        post '/reset_oauth_application_settings' => 'admin/applications#reset_web_ide_oauth_application_settings'
       end
 
       draw :operations

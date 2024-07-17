@@ -26513,6 +26513,15 @@ msgstr ""
 msgid "IDE"
 msgstr ""
 
+msgid "IDE|An error occurred while restoring the application to default. Please try again."
+msgstr ""
+
+msgid "IDE|Are you sure you want to restore this application to its original configuration? All your changes will be lost."
+msgstr ""
+
+msgid "IDE|Cancel"
+msgstr ""
+
 msgid "IDE|Cannot open Web IDE"
 msgstr ""
 
@@ -26522,10 +26531,16 @@ msgstr ""
 msgid "IDE|Commit to %{branchName} branch"
 msgstr ""
 
+msgid "IDE|Confirm"
+msgstr ""
+
 msgid "IDE|Contact your administrator or try to open the Web IDE again with another domain."
 msgstr ""
 
 msgid "IDE|Edit"
+msgstr ""
+
+msgid "IDE|Editing this application might affect the functionality of the Web IDE. Ensure the configuration meets the following conditions:"
 msgstr ""
 
 msgid "IDE|Error reloading page"
@@ -26546,6 +26561,12 @@ msgstr ""
 msgid "IDE|Reopen with other domain"
 msgstr ""
 
+msgid "IDE|Restore application to default"
+msgstr ""
+
+msgid "IDE|Restore to default"
+msgstr ""
+
 msgid "IDE|Review"
 msgstr ""
 
@@ -26555,7 +26576,19 @@ msgstr ""
 msgid "IDE|Successful commit"
 msgstr ""
 
+msgid "IDE|The %{boldStart}Confidential%{boldEnd} checkbox is cleared."
+msgstr ""
+
+msgid "IDE|The %{boldStart}Trusted%{boldEnd} checkbox is selected."
+msgstr ""
+
+msgid "IDE|The %{boldStart}api%{boldEnd} scope is selected."
+msgstr ""
+
 msgid "IDE|The URL you're using to access the Web IDE and the configured OAuth callback URL do not match. This issue often occurs when you're using a proxy."
+msgstr ""
+
+msgid "IDE|The redirect URI path is %{codeBlockStart}%{pathFormat}%{codeBlockEnd}. An example of a valid redirect URI is %{codeBlockStart}%{example}%{codeBlockEnd}."
 msgstr ""
 
 msgid "IDE|This option is disabled because you are not allowed to create merge requests in this project."
