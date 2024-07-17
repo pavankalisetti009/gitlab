@@ -18,7 +18,7 @@ RSpec.describe WorkItems::Widgets::Weight, feature_category: :team_planning do
 
     before do
       create(
-        :widget_definition, :default,
+        :widget_definition,
         work_item_type: work_item.work_item_type, widget_type: 'weight',
         widget_options: widget_options
       )
