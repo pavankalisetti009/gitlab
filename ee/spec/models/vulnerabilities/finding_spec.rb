@@ -55,78 +55,385 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
       it { is_expected.to validate_length_of(:solution).is_at_most(7000) }
       it { is_expected.to validate_length_of(:cve).is_at_most(48400) }
 
-      context 'when value for details field is valid' do
-        it 'is valid' do
-          finding.details = {}
-
-          expect(finding).to be_valid
-        end
-
-        it 'is valid when details contains code_flows' do
-          finding.details = {
-            "code_flows" => {
-              "items" => [
-                [
-                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "source", "type" => "code-flow-node" },
-                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
-                  { "file_location" => { "file_name" => "app/app.py", "line_end" => 9, "line_start" => 9, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
-                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 4, "line_start" => 4, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
-                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "sink", "type" => "code-flow-node" }
-                ]
-              ],
-              "name" => "code_flows",
-              "type" => "code-flows"
-            }
-          }
-          expect(finding).to be_valid
-        end
-      end
-
-      context 'when value for details field is invalid' do
-        it 'returns errors' do
-          finding.details = { invalid: 'data' }
-
-          expect(finding).to be_invalid
-          expect(finding.errors.full_messages).to eq(["Details must be a valid json schema"])
-        end
-
+      context 'details property' do
         subject { finding }
 
-        context 'when details contains code flows' do
-          let(:details) do
-            {
-              "code_flows" => {
-                "items" => items,
-                "name" => "code_flows",
-                "type" => "code-flows"
+        before do
+          finding.details = details
+        end
+
+        context 'when value for details field is valid' do
+          context 'when details is empty' do
+            let(:details) { {} }
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains named-list' do
+            let(:details) do
+              {
+                "named-list" => {
+                  "name" => "named_list example",
+                  "type" => "named-list",
+                  "items" => {
+                    "Comment #1" => { "name" => "Fred=>", "type" => "text", "value" => "Hi Wilma" },
+                    "Comment #2" => { "name" => "Wilma=>", "type" => "markdown", "value" => "Hi Fred. Checkout [GitLab](https://gitlab.com)" },
+                    "A list" => { "name" => "resources", "type" => "list",
+                                  "items" => [{ "type" => "value", "value" => "42" },
+                                    { "type" => "value", "value" => "Life, the universe and everything" },
+                                    { "type" => "commit", "name" => "commit1", "value" => "initial-commit" }] }
+                  }
+                }
               }
-            }
+            end
+
+            it { is_expected.to be_valid }
           end
 
-          before do
-            finding.details = details
+          context 'when details contains list' do
+            let(:details) do
+              {
+                "list" => {
+                  "name" => "URLs",
+                  "type" => "list",
+                  "items" => [
+                    { "type" => "url", "href" => "https://site.com/page/1" }, { "type" => "url", "href" => "https://site.com/page/2" }, { "type" => "url", "href" => "https://site.com/page/3" }
+                  ]
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
           end
 
-          context 'when items contains invalid node_type' do
-            let(:items) do
-              [
+          context 'when details contains table' do
+            let(:details) do
+              {
+                "table" => {
+                  "name" => "Pretty Table Example",
+                  "type" => "table",
+                  "header" => [{ "type" => "text", "value" => "Number" }, { "type" => "text", "value" => "Address" }],
+                  "rows" => [[{ "type" => "text", "value" => "1" }, { "type" => "url", "href" => "https://1.example.com/" }]]
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains code' do
+            let(:details) do
+              {
+                "code" => {
+                  "name" => "Code Sample",
+                  "type" => "code",
+                  "value" => "<img src=x onerror=alert(1)>",
+                  "lang" => "html"
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains diff' do
+            let(:details) do
+              {
+                "diff example": {
+                  "name" => "An Example Diff",
+                  "type" => "diff",
+                  "before" => "one potato,\ntwo potato,\nthree potato",
+                  "after" => "one potato,\ntwo potato,\nhot potato"
+                }
+
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains markdown' do
+            let(:details) do
+              {
+                "markdown example" => {
+                  "name" => "Markdown Example",
+                  "type" => "markdown",
+                  "value" => "**Markdown** _example_ with a [link](https://www.gitlab.com)"
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains file location' do
+            let(:details) do
+              {
+                "file" => {
+                  "name" => "File Location Example",
+                  "type" => "file-location",
+                  "file_name" => "index.js",
+                  "line_start" => 1,
+                  "line_end" => 2
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains module location' do
+            let(:details) do
+              {
+                "module" => {
+                  "name" => "A Module Location Example",
+                  "type" => "module-location",
+                  "module_name" => "dynamic-library.dll",
+                  "offset" => 500
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+
+          context 'when details contains code_flows' do
+            let(:details) do
+              {
+                "code_flows" => {
+                  "name" => "code_flows",
+                  "type" => "code-flows",
+                  "items" => [
+                    [
+                      { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "source", "type" => "code-flow-node" },
+                      { "file_location" => { "file_name" => "app/app.py", "line_end" => 8, "line_start" => 8, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                      { "file_location" => { "file_name" => "app/app.py", "line_end" => 9, "line_start" => 9, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                      { "file_location" => { "file_name" => "app/utils.py", "line_end" => 4, "line_start" => 4, "type" => "file-location" }, "node_type" => "propagation", "type" => "code-flow-node" },
+                      { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "sink", "type" => "code-flow-node" }
+                    ]
+                  ]
+                }
+              }
+            end
+
+            it { is_expected.to be_valid }
+          end
+        end
+
+        context 'when value for details field is invalid' do
+          context 'returns errors' do
+            let(:details) { { invalid: 'data' } }
+
+            it 'is invalid and returns an error message' do
+              expect(subject).to be_invalid
+              expect(finding.errors.full_messages).to eq(["Details must be a valid json schema"])
+            end
+          end
+
+          context 'when value of named-list field is invalid' do
+            let(:details) do
+              {
+                "named-list" => {
+                  "name" => "named_list example",
+                  "type" => "named-list",
+                  "items" => [{ "name" => "Fred=>", "type" => "text", "value" => "Hi Wilma" }] # should be object, not an array
+                }
+              }
+            end
+
+            it { is_expected.to be_invalid }
+          end
+
+          context 'when value of list field is invalid' do
+            let(:details) do
+              {
+                "list" => {
+                  "type" => "List", # Wrong type. should be "list"
+                  "items" => [{ "type" => "url", "href" => "https://site.com/page/1" }]
+                }
+              }
+            end
+
+            it { is_expected.to be_invalid }
+          end
+
+          context 'when value of table field is invalid' do
+            context 'when rows are missing' do
+              let(:details) do
+                {
+                  "table" => {
+                    "type" => "table",
+                    "header" => [{ "type" => "text", "value" => "Number" }, { "type" => "text", "value" => "Address" }]
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+
+            context 'when header type is wrong' do
+              let(:details) do
+                {
+                  "table" => {
+                    "type" => "table",
+                    "header" => ['Col name 1', 'Col name 2'], # wrong type. should be array of objects
+                    "rows" => [{ "type" => "text", "value" => "1" }, { "type" => "text", "value" => "2" }]
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+          end
+
+          context 'when value of code field is invalid' do
+            let(:details) do
+              {
+                "code" => {
+                  "type" => "python", # wrong type. should be "code"
+                  "value" => "<img src=x onerror=alert(1)>"
+                }
+              }
+            end
+
+            it { is_expected.to be_invalid }
+          end
+
+          context 'when value of diff field is invalid' do
+            context 'when before field is missing ' do
+              let(:details) do
+                {
+                  "diff example": {
+                    "name" => "An Example Diff",
+                    "type" => "diff",
+                    "after" => "one potato,\ntwo potato,\nhot potato"
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+
+            context 'when after field is missing ' do
+              let(:details) do
+                {
+                  "diff example": {
+                    "name" => "An Example Diff",
+                    "type" => "diff",
+                    "before" => "one potato,\ntwo potato,\nhot potato"
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+          end
+
+          context 'when value of file-location field is invalid' do
+            context 'when file_name field is missing ' do
+              let(:details) do
+                {
+                  "file" => {
+                    "type" => "file-location",
+                    "line_start" => 1
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+
+            context 'when line_start field is missing ' do
+              let(:details) do
+                {
+                  "file" => {
+                    "type" => "file-location",
+                    "file_name" => "index.js"
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+
+            context 'when line_start field has wrong type ' do
+              let(:details) do
+                {
+                  "file" => {
+                    "type" => "file-location",
+                    "file_name" => "index.js",
+                    "line_start" => "require 'spec_helper'" # wrong type. should be an integer
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+          end
+
+          context 'when value of module-location field is invalid' do
+            context 'when module_name field is too short' do
+              let(:details) do
+                {
+                  "module" => {
+                    "name" => "A Module Location Example",
+                    "module_name" => "",
+                    "offset" => 500
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+
+            context 'when offset field has wrong type' do
+              let(:details) do
+                {
+                  "module" => {
+                    "name" => "Hello World",
+                    "type" => "module-location",
+                    "module_name" => "dynamic-library.dll",
+                    "offset" => "500" # wrong type. should be an integer.
+                  }
+                }
+              end
+
+              it { is_expected.to be_invalid }
+            end
+          end
+
+          context 'when details contains code flows' do
+            let(:details) do
+              {
+                "code_flows" => {
+                  "items" => items,
+                  "name" => "code_flows",
+                  "type" => "code-flows"
+                }
+              }
+            end
+
+            context 'when items contains invalid node_type' do
+              let(:items) do
                 [
-                  { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "unknown", "type" => "code-flow-node" }
+                  [
+                    { "file_location" => { "file_name" => "app/utils.py", "line_end" => 5, "line_start" => 5, "type" => "file-location" }, "node_type" => "unknown", "type" => "code-flow-node" }
+                  ]
                 ]
-              ]
+              end
+
+              it { is_expected.to be_invalid }
             end
 
-            it { is_expected.to be_invalid }
-          end
+            context 'when items contains an empty flows array' do
+              let(:items) do
+                [
+                  []
+                ]
+              end
 
-          context 'when items contains an empty flows array' do
-            let(:items) do
-              [
-                []
-              ]
+              it { is_expected.to be_invalid }
             end
-
-            it { is_expected.to be_invalid }
           end
         end
       end
