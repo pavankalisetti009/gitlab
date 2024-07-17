@@ -49,12 +49,12 @@ RSpec.describe Sbom::SyncTraversalIdsService, feature_category: :dependency_mana
 
         let_it_be(:other_project) { create(:project) }
 
-        let(:lease_key) { "sync_sbom_occurrences_traversal_ids:projects:#{project.id}" }
-        let(:lease_ttl) { 5.minutes }
+        let(:lease_key) { Sbom::Ingestion.project_lease_key(project_id) }
 
         before do
+          # Speed up retries to avoid long-running tests
           stub_const("#{described_class}::LEASE_TRY_AFTER", 0.01)
-          stub_exclusive_lease_taken(lease_key, timeout: lease_ttl)
+          stub_exclusive_lease_taken(lease_key)
         end
 
         it 'does not permit parallel execution on the same project' do

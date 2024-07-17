@@ -38,6 +38,24 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
         .with(pipeline, sequencer.range)
     end
 
+    context 'when lease is taken' do
+      include ExclusiveLeaseHelpers
+
+      let(:lease_key) { Sbom::Ingestion.project_lease_key(pipeline.project.id) }
+
+      before do
+        # Speed up retries to avoid long-running tests
+        stub_const("#{described_class}::LEASE_TRY_AFTER", 0.01)
+        stub_exclusive_lease_taken(lease_key)
+      end
+
+      it 'does not permit parallel execution on the same project' do
+        expect { execute }.to raise_error(Gitlab::ExclusiveLeaseHelpers::FailedToObtainLockError)
+
+        expect(::Sbom::Ingestion::IngestReportService).not_to have_received(:execute)
+      end
+    end
+
     context 'when feature flag dependency_scanning_using_sbom_reports is enabled' do
       it 'publishes the pipeline id to the event store' do
         expect { execute }.to publish_event(::Sbom::SbomIngestedEvent).with({ pipeline_id: pipeline.id })
