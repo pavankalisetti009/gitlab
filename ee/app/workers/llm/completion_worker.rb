@@ -21,11 +21,13 @@ module Llm
       end
 
       def deserialize_message(message_hash, options)
+        # rubocop: disable Gitlab/NoFindInWorkers -- not ActiveRecordFind
         message_hash['user'] &&= GitlabSchema.parse_gid(message_hash['user']).find
         message_hash['context'] = begin
           message_hash['context']['resource'] &&= GitlabSchema.parse_gid(message_hash['context']['resource']).find
           ::Gitlab::Llm::AiMessageContext.new(message_hash['context'])
         end
+        # rubocop: enable Gitlab/NoFindInWorkers
 
         ::Gitlab::Llm::AiMessage.for(action: message_hash['ai_action']).new(options.merge(message_hash))
       end
