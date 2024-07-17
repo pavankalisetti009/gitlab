@@ -211,6 +211,15 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
             is_expected.to be_empty
           end
         end
+
+        context 'when work item related link is an epic without related legacy epic' do
+          it 'returns no mismatch on related links' do
+            issue = create(:work_item, :epic, namespace: group)
+            create(:work_item_link, source: source.work_item, target: issue)
+
+            is_expected.to be_empty
+          end
+        end
       end
     end
   end
