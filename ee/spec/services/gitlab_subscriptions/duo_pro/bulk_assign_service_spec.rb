@@ -274,5 +274,186 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
         end
       end
     end
+
+    context 'on Self managed' do
+      subject(:bulk_assign) do
+        described_class.new(
+          add_on_purchase: add_on_purchase,
+          user_ids: user_ids
+        ).execute
+      end
+
+      let(:add_on_purchase) do
+        create(:gitlab_subscription_add_on_purchase, :self_managed, quantity: 10, add_on: add_on)
+      end
+
+      let(:expected_error_log) do
+        {
+          add_on_purchase_id: add_on_purchase.id,
+          message: 'Duo Pro Bulk User Assignment',
+          response_type: 'error',
+          payload: { errors: error_message, user_ids: user_ids }
+        }
+      end
+
+      let(:expected_success_log) do
+        {
+          add_on_purchase_id: add_on_purchase.id,
+          message: 'Duo Pro Bulk User Assignment',
+          response_type: 'success',
+          payload: { users: user_ids.reverse }
+        }
+      end
+
+      context 'with singular user assignment' do
+        context 'when user is valid' do
+          let(:user_ids) { [create(:user).id] }
+
+          it 'assigns the user with log' do
+            expect(Gitlab::AppLogger).to receive(:info).with(expected_success_log)
+
+            response = bulk_assign
+
+            expect(response.success?).to be_truthy
+            expect(response[:users].map(&:id)).to match_array(user_ids)
+          end
+        end
+
+        context 'when user is not valid' do
+          let(:user_ids) { [create(:user, :blocked).id] }
+          let(:error_message) { 'INVALID_USER_ID_PRESENT' }
+
+          it 'does not assign the user' do
+            expect(Gitlab::AppLogger).to receive(:error).with(expected_error_log)
+
+            response = bulk_assign
+            expect(response.error?).to be_truthy
+            expect(response.message).to eq(error_message)
+          end
+        end
+
+        context 'when user is not found' do
+          let(:user_ids) { [non_existing_record_id] }
+          let(:error_message) { 'INVALID_USER_ID_PRESENT' }
+
+          it 'does not assign the user' do
+            expect(Gitlab::AppLogger).to receive(:error).with(expected_error_log)
+
+            response = bulk_assign
+            expect(response.error?).to be_truthy
+            expect(response.message).to eq(error_message)
+          end
+        end
+      end
+
+      context 'with multiple users assignments' do
+        let_it_be(:user_1) { create(:user, username: 'code_suggestions_user_1') }
+        let_it_be(:user_2) { create(:user, username: 'code_suggestions_user_2') }
+        let_it_be(:user_3) { create(:user, username: 'code_suggestions_user_3') }
+
+        let_it_be(:user_ids) { User.pluck(:id) }
+
+        context 'with enough seats' do
+          let_it_be(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, quantity: 50, add_on: add_on)
+          end
+
+          it 'assigns users with log' do
+            expect(Gitlab::AppLogger).to receive(:info).with(expected_success_log)
+
+            response = bulk_assign
+
+            expect(response.success?).to be_truthy
+            expect(response[:users].map(&:id)).to eq(user_ids)
+          end
+
+          it 'does not call the iterable triggers worker', :sidekiq_inline do
+            expect(::Onboarding::CreateIterableTriggersWorker).not_to receive(:perform_async)
+
+            bulk_assign
+          end
+
+          context 'when some users are invalid' do
+            let(:bot_user) { create(:user, :bot) }
+            let(:ghost_user) { create(:user, :ghost) }
+            let(:user_ids) { User.pluck(:id) + [bot_user.id, ghost_user.id] }
+            let(:error_message) { 'INVALID_USER_ID_PRESENT' }
+
+            it 'does not assign the users' do
+              expect(Gitlab::AppLogger).to receive(:error).with(expected_error_log)
+
+              response = bulk_assign
+              expect(response.error?).to be_truthy
+              expect(response.message).to eq(error_message)
+            end
+          end
+
+          context 'when a user is already assigned' do
+            before do
+              add_on_purchase.update!(quantity: 3)
+              create(:gitlab_subscription_user_add_on_assignment, add_on_purchase: add_on_purchase, user: user_1)
+            end
+
+            it 'excludes the assigned user when checking seats but still return it' do
+              expect(Gitlab::AppLogger).to receive(:info).with(expected_success_log)
+
+              response = bulk_assign
+
+              expect(response.success?).to be_truthy
+              expect(response[:users].map(&:id)).to match_array([user_1.id, user_2.id, user_3.id])
+            end
+          end
+
+          context 'with resource locking' do
+            before do
+              add_on_purchase.update!(quantity: 1)
+            end
+
+            it 'prevents from double booking assignment' do
+              expect(add_on_purchase.assigned_users.count).to eq(0)
+
+              # Create threads to execute BulkAssignService for each user
+              threads = User.all.map do |user|
+                Thread.new do
+                  described_class.new(
+                    add_on_purchase: add_on_purchase,
+                    user_ids: [user.id]
+                  ).execute
+                end
+              end
+              threads.each(&:join)
+
+              expect(add_on_purchase.assigned_users.count).to eq(1)
+            end
+          end
+        end
+
+        context 'with not enough seats' do
+          let_it_be(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :self_managed, quantity: 2, add_on: add_on)
+          end
+
+          let(:error_message) { 'NOT_ENOUGH_SEATS' }
+
+          let(:expected_error_log) do
+            {
+              add_on_purchase_id: add_on_purchase.id,
+              message: 'Duo Pro Bulk User Assignment',
+              response_type: 'error',
+              payload: { errors: error_message }
+            }
+          end
+
+          it 'returns the error' do
+            expect(Gitlab::AppLogger).to receive(:error).with(expected_error_log)
+
+            response = bulk_assign
+
+            expect(response.error?).to be_truthy
+            expect(response.message).to eq(error_message)
+          end
+        end
+      end
+    end
   end
 end

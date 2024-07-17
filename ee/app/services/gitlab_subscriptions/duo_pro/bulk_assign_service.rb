@@ -3,7 +3,9 @@
 module GitlabSubscriptions
   module DuoPro
     class BulkAssignService < BaseService
+      include ::GitlabSubscriptions::SubscriptionHelper
       include Gitlab::Utils::StrongMemoize
+
       ERROR_NOT_ENOUGH_SEATS = 'NOT_ENOUGH_SEATS'
       ERROR_INVALID_USER_ID_PRESENT = 'INVALID_USER_ID_PRESENT'
 
@@ -31,7 +33,11 @@ module GitlabSubscriptions
           )
         end
 
-        ::Onboarding::CreateIterableTriggersWorker.perform_async(namespace.id, eligible_user_ids)
+        # Currently we do not support iterables and onboarding for SM-instances
+        # Refer to https://gitlab.com/gitlab-org/gitlab/-/issues/461229#note_1965100459
+        if gitlab_com_subscription?
+          ::Onboarding::CreateIterableTriggersWorker.perform_async(namespace.id, eligible_user_ids)
+        end
 
         Gitlab::AppLogger.info(log_events(type: 'success',
           payload: { users: eligible_user_ids }))
@@ -76,9 +82,21 @@ module GitlabSubscriptions
       end
 
       def eligible_user_ids
-        namespace.gitlab_duo_pro_eligible_user_ids & user_ids
+        gitlab_com_subscription? ? saas_eligible_user_ids : sm_eligible_user_ids
       end
       strong_memoize_attr :eligible_user_ids
+
+      def saas_eligible_user_ids
+        namespace.gitlab_duo_pro_eligible_user_ids & user_ids
+      end
+
+      # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- Safe because query filters based on passed user_ids
+      def sm_eligible_user_ids
+        GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(add_on_type: :code_suggestions).execute
+          .where(id: user_ids)
+          .pluck(:id)
+      end
+      # rubocop: enable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit
 
       def namespace
         @namespace ||= add_on_purchase.namespace
