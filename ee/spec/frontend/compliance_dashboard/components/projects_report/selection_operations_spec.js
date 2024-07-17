@@ -2,7 +2,7 @@ import { GlButton, GlCollapsibleListbox } from '@gitlab/ui';
 import { mount, ErrorWrapper } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { createComplianceFrameworksResponse } from 'ee_jest/compliance_dashboard/mock_data';
-
+import { mapProjects } from 'ee/compliance_dashboard/graphql/mappers';
 import { validFetchResponse as getComplianceFrameworksResponse } from 'ee_jest/groups/settings/compliance_frameworks/mock_data';
 import SelectionOperations from 'ee/compliance_dashboard/components/projects_report/selection_operations.vue';
 import FrameworkSelectionBox from 'ee/compliance_dashboard/components/projects_report/framework_selection_box.vue';
@@ -59,7 +59,7 @@ describe('SelectionOperations component', () => {
   describe('when selection is provided', () => {
     const COUNT = 2;
     const complianceFrameworkResponse = createComplianceFrameworksResponse({ count: COUNT });
-    const projects = complianceFrameworkResponse.data.group.projects.nodes;
+    const projects = mapProjects(complianceFrameworkResponse.data.group.projects.nodes);
 
     beforeEach(() => {
       createComponent({ selection: projects });
@@ -74,24 +74,42 @@ describe('SelectionOperations component', () => {
         select(findOperationDropdown(), SelectionOperations.operations.REMOVE_OPERATION),
       );
 
-      it('renders remove button', () => {
+      it('renders remove button disabled by default', () => {
         expect(findRemoveButton().exists()).toBe(true);
+        expect(findRemoveButton().props('disabled')).toBe(true);
       });
 
-      it('framework selection dropdown is not available', () => {
-        expect(findFrameworkSelectionDropdown().exists()).toBe(false);
+      it('framework selection dropdown is available', () => {
+        expect(findFrameworkSelectionDropdown().exists()).toBe(true);
       });
 
-      it('clicking remove button emits change event', async () => {
-        await findRemoveButton().vm.$emit('click');
+      describe('when selecting framework', () => {
+        const SELECTED_FRAMEWORK =
+          getComplianceFrameworksResponse.data.namespace.complianceFrameworks.nodes[0].id;
 
-        expect(wrapper.emitted('change').at(-1)).toStrictEqual([
-          projects.map((p) => ({
-            projectId: p.id,
-            frameworkId: null,
-            previousFrameworkId: p.complianceFrameworks?.nodes?.[0]?.id,
-          })),
-        ]);
+        beforeEach(() => select(findFrameworkSelectionDropdown(), [SELECTED_FRAMEWORK]));
+
+        it('enables apply button when framework is selected', () => {
+          expect(findRemoveButton().props('disabled')).toBe(false);
+        });
+
+        it('clicking remove button emits change event', async () => {
+          await findRemoveButton().vm.$emit('click');
+          const expectedOperations = [
+            {
+              projectId: projects[0].id,
+              frameworkIds: [projects[0].complianceFrameworks?.[0]?.id],
+              previousFrameworkIds: [projects[0].complianceFrameworks?.[0]?.id],
+            },
+            {
+              projectId: projects[1].id,
+              frameworkIds: [],
+              previousFrameworkIds: [projects[1].complianceFrameworks?.[0]?.id],
+            },
+          ];
+
+          expect(wrapper.emitted('change').at(-1)).toStrictEqual([expectedOperations]);
+        });
       });
     });
 
@@ -113,7 +131,7 @@ describe('SelectionOperations component', () => {
         const SELECTED_FRAMEWORK =
           getComplianceFrameworksResponse.data.namespace.complianceFrameworks.nodes[1].id;
 
-        beforeEach(() => select(findFrameworkSelectionDropdown(), SELECTED_FRAMEWORK));
+        beforeEach(() => select(findFrameworkSelectionDropdown(), [SELECTED_FRAMEWORK]));
 
         it('enables apply button when framework is selected', () => {
           expect(findApplyButton().props('disabled')).toBe(false);
@@ -142,8 +160,8 @@ describe('SelectionOperations component', () => {
             expect(wrapper.emitted('change').at(-1)).toStrictEqual([
               projects.map((p) => ({
                 projectId: p.id,
-                frameworkId: SELECTED_FRAMEWORK,
-                previousFrameworkId: p.complianceFrameworks?.nodes?.[0]?.id,
+                frameworkIds: [p.complianceFrameworks?.[0]?.id, SELECTED_FRAMEWORK],
+                previousFrameworkIds: [p.complianceFrameworks?.[0]?.id],
               })),
             ]);
           });
@@ -181,7 +199,7 @@ describe('SelectionOperations component', () => {
       await wrapper.setProps({ defaultFramework: { id: NEW_FRAMEWORK_ID } });
       await nextTick();
 
-      expect(findFrameworkSelectionDropdown().props('selected')).toBe(NEW_FRAMEWORK_ID);
+      expect(findFrameworkSelectionDropdown().props('selected')).toEqual([NEW_FRAMEWORK_ID]);
     });
   });
 });

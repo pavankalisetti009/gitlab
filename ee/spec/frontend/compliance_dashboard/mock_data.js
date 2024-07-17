@@ -225,10 +225,10 @@ export const createComplianceFrameworksResponse = ({
   };
 };
 
-export const createProjectSetComplianceFrameworkResponse = ({ errors } = {}) => ({
+export const createProjectUpdateComplianceFrameworksResponse = ({ errors } = {}) => ({
   data: {
-    projectSetComplianceFramework: {
-      __typename: 'ProjectSetComplianceFrameworkPayload',
+    projectUpdateComplianceFrameworks: {
+      __typename: 'ProjectUpdateComplianceFrameworksPayload',
       clientMutationId: '1',
       errors: errors ?? [],
       project: createProject({ id: 1 }),

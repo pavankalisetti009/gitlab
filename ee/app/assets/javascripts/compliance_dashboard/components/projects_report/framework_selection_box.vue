@@ -5,7 +5,7 @@ import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 
-const frameworksDropdownPlaceholder = s__('ComplianceReport|Choose one framework');
+const frameworksDropdownPlaceholder = s__('ComplianceReport|Select frameworks');
 
 export default {
   components: {
@@ -27,9 +27,9 @@ export default {
       default: false,
     },
     selected: {
-      type: String,
+      type: Array,
       required: false,
-      default: () => null,
+      default: () => [],
     },
     placeholder: {
       type: String,
@@ -66,9 +66,7 @@ export default {
   },
   computed: {
     toggleText() {
-      const selectedFramework = this.frameworks?.find((f) => f.id === this.selected);
-
-      return selectedFramework?.name ?? this.placeholder;
+      return this.getToggleText() || this.placeholder;
     },
     frameworksDropdownItems() {
       return (this.frameworks ?? [])
@@ -84,6 +82,23 @@ export default {
     },
   },
   methods: {
+    getToggleText() {
+      const maxFrameworks = 5;
+      const maxTextLength = 30;
+
+      const selectedFrameworksNames = (this.frameworks ?? [])
+        .filter((f) => this.selected.includes(f.id))
+        .slice(0, maxFrameworks)
+        .map((f) => f.name);
+
+      const combinedNames = selectedFrameworksNames.join(', ');
+
+      const text =
+        combinedNames.length < maxTextLength
+          ? combinedNames
+          : combinedNames.slice(0, maxTextLength).concat('...');
+      return text;
+    },
     createNewFramework() {
       this.$refs.listbox.close();
       this.$emit('create');
@@ -104,6 +119,7 @@ export default {
     :disabled="disabled"
     :header-text="$options.i18n.frameworksDropdownPlaceholder"
     :items="frameworksDropdownItems"
+    multiple
     searchable
     role="button"
     tabindex="0"
@@ -114,10 +130,10 @@ export default {
     <template #list-item="{ item }">
       <div class="gl-display-flex gl-align-items-center">
         <div
-          class="gl-display-inline-block gl-w-5 gl-h-3 gl-mr-3 gl-rounded-pill"
+          class="gl-w-5 gl-h-3 gl-mr-3 gl-rounded-pill"
           :style="{ backgroundColor: item.color }"
         ></div>
-        {{ item.text }}
+        <div class="gl-str-truncated">{{ item.text }}</div>
       </div>
     </template>
     <template #footer>

@@ -65,15 +65,18 @@ RSpec.describe 'Compliance Dashboard', :js, feature_category: :compliance_manage
 
         expect(first_row).to have_content(project_2.name)
         expect(first_row).to have_content(project_2.full_path)
-        expect(first_row).to have_content("Add framework")
+        expect(first_row).to have_content("No frameworks")
+        expect(first_row).to have_selector('[aria-label="Select frameworks"]')
 
         expect(second_row).to have_content(project.name)
         expect(second_row).to have_content(project.full_path)
         expect(second_row).to have_content(framework2.name)
+        expect(second_row).to have_selector('[aria-label="Select frameworks"]')
 
         expect(third_row).to have_content(subgroup_project.name)
         expect(third_row).to have_content(subgroup_project.full_path)
         expect(third_row).to have_content(framework1.name)
+        expect(third_row).to have_selector('[aria-label="Select frameworks"]')
       end
     end
 

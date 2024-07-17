@@ -17,7 +17,7 @@ import CreateForm from 'ee/groups/settings/compliance_frameworks/components/crea
 import EditForm from 'ee/groups/settings/compliance_frameworks/components/edit_form.vue';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import { isTopLevelGroup } from '../../utils';
-import setComplianceFrameworkMutation from '../../graphql/set_compliance_framework.mutation.graphql';
+import updateComplianceFrameworksMutation from '../../graphql/mutations/project_update_compliance_frameworks.graphql';
 import SelectionOperations from './selection_operations.vue';
 import FrameworkSelectionBox from './framework_selection_box.vue';
 
@@ -72,6 +72,7 @@ export default {
       preselectedFrameworkForBulkOperation: null,
       projectsPendindSingleOperation: [],
       isApplyInProgress: false,
+      selectedFrameworkIds: [],
     };
   },
   computed: {
@@ -123,47 +124,47 @@ export default {
     },
 
     async applyOperations(operations) {
-      const successMessage = operations.some((entry) => Boolean(entry.frameworkId))
-        ? this.$options.i18n.successApplyToastMessage
-        : this.$options.i18n.successRemoveToastMessage;
-
+      const isBulkAction = operations.length > 1;
       try {
         this.isApplyInProgress = true;
         const results = await Promise.all(
           operations.map((entry) =>
             this.$apollo.mutate({
-              mutation: setComplianceFrameworkMutation,
+              mutation: updateComplianceFrameworksMutation,
               variables: {
                 projectId: entry.projectId,
-                frameworkId: entry.frameworkId,
+                complianceFrameworkIds: entry.frameworkIds,
               },
             }),
           ),
         );
 
-        const firstError = results.find(
-          (response) => response.data.projectSetComplianceFramework.errors.length,
+        const errors = results.find(
+          (response) => response.data.projectUpdateComplianceFrameworks.errors,
         );
-        if (firstError) {
-          throw firstError;
+        if (errors.length) {
+          throw errors[0];
         }
-        this.$toast.show(successMessage, {
-          action: {
-            text: __('Undo'),
-            onClick: () => {
-              this.applyOperations(
-                operations.map((entry) => ({
-                  projectId: entry.projectId,
-                  previousFrameworkId: entry.frameworkId,
-                  frameworkId: entry.previousFrameworkId,
-                })),
-              );
+        if (isBulkAction) {
+          this.$toast.show(this.$options.i18n.successUpdateToastMessage, {
+            action: {
+              text: __('Undo'),
+              onClick: () => {
+                this.applyOperations(
+                  operations.map((entry) => ({
+                    projectId: entry.projectId,
+                    previousFrameworkIds: entry.frameworkIds,
+                    frameworkIds: entry.previousFrameworkIds,
+                  })),
+                );
+              },
             },
-          },
-        });
+          });
+        }
       } catch (e) {
+        const message = e?.message || __('Something went wrong on our end.');
         createAlert({
-          message: __('Something went wrong on our end.'),
+          message,
         });
       } finally {
         this.isApplyInProgress = false;
@@ -186,28 +187,42 @@ export default {
       return this.projectsPendindSingleOperation.indexOf(projectId) > -1;
     },
 
-    createComplianceFramework(projectId) {
+    createComplianceFramework(projectId, frameworks = []) {
       this.projectWhichInvokedModal = projectId;
+      this.selectedFrameworkIds = frameworks.map((f) => f.id);
       this.$refs.createModal.show();
+    },
+
+    getFrameworkIdsToApply(frameworks, idsToDelete) {
+      const frameworkIds = frameworks.map((f) => f.id);
+      return frameworkIds.filter((id) => !idsToDelete.includes(id));
+    },
+
+    handleItemDelete(projectId, frameworkId, frameworks = []) {
+      const frameworksToApply = this.getFrameworkIdsToApply(frameworks, [frameworkId]);
+      this.applySingleItemOperation({
+        projectId,
+        frameworkIds: frameworksToApply,
+      });
     },
 
     selectNewlyCreatedFramework({ framework }) {
       const projectId = this.projectWhichInvokedModal;
+      const frameworkIds = this.selectedFrameworkIds;
       this.resetCreateModal();
-
       if (projectId === this.$options.BULK_FRAMEWORK_ID) {
         this.preselectedFrameworkForBulkOperation = framework;
       } else {
         this.applySingleItemOperation({
           projectId,
-          frameworkId: framework.id,
-          previousFrameworkId: null,
+          frameworkIds: [...frameworkIds, framework.id],
         });
       }
     },
 
     resetCreateModal() {
       this.projectWhichInvokedModal = null;
+      this.selectedFrameworkIds = [];
       this.$refs.createModal.hide();
     },
 
@@ -240,9 +255,16 @@ export default {
     },
     {
       key: 'complianceFramework',
-      label: __('Compliance framework'),
-      thClass: 'gl-md-max-w-26 !gl-align-middle',
-      tdClass: 'gl-md-max-w-26 !gl-align-middle',
+      label: __('Compliance frameworks'),
+      thClass: '!gl-align-middle',
+      tdClass: '!gl-align-middle',
+      sortable: false,
+    },
+    {
+      key: 'action',
+      label: __('Action'),
+      thClass: '!gl-align-middle',
+      tdClass: '!gl-align-middle',
       sortable: false,
     },
   ],
@@ -252,10 +274,9 @@ export default {
 
     noProjectsFound: s__('ComplianceReport|No projects found'),
     noProjectsFoundMatchingFilters: s__('ComplianceReport|No projects found that match filters'),
-    addFrameworkMessage: s__('ComplianceReport|Add framework'),
-
-    successApplyToastMessage: s__('ComplianceReport|Framework successfully applied'),
-    successRemoveToastMessage: s__('ComplianceReport|Framework successfully removed'),
+    selectFrameworks: s__('ComplianceReport|Select frameworks'),
+    noFrameworks: s__('ComplianceReport|No frameworks'),
+    successUpdateToastMessage: s__('ComplianceReport|Frameworks have been successfully updated.'),
   },
   BULK_FRAMEWORK_ID: '__INTERNAL_BULK_FRAMEWORK_VALUE',
 };
@@ -333,46 +354,48 @@ export default {
         {{ fullPath }}
       </template>
       <template #cell(complianceFramework)="{ item: { id, complianceFrameworks } }">
-        <gl-loading-icon v-if="hasPendingSingleOperation(id)" size="sm" inline />
-        <framework-selection-box
-          v-else-if="!complianceFrameworks.length"
-          :group-path="groupPath"
-          :is-framework-creating-enabled="isFrameworkEditingEnabled"
-          @select="
-            applySingleItemOperation({
-              projectId: id,
-              frameworkId: $event,
-              previousFrameworkId: null,
-            })
-          "
-          @create="createComplianceFramework(id)"
-        >
-          <template #toggle>
-            <gl-button
-              v-if="isFrameworkEditingEnabled"
-              icon="plus"
-              category="tertiary"
-              variant="confirm"
-            >
-              {{ $options.i18n.addFrameworkMessage }}
-            </gl-button>
-          </template>
-        </framework-selection-box>
+        <div v-if="!complianceFrameworks.length && !hasPendingSingleOperation(id)">
+          {{ $options.i18n.noFrameworks }}
+        </div>
         <framework-badge
           v-for="framework in complianceFrameworks"
-          v-else
           :key="framework.id"
           closeable
           :show-edit="isFrameworkEditingEnabled"
+          class="gl-inline-block gl-mr-2 gl-my-2"
           :framework="framework"
-          @close="
+          @close="handleItemDelete(id, framework.id, complianceFrameworks)"
+        />
+        <gl-loading-icon
+          v-if="hasPendingSingleOperation(id)"
+          class="gl-inline-block gl-mr-2 gl-my-2"
+          size="sm"
+          inline
+        />
+      </template>
+      <template #cell(action)="{ item: { id, complianceFrameworks } }">
+        <framework-selection-box
+          :is-framework-creating-enabled="isFrameworkEditingEnabled"
+          :selected="complianceFrameworks.map((f) => f.id)"
+          :group-path="groupPath"
+          @select="
             applySingleItemOperation({
               projectId: id,
-              frameworkId: null,
-              previousFrameworkId: framework.id,
+              frameworkIds: $event,
             })
           "
-        />
+          @create="createComplianceFramework(id, complianceFrameworks)"
+        >
+          <template #toggle>
+            <gl-button
+              icon="pencil"
+              category="secondary"
+              size="small"
+              variant="default"
+              :aria-label="$options.i18n.selectFrameworks"
+            />
+          </template>
+        </framework-selection-box>
       </template>
       <template #table-busy>
         <gl-loading-icon size="lg" color="dark" class="gl-my-5" />

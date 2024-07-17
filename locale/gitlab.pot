@@ -13411,10 +13411,10 @@ msgstr ""
 msgid "Compliance center"
 msgstr ""
 
-msgid "Compliance framework"
+msgid "Compliance framework settings have moved."
 msgstr ""
 
-msgid "Compliance framework settings have moved."
+msgid "Compliance frameworks"
 msgstr ""
 
 msgid "ComplianceChainOfCustody| Chain of custody export"
@@ -13632,10 +13632,7 @@ msgstr ""
 msgid "ComplianceFramework|No compliance frameworks are set up yet"
 msgstr ""
 
-msgid "ComplianceReport|Add framework"
-msgstr ""
-
-msgid "ComplianceReport|Apply framework to selected projects"
+msgid "ComplianceReport|Apply frameworks to selected projects"
 msgstr ""
 
 msgid "ComplianceReport|Approved by author"
@@ -13648,9 +13645,6 @@ msgid "ComplianceReport|Avoid creating new compliance pipelines and use pipeline
 msgstr ""
 
 msgid "ComplianceReport|Choose one bulk action"
-msgstr ""
-
-msgid "ComplianceReport|Choose one framework"
 msgstr ""
 
 msgid "ComplianceReport|Compliance framework"
@@ -13674,10 +13668,7 @@ msgstr ""
 msgid "ComplianceReport|For more information, see %{linkStart}how to migrate from compliance pipelines to pipeline execution policy actions%{linkEnd}."
 msgstr ""
 
-msgid "ComplianceReport|Framework successfully applied"
-msgstr ""
-
-msgid "ComplianceReport|Framework successfully removed"
+msgid "ComplianceReport|Frameworks have been successfully updated."
 msgstr ""
 
 msgid "ComplianceReport|Full target branch name"
@@ -13687,6 +13678,9 @@ msgid "ComplianceReport|Less than 2 approvers"
 msgstr ""
 
 msgid "ComplianceReport|Migrate pipeline to a policy"
+msgstr ""
+
+msgid "ComplianceReport|No frameworks"
 msgstr ""
 
 msgid "ComplianceReport|No frameworks found"
@@ -13704,13 +13698,16 @@ msgstr ""
 msgid "ComplianceReport|No violations found. Change search options and try again"
 msgstr ""
 
-msgid "ComplianceReport|Remove framework from selected projects"
+msgid "ComplianceReport|Remove frameworks from selected projects"
 msgstr ""
 
 msgid "ComplianceReport|Search target branch"
 msgstr ""
 
 msgid "ComplianceReport|Select at least one project to apply the bulk action"
+msgstr ""
+
+msgid "ComplianceReport|Select frameworks"
 msgstr ""
 
 msgid "ComplianceReport|Unable to load the compliance framework projects report. Refresh the page and try again."

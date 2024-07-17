@@ -63,13 +63,23 @@ describe('FrameworkSelectionBox component', () => {
     );
   });
 
-  it('sets toggle-text to framework name when it matches selection', async () => {
+  it('sets toggle-text to framework name when framework is selected', async () => {
     const framework = mockedResponse.data.namespace.complianceFrameworks.nodes[0];
 
-    createComponent({ selected: framework.id });
+    createComponent({ selected: [framework.id] });
+
     await waitForPromises();
 
     expect(wrapper.findComponent(GlCollapsibleListbox).props('toggleText')).toBe(framework.name);
+  });
+
+  it('sets toggle-text to placeholder when no framework is selected', async () => {
+    createComponent({ selected: [] });
+    await waitForPromises();
+
+    expect(wrapper.findComponent(GlCollapsibleListbox).props('toggleText')).toBe(
+      'Select frameworks',
+    );
   });
 
   it('emits selected framework from underlying listbox', () => {

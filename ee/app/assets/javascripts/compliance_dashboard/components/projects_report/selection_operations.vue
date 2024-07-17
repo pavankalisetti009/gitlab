@@ -29,7 +29,7 @@ export default {
     defaultFramework: {
       type: Object,
       required: false,
-      default: () => null,
+      default: null,
     },
     isFrameworkCreatingEnabled: {
       type: Boolean,
@@ -42,7 +42,7 @@ export default {
   data() {
     return {
       selectedOperation: null,
-      selectedFramework: this.defaultFramework?.id ?? null,
+      selectedFrameworks: this.defaultFramework ? [this.defaultFramework.id] : [],
       frameworkSearchQuery: '',
     };
   },
@@ -50,6 +50,18 @@ export default {
   computed: {
     hasSelection() {
       return this.selection.length > 0;
+    },
+
+    isRemoveOperation() {
+      return this.selectedOperation === this.$options.operations.REMOVE_OPERATION;
+    },
+
+    isSubmitButtonDisabled() {
+      return !this.isSelectionValid || this.isApplyInProgress || !this.hasSelection;
+    },
+
+    isSubmitButtonLoading() {
+      return !this.isSubmitButtonDisabled && this.isApplyInProgress;
     },
 
     operationsDropdownItems() {
@@ -66,15 +78,11 @@ export default {
     },
 
     isSelectionValid() {
-      return (
-        this.selectedOperation === this.$options.operations.REMOVE_OPERATION ||
-        (this.selectedOperation === this.$options.operations.APPLY_OPERATION &&
-          this.selectedFramework)
-      );
+      return this.selectedOperation && this.selectedFrameworks.length;
     },
 
     actionButtonText() {
-      if (this.selectedOperation === this.$options.operations.REMOVE_OPERATION) {
+      if (this.isRemoveOperation) {
         return __('Remove');
       }
 
@@ -82,7 +90,7 @@ export default {
     },
 
     actionButtonVariant() {
-      if (this.selectedOperation === this.$options.operations.REMOVE_OPERATION) {
+      if (this.isRemoveOperation) {
         return 'danger';
       }
 
@@ -92,36 +100,51 @@ export default {
 
   watch: {
     selectedOperation() {
-      this.selectedFramework = null;
+      this.selectedFrameworks = [];
     },
 
-    defaultFramework() {
-      this.selectedFramework = this.defaultFramework.id;
+    defaultFramework(newValue) {
+      if (newValue) {
+        this.selectedFrameworks = [...this.selectedFrameworks, newValue.id];
+      }
     },
   },
 
   methods: {
     reset() {
       this.selectedOperation = null;
-      this.selectedFramework = null;
+      this.selectedFrameworks = [];
     },
 
     async apply() {
       const operations = this.selection.map((project) => ({
         projectId: project.id,
-        previousFrameworkId: project.complianceFrameworks?.nodes?.[0]?.id ?? null,
-        frameworkId: this.selectedFramework ?? null,
+        previousFrameworkIds: this.getPreviousFrameworkIds(project),
+        frameworkIds: this.getFrameworkIds(project),
       }));
-
       this.$emit('change', operations);
       this.reset();
+    },
+
+    getFrameworkIds(project) {
+      const previousFrameworkIds = this.getPreviousFrameworkIds(project);
+      if (this.isRemoveOperation) {
+        return previousFrameworkIds.filter((id) => !this.selectedFrameworks.includes(id));
+      }
+      return [...new Set([...previousFrameworkIds, ...this.selectedFrameworks])];
+    },
+
+    getPreviousFrameworkIds(project) {
+      return project.complianceFrameworks
+        ? project.complianceFrameworks?.map((framework) => framework.id)
+        : [];
     },
   },
 
   i18n: {
     dropdownActionPlaceholder: s__('ComplianceReport|Choose one bulk action'),
-    applyFramework: s__('ComplianceReport|Apply framework to selected projects'),
-    removeFramework: s__('ComplianceReport|Remove framework from selected projects'),
+    applyFramework: s__('ComplianceReport|Apply frameworks to selected projects'),
+    removeFramework: s__('ComplianceReport|Remove frameworks from selected projects'),
 
     operationSelectionTooltip: s__(
       'ComplianceReport|Select at least one project to apply the bulk action',
@@ -162,12 +185,12 @@ export default {
         tabindex="0"
       />
       <framework-selection-box
-        v-if="selectedOperation === $options.operations.APPLY_OPERATION"
-        v-model="selectedFramework"
+        v-if="selectedOperation"
+        v-model="selectedFrameworks"
         data-testid="choose-framework"
         :disabled="!hasSelection"
         :group-path="groupPath"
-        :is-framework-creating-enabled="isFrameworkCreatingEnabled"
+        :is-framework-creating-enabled="isFrameworkCreatingEnabled && !isRemoveOperation"
         @create="$emit('create')"
       />
     </div>
@@ -179,8 +202,8 @@ export default {
       class="gl-ml-3"
       data-testid="apply-bulk-operation-button"
       :variant="actionButtonVariant"
-      :disabled="!isSelectionValid || isApplyInProgress || !hasSelection"
-      :loading="isApplyInProgress"
+      :disabled="isSubmitButtonDisabled"
+      :loading="isSubmitButtonLoading"
       @click="apply"
     >
       {{ actionButtonText }}
