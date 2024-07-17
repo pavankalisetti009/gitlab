@@ -116,7 +116,7 @@ gem 'attr_encrypted', '~> 3.2.4', path: 'vendor/gems/attr_encrypted' # rubocop:t
 gem 'validates_hostname', '~> 1.0.13' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'rubyzip', '~> 2.3.2', require: 'zip' # rubocop:todo Gemfile/MissingFeatureCategory
 # GitLab Pages letsencrypt support
-gem 'acme-client', '~> 2.0' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'acme-client', '~> 2.0.18' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # Browser detection
 gem 'browser', '~> 5.3.1' # rubocop:todo Gemfile/MissingFeatureCategory
