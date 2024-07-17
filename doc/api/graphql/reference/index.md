@@ -39250,6 +39250,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="mergerequestsresolvernegatedparamsassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Usernames of the assignee to exclude. |
 | <a id="mergerequestsresolvernegatedparamslabels"></a>`labels` | [`[String!]`](#string) | Array of label names. All resolved merge requests will not have these labels. |
 | <a id="mergerequestsresolvernegatedparamsmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Title of the milestone. |
 
