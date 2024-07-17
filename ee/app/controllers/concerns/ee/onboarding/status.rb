@@ -48,7 +48,7 @@ module EE
       def welcome_submit_button_text
         base_value = registration_type.welcome_submit_button_text
 
-        return base_value if subscription? || invite?
+        return base_value if registration_type.ignore_oauth_in_welcome_submit_text?
         return _('Get started!') if oauth?
 
         # free, trial if not in oauth
@@ -56,10 +56,7 @@ module EE
       end
 
       def continue_full_onboarding?
-        !subscription? &&
-          !invite? &&
-          !oauth? &&
-          enabled?
+        registration_type.continue_full_onboarding? && !oauth? && enabled?
       end
 
       def joining_a_project?
@@ -67,28 +64,9 @@ module EE
       end
 
       def convert_to_automatic_trial?
-        # TODO: Basically only free, but this logic may go away soon as we start the next step in
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/453979
-        return false if invite? || subscription? || trial?
+        return false unless registration_type.convert_to_automatic_trial?
 
         setup_for_company?
-      end
-
-      def invite?
-        user.onboarding_status_registration_type == REGISTRATION_TYPE[:invite]
-      end
-
-      def trial?
-        return false unless enabled?
-
-        user.onboarding_status_registration_type == REGISTRATION_TYPE[:trial]
-      end
-
-      def oauth?
-        # During authorization for oauth, we want to allow it to finish.
-        return false unless base_stored_user_location_path.present?
-
-        base_stored_user_location_path == ::Gitlab::Routing.url_helpers.oauth_authorization_path
       end
 
       def preregistration_tracking_label
@@ -105,12 +83,6 @@ module EE
 
       def enabled?
         self.class.enabled?
-      end
-
-      def subscription?
-        return false unless enabled?
-
-        user.onboarding_status_registration_type == REGISTRATION_TYPE[:subscription]
       end
 
       def company_lead_product_interaction
@@ -138,6 +110,13 @@ module EE
 
       def calculate_registration_type_klass
         REGISTRATION_KLASSES.fetch(user&.onboarding_status_registration_type, ::Onboarding::FreeRegistration)
+      end
+
+      def oauth?
+        # During authorization for oauth, we want to allow it to finish.
+        return false unless base_stored_user_location_path.present?
+
+        base_stored_user_location_path == ::Gitlab::Routing.url_helpers.oauth_authorization_path
       end
 
       def subscription_from_stored_location?

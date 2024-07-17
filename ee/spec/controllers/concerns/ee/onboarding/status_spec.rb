@@ -38,26 +38,44 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
   end
 
   describe '#continue_full_onboarding?' do
-    let(:instance) { described_class.new(nil, nil, nil) }
+    let(:session_in_oauth) do
+      { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
+    end
 
-    subject { instance.continue_full_onboarding? }
+    let(:session_not_in_oauth) { { 'user_return_to' => nil } }
 
-    where(
-      subscription?: [true, false],
-      invite?: [true, false],
-      oauth?: [true, false],
-      enabled?: [true, false]
-    )
+    where(:registration_type, :session, :enabled?, :expected_result) do
+      'free'         | ref(:session_not_in_oauth) | true  | true
+      'free'         | ref(:session_in_oauth)     | true  | false
+      'free'         | ref(:session_not_in_oauth) | false | false
+      'free'         | ref(:session_in_oauth)     | false | false
+      nil            | ref(:session_not_in_oauth) | true  | true
+      nil            | ref(:session_in_oauth)     | true  | false
+      nil            | ref(:session_not_in_oauth) | false | false
+      nil            | ref(:session_in_oauth)     | false | false
+      'trial'        | ref(:session_not_in_oauth) | true  | true
+      'trial'        | ref(:session_in_oauth)     | true  | false
+      'trial'        | ref(:session_not_in_oauth) | false | false
+      'trial'        | ref(:session_in_oauth)     | false | false
+      'invite'       | ref(:session_not_in_oauth) | true  | false
+      'invite'       | ref(:session_in_oauth)     | true  | false
+      'invite'       | ref(:session_not_in_oauth) | false | false
+      'invite'       | ref(:session_in_oauth)     | false | false
+      'subscription' | ref(:session_not_in_oauth) | true  | false
+      'subscription' | ref(:session_in_oauth)     | true  | false
+      'subscription' | ref(:session_not_in_oauth) | false | false
+      'subscription' | ref(:session_in_oauth)     | false | false
+    end
 
     with_them do
-      let(:expected_result) { !subscription? && !invite? && !oauth? && enabled? }
+      let(:current_user) { build(:user, onboarding_status_registration_type: registration_type) }
+      let(:instance) { described_class.new({}, session, current_user) }
 
       before do
-        allow(instance).to receive(:subscription?).and_return(subscription?)
-        allow(instance).to receive(:invite?).and_return(invite?)
-        allow(instance).to receive(:oauth?).and_return(oauth?)
         allow(instance).to receive(:enabled?).and_return(enabled?)
       end
+
+      subject { instance.continue_full_onboarding? }
 
       it { is_expected.to eq(expected_result) }
     end
@@ -117,46 +135,29 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
   end
 
-  describe '#redirect_to_company_form?' do
-    where(:registration_type, :expected_result) do
-      'free'         | false
-      'trial'        | true
-      'invite'       | false
-      'subscription' | false
-      nil            | false
+  describe '#convert_to_automatic_trial?' do
+    where(:registration_type, :setup_for_company?, :expected_result) do
+      'free'         | false | false
+      'free'         | true  | true
+      nil            | false | false
+      nil            | true  | true
+      'trial'        | false | false
+      'trial'        | true  | false
+      'invite'       | false | false
+      'invite'       | true  | false
+      'subscription' | false | false
+      'subscription' | true  | false
     end
 
     with_them do
       let(:current_user) { build(:user, onboarding_status_registration_type: registration_type) }
       let(:instance) { described_class.new({}, nil, current_user) }
 
-      subject { instance.redirect_to_company_form? }
-
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '#convert_to_automatic_trial?' do
-    where(:setup_for_company?, :invite?, :subscription?, :trial?, :expected_result) do
-      true  | false | false | false | true
-      false | false | false | false | false
-      false | true  | false | false | false
-      true  | true  | false | false | false
-      true  | false | true  | false | false
-      true  | false | false | true  | false
-    end
-
-    with_them do
-      let(:instance) { described_class.new({}, nil, nil) }
-
-      subject { instance.convert_to_automatic_trial? }
-
       before do
-        allow(instance).to receive(:invite?).and_return(invite?)
-        allow(instance).to receive(:subscription?).and_return(subscription?)
-        allow(instance).to receive(:trial?).and_return(trial?)
         allow(instance).to receive(:setup_for_company?).and_return(setup_for_company?)
       end
+
+      subject { instance.convert_to_automatic_trial? }
 
       it { is_expected.to eq(expected_result) }
     end
@@ -178,24 +179,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
   end
 
-  describe '#invite?' do
-    let(:user_with_invite_registration_type) { build_stubbed(:user, onboarding_status_registration_type: 'invite') }
-    let(:user_without_invite_registration_type) { build_stubbed(:user, onboarding_status_registration_type: 'free') }
-
-    where(:current_user, :expected_result) do
-      ref(:user_with_invite_registration_type)    | true
-      ref(:user_without_invite_registration_type) | false
-    end
-
-    with_them do
-      let(:instance) { described_class.new(nil, nil, current_user) }
-
-      subject { instance.invite? }
-
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
   describe '#joining_a_project?' do
     where(:params, :expected_result) do
       { joining_project: 'true' }  | true
@@ -208,29 +191,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       let(:instance) { described_class.new(params, nil, nil) }
 
       subject { instance.joining_a_project? }
-
-      it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '#trial?' do
-    let(:user_with_trial) { build_stubbed(:user, onboarding_status_registration_type: 'trial') }
-
-    where(:current_user, :onboarding_enabled?, :expected_result) do
-      ref(:user)            | false | false
-      ref(:user)            | true  | false
-      ref(:user_with_trial) | true  | true
-      ref(:user_with_trial) | false | false
-    end
-
-    with_them do
-      let(:instance) { described_class.new(nil, nil, current_user) }
-
-      subject { instance.trial? }
-
-      before do
-        stub_saas_features(onboarding: onboarding_enabled?)
-      end
 
       it { is_expected.to eq(expected_result) }
     end
@@ -259,43 +219,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
   end
 
-  describe '#oauth?' do
-    let(:return_to) { nil }
-    let(:session) { { 'user_return_to' => return_to } }
-
-    subject { described_class.new(nil, session, nil).oauth? }
-
-    context 'when in oauth' do
-      let(:return_to) { ::Gitlab::Routing.url_helpers.oauth_authorization_path }
-
-      it { is_expected.to eq(true) }
-
-      context 'when there are params on the oauth path' do
-        let(:return_to) { ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
-
-        it { is_expected.to eq(true) }
-      end
-    end
-
-    context 'when not in oauth' do
-      context 'when no user location is stored' do
-        it { is_expected.to eq(false) }
-      end
-
-      context 'when user location does not indicate oauth' do
-        let(:return_to) { '/not/oauth/path' }
-
-        it { is_expected.to eq(false) }
-      end
-
-      context 'when user location does not have value in session' do
-        let(:session) { {} }
-
-        it { is_expected.to eq(false) }
-      end
-    end
-  end
-
   describe '#enabled?' do
     subject { described_class.new(nil, nil, nil).enabled? }
 
@@ -304,30 +227,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     end
 
     context 'when not on SaaS' do
-      it { is_expected.to eq(false) }
-    end
-  end
-
-  describe '#subscription?' do
-    let(:current_user) { build_stubbed(:user, onboarding_status_registration_type: 'subscription') }
-
-    subject { described_class.new(nil, session, current_user).subscription? }
-
-    context 'when onboarding feature is available' do
-      before do
-        stub_saas_features(onboarding: true)
-      end
-
-      it { is_expected.to eq(true) }
-
-      context 'when the registration type is not subscription' do
-        let(:current_user) { build_stubbed(:user, onboarding_status_registration_type: 'free') }
-
-        it { is_expected.to eq(false) }
-      end
-    end
-
-    context 'when onboarding feature is not available' do
       it { is_expected.to eq(false) }
     end
   end
