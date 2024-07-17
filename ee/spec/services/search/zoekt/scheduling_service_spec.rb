@@ -524,4 +524,24 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       expect(top_group.reload.zoekt_enabled_namespace).not_to be_nil
     end
   end
+
+  describe '#update_replica_states' do
+    let(:task) { :update_replica_states }
+
+    it 'calls ReplicaStateService.execute' do
+      expect(::Search::Zoekt::ReplicaStateService).to receive(:execute)
+      execute_task
+    end
+
+    context 'when zoekt replica state updates FF is disabled' do
+      before do
+        stub_feature_flags(zoekt_replica_state_updates: false)
+      end
+
+      it 'returns false and does not do anything' do
+        expect(::Search::Zoekt::ReplicaStateService).not_to receive(:execute)
+        expect(execute_task).to eq(false)
+      end
+    end
+  end
 end
