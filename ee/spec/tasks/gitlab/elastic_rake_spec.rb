@@ -116,28 +116,10 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
     end
 
     context 'with elasticsearch_indexing is disabled' do
-      context 'when elastic_index_use_trigger_indexing is enabled' do
-        before do
-          stub_feature_flags(elastic_index_use_trigger_indexing: true)
-        end
-
-        it 'does not enable `elasticsearch_indexing`' do
-          expect { run_rake_task 'gitlab:elastic:index' }.not_to change {
-            Gitlab::CurrentSettings.elasticsearch_indexing?
-          }
-        end
-      end
-
-      context 'when elastic_index_use_trigger_indexing is disabled' do
-        before do
-          stub_feature_flags(elastic_index_use_trigger_indexing: false)
-        end
-
-        it 'enables `elasticsearch_indexing`' do
-          expect { run_rake_task 'gitlab:elastic:index' }.to change {
-            Gitlab::CurrentSettings.elasticsearch_indexing?
-          }.from(false).to(true)
-        end
+      it 'does not enable `elasticsearch_indexing`' do
+        expect { run_rake_task 'gitlab:elastic:index' }.not_to change {
+          Gitlab::CurrentSettings.elasticsearch_indexing?
+        }
       end
     end
 
@@ -167,37 +149,6 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
         expect(logger).to receive(:warn).with(/WARNING: `elasticsearch_pause_indexing` is enabled/)
 
         task
-      end
-
-      context 'when elastic_index_use_trigger_indexing is disabled' do
-        before do
-          stub_feature_flags(elastic_index_use_trigger_indexing: false)
-        end
-
-        it 'calls all indexing tasks in order' do
-          expect(Rake::Task['gitlab:elastic:recreate_index']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:clear_index_status']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_group_entities']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_projects']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_snippets']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_users']).to receive(:invoke).ordered
-
-          task
-        end
-
-        it 'outputs warning if indexing is paused and still runs all indexing tasks in order' do
-          stub_ee_application_setting(elasticsearch_pause_indexing: true)
-
-          expect(Rake::Task['gitlab:elastic:recreate_index']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:clear_index_status']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_group_entities']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_projects']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_snippets']).to receive(:invoke).ordered
-          expect(Rake::Task['gitlab:elastic:index_users']).to receive(:invoke).ordered
-          expect(logger).to receive(:warn).with(/WARNING: `elasticsearch_pause_indexing` is enabled/)
-
-          task
-        end
       end
     end
   end

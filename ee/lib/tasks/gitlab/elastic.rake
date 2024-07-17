@@ -6,50 +6,23 @@ namespace :gitlab do
     task index: :environment do
       raise 'This task cannot be run on GitLab.com' if ::Gitlab::Saas.feature_available?(:advanced_search)
 
-      if Feature.enabled?(:elastic_index_use_trigger_indexing) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- this ff cannot have an actor
-        if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
-          stdout_logger.warn('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
-            'This setting will be disabled to complete indexing'.color(:yellow))
-        end
-
-        unless Gitlab::CurrentSettings.elasticsearch_indexing?
-          stdout_logger.warn('Setting `elasticsearch_indexing` is disabled. ' \
-            'This setting will been enabled to complete indexing.'.color(:yellow))
-        end
-
-        stdout_logger.info('Scheduling indexing with TriggerIndexingWorker')
-
-        # skip projects, all namespace and project data is handled by `namespaces` task
-        Search::Elastic::TriggerIndexingWorker.perform_in(1.minute,
-          Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
-
-        stdout_logger.info("Scheduling indexing with TriggerIndexingWorker... #{'done'.color(:green)}")
-      else
-        # enable `elasticsearch_indexing` if it isn't
-        unless Gitlab::CurrentSettings.elasticsearch_indexing?
-          ApplicationSettings::UpdateService.new(
-            Gitlab::CurrentSettings.current_application_settings,
-            nil,
-            { elasticsearch_indexing: true }
-          ).execute
-
-          stdout_logger.info('Setting `elasticsearch_indexing` has been enabled.')
-        end
-
-        if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
-          stdout_logger.warn('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
-            'Disable this setting by running `rake gitlab:elastic:resume_indexing` ' \
-            'to complete indexing.'.color(:yellow))
-        end
-
-        Rake::Task['gitlab:elastic:recreate_index'].invoke
-        Rake::Task['gitlab:elastic:clear_index_status'].invoke
-
-        Rake::Task['gitlab:elastic:index_group_entities'].invoke
-        Rake::Task['gitlab:elastic:index_projects'].invoke
-        Rake::Task['gitlab:elastic:index_snippets'].invoke
-        Rake::Task['gitlab:elastic:index_users'].invoke
+      if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
+        stdout_logger.warn('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
+          'This setting will be disabled to complete indexing'.color(:yellow))
       end
+
+      unless Gitlab::CurrentSettings.elasticsearch_indexing?
+        stdout_logger.warn('Setting `elasticsearch_indexing` is disabled. ' \
+          'This setting will been enabled to complete indexing.'.color(:yellow))
+      end
+
+      stdout_logger.info('Scheduling indexing with TriggerIndexingWorker')
+
+      # skip projects, all namespace and project data is handled by `namespaces` task
+      Search::Elastic::TriggerIndexingWorker.perform_in(1.minute,
+        Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
+
+      stdout_logger.info("Scheduling indexing with TriggerIndexingWorker... #{'done'.color(:green)}")
     end
 
     desc 'GitLab | Elasticsearch | Index Group entities'
