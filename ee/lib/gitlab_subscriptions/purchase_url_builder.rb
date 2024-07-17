@@ -2,6 +2,8 @@
 
 module GitlabSubscriptions
   class PurchaseUrlBuilder
+    include ::Gitlab::Utils::StrongMemoize
+
     def initialize(current_user:, plan_id:, namespace:)
       @current_user = current_user
       @plan_id = plan_id
@@ -18,6 +20,7 @@ module GitlabSubscriptions
 
       migrate_new_customers
     end
+    strong_memoize_attr :customers_dot_flow?
 
     def build(params = {})
       if customers_dot_flow?
