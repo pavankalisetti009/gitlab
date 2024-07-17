@@ -14,11 +14,7 @@ module EE
         has_many :vulnerability_state_transitions, foreign_key: :state_changed_at_pipeline_id, class_name: 'Vulnerabilities::StateTransition', inverse_of: :pipeline
 
         # Subscriptions to this pipeline
-        has_many :downstream_bridges,
-          ->(pipeline) { in_partition(pipeline) },
-          class_name: '::Ci::Bridge',
-          foreign_key: :upstream_pipeline_id,
-          partition_foreign_key: :partition_id
+        has_many :downstream_bridges, class_name: '::Ci::Bridge', foreign_key: :upstream_pipeline_id
         has_many :security_scans, class_name: 'Security::Scan', inverse_of: :pipeline
         has_many :security_findings, class_name: 'Security::Finding', through: :security_scans, source: :findings
 
