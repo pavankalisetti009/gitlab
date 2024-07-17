@@ -9,6 +9,7 @@ RSpec.describe GitlabSchema.types['Subscription'], feature_category: :shared do
       issuable_iteration_updated
       issuable_health_status_updated
       issuable_epic_updated
+      workflow_events_updated
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)

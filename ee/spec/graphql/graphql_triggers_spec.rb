@@ -136,4 +136,21 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
       end
     end
   end
+
+  describe '.workflow_events_updated' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:user) { create(:user, developer_of: project) }
+    let(:workflow) { create(:duo_workflows_workflow, project: project, user: user) }
+    let(:checkpoint) { create(:duo_workflows_checkpoint, project: project, workflow: workflow) }
+
+    it 'triggers the workflow_events_updated subscription' do
+      expect(GitlabSchema.subscriptions).to receive(:trigger).with(
+        :workflow_events_updated,
+        { workflow_id: checkpoint.workflow.to_gid },
+        checkpoint
+      ).and_call_original
+
+      ::GraphqlTriggers.workflow_events_updated(checkpoint)
+    end
+  end
 end

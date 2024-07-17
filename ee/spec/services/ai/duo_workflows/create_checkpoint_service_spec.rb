@@ -11,6 +11,10 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCheckpointService, feature_category: :d
     let(:metadata) { { another_key: 'another value' } }
     let(:params) { { thread_ts: thread_ts, parent_ts: parent_ts, checkpoint: { key: 'value' }, metadata: metadata } }
 
+    before do
+      allow(GraphqlTriggers).to receive(:workflow_events_updated)
+    end
+
     subject(:execute) do
       described_class
         .new(project: project, workflow: workflow, params: params)
@@ -26,6 +30,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCheckpointService, feature_category: :d
       expect(execute[:checkpoint].parent_ts).to eq(parent_ts)
       expect(execute[:checkpoint].checkpoint).to eq({ 'key' => 'value' })
       expect(execute[:checkpoint].metadata).to eq({ 'another_key' => 'another value' })
+      expect(GraphqlTriggers).to have_received(:workflow_events_updated).with(execute[:checkpoint])
     end
 
     context 'when there is invalid params' do
@@ -34,6 +39,7 @@ RSpec.describe ::Ai::DuoWorkflows::CreateCheckpointService, feature_category: :d
       it 'returns an error' do
         expect(execute[:status]).to eq(:error)
         expect(execute[:message].to_s).to include("can't be blank")
+        expect(GraphqlTriggers).not_to have_received(:workflow_events_updated).with(execute[:checkpoint])
       end
     end
   end
