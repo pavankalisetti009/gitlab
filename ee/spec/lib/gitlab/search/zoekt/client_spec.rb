@@ -286,7 +286,8 @@ RSpec.describe ::Gitlab::Search::Zoekt::Client, :zoekt, :clean_gitlab_redis_cach
 
     subject(:index) { client.index(project_1, node_id) }
 
-    it 'indexes the project to make it searchable' do
+    it 'indexes the project to make it searchable',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444861' do
       search_results = client.search('use.*egex', num: 10, project_ids: [project_1.id], node_id: node_id,
         search_mode: :regex)
       expect(search_results.result[:Files].to_a.size).to eq(0)
