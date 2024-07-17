@@ -30,7 +30,7 @@ module EE
         has_epics_feature: group.licensed_feature_available?(:epics).to_s,
         has_issuable_health_status_feature: group.licensed_feature_available?(:issuable_health_status).to_s,
         has_issue_weights_feature: group.licensed_feature_available?(:issue_weights).to_s,
-        has_epics_color_feature: group.licensed_feature_available?(:epic_colors).to_s
+        has_scoped_labels_feature: group.licensed_feature_available?(:scoped_labels).to_s
       )
     end
   end
