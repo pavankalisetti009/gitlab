@@ -1,7 +1,7 @@
 ---
 key_path: redis_hll_counters.workspaces.users_updating_workspaces_monthly
 description: Count of users updating workspaces
-product_group: ide
+product_group: remote_development
 value_type: number
 status: active
 milestone: "16.0"

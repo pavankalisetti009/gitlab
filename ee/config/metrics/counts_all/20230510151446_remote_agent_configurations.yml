@@ -1,7 +1,7 @@
 ---
 key_path: counts.remote_agent_configurations
 description: Count of remote agent configurations
-product_group: ide
+product_group: remote_development
 value_type: number
 status: active
 milestone: "16.0"
