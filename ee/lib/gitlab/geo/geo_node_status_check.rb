@@ -51,7 +51,7 @@ module Gitlab
 
       def print_counts_row(description:, failed:, succeeded:, total:, percentage:)
         print "#{description}: ".rjust(GEO_STATUS_COLUMN_WIDTH)
-        print "failed #{failed}".color(:red), ' / ' if failed.present? && failed > 0
+        print Rainbow("failed #{failed}").red, ' / ' if failed.present? && failed > 0
         print "succeeded #{succeeded || 0} / total #{total || 0} "
         puts  using_percentage(percentage)
       end
@@ -85,7 +85,7 @@ module Gitlab
         puts
         puts "Name: #{GeoNode.current_node_name}"
         puts "URL: #{GeoNode.current_node_url}"
-        puts '-----------------------------------------------------'.color(:yellow)
+        puts Rainbow('-----------------------------------------------------').yellow
       end
 
       def print_gitlab_version
@@ -99,7 +99,7 @@ module Gitlab
           if Gitlab::Geo.primary?
             'Primary'
           else
-            Gitlab::Geo.secondary? ? 'Secondary' : 'unknown'.color(:yellow)
+            Gitlab::Geo.secondary? ? 'Secondary' : Rainbow('unknown').yellow
           end
 
         puts role
@@ -111,12 +111,12 @@ module Gitlab
         if current_node_status.healthy?
           puts current_node_status.health_status
         else
-          puts current_node_status.health_status.color(:red)
+          puts Rainbow(current_node_status.health_status).red
         end
 
         unless current_node_status.healthy?
           print 'Health Status Summary: '.rjust(GEO_STATUS_COLUMN_WIDTH)
-          puts current_node_status.health.color(:red)
+          puts Rainbow(current_node_status.health).red
         end
       end
 
