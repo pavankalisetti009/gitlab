@@ -18,6 +18,16 @@ module Search
 
       validate :project_can_not_assigned_to_same_replica_unless_index_is_reallocating
 
+      scope :with_all_ready_indices, -> do
+        raw_sql = 'sum(case when zoekt_indices.state != :state then 0 else 1 end) = count(*)'
+        joins(:indices).group(:id).having(raw_sql, state: Search::Zoekt::Index.states[:ready])
+      end
+
+      scope :with_non_ready_indices, -> do
+        non_ready_index_states = Search::Zoekt::Index.states.values - [Search::Zoekt::Index.states[:ready]]
+        where(id: Search::Zoekt::Index.select(:zoekt_replica_id).where(state: non_ready_index_states).distinct)
+      end
+
       scope :for_namespace, ->(id) { where(namespace_id: id) }
 
       def self.for_enabled_namespace!(zoekt_enabled_namespace)

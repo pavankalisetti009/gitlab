@@ -13,6 +13,7 @@ module Search
         mark_indices_as_ready
         initial_indexing
         auto_index_self_managed
+        update_replica_states
       ].freeze
 
       BUFFER_FACTOR = 3
@@ -67,43 +68,45 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_reallocation_task)
 
-        nodes = ::Search::Zoekt::Node.online.find_each.to_a
-        over_watermark_nodes = nodes.select { |n| (n.used_bytes / n.total_bytes.to_f) >= WATERMARK_LIMIT_HIGH }
+        execute_every 10.minutes, cache_key: :reallocation do
+          nodes = ::Search::Zoekt::Node.online.find_each.to_a
+          over_watermark_nodes = nodes.select { |n| (n.used_bytes / n.total_bytes.to_f) >= WATERMARK_LIMIT_HIGH }
 
-        return if over_watermark_nodes.empty?
+          break if over_watermark_nodes.empty?
 
-        info(:reallocation, message: 'Detected nodes over watermark',
-          watermark_limit_high: WATERMARK_LIMIT_HIGH,
-          count: over_watermark_nodes.count)
+          info(:reallocation, message: 'Detected nodes over watermark',
+            watermark_limit_high: WATERMARK_LIMIT_HIGH,
+            count: over_watermark_nodes.count)
 
-        over_watermark_nodes.each do |node|
-          sizes = {}
+          over_watermark_nodes.each do |node|
+            sizes = {}
 
-          node.indices.each_batch do |batch|
-            scope = Namespace.includes(:root_storage_statistics) # rubocop:disable CodeReuse/ActiveRecord -- this is a temporary incident mitigation task
-                              .by_parent(nil)
-                              .id_in(batch.select(:namespace_id))
+            node.indices.each_batch do |batch|
+              scope = Namespace.includes(:root_storage_statistics) # rubocop:disable CodeReuse/ActiveRecord -- this is a temporary incident mitigation task
+                                .by_parent(nil)
+                                .id_in(batch.select(:namespace_id))
 
-            scope.each do |group|
-              sizes[group.id] = group.root_storage_statistics&.repository_size || 0
+              scope.each do |group|
+                sizes[group.id] = group.root_storage_statistics&.repository_size || 0
+              end
             end
+
+            sorted = sizes.to_a.sort_by { |_k, v| v }
+
+            namespaces_to_move = []
+            total_repository_size = 0
+            node_original_used_bytes = node.used_bytes
+            sorted.each do |namespace_id, repository_size|
+              node.used_bytes -= repository_size
+
+              break if (node.used_bytes / node.total_bytes.to_f) < WATERMARK_LIMIT_LOW
+
+              namespaces_to_move << namespace_id
+              total_repository_size += repository_size
+            end
+
+            unassign_namespaces_from_node(node, namespaces_to_move, node_original_used_bytes, total_repository_size)
           end
-
-          sorted = sizes.to_a.sort_by { |_k, v| v }
-
-          namespaces_to_move = []
-          total_repository_size = 0
-          node_original_used_bytes = node.used_bytes
-          sorted.each do |namespace_id, repository_size|
-            node.used_bytes -= repository_size
-
-            break if (node.used_bytes / node.total_bytes.to_f) < WATERMARK_LIMIT_LOW
-
-            namespaces_to_move << namespace_id
-            total_repository_size += repository_size
-          end
-
-          unassign_namespaces_from_node(node, namespaces_to_move, node_original_used_bytes, total_repository_size)
         end
       end
 
@@ -188,7 +191,9 @@ module Search
       def remove_expired_subscriptions
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
 
-        Search::Zoekt::EnabledNamespace.destroy_namespaces_with_expired_subscriptions!
+        execute_every 10.minutes, cache_key: :remove_expired_subscriptions do
+          Search::Zoekt::EnabledNamespace.destroy_namespaces_with_expired_subscriptions!
+        end
       end
 
       def node_assignment
@@ -249,51 +254,56 @@ module Search
       end
 
       def mark_indices_as_ready
-        initializing_indices = Search::Zoekt::Index.initializing
-        if initializing_indices.empty?
-          logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready', count: 0))
-          return
-        end
+        execute_every 10.minutes, cache_key: :mark_indices_as_ready do
+          initializing_indices = Search::Zoekt::Index.initializing
+          if initializing_indices.empty?
+            logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready', count: 0))
+            break
+          end
 
-        count = 0
-        initializing_indices.each_batch do |batch|
-          records = batch.with_all_repositories_ready
-          next if records.empty?
+          count = 0
+          initializing_indices.each_batch do |batch|
+            records = batch.with_all_repositories_ready
+            next if records.empty?
 
-          count += records.update_all(state: :ready)
+            count += records.update_all(state: :ready)
+          end
+          logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready',
+            count: count))
         end
-        logger.info(build_structured_payload(task: :mark_indices_as_ready, message: 'Set indices ready', count: count))
       end
 
       def initial_indexing
         return false if Feature.disabled?(:zoekt_initial_indexing_task)
 
-        Index.in_progress.preload_zoekt_enabled_namespace_and_namespace.preload_node.find_each do |index|
-          namespace = index.zoekt_enabled_namespace&.namespace
-          next unless namespace
+        execute_every 10.minutes, cache_key: :initial_indexing do
+          Index.in_progress.preload_zoekt_enabled_namespace_and_namespace.preload_node.find_each do |index|
+            namespace = index.zoekt_enabled_namespace&.namespace
+            next unless namespace
 
-          count = namespace.all_project_ids.count
-          repo_count = index.zoekt_repositories.count
-          if repo_count >= count
-            index.initializing!
-            node = index.node
-            log_data = build_structured_payload(
-              meta: {
-                'zoekt.node_name' => node.metadata['name'], 'zoekt.node_id' => node.id, 'zoekt.index_id' => index.id
-              },
-              namespace_id: namespace.id, message: 'index moved to initializing',
-              repo_count: repo_count, project_count: count, task: :initial_indexing
-            )
-            logger.info(log_data)
+            count = namespace.all_project_ids.count
+            repo_count = index.zoekt_repositories.count
+            if repo_count >= count
+              index.initializing!
+              node = index.node
+              log_data = build_structured_payload(
+                meta: {
+                  'zoekt.node_name' => node.metadata['name'], 'zoekt.node_id' => node.id, 'zoekt.index_id' => index.id
+                },
+                namespace_id: namespace.id, message: 'index moved to initializing',
+                repo_count: repo_count, project_count: count, task: :initial_indexing
+              )
+              logger.info(log_data)
+            end
           end
-        end
 
-        Index.pending.each_batch do |batch, i|
-          NamespaceInitialIndexingWorker.bulk_perform_in_with_contexts(
-            i * 5.minutes, batch.preload_zoekt_enabled_namespace_and_namespace,
-            arguments_proc: ->(zoekt_index) { zoekt_index.id },
-            context_proc: ->(zoekt_index) { { namespace: zoekt_index.zoekt_enabled_namespace&.namespace } }
-          )
+          Index.pending.each_batch do |batch, i|
+            NamespaceInitialIndexingWorker.bulk_perform_in_with_contexts(
+              i * 5.minutes, batch.preload_zoekt_enabled_namespace_and_namespace,
+              arguments_proc: ->(zoekt_index) { zoekt_index.id },
+              context_proc: ->(zoekt_index) { { namespace: zoekt_index.zoekt_enabled_namespace&.namespace } }
+            )
+          end
         end
       end
 
@@ -302,9 +312,19 @@ module Search
         return if Gitlab::Saas.feature_available?(:exact_code_search)
         return unless Gitlab::CurrentSettings.zoekt_auto_index_root_namespace?
 
-        Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
-          data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
-          Search::Zoekt::EnabledNamespace.insert_all(data)
+        execute_every 10.minutes, cache_key: :auto_index_self_managed do
+          Namespace.group_namespaces.root_namespaces_without_zoekt_enabled_namespace.each_batch do |batch|
+            data = batch.pluck_primary_key.map { |id| { root_namespace_id: id } }
+            Search::Zoekt::EnabledNamespace.insert_all(data)
+          end
+        end
+      end
+
+      def update_replica_states
+        return false if Feature.disabled?(:zoekt_replica_state_updates)
+
+        execute_every 2.minutes, cache_key: :update_replica_states do
+          ReplicaStateService.execute
         end
       end
     end

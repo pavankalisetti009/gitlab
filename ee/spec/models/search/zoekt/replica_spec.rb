@@ -128,6 +128,42 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
   end
 
   describe 'scopes' do
+    let_it_be_with_reload(:replica_1_idx_1) do
+      create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_replica.zoekt_enabled_namespace)
+    end
+
+    let_it_be_with_reload(:replica_1_idx_2) do
+      create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_replica.zoekt_enabled_namespace)
+    end
+
+    describe '.with_all_ready_indices' do
+      subject(:scope) { described_class.with_all_ready_indices }
+
+      it 'returns replicas where all their indices are marked as ready' do
+        replica_1_idx_1.ready!
+        replica_1_idx_2.pending!
+
+        expect(scope).to be_empty
+
+        replica_1_idx_2.ready!
+        expect(scope).to match_array(zoekt_replica)
+      end
+    end
+
+    describe '.with_non_ready_indices' do
+      subject(:scope) { described_class.with_non_ready_indices }
+
+      it 'returns replicas that have at least one index that is not ready' do
+        replica_1_idx_1.ready!
+        replica_1_idx_2.ready!
+
+        expect(scope).to be_empty
+
+        replica_1_idx_2.pending!
+        expect(scope).to match_array(zoekt_replica)
+      end
+    end
+
     describe '.for_namespace' do
       before do
         create(:zoekt_replica)
