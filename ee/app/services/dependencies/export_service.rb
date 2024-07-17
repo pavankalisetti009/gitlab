@@ -25,7 +25,7 @@ module Dependencies
       return unless dependency_list_export.created?
 
       create_export
-      schedule_export_deletion
+      dependency_list_export.schedule_export_deletion
     end
 
     private
@@ -109,10 +109,6 @@ module Dependencies
         '.',
         'json'
       ].join
-    end
-
-    def schedule_export_deletion
-      Dependencies::DestroyExportWorker.perform_in(1.hour, dependency_list_export.id)
     end
   end
 end

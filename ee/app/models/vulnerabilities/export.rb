@@ -6,6 +6,7 @@ module Vulnerabilities
     include FileStoreMounter
 
     EXPORTER_CLASS = VulnerabilityExports::ExportService
+    MAX_EXPORT_DURATION = 24.hours
 
     self.table_name = "vulnerability_exports"
 
@@ -86,6 +87,14 @@ module Vulnerabilities
 
     def export_service
       EXPORTER_CLASS.new(self)
+    end
+
+    def schedule_export_deletion
+      VulnerabilityExports::ExportDeletionWorker.perform_in(1.hour, id)
+    end
+
+    def timed_out?
+      created_at < MAX_EXPORT_DURATION.ago
     end
 
     private

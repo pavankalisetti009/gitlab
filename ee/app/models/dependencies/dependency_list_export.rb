@@ -3,6 +3,8 @@ module Dependencies
   class DependencyListExport < ApplicationRecord
     include FileStoreMounter
 
+    MAX_EXPORT_DURATION = 24.hours
+
     mount_file_store_uploader AttachmentUploader
 
     belongs_to :organization, class_name: 'Organizations::Organization'
@@ -72,6 +74,14 @@ module Dependencies
 
     def export_service
       Dependencies::Export::SegmentedExportService.new(self) # rubocop:disable CodeReuse/ServiceClass -- This interface is expected by segmented export framework
+    end
+
+    def schedule_export_deletion
+      Dependencies::DestroyExportWorker.perform_in(1.hour, id)
+    end
+
+    def timed_out?
+      created_at < MAX_EXPORT_DURATION.ago
     end
 
     private

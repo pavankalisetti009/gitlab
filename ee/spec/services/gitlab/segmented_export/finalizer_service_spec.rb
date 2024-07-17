@@ -19,6 +19,19 @@ RSpec.describe Gitlab::SegmentedExport::FinalizerService, feature_category: :sha
         allow(vulnerability_export).to receive(:export_service).and_return(mock_exporter_service)
       end
 
+      context 'when the export has taken too long to execute' do
+        let(:vulnerability_export) do
+          create(:vulnerability_export, created_at: (Vulnerabilities::Export::MAX_EXPORT_DURATION + 1.hour).ago)
+        end
+
+        it 'fails the export and schedules its deletion' do
+          expect(vulnerability_export).to receive(:failed!)
+          expect(vulnerability_export).to receive(:schedule_for_deletion)
+
+          finalize_export
+        end
+      end
+
       context 'when there are still not finished export parts' do
         before do
           create(:vulnerability_export_part, vulnerability_export: vulnerability_export)
