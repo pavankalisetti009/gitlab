@@ -12,6 +12,7 @@ module Ai
       validates :status, presence: true
 
       scope :for_user_with_id!, ->(user_id, id) { find_by!(user_id: user_id, id: id) }
+      scope :for_user, ->(user_id) { where(user_id: user_id) }
 
       state_machine :status, initial: :created do
         event :start do
