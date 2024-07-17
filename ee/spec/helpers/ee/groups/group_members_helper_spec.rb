@@ -22,7 +22,8 @@ RSpec.describe Groups::GroupMembersHelper do
       banned: banned,
       include_relations: [:inherited, :direct],
       search: nil,
-      pending_members: []
+      pending_members: [],
+      placeholder_users: {}
     )
   end
 
@@ -151,7 +152,8 @@ RSpec.describe Groups::GroupMembersHelper do
           banned: banned,
           include_relations: [:inherited, :direct],
           search: nil,
-          pending_members: pending_members
+          pending_members: pending_members,
+          placeholder_users: {}
         )
       end
 
