@@ -21,6 +21,7 @@ export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_REPORT = helpPagePath(
   'development/integrations/secure',
   { anchor: 'report' },
 );
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const DOC_PATH_SECURITY_SCANNER_INTEGRATION_RETENTION_PERIOD = helpPagePath(
   'development/integrations/secure',
   { anchor: 'retention-period-for-vulnerabilities' },

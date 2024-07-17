@@ -109,6 +109,7 @@ export const seatsInUseLink = helpPagePath('subscriptions/gitlab_com/index', {
 export const seatsOwedLink = helpPagePath('subscriptions/gitlab_com/index', {
   anchor: 'seats-owed',
 });
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const seatsUsedLink = helpPagePath('subscriptions/gitlab_com/index', {
   anchor: 'view-your-gitlab-saas-subscription',
 });

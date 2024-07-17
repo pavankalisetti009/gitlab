@@ -60,6 +60,7 @@ export default {
       };
     },
     docsPath() {
+      // eslint-disable-next-line local-rules/require-valid-help-page-path
       return helpPagePath('user/application_security/dast/index', {
         anchor: 'revoke-a-site-validation',
       });

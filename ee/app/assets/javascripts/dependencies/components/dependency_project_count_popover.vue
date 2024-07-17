@@ -14,6 +14,7 @@ export default {
     targetId: { type: String, required: true },
     targetText: { type: String, required: true },
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index', {
     anchor: 'view-a-groups-dependencies',
   }),

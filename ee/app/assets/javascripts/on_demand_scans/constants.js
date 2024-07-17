@@ -2,6 +2,7 @@ import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { stripTimezoneFromISODate } from '~/lib/utils/datetime/date_format_utility';
 
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const HELP_PAGE_PATH = helpPagePath('user/application_security/dast/index', {
   anchor: 'on-demand-scans',
 });
@@ -10,6 +11,7 @@ export const HELP_PAGE_AUDITOR_ROLE_PATH = helpPagePath('administration/auditor_
   anchor: 'auditor-users',
 });
 
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const HELP_PAGE_RUNNER_TAGS_PATH = helpPagePath('ci/runners/configure_runners', {
   anchor: 'use-tags-to-control-which-jobs-a-runner-can-run',
 });
@@ -17,6 +19,7 @@ export const HELP_PAGE_RUNNER_TAGS_PATH = helpPagePath('ci/runners/configure_run
 export const LEARN_MORE_TEXT = s__(
   'OnDemandScans|%{learnMoreLinkStart}Learn more about on-demand scans%{learnMoreLinkEnd}.',
 );
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const DAST_CONFIGURATION_HELP_PATH = helpPagePath('user/application_security/dast/index', {
   anchor: 'on-demand-scans',
 });

@@ -104,6 +104,7 @@ export default {
       return this.$options.i18n.pipelineConfigurationInputUnknownFile;
     },
     compliancePipelineConfigurationHelpPath() {
+      // eslint-disable-next-line local-rules/require-valid-help-page-path
       return helpPagePath('user/group/compliance_frameworks.md', {
         anchor: 'example-configuration',
       });
@@ -150,6 +151,7 @@ export default {
     pipelineConfigurationInputDisabledPopoverContent: s__(
       'ComplianceFrameworks|Set compliance pipeline configuration for projects that use this framework. %{linkStart}How do I create the configuration?%{linkEnd}',
     ),
+    // eslint-disable-next-line local-rules/require-valid-help-page-path
     pipelineConfigurationInputDisabledPopoverLink: helpPagePath(
       'user/group/compliance_frameworks.html#compliance-pipelines',
     ),

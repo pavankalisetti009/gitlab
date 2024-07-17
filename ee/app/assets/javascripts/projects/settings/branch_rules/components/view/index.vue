@@ -10,7 +10,9 @@ import {
   STATUS_CHECKS_HELP_PATH,
 } from '~/projects/settings/branch_rules/components/view/constants';
 
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 const approvalsHelpDocLink = helpPagePath(APPROVALS_HELP_PATH);
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 const statusChecksHelpDocLink = helpPagePath(STATUS_CHECKS_HELP_PATH);
 
 // This is a false violation of @gitlab/no-runtime-template-compiler, since it

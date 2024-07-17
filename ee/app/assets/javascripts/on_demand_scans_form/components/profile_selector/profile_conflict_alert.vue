@@ -9,6 +9,7 @@ export default {
     GlSprintf,
     GlLink,
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   dastSiteValidationDocsPath: helpPagePath('user/application_security/dast/proxy-based', {
     anchor: 'site-profile-validation',
   }),

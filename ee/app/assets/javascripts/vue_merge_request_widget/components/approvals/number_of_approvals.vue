@@ -80,6 +80,7 @@ export default {
   rulesDocsPath: helpPagePath('user/project/merge_requests/approvals/rules.html', {
     anchor: 'eligible-approvers',
   }),
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   settingsDocsPath: helpPagePath('user/project/merge_requests/approvals/settings.html', {
     anchor: 'approval-settings',
   }),

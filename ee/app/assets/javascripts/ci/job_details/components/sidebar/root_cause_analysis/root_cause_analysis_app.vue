@@ -101,6 +101,7 @@ export default {
       }
     },
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   helpPagePath: helpPagePath('user/ai_features', { anchor: 'root-cause-analysis' }),
   i18n: {
     drawerTitle: __('Root cause analysis'),

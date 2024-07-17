@@ -33,6 +33,7 @@ export default {
       this.showEmptyState = true;
     },
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   ONBOARD_PROJECTS_URL: helpPagePath('/user/product_analytics/index', {
     anchor: 'instrument-a-gitlab-project',
   }),
