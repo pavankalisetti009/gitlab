@@ -63,7 +63,7 @@ RSpec.shared_context 'with base security policies graphql context' do
     { "editPath" => edid_path }
   end
 
-  def expected_policy_reponse(policy, inherited = false)
+  def expected_policy_response(policy, inherited = false)
     {
       "description" => policy[:description],
       "enabled" => policy[:enabled],
@@ -80,7 +80,7 @@ RSpec.shared_context 'with base security policies graphql context' do
   end
 
   def expected_approval_policy_response(policy, inherited = false)
-    expected_policy_reponse(policy, inherited).merge({
+    expected_policy_response(policy, inherited).merge({
       "userApprovers" => [
         {
           "id" => "gid://gitlab/User/#{user.id}",

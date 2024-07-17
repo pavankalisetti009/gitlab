@@ -17,7 +17,7 @@ RSpec.describe 'Query.project(fullPath).scanExecutionPolicies', feature_category
 
     it 'returns the policy' do
       expect(query_result).to match_array([
-        expected_policy_reponse(policy)
+        expected_policy_response(policy)
           .merge(expected_project_source_response)
           .merge(expected_edit_path_response(project))
       ])
@@ -28,7 +28,7 @@ RSpec.describe 'Query.project(fullPath).scanExecutionPolicies', feature_category
 
       it 'returns the policy' do
         expect(query_result).to match_array([
-          expected_policy_reponse(policy)
+          expected_policy_response(policy)
             .merge(expected_policy_scope_response)
             .merge(expected_project_source_response)
             .merge(expected_edit_path_response(project))
@@ -52,7 +52,7 @@ RSpec.describe 'Query.project(fullPath).scanExecutionPolicies', feature_category
     end
 
     it 'returns the policy' do
-      expect(query_result).to match_array([expected_policy_reponse(policy, true)])
+      expect(query_result).to match_array([expected_policy_response(policy, true)])
     end
   end
 end
