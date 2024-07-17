@@ -21,7 +21,9 @@ module Ci
         return bridge.drop!(:insufficient_upstream_permissions)
       end
 
-      bridge.update!(upstream_pipeline: upstream_pipeline)
+      bridge.update!(
+        upstream_pipeline: upstream_pipeline,
+        upstream_pipeline_partition_id: upstream_pipeline.partition_id)
       bridge.inherit_status_from_upstream!
     end
 
