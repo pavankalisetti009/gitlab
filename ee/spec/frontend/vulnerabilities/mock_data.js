@@ -210,3 +210,48 @@ export const TEST_ALL_BLOBS_INFO_GRAPHQL_SUCCESS_RESPONSE = {
     },
   },
 };
+
+export const mockVulnerability = {
+  id: 123,
+  description: 'vulnerability description',
+  descriptionHtml: 'vulnerability description <code>sample</code>',
+  details: {
+    name: 'code_flows',
+    type: 'code_flows',
+    items: [
+      [
+        {
+          nodeType: 'source',
+          fileDescription: '{',
+          rawTextBlobs: '{ a: 1, a: 2 }',
+          stepNumber: 1,
+          fileLocation: {
+            fileName: 'src/url/test.java',
+            lineStart: 1,
+          },
+        },
+        {
+          nodeType: 'propagation',
+          fileDescription: '{',
+          rawTextBlobs: '{ b: 1, b: 2 }',
+          stepNumber: 2,
+          fileLocation: { fileName: 'src/url/test.java', lineStart: 1 },
+        },
+        {
+          nodeType: 'sink',
+          fileDescription: '{',
+          rawTextBlobs: '{ c: 1, c: 2 }',
+          stepNumber: 3,
+          fileLocation: {
+            lineEnd: 2,
+            fileName: 'src/url/test.java',
+            lineStart: 1,
+          },
+        },
+      ],
+    ],
+  },
+  rawTextBlobs: {
+    'src/url/test.java': '{\n  "newArray": [],\n }',
+  },
+};

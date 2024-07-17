@@ -1,0 +1,272 @@
+<script>
+import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlPopover } from '@gitlab/ui';
+import { flattenDeep } from 'lodash';
+import { renderGFM } from '~/behaviors/markdown/render_gfm';
+import SafeHtml from '~/vue_shared/directives/safe_html';
+import { __, s__, sprintf } from '~/locale';
+
+export default {
+  name: 'CodeFlowStepsSection',
+  components: {
+    GlPopover,
+    GlButton,
+    GlButtonGroup,
+    GlCollapse,
+    GlBadge,
+  },
+  directives: {
+    SafeHtml,
+  },
+  props: {
+    description: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    descriptionHtml: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    details: {
+      type: Object,
+      required: true,
+    },
+    rawTextBlobs: {
+      type: Object,
+      required: false,
+      default: () => {},
+    },
+  },
+  data() {
+    return {
+      stepsExpanded: [],
+      selectedStepNumber: 1,
+      selectedVulnerability: this.details?.items[0][0],
+    };
+  },
+  computed: {
+    vulnerabilityFlowDetails() {
+      const groupedItems = this.details.items[0].reduce((acc, item, index) => {
+        const { fileName } = item.fileLocation;
+        if (!acc[fileName]) {
+          acc[fileName] = [];
+        }
+        const fileDescription = this.getDescription(
+          this.rawTextBlobs[item.fileLocation.fileName],
+          item.fileLocation.lineStart - 1,
+        );
+
+        acc[fileName].push({
+          ...item,
+          stepNumber: index + 1,
+          rawTextBlob: this.rawTextBlobs[item.fileLocation.fileName],
+          fileDescription,
+        });
+        return acc;
+      }, {});
+      const vulnerabilityFlow = [{ items: Object.values(groupedItems) }];
+      return vulnerabilityFlow[0].items;
+    },
+    numOfSteps() {
+      return this.details.items[0].length;
+    },
+    numOfFiles() {
+      return this.vulnerabilityFlowDetails.length;
+    },
+    stepsHeader() {
+      return sprintf(__('%{numOfSteps} steps across %{numOfFiles} files'), {
+        numOfSteps: this.numOfSteps,
+        numOfFiles: this.numOfFiles,
+      });
+    },
+  },
+
+  mounted() {
+    // Use renderGFM() to add syntax highlighting to the markdown.
+    renderGFM(this.$refs.markdownContent);
+    this.stepsExpanded = Array(this.vulnerabilityFlowDetails.length).fill(true);
+  },
+  methods: {
+    openFileSteps(index) {
+      const copyStepsExpanded = [...this.stepsExpanded];
+      copyStepsExpanded[index] = !this.stepsExpanded[index];
+      this.stepsExpanded = copyStepsExpanded;
+    },
+    getPathIcon(index) {
+      return this.stepsExpanded[index] ? 'chevron-down' : 'chevron-right';
+    },
+    getBoldFileName(filepath) {
+      const parts = filepath.split('/');
+      const filename = parts[parts.length - 1];
+      return filepath.replace(filename, `<b>${filename}</b>`);
+    },
+    selectStep(vulnerabilityItem) {
+      this.selectedStepNumber = vulnerabilityItem.stepNumber;
+      this.selectedVulnerability = vulnerabilityItem;
+    },
+    getNextIndex(isNext) {
+      return isNext ? this.selectedStepNumber + 1 : this.selectedStepNumber - 1;
+    },
+    isOutOfRange(isNext) {
+      const calculation = this.getNextIndex(isNext);
+      return calculation > this.numOfSteps || calculation <= 0;
+    },
+    changeSelectedVulnerability(isNextVulnerability) {
+      if (this.isOutOfRange(isNextVulnerability)) return;
+      this.selectedVulnerability = flattenDeep(this.vulnerabilityFlowDetails).find(
+        (item) => item.stepNumber === this.getNextIndex(isNextVulnerability),
+      );
+      this.selectedStepNumber = this.selectedVulnerability.stepNumber;
+    },
+    showNodeTypePopover(nodeType) {
+      return nodeType === 'source'
+        ? this.$options.i18n.sourceNodeTypePopover
+        : this.$options.i18n.sinkNodeTypePopover;
+    },
+    toggleAriaLabel(index) {
+      return this.stepsExpanded[index] ? __('Collapse') : __('Expand');
+    },
+    getDescription(rawTextBlob, startLine) {
+      return rawTextBlob?.split(/\r?\n/)[startLine];
+    },
+  },
+  i18n: {
+    codeFlowInfoButton: s__('Vulnerability|What is code flow?'),
+    codeFlowInfoAnswer: s__(
+      "Vulnerability|Code flow helps trace and flag risky data ('tainted data') as it moves through your software. Vulnerabilities are detected by pinpointing how untrusted inputs, like user data or network traffic, are utilized. This technique finds and fixes data handling flaws, securing software from injection and cross-site scripting attacks.",
+    ),
+    steps: s__('Vulnerability|Steps'),
+    sourceNodeTypePopover: s__(
+      "Vulnerability|A 'source' refers to untrusted inputs like user data or external data sources. These inputs can introduce security risks into the software system and are monitored to prevent vulnerabilities.",
+    ),
+    sinkNodeTypePopover: s__(
+      "Vulnerability|A 'sink' is where untrusted data is used in a potentially risky way, such as in SQL queries or HTML output. Sink points are monitored to prevent security vulnerabilities in the software.",
+    ),
+  },
+};
+</script>
+
+<template>
+  <div class="gl-flex gl-flex-col gl-w-4/10">
+    <div>
+      <div class="gl-flex gl-justify-between">
+        <span class="gl-text-lg item-title">{{ __('Description') }}</span>
+        <span
+          id="what-is-code-flow"
+          data-testid="what-is-code-flow"
+          class="gl-text-blue-400 gl-cursor-default"
+        >
+          {{ $options.i18n.codeFlowInfoButton }}
+        </span>
+        <gl-popover
+          triggers="hover focus"
+          placement="top"
+          target="what-is-code-flow"
+          :content="$options.i18n.codeFlowInfoAnswer"
+          data-testid="what-is-code-flow-popover"
+          :show="false"
+        />
+      </div>
+      <div class="gl-pt-3">
+        <span
+          v-if="descriptionHtml"
+          ref="markdownContent"
+          v-safe-html="descriptionHtml"
+          data-testid="description"
+        ></span>
+        <span v-else data-testid="description">
+          {{ description }}
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <div class="gl-flex gl-justify-between">
+        <div>
+          <div class="gl-text-lg item-title">{{ $options.i18n.steps }}</div>
+          <div class="gl-pt-2" data-testid="steps-header">{{ stepsHeader }}</div>
+        </div>
+        <gl-button-group>
+          <gl-button
+            icon="chevron-up"
+            :aria-label="__(`Previous step`)"
+            :disabled="isOutOfRange(false)"
+            @click="changeSelectedVulnerability(false)"
+          />
+          <gl-button
+            icon="chevron-down"
+            :aria-label="__(`Next step`)"
+            :disabled="isOutOfRange(true)"
+            @click="changeSelectedVulnerability(true)"
+          />
+        </gl-button-group>
+      </div>
+      <div class="gl-pt-3">
+        <div
+          v-for="(vulnerabilityFlow, index) in vulnerabilityFlowDetails"
+          :key="index"
+          class="-gl-ml-4"
+          :data-testid="`file-steps-${index}`"
+        >
+          <gl-button
+            :icon="getPathIcon(index)"
+            category="tertiary"
+            :aria-label="toggleAriaLabel(index)"
+            @click="openFileSteps(index)"
+          />
+          <span v-safe-html="getBoldFileName(vulnerabilityFlow[0].fileLocation.fileName)"></span>
+          <gl-collapse class="gl-mt-2 gl-pl-6" :visible="!!stepsExpanded[index]">
+            <div
+              v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
+              :key="i"
+              class="gl-flex align-content-center gl-justify-between gl-pt-2 gl-pb-2 gl-pr-2 gl-pl-2"
+              :class="{
+                'gl-bg-blue-50 gl-rounded-base':
+                  selectedStepNumber === vulnerabilityItem.stepNumber,
+              }"
+              :data-testid="`step-row-${i}`"
+              @click="selectStep(vulnerabilityItem)"
+            >
+              <gl-badge
+                class="gl-mr-3 gl-rounded-base gl-pr-4 gl-pl-4"
+                :class="{
+                  '!gl-bg-blue-500 !gl-text-white':
+                    selectedStepNumber === vulnerabilityItem.stepNumber,
+                }"
+                size="lg"
+                variant="muted"
+              >
+                {{ vulnerabilityItem.stepNumber }}
+              </gl-badge>
+              <span class="align-content-center gl-mr-auto">
+                <gl-badge
+                  v-if="['source', 'sink'].includes(vulnerabilityItem.nodeType)"
+                  :id="vulnerabilityItem.nodeType"
+                  :data-testid="vulnerabilityItem.nodeType"
+                  class="gl-mr-3 gl-pr-4 gl-pl-4"
+                  size="md"
+                  variant="muted"
+                >
+                  {{ vulnerabilityItem.nodeType }}
+                </gl-badge>
+                <gl-popover
+                  triggers="hover focus"
+                  placement="top"
+                  :target="vulnerabilityItem.nodeType"
+                  :content="showNodeTypePopover(vulnerabilityItem.nodeType)"
+                  :show="false"
+                />
+
+                {{ vulnerabilityItem.fileDescription }}
+              </span>
+              <span class="align-content-center gl-pr-3">{{
+                vulnerabilityItem.fileLocation.lineStart
+              }}</span>
+            </div>
+          </gl-collapse>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
