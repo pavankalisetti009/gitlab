@@ -307,6 +307,7 @@ export default {
     minimumSeatMessage: s__('Checkout|You must buy a minimum of %{seatLimit} seat.'),
   },
   stepId: STEP_SUBSCRIPTION_DETAILS,
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   qsrReconciliationLink: helpPagePath(QSR_RECONCILIATION_PATH),
 };
 </script>

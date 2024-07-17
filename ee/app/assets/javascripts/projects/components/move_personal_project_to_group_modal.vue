@@ -44,6 +44,7 @@ export default {
     modalTitle: s__('PersonalProject|Your project %{projectName} is not in a group'),
     buttonLabel: s__('PersonalProject|Learn to move a project to a group'),
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   moveProjectDocsPath: helpPagePath('tutorials/move_personal_project_to_a_group'),
   modalId: MOVE_PERSONAL_PROJECT_TO_GROUP_MODAL,
 };
@@ -60,9 +61,9 @@ export default {
     <gl-sprintf
       :message="
         s__(
-          `PersonalProject|Some GitLab features, 
-          including the ability to upgrade to a paid plan or start a free trial, 
-          are only available for groups and projects inside groups. %{projectName} is a personal project, 
+          `PersonalProject|Some GitLab features,
+          including the ability to upgrade to a paid plan or start a free trial,
+          are only available for groups and projects inside groups. %{projectName} is a personal project,
           so none of this is available. We recommend you move your project to a group to unlock GitLab's full potential.`,
         )
       "

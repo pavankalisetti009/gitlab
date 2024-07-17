@@ -36,12 +36,15 @@ import dastSiteProfileUpdateMutation from '../graphql/dast_site_profile_update.m
 import DastSiteAuthSection from './dast_site_auth_section.vue';
 
 export default {
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   DAST_API_DOC_PATH: helpPagePath(DAST_API_DOC_PATH_BASE, {
     anchor: 'enable-dast-api-scanning',
   }),
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   DAST_API_DOC_GRAPHQL_PATH: helpPagePath(DAST_API_DOC_PATH_BASE, {
     anchor: 'graphql-schema',
   }),
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   DAST_BROWSER_AVAILABLE_VARIABLES_PATH: helpPagePath(DAST_BROWSER_BASED_DOC_PATH_BASE, {
     anchor: 'available-cicd-variables',
   }),

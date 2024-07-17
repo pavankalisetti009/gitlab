@@ -20,6 +20,7 @@ export const SECONDARY_SITE_SETTINGS = helpPagePath('administration/geo_sites.ht
   anchor: 'secondary-site-settings',
 });
 
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const SELECTIVE_SYNC_MORE_INFO = helpPagePath(
   'administration/geo/replication/configuration.html',
   { anchor: 'selective-synchronization' },

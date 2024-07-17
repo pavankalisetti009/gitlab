@@ -10,6 +10,7 @@ export default {
     GlIcon,
   },
   inject: ['testRunsEmptyStateImagePath'],
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   testRunsHelpPath: helpPagePath('ci/pipelines/settings', {
     anchor: 'add-test-coverage-results-to-a-merge-request',
   }),

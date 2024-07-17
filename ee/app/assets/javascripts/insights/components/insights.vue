@@ -131,6 +131,7 @@ export default {
     insightsConfigurationText: INSIGHTS_CONFIGURATION_TEXT,
     insightsPageFilteredOut: INSIGHTS_PAGE_FILTERED_OUT,
   },
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   insightsDocumentationLink: helpPagePath('user/group/insights/index.md', {
     anchor: 'configure-your-insights',
   }),

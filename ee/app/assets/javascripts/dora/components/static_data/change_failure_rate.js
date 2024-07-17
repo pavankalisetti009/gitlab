@@ -28,6 +28,7 @@ export const chartDescriptionText = s__(
   'DORA4Metrics|Number of incidents divided by the number of deployments to a production environment in the given time period.',
 );
 
+// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics.html', {
   anchor: 'change-failure-rate-charts',
 });

@@ -27,6 +27,7 @@ export default {
   },
   links: {
     groupSettingsDocsPath: helpPagePath('user/project/merge_requests/approvals/index.md'),
+    // eslint-disable-next-line local-rules/require-valid-help-page-path
     separationOfDutiesDocsPath: helpPagePath('user/compliance/compliance_center/index', {
       anchor: 'separation-of-duties',
     }),

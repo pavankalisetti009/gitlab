@@ -6,6 +6,7 @@ import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { s__ } from '~/locale';
 
 export default {
+  // eslint-disable-next-line local-rules/require-valid-help-page-path
   EXPERIMENTAL_FEATURES_PATH: helpPagePath(
     'user/application_security/policies/scan-execution-policies',
     {
