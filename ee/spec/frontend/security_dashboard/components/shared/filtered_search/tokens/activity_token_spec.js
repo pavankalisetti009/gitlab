@@ -129,7 +129,7 @@ describe('ActivityToken', () => {
       expect(findAllBadges().wrappers.map((component) => component.props('icon'))).toEqual([
         'check-circle-dashed',
         'issues',
-        'git-merge',
+        'merge-request',
         'bulb',
       ]);
     });

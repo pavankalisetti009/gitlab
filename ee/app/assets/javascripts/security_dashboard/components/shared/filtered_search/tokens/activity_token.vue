@@ -41,7 +41,7 @@ const GROUPS = [
   {
     text: s__('SecurityReports|Merge Request'),
     options: [ITEMS.HAS_MERGE_REQUEST, ITEMS.DOES_NOT_HAVE_MERGE_REQUEST],
-    icon: 'git-merge',
+    icon: 'merge-request',
   },
   {
     text: s__('SecurityReports|Solution available'),
