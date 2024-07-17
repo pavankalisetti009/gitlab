@@ -38,10 +38,22 @@ RSpec.describe 'Delete a work item', feature_category: :team_planning do
         let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
         let(:work_item) { epic.work_item }
 
-        it 'does not deletes the epic work item' do
+        it 'deletes the epic work item' do
           expect do
             post_graphql_mutation(mutation, current_user: owner)
-          end.not_to change { WorkItem.count }
+          end.to change { WorkItem.count }.by(-1)
+        end
+
+        context 'when work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_epics: false)
+          end
+
+          it 'does not deletes the epic work item' do
+            expect do
+              post_graphql_mutation(mutation, current_user: owner)
+            end.not_to change { WorkItem.count }
+          end
         end
       end
     end

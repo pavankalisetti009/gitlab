@@ -361,7 +361,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
       end
 
       before do
-        stub_feature_flags(synced_epic_work_item_editable: true)
+        stub_feature_flags(work_item_epics: true)
         stub_licensed_features(epics: true, subepics: true, epic_colors: true)
       end
 
