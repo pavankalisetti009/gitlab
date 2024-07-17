@@ -488,6 +488,20 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
         end
       end
 
+      context 'when fixing selected code' do
+        where(:input_template, :tools) do
+          'Fix this code'     | []
+          '/fix'              | %w[FixCode]
+          '/fix input params' | %w[FixCode]
+        end
+
+        with_them do
+          let(:input) { format(input_template) }
+
+          it_behaves_like 'successful prompt processing'
+        end
+      end
+
       context 'when explaining selected code' do
         where(:input_template, :tools) do
           'Explain this code'     | []

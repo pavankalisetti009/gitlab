@@ -19,6 +19,7 @@ module Gitlab
       SLASH_COMMAND_TOOLS = [
         ::Gitlab::Llm::Chain::Tools::ExplainCode,
         ::Gitlab::Llm::Chain::Tools::WriteTests,
+        ::Gitlab::Llm::Chain::Tools::FixCode,
         ::Gitlab::Llm::Chain::Tools::RefactorCode
       ].freeze
 

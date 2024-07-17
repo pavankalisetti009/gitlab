@@ -312,6 +312,14 @@ client_subscription_id: 'someid' }
         end
       end
 
+      context 'when /fix is used' do
+        let(:command) { '/fix' }
+
+        it_behaves_like 'slash command execution' do
+          let(:expected_tool) { ::Gitlab::Llm::Chain::Tools::FixCode::Executor }
+        end
+      end
+
       context 'when slash command does not exist' do
         let(:command) { '/explain2' }
 
