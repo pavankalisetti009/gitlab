@@ -105,8 +105,6 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
         it 'returns the response hash' do
           expect(execute).to eq(success: false, data: { errors: 'failed to create subscription' })
         end
-
-        it_behaves_like 'does not record an onboarding progress action'
       end
 
       context 'when successfully creating a subscription' do
@@ -192,10 +190,6 @@ RSpec.describe GitlabSubscriptions::CreateService, feature_category: :subscripti
             execute
           end
         end
-      end
-
-      it_behaves_like 'records an onboarding progress action', :subscription_created do
-        let(:namespace) { group }
       end
     end
   end

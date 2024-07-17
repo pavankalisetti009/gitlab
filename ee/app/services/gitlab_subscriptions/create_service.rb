@@ -27,11 +27,7 @@ module GitlabSubscriptions
       # We can't use an email from GL.com because it may differ from the billing email.
       # Instead we use the email received from the CustomersDot as a billing email.
       customer_data = response.with_indifferent_access[:data][:customer]
-      response = create_subscription(customer_data)
-
-      ::Onboarding::ProgressService.new(@group).execute(action: :subscription_created) if response[:success]
-
-      response
+      create_subscription(customer_data)
     end
 
     private
