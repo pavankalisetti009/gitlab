@@ -24,6 +24,7 @@ describe('ReadyToMerge', () => {
   };
 
   const mr = {
+    iid: 1,
     isPipelineActive: false,
     headPipeline: { id: 'gid://gitlab/Pipeline/1', path: 'path/to/pipeline' },
     isPipelineFailed: false,
@@ -54,6 +55,7 @@ describe('ReadyToMerge', () => {
     transitionStateMachine: jest.fn(),
     state: 'readyToMerge',
     mergeTrainsSkipAllowed: false,
+    targetProjectId: 1,
   };
 
   const createComponent = (
