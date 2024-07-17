@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::TriggerIndexingWorker, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::TriggerIndexingWorker, :elastic, feature_category: :global_search do
   let(:task_executor_service) { instance_double(Search::RakeTaskExecutorService) }
   let(:job_args) { nil }
   let(:worker) { described_class.new }
