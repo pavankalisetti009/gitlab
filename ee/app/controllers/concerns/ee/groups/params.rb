@@ -22,7 +22,7 @@ module EE
 
       private
 
-      # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- The .tap block
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- The .tap block
       # requires many necessary checks for each parameter.
       def group_params_ee
         [
@@ -68,22 +68,9 @@ module EE
           params_ee.push(%i[duo_features_enabled lock_duo_features_enabled]) if licensed_ai_features_available?
           params_ee << :disable_personal_access_tokens
           params_ee << :enable_auto_assign_gitlab_duo_pro_seats if allow_update_enable_auto_assign_gitlab_duo_pro_seats?
-        end + security_policies_toggle_params
+        end
       end
-      # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
-
-      def security_policies_toggle_params
-        security_policy_custom_ci_toggle_params
-      end
-
-      def security_policy_custom_ci_toggle_params
-        return [] if ::Feature.disabled?(:compliance_pipeline_in_policies, current_group)
-
-        [
-          :toggle_security_policy_custom_ci,
-          :lock_toggle_security_policy_custom_ci
-        ]
-      end
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
 
       def allow_update_enable_auto_assign_gitlab_duo_pro_seats?
         ::Feature.enabled?(:auto_assign_gitlab_duo_pro_seats, current_group) &&

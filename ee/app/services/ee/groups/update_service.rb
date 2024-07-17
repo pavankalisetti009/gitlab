@@ -5,8 +5,7 @@ module EE
     module UpdateService
       extend ::Gitlab::Utils::Override
       EE_SETTINGS_PARAMS = [
-        :prevent_forking_outside_group,
-        :toggle_security_policy_custom_ci, :lock_toggle_security_policy_custom_ci
+        :prevent_forking_outside_group
       ].freeze
 
       override :execute
