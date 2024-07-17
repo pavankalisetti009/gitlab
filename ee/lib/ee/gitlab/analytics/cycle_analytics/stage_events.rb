@@ -11,201 +11,209 @@ module EE
             extend ::Gitlab::Utils::StrongMemoize
           end
 
+          def self.event(klass)
+            const_get("::Gitlab::Analytics::CycleAnalytics::StageEvents::#{klass.to_s.classify}", false)
+          end
+
+          def self.events(*all_events)
+            all_events.map { |e| event(e) }.freeze
+          end
+
           EE_ENUM_MAPPING = {
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed => 3,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard => 4,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone => 5,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited => 7,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded => 8,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved => 9,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt => 11,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration => 12,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed => 105,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited => 106,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded => 107,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved => 108,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt => 109,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt => 110,
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt => 111
+            event(:issue_closed) => 3,
+            event(:issue_first_added_to_board) => 4,
+            event(:issue_first_associated_with_milestone) => 5,
+            event(:issue_last_edited) => 7,
+            event(:issue_label_added) => 8,
+            event(:issue_label_removed) => 9,
+            event(:issue_first_assigned_at) => 11,
+            event(:issue_first_added_to_iteration) => 12,
+            event(:merge_request_closed) => 105,
+            event(:merge_request_last_edited) => 106,
+            event(:merge_request_label_added) => 107,
+            event(:merge_request_label_removed) => 108,
+            event(:merge_request_first_commit_at) => 109,
+            event(:merge_request_first_assigned_at) => 110,
+            event(:merge_request_reviewer_first_assigned_at) => 111
           }.freeze
 
           EE_EVENTS = EE_ENUM_MAPPING.keys.freeze
 
           EE_PAIRING_RULES = {
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueCreated => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToIteration => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAddedToBoard,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssociatedWithMilestone,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstMentionedInCommit,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::IssueFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildFinished,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestCreated => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildFinished,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildFinished => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstCommitAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstAssignedAt => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt
-            ],
-            ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestReviewerFirstAssignedAt => [
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestClosed,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastBuildStarted,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestFirstDeployedToProduction,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLastEdited,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestMerged,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelAdded,
-              ::Gitlab::Analytics::CycleAnalytics::StageEvents::MergeRequestLabelRemoved
-            ]
+            event(:issue_label_added) => events(
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_closed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_label_removed) => events(
+              :issue_closed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_created) => events(
+              :issue_closed,
+              :issue_first_added_to_board,
+              :issue_first_associated_with_milestone,
+              :issue_first_mentioned_in_commit,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_first_added_to_board) => events(
+              :issue_closed,
+              :issue_first_associated_with_milestone,
+              :issue_first_mentioned_in_commit,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_first_associated_with_milestone) => events(
+              :issue_closed,
+              :issue_first_added_to_board,
+              :issue_first_mentioned_in_commit,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_first_mentioned_in_commit) => events(
+              :issue_closed,
+              :issue_first_associated_with_milestone,
+              :issue_first_added_to_board,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_assigned_at,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_closed) => events(
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed
+            ),
+            event(:issue_first_assigned_at) => events(
+              :issue_closed,
+              :issue_first_added_to_board,
+              :issue_first_associated_with_milestone,
+              :issue_first_mentioned_in_commit,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_added_to_iteration
+            ),
+            event(:issue_first_added_to_iteration) => events(
+              :issue_closed,
+              :issue_first_added_to_board,
+              :issue_first_associated_with_milestone,
+              :issue_first_mentioned_in_commit,
+              :issue_last_edited,
+              :issue_label_added,
+              :issue_label_removed,
+              :issue_first_assigned_at
+            ),
+            event(:merge_request_first_commit_at) => events(
+              :merge_request_closed,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_build_started,
+              :merge_request_last_build_finished,
+              :merge_request_last_edited,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_merged,
+              :merge_request_first_assigned_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_created) => events(
+              :merge_request_closed,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_build_started,
+              :merge_request_last_build_finished,
+              :merge_request_last_edited,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_assigned_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_closed) => events(
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_commit_at
+            ),
+            event(:merge_request_first_deployed_to_production) => events(
+              :merge_request_last_edited,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_commit_at
+            ),
+            event(:merge_request_last_build_started) => events(
+              :merge_request_closed,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_merged,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_commit_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_last_build_finished) => events(
+              :merge_request_closed,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_merged,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_commit_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_merged) => events(
+              :merge_request_closed,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_commit_at
+            ),
+            event(:merge_request_label_added) => events(
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_merged,
+              :merge_request_first_assigned_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_label_removed) => events(
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_first_assigned_at,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_first_assigned_at) => events(
+              :merge_request_closed,
+              :merge_request_last_build_started,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_merged,
+              :merge_request_label_added,
+              :merge_request_label_removed,
+              :merge_request_reviewer_first_assigned_at
+            ),
+            event(:merge_request_reviewer_first_assigned_at) => events(
+              :merge_request_closed,
+              :merge_request_last_build_started,
+              :merge_request_first_deployed_to_production,
+              :merge_request_last_edited,
+              :merge_request_merged,
+              :merge_request_label_added,
+              :merge_request_label_removed
+            )
           }.freeze
 
           class_methods do
