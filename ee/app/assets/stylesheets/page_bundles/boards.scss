@@ -1,9 +1,11 @@
 @import '../../../../../app/assets/stylesheets/page_bundles/boards';
 
 .board-add-new-list {
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-dropdown-inner {
     max-height: 12rem !important;
 
+    // stylelint-disable-next-line gitlab/no-gl-class
     .gl-form-radio {
       min-height: 1em;
     }
@@ -108,6 +110,7 @@ $epic-icons-spacing: 40px;
 }
 
 .board-dropdown-toggle {
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-toggle-label {
     font-weight: $gl-font-weight-normal;
   }

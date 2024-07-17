@@ -108,6 +108,7 @@ $subscriptions-full-width-lg: 541px;
     }
   }
 
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-form-group,
   .combined {
     flex-grow: 1;
@@ -118,6 +119,7 @@ $subscriptions-full-width-lg: 541px;
       font-weight: $gl-font-weight-bold;
     }
 
+    // stylelint-disable-next-line gitlab/no-gl-class
     .gl-form-input,
     .gl-form-select {
       height: 32px;

@@ -26,6 +26,7 @@
 }
 
 .add-item-form-container {
+  // stylelint-disable-next-line gitlab/no-gl-class
   .select-project-dropdown .gl-dropdown-item-text-primary {
     display: flex;
   }

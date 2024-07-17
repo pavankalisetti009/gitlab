@@ -1,6 +1,8 @@
 @import 'page_bundles/mixins_and_variables_and_functions';
 
+// stylelint-disable-next-line gitlab/no-gl-class
 .gl-daterange-picker {
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-datepicker-input {
     width: 140px;
 
