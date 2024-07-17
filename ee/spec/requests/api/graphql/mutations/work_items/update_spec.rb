@@ -19,6 +19,8 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
   shared_examples 'work item is not updated' do
     it 'ignores the update' do
+      work_item.reload
+
       expect do
         post_graphql_mutation(mutation, current_user: current_user)
         work_item.reload
@@ -54,11 +56,31 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
     context 'when the work item has synced epic' do
       let_it_be(:work_item) { synced_epic.work_item }
 
-      it 'does not change confidentiality' do
+      it 'successfully updates work item' do
         expect do
           post_graphql_mutation(mutation, current_user: current_user)
           work_item.reload
-        end.to not_change(work_item, :confidential)
+        end.to change(work_item, :confidential).from(false).to(true)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['workItem']).to include(
+          'confidential' => true
+        )
+      end
+
+      context 'when work_item_epics feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_epics: false)
+        end
+
+        it 'does not change confidentiality' do
+          work_item.reload
+
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+            work_item.reload
+          end.to not_change(work_item, :confidential)
+        end
       end
     end
   end
@@ -280,8 +302,21 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         context 'when the work item has synced epic' do
           let_it_be(:work_item) { synced_epic.work_item }
 
-          it_behaves_like 'work item is not updated' do
-            let(:work_item_change) { -> { work_item.weight } }
+          it 'updates the weight widget' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+              work_item.reload
+            end.to change(work_item, :weight).to(new_weight)
+          end
+
+          context 'when work_item_epics feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics: false)
+            end
+
+            it_behaves_like 'work item is not updated' do
+              let(:work_item_change) { -> { work_item.weight } }
+            end
           end
         end
       end
@@ -442,26 +477,38 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       context 'when the user has permission to admin a work item' do
         let(:current_user) { reporter }
 
-        it 'updates the color widget' do
-          expect do
-            post_graphql_mutation(mutation, current_user: current_user)
-            work_item.reload
-          end.to change { work_item_color }.from(nil).to(::Gitlab::Color.of(new_color))
+        shared_examples 'updates the color widget' do
+          specify do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+              work_item.reload
+            end.to change { work_item_color }.from(nil).to(::Gitlab::Color.of(new_color))
 
-          expect(response).to have_gitlab_http_status(:success)
-          expect(mutation_response['workItem']['widgets']).to include(
-            {
-              'color' => new_color,
-              'type' => 'COLOR'
-            }
-          )
+            expect(response).to have_gitlab_http_status(:success)
+            expect(mutation_response['workItem']['widgets']).to include(
+              {
+                'color' => new_color,
+                'type' => 'COLOR'
+              }
+            )
+          end
         end
+
+        it_behaves_like 'updates the color widget'
 
         context 'when the work item has synced epic' do
           let_it_be(:work_item) { synced_epic.work_item }
 
-          it_behaves_like 'work item is not updated' do
-            let(:work_item_change) { -> { work_item_color } }
+          it_behaves_like 'updates the color widget'
+
+          context 'when work_item_epics feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics: false)
+            end
+
+            it_behaves_like 'work item is not updated' do
+              let(:work_item_change) { -> { work_item_color } }
+            end
           end
         end
       end
@@ -503,32 +550,32 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
         let(:fields) do
           <<~FIELDS
-          workItem {
-            widgets {
-              type
-              ... on WorkItemWidgetRolledupDates {
-                startDate
-                startDateFixed
-                startDateIsFixed
-                startDateSourcingWorkItem {
-                  id
-                }
-                startDateSourcingMilestone {
-                  id
-                }
-                dueDate
-                dueDateFixed
-                dueDateIsFixed
-                dueDateSourcingWorkItem {
-                  id
-                }
-                dueDateSourcingMilestone {
-                  id
+            workItem {
+              widgets {
+                type
+                ... on WorkItemWidgetRolledupDates {
+                  startDate
+                  startDateFixed
+                  startDateIsFixed
+                  startDateSourcingWorkItem {
+                    id
+                  }
+                  startDateSourcingMilestone {
+                    id
+                  }
+                  dueDate
+                  dueDateFixed
+                  dueDateIsFixed
+                  dueDateSourcingWorkItem {
+                    id
+                  }
+                  dueDateSourcingMilestone {
+                    id
+                  }
                 }
               }
             }
-          }
-          errors
+            errors
           FIELDS
         end
 
@@ -554,29 +601,42 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
             }
           end
 
-          it "updates the work item's start and due date" do
-            post_graphql_mutation(mutation, current_user: current_user)
+          shared_examples "updates the work item's start and due date" do
+            specify do
+              post_graphql_mutation(mutation, current_user: current_user)
 
-            expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_response['workItem']['widgets']).to include(
-              "type" => "ROLLEDUP_DATES",
-              "dueDate" => due_date,
-              "dueDateFixed" => due_date,
-              "dueDateIsFixed" => true,
-              "dueDateSourcingMilestone" => nil,
-              "dueDateSourcingWorkItem" => nil,
-              "startDate" => start_date,
-              "startDateFixed" => start_date,
-              "startDateIsFixed" => true,
-              "startDateSourcingMilestone" => nil,
-              "startDateSourcingWorkItem" => nil)
+              expect(response).to have_gitlab_http_status(:success)
+              expect(mutation_response['workItem']['widgets']).to include(
+                "type" => "ROLLEDUP_DATES",
+                "dueDate" => due_date,
+                "dueDateFixed" => due_date,
+                "dueDateIsFixed" => true,
+                "dueDateSourcingMilestone" => nil,
+                "dueDateSourcingWorkItem" => nil,
+                "startDate" => start_date,
+                "startDateFixed" => start_date,
+                "startDateIsFixed" => true,
+                "startDateSourcingMilestone" => nil,
+                "startDateSourcingWorkItem" => nil
+              )
+            end
           end
+
+          it_behaves_like "updates the work item's start and due date"
 
           context 'when the work item has synced epic' do
             let_it_be(:work_item) { synced_epic.work_item }
 
-            it_behaves_like 'work item is not updated' do
-              let(:work_item_change) { -> { work_item.dates_source&.start_date } }
+            it_behaves_like "updates the work item's start and due date"
+
+            context 'when work_item_epics feature flag is disabled' do
+              before do
+                stub_feature_flags(work_item_epics: false)
+              end
+
+              it_behaves_like 'work item is not updated' do
+                let(:work_item_change) { -> { work_item.dates_source&.start_date } }
+              end
             end
           end
         end
@@ -891,8 +951,29 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         context 'when the work item has synced epic' do
           let_it_be(:work_item) { synced_epic.work_item }
 
-          it_behaves_like 'work item is not updated' do
-            let(:work_item_change) { -> { work_item.health_status } }
+          it 'updates work item health status' do
+            expect do
+              post_graphql_mutation(mutation, current_user: current_user)
+              work_item.reload
+            end.to change { work_item.health_status }.from(nil).to('on_track')
+
+            expect(response).to have_gitlab_http_status(:success)
+            expect(mutation_response['workItem']['widgets']).to include(
+              {
+                'healthStatus' => 'onTrack',
+                'type' => 'HEALTH_STATUS'
+              }
+            )
+          end
+
+          context 'when work_item_epics feature flag is disabled' do
+            before do
+              stub_feature_flags(work_item_epics: false)
+            end
+
+            it_behaves_like 'work item is not updated' do
+              let(:work_item_change) { -> { work_item.health_status } }
+            end
           end
         end
       end

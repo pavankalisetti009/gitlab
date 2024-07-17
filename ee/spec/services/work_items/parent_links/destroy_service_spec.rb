@@ -84,11 +84,17 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        it_behaves_like 'does not remove relationship'
-
-        context 'when synced_epic_work_item_editable feature flag is enabled' do
+        context 'when work_item_epics feature flag is disabled' do
           before do
-            stub_feature_flags(synced_epic_work_item_editable: true)
+            stub_feature_flags(work_item_epics: false)
+          end
+
+          it_behaves_like 'does not remove relationship'
+        end
+
+        context 'when work_item_epics feature flag is enabled' do
+          before do
+            stub_feature_flags(work_item_epics: true)
           end
 
           it_behaves_like 'destroys parent link'
@@ -179,11 +185,17 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        it_behaves_like 'does not remove relationship'
-
-        context 'when synced_epic_work_item_editable feature flag is enabled' do
+        context 'when work_item_epics feature flag is disabled' do
           before do
-            stub_feature_flags(synced_epic_work_item_editable: true)
+            stub_feature_flags(work_item_epics: false)
+          end
+
+          it_behaves_like 'does not remove relationship'
+        end
+
+        context 'when work_item_epics feature flag is enabled' do
+          before do
+            stub_feature_flags(work_item_epics: true)
           end
 
           it_behaves_like 'destroys parent link'
@@ -205,11 +217,17 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when synced_work_item param is false' do
         let(:params) { { synced_work_item: false } }
 
-        it_behaves_like 'does not remove relationship'
-
-        context 'when synced_epic_work_item_editable feature flag is enabled' do
+        context 'when work_item_epics feature flag is disabled' do
           before do
-            stub_feature_flags(synced_epic_work_item_editable: true)
+            stub_feature_flags(work_item_epics: false)
+          end
+
+          it_behaves_like 'does not remove relationship'
+        end
+
+        context 'when work_item_epics feature flag is enabled' do
+          before do
+            stub_feature_flags(work_item_epics: true)
           end
 
           it_behaves_like 'destroys parent link'

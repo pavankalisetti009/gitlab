@@ -49,7 +49,7 @@ module EE
 
         scope = group_issue? ? subject_container : subject_container.group
 
-        ::Feature.enabled?(:synced_epic_work_item_editable, scope, type: :wip)
+        ::Feature.enabled?(:work_item_epics, scope, type: :beta)
       end
 
       rule { can_be_promoted_to_epic }.policy do

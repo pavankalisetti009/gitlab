@@ -70,7 +70,15 @@ RSpec.describe 'Adding a Note to an Epic', feature_category: :portfolio_manageme
         let_it_be(:synced_epic) { create(:epic, :with_synced_work_item, group: group) }
         let_it_be(:noteable) { synced_epic.work_item }
 
-        it_behaves_like 'a Note mutation that does not create a Note'
+        it_behaves_like 'a Note mutation that creates a Note'
+
+        context 'when work_item_epics feature flag is disabled' do
+          before do
+            stub_feature_flags(work_item_epics: false)
+          end
+
+          it_behaves_like 'a Note mutation that does not create a Note'
+        end
       end
     end
   end

@@ -98,7 +98,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
     before do
       stub_licensed_features(subepics: true)
-      stub_feature_flags(synced_epic_work_item_editable: true)
+      stub_feature_flags(work_item_epics: true)
     end
 
     context 'when adjacent_work_item parent link is missing' do

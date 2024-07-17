@@ -55,7 +55,7 @@ RSpec.describe Issues::ReopenService, feature_category: :team_planning do
       end
 
       before do
-        stub_feature_flags(synced_epic_work_item_editable: true)
+        stub_feature_flags(work_item_epics: true)
       end
 
       it_behaves_like 'syncs all data from an epic to a work item'

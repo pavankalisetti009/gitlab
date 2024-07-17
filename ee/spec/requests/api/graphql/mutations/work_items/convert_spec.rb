@@ -89,15 +89,29 @@ RSpec.describe "Converts a work item to a new type", feature_category: :team_pla
       let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
       let(:work_item) { epic.work_item }
 
-      it 'does not convert the work item type', :aggregate_failures do
-        expect do
-          post_graphql_mutation(mutation, current_user: current_user)
-        end.not_to change { work_item.reload.work_item_type }
+      it 'converts the work item type', :aggregate_failures do
+        post_graphql_mutation(mutation, current_user: current_user)
 
-        expect_graphql_errors_to_include(
-          "The resource that you are attempting to access does not exist or " \
-          "you don't have permission to perform this action"
+        expect(mutation_response['errors']).to contain_exactly(
+          'Work item type cannot be changed to objective when the work item is a legacy epic synced work item'
         )
+      end
+
+      context 'when work_item_epics feature flag is disabled' do
+        before do
+          stub_feature_flags(work_item_epics: false)
+        end
+
+        it 'does not convert the work item type', :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.not_to change { work_item.reload.work_item_type }
+
+          expect_graphql_errors_to_include(
+            "The resource that you are attempting to access does not exist or " \
+              "you don't have permission to perform this action"
+          )
+        end
       end
     end
   end

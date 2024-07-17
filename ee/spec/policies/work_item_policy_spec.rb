@@ -23,7 +23,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
     before do
       stub_licensed_features(issuable_resource_links: true)
-      stub_feature_flags(synced_epic_work_item_editable: false)
+      stub_feature_flags(work_item_epics: false)
     end
 
     it 'does allow' do
@@ -53,9 +53,9 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
       )
     end
 
-    context 'when synced_epic_work_item_editable is enabled' do
+    context 'when work_item_epics is enabled' do
       before do
-        stub_feature_flags(synced_epic_work_item_editable: true)
+        stub_feature_flags(work_item_epics: true)
       end
 
       it 'does allow' do
