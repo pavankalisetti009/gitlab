@@ -40,38 +40,13 @@ module Preloaders
 
       value_list = Arel::Nodes::ValuesList.new(sql_values_array)
 
-      permissions = all_permissions
       permission_select = permissions.map { |p| "bool_or(custom_permissions.#{p}) AS #{p}" }.join(', ')
-      permission_condition = permissions.map do |permission|
-        "member_roles.permissions @> ('{\"#{permission}\":true}')::jsonb"
-      end.join(' OR ')
-      permission_columns = permissions.map { |p| "(member_roles.permissions -> '#{p}')::BOOLEAN as #{p}" }.join(', ')
-      result_default = permissions.map { |p| "false AS #{p}" }.join(', ')
 
       sql = <<~SQL
       SELECT project_ids.project_id, #{permission_select}
         FROM (#{value_list.to_sql}) AS project_ids (project_id, namespace_ids),
         LATERAL (
-          (
-           #{Member.select(permission_columns)
-              .left_outer_joins(:member_role)
-              .where("members.source_type = 'Project' AND members.source_id = project_ids.project_id")
-              .with_user(user)
-              .where(permission_condition)
-              .to_sql}
-          ) UNION ALL
-          (
-            #{Member.select(permission_columns)
-              .left_outer_joins(:member_role)
-              .where("members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)")
-              .with_user(user)
-              .where(permission_condition)
-              .to_sql}
-          ) UNION ALL
-          (
-            SELECT #{result_default}
-          )
-
+          #{union_query}
         ) AS custom_permissions
         GROUP BY project_ids.project_id;
       SQL
@@ -85,6 +60,47 @@ module Preloaders
           permission if value.find { |custom_role| custom_role[permission.to_s] == true }
         end
       end
+    end
+
+    def union_query
+      permission_condition = permissions.map do |permission|
+        "member_roles.permissions @> ('{\"#{permission}\":true}')::jsonb"
+      end.join(' OR ')
+
+      permission_columns = permissions.map { |p| "(member_roles.permissions -> '#{p}')::BOOLEAN as #{p}" }.join(', ')
+
+      permissions_as_false = permissions.map { |p| "false AS #{p}" }.join(', ')
+
+      project_member = Member.select(permission_columns)
+        .left_outer_joins(:member_role)
+        .where("members.source_type = 'Project' AND members.source_id = project_ids.project_id")
+        .with_user(user)
+        .where(permission_condition)
+        .to_sql
+
+      namespace_member = Member.select(permission_columns)
+        .left_outer_joins(:member_role)
+        .where(
+          "members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)"
+        )
+        .with_user(user)
+        .where(permission_condition)
+        .to_sql
+
+      if Feature.enabled?(:assign_custom_roles_to_group_links, user)
+        group_link_member = GroupGroupLink.select(permission_columns)
+          .joins(:member_role)
+          .where('group_group_links.shared_group_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)')
+          .where(shared_with_group_id: user.member_namespaces.select(:id))
+          .where(permission_condition)
+          .to_sql
+      end
+
+      reset_default = "SELECT #{permissions_as_false}"
+
+      union_queries = [project_member, namespace_member, group_link_member, reset_default]
+
+      union_queries.compact.join(" UNION ALL ")
     end
 
     def custom_roles_enabled_on
@@ -102,11 +118,12 @@ module Preloaders
       "member_roles_in_projects:user:#{user.id}"
     end
 
-    def all_permissions
+    def permissions
       MemberRole
         .all_customizable_project_permissions
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
+    strong_memoize_attr :permissions
 
     attr_reader :projects, :user
   end

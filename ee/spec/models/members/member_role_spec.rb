@@ -10,6 +10,7 @@ RSpec.describe ::MemberRole, feature_category: :system_access do
     it { is_expected.to have_many(:members) }
     it { is_expected.to have_many(:saml_providers) }
     it { is_expected.to have_many(:saml_group_links) }
+    it { is_expected.to have_many(:group_group_links) }
   end
 
   describe 'validation' do

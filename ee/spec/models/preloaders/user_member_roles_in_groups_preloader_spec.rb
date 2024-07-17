@@ -28,7 +28,7 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
         record.assign_attributes(requirement => true)
       end
       record.save!
-      record.members << member
+      record.members << member if member
     end
   end
 
@@ -70,6 +70,38 @@ RSpec.describe Preloaders::UserMemberRolesInGroupsPreloader, feature_category: :
             end
 
             it { expect(result[group.id]).to match_array(ability_requirements(ability)) }
+          end
+        end
+      end
+
+      context 'when group has a group link assigned to a custom role' do
+        let_it_be(:shared_with_group) { create(:group) }
+        let_it_be(:shared_with_group_member) { create(:group_member, :guest, user: user, source: shared_with_group) }
+
+        let_it_be(:member_role) { create_member_role(ability, nil) }
+
+        let_it_be(:group_link) do
+          create(:group_group_link, shared_group: group, shared_with_group: shared_with_group,
+            group_access: Gitlab::Access::GUEST, member_role: member_role)
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: true)
+          end
+
+          it 'returns the project_id with a value array that includes the ability' do
+            expect(result[group.id]).to match_array(expected_abilities)
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: false)
+          end
+
+          it 'returns the project_id with a value array that includes the ability' do
+            expect(result[group.id]).to match_array([])
           end
         end
       end
