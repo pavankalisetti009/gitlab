@@ -38,7 +38,7 @@ describe('Approvals HiddenGroupsItem', () => {
     const folderIcon = findFolderIcon();
 
     expect(folderIcon.is(GlIcon)).toBe(true);
-    expect(folderIcon.props('name')).toBe('folder-o');
+    expect(folderIcon.props('name')).toBe('folder');
   });
 
   it('shows a help-icon with a tooltip', () => {
