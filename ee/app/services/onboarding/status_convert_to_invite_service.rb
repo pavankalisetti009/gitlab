@@ -26,10 +26,10 @@ module Onboarding
     end
 
     def attributes
-      attrs = { onboarding_status_registration_type: StatusCreateService::REGISTRATION_TYPE[:invite] }
+      attrs = { onboarding_status_registration_type: ::Onboarding::REGISTRATION_TYPE[:invite] }
 
       if initial_registration
-        attrs[:onboarding_status_initial_registration_type] = StatusCreateService::REGISTRATION_TYPE[:invite]
+        attrs[:onboarding_status_initial_registration_type] = ::Onboarding::REGISTRATION_TYPE[:invite]
       end
 
       attrs

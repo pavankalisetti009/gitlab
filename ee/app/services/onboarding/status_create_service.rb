@@ -2,13 +2,6 @@
 
 module Onboarding
   class StatusCreateService
-    REGISTRATION_TYPE = {
-      free: 'free',
-      trial: 'trial',
-      invite: 'invite',
-      subscription: 'subscription'
-    }.freeze
-
     def initialize(params, session, user, step_url)
       @params = params
       @session = session
@@ -17,9 +10,7 @@ module Onboarding
     end
 
     def execute
-      unless ::Onboarding::Status.enabled?
-        return ServiceResponse.error(message: 'Onboarding is not enabled', payload: payload)
-      end
+      return ServiceResponse.error(message: 'Onboarding is not enabled', payload: payload) unless ::Onboarding.enabled?
 
       if user.update(onboarding_in_progress: true, onboarding_status: onboarding_status)
         ServiceResponse.success(payload: payload)
@@ -48,13 +39,13 @@ module Onboarding
 
     def registration_type
       if trial_registration_type?
-        REGISTRATION_TYPE[:trial]
+        ::Onboarding::REGISTRATION_TYPE[:trial]
       elsif invited_registration_type?
-        REGISTRATION_TYPE[:invite]
+        ::Onboarding::REGISTRATION_TYPE[:invite]
       elsif subscription_registration_type?
-        REGISTRATION_TYPE[:subscription]
+        ::Onboarding::REGISTRATION_TYPE[:subscription]
       elsif free_registration_type?
-        REGISTRATION_TYPE[:free]
+        ::Onboarding::REGISTRATION_TYPE[:free]
       end
     end
 

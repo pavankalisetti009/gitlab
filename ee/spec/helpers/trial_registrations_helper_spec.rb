@@ -7,7 +7,7 @@ RSpec.describe TrialRegistrationsHelper, feature_category: :subscription_managem
 
   describe '#social_signin_enabled?' do
     before do
-      allow(::Onboarding::Status).to receive(:enabled?).and_return(onboarding_enabled)
+      stub_saas_features(onboarding: onboarding_enabled)
       allow(view).to receive(:omniauth_enabled?).and_return(omniauth_enabled)
       allow(view).to receive(:button_based_providers_enabled?).and_return(button_based_providers_enabled)
       allow(view).to receive(:devise_mapping).and_return(instance_double(Devise::Mapping, omniauthable?: omniauthable))

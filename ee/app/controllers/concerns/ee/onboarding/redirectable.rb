@@ -8,14 +8,14 @@ module EE
       private
 
       def onboarding_first_step_path
-        return unless onboarding_status.enabled?
+        return unless ::Onboarding.enabled?
 
         users_sign_up_welcome_path(onboarding_params)
       end
 
       override :after_sign_up_path
       def after_sign_up_path
-        if onboarding_status.enabled?
+        if ::Onboarding.enabled?
           onboarding_first_step_path
         else
           super
