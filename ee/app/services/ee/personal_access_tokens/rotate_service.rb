@@ -8,13 +8,21 @@ module EE
       private
 
       override :expires_at
-      def expires_at(params)
-        expires_at = super
-        max_pat_lifetime_duration = ::Gitlab::CurrentSettings.max_personal_access_token_lifetime_from_now
+      def expires_at
+        return params[:expires_at] if params[:expires_at].present?
 
-        return max_pat_lifetime_duration if max_pat_lifetime_duration && max_pat_lifetime_duration < expires_at
+        return unless EE::Gitlab::PersonalAccessTokens::ServiceAccountTokenValidator.new(target_user).expiry_enforced?
 
-        expires_at
+        max_pat_lifetime_duration =
+          EE::Gitlab::PersonalAccessTokens::ExpiryDateCalculator.new(target_user).max_expiry_date
+
+        min_expiry(default_expiration_date, max_pat_lifetime_duration)
+      end
+
+      def min_expiry(expiry, limit)
+        return expiry unless expiry && limit
+
+        expiry < limit ? expiry : limit
       end
     end
   end
