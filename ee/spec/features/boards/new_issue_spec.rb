@@ -15,65 +15,137 @@ RSpec.describe 'Issue Boards new issue', :js, feature_category: :portfolio_manag
 
   let!(:milestone_list)       { create(:milestone_list, board: board, milestone: milestone, position: 0) }
 
-  context 'authorized user' do
+  context 'when issues drawer is disabled' do
     before do
-      project.add_maintainer(user)
-
-      sign_in(user)
-
-      visit project_board_path(project, board)
-      wait_for_requests
-
-      expect(page).to have_selector('.board', count: 3)
+      stub_feature_flags(issues_list_drawer: false)
     end
 
-    it 'successfully assigns weight to newly-created issue' do
-      create_issue_in_board_list(0)
+    context 'authorized user' do
+      before do
+        project.add_maintainer(user)
 
-      within_testid('issue-boards-sidebar') do
-        find('.weight [data-testid="edit-button"]').click
-        find('.weight .form-control').set("10\n")
+        sign_in(user)
+
+        visit project_board_path(project, board)
+        wait_for_requests
+
+        expect(page).to have_selector('.board', count: 3)
       end
 
-      wait_for_requests
+      it 'successfully assigns weight to newly-created issue' do
+        create_issue_in_board_list(0)
 
-      page.within(first('.board-card')) do
-        expect(find('.board-card-weight .board-card-info-text').text).to eq("10")
+        within_testid('issue-boards-sidebar') do
+          find('.weight [data-testid="edit-button"]').click
+          find('.weight .form-control').set("10\n")
+        end
+
+        wait_for_requests
+
+        page.within(first('.board-card')) do
+          expect(find('.board-card-weight .board-card-info-text').text).to eq("10")
+        end
+      end
+
+      describe 'milestone list' do
+        it 'successfully loads milestone to be added to newly created issue' do
+          create_issue_in_board_list(1)
+
+          within_testid('sidebar-milestones') do
+            click_button 'Edit'
+
+            wait_for_requests
+
+            expect(page).to have_content 'Milestone 1'
+          end
+        end
+      end
+
+      describe 'board scoped to current iteration' do
+        let_it_be(:iteration) do
+          create(:current_iteration, title: 'Iteration 1',
+            iterations_cadence: create(:iterations_cadence, group: group),
+            start_date: 3.days.ago, due_date: 3.days.from_now)
+        end
+
+        it 'adds a new issue' do
+          scope_board_to_current_iteration
+
+          expect { create_issue_in_board_list(0) }.to change { Issue.count }.by(1)
+
+          within_testid('iteration-edit') do
+            expect(page).to have_content iteration.title
+          end
+
+          page.within('.board-card') do
+            expect(page).to have_content 'new issue'
+          end
+        end
       end
     end
+  end
 
-    describe 'milestone list' do
-      it 'successfully loads milestone to be added to newly created issue' do
-        create_issue_in_board_list(1)
+  context 'when issues drawer is enabled' do
+    context 'authorized user' do
+      before do
+        project.add_maintainer(user)
 
-        within_testid('sidebar-milestones') do
+        sign_in(user)
+
+        visit project_board_path(project, board)
+        wait_for_requests
+
+        expect(page).to have_selector('.board', count: 3)
+      end
+
+      it 'successfully assigns weight to newly-created issue' do
+        create_issue_in_board_list(0)
+
+        within_testid('work-item-weight') do
           click_button 'Edit'
-
-          wait_for_requests
-
-          expect(page).to have_content 'Milestone 1'
-        end
-      end
-    end
-
-    describe 'board scoped to current iteration' do
-      let!(:iteration) do
-        create(:current_iteration, title: 'Iteration 1',
-          iterations_cadence: create(:iterations_cadence, group: group),
-          start_date: 3.days.ago, due_date: 3.days.from_now)
-      end
-
-      it 'adds a new issue' do
-        scope_board_to_current_iteration
-
-        expect { create_issue_in_board_list(0) }.to change { Issue.count }.by(1)
-
-        within_testid('iteration-edit') do
-          expect(page).to have_content iteration.title
+          find('input').set("10\n")
         end
 
-        page.within('.board-card') do
-          expect(page).to have_content 'new issue'
+        wait_for_requests
+
+        page.within(first('.board-card')) do
+          expect(find('.board-card-weight .board-card-info-text').text).to eq("10")
+        end
+      end
+
+      describe 'milestone list' do
+        it 'successfully loads milestone to be added to newly created issue' do
+          create_issue_in_board_list(1)
+
+          within_testid('work-item-milestone') do
+            click_button 'Edit'
+
+            wait_for_requests
+
+            expect(page).to have_content 'Milestone 1'
+          end
+        end
+      end
+
+      describe 'board scoped to current iteration' do
+        let!(:iteration) do
+          create(:current_iteration, title: 'Iteration 1',
+            iterations_cadence: create(:iterations_cadence, group: group),
+            start_date: 3.days.ago, due_date: 3.days.from_now)
+        end
+
+        it 'adds a new issue' do
+          scope_board_to_current_iteration
+
+          expect { create_issue_in_board_list(0) }.to change { Issue.count }.by(1)
+
+          within_testid('work-item-iteration') do
+            expect(page).to have_content iteration.title
+          end
+
+          page.within('.board-card') do
+            expect(page).to have_content 'new issue'
+          end
         end
       end
     end

@@ -129,7 +129,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="hasIssueWeightsFeature">
+  <div v-if="hasIssueWeightsFeature" data-testid="work-item-weight">
     <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
       <!-- hide header when editing, since we then have a form label. Keep it reachable for screenreader nav  -->
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-mb-0! gl-heading-5">
