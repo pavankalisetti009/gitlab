@@ -104,7 +104,7 @@ export default {
 
       if (this.glAbilities.resolveVulnerabilityWithAi) {
         if (glFeatures.resolveVulnerabilityAiGateway) {
-          buttons.push(CREATE_MR_AI_ACTION);
+          buttons.push(CREATE_MR_AI_ACTION_DEPRECATED);
         } else {
           buttons.push(CREATE_MR_AI_ACTION_DEPRECATED);
         }
