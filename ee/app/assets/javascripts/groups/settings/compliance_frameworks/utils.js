@@ -12,7 +12,7 @@ export const injectIdIntoEditPath = (path, id) => {
 };
 
 export const initialiseFormData = () => ({
-  name: '',
+  name: null,
   description: null,
   pipelineConfigurationFullPath: null,
   color: null,

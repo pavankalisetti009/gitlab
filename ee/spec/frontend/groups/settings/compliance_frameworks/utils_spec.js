@@ -38,7 +38,7 @@ describe('Utils', () => {
   describe('initialiseFormData', () => {
     it('returns the initial form data object', () => {
       expect(Utils.initialiseFormData()).toStrictEqual({
-        name: '',
+        name: null,
         description: null,
         pipelineConfigurationFullPath: null,
         color: null,

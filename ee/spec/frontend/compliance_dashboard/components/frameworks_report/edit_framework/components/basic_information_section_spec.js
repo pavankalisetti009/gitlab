@@ -47,6 +47,12 @@ describe('Basic information section', () => {
     wrapper = createComponent();
   });
 
+  it.each([['Name'], ['Description']])('has valid state initially', (fieldName) => {
+    const input = wrapper.findByLabelText(fieldName);
+
+    expect(invalidFeedback(input.element)).toContain('');
+  });
+
   it.each([['Name'], ['Description']])(
     'validates required state for field %s',
     async (fieldName) => {
