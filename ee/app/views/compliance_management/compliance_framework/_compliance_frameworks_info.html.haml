@@ -8,5 +8,5 @@
     %p.gl-font-bold.gl-text-gray-900.gl-m-0= s_('ComplianceFrameworks|Compliance frameworks applied')
     .gl-mb-4
       - project.compliance_framework_settings.each do |setting|
-        = gl_badge_tag(nil, { size: :sm, href: href, class: ["gl-display-inline-block gl-mr-1 gl-mt-3", ('has-tooltip' if !is_maintainer)], style: "background-color: #{setting.compliance_management_framework.color}; color: #{text_color_for_bg(setting.compliance_management_framework.color)}", data: { container: 'body', testid: 'compliance-frameworks-info' }, title: title }) do
+        = gl_badge_tag(nil, { href: href, class: ["gl-display-inline-block gl-mr-1 gl-mt-3", ('has-tooltip' if !is_maintainer)], style: "background-color: #{setting.compliance_management_framework.color}; color: #{text_color_for_bg(setting.compliance_management_framework.color)}", data: { container: 'body', testid: 'compliance-frameworks-info' }, title: title }) do
           = setting.compliance_management_framework.name
