@@ -232,6 +232,9 @@ export default {
           });
         });
     },
+    handleWorkItemCreated() {
+      this.$apollo.queries.epics.refetch();
+    },
     hasDateSet({ startDate, dueDate }) {
       return Boolean(startDate || dueDate);
     },
@@ -280,6 +283,7 @@ export default {
           v-if="canCreateEpic && glFeatures.namespaceLevelWorkItems"
           class="gl-flex-grow-1"
           :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
+          @workItemCreated="handleWorkItemCreated"
         />
         <gl-button
           v-else-if="canCreateEpic"
