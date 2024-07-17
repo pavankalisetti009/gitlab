@@ -11,9 +11,18 @@ module EE::Groups::GroupMembersHelper
     })
   end
 
+  # rubocop:disable Metrics/ParameterLists -- all arguments needed
   override :group_members_app_data
   def group_members_app_data(
-    group, members:, invited:, access_requests:, banned:, include_relations:, search:, pending_members:
+    group,
+    members:,
+    invited:,
+    access_requests:,
+    banned:,
+    include_relations:,
+    search:,
+    pending_members:,
+    placeholder_users:
   )
     super.merge!({
       can_export_members: can?(current_user, :export_group_memberships, group),
@@ -26,6 +35,7 @@ module EE::Groups::GroupMembersHelper
       namespace_user_limit: ::Namespaces::FreeUserCap.dashboard_limit
     })
   end
+  # rubocop:enable Metrics/ParameterLists
 
   def group_member_header_subtext(group)
     if ::Namespaces::FreeUserCap::Enforcement.new(group.root_ancestor).enforce_cap? &&
