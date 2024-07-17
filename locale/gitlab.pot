@@ -62364,6 +62364,9 @@ msgstr ""
 msgid "can not be changed when assigned to an epic"
 msgstr ""
 
+msgid "can not be more restrictive than group visibility levels"
+msgstr ""
+
 msgid "can not be set for template labels"
 msgstr ""
 
