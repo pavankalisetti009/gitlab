@@ -168,6 +168,7 @@ export default {
           },
         });
         this.track('updated_iteration');
+        this.$emit('iterationUpdated', selectedIterationId);
         if (errors.length > 0) {
           throw new Error(errors.join('\n'));
         }
