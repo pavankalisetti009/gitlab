@@ -563,8 +563,8 @@ describe('Vulnerability Header', () => {
           vulnerability: getVulnerability(),
         });
 
-        expect(findResolveWithAIButton()).not.toHaveProperty('badge');
-        expect(findResolveWithAIButton()).not.toHaveProperty('tooltip');
+        expect(findResolveWithAIButton()).toHaveProperty('badge');
+        expect(findResolveWithAIButton()).toHaveProperty('tooltip');
       });
 
       it('continues to show the loading state into the redirect call', async () => {
