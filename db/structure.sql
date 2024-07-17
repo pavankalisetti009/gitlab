@@ -17206,7 +17206,7 @@ ALTER SEQUENCE scan_result_policies_id_seq OWNED BY scan_result_policies.id;
 
 CREATE TABLE scan_result_policy_violations (
     id bigint NOT NULL,
-    scan_result_policy_id bigint NOT NULL,
+    scan_result_policy_id bigint,
     merge_request_id bigint NOT NULL,
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -17214,6 +17214,7 @@ CREATE TABLE scan_result_policy_violations (
     violation_data jsonb,
     approval_policy_rule_id bigint,
     status smallint DEFAULT 1 NOT NULL
+    CONSTRAINT chk_policy_violations_rule_id_or_policy_id_not_null CHECK (((approval_policy_rule_id IS NOT NULL) OR (scan_result_policy_id IS NOT NULL)))
 );
 
 CREATE SEQUENCE scan_result_policy_violations_id_seq
