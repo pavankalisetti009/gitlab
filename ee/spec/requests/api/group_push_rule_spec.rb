@@ -348,7 +348,7 @@ RSpec.describe API::GroupPushRule, 'GroupPushRule', :aggregate_failures, api: tr
           put api("/groups/#{group_without_push_rule.id}/push_rule", user), params: params
 
           expect(response).to have_gitlab_http_status(:not_found)
-          expect(json_response['message']).to include('Push Rule Not Found')
+          expect(json_response['message']).to include('Push rule Not Found')
         end
       end
 

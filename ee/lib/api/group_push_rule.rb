@@ -105,7 +105,7 @@ module API
         use :push_rule_params
       end
       put ":id/push_rule" do
-        not_found!('Push Rule') unless user_group.push_rule
+        not_found!('Push rule') unless user_group.push_rule
         create_or_update_push_rule
       end
 

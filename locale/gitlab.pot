@@ -43308,12 +43308,6 @@ msgstr ""
 msgid "Push"
 msgstr ""
 
-msgid "Push Rule"
-msgstr ""
-
-msgid "Push Rule updated successfully."
-msgstr ""
-
 msgid "Push an existing Git repository"
 msgstr ""
 
@@ -43336,6 +43330,12 @@ msgid "Push mirrors will only sync LFS objects if LFS is %{docs_link_start}enabl
 msgstr ""
 
 msgid "Push project from command line"
+msgstr ""
+
+msgid "Push rule"
+msgstr ""
+
+msgid "Push rule updated successfully."
 msgstr ""
 
 msgid "Push rules"

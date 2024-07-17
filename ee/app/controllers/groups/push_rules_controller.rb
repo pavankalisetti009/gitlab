@@ -19,7 +19,7 @@ class Groups::PushRulesController < Groups::ApplicationController
       .execute
 
     if service_response.success?
-      flash[:notice] = _('Push Rule updated successfully.')
+      flash[:notice] = _('Push rule updated successfully.')
     else
       flash[:alert] = service_response.message
     end
