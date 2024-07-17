@@ -4,18 +4,24 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
   let(:user) { create(:user) }
-  let(:workflow) { create(:duo_workflows_workflow, user: user) }
+  let(:another_user) { create(:user) }
+  let(:owned_workflow) { create(:duo_workflows_workflow, user: user) }
+  let(:not_owned_workflow) { create(:duo_workflows_workflow, user: another_user) }
 
   describe '.for_user_with_id!' do
     it 'finds the workflow for the given user and id' do
-      expect(described_class.for_user_with_id!(user.id, workflow.id)).to eq(workflow)
+      expect(described_class.for_user_with_id!(user.id, owned_workflow.id)).to eq(owned_workflow)
     end
 
     it 'raises an error if the workflow is for a different user' do
-      different_user = create(:user)
-
-      expect { described_class.for_user_with_id!(different_user, workflow.id) }
+      expect { described_class.for_user_with_id!(another_user, owned_workflow.id) }
         .to raise_error(ActiveRecord::RecordNotFound)
+    end
+  end
+
+  describe '.for_user' do
+    it 'finds the workflows for the given user' do
+      expect(described_class.for_user(user)).to eq([owned_workflow])
     end
   end
 
@@ -35,13 +41,13 @@ RSpec.describe Ai::DuoWorkflows::Workflow, feature_category: :duo_workflow do
 
     with_them do
       it 'adheres to state machine rules', :aggregate_failures do
-        workflow.status = status
+        owned_workflow.status = status
 
-        expect(workflow.can_start?).to eq(can_start)
-        expect(workflow.can_pause?).to eq(can_pause)
-        expect(workflow.can_resume?).to eq(can_resume)
-        expect(workflow.can_finish?).to eq(can_finish)
-        expect(workflow.can_drop?).to eq(can_drop)
+        expect(owned_workflow.can_start?).to eq(can_start)
+        expect(owned_workflow.can_pause?).to eq(can_pause)
+        expect(owned_workflow.can_resume?).to eq(can_resume)
+        expect(owned_workflow.can_finish?).to eq(can_finish)
+        expect(owned_workflow.can_drop?).to eq(can_drop)
       end
     end
   end

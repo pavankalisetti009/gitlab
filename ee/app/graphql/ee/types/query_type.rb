@@ -117,6 +117,11 @@ module EE
           alpha: { milestone: '17.2' },
           description: 'List the events for a Duo Workflow'
 
+        field :duo_workflow_workflows, ::Types::Ai::DuoWorkflows::WorkflowType.connection_type,
+          resolver: ::Resolvers::Ai::DuoWorkflows::WorkflowsResolver,
+          alpha: { milestone: '17.2' },
+          description: 'List the workflows owned by the current user'
+
         field :ci_queueing_history,
           ::Types::Ci::QueueingHistoryType,
           null: true,
