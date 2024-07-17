@@ -241,8 +241,15 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
           agent_scratchpad: [],
           single_action_agent: true,
           conversation: "{:role=>:user, :content=>\"previous question\"}",
-          current_resource_type: "issue",
-          current_resource_content: "string",
+          current_resource_params: {
+            type: "issue",
+            content: "string"
+          },
+          current_file_params: {
+            file_path: "never.rb",
+            data: "puts 'gonna give you up'",
+            selected_code: true
+          },
           model_metadata: model_metadata
         }
       end
@@ -259,6 +266,11 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
             context: {
               type: "issue",
               content: "string"
+            },
+            current_file: {
+              file_path: "never.rb",
+              data: "puts 'gonna give you up'",
+              selected_code: true
             }
           },
           model_metadata: model_metadata
@@ -268,7 +280,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
     end
 
-    context 'when request is sent for a new ReAct Duo Chat prompt withouth context params' do
+    context 'when request is sent for a new ReAct Duo Chat prompt without optional params' do
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
 
       let(:prompt) { { prompt: user_prompt, options: options } }

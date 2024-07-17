@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_category: :duo_chat do
+  include FakeBlobHelpers
+
   describe "#execute" do
     subject(:answer) { agent.execute }
 
@@ -25,13 +27,15 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
     let(:tool_double) { instance_double(Gitlab::Llm::Chain::Tools::IssueReader::Executor) }
     let(:response_service_double) { instance_double(::Gitlab::Llm::ResponseService) }
     let(:stream_response_service_double) { instance_double(::Gitlab::Llm::ResponseService) }
+    let(:extra_resource) { {} }
+    let(:current_file) { nil }
 
     let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
 
     let(:context) do
       Gitlab::Llm::Chain::GitlabContext.new(
         current_user: user, container: nil, resource: resource, ai_request: ai_request_double,
-        extra_resource: nil, current_file: nil, agent_version: nil
+        extra_resource: extra_resource, current_file: current_file, agent_version: nil
       )
     end
 
@@ -86,8 +90,11 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
               agent_scratchpad: [],
               conversation: "",
               single_action_agent: true,
-              current_resource_type: "issue",
-              current_resource_content: "issue description",
+              current_resource_params: {
+                type: "issue",
+                content: "issue description"
+              },
+              current_file_params: nil,
               model_metadata: nil
             }
           },
@@ -142,18 +149,64 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
 
       it "sends request without context" do
         expect(ai_request_double).to receive(:request).with(
-          {
-            prompt: user_input,
-            options: {
-              agent_scratchpad: [],
-              conversation: "",
-              single_action_agent: true,
-              current_resource_type: nil,
-              current_resource_content: nil,
-              model_metadata: nil
-            }
-          },
-          { unit_primitive: nil }
+          hash_including(
+            options: hash_including(
+              current_resource_params: nil
+            )
+          ),
+          anything
+        )
+
+        agent.execute
+      end
+    end
+
+    context "when code is selected" do
+      let(:selected_text) { 'code selection' }
+      let(:current_file) do
+        {
+          file_name: 'test.py',
+          selected_text: selected_text,
+          cotent_above_cursor: 'prefix',
+          content_below_cursor: 'suffix'
+        }
+      end
+
+      it "adds code file params to the question options" do
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(
+            options: hash_including(
+              current_file_params: {
+                file_path: 'test.py',
+                data: 'code selection',
+                selected_code: true
+              }
+            )
+          ),
+          anything
+        )
+
+        agent.execute
+      end
+    end
+
+    context "when code file is included in context" do
+      let(:project) { build(:project) }
+      let(:blob) { fake_blob(path: 'never.rb', data: 'puts "gonna give you up"') }
+      let(:extra_resource) { { blob: blob } }
+
+      it "adds code file params to the question options" do
+        expect(ai_request_double).to receive(:request).with(
+          hash_including(
+            options: hash_including(
+              current_file_params: {
+                file_path: 'never.rb',
+                data: 'puts "gonna give you up"',
+                selected_code: false
+              }
+            )
+          ),
+          anything
         )
 
         agent.execute
@@ -172,8 +225,8 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
               agent_scratchpad: [],
               conversation: "",
               single_action_agent: true,
-              current_resource_type: nil,
-              current_resource_content: nil,
+              current_file_params: nil,
+              current_resource_params: nil,
               model_metadata: {
                 api_key: "test_token",
                 endpoint: "http://localhost:11434/v1",

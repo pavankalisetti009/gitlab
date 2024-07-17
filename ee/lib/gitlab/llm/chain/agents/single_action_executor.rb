@@ -121,8 +121,8 @@ module Gitlab
             @options = {
               agent_scratchpad: @agent_scratchpad,
               conversation: conversation,
-              current_resource_type: current_resource_type,
-              current_resource_content: current_resource_content,
+              current_resource_params: current_resource_params,
+              current_file_params: current_file_params,
               model_metadata: model_metadata_params,
               single_action_agent: true
             }
@@ -146,6 +146,15 @@ module Gitlab
               .join(", ")
           end
 
+          def current_resource_params
+            return unless current_resource_type
+
+            {
+              type: current_resource_type,
+              content: current_resource_content
+            }
+          end
+
           # TODO: remove issue condition when next issue is implemented
           # https://gitlab.com/gitlab-org/gitlab/-/issues/468905
           def current_resource_type
@@ -153,12 +162,44 @@ module Gitlab
           rescue ArgumentError
             nil
           end
+          strong_memoize_attr :current_resource_type
 
           def current_resource_content
             context.current_page_short_description
           rescue ArgumentError
             nil
           end
+          strong_memoize_attr :current_resource_content
+
+          def current_file_params
+            return unless current_selection || current_blob
+
+            if current_selection
+              file_path = current_selection[:file_name]
+              data = current_selection[:selected_text]
+            else
+              file_path = current_blob.path
+              data = current_blob.data
+            end
+
+            {
+              file_path: file_path,
+              data: data,
+              selected_code: !!current_selection
+            }
+          end
+
+          def current_selection
+            return unless context.current_file[:selected_text].present?
+
+            context.current_file
+          end
+          strong_memoize_attr :current_selection
+
+          def current_blob
+            context.extra_resource[:blob]
+          end
+          strong_memoize_attr :current_blob
 
           def chat_feature_setting
             ::Ai::FeatureSetting.find_by_feature(:duo_chat)

@@ -133,15 +133,10 @@ module Gitlab
               agent_scratchpad: {
                 agent_type: "react",
                 steps: options[:agent_scratchpad]
-              }
-            }
-
-            if options[:current_resource_type]
-              option_params[:context] = {
-                type: options[:current_resource_type],
-                content: options[:current_resource_content]
-              }
-            end
+              },
+              context: options[:current_resource_params],
+              current_file: options[:current_file_params]
+            }.compact
 
             {
               prompt: prompt,
