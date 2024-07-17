@@ -10,10 +10,8 @@
     @include gl-border-transparent;
     @include gl-bg-white;
   }
-  // Disable feedback
-  // Improve selector once the feedback has its own class name:
-  // https://gitlab.com/gitlab-org/gitlab/-/issues/442715
-  .duo-chat-message > div.gl-display-flex:last-of-type {
-    @include gl-display-none;
+
+  .duo-chat-message > .duo-chat-message-feedback {
+    display: none;
   }
 }

@@ -14,7 +14,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/group/epics/index"),
           video_url: "https://vimeo.com/693759778",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'epics_feature'
         },
@@ -25,7 +25,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/group/roadmap/index"),
           video_url: "https://vimeo.com/670922063",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'roadmaps_feature'
         },
@@ -37,7 +37,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/project/labels", anchor: "scoped-labels"),
           video_url: "https://vimeo.com/670906315",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'scoped_labels_feature'
         },
@@ -49,7 +49,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/project/merge_requests/approvals/rules"),
           video_url: "https://vimeo.com/670904904",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'merge_request_rule_feature'
         },
@@ -60,7 +60,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/project/milestones/burndown_and_burnup_charts"),
           video_url: "https://vimeo.com/670905639",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'burn_down_chart_feature'
         },
@@ -72,7 +72,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/project/codeowners/index"),
           video_url: "https://vimeo.com/670896787",
-          container_class: 'gl-flex-basis-third',
+          container_class: 'lg:gl-basis-1/3',
           description_class: 'gl-h-13',
           tracking_label: 'code_owners_feature'
         },
@@ -84,7 +84,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Premium"),
           doc_url: help_page_url("user/analytics/code_review_analytics"),
           video_url: "https://vimeo.com/670893940",
-          container_class: 'gl-flex-basis-half',
+          container_class: 'gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'code_review_feature'
         },
@@ -96,7 +96,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/permissions"),
           calculator_url: "https://about.gitlab.com/pricing/ultimate/#wu-guest-calculator",
-          container_class: 'gl-flex-basis-half',
+          container_class: 'gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'free_guests_feature'
         },
@@ -108,7 +108,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/application_security/dependency_scanning/index"),
           video_url: "https://vimeo.com/670886968",
-          container_class: 'gl-flex-basis-half',
+          container_class: 'gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'dependency_scanning_feature'
         },
@@ -120,7 +120,7 @@ module Groups
           plan: s_("TrialDiscoverPage|Ultimate"),
           doc_url: help_page_url("user/application_security/dast/index"),
           video_url: "https://vimeo.com/670891385",
-          container_class: 'gl-flex-basis-half',
+          container_class: 'gl-basis-1/2',
           description_class: 'gl-h-10',
           tracking_label: 'dast_feature'
         }
