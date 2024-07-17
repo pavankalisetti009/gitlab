@@ -37,9 +37,6 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
     allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(global_instance_id)
-
-    stub_feature_flags(claude_3_code_generation_haiku: false)
-    stub_feature_flags(claude_3_5_code_generation_sonnet: false)
   end
 
   shared_examples 'a response' do |case_name|
@@ -622,7 +619,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
                   content_above_cursor: prefix,
                   content_below_cursor: ''
                 },
-                model_name: 'claude-3-sonnet-20240229'
+                model_name: 'claude-3-5-sonnet-20240620'
               )
               expect(Gitlab::Workhorse)
                 .to receive(:send_url)
