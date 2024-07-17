@@ -74,9 +74,9 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
         end
 
         it 'displays the expected content', :js do
-          expect(page).to have_selector('[data-testid="mini-pipeline-graph-dropdown"]')
+          expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
 
-          find_by_testid('mini-pipeline-graph-dropdown-toggle').click
+          find_by_testid('pipeline-mini-graph-dropdown-toggle').click
           page.within '.ci-job-component' do
             expect(page).to have_selector('[data-testid="ci-icon"]')
             expect(page).not_to have_selector('.retry')
@@ -91,9 +91,9 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
           end
 
           it 'displays the expected content', :js do
-            expect(page).to have_selector('[data-testid="mini-pipeline-graph-dropdown"]')
+            expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
 
-            find_by_testid('mini-pipeline-graph-dropdown-toggle').click
+            find_by_testid('pipeline-mini-graph-dropdown-toggle').click
             page.within '.ci-job-component' do
               expect(page).to have_selector('[data-testid="ci-icon"]')
               expect(page).not_to have_selector('.retry')
@@ -195,9 +195,9 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
           it 'merges the MR' do
             merge_request.merge_train_car.pipeline.builds.map(&:success!)
 
-            expect(page).to have_selector('[data-testid="mini-pipeline-graph-dropdown"]')
+            expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
 
-            find_by_testid('mini-pipeline-graph-dropdown-toggle').click
+            find_by_testid('pipeline-mini-graph-dropdown-toggle').click
             page.within '.ci-job-component' do
               expect(page).to have_selector('[data-testid="ci-icon"]')
               expect(page).not_to have_selector('.retry')
@@ -283,9 +283,9 @@ RSpec.describe 'User adds a merge request to a merge train', :sidekiq_inline, :j
             it 'merges the MR' do
               merge_request.merge_train_car.pipeline.builds.map(&:success!)
 
-              expect(page).to have_selector('[data-testid="mini-pipeline-graph-dropdown"]')
+              expect(page).to have_selector('[data-testid="pipeline-mini-graph-dropdown"]')
 
-              find_by_testid('mini-pipeline-graph-dropdown-toggle').click
+              find_by_testid('pipeline-mini-graph-dropdown-toggle').click
               page.within '.ci-job-component' do
                 expect(page).to have_selector('[data-testid="ci-icon"]')
                 expect(page).not_to have_selector('.retry')
