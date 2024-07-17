@@ -5,6 +5,11 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
+      include ::MemberRoles::MemberRoleRelation
+
+      base_access_level_attr :group_access
+      alias_attribute :group, :shared_group
+
       scope :in_shared_group, ->(shared_groups) { where(shared_group: shared_groups) }
       scope :not_in_shared_with_group, ->(shared_with_groups) { where.not(shared_with_group: shared_with_groups) }
 
