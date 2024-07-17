@@ -68,12 +68,18 @@ export default {
 </script>
 <template>
   <div ref="badge">
-    <gl-popover v-if="showPopover" ref="popover" :target="() => $refs.label">
-      <h5 v-if="framework.name" class="gl-text-left">{{ framework.name }}</h5>
-      <p v-if="framework.description" class="gl-text-left">{{ framework.description }}</p>
+    <gl-popover
+      v-if="showPopover"
+      ref="popover"
+      :title="framework.name"
+      :target="() => $refs.label"
+    >
+      <div v-if="framework.description" class="gl-text-left gl-mb-3">
+        {{ framework.description }}
+      </div>
       <div v-if="showEdit" class="gl-text-left">
         <gl-button
-          category="tertiary"
+          category="secondary"
           size="small"
           variant="confirm"
           class="gl-font-sm"

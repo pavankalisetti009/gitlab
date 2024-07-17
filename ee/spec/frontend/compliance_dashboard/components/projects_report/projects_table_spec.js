@@ -10,7 +10,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import {
   createComplianceFrameworksResponse,
-  createProjectSetComplianceFrameworkResponse,
+  createProjectUpdateComplianceFrameworksResponse,
 } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworkSelectionBox from 'ee/compliance_dashboard/components/projects_report/framework_selection_box.vue';
 import ProjectsTable from 'ee/compliance_dashboard/components/projects_report/projects_table.vue';
@@ -19,14 +19,14 @@ import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_
 
 import { mapProjects } from 'ee/compliance_dashboard/graphql/mappers';
 
-import setComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/set_compliance_framework.mutation.graphql';
+import updateComplianceFrameworksMutation from 'ee/compliance_dashboard/graphql/mutations/project_update_compliance_frameworks.graphql';
 
 Vue.use(VueApollo);
 
 describe('ProjectsTable component', () => {
   let wrapper;
   let apolloProvider;
-  let projectSetComplianceFrameworkMutation;
+  let updateComplianceFrameworkMockResponse;
   let toastMock;
 
   const GlModalStub = stubComponent(GlModal, { methods: { show: jest.fn(), hide: jest.fn() } });
@@ -36,6 +36,7 @@ describe('ProjectsTable component', () => {
   const hasFilters = false;
 
   const COMPLIANCE_FRAMEWORK_COLUMN_IDX = 3;
+  const ACTION_COLUMN_IDX = 4;
   const ROW_WITH_FRAMEWORK_IDX = 0;
   const ROW_WITHOUT_FRAMEWORK_IDX = 1;
 
@@ -59,12 +60,12 @@ describe('ProjectsTable component', () => {
   const selectRow = (index) => findTableRowData(index).at(0).trigger('click');
 
   const createComponent = (props = {}) => {
-    projectSetComplianceFrameworkMutation = jest
+    updateComplianceFrameworkMockResponse = jest
       .fn()
-      .mockResolvedValue(createProjectSetComplianceFrameworkResponse());
+      .mockResolvedValue(createProjectUpdateComplianceFrameworksResponse());
 
     apolloProvider = createMockApollo([
-      [setComplianceFrameworkMutation, projectSetComplianceFrameworkMutation],
+      [updateComplianceFrameworksMutation, updateComplianceFrameworkMockResponse],
     ]);
 
     toastMock = { show: jest.fn() };
@@ -113,7 +114,12 @@ describe('ProjectsTable component', () => {
       wrapper = createComponent({ projects: [], isLoading: false });
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
-      expect(headerTexts).toStrictEqual(['Project name', 'Project path', 'Compliance framework']);
+      expect(headerTexts).toStrictEqual([
+        'Project name',
+        'Project path',
+        'Compliance frameworks',
+        'Action',
+      ]);
     });
   });
 
@@ -204,65 +210,77 @@ describe('ProjectsTable component', () => {
       const [, projectName, projectPath, framework] = findTableRowData(idx).wrappers.map((d) =>
         d.text(),
       );
-      const expectedFrameworkName =
-        projects[idx].complianceFrameworks[0]?.name ?? 'add-framework-stub';
+      const expectedFrameworkName = projects[idx].complianceFrameworks[0]?.name ?? 'No frameworks';
 
       expect(projectName).toBe(`Project ${idx}`);
       expect(projectPath).toBe(`${groupPath}/project${idx}`);
       expect(framework).toContain(expectedFrameworkName);
     });
 
-    function itCallsSetFrameworkMutation(operations) {
+    function itCallsUpdateFrameworksMutation(operations) {
+      const isBulkAction = operations.lenght > 1;
       it('calls mutation', () => {
-        expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledTimes(operations.length);
+        expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledTimes(operations.length);
         operations.forEach((operation) => {
-          expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledWith({
+          expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledWith({
             projectId: operation.projectId,
-            frameworkId: operation.frameworkId,
+            complianceFrameworkIds: operation.frameworkIds,
           });
         });
       });
 
-      it('displays toast', async () => {
-        await waitForPromises();
+      if (isBulkAction) {
+        it('displays toast', async () => {
+          await waitForPromises();
 
-        expect(toastMock.show).toHaveBeenCalled();
-      });
+          expect(toastMock.show).toHaveBeenCalled();
+        });
+      }
 
       it('emits update event', async () => {
         await waitForPromises();
-
         expect(wrapper.emitted('updated')).toHaveLength(1);
       });
 
-      it('clicking undo in toast reverts changes', async () => {
-        await waitForPromises();
+      if (isBulkAction) {
+        it('clicking undo in toast reverts changes', async () => {
+          await waitForPromises();
+          toastMock.show.mock.calls[0][1].action.onClick();
 
-        toastMock.show.mock.calls[0][1].action.onClick();
-
-        expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledTimes(operations.length * 2);
-        operations.forEach((operation) => {
-          expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledWith(
-            expect.objectContaining({
-              frameworkId: operation.previousFrameworkId,
-              projectId: operation.projectId,
-            }),
+          expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledTimes(
+            operations.length * 2,
           );
+          const expectedCalls = [
+            ...operations.map((operation) => ({
+              complianceFrameworkIds: operation.frameworkIds,
+              projectId: operation.projectId,
+            })),
+            ...operations.map((operation) => ({
+              complianceFrameworkIds: operation.previousFrameworkIds,
+              projectId: operation.projectId,
+            })),
+          ];
+
+          expectedCalls.forEach((expectedCall) => {
+            expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledWith(
+              expect.objectContaining(expectedCall),
+            );
+          });
         });
-      });
+      }
     }
 
     describe('when selection operations component emits change event', () => {
       const operations = [
         {
           projectId: 'someId',
-          frameworkId: 'framework-id',
-          previousFrameworkId: 'previous-framework-id',
+          frameworkIds: ['framework-id'],
+          previousFrameworkIds: ['previous-framework-id'],
         },
         {
           projectId: 'someId-2',
-          frameworkId: 'framework-id-2',
-          previousFrameworkId: 'previous-framework-id-2',
+          frameworkIds: ['framework-id', 'framework-id-2'],
+          previousFrameworkIds: ['framework-id'],
         },
       ];
 
@@ -270,22 +288,25 @@ describe('ProjectsTable component', () => {
         wrapper.findComponent(SelectionOperations).vm.$emit('change', operations);
       });
 
-      itCallsSetFrameworkMutation(operations);
+      itCallsUpdateFrameworksMutation(operations);
     });
 
     describe('when clicking close sign of framework badge', () => {
+      const frameworkId = 'framework-to-remove';
       beforeEach(() => {
         findTableRowData(0)
           .at(COMPLIANCE_FRAMEWORK_COLUMN_IDX)
           .findComponent(GlLabel)
-          .vm.$emit('close');
+          .vm.$emit('close', frameworkId);
       });
 
-      itCallsSetFrameworkMutation([
+      itCallsUpdateFrameworksMutation([
         {
           projectId: projects[ROW_WITH_FRAMEWORK_IDX].id,
-          frameworkId: null,
-          previousFrameworkId: projects[ROW_WITH_FRAMEWORK_IDX].complianceFrameworks[0].id,
+          frameworkIds: [],
+          previousFrameworkIds: projects[ROW_WITH_FRAMEWORK_IDX].complianceFrameworks.map(
+            (f) => f.id,
+          ),
         },
       ]);
 
@@ -302,7 +323,7 @@ describe('ProjectsTable component', () => {
     describe('when new framework requested from framework selection', () => {
       beforeEach(() => {
         findTableRowData(ROW_WITHOUT_FRAMEWORK_IDX)
-          .at(COMPLIANCE_FRAMEWORK_COLUMN_IDX)
+          .at(ACTION_COLUMN_IDX)
           .findComponent(FrameworkSelectionBox)
           .vm.$emit('create');
       });
@@ -318,10 +339,10 @@ describe('ProjectsTable component', () => {
           .findComponent(CreateForm)
           .vm.$emit('success', { framework: NEW_FRAMEWORK });
 
-        expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledTimes(1);
-        expect(projectSetComplianceFrameworkMutation).toHaveBeenCalledWith({
+        expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledTimes(1);
+        expect(updateComplianceFrameworkMockResponse).toHaveBeenCalledWith({
           projectId: projects[ROW_WITHOUT_FRAMEWORK_IDX].id,
-          frameworkId: NEW_FRAMEWORK.id,
+          complianceFrameworkIds: [NEW_FRAMEWORK.id],
         });
       });
 
@@ -337,16 +358,16 @@ describe('ProjectsTable component', () => {
 
       beforeEach(() => {
         findTableRowData(ROW_WITHOUT_FRAMEWORK_IDX)
-          .at(COMPLIANCE_FRAMEWORK_COLUMN_IDX)
+          .at(ACTION_COLUMN_IDX)
           .findComponent(FrameworkSelectionBox)
-          .vm.$emit('select', NEW_FRAMEWORK_ID);
+          .vm.$emit('select', [NEW_FRAMEWORK_ID]);
       });
 
-      itCallsSetFrameworkMutation([
+      itCallsUpdateFrameworksMutation([
         {
           projectId: projects[ROW_WITHOUT_FRAMEWORK_IDX].id,
-          frameworkId: NEW_FRAMEWORK_ID,
-          previousFrameworkId: null,
+          frameworkIds: [NEW_FRAMEWORK_ID],
+          previousFrameworkIds: [],
         },
       ]);
 

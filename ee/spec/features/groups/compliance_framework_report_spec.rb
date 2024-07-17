@@ -26,7 +26,7 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
   end
 
   let(:default_framework_element) { find_by_testid('compliance-framework-default-label') }
-  let(:framework_element) { find_by_testid('compliance-framework-label') }
+  let(:framework_element) { first('[data-testid="compliance-framework-label"]') }
   let(:associated_project_selector) { 'td[data-label="Associated projects"]' }
 
   before_all do
@@ -117,13 +117,13 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
           click_button('Apply')
           wait_for_requests
 
-          expect(page).not_to have_content(compliance_framework_a.name) # Projects can have only one framework currently
-          expect(page).not_to have_content(compliance_framework_b.name) # Projects can have only one framework currently
-          expect(associated_compliance_framework_label(project_1.name))
+          expect(page).to have_content(compliance_framework_a.name)
+          expect(page).to have_content(compliance_framework_b.name)
+          expect(associated_compliance_framework_labels(project_1.name))
             .to include(compliance_framework_for_bulk_action1.name)
-          expect(associated_compliance_framework_label(project_2.name))
+          expect(associated_compliance_framework_labels(project_2.name))
             .to include(compliance_framework_for_bulk_action1.name)
-          expect(associated_compliance_framework_label(project_3.name))
+          expect(associated_compliance_framework_labels(project_3.name))
             .to include(compliance_framework_for_bulk_action1.name)
         end
 
@@ -139,9 +139,11 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
             find_by_testid('select-all-projects-checkbox').click
             find_by_testid('choose-bulk-action').click
             find_by_testid('listbox-item-remove').click
+            find_by_testid('choose-framework').click
+            find_by_testid("listbox-item-#{global_id_of(compliance_framework_for_bulk_action1)}").click
             click_button('Remove')
             wait_for_requests
-            expect(page).not_to have_css('[data-testid="compliance-framework-label"]')
+            expect(page).not_to have_content(compliance_framework_for_bulk_action1.name)
 
             visit(project_path(project_2))
             wait_for_requests
@@ -192,9 +194,13 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
     "gid://gitlab/ComplianceManagement::Framework/#{compliance_framework.id}"
   end
 
-  def associated_compliance_framework_label(project_name)
+  def associated_compliance_framework_labels(project_name)
+    labels = []
     within(find('tr', text: project_name)) do
-      find_by_testid('compliance-framework-label').text
+      all('[data-testid="compliance-framework-label"]').each do |elem|
+        labels << elem.text
+      end
     end
+    labels
   end
 end
