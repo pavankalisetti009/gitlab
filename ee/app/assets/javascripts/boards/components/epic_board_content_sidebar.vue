@@ -16,13 +16,11 @@ import SidebarSubscriptionsWidget from '~/sidebar/components/subscriptions/sideb
 import SidebarTodoWidget from '~/sidebar/components/todo_toggle/sidebar_todo_widget.vue';
 import SidebarLabelsWidget from '~/sidebar/components/labels/labels_select_widget/labels_select_root.vue';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import ColorSelectDropdown from '~/vue_shared/components/color_select_dropdown/color_select_root.vue';
 
 export default {
   ListType,
   components: {
     BoardSidebarTitle,
-    ColorSelectDropdown,
     GlDrawer,
     MountingPortal,
     SidebarAncestorsWidget,
@@ -206,19 +204,6 @@ export default {
         >
           {{ __('None') }}
         </sidebar-labels-widget>
-
-        <color-select-dropdown
-          class="block colors js-colors-block"
-          :allow-edit="canUpdate"
-          :iid="activeBoardCard.iid"
-          :full-path="fullPath"
-          workspace-type="group"
-          issuable-type="epic"
-          variant="sidebar"
-          data-testid="colors-select"
-        >
-          {{ __('None') }}
-        </color-select-dropdown>
 
         <sidebar-confidentiality-widget
           :iid="activeBoardCard.iid"
