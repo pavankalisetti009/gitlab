@@ -48,6 +48,11 @@ module EE
       def self.issuable_epic_updated(issuable)
         ::GitlabSchema.subscriptions.trigger(:issuable_epic_updated, { issuable_id: issuable.to_gid }, issuable)
       end
+
+      def self.workflow_events_updated(checkpoint)
+        ::GitlabSchema.subscriptions.trigger(:workflow_events_updated, { workflow_id: checkpoint.workflow.to_gid },
+          checkpoint)
+      end
     end
   end
 end

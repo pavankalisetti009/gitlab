@@ -31,6 +31,10 @@ module EE
         field :issuable_epic_updated,
           subscription: Subscriptions::IssuableUpdated, null: true,
           description: 'Triggered when the epic of an issuable is updated.'
+
+        field :workflow_events_updated,
+          subscription: ::Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated, null: true,
+          description: 'Triggered when the checkpoints/events of a workflow is updated.'
       end
     end
   end

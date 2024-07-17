@@ -16,6 +16,7 @@ module Ai
 
         return error(checkpoint.errors.full_messages, :bad_request) unless checkpoint.save
 
+        GraphqlTriggers.workflow_events_updated(checkpoint)
         success(checkpoint: checkpoint)
       end
 
