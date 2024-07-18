@@ -5,7 +5,7 @@
 .gl-display-grid.gl-sm-grid-template-columns-2.gl-gap-5.gl-mb-6
   = render Pajamas::CardComponent.new(body_options: { class: 'gl-flex-grow-1' }) do |c|
     - c.with_body do
-      = render Pajamas::SingleStatComponent.new(title: _('Users in License'), stat_value: licensed_users(@license), stat_value_testid: 'users-in-license')
+      = render Pajamas::SingleStatComponent.new(title: _('Users in License'), stat_value: licensed_users(@license), stat_value_testid: 'users-in-license-content')
       - if @license.will_expire?
         = _('Your license is valid from')
         %strong<>
@@ -21,7 +21,7 @@
   = render Pajamas::CardComponent.new(body_options: { class: 'gl-flex-grow-1' }) do |c|
     - c.with_body do
       - billable_users_count = number_with_delimiter @license.daily_billable_users_count
-      = render Pajamas::SingleStatComponent.new(title: _('Billable Users'), stat_value: billable_users_count, stat_value_testid: 'billable-users')
+      = render Pajamas::SingleStatComponent.new(title: _('Billable Users'), stat_value: billable_users_count, stat_value_testid: 'billable-users-content')
       %p
         = safe_format(_('This is the number of %{billable_users_link_start}billable users%{billable_users_link_end} on your installation, and this is the minimum number you need to purchase when you renew your license.'), tag_pair(billable_users_link, :billable_users_link_start, :billable_users_link_end))
     - c.with_footer do
