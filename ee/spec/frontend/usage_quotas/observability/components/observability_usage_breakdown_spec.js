@@ -2,6 +2,7 @@ import { GlSprintf } from '@gitlab/ui';
 import ObservabilityUsageBreakdown from 'ee/usage_quotas/observability/components/observability_usage_breakdown.vue';
 import ObservabilityUsageSectionedBar from 'ee/usage_quotas/observability/components/observability_usage_sectioned_bar.vue';
 import ObservabilityUsageChart from 'ee/usage_quotas/observability/components/observability_usage_chart.vue';
+import ObservabilityUsageNoData from 'ee/usage_quotas/observability/components/observability_usage_no_data.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
 import { mockData, mockEventsData, mockStorageData } from './mock_data';
@@ -29,6 +30,7 @@ describe('ObservabilityUsageBreakdown', () => {
   const findSectionedEventsUsage = () => wrapper.findByTestId('sectioned-events-usage');
   const findStorageUsageChart = () => wrapper.findByTestId('storage-usage-chart');
   const findEventsUsageChart = () => wrapper.findByTestId('events-usage-chart');
+  const findNoDataComponent = () => wrapper.findComponent(ObservabilityUsageNoData);
 
   it('renders a title and subtitle', () => {
     expect(wrapper.find('h3').text()).toBe('Usage breakdown');
@@ -71,6 +73,10 @@ describe('ObservabilityUsageBreakdown', () => {
     it('does not render EventsUsageChart', () => {
       expect(findEventsUsageChart().exists()).toBe(false);
     });
+
+    it('does not render the no data component', () => {
+      expect(findNoDataComponent().exists()).toBe(false);
+    });
   });
 
   describe('if storage data is missing', () => {
@@ -85,5 +91,14 @@ describe('ObservabilityUsageBreakdown', () => {
     it('does not render EventsUsageChart', () => {
       expect(findStorageUsageChart().exists()).toBe(false);
     });
+
+    it('does not render the no data component', () => {
+      expect(findNoDataComponent().exists()).toBe(false);
+    });
+  });
+
+  it('renders the no data component, if events and storage data are missing', () => {
+    mountComponent({ storage: {}, events: {} });
+    expect(findNoDataComponent().exists()).toBe(true);
   });
 });
