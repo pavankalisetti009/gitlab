@@ -90,9 +90,9 @@ RSpec.describe RemoteDevelopment::Workspaces::Update::Main, :rd_fast, feature_ca
           "when an unmatched error is returned, an exception is raised",
           {
             step_class: RemoteDevelopment::Workspaces::Update::Authorizer,
-            returned_message: lazy { Class.new(RemoteDevelopment::Message).new(err_message_content) }
+            returned_message: lazy { Class.new(Gitlab::Fp::Message).new(err_message_content) }
           },
-          RemoteDevelopment::UnmatchedResultError
+          Gitlab::Fp::UnmatchedResultError
         ],
       ]
     end

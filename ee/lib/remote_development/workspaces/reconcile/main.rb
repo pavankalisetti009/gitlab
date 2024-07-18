@@ -5,11 +5,11 @@ module RemoteDevelopment
     module Reconcile
       class Main
         include Messages
-        extend MessageSupport
+        extend Gitlab::Fp::MessageSupport
 
         # @param [Hash] context
         # @return [Hash]
-        # @raise [UnmatchedResultError]
+        # @raise [Gitlab::Fp::UnmatchedResultError]
         def self.main(context)
           initial_result = Gitlab::Fp::Result.ok(context)
 
@@ -43,7 +43,7 @@ module RemoteDevelopment
             }
             { status: :success, payload: message.content }
           else
-            raise UnmatchedResultError.new(result: result)
+            raise Gitlab::Fp::UnmatchedResultError.new(result: result)
           end
         end
       end

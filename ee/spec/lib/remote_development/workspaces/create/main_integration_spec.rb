@@ -55,19 +55,29 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::Main, :freeze_time, feat
     "registry.gitlab.com/gitlab-org/remote-development/gitlab-workspaces-tools:2.0.0"
   end
 
-  let(:settings) do
+  let(:vscode_extensions_gallery) do
     {
-      project_cloner_image: 'alpine/git:2.36.3',
-      tools_injector_image: tools_injector_image_from_settings,
-      vscode_extensions_gallery: {
-        service_url: "https://open-vsx.org/vscode/gallery",
-        item_url: "https://open-vsx.org/vscode/item",
-        resource_url_template: "https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}"
-      }
+      service_url: "https://open-vsx.org/vscode/gallery",
+      item_url: "https://open-vsx.org/vscode/item",
+      resource_url_template: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}"
     }
   end
 
-  let(:context) { { current_user: current_user, params: params, settings: settings } }
+  let(:settings) do
+    {
+      project_cloner_image: 'alpine/git:2.36.3',
+      tools_injector_image: tools_injector_image_from_settings
+    }
+  end
+
+  let(:context) do
+    {
+      current_user: current_user,
+      params: params,
+      settings: settings,
+      vscode_extensions_gallery: vscode_extensions_gallery
+    }
+  end
 
   subject(:response) do
     described_class.main(context)

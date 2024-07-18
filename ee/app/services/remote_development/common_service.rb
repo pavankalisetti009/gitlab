@@ -26,7 +26,7 @@ module RemoteDevelopment
 
       main_class_method = retrieve_single_public_singleton_method(domain_main_class)
 
-      settings = ::RemoteDevelopment::Settings.get_all_settings
+      settings = RemoteDevelopment::Settings.get(RemoteDevelopment::Settings::DefaultSettings.default_settings.keys)
       logger = RemoteDevelopment::Logger.build
 
       response_hash = domain_main_class.singleton_method(main_class_method).call(

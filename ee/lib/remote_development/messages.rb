@@ -10,55 +10,55 @@ module RemoteDevelopment
     #---------------------------------------------------------------
 
     # License error
-    LicenseCheckFailed = Class.new(Message)
+    LicenseCheckFailed = Class.new(Gitlab::Fp::Message)
 
     # Auth errors
-    Unauthorized = Class.new(Message)
+    Unauthorized = Class.new(Gitlab::Fp::Message)
 
     # AgentConfig errors
-    AgentConfigUpdateFailed = Class.new(Message)
+    AgentConfigUpdateFailed = Class.new(Gitlab::Fp::Message)
 
     # Workspace create errors
-    WorkspaceCreateParamsValidationFailed = Class.new(Message)
-    WorkspaceCreateDevfileLoadFailed = Class.new(Message)
-    WorkspaceCreateDevfileYamlParseFailed = Class.new(Message)
-    WorkspaceCreatePreFlattenDevfileValidationFailed = Class.new(Message)
-    WorkspaceCreateDevfileFlattenFailed = Class.new(Message)
-    WorkspaceCreatePostFlattenDevfileValidationFailed = Class.new(Message)
-    PersonalAccessTokenModelCreateFailed = Class.new(Message)
-    WorkspaceModelCreateFailed = Class.new(Message)
-    WorkspaceVariablesModelCreateFailed = Class.new(Message)
-    WorkspaceCreateFailed = Class.new(Message)
+    WorkspaceCreateParamsValidationFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreateDevfileLoadFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreateDevfileYamlParseFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreatePreFlattenDevfileValidationFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreateDevfileFlattenFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreatePostFlattenDevfileValidationFailed = Class.new(Gitlab::Fp::Message)
+    PersonalAccessTokenModelCreateFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceModelCreateFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceVariablesModelCreateFailed = Class.new(Gitlab::Fp::Message)
+    WorkspaceCreateFailed = Class.new(Gitlab::Fp::Message)
 
     # Workspace update errors
-    WorkspaceUpdateFailed = Class.new(Message)
+    WorkspaceUpdateFailed = Class.new(Gitlab::Fp::Message)
 
     # Workspace reconcile errors
-    WorkspaceReconcileParamsValidationFailed = Class.new(Message)
+    WorkspaceReconcileParamsValidationFailed = Class.new(Gitlab::Fp::Message)
 
     # Namespace Cluster Agent Mapping create errors
-    NamespaceClusterAgentMappingAlreadyExists = Class.new(Message)
-    NamespaceClusterAgentMappingCreateFailed = Class.new(Message)
-    NamespaceClusterAgentMappingCreateValidationFailed = Class.new(Message)
+    NamespaceClusterAgentMappingAlreadyExists = Class.new(Gitlab::Fp::Message)
+    NamespaceClusterAgentMappingCreateFailed = Class.new(Gitlab::Fp::Message)
+    NamespaceClusterAgentMappingCreateValidationFailed = Class.new(Gitlab::Fp::Message)
 
     # Namespace Cluster Agent Mapping delete errors
-    NamespaceClusterAgentMappingNotFound = Class.new(Message)
+    NamespaceClusterAgentMappingNotFound = Class.new(Gitlab::Fp::Message)
 
     #---------------------------------------------------------
     # Domain Events - message name should describe the outcome
     #---------------------------------------------------------
 
     # AgentConfig domain events
-    AgentConfigUpdateSkippedBecauseNoConfigFileEntryFound = Class.new(Message)
-    AgentConfigUpdateSuccessful = Class.new(Message)
+    AgentConfigUpdateSkippedBecauseNoConfigFileEntryFound = Class.new(Gitlab::Fp::Message)
+    AgentConfigUpdateSuccessful = Class.new(Gitlab::Fp::Message)
 
     # Workspace domain events
-    WorkspaceCreateSuccessful = Class.new(Message)
-    WorkspaceUpdateSuccessful = Class.new(Message)
-    WorkspaceReconcileSuccessful = Class.new(Message)
+    WorkspaceCreateSuccessful = Class.new(Gitlab::Fp::Message)
+    WorkspaceUpdateSuccessful = Class.new(Gitlab::Fp::Message)
+    WorkspaceReconcileSuccessful = Class.new(Gitlab::Fp::Message)
 
     # Namespace Cluster Agent Mapping domain events
-    NamespaceClusterAgentMappingCreateSuccessful = Class.new(Message)
-    NamespaceClusterAgentMappingDeleteSuccessful = Class.new(Message)
+    NamespaceClusterAgentMappingCreateSuccessful = Class.new(Gitlab::Fp::Message)
+    NamespaceClusterAgentMappingDeleteSuccessful = Class.new(Gitlab::Fp::Message)
   end
 end

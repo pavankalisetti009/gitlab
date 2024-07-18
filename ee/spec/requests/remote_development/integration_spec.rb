@@ -65,7 +65,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GIT_CONFIG_VALUE_1", type: :environment, value: "Workspaces User" },
       { key: "GIT_CONFIG_VALUE_2", type: :environment, value: "workspaces-user@example.org" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_ITEM_URL", type: :environment, value: "https://open-vsx.org/vscode/item" },
-      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/api/{publisher}/{name}/{version}/file/{path}" },
+      { key: "GL_EDITOR_EXTENSIONS_GALLERY_RESOURCE_URL_TEMPLATE", type: :environment, value: "https://open-vsx.org/vscode/unpkg/{publisher}/{name}/{version}/{path}" },
       { key: "GL_EDITOR_EXTENSIONS_GALLERY_SERVICE_URL", type: :environment, value: "https://open-vsx.org/vscode/gallery" },
       { key: "GL_GIT_CREDENTIAL_STORE_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_git_credential_store.sh" },
       { key: "GL_TOKEN_FILE_PATH", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
@@ -228,9 +228,11 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   def simulate_agentk_reconcile_post(workspace_agent_infos:, update_type:, agent_token:)
     # Add `travel(...)` based on full or partial reconciliation interval in response body
-    reconciliation_interval =
-      ::RemoteDevelopment::Settings.get_single_setting(:partial_reconciliation_interval_seconds).to_i
-    travel(reconciliation_interval)
+    partial_reconciliation_interval_seconds = RemoteDevelopment::Settings
+      .get([:full_reconciliation_interval_seconds, :partial_reconciliation_interval_seconds])
+      .fetch(:partial_reconciliation_interval_seconds)
+      .to_i
+    travel(partial_reconciliation_interval_seconds)
 
     jwt_token = JWT.encode(
       { "iss" => Gitlab::Kas::JWT_ISSUER, 'aud' => Gitlab::Kas::JWT_AUDIENCE },
@@ -254,7 +256,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
     reconciliation_interval_from_response =
       response_json.fetch(:settings).fetch(:partial_reconciliation_interval_seconds).to_i
-    expect(reconciliation_interval_from_response).to eq(reconciliation_interval)
+    expect(reconciliation_interval_from_response).to eq(partial_reconciliation_interval_seconds)
 
     response_json
   end

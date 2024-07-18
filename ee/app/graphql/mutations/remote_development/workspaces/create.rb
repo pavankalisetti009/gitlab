@@ -125,7 +125,9 @@ module Mutations
 
           domain_main_class_args = {
             current_user: current_user,
-            params: params
+            params: params,
+            vscode_extensions_gallery:
+              WebIde::Settings.get_single_setting(:vscode_extensions_gallery, user: current_user)
           }
 
           response = ::RemoteDevelopment::CommonService.execute(
