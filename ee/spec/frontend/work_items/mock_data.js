@@ -75,8 +75,14 @@ export const workItemObjectiveMetadataWidgetsEE = {
   },
   WEIGHT: {
     type: 'WEIGHT',
-    __typename: 'WorkItemWidgetWEIGHT',
     weight: 1,
+    rolledUpWeight: 0,
+    widgetDefinition: {
+      editable: true,
+      rollUp: false,
+      __typename: 'WorkItemWidgetDefinitionWeight',
+    },
+    __typename: 'WorkItemWidgetWeight',
   },
   ITERATION: {
     type: 'ITERATION',

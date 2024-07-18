@@ -60,6 +60,11 @@ fragment WorkItemWidgets on WorkItemWidget {
   ...RolledupDatesFragment
   ... on WorkItemWidgetWeight {
     weight
+    rolledUpWeight
+    widgetDefinition {
+      editable
+      rollUp
+    }
   }
   ... on WorkItemWidgetProgress {
     progress

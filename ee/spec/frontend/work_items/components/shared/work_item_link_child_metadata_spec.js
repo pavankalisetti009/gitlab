@@ -60,12 +60,41 @@ describe('WorkItemLinkChildMetadataEE', () => {
     });
   });
 
-  it('renders item weight icon and value', () => {
-    const weightEl = wrapper.findByTestId('item-weight');
+  describe('metadata weight', () => {
+    it('renders item weight icon and value', () => {
+      const weightEl = wrapper.findByTestId('item-weight');
 
-    expect(weightEl.exists()).toBe(true);
-    expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
-    expect(wrapper.findByTestId('weight-value').text().trim()).toBe(`${WEIGHT.weight}`);
+      expect(weightEl.exists()).toBe(true);
+      expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
+      expect(wrapper.findByTestId('weight-value').text().trim()).toBe(`${WEIGHT.weight}`);
+    });
+
+    it('renders rollup weight with icon and value when widget has rollUp weight', () => {
+      const rolledUpWeightWidget = {
+        type: 'WEIGHT',
+        weight: null,
+        rolledUpWeight: 5,
+        widgetDefinition: {
+          editable: false,
+          rollUp: true,
+          __typename: 'WorkItemWidgetDefinitionWeight',
+        },
+        __typename: 'WorkItemWidgetWeight',
+      };
+      createComponent({
+        metadataWidgets: {
+          WEIGHT: rolledUpWeightWidget,
+        },
+      });
+
+      const weightEl = wrapper.findByTestId('item-weight');
+
+      expect(weightEl.exists()).toBe(true);
+      expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
+      expect(wrapper.findByTestId('weight-value').text().trim()).toBe(
+        `${rolledUpWeightWidget.rolledUpWeight}`,
+      );
+    });
   });
 
   describe('dates', () => {

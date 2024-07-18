@@ -930,6 +930,7 @@ export const workItemResponseFactory = ({
   linkedItems = mockEmptyLinkedItems,
   developmentItems = workItemDevelopmentFragmentResponse(),
   color = '#1068bf',
+  editableWeightWidget = true,
 } = {}) => ({
   data: {
     workItem: {
@@ -1020,9 +1021,15 @@ export const workItemResponseFactory = ({
           : { type: 'MOCK TYPE' },
         weightWidgetPresent
           ? {
-              __typename: 'WorkItemWidgetWeight',
               type: 'WEIGHT',
-              weight: 0,
+              weight: null,
+              rolledUpWeight: 0,
+              widgetDefinition: {
+                editable: editableWeightWidget,
+                rollUp: !editableWeightWidget,
+                __typename: 'WorkItemWidgetDefinitionWeight',
+              },
+              __typename: 'WorkItemWidgetWeight',
             }
           : { type: 'MOCK TYPE' },
         iterationWidgetPresent
