@@ -1,21 +1,22 @@
 <script>
-import { GlCard, GlBadge, GlButton, GlCollapse, GlIcon, GlModal } from '@gitlab/ui';
+import { GlBadge, GlButton, GlCollapse, GlIcon, GlModal } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import Pagination from '~/vue_shared/components/pagination_links.vue';
 import { n__, s__, __, sprintf } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { DEPLOYER_RULE_KEY, APPROVER_RULE_KEY } from './constants';
 import CreateProtectedEnvironment from './create_protected_environment.vue';
 
 export default {
   components: {
-    GlCard,
     GlBadge,
     GlButton,
     GlCollapse,
     GlIcon,
     GlModal,
     Pagination,
+    CrudComponent,
     CreateProtectedEnvironment,
   },
   inject: ['entityType'],
@@ -57,7 +58,7 @@ export default {
       return this.pageInfo?.totalPages > 1;
     },
     protectedEnvironmentsCount() {
-      return this.environments.length;
+      return this.environments.length.toString();
     },
     showEmptyMessage() {
       return this.environments.length === 0 && !this.isAddFormVisible;
@@ -108,9 +109,11 @@ export default {
     },
     showAddForm() {
       this.isAddFormVisible = true;
+      this.$refs.crud.showForm();
     },
     hideAddForm() {
       this.isAddFormVisible = false;
+      this.$refs.crud.hideForm();
     },
     completeAddForm() {
       this.hideAddForm();
@@ -132,36 +135,17 @@ export default {
 </script>
 <template>
   <div class="gl-mb-5">
-    <gl-card
-      class="gl-new-card"
-      header-class="gl-new-card-header"
-      body-class="gl-new-card-body gl-px-0"
+    <crud-component
+      ref="crud"
+      :title="$options.i18n.title"
+      icon="environment"
+      :count="protectedEnvironmentsCount"
+      :toggle-text="$options.i18n.newProtectedEnvironment"
       data-testid="new-protected-environment"
     >
-      <template #header>
-        <div class="gl-new-card-title-wrapper">
-          <h3 class="gl-new-card-title">{{ $options.i18n.title }}</h3>
-          <span class="gl-new-card-count" data-testid="protected-environments-count">
-            <gl-icon name="environment" class="gl-mr-2" />
-            {{ protectedEnvironmentsCount }}
-          </span>
-        </div>
-        <div class="gl-new-card-actions">
-          <gl-button
-            v-if="!isAddFormVisible"
-            size="small"
-            data-testid="new-environment-button"
-            @click="showAddForm"
-            >{{ $options.i18n.newProtectedEnvironment }}</gl-button
-          >
-        </div>
+      <template #form>
+        <create-protected-environment @success="completeAddForm" @cancel="hideAddForm" />
       </template>
-
-      <create-protected-environment
-        v-if="isAddFormVisible"
-        @success="completeAddForm"
-        @cancel="hideAddForm"
-      />
 
       <gl-modal
         :visible="isUnprotectModalVisible"
@@ -172,65 +156,63 @@ export default {
         {{ confirmUnprotectText }}
       </gl-modal>
 
-      <div v-if="showEmptyMessage" class="gl-new-card-empty gl-px-5 gl-py-4">
+      <div v-if="showEmptyMessage" class="gl-text-secondary">
         {{ emptyMessage }}
       </div>
       <template v-else>
-        <div
-          v-for="(environment, index) in environments"
-          :key="environment.name"
-          :class="{ 'gl-border-b': !isLast(index) }"
-        >
-          <gl-button
-            block
-            category="tertiary"
-            variant="confirm"
-            class="gl-px-5! gl-py-4! gl-rounded-0!"
-            button-text-classes="gl-display-flex gl-w-full gl-align-items-baseline"
-            :aria-label="environment.name"
-            data-testid="protected-environment-item-toggle"
-            @click="toggleCollapse(environment)"
+        <div class="-gl-mx-5 -gl-my-4">
+          <div
+            v-for="(environment, index) in environments"
+            :key="environment.name"
+            :class="{ 'gl-border-b': !isLast(index) }"
           >
-            <span class="gl-text-gray-900 gl-py-2">{{ environment.name }}</span>
-            <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
-              {{ deploymentRulesText(environment) }}
-            </gl-badge>
-            <gl-badge v-if="!isExpanded(environment)" class="gl-ml-3">
-              {{ approvalRulesText(environment) }}
-            </gl-badge>
-            <gl-icon
-              :name="icon(environment)"
-              :size="14"
-              :class="{
-                'gl-ml-3': !isExpanded(environment),
-                'gl-ml-auto': isExpanded(environment),
-              }"
-              class="gl-text-gray-500"
-            />
-          </gl-button>
-          <gl-collapse
-            :visible="isExpanded(environment)"
-            class="gl-display-flex gl-flex-direction-column gl-mt-3 gl-mx-5 gl-mb-5"
-          >
-            <slot :environment="environment"></slot>
             <gl-button
-              category="secondary"
-              variant="danger"
-              class="gl-mt-5 gl-align-self-end"
-              @click="confirmUnprotect(environment)"
+              block
+              category="tertiary"
+              variant="confirm"
+              class="!gl-px-5 !gl-py-4 !gl-rounded-none"
+              button-text-classes="gl-flex gl-w-full gl-items-baseline"
+              :aria-label="environment.name"
+              data-testid="protected-environment-item-toggle"
+              @click="toggleCollapse(environment)"
             >
-              {{ s__('ProtectedEnvironments|Unprotect') }}
+              <span class="gl-text-gray-900 gl-py-2">{{ environment.name }}</span>
+              <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
+                {{ deploymentRulesText(environment) }}
+              </gl-badge>
+              <gl-badge v-if="!isExpanded(environment)" class="gl-ml-3">
+                {{ approvalRulesText(environment) }}
+              </gl-badge>
+              <gl-icon
+                :name="icon(environment)"
+                :size="14"
+                :class="{
+                  'gl-ml-3': !isExpanded(environment),
+                  'gl-ml-auto': isExpanded(environment),
+                }"
+                class="gl-text-gray-500"
+              />
             </gl-button>
-          </gl-collapse>
+            <gl-collapse
+              :visible="isExpanded(environment)"
+              class="gl-flex gl-flex-col gl-mt-3 gl-mx-5 gl-mb-5"
+            >
+              <slot :environment="environment"></slot>
+              <gl-button
+                category="secondary"
+                variant="danger"
+                class="gl-mt-5 gl-self-end"
+                @click="confirmUnprotect(environment)"
+              >
+                {{ s__('ProtectedEnvironments|Unprotect') }}
+              </gl-button>
+            </gl-collapse>
+          </div>
         </div>
       </template>
-    </gl-card>
-    <pagination
-      v-if="showPagination"
-      :change="setPage"
-      :page-info="pageInfo"
-      align="center"
-      class="gl-mt-3"
-    />
+      <template #pagination>
+        <pagination v-if="showPagination" :change="setPage" :page-info="pageInfo" align="center" />
+      </template>
+    </crud-component>
   </div>
 </template>

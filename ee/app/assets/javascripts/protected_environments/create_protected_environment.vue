@@ -188,7 +188,7 @@ export default {
 };
 </script>
 <template>
-  <gl-form class="gl-new-card-add-form gl-m-4" @submit.prevent="submitForm">
+  <gl-form @submit.prevent="submitForm">
     <div data-testid="new-protected-environment">
       <gl-alert v-if="errorMessage" variant="danger" class="gl-mb-5" @dismiss="errorMessage = ''">
         {{ errorMessage }}

@@ -2,18 +2,15 @@
 
 - expanded = expanded_by_default?
 
-%section.settings.no-animate#pipeline-subscriptions{ class: ('expanded' if expanded), data: { testid: 'pipeline-subscriptions-setting-content' } }
-  .settings-header
-    %h4.settings-title.js-settings-toggle.js-settings-toggle-trigger-only
-      = _("Pipeline subscriptions")
-    = render Pajamas::ButtonComponent.new(button_options: { class: 'js-settings-toggle' }) do
-      = expanded ? _('Collapse') : _('Expand')
-    %p.gl-text-secondary
-      - default_branch_docs = link_to(_("default branch"), help_page_path('user/project/repository/branches/default'))
-      = _("Pipeline subscriptions trigger a new pipeline on the default branch of this project when a pipeline successfully completes for a new tag on the %{default_branch_docs} of the subscribed project.").html_safe % { default_branch_docs: default_branch_docs }
-      = _("A limit of %{ci_project_subscriptions_limit} subscriptions to or from a project applies.").html_safe % { ci_project_subscriptions_limit: @project.actual_limits.ci_project_subscriptions }
-
-  .settings-content
+= render ::Layouts::SettingsBlockComponent.new(_("Pipeline subscriptions"),
+  id: 'pipeline-subscriptions',
+  testid: 'pipeline-subscriptions-setting-content',
+  expanded: expanded) do |c|
+  - c.with_description do
+    - default_branch_docs = link_to(_("default branch"), help_page_path('user/project/repository/branches/default'))
+    = _("Pipeline subscriptions trigger a new pipeline on the default branch of this project when a pipeline successfully completes for a new tag on the %{default_branch_docs} of the subscribed project.").html_safe % { default_branch_docs: default_branch_docs }
+    = _("A limit of %{ci_project_subscriptions_limit} subscriptions to or from a project applies.").html_safe % { ci_project_subscriptions_limit: @project.actual_limits.ci_project_subscriptions }
+  - c.with_body do
     - if Feature.enabled?(:pipeline_subscriptions_vue, @project)
       #js-pipeline-subscriptions-app{ data: { project_path: @project.full_path } }
     - else
