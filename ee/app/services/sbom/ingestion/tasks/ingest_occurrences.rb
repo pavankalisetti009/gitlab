@@ -94,11 +94,7 @@ module Sbom
 
           return true unless existing_occurrence
 
-          compared_attributes = new_attributes.keys
-          if Feature.enabled?(:skip_sbom_occurrences_update_on_pipeline_id_change, project)
-            compared_attributes -= PIPELINE_ATTRIBUTES_KEYS
-          end
-
+          compared_attributes = new_attributes.keys - PIPELINE_ATTRIBUTES_KEYS
           stable_new_attributes = new_attributes.deep_symbolize_keys.slice(*compared_attributes)
           stable_existing_attributes = existing_occurrence.attributes.deep_symbolize_keys.slice(*compared_attributes)
 
