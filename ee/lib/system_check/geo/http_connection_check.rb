@@ -36,9 +36,9 @@ module SystemCheck
         response = Gitlab::HTTP.get(node.internal_uri, allow_local_requests: true, limit: 10)
 
         if response.code_type == Net::HTTPOK
-          $stdout.puts 'yes'.color(:green)
+          $stdout.puts Rainbow('yes').green
         else
-          $stdout.puts 'no'.color(:red)
+          $stdout.puts Rainbow('no').red
         end
       rescue Errno::ECONNREFUSED => e
         display_exception(e)
@@ -74,8 +74,8 @@ module SystemCheck
       end
 
       def display_exception(exception)
-        $stdout.puts 'no'.color(:red)
-        $stdout.puts '  Reason:'.color(:blue)
+        $stdout.puts Rainbow('no').red
+        $stdout.puts Rainbow('  Reason:').blue
         $stdout.puts "  #{exception.message}"
       end
 

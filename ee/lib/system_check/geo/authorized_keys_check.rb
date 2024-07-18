@@ -121,7 +121,7 @@ module SystemCheck
           return
         end
 
-        $stdout.puts 'yes'.color(:green)
+        $stdout.puts Rainbow('yes').green
         true
       end
 

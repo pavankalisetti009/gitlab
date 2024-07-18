@@ -20,7 +20,7 @@ module SystemCheck
 
       def multi_check
         unless Gitlab::Geo.geo_database_configured?
-          $stdout.puts 'no'.color(:red)
+          $stdout.puts Rainbow('no').red
           try_fixing_it(WRONG_CONFIGURATION_MESSAGE)
           for_more_information(database_docs)
 
@@ -28,7 +28,7 @@ module SystemCheck
         end
 
         unless connection_healthy?
-          $stdout.puts 'no'.color(:red)
+          $stdout.puts Rainbow('no').red
           try_fixing_it(UNHEALTHY_CONNECTION_MESSAGE)
           for_more_information(database_docs)
 
@@ -36,7 +36,7 @@ module SystemCheck
         end
 
         unless tables_present?
-          $stdout.puts 'no'.color(:red)
+          $stdout.puts Rainbow('no').red
           try_fixing_it(NO_TABLES_MESSAGE)
           for_more_information(database_docs)
 
@@ -44,14 +44,14 @@ module SystemCheck
         end
 
         unless fresh_database?
-          $stdout.puts 'no'.color(:red)
+          $stdout.puts Rainbow('no').red
           try_fixing_it(REUSING_EXISTING_DATABASE_MESSAGE)
           for_more_information(troubleshooting_docs)
 
           return false
         end
 
-        $stdout.puts 'yes'.color(:green)
+        $stdout.puts Rainbow('yes').green
         true
       end
 
