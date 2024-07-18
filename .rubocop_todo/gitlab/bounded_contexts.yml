@@ -2108,6 +2108,7 @@ Gitlab/BoundedContexts:
     - 'app/workers/issuable_export_csv_worker.rb'
     - 'app/workers/issue_due_scheduler_worker.rb'
     - 'app/workers/issues/close_worker.rb'
+    - 'app/workers/issues/copy_timelogs_worker.rb'
     - 'app/workers/issues/placement_worker.rb'
     - 'app/workers/issues/rebalancing_worker.rb'
     - 'app/workers/issues/reschedule_stuck_issue_rebalances_worker.rb'
