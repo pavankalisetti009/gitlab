@@ -11,7 +11,7 @@ namespace :gitlab do
       geo_node = current_node_status.geo_node
 
       unless geo_node.secondary?
-        puts 'This command is only available on a secondary node'.color(:red)
+        puts Rainbow('This command is only available on a secondary node').red
         exit
       end
 
@@ -23,14 +23,14 @@ namespace :gitlab do
       complete = status_check.replication_verification_complete?
 
       if complete
-        puts 'SUCCESS - Replication is up-to-date.'.color(:green)
+        puts Rainbow('SUCCESS - Replication is up-to-date.').green
         exit 0
       else
-        puts "ERROR - Replication is not up-to-date. \n"\
+        puts Rainbow("ERROR - Replication is not up-to-date. \n"\
         "Please see documentation to complete replication: "\
         "https://docs.gitlab.com/ee/administration/geo/disaster_recovery"\
-        "/planned_failover.html#ensure-geo-replication-is-up-to-date"
-               .color(:red)
+        "/planned_failover.html#ensure-geo-replication-is-up-to-date")
+               .red
         exit 1
       end
     end
@@ -38,7 +38,7 @@ namespace :gitlab do
     desc 'GitLab | Geo | Check Geo database replication'
     task check_database_replication_working: :gitlab_environment do
       unless ::Gitlab::Geo.secondary?
-        abort 'This command is only available on a secondary node'.color(:red)
+        abort Rainbow('This command is only available on a secondary node').red
       end
 
       geo_health_check = Gitlab::Geo::HealthCheck.new
@@ -47,17 +47,17 @@ namespace :gitlab do
       success = enabled && geo_health_check.replication_working?
 
       if success
-        puts 'SUCCESS - Database replication is working.'.color(:green)
+        puts Rainbow('SUCCESS - Database replication is working.').green
       elsif enabled
-        abort "ERROR - Database replication is enabled, but not working.\n"\
+        abort Rainbow("ERROR - Database replication is enabled, but not working.\n"\
               "This rake task is intended for programmatic use. Please run\n"\
               "the full Geo check task for more information:\n"\
-              "  gitlab-rake gitlab:geo:check".color(:red)
+              "  gitlab-rake gitlab:geo:check").red
       else
-        abort "ERROR - Database replication is not enabled.\n"\
+        abort Rainbow("ERROR - Database replication is not enabled.\n"\
               "This rake task is intended for programmatic use. Please run\n"\
               "the full Geo check task for more information:\n"\
-              "  gitlab-rake gitlab:geo:check".color(:red)
+              "  gitlab-rake gitlab:geo:check").red
       end
     end
 
