@@ -67,6 +67,26 @@ export default {
   },
 
   computed: {
+    dynamicMigratePipelineToPolicyPath() {
+      if (!this.formData.pipelineConfigurationFullPath) {
+        // create new policy
+        return this.pipelineExecutionPolicyPath;
+      }
+
+      return (
+        `${this.pipelineExecutionPolicyPath}&path=${this.formData.pipelineConfigurationFullPath}` +
+        `&compliance_framework_id=${this.$route.params.id}`
+      );
+    },
+    deprecationWarningButtonText() {
+      if (!this.formData.pipelineConfigurationFullPath) {
+        // create new ploicy
+        return this.$options.i18n.deprecationWarning.migratePipelineToPolicyEmpty;
+      }
+
+      // migrate pipeline to policy
+      return this.$options.i18n.deprecationWarning.migratePipelineToPolicy;
+    },
     pipelineConfigurationFeedbackMessage() {
       if (!this.isValidPipelineConfigurationFormat) {
         return this.$options.i18n.pipelineConfigurationInputInvalidFormat;
@@ -272,10 +292,11 @@ export default {
           <gl-button
             category="primary"
             variant="confirm"
-            :href="migratePipelineToPolicyPath"
+            data-testid="migrate-action-button"
+            :href="dynamicMigratePipelineToPolicyPath"
             target="_blank"
           >
-            {{ $options.i18n.deprecationWarning.migratePipelineToPolicy }}
+            {{ deprecationWarningButtonText }}
           </gl-button>
 
           <gl-button class="gl-ml-5" @click="handleOnDismissMaintenanceMode">

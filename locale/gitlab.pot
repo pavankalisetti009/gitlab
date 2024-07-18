@@ -13665,6 +13665,9 @@ msgstr ""
 msgid "ComplianceReport|Create a new framework"
 msgstr ""
 
+msgid "ComplianceReport|Create policy"
+msgstr ""
+
 msgid "ComplianceReport|Dismiss"
 msgstr ""
 

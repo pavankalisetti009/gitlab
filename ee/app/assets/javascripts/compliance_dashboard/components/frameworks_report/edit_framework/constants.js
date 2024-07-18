@@ -96,6 +96,7 @@ export const i18n = {
     ),
     dismiss: s__('ComplianceReport|Dismiss'),
     migratePipelineToPolicy: s__('ComplianceReport|Migrate pipeline to a policy'),
+    migratePipelineToPolicyEmpty: s__('ComplianceReport|Create policy'),
   },
 
   projects: s__('ComplianceFrameworks|Projects'),

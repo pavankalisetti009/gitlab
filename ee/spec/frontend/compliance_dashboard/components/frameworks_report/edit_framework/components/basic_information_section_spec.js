@@ -1,3 +1,5 @@
+import Vue from 'vue';
+import VueRouter from 'vue-router';
 import { __ } from '~/locale';
 import * as Utils from 'ee/groups/settings/compliance_frameworks/utils';
 import BasicInformationSection from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/basic_information_section.vue';
@@ -6,6 +8,7 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
 describe('Basic information section', () => {
+  Vue.use(VueRouter);
   let wrapper;
   const fakeFramework = {
     id: '1',
@@ -26,6 +29,8 @@ describe('Basic information section', () => {
   const invalidFeedback = (input) =>
     input.closest('[role=group].is-invalid')?.querySelector('.invalid-feedback').textContent ?? '';
 
+  const router = new VueRouter();
+
   function createComponent(props, provides) {
     return mountExtended(BasicInformationSection, {
       provide: {
@@ -39,9 +44,11 @@ describe('Basic information section', () => {
       stubs: {
         ColorPicker: true,
       },
+      router,
     });
   }
   const findMaintenanceAlert = () => wrapper.findComponentByTestId('maintenance-mode-alert');
+  const findMigrationActionButton = () => wrapper.findComponentByTestId('migrate-action-button');
 
   beforeEach(() => {
     wrapper = createComponent();
@@ -100,11 +107,24 @@ describe('Basic information section', () => {
     expect(wrapper.findComponent(EditSection).props('initiallyExpanded')).toBe(true);
   });
 
-  it('renders the maintenance-mode-alert', () => {
+  it('renders the maintenance-mode-alert', async () => {
     const maintenanceAlert = findMaintenanceAlert();
+    const actionButton = findMigrationActionButton();
 
     expect(maintenanceAlert.exists()).toBe(true);
     expect(maintenanceAlert.text()).toContain('Compliance pipelines are deprecated');
+
+    expect(actionButton.text()).toContain('Create policy');
+    expect(actionButton.attributes('href')).toEqual('/policypath');
+
+    jest.spyOn(Utils, 'fetchPipelineConfigurationFileExists').mockReturnValue(false);
+    const pipelineYAMLPath = 'file.yaml@group/project';
+    const pipelineInput = wrapper.findByLabelText('Compliance pipeline configuration (optional)');
+    await pipelineInput.setValue(pipelineYAMLPath);
+    await waitForPromises();
+
+    expect(actionButton.text()).toContain('Migrate pipeline to a policy');
+    expect(actionButton.attributes('href')).toContain(pipelineYAMLPath);
   });
 
   describe('when ff_compliance_pipeline_maintenance_mode feature flag is disabled', () => {
