@@ -2,7 +2,7 @@
 import { GlColumnChart } from '@gitlab/ui/dist/charts';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { __ } from '~/locale';
-import { numberToHumanSize } from '~/lib/utils/number_utils';
+import { numberToHumanSize, numberToMetricPrefix } from '~/lib/utils/number_utils';
 
 export default {
   name: 'ObservabilityUsageChart',
@@ -40,7 +40,7 @@ export default {
       if (this.usageData.data_unit === 'bytes') {
         return numberToHumanSize(params.value);
       }
-      return params.value;
+      return numberToMetricPrefix(params.value, true);
     },
   },
 };

@@ -70,6 +70,6 @@ describe('ObservabilityUsageChart', () => {
   it('renders the tooltip value as it is if unit is not bytes', () => {
     mountComponent({ mockTooltipValue: 10000, usageData: { ...mockUsageData, data_unit: '' } });
 
-    expect(findColumnChart().text()).toBe('10000');
+    expect(findColumnChart().text()).toBe('10K');
   });
 });

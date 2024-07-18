@@ -50,14 +50,14 @@ describe('ObservabilityUsageChart', () => {
     });
     it('renders a SectionedPercentageBar component formatting values to human size', () => {
       expect(findSectionedPercentageBar().props('sections')).toEqual([
-        { formattedValue: 986845920, id: 'logs', label: 'logs', value: 986845920 },
-        { formattedValue: 1251314399, id: 'metrics', label: 'metrics', value: 1251314399 },
-        { formattedValue: 34428565748, id: 'traces', label: 'traces', value: 34428565748 },
+        { formattedValue: '986.8M', id: 'logs', label: 'logs', value: 986845920 },
+        { formattedValue: '1251.3M', id: 'metrics', label: 'metrics', value: 1251314399 },
+        { formattedValue: '34428.6M', id: 'traces', label: 'traces', value: 34428565748 },
       ]);
     });
 
     it('renders the total usage to human size if data_unit is bytes', () => {
-      expect(wrapper.text()).toBe('36666.7m events');
+      expect(wrapper.text()).toBe('36666.7M events');
     });
   });
 });
