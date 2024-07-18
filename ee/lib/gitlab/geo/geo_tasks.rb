@@ -11,9 +11,9 @@ module Gitlab
         node.save
 
         if node.persisted?
-          puts "#{node.url} is now the primary Geo node".color(:green)
+          puts Rainbow("#{node.url} is now the primary Geo node").green
         else
-          puts "Error saving Geo node:\n#{node.errors.full_messages.join("\n")}".color(:red)
+          puts Rainbow("Error saving Geo node:\n#{node.errors.full_messages.join("\n")}").red
         end
       end
 
@@ -26,12 +26,12 @@ module Gitlab
           abort 'Current node is not identified' unless current_node
 
           if current_node.primary?
-            puts "#{current_node.url} is already the primary Geo site".color(:green)
+            puts Rainbow("#{current_node.url} is already the primary Geo site").green
           else
             primary_node.destroy
             current_node.update!(primary: true, enabled: true)
 
-            puts "#{current_node.url} is now the primary Geo site".color(:green)
+            puts Rainbow("#{current_node.url} is now the primary Geo site").green
           end
         end
       end
@@ -40,16 +40,16 @@ module Gitlab
         node = Gitlab::Geo.primary_node
 
         unless node.present?
-          puts 'This is not a primary node'.color(:red)
+          puts Rainbow('This is not a primary node').red
           exit 1
         end
 
         puts "Updating primary Geo node with URL #{node.url} ..."
 
         if node.update(name: GeoNode.current_node_name, url: GeoNode.current_node_url)
-          puts "#{node.url} is now the primary Geo node URL".color(:green)
+          puts Rainbow("#{node.url} is now the primary Geo node URL").green
         else
-          puts "Error saving Geo node:\n#{node.errors.full_messages.join("\n")}".color(:red)
+          puts Rainbow("Error saving Geo node:\n#{node.errors.full_messages.join("\n")}").red
           exit 1
         end
       end
@@ -77,7 +77,7 @@ module Gitlab
 
         puts "Sidekiq Queues: Waiting for all non-Geo queues to be empty"
         sleep(1) until all_sidekiq_queues.select { |queue| !geo_queue?(queue) && queue_has_jobs?(queue) }.empty?
-        puts "Sidekiq Queues: Non-Geo queues empty".color(:green)
+        puts Rainbow("Sidekiq Queues: Non-Geo queues empty").green
       end
 
       def wait_until_replicated_and_verified
@@ -95,7 +95,7 @@ module Gitlab
       def drain_geo_secondary_queues
         puts "Sidekiq Queues: Waiting for all Geo queues to be empty"
         sleep(1) until all_sidekiq_queues.select { |queue| geo_queue?(queue) && queue_has_jobs?(queue) }.empty?
-        puts "Sidekiq Queues: Geo queues empty".color(:green)
+        puts Rainbow("Sidekiq Queues: Geo queues empty").green
       end
 
       # With no user activity on the primary site, we expect no new Geo update events to arrive after waiting
@@ -103,13 +103,13 @@ module Gitlab
       def wait_for_database_replication
         puts "Database replication: Waiting for database replication to catch up"
         sleep(Gitlab::Geo::HealthCheck.new.db_replication_lag_seconds)
-        puts "Database replication: Caught up".color(:green)
+        puts Rainbow("Database replication: Caught up").green
       end
 
       def wait_for_geo_log_cursor
         puts "Geo log cursor: Wait Geo log cursor to have processed all events on this secondary"
         sleep(1) until geo_log_cursor_is_caught_up?
-        puts "Geo log cursor: Caught up".color(:green)
+        puts Rainbow("Geo log cursor: Caught up").green
       end
 
       def wait_for_data_replication_and_verification
@@ -126,7 +126,7 @@ module Gitlab
           status_check = do_status_check
           i += 1
         end
-        puts "Data replication/verification: All data successfully replicated and verified".color(:green)
+        puts Rainbow("Data replication/verification: All data successfully replicated and verified").green
       end
 
       def do_status_check
