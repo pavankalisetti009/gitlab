@@ -53,7 +53,7 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :continuous_integration d
         describe 'language detection' do
           using RSpec::Parameterized::TableSyntax
 
-          where(:case_name, :files, :variables, :include_build_names) do
+          where(:case_name, :files, :variables, :jobs) do
             'Apex'                 | { 'app.cls' => '' }                                    | {}                                         | %w[pmd-apex-sast]
             'C'                    | { 'app.c' => '' }                                      | {}                                         | %w[semgrep-sast]
             'C++'                  | { 'app.cpp' => '' }                                    | {}                                         | %w[semgrep-sast]
@@ -87,9 +87,7 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :continuous_integration d
               end
             end
 
-            it 'creates a pipeline with the expected jobs' do
-              expect(build_names).to include(*include_build_names)
-            end
+            it_behaves_like 'acts as branch pipeline', params[:jobs]
           end
         end
       end
