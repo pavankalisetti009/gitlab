@@ -3,7 +3,7 @@
 module Elastic
   module Latest
     class MergeRequestInstanceProxy < ApplicationInstanceProxy
-      SCHEMA_VERSION = 24_07
+      SCHEMA_VERSION = 24_08
       def as_indexed_json(_options = {})
         # We don't use as_json(only: ...) because it calls all virtual and serialized attributtes
         # https://gitlab.com/gitlab-org/gitlab/issues/349
