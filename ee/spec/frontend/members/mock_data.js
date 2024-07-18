@@ -58,9 +58,18 @@ export const updateableCustomRoleMember = {
   ...upgradedMember,
   isDirectMember: true,
   canUpdate: true,
-  memberPath: 'user/path/238',
+  memberPath: 'group/path/-/group_members/238',
   namespace: 'user',
 };
+
+export const ldapMember = {
+  ...updateableCustomRoleMember,
+  canOverride: true,
+  isOverridden: false,
+  ldapOverridePath: 'group/path/-/group_members/238/override',
+};
+
+export const ldapOverriddenMember = { ...ldapMember, isOverridden: true };
 
 // eslint-disable-next-line import/export
 export const dataAttribute = JSON.stringify({

@@ -33,7 +33,6 @@ export default {
       seatsInSubscription: null,
       newBillableUserCount: null,
       groupName: null,
-      isModalVisible: false,
     };
   },
   computed: {
@@ -63,7 +62,9 @@ export default {
         // Skip if the member is already assigned a role that uses a seat because the seat usage won't increase.
         this.member.usingLicense ||
         // Skip if the new role does not occupy a seat because it won't cause an overage.
-        !this.role.occupiesSeat
+        !this.role.occupiesSeat ||
+        // Skip if this member is an LDAP user, the LDAP feature is only for self-managed instances.
+        this.member.canOverride
       );
     },
     isGroup() {
@@ -76,10 +77,11 @@ export default {
     async checkOverage() {
       try {
         if (this.shouldSkipConfirmationCheck) {
-          this.emitConfirm();
+          this.emitEvent('confirm');
           return;
         }
 
+        this.$emit('busy', true);
         const response = await this.$apollo.query({
           query: getBillableUserCountChanges,
           fetchPolicy: fetchPolicies.NO_CACHE,
@@ -97,7 +99,7 @@ export default {
           response?.data?.group?.gitlabSubscriptionsPreviewBillableUserChange || {};
         // If the overage won't increase or if there's no subscription data, don't show the modal.
         if (!willIncreaseOverage || isNil(seatsInSubscription) || isNil(newBillableUserCount)) {
-          this.emitConfirm();
+          this.emitEvent('confirm');
           return;
         }
 
@@ -105,13 +107,23 @@ export default {
         this.groupName = response.data.group.name;
         this.seatsInSubscription = seatsInSubscription;
         this.newBillableUserCount = newBillableUserCount;
-        this.isModalVisible = true;
+        this.$refs.modal.show();
       } catch (error) {
-        this.$emit('error', error);
+        this.emitEvent('error', error);
       }
     },
-    emitConfirm() {
-      this.$emit('confirm');
+    emitEvent(eventName, eventData) {
+      // The busy event must be emitted before the actual event so that the busy event handler is called before the
+      // actual event handler. Otherwise, if the actual event handler awaits a promise, the busy handler will be called
+      // after the promise is started but before it resolves.
+      this.$emit('busy', false);
+      this.$emit(eventName, eventData);
+    },
+    processModalClose({ trigger }) {
+      // Only clicking on the OK button is a confirmation. All other triggers (cancel click, backdrop click, click on
+      // upper right X icon, and Esc key press) is a cancellation.
+      const eventName = trigger === 'ok' ? 'confirm' : 'cancel';
+      this.emitEvent(eventName);
     },
   },
   actionPrimary: { text: s__('MembersOverage|Continue with overages') },
@@ -120,26 +132,27 @@ export default {
 </script>
 
 <template>
-  <gl-modal
-    ref="modal"
-    v-model="isModalVisible"
-    modal-id="guest-overage-confirmation-modal"
-    :title="s__('MembersOverage|You are about to incur additional charges')"
-    :action-primary="$options.actionPrimary"
-    :action-cancel="$options.actionCancel"
-    size="sm"
-    no-focus-on-show
-    @primary="emitConfirm"
-    @canceled="$emit('cancel')"
-  >
-    {{ currentSeatCountMessage }}
-    <gl-sprintf :message="newSeatCountMessage">
-      <template #groupName>{{ groupName }}</template>
-      <template #seatCount>{{ newBillableUserCount }}</template>
-    </gl-sprintf>
-    <gl-link :href="reconciliationDocsPath" target="_blank" class="gl-display-inline-block">
-      {{ __('Learn more') }}
-      <gl-icon name="external-link" />
-    </gl-link>
-  </gl-modal>
+  <div>
+    <slot :check-overage="checkOverage"></slot>
+    <gl-modal
+      ref="modal"
+      modal-id="guest-overage-confirmation-modal"
+      :title="s__('MembersOverage|You are about to incur additional charges')"
+      :action-primary="$options.actionPrimary"
+      :action-cancel="$options.actionCancel"
+      size="sm"
+      no-focus-on-show
+      @hide="processModalClose"
+    >
+      {{ currentSeatCountMessage }}
+      <gl-sprintf :message="newSeatCountMessage">
+        <template #groupName>{{ groupName }}</template>
+        <template #seatCount>{{ newBillableUserCount }}</template>
+      </gl-sprintf>
+      <gl-link :href="reconciliationDocsPath" target="_blank" class="gl-inline-block">
+        {{ __('Learn more') }}
+        <gl-icon name="external-link" />
+      </gl-link>
+    </gl-modal>
+  </div>
 </template>

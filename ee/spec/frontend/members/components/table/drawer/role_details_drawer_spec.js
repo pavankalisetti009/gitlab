@@ -1,89 +1,62 @@
-import { GlDrawer, GlBadge, GlSprintf, GlIcon, GlAlert } from '@gitlab/ui';
-import MockAdapter from 'axios-mock-adapter';
-import axios from 'axios';
+import { GlIcon, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleDetailsDrawer from '~/members/components/table/drawer/role_details_drawer.vue';
-import MembersTableCell from '~/members/components/table/members_table_cell.vue';
-import RoleSelector from '~/members/components/role_selector.vue';
+import { stubComponent } from 'helpers/stub_component';
+import MembersTableCell from 'ee/members/components/table/members_table_cell.vue';
+import RoleBadges from 'ee/members/components/table/role_badges.vue';
 import { roleDropdownItems } from 'ee/members/utils';
 import waitForPromises from 'helpers/wait_for_promises';
-import GuestOverageConfirmation from 'ee/members/components/table/drawer/guest_overage_confirmation.vue';
-import { stubComponent } from 'helpers/stub_component';
-import { member as baseRoleMember, updateableCustomRoleMember } from '../../../mock_data';
+import {
+  member as baseRoleMember,
+  updateableCustomRoleMember,
+  updateableMember,
+} from '../../../mock_data';
 
 describe('Role details drawer', () => {
   const { permissions } = updateableCustomRoleMember.customRoles[1];
   const dropdownItems = roleDropdownItems(updateableCustomRoleMember);
-  const customRole1 = dropdownItems.flatten[7];
-  const customRole2 = dropdownItems.flatten[8];
-  const checkOverageStub = jest.fn();
-  let axiosMock;
+  const currentRole = dropdownItems.flatten[7];
   let wrapper;
 
   const createWrapper = ({ member = updateableCustomRoleMember } = {}) => {
     wrapper = shallowMountExtended(RoleDetailsDrawer, {
-      propsData: { member, memberPath: 'user/path/:id' },
-      provide: {
-        currentUserId: 1,
-        canManageMembers: true,
-        group: { path: 'group/path' },
-      },
+      propsData: { member },
       stubs: {
-        GlDrawer,
-        MembersTableCell,
         GlSprintf,
-        GuestOverageConfirmation: stubComponent(GuestOverageConfirmation, {
-          methods: { checkOverage: checkOverageStub },
+        MembersTableCell: stubComponent(MembersTableCell, {
+          render() {
+            return this.$scopedSlots.default({
+              memberType: 'user',
+              isCurrentUser: false,
+              permissions: { canUpdate: member.canUpdate },
+            });
+          },
         }),
       },
     });
   };
 
-  const findRoleSelector = () => wrapper.findComponent(RoleSelector);
-  const findCustomRoleBadge = () => wrapper.findComponent(GlBadge);
+  const findRoleText = () => wrapper.findByTestId('role-text');
   const findBaseRole = () => wrapper.findByTestId('base-role');
   const findPermissions = () => wrapper.findAllByTestId('permission');
   const findPermissionAt = (index) => findPermissions().at(index);
   const findPermissionNameAt = (index) => wrapper.findAllByTestId('permission-name').at(index);
   const findPermissionDescriptionAt = (index) =>
     wrapper.findAllByTestId('permission-description').at(index);
-  const findSaveButton = () => wrapper.findByTestId('save-button');
-  const findGuestOverageConfirmation = () => wrapper.findComponent(GuestOverageConfirmation);
 
-  // Create wrapper, change role, then click save button.
-  const createWrapperChangeRoleAndClickSave = async () => {
-    createWrapper({ member: updateableCustomRoleMember });
-    findRoleSelector().vm.$emit('input', customRole2);
-    await nextTick();
-    findSaveButton().vm.$emit('click');
+  it('shows role badges', async () => {
+    createWrapper();
+    await waitForPromises();
 
-    return waitForPromises();
-  };
-
-  const createWrapperAndEmitOverageEvent = async ({ member, eventName = 'confirm' } = {}) => {
-    await createWrapperChangeRoleAndClickSave(member);
-    findGuestOverageConfirmation().vm.$emit(eventName);
-
-    return waitForPromises();
-  };
-
-  beforeEach(() => {
-    axiosMock = new MockAdapter(axios);
-  });
-
-  afterEach(() => {
-    axiosMock.restore();
+    expect(wrapper.findComponent(RoleBadges).props()).toEqual({
+      member: updateableCustomRoleMember,
+      role: currentRole,
+    });
   });
 
   describe('when the member has a base role', () => {
-    beforeEach(() => {
-      createWrapper({ member: baseRoleMember });
-    });
-
-    it('does not show the custom role badge', () => {
-      expect(findCustomRoleBadge().exists()).toBe(false);
-    });
+    beforeEach(() => createWrapper({ member: baseRoleMember }));
 
     it('does not show the base role in the permissions section', () => {
       expect(findBaseRole().exists()).toBe(false);
@@ -95,12 +68,17 @@ describe('Role details drawer', () => {
   });
 
   describe('when the member has a custom role', () => {
-    beforeEach(() => {
-      createWrapper();
-    });
+    beforeEach(createWrapper);
 
-    it('shows the custom role badge', () => {
-      expect(findCustomRoleBadge().text()).toBe('Custom role');
+    it('shows "No description" when there is no role description', async () => {
+      // Create a member that's assigned to a non-existent custom role.
+      const member = { ...updateableMember, accessLevel: { memberRoleId: 999 } };
+      wrapper.setProps({ member });
+      await nextTick();
+      const noDescriptionSpan = wrapper.findByTestId('description-value').find('span');
+
+      expect(noDescriptionSpan.text()).toBe('No description');
+      expect(noDescriptionSpan.classes('gl-text-gray-400')).toBe(true);
     });
 
     it('shows the base role in the permissions section', () => {
@@ -128,39 +106,13 @@ describe('Role details drawer', () => {
     });
   });
 
-  describe('when update role button is clicked for a custom role', () => {
-    beforeEach(() => {
-      axiosMock.onPut('user/path/238').replyOnce(200);
-      return createWrapperChangeRoleAndClickSave();
-    });
+  // Minimal Access and logged out users can't see custom roles data, but should still see the custom role name.
+  describe('when the user does not have access to custom roles data', () => {
+    it('shows the custom role name', () => {
+      const member = { ...updateableCustomRoleMember, customRoles: [], canUpdate: false };
+      createWrapper({ member });
 
-    it('does not call update role API', () => {
-      expect(axiosMock.history.put).toHaveLength(0);
-    });
-
-    it('checks overage', () => {
-      expect(checkOverageStub).toHaveBeenCalledTimes(1);
-    });
-  });
-
-  describe('guest overage confirmation', () => {
-    it('calls update role API when guest confirmation is confirmed', async () => {
-      await createWrapperAndEmitOverageEvent({ eventName: 'confirm' });
-      const expectedData = JSON.stringify({ access_level: 10, member_role_id: 102 });
-
-      expect(axiosMock.history.put[0].data).toBe(expectedData);
-    });
-
-    it('resets role when guest confirmation is canceled', async () => {
-      await createWrapperAndEmitOverageEvent({ eventName: 'cancel' });
-
-      expect(findRoleSelector().props('value')).toEqual(customRole1);
-    });
-
-    it('shows error message if confirmation check failed', async () => {
-      await createWrapperAndEmitOverageEvent({ eventName: 'error' });
-
-      expect(wrapper.findComponent(GlAlert).text()).toBe('Could not check guest overage.');
+      expect(findRoleText().text()).toBe('custom role 1');
     });
   });
 });
