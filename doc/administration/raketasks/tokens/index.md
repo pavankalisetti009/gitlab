@@ -14,12 +14,12 @@ DETAILS:
 
 ## Analyze token expiration dates
 
-GitLab provides a Rake task that analyzes personal, project, and group access tokens and
-displays the top ten most common expiration dates. In GitLab 16.0, a [background migration](https://gitlab.com/gitlab-org/gitlab/-/issues/369123) assigned
-an expiration date of one year after an access token was created. This tool helps
-identify which tokens might have been affected by this migration.
+In GitLab 16.0, a [background migration](https://gitlab.com/gitlab-org/gitlab/-/issues/369123)
+gave all non-expiring personal, project, and group access tokens an expiration date set at one
+year after those tokens were created.
 
-To see the breakdown, run:
+To identify which tokens might have been affected by this migration, you can run a
+Rake task that analyses all access tokens and displays the top ten most common expiration dates:
 
    ::Tabs
 
@@ -53,7 +53,7 @@ To see the breakdown, run:
    ::EndTabs
 
 This task analyzes all the access tokens and groups them by expiration date.
-The left column shows the expiration date, and the right shows how many tokens
+The left column shows the expiration date, and the right column shows how many tokens
 have that expiration date. Example output:
 
 ```plaintext
@@ -84,9 +84,14 @@ tokens were created manually with the same date.
 
 ## Update expiration dates in bulk
 
-GitLab provides another Rake task that allows an administrator to extend
-or remove expiration dates from token in bulk. This tool requires an
-interactive terminal.
+Prerequisites:
+
+You must:
+
+- Be an administrator.
+- Have an interactive terminal.
+
+Run the following Rake task to extend or remove expiration dates from tokens in bulk:
 
 1. Run the tool:
 
@@ -121,9 +126,8 @@ interactive terminal.
 
    ::EndTabs
 
-   After the tool starts, it shows the output from the analyze step
-   described above plus an additional prompt about modifying the expiration
-   dates:
+   After the tool starts, it shows the output from the [analyze step](#analyze-token-expiration-dates)
+   plus an additional prompt about modifying the expiration dates:
 
    ```plaintext
    ======= Personal/Project/Group Access Token Expiration Migration =======
@@ -151,7 +155,7 @@ interactive terminal.
 
 ### Extend expiration dates
 
-To extend expirations dates on all tokens matching a given expiration date:
+To extend expiration dates on all tokens matching a given expiration date:
 
 1. Select option 1, `Extend expiration date`:
 
@@ -162,7 +166,7 @@ To extend expirations dates on all tokens matching a given expiration date:
      3. Quit
    ```
 
-1. Tthe tool asks you to select one of the expiration dates listed. For example:
+1. The tool asks you to select one of the expiration dates listed. For example:
 
    ```plaintext
    Select an expiration date (Press ↑/↓/←/→ arrow to move and Enter to select)
@@ -195,7 +199,7 @@ To extend expirations dates on all tokens matching a given expiration date:
    ```
 
    The default is one year from the selected date. Press <kbd>Enter</kbd>
-   to use the default, or manually type in a date in `YYYY-MM-DD` format.
+   to use the default, or manually enter a date in `YYYY-MM-DD` format.
 
 1. After you have entered a valid date, the tool asks one more time for confirmation:
 
@@ -205,7 +209,7 @@ To extend expirations dates on all tokens matching a given expiration date:
    WARNING: This will now update 1565353 token(s). Are you sure? (y/N)
    ```
 
-   If you enter `y`, the tool proceeds to extend the expiration date
+   If you enter `y`, the tool extends the expiration date
    for all the tokens with the selected expiration date.
 
    If you enter `N`, the tool aborts the update task and return to the
