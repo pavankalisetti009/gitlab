@@ -22,6 +22,7 @@ module Issues
 
       copy_email_participants
       queue_copy_designs
+      queue_copy_timelogs
 
       new_entity
     end
@@ -143,6 +144,18 @@ module Issues
       ).execute
 
       log_error(response.message) if response.error?
+    end
+
+    def queue_copy_timelogs
+      return unless original_entity.timelogs.present?
+
+      new_attributes = { id: nil, project_id: new_entity.project_id, issue_id: new_entity.id }
+      new_timelogs = original_entity.timelogs.dup
+
+      new_timelogs.each do |timelog|
+        timelog.assign_attributes(new_attributes)
+        Timelog.create!(timelog.attributes)
+      end
     end
 
     def mark_as_moved
