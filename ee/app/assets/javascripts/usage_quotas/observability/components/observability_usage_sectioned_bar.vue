@@ -27,7 +27,7 @@ export default {
     usageTotal() {
       return this.usageData.data_unit === 'bytes'
         ? this.usageData.aggregated_total
-        : numberToMetricPrefix(this.usageData.aggregated_total);
+        : numberToMetricPrefix(this.usageData.aggregated_total, true);
     },
     sectionedUsage() {
       const data = this.usageData.aggregated_per_feature;
@@ -35,7 +35,7 @@ export default {
         id: key,
         label: key,
         value,
-        formattedValue: this.isBytes ? numberToHumanSize(value) : value,
+        formattedValue: this.isBytes ? numberToHumanSize(value) : numberToMetricPrefix(value, true),
       }));
     },
   },
