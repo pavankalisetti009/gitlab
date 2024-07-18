@@ -71,7 +71,6 @@ module Users
       @tracking_label = onboarding_status.tracking_label
 
       set_redirect_url
-      experiment(:phone_verification_for_low_risk_users, user: @user).track(:registration_completed)
     end
 
     private

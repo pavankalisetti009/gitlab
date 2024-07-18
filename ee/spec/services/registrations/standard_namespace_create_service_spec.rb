@@ -93,15 +93,6 @@ RSpec.describe Registrations::StandardNamespaceCreateService, :aggregate_failure
         execute
       end
 
-      it 'tracks phone_verification_for_low_risk_users assignment event with group information', :experiment do
-        expect(experiment(:phone_verification_for_low_risk_users))
-          .to track(:assignment, namespace: an_instance_of(Group))
-          .on_next_instance
-          .with_context(user: user)
-
-        expect(execute).to be_success
-      end
-
       it 'does not attempt to create a trial' do
         expect(GitlabSubscriptions::Trials::ApplyTrialWorker).not_to receive(:perform_async)
 

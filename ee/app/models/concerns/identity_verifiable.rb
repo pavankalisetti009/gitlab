@@ -223,14 +223,6 @@ module IdentityVerifiable
     false
   end
 
-  def phone_number_verification_experiment_candidate?
-    return unless low_risk? && verification_method_enabled?('phone')
-
-    experiment(:phone_verification_for_low_risk_users, user: self) do |e|
-      e.candidate { true }
-    end.run
-  end
-
   def determine_required_methods
     if opt_in_flow?
       active_user_required_methods
@@ -251,7 +243,7 @@ module IdentityVerifiable
     return PHONE_NUMBER_EXEMPT_METHODS if exempt_from_phone_number_verification?
     return ASSUMED_HIGH_RISK_USER_METHODS if assumed_high_risk? || affected_by_phone_verifications_limit?
     return HIGH_RISK_USER_METHODS if high_risk?
-    return MEDIUM_RISK_USER_METHODS if medium_risk? || phone_number_verification_experiment_candidate?
+    return MEDIUM_RISK_USER_METHODS if medium_risk?
 
     LOW_RISK_USER_METHODS
   end
