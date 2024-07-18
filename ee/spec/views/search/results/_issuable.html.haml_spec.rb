@@ -22,7 +22,7 @@ RSpec.describe "search/results/_issuable", feature_category: :global_search do
     assign(:project, project)
     assign(:issuable, issue)
     assign(:search_term, 'Test')
-    assign(:search_highlight, true)
+    assign(:search_highlight, {})
     assign(:scope, 'issues')
 
     assign(:issues, [issue])

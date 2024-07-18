@@ -3,17 +3,33 @@
 module Gitlab
   module Search
     class Client
-      DELEGATED_METHODS = %i[cat count indices index reindex update_by_query delete_by_query search].freeze
+      include ::Elastic::Latest::Routing
 
-      attr_reader :adapter
+      DELEGATED_METHODS = %i[cat count delete_by_query index indices reindex update_by_query search].freeze
+
+      delegate(*DELEGATED_METHODS, to: :adapter)
+
+      def self.execute_search(...)
+        new.execute_search(...)
+      end
 
       def initialize(adapter: nil)
         @adapter = adapter || default_adapter
       end
 
-      delegate(*DELEGATED_METHODS, to: :adapter)
+      def execute_search(query:, options:)
+        es_query = routing_options(options).merge(
+          timeout: options[:count_only] ? '1s' : '30s',
+          index: options[:index_name] || options[:klass].index_name,
+          body: query
+        )
+
+        yield search(es_query)
+      end
 
       private
+
+      attr_reader :adapter
 
       def default_adapter
         # Note: in the future, the default adapter should be changed to whatever

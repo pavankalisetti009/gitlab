@@ -28,6 +28,19 @@ module Gitlab
         @filters = filters
       end
 
+      def failed?(scope)
+        return false unless scope == 'issues' && Feature.enabled?(:search_issue_refactor, current_user)
+
+        issues.failed?
+      end
+
+      def error(scope)
+        return unless scope == 'issues' && Feature.enabled?(:search_issue_refactor, current_user)
+
+        issues.error
+      end
+
+      # rubocop:disable Metrics/CyclomaticComplexity -- method consists of case statement only
       def objects(scope, page: 1, per_page: DEFAULT_PER_PAGE, preload_method: nil)
         page = (page || 1).to_i
 
@@ -35,9 +48,13 @@ module Gitlab
         when 'projects'
           eager_load(projects, page, per_page, preload_method, [:route, :namespace, :topics, :creator])
         when 'issues'
+          if Feature.enabled?(:search_issue_refactor, current_user)
+            return issues(page: page, per_page: per_page, preload_method: preload_method).paginated_array
+          end
+
           eager_load(issues, page, per_page, preload_method,
-            project: [:route, :namespace], labels: [], timelogs: [], assignees: [], synced_epic: [], work_item_type: []
-          )
+            project: [:route, :namespace, :group], labels: [], timelogs: [],
+            assignees: [], synced_epic: [], work_item_type: [])
         when 'merge_requests'
           eager_load(merge_requests, page, per_page, preload_method, target_project: [:route, :namespace])
         when 'milestones'
@@ -58,24 +75,27 @@ module Gitlab
           Kaminari.paginate_array([])
         end
       end
+      # rubocop:enable Metrics/CyclomaticComplexity
 
       # Pull the highlight attribute out of Elasticsearch results
       # and map it to the result id
       def highlight_map(scope)
-        results = case scope
-                  when 'projects'
-                    projects
-                  when 'issues'
-                    issues
-                  when 'merge_requests'
-                    merge_requests
-                  when 'milestones'
-                    milestones
-                  when 'notes'
-                    notes
-                  end
+        case scope
+        when 'projects'
+          create_map(projects)
+        when 'issues'
+          return issues.highlight_map if Feature.enabled?(:search_issue_refactor, current_user)
 
-        results.to_h { |x| [x[:_source][:id], x[:highlight]] } if results.present?
+          create_map(issues)
+        when 'merge_requests'
+          create_map(merge_requests)
+        when 'milestones'
+          create_map(milestones)
+        when 'notes'
+          create_map(notes)
+        else
+          {}
+        end
       end
 
       def formatted_count(scope)
@@ -309,7 +329,9 @@ module Gitlab
           base_options
             .merge(filters.slice(:order_by, :sort, :state, :include_archived, :source_branch, :not_source_branch, :author_username, :not_author_username))
         when :issues
-          base_options.merge(filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived))
+          base_options.merge(
+            filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived),
+            klass: Issue)
         when :milestones
           # Must pass 'issues' and 'merge_requests' to check
           # if any of the features is available for projects in ApplicationClassProxy#project_ids_query
@@ -343,8 +365,20 @@ module Gitlab
         scope_results :projects, Project, count_only: count_only
       end
 
-      def issues(count_only: false)
-        scope_results :issues, Issue, count_only: count_only
+      def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
+        if Feature.disabled?(:search_issue_refactor, current_user)
+          return scope_results :issues, Issue, count_only: count_only
+        end
+
+        strong_memoize(memoize_key('issues', count_only: count_only)) do
+          options = scope_options(:issues)
+            .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+
+          issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
+          ::Gitlab::Search::Client.execute_search(query: issue_query, options: options) do |response|
+            ::Search::Elastic::ResponseMapper.new(response, options)
+          end
+        end
       end
 
       def milestones(count_only: false)
@@ -472,6 +506,10 @@ module Gitlab
 
       def reindex_wikis_to_fix_routing_done?
         ::Elastic::DataMigrationService.migration_has_finished?(:reindex_wikis_to_fix_routing)
+      end
+
+      def create_map(results)
+        results.to_h { |x| [x[:_source][:id], x[:highlight]] } if results.present?
       end
     end
   end
