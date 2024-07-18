@@ -124,7 +124,7 @@ exports[`License Compliance extension expanded data with new licenses displays a
                             </span>
                           </button>
                           <div
-                            class="gl-new-dropdown-panel gl-w-31!"
+                            class="!gl-w-31 gl-new-dropdown-panel"
                             data-testid="base-dropdown-menu"
                             id="reference-1"
                           >
@@ -421,7 +421,7 @@ exports[`License Compliance extension expanded data with new licenses displays u
                             </span>
                           </button>
                           <div
-                            class="gl-new-dropdown-panel gl-w-31!"
+                            class="!gl-w-31 gl-new-dropdown-panel"
                             data-testid="base-dropdown-menu"
                             id="reference-1"
                           >

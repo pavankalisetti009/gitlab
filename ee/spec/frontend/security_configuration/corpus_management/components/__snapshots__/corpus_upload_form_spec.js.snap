@@ -11,7 +11,7 @@ exports[`Corpus upload modal corpus modal uploading state does show the upload p
     role="status"
   >
     <span
-      class="gl-spinner gl-spinner-dark gl-spinner-sm gl-vertical-align-text-bottom!"
+      class="!gl-align-text-bottom gl-spinner gl-spinner-dark gl-spinner-sm"
     />
   </span>
   Attaching File - 25%

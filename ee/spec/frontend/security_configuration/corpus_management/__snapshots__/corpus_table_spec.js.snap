@@ -11,7 +11,7 @@ exports[`Corpus table corpus management renders with the correct columns 1`] = `
     scope="col"
   >
     <div
-      class="gl-display-flex"
+      class="gl-flex"
     >
       <span>
         Corpus name
@@ -25,7 +25,7 @@ exports[`Corpus table corpus management renders with the correct columns 1`] = `
     scope="col"
   >
     <div
-      class="gl-display-flex"
+      class="gl-flex"
     >
       <span>
         Target
@@ -39,7 +39,7 @@ exports[`Corpus table corpus management renders with the correct columns 1`] = `
     scope="col"
   >
     <div
-      class="gl-display-flex"
+      class="gl-flex"
     >
       <span>
         Last updated
@@ -53,7 +53,7 @@ exports[`Corpus table corpus management renders with the correct columns 1`] = `
     scope="col"
   >
     <div
-      class="gl-display-flex"
+      class="gl-flex"
     >
       <span>
         Last used
@@ -67,7 +67,7 @@ exports[`Corpus table corpus management renders with the correct columns 1`] = `
     scope="col"
   >
     <div
-      class="gl-display-flex"
+      class="gl-flex"
     >
       <span>
         Actions

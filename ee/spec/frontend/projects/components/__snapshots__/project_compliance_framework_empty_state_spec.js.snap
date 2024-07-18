@@ -2,10 +2,10 @@
 
 exports[`Project compliance framework empty state matches the snapshot when "addFrameworkPath" is a string path 1`] = `
 <section
-  class="gl-display-flex gl-flex-direction-row"
+  class="gl-flex gl-flex-row"
 >
   <div
-    class="gl-display-none gl-px-4 gl-sm-display-block"
+    class="gl-hidden gl-px-4 sm:gl-block"
   >
     <img
       alt=""
@@ -15,7 +15,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
     />
   </div>
   <div
-    class="gl-empty-state-content gl-flex-basis-0 gl-flex-grow-1 gl-mx-auto gl-my-0 gl-px-4"
+    class="gl-basis-0 gl-empty-state-content gl-grow gl-mx-auto gl-my-0 gl-px-4"
     data-testid="gl-empty-state-content"
   >
     <h5
@@ -35,7 +35,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
       and it will appear here.
     </p>
     <div
-      class="gl-display-flex gl-flex-wrap gl-mt-5"
+      class="gl-flex gl-flex-wrap gl-mt-5"
     >
       <gl-button-stub
         buttontextclasses=""
@@ -55,10 +55,10 @@ exports[`Project compliance framework empty state matches the snapshot when "add
 
 exports[`Project compliance framework empty state matches the snapshot when "addFrameworkPath" is undefined 1`] = `
 <section
-  class="gl-display-flex gl-flex-direction-row"
+  class="gl-flex gl-flex-row"
 >
   <div
-    class="gl-display-none gl-px-4 gl-sm-display-block"
+    class="gl-hidden gl-px-4 sm:gl-block"
   >
     <img
       alt=""
@@ -68,7 +68,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
     />
   </div>
   <div
-    class="gl-empty-state-content gl-flex-basis-0 gl-flex-grow-1 gl-mx-auto gl-my-0 gl-px-4"
+    class="gl-basis-0 gl-empty-state-content gl-grow gl-mx-auto gl-my-0 gl-px-4"
     data-testid="gl-empty-state-content"
   >
     <h5
@@ -88,7 +88,7 @@ exports[`Project compliance framework empty state matches the snapshot when "add
       , it will appear here.
     </p>
     <div
-      class="gl-display-flex gl-flex-wrap gl-mt-5"
+      class="gl-flex gl-flex-wrap gl-mt-5"
     />
   </div>
 </section>
