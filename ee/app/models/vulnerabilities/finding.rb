@@ -104,7 +104,7 @@ module Vulnerabilities
     delegate :name, :external_id, to: :scanner, prefix: true, allow_nil: true
 
     scope :report_type, ->(type) { where(report_type: report_types[type]) }
-    scope :ordered, -> { order(severity: :desc, confidence: :desc, id: :asc) }
+    scope :ordered, -> { order(severity: :desc, id: :asc) }
 
     scope :by_vulnerability, ->(vulnerability_id) { where(vulnerability: vulnerability_id) }
     scope :ids_by_vulnerability, ->(vulnerability_id) { by_vulnerability(vulnerability_id).pluck(:id) }
