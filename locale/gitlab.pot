@@ -33567,6 +33567,9 @@ msgid_plural "MlModelRegistry|%d versions"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "MlModelRegistry|(Optional)"
+msgstr ""
+
 msgid "MlModelRegistry|Add a model"
 msgstr ""
 
@@ -33781,9 +33784,6 @@ msgid "MlModelRegistry|No logged parameters"
 msgstr ""
 
 msgid "MlModelRegistry|No registered versions"
-msgstr ""
-
-msgid "MlModelRegistry|Optional"
 msgstr ""
 
 msgid "MlModelRegistry|Package creation failed"
