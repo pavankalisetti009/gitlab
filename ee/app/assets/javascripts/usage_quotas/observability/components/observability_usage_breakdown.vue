@@ -4,6 +4,7 @@ import { s__, __ } from '~/locale';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
 import ObservabilityUsageChart from './observability_usage_chart.vue';
 import ObservabilityUsageSectionedBar from './observability_usage_sectioned_bar.vue';
+import ObservabilityUsageNoData from './observability_usage_no_data.vue';
 
 export default {
   i18n: {
@@ -20,6 +21,7 @@ export default {
     GlLink,
     ObservabilityUsageChart,
     ObservabilityUsageSectionedBar,
+    ObservabilityUsageNoData,
   },
   props: {
     usageData: {
@@ -57,33 +59,37 @@ export default {
       </p>
     </div>
 
-    <observability-usage-sectioned-bar
-      v-if="storageData"
-      :usage-data="storageData"
-      data-testid="sectioned-storage-usage"
-    />
+    <observability-usage-no-data v-if="!storageData && !eventsData" />
 
-    <observability-usage-sectioned-bar
-      v-if="eventsData"
-      :usage-data="eventsData"
-      data-testid="sectioned-events-usage"
-    />
+    <template v-else>
+      <observability-usage-sectioned-bar
+        v-if="storageData"
+        :usage-data="storageData"
+        data-testid="sectioned-storage-usage"
+      />
 
-    <h2 class="gl-heading-4 gl-mt-8">{{ $options.i18n.dayUsageTitle }}</h2>
+      <observability-usage-sectioned-bar
+        v-if="eventsData"
+        :usage-data="eventsData"
+        data-testid="sectioned-events-usage"
+      />
 
-    <observability-usage-chart
-      v-if="storageData"
-      :title="$options.i18n.storageChartTitle"
-      :usage-data="storageData"
-      :unit="storageData"
-      data-testid="storage-usage-chart"
-    />
+      <h2 class="gl-heading-4 gl-mt-8">{{ $options.i18n.dayUsageTitle }}</h2>
 
-    <observability-usage-chart
-      v-if="eventsData"
-      :title="$options.i18n.eventsChartTitle"
-      :usage-data="eventsData"
-      data-testid="events-usage-chart"
-    />
+      <observability-usage-chart
+        v-if="storageData"
+        :title="$options.i18n.storageChartTitle"
+        :usage-data="storageData"
+        :unit="storageData"
+        data-testid="storage-usage-chart"
+      />
+
+      <observability-usage-chart
+        v-if="eventsData"
+        :title="$options.i18n.eventsChartTitle"
+        :usage-data="eventsData"
+        data-testid="events-usage-chart"
+      />
+    </template>
   </section>
 </template>
