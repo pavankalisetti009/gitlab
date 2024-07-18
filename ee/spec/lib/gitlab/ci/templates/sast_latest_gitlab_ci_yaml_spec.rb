@@ -80,14 +80,11 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
 
       context 'by default' do
         describe 'language detection' do
-          let(:experimental_vars) { { 'SAST_EXPERIMENTAL_FEATURES' => 'true' } }
           let(:kubernetes_vars) { { 'SCAN_KUBERNETES_MANIFESTS' => 'true' } }
-          let(:android) { 'Android' }
-          let(:ios) { 'iOS' }
 
           using RSpec::Parameterized::TableSyntax
 
-          where(:case_name, :files, :variables, :include_build_names) do
+          where(:case_name, :files, :variables, :jobs) do
             'Apex'                 | { 'app.cls' => '' }                             | {}                      | %w[pmd-apex-sast]
             'C'                    | { 'app.c' => '' }                               | {}                      | %w[semgrep-sast]
             'C++'                  | { 'app.cpp' => '' }                             | {}                      | %w[semgrep-sast]
@@ -121,44 +118,40 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
               end
             end
 
-            context 'when branch pipeline' do
-              it 'creates a pipeline with the expected jobs' do
-                expect(pipeline.errors.full_messages).to be_empty
-                expect(build_names).to include(*include_build_names)
-              end
-            end
+            it_behaves_like 'acts as branch pipeline', params[:jobs]
 
-            context 'when MR pipeline' do
-              let(:service) { MergeRequests::CreatePipelineService.new(project: project, current_user: user) }
-              let(:feature_branch) { 'feature' }
-              let(:pipeline) { service.execute(merge_request).payload }
+            it_behaves_like 'acts as MR pipeline', params[:jobs], params[:files]
+          end
+        end
+      end
+    end
 
-              let(:merge_request) do
-                create(:merge_request,
-                  source_project: project,
-                  source_branch: feature_branch,
-                  target_project: project,
-                  target_branch: default_branch)
-              end
+    context 'when project has Ultimate license' do
+      let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
 
-              before do
-                files.each do |filename, contents|
-                  project.repository.create_file(
-                    project.creator,
-                    filename,
-                    contents,
-                    message: "Add #{filename}",
-                    branch_name: feature_branch)
-                end
-              end
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
 
-              it 'creates a pipeline with the expected jobs' do
-                expect(pipeline).to be_merge_request_event
-                expect(pipeline.errors.full_messages).to be_empty
-                expect(build_names).to include(*include_build_names)
-              end
+      describe 'language detection' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:case_name, :files, :variables, :jobs) do
+          'Golang'               | { 'main.go' => '' }          | {} | %w[gitlab-advanced-sast semgrep-sast]
+          'Java'                 | { 'app.java' => '' }         | {} | %w[gitlab-advanced-sast semgrep-sast]
+          'Python'               | { 'app.py' => '' }           | {} | %w[gitlab-advanced-sast semgrep-sast]
+        end
+
+        with_them do
+          before do
+            variables.each do |(key, value)|
+              create(:ci_variable, project: project, key: key, value: value)
             end
           end
+
+          it_behaves_like 'acts as branch pipeline', params[:jobs]
+
+          it_behaves_like 'acts as MR pipeline', params[:jobs], params[:files]
         end
       end
     end
