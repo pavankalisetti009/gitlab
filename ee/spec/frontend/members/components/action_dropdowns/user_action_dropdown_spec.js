@@ -13,13 +13,14 @@ import { stubComponent } from 'helpers/stub_component';
 describe('UserActionDropdown', () => {
   let wrapper;
 
-  const createComponent = (propsData = {}) => {
+  const createComponent = (propsData = {}, { showRoleDetailsInDrawer = false } = {}) => {
     wrapper = shallowMount(UserActionDropdown, {
       stubs: {
         BanMemberDropdownItem: stubComponent(BanMemberDropdownItem),
       },
       provide: {
         namespace: MEMBERS_TAB_TYPES.user,
+        glFeatures: { showRoleDetailsInDrawer },
       },
       propsData: {
         member,
@@ -61,7 +62,7 @@ describe('UserActionDropdown', () => {
     });
   });
 
-  describe('when member has `canOverride` permissions', () => {
+  describe('when member is LDAP user', () => {
     describe('when member is not overridden', () => {
       it('renders LDAP override dropdown item with correct text', async () => {
         await createComponent({
@@ -76,6 +77,18 @@ describe('UserActionDropdown', () => {
         expect(ldapOverrideDropdownItem.exists()).toBe(true);
         expect(ldapOverrideDropdownItem.html()).toContain(I18N.editPermissions);
       });
+    });
+
+    it('does not show LDAP override dropdown item if showRoleDetailsInDrawer feature flag is on', () => {
+      createComponent(
+        {
+          permissions: { canOverride: true },
+          member: { ...member, isOverridden: false },
+        },
+        { showRoleDetailsInDrawer: true },
+      );
+
+      expect(findLdapOverrideDropdownItem().exists()).toBe(false);
     });
 
     describe('when member is overridden', () => {
@@ -93,7 +106,7 @@ describe('UserActionDropdown', () => {
     });
   });
 
-  describe('when member does not have `canOverride` permissions', () => {
+  describe('when member is standard user', () => {
     it('does not render the LDAP override dropdown item', async () => {
       await createComponent({
         permissions: { canOverride: false },

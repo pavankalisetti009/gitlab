@@ -15,6 +15,7 @@ describe('Guest overage confirmation', () => {
   let wrapper;
   const mockMember = { ...upgradedMember, usingLicense: false };
   const customRole = { ...mockMember.customRoles[0], accessLevel: 20, occupiesSeat: true };
+  const showStub = jest.fn();
 
   const getResponseHandler = ({
     willIncreaseOverage = true,
@@ -47,7 +48,9 @@ describe('Guest overage confirmation', () => {
       apolloProvider: createMockApollo([[getBillableUserCountChanges, responseHandler]]),
       propsData: { groupPath, member, role },
       provide: { glFeatures: { showOverageOnRolePromotion } },
-      stubs: { GlModal: stubComponent(GlModal) },
+      stubs: {
+        GlModal: stubComponent(GlModal, { methods: { show: showStub } }),
+      },
     });
 
     wrapper.vm.checkOverage();
@@ -98,12 +101,21 @@ describe('Guest overage confirmation', () => {
   });
 
   describe('overage check', () => {
-    it('emits an error event with the error if there was an error', async () => {
+    describe('when there is an error', () => {
       const error = new Error();
-      const responseHandler = jest.fn().mockRejectedValue(error);
-      await createWrapper({ responseHandler });
 
-      expect(wrapper.emitted('error')[0][0]).toEqual(error);
+      beforeEach(() => {
+        const responseHandler = jest.fn().mockRejectedValue(error);
+        return createWrapper({ responseHandler });
+      });
+
+      it('emits a busy = false event', () => {
+        expect(wrapper.emitted('busy')[1][0]).toBe(false);
+      });
+
+      it('emits an error event', () => {
+        expect(wrapper.emitted('error')[0][0]).toEqual(error);
+      });
     });
 
     describe('query parameters', () => {
@@ -134,13 +146,14 @@ describe('Guest overage confirmation', () => {
         ${'the feature flag is off'}             | ${{ showOverageOnRolePromotion: false }}
         ${`there's no group path`}               | ${{ groupPath: '' }}
         ${'the member is already using a seat'}  | ${{ member: { ...mockMember, usingLicense: true } }}
+        ${'the member is a LDAP user'}           | ${{ member: { ...mockMember, canOverride: true } }}
         ${'the new role does not occupy a seat'} | ${{ role: { ...customRole, occupiesSeat: false } }}
       `('$phrase', async ({ data }) => {
         const responseHandler = getResponseHandler();
         await createWrapper({ ...data, responseHandler });
 
         expect(responseHandler).not.toHaveBeenCalled();
-        expect(findModal().props('visible')).toBe(false);
+        expect(showStub).not.toHaveBeenCalled();
         expect(wrapper.emitted('confirm')).toHaveLength(1);
       });
     });
@@ -156,7 +169,7 @@ describe('Guest overage confirmation', () => {
         await createWrapper({ responseHandler });
 
         expect(responseHandler).toHaveBeenCalledTimes(1);
-        expect(findModal().props('visible')).toBe(false);
+        expect(showStub).not.toHaveBeenCalled();
       });
     });
   });
@@ -164,21 +177,31 @@ describe('Guest overage confirmation', () => {
   describe('when warning modal should be shown', () => {
     it('shows the modal', async () => {
       await createWrapper();
-      expect(findModal().props('visible')).toBe(true);
+
+      expect(showStub).toHaveBeenCalledTimes(1);
     });
 
-    it.each`
-      action        | eventName
-      ${'primary'}  | ${'confirm'}
-      ${'canceled'} | ${'cancel'}
-    `(
-      'emits the $eventName event when the modal action is $action',
-      async ({ action, eventName }) => {
+    describe.each`
+      trigger          | expectedEvent
+      ${'ok'}          | ${'confirm'}
+      ${'cancel'}      | ${'cancel'}
+      ${'esc'}         | ${'cancel'}
+      ${'backdrop'}    | ${'cancel'}
+      ${'headerclose'} | ${'cancel'}
+      ${null}          | ${'cancel'}
+    `(`when modal is closed by trigger '$trigger'`, ({ trigger, expectedEvent }) => {
+      beforeEach(async () => {
         await createWrapper();
-        findModal().vm.$emit(action);
+        findModal().vm.$emit('hide', { trigger });
+      });
 
-        expect(wrapper.emitted(eventName)).toHaveLength(1);
-      },
-    );
+      it(`emits ${expectedEvent} event`, () => {
+        expect(wrapper.emitted(expectedEvent)).toHaveLength(1);
+      });
+
+      it('emits busy = false event', () => {
+        expect(wrapper.emitted('busy')[1][0]).toBe(false);
+      });
+    });
   });
 });

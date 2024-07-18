@@ -1,12 +1,26 @@
 import { cloneDeep } from 'lodash';
-import { getMemberRole, getRoleDropdownItems } from 'ee/members/components/table/drawer/utils';
+import {
+  getMemberRole,
+  getRoleDropdownItems,
+  ldapRole,
+} from 'ee/members/components/table/drawer/utils';
 import { roleDropdownItems } from 'ee/members/utils';
-import { upgradedMember } from '../../../mock_data';
+import { upgradedMember, ldapMember } from '../../../mock_data';
 
 describe('Role details drawer utils', () => {
   describe('getRoleDropdownItems', () => {
     it('returns dropdown items', () => {
-      expect(getRoleDropdownItems).toBe(roleDropdownItems);
+      const roles = getRoleDropdownItems(upgradedMember);
+      const expectedRoles = roleDropdownItems(upgradedMember);
+
+      expect(roles).toEqual(expectedRoles);
+    });
+
+    it('returns LDAP role for LDAP users', () => {
+      const roles = getRoleDropdownItems(ldapMember);
+
+      expect(roles.flatten).toContain(ldapRole);
+      expect(roles.formatted).toContainEqual({ text: 'LDAP', options: [ldapRole] });
     });
   });
 
@@ -20,6 +34,19 @@ describe('Role details drawer utils', () => {
       const role = getMemberRole(roles, member);
 
       expect(role).toBe(expectedRole);
+    });
+
+    it('returns LDAP role for LDAP users that are synced to the LDAP settings', () => {
+      const role = getMemberRole(roles, ldapMember);
+
+      expect(role).toBe(ldapRole);
+    });
+
+    it('returns actual role for LDAP users that have had their role overridden', () => {
+      const member = { ...ldapMember, isOverridden: true };
+      const role = getMemberRole(roles, member);
+
+      expect(role.text).toBe('custom role 1');
     });
   });
 });
