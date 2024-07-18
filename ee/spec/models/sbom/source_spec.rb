@@ -9,6 +9,10 @@ RSpec.describe Sbom::Source, type: :model, feature_category: :dependency_managem
     it { is_expected.to define_enum_for(:source_type).with_values(source_types) }
   end
 
+  describe 'associations' do
+    it { is_expected.to belong_to(:organization) }
+  end
+
   describe 'validations' do
     it { is_expected.to validate_presence_of(:source_type) }
     it { is_expected.to validate_presence_of(:source) }
@@ -214,6 +218,13 @@ RSpec.describe Sbom::Source, type: :model, feature_category: :dependency_managem
       end
 
       include_examples 'common container readers'
+    end
+  end
+
+  context 'with loose foreign key on sbom_sources.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:sbom_source, organization: parent) }
     end
   end
 end

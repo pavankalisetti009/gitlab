@@ -10,7 +10,7 @@ module Sbom
         # allows for multiple sources.
         self.model = Sbom::Source
         self.uses = %i[id].freeze
-        self.unique_by = %i[source_type source].freeze
+        self.unique_by = %i[source_type source organization_id].freeze
 
         private
 
@@ -31,12 +31,17 @@ module Sbom
 
           [{
             source_type: source_type,
-            source: data
+            source: data,
+            organization_id: organization_id
           }]
         end
 
         def report_source
           @report_source ||= occurrence_maps.first&.report_source
+        end
+
+        def organization_id
+          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
         end
       end
     end

@@ -6,6 +6,7 @@ RSpec.describe Organizations::Organization, feature_category: :cell do
   describe 'associations' do
     it { is_expected.to have_many(:sbom_occurrences).through(:active_projects).class_name('Sbom::Occurrence') }
     it { is_expected.to have_many(:vulnerability_exports).class_name('Vulnerabilities::Export') }
+    it { is_expected.to have_many(:sbom_sources).class_name('Sbom::Source') }
   end
 
   describe '#sbom_occurrences' do
