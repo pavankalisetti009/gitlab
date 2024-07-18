@@ -65,7 +65,6 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :continuous_integration d
             'Java'                 | { 'app.java' => '' }                                   | {}                                         | %w[semgrep-sast]
             'Javascript'           | { 'app.js' => '' }                                     | {}                                         | %w[semgrep-sast]
             'JSX'                  | { 'app.jsx' => '' }                                    | {}                                         | %w[semgrep-sast]
-            'HTML'                 | { 'index.html' => '' }                                 | {}                                         | %w[semgrep-sast]
             'Kotlin'               | { 'app.kt' => '' }                                     | {}                                         | %w[semgrep-sast]
             'Kubernetes Manifests' | { 'Chart.yaml' => '' }                                 | { 'SCAN_KUBERNETES_MANIFESTS' => 'true' }  | %w[kubesec-sast]
             'Multiple languages'   | { 'app.java' => '', 'app.js' => '', 'app.php' => '' }  | {}                                         | %w[semgrep-sast]

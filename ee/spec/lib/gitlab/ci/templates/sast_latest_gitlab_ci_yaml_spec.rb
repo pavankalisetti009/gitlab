@@ -96,7 +96,6 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
             'Java'                 | { 'app.java' => '' }                            | {}                      | %w[semgrep-sast]
             'Javascript'           | { 'app.js' => '' }                              | {}                      | %w[semgrep-sast]
             'JSX'                  | { 'app.jsx' => '' }                             | {}                      | %w[semgrep-sast]
-            'HTML'                 | { 'index.html' => '' }                          | {}                      | %w[semgrep-sast]
             'Kotlin'               | { 'app.kt' => '' }                              | {}                      | %w[semgrep-sast]
             'Kubernetes Manifests' | { 'Chart.yaml' => '' }                          | ref(:kubernetes_vars)   | %w[kubesec-sast]
             'Multiple languages'   | { 'app.java' => '', 'app.js' => '' }            | {}                      | %w[semgrep-sast]
