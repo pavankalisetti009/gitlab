@@ -8,14 +8,14 @@ module Security
     end
 
     def execute
-      fetch_scan_policies
+      fetch_security_policies
     end
 
     private
 
     attr_reader :actor, :policy_configurations
 
-    def fetch_scan_policies
+    def fetch_security_policies
       policy_configurations.select { |config| authorized_to_read_policy_configuration?(config) }
         .each_with_object({ scan_execution_policies: [], scan_result_policies: [] }) do |config, policies|
           scan_result_policies, scan_execution_policies = merge_project_relationship(config)

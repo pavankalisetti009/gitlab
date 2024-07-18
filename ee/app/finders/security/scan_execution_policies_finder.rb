@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class ScanExecutionPoliciesFinder < ScanPolicyBaseFinder
+  class ScanExecutionPoliciesFinder < SecurityPolicyBaseFinder
     extend ::Gitlab::Utils::Override
 
     def initialize(actor, object, params = {})
@@ -9,7 +9,7 @@ module Security
     end
 
     def execute
-      policies = fetch_scan_policies
+      policies = fetch_security_policies
       policies = filter_by_scan_types(policies, params[:action_scan_types]) if params[:action_scan_types]
 
       policies

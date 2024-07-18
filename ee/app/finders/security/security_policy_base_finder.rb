@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class ScanPolicyBaseFinder
+  class SecurityPolicyBaseFinder
     def initialize(actor, object, policy_type, params)
       @actor = actor
       @object = object
@@ -17,7 +17,7 @@ module Security
 
     attr_reader :actor, :object, :policy_type, :params
 
-    def fetch_scan_policies
+    def fetch_security_policies
       return [] unless authorized_to_read_policy_configuration?
 
       fetch_policy_configurations
@@ -60,7 +60,7 @@ module Security
     def merge_project_relationship(config)
       return [] unless config.respond_to? policy_type
 
-      config.public_send(policy_type).map do |policy| # rubocop:disable GitlabSecurity/PublicSend
+      config.public_send(policy_type).map do |policy| # rubocop:disable GitlabSecurity/PublicSend -- necessary
         policy.merge(
           config: config,
           project: config.project,

@@ -14,7 +14,7 @@ RSpec.shared_examples 'scan policies finder' do
   describe '#execute' do
     context 'when execute is not implemented in the subclass' do
       let(:example_class) do
-        Class.new(Security::ScanPolicyBaseFinder) do
+        Class.new(Security::SecurityPolicyBaseFinder) do
           def initialize(actor, project, params)
             super(actor, project, :new_finder, params)
           end
