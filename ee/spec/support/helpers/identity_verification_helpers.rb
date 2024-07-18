@@ -167,9 +167,8 @@ module IdentityVerificationHelpers
   end
 
   def expect_to_see_identity_verification_page
-    expect(page).to have_content(
-      s_("IdentityVerification|For added security, you'll need to verify your identity")
-    )
+    expect(page).to have_current_path(/identity_verification/)
+    expect(page).to have_content(s_('IdentityVerification|Help us keep GitLab secure'))
   end
 
   def expect_verification_completed

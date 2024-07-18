@@ -44,6 +44,7 @@ module Users
     def build_data(user, path_helper:)
       {
         data: {
+          username: user.username,
           verification_state_path: path_helper.call(:verification_state),
           phone_exemption_path: path_helper.call(:toggle_phone_exemption),
           phone_send_code_path: path_helper.call(:send_phone_verification_code),
