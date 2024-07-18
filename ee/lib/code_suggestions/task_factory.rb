@@ -6,7 +6,7 @@ module CodeSuggestions
 
     VERTEX_AI = :vertex_ai
     ANTHROPIC = :anthropic
-    ANTHROPIC_MODEL = 'claude-3-sonnet-20240229'
+    ANTHROPIC_MODEL = 'claude-3-5-sonnet-20240620'
 
     def initialize(current_user, params:, unsafe_passthrough_params: {})
       @current_user = current_user
@@ -69,16 +69,6 @@ module CodeSuggestions
       end
     end
 
-    def anthropic_model
-      if Feature.enabled?(:claude_3_5_code_generation_sonnet, current_user)
-        'claude-3-5-sonnet-20240620'
-      elsif Feature.enabled?(:claude_3_code_generation_haiku, current_user)
-        'claude-3-haiku-20240307'
-      else
-        ANTHROPIC_MODEL
-      end
-    end
-
     def language
       CodeSuggestions::ProgrammingLanguage.detect_from_filename(params.dig(:current_file, :file_name))
     end
@@ -89,7 +79,7 @@ module CodeSuggestions
         prefix: prefix,
         instruction: instruction,
         project: project,
-        model_name: anthropic_model,
+        model_name: ANTHROPIC_MODEL,
         current_user: current_user,
         skip_dependency_descriptions: Feature.enabled?(:code_suggestions_skip_dependency_descriptions, current_user)
       )

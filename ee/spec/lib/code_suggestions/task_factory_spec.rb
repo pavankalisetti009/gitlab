@@ -98,7 +98,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
             instruction: instruction,
             prefix: prefix,
             project: expected_project,
-            model_name: expected_model,
+            model_name: described_class::ANTHROPIC_MODEL,
             current_user: current_user,
             skip_dependency_descriptions: true
           ),
@@ -110,15 +110,10 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         instance_double(CodeSuggestions::Instruction, instruction: 'instruction', trigger_type: 'comment')
       end
 
-      let(:expected_model) { 'claude-3-sonnet-20240229' }
-
       before do
         allow_next_instance_of(CodeSuggestions::InstructionsExtractor) do |instance|
           allow(instance).to receive(:extract).and_return(instruction)
         end
-
-        stub_feature_flags(claude_3_code_generation_haiku: false)
-        stub_feature_flags(claude_3_5_code_generation_sonnet: false)
       end
 
       it_behaves_like 'correct task initializer'
@@ -174,26 +169,6 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         context 'when code generations is self-hosted' do
           it_behaves_like 'correct task initializer'
         end
-      end
-
-      context 'with claude_3_code_generation_haiku flag is enabled' do
-        before do
-          stub_feature_flags(claude_3_code_generation_haiku: true)
-        end
-
-        let(:expected_model) { 'claude-3-haiku-20240307' }
-
-        it_behaves_like 'correct task initializer'
-      end
-
-      context 'with claude_3_5_code_generation_sonnet flag is enabled' do
-        before do
-          stub_feature_flags(claude_3_5_code_generation_sonnet: true)
-        end
-
-        let(:expected_model) { 'claude-3-5-sonnet-20240620' }
-
-        it_behaves_like 'correct task initializer'
       end
 
       context 'when code_suggestions_context feature flag is off' do

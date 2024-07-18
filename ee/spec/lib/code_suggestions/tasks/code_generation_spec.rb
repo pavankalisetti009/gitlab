@@ -23,7 +23,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     }.with_indifferent_access
   end
 
-  let(:model_name) { 'claude-3-sonnet-20240229' }
+  let(:model_name) { 'claude-3-5-sonnet-20240620' }
 
   let(:params) do
     {
