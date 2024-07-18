@@ -5,7 +5,7 @@ module Sbom
     class Vulnerabilities
       include Gitlab::Utils::StrongMemoize
 
-      attr_reader :pipeline, :vulnerabilities_info
+      attr_reader :pipeline
 
       delegate :project, to: :pipeline
 
@@ -13,36 +13,34 @@ module Sbom
         @pipeline = pipeline
       end
 
+      # Retrieves vulnerability info for the given package.
+      # Note: Builds the full vulnerability info map on first call.
       def fetch(name, version, path)
-        update_vulnerabilities_info unless vulnerabilities_info
-
         key = [name, version, path]
-        if vulnerabilities_info.has_key?(key)
-          vulnerabilities_info[key]
-        else
-          { vulnerability_ids: [], highest_severity: nil }
-        end
+        vulnerabilities_info.fetch(key, { vulnerability_ids: [], highest_severity: nil })
       end
 
       private
 
-      def update_vulnerabilities_info
-        @vulnerabilities_info = {}
+      def vulnerabilities_info
+        @vulnerabilities_info ||= build_vulnerabilities_info
+      end
 
-        vulnerability_findings.each do |finding|
+      def build_vulnerabilities_info
+        vulnerability_findings.each_with_object({}) do |finding, info|
           dependency = finding.location["dependency"]
-
           next unless dependency
 
-          key = [dependency['package']['name'], dependency['version'], dependency_path(finding)]
-          if vulnerabilities_info.has_key?(key)
-            @vulnerabilities_info[key][:vulnerability_ids] << finding.vulnerability_id
-          else
-            @vulnerabilities_info[key] = {
-              vulnerability_ids: [finding.vulnerability_id],
-              highest_severity: finding.severity
-            }
-          end
+          key = [
+            dependency.dig('package', 'name'),
+            dependency['version'],
+            dependency_path(finding)
+          ]
+
+          # since we fetch the findings ordered by `severity: :desc`,
+          # the first finding will be the highest severity
+          info[key] ||= { vulnerability_ids: [], highest_severity: finding.severity }
+          info[key][:vulnerability_ids] << finding.vulnerability_id
         end
       end
 
