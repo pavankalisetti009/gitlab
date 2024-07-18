@@ -2,7 +2,7 @@
 
 module QA
   # https://docs.gitlab.com/ee/development/ai_features/duo_chat.html
-  RSpec.describe 'Create', product_group: :ide do
+  RSpec.describe 'Create', product_group: :remote_development do
     describe 'Duo Chat in Web IDE' do
       shared_examples 'Duo Chat' do |testcase|
         it 'gets a response back from Duo Chat', testcase: testcase do

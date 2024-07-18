@@ -22,7 +22,7 @@
 #      then run the test using step 1
 
 module QA
-  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :ide do
+  RSpec.describe 'Create', only: { pipeline: %i[staging staging-canary] }, product_group: :remote_development do
     describe 'Remote Development' do
       include Runtime::Fixtures
 

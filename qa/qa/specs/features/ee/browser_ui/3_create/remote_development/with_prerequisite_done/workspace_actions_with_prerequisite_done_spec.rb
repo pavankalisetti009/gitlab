@@ -23,7 +23,7 @@ module QA
     quarantine: {
       type: :waiting_on,
       issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/397005'
-    }, product_group: :ide do
+    }, product_group: :remote_development do
     describe 'Remote Development' do
       context 'when prerequisite is already done',
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/396854' do
