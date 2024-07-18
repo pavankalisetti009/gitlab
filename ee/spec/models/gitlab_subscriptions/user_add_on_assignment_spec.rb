@@ -198,42 +198,12 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignment, feature_category: :seat
     end
   end
 
-  describe 'callbacks' do
-    describe 'after_save' do
-      let(:user) { create(:user) }
-
-      subject(:assigment) { build(:gitlab_subscription_user_add_on_assignment, user: user) }
-
-      it 'calls #clear_user_add_on_assigment_cache!' do
-        is_expected.to receive(:clear_user_add_on_assigment_cache!)
-        assigment.save!
-      end
-    end
-  end
-
   describe '.pluck_user_ids' do
     it 'plucks the user ids' do
       user = create(:user)
       assignment = create(:gitlab_subscription_user_add_on_assignment, user: user)
 
       expect(described_class.where(id: assignment).pluck_user_ids).to match_array([user.id])
-    end
-  end
-
-  describe '#clear_user_add_on_assigment_cache!', :use_clean_rails_memory_store_caching do
-    let(:user) { create(:user) }
-    let(:cache_key) { format(described_class::USER_ADD_ON_ASSIGNMENT_CACHE_KEY, user_id: user.id) }
-
-    before do
-      Rails.cache.write(cache_key, double)
-    end
-
-    it 'clears cache' do
-      assignment = create(:gitlab_subscription_user_add_on_assignment, user: user)
-
-      assignment.clear_user_add_on_assigment_cache!
-
-      expect(Rails.cache.read(cache_key)).to be_nil
     end
   end
 end
