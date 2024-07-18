@@ -119,6 +119,16 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
           let(:audit_event) { group_audit_event }
         end
       end
+
+      context 'Instance Event' do
+        let_it_be(:instance_audit_event) { create(:instance_audit_event) }
+        let(:params) { { entity_type: 'Gitlab::Audit::InstanceScope', entity_id: instance_audit_event.entity_id } }
+
+        it_behaves_like 'finds the right event' do
+          let(:entity_type) { 'Gitlab::Audit::InstanceScope' }
+          let(:audit_event) { instance_audit_event }
+        end
+      end
     end
 
     context 'filtering by entity_type' do
@@ -145,6 +155,14 @@ RSpec.describe AuditEventFinder, feature_category: :audit_events do
 
         it 'finds the right group event' do
           expect(entity_types).to all(eq 'Group')
+        end
+      end
+
+      context 'Instance Event' do
+        let(:params) { { entity_type: 'Gitlab::Audit::InstanceScope' } }
+
+        it 'finds the right group event' do
+          expect(entity_types).to all(eq 'Gitlab::Audit::InstanceScope')
         end
       end
 
