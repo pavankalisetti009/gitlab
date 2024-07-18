@@ -84,6 +84,7 @@ describe('ComplianceFrameworksReport component', () => {
           $router,
           $route: {
             name: ROUTE_FRAMEWORKS,
+            query: currentQueryParams,
           },
         },
       }),
@@ -267,11 +268,11 @@ describe('ComplianceFrameworksReport component', () => {
       expect(findFrameworksTable().props('frameworks')).toHaveLength(1);
       expect(findFrameworksTable().props('frameworks')[0]).toMatchObject({
         __typename: 'ComplianceFramework',
-        color: '#3cb370',
+        color: '#3cb371',
         default: false,
-        description: 'This is a framework 0',
-        id: 'gid://gitlab/ComplianceManagement::Framework/0',
-        name: 'Some framework 0',
+        description: 'This is a framework 1',
+        id: 'gid://gitlab/ComplianceManagement::Framework/1',
+        name: 'Some framework 1',
         pipelineConfigurationFullPath: null,
       });
     });

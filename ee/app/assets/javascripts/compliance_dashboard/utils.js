@@ -1,10 +1,14 @@
-import { convertToGraphQLIds } from '~/graphql_shared/utils';
+import { convertToGraphQLIds, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { formatDate, getDateInPast, pikadayToString } from '~/lib/utils/datetime_utility';
 import { ISO_SHORT_FORMAT } from '~/vue_shared/constants';
 import { queryToObject } from '~/lib/utils/url_utility';
 import { CURRENT_DATE } from '../audit_events/constants';
-import { FRAMEWORKS_FILTER_TYPE_FRAMEWORK, FRAMEWORKS_FILTER_TYPE_PROJECT } from './constants';
+import {
+  FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+  FRAMEWORKS_FILTER_TYPE_PROJECT,
+  GRAPHQL_FRAMEWORK_TYPE,
+} from './constants';
 
 export const isTopLevelGroup = (groupPath, rootPath) => groupPath === rootPath;
 
@@ -13,6 +17,9 @@ export const convertProjectIdsToGraphQl = (projectIds) =>
     TYPENAME_PROJECT,
     projectIds.filter((id) => Boolean(id)),
   );
+
+export const convertFrameworkIdToGraphQl = (frameworId) =>
+  convertToGraphQLId(GRAPHQL_FRAMEWORK_TYPE, frameworId);
 
 export const parseViolationsQueryFilter = ({
   mergedBefore,

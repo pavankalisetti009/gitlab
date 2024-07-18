@@ -83,6 +83,15 @@ describe('compliance report utils', () => {
     });
   });
 
+  describe('convertFrameworkIdToGraphQl', () => {
+    it('should convert normal id to GraphQl compliance framework id', () => {
+      const frameworkId = '123';
+      expect(utils.convertFrameworkIdToGraphQl(frameworkId)).toBe(
+        'gid://gitlab/ComplianceManagement::Framework/123',
+      );
+    });
+  });
+
   describe('buildDefaultViolationsFilterParams', () => {
     it('returns the expected result with the default date range of 30 days', () => {
       const queryString = 'projectIds[]=20';

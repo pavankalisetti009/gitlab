@@ -1,10 +1,10 @@
 import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlLink, GlModal } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { stubComponent } from 'helpers/stub_component';
-
 import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
@@ -14,6 +14,7 @@ Vue.use(VueApollo);
 
 describe('FrameworksTable component', () => {
   let wrapper;
+  let $router;
 
   const GROUP_PATH = 'group';
   const frameworksResponse = createComplianceFrameworksReportResponse({
@@ -37,14 +38,18 @@ describe('FrameworksTable component', () => {
   const findNewFrameworkButton = () => wrapper.findByRole('button', { name: 'New framework' });
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByClick);
 
-  const openSidebar = async () => {
+  const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
     await nextTick();
   };
 
-  let routerPushMock;
-  const createComponent = (props = {}) => {
-    routerPushMock = jest.fn();
+  const createComponent = (props = {}, queryParams = {}) => {
+    const currentQueryParams = { ...queryParams };
+    $router = {
+      push: jest.fn().mockImplementation(({ query }) => {
+        Object.assign(currentQueryParams, query);
+      }),
+    };
     return mountExtended(FrameworksTable, {
       propsData: {
         groupPath: GROUP_PATH,
@@ -59,7 +64,8 @@ describe('FrameworksTable component', () => {
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
       },
       mocks: {
-        $router: { push: routerPushMock },
+        $route: { query: currentQueryParams },
+        $router,
       },
       stubs: {
         EditForm: true,
@@ -99,7 +105,7 @@ describe('FrameworksTable component', () => {
       const newFrameworkButton = findNewFrameworkButton();
 
       newFrameworkButton.trigger('click');
-      expect(routerPushMock).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
+      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
     });
 
     it('emits search event when underlying search box is submitted', () => {
@@ -161,36 +167,70 @@ describe('FrameworksTable component', () => {
     });
 
     describe('Sidebar', () => {
-      describe('closing the sidebar', () => {
-        it('has the correct props when closed', async () => {
-          await openSidebar();
-
-          await findFrameworkInfoSidebar().vm.$emit('close');
-
-          expect(findFrameworkInfoSidebar().props('framework')).toBe(null);
-        });
-      });
-
       describe('edit button in sidebar', () => {
+        describe('when query has framework id', () => {
+          beforeEach(() => {
+            wrapper = createComponent(
+              {
+                frameworks,
+                isLoading: false,
+              },
+              { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
+            );
+          });
+
+          it('passes the selected framework as a framework prop', () => {
+            expect(findFrameworkInfoSidebar().props('framework')).toMatchObject(
+              frameworks[rowCheckIndex],
+            );
+          });
+        });
+
+        describe('when query does not have framework id', () => {
+          it('the framework prop is null', () => {
+            expect(findFrameworkInfoSidebar().props('framework')).toBe(null);
+          });
+
+          it('adds id to the query after sidebar is open', async () => {
+            await toggleSidebar();
+
+            expect($router.push).toHaveBeenCalledWith({
+              query: { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
+            });
+          });
+        });
+
         it('opens edit form for the framework', async () => {
-          await openSidebar();
+          await toggleSidebar();
 
           await findFrameworkInfoSidebar().vm.$emit('edit', frameworks[rowCheckIndex]);
 
-          expect(routerPushMock).toHaveBeenCalledWith({
+          expect($router.push).toHaveBeenCalledWith({
             name: ROUTE_EDIT_FRAMEWORK,
-            params: { id: frameworks[rowCheckIndex].id },
+            params: { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
           });
         });
       });
 
-      describe('opening the sidebar', () => {
-        it('has the correct props when opened', async () => {
-          await openSidebar();
+      describe('closing the sidebar', () => {
+        it('has the correct props when closed', async () => {
+          await toggleSidebar();
 
-          expect(findFrameworkInfoSidebar().props('framework')).toMatchObject(
-            frameworks[rowCheckIndex],
-          );
+          await findFrameworkInfoSidebar().vm.$emit('close');
+
+          await nextTick();
+
+          expect(findFrameworkInfoSidebar().props('framework')).toBe(null);
+        });
+
+        it('removes query', async () => {
+          await toggleSidebar();
+
+          await findFrameworkInfoSidebar().vm.$emit('close');
+
+          expect($router.push).toHaveBeenCalledWith({
+            query: null,
+          });
         });
       });
     });

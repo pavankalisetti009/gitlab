@@ -11,9 +11,10 @@ import {
   GlLink,
 } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import { ROUTE_EDIT_FRAMEWORK, ROUTE_NEW_FRAMEWORK } from '../../constants';
-import { isTopLevelGroup } from '../../utils';
+import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
 import FrameworkInfoDrawer from './framework_info_drawer.vue';
 
 Vue.use(GlToast);
@@ -49,16 +50,18 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      selectedFramework: null,
-    };
-  },
   computed: {
     isTopLevelGroup() {
       return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
     },
 
+    selectedFramework() {
+      return this.$route.query.id
+        ? this.frameworks.find(
+            (framework) => framework.id === convertFrameworkIdToGraphQl(this.$route.query.id),
+          )
+        : null;
+    },
     showDrawer() {
       return this.selectedFramework !== null;
     },
@@ -72,10 +75,10 @@ export default {
       }
     },
     openDrawer(item) {
-      this.selectedFramework = item;
+      this.$router.push({ query: { id: getIdFromGraphQLId(item.id) } });
     },
     closeDrawer() {
-      this.selectedFramework = null;
+      this.$router.push({ query: null });
     },
     isLastItem(index, arr) {
       return index >= arr.length - 1;
@@ -84,7 +87,7 @@ export default {
       this.$router.push({ name: ROUTE_NEW_FRAMEWORK });
     },
     editFramework({ id }) {
-      this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id } });
+      this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
     getPoliciesList(item) {
       const { scanExecutionPolicies, scanResultPolicies } = item;
@@ -201,7 +204,6 @@ export default {
     <framework-info-drawer
       :group-path="groupPath"
       :root-ancestor="rootAncestor"
-      :show-drawer="showDrawer"
       :framework="selectedFramework"
       @close="closeDrawer"
       @edit="editFramework"
