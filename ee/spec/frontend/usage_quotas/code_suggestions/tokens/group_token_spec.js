@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import searchGroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import GroupToken from 'ee/usage_quotas/code_suggestions/tokens/group_token.vue';
 import { mockGroups, mockNoGroups } from 'ee_jest/usage_quotas/code_suggestions/mock_data';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import searchGroupsQuery from 'ee/boards/graphql/sub_groups.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 
