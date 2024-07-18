@@ -6,7 +6,7 @@ class AuditEventFinder
 
   InvalidLevelTypeError = Class.new(StandardError)
 
-  VALID_ENTITY_TYPES = %w[Project User Group].freeze
+  VALID_ENTITY_TYPES = %w[Project User Group Gitlab::Audit::InstanceScope].freeze
 
   # Instantiates a new finder
   #

@@ -105,6 +105,17 @@ RSpec.describe API::AuditEvents, :aggregate_failures, feature_category: :audit_e
               expect(json_response.size).to eq 1
               expect(json_response.first["id"]).to eq(user_audit_event.id)
             end
+
+            context 'when entity_type is Gitlab::Audit::InstanceScope' do
+              let_it_be(:instance_audit_event) { create(:instance_audit_event) }
+
+              it 'returns audit events of instance entity_type' do
+                get api(url, admin, admin_mode: true), params: { entity_type: 'Gitlab::Audit::InstanceScope' }
+
+                expect(json_response.size).to eq 1
+                expect(json_response.first["id"]).to eq(instance_audit_event.id)
+              end
+            end
           end
 
           context 'entity_id parameter' do
