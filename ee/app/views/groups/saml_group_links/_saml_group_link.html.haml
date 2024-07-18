@@ -6,4 +6,4 @@
   %strong= s_('GroupSAML|SAML Group Name: %{saml_group_name}') % { saml_group_name: saml_group_link.saml_group_name }
 
   .light
-    = s_('GroupSAML|as %{access_level}') % { access_level: saml_group_link_role_name(saml_group_link) }
+    = s_('GroupSAML|as %{access_level}') % { access_level: group_link_role_name(saml_group_link) }
