@@ -2,7 +2,7 @@
 
 exports[`EmptyState renders properly 1`] = `
 <section
-  class="gl-display-flex gl-empty-state gl-flex-direction-column gl-text-center"
+  class="gl-empty-state gl-flex gl-flex-col gl-text-center"
 >
   <div
     class="gl-max-w-full"
@@ -19,7 +19,7 @@ exports[`EmptyState renders properly 1`] = `
     data-testid="gl-empty-state-content"
   >
     <h1
-      class="gl-font-size-h-display gl-line-height-36 gl-mb-0 gl-mt-0 h4"
+      class="gl-leading-36 gl-mb-0 gl-mt-0 gl-text-size-h-display h4"
     >
       On-demand scans
     </h1>
@@ -36,7 +36,7 @@ exports[`EmptyState renders properly 1`] = `
       .
     </p>
     <div
-      class="gl-display-flex gl-flex-wrap gl-justify-content-center gl-mt-5"
+      class="gl-flex gl-flex-wrap gl-justify-center gl-mt-5"
     >
       <a
         class="btn btn-confirm btn-md gl-button gl-mb-3 gl-mx-2"
