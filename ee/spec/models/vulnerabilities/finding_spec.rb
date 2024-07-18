@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_management do
@@ -159,12 +160,18 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     end
 
     context 'order' do
-      let!(:finding1) { create(:vulnerabilities_finding, confidence: ::Enums::Vulnerability.confidence_levels[:high], severity: ::Enums::Vulnerability.severity_levels[:high]) }
-      let!(:finding2) { create(:vulnerabilities_finding, confidence: ::Enums::Vulnerability.confidence_levels[:medium], severity: ::Enums::Vulnerability.severity_levels[:critical]) }
-      let!(:finding3) { create(:vulnerabilities_finding, confidence: ::Enums::Vulnerability.confidence_levels[:high], severity: ::Enums::Vulnerability.severity_levels[:critical]) }
+      subject { described_class.all.ordered }
 
-      it 'orders by severity and confidence' do
-        expect(described_class.all.ordered).to eq([finding3, finding2, finding1])
+      let!(:expected_order) do
+        [
+          create(:vulnerabilities_finding, id: 2001, severity: ::Enums::Vulnerability.severity_levels[:critical]),
+          create(:vulnerabilities_finding, id: 3001, severity: ::Enums::Vulnerability.severity_levels[:critical]),
+          create(:vulnerabilities_finding, id: 1001, severity: ::Enums::Vulnerability.severity_levels[:high])
+        ]
+      end
+
+      it 'orders by severity desc and id asc' do
+        is_expected.to eq expected_order
       end
     end
 
