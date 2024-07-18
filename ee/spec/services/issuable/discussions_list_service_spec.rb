@@ -52,6 +52,142 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
 
       it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 5
     end
+
+    context 'when fetching system notes with references' do
+      let_it_be(:public_group) { create(:group, :public) }
+      let_it_be(:public_project) { create(:project, :public, group: public_group) }
+      let_it_be(:issue) { create(:issue, project: public_project) }
+
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      context 'with epic in private group' do
+        let_it_be(:epic) { create(:epic, group: group) }
+        let_it_be(:epic_system_note) do
+          create(:system_note,
+            noteable: epic, namespace: epic.group, note: "added issue #{issue.to_reference(full: true)}"
+          )
+        end
+
+        let_it_be(:epic_system_note_metadata) do
+          create(:system_note_metadata, note: epic_system_note, action: 'relate_to_child')
+        end
+
+        it 'does not return system note link on epic' do
+          notes = described_class.new(nil, epic, finder_params_for_issuable).execute
+
+          expect(notes).to be_empty
+        end
+
+        it 'does not return system note link on epic work item' do
+          notes = described_class.new(nil, epic.work_item, finder_params_for_issuable).execute
+
+          expect(notes).to be_empty
+        end
+      end
+
+      context 'with epic in public group' do
+        let_it_be(:epic) { create(:epic, group: public_group) }
+        let_it_be(:epic_system_note) do
+          create(:system_note,
+            noteable: epic, namespace: epic.group, note: "added issue #{issue.to_reference(full: true)}"
+          )
+        end
+
+        let_it_be(:epic_system_note_metadata) do
+          create(:system_note_metadata, note: epic_system_note, action: 'relate_to_child')
+        end
+
+        it 'returns system note link on epic' do
+          notes = described_class.new(nil, epic, finder_params_for_issuable).execute
+
+          expect(notes).not_to be_empty
+        end
+
+        it 'returns system note link on epic work item' do
+          notes = described_class.new(nil, epic.work_item, finder_params_for_issuable).execute
+
+          expect(notes).not_to be_empty
+        end
+
+        context 'with issue in private project' do
+          let_it_be(:issue) { create(:issue, project: project) }
+          let_it_be(:epic) { create(:epic, group: public_group) }
+          let_it_be(:epic_system_note) do
+            create(:system_note,
+              noteable: epic, namespace: epic.group, note: "added issue #{issue.to_reference(full: true)}"
+            )
+          end
+
+          let_it_be(:epic_system_note_metadata) do
+            create(:system_note_metadata, note: epic_system_note, action: 'relate_to_child')
+          end
+
+          it 'returns system note link on epic' do
+            notes = described_class.new(nil, epic, finder_params_for_issuable).execute
+
+            expect(notes).to be_empty
+          end
+
+          it 'returns system note link on epic work item' do
+            notes = described_class.new(nil, epic.work_item, finder_params_for_issuable).execute
+
+            expect(notes).to be_empty
+          end
+        end
+      end
+    end
+  end
+
+  describe 'fetching notes for issue' do
+    context 'when fetching system notes with references' do
+      let_it_be(:public_group) { create(:group, :public) }
+      let_it_be(:public_project) { create(:project, :public, group: public_group) }
+      let_it_be(:issue) { create(:issue, project: public_project) }
+
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      context 'with epic in private group' do
+        let_it_be(:epic) { create(:epic, group: group) }
+        let_it_be(:epic_system_note) do
+          create(:system_note,
+            noteable: issue, project: issue.project, note: "added parent epic #{epic.to_reference(full: true)}"
+          )
+        end
+
+        let_it_be(:epic_system_note_metadata) do
+          create(:system_note_metadata, note: epic_system_note, action: 'relate_to_parent')
+        end
+
+        it 'does not return system note link on issue' do
+          notes = described_class.new(nil, issue, finder_params_for_issuable).execute
+
+          expect(notes).to be_empty
+        end
+      end
+
+      context 'with epic in public group' do
+        let_it_be(:epic) { create(:epic, group: public_group) }
+        let_it_be(:epic_system_note) do
+          create(:system_note,
+            noteable: issue, project: issue.project, note: "added parent epic #{epic.to_reference(full: true)}"
+          )
+        end
+
+        let_it_be(:epic_system_note_metadata) do
+          create(:system_note_metadata, note: epic_system_note, action: 'relate_to_parent')
+        end
+
+        it 'returns system note link on epic' do
+          notes = described_class.new(nil, issue, finder_params_for_issuable).execute
+
+          expect(notes).not_to be_empty
+        end
+      end
+    end
   end
 
   describe 'fetching notes for vulnerabilities' do

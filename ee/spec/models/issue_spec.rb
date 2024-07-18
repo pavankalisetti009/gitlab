@@ -481,6 +481,30 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
   end
 
+  context 'with group level issues' do
+    let(:group) { build(:group, group_visibility) }
+    let(:issue) { build(:issue, :group_level, confidential: confidential, namespace: group) }
+
+    subject { issue.send(:publicly_visible?) }
+
+    before do
+      stub_licensed_features(epics: true)
+    end
+
+    where(:group_visibility, :confidential, :expected_value) do
+      :public   | false | true
+      :public   | true  | false
+      :internal | false | false
+      :internal | true  | false
+      :private  | false | false
+      :private  | true  | false
+    end
+
+    with_them do
+      it { is_expected.to eq(expected_value) }
+    end
+  end
+
   describe '#allows_multiple_assignees?' do
     it 'does not allow multiple assignees without license' do
       stub_licensed_features(multiple_issue_assignees: false)
