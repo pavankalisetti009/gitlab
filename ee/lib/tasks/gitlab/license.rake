@@ -46,10 +46,10 @@ module Tasks
     def activate(activation_code)
       result = ::GitlabSubscriptions::ActivateService.new.execute(activation_code, automated: true)
       if result[:success]
-        puts 'Activation successful'.color(:green)
+        puts Rainbow('Activation successful').green
       else
-        puts 'Activation unsuccessful'.color(:red)
-        puts Array(result[:errors]).join(' ').color(:red)
+        puts Rainbow('Activation unsuccessful').red
+        puts Rainbow(Array(result[:errors]).join(' ')).red
         raise 'Activation unsuccessful'
       end
     end
@@ -62,13 +62,13 @@ module Tasks
       if File.file?(license_file)
         begin
           ::License.create!(data: File.read(license_file))
-          puts "License Added:\n\nFilePath: #{license_file}".color(:green)
+          puts Rainbow("License Added:\n\nFilePath: #{license_file}").green
         rescue ::Gitlab::License::Error, ActiveRecord::RecordInvalid
-          puts "License Invalid:\n\nFilePath: #{license_file}".color(:red)
+          puts Rainbow("License Invalid:\n\nFilePath: #{license_file}").red
           raise "License Invalid"
         end
       elsif ENV[flag].present?
-        puts "License File Missing:\n\nFilePath: #{license_file}".color(:red)
+        puts Rainbow("License File Missing:\n\nFilePath: #{license_file}").red
         raise "License File Missing"
       elsif args[:mode] == 'verbose'
         puts "Skipped. Use the `#{flag}` environment variable to seed the License file of the given path."

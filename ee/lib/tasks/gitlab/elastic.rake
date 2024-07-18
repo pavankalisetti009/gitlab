@@ -7,13 +7,13 @@ namespace :gitlab do
       raise 'This task cannot be run on GitLab.com' if ::Gitlab::Saas.feature_available?(:advanced_search)
 
       if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
-        stdout_logger.warn('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
-          'This setting will be disabled to complete indexing'.color(:yellow))
+        stdout_logger.warn(Rainbow('WARNING: `elasticsearch_pause_indexing` is enabled. ' \
+          'This setting will be disabled to complete indexing').yellow)
       end
 
       unless Gitlab::CurrentSettings.elasticsearch_indexing?
-        stdout_logger.warn('Setting `elasticsearch_indexing` is disabled. ' \
-          'This setting will been enabled to complete indexing.'.color(:yellow))
+        stdout_logger.warn(Rainbow('Setting `elasticsearch_indexing` is disabled. ' \
+          'This setting will been enabled to complete indexing.').yellow)
       end
 
       stdout_logger.info('Scheduling indexing with TriggerIndexingWorker')
@@ -22,7 +22,7 @@ namespace :gitlab do
       Search::Elastic::TriggerIndexingWorker.perform_in(1.minute,
         Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
 
-      stdout_logger.info("Scheduling indexing with TriggerIndexingWorker... #{'done'.color(:green)}")
+      stdout_logger.info("Scheduling indexing with TriggerIndexingWorker... #{Rainbow('done').green}")
     end
 
     desc 'GitLab | Elasticsearch | Index Group entities'
