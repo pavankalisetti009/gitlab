@@ -384,10 +384,16 @@ RSpec.describe Issues::MoveService, feature_category: :team_planning do
         end
       end
 
-      it 'calls CopyTimelogsWorker' do
-        expect(Issues::CopyTimelogsWorker).to receive(:perform_async).with(old_issue.id, kind_of(Integer))
+      context 'issue with timelogs' do
+        before do
+          create(:timelog, issue: old_issue)
+        end
 
-        move_service.execute(old_issue, new_project)
+        it 'calls CopyTimelogsWorker' do
+          expect(Issues::CopyTimelogsWorker).to receive(:perform_async).with(old_issue.id, kind_of(Integer))
+
+          move_service.execute(old_issue, new_project)
+        end
       end
 
       context 'issue relative position' do

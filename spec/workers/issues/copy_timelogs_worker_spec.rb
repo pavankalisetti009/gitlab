@@ -15,9 +15,12 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
         expect(Gitlab::AppLogger).to receive(:info).with(
           "Copying timelogs from issue #{from_issue.id} to issue #{to_issue.id}")
 
-        expect(described_class.new.perform(from_issue.id, to_issue.id)).to change { Timelog.count }.by(1)
+        expect do
+          described_class.new.perform(from_issue.id, to_issue.id)
+        end.to change { Timelog.count }.by(1)
 
         new_timelog = Timelog.last
+
         expect(new_timelog.issue_id).to eq(to_issue.id)
         expect(new_timelog.project_id).to eq(to_issue.project_id)
       end
@@ -25,13 +28,17 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
 
     context 'when from_issue does not exist' do
       it 'does not copy timelogs' do
-        expect(described_class.new.perform(nil, to_issue.id)).not_to change { Timelog.count }
+        expect do
+          described_class.new.perform(nil, to_issue.id)
+        end.not_to change { Timelog.count }
       end
     end
 
     context 'when to_issue does not exist' do
       it 'does not copy timelogs' do
-        expect(described_class.new.perform(from_issue.id, nil)).not_to change { Timelog.count }
+        expect do
+          described_class.new.perform(from_issue.id, nil)
+        end.not_to change { Timelog.count }
       end
     end
 
@@ -39,7 +46,9 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
       let(:from_issue_without_timelog) { create(:issue) }
 
       it 'does not copy timelogs' do
-        expect(described_class.new.perform(from_issue_without_timelog.id, to_issue.id)).not_to change { Timelog.count }
+        expect do
+          described_class.new.perform(from_issue_without_timelog.id, to_issue.id)
+        end.not_to change { Timelog.count }
       end
     end
 
@@ -49,7 +58,9 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
       end
 
       it 'does not copy timelogs' do
-        expect(described_class.new.perform(from_issue.id, to_issue.id)).not_to change { Timelog.count }
+        expect do
+          described_class.new.perform(from_issue.id, to_issue.id)
+        end.not_to change { Timelog.count }
       end
     end
   end

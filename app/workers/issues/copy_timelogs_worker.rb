@@ -18,9 +18,11 @@ module Issues
       new_attributes = { id: nil, project_id: to_issue.project_id, issue_id: to_issue.id }
       new_timelogs = from_issue.timelogs.dup
 
-      new_timelogs.each do |timelog|
-        timelog.assign_attributes(new_attributes)
-        Timelog.create!(timelog.attributes)
+      ApplicationRecord.transaction do
+        new_timelogs.each do |timelog|
+          timelog.assign_attributes(new_attributes)
+          Timelog.create!(timelog.attributes)
+        end
       end
     end
   end

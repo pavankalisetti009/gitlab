@@ -451,6 +451,8 @@
   - 1
 - - issues_close
   - 2
+- - issues_copy_timelogs
+  - 1
 - - issues_placement
   - 2
 - - issues_rebalancing
