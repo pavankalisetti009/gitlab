@@ -97,7 +97,7 @@ The following features are extended from standard Markdown:
 
 When you use GitLab Flavored Markdown, you are creating digital content.
 This content should be as accessible as possible to your audience.
-The following list is not exhaustive, but it provides guidance for some of the GLFM styles to pay
+The following list is not exhaustive, but it provides guidance for some of the GitLab Flavored Markdown styles to pay
 particular attention to:
 
 ### Accessible headings
@@ -121,7 +121,7 @@ Don't use `image of` or `video of` in the description. For more information, see
 [View this topic in GitLab](https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/user/markdown.md#line-breaks).
 
 A line break is inserted (a new paragraph starts) if the previous text is
-ended with two newlines, like when you press <kbd>Enter</kbd> twice in a row. If you only
+ended with two newlines. For example, when you press <kbd>Enter</kbd> twice in a row. If you only
 use one newline (press <kbd>Enter</kbd> once), the next sentence remains part of the
 same paragraph. Use this approach if you want to keep long lines from wrapping, and keep
 them editable:
@@ -270,7 +270,7 @@ However, you cannot mix the wrapping tags:
 - [- deletion -}
 ```
 
-Diff highlighting doesn't work with `` `inline code` ``. If your text includes backticks (`` ` ``), escape
+Diff highlighting doesn't work with `` `inline code` ``. If your text includes backticks (`` ` ``), [escape](#escape-characters)
 each backtick with a backslash <code>&#92;</code>:
 
 ```markdown
@@ -549,7 +549,7 @@ Here's an example audio clip:
 You can create ordered and unordered lists.
 
 For an ordered list, add the number you want the list
-to start with, like `1.`, followed by a space, at the start of each line for ordered lists.
+to start with, like `1.`, followed by a space, at the start of each line.
 After the first number, it does not matter what number you use. Ordered lists are
 numbered automatically by vertical order, so repeating `1.` for all items in the
 same list is common. If you start with a number other than `1.`, it uses that as the first
@@ -582,7 +582,7 @@ See https://docs.gitlab.com/ee/development/documentation/styleguide/index.html#l
 1. And another item.
 
 For an unordered list, add a `-`, `*` or `+`, followed by a space, at the start of
-each line for unordered lists, but you should not use a mix of them.
+each line. Don't mix the characters in the same list.
 
 ```markdown
 Unordered lists can:
@@ -646,7 +646,8 @@ Example:
 ---
 
 If the first item's paragraph isn't indented with the proper number of spaces,
-the paragraph appears outside the list, instead of properly indented under the list item.
+the paragraph appears outside the list.
+Use the correct number of spaces to properly indent under the list item.
 For example:
 
 ```markdown
@@ -684,8 +685,8 @@ Ordered lists that are the first sub-item of an unordered list item must have a 
 
 ---
 
-CommonMark ignores blank lines between ordered and unordered list items, and considers them part of a single list. These are rendered as a
-_[loose](https://spec.commonmark.org/0.30/#loose)_ list. Each list item is enclosed in a paragraph tag and, therefore, has paragraph spacing and margins.
+CommonMark ignores blank lines between ordered and unordered list items, and considers them part of a single list. The items are rendered as a
+_[loose](https://spec.commonmark.org/0.30/#loose)_ list. Each list item is enclosed in a paragraph tag and therefore has paragraph spacing and margins.
 This makes the list look like there is extra spacing between each item.
 
 For example:
@@ -1076,7 +1077,7 @@ When creating tables:
     by pipes (`|`).
   - You **can** have blank cells.
 - Column widths are calculated dynamically based on the content of the cells.
-- To use the pipe character (`|`) in the text and not as table delimiter, you must escape it with a backslash (`\|`).
+- To use the pipe character (`|`) in the text and not as table delimiter, you must [escape](#escape-characters) it with a backslash (`\|`).
 
 Example:
 
@@ -1559,6 +1560,58 @@ $example = array(
 ---
 ```
 
+## Escape characters
+
+[View this topic rendered in GitLab](https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/user/markdown.md#escape-characters).
+
+Markdown reserves the following ASCII characters to format the page:
+
+```plaintext
+! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~
+```
+
+To use one of these reserved characters in your text, add the backslash character (` \ `) immediately before the
+reserved character. When you place the backslash before a reserved character, the Markdown parser omits the
+backslash and treats the reserved character as regular text.
+
+Examples:
+
+```plaintext
+\# Not a heading
+
+| Food            | Do you like this food? (circle) |
+|-----------------|---------------------------------|
+|  Pizza          |  Yes \| No                      |
+
+
+\**Not bold, just italic text placed between some asterisks*\*
+```
+
+When rendered, the escaped characters look like this:
+
+---
+
+\# Not a heading
+
+| Food            | Do you like this food? (circle)|
+|-----------------|--------------------------------|
+|  Pizza          |  Yes \| No                     |
+
+\**Not bold, just italic text placed between some asterisks*\*
+
+---
+
+Exceptions:
+
+A backslash doesn't always escape the following character. The backslash appears as regular text in the following cases:
+
+- When the backslash appears before a non-reserved character, such as `A`, `3`, or a space.
+- When the backslash appears inside of these Markdown elements:
+  - Code blocks
+  - Code spans
+  - Auto-links
+  - Inline HTML
+
 ## Footnotes
 
 [View this topic in GitLab](https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/user/markdown.md#footnotes).
@@ -1812,8 +1865,8 @@ it links to `<your_wiki>/documentation/file.md`:
 
 ### Wiki - hierarchical link
 
-A hierarchical link can be constructed relative to the current wiki page by using `./<page>`,
-`../<page>`, and so on.
+A hierarchical link can be constructed relative to the current wiki page by using relative paths like `./<page>` or
+`../<page>`.
 
 If this example is on a page at `<your_wiki>/documentation/main`,
 it links to `<your_wiki>/documentation/related`:
