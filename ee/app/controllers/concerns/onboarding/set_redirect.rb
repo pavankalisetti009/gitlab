@@ -7,7 +7,7 @@ module Onboarding
     private
 
     def verify_onboarding_enabled!
-      render_404 unless ::Onboarding::Status.enabled?
+      render_404 unless ::Onboarding.enabled?
     end
   end
 end

@@ -25,18 +25,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     it { is_expected.to delegate_method(:preserve_stored_location?).to(:registration_type) }
   end
 
-  describe '.enabled?' do
-    subject { described_class.enabled? }
-
-    context 'when on SaaS', :saas do
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when not on SaaS' do
-      it { is_expected.to eq(false) }
-    end
-  end
-
   describe '#continue_full_onboarding?' do
     let(:session_in_oauth) do
       { 'user_return_to' => ::Gitlab::Routing.url_helpers.oauth_authorization_path(some_param: '_param_') }
@@ -72,7 +60,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       let(:instance) { described_class.new({}, session, current_user) }
 
       before do
-        allow(instance).to receive(:enabled?).and_return(enabled?)
+        stub_saas_features(onboarding: enabled?)
       end
 
       subject { instance.continue_full_onboarding? }
@@ -216,18 +204,6 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
       subject { instance.initial_trial? }
 
       it { is_expected.to eq(expected_result) }
-    end
-  end
-
-  describe '#enabled?' do
-    subject { described_class.new(nil, nil, nil).enabled? }
-
-    context 'when on SaaS', :saas do
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when not on SaaS' do
-      it { is_expected.to eq(false) }
     end
   end
 

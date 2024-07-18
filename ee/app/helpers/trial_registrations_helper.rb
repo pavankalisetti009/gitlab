@@ -35,7 +35,7 @@ module TrialRegistrationsHelper
   ].freeze
 
   def social_signin_enabled?
-    ::Onboarding::Status.enabled? &&
+    ::Onboarding.enabled? &&
       omniauth_enabled? &&
       devise_mapping.omniauthable? &&
       button_based_providers_enabled?

@@ -196,15 +196,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
       end
 
       describe 'redirection' do
-        context 'when onboarding is not enabled' do
-          before do
-            allow_next_instance_of(Onboarding::Status) do |instance|
-              allow(instance).to receive(:enabled?).and_return(false)
-            end
-          end
-
-          it { is_expected.to redirect_to dashboard_projects_path }
-
+        context 'when onboarding is enabled' do
           it 'tracks successful submission event' do
             patch_update
 
@@ -214,76 +206,6 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               user: user,
               label: 'free_registration'
             )
-          end
-
-          context 'with joining_project selection' do
-            context 'when creating a new project' do
-              it 'does not track join a project event' do
-                patch_update
-
-                expect_no_snowplow_event(
-                  category: 'registrations:welcome:update',
-                  action: 'select_button',
-                  user: user,
-                  label: 'join_a_project'
-                )
-              end
-            end
-
-            context 'when joining a project' do
-              let(:joining_project) { 'true' }
-
-              it 'tracks join a project event' do
-                patch_update
-
-                expect_snowplow_event(
-                  category: 'registrations:welcome:update',
-                  action: 'select_button',
-                  user: user,
-                  label: 'join_a_project'
-                )
-              end
-            end
-          end
-
-          context 'when the new user already has any accepted group membership' do
-            let!(:member1) { create(:group_member, user: user) }
-
-            it 'redirects to the group page' do
-              expect(patch_update).to redirect_to(group_path(member1.source))
-            end
-
-            context 'when the new user already has more than 1 accepted group membership' do
-              it 'redirects to the most recent membership group page' do
-                member2 = create(:group_member, user: user)
-
-                expect(patch_update).to redirect_to(group_path(member2.source))
-              end
-            end
-
-            context 'when the member has an orphaned source at the time of the welcome' do
-              it 'redirects to the project dashboard page' do
-                member1.source.delete
-
-                expect(patch_update).to redirect_to(dashboard_projects_path)
-              end
-            end
-          end
-        end
-
-        context 'when onboarding is enabled' do
-          let_it_be(:user, reload: true) { create(:user, onboarding_in_progress: true) }
-
-          context 'when the new user already has any accepted group membership' do
-            let!(:member1) { create(:group_member, user: user) }
-
-            context 'when the member has an orphaned source at the time of the welcome' do
-              it 'redirects to the project non invite onboarding flow' do
-                member1.source.delete
-
-                expect(patch_update).to redirect_to(new_users_sign_up_group_path)
-              end
-            end
           end
 
           context 'when joining_project is "true"' do
@@ -296,9 +218,31 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               expect(user.onboarding_in_progress).to be(false)
               expect(response).to redirect_to dashboard_projects_path
             end
+
+            it 'tracks join a project event' do
+              patch_update
+
+              expect_snowplow_event(
+                category: 'registrations:welcome:update',
+                action: 'select_button',
+                user: user,
+                label: 'join_a_project'
+              )
+            end
           end
 
           context 'when joining_project is "false"' do
+            it 'does not track join a project event' do
+              patch_update
+
+              expect_no_snowplow_event(
+                category: 'registrations:welcome:update',
+                action: 'select_button',
+                user: user,
+                label: 'join_a_project'
+              )
+            end
+
             context 'with group and project creation' do
               specify do
                 patch_update
@@ -442,7 +386,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 expect(user.onboarding_status_step_url).to eq(redirect_path)
                 expect(user.onboarding_status_email_opt_in).to eq(true)
                 expect(user.onboarding_status_registration_type)
-                  .to eq(::Onboarding::StatusCreateService::REGISTRATION_TYPE[:trial])
+                  .to eq(::Onboarding::REGISTRATION_TYPE[:trial])
                 expect(response).to redirect_to redirect_path
               end
             end
@@ -460,7 +404,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 expect(user.onboarding_status_step_url).to eq(redirect_path)
                 expect(user.onboarding_status_email_opt_in).to eq(true)
                 expect(user.onboarding_status_registration_type)
-                  .to eq(::Onboarding::StatusCreateService::REGISTRATION_TYPE[:trial])
+                  .to eq(::Onboarding::REGISTRATION_TYPE[:trial])
                 expect(response).to redirect_to redirect_path
               end
             end
@@ -473,7 +417,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 user.reset
 
                 expect(user.onboarding_status_registration_type)
-                  .not_to eq(::Onboarding::Status::REGISTRATION_TYPE[:trial])
+                  .not_to eq(::Onboarding::REGISTRATION_TYPE[:trial])
               end
             end
 
@@ -488,7 +432,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                   user.reset
 
                   expect(user.onboarding_status_registration_type)
-                    .not_to eq(::Onboarding::Status::REGISTRATION_TYPE[:trial])
+                    .not_to eq(::Onboarding::REGISTRATION_TYPE[:trial])
                 end
               end
             end
@@ -505,7 +449,7 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               expect(user.onboarding_in_progress).to be(true)
               expect(user.onboarding_status_step_url).to eq(path)
               expect(user.onboarding_status_registration_type)
-                .not_to eq(::Onboarding::StatusCreateService::REGISTRATION_TYPE[:trial])
+                .not_to eq(::Onboarding::REGISTRATION_TYPE[:trial])
               expect(response).to redirect_to path
             end
 
@@ -586,6 +530,8 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
           end
 
           context 'when in invitation flow' do
+            let!(:member1) { create(:group_member, user: user) }
+
             before do
               user.update!(onboarding_status_registration_type: 'invite')
             end
@@ -601,6 +547,26 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
                 user: user,
                 label: 'invite_registration'
               )
+            end
+
+            it 'redirects to the group page' do
+              expect(patch_update).to redirect_to(group_path(member1.source))
+            end
+
+            context 'when the new user already has more than 1 accepted group membership' do
+              it 'redirects to the most recent membership group page' do
+                member2 = create(:group_member, user: user)
+
+                expect(patch_update).to redirect_to(group_path(member2.source))
+              end
+            end
+
+            context 'when the member has an orphaned source at the time of the welcome' do
+              it 'redirects to the project dashboard page' do
+                member1.source.delete
+
+                expect(patch_update).to redirect_to(dashboard_projects_path)
+              end
             end
           end
 

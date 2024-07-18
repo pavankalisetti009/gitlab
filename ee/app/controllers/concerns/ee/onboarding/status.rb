@@ -3,29 +3,12 @@
 module EE
   module Onboarding
     module Status
-      REGISTRATION_TYPE = {
-        free: 'free',
-        trial: 'trial',
-        invite: 'invite',
-        subscription: 'subscription'
-      }.freeze
-
       REGISTRATION_KLASSES = {
-        REGISTRATION_TYPE[:free] => ::Onboarding::FreeRegistration,
-        REGISTRATION_TYPE[:trial] => ::Onboarding::TrialRegistration,
-        REGISTRATION_TYPE[:invite] => ::Onboarding::InviteRegistration,
-        REGISTRATION_TYPE[:subscription] => ::Onboarding::SubscriptionRegistration
+        ::Onboarding::REGISTRATION_TYPE[:free] => ::Onboarding::FreeRegistration,
+        ::Onboarding::REGISTRATION_TYPE[:trial] => ::Onboarding::TrialRegistration,
+        ::Onboarding::REGISTRATION_TYPE[:invite] => ::Onboarding::InviteRegistration,
+        ::Onboarding::REGISTRATION_TYPE[:subscription] => ::Onboarding::SubscriptionRegistration
       }.freeze
-
-      module ClassMethods
-        def enabled?
-          ::Gitlab::Saas.feature_available?(:onboarding)
-        end
-      end
-
-      def self.prepended(base)
-        base.singleton_class.prepend ClassMethods
-      end
 
       attr_reader :registration_type
 
@@ -56,7 +39,7 @@ module EE
       end
 
       def continue_full_onboarding?
-        registration_type.continue_full_onboarding? && !oauth? && enabled?
+        registration_type.continue_full_onboarding? && !oauth? && ::Onboarding.enabled?
       end
 
       def joining_a_project?
@@ -81,10 +64,6 @@ module EE
         ::Gitlab::Utils.to_boolean(params.dig(:user, :setup_for_company), default: false)
       end
 
-      def enabled?
-        self.class.enabled?
-      end
-
       def company_lead_product_interaction
         if initial_trial?
           ::Onboarding::TrialRegistration.product_interaction
@@ -96,7 +75,7 @@ module EE
       end
 
       def initial_trial?
-        user.onboarding_status_initial_registration_type == REGISTRATION_TYPE[:trial]
+        user.onboarding_status_initial_registration_type == ::Onboarding::REGISTRATION_TYPE[:trial]
       end
 
       def stored_user_location

@@ -2,25 +2,30 @@
 
 require 'spec_helper'
 
-RSpec.describe 'devise/sessions/new' do
+RSpec.describe 'devise/sessions/new', feature_category: :system_access do
   before do
     view.instance_variable_set(:@arkose_labs_public_key, "arkose-api-key")
     view.instance_variable_set(:@arkose_labs_domain, "gitlab-api.arkoselab.com")
   end
 
   describe 'broadcast messaging' do
+    let(:onboarding_enabled) { true }
+
     before do
+      stub_saas_features(onboarding: onboarding_enabled)
       stub_devise
       disable_captcha
 
       render
     end
 
-    context 'when self-hosted' do
+    context 'when onboarding feature is not available' do
+      let(:onboarding_enabled) { false }
+
       it { expect(rendered).to render_template('layouts/_broadcast') }
     end
 
-    context 'when SaaS', :saas do
+    context 'when onboarding feature is available' do
       it { expect(rendered).not_to render_template('layouts/_broadcast') }
     end
   end

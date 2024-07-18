@@ -68,7 +68,7 @@ module Registrations
       # Now we are in automatic trial and we'll update our status as such, initial_registration_type
       # will be how we know if they weren't a trial originally from here on out.
       status_params
-        .merge(onboarding_status_registration_type: ::Onboarding::StatusCreateService::REGISTRATION_TYPE[:trial])
+        .merge(onboarding_status_registration_type: ::Onboarding::REGISTRATION_TYPE[:trial])
     end
 
     def passed_through_params
