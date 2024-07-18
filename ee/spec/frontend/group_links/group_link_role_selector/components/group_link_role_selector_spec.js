@@ -1,12 +1,12 @@
-import SamlGroupLinkRoleSelector from 'ee/saml_group_links/saml_group_link_role_selector/components/saml_group_link_role_selector.vue';
+import GroupLinkRoleSelector from 'ee/group_links/group_link_role_selector/components/group_link_role_selector.vue';
 import RoleSelector from 'ee/roles_and_permissions/components/role_selector.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-describe('SamlGroupLinkRoleSelector', () => {
+describe('GroupLinkRoleSelector', () => {
   let wrapper;
 
   const createComponent = () => {
-    wrapper = shallowMountExtended(SamlGroupLinkRoleSelector, {
+    wrapper = shallowMountExtended(GroupLinkRoleSelector, {
       propsData: {
         baseAccessLevelInputName: 'mock_group_link[access_level]',
         memberRoleIdInputName: 'mock_group_link[member_role_id]',
