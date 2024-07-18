@@ -92,7 +92,7 @@ module QA
       end
 
       def expect_storage_limit_message(message, error_message)
-        Page::Alert::StorageLimit.perform do |storage_limit_alert|
+        EE::Page::Alert::StorageLimit.perform do |storage_limit_alert|
           Support::Retrier.retry_until(
             max_duration: 300,
             sleep_interval: 10,
