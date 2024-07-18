@@ -98,12 +98,14 @@ describe('EE WorkItemAttributesWrapper component', () => {
 
   describe('weight widget', () => {
     describe.each`
-      description                               | weightWidgetPresent | exists
-      ${'when widget is returned from API'}     | ${true}             | ${true}
-      ${'when widget is not returned from API'} | ${false}            | ${false}
-    `('$description', ({ weightWidgetPresent, exists }) => {
-      it(`${weightWidgetPresent ? 'renders' : 'does not render'} weight component`, async () => {
-        const response = workItemResponseFactory({ weightWidgetPresent });
+      description                               | editableWeightWidget | weightWidgetPresent | exists
+      ${'when widget is returned from API'}     | ${true}              | ${true}             | ${true}
+      ${'when widget is not returned from API'} | ${true}              | ${false}            | ${false}
+      ${'when widget is returned from API'}     | ${false}             | ${true}             | ${false}
+      ${'when widget is not returned from API'} | ${false}             | ${false}            | ${false}
+    `('$description', ({ weightWidgetPresent, exists, editableWeightWidget }) => {
+      it(`when the weight widget is ${editableWeightWidget ? 'editable' : 'not editable'} ${weightWidgetPresent && editableWeightWidget ? 'renders' : 'does not render'} weight component`, async () => {
+        const response = workItemResponseFactory({ weightWidgetPresent, editableWeightWidget });
         createComponent({ workItem: response.data.workItem });
 
         await waitForPromises();
@@ -113,13 +115,17 @@ describe('EE WorkItemAttributesWrapper component', () => {
     });
 
     it.each`
-      workItemType | typeName   | description          | expected
-      ${epicType}  | ${`Epic`}  | ${'does not render'} | ${false}
-      ${issueType} | ${`Issue`} | ${'renders'}         | ${true}
+      workItemType | typeName   | description          | expected | editableWeightWidget
+      ${epicType}  | ${`Epic`}  | ${'does not render'} | ${false} | ${false}
+      ${issueType} | ${`Issue`} | ${'renders'}         | ${true}  | ${true}
     `(
       '$description WorkItemWeight when workItemType is $typeName',
-      async ({ workItemType, expected }) => {
-        const response = workItemResponseFactory({ weightWidgetPresent: true, workItemType });
+      async ({ workItemType, expected, editableWeightWidget }) => {
+        const response = workItemResponseFactory({
+          weightWidgetPresent: true,
+          workItemType,
+          editableWeightWidget,
+        });
         createComponent({ workItem: response.data.workItem });
 
         await waitForPromises();

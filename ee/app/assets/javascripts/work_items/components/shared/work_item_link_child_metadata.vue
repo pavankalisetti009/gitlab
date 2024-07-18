@@ -56,8 +56,17 @@ export default {
     hasProgress() {
       return Number.isInteger(this.progress);
     },
+    isWeightRollup() {
+      return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.widgetDefinition?.rollUp;
+    },
     weight() {
       return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.weight;
+    },
+    rolledUpWeight() {
+      return this.metadataWidgets[WIDGET_TYPE_WEIGHT]?.rolledUpWeight;
+    },
+    workItemWeight() {
+      return this.isWeightRollup ? this.rolledUpWeight : this.weight;
     },
     iteration() {
       return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
@@ -103,13 +112,13 @@ export default {
   >
     <template #left-metadata>
       <div
-        v-if="weight"
+        v-if="workItemWeight"
         ref="weightData"
         data-testid="item-weight"
         class="gl-display-flex gl-align-items-center gl-cursor-help gl-gap-2 gl-min-w-7"
       >
         <gl-icon name="weight" />
-        <span data-testid="weight-value" class="gl-font-sm">{{ weight }}</span>
+        <span data-testid="weight-value" class="gl-font-sm">{{ workItemWeight }}</span>
         <gl-tooltip :target="() => $refs.weightData">
           <span class="gl-font-bold">
             {{ __('Weight') }}

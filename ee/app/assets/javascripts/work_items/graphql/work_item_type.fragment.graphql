@@ -10,5 +10,9 @@ fragment WorkItemTypeFragment on WorkItemType {
     ... on WorkItemWidgetDefinitionLabels {
       allowsScopedLabels
     }
+    ... on WorkItemWidgetDefinitionWeight {
+      editable
+      rollUp
+    }
   }
 }
