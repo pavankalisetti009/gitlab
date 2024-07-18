@@ -63,10 +63,13 @@ module EE
         state_machine :status do
           after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
             next if pipeline.manual? && !pipeline.include_manual_to_pipeline_completion_enabled?
-            next unless pipeline.can_store_security_reports?
 
             pipeline.run_after_commit do
-              ::Security::StoreScansWorker.perform_async(pipeline.id)
+              if pipeline.can_store_security_reports?
+                ::Security::StoreScansWorker.perform_async(pipeline.id)
+              else
+                ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
+              end
             end
           end
 
@@ -75,16 +78,6 @@ module EE
 
             pipeline.run_after_commit do
               ::Ai::StoreRepositoryXrayWorker.perform_async(pipeline.id)
-            end
-          end
-
-          after_transition any => ::Ci::Pipeline.completed_with_manual_statuses do |pipeline|
-            next if pipeline.manual? && !pipeline.include_manual_to_pipeline_completion_enabled?
-
-            next if pipeline.can_store_security_reports?
-
-            pipeline.run_after_commit do
-              ::Sbom::ScheduleIngestReportsService.new(pipeline).execute
             end
           end
 
