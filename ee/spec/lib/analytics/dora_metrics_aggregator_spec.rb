@@ -6,8 +6,8 @@ RSpec.describe Analytics::DoraMetricsAggregator, feature_category: :devops_repor
   describe '.aggregate_for', :freeze_time do
     let_it_be(:project) { create(:project) }
     let(:metric) { 'deployment_frequency' }
-    let(:end_date) { Time.current.to_date }
-    let(:start_date) { 3.months.ago(end_date) }
+    let(:end_date) { Date.parse('2022-03-03') }
+    let(:start_date) { Date.parse('2022-01-20') }
     let(:params) do
       {
         projects: [project],
@@ -23,11 +23,19 @@ RSpec.describe Analytics::DoraMetricsAggregator, feature_category: :devops_repor
     let_it_be(:production) { create(:environment, :production, project: project) }
     let_it_be(:staging) { create(:environment, :staging, project: project) }
 
+    let(:days_in_january) { 12 }
+    let(:days_in_february) { 28 }
+    let(:days_in_march) { 3 }
+    let(:total_days) { days_in_january + days_in_february + days_in_march }
+
     subject { described_class.aggregate_for(**params) }
 
     before_all do
-      create(:dora_daily_metrics, deployment_frequency: 2, environment: production)
-      create(:dora_daily_metrics, deployment_frequency: 1, environment: staging)
+      create(:dora_daily_metrics, deployment_frequency: 2, environment: production, date: Date.parse('2022-01-25'))
+      create(:dora_daily_metrics, deployment_frequency: 5, environment: production, date: Date.parse('2022-01-28'))
+      create(:dora_daily_metrics, deployment_frequency: 9, environment: production, date: Date.parse('2022-02-07'))
+      create(:dora_daily_metrics, deployment_frequency: 1, environment: production, date: Date.parse('2022-03-01'))
+      create(:dora_daily_metrics, deployment_frequency: 1, environment: staging, date: Date.parse('2022-01-26'))
     end
 
     before do
@@ -35,14 +43,26 @@ RSpec.describe Analytics::DoraMetricsAggregator, feature_category: :devops_repor
     end
 
     it 'returns the aggregated data' do
-      expect(subject).to match_array([{ 'date' => Time.current.to_date, metric => 2 }])
+      expect(subject).to match_array([
+        { 'date' => Date.parse('2022-01-25'), metric => 2 },
+        { 'date' => Date.parse('2022-01-28'), metric => 5 },
+        { 'date' => Date.parse('2022-02-07'), metric => 9 },
+        { 'date' => Date.parse('2022-03-01'), metric => 1 }
+      ])
     end
 
     context 'when interval is monthly' do
       let(:extra_params) { { interval: Dora::DailyMetrics::INTERVAL_MONTHLY } }
 
       it 'returns the aggregated data' do
-        expect(subject).to match_array([{ 'date' => Time.current.beginning_of_month.to_date, metric => 2 }])
+        expect(subject).to match_array([
+          { 'date' => Date.parse('2022-01-01'), 'deployment_count' => 7,
+            metric => 7.fdiv(days_in_january) },
+          { 'date' => Date.parse('2022-02-01'), 'deployment_count' => 9,
+            metric => 9.fdiv(days_in_february) },
+          { 'date' => Date.parse('2022-03-01'), 'deployment_count' => 1,
+            metric => 1.fdiv(days_in_march) }
+        ])
       end
     end
 
@@ -50,7 +70,7 @@ RSpec.describe Analytics::DoraMetricsAggregator, feature_category: :devops_repor
       let(:extra_params) { { interval: Dora::DailyMetrics::INTERVAL_ALL } }
 
       it 'returns the aggregated data' do
-        expect(subject).to match_array([{ 'date' => nil, metric => 2 }])
+        expect(subject).to match_array([{ 'date' => nil, 'deployment_count' => 17, metric => 17.fdiv(total_days) }])
       end
     end
 
@@ -58,7 +78,7 @@ RSpec.describe Analytics::DoraMetricsAggregator, feature_category: :devops_repor
       let(:extra_params) { { environment_tiers: ['staging'] } }
 
       it 'returns the aggregated data' do
-        expect(subject).to match_array([{ 'date' => Time.current.to_date, metric => 1 }])
+        expect(subject).to match_array([{ 'date' => Date.parse('2022-01-26'), metric => 1 }])
       end
     end
   end
