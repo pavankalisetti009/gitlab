@@ -34,6 +34,7 @@ RSpec.describe Users::IdentityVerificationHelper, feature_category: :instance_re
 
     let(:common_data) do
       {
+        username: user.username,
         offer_phone_number_exemption: mock_offer_phone_number_exemption,
         phone_number: {},
         credit_card: {

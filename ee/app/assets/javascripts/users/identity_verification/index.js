@@ -9,6 +9,7 @@ export const initIdentityVerification = () => {
   if (!el) return false;
 
   const {
+    username,
     email,
     creditCard,
     phoneNumber,
@@ -43,6 +44,9 @@ export const initIdentityVerification = () => {
       arkoseDataExchangePayload,
       successfulVerificationPath,
     },
-    render: (createElement) => createElement(IdentityVerificationWizard),
+    render: (createElement) =>
+      createElement(IdentityVerificationWizard, {
+        props: { username },
+      }),
   });
 };

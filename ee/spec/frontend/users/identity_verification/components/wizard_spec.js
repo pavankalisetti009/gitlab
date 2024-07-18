@@ -28,6 +28,7 @@ describe('IdentityVerificationWizard', () => {
   let wrapper;
   let axiosMock;
 
+  const DEFAULT_PROPS = { username: 'test_user123' };
   const DEFAULT_PROVIDE = {
     verificationStatePath: '/users/identity_verification/verification_state',
     successfulVerificationPath: '/users/identity_verification/success',
@@ -38,6 +39,7 @@ describe('IdentityVerificationWizard', () => {
 
   const createComponent = ({ provide } = { provide: {} }) => {
     wrapper = shallowMount(IdentityVerificationWizard, {
+      propsData: DEFAULT_PROPS,
       provide: { ...DEFAULT_PROVIDE, ...provide },
     });
   };
@@ -81,9 +83,7 @@ describe('IdentityVerificationWizard', () => {
 
     it('displays the description', () => {
       expect(findDescription().text()).toBe(
-        s__(
-          "IdentityVerification|For added security, you'll need to verify your identity in a few quick steps.",
-        ),
+        `You are signed in as ${DEFAULT_PROPS.username}. For added security, you'll need to verify your identity in a few quick steps.`,
       );
     });
 

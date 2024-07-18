@@ -23,6 +23,12 @@ export default {
     GlButton,
   },
   inject: ['verificationStatePath', 'phoneExemptionPath', 'successfulVerificationPath'],
+  props: {
+    username: {
+      type: String,
+      required: true,
+    },
+  },
   data() {
     return {
       steps: [],
@@ -43,6 +49,11 @@ export default {
     },
     allStepsCompleted() {
       return !Object.entries(this.stepsVerifiedState).filter(([, completed]) => !completed).length;
+    },
+    pageDescription() {
+      return sprintf(this.$options.i18n.pageDescription, {
+        username: this.username,
+      });
     },
   },
   mounted() {
@@ -115,7 +126,7 @@ export default {
   i18n: {
     pageTitle: s__('IdentityVerification|Help us keep GitLab secure'),
     pageDescription: s__(
-      "IdentityVerification|For added security, you'll need to verify your identity in a few quick steps.",
+      "IdentityVerification|You are signed in as %{username}. For added security, you'll need to verify your identity in a few quick steps.",
     ),
     ccStep: s__('IdentityVerification|Step %{stepNumber}: Verify a payment method'),
     phoneStep: s__('IdentityVerification|Step %{stepNumber}: Verify phone number'),
@@ -129,7 +140,7 @@ export default {
     <div class="gl-flex-grow-1 gl-max-w-62">
       <header class="gl-text-center">
         <h2>{{ $options.i18n.pageTitle }}</h2>
-        <p>{{ $options.i18n.pageDescription }}</p>
+        <p>{{ pageDescription }}</p>
       </header>
 
       <gl-loading-icon v-if="loading" />
