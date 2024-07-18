@@ -38,6 +38,7 @@ module Search
         return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
 
         query_hash = ::Search::Elastic::Formats.source_fields(query_hash: query_hash, options: options)
+        query_hash = ::Search::Elastic::Formats.page(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Formats.size(query_hash: query_hash, options: options)
 
         ::Search::Elastic::Sorts.sort_by(query_hash: query_hash, options: options)

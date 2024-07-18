@@ -12,8 +12,7 @@ module Search
 
       attr_accessor :file_count
 
-      # Limit search results by passed projects. It allows us to search only for projects user has access to
-      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :error, :modes,
+      attr_reader :current_user, :query, :public_and_internal_projects, :order_by, :sort, :filters, :modes,
         :projects, :node_id, :multi_match
 
       # rubocop: disable Metrics/ParameterLists -- Might consider to refactor later
@@ -80,15 +79,21 @@ module Search
         []
       end
 
-      def highlight_map(_scope = 'blobs')
-        nil
+      def highlight_map(*)
+        {}
       end
 
-      def failed?(_scope = 'blobs')
+      def failed?(*)
         error.present?
       end
 
+      def error(*)
+        error_message
+      end
+
       private
+
+      attr_reader :error_message
 
       def base_options
         {
@@ -160,7 +165,7 @@ module Search
 
         if response.failure?
           @blobs_count = 0
-          @error = response.error_message
+          @error_message = response.error_message
           return [{}, @blobs_count, 0]
         end
 
@@ -174,7 +179,7 @@ module Search
         [results, total_count, response.file_count]
       rescue ::Search::Zoekt::Errors::ClientConnectionError, ::Search::Zoekt::Errors::BackoffError => e
         @blobs_count = 0
-        @error = e.message
+        @error_message = e.message
         [{}, @blobs_count, 0]
       end
 

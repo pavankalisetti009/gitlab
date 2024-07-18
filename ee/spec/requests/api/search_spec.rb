@@ -250,20 +250,47 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         ensure_elasticsearch_index!
       end
 
-      it 'avoids N+1 queries' do
-        control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
+      context 'when  search_issue_refactor flag is false' do
+        before do
+          stub_feature_flags(search_issue_refactor: false)
+        end
 
-        create_list(:issue, 2, project: project)
-        create_list(:issue, 2, project: create(:project, group: group))
-        create_list(:issue, 2)
+        it 'avoids N+1 queries' do
+          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
 
-        ensure_elasticsearch_index!
+          create_list(:issue, 2, project: project)
+          create_list(:issue, 2, project: create(:project, group: group))
+          create_list(:issue, 2)
 
-        expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
+          ensure_elasticsearch_index!
+
+          expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
+        end
+
+        it_behaves_like 'pagination', scope: 'issues'
+        it_behaves_like 'orderable by created_at', scope: 'issues'
       end
 
-      it_behaves_like 'pagination', scope: 'issues'
-      it_behaves_like 'orderable by created_at', scope: 'issues'
+      context 'when  search_issue_refactor flag is true' do
+        before do
+          stub_feature_flags(search_issue_refactor: true)
+        end
+
+        it 'avoids N+1 queries' do
+          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
+
+          create_list(:issue, 2, project: project)
+          create_list(:issue, 2, project: create(:project, group: group))
+          create_list(:issue, 2)
+
+          ensure_elasticsearch_index!
+
+          expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
+        end
+
+        it_behaves_like 'pagination', scope: 'issues'
+        it_behaves_like 'orderable by created_at', scope: 'issues'
+      end
     end
 
     unless level == :project

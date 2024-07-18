@@ -220,6 +220,7 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
 
   describe 'formats' do
     it_behaves_like 'a query that sets source_fields'
-    it_behaves_like 'a query formatted for count_only'
+    it_behaves_like 'a query formatted for size'
+    it_behaves_like 'a query that is paginated'
   end
 end

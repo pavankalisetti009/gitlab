@@ -187,6 +187,6 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
 
   describe 'formats' do
     it_behaves_like 'a query that sets source_fields'
-    it_behaves_like 'a query formatted for count_only'
+    it_behaves_like 'a query formatted for size'
   end
 end

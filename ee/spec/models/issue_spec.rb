@@ -318,6 +318,24 @@ RSpec.describe Issue, feature_category: :team_planning do
         it { is_expected.to eq([sla_due_last, sla_due_first, no_sla]) }
       end
     end
+
+    describe '.preload_search_data' do
+      subject(:relation) { described_class.preload_search_data }
+
+      it 'loads associations' do
+        label = create(:label)
+        create(:issue, :with_synced_epic, title: 'A issue', labels: [label])
+        create(:issue, title: 'B issue', labels: [label])
+
+        expect(relation.first.association(:labels)).to be_loaded
+        expect(relation.first.association(:timelogs)).to be_loaded
+        expect(relation.first.association(:assignees)).to be_loaded
+        expect(relation.group_level.first.association(:synced_epic)).to be_loaded
+        expect(relation.project_level.first.association(:project)).to be_loaded
+        expect(relation.project_level.first.project.association(:route)).to be_loaded
+        expect(relation.project_level.first.project.association(:namespace)).to be_loaded
+      end
+    end
   end
 
   describe 'validations' do

@@ -71,12 +71,13 @@ module EE
 
     override :highlight_and_truncate_issuable
     def highlight_and_truncate_issuable(issuable, search_term, search_highlight)
-      return super unless search_service.use_elasticsearch? && search_highlight[issuable.id]&.description.present?
+      search_highlight = search_highlight&.with_indifferent_access
+      return super unless search_service.use_elasticsearch? && search_highlight.dig(issuable.id, 'description').present?
 
       # We use Elasticsearch highlighting for results from Elasticsearch. Sanitize the description, replace the
       # pre/post tags from Elasticsearch with highlighting, truncate, and mark as html_safe. HTML tags are not
       # counted towards the character limit.
-      text = search_sanitize(search_highlight[issuable.id].description.first)
+      text = search_sanitize(search_highlight.dig(issuable.id, 'description').first)
       text.gsub!(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG, '<mark>')
       text.gsub!(::Elastic::Latest::GitClassProxy::HIGHLIGHT_END_TAG, '</mark>')
       search_truncate(text).html_safe

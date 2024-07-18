@@ -95,6 +95,10 @@ module EE
         epic_ids
       end
 
+      scope :preload_search_data, -> do
+        preload(:labels, :timelogs, :assignees, :synced_epic, :work_item_type, project: [:route, :namespace, :group])
+      end
+
       belongs_to :iteration, foreign_key: 'sprint_id', inverse_of: :issues
 
       has_one :epic_issue
