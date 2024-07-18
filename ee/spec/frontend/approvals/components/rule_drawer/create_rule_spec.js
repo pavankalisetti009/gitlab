@@ -36,7 +36,10 @@ describe('Approvals DrawerRuleCreate', () => {
 
     wrapper = shallowMountExtended(DrawerRuleCreate, {
       store: new Vuex.Store(store),
-      stubs: { RuleForm: RuleFormStub },
+      stubs: {
+        RuleForm: RuleFormStub,
+        GlDrawer,
+      },
       propsData,
     });
   };
