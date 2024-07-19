@@ -119,7 +119,6 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       end
 
       it "returns tool answer" do
-        expect(stream_response_service_double).to receive(:execute)
         expect(answer.is_final?).to be_truthy
         expect(answer.content).to include("tool answer")
       end

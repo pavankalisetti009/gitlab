@@ -51,8 +51,6 @@ module Gitlab
 
               tool_class = answer.tool
 
-              picked_tool_action(tool_class)
-
               tool = tool_class.new(
                 context: context,
                 options: {
@@ -126,18 +124,6 @@ module Gitlab
               model_metadata: model_metadata_params,
               single_action_agent: true
             }
-          end
-
-          def picked_tool_action(tool_class)
-            logger.info(message: "Picked tool", tool: tool_class.to_s)
-
-            stream_response_handler.execute(
-              response: Gitlab::Llm::Chain::ToolResponseModifier.new(tool_class),
-              options: {
-                role: ::Gitlab::Llm::ChatMessage::ROLE_SYSTEM,
-                type: RESPONSE_TYPE_TOOL
-              }
-            )
           end
 
           def conversation
