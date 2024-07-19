@@ -343,7 +343,7 @@ module Gitlab
         when :blobs
           base_options.merge(filters.slice(:language, :include_archived, :num_context_lines))
         when :wiki_blobs
-          base_options.merge(root_ancestor_ids: root_ancestor_ids, routing_disabled: !reindex_wikis_to_fix_routing_done?).merge(filters.slice(:include_archived))
+          base_options.merge(root_ancestor_ids: root_ancestor_ids).merge(filters.slice(:include_archived))
         else
           base_options
         end
@@ -502,10 +502,6 @@ module Gitlab
       def self.get_highlight_content(result)
         content_key = result['_source']['type'].eql?('wiki_blob') ? 'content' : 'blob.content'
         result.dig('highlight', content_key)&.first || ''
-      end
-
-      def reindex_wikis_to_fix_routing_done?
-        ::Elastic::DataMigrationService.migration_has_finished?(:reindex_wikis_to_fix_routing)
       end
 
       def create_map(results)

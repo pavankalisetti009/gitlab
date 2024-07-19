@@ -445,10 +445,7 @@ module Gitlab
       def remove_wikis_from_the_standalone_index(container_id, container_type, namespace_routing_id = nil)
         return unless %w[Group Project].include?(container_type)
 
-        route = if namespace_routing_id &&
-            ::Elastic::DataMigrationService.migration_has_finished?(:reindex_wikis_to_fix_routing)
-                  "n_#{namespace_routing_id}"
-                end
+        route = "n_#{namespace_routing_id}" if namespace_routing_id
 
         client.delete_by_query({
           index: ::Elastic::Latest::WikiConfig.index_name,

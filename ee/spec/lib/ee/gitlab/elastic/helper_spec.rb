@@ -809,9 +809,6 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
 
   describe '#remove_wikis_from_the_standalone_index' do
     include ElasticsearchHelpers
-    before do
-      set_elasticsearch_migration_to :reindex_wikis_to_fix_routing, including: true
-    end
 
     context 'when container_type is other than Group or Project' do
       it 'not calls delete_by_query' do
@@ -836,17 +833,6 @@ RSpec.describe Gitlab::Elastic::Helper, :request_store, feature_category: :globa
         it 'calls delete_by_query with passed namespace_routing_id as routing' do
           expect(helper.client).to receive(:delete_by_query).with({ body: body, index: index, conflicts: 'proceed', routing: "n_#{namespace_routing_id}" })
           helper.remove_wikis_from_the_standalone_index(container_id, container_type, namespace_routing_id)
-        end
-
-        context 'when migration reindex_wikis_to_fix_routing is not finished' do
-          before do
-            set_elasticsearch_migration_to :reindex_wikis_to_fix_routing, including: false
-          end
-
-          it 'calls delete_by_query without routing' do
-            expect(helper.client).to receive(:delete_by_query).with({ body: body, index: index, conflicts: 'proceed' })
-            helper.remove_wikis_from_the_standalone_index(container_id, container_type, namespace_routing_id)
-          end
         end
       end
 

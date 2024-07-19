@@ -40,7 +40,7 @@ class ReindexWikisToFixRouting < Elastic::Migration
       }
     )
     rids_hist = results.dig('aggregations', 'rids', 'buckets') || []
-    rids_hist.pluck('key') # rubocop: disable CodeReuse/ActiveRecord
+    rids_hist.pluck('key') # rubocop: disable CodeReuse/ActiveRecord -- ActiveRecord is not used
   end
 
   def remaining_documents_count
@@ -56,3 +56,5 @@ class ReindexWikisToFixRouting < Elastic::Migration
     Elastic::Latest::WikiConfig.index_name
   end
 end
+
+ReindexWikisToFixRouting.prepend ::Elastic::MigrationObsolete
