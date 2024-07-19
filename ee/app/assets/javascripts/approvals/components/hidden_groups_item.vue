@@ -12,8 +12,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center">
-    <div class="square s24 gl-align-items-center gl-justify-content-center gl-mr-3 text-tertiary">
+  <div class="gl-flex gl-items-center">
+    <div class="square s24 text-tertiary gl-mr-3 gl-items-center gl-justify-center">
       <gl-icon name="folder" :size="16" data-testid="folder-icon" />
     </div>
     <span>{{ __('Private group(s)') }}</span>

@@ -125,7 +125,7 @@ export default {
     <template v-else>
       <slot name="rules"></slot>
       <div v-if="checkShowResetButton" class="border-bottom py-3 px-3">
-        <div class="gl-display-flex">
+        <div class="gl-flex">
           <gl-button
             v-if="targetBranch"
             :disabled="isLoading"

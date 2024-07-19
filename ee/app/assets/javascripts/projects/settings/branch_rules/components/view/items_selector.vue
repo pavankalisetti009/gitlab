@@ -61,7 +61,7 @@ export default {
   <div>
     <list-selector
       :type="type"
-      class="gl-mt-5 gl-p-0!"
+      class="gl-mt-5 !gl-p-0"
       :project-path="projectPath"
       :selected-items="selectedItems"
       :users-query-options="usersOptions"

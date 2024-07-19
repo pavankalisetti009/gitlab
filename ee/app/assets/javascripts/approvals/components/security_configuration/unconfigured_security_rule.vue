@@ -21,11 +21,11 @@ export default {
 <template>
   <!-- Suggested approval rule creation row -->
   <td class="js-name" colspan="5">
-    <div class="gl-display-flex gl-gap-5">
+    <div class="gl-flex gl-gap-5">
       <div class="gl-w-full">
-        <rule-name class="gl-text-left!" :name="rule.name" />
+        <rule-name class="!gl-text-left" :name="rule.name" />
 
-        <div class="gl-text-gray-500 gl-text-left!">
+        <div class="!gl-text-left gl-text-gray-500">
           <gl-sprintf :message="rule.description">
             <template #link="{ content }">
               <gl-link :href="rule.docsPath" target="_blank">{{ content }}</gl-link>
