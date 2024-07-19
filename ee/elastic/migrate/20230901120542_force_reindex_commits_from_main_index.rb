@@ -37,7 +37,7 @@ class ForceReindexCommitsFromMainIndex < Elastic::Migration
       size: 0, query: query, aggs: { rids: { terms: { size: batch_size, field: 'commit.rid' } } }
     })
     rids_hist = results.dig('aggregations', 'rids', 'buckets') || []
-    rids_hist.pluck('key') # rubocop: disable CodeReuse/ActiveRecord
+    rids_hist.pluck('key') # rubocop: disable CodeReuse/ActiveRecord -- ActiveRecord is not used
   end
 
   def update_schema_version(rid)
@@ -62,3 +62,5 @@ class ForceReindexCommitsFromMainIndex < Elastic::Migration
     Elastic::Latest::Config.index_name
   end
 end
+
+ForceReindexCommitsFromMainIndex.prepend ::Elastic::MigrationObsolete
