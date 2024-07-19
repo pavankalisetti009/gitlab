@@ -16,6 +16,7 @@ module EE
           module PipelineExecutionPolicies
             module MergeJobs
               include ::Gitlab::Ci::Pipeline::Chain::Helpers
+              include ::Gitlab::InternalEventsTracking
 
               def perform!
                 return if ::Feature.disabled?(:pipeline_execution_policy_type, project.group)
@@ -23,6 +24,7 @@ module EE
 
                 clear_project_pipeline
                 merge_policy_jobs
+                track_pipeline_execution_policy_usage
               rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::DuplicateJobNameError => e
                 error("Pipeline execution policy error: #{e.message}", failure_reason: :config_error)
               end
@@ -56,6 +58,14 @@ module EE
                     declared_stages: command.yaml_processor_result.stages
                   )
                   .execute
+              end
+
+              def track_pipeline_execution_policy_usage
+                track_internal_event(
+                  'enforce_pipeline_execution_policy_in_project',
+                  namespace: project.group,
+                  project: project
+                )
               end
             end
           end
