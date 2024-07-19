@@ -8,7 +8,12 @@ module EE
       prepended do
         before_action only: [:show] do
           push_frontend_feature_flag(:root_cause_analysis_duo, @current_user)
+          set_application_context!
         end
+      end
+
+      def set_application_context!
+        ::Gitlab::ApplicationContext.push(ai_resource: @build.try(:to_global_id)) # rubocop:disable Gitlab/ModuleWithInstanceVariables -- build comes from the main jobs controller
       end
     end
   end

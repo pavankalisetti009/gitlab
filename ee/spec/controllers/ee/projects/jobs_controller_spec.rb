@@ -29,6 +29,14 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
         get_show(id: job.id, format: :json)
       end
 
+      it 'sets the ApplicationContext with an ai_resource key' do
+        get_show(id: job.id, format: :json)
+
+        expect(Gitlab::ApplicationContext.current).to include(
+          'meta.ai_resource' => job.try(:to_global_id)
+        )
+      end
+
       context 'with shared runner that has quota' do
         let(:project) { create(:project, :repository, :private, shared_runners_enabled: true) }
 
