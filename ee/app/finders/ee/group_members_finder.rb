@@ -56,4 +56,12 @@ module EE::GroupMembersFinder
   def static_roles_only?
     !params[:with_custom_role]
   end
+
+  override :filter_by_max_role
+  def filter_by_max_role(members)
+    member_role_id = get_member_role_id(params[:max_role])
+    return super unless member_role_id
+
+    members.with_member_role_id(member_role_id)
+  end
 end

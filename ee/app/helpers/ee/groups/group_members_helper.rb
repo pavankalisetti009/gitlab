@@ -45,4 +45,14 @@ module EE::Groups::GroupMembersHelper
       super
     end
   end
+
+  override :available_group_roles
+  def available_group_roles(group)
+    custom_roles = ::MemberRoles::RolesFinder.new(current_user, parent: group).execute
+    custom_role_options = custom_roles.map do |member_role|
+      { title: member_role.name, value: "custom-#{member_role.id}" }
+    end
+
+    super + custom_role_options
+  end
 end

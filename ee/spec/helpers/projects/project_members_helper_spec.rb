@@ -85,6 +85,8 @@ RSpec.describe Projects::ProjectMembersHelper do
       )
     end
 
+    let(:pending_members) { nil }
+
     context 'with promotion_request' do
       let(:type) { :for_project_member }
       let(:member_namespace) { project.project_namespace }
@@ -94,8 +96,6 @@ RSpec.describe Projects::ProjectMembersHelper do
 
     context 'with `can_approve_access_requests`' do
       subject(:can_approve_access_requests) { helper_app_data[:can_approve_access_requests] }
-
-      let!(:pending_members) { nil }
 
       context 'when project has an associated group' do
         let_it_be(:project) { create(:project, group: create(:group)) }
@@ -133,8 +133,6 @@ RSpec.describe Projects::ProjectMembersHelper do
     context 'with `namespace_user_limit`' do
       subject(:namespace_user_limit) { helper_app_data[:namespace_user_limit] }
 
-      let!(:pending_members) { nil }
-
       context 'when dashboard limit is set' do
         before do
           stub_ee_application_setting(dashboard_limit: 5)
@@ -149,6 +147,20 @@ RSpec.describe Projects::ProjectMembersHelper do
         it 'sets the value to false' do
           expect(namespace_user_limit).to eq(0)
         end
+      end
+    end
+
+    describe 'available roles' do
+      subject(:available_roles) { helper_app_data[:available_roles] }
+
+      context 'when custom roles exist' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        let!(:member_role) { create(:member_role, :instance) }
+
+        it { is_expected.to include(title: member_role.name, value: "custom-#{member_role.id}") }
       end
     end
   end

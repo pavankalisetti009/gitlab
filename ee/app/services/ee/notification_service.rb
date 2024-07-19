@@ -133,7 +133,7 @@ module EE
     def incident_management_owners(project)
       return project.owners if project.personal?
 
-      MembersFinder
+      ::MembersFinder
         .new(project, nil, params: { active_without_invites_and_requests: true })
         .execute
         .owners

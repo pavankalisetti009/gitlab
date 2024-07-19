@@ -4,7 +4,6 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { visitUrl } from '~/lib/utils/url_utility';
-import { __ } from '~/locale';
 import MembersFilteredSearchBar from '~/members/components/filter_sort/members_filtered_search_bar.vue';
 import { MEMBERS_TAB_TYPES } from '~/members/constants';
 import { FILTERED_SEARCH_TOKEN_ENTERPRISE, FILTERED_SEARCH_USER_TYPE } from 'ee/members/constants';
@@ -50,6 +49,7 @@ describe('MembersFilteredSearchBar', () => {
         canManageMembers: true,
         canFilterByEnterprise: true,
         namespace: MEMBERS_TAB_TYPES.user,
+        availableRoles: [],
         ...provide,
       },
       store,
@@ -115,8 +115,7 @@ describe('MembersFilteredSearchBar', () => {
           findFilteredSearchBar().vm.$emit('onFilter', [
             {
               type: FILTERED_SEARCH_USER_TYPE.type,
-              // Remove the internationalized string after this issue is closed: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2159
-              value: { data: __('Service account'), operator: '=' },
+              value: { data: 'service_account', operator: '=' },
             },
           ]);
 
