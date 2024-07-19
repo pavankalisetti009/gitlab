@@ -137,7 +137,6 @@ export default {
           mutation: updateNewWorkItemMutation,
           variables: {
             input: {
-              isGroup: this.isGroup,
               fullPath: this.fullPath,
               color: this.currentColor,
               workItemType: this.workItemType,

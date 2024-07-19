@@ -6,7 +6,7 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   updateWorkItemMutationResponseFactory,
-  groupWorkItemByIidResponseFactory,
+  workItemByIidResponseFactory,
   updateWorkItemMutationErrorResponse,
   epicType,
 } from 'jest/work_items/mock_data';
@@ -23,12 +23,12 @@ describe('WorkItemColor component', () => {
   let wrapper;
   const selectedColor = '#ffffff';
 
-  const mockWorkItem = groupWorkItemByIidResponseFactory({
+  const mockWorkItem = workItemByIidResponseFactory({
     workItemType: epicType,
     colorWidgetPresent: true,
     color: DEFAULT_COLOR.color,
   }).data.workspace.workItem;
-  const mockSelectedColorWorkItem = groupWorkItemByIidResponseFactory({
+  const mockSelectedColorWorkItem = workItemByIidResponseFactory({
     workItemType: epicType,
     colorWidgetPresent: true,
     color: selectedColor,

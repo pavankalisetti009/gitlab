@@ -12,7 +12,6 @@ import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_d
 import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
-import groupWorkItemByIidQuery from '~/work_items/graphql/group_work_item_by_iid.query.graphql';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import { resolvers } from '~/graphql_shared/issuable_client';
 import {
@@ -28,11 +27,7 @@ describe('Create work item component', () => {
   const workItemTypeEpicId = 'gid://gitlab/WorkItems::Type/8';
 
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
-
-  const projectWorkItemQuerySuccessHandler = jest
-    .fn()
-    .mockResolvedValue(createWorkItemQueryResponse);
-  const groupWorkItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
+  const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
 
   const findHealthStatusWidget = () => wrapper.findComponent(WorkItemHealthStatus);
   const findColorWidget = () => wrapper.findComponent(WorkItemColor);
@@ -47,8 +42,7 @@ describe('Create work item component', () => {
   } = {}) => {
     mockApollo = createMockApollo(
       [
-        [groupWorkItemByIidQuery, groupWorkItemQuerySuccessHandler],
-        [workItemByIidQuery, projectWorkItemQuerySuccessHandler],
+        [workItemByIidQuery, workItemQuerySuccessHandler],
         [createWorkItemMutation, mutationHandler],
       ],
       resolvers,
