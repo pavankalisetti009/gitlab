@@ -103,23 +103,16 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:param_regex_mode, :feature_flag_zoekt_exact_search, :search_mode_sent_to_client) do
-      nil     | true  | :exact
-      true    | true  | :regex
-      false   | true  | :exact
-      'true'  | true  | :regex
-      'false' | true  | :exact
-      nil     | false | :regex
-      true    | false | :regex
-      false   | false | :regex
-      'true'  | false | :regex
-      'false' | false | :regex
+    where(:param_regex_mode, :search_mode_sent_to_client) do
+      nil     | :exact
+      true    | :regex
+      false   | :exact
+      'true'  | :regex
+      'false' | :exact
     end
 
     with_them do
       it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-        stub_feature_flags(zoekt_exact_search: feature_flag_zoekt_exact_search)
-
         expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
           query,
           num: described_class::ZOEKT_COUNT_LIMIT,
@@ -134,23 +127,6 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
     end
 
     context 'when modes is not passed' do
-      context 'and feature flag zoekt_exact_search is disabled' do
-        before do
-          stub_feature_flags(zoekt_exact_search: false)
-        end
-
-        it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
-          expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
-            query,
-            num: described_class::ZOEKT_COUNT_LIMIT,
-            project_ids: [project_1.id],
-            node_id: node_id,
-            search_mode: :regex
-          ).and_call_original
-          described_class.new(user, query, limit_projects, node_id: node_id).objects('blobs')
-        end
-      end
-
       it 'calls search on Gitlab::Search::Zoekt::Client with correct parameters' do
         expect(Gitlab::Search::Zoekt::Client).to receive(:search).with(
           query,

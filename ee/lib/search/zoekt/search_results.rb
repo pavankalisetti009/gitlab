@@ -275,11 +275,7 @@ module Search
       end
 
       def search_mode
-        Gitlab::Utils.to_boolean(modes[:regex]) ? :regex : default_search_mode
-      end
-
-      def default_search_mode
-        Feature.enabled?(:zoekt_exact_search, current_user) ? :exact : :regex
+        Gitlab::Utils.to_boolean(modes[:regex]) ? :regex : :exact
       end
 
       def filtered_projects(projects)
