@@ -204,16 +204,6 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       let_it_be(:project) { create(:project, :archived, :public) }
       let_it_be(:note) { create(:note, note: query, project: project) }
 
-      context 'when migration backfill_archived_on_notes is not finished' do
-        before do
-          set_elasticsearch_migration_to(:backfill_archived_on_notes, including: false)
-        end
-
-        it 'includes the notes from the archived project' do
-          expect(results.objects('notes')).to contain_exactly note
-        end
-      end
-
       context 'when filters contains include_archived as true' do
         let(:filters) do
           { include_archived: true }
@@ -232,16 +222,6 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
     context 'when project is not archived' do
       let_it_be(:project) { create(:project, :public) }
       let_it_be(:note) { create(:note, note: query, project: project) }
-
-      context 'when migration backfill_archived_on_notes is not finished' do
-        before do
-          set_elasticsearch_migration_to(:backfill_archived_on_notes, including: false)
-        end
-
-        it 'includes the notes from the project' do
-          expect(results.objects('notes')).to contain_exactly note
-        end
-      end
 
       it 'includes the notes from the project' do
         expect(results.objects('notes')).to contain_exactly note
