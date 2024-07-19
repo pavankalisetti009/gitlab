@@ -17,7 +17,7 @@ namespace :gitlab do
                 error_message += " Did you mean '#{potential_projects.first.full_path}'?"
               end
 
-              puts error_message.color(:red)
+              puts Rainbow(error_message).red
               exit 1
             end
 
