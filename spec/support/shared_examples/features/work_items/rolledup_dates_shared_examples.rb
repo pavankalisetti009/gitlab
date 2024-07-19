@@ -79,6 +79,9 @@ RSpec.shared_examples 'work items rolled up dates' do
         within_testid('work-item-milestone') do
           fill_in 'Milestone', with: milestone
         end
+
+        page.refresh
+        wait_for_all_requests
       end
 
       def update_child_date(title:, start_date:, due_date:)
@@ -137,6 +140,9 @@ RSpec.shared_examples 'work items rolled up dates' do
 
           wait_for_all_requests
         end
+
+        page.refresh
+        wait_for_all_requests
       end
 
       context 'when adding existing work item with fixed dates as children' do
