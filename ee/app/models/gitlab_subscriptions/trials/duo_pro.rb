@@ -24,8 +24,8 @@ module GitlabSubscriptions
       end
 
       def self.add_on_purchase_for_namespace(namespace)
-        GitlabSubscriptions::DuoPro::NamespaceAddOnPurchasesFinder
-          .new(namespace, trial: true, only_active: false)
+        GitlabSubscriptions::NamespaceAddOnPurchasesFinder
+          .new(namespace, add_on: :duo_pro, trial: true, only_active: false)
           .execute
           .first
       end
