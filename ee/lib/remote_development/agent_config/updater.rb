@@ -14,6 +14,8 @@ module RemoteDevelopment
       ].freeze
       DEFAULT_RESOURCES_PER_WORKSPACE_CONTAINER_DEFAULT = {}.freeze
       MAX_RESOURCES_PER_WORKSPACE_DEFAULT = {}.freeze
+      DEFAULT_MAX_HOURS_BEFORE_TERMINATION_DEFAULT_VALUE = 24
+      MAX_HOURS_BEFORE_TERMINATION_LIMIT_DEFAULT_VALUE = 120
 
       # @param [Hash] context
       # @return [Gitlab::Fp::Result]
@@ -93,6 +95,12 @@ module RemoteDevelopment
           config_from_agent_config_file.fetch(:default_resources_per_workspace_container, {})
         model_instance.max_resources_per_workspace =
           config_from_agent_config_file.fetch(:max_resources_per_workspace, {})
+        model_instance.default_max_hours_before_termination =
+          config_from_agent_config_file.fetch(:default_max_hours_before_termination,
+            DEFAULT_MAX_HOURS_BEFORE_TERMINATION_DEFAULT_VALUE)
+        model_instance.max_hours_before_termination_limit =
+          config_from_agent_config_file.fetch(:max_hours_before_termination_limit,
+            MAX_HOURS_BEFORE_TERMINATION_LIMIT_DEFAULT_VALUE)
 
         model_instance
       end
