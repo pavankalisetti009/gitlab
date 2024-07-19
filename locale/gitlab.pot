@@ -1556,12 +1556,6 @@ msgstr ""
 msgid "(Unlimited compute minutes)"
 msgstr ""
 
-msgid "(banned)"
-msgstr ""
-
-msgid "(blocked)"
-msgstr ""
-
 msgid "(check progress)"
 msgstr ""
 
@@ -1593,9 +1587,6 @@ msgid "(required)"
 msgstr ""
 
 msgid "(revoked)"
-msgstr ""
-
-msgid "(this user)"
 msgstr ""
 
 msgid "(we need your current password to confirm your changes)"
