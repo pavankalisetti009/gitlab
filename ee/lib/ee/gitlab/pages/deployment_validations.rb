@@ -26,9 +26,15 @@ module EE
           return if path_prefix.blank?
           return if versioned_deployments_limit > versioned_deployments_count
 
+          docs_link = Rails.application.routes.url_helpers.help_page_url(
+            'user/project/pages/index.md',
+            anchor: 'limits'
+          )
+
           errors.add(:base, format(
-            _("Namespace reached its allowed limit of %{limit} extra deployments"),
-            limit: versioned_deployments_limit
+            _("Namespace reached its allowed limit of %{limit} extra deployments. Learn more: %{docs_link}"),
+            limit: versioned_deployments_limit,
+            docs_link: docs_link
           ))
         end
 
