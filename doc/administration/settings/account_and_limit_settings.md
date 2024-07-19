@@ -204,6 +204,44 @@ To set a limit on how long these sessions are valid:
 1. Fill in the **Session duration for Git operations when 2FA is enabled (minutes)** field.
 1. Select **Save changes**.
 
+## Require expiration dates for new access tokens
+
+DETAILS:
+**Tier:** Free, Premium, Ultimate
+**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/470192) in GitLab 17.3.
+
+Prerequisites:
+
+- You must be an administrator.
+
+You can require all new access tokens to have an expiration date. This setting applies to:
+
+- Project access tokens.
+- Group access tokens.
+- Personal access tokens for non-service account users.
+
+For personal access tokens for service accounts, use the `service_access_tokens_expiration_enforced` setting in the [Application Settings API](../../api/settings.md).
+
+To require expiration dates for new access tokens:
+
+1. On the left sidebar, at the bottom, select **Admin area**.
+1. Select **Settings > General**.
+1. Expand **Account and limit**.
+1. Select the **Personal / Project / Group access token expiration** checkbox.
+1. Select **Save changes**.
+
+When you require expirations dates for new access tokens:
+
+- Users must set an expiration date that does not exceed the allowed lifetime for new access tokens.
+- To control the maximum access token lifetime, use the [**Limit the lifetime of access tokens** setting](#limit-the-lifetime-of-access-tokens).
+
+On new installations, this setting is turned on by default. On existing installations, if the background migration to set expiry on all access tokens:
+
+- Has never run, this setting is turned off.
+- Has run, this setting is turned on.
+
 ## Limit the lifetime of SSH keys
 
 DETAILS:
