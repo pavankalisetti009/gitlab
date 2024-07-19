@@ -13,6 +13,16 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountDistinctReportType
   let_it_be(:project_with_two_resolutions) { create(:project, group: group_with_resolutions) }
   let_it_be(:project_with_one_resolution) { create(:project, group: child_group_with_resolutions) }
   let_it_be(:project_with_no_resolutions) { create(:project, group: group_without_resolutions) }
+  let(:expected_value) { 3 }
+  let(:expected_query) do
+    "SELECT COUNT(*) FROM (" \
+      "SELECT DISTINCT \"vulnerability_reads\".\"project_id\", \"vulnerability_reads\".\"report_type\" FROM " \
+      "\"vulnerability_reads\" INNER JOIN vulnerability_state_transitions\n                  " \
+      "ON vulnerability_state_transitions.vulnerability_id = vulnerability_reads.vulnerability_id " \
+      "WHERE \"vulnerability_state_transitions\".\"to_state\" = 3 AND " \
+      "\"vulnerability_state_transitions\".\"created_at\" BETWEEN '#{start}' AND '#{finish}' " \
+      "GROUP BY \"vulnerability_reads\".\"project_id\", \"vulnerability_reads\".\"report_type\") subquery"
+  end
 
   before do
     create(:vulnerability, :with_read, :resolved, :sast,
@@ -31,16 +41,7 @@ RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountDistinctReportType
       project: project_with_no_resolutions)
   end
 
-  it_behaves_like 'a correct instrumented metric value and query', { time_frame: '28d', data_source: 'database' } do
-    let(:expected_value) { 3 }
-    let(:expected_query) do
-      "SELECT COUNT(\"vulnerability_reads\".\"vulnerability_id\") FROM (" \
-        "SELECT DISTINCT \"vulnerability_reads\".\"project_id\", \"vulnerability_reads\".\"report_type\" FROM " \
-        "\"vulnerability_reads\" INNER JOIN vulnerability_state_transitions\n                  " \
-        "ON vulnerability_state_transitions.vulnerability_id = vulnerability_reads.vulnerability_id " \
-        "WHERE \"vulnerability_state_transitions\".\"to_state\" = 3 AND " \
-        "\"vulnerability_state_transitions\".\"created_at\" BETWEEN '#{start}' AND '#{finish}' " \
-        "GROUP BY \"vulnerability_reads\".\"project_id\", \"vulnerability_reads\".\"report_type\") subquery"
-    end
-  end
+  it_behaves_like 'a correct instrumented database query execution value',
+    { time_frame: '28d', data_source: 'database' }
+  it_behaves_like 'a correct instrumented metric value and query', { time_frame: '28d', data_source: 'database' }
 end
