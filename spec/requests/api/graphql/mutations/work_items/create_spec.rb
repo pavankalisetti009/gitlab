@@ -144,7 +144,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
             create(:parent_link, work_item_parent: parent, work_item: adjacent, relative_position: 0)
           end
 
-          it 'creates work item and sets the relative position to be AFTER adjacent' do
+          it 'creates work item and sets the relative position to be BEFORE adjacent' do
             expect do
               post_graphql_mutation(mutation, current_user: current_user)
             end.to change(WorkItem, :count).by(1)
@@ -157,7 +157,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
                 'type' => 'HIERARCHY'
               }
             )
-            expect(work_item.parent_link.relative_position).to be > adjacent.parent_link.relative_position
+            expect(work_item.parent_link.relative_position).to be < adjacent.parent_link.relative_position
           end
         end
       end
