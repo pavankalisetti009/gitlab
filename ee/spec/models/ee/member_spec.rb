@@ -141,23 +141,31 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
   end
 
   describe 'scopes' do
+    let_it_be(:member_role) { create(:member_role, :maintainer, namespace: group) }
+    let_it_be(:membership_with_custom_role) do
+      create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER, member_role: member_role)
+    end
+
+    let_it_be(:membership_without_custom_role) do
+      create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER)
+    end
+
     describe '.with_custom_role' do
-      let_it_be(:membership_with_custom_role) do
-        member_role = create(:member_role, { name: 'custom maintainer',
-                                             namespace: group,
-                                             base_access_level: ::Gitlab::Access::MAINTAINER })
-
-        create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER, member_role: member_role)
-      end
-
-      let_it_be(:membership_without_custom_role) do
-        create(:group_member, group: sub_group, access_level: ::Gitlab::Access::MAINTAINER)
-      end
-
       subject { described_class.with_custom_role }
 
-      it { is_expected.to include(membership_with_custom_role) }
-      it { is_expected.not_to include(membership_without_custom_role) }
+      it { is_expected.to contain_exactly(membership_with_custom_role) }
+    end
+
+    describe '.with_member_role_id' do
+      subject { described_class.with_member_role_id(member_role.id) }
+
+      it { is_expected.to contain_exactly(membership_with_custom_role) }
+    end
+
+    describe '.with_static_role' do
+      subject { described_class.with_static_role }
+
+      it { is_expected.to contain_exactly(membership_without_custom_role) }
     end
   end
 

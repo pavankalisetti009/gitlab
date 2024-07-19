@@ -260,5 +260,59 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'filter by max role' do
+      let_it_be(:member_role) { create(:member_role, :guest, namespace: group) }
+      let_it_be(:member_with_custom_role) { create(:group_member, :guest, group: group, member_role: member_role) }
+      let_it_be(:member_without_custom_role) { create(:group_member, :guest, group: group) }
+
+      subject(:by_max_role) { described_class.new(group, create(:user), params: { max_role: max_role }).execute }
+
+      context 'filter by custom role ID' do
+        describe 'provided member role ID is incorrect' do
+          using RSpec::Parameterized::TableSyntax
+
+          where(:max_role) { [nil, '', 'custom', lazy { "xcustom-#{member_role.id}" }, lazy { "custom-#{member_role.id}x" }] }
+
+          with_them do
+            it { is_expected.to match_array(group.members) }
+          end
+        end
+
+        describe 'none of the members have the provided member role ID' do
+          let(:max_role) { "custom-#{non_existing_record_id}" }
+
+          it { is_expected.to be_empty }
+        end
+
+        describe 'one of the members has the provided member role ID' do
+          let(:max_role) { "custom-#{member_role.id}" }
+
+          it { is_expected.to contain_exactly(member_with_custom_role) }
+        end
+      end
+
+      context 'filter by max role minimal access' do
+        let(:max_role) { 'static-5' }
+
+        let_it_be(:member_with_minimal_access) { create(:group_member, :minimal_access, source: group) }
+
+        context 'when group does not allow minimal access members' do
+          before do
+            stub_licensed_features(minimal_access_role: false)
+          end
+
+          it { is_expected.to match_array(group.members) }
+        end
+
+        context 'when group allows minimal access members' do
+          before do
+            stub_licensed_features(minimal_access_role: true)
+          end
+
+          it { is_expected.to contain_exactly(member_with_minimal_access) }
+        end
+      end
+    end
   end
 end

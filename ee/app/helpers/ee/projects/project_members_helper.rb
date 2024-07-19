@@ -32,6 +32,16 @@ module EE
           super
         end
       end
+
+      override :available_project_roles
+      def available_project_roles(project)
+        custom_roles = ::MemberRoles::RolesFinder.new(current_user, parent: project).execute
+        custom_role_options = custom_roles.map do |member_role|
+          { title: member_role.name, value: "custom-#{member_role.id}" }
+        end
+
+        super + custom_role_options
+      end
     end
   end
 end

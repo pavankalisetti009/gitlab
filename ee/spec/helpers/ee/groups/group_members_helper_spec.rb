@@ -13,7 +13,7 @@ RSpec.describe Groups::GroupMembersHelper do
     allow(helper).to receive(:current_user).and_return(current_user)
   end
 
-  subject do
+  subject(:helper_app_data) do
     helper.group_members_app_data(
       group,
       members: [],
@@ -158,6 +158,30 @@ RSpec.describe Groups::GroupMembersHelper do
       end
 
       it_behaves_like 'adding promotion_request in app data'
+    end
+
+    describe 'available roles' do
+      subject(:available_roles) { helper_app_data[:available_roles] }
+
+      context 'when group allows minimal access members' do
+        before do
+          stub_licensed_features(minimal_access_role: true)
+        end
+
+        let(:minimal_access) { EE::Gitlab::Access::MINIMAL_ACCESS_HASH }
+
+        it { is_expected.to include(title: minimal_access.keys[0], value: "static-#{minimal_access.values[0]}") }
+      end
+
+      context 'when custom roles exist' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        let!(:member_role) { create(:member_role, :instance) }
+
+        it { is_expected.to include(title: member_role.name, value: "custom-#{member_role.id}") }
+      end
     end
   end
 

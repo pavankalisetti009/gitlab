@@ -42,8 +42,7 @@ export const FILTERED_SEARCH_USER_TYPE = {
   token: GlFilteredSearchToken,
   unique: true,
   operators: OPERATORS_IS,
-  // Remove the single quotes surrounding `Service account` after this issue is closed: https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2159
-  options: [{ value: 'service_account', title: `'${__('Service account')}'` }],
+  options: [{ value: 'service_account', title: __('Service account') }],
   requiredPermissions: 'canManageMembers',
 };
 

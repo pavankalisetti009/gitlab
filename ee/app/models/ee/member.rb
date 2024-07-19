@@ -45,6 +45,8 @@ module EE
 
       scope :with_custom_role, -> { where.not(member_role_id: nil) }
 
+      scope :with_member_role_id, ->(member_role_id) { where(member_role_id: member_role_id) }
+
       scope :elevated_guests, -> do
         where(access_level: ::Gitlab::Access::GUEST).joins(:member_role).merge(MemberRole.occupies_seat)
       end
