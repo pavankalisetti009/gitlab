@@ -2,12 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe 'admin/users/card_match.html.haml', feature_category: :system_access do
-  let(:credit_card_validations) { build_list(:credit_card_validation, 1, user: user) }
+RSpec.describe 'admin/users/phone_match.html.haml', feature_category: :system_access do
+  let(:phone_number_validations) { build_list(:phone_number_validation, 1, user: user) }
 
   before do
     assign(:user, user)
-    assign(:similar_credit_card_validations, Kaminari.paginate_array(credit_card_validations).page(1))
+    assign(:similar_phone_number_validations, Kaminari.paginate_array(phone_number_validations).page(1))
 
     render
   end
