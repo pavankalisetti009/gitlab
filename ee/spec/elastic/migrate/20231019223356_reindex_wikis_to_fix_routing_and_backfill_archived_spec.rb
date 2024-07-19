@@ -28,7 +28,7 @@ RSpec.describe ReindexWikisToFixRoutingAndBackfillArchived, :elastic_clean, :sid
     allow(::Gitlab::CurrentSettings).to receive(:elasticsearch_indexes_project?).with(anything).and_return true
     allow(::Gitlab::CurrentSettings).to receive(:elasticsearch_indexes_namespace?).with(anything).and_return true
     allow(migration).to receive(:helper).and_return(helper)
-    set_elasticsearch_migration_to :reindex_wikis_to_fix_routing, including: false
+    set_elasticsearch_migration_to :reindex_wikis_to_fix_routing_and_backfill_archived, including: false
     allow(migration).to receive(:client).and_return(client)
     [project_wiki, project_wiki2, project_wiki3, group_wiki, group_wiki2, group_wiki3].each do |wiki|
       wiki.create_page('index_page', 'Bla bla term')
