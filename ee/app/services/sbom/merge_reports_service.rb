@@ -17,7 +17,7 @@ module Sbom
 
     def execute
       reports.each do |report|
-        report.metadata.tools.each { |e| @all_tools[e] = 1 }
+        add_tools_for(report)
         report.metadata.authors.each { |e| @all_authors[e] = 1 }
         report.metadata.properties.each { |e| @all_properties[e] = 1 }
 
@@ -46,6 +46,23 @@ module Sbom
 
     def component_with_licenses_for(report)
       ::Gitlab::LicenseScanning::PackageLicenses.new(components: report.components).fetch
+    end
+
+    def add_tools_for(report)
+      if report.metadata.tools.is_a? Array
+        report.metadata.tools.each { |e| @all_tools[e] = 1 }
+      else
+        report.metadata.tools&.dig(:components)&.each { |e| @all_tools[convert_tool_into_deprecated_form(e)] = 1 }
+      end
+    end
+
+    # Spec 1.4 of CycloneDX requires the old tool object structure
+    def convert_tool_into_deprecated_form(tool)
+      {
+        vendor: tool[:group],
+        name: tool[:name],
+        version: tool[:version]
+      }
     end
   end
 end

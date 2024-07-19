@@ -108,10 +108,14 @@ RSpec.describe Sbom::MergeReportsService, :freeze_time, feature_category: :depen
       describe 'tools' do
         context 'when tools is not present' do
           let(:metadata_1) { build(:ci_reports_sbom_metadata, tools: []) }
-          let(:metadata_2) { build(:ci_reports_sbom_metadata, tools: []) }
+          let(:metadata_2) { build(:ci_reports_sbom_metadata, tools: {}) }
           let(:metadata_3) { build(:ci_reports_sbom_metadata, tools: []) }
 
-          it { is_expected.to have_json_attributes }
+          it "returns an empty list" do
+            merged_report = execute
+
+            expect(merged_report.metadata.tools).to eq([])
+          end
         end
 
         context 'with duplicate tools' do
@@ -121,6 +125,27 @@ RSpec.describe Sbom::MergeReportsService, :freeze_time, feature_category: :depen
           let(:metadata_3) { build(:ci_reports_sbom_metadata, tools: tools) }
 
           it { is_expected.to have_json_attributes }
+        end
+
+        context 'with mixed object structures for tools' do
+          let(:deprecated_tools) { [{ vendor: "Gitlab", name: "Gemnasium", version: "5.1.0" }] }
+          let(:tools) do
+            { components: [{ type: "application", group: "aquasecurity", name: "trivy", version: "2.34.0" }] }
+          end
+
+          let(:metadata_1) { build(:ci_reports_sbom_metadata, tools: deprecated_tools) }
+          let(:metadata_2) { build(:ci_reports_sbom_metadata, tools: tools) }
+          let(:metadata_3) { build(:ci_reports_sbom_metadata, tools: tools) }
+
+          it "converts tools to match spec 1.4 and merges them" do
+            expected_tools = [
+              { vendor: "Gitlab", name: "Gemnasium", version: "5.1.0" },
+              { vendor: "aquasecurity", name: "trivy", version: "2.34.0" }
+            ]
+            merged_report = execute
+
+            expect(merged_report.metadata.tools).to eq(expected_tools)
+          end
         end
       end
 
