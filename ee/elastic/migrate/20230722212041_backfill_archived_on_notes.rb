@@ -15,3 +15,5 @@ class BackfillArchivedOnNotes < Elastic::Migration
     'archived'
   end
 end
+
+BackfillArchivedOnNotes.prepend ::Elastic::MigrationObsolete

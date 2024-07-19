@@ -447,16 +447,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
       ensure_elasticsearch_index!
     end
 
-    context 'when migration backfill_archived_on_notes is not finished' do
-      before do
-        set_elasticsearch_migration_to(:backfill_archived_on_notes, including: false)
-      end
-
-      it 'includes the archived notes in the search results' do
-        expect(subject.objects('notes')).to match_array([note, note_on_archived_project])
-      end
-    end
-
     context 'when filters contains include_archived as true' do
       let(:filters) do
         { include_archived: true }

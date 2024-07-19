@@ -37,17 +37,6 @@ RSpec.describe Elastic::Latest::NoteClassProxy, feature_category: :global_search
         ensure_elasticsearch_index!
       end
 
-      context 'when migration backfill_archived_on_notes is not finished' do
-        before do
-          set_elasticsearch_migration_to(:backfill_archived_on_notes, including: false)
-        end
-
-        it 'does not add archived filter query and includes the archived notes with results from all projects' do
-          expect(elasticsearch_hit_ids(result)).to match_array [note.id, note2.id, archived_note.id]
-          assert_named_queries('note:match:search_terms', without: ['note:archived:non_archived'])
-        end
-      end
-
       context 'when options contains include_archived as true' do
         let(:options) do
           { current_user: user, project_ids: [], public_and_internal_projects: true, include_archived: true }
