@@ -42,6 +42,14 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
 
   let(:max_resources_per_workspace) { default_max_resources_per_workspace }
 
+  let(:default_max_hours_before_termination) do
+    RemoteDevelopment::AgentConfig::Updater::DEFAULT_MAX_HOURS_BEFORE_TERMINATION_DEFAULT_VALUE
+  end
+
+  let(:max_hours_before_termination_limit) do
+    RemoteDevelopment::AgentConfig::Updater::MAX_HOURS_BEFORE_TERMINATION_LIMIT_DEFAULT_VALUE
+  end
+
   let_it_be(:agent) { create(:cluster_agent) }
   let_it_be(:workspace1) { create(:workspace, force_include_all_resources: false) }
   let_it_be(:workspace2) { create(:workspace, force_include_all_resources: false) }
@@ -55,6 +63,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
     remote_development_config[:gitlab_workspaces_proxy] = gitlab_workspaces_proxy if gitlab_workspaces_proxy_present
     remote_development_config[:default_resources_per_workspace_container] = default_resources_per_workspace_container
     remote_development_config[:max_resources_per_workspace] = max_resources_per_workspace
+    remote_development_config[:default_max_hours_before_termination] = default_max_hours_before_termination
+    remote_development_config[:max_hours_before_termination_limit] = max_hours_before_termination_limit
 
     if quota
       remote_development_config[:workspaces_quota] = quota
@@ -102,6 +112,8 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
         expect(config_instance.workspaces_quota).to eq(saved_quota)
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect(config_instance.workspaces_per_user_quota).to eq(saved_quota)
+        expect(config_instance.default_max_hours_before_termination).to eq(default_max_hours_before_termination)
+        expect(config_instance.max_hours_before_termination_limit).to eq(max_hours_before_termination_limit)
 
         expect(result)
           .to be_ok_result(RemoteDevelopment::Messages::AgentConfigUpdateSuccessful.new(
@@ -150,6 +162,18 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
           end
 
           let(:network_policy) { network_policy_with_egress }
+
+          it_behaves_like 'successful update'
+        end
+
+        context 'when default_max_hours_before_termination is explicitly specified in the config passed' do
+          let(:default_max_hours_before_termination) { 20 }
+
+          it_behaves_like 'successful update'
+        end
+
+        context 'when max_hours_before_termination_limit is explicitly specified in the config passed' do
+          let(:max_hours_before_termination_limit) { 220 }
 
           it_behaves_like 'successful update'
         end
