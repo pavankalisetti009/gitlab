@@ -25,6 +25,7 @@ module Mutations
 
       argument :identifiers, [Types::VulnerabilityIdentifierInputType],
         required: true,
+        validates: { length: { minimum: 1 } },
         description: 'Array of CVE or CWE identifiers for the vulnerability.'
 
       argument :state, Types::VulnerabilityStateEnum,
