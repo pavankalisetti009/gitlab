@@ -7,11 +7,11 @@ FactoryBot.define do
     read_code { true }
     name { generate(:title) }
 
-    trait(:developer) { base_access_level { Gitlab::Access::DEVELOPER } }
-    trait(:maintainer) { base_access_level { Gitlab::Access::MAINTAINER } }
-    trait(:reporter) { base_access_level { Gitlab::Access::REPORTER } }
-    trait(:guest) { base_access_level { Gitlab::Access::GUEST } }
     trait(:minimal_access) { base_access_level { Gitlab::Access::MINIMAL_ACCESS } }
+
+    ::Gitlab::Access.sym_options_with_owner.each do |role, value|
+      trait(role) { base_access_level { value } }
+    end
 
     Gitlab::CustomRoles::Definition.all.each_value do |attributes|
       trait attributes[:name].to_sym do
