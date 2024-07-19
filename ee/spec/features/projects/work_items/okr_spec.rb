@@ -367,15 +367,15 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
       create_okr('key result', 'KR 3')
       click_button 'Cancel'
 
-      expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 1')
+      expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 3')
       expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 2')
-      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 3')
+      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 1')
 
       drag_to(selector: '.sortable-container', from_index: 0, to_index: 2)
 
       expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 2')
-      expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 3')
-      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 1')
+      expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 1')
+      expect(page).to have_css('.tree-item:nth-child(3) .item-title', text: 'KR 3')
     end
   end
 
