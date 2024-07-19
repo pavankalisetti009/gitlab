@@ -883,11 +883,10 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       let(:results) { described_class.new(user, 'foo', project_ids, filters: filters) }
 
       before do
-        set_elasticsearch_migration_to(:backfill_archived_on_milestones, including: true)
         ensure_elasticsearch_index!
       end
 
-      include_examples 'search results filtered by archived', nil, :backfill_archived_on_milestones
+      include_examples 'search results filtered by archived', nil
     end
   end
 
