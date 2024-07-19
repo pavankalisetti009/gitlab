@@ -60,6 +60,14 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       expect(test_stage.statuses.map(&:name)).to contain_exactly('rake', 'rspec')
     end
 
+    it_behaves_like 'internal event tracking' do
+      let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+      let(:category) { described_class.name }
+      let_it_be(:project) { project }
+      let_it_be(:user) { nil }
+      let_it_be(:namespace) { group }
+    end
+
     context 'when project CI configuration declares custom stages' do
       let(:config) do
         { stages: %w[pre-test test post-test],
@@ -75,6 +83,14 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
           ).and_call_original
 
         run_chain
+      end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+        let(:category) { described_class.name }
+        let_it_be(:project) { project }
+        let_it_be(:user) { nil }
+        let_it_be(:namespace) { group }
       end
     end
 
@@ -122,6 +138,14 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         test_stage = pipeline.stages.find { |stage| stage.name == 'test' }
         expect(test_stage.statuses.map(&:name)).to contain_exactly('rspec')
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+        let(:category) { described_class.name }
+        let_it_be(:project) { project }
+        let_it_be(:user) { nil }
+        let_it_be(:namespace) { group }
+      end
     end
 
     context 'when a policy has strategy "override_project_ci"' do
@@ -146,6 +170,14 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         pre_stage = pipeline.stages.find { |stage| stage.name == '.pipeline-policy-pre' }
         expect(pre_stage.statuses.map(&:name)).to contain_exactly('rspec')
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+        let(:category) { described_class.name }
+        let_it_be(:project) { project }
+        let_it_be(:user) { nil }
+        let_it_be(:namespace) { group }
+      end
     end
 
     context 'when feature flag "pipeline_execution_policy_type" is disabled' do
@@ -156,6 +188,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       it 'does not change pipeline stages' do
         expect { run_chain }.not_to change { pipeline.stages }
       end
+
+      it_behaves_like 'internal event not tracked' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
+      end
     end
 
     context 'when pipeline_execution_policies is not defined' do
@@ -163,6 +199,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
       it 'does not change pipeline stages' do
         expect { run_chain }.not_to change { pipeline.stages }
+      end
+
+      it_behaves_like 'internal event not tracked' do
+        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
       end
     end
 
