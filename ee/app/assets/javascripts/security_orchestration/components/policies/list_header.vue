@@ -5,14 +5,12 @@ import { s__ } from '~/locale';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
-import ExperimentFeaturesBanner from './banners/experiment_features_banner.vue';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
 import ProjectModal from './project_modal.vue';
 
 export default {
   BANNER_STORAGE_KEY: 'security_policies_scan_result_name_change',
   components: {
-    ExperimentFeaturesBanner,
     GlAlert,
     GlButton,
     GlIcon,
@@ -59,9 +57,6 @@ export default {
     };
   },
   computed: {
-    feedbackBannerEnabled() {
-      return this.glFeatures.compliancePipelineInPolicies;
-    },
     hasAssignedPolicyProject() {
       return Boolean(this.assignedPolicyProject?.id);
     },
@@ -156,8 +151,6 @@ export default {
           {{ $options.i18n.newPolicyButtonText }}
         </gl-button>
       </div>
-
-      <experiment-features-banner v-if="feedbackBannerEnabled" />
 
       <project-modal
         :visible="modalVisible"

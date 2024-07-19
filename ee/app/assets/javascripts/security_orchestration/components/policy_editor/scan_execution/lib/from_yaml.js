@@ -1,5 +1,4 @@
 import { safeLoad } from 'js-yaml';
-import { CUSTOM_ACTION_KEY } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import {
   DEFAULT_TEMPLATE,
   LATEST_TEMPLATE,
@@ -53,10 +52,6 @@ export const hasRuleModeSupportedScanners = (policy) => {
 
   const availableScanners = Object.keys(RULE_MODE_SCANNERS);
 
-  if (gon?.features?.compliancePipelineInPolicies) {
-    availableScanners.push(CUSTOM_ACTION_KEY);
-  }
-
   const configuredScanners = policy.actions.map((action) => action.scan);
   return configuredScanners.every((scanner) => availableScanners.includes(scanner));
 };
@@ -97,10 +92,6 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
         'id',
         'template',
       ];
-
-      if (gon?.features?.compliancePipelineInPolicies) {
-        actionsKeys.push('ci_configuration');
-      }
 
       return isValidPolicy({ policy, primaryKeys, rulesKeys, actionsKeys }) &&
         !hasInvalidCron(policy) &&

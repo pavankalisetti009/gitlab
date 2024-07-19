@@ -28,7 +28,6 @@ export const DEFAULT_PROVIDE = {
   rootNamespacePath: 'path/to/root',
   parsedSoftwareLicenses: [],
   timezones: [],
-  customCiToggleEnabled: true,
   existingPolicy: undefined,
 };
 
