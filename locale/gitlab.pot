@@ -8191,15 +8191,6 @@ msgstr ""
 msgid "BillingPlans|10000 compute minutes"
 msgstr ""
 
-msgid "BillingPlans|100GB transfer per month"
-msgstr ""
-
-msgid "BillingPlans|10GB transfer per month"
-msgstr ""
-
-msgid "BillingPlans|250GB storage"
-msgstr ""
-
 msgid "BillingPlans|400 CI/CD minutes per month"
 msgstr ""
 
@@ -8213,15 +8204,6 @@ msgid "BillingPlans|50,000 CI/CD minutes per month"
 msgstr ""
 
 msgid "BillingPlans|50000 compute minutes"
-msgstr ""
-
-msgid "BillingPlans|500GB transfer per month"
-msgstr ""
-
-msgid "BillingPlans|50GB storage"
-msgstr ""
-
-msgid "BillingPlans|5GB storage"
 msgstr ""
 
 msgid "BillingPlans|@%{user_name} you are currently using the %{plan_name}."

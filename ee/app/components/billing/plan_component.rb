@@ -135,12 +135,6 @@ module Billing
           features_elevator_pitch: s_("BillingPlans|Free forever features:"),
           features: [
             {
-              title: s_("BillingPlans|5GB storage")
-            },
-            {
-              title: s_("BillingPlans|10GB transfer per month")
-            },
-            {
               title: s_("BillingPlans|400 CI/CD minutes per month")
             },
             {
@@ -172,12 +166,6 @@ module Billing
             },
             {
               title: s_("BillingPlans|Enterprise User and Incident Management")
-            },
-            {
-              title: s_("BillingPlans|50GB storage")
-            },
-            {
-              title: s_("BillingPlans|100GB transfer per month")
             },
             {
               title: s_("BillingPlans|10,000 CI/CD minutes per month")
@@ -230,12 +218,6 @@ module Billing
             },
             {
               title: s_("BillingPlans|Value Stream Management")
-            },
-            {
-              title: s_("BillingPlans|250GB storage")
-            },
-            {
-              title: s_("BillingPlans|500GB transfer per month")
             },
             {
               title: s_("BillingPlans|50,000 CI/CD minutes per month")
