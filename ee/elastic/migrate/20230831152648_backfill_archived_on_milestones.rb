@@ -15,3 +15,5 @@ class BackfillArchivedOnMilestones < Elastic::Migration
     'archived'
   end
 end
+
+BackfillArchivedOnMilestones.prepend ::Elastic::MigrationObsolete
