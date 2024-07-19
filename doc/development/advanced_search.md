@@ -541,7 +541,7 @@ in the cluster back the request in GitLab.
 
 ### Debugging Elasticsearch queries
 
-The `ELASTIC_CLIENT_DEBUG` environment variable enables the [debug option for the Elasticsearch client](../../ee/lib/gitlab/elastic/client.rb)
+The `ELASTIC_CLIENT_DEBUG` environment variable enables the [debug option for the Elasticsearch client](https://gitlab.com/gitlab-org/gitlab/-/blob/76bd885119795096611cb94e364149d1ef006fef/ee/lib/gitlab/elastic/client.rb#L50)
 in development or test environments. If you need to debug Elasticsearch HTTP queries generated from
 code or tests, it can be enabled before running specs or starting the Rails console:
 
