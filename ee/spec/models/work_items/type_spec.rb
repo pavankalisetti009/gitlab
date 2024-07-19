@@ -15,7 +15,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
       # widgets and then add all existing ones. This type now has all possible widgets just for testing.
       WorkItems::WidgetDefinition.where(work_item_type: work_item_type).delete_all
       WorkItems::WidgetDefinition.widget_types.each_key do |type|
-        create(:widget_definition, :default, work_item_type: work_item_type, name: type.to_s, widget_type: type)
+        create(:widget_definition, work_item_type: work_item_type, name: type.to_s, widget_type: type)
       end
     end
 
