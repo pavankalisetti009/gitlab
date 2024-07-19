@@ -22,8 +22,9 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
     let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [build(:scan_execution_policy)]) }
 
     let(:pipeline) { build(:ci_pipeline, project: project, ref: ref) }
+    let(:pipeline_policy_context) { nil }
 
-    subject(:config) { described_class.new(ci_yml, pipeline: pipeline, project: project, source: source) }
+    subject(:config) { described_class.new(ci_yml, pipeline: pipeline, project: project, source: source, pipeline_policy_context: pipeline_policy_context) }
 
     before do
       allow_next_instance_of(Repository) do |repository|
@@ -100,6 +101,24 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
 
           it 'extends config with additional jobs' do
             expect(config.to_hash).to include(expected_configuration)
+          end
+
+          context 'when in execution_policy_mode' do
+            let(:pipeline_policy_context) do
+              Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project, command: command)
+            end
+
+            let(:command) do
+              Gitlab::Ci::Pipeline::Chain::Command.new(
+                project: project,
+                execution_policy_dry_run: true,
+                pipeline_execution_policies: []
+              )
+            end
+
+            it 'does not modify the config' do
+              expect(config.to_hash).not_to have_key(:'dast-on-demand-0')
+            end
           end
 
           context 'when source is ondemand_dast_scan' do

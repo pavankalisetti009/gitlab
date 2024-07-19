@@ -389,6 +389,32 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
     end
   end
 
+  context 'when both Scan Execution Policy and Pipeline Execution Policy are applied on the project' do
+    let(:scan_execution_policy) do
+      build(:scan_execution_policy, actions: [{ scan: 'secret_detection' }])
+    end
+
+    let(:project_policy_yaml) do
+      build(:orchestration_policy_yaml,
+        pipeline_execution_policy: [project_policy],
+        scan_execution_policy: [scan_execution_policy])
+    end
+
+    it 'persists both pipeline execution policy and scan execution policy jobs', :aggregate_failures do
+      expect { execute }.to change { Ci::Build.count }.from(0).to(5)
+
+      expect(execute).to be_success
+      expect(execute.payload).to be_persisted
+
+      stages = execute.payload.stages
+      expect(stages.map(&:name)).to contain_exactly('build', 'test')
+
+      expect(stages.find_by(name: 'build').builds.map(&:name)).to contain_exactly('build', 'namespace_policy_job')
+      expect(stages.find_by(name: 'test').builds.map(&:name))
+        .to contain_exactly('rspec', 'project_policy_job', 'secret-detection-0')
+    end
+  end
+
   context 'when project CI configuration is missing' do
     let(:project_ci_yaml) { nil }
 

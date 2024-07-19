@@ -25,6 +25,10 @@ module EE
         end
 
         def process_security_orchestration_policy_includes(config)
+          # We need to prevent SEP jobs from being injected into PEP pipelines
+          # because they need to be added into only the main pipeline.
+          return config if pipeline_policy_context&.execution_policy_mode?
+
           ::Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor.new(config, context, source_ref_path,
             source).perform
         end
