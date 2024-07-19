@@ -2,13 +2,13 @@
 
 module TrialsHelper
   TRIAL_ONBOARDING_SOURCE_URLS = %w[about.gitlab.com docs.gitlab.com learn.gitlab.com].freeze
-  DUO_PRO_TRIAL_VARIANT = 'duo_pro'
 
   def create_lead_form_data
     _lead_form_data.merge(
       submit_path: trials_path(
         step: GitlabSubscriptions::Trials::CreateService::LEAD, **params.permit(:namespace_id).merge(glm_params)
-      )
+      ),
+      submit_button_text: s_('Trial|Start free GitLab Ultimate trial')
     )
   end
 
@@ -18,7 +18,7 @@ module TrialsHelper
         step: GitlabSubscriptions::Trials::CreateDuoProService::LEAD,
         namespace_id: params[:namespace_id]
       ),
-      trial_variant: DUO_PRO_TRIAL_VARIANT
+      submit_button_text: s_('Trial|Continue')
     )
   end
 

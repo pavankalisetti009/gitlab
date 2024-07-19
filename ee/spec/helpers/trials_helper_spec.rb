@@ -30,7 +30,7 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
     end
 
     it 'provides expected form data' do
-      keys = extra_params.keys + [:submit_path]
+      keys = extra_params.keys + [:submit_path, :submit_button_text]
 
       expect(helper.create_lead_form_data.keys.map(&:to_sym)).to match_array(keys)
     end
@@ -87,7 +87,7 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
     subject(:form_data) { helper.create_duo_pro_lead_form_data }
 
     it 'provides expected form data' do
-      keys = extra_params.keys + [:submit_path, :trial_variant]
+      keys = extra_params.keys + [:submit_path, :submit_button_text]
 
       expect(form_data.keys.map(&:to_sym)).to match_array(keys)
     end

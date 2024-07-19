@@ -18,7 +18,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
     country,
     state,
     phoneNumber,
-    trialVariant,
+    submitButtonText,
   } = el.dataset;
 
   return new Vue({
@@ -36,7 +36,7 @@ export const initTrialCreateLeadForm = (gtmSubmitEventLabel) => {
       },
       submitPath,
       gtmSubmitEventLabel,
-      trialVariant,
+      submitButtonText,
     },
     render(createElement) {
       return createElement(TrialCreateLeadForm);
