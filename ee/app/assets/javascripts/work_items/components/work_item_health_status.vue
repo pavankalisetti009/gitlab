@@ -30,7 +30,7 @@ export default {
     WorkItemSidebarDropdownWidget,
   },
   mixins: [Tracking.mixin()],
-  inject: ['hasIssuableHealthStatusFeature', 'isGroup'],
+  inject: ['hasIssuableHealthStatusFeature'],
   props: {
     fullPath: {
       type: String,
@@ -98,7 +98,6 @@ export default {
           mutation: updateNewWorkItemMutation,
           variables: {
             input: {
-              isGroup: this.isGroup,
               fullPath: this.fullPath,
               healthStatus,
               workItemType: this.workItemType,

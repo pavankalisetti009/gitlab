@@ -49,7 +49,6 @@ export default {
     Outside,
   },
   mixins: [Tracking.mixin()],
-  inject: ['isGroup'],
   props: {
     canUpdate: {
       type: Boolean,
@@ -233,7 +232,6 @@ export default {
           mutation: updateNewWorkItemMutation,
           variables: {
             input: {
-              isGroup: this.isGroup,
               workItemType: this.workItemType,
               fullPath: this.fullPath,
               rolledUpDates: {
@@ -291,7 +289,6 @@ export default {
           mutation: updateNewWorkItemMutation,
           variables: {
             input: {
-              isGroup: this.isGroup,
               workItemType: this.workItemType,
               fullPath: this.fullPath,
               rolledUpDates: {
