@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Embedding::Vertex::GitlabDocumentation, :clean_gitlab_redis_shared_state, type: :model, feature_category: :duo_chat do
+  before_all { skip "no longer in use and is planned for removal" }
+
   let_it_be(:version) { 111 }
   let_it_be(:metadata1) { { source: "source1" } }
   let_it_be(:metadata2) { { source: "source2" } }

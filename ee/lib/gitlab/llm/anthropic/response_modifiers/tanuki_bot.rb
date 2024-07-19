@@ -11,9 +11,9 @@ module Gitlab
           CONTENT_ID_REGEX = /CNT-IDX-(?<id>\d+)/
           NO_ANSWER_REGEX = /i do.*n.+know/i
 
-          def initialize(ai_response, current_user, search_documents: nil)
+          def initialize(ai_response, current_user, search_documents:)
             @current_user = current_user
-            @search_documents = search_documents&.map(&:with_indifferent_access)
+            @search_documents = search_documents.map(&:with_indifferent_access)
             super(ai_response)
           end
 
@@ -47,10 +47,8 @@ module Gitlab
                         []
                       elsif message.match?(NO_ANSWER_REGEX)
                         []
-                      elsif search_documents
-                        find_sources_with_search_documents(source_ids)
                       else
-                        find_sources(source_ids)
+                        find_sources_with_search_documents(source_ids)
                       end
 
             {
@@ -61,17 +59,6 @@ module Gitlab
             }
           end
           strong_memoize_attr :parsed_response
-
-          def find_sources(source_ids)
-            matches = source_ids.match(CONTENT_ID_REGEX)
-            return [] if matches.nil?
-
-            ids = matches.captures.map(&:to_i)
-            documents = ::Embedding::Vertex::GitlabDocumentation.id_in(ids).select(:url, :metadata)
-            documents.map do |doc|
-              { source_url: doc.url }.merge(doc.metadata)
-            end.uniq
-          end
 
           def find_sources_with_search_documents(source_ids)
             ids = source_ids.scan(/CNT-IDX-(?<id>[0-9a-z]+)/).flatten

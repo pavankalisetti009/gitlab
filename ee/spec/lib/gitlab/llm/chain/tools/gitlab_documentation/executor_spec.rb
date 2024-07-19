@@ -13,7 +13,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::GitlabDocumentation::Executor, :saas, 
     let(:completion) { { 'completion' => 'In your User settings. ATTRS: CNT-IDX-123' }.to_json }
     let(:response_service) { nil }
 
-    let(:response) { Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot.new(completion, user) }
+    let(:search_documents) { build_list(:vertex_gitlab_documentation, 1) }
+    let(:response) do
+      Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot.new(completion, user, search_documents: search_documents)
+    end
+
     let(:options) { { input: "how to reset the password?" } }
     let(:context) do
       Gitlab::Llm::Chain::GitlabContext.new(

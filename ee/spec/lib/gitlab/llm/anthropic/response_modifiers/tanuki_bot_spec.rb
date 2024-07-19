@@ -6,75 +6,29 @@ RSpec.describe Gitlab::Llm::Anthropic::ResponseModifiers::TanukiBot, feature_cat
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:vertex_embedding) { create(:vertex_gitlab_documentation) }
 
   let(:text) { 'some ai response text' }
   let(:ai_response) { { completion: "#{text} ATTRS: CNT-IDX-#{record_id}" }.to_json }
-  let(:record_id) { vertex_embedding.id }
+  let(:record_id) { search_documents.first[:id] }
+
+  let(:metadata) { { foo: 'bar', 'filename' => 'baz.md' } }
+  let(:search_documents) do
+    [
+      { id: "abc123", content: '<content>', metadata: metadata },
+      { id: "efg456", content: '<content>', metadata: metadata }
+    ]
+  end
 
   describe '#response_body' do
     let(:expected_response) { text }
 
-    subject { described_class.new(ai_response, current_user).response_body }
+    subject { described_class.new(ai_response, current_user, search_documents: search_documents).response_body }
 
     it { is_expected.to eq(text) }
   end
 
   describe '#extras' do
-    subject { described_class.new(ai_response, current_user).extras }
-
-    context 'when the ids match existing documents' do
-      let(:sources) { [vertex_embedding.metadata.merge(source_url: vertex_embedding.url)] }
-
-      it 'fills sources' do
-        expect(subject).to eq(sources: sources)
-      end
-    end
-
-    context "when the ids don't match any documents" do
-      let(:record_id) { non_existing_record_id }
-
-      it 'sets extras as empty' do
-        expect(subject).to eq(sources: [])
-      end
-    end
-
-    context "when the there are no ids" do
-      let(:ai_response) { { completion: "#{text} ATTRS:" }.to_json }
-
-      it 'sets extras as empty' do
-        expect(subject).to eq(sources: [])
-      end
-    end
-
-    context "when there is error in place of ids" do
-      let(:ai_response) { { completion: "#{text} ATTRS: error" }.to_json }
-
-      it 'sets extras as empty' do
-        expect(subject).to eq(sources: [])
-      end
-    end
-
-    context "when the message contains the text I don't know" do
-      let(:text) { "I don't know the answer to your question" }
-      let(:record_id) { non_existing_record_id }
-
-      it 'sets extras as empty' do
-        expect(subject).to eq(sources: [])
-      end
-    end
-  end
-
-  describe '#extras with search_documents' do
     subject(:result) { described_class.new(ai_response, current_user, search_documents: search_documents).extras }
-
-    let(:metadata) { { foo: 'bar', 'filename' => 'baz.md' } }
-    let(:search_documents) do
-      [
-        { id: "abc123", content: '<content>', metadata: metadata },
-        { id: "efg456", content: '<content>', metadata: metadata }
-      ]
-    end
 
     let(:ai_response) do
       { completion: "#{text} ATTRS: CNT-IDX-abc123 ATTRS: CNT-IDX-efg456 #{text}" }.to_json
