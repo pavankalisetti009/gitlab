@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_category: :team_planning do
+RSpec.describe WorkItems::Callbacks::Progress, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be_with_reload(:work_item) { create(:work_item, :objective, project: project, author: user) }
   let_it_be_with_reload(:progress) { create(:progress, work_item: work_item, progress: 5, current_value: 5) }
 
-  let(:widget) { work_item.widgets.find { |widget| widget.is_a?(WorkItems::Widgets::Progress) } }
+  let(:callback) { described_class.new(issuable: work_item, current_user: user, params: params) }
 
   def work_item_progress
     work_item.reload.progress&.progress
@@ -26,10 +26,8 @@ RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_categ
     work_item.reload.progress&.end_value
   end
 
-  describe '#before_update_in_transaction' do
-    let(:service) { described_class.new(widget: widget, current_user: user) }
-
-    subject { service.before_update_in_transaction(params: params) }
+  describe '#before_update' do
+    subject(:before_update_callback) { callback.before_update }
 
     shared_examples 'work item and progress is unchanged' do
       it 'does not change work item progress value' do
@@ -66,7 +64,7 @@ RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_categ
     end
 
     shared_examples 'raises a WidgetError' do
-      it { expect { subject }.to raise_error(described_class::WidgetError, message) }
+      it { expect { subject }.to raise_error(::WorkItems::Widgets::BaseService::WidgetError, message) }
     end
 
     context 'when progress feature is licensed' do
@@ -77,7 +75,7 @@ RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_categ
       context 'when user cannot update work item' do
         let(:params) { { current_value: 10 } }
 
-        before do
+        before_all do
           project.add_guest(user)
         end
 
@@ -85,7 +83,7 @@ RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_categ
       end
 
       context 'when user can update work item' do
-        before do
+        before_all do
           project.add_reporter(user)
         end
 
@@ -109,12 +107,12 @@ RSpec.describe WorkItems::Widgets::ProgressService::UpdateService, feature_categ
             let(:params) { {} }
 
             before do
-              allow(service).to receive(:new_type_excludes_widget?).and_return(true)
+              allow(callback).to receive(:excluded_in_new_type?).and_return(true)
               work_item.progress = progress
             end
 
             it "removes the work item's progress" do
-              expect { subject }.to change { work_item.reload.progress }.from(progress).to(nil)
+              expect { before_update_callback }.to change { work_item.reload.progress }.from(progress).to(nil)
 
               work_item_note = work_item.notes.last
               expect(work_item_note.note).to eq("removed the progress **5%**")
