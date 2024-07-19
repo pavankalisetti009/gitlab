@@ -40,6 +40,14 @@ module QA
               click_element('close-icon')
             end
           end
+
+          def response
+            find_element('chat-history').text
+          end
+
+          def wait_for_response
+            Support::Waiter.wait_until { find_all('.duo-chat-message').present? }
+          end
         end
       end
     end
