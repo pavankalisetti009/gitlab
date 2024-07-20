@@ -338,71 +338,34 @@ RSpec.describe Geo::FrameworkRepositorySyncService, :geo, feature_category: :geo
     end
 
     context 'with a never synced repository' do
-      context 'with geo_use_clone_on_first_sync flag enabled' do
-        before do
-          stub_feature_flags(geo_use_clone_on_first_sync: true)
-          allow(repository).to receive(:exists?) { false }
-        end
-
-        it 'clones repository with JWT credentials' do
-          expect(repository).to receive(:clone_as_mirror)
-                                  .with(url_to_repo, http_authorization_header: anything)
-                                  .once
-
-          subject.execute
-        end
-
-        context 'repository housekeeping' do
-          before do
-            allow(model_record).to receive(:pushes_since_gc).and_return(0)
-            allow(replicator_class).to receive(:housekeeping_enabled?).and_return(true)
-          end
-
-          include_examples 'runs the garbage collection task specifically'
-
-          context 'when there were errors' do
-            before do
-              allow(repository).to receive(:clone_as_mirror)
-                       .with(url_to_repo, http_authorization_header: anything)
-                       .and_raise(Gitlab::Shell::Error)
-            end
-
-            include_examples 'does not run housekeeping'
-          end
-        end
+      before do
+        allow(repository).to receive(:exists?) { false }
       end
 
-      context 'with geo_use_clone_on_first_sync flag disabled' do
+      it 'clones repository with JWT credentials' do
+        expect(repository).to receive(:clone_as_mirror)
+                                .with(url_to_repo, http_authorization_header: anything)
+                                .once
+
+        subject.execute
+      end
+
+      context 'repository housekeeping' do
         before do
-          stub_feature_flags(geo_use_clone_on_first_sync: false)
-          allow(repository).to receive(:exists?) { false }
+          allow(model_record).to receive(:pushes_since_gc).and_return(0)
+          allow(replicator_class).to receive(:housekeeping_enabled?).and_return(true)
         end
 
-        it 'fetches repository with JWT credentials' do
-          expect(repository).to receive(:fetch_as_mirror)
-                                  .with(url_to_repo, forced: true, http_authorization_header: anything)
-                                  .once
+        include_examples 'runs the garbage collection task specifically'
 
-          subject.execute
-        end
-
-        context 'repository housekeeping' do
+        context 'when there were errors' do
           before do
-            allow(model_record).to receive(:pushes_since_gc).and_return(0)
-            allow(replicator_class).to receive(:housekeeping_enabled?).and_return(true)
+            allow(repository).to receive(:clone_as_mirror)
+                     .with(url_to_repo, http_authorization_header: anything)
+                     .and_raise(Gitlab::Shell::Error)
           end
 
-          include_examples 'runs the garbage collection task specifically'
-
-          context 'when there were errors' do
-            before do
-              allow(repository).to receive(:fetch_as_mirror)
-                                     .with(url_to_repo, forced: true, http_authorization_header: anything)
-                                     .and_raise(Gitlab::Shell::Error)
-            end
-
-            include_examples 'runs the garbage collection task specifically'
-          end
+          include_examples 'does not run housekeeping'
         end
       end
     end
