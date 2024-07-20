@@ -213,10 +213,11 @@ const sanitizeSparklineData = (value) => {
  * object of timeseries arrays, per metric.
  *
  * @param {Array} timePeriods - Array of the DORA metrics for different time periods
+ * @param {Array} metrics - Array of metric types to generate charts for
  * @returns {Object} object containing a timeseries of values for each metric
  */
-export const generateSparklineCharts = (timePeriods) =>
-  Object.entries(TABLE_METRICS).reduce((acc, [identifier, { units }]) => {
+export const generateSparklineCharts = (timePeriods, metrics = TABLE_METRICS) =>
+  Object.entries(metrics).reduce((acc, [identifier, { units }]) => {
     if (!isMetricInTimePeriods(identifier, timePeriods)) return acc;
 
     return Object.assign(acc, {

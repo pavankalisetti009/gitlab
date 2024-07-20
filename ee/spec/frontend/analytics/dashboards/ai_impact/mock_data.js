@@ -201,6 +201,8 @@ export const mockTableZeroValues = [
   mockTableRow(0, 0, 0, 0, 0, [0, 0]),
 ];
 
+export const mockTableAndChartValues = [...mockTableValues, ...mockTableValues];
+
 export const mockAiMetricsResponseData = {
   aiMetrics: {
     codeContributorsCount: 8,

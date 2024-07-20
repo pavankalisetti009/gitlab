@@ -1,6 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlTooltip } from '@gitlab/ui';
+import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import {
   FLOW_METRICS,
   DORA_METRICS,
@@ -11,6 +12,10 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import {
+  DASHBOARD_LOADING_FAILURE,
+  CHART_LOADING_FAILURE,
+} from 'ee/analytics/dashboards/constants';
 import FlowMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
@@ -35,6 +40,7 @@ import {
   mockTableLargeValues,
   mockTableBlankValues,
   mockTableZeroValues,
+  mockTableAndChartValues,
 } from '../mock_data';
 
 const mockTypePolicy = {
@@ -55,10 +61,10 @@ describe('Metric table', () => {
   const isProject = false;
 
   const createMockApolloProvider = ({
-    flowMetricsRequest = mockFlowMetricsResponse(mockTableValues),
-    doraMetricsRequest = mockDoraMetricsResponse(mockTableValues),
-    vulnerabilityMetricsRequest = mockVulnerabilityMetricsResponse(mockTableValues),
-    aiMetricsRequest = mockAiMetricsResponse(mockTableValues),
+    flowMetricsRequest = mockFlowMetricsResponse(mockTableAndChartValues),
+    doraMetricsRequest = mockDoraMetricsResponse(mockTableAndChartValues),
+    vulnerabilityMetricsRequest = mockVulnerabilityMetricsResponse(mockTableAndChartValues),
+    aiMetricsRequest = mockAiMetricsResponse(mockTableAndChartValues),
   } = {}) => {
     return createMockApollo(
       [
@@ -132,12 +138,22 @@ describe('Metric table', () => {
   const findValueTableCells = (rowTestId) =>
     findTableRow(rowTestId).findAll(`[data-testid="ai-impact-table-value-cell"]`);
   const findTrendIndicator = (rowTestId) => findTableRow(rowTestId).findComponent(TrendIndicator);
+  const findSparklineChart = (rowTestId) => findTableRow(rowTestId).findComponent(GlSparklineChart);
   const findSkeletonLoaders = (rowTestId) =>
     wrapper.findAll(`[data-testid="${rowTestId}"] [data-testid="metric-skeleton-loader"]`);
+  const findChartSkeletonLoader = (rowTestId) =>
+    wrapper.find(`[data-testid="${rowTestId}"] [data-testid="metric-chart-skeleton"]`);
   const findMetricNoChangeLabel = (rowTestId) =>
     wrapper.find(`[data-testid="${rowTestId}"] [data-testid="metric-cell-no-change"]`);
   const findMetricNoChangeTooltip = (rowTestId) =>
     getBinding(findMetricNoChangeLabel(rowTestId).element, 'gl-tooltip');
+
+  beforeEach(() => {
+    // Needed due to a deprecation in the GlSparkline API:
+    // https://gitlab.com/gitlab-org/gitlab-ui/-/issues/2119
+    // eslint-disable-next-line no-console
+    console.warn = jest.fn();
+  });
 
   describe.each`
     identifier                                | testId                            | requestPath
@@ -208,6 +224,10 @@ describe('Metric table', () => {
         const loadingCellCount = Object.keys(mockTableValues).length + 1;
         expect(findSkeletonLoaders(testId).length).toBe(loadingCellCount);
       });
+
+      it('renders a skeleton loader for the sparkline chart', () => {
+        expect(findChartSkeletonLoader(testId).exists()).toBe(true);
+      });
     });
 
     describe('when the data fails to load', () => {
@@ -222,9 +242,21 @@ describe('Metric table', () => {
         });
       });
 
-      it('emits `set-alerts` with the name of the failed metric', () => {
+      it('emits `set-alerts` with table and chart warnings', () => {
         expect(wrapper.emitted('set-alerts')).toHaveLength(1);
-        expect(wrapper.emitted('set-alerts')[0][0].warnings[0]).toContain(name);
+        expect(wrapper.emitted('set-alerts')[0][0].warnings).toHaveLength(2);
+      });
+
+      it('lists name of the failed metric in the table metrics warning', () => {
+        const [tableMetrics] = wrapper.emitted('set-alerts')[0][0].warnings;
+        expect(tableMetrics).toContain(DASHBOARD_LOADING_FAILURE);
+        expect(tableMetrics).toContain(name);
+      });
+
+      it('lists name of the failed metric in the chart metrics warning', () => {
+        const [, chartMetrics] = wrapper.emitted('set-alerts')[0][0].warnings;
+        expect(chartMetrics).toContain(CHART_LOADING_FAILURE);
+        expect(chartMetrics).toContain(name);
       });
     });
 
@@ -239,6 +271,15 @@ describe('Metric table', () => {
 
       it('renders the metric values', () => {
         expect(findTableRow(testId).text()).toMatchSnapshot();
+      });
+
+      it('does not render the chart skeleton loader', () => {
+        expect(findChartSkeletonLoader(testId).exists()).toBe(false);
+      });
+
+      it('renders the sparkline chart with expected props', () => {
+        expect(findSparklineChart(testId).exists()).toBe(true);
+        expect(findSparklineChart(testId).props()).toMatchSnapshot();
       });
     });
   });

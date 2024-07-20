@@ -7,6 +7,7 @@ import {
   GlSprintf,
   GlLink,
 } from '@gitlab/ui';
+import { GlSparklineChart } from '@gitlab/ui/dist/charts';
 import { toYmd } from '~/analytics/shared/utils';
 import { AI_METRICS } from '~/analytics/shared/constants';
 import { dasherize } from '~/lib/utils/text_utility';
@@ -24,8 +25,21 @@ import DoraMetricsQuery from '../graphql/dora_metrics.query.graphql';
 import AiMetricsQuery from '../graphql/ai_metrics.query.graphql';
 import MetricTableCell from '../../components/metric_table_cell.vue';
 import TrendIndicator from '../../components/trend_indicator.vue';
-import { DASHBOARD_LOADING_FAILURE, RESTRICTED_METRIC_ERROR, UNITS } from '../../constants';
-import { mergeTableData, generateValueStreamDashboardStartDate, formatMetric } from '../../utils';
+import {
+  DASHBOARD_LOADING_FAILURE,
+  RESTRICTED_METRIC_ERROR,
+  UNITS,
+  CHART_LOADING_FAILURE,
+  CHART_GRADIENT,
+  CHART_GRADIENT_INVERTED,
+} from '../../constants';
+import {
+  mergeTableData,
+  generateValueStreamDashboardStartDate,
+  generateChartTimePeriods,
+  generateSparklineCharts,
+  formatMetric,
+} from '../../utils';
 import {
   generateDateRanges,
   generateTableColumns,
@@ -40,6 +54,7 @@ import {
   SUPPORTED_VULNERABILITY_METRICS,
   SUPPORTED_AI_METRICS,
   HIDE_METRIC_DRILL_DOWN,
+  AI_IMPACT_TABLE_METRICS,
 } from '../constants';
 import {
   fetchMetricsForTimePeriods,
@@ -52,6 +67,7 @@ import { extractGraphqlAiData } from '../api';
 
 const NOW = generateValueStreamDashboardStartDate();
 const DASHBOARD_TIME_PERIODS = generateDateRanges(NOW);
+const CHART_TIME_PERIODS = generateChartTimePeriods(NOW);
 
 export default {
   name: 'MetricTable',
@@ -61,6 +77,7 @@ export default {
     GlSprintf,
     GlLink,
     GlSkeletonLoader,
+    GlSparklineChart,
     MetricTableCell,
     TrendIndicator,
   },
@@ -103,10 +120,15 @@ export default {
     },
   },
   async mounted() {
-    const failedTableMetrics = await this.resolveQueries();
+    const failedTableMetrics = await this.resolveQueries(this.fetchTableMetrics);
+    const failedChartMetrics = await this.resolveQueries(this.fetchSparklineCharts);
 
     const alerts = generateTableAlerts([[RESTRICTED_METRIC_ERROR, this.restrictedMetrics]]);
-    const warnings = generateTableAlerts([[DASHBOARD_LOADING_FAILURE, failedTableMetrics]]);
+    const warnings = generateTableAlerts([
+      [DASHBOARD_LOADING_FAILURE, failedTableMetrics],
+      [CHART_LOADING_FAILURE, failedChartMetrics],
+    ]);
+
     if (alerts.length > 0 || warnings.length > 0) {
       this.$emit('set-alerts', { alerts, warnings, canRetry: warnings.length > 0 });
     }
@@ -146,10 +168,12 @@ export default {
       return value === 0 ? formatMetric(0, UNITS.PERCENT) : value;
     },
 
-    async resolveQueries() {
-      const result = await Promise.allSettled(
-        this.tableQueries.map((query) => this.fetchTableMetrics(query)),
-      );
+    chartGradient(invert) {
+      return invert ? CHART_GRADIENT_INVERTED : CHART_GRADIENT;
+    },
+
+    async resolveQueries(handler) {
+      const result = await Promise.allSettled(this.tableQueries.map((query) => handler(query)));
 
       // Return an array of the failed metric IDs
       return result.reduce((failedMetrics, { reason = [] }) => failedMetrics.concat(reason), []);
@@ -159,6 +183,18 @@ export default {
       try {
         const data = await fetchMetricsForTimePeriods(DASHBOARD_TIME_PERIODS, queryFn);
         this.tableData = mergeTableData(this.tableData, generateTableRows(data));
+      } catch (error) {
+        throw metrics;
+      }
+    },
+
+    async fetchSparklineCharts({ metrics, queryFn }) {
+      try {
+        const data = await fetchMetricsForTimePeriods(CHART_TIME_PERIODS, queryFn);
+        this.tableData = mergeTableData(
+          this.tableData,
+          generateSparklineCharts(data, AI_IMPACT_TABLE_METRICS),
+        );
       } catch (error) {
         throw metrics;
       }
@@ -339,6 +375,22 @@ export default {
       >
         {{ formatInvalidTrend(value) }}
       </span>
+    </template>
+
+    <template #cell(chart)="{ value: { data, tooltipLabel }, item: { invertTrendColor } }">
+      <gl-sparkline-chart
+        v-if="data"
+        :height="30"
+        :tooltip-label="tooltipLabel"
+        :show-last-y-value="false"
+        :data="data"
+        :smooth="0.2"
+        :gradient="chartGradient(invertTrendColor)"
+        connect-nulls
+      />
+      <div v-else class="gl-py-4" data-testid="metric-chart-skeleton">
+        <gl-skeleton-loader :lines="1" :width="100" />
+      </div>
     </template>
   </gl-table-lite>
 </template>
