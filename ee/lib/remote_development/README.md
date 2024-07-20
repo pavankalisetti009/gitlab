@@ -667,36 +667,58 @@ We also tend to group all base `let` fixture declarations in the top-level globa
 
 ## Remote Development Settings
 
-### Overview of Remote Development settings module
+### Overview of GitLab::Fp settings module support
 
-Remote Development has a dedicated module in the domain logic for handling settings. It is
-`RemoteDevelopment::Settings`. The goals of this module are:
+The Workspaces feature developed a dedicated module in the domain logic for handling settings.
+It is `RemoteDevelopment::Settings`. The module is based on the patterns of 
+[Railway Oriented Programming and the Result class](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/README.md?plain=0#railway-oriented-programming-and-the-result-class).
+An addional implementation example of this pattern can be found in
+the [`WebIde::Settings` namespace](https://gitlab.com/gitlab-org/gitlab/-/tree/master/lib/web_ide/settings)
 
-1. Allow various methods to be used for providing settings depending on which are appropriate, including:
+Some reusable components have been abstracted out into the shared
+[`Gitlab::Fp::Settings` namespace](https://gitlab.com/gitlab-org/gitlab/-/tree/master/lib/gitlab/fp/settings). 
+
+The goals of this module are:
+
+1. Allow various methods to be used for providing settings depending on which are appropriate. These methods can vary based on the needs of the specific domain, and may include:
     - Default values
-    - One of the following:
+    - One or more of the following standard methods for managing GitLab settings:
       - `::Gitlab::CurrentSettings`
-      - `::Settings` (not yet supported)
-      - Cascading settings via `CascadingNamespaceSettingAttribute` (not yet supported)
+      - `::Settings`
+      - [Cascading settings](https://docs.gitlab.com/ee/development/cascading_settings.html)
+   - Any other domain-specific method for specifying settings.
    - Environment variables, with the required prefix of `GITLAB_REMOTE_DEVELOPMENT_`
-    - Any other current or future method
-1. Perform type checking of provided settings.
+1. Perform type checking of provided settings, with support for the following types:
+    - `String`
+    - `Integer`
+    - `Hash` (which can be validated via a defined JSON Schema)
+1. Perform any necessary domain-specific custom validation steps for settings.    
 1. Provide precedence rules (or validation errors/exceptions, if appropriate) if the same setting is
    defined by multiple methods. See the [Precedence of settings](#precedence-of-settings) section
    below for more details.
 1. Allow usage of the same settings module from both the backend domain logic as well as the frontend
    Vue components, by obtaining necessary settings values in the Rails controller and passing them
    through to the frontend.
+1. Allow injection of "context" which is necessary to obtain settings. For example, a user object
+   which can be used to obtain settings scoped to that specific user.
+1. Support "optimization" of settings processing, by processing only the requested settings, and
+   thus avoiding potentially expensive processing by not processing settings which were not requested.
 1. Use [inversion of control](#inversion-of-control), to avoid coupling the
-   Remote Development domain logic to the rest of the monolith. At the domain logic layer
+   domain logic to the rest of the monolith. At the domain logic layer
    all settings are injected and represented as a simple Hash. This injection approach also allows the
    Settings module to be used from controllers, models, or services without introducing
    direct circular dependencies at the class/module level.
 
-### Adding a new setting
+### Adding a new default setting
 
-To add a new Remote Development setting with a default value which is automatically configurable
-via an ENV var, add a new entry in `lib/remote_development/settings/default_settings.rb`
+To add a new setting with a default value which is automatically configurable
+via an ENV var, add a new entry in `lib/your_domain/settings/default_settings.rb`.
+
+### Adding support for overriding a setting
+
+To add support for overriding a setting via some means, you can modify or add steps to the
+Railway Oriented Programming chain as defined in the `Main` class of the settings module,
+located at `lib/your_domain/settings/main.rb`.
 
 ### Reading settings
 
@@ -717,17 +739,20 @@ there is a clear and simple set of precedence rules for which one "wins". These 
 order of the steps in the
 [RoP `Main` class of the Remote Development Settings module](../../../lib/remote_development/settings/main.rb):
 
-1. First, the default value is used
-1. Next, one of the following values are used if defined and not `nil`:
-    1. `::Gitlab::CurrentSettings`
-    1. `::Gitlab::Settings` (not yet implemented)
-    1. Cascading settings via `CascadingNamespaceSettingAttribute` (not yet implemented)
-1. Next, an ENV values is used if defined (i.e. not `nil`). The ENV var is intentionally placed as
-   the last step and highest precedence, so it can always be used to easily override any settings for
-   local or temporary testing.
+1. First, the default value is used, via the first `SettingsInitializer` step in the ROP chain.
+1. Next, the default values may be overridden by any of the next steps in the ROP chain. For example: 
+    1. `CurrentSettingsReader`
+    1. `GitlabSettingsReader` (not yet implemented)
+    1. `CascadingSettingsReader` (not yet implemented)
+1. Next, the `Gitlab::Fp::Settings::EnvVarOverrideProcessor` allows ENV values to be used if
+   they are defined (i.e. not `nil`). The `EnvVarOverrideProcessor` is intentionally placed as
+   the last step and highest precedence (but before any validation steps), so it can always
+   be used to easily override any settings for local or temporary testing. **NOTE that ENV var
+   overrides only apply to non-production RAILS_ENV. See the section below on ENV vars for more
+   details.
 
 In future iterations, we may want to provide more control of where a specific setting comes from,
-or providing specific precedence rules to override the default precedence rules. For example, we could
+or provide specific precedence rules to override the default precedence rules. For example, we could
 allow them to be specified as a new field in the defaults declaration:
 
 ```
@@ -745,17 +770,18 @@ allow them to be specified as a new field in the defaults declaration:
 
 **All settings should eventually be configurable via the Web UI (and optionally GraphQL API)**
 
-This means that the usage of environment variables with the prefix `GITLAB_REMOTE_DEVELOPMENT_` to control settings
-is _only intended to be used for the following **non-production** purposes_:
+This means that the usage of environment variables with the prefix `GITLAB_YOUR_DOMAIN_` to control
+settings is only supported for non-production RAILS_ENV, and is  _only intended to be used for the
+following **non-production** purposes_:
 
-1. To support initial proof-of-concept iterations, where we want to quickly make a new setting
-   available for use, but have not yet done the planning or design work to create an appropriate
-   UI for the setting.
+1. To support initial proof-of-concept iterations, where we want to quickly make
+   a new setting available for use, but have not yet done the planning or design work to create an
+   appropriate UI for the setting.
 1. To easily perform a global override of any setting for local or temporary testing, for example in
    local development or in a test installation.
 
-This is why ENV vars intentionally always have the highest precedence over all other methods of providing
-settings values.
+This is why ENV vars intentionally always have the highest precedence over all other methods of
+providing settings values.
 
 ## FAQ
 
