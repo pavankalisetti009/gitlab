@@ -16,7 +16,7 @@ module Geo
     feature_category :geo_replication
 
     def perform
-      Gitlab::Geo.enabled_replicator_classes.each do |replicator_class|
+      Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
         replicator_class.fail_sync_timeouts
       end
     end
