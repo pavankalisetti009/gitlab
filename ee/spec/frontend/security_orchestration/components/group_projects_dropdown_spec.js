@@ -28,6 +28,7 @@ describe('GroupProjectsDropdown', () => {
     ids.map((id) => ({
       id: convertToGraphQLId(TYPENAME_GROUP, id),
       name: `${id}`,
+      fullPath: `group-${id}-full-path`,
     }));
 
   const defaultNodes = generateMockNode([1, 2]);
@@ -36,7 +37,8 @@ describe('GroupProjectsDropdown', () => {
   const defaultNodesIds = defaultNodes.map(({ id }) => id);
   const defaultGroupIds = defaultGroups.map(({ id }) => id);
 
-  const mapItems = (items) => items.map(({ id, name }) => ({ value: id, text: name }));
+  const mapItems = (items) =>
+    items.map(({ id, name, fullPath }) => ({ value: id, text: name, fullPath }));
 
   const defaultPageInfo = {
     __typename: 'PageInfo',

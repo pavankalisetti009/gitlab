@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlTruncate } from '@gitlab/ui';
 import { debounce, uniqBy } from 'lodash';
 import produce from 'immer';
 import { __ } from '~/locale';
@@ -18,6 +18,7 @@ export default {
   name: 'GroupProjectsDropdown',
   components: {
     GlCollapsibleListbox,
+    GlTruncate,
   },
   apollo: {
     groups: {
@@ -168,7 +169,7 @@ export default {
     },
     listBoxItems() {
       return this.items
-        .map(({ id, name }) => ({ text: name, value: id }))
+        .map(({ id, fullPath, name }) => ({ text: name, value: id, fullPath }))
         .filter(({ text }) => text.toLowerCase().includes(this.searchTerm.toLowerCase()));
     },
     itemsIds() {
@@ -260,5 +261,14 @@ export default {
     @reset="selectItems([])"
     @select="selectItems"
     @select-all="selectItems(itemsIds)"
-  />
+  >
+    <template #list-item="{ item }">
+      <span :class="['gl-display-block', { 'gl-font-bold': item.fullPath }]">
+        <gl-truncate :text="item.text" with-tooltip />
+      </span>
+      <span v-if="item.fullPath" class="gl-display-block gl-text-gray-700 gl-font-sm gl-mt-1">
+        <gl-truncate position="middle" :text="item.fullPath" with-tooltip />
+      </span>
+    </template>
+  </gl-collapsible-listbox>
 </template>
