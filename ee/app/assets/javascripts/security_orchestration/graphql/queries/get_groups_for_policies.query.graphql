@@ -8,6 +8,7 @@ query getGroupsForPolicies($fullPath: ID!, $search: String, $after: String) {
       nodes {
         id
         name
+        fullPath
       }
       pageInfo {
         ...PageInfo
