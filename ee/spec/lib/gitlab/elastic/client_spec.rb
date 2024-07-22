@@ -20,30 +20,30 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
       it 'makes unsigned requests' do
         stub_request(:get, 'http://dummy-elastic:9200/foo/_doc/1')
           .with(headers: { 'Content-Type' => 'application/json' })
-          .to_return(status: 200, body: [:fake_response])
+          .to_return(status: 200, body: 'fake_response')
 
-        expect(client.get(index: 'foo', id: 1)).to eq([:fake_response])
+        expect(client.get(index: 'foo', id: 1)).to eq('fake_response')
       end
 
       it 'does not set request timeout in transport' do
-        options = client.transport.options.dig(:transport_options, :request)
+        options = client.transport.transport.options.dig(:transport_options, :request)
 
         expect(options).to include(open_timeout: described_class::OPEN_TIMEOUT, timeout: nil)
       end
 
       it 'does not set log & debug flags by default' do
-        expect(client.transport.options).not_to include(debug: true, log: true)
+        expect(client.transport.transport.options).not_to include(debug: true, log: true)
       end
 
       it 'sets log & debug flags if .debug? is true' do
         allow(described_class).to receive(:debug?).and_return(true)
 
-        expect(client.transport.options).to include(debug: true, log: true)
+        expect(client.transport.transport.options).to include(debug: true, log: true)
       end
 
       context 'with typhoeus adapter for keep-alive connections' do
         it 'sets typhoeus as the adapter' do
-          options = client.transport.options
+          options = client.transport.transport.options
 
           expect(options).to include(adapter: :typhoeus)
         end
@@ -54,7 +54,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
           end
 
           it 'uses the net/http adapter' do
-            options = client.transport.options
+            options = client.transport.transport.options
             expect(options).to include(adapter: :net_http)
           end
         end
@@ -62,11 +62,11 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
         context 'cached client when FeatureFlag changes' do
           it 'successfully changes adapter from net/http to typhoeus' do
             stub_feature_flags(use_typhoeus_elasticsearch_adapter: false)
-            adapter = Issue.__elasticsearch__.client.transport.connections.first.connection.builder.adapter
+            adapter = Issue.__elasticsearch__.client.transport.transport.connections.first.connection.builder.adapter
             expect(adapter).to eq(::Faraday::Adapter::NetHttp)
 
             stub_feature_flags(use_typhoeus_elasticsearch_adapter: true)
-            adapter = Issue.__elasticsearch__.client.transport.connections.first.connection.builder.adapter
+            adapter = Issue.__elasticsearch__.client.transport.transport.connections.first.connection.builder.adapter
             expect(adapter).to eq(::Faraday::Adapter::Typhoeus)
           end
         end
@@ -76,7 +76,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
         let(:params) { { url: 'http://dummy-elastic:9200', client_request_timeout: 30 } }
 
         it 'sets request timeout in transport' do
-          options = client.transport.options.dig(:transport_options, :request)
+          options = client.transport.transport.options.dig(:transport_options, :request)
 
           expect(options).to include(open_timeout: described_class::OPEN_TIMEOUT, timeout: 30)
         end
@@ -96,7 +96,7 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
           let(:params) { { url: 'http://dummy-elastic:9200', retry_on_failure: retry_on_failure } }
 
           it 'sets retry in transport' do
-            expect(client.transport.options.dig(:retry_on_failure)).to eq(client_retry)
+            expect(client.transport.transport.options.dig(:retry_on_failure)).to eq(client_retry)
           end
         end
       end
@@ -111,6 +111,10 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
           aws_access_key: '0',
           aws_secret_access_key: '0'
         }
+      end
+
+      let(:meta_string) do
+        "es=#{Elasticsearch::VERSION},rb=#{RUBY_VERSION},t=#{Elasticsearch::Transport::VERSION},fd=#{Faraday::VERSION},ty=#{Typhoeus::VERSION}" # rubocop:disable Layout/LineLength -- This is just a long string
       end
 
       it 'signs_requests' do
@@ -128,11 +132,11 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
                 'User-Agent' => /^elasticsearch-ruby/,
                 'X-Amz-Content-Sha256' => 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
                 'X-Amz-Date' => '20170303T133952Z',
-                'X-Elastic-Client-Meta' => "es=7.13.3,rb=#{RUBY_VERSION},t=7.13.3,fd=1.10.3,ty=1.4.0"
+                'X-Elastic-Client-Meta' => meta_string
               }
-            ).to_return(status: 200, body: [:fake_response])
+            ).to_return(status: 200, body: 'fake_response')
 
-          expect(client.get(index: 'foo', id: 1)).to eq([:fake_response])
+          expect(client.get(index: 'foo', id: 1)).to eq('fake_response')
         end
       end
     end
