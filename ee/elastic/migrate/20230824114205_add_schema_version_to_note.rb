@@ -15,3 +15,5 @@ class AddSchemaVersionToNote < Elastic::Migration
     }
   end
 end
+
+AddSchemaVersionToNote.prepend ::Elastic::MigrationObsolete
