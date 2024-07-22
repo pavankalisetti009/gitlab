@@ -6,10 +6,7 @@ module EE
 
     override :preload_member_roles
     def preload_member_roles(projects)
-      ::Preloaders::UserMemberRolesInProjectsPreloader.new(
-        projects: projects,
-        user: current_user
-      ).execute
+      ::Authz::Project.new(current_user, scope: projects).permitted
     end
   end
 end
