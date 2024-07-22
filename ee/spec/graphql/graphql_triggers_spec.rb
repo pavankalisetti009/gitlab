@@ -153,4 +153,25 @@ RSpec.describe GraphqlTriggers, feature_category: :shared do
       ::GraphqlTriggers.workflow_events_updated(checkpoint)
     end
   end
+
+  describe '.security_policy_project_created' do
+    subject(:trigger) do
+      described_class.security_policy_project_created(container, status, security_policy_project, error_message)
+    end
+
+    let_it_be(:container) { create(:project) }
+    let_it_be(:security_policy_project) { create(:project) }
+    let(:status) { :success }
+    let(:error_message) { nil }
+
+    it 'triggers the subscription' do
+      expect(GitlabSchema.subscriptions).to receive(:trigger).with(
+        :security_policy_project_created,
+        { full_path: container.full_path },
+        { status: status, project: security_policy_project, error_message: error_message }
+      )
+
+      trigger
+    end
+  end
 end

@@ -53,6 +53,14 @@ module EE
         ::GitlabSchema.subscriptions.trigger(:workflow_events_updated, { workflow_id: checkpoint.workflow.to_gid },
           checkpoint)
       end
+
+      def self.security_policy_project_created(container, status, security_policy_project, error_message)
+        ::GitlabSchema.subscriptions.trigger(
+          :security_policy_project_created,
+          { full_path: container.full_path },
+          { status: status, error_message: error_message, project: security_policy_project }
+        )
+      end
     end
   end
 end
