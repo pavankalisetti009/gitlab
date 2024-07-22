@@ -261,6 +261,7 @@ module GitlabSubscriptions
       suggested_reviewers
       subepics
       observability
+      troubleshoot_job
       unique_project_download_limit
       vulnerability_finding_signatures
       container_scanning_for_registry

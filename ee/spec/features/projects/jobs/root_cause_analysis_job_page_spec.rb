@@ -71,17 +71,24 @@ RSpec.describe 'Root cause analysis job page', :js, feature_category: :continuou
       stub_feature_flags(root_cause_analysis_duo: true)
     end
 
-    context 'with failed jobs' do
+    context 'with duo enterprise license' do
       before do
-        allow(failed_job).to receive(:debug_mode?).and_return(false)
-
-        visit(project_job_path(project, failed_job))
-
-        wait_for_requests
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?).with(user, :troubleshoot_job_with_ai, failed_job).and_return(true)
       end
 
-      it 'does display rca with duo button' do
-        expect(page).to have_selector("[data-testid='rca-duo-button']")
+      context 'with failed jobs' do
+        before do
+          allow(failed_job).to receive(:debug_mode?).and_return(false)
+
+          visit(project_job_path(project, failed_job))
+
+          wait_for_requests
+        end
+
+        it 'does display rca with duo button' do
+          expect(page).to have_selector("[data-testid='rca-duo-button']")
+        end
       end
     end
   end

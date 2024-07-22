@@ -68,9 +68,6 @@ module Gitlab
             def perform
               error_message = if disabled?
                                 _('This feature is not enabled yet.')
-                              elsif !job.is_a?(::Ci::Build)
-                                _('This command is used for troubleshooting jobs and can only be invoked from ' \
-                                  'a job log page.')
                               elsif !job.failed?
                                 _('This command is used for troubleshooting jobs and can only be invoked from ' \
                                   'a failed job log page.')
@@ -82,6 +79,17 @@ module Gitlab
             end
 
             private
+
+            def unit_primitive
+              'troubleshoot_job'
+            end
+
+            def tracking_context
+              {
+                request_id: context.request_id,
+                action: unit_primitive
+              }
+            end
 
             def disabled?
               Feature.disabled?(:root_cause_analysis_duo, context.current_user)
@@ -109,8 +117,7 @@ module Gitlab
             strong_memoize_attr :job
 
             def authorize
-              context.current_user.can?(:read_build_trace, job) &&
-                Utils::ChatAuthorizer.context(context: context).allowed?
+              context.current_user.can?(:troubleshoot_job_with_ai, job)
             end
 
             def resource_name

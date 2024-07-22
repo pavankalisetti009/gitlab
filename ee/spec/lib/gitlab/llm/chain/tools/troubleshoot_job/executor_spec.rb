@@ -41,6 +41,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
     end
   end
 
+  before do
+    allow(user).to receive(:can?).and_call_original
+    allow(user).to receive(:can?).with(:troubleshoot_job_with_ai, build).and_return(true)
+  end
+
   describe '#name' do
     it 'returns the correct tool name' do
       expect(described_class::NAME).to eq('TroubleshootJob')
@@ -68,16 +73,18 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
       include_context 'with stubbed LLM authorizer', allowed: true
 
       before do
-        allow(user).to receive(:can?).and_call_original
-        allow(user).to receive(:can?).with(:read_build, build).and_return(true)
-        allow(user).to receive(:can?).with(:read_build_trace, build).and_return(true)
-        allow(Gitlab::Llm::Chain::Utils::ChatAuthorizer).to receive_message_chain(:context, :allowed?).and_return(true)
         allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
       end
 
       it 'performs the troubleshooting' do
         expect(tool).to receive(:request).and_return('Troubleshooting response')
         expect(tool.execute.content).to eq('Troubleshooting response')
+      end
+
+      it 'sets the correct unit primitive' do
+        expect(ai_request_double).to receive(:request).with(tool.prompt, unit_primitive: 'troubleshoot_job')
+
+        tool.execute
       end
 
       context 'with repository languages' do
@@ -133,7 +140,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         end
 
         it 'returns an error message' do
-          expect(tool.execute.content).to include('This command is used for troubleshooting jobs')
+          expect(tool.execute.content).to include("I'm sorry, I can't generate a response.")
         end
       end
     end
@@ -145,7 +152,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         allow(tool).to receive(:provider_prompt_class).and_return(
           ::Gitlab::Llm::Chain::Tools::TroubleshootJob::Prompts::Anthropic
         )
-        allow(user).to receive(:can?).with(:read_build_trace, build).and_return(false)
+        allow(user).to receive(:can?).with(:troubleshoot_job_with_ai, build).and_return(false)
       end
 
       it 'returns an error message' do
