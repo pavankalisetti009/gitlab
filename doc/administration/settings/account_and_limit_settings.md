@@ -216,7 +216,9 @@ Prerequisites:
 
 - You must be an administrator.
 
-You can require all new access tokens to have an expiration date. This setting applies to:
+You can require all new access tokens to have an expiration date.
+This setting is turned on by default.
+It applies to:
 
 - Project access tokens.
 - Group access tokens.
@@ -236,11 +238,6 @@ When you require expiration dates for new access tokens:
 
 - Users must set an expiration date that does not exceed the allowed lifetime for new access tokens.
 - To control the maximum access token lifetime, use the [**Limit the lifetime of access tokens** setting](#limit-the-lifetime-of-access-tokens).
-
-On new installations, this setting is turned on by default. On existing installations, if the background migration to set expiry on all access tokens:
-
-- Has never run, this setting is turned off.
-- Has run, this setting is turned on.
 
 ## Limit the lifetime of SSH keys
 
