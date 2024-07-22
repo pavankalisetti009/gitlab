@@ -232,7 +232,7 @@ To require expiration dates for new access tokens:
 1. Select the **Personal / Project / Group access token expiration** checkbox.
 1. Select **Save changes**.
 
-When you require expirations dates for new access tokens:
+When you require expiration dates for new access tokens:
 
 - Users must set an expiration date that does not exceed the allowed lifetime for new access tokens.
 - To control the maximum access token lifetime, use the [**Limit the lifetime of access tokens** setting](#limit-the-lifetime-of-access-tokens).
