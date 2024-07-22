@@ -227,7 +227,8 @@ module Search
                 namespace_id: zoekt_enabled_namespace.root_namespace_id,
                 zoekt_node_id: node.id,
                 zoekt_enabled_namespace: zoekt_enabled_namespace,
-                replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace)
+                replica: Replica.for_enabled_namespace!(zoekt_enabled_namespace),
+                reserved_storage_bytes: space_required
               )
               zoekt_index.state = :ready if Feature.disabled?(:zoekt_initial_indexing_task)
               zoekt_indices << zoekt_index
