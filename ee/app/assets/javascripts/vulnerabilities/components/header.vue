@@ -14,7 +14,7 @@ import download from '~/lib/utils/downloader';
 import { visitUrl } from '~/lib/utils/url_utility';
 import UsersCache from '~/lib/utils/users_cache';
 import { __, s__ } from '~/locale';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
@@ -247,7 +247,7 @@ export default {
       }
     },
     explainVulnerability() {
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
 
       this.$apollo.mutate({
         mutation: chatMutation,

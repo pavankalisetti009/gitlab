@@ -1,18 +1,13 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlButton } from '@gitlab/ui';
-import { createAlert } from '~/alert';
-import waitForPromises from 'helpers/wait_for_promises';
-import createMockApollo from 'helpers/mock_apollo_helper';
 import AiGenie from 'ee/ai/components/ai_genie.vue';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import { i18n, GENIE_CHAT_EXPLAIN_MESSAGE } from 'ee/ai/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
-import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import LineHighlighter from '~/blob/line_highlighter';
 import { getMarkdown } from '~/rest_api';
-import { helpCenterState } from '~/super_sidebar/constants';
 
 const lineHighlighter = new LineHighlighter();
 jest.mock('~/blob/line_highlighter', () =>
@@ -24,39 +19,17 @@ jest.mock('~/blob/line_highlighter', () =>
 jest.mock('ee/ai/utils', () => ({
   generateExplainCodePrompt: jest.fn(),
   generateChatPrompt: jest.fn(),
+  sendDuoChatCommand: jest.fn(),
 }));
 jest.mock('~/rest_api');
 jest.mock('~/alert');
 
 Vue.use(VueApollo);
 
-const aiResponse = 'AI response';
-const explainCodeMutationResponse = { data: { aiAction: { errors: [] } } };
-const defaultAiCompletionResponse = {
-  id: '1',
-  requestId: '2',
-  content: aiResponse,
-  contentHtml: '',
-  role: '',
-  timestamp: '',
-  type: '',
-  chunkId: '',
-  errors: [],
-  extras: { sources: '' },
-};
-const explainCodeSubscriptionResponse = {
-  data: {
-    aiCompletionResponse: defaultAiCompletionResponse,
-  },
-};
-
 const SELECTION_START_POSITION = 50;
 const SELECTION_END_POSITION = 150;
 const CONTAINER_TOP = 20;
 const LINE_ID = 'LC1';
-
-let mutationHandlerMock;
-let subscriptionHandlerMock;
 
 describe('AiGenie', () => {
   let wrapper;
@@ -71,11 +44,6 @@ describe('AiGenie', () => {
     data = {},
     glFeatures = {},
   } = {}) => {
-    const apolloProvider = createMockApollo([
-      [aiResponseSubscription, subscriptionHandlerMock],
-      [chatMutation, mutationHandlerMock],
-    ]);
-
     wrapper = shallowMountExtended(AiGenie, {
       propsData,
       data() {
@@ -85,7 +53,6 @@ describe('AiGenie', () => {
         resourceId,
         glFeatures,
       },
-      apolloProvider,
     });
   };
   const findButton = () => wrapper.findComponent(GlButton);
@@ -143,8 +110,6 @@ describe('AiGenie', () => {
   };
 
   beforeEach(() => {
-    mutationHandlerMock = jest.fn().mockResolvedValue(explainCodeMutationResponse);
-    subscriptionHandlerMock = jest.fn().mockResolvedValue(explainCodeSubscriptionResponse);
     setHTMLFixture(
       `<div class="container" style="height:1000px; width: 800px"><span class="line" id="${LINE_ID}"><p lang=${language} id="first-paragraph">Foo</p></span></div>`,
     );
@@ -153,8 +118,6 @@ describe('AiGenie', () => {
 
   afterEach(() => {
     resetHTMLFixture();
-    mutationHandlerMock.mockRestore();
-    subscriptionHandlerMock.mockRestore();
   });
 
   it('correctly renders the component by default', () => {
@@ -236,36 +199,18 @@ describe('AiGenie', () => {
       createComponent();
     });
 
-    it('toggles the Duo Chat when explain code requested', async () => {
+    it('calls the `sendDuoChatCommand` code request', async () => {
       await simulateSelectText();
       await requestExplanation();
-      expect(helpCenterState.showTanukiBotChatDrawer).toBe(true);
-    });
-
-    it('calls a GraphQL mutation when explain code requested', async () => {
-      await simulateSelectText();
-      await requestExplanation();
-      expect(mutationHandlerMock).toHaveBeenCalledWith({
+      expect(sendDuoChatCommand).toHaveBeenCalledWith({
         question: GENIE_CHAT_EXPLAIN_MESSAGE,
         resourceId,
-        currentFileContext: {
-          fileName: filePath,
-          selectedText: getSelection().toString(),
+        variables: {
+          currentFileContext: {
+            fileName: filePath,
+            selectedText: getSelection().toString(),
+          },
         },
-      });
-    });
-
-    describe('error handling', () => {
-      it('if the mutation fails, an alert is created', async () => {
-        mutationHandlerMock = jest.fn().mockRejectedValue();
-        createComponent();
-        await requestExplanation();
-        await waitForPromises();
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'An error occurred while explaining the code.',
-          captureError: true,
-          error: expect.any(Error),
-        });
       });
     });
   });

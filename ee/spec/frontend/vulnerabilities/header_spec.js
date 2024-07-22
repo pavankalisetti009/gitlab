@@ -27,7 +27,7 @@ import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/h
 import { visitUrl } from '~/lib/utils/url_utility';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import { MOCK_TANUKI_BOT_MUTATATION_RES } from 'ee_jest/ai/tanuki_bot/mock_data';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import {
   getVulnerabilityStatusMutationResponse,
   dismissalDescriptions,
@@ -663,11 +663,11 @@ describe('Vulnerability Header', () => {
       });
 
       it('opens the global DuoChat drawer when clicked', async () => {
-        expect(helpCenterState.showTanukiBotChatDrawer).toBe(false);
+        expect(duoChatGlobalState.isShown).toBe(false);
 
         await clickButton('explain-vulnerability');
 
-        expect(helpCenterState.showTanukiBotChatDrawer).toBe(true);
+        expect(duoChatGlobalState.isShown).toBe(true);
       });
 
       it('calls the correct mutation with the correct parameters when clicked', async () => {

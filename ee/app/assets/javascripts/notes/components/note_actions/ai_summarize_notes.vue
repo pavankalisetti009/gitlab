@@ -7,7 +7,7 @@ import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import { MAX_REQUEST_TIMEOUT } from 'ee/notes/constants';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 export default {
   components: {
@@ -57,7 +57,7 @@ export default {
           question: '/summarize_comments',
           resourceId: this.resourceGlobalId,
         };
-        helpCenterState.showTanukiBotChatDrawer = true;
+        duoChatGlobalState.isShown = true;
       } else {
         mutation = aiActionMutation;
         variables = {
