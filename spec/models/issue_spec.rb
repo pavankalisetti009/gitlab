@@ -1589,12 +1589,12 @@ RSpec.describe Issue, feature_category: :team_planning do
   end
 
   describe '#publicly_visible?' do
-    let(:project) { build(:project, project_visiblity) }
+    let(:project) { build(:project, project_visibility) }
     let(:issue) { build(:issue, confidential: confidential, project: project) }
 
     subject { issue.send(:publicly_visible?) }
 
-    where(:project_visiblity, :confidential, :expected_value) do
+    where(:project_visibility, :confidential, :expected_value) do
       :public   | false | true
       :public   | true  | false
       :internal | false | false
@@ -1605,6 +1605,28 @@ RSpec.describe Issue, feature_category: :team_planning do
 
     with_them do
       it { is_expected.to eq(expected_value) }
+    end
+
+    context 'with group level issues' do
+      let(:group) { build(:group, group_visibility) }
+      let(:issue) { build(:issue, :group_level, confidential: confidential, namespace: group) }
+
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      where(:group_visibility, :confidential, :expected_value) do
+        :public   | false | false
+        :public   | true  | false
+        :internal | false | false
+        :internal | true  | false
+        :private  | false | false
+        :private  | true  | false
+      end
+
+      with_them do
+        it { is_expected.to eq(expected_value) }
+      end
     end
   end
 
