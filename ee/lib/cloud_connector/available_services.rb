@@ -7,8 +7,7 @@ module CloudConnector
     class << self
       def find_by_name(name)
         service_data_map = available_services
-
-        return CloudConnector::MissingServiceData.new if service_data_map.empty?
+        return CloudConnector::MissingServiceData.new if service_data_map.empty? || !service_data_map[name].present?
 
         service_data_map[name]
       end
