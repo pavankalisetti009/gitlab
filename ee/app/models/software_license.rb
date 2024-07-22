@@ -8,6 +8,7 @@ class SoftwareLicense < ApplicationRecord
   TransactionInProgressError = Class.new(StandardError)
   ALL_LICENSE_NAMES_CACHE_KEY = [name, 'all_license_names'].freeze
   TRANSACTION_MESSAGE = "Sub-transactions are not allowed as there is already an open transaction."
+  LICENSE_LIMIT = 1_000
 
   validates :name, presence: true, uniqueness: true
   validates :spdx_identifier, length: { maximum: 255 }
@@ -18,13 +19,9 @@ class SoftwareLicense < ApplicationRecord
   scope :spdx, -> { where.not(spdx_identifier: nil) }
   scope :unknown, -> { where(spdx_identifier: nil) }
   scope :grouped_by_name, -> { group(:name) }
-  scope :unreachable_limit, -> { limit(500) }
+  scope :unreachable_limit, -> { limit(LICENSE_LIMIT) }
 
   class << self
-    def unclassified_licenses_for(project)
-      spdx.id_not_in(project.software_licenses).ordered.unreachable_limit
-    end
-
     def all_license_names
       Rails.cache.fetch(ALL_LICENSE_NAMES_CACHE_KEY, expires_in: 7.days) do
         spdx.ordered.unreachable_limit.pluck_names
