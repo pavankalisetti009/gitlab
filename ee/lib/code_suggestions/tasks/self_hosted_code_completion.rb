@@ -37,16 +37,23 @@ module CodeSuggestions
 
       def prompt
         model_name = feature_setting.self_hosted_model.model.to_sym
-        case model_name
-        when :codegemma
-          CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages.new(params)
-        when :codestral
-          CodeSuggestions::Prompts::CodeCompletion::CodestralMessages.new(params)
-        when :'codellama:code'
-          CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages.new(params)
-        else
-          raise "Unknown model: #{model_name}"
-        end
+        # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global development flag for migrating the prompts
+        prompt_migration_enabled = ::Feature.enabled?(:ai_custom_models_prompts_migration)
+        # rubocop:enable Gitlab/FeatureFlagWithoutActor
+        ai_gateway_class = CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage
+        model_classes = {
+          codegemma: CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages,
+          codestral: CodeSuggestions::Prompts::CodeCompletion::CodestralMessages,
+          'codellama:code': CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages
+        }
+
+        message_class = if prompt_migration_enabled
+                          ai_gateway_class
+                        else
+                          model_classes.fetch(model_name) { raise "Unknown model: #{model_name}" }
+                        end
+
+        message_class.new(params)
       end
       strong_memoize_attr :prompt
     end

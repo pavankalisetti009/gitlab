@@ -18,11 +18,11 @@ module CodeSuggestions
           end
         end
 
-        private
-
         def prompt
-          raise NotImplementedError, "#{self.class} has not implemented method #{__method__}"
+          nil
         end
+
+        private
 
         def pick_prefix
           prefix.last(500)

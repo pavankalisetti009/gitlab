@@ -35,10 +35,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
   end
 
   describe '#prompt' do
-    it 'raises NotImplementedError for the abstract class' do
-      expect do
-        described_class.new(params).send(:prompt)
-      end.to raise_error(NotImplementedError, "#{described_class} has not implemented method prompt")
+    it 'returns an empty prompt' do
+      expect(described_class.new(params).prompt).to be_nil
     end
   end
 end

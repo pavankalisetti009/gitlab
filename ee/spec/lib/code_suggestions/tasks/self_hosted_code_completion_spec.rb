@@ -52,6 +52,10 @@ RSpec.describe CodeSuggestions::Tasks::SelfHostedCodeCompletion, feature_categor
       params: params, unsafe_passthrough_params: unsafe_params)
   end
 
+  before do
+    stub_feature_flags(ai_custom_models_prompts_migration: false)
+  end
+
   describe '#body' do
     before do
       allow(CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages)
@@ -84,6 +88,21 @@ RSpec.describe CodeSuggestions::Tasks::SelfHostedCodeCompletion, feature_categor
       task.body
 
       expect(CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages).to have_received(:new).with(params)
+    end
+
+    context 'when the ai_custom_models_prompts_migration FF is enabled' do
+      before do
+        stub_feature_flags(ai_custom_models_prompts_migration: true)
+        allow(CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage)
+          .to receive(:new).and_return(codgemma_messages_prompt)
+      end
+
+      it 'calls the base AiGatewayCodeCompletionMessage class' do
+        task.body
+
+        expect(CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage)
+          .to have_received(:new).with(params)
+      end
     end
   end
 
