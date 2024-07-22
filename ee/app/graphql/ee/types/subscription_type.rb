@@ -35,6 +35,11 @@ module EE
         field :workflow_events_updated,
           subscription: ::Subscriptions::Ai::DuoWorkflows::WorkflowEventsUpdated, null: true,
           description: 'Triggered when the checkpoints/events of a workflow is updated.'
+
+        field :security_policy_project_created,
+          subscription: Subscriptions::Security::PolicyProjectCreated, null: true,
+          description: 'Triggered when the security policy project is created for a specific group or project.',
+          alpha: { milestone: '17.3' }
       end
     end
   end

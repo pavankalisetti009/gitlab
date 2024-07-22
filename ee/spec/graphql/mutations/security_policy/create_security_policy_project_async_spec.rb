@@ -1,20 +1,21 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
-RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProject, feature_category: :security_policy_management do
+RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProjectAsync, feature_category: :security_policy_management do
   let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
 
   describe '#resolve' do
     let_it_be(:owner) { create(:user) }
     let_it_be(:maintainer) { create(:user) }
     let_it_be(:namespace) { create(:group) }
-    let_it_be(:project) { create(:project, namespace: owner.namespace) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
 
     let(:current_user) { owner }
 
-    subject { mutation.resolve(full_path: container.full_path) }
+    subject(:resolve_mutation) { mutation.resolve(full_path: container.full_path) }
 
-    shared_context 'creates security policy project' do
+    shared_examples 'triggers the create security policy project worker' do
       context 'when licensed feature is available' do
         before do
           stub_licensed_features(security_orchestration_policies: true)
@@ -23,15 +24,19 @@ RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProject, feature_c
         context 'when user is an owner of the container' do
           let(:current_user) { owner }
 
-          before do
+          before_all do
             namespace.add_owner(owner)
           end
 
-          it 'returns project' do
-            result = subject
+          it 'triggers the worker' do
+            expect(Security::CreateSecurityPolicyProjectWorker).to receive(:perform_async).with(
+              container.full_path,
+              current_user.id
+            )
+
+            result = resolve_mutation
 
             expect(result[:errors]).to be_empty
-            expect(result[:project]).to eq(Project.last)
           end
         end
 
@@ -43,7 +48,7 @@ RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProject, feature_c
           end
 
           it 'raises exception' do
-            expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+            expect { resolve_mutation }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
           end
         end
       end
@@ -54,33 +59,33 @@ RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProject, feature_c
         end
 
         it 'raises exception' do
-          expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
+          expect { resolve_mutation }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
         end
       end
     end
 
-    context 'when both fullPath and projectPath are not provided' do
-      subject { mutation.resolve({}) }
+    context 'when fullPath is not provided' do
+      subject(:resolve_mutation) { mutation.resolve({}) }
 
       before do
         stub_licensed_features(security_orchestration_policies: true)
       end
 
       it 'raises exception' do
-        expect { subject }.to raise_error(Gitlab::Graphql::Errors::ArgumentError)
+        expect { resolve_mutation }.to raise_error(Gitlab::Graphql::Errors::ArgumentError)
       end
     end
 
     context 'for project' do
       let(:container) { project }
 
-      it_behaves_like 'creates security policy project'
+      it_behaves_like 'triggers the create security policy project worker'
     end
 
     context 'for namespace' do
       let(:container) { namespace }
 
-      it_behaves_like 'creates security policy project'
+      it_behaves_like 'triggers the create security policy project worker'
     end
   end
 end
