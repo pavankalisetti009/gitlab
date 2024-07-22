@@ -1030,6 +1030,32 @@ RSpec.describe Issue, feature_category: :team_planning do
     end
   end
 
+  describe '#autoclose_by_merged_closing_merge_request?' do
+    subject { issue.autoclose_by_merged_closing_merge_request? }
+
+    context 'when issue belongs to a group' do
+      let(:issue) { build_stubbed(:issue, :group_level, namespace: build_stubbed(:group)) }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when issue belongs to a project' do
+      let(:issue) { build_stubbed(:issue, project: reusable_project) }
+
+      context 'when autoclose_referenced_issues is enabled for the project' do
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when autoclose_referenced_issues is disabled for the project' do
+        before do
+          issue.project.update!(autoclose_referenced_issues: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
   describe '#suggested_branch_name' do
     let(:repository) { double }
 
