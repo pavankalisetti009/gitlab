@@ -455,7 +455,7 @@ GEM
     danger-gitlab (8.0.0)
       danger
       gitlab (~> 4.2, >= 4.2.0)
-    database_cleaner-active_record (2.1.0)
+    database_cleaner-active_record (2.2.0)
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
@@ -1973,7 +1973,7 @@ DEPENDENCIES
   cssbundling-rails (= 1.4.0)
   csv_builder!
   cvss-suite (~> 3.0.1)
-  database_cleaner-active_record (~> 2.1.0)
+  database_cleaner-active_record (~> 2.2.0)
   deckar01-task_list (= 2.3.4)
   declarative_policy (~> 1.1.0)
   deprecation_toolkit (~> 1.5.1)
