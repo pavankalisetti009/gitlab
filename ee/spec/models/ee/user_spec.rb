@@ -64,6 +64,8 @@ RSpec.describe User, feature_category: :system_access do
     it { is_expected.to have_many(:elevated_members).class_name('Member') }
     it { is_expected.to have_many(:assigned_add_ons).class_name('GitlabSubscriptions::UserAddOnAssignment').inverse_of(:user) }
     it { is_expected.to have_many(:country_access_logs).class_name('Users::CountryAccessLog').inverse_of(:user) }
+    it { is_expected.to have_many(:group_saml_identities).class_name('::Identity') }
+    it { is_expected.to have_many(:group_saml_providers).through(:group_saml_identities).source(:saml_provider) }
   end
 
   describe 'nested attributes' do
@@ -346,6 +348,42 @@ RSpec.describe User, feature_category: :system_access do
           provider = create(:saml_provider)
 
           expect(described_class.with_saml_provider(provider)).to match_array([])
+        end
+      end
+    end
+
+    describe '.expired_sso_session_saml_providers' do
+      let_it_be(:user) { create(:user) }
+      let_it_be(:saml_provider1) { create(:saml_provider) }
+      let_it_be(:saml_provider2) { create(:saml_provider) }
+
+      subject(:expired_sso_session_saml_providers) { user.expired_sso_session_saml_providers }
+
+      context 'for users without SAML identity' do
+        it { is_expected.to be_empty }
+      end
+
+      context 'for users with SAML identity' do
+        let_it_be(:identity1) { create(:group_saml_identity, user: user) }
+        let_it_be(:identity2) { create(:group_saml_identity, user: user) }
+        let_it_be(:saml_provider1) { identity1.saml_provider }
+        let_it_be(:saml_provider2) { identity2.saml_provider }
+
+        context 'when there are no active SAML sessions' do
+          it 'returns all the SAML providers' do
+            expect(expired_sso_session_saml_providers).to contain_exactly(saml_provider1, saml_provider2)
+          end
+        end
+
+        context 'when there are an active SAML sessions' do
+          before do
+            active_saml_sessions = { saml_provider1.id => Time.current }
+            allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
+          end
+
+          it 'returns the expired SAML providers where the session is expired' do
+            expect(expired_sso_session_saml_providers).to contain_exactly(saml_provider2)
+          end
         end
       end
     end

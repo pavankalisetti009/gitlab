@@ -93,6 +93,7 @@ module EE
       has_many :security_dashboard_projects, through: :users_security_dashboard_projects, source: :project
 
       has_many :group_saml_identities, -> { where.not(saml_provider_id: nil) }, class_name: "::Identity"
+      has_many :group_saml_providers, through: :group_saml_identities, source: :saml_provider
 
       # Protected Branch Access
       has_many :protected_branch_merge_access_levels, dependent: :destroy, class_name: "::ProtectedBranch::MergeAccessLevel" # rubocop:disable Cop/ActiveRecordDependent
@@ -291,6 +292,14 @@ module EE
     def toggle_star(project)
       super
       project.maintain_elasticsearch_update if self.active? && project.maintaining_elasticsearch?
+    end
+
+    def expired_sso_session_saml_providers
+      group_saml_providers.id_not_in(active_sso_sessions_saml_provider_ids)
+    end
+
+    def active_sso_sessions_saml_provider_ids
+      ::Gitlab::Auth::GroupSaml::SsoState.active_saml_sessions.keys
     end
 
     def pending_billable_invitations
