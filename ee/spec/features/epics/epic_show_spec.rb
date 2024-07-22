@@ -32,6 +32,7 @@ RSpec.describe 'Epic show', :js, feature_category: :portfolio_management do
   before do
     group.add_developer(user)
     stub_licensed_features(epics: true, subepics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     sign_in(user)
   end
 

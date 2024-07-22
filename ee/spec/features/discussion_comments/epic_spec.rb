@@ -8,6 +8,7 @@ RSpec.describe 'Thread Comments Epic', :js, feature_category: :portfolio_managem
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     epic.group.add_maintainer(user)
     sign_in(user)
 

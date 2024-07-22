@@ -138,24 +138,65 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
       end
 
       context 'when format is HTML' do
-        it 'renders template' do
-          group.add_developer(user)
-          show_epic
+        context 'when authorized' do
+          before do
+            group.add_developer(user)
+          end
 
-          expect(response.media_type).to eq 'text/html'
-          expect(response).to render_template 'groups/epics/show'
-        end
+          context 'when work_item_epics is disabled' do
+            before do
+              stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+            end
 
-        it 'logs the view with Gitlab::Search::RecentEpics' do
-          group.add_developer(user)
+            it 'renders template' do
+              show_epic
 
-          recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
-          expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+              expect(response.media_type).to eq 'text/html'
+              expect(response).to render_template 'groups/epics/show'
+            end
+          end
 
-          show_epic
+          context 'when work_item_epics_rollout is true' do
+            before do
+              stub_feature_flags(work_item_epics_rollout: user)
+            end
 
-          expect(response).to be_successful
-          expect(recent_epics_double).to have_received(:log_view).with(epic)
+            it 'renders work item template' do
+              show_epic
+
+              expect(response.media_type).to eq 'text/html'
+              expect(response).to render_template 'groups/work_items/show'
+            end
+
+            it 'renders legacy template when forcing it' do
+              get :show, params: { group_id: group, id: epic.to_param, force_legacy_view: true }
+
+              expect(response).to render_template 'groups/epics/show'
+            end
+          end
+
+          context 'when work_item_epics_rollout is false' do
+            before do
+              stub_feature_flags(work_item_epics_rollout: false)
+            end
+
+            it 'renders work item template' do
+              show_epic
+
+              expect(response.media_type).to eq 'text/html'
+              expect(response).to render_template 'groups/epics/show'
+            end
+          end
+
+          it 'logs the view with Gitlab::Search::RecentEpics' do
+            recent_epics_double = instance_double(::Gitlab::Search::RecentEpics, log_view: nil)
+            expect(::Gitlab::Search::RecentEpics).to receive(:new).with(user: user).and_return(recent_epics_double)
+
+            show_epic
+
+            expect(response).to be_successful
+            expect(recent_epics_double).to have_received(:log_view).with(epic)
+          end
         end
 
         context 'with unauthorized user' do

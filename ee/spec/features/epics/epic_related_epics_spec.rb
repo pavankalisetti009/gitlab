@@ -13,6 +13,7 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
 
   def visit_epic(related_epics: true)
     group.add_developer(user)
+    stub_feature_flags(work_item_epics_rollout: false)
     stub_licensed_features(epics: true, related_epics: related_epics)
     sign_in(user)
     visit group_epic_path(group, epic1)

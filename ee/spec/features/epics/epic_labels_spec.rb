@@ -10,6 +10,7 @@ RSpec.describe 'Assign labels to an epic', :js, feature_category: :portfolio_man
 
   before do
     group.add_developer(user)
+    stub_feature_flags(work_item_epics_rollout: false)
     stub_licensed_features(epics: true)
     sign_in(user)
 

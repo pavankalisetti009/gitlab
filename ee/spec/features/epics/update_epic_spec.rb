@@ -20,6 +20,7 @@ RSpec.describe 'Update Epic', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
   end
 
   context 'when user who is not a group member displays the epic' do
