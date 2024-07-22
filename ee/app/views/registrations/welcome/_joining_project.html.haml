@@ -3,15 +3,16 @@
 .row
   .form-group.col-sm-12
     = label_tag :joining_project, _('What would you like to do?'), class: 'label-bold'
-    .form-check.gl-mb-2
-      = radio_button_tag :joining_project, false, false, required: true, class: 'form-check-input'
-      = label_tag :joining_project_false, class: 'form-check-label normal', data: { testid: 'create-a-new-project-radio'} do
-        = _('Create a new project')
-        .form-text.gl-text-gray-600
-          = _('Create a new project on GitLab. Store your files, plan your work, and collaborate on code.')
-    .form-check
-      = radio_button_tag :joining_project, true, false, required: true, class: 'form-check-input'
-      = label_tag :joining_project_true, class: 'form-check-label normal' do
-        = _('Join a project')
-        .form-text.gl-text-gray-600
-          = _('Join your team on GitLab and contribute to an existing project')
+    .gl-mb-2
+      = render Pajamas::RadioTagComponent.new(name: :joining_project,
+          label: _('Create a new project'),
+          help_text: _('Create a new project on GitLab. Store your files, plan your work, and collaborate on code.'),
+          value: false,
+          radio_options: { required: true, class: 'js-track-error', data: { track_action_for_errors: 'welcome_form' } },
+          label_options: { data: { testid: 'create-a-new-project-radio' } })
+    %div
+      = render Pajamas::RadioTagComponent.new(name: :joining_project,
+          label: _('Join a project'),
+          help_text: _('Join your team on GitLab and contribute to an existing project'),
+          value: true,
+          radio_options: { required: true })
