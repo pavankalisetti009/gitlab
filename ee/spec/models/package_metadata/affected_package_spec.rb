@@ -115,4 +115,27 @@ RSpec.describe PackageMetadata::AffectedPackage, type: :model, feature_category:
       end
     end
   end
+
+  describe '.for_occurrences' do
+    let_it_be(:occurrences) { create_list(:sbom_occurrence, 3) }
+    let_it_be(:unrelated_occurrence) { create(:sbom_occurrence) }
+    let_it_be(:unrelated_affected_package) do
+      create(:pm_affected_package, purl_type: unrelated_occurrence.purl_type,
+        package_name: unrelated_occurrence.component_name)
+    end
+
+    let_it_be(:affected_packages) do
+      occurrences.map do |occurrence|
+        create(:pm_affected_package, purl_type: occurrence.purl_type, package_name: occurrence.component_name)
+      end
+    end
+
+    it 'returns only related occurrences' do
+      expect(described_class.for_occurrences(occurrences)).to eq(affected_packages)
+    end
+
+    it 'does not return unrelated occurrences' do
+      expect(described_class.for_occurrences(occurrences)).not_to include(unrelated_affected_package)
+    end
+  end
 end
