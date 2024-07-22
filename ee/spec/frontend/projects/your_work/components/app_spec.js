@@ -1,39 +1,44 @@
-import { GlTab, GlSprintf } from '@gitlab/ui';
-import { nextTick } from 'vue';
-import { TEST_HOST } from 'helpers/test_constants';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import YourWorkProjectsApp from '~/projects/your_work/components/app.vue';
-import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
+import { createRouter } from '~/projects/your_work';
+import { ROOT_ROUTE_NAME, INACTIVE_TAB } from 'ee/projects/your_work/constants';
 
-jest.mock('~/alert');
+Vue.use(VueRouter);
 
-describe('YourWorkProjectsApp', () => {
+const defaultRoute = {
+  name: ROOT_ROUTE_NAME,
+};
+
+describe('YourWorkProjectsAppEE', () => {
   let wrapper;
+  let router;
 
-  const createComponent = () => {
-    wrapper = shallowMountExtended(YourWorkProjectsApp, {
-      stubs: {
-        GlSprintf,
-        GlTab,
-      },
+  const createComponent = ({ route = defaultRoute } = {}) => {
+    router = createRouter();
+    router.push(route);
+
+    wrapper = mountExtended(YourWorkProjectsApp, {
+      router,
     });
   };
+  const findActiveTab = () => wrapper.find('.tab-pane.active');
+
+  afterEach(() => {
+    router = null;
+  });
 
   describe.each`
-    path                             | expectedIndex
-    ${'/dashboard/projects/removed'} | ${4}
-  `('onMount when path is $path', ({ path, expectedIndex }) => {
-    useMockLocationHelper();
-    beforeEach(async () => {
-      delete window.location;
-      window.location = new URL(`${TEST_HOST}/${path}`);
-
-      createComponent();
-      await nextTick();
+    name                  | expectedTab
+    ${INACTIVE_TAB.value} | ${INACTIVE_TAB}
+  `('onMount when route name is $name', ({ name, expectedTab }) => {
+    beforeEach(() => {
+      createComponent({ route: { name } });
     });
 
     it('initializes to the correct tab', () => {
-      expect(wrapper.vm.activeTabIndex).toBe(expectedIndex);
+      expect(findActiveTab().text()).toContain(expectedTab.text);
     });
   });
 });
