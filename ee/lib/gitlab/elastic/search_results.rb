@@ -474,10 +474,19 @@ module Gitlab
       end
 
       def issue_aggregations
-        strong_memoize(:issue_aggregations) do
-          Issue.__elasticsearch__.issue_aggregations(query, base_options)
+        if Feature.disabled?(:search_issue_refactor, current_user)
+          return Issue.__elasticsearch__.issue_aggregations(query, base_options)
         end
+
+        options = base_options.merge(aggregation: true, klass: Issue)
+
+        issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
+        results = ::Gitlab::Search::Client.execute_search(query: issue_query, options: options) do |response|
+          ::Search::Elastic::ResponseMapper.new(response, options)
+        end
+        ::Gitlab::Search::AggregationParser.call(results.aggregations)
       end
+      strong_memoize_attr :issue_aggregations
 
       def allowed_to_read_users?
         Ability.allowed?(current_user, :read_users_list)

@@ -90,17 +90,17 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     subject(:aggregations) { results.aggregations(scope) }
 
     where(:scope, :expected_aggregation_name, :feature_flag) do
-      'projects'       | nil        | false
-      'milestones'     | nil        | false
-      'notes'          | nil        | false
-      'issues'         | 'labels'   | false
-      'merge_requests' | nil        | false
-      'wiki_blobs'     | nil        | false
-      'commits'        | nil        | false
-      'users'          | nil        | false
-      'epics'          | nil        | false
-      'unknown'        | nil        | false
-      'blobs'          | 'language' | false
+      'projects' | nil | false
+      'milestones' | nil | false
+      'notes' | nil | false
+      'issues' | 'labels' | false
+      'merge_requests' | nil | false
+      'wiki_blobs' | nil | false
+      'commits' | nil | false
+      'users' | nil | false
+      'epics' | nil | false
+      'unknown' | nil | false
+      'blobs' | 'language' | false
     end
 
     with_them do
@@ -113,6 +113,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         end
 
         it_behaves_like 'loads expected aggregations'
+
+        context 'when search_issue_refactor flag is false' do
+          before do
+            stub_feature_flags(search_issue_refactor: false)
+          end
+
+          it_behaves_like 'loads expected aggregations'
+        end
       end
 
       context 'when feature flag is disabled for user' do
@@ -124,6 +132,14 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         end
 
         it_behaves_like 'loads expected aggregations'
+
+        context 'when search_issue_refactor flag is false' do
+          before do
+            stub_feature_flags(search_issue_refactor: false)
+          end
+
+          it_behaves_like 'loads expected aggregations'
+        end
       end
     end
   end
@@ -1678,10 +1694,13 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     let(:results) { described_class.new(user, query, limit_project_ids) }
     let(:response_mapper) { instance_double(::Search::Elastic::ResponseMapper, failed?: true) }
 
+    before do
+      allow(results).to receive(:issues).and_return(response_mapper)
+    end
+
     context 'when search_issue_refactor feature flag is false' do
       before do
         stub_feature_flags(search_issue_refactor: false)
-        allow(results).to receive(:issues).and_return(response_mapper)
       end
 
       context 'for issues scope' do
@@ -1701,26 +1720,19 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       end
     end
 
-    context 'when search_issue_refactor feature flag is true' do
-      before do
-        stub_feature_flags(search_issue_refactor: true)
-        allow(results).to receive(:issues).and_return(response_mapper)
+    context 'for issues scope' do
+      let(:scope) { 'issues' }
+
+      it 'returns failed from the response mapper' do
+        expect(results.failed?(scope)).to eq true
       end
+    end
 
-      context 'for issues scope' do
-        let(:scope) { 'issues' }
+    context 'for other scopes' do
+      let(:scope) { 'blobs' }
 
-        it 'returns failed from the response mapper' do
-          expect(results.failed?(scope)).to eq true
-        end
-      end
-
-      context 'for other scopes' do
-        let(:scope) { 'blobs' }
-
-        it 'returns false' do
-          expect(results.failed?(scope)).to eq false
-        end
+      it 'returns false' do
+        expect(results.failed?(scope)).to eq false
       end
     end
   end
@@ -1729,10 +1741,13 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     let(:results) { described_class.new(user, query, limit_project_ids) }
     let(:response_mapper) { instance_double(::Search::Elastic::ResponseMapper, error: 'An error occurred') }
 
+    before do
+      allow(results).to receive(:issues).and_return(response_mapper)
+    end
+
     context 'when search_issue_refactor feature flag is false' do
       before do
         stub_feature_flags(search_issue_refactor: false)
-        allow(results).to receive(:issues).and_return(response_mapper)
       end
 
       context 'for issues scope' do
@@ -1752,26 +1767,19 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       end
     end
 
-    context 'when search_issue_refactor feature flag is true' do
-      before do
-        stub_feature_flags(search_issue_refactor: true)
-        allow(results).to receive(:issues).and_return(response_mapper)
+    context 'for issues scope' do
+      let(:scope) { 'issues' }
+
+      it 'returns the error from the response mapper' do
+        expect(results.error(scope)).to eq 'An error occurred'
       end
+    end
 
-      context 'for issues scope' do
-        let(:scope) { 'issues' }
+    context 'for other scopes' do
+      let(:scope) { 'blobs' }
 
-        it 'returns the error from the response mapper' do
-          expect(results.error(scope)).to eq 'An error occurred'
-        end
-      end
-
-      context 'for other scopes' do
-        let(:scope) { 'blobs' }
-
-        it 'returns nil' do
-          expect(results.error(scope)).to be_nil
-        end
+      it 'returns nil' do
+        expect(results.error(scope)).to be_nil
       end
     end
   end

@@ -18,6 +18,8 @@ module Search
         sql_records = klass.id_in(ids)
         sql_records = sql_records.preload_search_data
         sql_records = sql_records.public_send(preload_method) if preload_method # rubocop:disable GitlabSecurity/PublicSend -- needed for generic preload method
+        # sorted in memory because database sort is not faster due to querying by id only
+        # and the records will always be a small set of data (< 100 records)
         sql_records.sort_by { |record| results.index { |hit| hit['_source']['id'].to_s == record.id.to_s } }
       end
 

@@ -75,7 +75,7 @@ module Search
         end
       end
 
-      def aggregations(_scope = 'blobs')
+      def aggregations(*)
         []
       end
 

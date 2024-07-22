@@ -8,7 +8,7 @@ module Gitlab
           return [] unless aggregations
 
           aggregations.keys.map do |key|
-            buckets = aggregations[key].buckets
+            buckets = aggregations[key]['buckets']
 
             buckets = add_extra_data_for_labels(buckets) if key == 'labels'
 
