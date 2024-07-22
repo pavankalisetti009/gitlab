@@ -23723,6 +23723,9 @@ msgstr ""
 msgid "GitLab Duo Pro seats"
 msgstr ""
 
+msgid "GitLab Duo didn't find any reviewable files. Code Review request skipped."
+msgstr ""
+
 msgid "GitLab Enterprise Edition"
 msgstr ""
 
