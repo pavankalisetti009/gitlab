@@ -152,7 +152,7 @@ export default {
         v-model.trim="form.fields.activationCode.value"
         v-validation:[form.showValidation]
         class="gl-mb-4"
-        data-testid="activation-code"
+        data-testid="activation-code-field"
         :disabled="isLoading"
         :placeholder="$options.i18n.pasteActivationCode"
         :state="form.fields.activationCode.state"
@@ -175,6 +175,7 @@ export default {
         v-validation:[form.showValidation]
         :state="form.fields.terms.state"
         :validation-message="$options.i18n.acceptTermsFeedback"
+        data-testid="subscription-terms-checkbox"
         name="terms"
         required
       >
@@ -193,7 +194,7 @@ export default {
       :loading="isLoading"
       category="primary"
       class="gl-mt-6 js-no-auto-disable"
-      data-testid="activate"
+      data-testid="activate-button"
       type="submit"
       variant="confirm"
     >

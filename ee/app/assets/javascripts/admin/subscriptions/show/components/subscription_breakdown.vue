@@ -134,7 +134,7 @@ export default {
     },
     actionPrimary: {
       text: i18n.removeLicense,
-      attributes: { variant: 'danger', 'data-testid': 'confirm-remove-license' },
+      attributes: { variant: 'danger', 'data-testid': 'confirm-remove-license-button' },
     },
   },
   isDotCom: gon.dot_com,
@@ -165,7 +165,7 @@ export default {
         :details-fields="subscriptionDetailsFields"
         :header-text="$options.i18n.subscriptionDetailsHeaderText"
         :subscription="subscription"
-        data-testid="subscription-details"
+        data-testid="subscription-details-card"
       >
         <template v-if="shouldShowFooter" #footer>
           <div
@@ -186,7 +186,7 @@ export default {
                 :title="$options.i18n.removeLicenseButtonLabel"
                 :aria-label="$options.i18n.removeLicenseButtonLabel"
                 variant="danger"
-                data-testid="remove-license"
+                data-testid="remove-license-button"
               >
                 {{ $options.i18n.removeLicense }}
               </gl-button>

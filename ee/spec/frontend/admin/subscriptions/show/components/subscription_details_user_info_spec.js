@@ -14,7 +14,7 @@ describe('Subscription Details User Info', () => {
   const findBillableUsersCard = () => wrapper.findByTestId('billable-users');
   const findMaximumUsersCard = () => wrapper.findByTestId('maximum-users');
   const findUsersOverLicenseCard = () => wrapper.findByTestId('users-over-license');
-  const findSubscriptionText = () => wrapper.findByTestId('users-in-subscription').text();
+  const findSubscriptionText = () => wrapper.findByTestId('users-in-subscription-content').text();
 
   const createComponent = ({ props = {}, stubGlSprintf = false } = {}) => {
     wrapper = extendedWrapper(

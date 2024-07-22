@@ -18,10 +18,15 @@ module QA
       EE::Resource::License.delete_all
 
       Flow::Login.sign_in_as_admin
-      Gitlab::Page::Admin::Subscription.perform do |subscription|
-        subscription.visit
+
+      Runtime::Browser.visit(:gitlab, EE::Page::Admin::Subscription)
+
+      EE::Page::Admin::Subscription.perform do |subscription|
         # workaround for UI bug https://gitlab.com/gitlab-org/gitlab/-/issues/365305
-        expect { subscription.no_active_subscription_title? }.to eventually_be_truthy.within(max_attempts: 60, reload_page: page)
+        expect { subscription.has_no_active_subscription_title? }
+          .to eventually_be_truthy.within(max_attempts: 60, reload_page: page)
+
+        subscription.activate_license(Runtime::Env.ee_activation_code)
       end
     end
 
@@ -31,10 +36,9 @@ module QA
     end
 
     context 'Cloud activation code' do
-      it 'activates instance with correct subscription details', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350294' do
-        activate_license
-
-        Gitlab::Page::Admin::Subscription.perform do |subscription|
+      it 'activates instance with correct subscription details',
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350294' do
+        EE::Page::Admin::Subscription.perform do |subscription|
           aggregate_failures do
             expect { subscription.subscription_details? }.to eventually_be_truthy.within(max_duration: 60)
             expect(subscription.name).to eq(user)
@@ -48,27 +52,17 @@ module QA
     end
 
     context 'Remove cloud subscription' do
-      before do
-        activate_license
-      end
-
-      it 'successfully removes a cloud activation and shows flash notice', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/364831' do
-        Gitlab::Page::Admin::Subscription.perform do |subscription|
+      it 'successfully removes a cloud activation and shows flash notice',
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/364831' do
+        EE::Page::Admin::Subscription.perform do |subscription|
           subscription.remove_license_file
 
-          expect { subscription.no_valid_license_alert? }.to eventually_be_truthy.within(max_duration: 60, max_attempts: 30)
-          expect { subscription.no_active_subscription_title? }.to eventually_be_truthy.within(max_duration: 60, max_attempts: 30, reload_page: page)
+          expect { subscription.has_no_valid_license_alert? }
+            .to eventually_be_truthy.within(max_duration: 60, max_attempts: 30)
+
+          expect { subscription.has_no_active_subscription_title? }
+            .to eventually_be_truthy.within(max_duration: 60, max_attempts: 30, reload_page: page)
         end
-      end
-    end
-
-    private
-
-    def activate_license
-      Gitlab::Page::Admin::Subscription.perform do |subscription|
-        subscription.activation_code = Runtime::Env.ee_activation_code
-        subscription.accept_terms
-        subscription.activate
       end
     end
   end

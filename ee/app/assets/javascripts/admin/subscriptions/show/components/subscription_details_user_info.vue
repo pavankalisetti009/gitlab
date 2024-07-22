@@ -66,7 +66,9 @@ export default {
     <gl-card>
       <header>
         <h5 class="gl-font-normal gl-text-secondary gl-mt-0">{{ usersInSubscriptionTitle }}</h5>
-        <h2 class="!gl-mt-0" data-testid="users-in-subscription">{{ usersInSubscription }}</h2>
+        <h2 class="!gl-mt-0" data-testid="users-in-subscription-content">
+          {{ usersInSubscription }}
+        </h2>
       </header>
       <div v-if="isUsersInSubscriptionVisible" data-testid="users-in-subscription-desc">
         {{

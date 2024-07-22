@@ -113,7 +113,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_
               }
             }.to_json, headers: { 'Content-Type' => 'application/json' })
 
-          page.within(find_by_testid('subscription-details', match: :first)) do
+          page.within(find_by_testid('subscription-details-card', match: :first)) do
             click_button('Add activation code')
           end
 
@@ -142,7 +142,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_
 
     context 'when activating another subscription' do
       before do
-        page.within(find_by_testid('subscription-details', match: :first)) do
+        page.within(find_by_testid('subscription-details-card', match: :first)) do
           click_button('Add activation code')
         end
       end
