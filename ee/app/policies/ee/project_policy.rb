@@ -254,8 +254,7 @@ module EE
       end
 
       condition(:observability_enabled) do
-        # temporarily checking :observability_tracing for backward compability until all existing users have the new FF enabled
-        (::Feature.enabled?(:observability_tracing, @subject.root_namespace) || ::Feature.enabled?(:observability_features, @subject.root_namespace)) &&
+        ::Feature.enabled?(:observability_features, @subject.root_namespace) &&
           @subject.licensed_feature_available?(:observability)
       end
 

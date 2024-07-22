@@ -57,7 +57,6 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       describe 'when feature flag is disabled' do
         before do
           stub_feature_flags(observability_features: false)
-          stub_feature_flags(observability_tracing: false)
         end
 
         it { is_expected.to be_nil }
@@ -93,7 +92,6 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       describe 'when feature flag is disabled' do
         before do
           stub_feature_flags(observability_features: false)
-          stub_feature_flags(observability_tracing: false)
         end
 
         it { is_expected.to be_nil }
@@ -129,7 +127,6 @@ RSpec.describe Sidebars::Projects::Menus::MonitorMenu do
       describe 'when feature flag is disabled' do
         before do
           stub_feature_flags(observability_features: false)
-          stub_feature_flags(observability_tracing: false)
         end
 
         it { is_expected.to be_nil }
