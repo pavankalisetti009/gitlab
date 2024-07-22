@@ -11,5 +11,11 @@ namespace :gitlab do
     task enable_feature_flags: :gitlab_environment do
       Gitlab::Duo::Developments::FeatureFlagEnabler.execute
     end
+
+    desc 'GitLab | Duo | Create evaluation-ready group'
+    task :setup_evaluation, [:root_group_path] => :environment do |_, args|
+      group = Gitlab::Duo::Developments::Setup.new(args).execute
+      Gitlab::Duo::Developments::SetupGroupsForModelEvaluation.new(group).execute
+    end
   end
 end

@@ -1,0 +1,173 @@
+# frozen_string_literal: true
+
+module Gitlab
+  module Duo
+    module Developments
+      class SetupGroupsForModelEvaluation
+        STRUCTURE = {
+          'gitlab_com' => { projects: ['www-gitlab-com'], name: 'gitlab-com' },
+          'gitlab_org' => { projects: ['gitlab'], name: 'gitlab-org' }
+        }.freeze
+        DOWNLOAD_FOLDER = 'tmp'
+        SAMPLES_FOLDER = 'duo_chat_samples'
+        GROUP_FILE_NAME = '01_group.tar.gz'
+        FILE_NAME = 'duo_chat_samples.tar.gz'
+        DOWNLOAD_URL = 'https://gitlab.com/gitlab-org/ai-powered/datasets/-/package_files/135727282/download'
+        GROUP_IMPORT_URL = '/api/v4/groups/import'
+        PROJECT_IMPORT_URL = '/api/v4/projects/import'
+
+        def initialize(group)
+          @main_group = group
+          @current_user = User.find_by(username: 'root') # rubocop:disable CodeReuse/ActiveRecord -- we need admin user
+        end
+
+        def execute
+          ensure_dev_mode!
+          set_token!
+          ensure_server_running!
+          download_and_unpack_file
+          create_subgroups
+          create_subprojects
+          delete_temporary_directory!
+          clean_up_token!
+
+          print_output
+        end
+
+        private
+
+        attr_reader :main_group, :current_user, :token_value, :token
+
+        # rubocop:disable Style/GuardClause -- Keep it explicit
+        def ensure_dev_mode!
+          unless ::Gitlab.dev_or_test_env?
+            raise <<~MSG
+              Setup can only be performed in development or test environment, however, the current environment is #{ENV['RAILS_ENV']}.
+            MSG
+          end
+        end
+        # rubocop:enable Style/GuardClause
+
+        def set_token!
+          @token = current_user.personal_access_tokens.create(scopes: ['api'], name: 'Automation token',
+            expires_at: 1.day.from_now)
+          @token_value = "token-string-#{SecureRandom.hex(10)}"
+          @token.set_token(token_value)
+          @token.save!
+        end
+
+        def clean_up_token!
+          token.destroy!
+        end
+
+        def ensure_server_running!
+          return true if Gitlab::HTTP.get(instance_url).success?
+
+          raise 'Server is not running, please start your GitLab server'
+        end
+
+        def download_and_unpack_file
+          download_path = Rails.root.join(DOWNLOAD_FOLDER, FILE_NAME)
+
+          download_file(DOWNLOAD_URL, download_path)
+          unzip_file(DOWNLOAD_FOLDER, FILE_NAME)
+
+          FileUtils.rm(download_path)
+        end
+
+        def download_file(url, path)
+          File.open(path, 'wb') do |file|
+            file.write(Gitlab::HTTP.get(url).parsed_response)
+          end
+        end
+
+        def unzip_file(download_folder, file_name)
+          Dir.chdir(Rails.root.join(download_folder)) do
+            `tar -xzvf #{file_name}`
+          end
+        end
+
+        def create_subprojects
+          STRUCTURE.each do |name, structure|
+            structure[:projects].each do |project|
+              project_file_name = "02_#{project.tr('-', '_')}.tar.gz"
+              file = Rails.root.join(DOWNLOAD_FOLDER, SAMPLES_FOLDER, name, project_file_name)
+              namespace = main_group.children.find_by(name: structure[:name]) # rubocop:disable CodeReuse/ActiveRecord -- we need to find a group by name
+              create_subproject(name: project, file: file, namespace_id: namespace.id)
+            end
+          end
+        end
+
+        def create_subgroups
+          STRUCTURE.each do |name, structure|
+            file = Rails.root.join(DOWNLOAD_FOLDER, SAMPLES_FOLDER, name, GROUP_FILE_NAME)
+            create_subgroup(name: structure[:name], file: file)
+          end
+        end
+
+        def create_subgroup(params)
+          url = "#{instance_url}#{GROUP_IMPORT_URL}"
+
+          headers = {
+            'PRIVATE-TOKEN' => token_value
+          }
+          body = {
+            name: params[:name],
+            path: params[:name],
+            file: File.new(params[:file]),
+            parent_id: main_group.id
+          }
+
+          response = Gitlab::HTTP.post(url, headers: headers, body: body)
+
+          puts "API response for #{params[:name]} import"
+          puts response.body
+        end
+
+        def create_subproject(params)
+          url = "#{instance_url}#{PROJECT_IMPORT_URL}"
+
+          headers = {
+            'PRIVATE-TOKEN' => token_value
+          }
+          body = {
+            name: params[:name],
+            path: params[:name],
+            file: File.new(params[:file]),
+            namespace: params[:namespace_id]
+          }
+
+          response = Gitlab::HTTP.post(url, headers: headers, body: body)
+
+          puts "API response for #{params[:name]} import"
+          puts response.body
+        end
+
+        def instance_url
+          "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:#{Gitlab.config.gitlab.port}"
+        end
+
+        def delete_temporary_directory!
+          FileUtils.rm_rf(Rails.root.join(DOWNLOAD_FOLDER, SAMPLES_FOLDER))
+        end
+
+        def print_output
+          puts <<~MSG
+            ----------------------------------------
+            Setup for evaluation Complete!
+            ----------------------------------------
+
+            Visit "#{Gitlab.config.gitlab.protocol}://#{Gitlab.config.gitlab.host}:#{Gitlab.config.gitlab.port}/#{main_group.full_path}"
+            and please see if the subgroups structure looks like:
+            |
+            - gitlab-com
+            |   - www-gitlab-com
+            |
+            - gitlab-org
+            |   - gitlab
+          MSG
+        end
+      end
+    end
+  end
+end

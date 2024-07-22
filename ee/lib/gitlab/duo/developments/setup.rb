@@ -205,6 +205,8 @@ module Gitlab
 
             For more development guidelines, see https://docs.gitlab.com/ee/development/ai_features/index.html.
           MSG
+
+          Group.find_by_full_path(@namespace)
         end
       end
     end
