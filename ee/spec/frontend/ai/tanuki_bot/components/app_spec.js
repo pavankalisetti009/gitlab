@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import Vuex from 'vuex';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription } from 'mock-apollo-client';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import TanukiBotChatApp from 'ee/ai/tanuki_bot/components/app.vue';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
 import {
@@ -23,7 +24,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { getMarkdown } from '~/rest_api';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import {
   MOCK_USER_MESSAGE,
   MOCK_USER_ID,
@@ -114,6 +115,10 @@ describe('GitLab Duo Chat', () => {
     getMarkdown.mockImplementation(({ text }) => Promise.resolve({ data: { html: text } }));
   });
 
+  afterEach(() => {
+    duoChatGlobalState.commands = [];
+  });
+
   it('generates unique `clientSubscriptionId` using v4', () => {
     createComponent();
     expect(uuidv4).toHaveBeenCalled();
@@ -147,7 +152,7 @@ describe('GitLab Duo Chat', () => {
   describe('rendering', () => {
     beforeEach(() => {
       createComponent();
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
     });
 
     it('renders the DuoChat component', () => {
@@ -155,20 +160,46 @@ describe('GitLab Duo Chat', () => {
     });
 
     it('sets correct `badge-type` and `badge-help-page-url` props on the chat component', () => {
-      createComponent();
       expect(findGlDuoChat().props('badgeType')).toBe(null);
     });
 
     it('renders the duo-chat-callout component', () => {
-      createComponent();
       expect(findCallout().exists()).toBe(true);
+    });
+  });
+
+  describe('when new commands are added to the global state', () => {
+    beforeEach(() => {
+      createComponent();
+      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
+      performance.mark = jest.fn();
+    });
+
+    it('calls the chat mutation', async () => {
+      expect(chatMutationHandlerMock).toHaveBeenCalledTimes(0);
+
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+      await waitForPromises();
+
+      expect(chatMutationHandlerMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('uses the command resourceId', async () => {
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: 'command::1' });
+      await waitForPromises();
+
+      expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+        clientSubscriptionId: '123',
+        question: '/troubleshoot',
+        resourceId: 'command::1',
+      });
     });
   });
 
   describe('events handling', () => {
     beforeEach(() => {
       createComponent();
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
     });
 
     describe('@chat-hidden', () => {
@@ -178,7 +209,7 @@ describe('GitLab Duo Chat', () => {
       });
 
       it('closes the chat on @chat-hidden', () => {
-        expect(helpCenterState.showTanukiBotChatDrawer).toBe(false);
+        expect(duoChatGlobalState.isShown).toBe(false);
         expect(findGlDuoChat().exists()).toBe(false);
       });
     });
@@ -342,7 +373,7 @@ describe('GitLab Duo Chat', () => {
 
     beforeEach(async () => {
       queryHandlerMock.mockRejectedValue(new Error(errorText));
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
     });
@@ -355,7 +386,7 @@ describe('GitLab Duo Chat', () => {
     describe('when mutation fails', () => {
       beforeEach(async () => {
         chatMutationHandlerMock.mockRejectedValue(new Error(errorText));
-        helpCenterState.showTanukiBotChatDrawer = true;
+        duoChatGlobalState.isShown = true;
         createComponent();
         await waitForPromises();
         findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
@@ -393,15 +424,15 @@ describe('GitLab Duo Chat', () => {
     });
 
     afterEach(() => {
-      helpCenterState.showTanukiBotChatDrawer = false;
+      duoChatGlobalState.isShown = false;
       if (wrapper) {
         wrapper.destroy();
       }
       jest.clearAllMocks();
     });
 
-    it('activates subscriptions when showTanukiBotChatDrawer is true', async () => {
-      helpCenterState.showTanukiBotChatDrawer = true;
+    it('activates subscriptions when isShown is true', async () => {
+      duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
 
@@ -409,8 +440,8 @@ describe('GitLab Duo Chat', () => {
       expect(mockSubscriptionStream.closed).toBe(false);
     });
 
-    it('does not activate subscriptions when showTanukiBotChatDrawer is false', async () => {
-      helpCenterState.showTanukiBotChatDrawer = false;
+    it('does not activate subscriptions when isShown is false', async () => {
+      duoChatGlobalState.isShown = false;
       createComponent();
       await waitForPromises();
 
@@ -424,7 +455,7 @@ describe('GitLab Duo Chat', () => {
       const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, requestId);
       const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
 
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
 
       createComponent();
       await waitForPromises();
@@ -454,11 +485,40 @@ describe('GitLab Duo Chat', () => {
       expect(actionSpies.addDuoChatMessage).toHaveBeenCalledTimes(2);
     });
 
+    it('clears the commands when streaming is done', async () => {
+      const requestId = '123';
+      const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
+      const successResponse = GENERATE_MOCK_TANUKI_RES('', requestId);
+
+      duoChatGlobalState.isShown = true;
+
+      expect(duoChatGlobalState.commands).toHaveLength(0);
+      sendDuoChatCommand({ question: '/troubleshoot', resourceId: '1' });
+      expect(duoChatGlobalState.commands).toHaveLength(1);
+
+      createComponent();
+      await waitForPromises();
+
+      // message chunk streaming in
+      mockSubscriptionStream.next(firstChunk);
+      await waitForPromises();
+      // No changes to commands
+      expect(duoChatGlobalState.commands).toHaveLength(1);
+
+      // full message being sent
+      mockSubscriptionComplete.next(successResponse);
+      await waitForPromises();
+      await waitForPromises();
+
+      // commands have been cleared out
+      expect(duoChatGlobalState.commands).toHaveLength(0);
+    });
+
     it('continues to invoke addDuoChatMessage when a new message chunk arrives with a distinct request ID, even after a complete message has been received', async () => {
       const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1);
       const firstChunkNewRequest = MOCK_CHUNK_MESSAGE('first chunk', 2, 2);
 
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
 
@@ -489,7 +549,7 @@ describe('GitLab Duo Chat', () => {
       const firstChunk = MOCK_CHUNK_MESSAGE('first chunk', 1, requestId);
       const secondChunk = MOCK_CHUNK_MESSAGE('second chunk', 2, requestId);
 
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
 
       createComponent({
         initialState: {
@@ -524,7 +584,7 @@ describe('GitLab Duo Chat', () => {
     it('stops adding new message when requestId was canceled', async () => {
       const requestId = '123';
 
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
       createComponent({
         initialState: {
           messages: [
@@ -548,7 +608,7 @@ describe('GitLab Duo Chat', () => {
     it('tracks performance metrics correctly when a chunk is received', async () => {
       const chunkMessage = MOCK_CHUNK_MESSAGE('chunk content', 1, 'requestId-123');
 
-      helpCenterState.showTanukiBotChatDrawer = true;
+      duoChatGlobalState.isShown = true;
       createComponent();
 
       await waitForPromises();

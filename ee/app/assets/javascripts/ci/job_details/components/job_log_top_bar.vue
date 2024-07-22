@@ -2,15 +2,13 @@
 import { GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
-import { createAlert } from '~/alert';
-import { s__ } from '~/locale';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_CI_BUILD } from '~/graphql_shared/constants';
 import CeJobLogTopBar from '~/ci/job_details/components/job_log_top_bar.vue';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import RootCauseAnalysis from './sidebar/root_cause_analysis/root_cause_analysis_app.vue';
 
 export default {
@@ -100,7 +98,7 @@ export default {
       return convertToGraphQLId(TYPENAME_CI_BUILD, this.job.id);
     },
     duoDrawerOpen() {
-      return helpCenterState.showTanukiBotChatDrawer;
+      return duoChatGlobalState.isShown;
     },
     ...mapState(['job', 'isLoading']),
   },
@@ -124,23 +122,10 @@ export default {
       this.$emit('exitFullscreen');
     },
     callDuo() {
-      helpCenterState.showTanukiBotChatDrawer = true;
-
-      this.$apollo
-        .mutate({
-          mutation: chatMutation,
-          variables: {
-            question: '/troubleshoot',
-            resourceId: this.jobGid,
-          },
-        })
-        .catch((error) => {
-          createAlert({
-            message: s__('AI|An error occurred while troubleshooting the failed job.'),
-            captureError: true,
-            error,
-          });
-        });
+      sendDuoChatCommand({
+        question: '/troubleshoot',
+        resourceId: this.jobId,
+      });
     },
   },
 };

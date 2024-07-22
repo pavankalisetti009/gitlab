@@ -6,7 +6,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { __, s__ } from '~/locale';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { clearDuoChatCommands } from 'ee/ai/utils';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResponseStreamSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response_stream.subscription.graphql';
 import DuoChatCallout from 'ee/ai/components/global_callout/duo_chat_callout.vue';
@@ -78,6 +79,7 @@ export default {
             this.addDuoChatMessage(data.aiCompletionResponse);
             if (data.aiCompletionResponse.role.toLowerCase() === MESSAGE_TYPES.TANUKI) {
               this.responseCompleted = requestId;
+              clearDuoChatCommands();
             }
           }
         },
@@ -85,7 +87,7 @@ export default {
           this.error = err.toString();
         },
         skip() {
-          return !this.helpCenterState.showTanukiBotChatDrawer;
+          return !this.duoChatGlobalState.isShown;
         },
       },
       aiCompletionResponseStream: {
@@ -93,7 +95,7 @@ export default {
         variables() {
           return {
             userId: this.userId,
-            resourceId: this.resourceId || this.userId,
+            resourceId: this.computedResourceId,
             clientSubscriptionId: this.clientSubscriptionId,
           };
         },
@@ -123,7 +125,7 @@ export default {
           this.error = err.toString();
         },
         skip() {
-          return !this.helpCenterState.showTanukiBotChatDrawer;
+          return !this.duoChatGlobalState.isShown;
         },
       },
     },
@@ -141,7 +143,7 @@ export default {
   },
   data() {
     return {
-      helpCenterState,
+      duoChatGlobalState,
       clientSubscriptionId: uuidv4(),
       toolName: i18n.GITLAB_DUO,
       error: '',
@@ -152,6 +154,26 @@ export default {
   },
   computed: {
     ...mapState(['loading', 'messages']),
+    computedResourceId() {
+      if (this.hasCommands) {
+        return this.duoChatGlobalState.commands[0].resourceId;
+      }
+
+      return this.resourceId || this.userId;
+    },
+    hasCommands() {
+      return this.duoChatGlobalState.commands.length > 0;
+    },
+  },
+  watch: {
+    'duoChatGlobalState.commands': {
+      handler(commands) {
+        if (commands?.length) {
+          const { question, variables } = commands[0];
+          this.onSendChatPrompt(question, variables);
+        }
+      },
+    },
   },
   methods: {
     ...mapActions(['addDuoChatMessage', 'setMessages', 'setLoading']),
@@ -167,7 +189,7 @@ export default {
       this.cancelledRequestIds.push(this.messages[this.messages.length - 1].requestId);
       this.setLoading(false);
     },
-    onSendChatPrompt(question) {
+    onSendChatPrompt(question, variables = {}) {
       this.responseCompleted = undefined;
       performance.mark('prompt-sent');
       this.isResponseTracked = false;
@@ -180,8 +202,9 @@ export default {
           mutation: chatMutation,
           variables: {
             question,
-            resourceId: this.resourceId || this.userId,
+            resourceId: this.computedResourceId,
             clientSubscriptionId: this.clientSubscriptionId,
+            ...variables,
           },
         })
         .then(({ data: { aiAction = {} } = {} }) => {
@@ -208,10 +231,10 @@ export default {
         });
     },
     onChatClose() {
-      this.helpCenterState.showTanukiBotChatDrawer = false;
+      this.duoChatGlobalState.isShown = false;
     },
     onCalloutDismissed() {
-      this.helpCenterState.showTanukiBotChatDrawer = true;
+      this.duoChatGlobalState.isShown = true;
     },
     onTrackFeedback({ feedbackChoices, didWhat, improveWhat, message } = {}) {
       if (message) {
@@ -255,7 +278,7 @@ export default {
 <template>
   <div>
     <gl-duo-chat
-      v-if="helpCenterState.showTanukiBotChatDrawer"
+      v-if="duoChatGlobalState.isShown"
       id="duo-chat"
       :title="$options.i18n.gitlabChat"
       :messages="messages"

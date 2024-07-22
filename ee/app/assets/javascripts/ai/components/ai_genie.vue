@@ -1,19 +1,16 @@
 <script>
 import { debounce } from 'lodash';
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { createAlert } from '~/alert';
-import { s__ } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import LineHighlighter from '~/blob/line_highlighter';
-import { helpCenterState } from '~/super_sidebar/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import {
   i18n,
   AI_GENIE_DEBOUNCE,
   EXPLAIN_CODE_TRACKING_EVENT_NAME,
   GENIE_CHAT_EXPLAIN_MESSAGE,
 } from '../constants';
+import { sendDuoChatCommand } from '../utils';
 
 const linesWithDigitsOnly = /^\d+$\n/gm;
 
@@ -107,27 +104,16 @@ export default {
 
       this.setHighlightedLines();
 
-      helpCenterState.showTanukiBotChatDrawer = true;
-
-      this.$apollo
-        .mutate({
-          mutation: chatMutation,
-          variables: {
-            question: GENIE_CHAT_EXPLAIN_MESSAGE,
-            resourceId: this.resourceId,
-            currentFileContext: {
-              fileName: this.filePath,
-              selectedText: this.selectedText,
-            },
+      sendDuoChatCommand({
+        question: GENIE_CHAT_EXPLAIN_MESSAGE,
+        resourceId: this.resourceId,
+        variables: {
+          currentFileContext: {
+            fileName: this.filePath,
+            selectedText: this.selectedText,
           },
-        })
-        .catch((error) => {
-          createAlert({
-            message: s__('AI|An error occurred while explaining the code.'),
-            captureError: true,
-            error,
-          });
-        });
+        },
+      });
     },
     setHighlightedLines() {
       const getSelection = window.getSelection();

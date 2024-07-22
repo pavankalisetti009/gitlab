@@ -9,7 +9,7 @@ import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import { helpCenterState } from '~/super_sidebar/constants';
+import { duoChatGlobalState } from '~/super_sidebar/constants';
 import { MOCK_TANUKI_BOT_MUTATATION_RES } from 'ee_jest/ai/tanuki_bot/mock_data';
 
 Vue.use(VueApollo);
@@ -59,7 +59,7 @@ describe('AiSummarizeNotes component', () => {
         await findButton().trigger('click');
         await nextTick();
 
-        expect(helpCenterState.showTanukiBotChatDrawer).toBe(true);
+        expect(duoChatGlobalState.isShown).toBe(true);
       });
 
       it('calls mutation', async () => {
