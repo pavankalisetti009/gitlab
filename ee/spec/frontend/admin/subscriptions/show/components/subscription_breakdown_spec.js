@@ -50,7 +50,7 @@ describe('Subscription Breakdown', () => {
   const findDetailsCardFooter = () => wrapper.find('.gl-card-footer');
   const findDetailsHistory = () => wrapper.findComponent(SubscriptionDetailsHistory);
   const findDetailsUserInfo = () => wrapper.findComponent(SubscriptionDetailsUserInfo);
-  const findRemoveLicenseAction = () => wrapper.findByTestId('remove-license');
+  const findRemoveLicenseButton = () => wrapper.findByTestId('remove-license-button');
   const findActivateSubscriptionAction = () =>
     wrapper.findByTestId('subscription-activate-subscription-action');
   const findSubscriptionActivationBanner = () =>
@@ -214,7 +214,7 @@ describe('Subscription Breakdown', () => {
           const stubs = { GlCard, SubscriptionDetailsCard };
           createComponent({ props, provide, stubs });
 
-          expect(findRemoveLicenseAction().exists()).toBe(shouldShow);
+          expect(findRemoveLicenseButton().exists()).toBe(shouldShow);
         },
       );
 

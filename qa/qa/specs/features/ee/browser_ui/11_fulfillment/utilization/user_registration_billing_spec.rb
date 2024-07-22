@@ -47,11 +47,11 @@ module QA
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347617' do
             Flow::Login.sign_in_as_admin
 
+            Runtime::Browser.visit(:gitlab, EE::Page::Admin::Subscription)
+
             # Save the number of users as stated by the license
-            users_in_subscription = Gitlab::Page::Admin::Subscription.perform do |subscription|
-              subscription.visit
-              subscription.users_in_subscription
-            end.tr(',', '') # sanitize the value when returned as 10,000
+            # and sanitize the value when returned as 10,000
+            users_in_subscription = EE::Page::Admin::Subscription.perform(&:users_in_subscription).tr(',', '')
 
             # Save the number of users active on the instance as reported by GitLab
             users_in_license = Gitlab::Page::Admin::Dashboard.perform do |users|

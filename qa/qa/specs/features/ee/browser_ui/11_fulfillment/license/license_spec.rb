@@ -15,11 +15,11 @@ module QA
     context 'Active license details' do
       before do
         Flow::Login.sign_in_as_admin
-        Gitlab::Page::Admin::Subscription.perform(&:visit)
+        Runtime::Browser.visit(:gitlab, EE::Page::Admin::Subscription)
       end
 
       it 'shows up in subscription page', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347607' do
-        Gitlab::Page::Admin::Subscription.perform do |subscription|
+        EE::Page::Admin::Subscription.perform do |subscription|
           aggregate_failures do
             expect { subscription.subscription_details? }.to eventually_be_truthy.within(max_duration: 60)
             expect(subscription.name).to eq(user)
