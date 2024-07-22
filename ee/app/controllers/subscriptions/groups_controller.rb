@@ -7,7 +7,6 @@ module Subscriptions
     layout 'minimal'
 
     before_action :authenticate_user!
-    before_action :ensure_flow_enabled!, only: :new
 
     before_action :find_group, except: %i[new create]
     before_action :authorize_admin_group!, except: %i[new create]
@@ -65,10 +64,6 @@ module Subscriptions
 
     def authorize_admin_group!
       access_denied! unless can?(current_user, :admin_group, @group)
-    end
-
-    def ensure_flow_enabled!
-      not_found if Feature.disabled?(:migrate_purchase_flows_for_existing_customers, current_user)
     end
 
     def group_params

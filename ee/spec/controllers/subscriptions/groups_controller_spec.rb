@@ -14,108 +14,92 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
     end
 
     context 'with an authenticated user' do
-      context 'when the migrate_purchase_flows_for_existing_customers feature is disabled' do
-        subject { get :new, params: { plan_id: 'plan-id' } }
+      subject(:get_new) { get :new, params: { plan_id: 'plan-id' } }
 
+      before do
+        sign_in(user)
+      end
+
+      context 'when the plan cannot be found' do
         before do
-          stub_feature_flags(migrate_purchase_flows_for_existing_customers: false)
-
-          sign_in(user)
+          allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+            allow(instance).to receive(:execute).and_return([])
+          end
         end
 
         it { is_expected.to have_gitlab_http_status(:not_found) }
       end
 
-      context 'when the migrate_purchase_flows_for_existing_customers feature is enabled' do
-        subject(:get_new) { get :new, params: { plan_id: 'plan-id' } }
+      context 'when the user does not have existing namespaces' do
+        let(:plan_data) { { id: 'plan-id' } }
 
         before do
-          stub_feature_flags(migrate_purchase_flows_for_existing_customers: true)
-
-          sign_in(user)
-        end
-
-        context 'when the plan cannot be found' do
-          before do
-            allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
-              allow(instance).to receive(:execute).and_return([])
-            end
-          end
-
-          it { is_expected.to have_gitlab_http_status(:not_found) }
-        end
-
-        context 'when the user does not have existing namespaces' do
-          let(:plan_data) { { id: 'plan-id' } }
-
-          before do
-            allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
-              allow(instance).to receive(:execute).and_return([plan_data])
-            end
-          end
-
-          it { is_expected.to render_template 'layouts/minimal' }
-          it { is_expected.to render_template :new }
-          it { is_expected.to have_gitlab_http_status(:ok) }
-
-          it 'assigns the eligible groups for the subscription' do
-            get_new
-
-            expect(assigns(:eligible_groups)).to match_array []
-          end
-
-          it 'assigns the plan data' do
-            get_new
-
-            expect(assigns(:plan_data)).to eq plan_data
+          allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+            allow(instance).to receive(:execute).and_return([plan_data])
           end
         end
 
-        context 'when the user has existing namespaces' do
-          let(:plan_data) { { id: 'plan-id' } }
+        it { is_expected.to render_template 'layouts/minimal' }
+        it { is_expected.to render_template :new }
+        it { is_expected.to have_gitlab_http_status(:ok) }
 
-          let_it_be(:owned_group) { create(:group) }
-          let_it_be(:maintainer_group) { create(:group) }
-          let_it_be(:developer_group) { create(:group) }
+        it 'assigns the eligible groups for the subscription' do
+          get_new
 
-          before_all do
-            owned_group.add_owner(user)
-            maintainer_group.add_maintainer(user)
-            developer_group.add_developer(user)
+          expect(assigns(:eligible_groups)).to match_array []
+        end
+
+        it 'assigns the plan data' do
+          get_new
+
+          expect(assigns(:plan_data)).to eq plan_data
+        end
+      end
+
+      context 'when the user has existing namespaces' do
+        let(:plan_data) { { id: 'plan-id' } }
+
+        let_it_be(:owned_group) { create(:group) }
+        let_it_be(:maintainer_group) { create(:group) }
+        let_it_be(:developer_group) { create(:group) }
+
+        before_all do
+          owned_group.add_owner(user)
+          maintainer_group.add_maintainer(user)
+          developer_group.add_developer(user)
+        end
+
+        before do
+          allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
+            allow(instance).to receive(:execute).and_return([plan_data])
           end
 
-          before do
-            allow_next_instance_of(GitlabSubscriptions::FetchSubscriptionPlansService) do |instance|
-              allow(instance).to receive(:execute).and_return([plan_data])
-            end
-
-            allow_next_instance_of(
-              GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
-              user: user,
-              namespaces: [owned_group],
-              plan_id: 'plan-id'
-            ) do |instance|
-              allow(instance).to receive(:execute).and_return(
-                instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
-              )
-            end
+          allow_next_instance_of(
+            GitlabSubscriptions::FetchPurchaseEligibleNamespacesService,
+            user: user,
+            namespaces: [owned_group],
+            plan_id: 'plan-id'
+          ) do |instance|
+            allow(instance).to receive(:execute).and_return(
+              instance_double(ServiceResponse, success?: true, payload: [{ namespace: owned_group, account_id: nil }])
+            )
           end
+        end
 
-          it { is_expected.to render_template 'layouts/minimal' }
-          it { is_expected.to render_template :new }
-          it { is_expected.to have_gitlab_http_status(:ok) }
+        it { is_expected.to render_template 'layouts/minimal' }
+        it { is_expected.to render_template :new }
+        it { is_expected.to have_gitlab_http_status(:ok) }
 
-          it 'assigns the eligible groups for the subscription' do
-            get_new
+        it 'assigns the eligible groups for the subscription' do
+          get_new
 
-            expect(assigns(:eligible_groups)).to match_array [owned_group]
-          end
+          expect(assigns(:eligible_groups)).to match_array [owned_group]
+        end
 
-          it 'assigns the plan data' do
-            get_new
+        it 'assigns the plan data' do
+          get_new
 
-            expect(assigns(:plan_data)).to eq plan_data
-          end
+          expect(assigns(:plan_data)).to eq plan_data
         end
       end
     end
