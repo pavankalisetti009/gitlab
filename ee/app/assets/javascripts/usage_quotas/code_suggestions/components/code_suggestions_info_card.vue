@@ -18,7 +18,8 @@ import {
   DUO_ENTERPRISE_TITLE,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import { addSeatsText } from 'ee/usage_quotas/seats/constants';
-import Tracking from '~/tracking';
+import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
+import { InternalEvents } from '~/tracking';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
@@ -26,6 +27,7 @@ import { LIMITED_ACCESS_KEYS } from 'ee/usage_quotas/components/constants';
 import { ADD_ON_PURCHASE_FETCH_ERROR_CODE } from 'ee/usage_quotas/error_constants';
 import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
+import { PQL_MODAL_ID } from 'ee/hand_raise_leads/hand_raise_lead/constants';
 
 export default {
   name: 'CodeSuggestionsUsageInfoCard',
@@ -40,7 +42,11 @@ export default {
     addSeatsText,
     subscriptionStartDate: __('Subscription start date'),
     subscriptionEndDate: __('Subscription end date'),
+    trialStartDate: __('Trial start date'),
+    trialEndDate: __('Trial end date'),
     notAvailable: __('Not available'),
+    purchaseSeats: __('Purchase seats'),
+    trial: s__('CodeSuggestions|trial'),
   },
   components: {
     GlButton,
@@ -50,17 +56,20 @@ export default {
     UsageStatistics,
     GlSkeletonLoader,
     LimitedAccessModal,
+    HandRaiseLeadButton,
   },
   directives: {
     GlModalDirective,
   },
-  mixins: [Tracking.mixin()],
+  mixins: [InternalEvents.mixin()],
   inject: [
     'addDuoProHref',
     'isSaaS',
     'subscriptionName',
     'subscriptionStartDate',
     'subscriptionEndDate',
+    'duoProActiveTrialStartDate',
+    'duoProActiveTrialEndDate',
   ],
   props: {
     groupId: {
@@ -109,15 +118,41 @@ export default {
       return this.subscriptionPermissions?.reason;
     },
     duoTitle() {
-      return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
+      const title = this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
+
+      return `${title} ${this.duoProActiveTrial ? this.$options.i18n.trial : ''}`;
+    },
+    subscriptionStartDateText() {
+      return this.duoProActiveTrial
+        ? this.$options.i18n.trialStartDate
+        : this.$options.i18n.subscriptionStartDate;
+    },
+    subscriptionEndDateText() {
+      return this.duoProActiveTrial
+        ? this.$options.i18n.trialEndDate
+        : this.$options.i18n.subscriptionEndDate;
     },
     startDate() {
+      if (this.duoProActiveTrial) {
+        return this.formattedDate(this.duoProActiveTrialStartDate);
+      }
+
       const date = this.subscription?.startDate || this.subscriptionStartDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
     },
     endDate() {
+      if (this.duoProActiveTrial) {
+        return this.formattedDate(this.duoProActiveTrialEndDate);
+      }
+
       const date = this.subscription?.endDate || this.subscriptionEndDate;
       return date ? this.formattedDate(date) : this.$options.i18n.notAvailable;
+    },
+    duoProActiveTrial() {
+      return Boolean(this.duoProActiveTrialStartDate);
+    },
+    pageViewLabel() {
+      return this.duoProActiveTrial ? `duo_pro_add_on_tab_active_trial` : `duo_pro_add_on_tab`;
     },
   },
   apollo: {
@@ -161,9 +196,18 @@ export default {
       },
     },
   },
+  mounted() {
+    this.trackEvent(
+      'pageview',
+      {
+        label: this.pageViewLabel,
+      },
+      'groups:usage_quotas:index',
+    );
+  },
   methods: {
     handleAddDuoProClick() {
-      this.track('click_button', {
+      this.trackEvent('click_button', {
         label: `add_duo_pro_${this.trackingPreffix}`,
         property: 'usage_quotas_page',
       });
@@ -177,11 +221,44 @@ export default {
       this.handleAddDuoProClick();
       visitUrl(this.addDuoProHref);
     },
+    handlePurchaseSeats() {
+      this.trackEvent(
+        'click_button',
+        {
+          label: `duo_pro_purchase_seats`,
+        },
+        'groups:usage_quotas:index',
+      );
+
+      visitUrl(this.addDuoProHref);
+    },
+    handleCodeSuggestionsLink() {
+      this.trackEvent(
+        'click_link',
+        {
+          label: `duo_pro_marketing_page`,
+        },
+        'groups:usage_quotas:index',
+      );
+
+      visitUrl(this.$options.helpLinks.codeSuggestionsLearnMoreLink);
+    },
     formattedDate(date) {
       const [year, month, day] = date.split('-');
       return localeDateFormat.asDate.format(new Date(year, month - 1, day));
     },
   },
+  handRaiseLeadAttributes: {
+    size: 'small',
+    variant: 'confirm',
+    category: 'secondary',
+  },
+  handRaiseLeadBtnTracking: {
+    category: 'groups:usage_quotas:index',
+    action: 'click_button',
+    label: 'duo_pro_contact_sales',
+  },
+  modalId: PQL_MODAL_ID,
 };
 </script>
 <template>
@@ -201,46 +278,66 @@ export default {
         <p class="gl-mt-5" data-testid="description">
           <gl-sprintf :message="$options.i18n.description">
             <template #link="{ content }">
-              <gl-link :href="$options.helpLinks.codeSuggestionsLearnMoreLink" target="_blank">{{
-                content
-              }}</gl-link>
+              <gl-link
+                target="_blank"
+                data-testid="usage-quotas-gitlab-duo-tab-code-suggestions-link"
+                @click="handleCodeSuggestionsLink"
+                >{{ content }}</gl-link
+              >
             </template>
           </gl-sprintf>
         </p>
         <div data-testid="subscription-info">
           <div class="gl-flex gl-gap-3">
             <span class="gl-basis-1/3 gl-font-bold gl-min-w-20">{{
-              $options.i18n.subscriptionStartDate
+              subscriptionStartDateText
             }}</span>
             <span>{{ startDate }}</span>
           </div>
           <div class="gl-flex gl-mt-2 gl-gap-3">
-            <span class="gl-basis-1/3 gl-font-bold gl-min-w-20">{{
-              $options.i18n.subscriptionEndDate
-            }}</span>
+            <span class="gl-basis-1/3 gl-font-bold gl-min-w-20">{{ subscriptionEndDateText }}</span>
             <span>{{ endDate }}</span>
           </div>
         </div>
       </template>
       <template #actions>
-        <gl-button
-          v-if="shouldShowAddSeatsButton"
-          v-gl-modal-directive="'limited-access-modal-id'"
-          category="primary"
-          target="_blank"
-          variant="confirm"
-          size="small"
-          class="gl-ml-3 gl-align-self-start"
-          data-testid="purchase-button"
-          @click="handleAddSeats"
-        >
-          {{ $options.i18n.addSeatsText }}
-        </gl-button>
-        <limited-access-modal
-          v-if="shouldShowModal"
-          v-model="showLimitedAccessModal"
-          :limited-access-reason="permissionReason"
-        />
+        <div v-if="duoProActiveTrial">
+          <gl-button
+            variant="confirm"
+            size="small"
+            data-testid="usage-quotas-gitlab-duo-tab-active-trial-purchase-seats-button"
+            @click="handlePurchaseSeats"
+          >
+            {{ $options.i18n.purchaseSeats }}
+          </gl-button>
+
+          <hand-raise-lead-button
+            :modal-id="$options.modalId"
+            :button-attributes="$options.handRaiseLeadAttributes"
+            :cta-tracking="$options.handRaiseLeadBtnTracking"
+            glm-content="usage-quotas-gitlab-duo-tab"
+          />
+        </div>
+        <div v-else>
+          <gl-button
+            v-if="shouldShowAddSeatsButton"
+            v-gl-modal-directive="'limited-access-modal-id'"
+            category="primary"
+            target="_blank"
+            variant="confirm"
+            size="small"
+            class="gl-ml-3 gl-self-start"
+            data-testid="purchase-button"
+            @click="handleAddSeats"
+          >
+            {{ $options.i18n.addSeatsText }}
+          </gl-button>
+          <limited-access-modal
+            v-if="shouldShowModal"
+            v-model="showLimitedAccessModal"
+            :limited-access-reason="permissionReason"
+          />
+        </div>
       </template>
     </usage-statistics>
   </gl-card>

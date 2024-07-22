@@ -1,10 +1,10 @@
-import { GlLink, GlSprintf, GlButton, GlSkeletonLoader } from '@gitlab/ui';
+import { GlSprintf, GlButton, GlSkeletonLoader } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { PROMO_URL, visitUrl } from 'jh_else_ce/lib/utils/url_utility';
+import { visitUrl, PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 import CodeSuggestionsInfoCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_info_card.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { createMockClient } from 'helpers/mock_apollo_helper';
@@ -13,6 +13,7 @@ import LimitedAccessModal from 'ee/usage_quotas/components/limited_access_modal.
 import { ADD_ON_PURCHASE_FETCH_ERROR_CODE } from 'ee/usage_quotas/error_constants';
 import getGitlabSubscriptionQuery from 'ee/fulfillment/shared_queries/gitlab_subscription.query.graphql';
 import { getMockSubscriptionData } from 'ee_jest/usage_quotas/seats/mock_data';
+import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 
 Vue.use(VueApollo);
 
@@ -28,6 +29,8 @@ const defaultProvide = {
   subscriptionName: null,
   subscriptionStartDate: '2023-03-16',
   subscriptionEndDate: '2024-03-16',
+  duoProActiveTrialStartDate: null,
+  duoProActiveTrialEndDate: null,
 };
 
 describe('CodeSuggestionsInfoCard', () => {
@@ -50,10 +53,14 @@ describe('CodeSuggestionsInfoCard', () => {
 
   const findCodeSuggestionsDescription = () => wrapper.findByTestId('description');
   const findCodeSuggestionsSubscriptionInfo = () => wrapper.findByTestId('subscription-info');
-  const findCodeSuggestionsLearnMoreLink = () => wrapper.findComponent(GlLink);
+  const findCodeSuggestionsLearnMoreLink = () =>
+    wrapper.findByTestId('usage-quotas-gitlab-duo-tab-code-suggestions-link');
   const findCodeSuggestionsInfoTitle = () => wrapper.findByTestId('title');
   const findAddSeatsButton = () => wrapper.findComponent(GlButton);
   const findLimitedAccessModal = () => wrapper.findComponent(LimitedAccessModal);
+  const findPurchaseSeatsButton = () =>
+    wrapper.findByTestId('usage-quotas-gitlab-duo-tab-active-trial-purchase-seats-button');
+  const findContactSalesButton = () => wrapper.findComponent(HandRaiseLeadButton);
 
   const createMockApolloProvider = ({ subscriptionData }) => {
     const mockCustomersDotClient = createMockClient([
@@ -126,6 +133,8 @@ describe('CodeSuggestionsInfoCard', () => {
 
     describe('with Duo Pro add-on enabled', () => {
       beforeEach(async () => {
+        jest.spyOn(Tracking, 'event');
+
         createComponent({ props: { duoTier: 'pro' } });
 
         // wait for apollo to load
@@ -134,6 +143,16 @@ describe('CodeSuggestionsInfoCard', () => {
 
       it('renders the title text', () => {
         expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro');
+      });
+
+      it('tracks the pageview correctly', () => {
+        expect(Tracking.event).toHaveBeenCalledWith(
+          'groups:usage_quotas:index',
+          'pageview',
+          expect.objectContaining({
+            label: 'duo_pro_add_on_tab',
+          }),
+        );
       });
     });
 
@@ -153,12 +172,6 @@ describe('CodeSuggestionsInfoCard', () => {
     it('renders the description text', () => {
       expect(findCodeSuggestionsDescription().text()).toBe(
         "Code Suggestions uses generative AI to suggest code while you're developing.",
-      );
-    });
-
-    it('renders the learn more link', () => {
-      expect(findCodeSuggestionsLearnMoreLink().attributes('href')).toBe(
-        `${PROMO_URL}/gitlab-duo/`,
       );
     });
 
@@ -214,6 +227,87 @@ describe('CodeSuggestionsInfoCard', () => {
 
         it('renders the correct end date text', () => {
           expect(findCodeSuggestionsSubscriptionInfo().text()).toContain('Not available');
+        });
+      });
+    });
+
+    describe('with a Duo Pro add-on trial', () => {
+      const outputStartDate = 'Jan 1, 2024';
+      const outputEndDate = 'Feb 1, 2024';
+
+      beforeEach(async () => {
+        jest.spyOn(Tracking, 'event');
+
+        createComponent({
+          provide: {
+            duoProActiveTrialStartDate: '2024-01-01',
+            duoProActiveTrialEndDate: '2024-02-01',
+          },
+        });
+
+        await waitForPromises();
+      });
+
+      it('renders the title text', () => {
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro trial');
+      });
+
+      it('renders the trial start date', () => {
+        expect(findCodeSuggestionsSubscriptionInfo().text()).toContain(outputStartDate);
+      });
+
+      it('renders the trial end date', () => {
+        expect(findCodeSuggestionsSubscriptionInfo().text()).toContain(outputEndDate);
+      });
+
+      it('tracks the pageview correctly', () => {
+        expect(Tracking.event).toHaveBeenCalledWith(
+          'groups:usage_quotas:index',
+          'pageview',
+          expect.objectContaining({
+            label: 'duo_pro_add_on_tab_active_trial',
+          }),
+        );
+      });
+
+      describe('buttons', () => {
+        it('sets to the correct props to the hand raise lead (contact sales) button', () => {
+          expect(findContactSalesButton().props()).toMatchObject({
+            glmContent: 'usage-quotas-gitlab-duo-tab',
+            ctaTracking: {
+              category: 'groups:usage_quotas:index',
+              action: 'click_button',
+              label: 'duo_pro_contact_sales',
+            },
+          });
+        });
+
+        it('visits the correct url and tracks the purchase seats button when clicked', () => {
+          findPurchaseSeatsButton().vm.$emit('click');
+
+          expect(Tracking.event).toHaveBeenCalledWith(
+            'groups:usage_quotas:index',
+            'click_button',
+            expect.objectContaining({
+              label: 'duo_pro_purchase_seats',
+            }),
+          );
+
+          expect(visitUrl).toHaveBeenCalledWith(defaultProvide.addDuoProHref);
+        });
+
+        it('visits the correct url and tracks the learn more link when clicked', () => {
+          findCodeSuggestionsLearnMoreLink().vm.$emit('click');
+
+          expect(Tracking.event).toHaveBeenCalledWith(
+            'groups:usage_quotas:index',
+            'click_link',
+            expect.objectContaining({
+              label: 'duo_pro_marketing_page',
+            }),
+          );
+
+          expect(visitUrl).toHaveBeenCalledWith(`${PROMO_URL}/gitlab-duo/`);
         });
       });
     });
