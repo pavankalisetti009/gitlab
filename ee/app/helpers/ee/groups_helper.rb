@@ -116,7 +116,18 @@ module EE
         add_duo_pro_href: duo_pro_url(group),
         duo_pro_bulk_user_assignment_available: duo_pro_bulk_user_assignment_available?(group).to_s,
         hand_raise_lead: code_suggestions_usage_app_hand_raise_lead_data
-      }.merge(duo_pro_trial_link(group))
+      }.merge(duo_pro_trial_link(group), active_duo_pro_trial_data(group))
+    end
+
+    def active_duo_pro_trial_data(group)
+      active_duo_pro_trial_add_on = group.subscription_add_on_purchases.for_gitlab_duo_pro.active.trial.first
+
+      return {} unless active_duo_pro_trial_add_on
+
+      {
+        duo_pro_active_trial_start_date: active_duo_pro_trial_add_on.started_at,
+        duo_pro_active_trial_end_date: active_duo_pro_trial_add_on.expires_on
+      }
     end
 
     def duo_pro_trial_link(group)

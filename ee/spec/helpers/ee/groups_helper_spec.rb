@@ -478,6 +478,27 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
+  describe '#active_duo_pro_trial_data' do
+    context 'when an active duo pro trial exists' do
+      let(:trial_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group) }
+
+      it 'returns the trial start date and end date' do
+        trial_add_on
+
+        expect(helper.active_duo_pro_trial_data(group)).to eq({
+          duo_pro_active_trial_start_date: trial_add_on.started_at,
+          duo_pro_active_trial_end_date: trial_add_on.expires_on
+        })
+      end
+    end
+
+    context 'when an active duo pro trial does not exist' do
+      it 'returns empty' do
+        expect(helper.active_duo_pro_trial_data(group)).to eq({})
+      end
+    end
+  end
+
   describe '#duo_pro_trial_link' do
     it 'returns the trial link when group has no previous or active duo pro trial' do
       expect(helper.duo_pro_trial_link(group)).to eq({
