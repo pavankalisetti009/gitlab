@@ -590,13 +590,6 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
           expect(response).to have_gitlab_http_status(:ok)
           expect(assigns(:redirect_url)).to eq(stored_user_return_to_path)
         end
-
-        it 'tracks phone_verification_for_low_risk_users registration_completed event', :experiment do
-          expect(experiment(:phone_verification_for_low_risk_users))
-            .to track(:registration_completed).on_next_instance.with_context(user: user)
-
-          get success_signup_identity_verification_path
-        end
       end
 
       context 'when onboarding is available' do

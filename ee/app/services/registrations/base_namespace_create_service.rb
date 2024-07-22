@@ -19,8 +19,6 @@ module Registrations
       Gitlab::Tracking.event(self.class.name, group_track_action, namespace: group, user: user)
       ::Onboarding::Progress.onboard(group)
 
-      experiment(:phone_verification_for_low_risk_users, user: user).track(:assignment, namespace: group)
-
       apply_trial if onboarding_status.apply_trial?
     end
 
