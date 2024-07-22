@@ -329,6 +329,10 @@ RSpec.describe Groups::OmniauthCallbacksController, :aggregate_failures, feature
         it "links the identity" do
           post provider, params: { group_id: group }
 
+          # This line should be removed if this file is removed from the exception file:
+          # spec/support/helpers/disable_namespace_organization_validation.yml
+          Gitlab::SafeRequestStore.clear!
+
           expect(group).to be_member(user)
         end
 

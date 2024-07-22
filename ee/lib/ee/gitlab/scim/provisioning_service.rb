@@ -53,7 +53,11 @@ module EE
         end
 
         def create_identity_and_user
-          return success_response if user.save && identity.save
+          saved = ::Namespace.with_disabled_organization_validation do
+            user.save && identity.save
+          end
+
+          return success_response if saved
 
           error_response(objects: [identity, user])
         end

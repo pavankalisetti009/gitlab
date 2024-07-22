@@ -63,7 +63,9 @@ module Registrations
     end
 
     def create_project_flow
-      @project = ::Projects::CreateService.new(user, create_project_params).execute
+      @project = Namespace.with_disabled_organization_validation do
+        ::Projects::CreateService.new(user, create_project_params).execute
+      end
 
       if project.persisted?
         Gitlab::Tracking.event(self.class.name, 'create_project', namespace: project.namespace, user: user)

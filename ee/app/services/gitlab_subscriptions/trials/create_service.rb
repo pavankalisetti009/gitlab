@@ -28,7 +28,9 @@ module GitlabSubscriptions
         name = ActionController::Base.helpers.sanitize(trial_params[:new_group_name])
         path = Namespace.clean_path(name.parameterize)
         create_service_params = { name: name, path: path, organization_id: trial_params[:organization_id] }
-        response = Groups::CreateService.new(user, create_service_params).execute
+        response = Namespace.with_disabled_organization_validation do
+          Groups::CreateService.new(user, create_service_params).execute
+        end
         @namespace = response[:group]
 
         if response.success?

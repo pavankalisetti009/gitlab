@@ -24,6 +24,10 @@ RSpec.describe Gitlab::Auth::Ldap::User do
   let(:external_groups) { [] }
   let!(:fake_proxy) { fake_ldap_sync_proxy(auth_hash.provider) }
 
+  around do |example|
+    Namespace.with_disabled_organization_validation { example.run }
+  end
+
   before do
     allow(fake_proxy).to receive(:dns_for_group_cn).with(group_cn).and_return(group_member_dns)
     stub_ldap_config(external_groups: external_groups)

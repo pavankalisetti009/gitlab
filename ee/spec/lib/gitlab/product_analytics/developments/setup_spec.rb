@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Gitlab::ProductAnalytics::Developments::Setup, :saas, feature_category: :product_analytics_data_management do
   include RakeHelpers
 
-  let_it_be(:group) { create(:group, path: 'test-group') }
+  let_it_be(:organization) { create(:organization) }
+  let_it_be(:group) { create(:group, path: 'test-group', organization: organization) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:user) { create(:user) }
 
