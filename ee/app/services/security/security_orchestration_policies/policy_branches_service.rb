@@ -66,7 +66,7 @@ module Security
 
       def match_branch_types(branch_types)
         case branch_types
-        when "all" then all_branch_names
+        when "all" then all_project_branch_names
         when "protected" then matched_protected_branches
         when "default" then [project.default_branch].compact
         else []
@@ -89,10 +89,17 @@ module Security
         end
       end
 
+      # all_project_branch_names does not include group level protected_branches.
+      # So we need to include all_protected_branch_names to check if the pattern
+      # matches the group level protected_branches.
       def all_branch_names
+        (all_project_branch_names + all_protected_branch_names).compact
+      end
+
+      def all_project_branch_names
         repository.branch_names
       end
-      strong_memoize_attr :all_branch_names
+      strong_memoize_attr :all_project_branch_names
 
       def all_protected_branch_names
         project.all_protected_branches.pluck(:name) # rubocop: disable CodeReuse/ActiveRecord
