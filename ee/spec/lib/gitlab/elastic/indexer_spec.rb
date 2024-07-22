@@ -405,46 +405,6 @@ RSpec.describe Gitlab::Elastic::Indexer, feature_category: :global_search do
           expect(indexed_wiki_paths_for('23')).not_to include('23.md')
         end
       end
-
-      context 'when add_archived_to_wikis migration is not completed' do
-        before do
-          set_elasticsearch_migration_to(:add_archived_to_wikis, including: false)
-        end
-
-        it 'runs the indexer without --archived flag' do
-          gitaly_connection_data = {
-            storage: project.repository_storage,
-            limit_file_size: Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes
-          }.merge(Gitlab::GitalyClient.connection_data(project.repository_storage))
-          expect_popen.with(
-            [
-              TestEnv.indexer_bin_path,
-              "--timeout=#{described_class::TIMEOUT}s",
-              "--visibility-level=#{project.visibility_level}",
-              "--project-id=#{project.id}",
-              '--search-curation',
-              "--from-sha=#{expected_from_sha}",
-              "--to-sha=#{to_sha}",
-              "--full-path=#{project.full_path}",
-              '--blob-type=wiki_blob',
-              '--skip-commits',
-              "--wiki-access-level=#{project.wiki_access_level}",
-              "--schema-version-wiki=#{described_class::WIKI_SCHEMA_VERSION}",
-              "--traversal-ids=#{project.namespace_ancestry}",
-              "#{project.wiki.repository.disk_path}.git"
-            ],
-            nil,
-            hash_including(
-              'GITALY_CONNECTION_INFO' => gitaly_connection_data.to_json,
-              'ELASTIC_CONNECTION_INFO' => elasticsearch_config.to_json,
-              'RAILS_ENV' => Rails.env,
-              'CORRELATION_ID' => Labkit::Correlation::CorrelationId.current_id
-            )
-          ).and_return(popen_success)
-
-          indexer.run
-        end
-      end
     end
   end
 

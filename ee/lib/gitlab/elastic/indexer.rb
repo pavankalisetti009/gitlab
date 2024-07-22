@@ -186,7 +186,7 @@ module Gitlab
 
       def build_wiki_specific_flags
         %W[--blob-type=wiki_blob --skip-commits --wiki-access-level=#{container.wiki_access_level}].tap do |c|
-          c << "--archived=#{project.archived}" if project && migration_finished?(:add_archived_to_wikis)
+          c << "--archived=#{project.archived}" if project
           c << "--schema-version-wiki=#{WIKI_SCHEMA_VERSION}"
         end
       end

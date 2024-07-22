@@ -3,8 +3,6 @@
 require 'spec_helper'
 require File.expand_path('ee/elastic/migrate/20230719211400_add_archived_to_wikis.rb')
 
-RSpec.describe AddArchivedToWikis, :elastic, :sidekiq_inline, feature_category: :global_search do
-  let(:version) { 20230719211400 }
-
-  include_examples 'migration adds mapping'
+RSpec.describe AddArchivedToWikis, feature_category: :global_search do
+  it_behaves_like 'a deprecated Advanced Search migration', 20230719211400
 end
