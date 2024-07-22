@@ -10,3 +10,5 @@ class ReindexIssuesToFixLabelIds < Elastic::Migration
   DOCUMENT_TYPE = Issue
   NEW_SCHEMA_VERSION = 23_09
 end
+
+ReindexIssuesToFixLabelIds.prepend ::Elastic::MigrationObsolete
