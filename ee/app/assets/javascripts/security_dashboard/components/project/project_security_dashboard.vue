@@ -5,7 +5,6 @@ import projectsHistoryQuery from 'ee/security_dashboard/graphql/queries/project_
 import severitiesCountQuery from 'ee/security_dashboard/graphql/queries/vulnerability_severities_count.query.graphql';
 import SecurityTrainingPromoBanner from 'ee/security_dashboard/components/project/security_training_promo_banner.vue';
 import { PROJECT_LOADING_ERROR_MESSAGE } from 'ee/security_dashboard/helpers';
-import { getToolboxOptions } from '~/lib/utils/chart_utils';
 import { createAlert } from '~/alert';
 import { formatDate, getDateInPast } from '~/lib/utils/datetime_utility';
 import { s__, __ } from '~/locale';
@@ -80,7 +79,6 @@ export default {
     return {
       chartWidth: 0,
       trendsByDay: [],
-      toolboxOptions: {},
     };
   },
   computed: {
@@ -153,12 +151,11 @@ export default {
             startValue: this.chartStartDate,
           },
         ],
-        ...this.toolboxOptions,
+        toolbox: {
+          show: true,
+        },
       };
     },
-  },
-  async created() {
-    this.toolboxOptions = await getToolboxOptions();
   },
 };
 </script>

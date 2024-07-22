@@ -1,10 +1,8 @@
 <script>
 import { GlAreaChart } from '@gitlab/ui/dist/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
-import { isEmpty } from 'lodash';
 import { s__, __ } from '~/locale';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
-import { getToolboxOptions } from '~/lib/utils/chart_utils';
 import { USAGE_BY_MONTH_HEADER } from '../../constants';
 
 export default {
@@ -59,15 +57,14 @@ export default {
             },
           },
         },
-        ...this.toolboxOptions,
+        toolbox: {
+          show: true,
+        },
       };
     },
     shouldRenderSkeletonLoader() {
-      return this.loading || isEmpty(this.toolboxOptions);
+      return this.loading;
     },
-  },
-  async created() {
-    this.toolboxOptions = await getToolboxOptions();
   },
   methods: {
     formatTooltipText({ seriesData }) {

@@ -14,10 +14,6 @@ import { mockProjectSecurityChartsWithData, mockSeverityCountsWithData } from '.
 
 Vue.use(VueApollo);
 
-jest.mock('~/lib/utils/icon_utils', () => ({
-  getSvgIconPathContent: jest.fn().mockResolvedValue('mockSvgPathContent'),
-}));
-
 describe('Project Security Dashboard component', () => {
   let wrapper;
   let severitiesCountQueryHandler;
@@ -116,16 +112,9 @@ describe('Project Security Dashboard component', () => {
       expect(findLoadingIcon().exists()).toBe(false);
     });
 
-    it.each([['restore'], ['saveAsImage']])('should contain %i icon', (icon) => {
-      const option = findLineChart().props('option').toolbox.feature;
-
-      expect(option[icon].icon).toBe('path://mockSvgPathContent');
-    });
-
-    it('contains dataZoom config', () => {
-      const option = findLineChart().props('option').toolbox.feature;
-      expect(option.dataZoom.icon.zoom).toBe('path://mockSvgPathContent');
-      expect(option.dataZoom.icon.back).toBe('path://mockSvgPathContent');
+    it('sets the contains `toolbox.show` option', () => {
+      const { toolbox } = findLineChart().props('option');
+      expect(toolbox).toMatchObject({ show: true });
     });
 
     it('contains the timeline slider', () => {
