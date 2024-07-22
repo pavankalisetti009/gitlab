@@ -119,8 +119,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_result_policies_allowed: Gitlab::CurrentSettings.security_approval_policies_limit,
           max_scan_execution_policies_allowed: 5,
           max_pipeline_execution_policies_allowed: 5,
-          max_ci_component_sources_policies_allowed: 5,
-          max_ci_component_sources_policies_reached: 'false',
+          max_ci_component_publishing_policies_allowed: 5,
+          max_ci_component_publishing_policies_reached: 'false',
           custom_ci_toggle_enabled: 'false'
         }
       end
@@ -226,8 +226,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_result_policies_allowed: Gitlab::CurrentSettings.security_approval_policies_limit,
           max_scan_execution_policies_allowed: 5,
           max_pipeline_execution_policies_allowed: 5,
-          max_ci_component_sources_policies_allowed: 5,
-          max_ci_component_sources_policies_reached: 'false',
+          max_ci_component_publishing_policies_allowed: 5,
+          max_ci_component_publishing_policies_reached: 'false',
           custom_ci_toggle_enabled: 'false'
         }
       end
@@ -373,29 +373,29 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
     end
   end
 
-  shared_examples '#max_active_ci_component_sources_policies_reached for source' do
+  shared_examples '#max_active_ci_component_publishing_policies_reached for source' do
     context 'when a source does not have a security policy project' do
       it { is_expected.to be_falsey }
     end
 
-    context 'when a source did not reach the limit of ci component sources policies' do
+    context 'when a source did not reach the limit of ci component publishing policies' do
       it_behaves_like 'when source has active scan policies', limit_reached: false
     end
 
-    context 'when a source reached the limit of active ci component sources policies' do
+    context 'when a source reached the limit of active ci component publishing policies' do
       before do
-        stub_const('::Security::CiComponentSourcesPolicy::POLICY_LIMIT', 1)
+        stub_const('::Security::CiComponentPublishingPolicy::POLICY_LIMIT', 1)
       end
 
       it_behaves_like 'when source has active scan policies', limit_reached: true
     end
   end
 
-  describe '#max_active_ci_component_sources_policies_reached?' do
+  describe '#max_active_ci_component_publishing_policies_reached?' do
     let_it_be(:policy_management_project) { create(:project, :repository) }
 
     let(:policy_yaml) do
-      build(:orchestration_policy_yaml, ci_component_sources_policy: [build(:ci_component_sources_policy)])
+      build(:orchestration_policy_yaml, ci_component_publishing_policy: [build(:ci_component_publishing_policy)])
     end
 
     context 'for project' do
@@ -406,9 +406,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         )
       end
 
-      subject { helper.max_active_ci_component_sources_policies_reached?(project) }
+      subject { helper.max_active_ci_component_publishing_policies_reached?(project) }
 
-      it_behaves_like '#max_active_ci_component_sources_policies_reached for source'
+      it_behaves_like '#max_active_ci_component_publishing_policies_reached for source'
     end
 
     context 'for namespace' do
@@ -419,9 +419,9 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
         )
       end
 
-      subject { helper.max_active_ci_component_sources_policies_reached?(namespace) }
+      subject { helper.max_active_ci_component_publishing_policies_reached?(namespace) }
 
-      it_behaves_like '#max_active_ci_component_sources_policies_reached for source'
+      it_behaves_like '#max_active_ci_component_publishing_policies_reached for source'
     end
   end
 

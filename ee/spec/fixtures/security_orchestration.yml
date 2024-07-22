@@ -291,7 +291,7 @@ pipeline_execution_policy:
     enabled: true
     content: {}
     policy_scope: {}
-ci_component_sources_policy:
+ci_component_publishing_policy:
   - name: Allow publishing of CI Components to catalog
     description: This policy enforces an allowlist of projects and groups that can publish CI components
     enabled: true
