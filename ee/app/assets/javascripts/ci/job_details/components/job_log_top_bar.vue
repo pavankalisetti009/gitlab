@@ -4,6 +4,7 @@ import { GlButton } from '@gitlab/ui';
 import { mapState } from 'vuex';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
+import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -18,7 +19,7 @@ export default {
     GlButton,
     RootCauseAnalysis,
   },
-  mixins: [glFeatureFlagMixin()],
+  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
   inject: ['aiRootCauseAnalysisAvailable', 'duoFeaturesEnabled', 'jobGid'],
   props: {
     size: {
@@ -84,7 +85,8 @@ export default {
         this.glFeatures.aiBuildFailureCause &&
         this.aiRootCauseAnalysisAvailable &&
         this.duoFeaturesEnabled &&
-        this.glFeatures.rootCauseAnalysisDuo
+        this.glFeatures.rootCauseAnalysisDuo &&
+        this.glAbilities.troubleshootJobWithAi
       );
     },
     jobFailed() {

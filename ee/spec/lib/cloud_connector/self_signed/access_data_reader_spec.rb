@@ -57,6 +57,14 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
       }
     end
 
+    let_it_be(:troubleshoot_job_bundled_with) do
+      {
+        "duo_enterprise" => %i[
+          troubleshoot_job
+        ]
+      }
+    end
+
     let_it_be(:resolve_vulnerability_bundled_with) do
       {
         "duo_enterprise" => %i[
@@ -103,7 +111,8 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           glab_ask_git_command: [nil, glab_ask_git_command_bundled_with, backend],
           explain_vulnerability: [nil, explain_vulnerability_bundled_with,
             backend],
-          summarize_comments: [nil, summarize_comments_bundled_with, backend]
+          summarize_comments: [nil, summarize_comments_bundled_with, backend],
+          troubleshoot_job: [nil, troubleshoot_job_bundled_with, backend]
         }
       end
     end

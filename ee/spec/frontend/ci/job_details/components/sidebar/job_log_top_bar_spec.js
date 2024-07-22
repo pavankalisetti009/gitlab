@@ -28,6 +28,9 @@ describe('EE JobLogTopBar', () => {
         duoFeaturesEnabled: true,
         rootCauseAnalysisDuo: false,
         jobGid: 'gid://gitlab/Ci::Build/123',
+        glAbilities: {
+          troubleshootJobWithAi: false,
+        },
       },
     });
   };
