@@ -45,7 +45,7 @@ module EE
             ::Sidebars::MenuItem.new(
               title: _('Analytics'),
               link: project_settings_analytics_path(context.project),
-              active_routes: { path: %w[analytics#index] },
+              active_routes: { path: %w[projects/settings/analytics#show] },
               item_id: :analytics
             )
           end
