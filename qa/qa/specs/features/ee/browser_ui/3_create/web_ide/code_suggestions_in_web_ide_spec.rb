@@ -3,7 +3,7 @@
 module QA
   # This test requires several feature flags, user settings, and instance configuration.
   # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
-  RSpec.describe 'Create', product_group: :ide do
+  RSpec.describe 'Create', product_group: :remote_development do
     describe 'Code Suggestions in Web IDE' do
       let(:project) { create(:project, :with_readme, name: 'webide-code-suggestions-project') }
       let(:file_name) { 'new_file.rb' }
