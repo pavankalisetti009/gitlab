@@ -27,7 +27,7 @@ RSpec.describe ::Search::Elastic::Delete::ProjectTransferService, :elastic_helpe
       end
 
       context 'when there is a failure in delete' do
-        let(:client) { instance_double('Elasticsearch::Transport::Client') }
+        let(:client) { instance_double(::Gitlab::Search::Client) }
         let(:logger) { ::Gitlab::Elasticsearch::Logger.build }
 
         before do
