@@ -278,7 +278,7 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
       stub_licensed_features(external_status_checks: true)
     end
 
-    it 'responds with expected JSON', :aggregate_failures do
+    it 'responds with expected JSON', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/451081' do
       get api(collection_url, project.first_owner)
 
       expect(json_response.size).to eq(2)
