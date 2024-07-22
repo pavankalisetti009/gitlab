@@ -229,7 +229,7 @@ You can also use the `/assign` [quick action](../quick_actions.md) in a comment.
 
 ### Filters in list pages
 
-You can filter by both group and project milestones from the project and group issue/merge request list pages, .
+You can filter by both group and project milestones from the project and group issue/merge request list pages.
 
 ### Filters in issue boards
 
