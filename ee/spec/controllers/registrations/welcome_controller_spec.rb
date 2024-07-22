@@ -622,6 +622,17 @@ RSpec.describe Registrations::WelcomeController, feature_category: :onboarding d
               label: 'join_a_project'
             )
           end
+
+          it 'track failed submission event' do
+            patch_update
+
+            expect_snowplow_event(
+              category: 'registrations:welcome:update',
+              action: 'failed_submitting_form',
+              user: user,
+              label: 'free_registration'
+            )
+          end
         end
       end
     end
