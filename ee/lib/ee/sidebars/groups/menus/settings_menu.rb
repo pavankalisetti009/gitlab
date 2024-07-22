@@ -184,7 +184,7 @@ module EE
             ::Sidebars::MenuItem.new(
               title: _('Analytics'),
               link: group_settings_analytics_path(context.group),
-              active_routes: { path: %w[analytics#index] },
+              active_routes: { path: %w[analytics#show] },
               item_id: :analytics
             )
           end

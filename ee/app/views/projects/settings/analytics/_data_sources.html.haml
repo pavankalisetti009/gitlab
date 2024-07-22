@@ -1,12 +1,8 @@
 - return unless @project.product_analytics_enabled? && current_user.can?(:modify_product_analytics_settings, @project)
 
-%section.settings.no-animate#js-analytics-data-sources{ class: ('expanded' if expanded), data: { testid: 'data-sources-content' } }
-  .settings-header
-    %h3.settings-title.js-settings-toggle.js-settings-toggle-trigger-only= s_('ProjectSettings|Data sources')
-    = render Pajamas::ButtonComponent.new(button_options: { class: 'js-settings-toggle' }) do
-      = expanded ? _('Collapse') : _('Expand')
-    %p.gl-text-secondary
-      - link = link_to('', help_page_path('user/analytics/analytics_dashboards', anchor: 'data-sources'), target: '_blank', rel: 'noopener noreferrer')
-      = safe_format(s_('ProjectSettings|Configure %{link_start}data sources%{link_end} to be used for your dashboards.'), tag_pair(link, :link_start, :link_end))
-  .settings-content
+= render ::Layouts::SettingsSectionComponent.new(s_('ProjectSettings|Data sources'), id: 'js-analytics-data-sources', testid: 'data-sources-content') do |c|
+  - c.with_description do
+    - link = link_to('', help_page_path('user/analytics/analytics_dashboards', anchor: 'data-sources'), target: '_blank', rel: 'noopener noreferrer')
+    = safe_format(s_('ProjectSettings|Configure %{link_start}data sources%{link_end} to be used for your dashboards.'), tag_pair(link, :link_start, :link_end))
+  - c.with_body do
     = render_if_exists 'projects/settings/analytics/product_analytics'
