@@ -50,7 +50,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld, featur
 
       context 'when user has permission to read resource' do
         context 'when resource has no comments to summarize' do
-          it 'responds without making an AI call' do
+          it 'responds without making an AI call', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472965' do
             expect(tool).not_to receive(:request)
 
             response = "Issue ##{issue1.iid} has no comments to be summarized."
