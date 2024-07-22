@@ -7,7 +7,7 @@
       .light
         = s_("LDAP|As %{human_access} on %{provider_label} server") % { human_access: group_link_role_name(ldap_group_link), provider_label: ldap_group_link.provider_label }
     - else
-      .cred
+      .gl-text-danger
         = sprite_icon('warning-solid')
         = safe_format(s_("LDAP|Config for LDAP server %{provider} is not present in GitLab"), provider: content_tag(:code, ldap_group_link.provider))
 
