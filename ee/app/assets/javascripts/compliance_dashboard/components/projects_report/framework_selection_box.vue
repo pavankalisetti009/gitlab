@@ -4,6 +4,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
 import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
+import FrameworkBadge from '../shared/framework_badge.vue';
 
 const frameworksDropdownPlaceholder = s__('ComplianceReport|Select frameworks');
 
@@ -11,6 +12,7 @@ export default {
   components: {
     GlButton,
     GlCollapsibleListbox,
+    FrameworkBadge,
   },
   model: {
     prop: 'selected',
@@ -103,6 +105,9 @@ export default {
       this.$refs.listbox.close();
       this.$emit('create');
     },
+    getFrameworkById(id) {
+      return this.frameworks?.find((f) => f.id === id) || null;
+    },
   },
   i18n: {
     frameworksDropdownPlaceholder,
@@ -123,17 +128,14 @@ export default {
     searchable
     role="button"
     tabindex="0"
+    fluid-width
     @select="$emit('select', $event)"
     @search="frameworkSearchQuery = $event"
   >
     <template v-if="$scopedSlots.toggle" #toggle><slot name="toggle"></slot></template>
     <template #list-item="{ item }">
-      <div class="gl-display-flex gl-align-items-center">
-        <div
-          class="gl-w-5 gl-h-3 gl-mr-3 gl-rounded-pill"
-          :style="{ backgroundColor: item.color }"
-        ></div>
-        <div class="gl-str-truncated">{{ item.text }}</div>
+      <div class="gl-mr-2">
+        <framework-badge :show-popover="false" :framework="getFrameworkById(item.value)" />
       </div>
     </template>
     <template #footer>
