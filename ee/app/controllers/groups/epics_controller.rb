@@ -14,6 +14,7 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :authorize_create_epic!, only: [:create, :new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
   before_action :set_summarize_notes_feature_flag, only: :show
+  before_action :set_work_item_epics_feature_flag, only: :show
   after_action :log_epic_show, only: :show
 
   before_action do
@@ -25,6 +26,17 @@ class Groups::EpicsController < Groups::ApplicationController
   feature_category :portfolio_management
   urgency :default, [:show, :new, :realtime_changes]
   urgency :low, [:discussions]
+
+  def show
+    respond_to do |format|
+      format.html do
+        next render_as_work_item if work_item_view?
+      end
+      format.json do
+        render json: serializer.represent(epic)
+      end
+    end
+  end
 
   def new
     @noteable = Epic.new
@@ -63,6 +75,13 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def subscribable_project
     nil
+  end
+
+  def render_as_work_item
+    @work_item = ::WorkItems::WorkItemsFinder.new(current_user,
+      group_id: group.id).execute.with_work_item_type.find_by_iid(epic.iid)
+
+    render 'groups/work_items/show'
   end
 
   def epic_params
@@ -115,8 +134,18 @@ class Groups::EpicsController < Groups::ApplicationController
     return render_404 unless can?(current_user, :create_epic, group)
   end
 
+  def work_item_view?
+    return false if params[:force_legacy_view].present? && params[:force_legacy_view]
+
+    epic_work_items_enabled?
+  end
+
   def verify_group_bulk_edit_enabled!
     render_404 unless group.licensed_feature_available?(:group_bulk_edit)
+  end
+
+  def set_work_item_epics_feature_flag
+    push_force_frontend_feature_flag(:work_item_epics, work_item_view?)
   end
 
   def set_summarize_notes_feature_flag

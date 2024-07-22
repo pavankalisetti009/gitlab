@@ -15,6 +15,7 @@ RSpec.describe 'Epics > User uses quick actions', :js, feature_category: :portfo
 
   before do
     stub_licensed_features(epics: true, subepics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     sign_in(reporter)
   end
 

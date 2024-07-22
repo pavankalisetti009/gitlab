@@ -11,6 +11,7 @@ RSpec.describe 'GFM autocomplete', :js, feature_category: :portfolio_management 
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     sign_in(user)
   end
 

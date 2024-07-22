@@ -10,6 +10,7 @@ RSpec.describe 'Abuse reports on epics', :js, feature_category: :insider_threat 
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     sign_in(reporter1)
   end
 

@@ -11,6 +11,7 @@ RSpec.describe 'Epic quick actions', :js, feature_category: :team_planning do
 
   before do
     stub_licensed_features(epics: true)
+    stub_feature_flags(work_item_epics_rollout: false)
     group.add_developer(user)
 
     sign_in(user)

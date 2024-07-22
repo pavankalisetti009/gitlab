@@ -30,6 +30,7 @@ RSpec.describe 'Epic Issues', :js, feature_category: :portfolio_management do
   end
 
   before do
+    stub_feature_flags(work_item_epics_rollout: false)
     stub_licensed_features(epics: true, subepics: true)
   end
 

@@ -8,29 +8,62 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
   let_it_be_with_reload(:user) { create(:user) }
 
   let_it_be(:group) { create(:group, :nested, developers: user) }
-  let_it_be(:work_item) { create(:work_item, :epic, :group_level, namespace: group) }
   let(:work_items_path) { group_work_item_path(group, work_item.iid) }
 
   context 'for signed in user' do
     before do
       sign_in(user)
-      visit work_items_path
     end
 
-    it_behaves_like 'work items rolled up dates'
+    context 'for epic work items' do
+      let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
 
-    context 'for epics' do
-      it 'shows the correct breadcrumbs' do
-        within_testid('breadcrumb-links') do
-          expect(page).to have_link(group.name, href: group_path(group))
-          expect(page).to have_link('Epics', href: group_epics_path(group))
-          expect(find('li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
+      context 'on the work item route' do
+        before do
+          visit work_items_path
         end
+
+        it_behaves_like 'work items rolled up dates'
+
+        it 'shows the correct breadcrumbs' do
+          within_testid('breadcrumb-links') do
+            expect(page).to have_link(group.name, href: group_path(group))
+            expect(page).to have_link('Epics', href: group_epics_path(group))
+            expect(find('li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
+          end
+        end
+      end
+
+      context 'on the epics route' do
+        before do
+          stub_licensed_features(epics: true)
+          visit group_epic_path(group, work_item.iid)
+
+          within_testid('work-item-feedback-popover') do
+            find_by_testid('close-button').click
+          end
+        end
+
+        it 'shows the correct breadcrumbs' do
+          within_testid('breadcrumb-links') do
+            expect(page).to have_link(group.name, href: group_path(group))
+            expect(page).to have_link('Epics', href: group_epics_path(group))
+            expect(find('li:last-of-type')).to have_link(work_item.to_reference,
+              href: group_epic_path(group, work_item.iid))
+          end
+        end
+
+        # Make sure we render the work item under the epics route and are able to edit it.
+        it_behaves_like 'work items title'
       end
     end
 
     context 'for other work items' do
       let_it_be(:work_item) { create(:work_item, :issue, :group_level, namespace: group) }
+
+      before do
+        visit work_items_path
+      end
 
       it 'shows the correct breadcrumbs' do
         within_testid('breadcrumb-links') do
