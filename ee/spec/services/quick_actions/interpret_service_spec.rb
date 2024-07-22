@@ -1400,7 +1400,9 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           expect(svc).to receive(:execute)
         end
 
-        service.execute(content, merge_request)
+        _, _, message = service.execute(content, merge_request)
+
+        expect(message).to eq _('Request for a Duo Code Review queued.')
       end
 
       context 'when user is not allowed to execute quick action' do
@@ -1410,6 +1412,20 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           expect(Llm::ReviewMergeRequestService).not_to receive(:new)
 
           service.execute(content, merge_request)
+        end
+      end
+
+      context 'when merge_request has no diff files to review' do
+        before do
+          allow(merge_request).to receive(:ai_reviewable_diff_files).and_return([])
+        end
+
+        it 'does not call Llm::ReviewMergeRequestService#execute' do
+          expect(Llm::ReviewMergeRequestService).not_to receive(:new)
+
+          _, _, message = service.execute(content, merge_request)
+
+          expect(message).to eq _("GitLab Duo didn't find any reviewable files. Code Review request skipped.")
         end
       end
     end

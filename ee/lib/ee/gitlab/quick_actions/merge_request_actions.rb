@@ -24,13 +24,19 @@ module EE
 
           desc { _('Requests a Duo Code Review') }
           explanation { _('Requests a Duo Code Review') }
-          execution_message { _('Request for a Duo Code Review queued.') }
           types MergeRequest
           condition do
             quick_action_target.ai_review_merge_request_allowed?(current_user)
           end
           command :duo_code_review do
-            Llm::ReviewMergeRequestService.new(current_user, quick_action_target).execute
+            if quick_action_target.ai_reviewable_diff_files.blank?
+              @execution_message[:duo_code_review] =
+                _("GitLab Duo didn't find any reviewable files. Code Review request skipped.")
+            else
+              @execution_message[:duo_code_review] = _('Request for a Duo Code Review queued.')
+
+              Llm::ReviewMergeRequestService.new(current_user, quick_action_target).execute
+            end
           end
         end
       end
