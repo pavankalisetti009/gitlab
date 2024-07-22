@@ -1,0 +1,84 @@
+# frozen_string_literal: true
+
+module Search
+  module Elastic
+    module Delete
+      class ProjectTransferService
+        include Gitlab::Loggable
+
+        attr_reader :options
+
+        def self.execute(options)
+          new(options).execute
+        end
+
+        def initialize(options)
+          @options = options.with_indifferent_access
+        end
+
+        def execute
+          project_id = options[:project_id]
+          traversal_id = options[:traversal_id]
+          remove_work_item_documents(project_id, traversal_id)
+        end
+
+        private
+
+        def logger
+          @logger ||= ::Gitlab::Elasticsearch::Logger.build
+        end
+
+        def work_item_index_available?
+          ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- We do not need an actor here
+            ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
+        end
+
+        def remove_work_item_documents(project_id, traversal_id)
+          return unless work_item_index_available?
+
+          response = client.delete_by_query(
+            {
+              index: ::Search::Elastic::Types::WorkItem.index_name,
+              conflicts: 'proceed',
+              timeout: '10m',
+              body: {
+                query: {
+                  bool: {
+                    filter: [
+                      { term: { project_id: project_id } },
+                      { bool: { must_not: { prefix: { traversal_ids: { value: traversal_id } } } } }
+                    ]
+                  }
+                }
+              }
+            }
+          )
+
+          log_payload = build_structured_payload(
+            project_id: project_id,
+            traversal_id: traversal_id,
+            index: ::Search::Elastic::Types::WorkItem.index_name
+          )
+
+          if !response['failure'].nil?
+            log_payload[:failure] = response['failure']
+            log_payload[:message] = "Failed to delete data for project transfer"
+          else
+            log_payload[:deleted] = response['deleted']
+            log_payload[:message] = "Sucesfully deleted duplicate data for project transfer"
+          end
+
+          if log_payload[:failure].present?
+            logger.error(log_payload)
+          else
+            logger.info(log_payload)
+          end
+        end
+
+        def client
+          @client ||= ::Gitlab::Search::Client.new
+        end
+      end
+    end
+  end
+end

@@ -100,4 +100,8 @@ module ElasticsearchHelpers
   def elastic_group_association_deletion_worker_random_delay_range
     a_value_between(0, Search::ElasticGroupAssociationDeletionWorker::MAX_JOBS_PER_HOUR.pred)
   end
+
+  def items_in_index(index_name)
+    es_helper.client.search(index: index_name).dig('hits', 'hits').map { |hit| hit['_source']['id'] }
+  end
 end

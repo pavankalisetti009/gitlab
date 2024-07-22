@@ -1,0 +1,43 @@
+# frozen_string_literal: true
+
+module Search
+  module Elastic
+    class DeleteWorker
+      include ApplicationWorker
+      prepend ::Elastic::IndexingControl
+      prepend ::Geo::SkipSecondary
+
+      sidekiq_options retry: 3
+      data_consistency :delayed
+      feature_category :global_search
+      urgency :throttled
+      idempotent!
+
+      TASKS = {
+        project_transfer: ::Search::Elastic::Delete::ProjectTransferService
+      }.freeze
+
+      def perform(options = {})
+        return false unless Gitlab::CurrentSettings.elasticsearch_indexing?
+
+        options = options.with_indifferent_access
+        task = options[:task]
+        return run_all_tasks(options) if task.to_sym == :all
+
+        raise ArgumentError, "Unknown task: #{task.inspect}" unless TASKS.key?(task.to_sym)
+
+        TASKS[task.to_sym].execute(options)
+      end
+
+      private
+
+      def run_all_tasks(options)
+        TASKS.each_key do |task|
+          with_context(related_class: self.class) do
+            self.class.perform_async(options.merge(task: task))
+          end
+        end
+      end
+    end
+  end
+end
