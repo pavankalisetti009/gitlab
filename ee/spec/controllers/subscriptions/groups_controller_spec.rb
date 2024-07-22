@@ -105,7 +105,7 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
     end
   end
 
-  describe 'POST #create' do
+  describe 'POST #create', :with_current_organization do
     context 'with an unauthenticated user' do
       subject { post :create, params: { group: { name: 'Test Group', plan_id: 'plan-id' } } }
 
@@ -116,6 +116,7 @@ RSpec.describe Subscriptions::GroupsController, feature_category: :subscription_
     context 'with an authenticated user' do
       before do
         sign_in(user)
+        current_organization.users << user
       end
 
       context 'with valid params' do

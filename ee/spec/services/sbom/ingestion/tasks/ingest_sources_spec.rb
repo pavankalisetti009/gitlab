@@ -6,7 +6,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestSources, feature_category: :depende
   describe '#execute' do
     let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
 
-    let!(:organization) { create(:organization, :default) }
+    let(:organization) { pipeline.project.namespace.organization }
     let(:report_source) { create(:ci_reports_sbom_source) }
     let(:occurrence_maps) { create_list(:sbom_occurrence_map, 4, report_source: report_source) }
 

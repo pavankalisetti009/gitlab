@@ -41,7 +41,9 @@ module Registrations
                       end
 
       service_params = params.with_defaults(organization_id: Current.organization_id)
-      result = service_class.new(current_user, service_params).execute
+      result = Namespace.with_disabled_organization_validation do
+        service_class.new(current_user, service_params).execute
+      end
 
       if result.success?
         actions_after_success(result.payload)

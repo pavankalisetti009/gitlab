@@ -152,7 +152,7 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     subject(:set_exportable) { vulnerability_export.exportable = exportable }
 
     context 'when the exportable is a Project' do
-      let(:exportable) { build(:project) }
+      let_it_be(:exportable) { create(:project) }
 
       it 'changes the exportable of the export to given project' do
         expect { set_exportable }.to change { vulnerability_export.exportable }.to(exportable)
@@ -165,7 +165,7 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
     end
 
     context 'when the exportable is a Group' do
-      let(:exportable) { build(:group) }
+      let(:exportable) { create(:group) }
 
       it 'changes the exportable of the export to given group' do
         expect { set_exportable }.to change { vulnerability_export.exportable }.to(exportable)

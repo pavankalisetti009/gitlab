@@ -786,7 +786,7 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
       end
 
       context 'when an error occurs creating a group' do
-        let(:group) { Group.new(path: 'foo') }
+        let(:group) { Group.new(path: 'foo', organization: current_organization) }
 
         it 'returns the errors in json format' do
           group.valid?

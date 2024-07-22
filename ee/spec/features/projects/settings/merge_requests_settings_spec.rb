@@ -6,7 +6,7 @@ RSpec.describe 'Project settings > [EE] Merge Requests', :js, feature_category: 
 
   let_it_be(:user) { create(:user, :with_namespace) }
   let_it_be(:group) { create(:group) }
-  let_it_be(:project) { create(:project, :public, namespace: user.namespace, path: 'gitlab', name: 'sample', group: group) }
+  let_it_be(:project) { create(:project, :public, path: 'gitlab', name: 'sample', group: group) }
   let_it_be(:group_member) { create(:user) }
 
   before do
