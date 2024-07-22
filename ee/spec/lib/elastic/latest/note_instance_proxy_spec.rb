@@ -8,10 +8,6 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
   describe '#as_indexed_json' do
     include ElasticsearchHelpers
 
-    before do
-      set_elasticsearch_migration_to :add_schema_version_to_note, including: true
-    end
-
     let(:result) { subject.as_indexed_json }
     let(:noteable) { note.noteable }
     let(:common_attributes) do
@@ -45,16 +41,6 @@ RSpec.describe Elastic::Latest::NoteInstanceProxy, feature_category: :global_sea
 
       it 'serializes the object as a hash with issue properties' do
         expect(result).to match(common_attributes.merge(issue_attributes))
-      end
-
-      context 'when migration add_schema_version_to_note is not finished' do
-        before do
-          set_elasticsearch_migration_to :add_schema_version_to_note, including: false
-        end
-
-        it 'serializes the object as a hash without schema_version field' do
-          expect(result).to match(common_attributes.except(:schema_version).merge(issue_attributes))
-        end
       end
     end
 
