@@ -304,26 +304,6 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
     end
   end
 
-  describe '#show_code_suggestions_card?' do
-    let(:namespace) { build(:namespace) }
-
-    subject { helper.show_code_suggestions_card?(namespace) }
-
-    it { is_expected.to eq(true) }
-
-    context 'when namespace has an active code suggestions add_on' do
-      let(:namespace) { create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro).namespace }
-
-      it { is_expected.to eq(false) }
-    end
-
-    context 'when namespace has an expired code suggestions add_on' do
-      let(:namespace) { create(:gitlab_subscription_add_on_purchase, :expired, :gitlab_duo_pro).namespace }
-
-      it { is_expected.to eq(true) }
-    end
-  end
-
   describe '#upgrade_button_css_classes' do
     let(:plan_data) { double(deprecated?: plan_is_deprecated) }
     let(:namespace) do
