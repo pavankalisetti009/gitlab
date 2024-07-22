@@ -13,3 +13,5 @@ class AddArchivedToWikis < Elastic::Migration
     { archived: { type: 'boolean' } }
   end
 end
+
+AddArchivedToWikis.prepend ::Elastic::MigrationObsolete
