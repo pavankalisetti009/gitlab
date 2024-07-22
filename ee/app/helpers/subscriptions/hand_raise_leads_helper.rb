@@ -52,22 +52,6 @@ module Subscriptions
       }
     end
 
-    def code_suggestions_billing_card_hand_raise_lead_data
-      {
-        glm_content: 'code-suggestions',
-        product_interaction: 'Requested Contact-Duo Pro Add-On',
-        button_attributes: {
-          'data-testid': 'code-suggestions-hand-raise-lead-button',
-          category: 'tertiary',
-          variant: 'confirm'
-        }.to_json,
-        cta_tracking: {
-          action: 'click_button',
-          label: 'code_suggestions_hand_raise_lead_form'
-        }.to_json
-      }
-    end
-
     def discover_duo_pro_hand_raise_lead_data(namespace)
       {
         namespace_id: namespace.id,

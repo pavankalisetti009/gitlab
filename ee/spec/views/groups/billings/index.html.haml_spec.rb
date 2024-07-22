@@ -8,6 +8,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group_with_plan, plan: :free_plan) }
   let_it_be(:plans_data) { billing_plans_data.map { |plan| Hashie::Mash.new(plan) } }
+  let(:duo_pro_card_msg) { s_('CodeSuggestions|Introducing the GitLab Duo Pro add-on') }
 
   before do
     stub_signing_key
@@ -18,6 +19,22 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
   end
 
   context 'when the group is the top level' do
+    shared_examples 'without duo pro component' do
+      it 'does not have the duo pro component' do
+        render
+
+        expect(rendered).not_to have_content(duo_pro_card_msg)
+      end
+    end
+
+    shared_examples 'with duo pro component' do
+      it 'renders the component' do
+        render
+
+        expect(rendered).to have_content(duo_pro_card_msg)
+      end
+    end
+
     context 'with free plan' do
       it 'renders the billing page' do
         render
@@ -62,6 +79,8 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect_to_have_tracking(action: 'click_button', label: 'start_trial')
       end
 
+      it_behaves_like 'without duo pro component'
+
       def expect_to_have_tracking(action:, label: nil)
         css = "[data-track-action='#{action}']"
         css += "[data-track-label='#{label}']" if label
@@ -77,6 +96,8 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
 
           expect(rendered).not_to have_link('Start a free Ultimate trial')
         end
+
+        it_behaves_like 'without duo pro component'
       end
     end
 
@@ -91,6 +112,8 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
 
         expect(rendered).not_to have_link('Start a free Ultimate trial')
       end
+
+      it_behaves_like 'with duo pro component'
     end
 
     context 'with a paid plan' do
@@ -115,28 +138,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         end
       end
 
-      context 'with code suggestions' do
-        it 'renders the code suggestions component' do
-          tracking = {
-            action: 'click_button',
-            label: 'code_suggestions_hand_raise_lead_form'
-          }.to_json
-          hand_raise_selector = ".js-hand-raise-lead-trigger[data-cta-tracking='#{tracking}']"
-
-          render
-
-          expect(rendered).to have_content(s_('CodeSuggestions|Introducing the GitLab Duo Pro add-on'))
-
-          expect(rendered).to have_content(
-            'Boost productivity across the software development life cycle by using ' \
-            'Code Suggestions and GitLab Duo Chat'
-          )
-
-          expect(rendered).to have_content(_('You can now try GitLab Duo Pro for free for 60 days'))
-          expect(rendered).to have_link('GitLab Duo Pro', href: 'https://about.gitlab.com/gitlab-duo/')
-          expect(rendered).to have_selector(hand_raise_selector)
-        end
-      end
+      it_behaves_like 'with duo pro component'
     end
 
     context 'when purchasing a plan' do

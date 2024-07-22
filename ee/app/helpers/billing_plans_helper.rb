@@ -110,10 +110,6 @@ module BillingPlansHelper
     ).build(source: params[:source])
   end
 
-  def show_code_suggestions_card?(namespace)
-    GitlabSubscriptions::DuoPro.no_active_add_on_purchase_for_namespace?(namespace)
-  end
-
   def billing_upgrade_button_data(plan)
     {
       track_action: 'click_button',
