@@ -76,6 +76,8 @@ RSpec.describe PhoneVerification::TelesignClient::RiskScoreService, feature_cate
             telesign_risk_level: 'low',
             telesign_risk_category: [10002],
             telesign_country: 'US',
+            telesign_phone_type: 'MOBILE',
+            valid_phone_type: true,
             username: user.username,
             email: user.email
           )

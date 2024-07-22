@@ -28,7 +28,7 @@ module PhoneVerification
 
         case response_status
         when HTTP_SUCCESS
-          BLOCKED_PHONE_TYPES.include?(phone_type) ? blocked : risk_success(risk_score)
+          valid_phone_type? ? risk_success(risk_score) : blocked
         when HTTP_CLIENT_ERROR
           invalid_phone_number_error
         else
@@ -66,6 +66,8 @@ module PhoneVerification
           telesign_risk_level: risk_level,
           telesign_risk_category: risk_category,
           telesign_country: country,
+          telesign_phone_type: phone_type,
+          valid_phone_type: valid_phone_type?,
           email: user.email
         }
 
@@ -84,6 +86,11 @@ module PhoneVerification
       def json_response
         @json_response ||= @response.json
       end
+
+      def valid_phone_type?
+        BLOCKED_PHONE_TYPES.exclude?(phone_type)
+      end
+      strong_memoize_attr :valid_phone_type?
 
       def phone_type
         json_response.dig('phone_type', 'description')
