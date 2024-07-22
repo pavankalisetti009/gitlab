@@ -44,7 +44,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center">
+  <div class="gl-flex gl-items-center">
     <span class="-gl-mt-1">{{ name }}</span>
     <span v-if="description" class="gl-ml-3">
       <gl-icon
@@ -57,7 +57,7 @@ export default {
       <gl-popover :target="popoverTarget" placement="top">
         <template #title>{{ __('Who can approve?') }}</template>
         <p>{{ description }}</p>
-        <gl-link v-if="linkPath" :href="linkPath" class="gl-font-sm" target="_blank">{{
+        <gl-link v-if="linkPath" :href="linkPath" class="gl-text-sm" target="_blank">{{
           __('More information')
         }}</gl-link>
       </gl-popover>

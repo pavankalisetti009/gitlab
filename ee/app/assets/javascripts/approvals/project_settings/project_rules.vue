@@ -132,7 +132,7 @@ export default {
           <th :colspan="firstColumnSpan" :class="firstColumnWidth">
             {{ hasNamedRule ? name : members }}
           </th>
-          <th v-if="hasNamedRule" class="gl-w-1/2 gl-hidden sm:gl-table-cell">
+          <th v-if="hasNamedRule" class="gl-hidden gl-w-1/2 sm:gl-table-cell">
             <span>{{ members }}</span>
           </th>
           <th v-if="settings.allowMultiRule && !isBranchRulesEdit">{{ branches }}</th>
@@ -158,7 +158,7 @@ export default {
             <td data-testid="approvals-table-name" :data-label="name">
               <rule-name :name="rule.name" />
             </td>
-            <td class="gl-py-5!" data-testid="approvals-table-members" :data-label="members">
+            <td class="!gl-py-5" data-testid="approvals-table-members" :data-label="members">
               <user-avatar-list
                 :items="rule.eligibleApprovers"
                 :img-size="24"
@@ -174,14 +174,14 @@ export default {
               <rule-branches :rule="rule" />
             </td>
             <td
-              class="gl-py-5!"
+              class="!gl-py-5"
               data-testid="approvals-table-approvals-required"
               :data-label="approvalsRequired"
             >
               <rule-input :rule="rule" :is-branch-rules-edit="isBranchRulesEdit" />
             </td>
             <td
-              class="text-nowrap gl-md-pl-0! gl-md-pr-0!"
+              class="text-nowrap md:!gl-pl-0 md:!gl-pr-0"
               data-testid="approvals-table-controls"
               :data-label="actions"
             >
@@ -192,7 +192,7 @@ export default {
       </template>
     </rules>
 
-    <div v-if="hasPagination" class="gl-display-flex gl-justify-content-center gl-mb-4 gl-mt-6">
+    <div v-if="hasPagination" class="gl-mb-4 gl-mt-6 gl-flex gl-justify-center">
       <gl-button :loading="isLoading" @click="fetchRules">{{ __('Show more') }}</gl-button>
     </div>
   </div>
