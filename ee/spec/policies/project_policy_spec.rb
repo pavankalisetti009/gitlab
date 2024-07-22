@@ -3374,10 +3374,9 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       stub_licensed_features(observability: true)
     end
 
-    describe 'when observability and observability_tracing feature flags are disabled' do
+    describe 'when observability_features is disabled' do
       before do
         stub_feature_flags(observability_features: false)
-        stub_feature_flags(observability_tracing: false)
       end
 
       it { is_expected.to be_disallowed(:read_observability) }
@@ -3386,14 +3385,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     describe 'when observability feature flag is enabled for root namespace' do
       before do
         stub_feature_flags(observability_features: project.root_namespace)
-      end
-
-      it { is_expected.to be_allowed(:read_observability) }
-    end
-
-    describe 'when observability_tracing feature flag is enabled for root namespace' do
-      before do
-        stub_feature_flags(observability_tracing: project.root_namespace)
       end
 
       it { is_expected.to be_allowed(:read_observability) }

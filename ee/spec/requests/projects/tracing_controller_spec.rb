@@ -32,7 +32,6 @@ RSpec.describe Projects::TracingController, feature_category: :tracing do
 
   before do
     stub_licensed_features(observability: true)
-    stub_feature_flags(observability_tracing: observability_ff)
     stub_feature_flags(observability_features: observability_ff)
     sign_in(user)
   end
