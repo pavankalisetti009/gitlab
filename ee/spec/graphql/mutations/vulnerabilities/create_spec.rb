@@ -7,6 +7,7 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
   let_it_be(:user) { create(:user, maintainer_of: project) }
 
   let(:mutated_vulnerability) { subject[:vulnerability] }
+  let(:project_gid) { GitlabSchema.id_from_object(project) }
 
   before do
     stub_licensed_features(security_dashboard: true)
@@ -63,13 +64,23 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
     end
 
     context 'when a vulnerability with the same identifier already exists' do
-      let(:project_gid) { GitlabSchema.id_from_object(project) }
-
       before do
         resolve(described_class, args: attributes, ctx: { current_user: user })
       end
 
       it_behaves_like 'successfully created vulnerability'
+    end
+
+    context 'when no identifiers are given' do
+      before do
+        attributes[:identifiers] = []
+      end
+
+      it 'raises validation error' do
+        expect_graphql_error_to_be_created(GraphQL::Schema::Validator::ValidationFailedError) do
+          resolve(described_class, args: attributes, ctx: { current_user: user })
+        end
+      end
     end
 
     context 'with valid parameters' do
