@@ -92,6 +92,18 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
         expect(service).to be_instance_of(CloudConnector::MissingServiceData)
       end
     end
+
+    context 'when available_services does not contain the requested name' do
+      it 'returns null service data' do
+        available_services = { duo_chat: CloudConnector::BaseAvailableServiceData.new(:duo_chat, nil, nil) }
+        expect(described_class.access_data_reader).to receive(:read_available_services).and_return(available_services)
+
+        service = described_class.find_by_name(:service_name_that_is_not_synced_or_typo)
+
+        expect(service.name).to eq(:missing_service)
+        expect(service).to be_instance_of(CloudConnector::MissingServiceData)
+      end
+    end
   end
 
   describe '#available_services' do
