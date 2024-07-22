@@ -5,12 +5,7 @@ import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_help
 import { stubComponent } from 'helpers/stub_component';
 import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue';
 import CountryOrRegionSelector from 'jh_else_ee/trials/components/country_or_region_selector.vue';
-import {
-  GENERIC_TRIAL_FORM_SUBMIT_TEXT,
-  TRIAL_TERMS_TEXT,
-  ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
-  DUO_PRO_TRIAL_VARIANT,
-} from 'ee/trials/constants';
+import { TRIAL_TERMS_TEXT } from 'ee/trials/constants';
 import { trackSaasTrialSubmit } from 'ee/google_tag_manager';
 import { FORM_DATA, SUBMIT_PATH, GTM_SUBMIT_EVENT_LABEL } from './mock_data';
 
@@ -22,10 +17,11 @@ Vue.use(VueApollo);
 
 describe('TrialCreateLeadForm', () => {
   let wrapper;
+  const submitButtonText = 'Some Text';
 
   const createComponent = ({
     mountFunction = shallowMountExtended,
-    provide = { trialVariant: undefined },
+    provide = { submitButtonText },
   } = {}) =>
     mountFunction(TrialCreateLeadForm, {
       provide: {
@@ -79,16 +75,10 @@ describe('TrialCreateLeadForm', () => {
     });
   });
 
-  it('has the "Start free GitLab Ultimate trial" text on the submit button', () => {
+  it('has the submit button text on the submit button', () => {
     wrapper = createComponent();
 
-    expect(findButton().text()).toBe(ULTIMATE_TRIAL_FORM_SUBMIT_TEXT);
-  });
-
-  it('has the "Continue" text on the submit button when for other trial variants', () => {
-    wrapper = createComponent({ provide: { trialVariant: DUO_PRO_TRIAL_VARIANT } });
-
-    expect(findButton().text()).toBe(GENERIC_TRIAL_FORM_SUBMIT_TEXT);
+    expect(findButton().text()).toBe(submitButtonText);
   });
 
   describe('submitting', () => {

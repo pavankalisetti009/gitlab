@@ -31,4 +31,3 @@ export const TRIAL_COOKIE_POLICY = {
   text: s__('Trial|Cookie Policy.'),
   url: `${PROMO_URL}/privacy/cookies`,
 };
-export const DUO_PRO_TRIAL_VARIANT = 'duo_pro';

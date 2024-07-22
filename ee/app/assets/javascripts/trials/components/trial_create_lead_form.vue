@@ -22,14 +22,11 @@ import {
 } from 'ee/vue_shared/leads/constants';
 import {
   TRIAL_COMPANY_SIZE_PROMPT,
-  GENERIC_TRIAL_FORM_SUBMIT_TEXT,
   TRIAL_PHONE_DESCRIPTION,
   TRIAL_TERMS_TEXT,
   TRIAL_GITLAB_SUBSCRIPTION_AGREEMENT,
   TRIAL_PRIVACY_STATEMENT,
   TRIAL_COOKIE_POLICY,
-  ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
-  DUO_PRO_TRIAL_VARIANT,
 } from '../constants';
 
 export default {
@@ -48,7 +45,7 @@ export default {
   directives: {
     autofocusonshow,
   },
-  inject: ['user', 'submitPath', 'gtmSubmitEventLabel', 'trialVariant'],
+  inject: ['user', 'submitPath', 'gtmSubmitEventLabel', 'submitButtonText'],
   data() {
     return this.user;
   },
@@ -62,13 +59,6 @@ export default {
         ...companySizes,
       ];
     },
-    submitBtnText() {
-      if (this.trialVariant === DUO_PRO_TRIAL_VARIANT) {
-        return this.$options.i18n.formSubmitText;
-      }
-
-      return this.$options.i18n.ultimateTrialFormSubmitText;
-    },
   },
   methods: {
     onSubmit() {
@@ -81,8 +71,6 @@ export default {
     companyNameLabel: LEADS_COMPANY_NAME_LABEL,
     companySizeLabel: LEADS_COMPANY_SIZE_LABEL,
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
-    ultimateTrialFormSubmitText: ULTIMATE_TRIAL_FORM_SUBMIT_TEXT,
-    formSubmitText: GENERIC_TRIAL_FORM_SUBMIT_TEXT,
     companySizeSelectPrompt: TRIAL_COMPANY_SIZE_PROMPT,
     phoneNumberDescription: TRIAL_PHONE_DESCRIPTION,
     termsText: TRIAL_TERMS_TEXT,
@@ -165,7 +153,7 @@ export default {
       />
     </gl-form-group>
     <gl-button type="submit" variant="confirm" data-testid="continue-button" class="gl-w-full">
-      {{ submitBtnText }}
+      {{ submitButtonText }}
     </gl-button>
 
     <div class="gl-mt-4">
