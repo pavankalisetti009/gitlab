@@ -746,13 +746,13 @@ allow them to be specified as a new field in the defaults declaration:
 **All settings should eventually be configurable via the Web UI (and optionally GraphQL API)**
 
 This means that the usage of environment variables with the prefix `GITLAB_REMOTE_DEVELOPMENT_` to control settings
-is _only intended to be used for the following purposes_:
+is _only intended to be used for the following **non-production** purposes_:
 
-1. To support initial proof-of-concept of "early adopter" iterations, where we want to quickly make a new setting
+1. To support initial proof-of-concept iterations, where we want to quickly make a new setting
    available for use, but have not yet done the planning or design work to create an appropriate
    UI for the setting.
-1. To easily perform a global override of any setting for local or temporary testing, either in
-   local development or in a test/self-managed installation.
+1. To easily perform a global override of any setting for local or temporary testing, for example in
+   local development or in a test installation.
 
 This is why ENV vars intentionally always have the highest precedence over all other methods of providing
 settings values.
