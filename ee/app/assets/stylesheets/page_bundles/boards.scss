@@ -58,7 +58,7 @@
 
     // add a border between all items, but not at the start or end
     + .block {
-      border-top: solid 1px var(--border-color, $border-color);
+      border-top: solid 1px var(--gl-border-color-default);
     }
   }
 }
