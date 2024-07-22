@@ -25,7 +25,7 @@ module QA
       end
 
       it(
-        'finds the user that matches username',
+        'finds the user that matches username', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/382846'
       ) do
         QA::Support::Retrier.retry_on_exception(
