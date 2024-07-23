@@ -115,11 +115,6 @@ export const CONNECTIVITY_ERROR = 'CONNECTIVITY_ERROR';
 export const INVALID_CODE_ERROR = 'INVALID_CODE_ERROR';
 
 export const supportLink = `${PROMO_URL}/support/#contact-support`;
-export const subscriptionBannerTitle = s__('SuperSonics|Cloud licensing');
-export const subscriptionBannerText = s__(
-  "SuperSonics|Cloud licensing is now available. It's an easier way to activate instances and manage subscriptions. Read more about it in our %{blogPostLinkStart}blog post%{blogPostLinkEnd}. Activation codes are available in the %{portalLinkStart}Customers Portal%{portalLinkEnd}.",
-);
-export const subscriptionBannerBlogPostUrl = `${PROMO_URL}/blog/2021/07/20/improved-billing-and-subscription-management/`;
 export const exportLicenseUsageBtnText = s__('SuperSonics|Export license usage file');
 export const customersPortalBtnText = s__('SuperSonics|Customers Portal');
 

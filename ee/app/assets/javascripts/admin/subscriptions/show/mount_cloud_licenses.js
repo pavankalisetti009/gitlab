@@ -26,7 +26,6 @@ export default () => {
     freeTrialPath,
     hasActiveLicense,
     licenseRemovePath,
-    subscriptionActivationBannerCalloutName,
     subscriptionSyncPath,
     licenseUsageFilePath,
   } = el.dataset;
@@ -46,7 +45,6 @@ export default () => {
       customersPortalUrl,
       freeTrialPath,
       licenseRemovePath,
-      subscriptionActivationBannerCalloutName,
       subscriptionSyncPath,
     },
     render: (h) =>
