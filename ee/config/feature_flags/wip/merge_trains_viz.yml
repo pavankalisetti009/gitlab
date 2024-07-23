@@ -1,9 +1,0 @@
----
-name: merge_trains_viz
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/454179
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/149025
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/455342
-milestone: '16.11'
-group: group::pipeline execution
-type: wip
-default_enabled: false

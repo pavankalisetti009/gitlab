@@ -29,7 +29,7 @@ module Mutations
         private
 
         def ensure_feature_available!
-          return if Feature.enabled?(:merge_trains_viz, project) && merge_trains_available?
+          return if merge_trains_available?
 
           raise_resource_not_available_error!
         end

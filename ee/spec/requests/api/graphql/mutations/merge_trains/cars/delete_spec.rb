@@ -90,20 +90,6 @@ RSpec.describe 'Deleting a MergeTrain Car', feature_category: :merge_trains do
       end
     end
 
-    context 'when the feature is disabled' do
-      before do
-        stub_feature_flags(merge_trains_viz: false)
-        post_mutation
-      end
-
-      it 'returns a resource not available error' do
-        expect_graphql_errors_to_include(
-          "The resource that you are attempting to access does not exist " \
-            "or you don't have permission to perform this action"
-        )
-      end
-    end
-
     context 'when the car does not exist' do
       let(:target_car_id) { build(:merge_train_car, id: non_existing_record_iid).to_gid }
 

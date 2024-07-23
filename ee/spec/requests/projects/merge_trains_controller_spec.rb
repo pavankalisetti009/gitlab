@@ -13,27 +13,29 @@ RSpec.describe Projects::MergeTrainsController, type: :request, feature_category
       project.add_maintainer(user)
     end
 
-    before do
-      sign_in(user)
-    end
+    context 'when feature is enabled' do
+      before do
+        stub_licensed_features(merge_trains: true)
+        sign_in(user)
 
-    context 'when feature flag "merge_trains_viz" is enabled' do
-      it 'renders the merge trains index template' do
         request
+      end
 
+      it 'renders the merge trains index template' do
         expect(response).to have_gitlab_http_status(:ok)
         expect(response).to render_template('projects/merge_trains/index')
       end
     end
 
-    context 'when feature flag "merge_trains_viz" is disabled' do
+    context 'when feature is disabled' do
       before do
-        stub_feature_flags(merge_trains_viz: false)
+        stub_licensed_features(merge_trains: false)
+        sign_in(user)
+
+        request
       end
 
       it 'returns "not found response"' do
-        request
-
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
