@@ -476,7 +476,7 @@ group :development, :test do
 
   gem 'awesome_print', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 
-  gem 'database_cleaner-active_record', '~> 2.1.0', feature_category: :database
+  gem 'database_cleaner-active_record', '~> 2.2.0', feature_category: :database
   gem 'rspec-rails', '~> 6.1.1', feature_category: :shared
   gem 'factory_bot_rails', '~> 6.4.3', feature_category: :tooling
 
@@ -515,7 +515,7 @@ group :development, :test do
   # For now we only use vite in development / test, and not for production builds
   # See: https://gitlab.com/gitlab-org/frontend/rfcs/-/issues/106
   gem 'vite_rails', '~> 3.0.17', feature_category: :shared
-  gem 'vite_ruby', '~> 3.5.0', feature_category: :shared
+  gem 'vite_ruby', '~> 3.7.0', feature_category: :shared
 
   gem 'gitlab-housekeeper', path: 'gems/gitlab-housekeeper', feature_category: :tooling
 end

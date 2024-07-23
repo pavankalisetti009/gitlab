@@ -21,6 +21,7 @@ const parseJson = (data) => {
 export const DEFAULT_IFRAME_CONTAINER_MIN_HEIGHT = '200px';
 export const ZUORA_EVENT_CATEGORY = 'Zuora_cc';
 export const INVALID_SECURITY = 'Invalid_Security';
+export const CREDIT_CARD_LIMIT_EXCEEDED_ERROR = 'Credit card verification limit exceeded';
 
 export const Action = Object.freeze({
   RESIZE: 'resize',
@@ -76,6 +77,9 @@ error states in either the iframe (client side validation) or as an alert.
 export default {
   i18n: {
     paymentValidationError: s__('Billings|Error validating card details'),
+    paymentValidationLimitExceededError: s__(
+      'Billings|Credit card has exceeded the daily verification limit. Use a different card or try again later.',
+    ),
   },
   name: 'ZuoraSimple',
   components: {
@@ -303,7 +307,11 @@ export default {
       return Api.validatePaymentMethod(id, this.currentUserId)
         .then(({ data }) => {
           if (!parseBoolean(data.success)) {
-            throw new Error();
+            if (data.data?.errors === CREDIT_CARD_LIMIT_EXCEEDED_ERROR) {
+              throw new Error(this.$options.i18n.paymentValidationLimitExceededError);
+            } else {
+              throw new Error();
+            }
           }
           this.isLoading = false;
           this.$emit(Event.SUCCESS);

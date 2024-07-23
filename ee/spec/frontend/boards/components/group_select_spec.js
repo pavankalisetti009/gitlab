@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import GroupSelect from 'ee/boards/components/group_select.vue';
-import subgroupsQuery from 'ee/boards/graphql/sub_groups.query.graphql';
+import subgroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
