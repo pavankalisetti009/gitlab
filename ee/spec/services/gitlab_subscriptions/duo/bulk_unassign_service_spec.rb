@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DuoPro::BulkUnassignService, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::Duo::BulkUnassignService, feature_category: :seat_cost_management do
   let_it_be(:users) { create_list(:user, 5) }
   let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
   let_it_be(:add_on_purchase) do
@@ -13,7 +13,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkUnassignService, feature_categor
     let(:expected_logs) do
       {
         add_on_purchase_id: add_on_purchase.id,
-        message: 'Duo Pro Bulk User Unassignment',
+        message: 'Duo Bulk User Unassignment',
         response_type: 'error',
         payload: { errors: error_type }
       }
@@ -39,7 +39,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkUnassignService, feature_categor
     let(:expected_logs) do
       {
         add_on_purchase_id: add_on_purchase.id,
-        message: 'Duo Pro Bulk User Unassignment',
+        message: 'Duo Bulk User Unassignment',
         response_type: 'success',
         payload: { users: expected_users.map(&:id) }
       }

@@ -80,31 +80,32 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
       # 3) Insert into personal access tokens
       # 4) Release savepoint
       # 5) Select personal access tokens
-      # 6) Select geo nodes
-      # 7) Update personal access tokens(last used at)
-      # 8) Select user
-      # 9) Authorization check
-      # 10) Select vulnerability_reads
-      # 11) Select vulnerabilities
-      # 12) Select project
-      # 13) Select route
-      # 14) Select vulnerability occurrences
-      # 15) Select vulnerability reads
-      # 16) Select vulnerability scanners
-      # 17) Select vulnerability identifiers join table
-      # 18) Select vulnerability identifiers
-      # 19) Select namespace
-      # 20) Select group links
-      # 21) Select project features
-      # 22) Authorization check
-      # 23) Select issue links
-      # 24) Select issues
-      # 25) Select issue project
-      # 26) Loading the project authorizations
-      # 27) Loading the namespace
-      # 28) Loading the user
-      # 29) Loading the organization
-      expect { query_issue_links }.not_to exceed_query_limit(29)
+      # 6) Select current organization
+      # 7) Select geo nodes
+      # 8) Update personal access tokens(last used at)
+      # 9) Select user
+      # 10) Authorization check
+      # 12) Select vulnerability_reads
+      # 13) Select vulnerabilities
+      # 13) Select project
+      # 14) Select route
+      # 15) Select vulnerability occurrences
+      # 16) Select vulnerability reads
+      # 17) Select vulnerability scanners
+      # 18) Select vulnerability identifiers join table
+      # 19) Select vulnerability identifiers
+      # 20) Select namespace
+      # 21) Select group links
+      # 22) Select project features
+      # 23) Authorization check
+      # 24) Select issue links
+      # 25) Select issues
+      # 26) Select issue project
+      # 27) Loading the project authorizations
+      # 28) Loading the namespace
+      # 29) Loading the user
+      # 30) Loading the organization
+      expect { query_issue_links }.not_to exceed_query_limit(30)
     end
   end
 

@@ -15,7 +15,7 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_rollout: false)
+    stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_rollout: false, work_item_epics_list: false)
 
     sign_in(user)
   end
@@ -221,6 +221,37 @@ RSpec.describe 'epics list', :js, feature_category: :portfolio_management do
             expect(page.find('.issuable-list')).to have_content(epic_work_item_1.title)
             expect(page.find('.issuable-list')).to have_content(epic_work_item_2.title)
           end
+        end
+      end
+
+      context 'when work_item_epics_list is enabled' do
+        let_it_be(:epic_work_item_1) do
+          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 1", assignees: [user])
+        end
+
+        let_it_be(:epic_work_item_2) do
+          create(:work_item, :epic_with_legacy_epic, namespace: group, title: "WorkItem Epic 2", assignees: [user])
+        end
+
+        before do
+          stub_feature_flags(work_item_epics: true, work_item_epics_rollout: true, work_item_epics_list: true)
+        end
+
+        it 'renders work item epics' do
+          visit group_epics_path(group)
+
+          # We create a synced epic work item for each epic and legacy epic for each WI epic.
+          # We therefore expect 6 epics (4 legacy epics and their synced work item + 2 work item epics)
+          expect(page).to have_selector('.issue', count: 6)
+          expect(page).to have_link(epic_work_item_1.title)
+          expect(page).to have_link(epic_work_item_2.title)
+        end
+
+        it 'displays epic assignees' do
+          visit group_epics_path(group)
+
+          expect(page.find("#issuable_#{epic_work_item_1.id}")).to have_link("Assigned to #{user.name}")
+          expect(page.find("#issuable_#{epic_work_item_2.id}")).to have_link("Assigned to #{user.name}")
         end
       end
     end

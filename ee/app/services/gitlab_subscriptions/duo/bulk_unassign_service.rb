@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GitlabSubscriptions
-  module DuoPro
+  module Duo
     class BulkUnassignService < BaseService
       NO_ASSIGNMENTS_FOUND = 'NO_ASSIGNMENTS_FOUND'
 
@@ -41,7 +41,7 @@ module GitlabSubscriptions
       def log_events(type:, payload:)
         {
           add_on_purchase_id: add_on_purchase.id,
-          message: 'Duo Pro Bulk User Unassignment',
+          message: 'Duo Bulk User Unassignment',
           response_type: type,
           payload: payload
         }
