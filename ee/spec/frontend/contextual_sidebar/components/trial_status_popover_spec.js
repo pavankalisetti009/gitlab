@@ -3,7 +3,7 @@ import { GlBreakpointInstance } from '@gitlab/ui/dist/utils';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import timezoneMock from 'timezone-mock';
-import { POPOVER } from 'ee/contextual_sidebar/components/constants';
+import { POPOVER, WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/constants';
 import TrialStatusPopover from 'ee/contextual_sidebar/components/trial_status_popover.vue';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
@@ -40,7 +40,6 @@ describe('TrialStatusPopover component', () => {
     return extendedWrapper(
       mountFn(TrialStatusPopover, {
         provide: {
-          containerId: undefined,
           daysRemaining: defaultDaysRemaining,
           planName: 'Ultimate',
           plansHref: 'billing/path-for/group',
@@ -91,9 +90,17 @@ describe('TrialStatusPopover component', () => {
     });
   });
 
-  describe('popover css classes', () => {
+  describe('popover props/attributes', () => {
     it('does not set width when showing active trial status', () => {
       expect(findGlPopover().props('cssClasses')).toEqual(['gl-p-2']);
+    });
+
+    it('sets the container', () => {
+      expect(findGlPopover().props('container')).toEqual(WIDGET_CONTAINER_ID);
+    });
+
+    it('sets the target', () => {
+      expect(findGlPopover().props('target')).toEqual(WIDGET_CONTAINER_ID);
     });
 
     it('sets width when showing expired trial status', () => {

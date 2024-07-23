@@ -8,7 +8,7 @@ import { n__, sprintf } from '~/locale';
 import Tracking from '~/tracking';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { PQL_MODAL_ID } from 'ee/hand_raise_leads/hand_raise_lead/constants';
-import { POPOVER, RESIZE_EVENT } from './constants';
+import { POPOVER, RESIZE_EVENT, WIDGET_CONTAINER_ID } from './constants';
 
 const {
   i18n,
@@ -28,11 +28,9 @@ export default {
   },
   mixins: [trackingMixin],
   inject: {
-    containerId: {},
     daysRemaining: {},
     planName: {},
     plansHref: {},
-    targetId: {},
     trialEndDate: {},
     trialDiscoverPagePath: {},
   },
@@ -42,6 +40,7 @@ export default {
     };
   },
   i18n,
+  containerId: WIDGET_CONTAINER_ID,
   handRaiseLeadAttributes: {
     size: 'small',
     variant: 'confirm',
@@ -133,8 +132,8 @@ export default {
     ref="popover"
     placement="rightbottom"
     boundary="viewport"
-    :container="containerId"
-    :target="targetId"
+    :container="$options.containerId"
+    :target="$options.containerId"
     :disabled="disabled"
     :delay="{ hide: 400 } /* eslint-disable-line @gitlab/vue-no-new-non-primitive-in-template */"
     :css-classes="cssClasses"

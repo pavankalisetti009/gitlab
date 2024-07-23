@@ -2,6 +2,7 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DuoProTrialStatusWidget from 'ee/contextual_sidebar/components/duo_pro_trial_status_widget.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
+import { WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/constants';
 
 describe('DuoProTrialStatusWidget component', () => {
   let wrapper;
@@ -44,7 +45,7 @@ describe('DuoProTrialStatusWidget component', () => {
     });
   });
 
-  describe('without the optional containerId prop', () => {
+  describe('rendered content', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
@@ -53,8 +54,8 @@ describe('DuoProTrialStatusWidget component', () => {
       expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders without an id', () => {
-      expect(findRootElement().attributes('id')).toBe(undefined);
+    it('renders with an id', () => {
+      expect(findRootElement().attributes('id')).toBe(WIDGET_CONTAINER_ID);
     });
 
     describe('tracks when the widget menu is clicked', () => {
@@ -147,16 +148,6 @@ describe('DuoProTrialStatusWidget component', () => {
       it('renders the dismiss button', () => {
         expect(findGlButton().exists()).toBe(true);
       });
-    });
-  });
-
-  describe('with the optional containerId prop', () => {
-    beforeEach(() => {
-      wrapper = createComponent({ containerId: 'some-id' });
-    });
-
-    it('renders with the given id', () => {
-      expect(findRootElement().attributes('id')).toBe('some-id');
     });
   });
 });

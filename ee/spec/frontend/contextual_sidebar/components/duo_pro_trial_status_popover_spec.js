@@ -10,6 +10,7 @@ import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/
 import {
   DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
   DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
+  WIDGET_CONTAINER_ID,
 } from 'ee/contextual_sidebar/components/constants';
 
 describe('DuoProTrialStatusPopover component', () => {
@@ -32,7 +33,6 @@ describe('DuoProTrialStatusPopover component', () => {
   const createComponent = ({ providers = {}, mountFn = shallowMountExtended, stubs = {} } = {}) => {
     wrapper = mountFn(DuoProTrialStatusPopover, {
       provide: {
-        containerId: undefined,
         daysRemaining: defaultDaysRemaining,
         planName: 'Ultimate',
         purchaseNowUrl: 'usage_quota/path-for/group',
@@ -74,9 +74,17 @@ describe('DuoProTrialStatusPopover component', () => {
     });
   });
 
-  describe('popover css classes', () => {
+  describe('popover props/attributes', () => {
     it('does not set width when showing active trial status', () => {
       expect(findGlPopover().props('cssClasses')).toEqual(['gl-p-2']);
+    });
+
+    it('sets the container', () => {
+      expect(findGlPopover().props('container')).toEqual(WIDGET_CONTAINER_ID);
+    });
+
+    it('sets the target', () => {
+      expect(findGlPopover().props('target')).toEqual(WIDGET_CONTAINER_ID);
     });
   });
 

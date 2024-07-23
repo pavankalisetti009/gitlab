@@ -1,12 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`DuoProTrialStatusWidget component without the optional containerId prop matches the snapshot for namespace in active trial 1`] = `
+exports[`DuoProTrialStatusWidget component rendered content matches the snapshot for namespace in active trial 1`] = `
 <div
   class="!gl-items-start js-expired-duo-pro-trial-widget"
   data-dismiss-endpoint="some/dismiss/endpoint"
   data-feature-id="expired_duo_pro_trial_widget"
   data-group-id="1"
   data-testid="duo-pro-trial-widget-root-element"
+  id="reference-0"
 >
   <gl-link-stub
     class="!gl-no-underline !gl-text-gray-900 gl-mt-2"

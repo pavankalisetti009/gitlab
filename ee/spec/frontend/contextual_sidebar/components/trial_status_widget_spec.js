@@ -1,6 +1,6 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { WIDGET } from 'ee/contextual_sidebar/components/constants';
+import { WIDGET, WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/constants';
 import TrialStatusWidget from 'ee/contextual_sidebar/components/trial_status_widget.vue';
 import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
@@ -48,7 +48,7 @@ describe('TrialStatusWidget component', () => {
     });
   });
 
-  describe('without the optional containerId prop', () => {
+  describe('rendered content', () => {
     beforeEach(() => {
       wrapper = createComponent();
     });
@@ -63,8 +63,8 @@ describe('TrialStatusWidget component', () => {
       expect(wrapper.element).toMatchSnapshot();
     });
 
-    it('renders without an id', () => {
-      expect(wrapper.attributes('id')).toBe(undefined);
+    it('renders with an id', () => {
+      expect(wrapper.attributes('id')).toBe(WIDGET_CONTAINER_ID);
     });
 
     it('does not render Trial twice if the plan name includes "Trial"', () => {
@@ -89,16 +89,6 @@ describe('TrialStatusWidget component', () => {
       expect(wrapper.text()).toMatchInterpolatedText(
         'Ultimate Trial Day 30/30 Learn about features',
       );
-    });
-  });
-
-  describe('with the optional containerId prop', () => {
-    beforeEach(() => {
-      wrapper = createComponent({ containerId: 'some-id' });
-    });
-
-    it('renders with the given id', () => {
-      expect(wrapper.attributes('id')).toBe('some-id');
     });
   });
 

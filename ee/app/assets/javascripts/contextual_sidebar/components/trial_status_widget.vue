@@ -3,7 +3,7 @@ import { GlProgressBar, GlIcon, GlButton } from '@gitlab/ui';
 import { removeTrialSuffix } from 'ee/billings/billings_util';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import { WIDGET } from './constants';
+import { WIDGET, WIDGET_CONTAINER_ID } from './constants';
 
 const { i18n, trackingEvents } = WIDGET;
 const trackingMixin = Tracking.mixin();
@@ -16,7 +16,6 @@ export default {
   },
   mixins: [trackingMixin],
   inject: {
-    containerId: { default: null },
     trialDaysUsed: {},
     trialDuration: {},
     navIconImagePath: {},
@@ -25,6 +24,7 @@ export default {
     trialDiscoverPagePath: {},
   },
   i18n,
+  containerId: WIDGET_CONTAINER_ID,
   computed: {
     isTrialActive() {
       return this.percentageComplete <= 100;
@@ -57,7 +57,7 @@ export default {
 
 <template>
   <div
-    :id="containerId"
+    :id="$options.containerId"
     data-testid="trial-widget-menu"
     class="gl-display-flex gl-flex-direction-column gl-align-items-stretch gl-w-full"
   >

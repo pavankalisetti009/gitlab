@@ -25,7 +25,6 @@ module GitlabSubscriptions
 
       def widget_data_attributes
         {
-          container_id: 'trial-status-sidebar-widget',
           plan_name: namespace.gitlab_subscription.plan_title,
           plans_href: group_billings_path(namespace),
           trial_days_used: trial_status.days_used,

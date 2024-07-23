@@ -77,6 +77,8 @@ export const POPOVER = {
   trialEndDateFormatString: 'mmmm d',
 };
 
+export const WIDGET_CONTAINER_ID = 'trial-status-sidebar-widget';
+
 export const DUO_PRO_TRIAL_POPOVER_CONTENT = s__(`DuoProTrial|Your trial ends on
   %{strongStart}%{trialEndDate}%{strongEnd}. To continue using features in
   GitLab Duo Pro, purchase a subscription add-on.`);
