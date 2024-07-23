@@ -328,4 +328,26 @@ RSpec.describe ::Gitlab::GitGuardian::Client, feature_category: :source_code_man
       end
     end
   end
+
+  context 'with a blob containing binary data' do
+    let(:filename) { 'rails_sample.jpg' }
+    let(:blobs) do
+      [
+        fake_blob(
+          path: filename,
+          data: File.read(File.join('spec', 'fixtures', filename)),
+          binary: true
+        )
+      ]
+    end
+
+    it 'warns and does not call GitGuardian API' do
+      expect(::Gitlab::AppJsonLogger).to receive(:warn).with(class: described_class.name,
+        message: "Not processing data with filename '#{filename}' as it cannot be JSONified")
+      expect(::Gitlab::AppJsonLogger).to receive(:warn).with(class: described_class.name,
+        message: "Nothing to process")
+
+      expect(client.execute(blobs)).to eq([])
+    end
+  end
 end
