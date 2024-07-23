@@ -40,5 +40,15 @@ module PackageMetadata
       'INNER JOIN occurrences_cte ON occurrences_cte.purl_type = pm_affected_packages.purl_type ' \
         'AND occurrences_cte.name = pm_affected_packages.package_name'
     end
+
+    def solution_text
+      return solution if solution.present?
+
+      # This is a Container Scanning affected package, check for presence of fixed_versions.
+      explicit_fixed_version = fixed_versions.delete_if { |v| v == '*' }
+      return 'Unfortunately, there is no solution available yet.' if explicit_fixed_version.empty?
+
+      "Upgrade to version #{explicit_fixed_version.join(', ')} or above"
+    end
   end
 end
