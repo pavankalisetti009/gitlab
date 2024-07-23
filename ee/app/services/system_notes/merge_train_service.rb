@@ -29,11 +29,8 @@ module SystemNotes
       ##
       # TODO: Abort message should be sent by the system, not a particular user.
       # See https://gitlab.com/gitlab-org/gitlab/issues/29467.
-      url = Rails.application.routes.url_helpers.help_page_url(
-        'ci/pipelines/merge_trains',
-        anchor: 'merge-request-dropped-from-the-merge-train'
-      )
-      body = "removed this merge request from the merge train because #{reason}. [Learn more](#{url})."
+
+      body = "removed this merge request from the merge train because #{reason}"
 
       create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
     end

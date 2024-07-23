@@ -35,7 +35,7 @@ RSpec.describe MergeTrains::CreatePipelineService, feature_category: :continuous
 
         specify do
           expect(subject[:status]).to eq(:error)
-          expect(subject[:message]).to match(/^#{expected_reason}/)
+          expect(subject[:message]).to match expected_reason
         end
       end
 
@@ -146,10 +146,7 @@ RSpec.describe MergeTrains::CreatePipelineService, feature_category: :continuous
 
         context 'when .gitlab-ci.yml does not have only: [merge_requests] specification' do
           it_behaves_like 'returns an error' do
-            let(:expected_reason) do
-              'Pipeline will not run for the selected trigger. ' \
-              'The rules configuration prevented any jobs from being added to the pipeline.'
-            end
+            let(:expected_reason) { ::Ci::Pipeline.rules_failure_message }
           end
         end
       end

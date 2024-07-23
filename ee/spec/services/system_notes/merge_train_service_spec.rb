@@ -55,7 +55,11 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
   end
 
   describe '#abort' do
-    subject { described_class.new(noteable: noteable, project: project, author: author).abort('source branch was updated') }
+    subject do
+      described_class.new(noteable: noteable, project: project, author: author)
+                     .abort('the source branch was updated. ' \
+                       '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).')
+    end
 
     let(:noteable) { create(:merge_request, :on_train, source_project: project, target_project: project) }
 
@@ -64,7 +68,10 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
     end
 
     it "posts the 'merge train' system note" do
-      expect(subject.note).to eq('removed this merge request from the merge train because source branch was updated. [Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).')
+      expect(subject.note).to eq(
+        'removed this merge request from the merge train because the source branch was updated. ' \
+          '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+      )
     end
 
     it_behaves_like 'creates a removed merge train TODO'
