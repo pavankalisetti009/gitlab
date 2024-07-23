@@ -56,6 +56,20 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
       end
     end
 
+    context 'when feature flag store_sbom_report_ingestion_errors is enabled' do
+      before do
+        stub_feature_flags(store_sbom_report_ingestion_errors: true)
+      end
+
+      it 'does not set SBOM ingestion errors when report is valid' do
+        allow(pipeline).to receive(:set_sbom_report_ingestion_errors)
+
+        execute
+
+        expect(pipeline).not_to have_received(:set_sbom_report_ingestion_errors)
+      end
+    end
+
     context 'when feature flag dependency_scanning_using_sbom_reports is enabled' do
       it 'publishes the pipeline id to the event store' do
         expect { execute }.to publish_event(::Sbom::SbomIngestedEvent).with({ pipeline_id: pipeline.id })
@@ -73,7 +87,8 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
     end
 
     context 'when a report is invalid' do
-      let_it_be(:invalid_report) { create(:ci_reports_sbom_report, :invalid) }
+      let_it_be(:sbom_ingestion_error) { 'Unsupported CycloneDX version' }
+      let_it_be(:invalid_report) { create(:ci_reports_sbom_report, :invalid, error: sbom_ingestion_error) }
       let_it_be(:valid_reports) { create_list(:ci_reports_sbom_report, 4) }
       let_it_be(:reports) { [invalid_report] + valid_reports }
 
@@ -90,6 +105,32 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
 
         expect(::Sbom::Ingestion::DeleteNotPresentOccurrencesService).to have_received(:execute)
           .with(pipeline, sequencer.range)
+      end
+
+      context 'when feature flag store_sbom_report_ingestion_errors is enabled' do
+        before do
+          stub_feature_flags(store_sbom_report_ingestion_errors: true)
+        end
+
+        it 'sets the ingestion errors' do
+          execute
+
+          expect(pipeline.has_sbom_report_ingestion_errors?).to be_truthy
+          expect(pipeline.sbom_report_ingestion_errors).to eq([[sbom_ingestion_error]])
+        end
+      end
+
+      context 'when feature flag store_sbom_report_ingestion_errors is disabled' do
+        before do
+          stub_feature_flags(store_sbom_report_ingestion_errors: false)
+          allow(pipeline).to receive(:set_sbom_report_ingestion_errors)
+        end
+
+        it 'does not set the ingestion errors' do
+          execute
+
+          expect(pipeline).not_to have_received(:set_sbom_report_ingestion_errors)
+        end
       end
     end
 

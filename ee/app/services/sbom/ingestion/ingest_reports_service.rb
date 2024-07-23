@@ -4,6 +4,7 @@ module Sbom
   module Ingestion
     class IngestReportsService
       include Gitlab::ExclusiveLeaseHelpers
+      include Gitlab::Utils::StrongMemoize
 
       # Typical job finishes in 1-2 minutes, but has been observed
       # to take up to 20 minutes in the worst case.
@@ -33,6 +34,10 @@ module Sbom
           end
 
           project.set_latest_ingested_sbom_pipeline_id(pipeline.id)
+
+          break unless Feature.enabled?(:store_sbom_report_ingestion_errors, project) && sbom_report_errors
+
+          pipeline.set_sbom_report_ingestion_errors(sbom_report_errors)
         end
       end
 
@@ -43,11 +48,26 @@ module Sbom
       delegate :project, to: :pipeline, private: true
 
       def ingest_reports
-        sbom_reports.flat_map { |report| ingest_report(report) }
+        valid_sbom_reports.flat_map { |report| ingest_report(report) }
       end
 
-      def sbom_reports
-        pipeline.sbom_reports(self_and_project_descendants: true).reports.select(&:valid?)
+      def all_sbom_reports
+        @all_sbom_reports ||= pipeline.sbom_reports(self_and_project_descendants: true).reports
+      end
+
+      def valid_sbom_reports
+        all_sbom_reports.select(&:valid?)
+      end
+
+      def sbom_report_errors
+        return unless invalid_sbom_reports.any?
+
+        invalid_sbom_reports.map(&:errors)
+      end
+      strong_memoize_attr :sbom_report_errors
+
+      def invalid_sbom_reports
+        @invalid_sbom_reports ||= all_sbom_reports.reject(&:valid?)
       end
 
       def ingest_report(sbom_report)
