@@ -2,7 +2,11 @@
 
 module Security
   module SecurityOrchestrationPolicies
-    class PolicyScopeService < BaseProjectService
+    class PolicyScopeChecker
+      def initialize(project:)
+        @project = project
+      end
+
       def policy_applicable?(policy)
         return false if policy.blank?
 
@@ -10,6 +14,8 @@ module Security
       end
 
       private
+
+      attr_accessor :project
 
       def applicable_for_compliance_framework?(policy)
         policy_scope_compliance_frameworks = policy.dig(:policy_scope, :compliance_frameworks).to_a

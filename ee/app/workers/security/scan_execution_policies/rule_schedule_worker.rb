@@ -29,7 +29,7 @@ module Security
       private
 
       def policy_applicable?(project, policy)
-        Security::SecurityOrchestrationPolicies::PolicyScopeService
+        Security::SecurityOrchestrationPolicies::PolicyScopeChecker
           .new(project: project)
           .policy_applicable?(policy)
       end

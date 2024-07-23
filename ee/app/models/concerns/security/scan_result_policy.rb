@@ -96,8 +96,8 @@ module Security
 
       def applicable_scan_result_policies_for_project(project)
         strong_memoize_with(:applicable_scan_result_policies_for_project, project) do
-          policy_scope_service = ::Security::SecurityOrchestrationPolicies::PolicyScopeService.new(project: project)
-          active_scan_result_policies.select { |policy| policy_scope_service.policy_applicable?(policy) }
+          policy_scope_checker = ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
+          active_scan_result_policies.select { |policy| policy_scope_checker.policy_applicable?(policy) }
         end
       end
 

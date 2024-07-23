@@ -33,11 +33,11 @@ module Gitlab
         private
 
         def applicable_execution_policies_by_hierarchy
-          policy_scope_service = ::Security::SecurityOrchestrationPolicies::PolicyScopeService.new(project: @project)
+          policy_scope_checker = ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: @project)
 
           configs_ordered_by_hierarchy
             .flat_map(&:active_pipeline_execution_policies)
-            .select { |policy| policy_scope_service.policy_applicable?(policy) }
+            .select { |policy| policy_scope_checker.policy_applicable?(policy) }
         end
 
         # Returns an array of configs for the project, ordered by hierarchy.

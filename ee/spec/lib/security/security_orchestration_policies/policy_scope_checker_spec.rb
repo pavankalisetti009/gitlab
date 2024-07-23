@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeService, feature_category: :security_policy_management do
+RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feature_category: :security_policy_management do
   let_it_be_with_refind(:root_group) { create(:group) }
   let_it_be_with_refind(:group) { create(:group, parent: root_group) }
   let_it_be_with_refind(:project) { create(:project, group: group) }

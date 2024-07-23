@@ -2287,7 +2287,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           allow(service).to receive(:scan_execution_branches).and_return(Set[default_branch])
         end
 
-        allow_next_instance_of(Security::SecurityOrchestrationPolicies::PolicyScopeService) do |service|
+        allow_next_instance_of(Security::SecurityOrchestrationPolicies::PolicyScopeChecker) do |service|
           allow(service).to receive(:policy_applicable?).and_return(policy_applicable)
         end
       end
