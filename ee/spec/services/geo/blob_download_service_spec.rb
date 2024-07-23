@@ -144,6 +144,7 @@ RSpec.describe Geo::BlobDownloadService, feature_category: :geo_replication do
           end
 
           it 'logs the result' do
+            expect(Gitlab::Geo::Logger).to receive(:info).with(anything)
             expect(Gitlab::Geo::Logger).to receive(:info).with(
               {
                 class: 'Geo::BlobDownloadService',

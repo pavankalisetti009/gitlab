@@ -2,6 +2,7 @@
 
 module Geo::ReplicableRegistry
   extend ActiveSupport::Concern
+  include Gitlab::Geo::LogHelpers
 
   STATE_VALUES = {
     pending: 0,
@@ -59,7 +60,7 @@ module Geo::ReplicableRegistry
 
   # Overridden by Geo::VerifiableRegistry
   def after_synced
-    # No-op
+    log_debug("Sync state transition", { registry_id: id, model_record_id: model_record_id, to: 'synced' })
   end
 
   def replicator_class
@@ -99,12 +100,26 @@ module Geo::ReplicableRegistry
         registry.retry_at = registry.next_retry_time(registry.retry_count, registry.custom_max_retry_wait_time)
       end
 
+      # Transitions to synced usually do not go through this callback, see #synced!
       before_transition any => :synced do |registry, _|
         registry.before_synced
       end
 
+      # Transitions to synced usually do not go through this callback, see #synced!
       after_transition any => :synced do |registry, _|
         registry.after_synced
+      end
+
+      after_transition any => [:pending, :started] do |registry, transition|
+        registry.log_debug("Sync state transition",
+          { registry_id: registry.id, model_record_id: registry.model_record_id,
+            from: transition.from_name.to_s, to: transition.to_name.to_s, result: transition.result })
+      end
+
+      after_transition any => :failed do |registry, transition|
+        registry.log_warning("Sync state transition",
+          { registry_id: registry.id, model_record_id: registry.model_record_id,
+            from: transition.from_name.to_s, to: transition.to_name.to_s, result: transition.result })
       end
 
       event :pending do

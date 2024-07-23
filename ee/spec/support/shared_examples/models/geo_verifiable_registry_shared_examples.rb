@@ -111,6 +111,22 @@ RSpec.shared_examples 'a Geo verifiable registry' do
       expect(subject.reload.verification_started?).to be_truthy
       expect(subject.verification_started_at).to be_present
     end
+
+    it 'logs the verification state transition' do
+      create(registry_class_factory, :synced, verification_state: verification_state_value(:verification_pending))
+
+      expect(Gitlab::Geo::Logger).to receive(:debug).with(hash_including(
+        message: 'Batch verification state transition',
+        table: described_class.table_name,
+        "#{described_class.verification_state_model_key}": match(/\d+,\d+/),
+        count: 2,
+        from: 'verification_pending',
+        to: 'verification_started',
+        method: 'verification_pending_batch'
+      ))
+
+      described_class.verification_pending_batch(batch_size: 4)
+    end
   end
 
   describe '.verification_failed_batch' do
@@ -155,6 +171,20 @@ RSpec.shared_examples 'a Geo verifiable registry' do
 
         expect(subject.reload.verification_started?).to be_truthy
         expect(subject.verification_started_at).to be_present
+      end
+
+      it 'logs the verification state transition' do
+        expect(Gitlab::Geo::Logger).to receive(:debug).with(hash_including(
+          message: 'Batch verification state transition',
+          table: described_class.table_name,
+          "#{described_class.verification_state_model_key}": match(/\d+/),
+          count: 1,
+          from: 'verification_failed',
+          to: 'verification_started',
+          method: 'verification_failed_batch'
+        ))
+
+        described_class.verification_failed_batch(batch_size: 4)
       end
     end
 

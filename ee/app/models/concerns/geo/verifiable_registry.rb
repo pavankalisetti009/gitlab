@@ -59,7 +59,7 @@ module Geo
       # @param [String] checksum value which does not match the primary checksum
       def verification_failed_due_to_mismatch!(checksum, primary_checksum)
         message = 'Checksum does not match the primary checksum'
-        details = { checksum: checksum, primary_checksum: primary_checksum }
+        details = { checksum: checksum, primary_checksum: primary_checksum, registry_id: id }
 
         log_error(message, details)
 
@@ -132,6 +132,8 @@ module Geo
 
     override :after_synced
     def after_synced
+      super
+
       unless ready_to_verify?
         self.verification_disabled!
         return
