@@ -61,7 +61,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
       it { is_expected.to be_falsey }
     end
 
-    context 'when licensed feature `subscriptions_trials` is not available' do
+    context 'when the `subscriptions_trials` feature is not available' do
       before do
         stub_saas_features(subscriptions_trials: false)
       end
