@@ -298,7 +298,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-px-0!">
+  <div class="!gl-px-0">
     <local-storage-sync
       :value="editingMode"
       as-string
