@@ -31,7 +31,7 @@ module Resolvers
       private
 
       def ensure_feature_available
-        (Feature.enabled?(:merge_trains_viz, project) && merge_trains_available?) || raise_resource_not_available_error!
+        merge_trains_available? || raise_resource_not_available_error!
       end
 
       def merge_trains_available?

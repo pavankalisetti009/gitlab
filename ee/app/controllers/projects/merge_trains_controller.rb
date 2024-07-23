@@ -3,16 +3,19 @@
 module Projects
   class MergeTrainsController < Projects::ApplicationController
     feature_category :merge_trains
-
     before_action :authorize_read_merge_train!
-    before_action :check_enabled!
+    before_action :authorize!
 
     def index; end
 
     private
 
-    def check_enabled!
-      render_404 unless Feature.enabled?(:merge_trains_viz, project)
+    def authorize!
+      render_404 unless current_user && merge_trains_available?
+    end
+
+    def merge_trains_available?
+      project.licensed_feature_available?(:merge_trains)
     end
   end
 end

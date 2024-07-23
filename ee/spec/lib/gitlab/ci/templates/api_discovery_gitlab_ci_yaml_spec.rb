@@ -89,8 +89,7 @@ RSpec.describe 'API-Discovery.gitlab-ci.yml', feature_category: :continuous_inte
           it 'includes no jobs' do
             expect(build_names).to be_empty
             expect(pipeline.errors.full_messages).to match_array([
-              'Pipeline will not run for the selected trigger. ' \
-              'The rules configuration prevented any jobs from being added to the pipeline.'
+              Ci::Pipeline.rules_failure_message
             ])
           end
         end

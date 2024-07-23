@@ -35,16 +35,23 @@ module MergeTrains
       end
 
       if !merge_request.open? || merge_request.broken? || merge_request.draft?
-        raise ProcessError, 'merge request is not mergeable'
+        raise ProcessError, "the merge request is not mergeable. [Learn more](#{learn_more_url})."
       end
 
       unless merge_train_car.previous_ref_sha.present?
-        raise ProcessError, 'previous ref does not exist'
+        raise ProcessError, "the previous ref does not exist. [Learn more](#{learn_more_url})."
       end
 
       if merge_train_car.pipeline_not_succeeded?
-        raise ProcessError, 'pipeline did not succeed'
+        raise ProcessError, "the pipeline did not succeed. [Learn more](#{learn_more_url})."
       end
+    end
+
+    def learn_more_url
+      Rails.application.routes.url_helpers.help_page_url(
+        'ci/pipelines/merge_trains',
+        anchor: 'merge-request-dropped-from-the-merge-train'
+      )
     end
 
     def merge_from_train_ref?

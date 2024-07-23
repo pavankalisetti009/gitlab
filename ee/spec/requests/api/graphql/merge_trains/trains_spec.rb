@@ -130,20 +130,6 @@ RSpec.describe 'Query.project.mergeTrains.cars', feature_category: :merge_trains
   end
 
   context 'when the user has the right permissions' do
-    context 'when the feature is disabled' do
-      before do
-        stub_feature_flags(merge_trains_viz: false)
-      end
-
-      it 'returns a resource not available error' do
-        post_query
-        expect_graphql_errors_to_include(
-          "The resource that you are attempting to access does not exist " \
-            "or you don't have permission to perform this action"
-        )
-      end
-    end
-
     context 'when only the project is provided' do
       it_behaves_like 'fetches the requested trains' do
         let(:expected_branches) { %w[master feature-1] }

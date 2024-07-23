@@ -124,7 +124,10 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       end
 
       it_behaves_like 'drops the merge request from the merge train' do
-        let(:expected_reason) { 'merge request is not mergeable' }
+        let(:expected_reason) do
+          'the merge request is not mergeable. ' \
+            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+        end
       end
     end
 
@@ -136,7 +139,10 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       end
 
       it_behaves_like 'drops the merge request from the merge train' do
-        let(:expected_reason) { 'pipeline did not succeed' }
+        let(:expected_reason) do
+          'the pipeline did not succeed. ' \
+            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+        end
       end
     end
 
@@ -158,7 +164,10 @@ RSpec.describe MergeTrains::RefreshMergeRequestService, feature_category: :sourc
       end
 
       it_behaves_like 'drops the merge request from the merge train' do
-        let(:expected_reason) { 'previous ref does not exist' }
+        let(:expected_reason) do
+          'the previous ref does not exist. ' \
+            '[Learn more](http://localhost/help/ci/pipelines/merge_trains#merge-request-dropped-from-the-merge-train).'
+        end
       end
     end
 
