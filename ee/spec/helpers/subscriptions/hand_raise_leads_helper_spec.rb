@@ -103,7 +103,6 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
           label: 'duo_pro_active_trial'
         }.to_json,
         button_attributes: {
-          'data-testid': 'discover-duo-pro-hand-raise-lead-button',
           category: 'secondary',
           variant: 'confirm'
         }.to_json
