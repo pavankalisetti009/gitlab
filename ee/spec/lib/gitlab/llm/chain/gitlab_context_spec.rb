@@ -38,13 +38,13 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
     context 'with an authorized, serializable resource' do
       let(:resource) { create(:issue, project: project) }
       let(:resource_xml) do
-        Ai::AiResource::Issue.new(resource).serialize_for_ai(user: user, content_limit: content_limit)
+        Ai::AiResource::Issue.new(user, resource).serialize_for_ai(content_limit: content_limit)
           .to_xml(root: :root, skip_types: true, skip_instruct: true)
       end
 
       let(:resource2) { create(:issue, project: project) }
       let(:resource_xml2) do
-        Ai::AiResource::Issue.new(resource2).serialize_for_ai(user: user, content_limit: content_limit)
+        Ai::AiResource::Issue.new(user, resource2).serialize_for_ai(content_limit: content_limit)
                              .to_xml(root: :root, skip_types: true, skip_instruct: true)
       end
 
@@ -97,6 +97,24 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
 
       it 'returns short description of issue' do
         expect(context.current_page_short_description).to include("The title of the issue is '#{resource.title}'.")
+      end
+    end
+  end
+
+  describe '#current_page_description' do
+    context 'with an unauthorized resource' do
+      let(:resource) { create(:issue) }
+
+      it 'returns nil' do
+        expect(context.current_page_sentence).to be_nil
+      end
+    end
+
+    context 'with an authorized resource' do
+      let(:resource) { create(:issue, project: project) }
+
+      it 'returns sentence about the resource' do
+        expect(context.current_page_sentence).to include("The user is currently on a page that displays an issue")
       end
     end
   end

@@ -30,6 +30,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::ZeroShot::Prompts::Anthropic, feature
         current_user: user,
         zero_shot_prompt: zero_shot_prompt,
         system_prompt: system_prompt,
+        unavailable_resources: '',
         source_template: "source template"
       }
     end
@@ -110,6 +111,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::ZeroShot::Prompts::Anthropic, feature
           current_user: user,
           zero_shot_prompt: zero_shot_prompt,
           system_prompt: system_prompt,
+          unavailable_resources: '',
           source_template: "source template"
         }
       end
