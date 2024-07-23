@@ -3,24 +3,24 @@
 FactoryBot.modify do
   factory :work_item do
     trait :requirement do
-      association :work_item_type, :default, :requirement
+      association :work_item_type, :requirement
     end
 
     trait :test_case do
-      association :work_item_type, :default, :test_case
+      association :work_item_type, :test_case
     end
 
     trait :objective do
-      association :work_item_type, :default, :objective
+      association :work_item_type, :objective
     end
 
     trait :key_result do
-      association :work_item_type, :default, :key_result
+      association :work_item_type, :key_result
     end
 
     trait :epic_with_legacy_epic do
       project { nil }
-      association :work_item_type, :default, :epic
+      association :work_item_type, :epic
       association :namespace, factory: :group
       association :author, factory: :user
 
@@ -57,7 +57,7 @@ FactoryBot.modify do
     end
 
     trait :satisfied_status do
-      association :work_item_type, :default, :requirement
+      association :work_item_type, :requirement
 
       after(:create) do |work_item|
         create(:test_report, requirement_issue: work_item, state: :passed)
@@ -65,7 +65,7 @@ FactoryBot.modify do
     end
 
     trait :failed_status do
-      association :work_item_type, :default, :requirement
+      association :work_item_type, :requirement
 
       after(:create) do |work_item|
         create(:test_report, requirement_issue: work_item, state: :failed)
