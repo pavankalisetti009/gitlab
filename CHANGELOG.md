@@ -2861,6 +2861,16 @@ entry.
 - [Migrate self-managed custom roles to the instance-level roles](gitlab-org/gitlab@46ab664a1877f8b761c2b25e13e01561d56cf6fd) ([merge request](gitlab-org/gitlab!147829))
 - [Feature cleanup flag wiki_content_background_job](gitlab-org/gitlab@c39a37db4a6112456052c11bf5fd1afa9c23bd6d) by @ivantedja ([merge request](gitlab-org/gitlab!148820))
 
+## 16.11.7 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/74bda3d7064c5d346b89c3b81fc9ee9189919945) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159056))
+
+### Fixed (1 change)
+
+- [Ignore object pool already exists creation errors](https://gitlab.com/gitlab-org/gitlab/-/commit/b1ce2c82376ff000984686c22e739464458d868b) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159021))
+
 ## 16.11.6 (2024-07-09)
 
 ### Fixed (1 change)

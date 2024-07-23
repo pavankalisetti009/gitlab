@@ -93,7 +93,7 @@ module QA
         end
 
         it(
-          'runs sast job when enabled from configuration',
+          'runs sast job when enabled from configuration', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347685'
         ) do
           Page::Project::Menu.perform(&:go_to_security_configuration)
