@@ -80,7 +80,7 @@ export default {
     <template v-if="showSbomPipelineStatus">
       <div class="gl-mx-3 gl-hidden lg:gl-block" data-testid="pipeline-divider">•</div>
 
-      <div class="md:fl-flex gl-align-items-center gl-mt-5 gl-lg-mt-0" data-testid="sbom-pipeline">
+      <div class="md:gl-flex gl-align-items-center gl-mt-5 gl-lg-mt-0" data-testid="sbom-pipeline">
         <div>
           <span class="gl-font-bold gl-mr-3">{{ $options.i18n.sbomLastUpdated }}</span
           ><span class="gl-whitespace-nowrap">

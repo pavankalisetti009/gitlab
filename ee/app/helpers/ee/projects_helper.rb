@@ -413,8 +413,8 @@ module EE
           id: sbom_pipeline.id,
           path: pipeline_path(sbom_pipeline),
           created_at: sbom_pipeline.created_at.to_fs(:iso8601),
-          has_warnings: "", # To be added in: https://gitlab.com/gitlab-org/gitlab/-/issues/366960
-          has_errors: "" # To be added in: https://gitlab.com/gitlab-org/gitlab/-/issues/366960
+          has_warnings: "", # Not supported yet
+          has_errors: sbom_pipeline.has_sbom_report_ingestion_errors?.to_s
         }
       end
 

@@ -475,13 +475,14 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
                 path: "/#{project.full_path}/-/pipelines/#{sbom_pipeline.id}",
                 created_at: sbom_pipeline_created_at,
                 has_warnings: '',
-                has_errors: ''
+                has_errors: 'true'
               }
             }
           end
 
           before do
             allow(project).to receive(:latest_ingested_sbom_pipeline).and_return(sbom_pipeline)
+            allow(sbom_pipeline).to receive(:has_sbom_report_ingestion_errors?).and_return(true)
           end
 
           it { is_expected.to match(base_values.merge(sbom_pipeline_values, pipeline_values)) }
