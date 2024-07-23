@@ -14,7 +14,7 @@ RSpec.describe Groups::ImportExport::ImportService, feature_category: :importers
   subject(:import_service) { described_class.new(group: group, user: user) }
 
   before do
-    ImportExportUpload.create!(group: group, import_file: import_file)
+    ImportExportUpload.create!(group: group, import_file: import_file, user: user)
   end
 
   context 'when group_wikis feature is enabled' do

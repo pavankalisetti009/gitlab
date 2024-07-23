@@ -23,7 +23,7 @@ module EE
           def strategy_execute
             return unless export_into_project_exists?
 
-            prepare_template_environment(export_file)
+            prepare_template_environment(export_file, current_user)
 
             set_import_attributes
 
@@ -34,12 +34,16 @@ module EE
 
           def export_file
             strong_memoize(:export_file) do
-              project.export_file&.file
+              project.export_file(current_user)&.file
             end
           end
 
           def set_import_attributes
-            ::Project.update(export_into_project_id, params)
+            ::Project.update(export_into_project_id, params.except(:import_export_upload))
+
+            import_export_upload = params[:import_export_upload]
+            import_export_upload.project_id = export_into_project_id
+            import_export_upload.save
           end
 
           # rubocop: disable CodeReuse/ActiveRecord
