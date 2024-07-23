@@ -2,13 +2,10 @@
 import { GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
-import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
-import { sendDuoChatCommand } from 'ee/ai/utils';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_CI_BUILD } from '~/graphql_shared/constants';
 import CeJobLogTopBar from '~/ci/job_details/components/job_log_top_bar.vue';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
 import RootCauseAnalysis from './sidebar/root_cause_analysis/root_cause_analysis_app.vue';
 
 export default {
@@ -17,7 +14,7 @@ export default {
     GlButton,
     RootCauseAnalysis,
   },
-  mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
+  mixins: [glFeatureFlagMixin()],
   inject: ['aiRootCauseAnalysisAvailable', 'duoFeaturesEnabled', 'jobGid'],
   props: {
     size: {
@@ -78,15 +75,6 @@ export default {
         !this.glFeatures.rootCauseAnalysisDuo
       );
     },
-    rootCauseAnalysisDuoIsAvailable() {
-      return (
-        this.glFeatures.aiBuildFailureCause &&
-        this.aiRootCauseAnalysisAvailable &&
-        this.duoFeaturesEnabled &&
-        this.glFeatures.rootCauseAnalysisDuo &&
-        this.glAbilities.troubleshootJobWithAi
-      );
-    },
     jobFailed() {
       const { status } = this.job;
 
@@ -96,9 +84,6 @@ export default {
     },
     jobId() {
       return convertToGraphQLId(TYPENAME_CI_BUILD, this.job.id);
-    },
-    duoDrawerOpen() {
-      return duoChatGlobalState.isShown;
     },
     ...mapState(['job', 'isLoading']),
   },
@@ -120,12 +105,6 @@ export default {
     },
     handleExitFullscreen() {
       this.$emit('exitFullscreen');
-    },
-    callDuo() {
-      sendDuoChatCommand({
-        question: '/troubleshoot',
-        resourceId: this.jobId,
-      });
     },
   },
 };
@@ -158,22 +137,13 @@ export default {
       @exitFullscreen="handleExitFullscreen"
     >
       <template #controllers>
+        <!-- TODO: Remove the previous implementation of the RCA drawer https://gitlab.com/gitlab-org/gitlab/-/issues/473797 -->
         <gl-button
           v-if="rootCauseAnalysisIsAvailable && jobFailed"
           icon="tanuki-ai"
           class="gl-mr-3"
           data-testid="rca-button"
           @click="toggleDrawer"
-        >
-          {{ s__('Jobs|Troubleshoot') }}
-        </gl-button>
-        <gl-button
-          v-if="rootCauseAnalysisDuoIsAvailable && jobFailed"
-          :disabled="duoDrawerOpen"
-          icon="tanuki-ai"
-          class="gl-mr-3"
-          data-testid="rca-duo-button"
-          @click="callDuo"
         >
           {{ s__('Jobs|Troubleshoot') }}
         </gl-button>
