@@ -59,9 +59,7 @@ export default {
     <p>
       <gl-sprintf :message="$options.confirmationMessage">
         <template #title>
-          <code>
-            {{ mergeRequestTitle }}
-          </code>
+          <code>{{ mergeRequestTitle }}</code>
         </template>
       </gl-sprintf>
     </p>
