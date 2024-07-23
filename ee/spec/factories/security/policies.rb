@@ -81,7 +81,7 @@ FactoryBot.define do
     end
   end
 
-  factory :ci_component_sources_policy,
+  factory :ci_component_publishing_policy,
     class: Struct.new(:name, :description, :enabled, :allowed_sources, :policy_scope) do
     skip_create
 
@@ -280,7 +280,7 @@ FactoryBot.define do
 
   factory :orchestration_policy_yaml,
     class: Struct.new(:scan_execution_policy, :scan_result_policy, :approval_policy, :pipeline_execution_policy,
-      :ci_component_sources_policy) do
+      :ci_component_publishing_policy) do
     skip_create
 
     initialize_with do
@@ -288,7 +288,7 @@ FactoryBot.define do
       scan_result_policy = attributes[:scan_result_policy]
       approval_policy = attributes[:approval_policy]
       pipeline_execution_policy = attributes[:pipeline_execution_policy]
-      ci_component_sources_policy = attributes[:ci_component_sources_policy]
+      ci_component_publishing_policy = attributes[:ci_component_publishing_policy]
 
       YAML.dump(
         new(
@@ -296,7 +296,7 @@ FactoryBot.define do
           scan_result_policy,
           approval_policy,
           pipeline_execution_policy,
-          ci_component_sources_policy
+          ci_component_publishing_policy
         ).to_h.compact.deep_stringify_keys
       )
     end
