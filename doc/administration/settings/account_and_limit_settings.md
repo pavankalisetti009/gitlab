@@ -217,8 +217,7 @@ Prerequisites:
 - You must be an administrator.
 
 You can require all new access tokens to have an expiration date.
-This setting is turned on by default.
-It applies to:
+This setting is turned on by default and applies to:
 
 - Project access tokens.
 - Group access tokens.
@@ -228,7 +227,7 @@ For personal access tokens for service accounts, use the `service_access_tokens_
 
 To require expiration dates for new access tokens:
 
-1. On the left sidebar, at the bottom, select **Admin area**.
+1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **Settings > General**.
 1. Expand **Account and limit**.
 1. Select the **Personal / Project / Group access token expiration** checkbox.
