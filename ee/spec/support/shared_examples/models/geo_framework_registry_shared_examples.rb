@@ -204,6 +204,22 @@ RSpec.shared_examples 'a Geo framework registry' do
 
       expect(registry.reload.failed?).to be_truthy
     end
+
+    it 'logs the state transition' do
+      expect(Gitlab::Geo::Logger).to receive(:warn).with(
+        hash_including(
+          message: 'Sync state transition',
+          class: registry.class.name,
+          registry_id: registry.id,
+          model_record_id: registry.model_record_id,
+          from: 'started',
+          to: 'failed',
+          result: true
+        )
+      )
+
+      registry.failed!(message: message)
+    end
   end
 
   describe '#synced!' do
@@ -245,6 +261,20 @@ RSpec.shared_examples 'a Geo framework registry' do
         )
       end
     end
+
+    it 'logs the state transition' do
+      expect(Gitlab::Geo::Logger).to receive(:debug).with(
+        hash_including(
+          message: 'Sync state transition',
+          class: registry.class.name,
+          registry_id: registry.id,
+          model_record_id: registry.model_record_id,
+          to: 'synced'
+        )
+      )
+
+      registry.synced!
+    end
   end
 
   describe '#pending!' do
@@ -255,6 +285,22 @@ RSpec.shared_examples 'a Geo framework registry' do
         expect do
           registry.pending!
         end.to change { registry.pending? }.from(false).to(true)
+      end
+
+      it 'logs the state transition' do
+        expect(Gitlab::Geo::Logger).to receive(:debug).with(
+          hash_including(
+            message: 'Sync state transition',
+            class: registry.class.name,
+            registry_id: registry.id,
+            model_record_id: registry.model_record_id,
+            from: 'started',
+            to: 'pending',
+            result: true
+          )
+        )
+
+        registry.pending!
       end
     end
 
@@ -275,6 +321,32 @@ RSpec.shared_examples 'a Geo framework registry' do
           registry.reload
         end.to change { registry.last_synced_at }.from(a_kind_of(ActiveSupport::TimeWithZone)).to(nil)
       end
+    end
+  end
+
+  describe '#start!' do
+    let(:registry) { create(registry_class_factory, :failed) }
+
+    it 'successfully moves state to started' do
+      expect do
+        registry.start!
+      end.to change { registry.started? }.from(false).to(true)
+    end
+
+    it 'logs the state transition' do
+      expect(Gitlab::Geo::Logger).to receive(:debug).with(
+        hash_including(
+          message: 'Sync state transition',
+          class: registry.class.name,
+          registry_id: registry.id,
+          model_record_id: registry.model_record_id,
+          from: 'failed',
+          to: 'started',
+          result: true
+        )
+      )
+
+      registry.start!
     end
   end
 end

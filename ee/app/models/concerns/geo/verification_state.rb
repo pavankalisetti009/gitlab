@@ -60,6 +60,7 @@ module Geo
 
     class_methods do
       include Delay
+      include Gitlab::Geo::LogHelpers
 
       def verification_state_value(state_string)
         VERIFICATION_STATE_VALUES[state_string]
@@ -73,7 +74,15 @@ module Geo
       def verification_pending_batch(batch_size:)
         relation = verification_pending.order(verification_arel_table[:verified_at].asc.nulls_first).limit(batch_size)
 
-        start_verification_batch(relation)
+        ids = start_verification_batch(relation)
+
+        if ids.any?
+          log_batch_update(ids.size, __method__.to_s,
+            'verification_pending', 'verification_started',
+            { "#{verification_state_model_key}": ids.join(',') })
+        end
+
+        ids
       end
 
       # Returns IDs of records that failed to verify (calculate and save checksum).
@@ -84,7 +93,15 @@ module Geo
       def verification_failed_batch(batch_size:)
         relation = verification_failed.verification_retry_due.order(verification_arel_table[:verification_retry_at].asc.nulls_first).limit(batch_size)
 
-        start_verification_batch(relation)
+        ids = start_verification_batch(relation)
+
+        if ids.any?
+          log_batch_update(ids.size, __method__.to_s,
+            'verification_failed', 'verification_started',
+            { "#{verification_state_model_key}": ids.join(',') })
+        end
+
+        ids
       end
 
       # @return [Integer] number of records that need verification
@@ -182,9 +199,13 @@ module Geo
 
       # Fail verification for records which started verification a long time ago
       def fail_verification_timeouts
+        num_updated = 0
+
         verification_timed_out_batch_query.each_batch do |relation|
-          relation.update_all(fail_verification_timeouts_attrs)
+          num_updated += relation.update_all(fail_verification_timeouts_attrs)
         end
+
+        log_fail_verification_timeouts(num_updated)
       end
 
       def fail_verification_timeouts_attrs
@@ -196,6 +217,18 @@ module Geo
           verification_retry_at: next_retry_time(1),
           verified_at: Time.current
         }
+      end
+
+      def log_fail_verification_timeouts(num_updated)
+        if num_updated > 0
+          log_batch_update(num_updated, __method__.to_s,
+            'verification_started', 'verification_failed',
+            { timeout: VERIFICATION_TIMEOUT.to_s })
+        else
+          log_debug("Did not find any verification timeouts", {
+            table: verification_state_table_name, timeout: VERIFICATION_TIMEOUT.to_s
+          })
+        end
       end
 
       # Reverifies batch and returns the number of records.
@@ -225,7 +258,14 @@ module Geo
       def mark_as_verification_pending(relation)
         query = mark_as_verification_pending_query(relation)
 
-        self.connection.execute(query).cmd_tuples
+        num_updated = connection.execute(query).cmd_tuples
+
+        if num_updated > 0
+          log_batch_update(num_updated, __method__.to_s,
+            nil, 'verification_pending')
+        end
+
+        num_updated
       end
 
       # Returns a SQL statement which would update all the rows in the
@@ -242,6 +282,26 @@ module Geo
           SET "verification_state" = #{pending_enum_value}
           WHERE #{self.verification_state_model_key} IN (#{relation.select(self.verification_state_model_key).to_sql})
         SQL
+      end
+
+      def log_batch_update(count, method, from_state_name, to_state_name, extra_details = {})
+        if to_state_name == 'verification_failed'
+          log_warning("Batch verification state transition",
+            batch_update_log_details(count, method, from_state_name, to_state_name, extra_details))
+        else
+          log_debug("Batch verification state transition",
+            batch_update_log_details(count, method, from_state_name, to_state_name, extra_details))
+        end
+      end
+
+      def batch_update_log_details(count, method, from_state_name, to_state_name, extra_details = {})
+        {
+          table: verification_state_table_name,
+          count: count,
+          method: method,
+          from: from_state_name,
+          to: to_state_name
+        }.merge(extra_details).compact
       end
     end
 
@@ -293,7 +353,7 @@ module Geo
     # @param [String] message error information
     # @param [StandardError] error exception
     def verification_failed_with_message!(message, error = nil)
-      log_error(message, error)
+      log_error(message, error, { id: id })
 
       message += ": #{error.message}" if error.respond_to?(:message)
       self.verification_failure = message.truncate(255)

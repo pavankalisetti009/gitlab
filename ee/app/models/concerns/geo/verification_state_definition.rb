@@ -5,6 +5,7 @@ module Geo
     extend ActiveSupport::Concern
     include Delay
     include EachBatch
+    include Gitlab::Geo::LogHelpers
 
     included do
       validates :verification_failure, length: { maximum: 255 }
@@ -44,6 +45,19 @@ module Geo
           instance.clear_verification_failure_fields!
         end
 
+        after_transition any => [:verification_pending, :verification_started,
+          :verification_succeeded] do |object, transition|
+          object.log_verification_transition(:debug, object, transition)
+        end
+
+        after_transition any => :verification_disabled do |object, transition|
+          object.log_verification_transition(:info, object, transition)
+        end
+
+        after_transition any => :verification_failed do |object, transition|
+          object.log_verification_transition(:warn, object, transition)
+        end
+
         event :verification_started do
           transition [:verification_pending, :verification_started, :verification_succeeded, :verification_failed, :verification_disabled] => :verification_started
         end
@@ -79,6 +93,29 @@ module Geo
       self.verification_retry_count += 1
       self.verification_retry_at = self.next_retry_time(self.verification_retry_count)
       self.verified_at = Time.current
+    end
+
+    def log_verification_transition(level, object, transition)
+      case level
+      when :debug
+        object.log_debug("Verification state transition", verification_transition_details(object, transition))
+      when :info
+        object.log_info("Verification state transition", verification_transition_details(object, transition))
+      when :warn
+        object.log_warning("Verification state transition", verification_transition_details(object, transition))
+      end
+    end
+
+    def verification_transition_details(object, transition)
+      model_record_id = object.respond_to?(:model_record_id) ? object.model_record_id : object&.id
+
+      {
+        id: object.id,
+        model_record_id: model_record_id,
+        from: transition.from_name.to_s,
+        to: transition.to_name.to_s,
+        result: transition.result
+      }
     end
   end
 end
