@@ -32,6 +32,14 @@ Please see [our documentation](https://docs.gitlab.com/ee/user/application_secur
 * Location: [<%= finding.location_text %>](<%= finding.location_link %>)
 <% end %>
 
+<% if description_options && description_options[:analysis_data].present? %>
+### Analysis:
+<%= description_options[:analysis_data].html_safe %>
+<% end %>
+<% if description_options && description_options[:summary_data].present? %>
+### Summary:
+<%= description_options[:summary_data].html_safe %>
+<% end %>
 <% if vulnerability.solution.present? %>
 ### Solution:
 
