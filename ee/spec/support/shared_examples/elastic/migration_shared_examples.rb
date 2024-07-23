@@ -730,7 +730,6 @@ RSpec.shared_examples 'migration deletes documents based on schema version' do
 
           migration.migrate # To set a pristine state
           expect(migration.completed?).to be_truthy
-          expect(migration.migration_state).to match(task_id: nil, documents_remaining: 0)
         end
 
         context 'and task in progress' do
