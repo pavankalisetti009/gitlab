@@ -450,6 +450,23 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
 
         it_behaves_like 'returning response status', :forbidden
       end
+
+      described_class::MAJOR_BROWSERS.each do |browser|
+        context "when accessing with a #{browser} browser" do
+          before do
+            allow_next_instance_of(::Browser) do |b|
+              allow(b).to receive("#{browser}?").and_return(true)
+            end
+          end
+
+          it 'returns a bad request response' do
+            api_request
+
+            expect(response).to have_gitlab_http_status(:bad_request)
+            expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
+          end
+        end
+      end
     end
   end
 end

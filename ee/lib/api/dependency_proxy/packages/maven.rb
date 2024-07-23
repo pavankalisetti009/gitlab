@@ -70,6 +70,7 @@ module API
           end
 
           def present_package_file!(package_file)
+            header(*RESPONSE_HEADERS.to_a.flatten)
             present_carrierwave_file_with_head_support!(package_file)
           end
         end
