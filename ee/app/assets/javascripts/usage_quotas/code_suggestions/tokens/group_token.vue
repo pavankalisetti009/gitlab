@@ -2,9 +2,9 @@
 import { GlFilteredSearchSuggestion } from '@gitlab/ui';
 import { pick } from 'lodash';
 import { createAlert } from '~/alert';
+import searchGroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import { __ } from '~/locale';
 import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
-import searchGroupsQuery from 'ee/boards/graphql/sub_groups.query.graphql';
 import { OPTIONS_NONE_ANY } from '~/vue_shared/components/filtered_search_bar/constants';
 
 export default {

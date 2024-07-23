@@ -1,10 +1,10 @@
 <script>
 import { GlCollapsibleListbox } from '@gitlab/ui';
 import { debounce } from 'lodash';
+import subgroupsQuery from '~/boards/graphql/sub_groups.query.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { s__ } from '~/locale';
 import { setError } from '~/boards/graphql/cache_updates';
-import subgroupsQuery from '../graphql/sub_groups.query.graphql';
 
 export default {
   name: 'GroupSelect',
