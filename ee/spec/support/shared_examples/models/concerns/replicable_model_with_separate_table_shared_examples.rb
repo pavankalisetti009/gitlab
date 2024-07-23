@@ -17,57 +17,52 @@ RSpec.shared_examples 'a replicable model with a separate table for verification
   end
 
   context 'on a primary node' do
+    let(:verifiable_model_class) { verifiable_model_record.class }
+
     before do
       stub_primary_node
     end
 
     describe '.with_verification_state' do
-      let(:verification_model_class) { verifiable_model_record.class }
-
       it 'returns records with given scope' do
-        expect(verification_model_class.with_verification_state(:verification_succeeded).size).to eq(0)
+        expect(verifiable_model_class.with_verification_state(:verification_succeeded).size).to eq(0)
 
         verifiable_model_record.save!
         verifiable_model_record.verification_failed_with_message!('Test')
 
         expect(
-          verification_model_class.with_verification_state(:verification_failed).first
+          verifiable_model_class.with_verification_state(:verification_failed).first
         ).to eq verifiable_model_record
       end
     end
 
     describe '.checksummed' do
-      let(:verification_model_class) { verifiable_model_record.class }
-
       it 'returns records with given scope' do
-        expect(verification_model_class.checksummed.size).to eq(0)
+        expect(verifiable_model_class.checksummed.size).to eq(0)
 
         verifiable_model_record.save!
         verifiable_model_record.verification_started!
         verifiable_model_record.verification_succeeded_with_checksum!('checksum', Time.now)
 
-        expect(verification_model_class.checksummed.first).to eq verifiable_model_record
+        expect(verifiable_model_class.checksummed.first).to eq verifiable_model_record
       end
     end
 
     describe '.not_checksummed' do
-      let(:verification_model_class) { verifiable_model_record.class }
-
       it 'returns records with given scope' do
         verifiable_model_record.verification_started!
         verifiable_model_record.verification_failed_with_message!('checksum error')
 
-        expect(verification_model_class.not_checksummed.first).to eq verifiable_model_record
+        expect(verifiable_model_class.not_checksummed.first).to eq verifiable_model_record
 
         verifiable_model_record.verification_started!
         verifiable_model_record.verification_succeeded_with_checksum!('checksum', Time.now)
 
-        expect(verification_model_class.not_checksummed.size).to eq(0)
+        expect(verifiable_model_class.not_checksummed.size).to eq(0)
       end
     end
 
     describe '#save_verification_details' do
-      let(:verifiable_model_class) { verifiable_model_record.class }
       let(:verification_state_table_class) { verifiable_model_class.verification_state_table_class }
       let(:replicator_class) { verifiable_model_class.replicator_class }
 
@@ -87,6 +82,65 @@ RSpec.shared_examples 'a replicable model with a separate table for verification
         it 'creates verification details' do
           expect { verifiable_model_record.save! }.to change { verification_state_table_class.count }.by(1)
         end
+      end
+    end
+
+    describe '#verification_pending_batch' do
+      it 'logs the verification state transition' do
+        verifiable_model_record.save!
+
+        expect(Gitlab::Geo::Logger).to receive(:debug).with(hash_including(
+          message: 'Batch verification state transition',
+          table: verifiable_model_class.verification_state_table_name,
+          "#{verifiable_model_class.verification_state_model_key}": verifiable_model_record.id.to_s,
+          count: 1,
+          from: 'verification_pending',
+          to: 'verification_started',
+          method: 'verification_pending_batch'
+        ))
+
+        verifiable_model_class.verification_pending_batch(batch_size: 4)
+      end
+    end
+
+    describe '#verification_failed_batch' do
+      it 'logs the verification state transition' do
+        verifiable_model_record.verification_started
+        verifiable_model_record.verification_failed_with_message!('checksum error')
+        verifiable_model_record.update!(verification_retry_at: nil) # let it retry immediately
+
+        expect(Gitlab::Geo::Logger).to receive(:debug).with(hash_including(
+          message: 'Batch verification state transition',
+          table: verifiable_model_class.verification_state_table_name,
+          "#{verifiable_model_class.verification_state_model_key}": verifiable_model_record.id.to_s,
+          count: 1,
+          from: 'verification_failed',
+          to: 'verification_started',
+          method: 'verification_failed_batch'
+        ))
+
+        verifiable_model_class.verification_failed_batch(batch_size: 4)
+      end
+    end
+
+    describe '#fail_verification_timeouts' do
+      it 'logs the verification state transition' do
+        verifiable_model_record.save! # trigger after commit create callback already (sets verification pending)
+        verifiable_model_record.verification_started
+        verifiable_model_record.verification_started_at = 1.day.ago
+        verifiable_model_record.save!
+
+        expect(Gitlab::Geo::Logger).to receive(:warn).with(hash_including(
+          message: 'Batch verification state transition',
+          table: verifiable_model_class.verification_state_table_name,
+          count: 1,
+          from: 'verification_started',
+          to: 'verification_failed',
+          method: 'log_fail_verification_timeouts',
+          timeout: verifiable_model_class::VERIFICATION_TIMEOUT.to_s
+        ))
+
+        verifiable_model_class.fail_verification_timeouts
       end
     end
   end
