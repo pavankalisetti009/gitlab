@@ -20,13 +20,9 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
 
       def export_segment(part)
         occurrences_iterator(part).each_batch(of: BATCH_SIZE) do |batch|
-          # We need to use `includes!` instead of `include` because the latter
-          # spawns a new relation but the former modifies the existing relation.
-          # If we spawn a new relation, we will load that relation here and the
-          # `Keyset::Iterator` will load the original relation which means the
-          # same query will run twice.
-          batch.includes!(:component_version)
-               .includes!(project: [namespace: :route]).each { |occurrence| tempfile.puts json_line(occurrence) }
+          occurrences = Sbom::Occurrence.id_in(batch.map(&:id)).with_version.with_project_namespace
+
+          occurrences.each { |occurrence| tempfile.puts json_line(occurrence) }
         end
 
         part.file = tempfile
@@ -65,7 +61,7 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
 
       def occurrences_iterator(part)
         Gitlab::Pagination::Keyset::Iterator.new(
-          scope: part.sbom_occurrences.order_traversal_ids_asc,
+          scope: part.sbom_occurrences.select(:id, :traversal_ids).order_traversal_ids_asc,
           use_union_optimization: false
         )
       end
