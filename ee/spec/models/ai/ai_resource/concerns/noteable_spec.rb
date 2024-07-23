@@ -8,7 +8,7 @@ RSpec.describe Ai::AiResource::Concerns::Noteable, feature_category: :duo_chat d
     let_it_be(:user) { create(:user) }
     let_it_be(:content_limit) { 1000 }
 
-    subject(:notes) { Ai::AiResource::Issue.new(issue).notes_with_limit(user, notes_limit: content_limit) }
+    subject(:notes) { Ai::AiResource::Issue.new(user, issue).notes_with_limit(notes_limit: content_limit) }
 
     context 'when user can see notes' do
       before do

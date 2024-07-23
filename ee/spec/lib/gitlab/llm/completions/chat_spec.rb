@@ -187,6 +187,7 @@ client_subscription_id: 'someid' }
       allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_request)
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
+      stub_feature_flags(ai_merge_request_reader_for_chat: false)
     end
 
     context 'when resource is an issue' do
@@ -227,15 +228,36 @@ client_subscription_id: 'someid' }
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource,
             ai_request: ai_request, extra_resource: extra_resource, request_id: 'uuid',
-            current_file: current_file)
+            current_file: current_file, agent_version: agent_version)
           .and_return(context)
-        expect(categorize_service).to receive(:execute)
-        expect(Llm::ExecuteMethodService).to receive(:new)
-          .with(user, user, :categorize_question, categorize_service_params)
-          .and_return(categorize_service)
+        # This is temporarily commented out due to the following production issue:
+        # https://gitlab.com/gitlab-com/gl-infra/production/-/issues/18191
+        # Since the `#response_post_processing` call is commented out, this should be too.
+        # expect(categorize_service).to receive(:execute)
+        # expect(Llm::ExecuteMethodService).to receive(:new)
+        #   .with(user, user, :categorize_question, categorize_service_params)
+        #   .and_return(categorize_service)
 
         subject
       end
+    end
+
+    context 'with merge request reader allowed' do
+      before do
+        stub_feature_flags(ai_merge_request_reader_for_chat: true)
+      end
+
+      let(:tools) do
+        [
+          ::Gitlab::Llm::Chain::Tools::IssueReader,
+          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
+          ::Gitlab::Llm::Chain::Tools::EpicReader,
+          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::MergeRequestReader
+        ]
+      end
+
+      it_behaves_like 'tool behind a feature flag'
     end
 
     context 'when message is a slash command' do

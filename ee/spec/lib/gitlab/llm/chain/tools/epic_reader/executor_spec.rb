@@ -8,9 +8,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::EpicReader::Executor, feature_category
       ai_request = double
       allow(ai_request).to receive(:request).and_return(ai_response)
       allow(context).to receive(:ai_request).and_return(ai_request)
-      resource_serialized = Ai::AiResource::Epic.new(resource)
+      resource_serialized = Ai::AiResource::Epic.new(context.current_user, resource)
         .serialize_for_ai(
-          user: context.current_user,
           content_limit: ::Gitlab::Llm::Chain::Tools::EpicReader::Prompts::Anthropic::MAX_CHARACTERS
         ).to_xml(root: :root, skip_types: true, skip_instruct: true)
 

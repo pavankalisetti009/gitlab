@@ -6,7 +6,7 @@ RSpec.describe Ai::AiResource::Epic, feature_category: :duo_chat do
   let(:epic) { build(:epic) }
   let(:user) { build(:user) }
 
-  subject(:wrapped_epic) { described_class.new(epic) }
+  subject(:wrapped_epic) { described_class.new(user, epic) }
 
   describe '#serialize_for_ai' do
     it 'calls the serializations class' do
@@ -19,7 +19,7 @@ RSpec.describe Ai::AiResource::Epic, feature_category: :duo_chat do
                                     resource: wrapped_epic
                                   })
 
-      wrapped_epic.serialize_for_ai(user: user, content_limit: 100)
+      wrapped_epic.serialize_for_ai(content_limit: 100)
     end
   end
 

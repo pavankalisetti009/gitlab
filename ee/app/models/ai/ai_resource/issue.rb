@@ -5,10 +5,10 @@ module Ai
     class Issue < Ai::AiResource::BaseAiResource
       include Ai::AiResource::Concerns::Noteable
 
-      def serialize_for_ai(user:, content_limit:)
-        ::IssueSerializer.new(current_user: user, project: resource.project) # rubocop: disable CodeReuse/Serializer
+      def serialize_for_ai(content_limit:)
+        ::IssueSerializer.new(current_user: current_user, project: resource.project) # rubocop: disable CodeReuse/Serializer
                          .represent(resource, {
-                           user: user,
+                           user: current_user,
                            notes_limit: content_limit,
                            serializer: 'ai',
                            resource: self

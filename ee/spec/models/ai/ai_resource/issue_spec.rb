@@ -6,7 +6,7 @@ RSpec.describe Ai::AiResource::Issue, feature_category: :duo_chat do
   let(:issue) { build(:issue) }
   let(:user) { build(:user) }
 
-  subject(:wrapped_issue) { described_class.new(issue) }
+  subject(:wrapped_issue) { described_class.new(user, issue) }
 
   describe '#serialize_for_ai' do
     it 'calls the serializations class' do
@@ -18,7 +18,7 @@ RSpec.describe Ai::AiResource::Issue, feature_category: :duo_chat do
                                        serializer: 'ai',
                                        resource: wrapped_issue
                                      })
-      wrapped_issue.serialize_for_ai(user: user, content_limit: 100)
+      wrapped_issue.serialize_for_ai(content_limit: 100)
     end
   end
 

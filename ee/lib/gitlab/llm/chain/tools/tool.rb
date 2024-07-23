@@ -56,7 +56,8 @@ module Gitlab
           end
 
           def current_resource?(resource_identifier_type, resource_name)
-            resource_identifier_type == 'current' && context.resource.class.name.downcase == resource_name
+            resource_identifier_type == 'current' &&
+              context.resource.class.name.underscore == resource_name.tr(' ', '_')
           end
 
           def projects_from_context

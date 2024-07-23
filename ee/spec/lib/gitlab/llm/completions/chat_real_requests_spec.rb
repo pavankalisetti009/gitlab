@@ -83,12 +83,26 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
       end
     end
 
-    context 'without tool' do
+    context 'with predefined MR' do
       let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
 
       where(:input_template, :tools) do
-        'Summarize this Merge Request' | []
-        'Summarize %<merge_request_identifier>s Merge Request' | []
+        'Summarize this Merge Request' | %w[MergeRequestReader]
+        'Summarize %<merge_request_identifier>s Merge Request' | %w[MergeRequestReader]
+      end
+
+      with_them do
+        let(:resource) { merge_request }
+        let(:input) { format(input_template, merge_request_identifier: merge_request.to_reference(full: true).to_s) }
+
+        it_behaves_like 'successful prompt processing'
+      end
+    end
+
+    context 'without predefined tools' do
+      let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+
+      where(:input_template, :tools) do
         'Why did this pipeline fail?' | []
       end
 
