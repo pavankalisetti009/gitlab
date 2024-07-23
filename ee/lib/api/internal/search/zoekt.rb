@@ -58,7 +58,7 @@ module API
                   node = ::Search::Zoekt::Node.find_by_uuid(params[:uuid])
                   log_data = {
                     class: 'API::Internal::Search::Zoekt', callback_name: params[:name], payload: params[:payload],
-                    additional_payload: params[:additional_payload], success: params[:success],
+                    additional_payload: params[:additional_payload], success: params[:success], action: 'callback',
                     error_message: params[:error]
                   }
                   log_data[:meta] = { 'zoekt.node_name' => node.metadata['name'], 'zoekt.node_id' => node.id } if node

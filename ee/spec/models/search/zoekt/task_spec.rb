@@ -60,10 +60,12 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
   end
 
   describe '.each_task' do
-    it 'returns tasks sorted by performed_at' do
+    it 'returns tasks sorted by performed_at and unique by project' do
       task_1 = create(:zoekt_task, perform_at: 1.minute.ago)
       task_2 = create(:zoekt_task, perform_at: 3.minutes.ago)
       task_3 = create(:zoekt_task, perform_at: 2.minutes.ago)
+      task_with_same_project = create(:zoekt_task, perform_at: 5.minutes.ago,
+        zoekt_repository_id: task_2.zoekt_repository_id, project_identifier: task_2.project_identifier)
       task_in_future = create(:zoekt_task, perform_at: 3.minutes.from_now)
 
       tasks = []
@@ -71,8 +73,8 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         tasks << task
       end
 
-      expect(tasks).not_to include(task_in_future)
-      expect(tasks).to eq([task_2, task_3, task_1])
+      expect(tasks).not_to include(task_2, task_in_future)
+      expect(tasks).to eq([task_with_same_project, task_3, task_1])
     end
 
     context 'with orphaned task' do

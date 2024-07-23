@@ -63,7 +63,7 @@ module Search
 
         scope = for_processing.pending.with_project.order(:perform_at, :id)
         iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
-
+        processed_project_identifiers = Set.new
         iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
           orphaned_task_ids = []
 
@@ -72,6 +72,8 @@ module Search
               orphaned_task_ids << task.id
               next
             end
+
+            next unless processed_project_identifiers.add?(task.project_identifier)
 
             yield task
             count += 1
