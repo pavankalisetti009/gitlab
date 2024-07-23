@@ -97,7 +97,27 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
           expect(prompt_class).to receive(:prompt).with(a_hash_including(
             input: input,
             language_info: "The repository code is written in C and C++.",
-            selected_text: build.trace.raw
+            selected_text: build.trace.raw # "BUILD TRACE"
+          ))
+
+          tool.execute
+        end
+      end
+
+      context 'when log is truncated' do
+        let(:log_size_allowed) { 3 }
+
+        before do
+          stub_const("#{described_class}::APPROX_MAX_INPUT_CHARS",
+            described_class::PROMPT_TEMPLATE[1][1].size + log_size_allowed)
+        end
+
+        it 'calls prompt with correct params' do
+          allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+          expect(prompt_class).to receive(:prompt).with(a_hash_including(
+            input: input,
+            language_info: '',
+            selected_text: build.trace.raw.last(log_size_allowed) # ACE
           ))
 
           tool.execute
