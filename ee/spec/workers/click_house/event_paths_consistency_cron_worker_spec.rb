@@ -44,8 +44,8 @@ RSpec.describe ClickHouse::EventPathsConsistencyCronWorker, feature_category: :v
       before do
         insert_query = <<~SQL
       INSERT INTO events (id, path) VALUES
-      (1, '#{namespace1.id}/'),
-      (2, '#{namespace2.traversal_ids.join('/')}/'),
+      (1, '#{namespace1.traversal_path}'),
+      (2, '#{namespace2.traversal_path}'),
       (3, '#{namespace1.id}/#{namespace_with_updated_parent.id}/'),
       (4, '#{deleted_namespace_id}/'),
       (5, '#{deleted_namespace_id}/')
@@ -58,9 +58,9 @@ RSpec.describe ClickHouse::EventPathsConsistencyCronWorker, feature_category: :v
         worker.perform
 
         paths = [
-          "#{namespace1.id}/",
-          "#{namespace2.traversal_ids.join('/')}/",
-          "#{namespace_with_updated_parent.traversal_ids.join('/')}/"
+          namespace1.traversal_path,
+          namespace2.traversal_path,
+          namespace_with_updated_parent.traversal_path
         ]
 
         expect(leftover_paths).to match_array(paths)
@@ -84,8 +84,8 @@ RSpec.describe ClickHouse::EventPathsConsistencyCronWorker, feature_category: :v
           worker.perform
 
           paths = [
-            "#{namespace1.id}/",
-            "#{namespace2.traversal_ids.join('/')}/",
+            namespace1.traversal_path,
+            namespace2.traversal_path,
             "#{namespace1.id}/#{namespace_with_updated_parent.id}/"
           ]
           # the previous records should remain
@@ -104,9 +104,9 @@ RSpec.describe ClickHouse::EventPathsConsistencyCronWorker, feature_category: :v
           worker.perform
 
           paths = [
-            "#{namespace1.id}/",
-            "#{namespace2.traversal_ids.join('/')}/",
-            "#{namespace_with_updated_parent.traversal_ids.join('/')}/",
+            namespace1.traversal_path,
+            namespace2.traversal_path,
+            namespace_with_updated_parent.traversal_path,
             "#{deleted_namespace_id}/"
           ]
 
