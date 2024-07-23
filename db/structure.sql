@@ -11212,6 +11212,7 @@ CREATE TABLE import_export_uploads (
     export_file text,
     group_id bigint,
     remote_import_url text,
+    user_id bigint,
     CONSTRAINT check_58f0d37481 CHECK ((char_length(remote_import_url) <= 2048))
 );
 
@@ -27560,11 +27561,13 @@ CREATE INDEX index_im_timeline_events_promoted_from_note_id ON incident_manageme
 
 CREATE INDEX index_im_timeline_events_updated_by_user_id ON incident_management_timeline_events USING btree (updated_by_user_id);
 
-CREATE UNIQUE INDEX index_import_export_uploads_on_group_id ON import_export_uploads USING btree (group_id) WHERE (group_id IS NOT NULL);
+CREATE INDEX index_import_export_uploads_on_group_id_non_unique ON import_export_uploads USING btree (group_id) WHERE (group_id IS NOT NULL);
 
 CREATE INDEX index_import_export_uploads_on_project_id ON import_export_uploads USING btree (project_id);
 
 CREATE INDEX index_import_export_uploads_on_updated_at ON import_export_uploads USING btree (updated_at);
+
+CREATE INDEX index_import_export_uploads_on_user_id ON import_export_uploads USING btree (user_id);
 
 CREATE INDEX index_import_failures_on_correlation_id_value ON import_failures USING btree (correlation_id_value);
 
@@ -32325,6 +32328,9 @@ ALTER TABLE ONLY incident_management_timeline_events
 
 ALTER TABLE ONLY approval_group_rules_users
     ADD CONSTRAINT fk_3995d73930 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY import_export_uploads
+    ADD CONSTRAINT fk_38e11735aa FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY bulk_import_exports
     ADD CONSTRAINT fk_39c726d3b5 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
