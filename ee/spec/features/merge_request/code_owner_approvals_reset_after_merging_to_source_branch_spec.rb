@@ -124,7 +124,8 @@ RSpec.describe "Code owner approvals reset after merging to source branch", :js,
         context 'and the other merge request contains changes related to code owners' do
           let(:other_merge_request) { codeowner_change_merge_request }
 
-          it 'resets code owner approvals for the first merge request' do
+          it 'resets code owner approvals for the first merge request',
+            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438170' do
             visit project_merge_request_path(project, merge_request)
             page.within('.js-mr-approvals') do
               expect(page).to have_content('Requires 1 approval from Code Owners.')

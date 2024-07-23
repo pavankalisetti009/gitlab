@@ -21,6 +21,28 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       .inverse_of(:work_item)
   end
 
+  describe 'custom validations' do
+    subject(:valid?) { work_item.valid? }
+
+    describe 'due_date_after_start_date' do
+      context 'when type is epic' do
+        context 'when both values are not present' do
+          let(:work_item) { build(:work_item, :epic, namespace: reusable_group) }
+
+          it { is_expected.to be_truthy }
+        end
+
+        context 'when due date is before start date' do
+          let(:work_item) do
+            build(:work_item, :epic, namespace: reusable_group, due_date: 1.week.ago, start_date: 1.week.from_now)
+          end
+
+          it { is_expected.to be_truthy }
+        end
+      end
+    end
+  end
+
   describe '#supported_quick_action_commands' do
     subject { work_item.supported_quick_action_commands }
 
