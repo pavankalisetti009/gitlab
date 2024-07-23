@@ -12,7 +12,7 @@ module QA
               super
 
               base.class_eval do
-                view 'ee/app/assets/javascripts/ci/job_details/components/job_log_top_bar.vue' do
+                view 'ee/app/assets/javascripts/ci/job_details/components/root_cause_analysis_button.vue' do
                   element 'rca-duo-button'
                 end
               end
