@@ -32,6 +32,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       read_billing
       read_container_image
       read_confidential_issues
+      read_cycle_analytics
     ]
   end
 
@@ -500,18 +501,24 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       let(:current_user) { guest }
 
       it { is_expected.not_to be_allowed(:read_cycle_analytics) }
+      it { is_expected.not_to be_allowed(:read_group_stage) }
+      it { is_expected.not_to be_allowed(:view_type_of_work_charts) }
     end
 
     context 'for reporter+' do
       let(:current_user) { reporter }
 
       it { is_expected.to be_allowed(:read_cycle_analytics) }
+      it { is_expected.to be_allowed(:read_group_stage) }
+      it { is_expected.to be_allowed(:view_type_of_work_charts) }
     end
 
     context 'for auditor' do
       let(:current_user) { auditor }
 
       it { is_expected.to be_allowed(:read_cycle_analytics) }
+      it { is_expected.to be_allowed(:read_group_stage) }
+      it { is_expected.to be_allowed(:view_type_of_work_charts) }
     end
   end
 
@@ -1995,10 +2002,6 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
   describe 'view_productivity_analytics' do
     include_examples 'analytics policy', :view_productivity_analytics
-  end
-
-  describe 'view_type_of_work_charts' do
-    include_examples 'analytics policy', :view_type_of_work_charts
   end
 
   describe '#read_group_saml_identity' do
