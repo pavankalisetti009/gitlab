@@ -77,11 +77,6 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
       merge_request.project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
     end
 
-    it 'does not include schema_version if add_schema_version_to_merge_request is not finished' do
-      set_elasticsearch_migration_to :add_schema_version_to_merge_request, including: false
-      expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('schema_version', 'label_ids'))
-    end
-
     it 'does not include label_ids if add_label_ids_to_merge_request is not finished' do
       set_elasticsearch_migration_to :add_label_ids_to_merge_request, including: false
       expect(merge_request.__elasticsearch__.as_indexed_json).to eq(expected_hash.except('label_ids'))
