@@ -22,6 +22,22 @@ module Gitlab
 
             Pathname(ENV.fetch(OMNIBUS_CONFIG_ENV))
           end
+
+          private
+
+          def omnibus_config
+            return @omnibus_config if defined?(@omnibus_config)
+
+            @omnibus_config ||= OmnibusConfig.new(self.class.omnibus_config_filepath).then do |config|
+              raise ::Gitlab::Backup::Cli::Error, 'Failed to load Omnibus environment file' unless config.loaded?
+
+              config
+            end
+          end
+
+          def build_gitlab_config
+            Gitlab::Backup::Cli::GitlabConfig.new(omnibus_config.dig(:gitlab, :config_path))
+          end
         end
       end
     end
