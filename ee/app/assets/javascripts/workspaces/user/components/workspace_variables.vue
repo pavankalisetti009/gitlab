@@ -67,6 +67,11 @@ export default {
       label: '',
     },
   ],
+  computed: {
+    hasVariables() {
+      return this.variables.length;
+    },
+  },
   methods: {
     validateVariable(key) {
       return !(key === '');
@@ -110,11 +115,14 @@ export default {
 };
 </script>
 <template>
-  <gl-card body-class="gl-new-card-body">
-    <gl-table :fields="$options.fields" :items="variables" show-empty stacked="sm">
-      <template #empty>
-        <div class="text-center">{{ __('No variables') }}</div>
-      </template>
+  <gl-card class="gl-new-card" header-class="gl-new-card-header" body-class="gl-new-card-body">
+    <gl-table
+      v-if="hasVariables"
+      :fields="$options.fields"
+      :items="variables"
+      show-empty
+      stacked="sm"
+    >
       <template #cell(key)="{ item, index }">
         <gl-form-group
           :optional="false"
@@ -166,10 +174,15 @@ export default {
         />
       </template>
     </gl-table>
+    <div v-else class="gl-new-card-empty gl-px-3 gl-py-4">
+      {{ __('There are no variables yet.') }}
+    </div>
     <template #header>
-      <div class="gl-flex gl-justify-between gl-items-center">
-        <h3 class="gl-my-0 gl-font-bold gl-text-lg">{{ __('Variables') }}</h3>
-        <gl-button data-testid="add-variable" @click="addVariable">{{
+      <div class="gl-new-card-title-wrapper">
+        <h3 class="gl-new-card-title">{{ __('Variables') }}</h3>
+      </div>
+      <div class="gl-new-card-actions">
+        <gl-button size="small" data-testid="add-variable" @click="addVariable">{{
           __('Add variable')
         }}</gl-button>
       </div>
