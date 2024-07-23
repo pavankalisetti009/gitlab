@@ -10,6 +10,7 @@ module Llm
     data_consistency :sticky
     worker_has_external_dependencies!
     deduplicate :until_executed
+    sidekiq_options retry: 3
 
     class << self
       def serialize_message(message)
