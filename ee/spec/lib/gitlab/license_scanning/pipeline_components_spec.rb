@@ -10,6 +10,14 @@ RSpec.describe Gitlab::LicenseScanning::PipelineComponents, feature_category: :s
     context 'when the pipeline has an sbom report' do
       let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, project: project) }
 
+      context 'and sbom components are not supported by license scanning' do
+        let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_container_scanning, project: project) }
+
+        it 'returns an empty list' do
+          expect(fetch).to be_empty
+        end
+      end
+
       context 'and some of the sbom components do not have purl values' do
         it 'returns a list with the expected size' do
           expected_number_of_components = pipeline.sbom_reports.reports.sum do |report|
