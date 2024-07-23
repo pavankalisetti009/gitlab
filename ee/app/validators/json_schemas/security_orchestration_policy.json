@@ -26,12 +26,12 @@
     },
     {
       "required": [
-        "ci_component_sources_policy"
+        "ci_component_publishing_policy"
       ]
     }
   ],
   "properties": {
-    "ci_component_sources_policy": {
+    "ci_component_publishing_policy": {
       "type": "array",
       "description": "Allows the publishing of components from specific sources to the catalog.",
       "additionalItems": false,

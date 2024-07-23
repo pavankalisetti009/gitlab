@@ -17,7 +17,9 @@ module Gitlab
       # It allows us to search only for projects user has access to
       attr_reader :limit_project_ids
 
-      def initialize(current_user, query, limit_project_ids = nil, root_ancestor_ids: nil, public_and_internal_projects: true, order_by: nil, sort: nil, filters: {})
+      def initialize(
+        current_user, query, limit_project_ids = nil, root_ancestor_ids: nil,
+        public_and_internal_projects: true, order_by: nil, sort: nil, filters: {})
         @current_user = current_user
         @query = query
         @limit_project_ids = limit_project_ids
@@ -40,7 +42,6 @@ module Gitlab
         issues.error
       end
 
-      # rubocop:disable Metrics/CyclomaticComplexity -- method consists of case statement only
       def objects(scope, page: 1, per_page: DEFAULT_PER_PAGE, preload_method: nil)
         page = (page || 1).to_i
 
@@ -75,7 +76,6 @@ module Gitlab
           Kaminari.paginate_array([])
         end
       end
-      # rubocop:enable Metrics/CyclomaticComplexity
 
       # Pull the highlight attribute out of Elasticsearch results
       # and map it to the result id
@@ -327,7 +327,8 @@ module Gitlab
           base_options.merge(filters.slice(:include_archived))
         when :merge_requests
           base_options
-            .merge(filters.slice(:order_by, :sort, :state, :include_archived, :source_branch, :not_source_branch, :author_username, :not_author_username))
+            .merge(filters.slice(:order_by, :sort, :state, :include_archived, :source_branch, :not_source_branch,
+              :author_username, :not_author_username))
         when :issues
           base_options.merge(
             filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived),
@@ -358,7 +359,7 @@ module Gitlab
       end
 
       def memoize_key(scope, count_only:)
-        count_only ? "#{scope}_results_count".to_sym : scope
+        count_only ? :"#{scope}_results_count" : scope
       end
 
       def projects(count_only: false)
@@ -468,10 +469,9 @@ module Gitlab
       end
 
       def blob_aggregations
-        strong_memoize(:blob_aggregations) do
-          Repository.__elasticsearch__.blob_aggregations(query, base_options)
-        end
+        Repository.__elasticsearch__.blob_aggregations(query, base_options)
       end
+      strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
         if Feature.disabled?(:search_issue_refactor, current_user)

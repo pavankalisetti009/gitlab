@@ -153,7 +153,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
       let(:log_data) do
         {
           class: described_class, callback_name: params[:name], payload: params[:payload], additional_payload: nil,
-          success: true, error_message: nil
+          success: true, error_message: nil, action: :callback
         }
       end
 
