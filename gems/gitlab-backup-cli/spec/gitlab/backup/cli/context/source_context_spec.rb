@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe Gitlab::Backup::Cli::SourceContext do
+RSpec.describe Gitlab::Backup::Cli::Context::SourceContext do
   subject(:context) { described_class.new }
 
   let(:fake_gitlab_basepath) { Pathname.new(Dir.mktmpdir('gitlab', temp_path)) }
