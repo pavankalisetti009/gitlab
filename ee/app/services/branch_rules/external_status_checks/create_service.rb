@@ -36,7 +36,7 @@ module BranchRules
       end
 
       def permitted_params
-        %i[name external_url]
+        %i[name external_url shared_secret]
       end
     end
   end

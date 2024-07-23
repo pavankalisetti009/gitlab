@@ -179,6 +179,39 @@ RSpec.describe MergeRequests::ExternalStatusCheck, type: :model do
     it { is_expected.to eq(second_response) }
   end
 
+  describe 'hmac?' do
+    let_it_be(:merge_request) { create(:merge_request) }
+    let(:project) { merge_request.source_project }
+
+    context 'when shared secret is saved' do
+      let_it_be(:rule) { create(:external_status_check, shared_secret: 'shared_secret') }
+
+      subject { rule.hmac? }
+
+      it { is_expected.to eq(true) }
+    end
+
+    context 'when shared secret is not saved' do
+      let_it_be(:rule) { create(:external_status_check) }
+
+      subject { rule.hmac? }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when shared secret had invalid value' do
+      ['', ' ', nil].each do |value|
+        context "with invalid value #{value}" do
+          let_it_be(:rule) { create(:external_status_check, shared_secret: value) }
+
+          subject { rule.hmac? }
+
+          it { is_expected.to eq(false) }
+        end
+      end
+    end
+  end
+
   describe 'callbacks', :request_store do
     let_it_be(:project) { create(:project) }
     let_it_be(:master_branch) { create(:protected_branch, project: project, name: 'master') }

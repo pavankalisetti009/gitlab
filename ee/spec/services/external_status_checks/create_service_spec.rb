@@ -13,7 +13,8 @@ RSpec.describe ExternalStatusChecks::CreateService do
     {
       name: 'Test',
       external_url: 'https://external_url.text/hello.json',
-      protected_branch_ids: [protected_branch.id]
+      protected_branch_ids: [protected_branch.id],
+      shared_secret: 'shared_secret'
     }
   end
 

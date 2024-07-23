@@ -46,6 +46,7 @@ RSpec.shared_examples_for 'create external status services' do
       expect(rule.project).to eq(project)
       expect(rule.external_url).to eq('https://external_url.text/hello.json')
       expect(rule.name).to eq 'Test'
+      expect(rule.shared_secret).to eq 'shared_secret'
       expect(rule.protected_branches).to contain_exactly(protected_branch)
     end
   end
