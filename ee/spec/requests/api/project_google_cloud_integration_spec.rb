@@ -43,6 +43,30 @@ RSpec.describe API::ProjectGoogleCloudIntegration, feature_category: :integratio
     end
   end
 
+  shared_examples 'does not return the shell script' do |invalid_param:|
+    let(:invalid_google_project_ids) do
+      [
+        '$(curl evil-website.biz)',
+        'abcd',
+        'a' * 31,
+        'my-project-',
+        'Capital-Letters'
+      ]
+    end
+
+    it do
+      invalid_google_project_ids.each do |project_id|
+        get(api(path, owner), params: {
+          enable_google_cloud_artifact_registry: true,
+          "#{invalid_param}": project_id
+        })
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['error']).to eq("#{invalid_param} is invalid")
+      end
+    end
+  end
+
   describe 'GET /projects/:id/google_cloud/setup/runner_deployment_project.sh' do
     let(:path) { "/projects/#{project.id}/google_cloud/setup/runner_deployment_project.sh" }
     let(:params) do
@@ -60,6 +84,10 @@ RSpec.describe API::ProjectGoogleCloudIntegration, feature_category: :integratio
     context 'when SaaS feature is enabled' do
       before do
         stub_saas_features(google_cloud_support: true)
+      end
+
+      context 'when google_cloud_project_id is invalid' do
+        it_behaves_like 'does not return the shell script', invalid_param: :google_cloud_project_id
       end
 
       it_behaves_like 'an endpoint generating a bash script for Google Cloud'
@@ -87,6 +115,10 @@ RSpec.describe API::ProjectGoogleCloudIntegration, feature_category: :integratio
       context 'when Workload Identity Federation integration exists' do
         before do
           create(:google_cloud_platform_workload_identity_federation_integration, project: project)
+        end
+
+        context 'when google_cloud_artifact_registry_project_id is invalid' do
+          it_behaves_like 'does not return the shell script', invalid_param: :google_cloud_artifact_registry_project_id
         end
 
         it_behaves_like 'an endpoint generating a bash script for Google Cloud'
