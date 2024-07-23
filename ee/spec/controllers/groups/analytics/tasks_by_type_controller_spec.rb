@@ -10,7 +10,7 @@ RSpec.describe Groups::Analytics::TasksByTypeController, feature_category: :team
   let!(:issue) { create(:labeled_issue, created_at: 5.days.ago, project: create(:project, group: group), labels: [label]) }
 
   before do
-    stub_licensed_features(type_of_work_analytics: true)
+    stub_licensed_features(type_of_work_analytics: true, cycle_analytics_for_groups: true)
 
     group.add_reporter(user)
     sign_in(user)

@@ -35,6 +35,8 @@ module EE
             .for_sha(sha)
         end
 
+        SBOM_REPORT_INGESTION_ERRORS_TTL = 15.days.to_i.freeze
+
         # This structure describes feature levels
         # to access the file types for given reports
         REPORT_LICENSED_FEATURES = {
@@ -260,6 +262,21 @@ module EE
         security_scans.with_errors.exists?
       end
 
+      def has_sbom_report_ingestion_errors?
+        sbom_report_ingestion_errors.present?
+      end
+
+      def set_sbom_report_ingestion_errors(sbom_errors)
+        # Ensure error messages are kept under a manageable size
+        value = sbom_errors.first(10).map { |e| [e.first.truncate(255)] }.to_json
+        ::Gitlab::Redis::SharedState.with { |redis| redis.set(sbom_report_ingestion_errors_redis_key, value, ex: SBOM_REPORT_INGESTION_ERRORS_TTL) }
+      end
+
+      def sbom_report_ingestion_errors
+        ::Gitlab::Redis::SharedState.with { |redis| redis.get(sbom_report_ingestion_errors_redis_key) }
+                                    .then { |sbom_errors| ::Gitlab::Json.parse(sbom_errors) if sbom_errors }
+      end
+
       def total_ci_minutes_consumed
         ::Gitlab::Ci::Minutes::PipelineConsumption.new(self).amount
       end
@@ -314,6 +331,10 @@ module EE
 
       def security_builds
         @security_builds ||= ::Security::SecurityJobsFinder.new(pipeline: self).execute
+      end
+
+      def sbom_report_ingestion_errors_redis_key
+        "sbom_report_ingestion_errors/#{id}"
       end
     end
   end

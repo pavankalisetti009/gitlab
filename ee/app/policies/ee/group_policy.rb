@@ -275,7 +275,6 @@ module EE
       rule { reporter }.policy do
         enable :admin_issue_board_list
         enable :view_productivity_analytics
-        enable :view_type_of_work_charts
         enable :download_wiki_code
       end
 
@@ -348,7 +347,19 @@ module EE
       end
 
       rule { (reporter | admin) & cycle_analytics_available }.policy do
-        enable :read_cycle_analytics, :create_group_stage, :read_group_stage, :update_group_stage, :delete_group_stage, :admin_value_stream
+        enable :admin_value_stream
+        enable :create_group_stage
+        enable :delete_group_stage
+        enable :read_cycle_analytics
+        enable :read_group_stage
+        enable :update_group_stage
+        enable :view_type_of_work_charts
+      end
+
+      rule { auditor & cycle_analytics_available }.policy do
+        enable :read_cycle_analytics
+        enable :read_group_stage
+        enable :view_type_of_work_charts
       end
 
       rule { reporter & group_ci_cd_analytics_available }.policy do

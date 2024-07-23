@@ -84,6 +84,11 @@ module Gitlab
               'troubleshoot_job'
             end
 
+            def ai_request
+              ::Gitlab::Llm::Chain::Requests::AiGateway.new(context.current_user, service_name: :troubleshoot_job,
+                tracking_context: tracking_context)
+            end
+
             def tracking_context
               {
                 request_id: context.request_id,

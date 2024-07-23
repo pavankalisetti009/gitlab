@@ -1194,6 +1194,59 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
+  describe '#has_sbom_report_ingestion_errors?' do
+    subject { pipeline.has_sbom_report_ingestion_errors? }
+
+    context 'when there are no ingestion errors' do
+      it { is_expected.to be_falsey }
+    end
+
+    context 'when there are ingestion errors' do
+      before do
+        pipeline.set_sbom_report_ingestion_errors([["Invalid report"]])
+      end
+
+      it { is_expected.to be_truthy }
+    end
+  end
+
+  describe '#set_sbom_report_ingestion_errors' do
+    let(:sbom_errors) do
+      errors = Array.new(10, ['Invalid report'])
+      errors.unshift(['0' * 256])
+    end
+
+    subject { pipeline.set_sbom_report_ingestion_errors(sbom_errors) }
+
+    it 'persists the 10 first errors with 255 characters max per error' do
+      expected_value = sbom_errors.first(10)
+      expected_value[0] = [expected_value[0][0].truncate(255)]
+      Gitlab::Redis::SharedState.with do |redis|
+        expect(redis).to receive(:set).with("sbom_report_ingestion_errors/#{pipeline.id}", expected_value.to_json, ex: 15.days.to_i)
+      end
+
+      subject
+    end
+  end
+
+  describe '#sbom_report_ingestion_errors', :clean_gitlab_redis_shared_state do
+    subject { pipeline.sbom_report_ingestion_errors }
+
+    context 'when there is no record on Redis' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when there is a record on Redis' do
+      let(:sbom_errors) { [['Invalid report']] }
+
+      before do
+        pipeline.set_sbom_report_ingestion_errors(sbom_errors)
+      end
+
+      it { is_expected.to eq(sbom_errors) }
+    end
+  end
+
   describe '#total_ci_minutes_consumed', feature_category: :hosted_runners do
     let(:pipeline_consumption) do
       instance_double(::Gitlab::Ci::Minutes::PipelineConsumption, amount: 26)
