@@ -22,7 +22,8 @@ module Search
           file_url: Gitlab::Routing.url_helpers.project_blob_url(project, File.join(ref, result[:path])),
           blame_url: Gitlab::Routing.url_helpers.project_blame_url(project, File.join(ref, result[:path])),
           match_count_total: result[:match_count_total],
-          match_count: result[:match_count]
+          match_count: result[:match_count],
+          project: project
         )
       end
 
