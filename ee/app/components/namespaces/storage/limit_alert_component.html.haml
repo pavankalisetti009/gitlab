@@ -7,7 +7,7 @@
                             dismiss_endpoint: alert_callout_path,
                             group_id: root_namespace_id,
                             defer_links: "true",
-                            testid: 'storage-limit-message' }}) do |c|
+                            testid: 'storage-limit-alert-content' }}) do |c|
     = c.with_body do
       - alert_message.each do |paragraph|
         %p
