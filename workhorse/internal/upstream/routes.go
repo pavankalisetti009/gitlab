@@ -40,6 +40,12 @@ type routeEntry struct {
 	matchers []matcherFunc
 }
 
+type routeMetadata struct {
+	regexpStr string
+	routeID   string
+	backendID string
+}
+
 type routeOptions struct {
 	tracing         bool
 	isGeoProxyRoute bool
@@ -100,27 +106,29 @@ func withAllowOrigins(pattern string) func(*routeOptions) {
 	}
 }
 
-func (u *upstream) observabilityMiddlewares(handler http.Handler, method string, regexpStr string, opts *routeOptions) http.Handler {
+func (u *upstream) observabilityMiddlewares(handler http.Handler, method string, metadata routeMetadata, opts *routeOptions) http.Handler {
 	handler = log.AccessLogger(
 		handler,
 		log.WithAccessLogger(u.accessLogger),
 		log.WithExtraFields(func(_ *http.Request) log.Fields {
 			return log.Fields{
-				"route": regexpStr, // This field matches the `route` label in Prometheus metrics
+				"route":      metadata.regexpStr, // This field matches the `route` label in Prometheus metrics
+				"route_id":   metadata.routeID,
+				"backend_id": metadata.backendID,
 			}
 		}),
 	)
 
-	handler = instrumentRoute(handler, method, regexpStr) // Add prometheus metrics
+	handler = instrumentRoute(handler, method, metadata) // Add prometheus metrics
 
 	if opts != nil && opts.isGeoProxyRoute {
-		handler = instrumentGeoProxyRoute(handler, method, regexpStr) // Add Geo prometheus metrics
+		handler = instrumentGeoProxyRoute(handler, method, metadata) // Add Geo prometheus metrics
 	}
 
 	return handler
 }
 
-func (u *upstream) route(method, regexpStr string, handler http.Handler, opts ...func(*routeOptions)) routeEntry {
+func (u *upstream) route(method string, metadata routeMetadata, handler http.Handler, opts ...func(*routeOptions)) routeEntry {
 	// Instantiate a route with the defaults
 	options := routeOptions{
 		tracing: true,
@@ -130,11 +138,11 @@ func (u *upstream) route(method, regexpStr string, handler http.Handler, opts ..
 		f(&options)
 	}
 
-	handler = u.observabilityMiddlewares(handler, method, regexpStr, &options)
+	handler = u.observabilityMiddlewares(handler, method, metadata, &options)
 	handler = denyWebsocket(handler) // Disallow websockets
 	if options.tracing {
 		// Add distributed tracing
-		handler = tracing.Handler(handler, tracing.WithRouteIdentifier(regexpStr))
+		handler = tracing.Handler(handler, tracing.WithRouteIdentifier(metadata.regexpStr))
 	}
 	if options.allowOrigins != nil {
 		handler = corsMiddleware(handler, options.allowOrigins)
@@ -142,19 +150,19 @@ func (u *upstream) route(method, regexpStr string, handler http.Handler, opts ..
 
 	return routeEntry{
 		method:   method,
-		regex:    compileRegexp(regexpStr),
+		regex:    compileRegexp(metadata.regexpStr),
 		handler:  handler,
 		matchers: options.matchers,
 	}
 }
 
-func (u *upstream) wsRoute(regexpStr string, handler http.Handler, matchers ...matcherFunc) routeEntry {
+func (u *upstream) wsRoute(metadata routeMetadata, handler http.Handler, matchers ...matcherFunc) routeEntry {
 	method := "GET"
-	handler = u.observabilityMiddlewares(handler, method, regexpStr, nil)
+	handler = u.observabilityMiddlewares(handler, method, metadata, nil)
 
 	return routeEntry{
 		method:   method,
-		regex:    compileRegexp(regexpStr),
+		regex:    compileRegexp(metadata.regexpStr),
 		handler:  handler,
 		matchers: append(matchers, websocket.IsWebSocketUpgrade),
 	}
@@ -251,28 +259,49 @@ func configureRoutes(u *upstream) {
 
 	u.Routes = []routeEntry{
 		// Git Clone
-		u.route("GET", gitProjectPattern+`info/refs\z`, git.GetInfoRefsHandler(api)),
-		u.route("POST", gitProjectPattern+`git-upload-pack\z`, contentEncodingHandler(git.UploadPack(api)), withMatcher(isContentType("application/x-git-upload-pack-request"))),
-		u.route("POST", gitProjectPattern+`git-receive-pack\z`, contentEncodingHandler(git.ReceivePack(api)), withMatcher(isContentType("application/x-git-receive-pack-request"))),
-		u.route("PUT", gitProjectPattern+`gitlab-lfs/objects/([0-9a-f]{64})/([0-9]+)\z`, requestBodyUploader, withMatcher(isContentType("application/octet-stream"))),
-		u.route("POST", gitProjectPattern+`ssh-upload-pack\z`, git.SSHUploadPack(api)),
-		u.route("POST", gitProjectPattern+`ssh-receive-pack\z`, git.SSHReceivePack(api)),
+		u.route("GET",
+			routeMetadata{gitProjectPattern + `info/refs\z`, "git_info_refs", "gitaly"},
+			git.GetInfoRefsHandler(api)),
+		u.route("POST",
+			routeMetadata{gitProjectPattern + `git-upload-pack\z`, "git_upload_pack", "gitaly"},
+			contentEncodingHandler(git.UploadPack(api)), withMatcher(isContentType("application/x-git-upload-pack-request"))),
+		u.route("POST",
+			routeMetadata{gitProjectPattern + `git-receive-pack\z`, "git_receive_pack", "gitaly"},
+			contentEncodingHandler(git.ReceivePack(api)), withMatcher(isContentType("application/x-git-receive-pack-request"))),
+		u.route("PUT",
+			routeMetadata{gitProjectPattern + `gitlab-lfs/objects/([0-9a-f]{64})/([0-9]+)\z`, "git_lfs_objects", "rails"},
+			requestBodyUploader, withMatcher(isContentType("application/octet-stream"))),
+		u.route("POST",
+			routeMetadata{gitProjectPattern + `ssh-upload-pack\z`, "ssh_upload_pack", "gitaly"},
+			git.SSHUploadPack(api)),
+		u.route("POST",
+			routeMetadata{gitProjectPattern + `ssh-receive-pack\z`, "ssh_receive_pack", "gitaly"},
+			git.SSHReceivePack(api)),
 
 		// CI Artifacts
-		u.route("POST", apiPattern+`v4/jobs/[0-9]+/artifacts\z`, contentEncodingHandler(upload.Artifacts(api, signingProxy, preparer, &u.Config))),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/jobs/[0-9]+/artifacts\z`, "api_jobs_request", "rails"},
+			contentEncodingHandler(upload.Artifacts(api, signingProxy, preparer, &u.Config))),
 
 		// ActionCable websocket
-		u.wsRoute(`^/-/cable\z`, cableProxy),
+		u.wsRoute(routeMetadata{`^/-/cable\z`, "action_cable", "rails"},
+			cableProxy),
 
 		// Terminal websocket
-		u.wsRoute(projectPattern+`-/environments/[0-9]+/terminal.ws\z`, channel.Handler(api)),
-		u.wsRoute(projectPattern+`-/jobs/[0-9]+/terminal.ws\z`, channel.Handler(api)),
+		u.wsRoute(
+			routeMetadata{projectPattern + `-/environments/[0-9]+/terminal.ws\z`, "project_environments_terminal_ws", "rails"},
+			channel.Handler(api)),
+		u.wsRoute(routeMetadata{projectPattern + `-/jobs/[0-9]+/terminal.ws\z`, "project_jobs_terminal_ws", "rails"},
+			channel.Handler(api)),
 
 		// Proxy Job Services
-		u.wsRoute(projectPattern+`-/jobs/[0-9]+/proxy.ws\z`, channel.Handler(api)),
+		u.wsRoute(
+			routeMetadata{projectPattern + `-/jobs/[0-9]+/proxy.ws\z`, "project_jobs_proxy_ws", "rails"},
+			channel.Handler(api)),
 
 		// Long poll and limit capacity given to jobs/request and builds/register.json
-		u.route("", apiPattern+`v4/jobs/request\z`, ciAPILongPolling),
+		u.route("",
+			routeMetadata{apiPattern + `v4/jobs/request\z`, "api_jobs_request", "rails"}, ciAPILongPolling),
 
 		// Not all API endpoints support encoded project IDs
 		// (e.g. `group%2Fproject`), but for the sake of consistency we
@@ -282,86 +311,121 @@ func configureRoutes(u *upstream) {
 		// https://gitlab.com/gitlab-org/gitlab/-/merge_requests/56731.
 
 		// Maven Artifact Repository
-		u.route("PUT", apiProjectPattern+`/packages/maven/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/maven/`, "projects_api_packages_maven", "rails"}, requestBodyUploader),
 
 		// Conan Artifact Repository
-		u.route("PUT", apiPattern+`v4/packages/conan/`, requestBodyUploader),
-		u.route("PUT", apiProjectPattern+`/packages/conan/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiPattern + `v4/packages/conan/`, "api_packages_conan", "rails"}, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/conan/`, "project_api_packages_conan", "rails"}, requestBodyUploader),
 
 		// Generic Packages Repository
-		u.route("PUT", apiProjectPattern+`/packages/generic/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/generic/`, "api_projects_packages_generic", "rails"}, requestBodyUploader),
 
 		// Ml Model Packages Repository
-		u.route("PUT", apiProjectPattern+`/packages/ml_models/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/ml_models/`, "api_projects_packages_ml_models", "rails"}, requestBodyUploader),
 
 		// NuGet Artifact Repository
-		u.route("PUT", apiProjectPattern+`/packages/nuget/`, mimeMultipartUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/nuget/`, "api_projects_packages_nuget", "rails"}, mimeMultipartUploader),
 
 		// NuGet v2 Artifact Repository
-		u.route("PUT", apiProjectPattern+`/packages/nuget/v2`, mimeMultipartUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/nuget/v2`, "api_projects_packages_nuget_v2", "rails"}, mimeMultipartUploader),
 
 		// PyPI Artifact Repository
-		u.route("POST", apiProjectPattern+`/packages/pypi`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/packages/pypi`, "api_projects_packages_pypi", "rails"}, mimeMultipartUploader),
 
 		// Debian Artifact Repository
-		u.route("PUT", apiProjectPattern+`/packages/debian/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/debian/`, "api_projects_packages_debian", "rails"}, requestBodyUploader),
 
 		// RPM Artifact Repository
-		u.route("POST", apiProjectPattern+`/packages/rpm/`, requestBodyUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/packages/rpm/`, "api_projects_packages_rpm", "rails"}, requestBodyUploader),
 
 		// Gem Artifact Repository
-		u.route("POST", apiProjectPattern+`/packages/rubygems/`, requestBodyUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/packages/rubygems/`, "api_projects_packages_rubygems", "rails"}, requestBodyUploader),
 
 		// Terraform Module Package Repository
-		u.route("PUT", apiProjectPattern+`/packages/terraform/modules/`, requestBodyUploader),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `/packages/terraform/modules/`, "api_projects_packages_terraform", "rails"}, requestBodyUploader),
 
 		// Helm Artifact Repository
-		u.route("POST", apiProjectPattern+`/packages/helm/api/[^/]+/charts\z`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/packages/helm/api/[^/]+/charts\z`, "api_projects_packages_helm", "rails"}, mimeMultipartUploader),
 
 		// We are porting API to disk acceleration
 		// we need to declare each routes until we have fixed all the routes on the rails codebase.
 		// Overall status can be seen at https://gitlab.com/groups/gitlab-org/-/epics/1802#current-status
-		u.route("POST", apiProjectPattern+`/wikis/attachments\z`, tempfileMultipartProxy),
-		u.route("POST", apiGroupPattern+`/wikis/attachments\z`, tempfileMultipartProxy),
-		u.route("POST", apiPattern+`graphql\z`, tempfileMultipartProxy),
-		u.route("POST", apiTopicPattern, tempfileMultipartProxy),
-		u.route("PUT", apiTopicPattern, tempfileMultipartProxy),
-		u.route("POST", apiPattern+`v4/groups/import`, mimeMultipartUploader),
-		u.route("POST", apiPattern+`v4/projects/import`, mimeMultipartUploader),
-		u.route("POST", apiPattern+`v4/projects/import-relation`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/wikis/attachments\z`, "api_projects_wikis_attachments", "rails"}, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiGroupPattern + `/wikis/attachments\z`, "api_groups_wikis_attachments", "rails"}, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiPattern + `graphql\z`, "api_graphql", "rails"}, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiTopicPattern, "api_topics", "rails"}, tempfileMultipartProxy),
+		u.route("PUT",
+			routeMetadata{apiTopicPattern, "api_topics", "rails"}, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/groups/import`, "api_groups_import", "rails"}, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/projects/import`, "api_projects_import", "rails"}, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/projects/import-relation`, "api_projects_import_relation", "rails"}, mimeMultipartUploader),
 
 		// Project Import via UI upload acceleration
-		u.route("POST", importPattern+`gitlab_project`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{importPattern + `gitlab_project`, "import_gitlab_project", "rails"}, mimeMultipartUploader),
 		// Group Import via UI upload acceleration
-		u.route("POST", importPattern+`gitlab_group`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{importPattern + `gitlab_group`, "import_gitlab_group", "rails"}, mimeMultipartUploader),
 
 		// Issuable Metric image upload
-		u.route("POST", apiProjectPattern+`/issues/[0-9]+/metric_images\z`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/issues/[0-9]+/metric_images\z`, "api_projects_issues_metric_images", "rails"}, mimeMultipartUploader),
 
 		// Alert Metric image upload
-		u.route("POST", apiProjectPattern+`/alert_management_alerts/[0-9]+/metric_images\z`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/alert_management_alerts/[0-9]+/metric_images\z`, "api_projects_alert_management_alerts_metric_images", "rails"}, mimeMultipartUploader),
 
 		// Requirements Import via UI upload acceleration
-		u.route("POST", projectPattern+`requirements_management/requirements/import_csv`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{projectPattern + `requirements_management/requirements/import_csv`, "project_requirements_import_csv", "rails"}, mimeMultipartUploader),
 
 		// Work items Import via UI upload acceleration
-		u.route("POST", projectPattern+`work_items/import_csv`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{projectPattern + `work_items/import_csv`, "project_work_items_import_csv", "rails"}, mimeMultipartUploader),
 
 		// Uploads via API
-		u.route("POST", apiProjectPattern+`/uploads\z`, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{apiProjectPattern + `/uploads\z`, "api_projects_uploads", "rails"}, mimeMultipartUploader),
 
 		// Project Avatar
-		u.route("POST", apiPattern+`v4/projects\z`, tempfileMultipartProxy),
-		u.route("PUT", apiProjectPattern+`\z`, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/projects\z`, "api_projects", "rails"}, tempfileMultipartProxy),
+		u.route("PUT",
+			routeMetadata{apiProjectPattern + `\z`, "api_projects", "rails"}, tempfileMultipartProxy),
 
 		// Group Avatar
-		u.route("POST", apiPattern+`v4/groups\z`, tempfileMultipartProxy),
-		u.route("PUT", apiPattern+`v4/groups/[^/]+\z`, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/groups\z`, "api_groups", "rails"}, tempfileMultipartProxy),
+		u.route("PUT",
+			routeMetadata{apiPattern + `v4/groups/[^/]+\z`, "api_groups", "rails"}, tempfileMultipartProxy),
 
 		// User Avatar
-		u.route("PUT", apiPattern+`v4/user/avatar\z`, tempfileMultipartProxy),
-		u.route("POST", apiPattern+`v4/users\z`, tempfileMultipartProxy),
-		u.route("PUT", apiPattern+`v4/users/[0-9]+\z`, tempfileMultipartProxy),
+		u.route("PUT",
+			routeMetadata{apiPattern + `v4/user/avatar\z`, "api_user_avatar", "rails"}, tempfileMultipartProxy),
+		u.route("POST",
+			routeMetadata{apiPattern + `v4/users\z`, "api_users", "rails"}, tempfileMultipartProxy),
+		u.route("PUT",
+			routeMetadata{apiPattern + `v4/users/[0-9]+\z`, "api_users", "rails"}, tempfileMultipartProxy),
 
 		// GitLab Observability Backend (GOB). Write paths are versioned with v1 to align with
 		// OpenTelemetry compatibility, where SDKs POST to /v1/traces, /v1/logs and /v1/metrics.
@@ -376,11 +440,13 @@ func configureRoutes(u *upstream) {
 		u.route("GET", apiProjectPattern+`/observability/v1/services`, gob.WithProjectAuth("/read/services")),
 
 		// Explicitly proxy API requests
-		u.route("", apiPattern, proxy),
+		u.route("",
+			routeMetadata{apiPattern, "api", "rails"}, proxy),
 
 		// Serve assets
 		u.route(
-			"", `^/assets/`,
+			"",
+			routeMetadata{`^/assets/`, "assets", "rails"},
 			static.ServeExisting(
 				u.URLPrefix,
 				staticpages.CacheExpireMax,
@@ -391,20 +457,27 @@ func configureRoutes(u *upstream) {
 		),
 
 		// Uploads
-		u.route("POST", projectPattern+`uploads\z`, mimeMultipartUploader),
-		u.route("POST", snippetUploadPattern, mimeMultipartUploader),
-		u.route("POST", userUploadPattern, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{projectPattern + `uploads\z`, "project_uploads", "rails"}, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{snippetUploadPattern, "personal_snippet_uploads", "rails"}, mimeMultipartUploader),
+		u.route("POST",
+			routeMetadata{userUploadPattern, "user_uploads", "rails"}, mimeMultipartUploader),
 
 		// health checks don't intercept errors and go straight to rails
 		// TODO: We should probably not return a HTML deploy page?
 		//       https://gitlab.com/gitlab-org/gitlab/-/issues/336326
-		u.route("", "^/-/(readiness|liveness)$", static.DeployPage(probeUpstream)),
-		u.route("", "^/-/health$", static.DeployPage(healthUpstream)),
+		u.route("",
+			routeMetadata{"^/-/(readiness|liveness)$", "liveness", "self"}, static.DeployPage(probeUpstream)),
+		u.route("",
+			routeMetadata{"^/-/health$", "health", "self"}, static.DeployPage(healthUpstream)),
 
 		// This route lets us filter out health checks from our metrics.
-		u.route("", "^/-/", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/-/", "dash", "rails"}, defaultUpstream),
 
-		u.route("", "", defaultUpstream),
+		u.route("",
+			routeMetadata{"", "default", "rails"}, defaultUpstream),
 	}
 
 	// Routes which should actually be served locally by a Geo Proxy. If none
@@ -417,36 +490,54 @@ func configureRoutes(u *upstream) {
 		// pulls are performed against a different source of truth. Ideally, we'd
 		// proxy/redirect pulls as well, when the secondary is not up-to-date.
 		//
-		u.route("GET", geoGitProjectPattern+`info/refs\z`, git.GetInfoRefsHandler(api)),
-		u.route("POST", geoGitProjectPattern+`git-upload-pack\z`, contentEncodingHandler(git.UploadPack(api)), withMatcher(isContentType("application/x-git-upload-pack-request"))),
-		u.route("GET", geoGitProjectPattern+`gitlab-lfs/objects/([0-9a-f]{64})\z`, defaultUpstream),
-		u.route("POST", geoGitProjectPattern+`info/lfs/objects/batch\z`, defaultUpstream),
+		u.route("GET",
+			routeMetadata{geoGitProjectPattern + `info/refs\z`, "geo_git_info_refs", "gitaly"}, git.GetInfoRefsHandler(api)),
+		u.route("POST",
+			routeMetadata{geoGitProjectPattern + `git-upload-pack\z`, "geo_git_upload_pack", "gitaly"}, contentEncodingHandler(git.UploadPack(api)), withMatcher(isContentType("application/x-git-upload-pack-request"))),
+		u.route("GET",
+			routeMetadata{geoGitProjectPattern + `gitlab-lfs/objects/([0-9a-f]{64})\z`, "geo_git_lfs_objects", "rails"}, defaultUpstream),
+		u.route("POST",
+			routeMetadata{geoGitProjectPattern + `info/lfs/objects/batch\z`, "geo_git_lfs_info_objects_batch", "rails"}, defaultUpstream),
 
 		// Serve health checks from this Geo secondary
-		u.route("", "^/-/(readiness|liveness)$", static.DeployPage(probeUpstream)),
-		u.route("", "^/-/health$", static.DeployPage(healthUpstream)),
-		u.route("", "^/-/metrics$", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/-/(readiness|liveness)$", "geo_liveness", "self"}, static.DeployPage(probeUpstream)),
+		u.route("",
+			routeMetadata{"^/-/health$", "geo_health", "self"}, static.DeployPage(healthUpstream)),
+		u.route("",
+			routeMetadata{"^/-/metrics$", "geo_metrics", "rails"}, defaultUpstream),
 
 		// Authentication routes
-		u.route("", "^/users/auth/geo/(sign_in|sign_out)$", defaultUpstream),
-		u.route("", "^/oauth/geo/(auth|callback|logout)$", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/users/auth/geo/(sign_in|sign_out)$", "users_auth_geo", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/oauth/geo/(auth|callback|logout)$", "oauth_geo", "rails"}, defaultUpstream),
 
 		// Admin Area > Geo routes
-		u.route("", "^/admin/geo/replication/projects", defaultUpstream),
-		u.route("", "^/admin/geo/replication/designs", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/admin/geo/replication/projects", "admin_geo_replication_projects", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/admin/geo/replication/designs", "admin_geo_replication_designs", "rails"}, defaultUpstream),
 
 		// Geo API routes
-		u.route("", "^/api/v4/geo_replication", defaultUpstream),
-		u.route("", "^/api/v4/geo/proxy_git_ssh", defaultUpstream),
-		u.route("", "^/api/v4/geo/graphql", defaultUpstream),
-		u.route("", "^/api/v4/geo_nodes/current/failures", defaultUpstream),
-		u.route("", "^/api/v4/geo_sites/current/failures", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/geo_replication", "api_geo_replication", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/geo/proxy_git_ssh", "api_geo_proxy_git_ssh", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/geo/graphql", "api_geo_graphql", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/geo_nodes/current/failures", "api_geo_nodes_current_failures", "rails"}, defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/geo_sites/current/failures", "api_geo_sites_current_failures", "rails"}, defaultUpstream),
 
 		// Internal API routes
-		u.route("", "^/api/v4/internal", defaultUpstream),
+		u.route("",
+			routeMetadata{"^/api/v4/internal", "api_internal", "rails"}, defaultUpstream),
 
 		u.route(
-			"", `^/assets/`,
+			"",
+			routeMetadata{`^/assets/`, "assets", "rails"},
 			static.ServeExisting(
 				u.URLPrefix,
 				staticpages.CacheExpireMax,
