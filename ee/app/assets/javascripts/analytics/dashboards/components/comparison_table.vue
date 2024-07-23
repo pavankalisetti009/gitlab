@@ -140,6 +140,7 @@ export default {
         :data="data"
         :smooth="0.2"
         :gradient="chartGradient(invertTrendColor)"
+        connect-nulls
         data-testid="metric-chart"
       />
       <div v-else class="gl-py-4" data-testid="metric-chart-skeleton">
