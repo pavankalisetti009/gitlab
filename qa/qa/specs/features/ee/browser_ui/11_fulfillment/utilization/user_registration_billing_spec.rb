@@ -53,35 +53,35 @@ module QA
             # and sanitize the value when returned as 10,000
             users_in_subscription = EE::Page::Admin::Subscription.perform(&:users_in_subscription).tr(',', '')
 
+            Runtime::Browser.visit(:gitlab, EE::Page::Admin::Dashboard)
+
             # Save the number of users active on the instance as reported by GitLab
-            users_in_license = Gitlab::Page::Admin::Dashboard.perform do |users|
-              users.visit
-              users.users_in_license
-            end.tr(',', '') # sanitize the value when returned as 10,000
+            # and sanitize the value when returned as 10,000
+            users_in_license = EE::Page::Admin::Dashboard.perform(&:users_in_license).tr(',', '')
 
             expect(users_in_subscription).to eq(users_in_license)
 
-            billable_users = Gitlab::Page::Admin::Dashboard.perform(&:billable_users)
+            billable_users = EE::Page::Admin::Dashboard.perform(&:billable_users)
 
             # Activate the new user
             user.reload! && user.approve! # first reload the API resource to fetch the ID, then approve
 
-            Gitlab::Page::Admin::Dashboard.perform do |dashboard|
-              dashboard.visit
+            EE::Page::Admin::Dashboard.perform do |dashboard|
+              dashboard.refresh
 
               # Validate billable users has not changed after approval
               expect(dashboard.billable_users).to eq(billable_users)
 
               group.add_member(user) # add the user to the group
 
-              dashboard.visit # reload
+              dashboard.refresh
 
               # Validate billable users incremented by 1
               expect(dashboard.billable_users.to_i).to eq(billable_users.to_i + 1)
 
               group.remove_member(user) # remove the user from the group
 
-              dashboard.visit # reload
+              dashboard.refresh
 
               # Validate billable users equals the original amount
               expect(dashboard.billable_users).to eq(billable_users)
