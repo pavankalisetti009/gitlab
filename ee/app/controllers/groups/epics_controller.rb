@@ -23,10 +23,14 @@ class Groups::EpicsController < Groups::ApplicationController
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
   end
 
+  before_action only: :index do
+    push_frontend_feature_flag(:work_item_epics_list, @group)
+    push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
+  end
+
   feature_category :portfolio_management
   urgency :default, [:show, :new, :realtime_changes]
   urgency :low, [:discussions]
-
   def show
     respond_to do |format|
       format.html do
@@ -40,6 +44,14 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def new
     @noteable = Epic.new
+  end
+
+  def index
+    if Feature.enabled?(:work_item_epics_list, @group) && epic_work_items_enabled?
+      render 'work_items_index'
+    else
+      render 'index'
+    end
   end
 
   def create
