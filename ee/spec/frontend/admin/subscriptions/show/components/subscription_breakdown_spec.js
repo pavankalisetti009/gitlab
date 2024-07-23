@@ -1,16 +1,13 @@
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { GlCard } from '@gitlab/ui';
-import { mount, shallowMount } from '@vue/test-utils';
+import { shallowMount } from '@vue/test-utils';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
 import { createAlert } from '~/alert';
 import mutations from 'ee/admin/subscriptions/show/store/mutations';
 import * as types from 'ee/admin/subscriptions/show/store/mutation_types';
 import createState from 'ee/admin/subscriptions/show/store/state';
-import SubscriptionActivationBanner, {
-  ACTIVATE_SUBSCRIPTION_EVENT,
-} from 'ee/admin/subscriptions/show/components/subscription_activation_banner.vue';
 import SubscriptionActivationModal from 'ee/admin/subscriptions/show/components/subscription_activation_modal.vue';
 import SubscriptionBreakdown, {
   licensedToFields,
@@ -43,7 +40,6 @@ describe('Subscription Breakdown', () => {
   const congratulationSvgPath = '/path/to/svg';
   const connectivityHelpURL = 'connectivity/help/url';
   const licenseRemovePath = '/license/remove/';
-  const subscriptionActivationBannerCalloutName = 'banner_callout_name';
   const subscriptionSyncPath = '/sync/path/';
 
   const findDetailsCards = () => wrapper.findAllComponents(SubscriptionDetailsCard);
@@ -53,8 +49,6 @@ describe('Subscription Breakdown', () => {
   const findRemoveLicenseAction = () => wrapper.findByTestId('remove-license');
   const findActivateSubscriptionAction = () =>
     wrapper.findByTestId('subscription-activate-subscription-action');
-  const findSubscriptionActivationBanner = () =>
-    wrapper.findComponent(SubscriptionActivationBanner);
   const findSubscriptionActivationModal = () => wrapper.findComponent(SubscriptionActivationModal);
   const findSubscriptionSyncNotifications = () =>
     wrapper.findComponent(SubscriptionSyncNotifications);
@@ -104,7 +98,6 @@ describe('Subscription Breakdown', () => {
           congratulationSvgPath,
           connectivityHelpURL,
           licenseRemovePath,
-          subscriptionActivationBannerCalloutName,
           subscriptionSyncPath,
           ...provide,
         },
@@ -186,10 +179,6 @@ describe('Subscription Breakdown', () => {
       expect(findSubscriptionActivationModal().props('visible')).toBe(true);
     });
 
-    it('does not present a subscription activation banner', () => {
-      expect(findSubscriptionActivationBanner().exists()).toBe(false);
-    });
-
     describe('footer buttons', () => {
       it.each`
         url                  | type                                | shouldShow
@@ -249,42 +238,6 @@ describe('Subscription Breakdown', () => {
         findActivateSubscriptionAction().vm.$emit('click');
 
         expect(findSubscriptionActivationModal().isVisible()).toBe(true);
-      });
-    });
-
-    describe('subscription activation banner', () => {
-      beforeEach(() => {
-        createComponent({
-          props: { subscription: licenseFile },
-        });
-      });
-
-      it('presents a subscription activation banner', () => {
-        expect(findSubscriptionActivationBanner().exists()).toBe(true);
-      });
-
-      it('calls the dismiss callback when closing the banner', () => {
-        findSubscriptionActivationBanner().vm.$emit('close');
-
-        expect(userCalloutDismissSpy).toHaveBeenCalledTimes(1);
-      });
-
-      it('shows a modal', async () => {
-        expect(findSubscriptionActivationModal().props('visible')).toBe(false);
-
-        await findSubscriptionActivationBanner().vm.$emit(ACTIVATE_SUBSCRIPTION_EVENT);
-
-        expect(findSubscriptionActivationModal().props('visible')).toBe(true);
-      });
-
-      it('hides the banner when the proper condition applies', () => {
-        createComponent({
-          mountMethod: mount,
-          props: { subscription: licenseFile },
-          shouldShowCallout: false,
-        });
-
-        expect(findSubscriptionActivationBanner().exists()).toBe(false);
       });
     });
 
