@@ -9,7 +9,7 @@ RSpec.describe 'Merge request > User approves with SAML auth', :js, feature_cate
     create(
       :group_merge_request_approval_setting,
       require_saml_auth_to_approve: true,
-      require_password_to_approve: true, # enable password to test that SAML takes precdence
+      require_password_to_approve: true, # enable password to test that SAML takes precedence
       group: group
     )
   end
