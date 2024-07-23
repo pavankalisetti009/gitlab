@@ -7,6 +7,11 @@ module MergeRequests
     include Auditable
     include EachBatch
 
+    attr_encrypted :shared_secret,
+      mode: :per_attribute_iv,
+      algorithm: 'aes-256-cbc',
+      key: Settings.attr_encrypted_db_key_base_32
+
     scope :with_api_entity_associations, -> { preload(:protected_branches) }
     scope :applicable_to_branch, ->(branch) do
       includes(:protected_branches)
@@ -83,6 +88,10 @@ module MergeRequests
                 end
 
       push_audit_event(message)
+    end
+
+    def hmac?
+      shared_secret.present?
     end
 
     private
