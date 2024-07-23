@@ -55,7 +55,7 @@ module Search
     def clear_index_status
       IndexStatus.delete_all
       ::Elastic::GroupIndexStatus.delete_all
-      logger.info('Index status has been reset'.color(:green))
+      logger.info(Rainbow('Index status has been reset').green)
     end
 
     def create_empty_index
@@ -70,38 +70,38 @@ module Search
       if with_alias
         standalone_index_names = helper.create_standalone_indices(options: options)
         standalone_index_names.each do |index_name, alias_name|
-          logger.info("Index '#{index_name}' has been created.".color(:green))
-          logger.info("Alias '#{alias_name}' -> '#{index_name}' has been created.".color(:green))
+          logger.info(Rainbow("Index '#{index_name}' has been created.").green)
+          logger.info(Rainbow("Alias '#{alias_name}' -> '#{index_name}' has been created.").green)
         end
 
         helper.create_migrations_index unless helper.migrations_index_exists?
         ::Elastic::DataMigrationService.mark_all_as_completed!
       end
 
-      logger.info("Index '#{index_name}' has been created.".color(:green))
-      logger.info("Alias '#{helper.target_name}' → '#{index_name}' has been created".color(:green)) if with_alias
+      logger.info(Rainbow("Index '#{index_name}' has been created.").green)
+      logger.info(Rainbow("Alias '#{helper.target_name}' → '#{index_name}' has been created").green) if with_alias
     end
 
     def delete_index
       if helper.delete_index
-        logger.info("Index/alias '#{helper.target_name}' has been deleted".color(:green))
+        logger.info(Rainbow("Index/alias '#{helper.target_name}' has been deleted").green)
       else
-        logger.info("Index/alias '#{helper.target_name}' was not found".color(:green))
+        logger.info(Rainbow("Index/alias '#{helper.target_name}' was not found").green)
       end
 
       results = helper.delete_standalone_indices
       results.each do |index_name, alias_name, result|
         if result
-          logger.info("Index '#{index_name}' with alias '#{alias_name}' has been deleted".color(:green))
+          logger.info(Rainbow("Index '#{index_name}' with alias '#{alias_name}' has been deleted").green)
         else
-          logger.info("Index '#{index_name}' with alias '#{alias_name}' was not found".color(:green))
+          logger.info(Rainbow("Index '#{index_name}' with alias '#{alias_name}' was not found").green)
         end
       end
 
       if helper.delete_migrations_index
-        logger.info("Index/alias '#{helper.migrations_index_name}' has been deleted".color(:green))
+        logger.info(Rainbow("Index/alias '#{helper.migrations_index_name}' has been deleted").green)
       else
-        logger.info("Index/alias '#{helper.migrations_index_name}' was not found".color(:green))
+        logger.info(Rainbow("Index/alias '#{helper.migrations_index_name}' was not found").green)
       end
     end
 
@@ -115,9 +115,9 @@ module Search
 
       ::ElasticClusterReindexingCronWorker.perform_async
 
-      logger.info('Reindexing job was successfully scheduled'.color(:green))
+      logger.info(Rainbow('Reindexing job was successfully scheduled').green)
     rescue PG::UniqueViolation, ActiveRecord::RecordNotUnique
-      logger.error('There is another task in progress. Please wait for it to finish.'.color(:red))
+      logger.error(Rainbow('There is another task in progress. Please wait for it to finish.').red)
     end
 
     def index_snippets
@@ -125,14 +125,14 @@ module Search
 
       Snippet.es_import
 
-      logger.info("Indexing snippets... #{'done'.color(:green)}")
+      logger.info("Indexing snippets... #{Rainbow('done').green}")
     end
 
     def pause_indexing
-      logger.info('Pausing indexing...'.color(:green))
+      logger.info(Rainbow('Pausing indexing...').green)
 
       if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
-        logger.info('Indexing is already paused.'.color(:orange))
+        logger.info(Rainbow('Indexing is already paused.').orange)
       else
         ApplicationSettings::UpdateService.new(
           Gitlab::CurrentSettings.current_application_settings,
@@ -140,12 +140,12 @@ module Search
           { elasticsearch_pause_indexing: true }
         ).execute
 
-        logger.info('Indexing is now paused.'.color(:green))
+        logger.info(Rainbow('Indexing is now paused.').green)
       end
     end
 
     def resume_indexing
-      logger.info('Resuming indexing...'.color(:green))
+      logger.info(Rainbow('Resuming indexing...').green)
 
       if ::Gitlab::CurrentSettings.elasticsearch_pause_indexing?
         ApplicationSettings::UpdateService.new(
@@ -154,9 +154,9 @@ module Search
           { elasticsearch_pause_indexing: false }
         ).execute
 
-        logger.info('Indexing is now running.'.color(:green))
+        logger.info(Rainbow('Indexing is now running.').green)
       else
-        logger.info('Indexing is already running.'.color(:orange))
+        logger.info(Rainbow('Indexing is already running.').orange)
       end
     end
 
@@ -214,8 +214,8 @@ module Search
         significant: false)
 
       logger.info("This GitLab instance combined repository and wiki size is #{total_size_human}. ")
-      logger.info('By our estimates, ' \
-        "your cluster size should be at least #{estimated_cluster_size_human}. ".color(:green))
+      logger.info(Rainbow('By our estimates, ' \
+        "your cluster size should be at least #{estimated_cluster_size_human}. ").green)
       logger.info('Please note that it is possible to index only selected namespaces/projects by using ' \
         'Advanced search indexing restrictions.')
     end
@@ -223,7 +223,7 @@ module Search
     def mark_reindex_failed
       if ::Elastic::ReindexingTask.running?
         ::Elastic::ReindexingTask.current.failure!
-        logger.info('Marked the current reindexing job as failed.'.color(:green))
+        logger.info(Rainbow('Marked the current reindexing job as failed.').green)
       else
         logger.info('Did not find the current running reindexing job.')
       end
@@ -239,7 +239,7 @@ module Search
       end
 
       if not_indexed.empty?
-        logger.info('All projects are currently indexed'.color(:green))
+        logger.info(Rainbow('All projects are currently indexed').green)
       else
         display_unindexed(not_indexed)
       end
@@ -252,7 +252,7 @@ module Search
               projects[1..MAX_PROJECTS_TO_DISPLAY]
             end
 
-      arr.each { |p| logger.warn("Project '#{p.full_path}' (ID: #{p.id}) isn't indexed.".color(:red)) }
+      arr.each { |p| logger.warn(Rainbow("Project '#{p.full_path}' (ID: #{p.id}) isn't indexed.").red) }
 
       logger.info("#{arr.count} out of #{projects.count} non-indexed projects shown.")
     end
@@ -310,7 +310,7 @@ module Search
         ::Elastic::ProcessInitialBookkeepingService.track!(*users)
       end
 
-      logger.info("Indexing users... #{'done'.color(:green)}")
+      logger.info("Indexing users... #{Rainbow('done').green}")
     end
 
     def index_namespaces
@@ -328,8 +328,8 @@ module Search
 
     def index_projects
       unless Gitlab::CurrentSettings.elasticsearch_indexing?
-        logger.warn('WARNING: Setting `elasticsearch_indexing` is disabled. ' \
-          'This setting must be enabled to enqueue projects for indexing. '.color(:yellow))
+        logger.warn(Rainbow('WARNING: Setting `elasticsearch_indexing` is disabled. ' \
+          'This setting must be enabled to enqueue projects for indexing. ').yellow)
       end
 
       logger.info('Enqueuing projects...')
@@ -356,7 +356,7 @@ module Search
         ::Elastic::ProcessInitialBookkeepingService.maintain_indexed_group_associations!(*batch)
       end
 
-      logger.info("Indexing epics... #{'done'.color(:green)}")
+      logger.info("Indexing epics... #{Rainbow('done').green}")
     end
 
     def index_group_entities
@@ -384,7 +384,7 @@ module Search
         ::Elastic::ProcessInitialBookkeepingService.track!(*batch)
       end
 
-      logger.info("Indexing work_items... #{'done'.color(:green)}")
+      logger.info("Indexing work_items... #{Rainbow('done').green}")
     end
 
     def index_group_wikis
@@ -404,25 +404,26 @@ module Search
         group_ids.each { |group_id| ::ElasticWikiIndexerWorker.perform_async(group_id, 'Group', force: true) }
       end
 
-      logger.info("Indexing group wikis... #{'done'.color(:green)}")
+      logger.info("Indexing group wikis... #{Rainbow('done').green}")
     end
 
+    # rubocop: disable Metrics/AbcSize -- existing violations to be refactored in followup work
     def info
       setting = ::ApplicationSetting.current
 
-      logger.info("\nAdvanced Search".color(:yellow))
+      logger.info(Rainbow("\nAdvanced Search").yellow)
       logger.info("Server version:\t\t\t" \
-        "#{helper.server_info[:version] || 'unknown'.color(:red)}")
+        "#{helper.server_info[:version] || Rainbow('unknown').red}")
       logger.info("Server distribution:\t\t" \
-        "#{helper.server_info[:distribution] || 'unknown'.color(:red)}")
-      logger.info("Indexing enabled:\t\t#{setting.elasticsearch_indexing? ? 'yes'.color(:green) : 'no'}")
-      logger.info("Search enabled:\t\t\t#{setting.elasticsearch_search? ? 'yes'.color(:green) : 'no'}")
+        "#{helper.server_info[:distribution] || Rainbow('unknown').red}")
+      logger.info("Indexing enabled:\t\t#{setting.elasticsearch_indexing? ? Rainbow('yes').green : 'no'}")
+      logger.info("Search enabled:\t\t\t#{setting.elasticsearch_search? ? Rainbow('yes').green : 'no'}")
       logger.info("Requeue Indexing workers:\t" \
-        "#{setting.elasticsearch_requeue_workers? ? 'yes'.color(:green) : 'no'}")
+        "#{setting.elasticsearch_requeue_workers? ? Rainbow('yes').green : 'no'}")
       logger.info("Pause indexing:\t\t\t" \
-        "#{setting.elasticsearch_pause_indexing? ? 'yes'.color(:green) : 'no'}")
+        "#{setting.elasticsearch_pause_indexing? ? Rainbow('yes').green : 'no'}")
       logger.info("Indexing restrictions enabled:\t" \
-        "#{setting.elasticsearch_limit_indexing? ? 'yes'.color(:yellow) : 'no'}")
+        "#{setting.elasticsearch_limit_indexing? ? Rainbow('yes').yellow : 'no'}")
       logger.info("File size limit:\t\t#{setting.elasticsearch_indexed_file_size_limit_kb} KiB")
       logger.info("Indexing number of shards:\t" \
         "#{::Elastic::ProcessBookkeepingService.active_number_of_shards}")
@@ -443,11 +444,12 @@ module Search
 
       display_index_settings
     end
+    # rubocop:enable Metrics/AbcSize
 
     def check_handler
       yield
     rescue StandardError => e
-      logger.error("An exception occurred during the retrieval of the data: #{e.class}: #{e.message}".color(:red))
+      logger.error(Rainbow("An exception occurred during the retrieval of the data: #{e.class}: #{e.message}").red)
     end
 
     def display_current_migration
@@ -456,23 +458,23 @@ module Search
 
       current_state = current_migration.load_state
 
-      logger.info("\nCurrent Migration".color(:yellow))
+      logger.info(Rainbow("\nCurrent Migration").yellow)
       logger.info("Name:\t\t\t#{current_migration.name}")
-      logger.info("Started:\t\t#{current_migration.started? ? 'yes'.color(:green) : 'no'}")
-      logger.info("Halted:\t\t\t#{current_migration.halted? ? 'yes'.color(:red) : 'no'.color(:green)}")
-      logger.info("Failed:\t\t\t#{current_migration.failed? ? 'yes'.color(:red) : 'no'.color(:green)}")
-      logger.info("Obsolete:\t\t#{current_migration.obsolete? ? 'yes'.color(:red) : 'no'.color(:green)}")
+      logger.info("Started:\t\t#{current_migration.started? ? Rainbow('yes').green : 'no'}")
+      logger.info("Halted:\t\t\t#{current_migration.halted? ? Rainbow('yes').red : Rainbow('no').green}")
+      logger.info("Failed:\t\t\t#{current_migration.failed? ? Rainbow('yes').red : Rainbow('no').green}")
+      logger.info("Obsolete:\t\t#{current_migration.obsolete? ? Rainbow('yes').red : Rainbow('no').green}")
       logger.info("Current state:\t\t#{current_state.to_json}") if current_state.present?
     end
 
     def display_indexing_queues
-      logger.info("\nIndexing Queues".color(:yellow))
+      logger.info(Rainbow("\nIndexing Queues").yellow)
       logger.info("Initial queue:\t\t\t#{::Elastic::ProcessInitialBookkeepingService.queue_size}")
       logger.info("Incremental queue:\t\t#{::Elastic::ProcessBookkeepingService.queue_size}")
     end
 
     def display_index_settings
-      logger.info("\nIndices".color(:yellow))
+      logger.info(Rainbow("\nIndices").yellow)
       indices = ::Elastic::IndexSetting.order_by_name.pluck(:alias_name) # rubocop:disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- table contains small dataset
       indices.each do |alias_name|
         index_setting = {}
@@ -481,7 +483,7 @@ module Search
           index_setting = helper.client.indices.get_settings(index: alias_name).with_indifferent_access
           document_count = helper.documents_count(index_name: alias_name)
         rescue StandardError
-          logger.error("  - failed to load indices for #{alias_name}".color(:red))
+          logger.error(Rainbow("  - failed to load indices for #{alias_name}").red)
         end
 
         index_setting.sort.each do |index_name, hash|
@@ -494,18 +496,18 @@ module Search
           (hash.dig('settings', 'index', 'blocks') || {}).each do |block, value|
             next unless value == 'true'
 
-            logger.error("\tblocks.#{block}: yes".color(:red))
+            logger.error(Rainbow("\tblocks.#{block}: yes").red)
           end
         end
       end
     end
 
     def display_pending_migrations(pending_migrations)
-      logger.info('Pending Migrations'.color(:yellow))
+      logger.info(Rainbow('Pending Migrations').yellow)
       pending_migrations.each do |migration|
         migration_info = migration.name
         if migration.obsolete?
-          migration_info << ' [Obsolete]'.color(:red)
+          migration_info << Rainbow(' [Obsolete]').red
           logger.warn(migration_info)
         else
           logger.info(migration_info)

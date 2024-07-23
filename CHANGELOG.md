@@ -3578,6 +3578,12 @@ entry.
 - [Finalize the backfill migration for onboarding status step url](gitlab-org/gitlab@f986c1b1cf00968ff106136893bfe68d47895c69) ([merge request](gitlab-org/gitlab!147278))
 - [Remove ClusterRepositoryCache migration helper class](gitlab-org/gitlab@f71a7a94ce8d70d9d378ebc225b802b58f0ae006) ([merge request](gitlab-org/gitlab!147244))
 
+## 16.10.9 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/401fa9da22fdeffa67c783e11b98ce0c9bb8c7ae) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159057))
+
 ## 16.10.8 (2024-06-25)
 
 ### Fixed (1 change)
@@ -4367,6 +4373,16 @@ No changes.
 - [Add sharding keys for code_review_workflow](gitlab-org/gitlab@f0ad99cc932bd74a5d02de99ee62651b32a34af2) ([merge request](gitlab-org/gitlab!143310))
 - [Add sharding keys for system_access](gitlab-org/gitlab@62c2fd4788e62e46f1469e2f18d178840e8e3df2) ([merge request](gitlab-org/gitlab!142501))
 - [Add sharding keys for purchase](gitlab-org/gitlab@9c3843da74714c72483c17489d5d3d68ceffd2c8) ([merge request](gitlab-org/gitlab!142505))
+
+## 16.9.10 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/7747e83d1860f2186df35c5a29370e0e5bb0c810) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159058))
+
+### Changed (1 change)
+
+- [Do not enqueue PAT expiry enforcement migration](https://gitlab.com/gitlab-org/gitlab/-/commit/c7dc314ace84491b696fb65c3384fb0302d00d5a) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153470))
 
 ## 16.9.9 (2024-06-25)
 
