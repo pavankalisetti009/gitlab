@@ -51,7 +51,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
     buildMockApollo();
   });
 
-  it('renders table with empty state', () => {
+  it('renders empty state', () => {
     const variables = [];
     buildWrapper({ variables });
     expect(findCard().props()).toMatchObject({
@@ -60,7 +60,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       headerClass: expect.stringContaining(''),
     });
     expect(findCard().text()).toContain('Variables');
-    expect(findTable().text()).toContain('No variables');
+    expect(findCard().text()).toContain('There are no variables yet.');
     expect(findAddButton().exists()).toBe(true);
   });
 

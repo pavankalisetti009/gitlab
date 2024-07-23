@@ -35148,9 +35148,6 @@ msgstr ""
 msgid "No user provided"
 msgstr ""
 
-msgid "No variables"
-msgstr ""
-
 msgid "No vulnerabilities present"
 msgstr ""
 
