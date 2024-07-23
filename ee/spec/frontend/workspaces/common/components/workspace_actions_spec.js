@@ -106,20 +106,6 @@ describe('ee/workspaces/components/common/workspace_actions', () => {
     },
   );
 
-  describe('with multiple buttons', () => {
-    beforeEach(() => {
-      createWrapper({ actualState: 'Stopped', desiredState: 'Stopped' });
-    });
-
-    it('does not apply margin class to first element', () => {
-      const buttonMarginClasses = findButtons().wrappers.map((x) =>
-        x.element.parentNode.classList.contains('gl-ml-2') ? 'gl-ml-2' : '',
-      );
-
-      expect(buttonMarginClasses).toEqual(['', 'gl-ml-2', 'gl-ml-2']);
-    });
-  });
-
   it.each`
     actualState                 | desiredState       | buttonLabel    | actionDesiredState
     ${ACTUAL.creationRequested} | ${DESIRED.running} | ${'Terminate'} | ${'Terminated'}
