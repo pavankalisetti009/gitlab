@@ -116,7 +116,8 @@ module Gitlab
                 current_resource: current_resource,
                 source_template: source_template,
                 current_code: current_code,
-                resources: available_resources_names
+                resources: available_resources_names,
+                unavailable_resources: unavailable_resources_names
               }
             end
 
@@ -149,6 +150,14 @@ module Gitlab
               end.join(', ')
             end
             strong_memoize_attr :available_resources_names
+
+            def unavailable_resources_names
+              resources = %w[Pipelines Vulnerabilities]
+              resources << 'Merge Requests' unless Feature.enabled?(:ai_merge_request_reader_for_chat,
+                context.current_user)
+
+              resources.join(', ')
+            end
 
             def prompt_version
               return CUSTOM_AGENT_PROMPT_TEMPLATE if context.agent_version
@@ -244,7 +253,7 @@ module Gitlab
 
                   You have access to the following GitLab resources: %<resources>s.
                   You also have access to all information that can be helpful to someone working in software development of any kind.
-                  At the moment, you do not have access to the following GitLab resources: Merge Requests, Pipelines, Vulnerabilities.
+                  At the moment, you do not have access to the following GitLab resources: %<unavailable_resources>s.
                   At the moment, you do not have the ability to search Issues or Epics based on a description or keywords. You can only read information about a specific issue/epic IF the user is on the specific issue/epic's page, or provides a URL or ID.
                   Do not use the IssueReader or EpicReader tool if you do not have these specified identifiers.
 

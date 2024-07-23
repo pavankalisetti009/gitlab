@@ -92,7 +92,13 @@ module Gitlab
 
         # allows conditional logic e.g. feature flagging
         def tools
-          TOOLS
+          tools = TOOLS.dup
+
+          if Feature.enabled?(:ai_merge_request_reader_for_chat, user)
+            tools << ::Gitlab::Llm::Chain::Tools::MergeRequestReader
+          end
+
+          tools
         end
 
         def response_post_processing

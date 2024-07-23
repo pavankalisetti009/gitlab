@@ -28,10 +28,8 @@ module Gitlab
         def resource_serialized(content_limit:)
           return '' unless authorized_resource
 
-          authorized_resource.serialize_for_ai(
-            user: current_user,
-            content_limit: content_limit
-          ).to_xml(root: :root, skip_types: true, skip_instruct: true)
+          authorized_resource.serialize_for_ai(content_limit: content_limit)
+            .to_xml(root: :root, skip_types: true, skip_instruct: true)
         end
 
         private
@@ -44,7 +42,7 @@ module Gitlab
 
           return unless Utils::ChatAuthorizer.resource(resource: resource, user: current_user).allowed?
 
-          resource_wrapper_class.new(resource)
+          resource_wrapper_class.new(current_user, resource)
         end
       end
     end

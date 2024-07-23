@@ -23,6 +23,7 @@ module EE
         before_action :authorize_read_licenses!, only: [:license_scanning_reports, :license_scanning_reports_collapsed]
 
         before_action :authorize_read_security_reports!, only: [:security_reports]
+        before_action :set_application_context!, only: [:show, :diffs, :commits, :pipelines]
 
         feature_category :vulnerability_management, [:container_scanning_reports, :dependency_scanning_reports,
                                                      :sast_reports, :secret_detection_reports, :dast_reports,

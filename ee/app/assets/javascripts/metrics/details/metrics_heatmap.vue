@@ -73,7 +73,7 @@ export default {
     yAxisLabels() {
       return this.heatmapData.buckets;
     },
-    chartOptions() {
+    chartOption() {
       return {
         tooltip: {
           // show the default tooltip
@@ -96,7 +96,7 @@ export default {
       :x-axis-labels="xAxisLabels"
       :y-axis-labels="yAxisLabels"
       :data-series="chartData"
-      :options="chartOptions"
+      :option="chartOption"
       :show-tooltip="false"
       responsive
     />

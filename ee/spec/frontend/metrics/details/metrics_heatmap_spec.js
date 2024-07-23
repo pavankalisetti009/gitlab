@@ -81,8 +81,8 @@ describe('MetricsHeatmap', () => {
     expect(findHeatmap().props('yAxisLabels')).toEqual(['A', 'B', 'C']);
   });
 
-  it('overrides options to enable the default tooltip', () => {
-    expect(findHeatmap().props('options')).toEqual({
+  it('sets option prop to enable the default tooltip', () => {
+    expect(findHeatmap().props('option')).toEqual({
       tooltip: {},
       xAxis: { axisPointer: { show: false } },
     });

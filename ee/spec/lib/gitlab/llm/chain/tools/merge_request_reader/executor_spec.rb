@@ -2,51 +2,48 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_category: :duo_chat do
+RSpec.describe Gitlab::Llm::Chain::Tools::MergeRequestReader::Executor, feature_category: :duo_chat do
   RSpec.shared_examples 'success response' do
     it 'returns success response' do
       ai_request = double
       allow(ai_request).to receive(:request).and_return(ai_response)
       allow(context).to receive(:ai_request).and_return(ai_request)
-      resource_serialized = Ai::AiResource::Issue.new(context.current_user, resource)
+      resource_serialized = Ai::AiResource::MergeRequest.new(context.current_user, resource)
         .serialize_for_ai(
-          content_limit: ::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic::MAX_CHARACTERS
+          content_limit: ::Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic::MAX_CHARACTERS
         ).to_xml(root: :root, skip_types: true, skip_instruct: true)
 
-      response = "Please use this information about identified issue: #{resource_serialized}"
+      response = "Please use this information about identified merge request: #{resource_serialized}"
 
       expect(tool.execute.content).to eq(response)
     end
   end
 
-  RSpec.shared_examples 'issue not found response' do
-    let(:response) do
-      "I'm sorry, I can't generate a response. You might want to try again. " \
-        "You could also be getting this error because the items you're asking about " \
-        "either don't exist, you don't have access to them, or your session has expired."
-    end
-
+  RSpec.shared_examples 'merge request not found response' do
     it 'returns success response' do
       allow(tool).to receive(:request).and_return(ai_response)
 
+      response = "I'm sorry, I can't generate a response. You might want to try again. " \
+        "You could also be getting this error because the items you're asking about " \
+        "either don't exist, you don't have access to them, or your session has expired."
       expect(tool.execute.content).to eq(response)
     end
   end
 
   describe '#name' do
     it 'returns tool name' do
-      expect(described_class::NAME).to eq('IssueReader')
+      expect(described_class::NAME).to eq('MergeRequestReader')
     end
 
     it 'returns tool human name' do
-      expect(described_class::HUMAN_NAME).to eq('Issue Search')
+      expect(described_class::HUMAN_NAME).to eq('Merge Request Search')
     end
   end
 
   describe '#description' do
     it 'returns tool description' do
       expect(described_class::DESCRIPTION)
-        .to include('This tool retrieves the content of a specific issue')
+        .to include('Gets the content of the current merge request (also referenced as this or that, or MR)')
     end
   end
 
@@ -56,23 +53,23 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
     let_it_be_with_reload(:project) { create(:project, group: group) }
 
     before_all do
-      project.add_guest(user)
+      project.add_developer(user)
     end
 
     before do
-      stub_const("::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic::MAX_CHARACTERS",
+      stub_const("::Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic::MAX_CHARACTERS",
         999999)
       allow(tool).to receive(:provider_prompt_class)
-                       .and_return(::Gitlab::Llm::Chain::Tools::IssueReader::Prompts::Anthropic)
+                       .and_return(::Gitlab::Llm::Chain::Tools::MergeRequestReader::Prompts::Anthropic)
     end
 
-    context 'when issue is identified' do
-      let_it_be(:issue1) { create(:issue, project: project) }
-      let_it_be(:issue2) { create(:issue, project: project) }
+    context 'when merge request is identified' do
+      let_it_be(:merge_request1) { create(:merge_request, source_project: project, source_branch: 'branch-1') }
+      let_it_be(:merge_request2) { create(:merge_request, source_project: project, source_branch: 'branch-2') }
       let(:context) do
         Gitlab::Llm::Chain::GitlabContext.new(
           container: project,
-          resource: issue1,
+          resource: merge_request1,
           current_user: user,
           ai_request: double
         )
@@ -80,7 +77,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
 
       let(:tool) { described_class.new(context: context, options: input_variables, stream_response_handler: nil) }
       let(:input_variables) do
-        { input: "user input", suggestions: "Action: IssueReader\nActionInput: #{issue1.iid}" }
+        { input: "user input", suggestions: "Action: MergeRequestReader\nActionInput: #{merge_request1.iid}" }
       end
 
       context 'when user has permission to read resource' do
@@ -102,13 +99,10 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
 
             expect(tool).to receive(:request).exactly(3).times
 
-            answer = tool.execute
-
             response = "I'm sorry, I can't generate a response. You might want to try again. " \
               "You could also be getting this error because the items you're asking about " \
               "either don't exist, you don't have access to them, or your session has expired."
-            expect(answer.content).to eq(response)
-            expect(answer.error_code).to eq("M3003")
+            expect(tool.execute.content).to eq(response)
           end
         end
 
@@ -116,52 +110,50 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
           it 'returns an error' do
             input_variables = { input: "user input", suggestions: "" }
             tool = described_class.new(context: context, options: input_variables)
-            answer = tool.execute
 
             allow(tool).to receive(:request).and_raise(StandardError)
 
-            expect(answer.content).to eq("I'm sorry, I can't generate a response. Please try again.")
-            expect(answer.error_code).to eq("M4001")
+            expect(tool.execute.content).to eq("I'm sorry, I can't generate a response. Please try again.")
           end
         end
 
-        context 'when issue is the current issue in context' do
+        context 'when merge request is the current MR in context' do
           let(:identifier) { 'current' }
           let(:ai_response) { "current\", \"ResourceIdentifier\": \"#{identifier}\"}" }
-          let(:resource) { issue1 }
+          let(:resource) { merge_request1 }
 
           it_behaves_like 'success response'
         end
 
-        context 'when issue is identified by iid' do
-          let(:identifier) { issue2.iid }
+        context 'when merge request is identified by iid' do
+          let(:identifier) { merge_request2.iid }
           let(:ai_response) { "iid\", \"ResourceIdentifier\": #{identifier}}" }
-          let(:resource) { issue2 }
+          let(:resource) { merge_request2 }
 
           it_behaves_like 'success response'
         end
 
-        context 'when is issue identified with reference' do
-          let(:identifier) { issue2.to_reference(full: true) }
+        context 'when is merge request identified with reference' do
+          let(:identifier) { merge_request2.to_reference(full: true) }
           let(:ai_response) do
             "reference\", \"ResourceIdentifier\": \"#{identifier}\"}"
           end
 
-          let(:resource) { issue2 }
+          let(:resource) { merge_request2 }
 
           it_behaves_like 'success response'
         end
 
-        context 'when issue mistaken with an MR' do
-          let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+        context 'when MR mistaken with an issue' do
+          let_it_be(:issue) { create(:issue, project: project) }
 
           let(:ai_response) { "current\", \"ResourceIdentifier\": \"current\"}" }
 
           before do
-            context.resource = merge_request
+            context.resource = issue
           end
 
-          it_behaves_like 'issue not found response'
+          it_behaves_like 'merge request not found response'
         end
 
         context 'when context container is a group' do
@@ -169,20 +161,20 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             context.container = group
           end
 
-          let(:identifier) { issue2.iid }
+          let(:identifier) { merge_request2.iid }
           let(:ai_response) { "iid\", \"ResourceIdentifier\": #{identifier}}" }
-          let(:resource) { issue2 }
+          let(:resource) { merge_request2 }
 
           it_behaves_like 'success response'
 
-          context 'when multiple issues are identified' do
+          context 'when multiple merge requests are identified' do
             let_it_be(:project) { create(:project, group: group) }
-            let_it_be(:issue3) { create(:issue, iid: issue2.iid, project: project) }
+            let_it_be(:merge_request3) { create(:merge_request, iid: merge_request2.iid, source_project: project) }
 
-            let(:identifier) { issue2.iid }
+            let(:identifier) { merge_request2.iid }
             let(:ai_response) { "iid\", \"ResourceIdentifier\": #{identifier}}" }
 
-            it_behaves_like 'issue not found response'
+            it_behaves_like 'merge request not found response'
           end
         end
 
@@ -191,10 +183,10 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             context.container = project.project_namespace
           end
 
-          context 'when issue is the current issue in context' do
-            let(:identifier) { issue2.iid }
+          context 'when merge request is the current merge_request in context' do
+            let(:identifier) { merge_request2.iid }
             let(:ai_response) { "iid\", \"ResourceIdentifier\": #{identifier}}" }
-            let(:resource) { issue2 }
+            let(:resource) { merge_request2 }
 
             it_behaves_like 'success response'
           end
@@ -205,76 +197,76 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             context.container = nil
           end
 
-          context 'when issue is identified by iid' do
-            let(:identifier) { issue2.iid }
+          context 'when merge request is identified by iid' do
+            let(:identifier) { merge_request2.iid }
             let(:ai_response) { "iid\", \"ResourceIdentifier\": #{identifier}}" }
 
-            it_behaves_like 'issue not found response'
+            it_behaves_like 'merge request not found response'
           end
 
-          context 'when issue is the current issue in context' do
+          context 'when merge request is the current MR in context' do
             let(:identifier) { 'current' }
             let(:ai_response) { "current\", \"ResourceIdentifier\": \"#{identifier}\"}" }
-            let(:resource) { issue1 }
+            let(:resource) { merge_request1 }
 
             it_behaves_like 'success response'
           end
 
-          context 'when is issue identified with reference' do
-            let(:identifier) { issue2.to_reference(full: true) }
+          context 'when is merge request identified with reference' do
+            let(:identifier) { merge_request2.to_reference(full: true) }
             let(:ai_response) do
               "reference\", \"ResourceIdentifier\": \"#{identifier}\"}"
             end
 
-            let(:resource) { issue2 }
+            let(:resource) { merge_request2 }
 
             it_behaves_like 'success response'
           end
 
-          context 'when is issue identified with not-full reference' do
-            let(:identifier) { issue2.to_reference(full: false) }
+          context 'when is merge request identified with not-full reference' do
+            let(:identifier) { merge_request2.to_reference(full: false) }
             let(:ai_response) do
               "reference\", \"ResourceIdentifier\": \"#{identifier}\"}"
             end
 
-            it_behaves_like 'issue not found response'
+            it_behaves_like 'merge request not found response'
           end
 
           context 'when group does not have ai enabled' do
             let(:identifier) { 'current' }
             let(:ai_response) { "current\", \"ResourceIdentifier\": \"#{identifier}\"}" }
-            let(:resource) { issue1 }
+            let(:resource) { merge_request1 }
 
             before do
               stub_licensed_features(ai_chat: false)
             end
 
             it_behaves_like 'success response'
+          end
 
-            context 'when duo features are disabled for project' do
-              let(:identifier) { 'current' }
-              let(:ai_response) { "current\", \"ResourceIdentifier\": \"#{identifier}\"}" }
-              let(:response) do
-                "I am sorry, I cannot access the information you are asking about. " \
-                  "A group or project owner has turned off Duo features in this group or project."
-              end
+          context 'when duo features are disabled for project' do
+            let(:identifier) { 'current' }
+            let(:ai_response) { "current\", \"ResourceIdentifier\": \"#{identifier}\"}" }
+            let(:response) do
+              "I am sorry, I cannot access the information you are asking about. " \
+                "A group or project owner has turned off Duo features in this group or project."
+            end
 
-              before do
-                project.update!(duo_features_enabled: false)
-              end
+            before do
+              project.update!(duo_features_enabled: false)
+            end
 
-              it 'returns success response' do
-                allow(tool).to receive(:request).and_return(ai_response)
+            it 'returns success response' do
+              allow(tool).to receive(:request).and_return(ai_response)
 
-                expect(tool.execute.content).to eq(response)
-              end
+              expect(tool.execute.content).to eq(response)
             end
           end
         end
 
-        context 'when issue was already identified' do
-          let(:resource_iid) { issue1.iid }
-          let(:ai_response) { "iid\", \"ResourceIdentifier\": #{issue1.iid}}" }
+        context 'when merge request was already identified' do
+          let(:resource_iid) { merge_request1.iid }
+          let(:ai_response) { "iid\", \"ResourceIdentifier\": #{merge_request1.iid}}" }
 
           before do
             context.tools_used << described_class
@@ -285,7 +277,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::IssueReader::Executor, feature_categor
             allow(ai_request).to receive_message_chain(:complete, :dig, :to_s, :strip).and_return(ai_response)
             allow(context).to receive(:ai_request).and_return(ai_request)
 
-            response = "You already have identified the issue #{context.resource.to_global_id}, read carefully."
+            response = "You already have identified the merge request #{context.resource.to_global_id}, read carefully."
             expect(tool.execute.content).to eq(response)
           end
         end

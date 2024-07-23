@@ -46,7 +46,7 @@ RSpec.describe IssueSerializer do
     let(:json_entity) do
       described_class.new(current_user: user)
                      .represent(resource,
-                       serializer: serializer, resource: Ai::AiResource::Issue.new(resource))
+                       serializer: serializer, resource: Ai::AiResource::Issue.new(user, resource))
                      .with_indifferent_access
     end
 
