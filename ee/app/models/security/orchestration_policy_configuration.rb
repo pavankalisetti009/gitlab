@@ -22,7 +22,7 @@ module Security
     POLICY_SCHEMA = JSONSchemer.schema(Rails.root.join(POLICY_SCHEMA_PATH))
     # json_schemer computes an $id fallback property for schemas lacking one.
     # But this schema is kept anonymous on purpose, so the $id is stripped.
-    POLICY_SCHEMA_JSON = POLICY_SCHEMA.as_json['root'].except('$id')
+    POLICY_SCHEMA_JSON = POLICY_SCHEMA.value.except('$id')
     AVAILABLE_POLICY_TYPES = (%i[scan_execution_policy pipeline_execution_policy] +
       Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES).freeze
     JSON_SCHEMA_VALIDATION_TIMEOUT = 5.seconds
