@@ -501,8 +501,7 @@ module EE
     end
 
     def reviewer_requests_changes_feature
-      ::Feature.enabled?(:mr_reviewer_requests_changes, project) &&
-        project.feature_available?(:requested_changes_block_merge_request)
+      project.feature_available?(:requested_changes_block_merge_request)
     end
 
     def has_changes_requested?
