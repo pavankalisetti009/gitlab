@@ -6,7 +6,6 @@ import { uniqueId } from 'lodash';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import { createAlert } from '~/alert';
 import { __, sprintf } from '~/locale';
-import UserCalloutDismisser from '~/vue_shared/components/user_callout_dismisser.vue';
 import SubscriptionDetailsHistory from 'jh_else_ee/admin/subscriptions/show/components/subscription_details_history.vue';
 import {
   addActivationCode,
@@ -14,7 +13,6 @@ import {
   subscriptionDetailsHeaderText,
   subscriptionTypes,
 } from '../constants';
-import SubscriptionActivationBanner from './subscription_activation_banner.vue';
 import SubscriptionActivationModal from './subscription_activation_modal.vue';
 import SubscriptionDetailsCard from './subscription_details_card.vue';
 import SubscriptionDetailsUserInfo from './subscription_details_user_info.vue';
@@ -48,15 +46,13 @@ export default {
   components: {
     GlButton,
     GlModal,
-    SubscriptionActivationBanner,
     SubscriptionActivationModal,
     SubscriptionDetailsCard,
     SubscriptionDetailsHistory,
     SubscriptionDetailsUserInfo,
     SubscriptionSyncNotifications: () => import('./subscription_sync_notifications.vue'),
-    UserCalloutDismisser,
   },
-  inject: ['licenseRemovePath', 'subscriptionActivationBannerCalloutName'],
+  inject: ['licenseRemovePath'],
   props: {
     subscription: {
       type: Object,
@@ -149,16 +145,6 @@ export default {
       :modal-id="$options.activateSubscriptionModal.id"
       v-on="$listeners"
     />
-    <user-callout-dismisser :feature-name="subscriptionActivationBannerCalloutName">
-      <template #default="{ dismiss, shouldShowCallout }">
-        <subscription-activation-banner
-          v-if="isLegacySubscription && shouldShowCallout"
-          class="mb-4"
-          @activate-subscription="showActivationModal"
-          @close="dismiss"
-        />
-      </template>
-    </user-callout-dismisser>
     <subscription-sync-notifications v-if="shouldShowNotifications" class="gl-mb-4" />
     <div class="gl-grid sm:gl-grid-cols-2 gl-gap-5 gl-mb-5">
       <subscription-details-card

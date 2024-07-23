@@ -28,27 +28,17 @@ module Resolvers
       def resolve_with_lookahead(**args)
         params = params_with_defaults(args)
 
-        code_suggestion_usage = ::Analytics::AiAnalytics::CodeSuggestionUsageService.new(
+        usage = ::Analytics::AiAnalytics::AiMetricsService.new(
           current_user,
           namespace: namespace,
           from: params[:start_date],
           to: params[:end_date],
-          fields: selected_code_suggestion_fields
+          fields: selected_fields
         ).execute
 
-        return unless code_suggestion_usage.success?
+        return unless usage.success?
 
-        duo_chat_usage = ::Analytics::AiAnalytics::DuoChatUsageService.new(
-          current_user,
-          namespace: namespace,
-          from: params[:start_date],
-          to: params[:end_date],
-          fields: selected_duo_chat_fields
-        ).execute
-
-        return unless duo_chat_usage.success?
-
-        code_suggestion_usage.payload.merge(duo_chat_usage.payload)
+        usage.payload
       end
 
       private
@@ -69,16 +59,8 @@ module Resolvers
         object.respond_to?(:project_namespace) ? object.project_namespace : object
       end
 
-      def selected_code_suggestion_fields
-        ::Analytics::AiAnalytics::CodeSuggestionUsageService::FIELDS.select do |field|
-          lookahead.selects?(field)
-        end
-      end
-
-      def selected_duo_chat_fields
-        ::Analytics::AiAnalytics::DuoChatUsageService::FIELDS.select do |field|
-          lookahead.selects?(field)
-        end
+      def selected_fields
+        lookahead.selections.map(&:name)
       end
     end
   end

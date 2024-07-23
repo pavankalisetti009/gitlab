@@ -12,7 +12,6 @@ module EE
       ULTIMATE_TRIAL = 'ultimate_trial'
       NEW_USER_SIGNUPS_CAP_REACHED = 'new_user_signups_cap_reached'
       PERSONAL_ACCESS_TOKEN_EXPIRY = 'personal_access_token_expiry'
-      CL_SUBSCRIPTION_ACTIVATION = 'cloud_licensing_subscription_activation_banner'
       PROFILE_PERSONAL_ACCESS_TOKEN_EXPIRY = 'profile_personal_access_token_expiry'
       JOINING_A_PROJECT_ALERT = 'joining_a_project_alert'
 
