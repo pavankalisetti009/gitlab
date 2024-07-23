@@ -15,3 +15,5 @@ class AddSchemaVersionToMergeRequest < Elastic::Migration
     }
   end
 end
+
+AddSchemaVersionToMergeRequest.prepend ::Elastic::MigrationObsolete
