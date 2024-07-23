@@ -4031,8 +4031,6 @@ Layout/LineLength:
     - 'spec/requests/api/members_spec.rb'
     - 'spec/requests/api/merge_request_diffs_spec.rb'
     - 'spec/requests/api/merge_requests_spec.rb'
-    - 'spec/requests/api/metrics/dashboard/annotations_spec.rb'
-    - 'spec/requests/api/metrics/user_starred_dashboards_spec.rb'
     - 'spec/requests/api/notes_spec.rb'
     - 'spec/requests/api/notification_settings_spec.rb'
     - 'spec/requests/api/npm_project_packages_spec.rb'
