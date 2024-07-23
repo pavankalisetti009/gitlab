@@ -176,24 +176,10 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
   describe 'GET restricted' do
     subject(:get_restricted) { get restricted_signup_identity_verification_path }
 
-    context "when feature `prevent_registration_from_china` is enabled" do
-      it 'returns the template with a redirect', :aggregate_failures do
-        get_restricted
+    it 'returns the template with a redirect', :aggregate_failures do
+      get_restricted
 
-        expect(response).to have_gitlab_http_status(:ok)
-      end
-    end
-
-    context "when feature `prevent_registration_from_china` is not enabled" do
-      before do
-        stub_feature_flags(prevent_registration_from_china: false)
-      end
-
-      it 'returns not found', :aggregate_failures do
-        get_restricted
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
+      expect(response).to have_gitlab_http_status(:ok)
     end
   end
 

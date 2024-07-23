@@ -54,7 +54,7 @@ module EE
     end
 
     def restrict_registration
-      return unless restricted_country?(request.env['HTTP_CF_IPCOUNTRY'], invite_root_namespace)
+      return unless restricted_country?(request.env['HTTP_CF_IPCOUNTRY'])
       return if allow_invited_user?
 
       member&.destroy
