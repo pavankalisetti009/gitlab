@@ -3578,6 +3578,12 @@ entry.
 - [Finalize the backfill migration for onboarding status step url](gitlab-org/gitlab@f986c1b1cf00968ff106136893bfe68d47895c69) ([merge request](gitlab-org/gitlab!147278))
 - [Remove ClusterRepositoryCache migration helper class](gitlab-org/gitlab@f71a7a94ce8d70d9d378ebc225b802b58f0ae006) ([merge request](gitlab-org/gitlab!147244))
 
+## 16.10.9 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/401fa9da22fdeffa67c783e11b98ce0c9bb8c7ae) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159057))
+
 ## 16.10.8 (2024-06-25)
 
 ### Fixed (1 change)
