@@ -38,15 +38,8 @@ module QA
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform do |analytics_dashboards|
           analytics_dashboards.wait_for_dashboards_list
-          analytics_dashboards.click_configure_dashboard_project
+          analytics_dashboards.click_new_dashboard_button
         end
-
-        EE::Page::Project::Settings::Analytics.perform do |analytics_settings|
-          analytics_settings.set_dashboards_configuration_project(project)
-        end
-
-        Page::Project::Menu.perform(&:go_to_analytics_dashboards)
-        EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform(&:click_new_dashboard_button)
 
         EE::Page::Project::Analyze::DashboardSetup.perform do |your_dashboard|
           your_dashboard.set_dashboard_title(custom_dashboard_title)
