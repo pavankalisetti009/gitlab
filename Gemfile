@@ -476,7 +476,7 @@ group :development, :test do
 
   gem 'awesome_print', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 
-  gem 'database_cleaner-active_record', '~> 2.1.0', feature_category: :database
+  gem 'database_cleaner-active_record', '~> 2.2.0', feature_category: :database
   gem 'rspec-rails', '~> 6.1.1', feature_category: :shared
   gem 'factory_bot_rails', '~> 6.4.3', feature_category: :tooling
 
