@@ -8,8 +8,17 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:another_project) { create(:project, :repository, :public) }
-  let_it_be(:external_status_check) { create(:external_status_check, project: project, external_url: 'https://mock.api.test/status?token=123456789') }
-  let_it_be(:external_status_check_2) { create(:external_status_check, project: project) }
+
+  let_it_be(:external_status_check) do
+    create(
+      :external_status_check,
+      project: project,
+      external_url: 'https://mock.api.test/status?token=123456789',
+      name: 'first rule'
+    )
+  end
+
+  let_it_be(:external_status_check_2) { create(:external_status_check, project: project, name: 'second rule') }
   let_it_be(:user) { create(:user) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project, target_project: project, author: user) }
 
@@ -279,11 +288,11 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
       stub_licensed_features(external_status_checks: true)
     end
 
-    it 'responds with expected JSON', :aggregate_failures, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/451081' do
+    it 'responds with expected JSON', :aggregate_failures do
       get api(collection_url, project.first_owner)
 
       expect(json_response.size).to eq(2)
-      expect(json_response.map { |r| r['name'] }).to contain_exactly('rule 1', 'rule 2')
+      expect(json_response.map { |r| r['name'] }).to contain_exactly('first rule', 'second rule')
     end
 
     it 'paginates correctly' do
