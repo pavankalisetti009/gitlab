@@ -49,8 +49,7 @@ RSpec.describe 'DAST.gitlab-ci.yml', feature_category: :continuous_integration d
       context 'when project has no license' do
         it 'includes no jobs' do
           expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array(['Pipeline will not run for the selected trigger. ' \
-            'The rules configuration prevented any jobs from being added to the pipeline.'])
+          expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
         end
       end
 
@@ -72,8 +71,7 @@ RSpec.describe 'DAST.gitlab-ci.yml', feature_category: :continuous_integration d
 
           it 'includes no jobs' do
             expect(build_names).to be_empty
-            expect(pipeline.errors.full_messages).to match_array(['Pipeline will not run for the selected trigger. ' \
-              'The rules configuration prevented any jobs from being added to the pipeline.'])
+            expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
           end
         end
 
@@ -107,8 +105,7 @@ RSpec.describe 'DAST.gitlab-ci.yml', feature_category: :continuous_integration d
           context 'when on default branch' do
             it 'includes no jobs' do
               expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array(['Pipeline will not run for the selected trigger. ' \
-                'The rules configuration prevented any jobs from being added to the pipeline.'])
+              expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
             end
           end
 
@@ -145,8 +142,7 @@ RSpec.describe 'DAST.gitlab-ci.yml', feature_category: :continuous_integration d
 
             it 'includes no jobs' do
               expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array(['Pipeline will not run for the selected trigger. ' \
-                'The rules configuration prevented any jobs from being added to the pipeline.'])
+              expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
             end
           end
         end
