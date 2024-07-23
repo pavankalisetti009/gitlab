@@ -135,5 +135,12 @@ module EE
     def previous_type_was_epic?
       changes["work_item_type_id"].first == ::WorkItems::Type.default_by_type(:epic).id
     end
+
+    override :validate_due_date?
+    def validate_due_date?
+      return false if epic_work_item?
+
+      super
+    end
   end
 end
