@@ -16,7 +16,7 @@ FactoryBot.modify do
       project { nil }
       association :namespace, factory: :group
       association :author, factory: :user
-      association :work_item_type, :default, :epic
+      association :work_item_type, :epic
       synced_epic do
         association(:epic,
           group: namespace,
@@ -40,12 +40,12 @@ end
 
 FactoryBot.define do
   factory :requirement, parent: :issue do
-    association :work_item_type, :default, :requirement
+    association :work_item_type, :requirement
   end
 end
 
 FactoryBot.define do
   factory :quality_test_case, parent: :issue do
-    association :work_item_type, :default, :test_case
+    association :work_item_type, :test_case
   end
 end

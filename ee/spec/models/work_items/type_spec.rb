@@ -6,7 +6,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
   describe '#widgets' do
     let_it_be(:group) { build_stubbed(:group) }
     let_it_be(:project) { build_stubbed(:project, group: group) }
-    let_it_be_with_refind(:work_item_type) { create(:work_item_type, :default) }
+    let_it_be_with_refind(:work_item_type) { create(:work_item_type) }
     let(:licensed_features) { WorkItems::Type::LICENSED_WIDGETS.keys }
     let(:disabled_features) { [] }
 

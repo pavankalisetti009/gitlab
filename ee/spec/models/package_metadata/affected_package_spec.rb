@@ -138,4 +138,33 @@ RSpec.describe PackageMetadata::AffectedPackage, type: :model, feature_category:
       expect(described_class.for_occurrences(occurrences)).not_to include(unrelated_affected_package)
     end
   end
+
+  describe '#solution_text' do
+    subject { affected_package.solution_text }
+
+    let(:affected_package) do
+      build(:pm_affected_package, solution: 'Update version')
+    end
+
+    context 'with solution present' do
+      it { is_expected.to eq('Update version') }
+    end
+
+    context 'without fixed versions' do
+      let(:affected_package) do
+        build(:pm_affected_package, solution: nil, fixed_versions: [])
+      end
+
+      it { is_expected.to eq('Unfortunately, there is no solution available yet.') }
+    end
+
+    context 'with fixed versions' do
+      let(:fixed_version) { '1.2.3' }
+      let(:affected_package) do
+        build(:pm_affected_package, solution: nil, fixed_versions: [fixed_version])
+      end
+
+      it { is_expected.to match(/Upgrade to version #{fixed_version} or above/) }
+    end
+  end
 end
