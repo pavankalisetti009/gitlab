@@ -82,6 +82,13 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
       end
 
       it 'sets the correct unit primitive' do
+        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
+          service_name: :troubleshoot_job,
+          tracking_context: {
+            request_id: nil,
+            action: 'troubleshoot_job'
+          }
+        }).and_return(ai_request_double)
         expect(ai_request_double).to receive(:request).with(tool.prompt, unit_primitive: 'troubleshoot_job')
 
         tool.execute
