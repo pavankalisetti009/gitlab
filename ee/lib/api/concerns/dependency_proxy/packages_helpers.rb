@@ -18,6 +18,11 @@ module API
 
         CALLBACKS_CLASS = Struct.new(:skip_upload, :before_respond_with)
 
+        RESPONSE_HEADERS = { 'Content-Security-Policy' => "default-src 'none'" }.freeze
+
+        MAJOR_BROWSERS = %i[webkit firefox ie edge opera chrome].freeze
+        WEB_BROWSER_ERROR_MESSAGE = 'This endpoint is not meant to be accessed by a web browser.'
+
         included do
           include ::API::Helpers::Authentication
           helpers ::API::Helpers::PackagesHelpers
@@ -74,6 +79,7 @@ module API
                 Gitlab::Workhorse.send_url(
                   remote_package_file_url,
                   headers: remote_url_headers,
+                  response_headers: RESPONSE_HEADERS,
                   allow_redirects: true,
                   timeouts: TIMEOUTS,
                   response_statuses: RESPONSE_STATUSES
@@ -107,7 +113,8 @@ module API
                 Gitlab::Workhorse.send_dependency(
                   remote_url_headers,
                   remote_package_file_url,
-                  upload_config: upload_config
+                  upload_config: upload_config,
+                  response_headers: RESPONSE_HEADERS
                 )
               )
             end
@@ -171,9 +178,16 @@ module API
             def track_events?
               true
             end
+
+            def require_non_web_browser!
+              browser = ::Browser.new(request.user_agent)
+              bad_request!(WEB_BROWSER_ERROR_MESSAGE) if MAJOR_BROWSERS.any? { |b| browser.public_send(:"#{b}?") } # rubocop:disable GitlabSecurity/PublicSend -- Hardcoded list of methods.
+            end
           end
 
           after_validation do
+            # dependency proxy responses could be interpreted by web browsers
+            require_non_web_browser!
             require_packages_enabled!
             require_dependency_proxy_enabled!
 
