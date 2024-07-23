@@ -4374,6 +4374,16 @@ No changes.
 - [Add sharding keys for system_access](gitlab-org/gitlab@62c2fd4788e62e46f1469e2f18d178840e8e3df2) ([merge request](gitlab-org/gitlab!142501))
 - [Add sharding keys for purchase](gitlab-org/gitlab@9c3843da74714c72483c17489d5d3d68ceffd2c8) ([merge request](gitlab-org/gitlab!142505))
 
+## 16.9.10 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/7747e83d1860f2186df35c5a29370e0e5bb0c810) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159058))
+
+### Changed (1 change)
+
+- [Do not enqueue PAT expiry enforcement migration](https://gitlab.com/gitlab-org/gitlab/-/commit/c7dc314ace84491b696fb65c3384fb0302d00d5a) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153470))
+
 ## 16.9.9 (2024-06-25)
 
 ### Fixed (1 change)
