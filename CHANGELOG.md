@@ -9077,6 +9077,25 @@ No changes.
 - [Convert design_user_mentions.note_id to bigint for self-managed](gitlab-org/gitlab@08219da99fc356fecc4e9965fe1891baca4d10ff) ([merge request](gitlab-org/gitlab!129111))
 - [Migrate etag cache store from SharedState to Cache](gitlab-org/gitlab@6476298fcdcf77206fa768bcca6bd1e3c7994936) ([merge request](gitlab-org/gitlab!129050))
 
+## 16.3.8 (2024-07-23)
+
+### Added (1 change)
+
+- [Add Rake task to show token expiration info](https://gitlab.com/gitlab-org/gitlab/-/commit/5cff20e0f81c46192f7da21a99fcb2ccb3f1a759) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159383))
+
+### Fixed (1 change)
+
+- [Update an expired test certificate](https://gitlab.com/gitlab-org/gitlab/-/commit/f43da768fb134d230c927f725cf6f303f33259f9) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/156401))
+
+### Changed (2 changes)
+
+- [Add a banner informing about token expiration](https://gitlab.com/gitlab-org/gitlab/-/commit/c188632b066fefce719fbe3233d79d24474e8567) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158475))
+- [Do not enqueue PAT expiry enforcement migration](https://gitlab.com/gitlab-org/gitlab/-/commit/64da75077c8218d683c131476a6b1d24fab7a92d) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153457))
+
+### Other (1 change)
+
+- [Clear instance value](https://gitlab.com/gitlab-org/gitlab/-/commit/db817ea6889be2eb82815b22b7fa9d0e67c02d83) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/160265))
+
 ## 16.3.7 (2024-01-11)
 
 ### Security (2 changes)
