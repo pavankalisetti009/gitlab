@@ -18,7 +18,7 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
   shared_examples 'common ai metrics' do
     let(:fields) do
       %w[codeSuggestionsContributorsCount codeContributorsCount codeSuggestionsShownCount codeSuggestionsAcceptedCount
-        duoChatContributorsCount]
+        duoChatContributorsCount duoProAssignedUsersCount]
     end
 
     let(:from) { '2024-05-01'.to_date }
@@ -26,22 +26,21 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
     let(:filter_params) { { startDate: from, endDate: to } }
     let(:expected_filters) { { from: from, to: to } }
 
-    before do
-      allow_next_instance_of(::Analytics::AiAnalytics::CodeSuggestionUsageService,
-        current_user, hash_including(expected_filters)) do |instance|
-        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
-          code_contributors_count: 10,
-          code_suggestions_contributors_count: 3,
-          code_suggestions_shown_count: 5,
-          code_suggestions_accepted_count: 2
-        }))
-      end
+    let(:service_payload) do
+      {
+        code_contributors_count: 10,
+        code_suggestions_contributors_count: 3,
+        code_suggestions_shown_count: 5,
+        code_suggestions_accepted_count: 2,
+        duo_chat_contributors_count: 8,
+        duo_pro_assigned_users_count: 18
+      }
+    end
 
-      allow_next_instance_of(::Analytics::AiAnalytics::DuoChatUsageService,
+    before do
+      allow_next_instance_of(::Analytics::AiAnalytics::AiMetricsService,
         current_user, hash_including(expected_filters)) do |instance|
-        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: {
-          duo_chat_contributors_count: 8
-        }))
+        allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: service_payload))
       end
 
       post_graphql(query, current_user: current_user)
@@ -53,8 +52,31 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         'codeContributorsCount' => 10,
         'codeSuggestionsShownCount' => 5,
         'codeSuggestionsAcceptedCount' => 2,
-        'duoChatContributorsCount' => 8
+        'duoChatContributorsCount' => 8,
+        'duoProAssignedUsersCount' => 18
       })
+    end
+
+    context 'when AiMetrics service returns only part of queried fields' do
+      let(:service_payload) do
+        {
+          code_contributors_count: 10,
+          code_suggestions_contributors_count: 3,
+          code_suggestions_shown_count: 5,
+          code_suggestions_accepted_count: 2
+        }
+      end
+
+      it 'returns all metrics filled by default' do
+        expect(ai_metrics).to eq({
+          'codeSuggestionsContributorsCount' => 3,
+          'codeContributorsCount' => 10,
+          'codeSuggestionsShownCount' => 5,
+          'codeSuggestionsAcceptedCount' => 2,
+          'duoChatContributorsCount' => nil,
+          'duoProAssignedUsersCount' => nil
+        })
+      end
     end
 
     context 'when filter range is too wide' do
