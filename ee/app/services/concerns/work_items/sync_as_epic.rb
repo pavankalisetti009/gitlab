@@ -9,7 +9,7 @@ module WorkItems
     BASE_ATTRIBUTE_PARAMS = %i[
       iid author_id created_at updated_at title title_html description description_html
       confidential state_id last_edited_by_id last_edited_at external_key updated_by_id
-      closed_at closed_by_id imported_from start_date due_date
+      closed_at closed_by_id imported_from
     ].freeze
 
     def create_epic_for!(work_item)
@@ -48,6 +48,7 @@ module WorkItems
       epic_params
         .merge(base_attributes_params(work_item))
         .merge(color_params(work_item))
+        .merge(dates_params(work_item))
     end
 
     def update_params(work_item)
@@ -55,6 +56,7 @@ module WorkItems
         .intersection(BASE_ATTRIBUTE_PARAMS)
         .index_with { |attr| work_item[attr] }
         .merge(color_params(work_item))
+        .merge(dates_params(work_item))
         .merge(updated_at: work_item.updated_at)
     end
 
@@ -67,6 +69,19 @@ module WorkItems
       return {} unless work_item.color
 
       { color: work_item.color.color }
+    end
+
+    def dates_params(work_item)
+      return {} unless widget_params[:start_and_due_date_widget].present?
+
+      {
+        due_date: work_item.dates_source&.due_date,
+        due_date_fixed: work_item.dates_source&.due_date_fixed,
+        due_date_is_fixed: work_item.dates_source&.due_date_is_fixed,
+        start_date: work_item.dates_source&.start_date,
+        start_date_fixed: work_item.dates_source&.start_date_fixed,
+        start_date_is_fixed: work_item.dates_source&.start_date_is_fixed
+      }
     end
 
     def handle_error!(action, error, work_item)
