@@ -17,6 +17,13 @@ namespace :gitlab do
       end
 
       stdout_logger.info('Scheduling indexing with TriggerIndexingWorker')
+      worker_info_msg = <<~TEXT
+        The TriggerIndexingWorker worker enables indexing and pauses indexing to ensure all indices are created by the
+        worker. Then, the worker re-creates all indices, clears indexing status, and queues additional jobs to index
+        project and group data, snippets, and users. Finally, indexing is resumed to complete. Track progress in
+        elasticsearch.log.
+      TEXT
+      stdout_logger.info(worker_info_msg)
 
       # skip projects, all namespace and project data is handled by `namespaces` task
       Search::Elastic::TriggerIndexingWorker.perform_in(1.minute,
