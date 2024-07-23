@@ -61,7 +61,6 @@ module Subscriptions
           label: 'duo_pro_active_trial' # label needs to be dynamic for upcoming expired widget navigation
         }.to_json,
         button_attributes: {
-          'data-testid': 'discover-duo-pro-hand-raise-lead-button',
           category: 'secondary',
           variant: 'confirm'
         }.to_json
