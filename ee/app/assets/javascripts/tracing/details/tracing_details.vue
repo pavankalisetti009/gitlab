@@ -142,8 +142,13 @@ export default {
     <gl-loading-icon size="lg" />
   </div>
 
-  <div v-else-if="trace" data-testid="trace-details" class="gl-mx-7">
-    <tracing-header :trace="trace" :incomplete="spanTrees.incomplete" :logs-link="logsLink" />
+  <div v-else-if="trace" data-testid="trace-details" class="gl-mx-6">
+    <tracing-header
+      :trace="trace"
+      :incomplete="spanTrees.incomplete"
+      :logs-link="logsLink"
+      class="gl-mb-6"
+    />
 
     <gl-alert v-if="isTracePruned" variant="warning">
       <gl-sprintf :message="$options.i18n.prunedWarning">

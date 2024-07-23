@@ -16,7 +16,7 @@ export default {
       label: s__('ObservabilityLogs|Date'),
       tdAttr: { 'data-testid': 'log-timestamp' },
       // eslint-disable-next-line @gitlab/require-i18n-strings
-      thClass: `${thClass} gl-w-2/20`,
+      thClass: `${thClass} gl-w-1/6`,
       tdClass,
     },
     {
@@ -32,15 +32,14 @@ export default {
       label: s__('ObservabilityLogs|Service'),
       tdAttr: { 'data-testid': 'log-service' },
       // eslint-disable-next-line @gitlab/require-i18n-strings
-      thClass: `${thClass} gl-w-1/20`,
+      thClass: `${thClass} gl-w-1/6`,
       tdClass: `${tdClass} gl-break-anywhere`,
     },
     {
       key: 'body',
       label: s__('ObservabilityLogs|Message'),
       tdAttr: { 'data-testid': 'log-message' },
-      // eslint-disable-next-line @gitlab/require-i18n-strings
-      thClass: `${thClass} gl-w-16/20`,
+      thClass,
       tdClass,
     },
   ],
