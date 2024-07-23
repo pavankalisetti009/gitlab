@@ -102,7 +102,7 @@ namespace :geo do
     geo_node = current_node_status.geo_node
 
     unless geo_node.secondary?
-      puts 'This command is only available on a secondary node'.color(:red)
+      puts Rainbow('This command is only available on a secondary node').red
       exit
     end
 
