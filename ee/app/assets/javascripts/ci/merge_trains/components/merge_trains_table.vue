@@ -119,9 +119,9 @@ export default {
 
       <template #cell(mr)="{ item }">
         <ci-icon v-if="item.pipeline" :status="item.pipeline.detailedStatus" />
-        <gl-link :href="item.mergeRequest.webPath" class="gl-underline gl-ml-3">
-          {{ item.mergeRequest.title }}
-        </gl-link>
+        <gl-link :href="item.mergeRequest.webPath" class="gl-underline gl-ml-3">{{
+          item.mergeRequest.title
+        }}</gl-link>
         <div class="gl-ml-3 gl-inline-block">
           <span data-testid="timeago-train-text">
             {{ buildTimeAgoString(item) }}
