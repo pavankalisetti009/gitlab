@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Merge request > User approves with SAML auth', :js, feature_category: :code_review_workflow do
+RSpec.describe 'Merge request > User approves with SAML auth', :js, feature_category: :code_review_workflow, quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/431776' do
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, developers: user) }
   let_it_be(:setting) do
