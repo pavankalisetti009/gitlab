@@ -150,7 +150,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mx-7">
+  <div class="gl-mx-6">
     <div v-if="loading && metrics.length === 0" class="gl-py-5">
       <gl-loading-icon size="lg" />
     </div>
@@ -172,7 +172,9 @@ export default {
         </page-heading>
       </header>
 
-      <div class="vue-filtered-search-bar-container gl-border-t-none gl-my-6">
+      <div
+        class="gl-mt-3 gl-py-5 gl-px-3 gl-bg-gray-10 gl-border-b-1 gl-border-b-solid gl-border-t-1 gl-border-t-solid gl-border-gray-100"
+      >
         <filtered-search
           :initial-filter-value="initialFilterValue"
           recent-searches-storage-key="recent-metrics-filter-search"

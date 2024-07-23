@@ -177,7 +177,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-px-4">
+  <div class="gl-mx-6">
     <url-sync :query="query" />
 
     <header>

@@ -115,6 +115,7 @@ export default {
       selectable
       select-mode="single"
       selected-variant=""
+      class="gl-table-no-top-border"
       @row-clicked="onRowClicked"
     >
       <template #cell(type)="{ item }">
