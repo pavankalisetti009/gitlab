@@ -128,13 +128,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-justify-content-end">
-    <span
-      v-for="(action, idx) in actions"
-      :id="action.id"
-      :key="action.key"
-      :class="idx > 0 ? 'gl-ml-2' : ''"
-    >
+  <div class="gl-display-flex gl-justify-content-end gl-gap-3">
+    <span v-for="action in actions" :id="action.id" :key="action.key">
       <gl-button
         :disabled="action.isLoading"
         :loading="action.isLoading"
