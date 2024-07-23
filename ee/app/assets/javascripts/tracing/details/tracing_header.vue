@@ -56,7 +56,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mb-6">
+  <div>
     <header>
       <page-heading>
         <template #heading>

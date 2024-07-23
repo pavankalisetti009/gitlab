@@ -12,6 +12,7 @@ import axios from '~/lib/utils/axios_utils';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { TIME_RANGE_OPTIONS } from '~/observability/constants';
 import { InternalEvents } from '~/tracking';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { ingestedAtTimeAgo } from '../utils';
 import { METRIC_TYPE } from '../constants';
 import { VIEW_METRICS_DETAILS_PAGE } from '../events';
@@ -39,6 +40,7 @@ export default {
     FilteredSearch,
     UrlSync,
     MetricsHeatMap,
+    PageHeading,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -218,19 +220,24 @@ export default {
     <gl-loading-icon size="lg" />
   </div>
 
-  <div v-else data-testid="metric-details" class="gl-m-7">
+  <div v-else data-testid="metric-details" class="gl-mx-6">
     <url-sync :query="query" />
 
-    <div data-testid="metric-header">
-      <h1 class="gl-font-size-h1 gl-my-0" data-testid="metric-title">{{ header.title }}</h1>
-      <p class="gl-my-0" data-testid="metric-type">
-        <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}
-      </p>
-      <p class="gl-my-0" data-testid="metric-last-ingested">
-        <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
-      </p>
-      <p class="gl-my-0" data-testid="metric-description">{{ header.description }}</p>
-    </div>
+    <header>
+      <page-heading :heading="header.title">
+        <template #description>
+          <p class="gl-my-0 gl-text-primary">
+            <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}
+          </p>
+          <p class="gl-my-0 gl-text-primary">
+            <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
+          </p>
+          <p class="gl-my-0 gl-text-primary">
+            {{ header.description }}
+          </p>
+        </template>
+      </page-heading>
+    </header>
 
     <div class="gl-my-6">
       <filtered-search

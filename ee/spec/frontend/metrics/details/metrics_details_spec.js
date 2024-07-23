@@ -14,6 +14,7 @@ import axios from '~/lib/utils/axios_utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
@@ -30,11 +31,7 @@ describe('MetricsDetails', () => {
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
 
-  const findHeader = () => findMetricDetails().find(`[data-testid="metric-header"]`);
-  const findHeaderTitle = () => findHeader().find(`[data-testid="metric-title"]`);
-  const findHeaderType = () => findHeader().find(`[data-testid="metric-type"]`);
-  const findHeaderDescription = () => findHeader().find(`[data-testid="metric-description"]`);
-  const findHeaderLastIngested = () => findHeader().find(`[data-testid="metric-last-ingested"]`);
+  const findHeader = () => wrapper.findComponent(PageHeading);
   const findUrlSync = () => wrapper.findComponent(UrlSync);
   const findChart = () => wrapper.find(`[data-testid="metric-chart"]`);
   const findEmptyState = () => findMetricDetails().findComponent(GlEmptyState);
@@ -510,10 +507,10 @@ describe('MetricsDetails', () => {
 
     it('renders the details header', () => {
       expect(findHeader().exists()).toBe(true);
-      expect(findHeaderTitle().text()).toBe(METRIC_ID);
-      expect(findHeaderType().text()).toBe(`Type:\u00a0${METRIC_TYPE}`);
-      expect(findHeaderDescription().text()).toBe('System disk operations');
-      expect(findHeaderLastIngested().text()).toBe('Last ingested:\u00a03 days ago');
+      expect(findHeader().props('heading')).toBe(METRIC_ID);
+      expect(findHeader().text()).toContain(`Type:\u00a0${METRIC_TYPE}`);
+      expect(findHeader().text()).toContain('System disk operations');
+      expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
       expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
     });
 
@@ -525,10 +522,11 @@ describe('MetricsDetails', () => {
       });
 
       it('renders the header', () => {
-        expect(findHeaderTitle().text()).toBe(METRIC_ID);
-        expect(findHeaderType().text()).toBe(`Type:\u00a0${METRIC_TYPE}`);
-        expect(findHeaderLastIngested().text()).toBe('Last ingested:\u00a03 days ago');
-        expect(findHeaderDescription().text()).toBe('System disk operations');
+        expect(findHeader().exists()).toBe(true);
+        expect(findHeader().props('heading')).toBe(METRIC_ID);
+        expect(findHeader().text()).toContain(`Type:\u00a0${METRIC_TYPE}`);
+        expect(findHeader().text()).toContain('System disk operations');
+        expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
       });
 
       it('renders the empty state, with description for selected time range', () => {
