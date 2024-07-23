@@ -12,7 +12,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
   let(:create_service) { ExternalStatusChecks::CreateService }
   let(:create_service_instance) { instance_double(update_service) }
   let(:status_check_name) { 'Test' }
-  let(:params) { { name: status_check_name, external_url: 'https://external_url.text/hello.json' } }
+  let(:params) { { name: status_check_name, external_url: 'https://external_url.text/hello.json', shared_secret: 'shared_secret' } }
 
   subject(:execute) { described_class.new(branch_rule, user, params).execute }
 

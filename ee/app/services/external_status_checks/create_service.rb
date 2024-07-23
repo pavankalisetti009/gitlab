@@ -9,6 +9,7 @@ module ExternalStatusChecks
 
       rule = container.external_status_checks.new(name: params[:name],
                                                   external_url: params[:external_url],
+                                                  shared_secret: params[:shared_secret],
                                                   protected_branch_ids: params[:protected_branch_ids])
 
       if with_audit_logged(rule, 'create_status_check') { rule.save }
