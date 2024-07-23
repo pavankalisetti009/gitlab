@@ -6,6 +6,8 @@ module API
 
     include GrapePathHelpers::NamedRouteMatcher
 
+    GOOGLE_PROJECT_ID_REGEXP = /\A[a-z][a-z0-9-]{5,28}[a-z0-9]\z/
+
     before { authorize_admin_project }
     before do
       not_found! unless ::Gitlab::Saas.feature_available?(:google_cloud_support)
@@ -21,7 +23,7 @@ module API
         end
         params do
           optional :enable_google_cloud_artifact_registry, types: Boolean
-          optional :google_cloud_artifact_registry_project_id, types: String
+          optional :google_cloud_artifact_registry_project_id, types: String, regexp: GOOGLE_PROJECT_ID_REGEXP
           at_least_one_of :enable_google_cloud_artifact_registry
         end
         get '/integrations.sh' do
@@ -59,7 +61,7 @@ module API
           detail 'This feature is experimental.'
         end
         params do
-          requires :google_cloud_project_id, types: String
+          requires :google_cloud_project_id, types: String, regexp: GOOGLE_PROJECT_ID_REGEXP
         end
         get '/runner_deployment_project.sh' do
           env['api.format'] = :binary
