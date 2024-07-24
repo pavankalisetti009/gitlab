@@ -60691,6 +60691,9 @@ msgstr ""
 msgid "WorkItem|Test case"
 msgstr ""
 
+msgid "WorkItem|The %{workItemType} was closed automatically when a branch was merged."
+msgstr ""
+
 msgid "WorkItem|The current key result"
 msgstr ""
 
@@ -60707,6 +60710,12 @@ msgid "WorkItem|This %{workItemType} is confidential and should only be visible 
 msgstr ""
 
 msgid "WorkItem|This %{workItemType} is currently blocked by the following items:"
+msgstr ""
+
+msgid "WorkItem|This %{workItemType} will be closed when any of the following is merged."
+msgstr ""
+
+msgid "WorkItem|This %{workItemType} will be closed when the following is merged."
 msgstr ""
 
 msgid "WorkItem|This work item is not available. It either doesn't exist or you don't have permission to view it."
