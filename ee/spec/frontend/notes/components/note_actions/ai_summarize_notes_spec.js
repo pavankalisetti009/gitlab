@@ -4,21 +4,20 @@ import { GlButton } from '@gitlab/ui';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
+import * as aiUtils from 'ee/ai/utils';
 import AiSummaryNotes from 'ee/notes/components/note_actions/ai_summarize_notes.vue';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
-import { MOCK_TANUKI_BOT_MUTATATION_RES } from 'ee_jest/ai/tanuki_bot/mock_data';
 
 Vue.use(VueApollo);
 jest.mock('~/alert');
+jest.mock('ee/ai/utils');
+jest.spyOn(aiUtils, 'sendDuoChatCommand');
 
 describe('AiSummarizeNotes component', () => {
   let wrapper;
   let aiActionMutationHandler;
-  let chatMutationHandler;
   const resourceGlobalId = 'gid://gitlab/Issue/1';
   const clientSubscriptionId = 'someId';
   const LONGER_THAN_MAX_REQUEST_TIMEOUT = 1000 * 20; // 20 seconds
@@ -26,13 +25,9 @@ describe('AiSummarizeNotes component', () => {
   const findButton = () => wrapper.findComponent(GlButton);
 
   const createWrapper = (featureFlagEnabled = false) => {
-    chatMutationHandler = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
     aiActionMutationHandler = jest.fn();
 
-    const mockApollo = createMockApollo([
-      [chatMutation, chatMutationHandler],
-      [aiActionMutation, aiActionMutationHandler],
-    ]);
+    const mockApollo = createMockApollo([[aiActionMutation, aiActionMutationHandler]]);
 
     wrapper = mountExtended(AiSummaryNotes, {
       apolloProvider: mockApollo,
@@ -53,22 +48,13 @@ describe('AiSummarizeNotes component', () => {
 
   describe('with summarizeNotesWithDuo feature flag enabled', () => {
     describe('on click', () => {
-      it('opens duochat', async () => {
+      it('calls sendDuoChatCommand with correct variables', async () => {
         createWrapper(true);
 
         await findButton().trigger('click');
         await nextTick();
 
-        expect(duoChatGlobalState.isShown).toBe(true);
-      });
-
-      it('calls mutation', async () => {
-        createWrapper(true);
-
-        await findButton().trigger('click');
-        await nextTick();
-
-        expect(chatMutationHandler).toHaveBeenCalledWith({
+        expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
           question: '/summarize_comments',
           resourceId: resourceGlobalId,
         });
@@ -84,37 +70,6 @@ describe('AiSummarizeNotes component', () => {
         await nextTick();
 
         expect(bsTooltipHide).toHaveBeenCalled();
-      });
-
-      describe('unsuccessful mutation', () => {
-        beforeEach(() => {
-          createWrapper(true);
-          chatMutationHandler.mockResolvedValue({
-            data: { aiAction: { errors: ['GraphQL Error'], requestId: '123' } },
-          });
-          findButton().trigger('click');
-        });
-
-        it('shows error if no response within timeout limit', async () => {
-          jest.advanceTimersByTime(LONGER_THAN_MAX_REQUEST_TIMEOUT);
-          await nextTick();
-
-          expect(createAlert).toHaveBeenCalledWith(
-            expect.objectContaining({
-              message: 'Something went wrong',
-            }),
-          );
-        });
-
-        it('shows error on error response', async () => {
-          await waitForPromises();
-
-          expect(createAlert).toHaveBeenCalledWith(
-            expect.objectContaining({
-              message: 'GraphQL Error',
-            }),
-          );
-        });
       });
     });
   });
