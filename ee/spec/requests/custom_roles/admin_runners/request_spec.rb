@@ -453,4 +453,53 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
       expect(arguments).to be_empty
     end
   end
+
+  describe Mutations::Groups::Update do
+    include GraphqlHelpers
+    let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
+
+    it 'updates the shared_runners_setting setting' do
+      post_graphql_mutation(graphql_mutation(:group_update, {
+        full_path: group.full_path,
+        shared_runners_setting: 'DISABLED_AND_UNOVERRIDABLE'
+      }), current_user: user)
+
+      expect(response).to have_gitlab_http_status(:success)
+
+      mutation_response = graphql_mutation_response(:group_update)
+      expect(mutation_response).to be_present
+      expect(mutation_response['group']).to be_present
+      expect(mutation_response['errors']).to be_empty
+    end
+
+    it 'cannot update any other individual setting', :aggregate_failures do
+      expect do
+        post_graphql_mutation(graphql_mutation(:group_update, {
+          full_path: group.full_path,
+          name: 'example'
+        }), current_user: user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(fresh_response_data['errors']).to be_present
+        expect(fresh_response_data['errors'][0]['message'])
+          .to eq(Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR)
+      end.to not_change { group.reload.name }
+    end
+
+    it 'cannot update any other combined settings', :aggregate_failures do
+      expect do
+        post_graphql_mutation(graphql_mutation(:group_update, {
+          full_path: group.full_path,
+          name: 'example',
+          shared_runners_setting: 'DISABLED_AND_UNOVERRIDABLE'
+        }), current_user: user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(fresh_response_data['errors']).to be_present
+        expect(fresh_response_data['errors'][0]['message'])
+          .to eq(Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR)
+      end.to not_change { group.reload.name }
+        .and not_change { group.shared_runners_setting }
+    end
+  end
 end
