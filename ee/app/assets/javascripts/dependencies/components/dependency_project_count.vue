@@ -133,20 +133,18 @@ export default {
         </span>
       </template>
       <template #list-item="{ item }">
-        <div class="gl-display-flex">
-          <gl-link :href="getUrl(item)" class="gl-hover-text-decoration-none">
-            <gl-avatar
-              class="gl-mr-2 gl-align-middle"
-              :alt="item.name"
-              :size="16"
-              :entity-id="getEntityId(item)"
-              :entity-name="item.name"
-              :src="item.avatarUrl"
-              :shape="$options.AVATAR_SHAPE_OPTION_RECT"
-            />
-            <gl-truncate position="start" :text="item.name" with-tooltip />
-          </gl-link>
-        </div>
+        <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 gl-hover-text-decoration-none">
+          <gl-avatar
+            class="gl-align-middle"
+            :alt="item.name"
+            :size="16"
+            :entity-id="getEntityId(item)"
+            :entity-name="item.name"
+            :src="item.avatarUrl"
+            :shape="$options.AVATAR_SHAPE_OPTION_RECT"
+          />
+          <gl-truncate position="end" :text="item.name" with-tooltip class="gl-min-w-0" />
+        </gl-link>
       </template>
     </gl-collapsible-listbox>
     <dependency-project-count-popover v-else :target-id="targetId" :target-text="headerText" />
