@@ -17,6 +17,36 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
   end
 
   describe 'validations' do
+    shared_examples 'validates policy content' do
+      it { is_expected.to be_valid }
+
+      context 'with invalid content' do
+        before do
+          policy.content = { foo: "bar" }
+        end
+
+        it { is_expected.to be_invalid }
+      end
+    end
+
+    describe 'content' do
+      context 'when policy_type is approval_policy' do
+        it_behaves_like 'validates policy content'
+      end
+
+      context 'when policy_type is scan_execution_policy' do
+        subject(:policy) { create(:security_policy, :scan_execution_policy) }
+
+        it_behaves_like 'validates policy content'
+      end
+
+      context 'when policy_type is pipeline_execution_policy' do
+        subject(:policy) { create(:security_policy, :pipeline_execution_policy) }
+
+        it_behaves_like 'validates policy content'
+      end
+    end
+
     describe 'scope' do
       it { is_expected.to be_valid }
 
@@ -31,46 +61,6 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       context 'with invalid scope' do
         before do
           policy.scope = { foo: "bar" }
-        end
-
-        it { is_expected.to be_invalid }
-      end
-    end
-
-    describe 'actions' do
-      it { is_expected.to be_valid }
-
-      context 'without actions' do
-        before do
-          policy.actions = []
-        end
-
-        it { is_expected.to be_invalid }
-      end
-
-      context 'with invalid actions' do
-        before do
-          policy.actions.push(foo: "bar")
-        end
-
-        it { is_expected.to be_invalid }
-      end
-    end
-
-    describe 'approval_settings' do
-      it { is_expected.to be_valid }
-
-      context 'with empty approval settings' do
-        before do
-          policy.approval_settings = {}
-        end
-
-        it { is_expected.to be_valid }
-      end
-
-      context 'with invalid approval settings' do
-        before do
-          policy.approval_settings[:foo] = "bar"
         end
 
         it { is_expected.to be_invalid }
