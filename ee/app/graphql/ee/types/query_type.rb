@@ -11,6 +11,12 @@ module EE
           description: 'Retrieve the active add-on purchase. ' \
                        'This query can be used in GitLab SaaS and self-managed environments.',
           resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchaseResolver
+        field :add_on_purchases,
+          [::Types::GitlabSubscriptions::AddOnPurchaseType],
+          null: true,
+          description: 'Retrieve all active add-on purchases. ' \
+                       'This query can be used in GitLab.com and self-managed environments.',
+          resolver: ::Resolvers::GitlabSubscriptions::AddOnPurchasesResolver
         field :blob_search, ::Types::Search::Blob::BlobSearchType,
           null: true,
           resolver: ::Resolvers::Search::Blob::BlobSearchResolver,
