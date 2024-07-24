@@ -34,12 +34,11 @@ module Security
 
         dast_on_demand_template[:dast]
           .merge(action[:tags] ? { tags: action[:tags] } : {})
+          .merge(ignore_default_before_after_script?(action) ? { before_script: [], after_script: [] } : {})
           .deep_merge(
             'stage' => 'dast',
             'variables' => dast_on_demand_variables(action_variables),
-            'dast_configuration' => ci_configuration['dast']['dast_configuration'],
-            'before_script' => [],
-            'after_script' => []
+            'dast_configuration' => ci_configuration['dast']['dast_configuration']
           )
       end
 
@@ -50,6 +49,10 @@ module Security
         AppSec::Dast::ScanConfigs::BuildService
           .new(container: project, params: { dast_site_profile: site_profile, dast_scanner_profile: scanner_profile })
           .execute
+      end
+
+      def ignore_default_before_after_script?(action)
+        action.dig(:scan_settings, :ignore_default_before_after_script)
       end
 
       def dast_on_demand_template

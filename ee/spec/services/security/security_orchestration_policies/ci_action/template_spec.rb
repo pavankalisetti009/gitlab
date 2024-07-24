@@ -95,6 +95,16 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
       end
     end
 
+    shared_examples 'with scan_settings.ignore_default_before_after_script set to true' do
+      before do
+        action.merge!(scan_settings: { ignore_default_before_after_script: true })
+      end
+
+      it 'overrides before_script and after_script with empty array' do
+        expect(config.values).to all(include(before_script: [], after_script: []))
+      end
+    end
+
     context 'when action is valid' do
       context 'when scan type is secret_detection' do
         let_it_be(:action) { { scan: 'secret_detection', tags: ['runner-tag'] } }
@@ -105,6 +115,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
         it_behaves_like 'with template name for scan type'
         it_behaves_like 'removes rules which disable jobs'
+        it_behaves_like 'with scan_settings.ignore_default_before_after_script set to true'
 
         it 'merges template variables with ci variables and returns them as string' do
           expect(config[:'secret-detection-0']).to include(
@@ -119,8 +130,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           expected_configuration = {
             rules: [{ if: '$CI_COMMIT_BRANCH' }],
             script: ["/analyzer run"],
-            before_script: [],
-            after_script: [],
             tags: ['runner-tag'],
             stage: 'test',
             image: '$SECURE_ANALYZERS_PREFIX/secrets:$SECRETS_ANALYZER_VERSION$SECRET_DETECTION_IMAGE_SUFFIX',
@@ -153,6 +162,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
         it_behaves_like 'with template name for scan type'
         it_behaves_like 'removes rules which disable jobs'
+        it_behaves_like 'with scan_settings.ignore_default_before_after_script set to true'
 
         it 'merges template variables with ci variables and returns them as string' do
           expect(config[:'container-scanning-0']).to include(
@@ -181,8 +191,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             },
             dependencies: [],
             script: ['gtcs scan'],
-            before_script: [],
-            after_script: [],
             variables: {
               CS_ANALYZER_IMAGE: "$CI_TEMPLATE_REGISTRY_HOST/security-products/container-scanning:7",
               GIT_STRATEGY: 'fetch',

@@ -84,8 +84,6 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
                 },
                 allow_failure: true,
                 script: ['/analyze'],
-                before_script: [],
-                after_script: [],
                 artifacts: { access: 'developer', reports: { dast: 'gl-dast-report.json' } },
                 dast_configuration: {
                   site_profile: dast_site_profile.name,
@@ -101,6 +99,48 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
 
           it 'extends config with additional jobs' do
             expect(config.to_hash).to include(expected_configuration)
+          end
+
+          context 'when scan_settings is provided with ignore_default_before_after_script set to false' do
+            let_it_be(:actions) do
+              [
+                {
+                  scan: 'dast',
+                  site_profile: 'Site Profile',
+                  scanner_profile: 'Scanner Profile',
+                  scan_settings: {
+                    ignore_default_before_after_script: false
+                  }
+                }
+              ]
+            end
+
+            let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [build(:scan_execution_policy, actions: actions)]) }
+
+            it 'does not override before_script and after_script with empty array' do
+              expect(config.to_hash[:'dast-on-demand-0']).not_to include(before_script: [], after_script: [])
+            end
+          end
+
+          context 'when scan_settings is provided with ignore_default_before_after_script set to true' do
+            let_it_be(:actions) do
+              [
+                {
+                  scan: 'dast',
+                  site_profile: 'Site Profile',
+                  scanner_profile: 'Scanner Profile',
+                  scan_settings: {
+                    ignore_default_before_after_script: true
+                  }
+                }
+              ]
+            end
+
+            let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [build(:scan_execution_policy, actions: actions)]) }
+
+            it 'overrides before_script and after_script with empty array' do
+              expect(config.to_hash[:'dast-on-demand-0']).to include(before_script: [], after_script: [])
+            end
           end
 
           context 'when in execution_policy_mode' do
