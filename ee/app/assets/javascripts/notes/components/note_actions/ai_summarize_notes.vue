@@ -3,11 +3,10 @@ import { GlButton, GlTooltipDirective } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import aiActionMutation from 'ee/graphql_shared/mutations/ai_action.mutation.graphql';
 import { MAX_REQUEST_TIMEOUT } from 'ee/notes/constants';
 import { BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
 
 export default {
   components: {
@@ -48,50 +47,42 @@ export default {
         return;
       }
 
-      let mutation;
-      let variables;
-
       if (this.glFeatures.summarizeNotesWithDuo) {
-        mutation = chatMutation;
-        variables = {
+        sendDuoChatCommand({
           question: '/summarize_comments',
           resourceId: this.resourceGlobalId,
-        };
-        duoChatGlobalState.isShown = true;
+        });
       } else {
-        mutation = aiActionMutation;
-        variables = {
-          input: {
-            summarizeComments: { resourceId: this.resourceGlobalId },
-            clientSubscriptionId: this.summarizeClientSubscriptionId,
-          },
-        };
         this.$parent.$emit('set-ai-loading', true);
+
+        this.errorAlert?.dismiss();
+        this.timeout = window.setTimeout(this.handleError, MAX_REQUEST_TIMEOUT);
+
+        this.$apollo
+          .mutate({
+            mutation: aiActionMutation,
+            variables: {
+              input: {
+                summarizeComments: { resourceId: this.resourceGlobalId },
+                clientSubscriptionId: this.summarizeClientSubscriptionId,
+              },
+            },
+          })
+          .then(({ data: { aiAction } }) => {
+            const errors = aiAction?.errors || [];
+
+            // in some cases the tooltip can get stuck
+            // open when clicking the button, so hide again just in case
+            this.hideTooltips();
+
+            if (errors[0]) {
+              this.handleError(new Error(errors[0]));
+            }
+
+            clearTimeout(this.timeout);
+          })
+          .catch(this.handleError);
       }
-
-      this.errorAlert?.dismiss();
-
-      this.timeout = window.setTimeout(this.handleError, MAX_REQUEST_TIMEOUT);
-
-      this.$apollo
-        .mutate({
-          mutation,
-          variables,
-        })
-        .then(({ data: { aiAction } }) => {
-          const errors = aiAction?.errors || [];
-
-          // in some cases the tooltip can get stuck
-          // open when clicking the button, so hide again just in case
-          this.hideTooltips();
-
-          if (errors[0]) {
-            this.handleError(new Error(errors[0]));
-          }
-
-          clearTimeout(this.timeout);
-        })
-        .catch(this.handleError);
     },
     hideTooltips() {
       this.$nextTick(() => {
