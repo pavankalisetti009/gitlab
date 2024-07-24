@@ -30,7 +30,7 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
   end
 
   describe 'visit admin/geo/replication/*' do
-    Gitlab::Geo.enabled_replicator_classes.each do |replicator_class|
+    Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
       it_behaves_like 'active sidebar link', replicator_class.replicable_title_plural do
         let(:path) { admin_geo_replicables_path(replicable_name_plural: replicator_class.replicable_name_plural) }
       end
@@ -39,7 +39,7 @@ RSpec.describe 'admin Geo Replication Nav', :js, :geo, feature_category: :geo_re
     it 'displays enabled replicator replication details nav links' do
       visit admin_geo_replicables_path(replicable_name_plural: 'project_repositories')
 
-      Gitlab::Geo.enabled_replicator_classes.each do |replicator_class|
+      Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
         navbar = page.find(".gl-tabs-nav")
 
         expect(navbar).to have_link replicator_class.replicable_title_plural

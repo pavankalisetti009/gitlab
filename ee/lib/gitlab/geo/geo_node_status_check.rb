@@ -60,7 +60,7 @@ module Gitlab
 
       def replication_and_verification_checks_status
         [].tap do |status|
-          Gitlab::Geo.enabled_replicator_classes.each do |replicator_class|
+          Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
             next unless current_node_status.count_for(replicator_class).to_i > 0
 
             status.push current_node_status.synced_in_percentage_for(replicator_class)
@@ -170,7 +170,7 @@ module Gitlab
       end
 
       def print_replicators_status
-        Gitlab::Geo.enabled_replicator_classes.each do |replicator_class|
+        Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator_class|
           print_counts_row(
             description: replicator_class.replicable_title_plural.to_s,
             failed: replicator_class.failed_count,

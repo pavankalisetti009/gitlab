@@ -63,7 +63,7 @@ module EE
     end
 
     def replication_enabled_replicator_classes
-      ::Gitlab::Geo.enabled_replicator_classes
+      ::Gitlab::Geo.replication_enabled_replicator_classes
     end
 
     def verification_enabled_replicator_classes
