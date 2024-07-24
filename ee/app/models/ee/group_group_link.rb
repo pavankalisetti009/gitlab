@@ -3,6 +3,7 @@
 module EE
   module GroupGroupLink
     extend ActiveSupport::Concern
+    extend ::Gitlab::Utils::Override
 
     prepended do
       include ::MemberRoles::MemberRoleRelation
@@ -14,6 +15,13 @@ module EE
       scope :not_in_shared_with_group, ->(shared_with_groups) { where.not(shared_with_group: shared_with_groups) }
 
       validate :group_with_allowed_email_domains
+    end
+
+    override :human_access
+    def human_access
+      return member_role.name if member_role
+
+      super
     end
 
     private

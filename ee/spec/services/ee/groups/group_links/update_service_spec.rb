@@ -3,28 +3,23 @@
 require 'spec_helper'
 
 RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: :groups_and_projects do
-  subject { described_class.new(link, user).execute(group_link_params) }
-
   let_it_be(:group) { create(:group, :private) }
-  let_it_be(:shared_group) { create(:group, :private) }
+  let_it_be(:shared_with_group) { create(:group, :private) }
   let_it_be(:user) { create(:user, developer_of: group) }
 
-  let(:link) { create(:group_group_link, shared_group: shared_group, shared_with_group: group) }
+  let(:link) { create(:group_group_link, shared_group: group, shared_with_group: shared_with_group) }
   let(:expiry_date) { 1.month.from_now.to_date }
-  let(:group_link_params) do
-    { group_access: Gitlab::Access::GUEST,
-      expires_at: expiry_date }
-  end
+  let(:group_link_params) { { group_access: Gitlab::Access::GUEST, expires_at: expiry_date } }
 
   let(:audit_context) do
     {
       name: 'group_share_with_group_link_updated',
       stream_only: false,
       author: user,
-      scope: shared_group,
-      target: group,
-      message: "Updated #{group.name}'s " \
-               "access params for the group #{shared_group.name}",
+      scope: group,
+      target: shared_with_group,
+      message: "Updated #{shared_with_group.name}'s " \
+               "access params for the group #{group.name}",
       additional_details: {
         changes: [
           { change: :group_access, from: 'Developer', to: 'Guest' },
@@ -34,9 +29,86 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
     }
   end
 
+  subject(:update_service) { described_class.new(link, user).execute(group_link_params) }
+
   it 'sends an audit event' do
     expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(audit_context)).once
 
-    subject
+    update_service
+  end
+
+  context 'when assigning a member role to group link' do
+    let_it_be(:member_role) { create(:member_role, namespace: group) }
+
+    let(:group_link_params) { { member_role_id: member_role.id } }
+
+    context 'when custom_roles feature is enabled' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links: true)
+        end
+
+        it 'assigns member role to group link' do
+          expect(update_service.member_role_id).to eq(member_role.id)
+        end
+
+        it 'sends an audit event' do
+          expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including({
+            additional_details: {
+              changes: [
+                { change: :member_role, from: '', to: member_role.id.to_s }
+              ]
+            }
+          })).once
+
+          update_service
+        end
+
+        context 'when the member role is in a different namespace' do
+          let_it_be(:member_role) { create(:member_role, namespace: create(:group)) }
+
+          it 'returns error' do
+            expect { update_service }.to raise_error(ActiveRecord::RecordInvalid,
+              "Validation failed: Group must be in same hierarchy as custom role's namespace")
+          end
+        end
+
+        context 'when the member role is created on the instance-level' do
+          let_it_be(:member_role) { create(:member_role, :instance) }
+
+          before do
+            stub_saas_features(gitlab_com_subscriptions: false)
+          end
+
+          it 'assigns member role to group link' do
+            expect(update_service.member_role_id).to eq(member_role.id)
+          end
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links: false)
+        end
+
+        it 'does not assign member role to group link' do
+          expect(update_service.member_role_id).to be_nil
+        end
+      end
+    end
+
+    context 'when custom_roles feature is disabled' do
+      before do
+        stub_licensed_features(custom_roles: false)
+      end
+
+      it 'does not assign member role to group link' do
+        expect(update_service.member_role_id).to be_nil
+      end
+    end
   end
 end

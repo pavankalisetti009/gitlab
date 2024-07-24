@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GroupGroupLink do
+RSpec.describe GroupGroupLink, feature_category: :system_access do
   let_it_be(:group) { create(:group) }
   let_it_be(:group_group_link) { create(:group_group_link, shared_group: group, shared_with_group: create(:group)) }
 
@@ -100,6 +100,17 @@ RSpec.describe GroupGroupLink do
         let_it_be(:shared_with_group) { create(:group, parent: create(:group)) }
 
         it_behaves_like 'restricted membership by email domain'
+      end
+    end
+  end
+
+  describe '#human_access' do
+    context 'when a member role is assigned to the group link' do
+      let_it_be(:member_role) { create(:member_role, :instance) }
+      let_it_be(:group_group_link) { create(:group_group_link, member_role_id: member_role.id) }
+
+      it 'returns member role name' do
+        expect(group_group_link.human_access).to eq(member_role.name)
       end
     end
   end
