@@ -34175,7 +34175,7 @@ msgstr ""
 msgid "Namespace or project is required"
 msgstr ""
 
-msgid "Namespace reached its allowed limit of %{limit} extra deployments"
+msgid "Namespace reached its allowed limit of %{limit} extra deployments. Learn more: %{docs_link}"
 msgstr ""
 
 msgid "Namespace:"
