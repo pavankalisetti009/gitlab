@@ -46502,9 +46502,6 @@ msgstr ""
 msgid "SSL verification"
 msgstr ""
 
-msgid "SVG could not be rendered correctly: "
-msgstr ""
-
 msgid "Sat"
 msgstr ""
 
