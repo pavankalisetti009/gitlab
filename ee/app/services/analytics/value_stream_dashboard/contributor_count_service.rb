@@ -63,7 +63,7 @@ module Analytics
       end
 
       def namespace_path
-        @namespace_path ||= "#{namespace.traversal_ids.join('/')}/"
+        @namespace_path ||= namespace.traversal_path
       end
 
       def format_date(date)

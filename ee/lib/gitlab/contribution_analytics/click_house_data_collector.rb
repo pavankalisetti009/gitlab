@@ -53,7 +53,7 @@ module Gitlab
       def group_path
         # trailing slash required to denote end of path because we use startsWith
         # to get self and descendants
-        @group_path ||= "#{group.traversal_ids.join('/')}/"
+        @group_path ||= group.traversal_path
       end
 
       def format_date(date)
