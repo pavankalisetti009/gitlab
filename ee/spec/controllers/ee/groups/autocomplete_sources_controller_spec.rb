@@ -45,9 +45,9 @@ RSpec.describe Groups::AutocompleteSourcesController, feature_category: :team_pl
       expect(json_response).to match_array(issues_json_response)
     end
 
-    context 'when cache_autocomplete_sources_issues and namespace_level_work_items feature flags are disabled' do
+    context 'when work_item_epics and namespace_level_work_items feature flags are disabled' do
       before do
-        stub_feature_flags(cache_autocomplete_sources_issues: false, namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
       it 'returns response without group level work items', :aggregate_failures do
