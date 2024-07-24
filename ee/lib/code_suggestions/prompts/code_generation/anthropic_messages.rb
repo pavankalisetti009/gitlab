@@ -9,7 +9,6 @@ module CodeSuggestions
         # although claude-2's prompt limit is much bigger, response time grows with prompt size,
         # so we don't attempt to use the whole size of prompt window
         MAX_INPUT_CHARS = 50000
-        MAX_LIBS_COUNT = 50 # this is arbitrary number to keep prompt reasonably concise
         GATEWAY_PROMPT_VERSION = 3
         CONTENT_TYPES = { file: 'file', snippet: 'snippet' }.freeze
 
@@ -139,14 +138,7 @@ module CodeSuggestions
           return unless xray_report.present?
           return unless xray_report.libs.any?
 
-          libs =
-            if params[:skip_dependency_descriptions]
-              xray_report.libs.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
-            else
-              xray_report.libs[(0...MAX_LIBS_COUNT)].map do |lib|
-                "#{lib['name']}: #{lib['description']}"
-              end
-            end
+          libs = xray_report.libs.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
 
           Gitlab::InternalEvents.track_event(
             'include_repository_xray_data_into_code_generation_prompt',

@@ -99,8 +99,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
             prefix: prefix,
             project: expected_project,
             model_name: described_class::ANTHROPIC_MODEL,
-            current_user: current_user,
-            skip_dependency_descriptions: true
+            current_user: current_user
           ),
           unsafe_passthrough_params: {}
         }
@@ -179,8 +178,7 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
               prefix: prefix,
               project: expected_project,
               model_name: described_class::ANTHROPIC_MODEL,
-              current_user: current_user,
-              skip_dependency_descriptions: true
+              current_user: current_user
             ),
             unsafe_passthrough_params: {}
           }
@@ -188,28 +186,6 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
 
         before do
           stub_feature_flags(code_suggestions_context: false)
-        end
-
-        it_behaves_like 'correct task initializer'
-      end
-
-      context 'when code_suggestions_skip_dependency_descriptions is off' do
-        let(:expected_params) do
-          {
-            params: params.merge(
-              instruction: instruction,
-              prefix: prefix,
-              project: expected_project,
-              model_name: described_class::ANTHROPIC_MODEL,
-              current_user: current_user,
-              skip_dependency_descriptions: false
-            ),
-            unsafe_passthrough_params: {}
-          }
-        end
-
-        before do
-          stub_feature_flags(code_suggestions_skip_dependency_descriptions: false)
         end
 
         it_behaves_like 'correct task initializer'
