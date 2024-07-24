@@ -644,7 +644,7 @@ module EE
     end
 
     def permanent_deletion_date(date)
-      date + ::Gitlab::CurrentSettings.deletion_adjourned_period.days
+      ::Gitlab::CurrentSettings.deletion_adjourned_period.days.since(date)
     end
 
     def vulnerabilities

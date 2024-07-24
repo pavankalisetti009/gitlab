@@ -47,7 +47,7 @@ module EE
       if result[:status] == :success
         redirect_to group_path(group),
           status: :found,
-          notice: "'#{group.name}' has been scheduled for removal on #{permanent_deletion_date_formatted(group, Time.current.utc)}."
+          notice: format(s_("GroupSettings|'%{name}' has been scheduled for removal on %{date}."), { name: group.name, date: permanent_deletion_date_formatted(group, Time.current.utc) })
       else
         redirect_to edit_group_path(group), status: :found, alert: result[:message]
       end
