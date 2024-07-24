@@ -77,20 +77,7 @@ export default {
       <h2 class="gl-mt-0 gl-text-size-h2">{{ title }}</h2>
     </template>
 
-    <template #header>
-      <gl-button
-        variant="confirm"
-        data-testid="save-approval-rule-button"
-        :loading="isLoading"
-        @click="submit"
-      >
-        {{ $options.I18N.saveChanges }}
-      </gl-button>
-      <gl-button variant="confirm" category="secondary" @click="$emit('close')">
-        {{ $options.I18N.cancel }}
-      </gl-button>
-    </template>
-    <template #default>
+    <div>
       <rule-form
         ref="form"
         :init-rule="rule"
@@ -99,6 +86,20 @@ export default {
         :default-rule-name="defaultRuleName"
         v-on="$listeners"
       />
-    </template>
+
+      <div class="gl-flex gl-gap-3">
+        <gl-button
+          variant="confirm"
+          data-testid="save-approval-rule-button"
+          :loading="isLoading"
+          @click="submit"
+        >
+          {{ $options.I18N.saveChanges }}
+        </gl-button>
+        <gl-button variant="confirm" category="secondary" @click="$emit('close')">
+          {{ $options.I18N.cancel }}
+        </gl-button>
+      </div>
+    </div>
   </gl-drawer>
 </template>

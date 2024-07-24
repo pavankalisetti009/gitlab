@@ -141,9 +141,17 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
   end
 
   describe '.error_answer' do
-    subject(:answer) { described_class.error_answer(context: context, content: "error", error_code: error_code) }
+    subject(:answer) do
+      described_class.error_answer(
+        context: context,
+        content: "error",
+        error_code: error_code,
+        error: error
+      )
+    end
 
     let(:error_code) { nil }
+    let(:error) { StandardError.new('hello world') }
 
     context 'when the answer has no error code' do
       it 'returns final answer with error response' do
@@ -173,7 +181,35 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
       it 'logs the error code' do
         answer
 
-        expect(logger).to have_received(:error).with(message: "Error", error: "error", error_code: error_code)
+        expect(logger).to have_received(:error).with(error: "error", error_code: error_code,
+          message: 'hello world')
+      end
+
+      context 'when error has no message' do
+        let(:error) { StandardError.new }
+
+        it 'logs the error code' do
+          answer
+
+          expect(logger).to have_received(:error).with(error: "error", error_code: error_code,
+            message: 'StandardError')
+        end
+      end
+
+      context 'when error is not passed' do
+        subject(:answer) do
+          described_class.error_answer(
+            context: context,
+            content: "error",
+            error_code: error_code
+          )
+        end
+
+        it 'logs the error code' do
+          answer
+
+          expect(logger).to have_received(:error).with(message: "Error", error: "error", error_code: error_code)
+        end
       end
     end
 

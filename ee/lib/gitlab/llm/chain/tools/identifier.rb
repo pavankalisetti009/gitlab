@@ -47,6 +47,7 @@ module Gitlab
               Gitlab::ErrorTracking.track_exception(e)
 
               return Answer.error_answer(
+                error: e,
                 context: context,
                 error_code: "M4001"
               )
