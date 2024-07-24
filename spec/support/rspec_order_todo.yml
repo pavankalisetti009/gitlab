@@ -2408,7 +2408,6 @@
 - './ee/spec/services/elastic/indexing_control_service_spec.rb'
 - './ee/spec/services/elastic/index_projects_by_id_service_spec.rb'
 - './ee/spec/services/elastic/index_projects_by_range_service_spec.rb'
-- './ee/spec/services/elastic/index_projects_service_spec.rb'
 - './ee/spec/services/elastic/metrics_update_service_spec.rb'
 - './ee/spec/services/elastic/process_bookkeeping_service_spec.rb'
 - './ee/spec/services/elastic/process_initial_bookkeeping_service_spec.rb'

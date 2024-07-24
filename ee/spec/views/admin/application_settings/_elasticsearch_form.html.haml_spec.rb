@@ -23,7 +23,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
   context 'es indexing' do
     let(:application_setting) { build(:application_setting) }
-    let(:button_text) { 'Index all projects' }
+    let(:button_text) { 'Index the instance' }
 
     before do
       allow(Gitlab::CurrentSettings).to(receive(:elasticsearch_indexing?)).and_return(es_indexing)
