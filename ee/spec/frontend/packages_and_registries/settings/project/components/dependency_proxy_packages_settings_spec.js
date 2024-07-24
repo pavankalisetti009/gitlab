@@ -7,7 +7,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import DependencyProxyPackagesSettings from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings.vue';
 import DependencyProxyPackagesSettingsForm from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings_form.vue';
 import dependencyProxyPackagesSettingsQuery from 'ee_component/packages_and_registries/settings/project/graphql/queries/get_dependency_proxy_packages_settings.query.graphql';
-import SettingsBlock from '~/packages_and_registries/shared/components/settings_block.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 
 import {
   dependencyProxyPackagesSettingsPayload,
@@ -27,15 +27,10 @@ describe('Dependency proxy packages project settings', () => {
   const findAlert = () => wrapper.findComponent(GlAlert);
   const findFormComponent = () => wrapper.findComponent(DependencyProxyPackagesSettingsForm);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findTitle = () => wrapper.findByTestId('title');
-  const findDescription = () => wrapper.findByTestId('description');
-  const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
+  const findSettingsSection = () => wrapper.findComponent(SettingsSection);
 
   const mountComponent = (provide = defaultProvidedValues, config) => {
     wrapper = shallowMountExtended(DependencyProxyPackagesSettings, {
-      stubs: {
-        SettingsBlock,
-      },
       provide,
       ...config,
     });
@@ -57,14 +52,14 @@ describe('Dependency proxy packages project settings', () => {
   it('renders settings block component', () => {
     mountComponentWithApollo();
 
-    expect(findSettingsBlock().exists()).toBe(true);
+    expect(findSettingsSection().exists()).toBe(true);
   });
 
   it('has the correct header text and description', () => {
     mountComponentWithApollo();
 
-    expect(findTitle().text()).toBe('Dependency Proxy');
-    expect(findDescription().text()).toBe(
+    expect(findSettingsSection().props('heading')).toBe('Dependency Proxy');
+    expect(findSettingsSection().props('description')).toBe(
       'Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
     );
     expect(findLoader().exists()).toBe(true);

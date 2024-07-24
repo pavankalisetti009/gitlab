@@ -1,7 +1,7 @@
 <script>
 import { GlAlert, GlSkeletonLoader } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import SettingsBlock from '~/packages_and_registries/shared/components/settings_block.vue';
+import SettingsSection from '~/vue_shared/components/settings/settings_section.vue';
 import getDependencyProxyPackagesSettings from 'ee_component/packages_and_registries/settings/project/graphql/queries/get_dependency_proxy_packages_settings.query.graphql';
 import DependencyProxyPackagesSettingsForm from 'ee_component/packages_and_registries/settings/project/components/dependency_proxy_packages_settings_form.vue';
 
@@ -11,7 +11,7 @@ export default {
     DependencyProxyPackagesSettingsForm,
     GlAlert,
     GlSkeletonLoader,
-    SettingsBlock,
+    SettingsSection,
   },
   inject: {
     projectPath: {
@@ -48,19 +48,15 @@ export default {
 </script>
 
 <template>
-  <settings-block data-testid="dependency-proxy-settings">
-    <template #title>
-      <span data-testid="title">{{ s__('DependencyProxy|Dependency Proxy') }}</span></template
-    >
-    <template #description>
-      <span data-testid="description">
-        {{
-          s__(
-            'DependencyProxy|Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
-          )
-        }}
-      </span>
-    </template>
+  <settings-section
+    :heading="s__('DependencyProxy|Dependency Proxy')"
+    :description="
+      s__(
+        'DependencyProxy|Enable the Dependency Proxy for packages, and configure connection settings for external registries.',
+      )
+    "
+    data-testid="dependency-proxy-settings"
+  >
     <template #default>
       <gl-alert v-if="fetchSettingsError" variant="warning" :dismissible="false">
         {{
@@ -70,5 +66,5 @@ export default {
       <gl-skeleton-loader v-else-if="isLoading" />
       <dependency-proxy-packages-settings-form v-else :data="dependencyProxyPackagesSettings" />
     </template>
-  </settings-block>
+  </settings-section>
 </template>
