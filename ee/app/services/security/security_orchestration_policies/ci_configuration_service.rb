@@ -8,8 +8,7 @@ module Security
         'container_scanning' => CiAction::Template,
         'sast' => CiAction::Template,
         'sast_iac' => CiAction::Template,
-        'dependency_scanning' => CiAction::Template,
-        'custom' => CiAction::Custom
+        'dependency_scanning' => CiAction::Template
       }.freeze
 
       def execute(action, ci_variables, context, index = 0)
