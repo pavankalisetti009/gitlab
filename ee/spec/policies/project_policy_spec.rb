@@ -3420,6 +3420,68 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'write_observability policy' do
+    let(:current_user) { developer }
+
+    before do
+      stub_licensed_features(observability: true)
+    end
+
+    describe 'when observability and observability_tracing feature flags are disabled' do
+      before do
+        stub_feature_flags(observability_features: false)
+        stub_feature_flags(observability_tracing: false)
+      end
+
+      it { is_expected.to be_disallowed(:write_observability) }
+    end
+
+    describe 'when observability feature flag is enabled for root namespace' do
+      before do
+        stub_feature_flags(observability_features: project.root_namespace)
+      end
+
+      it { is_expected.to be_allowed(:write_observability) }
+    end
+
+    describe 'when observability_tracing feature flag is enabled for root namespace' do
+      before do
+        stub_feature_flags(observability_tracing: project.root_namespace)
+      end
+
+      it { is_expected.to be_allowed(:write_observability) }
+    end
+
+    describe 'when the project does not have the correct license' do
+      before do
+        stub_feature_flags(observability_features: true)
+        stub_licensed_features(observability: false)
+      end
+
+      it { is_expected.to be_disallowed(:write_observability) }
+    end
+
+    describe 'when the user does not have permission' do
+      let(:current_user) { reporter }
+
+      before do
+        stub_feature_flags(observability_features: true)
+        stub_licensed_features(observability: true)
+      end
+
+      it { is_expected.to be_disallowed(:write_observability) }
+    end
+
+    describe 'when the user has permission' do
+      before do
+        stub_feature_flags(observability_features: true)
+        stub_licensed_features(observability: true)
+      end
+
+      it { is_expected.to be_allowed(:write_observability) }
+    end
+  end
+
   describe "#admin_vulnerability" do
     before do
       stub_licensed_features(security_dashboard: true)

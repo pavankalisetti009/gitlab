@@ -831,6 +831,10 @@ module EE
         enable :read_observability
       end
 
+      rule { can?(:developer_access) & observability_enabled }.policy do
+        enable :write_observability
+      end
+
       rule { ci_cancellation_maintainers_only & ~can?(:maintainer_access) }.policy do
         prevent :cancel_pipeline
         prevent :cancel_build
