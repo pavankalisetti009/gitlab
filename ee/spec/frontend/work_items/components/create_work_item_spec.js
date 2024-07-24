@@ -24,7 +24,10 @@ Vue.use(VueApollo);
 describe('Create work item component', () => {
   let wrapper;
   let mockApollo;
-  const workItemTypeEpicId = 'gid://gitlab/WorkItems::Type/8';
+  const workItemTypeEpicId =
+    namespaceWorkItemTypesQueryResponse.data.workspace.workItemTypes.nodes.find(
+      ({ name }) => name === 'Epic',
+    ).id;
 
   const createWorkItemSuccessHandler = jest.fn().mockResolvedValue(createWorkItemMutationResponse);
   const workItemQuerySuccessHandler = jest.fn().mockResolvedValue(createWorkItemQueryResponse);
