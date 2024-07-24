@@ -30690,6 +30690,9 @@ msgstr ""
 msgid "Last attempted number:"
 msgstr ""
 
+msgid "Last comment by %{author} %{timeago}"
+msgstr ""
+
 msgid "Last commit"
 msgstr ""
 
