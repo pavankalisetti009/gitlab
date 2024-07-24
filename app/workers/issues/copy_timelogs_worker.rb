@@ -4,7 +4,8 @@ module Issues
   class CopyTimelogsWorker
     include ApplicationWorker
 
-    data_consistency :delayed
+    data_consistency :sticky
+    deduplicate :until_executed
     idempotent!
     feature_category :team_planning
 
@@ -13,7 +14,7 @@ module Issues
 
       from_issue = Issue.find_by_id(from_issue_id)
       to_issue = Issue.find_by_id(to_issue_id)
-      return if from_issue.nil? || to_issue.nil? || from_issue.timelogs.empty? || to_issue.timelogs.any?
+      return if from_issue.nil? || to_issue.nil? || from_issue.timelogs.empty?
 
       new_attributes = { id: nil, project_id: to_issue.project_id, issue_id: to_issue.id }
       new_timelogs = from_issue.timelogs.dup

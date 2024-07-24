@@ -7,11 +7,13 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
   let_it_be(:to_issue) { create(:issue) }
   let_it_be(:timelog) { create(:timelog, issue: from_issue) }
 
-  before_all { timelog }
+  it 'has the `until_executed` deduplicate strategy' do
+    expect(described_class.get_deduplicate_strategy).to eq(:until_executed)
+  end
 
   describe '#perform' do
     context 'when both issues exist and conditions are met' do
-      it 'copies timelogs from one issue to another' do
+      it 'copies timelogs from one issue to another', :aggregate_failures do
         expect(Gitlab::AppLogger).to receive(:info).with(
           "Copying timelogs from issue #{from_issue.id} to issue #{to_issue.id}")
 
@@ -48,18 +50,6 @@ RSpec.describe Issues::CopyTimelogsWorker, type: :worker, feature_category: :tea
       it 'does not copy timelogs' do
         expect do
           described_class.new.perform(from_issue_without_timelog.id, to_issue.id)
-        end.not_to change { Timelog.count }
-      end
-    end
-
-    context 'when to_issue already has timelogs' do
-      before do
-        create(:timelog, issue: to_issue)
-      end
-
-      it 'does not copy timelogs' do
-        expect do
-          described_class.new.perform(from_issue.id, to_issue.id)
         end.not_to change { Timelog.count }
       end
     end
