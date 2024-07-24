@@ -6,6 +6,7 @@ RSpec.describe Security::ScanResultPolicyViolation, feature_category: :security_
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
     it { is_expected.to belong_to(:scan_result_policy_read) }
+    it { is_expected.to belong_to(:approval_policy_rule) }
     it { is_expected.to belong_to(:merge_request) }
   end
 

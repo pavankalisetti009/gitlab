@@ -1,0 +1,14 @@
+# frozen_string_literal: true
+
+module Security
+  class ApprovalPolicyRuleProjectLink < ApplicationRecord
+    self.table_name = 'approval_policy_rule_project_links'
+
+    belongs_to :project
+    belongs_to :approval_policy_rule,
+      class_name: 'Security::ApprovalPolicyRule',
+      inverse_of: :approval_policy_rule_project_links
+
+    validates :approval_policy_rule, uniqueness: { scope: :project_id }
+  end
+end

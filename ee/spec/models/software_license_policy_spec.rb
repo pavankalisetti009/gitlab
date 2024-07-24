@@ -7,6 +7,14 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
 
   subject { software_license_policy }
 
+  describe 'associations' do
+    it { is_expected.to belong_to(:project) }
+    it { is_expected.to belong_to(:software_license) }
+    it { is_expected.to belong_to(:custom_software_license) }
+    it { is_expected.to belong_to(:scan_result_policy_read) }
+    it { is_expected.to belong_to(:approval_policy_rule) }
+  end
+
   describe 'validations' do
     it { is_expected.to include_module(Presentable) }
     it { is_expected.to validate_presence_of(:project) }
