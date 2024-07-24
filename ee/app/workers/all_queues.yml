@@ -957,15 +957,6 @@
   :weight: 2
   :idempotent: false
   :tags: []
-- :name: security_scans:store_security_reports
-  :worker_name: StoreSecurityReportsWorker
-  :feature_category: :vulnerability_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :cpu
-  :weight: 2
-  :idempotent: false
-  :tags: []
 - :name: todos_destroyer:todos_destroyer_confidential_epic
   :worker_name: TodosDestroyer::ConfidentialEpicWorker
   :feature_category: :portfolio_management

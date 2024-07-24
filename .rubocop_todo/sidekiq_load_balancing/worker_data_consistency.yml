@@ -400,7 +400,6 @@ SidekiqLoadBalancing/WorkerDataConsistency:
     - 'ee/app/workers/security/track_secure_scans_worker.rb'
     - 'ee/app/workers/set_user_status_based_on_user_cap_setting_worker.rb'
     - 'ee/app/workers/status_page/publish_worker.rb'
-    - 'ee/app/workers/store_security_reports_worker.rb'
     - 'ee/app/workers/sync_seat_link_request_worker.rb'
     - 'ee/app/workers/sync_seat_link_worker.rb'
     - 'ee/app/workers/todos_destroyer/confidential_epic_worker.rb'

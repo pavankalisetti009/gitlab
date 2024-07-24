@@ -1594,7 +1594,6 @@ Style/InlineDisableAnnotation:
     - 'ee/app/workers/security/store_scans_worker.rb'
     - 'ee/app/workers/security/track_secure_scans_worker.rb'
     - 'ee/app/workers/set_user_status_based_on_user_cap_setting_worker.rb'
-    - 'ee/app/workers/store_security_reports_worker.rb'
     - 'ee/app/workers/sync_seat_link_worker.rb'
     - 'ee/app/workers/system_access/base_global_group_sync_worker.rb'
     - 'ee/app/workers/system_access/base_saas_group_sync_worker.rb'
