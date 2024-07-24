@@ -111,24 +111,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
       it_behaves_like 'a template scan'
     end
 
-    context 'with custom scan action' do
-      let(:scan_type) { 'custom' }
-
-      it 'configures a custom scan' do
-        expect_next_instance_of(Security::SecurityOrchestrationPolicies::CiAction::Custom,
-          action,
-          ci_variables,
-          context,
-          index,
-          opts
-        ) do |instance|
-          expect(instance).to receive(:config)
-        end
-
-        execute_service
-      end
-    end
-
     context 'with unknown action' do
       let(:scan_type) { anything }
 

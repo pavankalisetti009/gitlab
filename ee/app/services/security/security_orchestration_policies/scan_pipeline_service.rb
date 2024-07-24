@@ -25,21 +25,19 @@ module Security
         }
       }.freeze
 
-      attr_reader :project, :base_variables, :context, :custom_ci_yaml_allowed
+      attr_reader :project, :base_variables, :context
 
-      def initialize(context, base_variables: {}, custom_ci_yaml_allowed: false)
+      def initialize(context, base_variables: {})
         default_scan_variables = allow_restricted_variables? ? SCAN_VARIABLES_WITH_RESTRICTED_VARIABLES : SCAN_VARIABLES
 
         @project = context.project
         @context = context
         @base_variables = default_scan_variables.deep_merge(base_variables)
-        @custom_ci_yaml_allowed = custom_ci_yaml_allowed
       end
 
       def execute(actions)
         actions = actions.select do |action|
-          (valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)) ||
-            custom_scan?(action)
+          valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)
         end
 
         on_demand_scan_actions, other_actions = actions.partition do |action|
@@ -66,9 +64,8 @@ module Security
       def collect_config_variables(actions, configs)
         actions.zip(configs).each_with_object({}) do |(action, config), hash|
           variables = scan_variables_with_action_variables(action, fallback: action_variables(action))
-          jobs = custom_scan?(action) ? Gitlab::Ci::Config.new(config.to_yaml).jobs : config
 
-          jobs&.each_key do |key|
+          config&.each_key do |key|
             hash[key] = variables
           end
         end
@@ -86,10 +83,6 @@ module Security
         Security::ScanExecutionPolicy.valid_scan_type?(scan_type)
       end
 
-      def custom_scan?(action)
-        custom_ci_yaml_enabled? && action[:scan] == 'custom'
-      end
-
       def prepare_on_demand_policy_configuration(actions)
         return {} if actions.blank?
 
@@ -99,7 +92,7 @@ module Security
       end
 
       def prepare_policy_configuration(action, index)
-        return unless valid_scan_type?(action[:scan]) || custom_scan?(action)
+        return unless valid_scan_type?(action[:scan])
 
         variables = scan_variables_with_action_variables(action, fallback: scan_variables(action))
 
@@ -123,24 +116,8 @@ module Security
         scan_variables(action).merge(action_variables(action))
       end
 
-      def custom_ci_yaml_enabled?
-        return false if project.group.nil?
-
-        custom_ci_yaml_allowed && compliance_pipeline_in_policies_enabled? && custom_ci_experiment_enabled?
-      end
-
-      def compliance_pipeline_in_policies_enabled?
-        Feature.enabled?(:compliance_pipeline_in_policies, project)
-      end
-
       def allow_restricted_variables?
         Feature.enabled?(:allow_restricted_variables_at_policy_level, project, type: :beta)
-      end
-
-      def custom_ci_experiment_enabled?
-        return false if project.group.nil?
-
-        project.group.namespace_settings.toggle_security_policy_custom_ci?
       end
     end
   end

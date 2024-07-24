@@ -177,20 +177,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
       describe 'custom_ci_toggle_enabled' do
         it { is_expected.to match(base_data.merge(custom_ci_toggle_enabled: 'false')) }
-
-        context 'when toggle_security_policy_custom_ci is enabled for the group' do
-          before_all do
-            project.group.namespace_settings.update!(toggle_security_policy_custom_ci: true)
-          end
-
-          it { is_expected.to match(base_data.merge(custom_ci_toggle_enabled: 'true')) }
-        end
-
-        context "when project's group is nil" do
-          let_it_be_with_reload(:project) { create(:project) }
-
-          it { is_expected.to match(base_data.merge(custom_ci_toggle_enabled: 'false')) }
-        end
       end
     end
 
@@ -295,14 +281,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
 
         it { is_expected.not_to have_key(:max_active_pipeline_execution_policies_reached) }
         it { is_expected.not_to have_key(:max_pipeline_execution_policies_allowed) }
-      end
-
-      context 'when toggle_security_policy_custom_ci is enabled' do
-        before_all do
-          namespace.namespace_settings.update!(toggle_security_policy_custom_ci: true)
-        end
-
-        it { is_expected.to match(base_data.merge(custom_ci_toggle_enabled: 'true')) }
       end
     end
   end
