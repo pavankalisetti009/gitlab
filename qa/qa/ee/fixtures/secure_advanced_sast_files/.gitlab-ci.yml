@@ -1,0 +1,6 @@
+include:
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+
+semgrep-sast:
+  script:
+    - echo 'no op'
