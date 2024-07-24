@@ -103,10 +103,6 @@ module API
           body = task.body
           file_too_large! if body.size > MAX_BODY_SIZE
 
-          if Gitlab::Tracking::AiTracking.track_via_code_suggestions?('code_suggestions_requested', current_user)
-            Gitlab::Tracking::AiTracking.track_event('code_suggestions_requested', user: current_user)
-          end
-
           workhorse_headers =
             Gitlab::Workhorse.send_url(
               task.endpoint,
@@ -147,8 +143,6 @@ module API
 
           token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
           service_unavailable!(token[:message]) if token[:status] == :error
-
-          Gitlab::Tracking::AiTracking.track_event('code_suggestion_direct_access_token_refresh', user: current_user)
 
           model_details = ::CodeSuggestions::CompletionsModelDetails.new(
             current_user: current_user

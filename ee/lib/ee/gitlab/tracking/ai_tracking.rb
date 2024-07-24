@@ -22,12 +22,6 @@ module EE
 
           matched_model.new(attributes).store
         end
-
-        override :track_via_code_suggestions?
-        def track_via_code_suggestions?(event_name, _user)
-          event_name.to_s == 'code_suggestions_requested' &&
-            ::Gitlab::CurrentSettings.disabled_direct_code_suggestions
-        end
       end
     end
   end
