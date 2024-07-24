@@ -128,6 +128,58 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         end
       end
     end
+
+    describe 'new_user_signups_cap', :saas do
+      # rubocop:disable Rails/SaveBang -- Testing validations
+      it 'is valid when new_user_signups_cap is set to nil' do
+        settings.update!(seat_control: :user_cap, new_user_signups_cap: 20)
+
+        settings.update(new_user_signups_cap: nil)
+
+        expect(settings).to be_valid
+        expect(settings.seat_control).to eq('off')
+        expect(settings.new_user_signups_cap).to be_nil
+      end
+
+      it 'is valid when seat_control is set to user_cap and new_user_signups_cap is set to nil' do
+        settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
+
+        expect(settings).to be_valid
+        expect(settings.seat_control).to eq('off')
+        expect(settings.new_user_signups_cap).to be_nil
+      end
+
+      it 'must be a positive number when seat_control is user cap' do
+        settings.update(seat_control: :user_cap, new_user_signups_cap: -1)
+
+        expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be greater than or equal to 0"])
+      end
+
+      it 'must be an integer' do
+        settings.update(seat_control: :user_cap, new_user_signups_cap: 2.5)
+
+        expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be an integer"])
+      end
+
+      it 'is valid when it is a positive integer' do
+        settings.update(seat_control: :user_cap, new_user_signups_cap: 1)
+
+        expect(settings).to be_valid
+      end
+
+      it 'can be nil when seat_control is off' do
+        settings.update(seat_control: :off, new_user_signups_cap: nil)
+
+        expect(settings).to be_valid
+      end
+
+      it 'can be set when seat_control is off' do
+        settings.update(seat_control: :off, new_user_signups_cap: 4)
+
+        expect(settings).to be_valid
+      end
+      # rubocop:enable Rails/SaveBang
+    end
   end
 
   describe '.duo_features_set' do

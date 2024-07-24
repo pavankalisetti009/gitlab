@@ -27,12 +27,16 @@ module EE
         user_id_existence: true,
         if: :unique_project_download_limit_alertlist_changed?
       validates :experiment_features_enabled, inclusion: { in: [true, false] }
+      validates :new_user_signups_cap,
+        numericality: { only_integer: true, greater_than_or_equal_to: 0 },
+        presence: true,
+        if: -> { seat_control_user_cap? }
 
       validate :user_cap_allowed, if: -> { enabling_user_cap? }
       validate :experiment_features_allowed
 
+      before_validation :set_seat_control
       before_save :set_prevent_sharing_groups_outside_hierarchy
-      before_save :set_seat_control
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? }
 
       delegate :root_ancestor, to: :namespace
