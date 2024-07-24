@@ -3,13 +3,30 @@
 require 'spec_helper'
 
 RSpec.describe CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages, feature_category: :custom_models do
+  let_it_be(:ai_self_hosted_model) do
+    create(
+      :ai_self_hosted_model,
+      model: :'codellama:code',
+      name: 'whatever',
+      endpoint: 'http://localhost:11434'
+    )
+  end
+
+  let_it_be(:ai_feature_setting) do
+    create(
+      :ai_feature_setting,
+      feature: :code_completions,
+      self_hosted_model: ai_self_hosted_model
+    )
+  end
+
   let(:prompt_version) { 2 }
   let(:language) { instance_double(CodeSuggestions::ProgrammingLanguage) }
   let(:language_name) { 'Python' }
 
   let(:prefix) do
     <<~PREFIX
-def hello_world():
+      def hello_world():
     PREFIX
   end
 
@@ -33,9 +50,7 @@ def hello_world():
     {
       prefix: prefix,
       suffix: suffix,
-      current_file: unsafe_params['current_file'].with_indifferent_access,
-      model_name: model_name,
-      model_endpoint: 'http://localhost:11434'
+      current_file: unsafe_params['current_file'].with_indifferent_access
     }
   end
 
@@ -46,7 +61,9 @@ def hello_world():
     allow(language).to receive(:name).and_return(language_name)
   end
 
-  subject(:codellama_prompt) { described_class.new(params) }
+  subject(:codellama_prompt) do
+    described_class.new(feature_setting: ::Ai::FeatureSetting.find_by_feature(:code_completions), params: params)
+  end
 
   describe '#request_params' do
     let(:request_params) do
@@ -60,7 +77,7 @@ def hello_world():
 
     let(:prompt) do
       <<~PROMPT.chomp
-      <PRE> def hello_world():\n <SUF>return <MID>
+        <PRE> def hello_world():\n <SUF>return <MID>
       PROMPT
     end
 

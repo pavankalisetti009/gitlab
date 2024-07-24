@@ -72,10 +72,9 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       it_behaves_like 'correct task initializer'
 
       context 'when on a self managed instance' do
-        let(:expected_class) { ::CodeSuggestions::Tasks::SelfHostedCodeCompletion }
+        let(:expected_class) { ::CodeSuggestions::Tasks::CodeCompletion }
         let(:expected_params) do
           {
-            feature_setting: feature_setting,
             params: params,
             unsafe_passthrough_params: {}
           }
@@ -155,16 +154,15 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
       end
 
       context 'when on a self managed instance' do
-        let(:expected_class) { ::CodeSuggestions::Tasks::SelfHostedCodeGeneration }
+        let(:expected_class) { ::CodeSuggestions::Tasks::CodeGeneration }
         let(:expected_params) do
           {
-            feature_setting: feature_setting,
             params: params,
             unsafe_passthrough_params: {}
           }
         end
 
-        let(:feature_setting) { create(:ai_feature_setting, feature: :code_generations) }
+        let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :code_generations) }
 
         context 'when code generations is self-hosted' do
           it_behaves_like 'correct task initializer'

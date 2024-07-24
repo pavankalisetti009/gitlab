@@ -6,8 +6,6 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
   let(:prefix) { 'some prefix' }
   let(:suffix) { 'some suffix' }
   let(:instruction) { 'Add code for validating function' }
-  let(:model_family) { CodeSuggestions::TaskFactory::ANTHROPIC }
-
   let(:current_file) do
     {
       'file_name' => 'test.py',
@@ -16,70 +14,236 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
     }.with_indifferent_access
   end
 
-  let(:unsafe_params) do
-    {
-      'current_file' => current_file,
-      'telemetry' => [{ 'model_engine' => 'anthropic' }]
-    }.with_indifferent_access
-  end
-
-  let(:model_name) { 'claude-3-5-sonnet-20240620' }
-
-  let(:params) do
-    {
-      code_generation_model_family: model_family,
-      prefix: prefix,
-      instruction: instruction,
-      current_file: current_file,
-      model_name: model_name
-    }
-  end
-
   let(:expected_current_file) do
     { current_file: { file_name: 'test.py', content_above_cursor: 'fix', content_below_cursor: 'som' } }
   end
 
-  let(:anthropic_request_params) { { prompt_version: 2, prompt: 'Anthropic prompt' } }
+  context 'when using saas anthropic model' do
+    let(:unsafe_params) do
+      {
+        'current_file' => current_file,
+        'telemetry' => [{ 'model_engine' => 'anthropic' }]
+      }.with_indifferent_access
+    end
 
-  let(:anthropic_messages_prompt) do
-    instance_double(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages,
-      request_params: anthropic_request_params)
-  end
+    let(:params) do
+      {
+        code_generation_model_family: :anthropic,
+        prefix: prefix,
+        instruction: instruction,
+        current_file: current_file,
+        model_name: 'claude-3-5-sonnet-20240620'
+      }
+    end
 
-  subject(:task) { described_class.new(params: params, unsafe_passthrough_params: unsafe_params) }
+    let(:anthropic_request_params) { { prompt_version: 2, prompt: 'Anthropic prompt' } }
+    let(:anthropic_messages_prompt) do
+      instance_double(
+        CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages,
+        request_params: anthropic_request_params
+      )
+    end
 
-  describe '#body' do
+    subject(:task) { described_class.new(params: params, unsafe_passthrough_params: unsafe_params) }
+
     before do
       allow(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages)
         .to receive(:new).and_return(anthropic_messages_prompt)
       stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
     end
 
-    context 'with anthropic model family' do
-      it_behaves_like 'code suggestion task' do
-        let(:endpoint_path) { 'v2/code/generations' }
-        let(:body) { unsafe_params.merge(anthropic_request_params.merge(expected_current_file)) }
-      end
-
-      it 'calls code creation Anthropic' do
-        task.body
-
-        expect(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages).to have_received(:new).with(params)
-      end
-    end
-  end
-
-  describe '#prompt' do
-    before do
-      allow(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages)
-        .to receive(:new).and_return(anthropic_messages_prompt)
-      stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
-    end
-
-    it 'returns message based prompt' do
+    it 'calls code creation Anthropic' do
       task.body
+      expect(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages)
+        .to have_received(:new).with(params)
+    end
 
-      expect(CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages).to have_received(:new).with(params)
+    it_behaves_like 'code suggestion task' do
+      let(:endpoint_path) { 'v2/code/generations' }
+      let(:expected_body) do
+        {
+          "current_file" => {
+            "file_name" => "test.py",
+            "content_above_cursor" => "fix",
+            "content_below_cursor" => "som"
+          },
+          "telemetry" => [{ "model_engine" => "anthropic" }],
+          "prompt_version" => 2,
+          "prompt" => "Anthropic prompt"
+        }
+      end
+
+      let(:expected_feature_name) { :code_suggestions }
+    end
+  end
+
+  context 'when using self hosted mistral, mixtral, codegemma, codestral model' do
+    let(:code_generations_feature_setting) { create(:ai_feature_setting, feature: :code_generations) }
+    let(:unsafe_params) do
+      {
+        'current_file' => current_file,
+        'telemetry' => [],
+        'stream' => false
+      }.with_indifferent_access
+    end
+
+    let(:params) do
+      {
+        current_file: current_file,
+        generation_type: 'empty_function',
+        model_endpoint: code_generations_feature_setting.self_hosted_model.endpoint,
+        model_name: code_generations_feature_setting.self_hosted_model.model,
+        model_api_key: nil
+      }
+    end
+
+    let(:mistral_request_params) { { prompt_version: 3, prompt: 'Mistral prompt' } }
+    let(:mistral_messages_prompt) do
+      instance_double(CodeSuggestions::Prompts::CodeGeneration::MistralMessages, request_params: mistral_request_params)
+    end
+
+    subject(:task) do
+      described_class.new(params: params, unsafe_passthrough_params: unsafe_params)
+    end
+
+    before do
+      allow(CodeSuggestions::Prompts::CodeGeneration::MistralMessages)
+        .to receive(:new).and_return(mistral_messages_prompt)
+
+      stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
+    end
+
+    it 'calls Mistral' do
+      task.body
+      expect(CodeSuggestions::Prompts::CodeGeneration::MistralMessages)
+        .to have_received(:new).with(feature_setting: code_generations_feature_setting, params: params)
+    end
+
+    it_behaves_like 'code suggestion task' do
+      let(:endpoint_path) { 'v2/code/generations' }
+      let(:expected_body) do
+        {
+          "current_file" => {
+            "file_name" => "test.py",
+            "content_above_cursor" => "fix",
+            "content_below_cursor" => "som"
+          },
+          "telemetry" => [],
+          "stream" => false,
+          "prompt_version" => 3,
+          "prompt" => "Mistral prompt"
+        }
+      end
+
+      let(:expected_feature_name) { :self_hosted_models }
+    end
+  end
+
+  context 'when using self hosted codellama model' do
+    let_it_be(:self_hosted_model) { create(:ai_self_hosted_model, model: 'codellama', name: "whatever") }
+    let_it_be(:code_generations_feature_setting) do
+      create(:ai_feature_setting, feature: :code_generations, self_hosted_model: self_hosted_model)
+    end
+
+    let(:unsafe_params) do
+      {
+        'current_file' => current_file,
+        'telemetry' => [],
+        'stream' => false
+      }.with_indifferent_access
+    end
+
+    let(:params) do
+      {
+        current_file: current_file,
+        generation_type: 'empty_function'
+      }
+    end
+
+    let(:prompt_content) do
+      "[INST]<<SYS>> You are a tremendously accurate and skilled code generation agent. " \
+        "We want to generate new Python code inside the file 'test.py'. Your task is to provide valid code without " \
+        "any additional explanations, comments, or feedback. " \
+        "<</SYS>>\n\nsome prefix\n[SUGGESTION]\nsome suffix\n\nThe new code you will generate will start at the " \
+        "position of the cursor, " \
+        "which is currently indicated by the [SUGGESTION] tag.\nThe comment directly " \
+        "before the cursor position is the instruction, " \
+        "all other comments are not instructions.\n\nWhen generating the new code, please ensure the following:\n" \
+        "1. It is valid Python code.\n" \
+        "2. It matches the existing code's variable, parameter, and function names.\n" \
+        "3. The code fulfills the instructions.\n" \
+        "4. Do not add any comments, including instructions.\n" \
+        "5. Return the code result without any extra explanation or examples.\n\n" \
+        "If you are not able to generate code based on the given instructions, return an empty result.\n\n[/INST]"
+    end
+
+    subject(:task) do
+      described_class.new(params: params, unsafe_passthrough_params: unsafe_params)
+    end
+
+    before do
+      stub_const('CodeSuggestions::Tasks::Base::AI_GATEWAY_CONTENT_SIZE', 3)
+    end
+
+    it_behaves_like 'code suggestion task' do
+      let(:endpoint_path) { 'v2/code/generations' }
+      let(:expected_body) do
+        {
+          "current_file" => {
+            "file_name" => "test.py",
+            "content_above_cursor" => "fix",
+            "content_below_cursor" => "som"
+          },
+          "telemetry" => [],
+          "stream" => false,
+          "prompt_version" => 3,
+          "model_endpoint" => "http://localhost:11434/v1",
+          "model_name" => "codellama",
+          "model_provider" => "litellm",
+          "prompt" => [
+            {
+              "content" => prompt_content,
+              "role" => "user"
+            }
+          ]
+        }
+      end
+
+      let(:expected_feature_name) { :self_hosted_models }
+    end
+  end
+
+  context 'when model name is unknown' do
+    before do
+      allow(Ai::FeatureSetting).to receive(:find_by_feature).with(:code_generations).and_return(ai_feature_setting)
+      allow(ai_feature_setting).to receive_message_chain(:self_hosted_model, :model, :to_sym).and_return("unknown")
+    end
+
+    let(:ai_feature_setting) do
+      instance_double(Ai::FeatureSetting, self_hosted?: true)
+    end
+
+    let(:unsafe_params) do
+      {
+        'current_file' => current_file,
+        'telemetry' => [],
+        'stream' => false
+      }.with_indifferent_access
+    end
+
+    let(:params) do
+      {
+        current_file: current_file,
+        generation_type: 'empty_function'
+      }
+    end
+
+    subject(:task) do
+      described_class.new(params: params, unsafe_passthrough_params: unsafe_params)
+    end
+
+    it 'raises an error' do
+      expect { task.body }.to raise_error("Unknown model: unknown")
     end
   end
 end

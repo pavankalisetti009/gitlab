@@ -14,6 +14,18 @@ module CodeSuggestions
         Gitlab::AiGateway.url
       end
 
+      def self_hosted?
+        feature_setting&.self_hosted?
+      end
+
+      def feature_name
+        if self_hosted?
+          :self_hosted_models
+        else
+          :code_suggestions
+        end
+      end
+
       def endpoint
         "#{self.class.base_url}/v2/code/#{endpoint_name}"
       end
@@ -24,10 +36,6 @@ module CodeSuggestions
         trim_content_params(body_params)
 
         body_params.to_json
-      end
-
-      def feature_name
-        :code_suggestions
       end
 
       private

@@ -6,6 +6,13 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
+      attr_reader :feature_setting
+
+      def initialize(params: nil, unsafe_passthrough_params: nil)
+        @feature_setting = ::Ai::FeatureSetting.find_by_feature(:code_completions)
+        super(params: params, unsafe_passthrough_params: unsafe_passthrough_params)
+      end
+
       override :endpoint_name
       def endpoint_name
         'completions'
@@ -14,8 +21,33 @@ module CodeSuggestions
       private
 
       def prompt
-        CodeSuggestions::Prompts::CodeCompletion::VertexAi.new(params)
+        if self_hosted?
+          # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global development flag for migrating the prompts
+          if ::Feature.enabled?(:ai_custom_models_prompts_migration)
+            return CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage.new(
+              feature_setting: feature_setting, params: params)
+          end
+          # rubocop:enable Gitlab/FeatureFlagWithoutActor
+
+          model_name = feature_setting&.self_hosted_model&.model&.to_sym
+          case model_name
+          when :codegemma
+            CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages.new(
+              feature_setting: feature_setting, params: params)
+          when :codestral
+            CodeSuggestions::Prompts::CodeCompletion::CodestralMessages.new(
+              feature_setting: feature_setting, params: params)
+          when :'codellama:code'
+            CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages.new(
+              feature_setting: feature_setting, params: params)
+          else
+            raise "Unknown model: #{model_name}"
+          end
+        else
+          CodeSuggestions::Prompts::CodeCompletion::VertexAi.new(params)
+        end
       end
+
       strong_memoize_attr :prompt
     end
   end

@@ -6,6 +6,13 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
+      attr_reader :feature_setting
+
+      def initialize(params: nil, unsafe_passthrough_params: nil)
+        @feature_setting = ::Ai::FeatureSetting.find_by_feature(:code_generations)
+        super(params: params, unsafe_passthrough_params: unsafe_passthrough_params)
+      end
+
       override :endpoint_name
       def endpoint_name
         'generations'
@@ -14,8 +21,23 @@ module CodeSuggestions
       private
 
       def prompt
-        CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages.new(params)
+        if self_hosted?
+          model_name = feature_setting&.self_hosted_model&.model&.to_sym
+          case model_name
+          when :codellama
+            CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages.new(
+              feature_setting: feature_setting, params: params)
+          when :mistral, :mixtral, :codegemma, :codestral
+            CodeSuggestions::Prompts::CodeGeneration::MistralMessages.new(
+              feature_setting: feature_setting, params: params)
+          else
+            raise "Unknown model: #{model_name}"
+          end
+        else
+          CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages.new(params)
+        end
       end
+
       strong_memoize_attr :prompt
     end
   end
