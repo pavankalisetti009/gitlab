@@ -9,6 +9,10 @@ RSpec.shared_examples 'code suggestion task' do
   end
 
   it 'returns body' do
-    expect(Gitlab::Json.parse(task.body)).to eq body
+    expect(Gitlab::Json.parse(task.body)).to eq expected_body
+  end
+
+  it 'has correct feature_name' do
+    expect(task.feature_name).to eq expected_feature_name
   end
 end

@@ -40,33 +40,17 @@ module CodeSuggestions
     end
 
     def code_completion_task
-      if code_completion_feature_setting&.self_hosted?
-        CodeSuggestions::Tasks::SelfHostedCodeCompletion.new(
-          feature_setting: code_completion_feature_setting,
-          params: params,
-          unsafe_passthrough_params: unsafe_passthrough_params
-        )
-      else
-        CodeSuggestions::Tasks::CodeCompletion.new(
-          params: params,
-          unsafe_passthrough_params: unsafe_passthrough_params
-        )
-      end
+      CodeSuggestions::Tasks::CodeCompletion.new(
+        params: params,
+        unsafe_passthrough_params: unsafe_passthrough_params
+      )
     end
 
     def code_generation_task(instruction)
-      if code_generation_feature_setting&.self_hosted?
-        CodeSuggestions::Tasks::SelfHostedCodeGeneration.new(
-          feature_setting: code_generation_feature_setting,
-          params: params,
-          unsafe_passthrough_params: unsafe_passthrough_params
-        )
-      else
-        CodeSuggestions::Tasks::CodeGeneration.new(
-          params: code_generation_params(instruction),
-          unsafe_passthrough_params: unsafe_passthrough_params
-        )
-      end
+      CodeSuggestions::Tasks::CodeGeneration.new(
+        params: code_generation_params(instruction),
+        unsafe_passthrough_params: unsafe_passthrough_params
+      )
     end
 
     def language
@@ -75,6 +59,9 @@ module CodeSuggestions
     strong_memoize_attr(:language)
 
     def code_generation_params(instruction)
+      self_hosted = ::Ai::FeatureSetting.find_by_feature(:code_generations).present?
+      return params if self_hosted
+
       params.merge(
         prefix: prefix,
         instruction: instruction,
@@ -93,14 +80,6 @@ module CodeSuggestions
         ).execute.first
     end
     strong_memoize_attr(:project)
-
-    def code_generation_feature_setting
-      ::Ai::FeatureSetting.find_by_feature(:code_generations)
-    end
-
-    def code_completion_feature_setting
-      ::Ai::FeatureSetting.find_by_feature(:code_completions)
-    end
 
     def trim_context!
       return if params[:context].blank?

@@ -16,10 +16,4 @@ RSpec.describe CodeSuggestions::Tasks::Base, feature_category: :code_suggestions
       expect { task.endpoint }.to raise_error(NotImplementedError)
     end
   end
-
-  describe '#feature_name' do
-    it 'returns code suggestions feature name' do
-      expect(task.feature_name).to eq(:code_suggestions)
-    end
-  end
 end

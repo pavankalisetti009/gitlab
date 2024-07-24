@@ -7,6 +7,23 @@ module CodeSuggestions
         GATEWAY_PROMPT_VERSION = 2
         MODEL_PROVIDER = 'litellm'
 
+        attr_reader :feature_setting
+
+        def initialize(feature_setting:, params:)
+          @feature_setting = feature_setting
+
+          super(params)
+        end
+
+        def params
+          self_hosted_model = feature_setting.self_hosted_model
+
+          super.merge({
+            model_name: self_hosted_model.model,
+            model_endpoint: self_hosted_model.endpoint
+          })
+        end
+
         def request_params
           {
             model_provider: self.class::MODEL_PROVIDER,
