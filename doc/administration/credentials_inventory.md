@@ -49,7 +49,7 @@ If a **Revoke** button is not available, the token may be expired or revoked, or
 
 When a PAT is revoked from the credentials inventory, the instance notifies the user by email.
 
-![Credentials inventory page - Personal access tokens](img/credentials_inventory_personal_access_tokens_v14_9.png)
+![The credentials inventory page listing personal access tokens.](img/credentials_inventory_personal_access_tokens_v14_9.png)
 
 ## Revoke a user's project access token
 
@@ -60,7 +60,7 @@ When a PAT is revoked from the credentials inventory, the instance notifies the 
 
 The project access token is revoked and a background worker is queued to delete the project bot user.
 
-![Credentials inventory page - Project access tokens](img/credentials_inventory_project_access_tokens_v14_9.png)
+![The credentials inventory page listing project access tokens.](img/credentials_inventory_project_access_tokens_v14_9.png)
 
 ## Delete a user's SSH key
 
@@ -71,7 +71,7 @@ The project access token is revoked and a background worker is queued to delete 
 
 The instance notifies the user.
 
-![Credentials inventory page - SSH keys](img/credentials_inventory_ssh_keys_v14_9.png)
+![The credentials inventory page listing SSH keys.](img/credentials_inventory_ssh_keys_v14_9.png)
 
 ## Review existing GPG keys
 
@@ -82,4 +82,4 @@ credentials inventory GPG Keys tab, as well as the following properties:
 - The ID of the GPG key.
 - Whether the GPG key is [verified or unverified](../user/project/repository/signed_commits/gpg.md).
 
-![Credentials inventory page - GPG keys](img/credentials_inventory_gpg_keys_v14_9.png)
+![The credentials inventory page listing GPG keys.](img/credentials_inventory_gpg_keys_v14_9.png)

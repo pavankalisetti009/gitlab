@@ -24,7 +24,7 @@ Broadcast messages can be managed using the [broadcast messages API](../api/broa
 
 Banners are shown on the top of a page and optionally in the command line as a Git remote response.
 
-![Broadcast Message Banner](img/broadcast_messages_banner_v15_0.png)
+![A broadcast message banner displaying a welcome message.](img/broadcast_messages_banner_v15_0.png)
 
 ```shell
 $ git push
@@ -50,7 +50,7 @@ The available placeholders are:
 
 If the user is not signed in, user related values are empty.
 
-![Broadcast Message Notification](img/broadcast_messages_notification_v12_10.png)
+![A broadcast message notification using the name placeholder.](img/broadcast_messages_notification_v12_10.png)
 
 If more than one notification is active at one time, only the newest is shown.
 

@@ -146,7 +146,7 @@ You can impersonate a user in the following ways:
 All impersonation activities are [captured with audit events](audit_event_reports.md#user-impersonation).
 By default, impersonation is enabled. GitLab can be configured to [disable impersonation](../api/rest/index.md#disable-impersonation).
 
-![user impersonation button](img/impersonate_user_button_v13_8.png)
+![The user impersonation button.](img/impersonate_user_button_v13_8.png)
 
 ### User identities
 
@@ -182,7 +182,7 @@ The following data is included in the export:
 
 Only the first 100,000 user accounts are exported.
 
-![user permission export button](img/export_permissions_v13_11.png)
+![The user permission export button.](img/export_permissions_v13_11.png)
 
 ### Users statistics
 
@@ -369,7 +369,7 @@ You can also filter runners by status, type, and tag. To filter:
 1. Select any **Type**, or filter by **Status** or **Tags**.
 1. Select or enter your search criteria.
 
-![Attributes of a runner filtered by status](img/index_runners_search_or_filter_v14_5.png)
+![Attributes of a runner filtered by status.](img/index_runners_search_or_filter_v14_5.png)
 
 #### Bulk delete runners
 

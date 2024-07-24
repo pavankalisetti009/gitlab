@@ -86,7 +86,7 @@ When a user is [impersonated](../administration/admin_area.md#user-impersonation
 - Audit events include information about the impersonating administrator.
 - Extra audit events are recorded for the start and end of the administrator's impersonation session.
 
-![Audit event with impersonated user](img/impersonated_audit_events_v15_7.png)
+![An audit event with an impersonated user.](img/impersonated_audit_events_v15_7.png)
 
 ## Time zones
 
