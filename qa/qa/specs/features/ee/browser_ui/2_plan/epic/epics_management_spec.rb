@@ -1,10 +1,19 @@
 # frozen_string_literal: true
 
 module QA
-  RSpec.describe 'Plan', :smoke, product_group: :product_planning do
+  RSpec.describe 'Plan', :smoke, product_group: :product_planning, feature_flag: {
+    name: 'work_item_epics_rollout',
+    scope: :user
+  } do
     describe 'Epics Management' do
       before do
+        Runtime::Feature.disable(:work_item_epics_rollout)
+
         Flow::Login.sign_in
+      end
+
+      after do
+        Runtime::Feature.enable(:work_item_epics_rollout)
       end
 
       it 'creates an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347980' do

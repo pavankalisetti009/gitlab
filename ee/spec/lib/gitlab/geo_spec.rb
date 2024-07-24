@@ -360,6 +360,10 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
 
     subject { described_class.proxied_site(env) }
 
+    before do
+      described_class.clear_memoization(:proxied_site)
+    end
+
     context 'for a non-proxied request' do
       it { is_expected.to be_nil }
     end
