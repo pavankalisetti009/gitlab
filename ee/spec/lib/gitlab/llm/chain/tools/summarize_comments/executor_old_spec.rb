@@ -94,7 +94,7 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld, featur
             end
           end
 
-          it 'responds with summary' do
+          it 'responds with summary', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472966' do
             expect(tool).to receive(:request).and_return("some response")
 
             response = "Here is the summary for Issue #1 comments:"
