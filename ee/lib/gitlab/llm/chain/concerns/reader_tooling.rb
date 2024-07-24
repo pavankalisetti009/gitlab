@@ -14,8 +14,9 @@ module Gitlab
                                     .resource_serialized(content_limit: provider_prompt_class::MAX_CHARACTERS * 0.6)
 
             "Please use this information about identified #{resource_name}: #{resource_serialized}"
-          rescue ArgumentError
+          rescue ArgumentError => error
             Answer.error_answer(
+              error: error,
               context: context,
               error_code: "M5000"
             )

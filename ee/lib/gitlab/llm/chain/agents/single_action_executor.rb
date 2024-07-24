@@ -72,6 +72,7 @@ module Gitlab
           rescue Net::ReadTimeout => error
             Gitlab::ErrorTracking.track_exception(error)
             Answer.error_answer(
+              error: error,
               context: context,
               content: _("I'm sorry, I couldn't respond in time. Please try again."),
               error_code: "A1000"
@@ -79,6 +80,7 @@ module Gitlab
           rescue Gitlab::Llm::AiGateway::Client::ConnectionError => error
             Gitlab::ErrorTracking.track_exception(error)
             Answer.error_answer(
+              error: error,
               context: context,
               error_code: "A1001"
             )
