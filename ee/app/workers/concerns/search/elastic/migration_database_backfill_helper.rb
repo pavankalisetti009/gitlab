@@ -16,19 +16,13 @@ module Search
       end
 
       def completed?
-        completed = documents_after_current_id.empty?
+        maximum_id = documents_after_current_id.maximum(:id).to_i
+        documents_remaining_approximate = maximum_id - current_id
+        set_migration_state(maximum_id: maximum_id, documents_remaining_approximate: documents_remaining_approximate)
+        log 'Checking if migration is finished', maximum_id: maximum_id, current_id: current_id,
+          documents_remaining_approximate: documents_remaining_approximate
 
-        unless completed
-          maximum_id = documents_after_current_id.maximum(:id).to_i
-          documents_remaining_approximate = maximum_id - current_id
-
-          set_migration_state(maximum_id: maximum_id, documents_remaining_approximate: documents_remaining_approximate)
-
-          log 'Migration is not finished', maximum_id: maximum_id, current_id: current_id,
-            documents_remaining_approximate: documents_remaining_approximate
-        end
-
-        completed
+        documents_after_current_id.empty?
       end
 
       def document_type
@@ -55,7 +49,7 @@ module Search
         DEFAULT_LIMIT_PER_ITERATION
       end
 
-      def number_of_iterations_per_run
+      def number_of_iteration_per_run
         (batch_size / limit_per_iteration.to_f).ceil
       end
 
@@ -69,7 +63,7 @@ module Search
 
       def backfill_documents
         [].tap do |documents|
-          number_of_iterations_per_run.times do
+          number_of_iteration_per_run.times do
             documents = documents_after_current_id.limit(limit_per_iteration)
 
             if limit_indexing?
