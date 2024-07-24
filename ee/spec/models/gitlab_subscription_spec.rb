@@ -620,9 +620,9 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
     it 'has all attributes listed in the subscription history table' do
       expect(described_class.attribute_names)
         .to contain_exactly(
-          *GitlabSubscriptionHistory::PREFIXED_ATTRIBUTES,
-          *GitlabSubscriptionHistory::TRACKED_ATTRIBUTES,
-          *GitlabSubscriptionHistory::OMITTED_ATTRIBUTES
+          *GitlabSubscriptions::SubscriptionHistory::PREFIXED_ATTRIBUTES,
+          *GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES,
+          *GitlabSubscriptions::SubscriptionHistory::OMITTED_ATTRIBUTES
         )
     end
 
@@ -643,8 +643,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'logs previous state to gitlab subscription history' do
           gitlab_subscription.update!(max_seats_used: 32)
 
-          expect(GitlabSubscriptionHistory.count).to eq(1)
-          expect(GitlabSubscriptionHistory.last.attributes).to include(
+          expect(GitlabSubscriptions::SubscriptionHistory.count).to eq(1)
+          expect(GitlabSubscriptions::SubscriptionHistory.last.attributes).to include(
             'gitlab_subscription_id' => gitlab_subscription.id,
             'change_type' => 'gitlab_subscription_updated',
             'max_seats_used' => 42,
@@ -657,7 +657,7 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
         it 'does not log previous state to gitlab subscription history' do
           expect do
             gitlab_subscription.update!(last_seat_refresh_at: Time.current)
-          end.to not_change(GitlabSubscriptionHistory, :count)
+          end.to not_change(GitlabSubscriptions::SubscriptionHistory, :count)
         end
       end
 
@@ -934,8 +934,8 @@ RSpec.describe GitlabSubscription, :saas, feature_category: :subscription_manage
 
         subject.destroy!
 
-        expect(GitlabSubscriptionHistory.count).to eq(1)
-        expect(GitlabSubscriptionHistory.last.attributes).to include(
+        expect(GitlabSubscriptions::SubscriptionHistory.count).to eq(1)
+        expect(GitlabSubscriptions::SubscriptionHistory.last.attributes).to include(
           'gitlab_subscription_id' => subject.id,
           'change_type' => 'gitlab_subscription_destroyed',
           'max_seats_used' => 37,

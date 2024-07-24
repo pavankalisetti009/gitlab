@@ -136,11 +136,11 @@ class GitlabSubscription < ApplicationRecord
   def log_previous_state_for_update
     attrs = self.attributes.merge(self.attributes_in_database)
 
-    GitlabSubscriptionHistory.create_from_change(:gitlab_subscription_updated, attrs)
+    GitlabSubscriptions::SubscriptionHistory.create_from_change(:gitlab_subscription_updated, attrs)
   end
 
   def log_previous_state_for_destroy
-    GitlabSubscriptionHistory.create_from_change(:gitlab_subscription_destroyed, self.attributes)
+    GitlabSubscriptions::SubscriptionHistory.create_from_change(:gitlab_subscription_destroyed, self.attributes)
   end
 
   def automatically_index_in_elasticsearch?
@@ -231,14 +231,14 @@ class GitlabSubscription < ApplicationRecord
   end
 
   def premium_plan_not_renewed?
-    previous_premium_gs = GitlabSubscriptionHistory
+    previous_premium_gs = GitlabSubscriptions::SubscriptionHistory
                             .where(gitlab_subscription_id: id, hosted_plan_id: premium_plan_id).order(:id).last
 
     previous_premium_gs&.start_date == start_date && previous_premium_gs&.end_date == end_date
   end
 
   def tracked_attributes_changed?
-    changed.intersection(GitlabSubscriptionHistory::TRACKED_ATTRIBUTES).any?
+    changed.intersection(GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES).any?
   end
 
   def reset_seats_usage_callouts
