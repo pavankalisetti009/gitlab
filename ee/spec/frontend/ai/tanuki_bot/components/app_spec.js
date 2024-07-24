@@ -25,6 +25,8 @@ import { getMarkdown } from '~/rest_api';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { duoChatGlobalState } from '~/super_sidebar/constants';
+import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
+
 import {
   MOCK_USER_MESSAGE,
   MOCK_USER_ID,
@@ -42,7 +44,13 @@ Vue.use(VueApollo);
 jest.mock('~/rest_api');
 jest.mock('uuid');
 
-describe('GitLab Duo Chat', () => {
+const skipReason = new SkipReason({
+  name: 'GitLab Duo Chat',
+  reason: 'Test times out (CPU pegged at 100%)',
+  issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/458409',
+});
+
+describeSkipVue3(skipReason, () => {
   let wrapper;
 
   const actionSpies = {
