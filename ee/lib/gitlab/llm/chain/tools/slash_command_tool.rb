@@ -17,6 +17,7 @@ module Gitlab
             Gitlab::ErrorTracking.track_exception(e)
 
             Answer.error_answer(
+              error: e,
               context: context,
               error_code: "M4000"
             )
