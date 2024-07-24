@@ -29,7 +29,7 @@ import {
   validatedSiteProfile,
 } from 'ee_jest/security_configuration/dast_profiles/mocks/mock_data';
 
-const dastSiteValidationDocsPath = '/application_security/dast/index#dast-site-validation';
+const dastSiteValidationDocsPath = '/application_security/dast/on-demand_scan';
 const projectPath = 'group/project';
 const defaultBranch = 'main';
 const selectedBranch = 'some-other-branch';
@@ -212,9 +212,7 @@ describe('OnDemandScansForm', () => {
       const link = findHelpPageLink();
 
       expect(link.exists()).toBe(true);
-      expect(link.attributes('href')).toBe(
-        '/help/user/application_security/dast/index#on-demand-scans',
-      );
+      expect(link.attributes('href')).toBe('/help/user/application_security/dast/on-demand_scan');
     });
 
     it('populates the branch input with the default branch', () => {

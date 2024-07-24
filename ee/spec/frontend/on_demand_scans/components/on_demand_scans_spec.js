@@ -156,9 +156,7 @@ describe('OnDemandScans', () => {
       const link = findHelpPageLink();
 
       expect(link.exists()).toBe(true);
-      expect(link.attributes('href')).toBe(
-        '/help/user/application_security/dast/index#on-demand-scans',
-      );
+      expect(link.attributes('href')).toBe('/help/user/application_security/dast/on-demand_scan');
     });
 
     it('renders a link to create a new scan', () => {
