@@ -277,18 +277,18 @@ module Gitlab
       _(template) % { url: url }
     end
 
-    def self.enabled_replicator_classes
+    def self.replication_enabled_replicator_classes
       REPLICATOR_CLASSES.select(&:replication_enabled?)
     end
 
     def self.blob_replicator_classes
-      enabled_replicator_classes.select do |replicator|
+      replication_enabled_replicator_classes.select do |replicator|
         replicator.ancestors.include?(::Geo::BlobReplicatorStrategy)
       end
     end
 
     def self.repository_replicator_classes
-      enabled_replicator_classes.select do |replicator|
+      replication_enabled_replicator_classes.select do |replicator|
         replicator.ancestors.include?(::Geo::RepositoryReplicatorStrategy) ||
           replicator == ::Geo::ContainerRepositoryReplicator
       end

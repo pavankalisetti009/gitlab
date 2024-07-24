@@ -23,7 +23,7 @@ RSpec.describe Gitlab::Geo::GeoNodeStatusCheck, :geo, feature_category: :geo_rep
 
     context 'replicators' do
       context 'replication' do
-        let(:replicators) { Gitlab::Geo.enabled_replicator_classes }
+        let(:replicators) { Gitlab::Geo.replication_enabled_replicator_classes }
         let(:checks) do
           replicators.map { |k| /#{k.replicable_title_plural}:/ }
         end

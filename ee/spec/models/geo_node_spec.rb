@@ -644,7 +644,7 @@ RSpec.describe GeoNode, :request_store, :geo, type: :model, feature_category: :g
 
   describe '#geo_replication_details_url' do
     before do
-      allow(Gitlab::Geo).to receive(:enabled_replicator_classes).and_return(
+      allow(Gitlab::Geo).to receive(:replication_enabled_replicator_classes).and_return(
         instance_double("Array", first: class_double("Gitlab::Geo::Replicator", replicable_name_plural: 'replicables'))
       )
     end

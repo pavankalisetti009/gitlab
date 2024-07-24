@@ -95,7 +95,7 @@ RSpec.describe DastScannerProfile, :dynamic_analysis, feature_category: :dynamic
         subject { build(:dast_scanner_profile, scan_type: :active) }
 
         it 'returns a collection of variables with the passive profile', :aggregate_failures do
-          expect(collection).to include(key: 'DAST_API_PROFILE', value: 'Quick-Active')
+          expect(collection).to include(key: 'DAST_API_PROFILE', value: 'Active-Quick')
         end
       end
 

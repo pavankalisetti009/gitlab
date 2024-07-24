@@ -347,7 +347,7 @@ class GeoNodeStatus < ApplicationRecord
   end
 
   def load_ssf_replicable_data
-    Gitlab::Geo.enabled_replicator_classes.each do |replicator|
+    Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator|
       public_send("#{replicator.replicable_name_plural}_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_registry_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_synced_count=", replicator.synced_count) # rubocop:disable GitlabSecurity/PublicSend
