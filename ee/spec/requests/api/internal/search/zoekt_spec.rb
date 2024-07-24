@@ -189,7 +189,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
         context 'and parms success is true' do
           it 'logs the info and returns accepted' do
             node = Search::Zoekt::Node.find_by_uuid(uuid)
-            log_data[:meta] = { 'zoekt.node_id' => node.id, 'zoekt.node_name' => node.metadata['name'] }
+            log_data[:meta] = node.metadata_json
             expect(logger).to receive(:info).with(log_data.as_json)
             expect(::Search::Zoekt::CallbackService).to receive(:execute).with(node, params)
             post api(endpoint), params: params, headers: gitlab_shell_internal_api_request_header
@@ -204,7 +204,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             log_data_with_meta = log_data.merge(
               {
                 success: false, error_message: 'Message',
-                meta: { 'zoekt.node_id' => node.id, 'zoekt.node_name' => node.metadata['name'] }
+                meta: node.metadata_json
               }
             )
             expect(logger).to receive(:error).with(log_data_with_meta.as_json)
@@ -225,7 +225,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             log_data_with_meta = log_data.merge(
               {
                 additional_payload: additional_payload,
-                meta: { 'zoekt.node_id' => node.id, 'zoekt.node_name' => node.metadata['name'] }
+                meta: node.metadata_json
               }
             )
             expect(logger).to receive(:info).with(log_data_with_meta.as_json)

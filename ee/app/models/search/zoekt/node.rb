@@ -45,6 +45,17 @@ module Search
       def backoff
         @backoff ||= ::Search::Zoekt::NodeBackoff.new(self)
       end
+
+      def metadata_json
+        {
+          'zoekt.node_name' => metadata['name'],
+          'zoekt.node_id' => id,
+          'zoekt.used_bytes' => used_bytes,
+          'zoekt.total_bytes' => total_bytes,
+          'zoekt.task_count' => metadata['task_count'],
+          'zoekt.concurrency' => metadata['concurrency']
+        }.compact
+      end
     end
   end
 end

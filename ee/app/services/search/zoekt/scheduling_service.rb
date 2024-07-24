@@ -14,6 +14,7 @@ module Search
         initial_indexing
         auto_index_self_managed
         update_replica_states
+        report_metrics
       ].freeze
 
       BUFFER_FACTOR = 3
@@ -119,10 +120,7 @@ module Search
           node_used_bytes: node_original_used_bytes,
           node_expected_used_bytes: node.used_bytes,
           total_repository_size: total_repository_size,
-          meta: {
-            "zoekt.node_name" => node.metadata['name'],
-            "zoekt.node_id" => node.id
-          }
+          meta: node.metadata_json
         )
 
         namespaces_to_move.each_slice(100) do |namespace_ids|
@@ -237,10 +235,7 @@ module Search
               logger.error(build_structured_payload(
                 task: :node_assignment,
                 message: 'Space is not available in Node', zoekt_enabled_namespace_id: zoekt_enabled_namespace.id,
-                meta: {
-                  "zoekt.node_name" => node.metadata['name'],
-                  "zoekt.node_id" => node.id
-                }
+                meta: node.metadata_json
               ))
             end
           end
@@ -288,9 +283,7 @@ module Search
               index.initializing!
               node = index.node
               log_data = build_structured_payload(
-                meta: {
-                  'zoekt.node_name' => node.metadata['name'], 'zoekt.node_id' => node.id, 'zoekt.index_id' => index.id
-                },
+                meta: node.metadata_json.merge('zoekt.index_id' => index.id),
                 namespace_id: namespace.id, message: 'index moved to initializing',
                 repo_count: repo_count, project_count: count, task: :initial_indexing
               )
@@ -326,6 +319,25 @@ module Search
 
         execute_every 2.minutes, cache_key: :update_replica_states do
           ReplicaStateService.execute
+        end
+      end
+
+      def report_metrics
+        execute_every 5.minutes, cache_key: :report_metrics do
+          ::Search::Zoekt::Node.online.find_each do |node|
+            log_data = build_structured_payload(
+              meta: node.metadata_json,
+              indices_count: node.indices.count,
+              task_count_pending: node.tasks.pending.count,
+              task_count_failed: node.tasks.failed.count,
+              task_count_orphaned: node.tasks.orphaned.count,
+              task_count_done: node.tasks.done.count,
+              message: 'Reporting metrics',
+              task: :report_metrics
+            )
+
+            logger.info(log_data)
+          end
         end
       end
     end
