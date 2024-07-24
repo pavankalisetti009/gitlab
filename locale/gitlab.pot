@@ -20480,9 +20480,6 @@ msgstr ""
 msgid "Environments|Auto stops %{autoStopAt}"
 msgstr ""
 
-msgid "Environments|Cancel"
-msgstr ""
-
 msgid "Environments|Clean up"
 msgstr ""
 
@@ -30320,6 +30317,9 @@ msgstr ""
 msgid "Kubernetes deployment not found"
 msgstr ""
 
+msgid "KubernetesDashboard|Actions"
+msgstr ""
+
 msgid "KubernetesDashboard|Age"
 msgstr ""
 
@@ -30353,7 +30353,7 @@ msgstr ""
 msgid "KubernetesDashboard|Dashboard"
 msgstr ""
 
-msgid "KubernetesDashboard|Delete Pod"
+msgid "KubernetesDashboard|Delete pod"
 msgstr ""
 
 msgid "KubernetesDashboard|Deployment"
