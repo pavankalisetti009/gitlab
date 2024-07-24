@@ -76,6 +76,7 @@ query getBranchRulesDetailsEE($projectPath: ID!) {
             id
             name
             externalUrl
+            hmac
           }
         }
         matchingBranchesCount

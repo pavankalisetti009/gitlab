@@ -61,8 +61,20 @@ export const approvalRulesMock = [
 ];
 
 export const statusChecksRulesMock = [
-  { __typename: 'StatusCheckRule', id: '123', name: 'test', externalUrl: 'https://test.test' },
-  { __typename: 'StatusCheckRule', id: '456', name: 'test 2', externalUrl: 'https://test2.test2' },
+  {
+    __typename: 'StatusCheckRule',
+    id: '123',
+    name: 'test',
+    externalUrl: 'https://test.test',
+    hmac: false,
+  },
+  {
+    __typename: 'StatusCheckRule',
+    id: '456',
+    name: 'test 2',
+    externalUrl: 'https://test2.test2',
+    hmac: true,
+  },
 ];
 
 export const protectionPropsMock = {
