@@ -29,13 +29,13 @@ module QA
             end
 
             view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
-                 'vulnerability_list.vue' do
+              'vulnerability_list.vue' do
               element 'vulnerability'
               element 'vulnerability-status-content'
             end
 
             view 'ee/app/assets/javascripts/security_dashboard/components/shared/vulnerability_report/' \
-                 'selection_summary.vue' do
+              'selection_summary.vue' do
               element 'status-listbox'
               element 'change-status-button'
               element 'dismissal-reason-listbox'
@@ -58,6 +58,52 @@ module QA
               select_dismissal_reason(reason)
               fill_element('change-status-comment-textbox', "E2E Test")
               click_element('change-status-button')
+            end
+
+            def has_vulnerability?(vulnerability_name)
+              vulnerability_element = feature_flag_controlled_element(:pipeline_security_dashboard_graphql,
+                'vulnerability',
+                'security-finding-name-button')
+
+              if vulnerability_element.eql?('vulnerability')
+                has_element?('vulnerability', vulnerability_description: vulnerability_name)
+              else
+                has_element?('security-finding-name-button', status_description: vulnerability_name)
+              end
+            end
+
+            def select_vulnerability(vulnerability_name)
+              vulnerability_element = feature_flag_controlled_element(:pipeline_security_dashboard_graphql,
+                'vulnerability',
+                'security-finding-name-button')
+
+              if vulnerability_element.eql?('vulnerability')
+                click_element('vulnerability', vulnerability_description: vulnerability_name)
+              else
+                click_element('security-finding-name-button', status_description: vulnerability_name)
+              end
+            end
+
+            def has_modal_scanner_type?(scanner_type)
+              within_element('vulnerability-modal-content') do
+                within_element('scanner-list-item') do
+                  has_text?(scanner_type)
+                end
+              end
+            end
+
+            def has_modal_vulnerability_filepath?(filepath)
+              within_element('vulnerability-modal-content') do
+                within_element('location-file-list-item') do
+                  has_text?(filepath)
+                end
+              end
+            end
+
+            def close_modal
+              within_element('vulnerability-modal-content') do
+                click_element('close-icon')
+              end
             end
 
             def select_finding(finding_name)
