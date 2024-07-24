@@ -117,7 +117,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', url)
 
           select direction, from: 'Mirror direction'
@@ -210,7 +210,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
 
         visit project_settings_repository_path(project)
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', 'http://2.example.com')
 
           select('Pull', from: 'Mirror direction')
@@ -229,7 +229,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', 'ssh://example.com')
 
           select('Pull', from: 'Mirror direction')
@@ -247,7 +247,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         find('.js-delete-pull-mirror').click
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', 'http://example.com')
 
           select('Pull', from: 'Mirror direction')
@@ -272,7 +272,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', ssh_url)
 
           select('Pull', from: 'Mirror direction')
@@ -297,7 +297,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
           visit project_settings_repository_path(project)
           click_button('Add new')
 
-          page.within('.project-mirror-settings') do
+          within_testid('mirroring-repositories-settings-content') do
             fill_and_wait_for_mirror_url_javascript('Git repository URL', ssh_url)
 
             select('Pull', from: 'Mirror direction')
@@ -324,7 +324,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', ssh_url)
 
           select('Pull', from: 'Mirror direction')
@@ -346,7 +346,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', ssh_url)
 
           select('Pull', from: 'Mirror direction')
@@ -363,7 +363,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', ssh_url)
 
           select('Pull', from: 'Mirror direction')
@@ -388,7 +388,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', 'ssh://example.com')
 
           select('Pull', from: 'Mirror direction')
@@ -414,7 +414,7 @@ RSpec.describe 'Project mirror', :js, feature_category: :source_code_management 
         visit project_settings_repository_path(project)
         click_button('Add new')
 
-        page.within('.project-mirror-settings') do
+        within_testid('mirroring-repositories-settings-content') do
           fill_and_wait_for_mirror_url_javascript('Git repository URL', 'https://example.com')
 
           select('Pull', from: 'Mirror direction')

@@ -20,7 +20,7 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
       visit project_settings_repository_path(project)
       click_button 'Add new'
 
-      page.within('.project-mirror-settings') do
+      within_testid('mirroring-repositories-settings-content') do
         expect(page).to have_selector('#url')
         expect(page).to have_selector('#mirror_direction')
         expect(page).to have_no_selector('#project_mirror', visible: false)
@@ -40,7 +40,7 @@ RSpec.describe 'Project settings > [EE] repository', feature_category: :source_c
       visit project_settings_repository_path(project)
       click_button 'Add new'
 
-      page.within('.project-mirror-settings') do
+      within_testid('mirroring-repositories-settings-content') do
         expect(page).to have_selector('#url')
         expect(page).to have_selector('#mirror_direction')
         expect(page).to have_selector('#project_mirror', visible: false)
