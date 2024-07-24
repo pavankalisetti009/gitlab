@@ -25,9 +25,7 @@ namespace :gitlab do
       TEXT
       stdout_logger.info(worker_info_msg)
 
-      # skip projects, all namespace and project data is handled by `namespaces` task
-      Search::Elastic::TriggerIndexingWorker.perform_in(1.minute,
-        Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
+      Search::Elastic::ReindexingService.execute(delay: 1.minute)
 
       stdout_logger.info("Scheduling indexing with TriggerIndexingWorker... #{Rainbow('done').green}")
     end

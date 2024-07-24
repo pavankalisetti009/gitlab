@@ -7,15 +7,11 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   # POST
   # Scheduling indexing jobs
   def enqueue_index
-    if Gitlab::Elastic::Helper.default.index_exists?
-      ::Elastic::IndexProjectsService.new.execute
+    ::Search::Elastic::ReindexingService.execute
 
-      notice = _('Elasticsearch indexing started')
-      queue_link = helpers.link_to(_('(check progress)'), sidekiq_path + '/queues/elastic_commit_indexer')
-      flash[:notice] = "#{notice} #{queue_link}".html_safe
-    else
-      flash[:warning] = _('Please create an index before enabling indexing')
-    end
+    flash[:notice] =
+      _('Advanced search indexing in progress. It might take a few minutes to create indices and initiate indexing.' \
+        'Please use gitlab:elastic:info rake task to check progress.')
 
     redirect_to redirect_path
   end
@@ -31,7 +27,7 @@ class Admin::ElasticsearchController < Admin::ApplicationController
         flash[:notice] = _('Elasticsearch reindexing triggered')
       else
         errors = @elasticsearch_reindexing_task.errors.full_messages.join(', ')
-        flash[:alert] = _("Elasticsearch reindexing was not started: %{errors}") % { errors: errors }
+        flash[:alert] = format(_("Elasticsearch reindexing was not started: %{errors}"), errors: errors)
       end
     end
 
@@ -69,10 +65,18 @@ class Admin::ElasticsearchController < Admin::ApplicationController
   end
 
   def trigger_reindexing_params
-    permitted_params = params.require(:elastic_reindexing_task).permit(:elasticsearch_max_slices_running, :elasticsearch_slice_multiplier)
+    permitted_params = params.require(:elastic_reindexing_task).permit(:elasticsearch_max_slices_running,
+      :elasticsearch_slice_multiplier)
     trigger_reindexing_params = {}
-    trigger_reindexing_params[:max_slices_running] = permitted_params[:elasticsearch_max_slices_running] if permitted_params.has_key?(:elasticsearch_max_slices_running)
-    trigger_reindexing_params[:slice_multiplier] = permitted_params[:elasticsearch_slice_multiplier] if permitted_params.has_key?(:elasticsearch_slice_multiplier)
+    if permitted_params.has_key?(:elasticsearch_max_slices_running)
+      trigger_reindexing_params[:max_slices_running] =
+        permitted_params[:elasticsearch_max_slices_running]
+    end
+
+    if permitted_params.has_key?(:elasticsearch_slice_multiplier)
+      trigger_reindexing_params[:slice_multiplier] =
+        permitted_params[:elasticsearch_slice_multiplier]
+    end
 
     trigger_reindexing_params
   end
