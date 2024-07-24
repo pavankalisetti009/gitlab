@@ -27,7 +27,7 @@ module ExternalStatusChecks
     end
 
     def resource_params
-      params.slice(:name, :external_url, :protected_branch_ids)
+      params.slice(:name, :shared_secret, :external_url, :protected_branch_ids)
     end
 
     def external_status_check

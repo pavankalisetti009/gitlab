@@ -8,7 +8,7 @@ RSpec.describe ExternalStatusChecks::UpdateService, feature_category: :groups_an
   let_it_be(:protected_branch) { create(:protected_branch, project: project) }
 
   let(:current_user) { project.first_owner }
-  let(:params) { { id: project.id, check_id: check.id, external_url: 'http://newvalue.com', name: 'new name', protected_branch_ids: [protected_branch.id] } }
+  let(:params) { { id: project.id, check_id: check.id, external_url: 'http://newvalue.com', name: 'new name', protected_branch_ids: [protected_branch.id], shared_secret: 'shared_secret' } }
 
   subject(:execute) { described_class.new(container: project, current_user: current_user, params: params).execute }
 
@@ -21,6 +21,7 @@ RSpec.describe ExternalStatusChecks::UpdateService, feature_category: :groups_an
       expect(check.external_url).to eq('http://newvalue.com')
       expect(check.name).to eq('new name')
       expect(check.protected_branches).to contain_exactly(protected_branch)
+      expect(check.shared_secret).to eq('shared_secret')
     end
 
     it 'is successful' do

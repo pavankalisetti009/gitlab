@@ -70,6 +70,7 @@ module API
               desc: 'ID of an external status check',
               documentation: { example: 1 }
             optional :name, type: String, desc: 'Display name of external status check', documentation: { example: 'QA' }
+            optional :shared_secret, type: String, desc: 'HMAC shared secret', documentation: { example: 'hmac-sha256' }
             optional :external_url,
               type: String,
               desc: 'URL of external status check resource',

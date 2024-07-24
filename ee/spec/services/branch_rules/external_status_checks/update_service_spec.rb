@@ -13,7 +13,8 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
     create(:external_status_check, project: project, protected_branches: [protected_branch])
   end
 
-  let(:params) { { check_id: external_status_check.id, name: 'Updated name', external_url: 'https://external_url_updated.com' } }
+  let(:shared_secret) { 'shared secret' }
+  let(:params) { { check_id: external_status_check.id, name: 'Updated name', external_url: 'https://external_url_updated.com', shared_secret: shared_secret } }
 
   subject(:execute) { described_class.new(branch_rule, user, params).execute }
 
@@ -36,6 +37,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
       external_status_check.reload
       expect(external_status_check.name).to eq('Updated name')
       expect(external_status_check.external_url).to eq('https://external_url_updated.com')
+      expect(external_status_check.shared_secret).to eq(shared_secret)
     end
 
     it 'includes the updated external_status_check record in payload' do
@@ -45,6 +47,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
       expect(external_status_check.project).to eq(project)
       expect(external_status_check.name).to eq('Updated name')
       expect(external_status_check.external_url).to eq('https://external_url_updated.com')
+      expect(external_status_check.shared_secret).to eq(shared_secret)
       expect(external_status_check.protected_branches).to contain_exactly(protected_branch)
     end
   end

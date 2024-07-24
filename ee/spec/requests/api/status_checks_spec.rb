@@ -481,7 +481,7 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
         let_it_be(:protected_branch) { create(:protected_branch, project: project) }
 
         let(:params) do
-          { name: 'New rule', external_url: 'https://gitlab.com/test/example.json', protected_branch_ids: protected_branch.id }
+          { name: 'New rule', external_url: 'https://gitlab.com/test/example.json', protected_branch_ids: protected_branch.id, shared_secret: 'shared_secret' }
         end
 
         subject do
@@ -503,7 +503,7 @@ RSpec.describe API::StatusChecks, feature_category: :security_policy_management 
 
           expect(json_response['id']).not_to be_nil
           expect(json_response['name']).to eq('New rule')
-          expect(json_response['hmac']).to eq(false)
+          expect(json_response['hmac']).to eq(true)
           expect(json_response['external_url']).to eq('https://gitlab.com/test/example.json')
           expect(json_response['protected_branches'].size).to eq(1)
         end
