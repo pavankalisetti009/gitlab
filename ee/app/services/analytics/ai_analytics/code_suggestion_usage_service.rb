@@ -101,7 +101,7 @@ module Analytics
 
       def placeholders
         {
-          traversal_path: "#{namespace.traversal_ids.join('/')}/",
+          traversal_path: namespace.traversal_path,
           from: from.strftime('%Y-%m-%d'),
           to: to.strftime('%Y-%m-%d')
         }

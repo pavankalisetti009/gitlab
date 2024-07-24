@@ -36,26 +36,36 @@ module Gitlab
 
       def execute_batched_request(blobs_batch)
         Thread.new do
-          params = blobs_batch.map do |blob|
-            blob_params = { document: blob.data }
-
+          params = blobs_batch.each_with_object([]) do |blob, all|
             # GitGuardian limits filename field to 256 characters.
             # That is why we only pass file name, which is sufficient for Git Guardian to perform its checks.
             # See: https://api.gitguardian.com/docs#operation/multiple_scan
             if blob.path.present?
               filename = File.basename(blob.path)
               limited_filename = limit_filename(filename)
-
-              blob_params[:filename] = limited_filename
             end
 
-            blob_params
+            unless can_be_jsonified?(blob.data)
+              Gitlab::AppJsonLogger.warn(class: self.class.name,
+                message: "Not processing data with filename '#{limited_filename}' as it cannot be JSONified")
+              next
+            end
+
+            blob_params = { document: blob.data }
+            blob_params[:filename] = limited_filename if limited_filename
+
+            all << blob_params
           end
 
-          response = perform_request(params)
-          policy_breaks = process_response(response, blobs_batch)
+          if params.empty?
+            Gitlab::AppJsonLogger.warn(class: self.class.name, message: "Nothing to process")
+            nil
+          else
+            response = perform_request(params)
+            policy_breaks = process_response(response, blobs_batch)
 
-          policy_breaks.presence
+            policy_breaks.presence
+          end
         end
       end
 
@@ -68,6 +78,13 @@ module Gitlab
         # in a First-In-First-Out to keep the file extension
         # which is necessary to some GitGuardian policies checks
         filename[over_limit..filename_size]
+      end
+
+      def can_be_jsonified?(data)
+        data.to_json
+        true
+      rescue JSON::GeneratorError
+        false
       end
 
       def perform_request(params)
