@@ -123,7 +123,7 @@ module BillingPlansHelper
     {
       track_action: 'click_button',
       track_label: 'start_trial',
-      testid: 'start-your-free-trial'
+      testid: 'start-your-free-trial-button'
     }
   end
 

@@ -53,7 +53,7 @@ module QA
 
             Page::Group::Menu.perform(&:go_to_billing)
 
-            Gitlab::Page::Group::Settings::Billing.perform do |billing|
+            QA::EE::Page::Group::Settings::Billing.perform do |billing|
               expect do
                 billing.billing_plan_header
               end.to eventually_include("#{group_for_trial.path} is currently using the Ultimate SaaS Trial Plan")
@@ -70,7 +70,7 @@ module QA
 
           it 'registers for a new trial',
             testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/349163' do
-            Gitlab::Page::Group::Settings::Billing.perform(&:start_your_free_trial)
+            QA::EE::Page::Group::Settings::Billing.perform(&:click_start_your_free_trial)
             EE::Flow::Trial.register_for_trial
 
             Page::Group::Show.perform do |group|
@@ -79,7 +79,7 @@ module QA
 
             Page::Group::Menu.perform(&:go_to_billing)
 
-            Gitlab::Page::Group::Settings::Billing.perform do |billing|
+            QA::EE::Page::Group::Settings::Billing.perform do |billing|
               expect do
                 billing.billing_plan_header
               end.to eventually_include("#{group_for_trial.path} is currently using the Ultimate SaaS Trial Plan")
