@@ -110,9 +110,7 @@ describe('DastProfilesConfigurator', () => {
       const link = findSectionLayout().findComponent(GlLink);
 
       expect(link.exists()).toBe(true);
-      expect(link.attributes('href')).toBe(
-        '/help/user/application_security/dast/index#on-demand-scans',
-      );
+      expect(link.attributes('href')).toBe('/help/user/application_security/dast/on-demand_scan');
     });
 
     it('shows loader in loading state', () => {
