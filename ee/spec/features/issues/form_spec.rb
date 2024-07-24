@@ -88,21 +88,23 @@ RSpec.describe 'New/edit issue', :js, feature_category: :team_planning do
 
       expect(page).to have_link 'Assign to me'
 
-      click_button 'Unassigned'
-      click_link user2.name
+      within_testid('merge-request-assignee') do
+        click_button 'Unassigned'
+        click_link user2.name
 
-      expect(find('input[name="issue[assignee_ids][]"]', visible: false).value).to match(user2.id.to_s)
-      expect(page).to have_button user2.name
+        expect(find('input[name="issue[assignee_ids][]"]', visible: false).value).to match(user2.id.to_s)
+        expect(page).to have_button user2.name
 
-      click_button 'Close'
-      click_link 'Assign to me'
+        click_button 'Close'
+        click_link 'Assign to me'
 
-      assignee_ids = page.all('input[name="issue[assignee_ids][]"]', visible: false)
-      expect(assignee_ids[0].value).to match(user2.id.to_s)
-      expect(assignee_ids[1].value).to match(user.id.to_s)
+        assignee_ids = page.all('input[name="issue[assignee_ids][]"]', visible: false)
+        expect(assignee_ids[0].value).to match(user2.id.to_s)
+        expect(assignee_ids[1].value).to match(user.id.to_s)
 
-      expect(page).to have_button "#{user2.name} + 1 more"
-      expect(page).not_to have_link 'Assign to me'
+        expect(page).to have_button "#{user2.name} + 1 more"
+        expect(page).not_to have_link 'Assign to me'
+      end
 
       click_button 'Select milestone'
       click_button milestone.title
