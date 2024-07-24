@@ -9,10 +9,10 @@ module Security
       def initialize(policy_configuration:, policies:, policy_type:)
         @policy_configuration = policy_configuration
         @policies = policies
-
         @policy_type = case policy_type
                        when :approval_policy, :scan_result_policy then :approval_policy
                        when :scan_execution_policy then :scan_execution_policy
+                       when :pipeline_execution_policy then :pipeline_execution_policy
                        else raise ArgumentError, "unrecognized policy_type"
                        end
       end
@@ -97,6 +97,7 @@ module Security
         case policy_type
         when :approval_policy then Security::Policy.type_approval_policy
         when :scan_execution_policy then Security::Policy.type_scan_execution_policy
+        when :pipeline_execution_policy then Security::Policy.type_pipeline_execution_policy
         end
       end
     end

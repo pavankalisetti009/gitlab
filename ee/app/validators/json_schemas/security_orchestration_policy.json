@@ -92,53 +92,7 @@
             }
           },
           "policy_scope": {
-            "type": "object",
-            "properties": {
-              "compliance_frameworks": {
-                "description": "Specifies for which compliance frameworks this policy should be applied.",
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              },
-              "projects": {
-                "type": "object",
-                "description": "Specifies to which projects this policy should be applied.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/$defs/policy_scope"
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
@@ -214,85 +168,7 @@
             ]
           },
           "policy_scope": {
-            "type": "object",
-            "properties": {
-              "compliance_frameworks": {
-                "description": "Specifies for which compliance frameworks this policy should be applied to.",
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              },
-              "projects": {
-                "type": "object",
-                "description": "Specifies for which projects this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "groups": {
-                "type": "object",
-                "description": "Specifies for which groups this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/$defs/policy_scope"
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
@@ -326,85 +202,7 @@
             "type": "string"
           },
           "policy_scope": {
-            "type": "object",
-            "properties": {
-              "compliance_frameworks": {
-                "description": "Specifies for which compliance frameworks this policy should be applied to.",
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              },
-              "projects": {
-                "type": "object",
-                "description": "Specifies for which projects this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "groups": {
-                "type": "object",
-                "description": "Specifies for which groups this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/$defs/policy_scope"
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
@@ -776,85 +574,7 @@
             }
           },
           "policy_scope": {
-            "type": "object",
-            "properties": {
-              "compliance_frameworks": {
-                "description": "Specifies for which compliance frameworks this policy should be applied to.",
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "integer"
-                    }
-                  }
-                }
-              },
-              "projects": {
-                "type": "object",
-                "description": "Specifies for which projects this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies projects where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the project."
-                        }
-                      }
-                    }
-                  }
-                }
-              },
-              "groups": {
-                "type": "object",
-                "description": "Specifies for which groups this policy should be applied to.",
-                "properties": {
-                  "including": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  },
-                  "excluding": {
-                    "type": "array",
-                    "description": "Specifies groups where this policy should not be applied to.",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer",
-                          "description": "Specifies the ID of the group."
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            "$ref": "#/$defs/policy_scope"
           },
           "rules": {
             "description": "Specifies conditions when a this policy should be applied.",
@@ -1316,6 +1036,87 @@
           }
         },
         "additionalProperties": false
+      }
+    },
+    "policy_scope": {
+      "type": "object",
+      "properties": {
+        "compliance_frameworks": {
+          "description": "Specifies for which compliance frameworks this policy should be applied to.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "projects": {
+          "type": "object",
+          "description": "Specifies for which projects this policy should be applied to.",
+          "properties": {
+            "including": {
+              "type": "array",
+              "description": "Specifies projects where this policy should be applied to.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "Specifies the ID of the project."
+                  }
+                }
+              }
+            },
+            "excluding": {
+              "type": "array",
+              "description": "Specifies projects where this policy should not be applied to.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "Specifies the ID of the project."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "groups": {
+          "type": "object",
+          "description": "Specifies for which groups this policy should be applied to.",
+          "properties": {
+            "including": {
+              "type": "array",
+              "description": "Specifies groups where this policy should be applied to.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "Specifies the ID of the group."
+                  }
+                }
+              }
+            },
+            "excluding": {
+              "type": "array",
+              "description": "Specifies groups where this policy should not be applied to.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "description": "Specifies the ID of the group."
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }

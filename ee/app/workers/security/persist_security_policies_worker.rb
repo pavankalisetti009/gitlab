@@ -16,16 +16,16 @@ module Security
 
       configuration.invalidate_policy_yaml_cache
 
-      Security::SecurityOrchestrationPolicies::PersistPolicyService
-        .new(policy_configuration: configuration,
-          policies: configuration.scan_result_policies,
-          policy_type: :approval_policy)
-        .execute
+      persist_policy(configuration, configuration.scan_result_policies, :approval_policy)
+      persist_policy(configuration, configuration.scan_execution_policy, :scan_execution_policy)
+      persist_policy(configuration, configuration.pipeline_execution_policy, :pipeline_execution_policy)
+    end
 
+    private
+
+    def persist_policy(configuration, policies, policy_type)
       Security::SecurityOrchestrationPolicies::PersistPolicyService
-        .new(policy_configuration: configuration,
-          policies: configuration.scan_execution_policy,
-          policy_type: :scan_execution_policy)
+        .new(policy_configuration: configuration, policies: policies, policy_type: policy_type)
         .execute
     end
   end
