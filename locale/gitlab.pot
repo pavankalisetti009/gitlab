@@ -29972,6 +29972,9 @@ msgstr ""
 msgid "Jobs|Raw text search is not currently supported for the jobs filtered search feature. Please use the available search tokens."
 msgstr ""
 
+msgid "Jobs|Search or filter jobs..."
+msgstr ""
+
 msgid "Jobs|Stage"
 msgstr ""
 
