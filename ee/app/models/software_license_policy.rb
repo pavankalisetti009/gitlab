@@ -18,6 +18,8 @@ class SoftwareLicensePolicy < ApplicationRecord
     foreign_key: 'scan_result_policy_id',
     optional: true
 
+  belongs_to :approval_policy_rule, class_name: 'Security::ApprovalPolicyRule', optional: true
+
   attr_readonly :software_license, :custom_software_license
 
   enum classification: {
