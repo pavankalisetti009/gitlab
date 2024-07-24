@@ -189,5 +189,19 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
         it_behaves_like 'creates scan jobs', pipeline_scan_job_templates: %w[Jobs/Secret-Detection], variables: { 'secret-detection-0': { 'SECRET_DETECTION_HISTORIC_SCAN' => 'false', 'SECRET_DETECTION_EXCLUDED_PATHS' => '' } }
       end
     end
+
+    describe 'metrics' do
+      let(:actions) { [{ scan: 'secret_detection' }, { scan: 'container_scanning' }] }
+      let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
+      let(:labels) { { project_id: project.id, action_count: actions.count } }
+
+      specify do
+        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
+
+        expect(hist).to receive(:observe).with(labels, kind_of(Float)).and_call_original
+
+        subject
+      end
+    end
   end
 end

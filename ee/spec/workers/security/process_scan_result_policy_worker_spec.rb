@@ -60,24 +60,15 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
     subject(:worker) { described_class.new }
 
     describe 'metrics' do
-      specify do
-        expect(Gitlab::Metrics).to receive(:histogram).with(
-          :gitlab_security_policies_scan_result_process_duration_seconds,
-          'The amount of time to process scan result policies',
-          {},
-          described_class::HISTOGRAM_BUCKETS
-        ).and_call_original
-
-        worker.perform(configuration.project_id, configuration.id)
-      end
+      let(:histograms) { Security::SecurityOrchestrationPolicies::ObserveHistogramsService::HISTOGRAMS }
+      let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
+      let(:labels) { { project_id: configuration.project_id, configuration_id: configuration.id } }
 
       specify do
-        histogram = instance_double('Prometheus::Client::Histogram')
-        expect(histogram).to receive(:observe).with(
-          { project_id: configuration.project_id,
-            configuration_id: configuration.id }, an_instance_of(Float))
+        hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
 
-        allow(worker).to receive(:histogram).and_return(histogram)
+        expect(hist).to receive(:observe).with(labels, kind_of(Float)).and_call_original
+
         worker.perform(configuration.project_id, configuration.id)
       end
     end
