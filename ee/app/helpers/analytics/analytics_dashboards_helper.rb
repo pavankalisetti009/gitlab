@@ -155,6 +155,7 @@ module Analytics
 
     def project_level_analytics_provider_settings_json(namespace)
       return unless project?(namespace)
+      return unless can_configure_project_settings?(namespace)
 
       {
         product_analytics_configurator_connection_string:

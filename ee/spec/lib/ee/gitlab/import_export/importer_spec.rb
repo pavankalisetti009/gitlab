@@ -7,7 +7,7 @@ RSpec.describe Gitlab::ImportExport::Importer, feature_category: :importers do
   let(:test_path) { "#{Dir.tmpdir}/importer_spec" }
   let(:shared) { project.import_export_shared }
   let(:import_file) { fixture_file_upload('spec/features/projects/import_export/test_project_export.tar.gz') }
-  let_it_be(:project) { create(:project) }
+  let(:project) { create(:project, creator: user) }
 
   subject(:importer) { described_class.new(project) }
 
@@ -19,7 +19,7 @@ RSpec.describe Gitlab::ImportExport::Importer, feature_category: :importers do
     stub_uploads_object_storage(FileUploader)
 
     FileUtils.mkdir_p(shared.export_path)
-    ImportExportUpload.create!(project: project, import_file: import_file)
+    ImportExportUpload.create!(project: project, import_file: import_file, user: user)
     allow(FileUtils).to receive(:rm_rf).and_call_original
   end
 

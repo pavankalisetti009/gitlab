@@ -23,8 +23,8 @@ RSpec.describe EE::Gitlab::ImportExport::AfterExportStrategies::CustomTemplateEx
       allow(repository_import_worker).to receive(:perform)
     end
 
-    let!(:project_template) { create(:project, :repository, :with_export) }
-    let(:project) { create(:project, :import_scheduled, import_type: 'gitlab_custom_project_template') }
+    let!(:project_template) { create(:project, :repository, :with_export, creator: user) }
+    let(:project) { create(:project, :import_scheduled, creator: user, import_type: 'gitlab_custom_project_template') }
     let(:user) { build(:user) }
     let(:repository_import_worker) { RepositoryImportWorker.new }
 
@@ -35,7 +35,7 @@ RSpec.describe EE::Gitlab::ImportExport::AfterExportStrategies::CustomTemplateEx
 
       subject.execute(user, project_template)
 
-      expect(project.reload.import_export_upload.import_file.file).not_to be_nil
+      expect(project.reload.import_export_upload_by_user(user).import_file.file).not_to be_nil
     end
 
     it 'imports repository' do
@@ -47,13 +47,13 @@ RSpec.describe EE::Gitlab::ImportExport::AfterExportStrategies::CustomTemplateEx
     end
 
     it 'removes the exported project file after the import' do
-      expect(project_template).to receive(:remove_exports)
+      expect(project_template).to receive(:remove_export_for_user).with(user)
 
       subject.execute(user, project_template)
     end
 
     describe 'export_file' do
-      let(:project_template) { create(:project, :with_export) }
+      let(:project_template) { create(:project, :with_export, creator: user) }
 
       before do
         allow(subject).to receive(:project).and_return(project_template)

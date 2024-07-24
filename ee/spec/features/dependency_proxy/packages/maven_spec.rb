@@ -56,6 +56,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
       expect(last_package_file.file_name).to eq('foo.bar-1.2.3.pom')
       expect(response.code).to eq(200)
       expect(response.body).to eq(remote_file_content)
+      expect(response.headers['Content-Security-Policy']).to eq("default-src 'none'")
     end
   end
 
@@ -71,6 +72,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
         .and not_change { ::Packages::PackageFile.count }
       expect(response.code).to eq(200)
       expect(response.body).to eq(remote_file_content)
+      expect(response.headers['Content-Security-Policy']).to eq("default-src 'none'")
     end
   end
 
@@ -84,6 +86,7 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
           .and not_change { ::Packages::PackageFile.pending_destruction.count }
         expect(response.code).to eq(200)
         expect(response.body).to eq(remote_file_content)
+        expect(response.headers['Content-Security-Policy']).to eq("default-src 'none'")
       end
     end
   end
