@@ -30,18 +30,29 @@ FactoryBot.define do
     type { Security::Policy.types[:approval_policy] }
     enabled { true }
     scope { {} }
-    approval_settings { {} }
+    content { {} }
     security_policy_management_project_id do
       security_orchestration_policy_configuration.security_policy_management_project_id
     end
     require_approval
 
     trait :require_approval do
-      actions { [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] }
+      content { { actions: [{ type: 'require_approval', approvals_required: 1, user_approvers: %w[owner] }] } }
     end
 
     trait :scan_execution_policy do
       type { Security::Policy.types[:scan_execution_policy] }
+      content { { actions: [{ scan: 'secret_detection' }] } }
+    end
+
+    trait :pipeline_execution_policy do
+      type { Security::Policy.types[:pipeline_execution_policy] }
+      content do
+        {
+          content: { include: [{ project: 'compliance-project', file: "compliance-pipeline.yml" }] },
+          pipeline_config_strategy: 'inject_ci'
+        }
+      end
     end
   end
 

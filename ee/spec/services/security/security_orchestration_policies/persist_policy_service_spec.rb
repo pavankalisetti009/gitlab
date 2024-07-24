@@ -126,8 +126,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   description: scan_finding_policy[:description],
                   checksum: Security::Policy.checksum(scan_finding_policy),
                   enabled: true,
-                  actions: scan_finding_policy[:actions].map(&:stringify_keys),
-                  approval_settings: scan_finding_policy[:approval_settings].stringify_keys,
+                  content: scan_finding_policy.slice(:actions, :approval_settings,
+                    :fallback_behavior).deep_stringify_keys,
                   scope: scan_finding_policy[:policy_scope].deep_stringify_keys
                 },
                 {
@@ -138,8 +138,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   description: license_finding_policy[:description],
                   checksum: Security::Policy.checksum(license_finding_policy),
                   enabled: true,
-                  actions: license_finding_policy[:actions].map(&:stringify_keys),
-                  approval_settings: license_finding_policy[:approval_settings].stringify_keys,
+                  content: license_finding_policy.slice(:actions, :approval_settings,
+                    :fallback_behavior).deep_stringify_keys,
                   scope: {}
                 },
                 {
@@ -150,8 +150,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   description: any_merge_request_policy[:description],
                   checksum: Security::Policy.checksum(any_merge_request_policy),
                   enabled: true,
-                  actions: any_merge_request_policy[:actions].map(&:stringify_keys),
-                  approval_settings: {},
+                  content: any_merge_request_policy.slice(:actions, :approval_settings,
+                    :fallback_behavior).deep_stringify_keys,
                   scope: any_merge_request_policy[:policy_scope].deep_stringify_keys
                 }
               ]
@@ -396,7 +396,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(pipeline_policy),
                   enabled: true,
                   scope: pipeline_policy[:policy_scope].deep_stringify_keys,
-                  actions: pipeline_policy[:actions].map(&:stringify_keys)
+                  content: { actions: pipeline_policy[:actions] }.deep_stringify_keys
                 },
                 {
                   security_orchestration_policy_configuration_id: policy_configuration.id,
@@ -407,7 +407,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                   checksum: Security::Policy.checksum(schedule_policy),
                   enabled: true,
                   scope: schedule_policy[:policy_scope].deep_stringify_keys,
-                  actions: schedule_policy[:actions].map(&:stringify_keys)
+                  content: { actions: schedule_policy[:actions] }.deep_stringify_keys
                 }
               ]
             end
@@ -425,6 +425,63 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
                 rule_index: 0,
                 content: pipeline_policy[:rules].first.except(:type).stringify_keys
               }]
+            end
+          end
+        end
+      end
+    end
+  end
+
+  describe "pipeline execution policies" do
+    let(:policy_type) { :pipeline_execution_policy }
+
+    let(:pipeline_execution_policy) do
+      build(:pipeline_execution_policy, :with_policy_scope)
+    end
+
+    let(:policies) do
+      [pipeline_execution_policy]
+    end
+
+    context 'without pre-existing policies' do
+      include_examples 'succeeds'
+
+      it 'creates policies' do
+        expect { persist }.to change {
+          policy_configuration.security_policies.reload.type_pipeline_execution_policy.count
+        }.by(1)
+      end
+
+      context 'on exception' do
+        let(:msg) { "foobar" }
+
+        before do
+          allow(ApplicationRecord).to receive(:transaction).and_raise(StandardError, msg)
+        end
+
+        it 'errors' do
+          expect(persist).to include(status: :error, message: msg)
+        end
+      end
+
+      describe 'persisted attributes' do
+        describe 'policies' do
+          include_examples 'persists attributes' do
+            let(:relation) { Security::Policy.type_pipeline_execution_policy.order(policy_index: :asc) }
+            let(:expected_attributes) do
+              [
+                {
+                  security_orchestration_policy_configuration_id: policy_configuration.id,
+                  policy_index: 0,
+                  name: pipeline_execution_policy[:name],
+                  type: 'pipeline_execution_policy',
+                  description: pipeline_execution_policy[:description],
+                  checksum: Security::Policy.checksum(pipeline_execution_policy),
+                  enabled: true,
+                  scope: pipeline_execution_policy[:policy_scope].deep_stringify_keys,
+                  content: pipeline_execution_policy.slice(:content, :pipeline_config_strategy).deep_stringify_keys
+                }
+              ]
             end
           end
         end
