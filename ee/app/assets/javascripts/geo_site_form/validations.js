@@ -1,4 +1,4 @@
-import { isSafeURL } from '~/lib/utils/url_utility';
+import { isValidURL } from '~/lib/utils/url_utility';
 import { sprintf, s__ } from '~/locale';
 
 const i18n = {
@@ -25,7 +25,7 @@ export const validateUrl = (data) => {
   if (!data) {
     return i18n.urlBlankError;
   }
-  if (!isSafeURL(data)) {
+  if (!isValidURL(data)) {
     return i18n.urlFormatError;
   }
 

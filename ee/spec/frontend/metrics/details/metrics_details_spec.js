@@ -76,7 +76,7 @@ describe('MetricsDetails', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   beforeEach(() => {
-    jest.spyOn(urlUtility, 'isSafeURL').mockReturnValue(true);
+    jest.spyOn(urlUtility, 'isValidURL').mockReturnValue(true);
 
     ingestedAtTimeAgo.mockReturnValue('3 days ago');
 
