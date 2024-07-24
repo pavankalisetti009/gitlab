@@ -37,7 +37,7 @@ class DastScannerProfile < ApplicationRecord
       next unless dast_site_profile&.api?
 
       if active?
-        variables.append(key: 'DAST_API_PROFILE', value: 'Quick-Active')
+        variables.append(key: 'DAST_API_PROFILE', value: 'Active-Quick')
       else
         variables.append(key: 'DAST_API_PROFILE', value: 'Quick')
       end
