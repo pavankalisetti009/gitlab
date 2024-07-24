@@ -164,18 +164,6 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
     end
   end
 
-  describe '#job_artifacts_synced_count' do
-    it 'counts synced job artifacts' do
-      # These should be ignored
-      create(:geo_upload_registry)
-      create(:geo_job_artifact_registry, :failed)
-
-      create(:geo_job_artifact_registry, :synced)
-
-      expect(subject.job_artifacts_synced_count).to eq(1)
-    end
-  end
-
   describe '#replication_slots_used_count' do
     it 'returns the right number of used replication slots' do
       stub_current_geo_node(primary)
@@ -463,23 +451,73 @@ RSpec.describe GeoNodeStatus, :geo, feature_category: :geo_replication do
           describe '#<replicable_name>_count' do
             let(:replicable_count_method) { "#{replicable_name}_count" }
 
-            context 'when there are replicables' do
+            context 'when replication is enabled' do
               before do
-                create_list(model_factory, 2)
+                allow(replicator).to receive(:replication_enabled?).and_return(true)
               end
 
-              it 'returns the number of available replicables on primary' do
-                expect(subject.send(replicable_count_method)).to eq(2)
+              context 'when there are replicables' do
+                before do
+                  create_list(model_factory, 2)
+                end
+
+                it 'returns the number of available replicables on primary' do
+                  expect(subject.send(replicable_count_method)).to eq(2)
+                end
+              end
+
+              context 'when there are no replicables' do
+                before do
+                  Project.delete_all
+                end
+
+                it 'returns 0' do
+                  expect(subject.send(replicable_count_method)).to eq(0)
+                end
               end
             end
 
-            context 'when there are no replicables' do
+            context 'when replication is disabled' do
               before do
-                Project.delete_all
+                allow(replicator).to receive(:replication_enabled?).and_return(false)
               end
 
-              it 'returns 0' do
-                expect(subject.send(replicable_count_method)).to eq(0)
+              context 'and primary checksumming is enabled' do
+                before do
+                  allow(replicator).to receive(:verification_enabled?).and_return(true)
+                end
+
+                context 'when there are replicables' do
+                  before do
+                    create_list(model_factory, 2)
+                  end
+
+                  it 'returns the number of available replicables on primary' do
+                    expect(subject.send(replicable_count_method)).to eq(2)
+                  end
+                end
+
+                context 'when there are no replicables' do
+                  before do
+                    Project.delete_all
+                  end
+
+                  it 'returns 0' do
+                    expect(subject.send(replicable_count_method)).to eq(0)
+                  end
+                end
+              end
+
+              context 'and primary checksumming is disabled' do
+                before do
+                  allow(replicator).to receive(:verification_enabled?).and_return(false)
+
+                  create_list(model_factory, 1)
+                end
+
+                it 'returns nil' do
+                  expect(subject.send(replicable_count_method)).to be_nil
+                end
               end
             end
           end
