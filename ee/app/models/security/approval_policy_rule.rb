@@ -10,6 +10,13 @@ module Security
 
     belongs_to :security_policy, class_name: 'Security::Policy', inverse_of: :approval_policy_rules
 
+    has_many :approval_policy_rule_project_links, class_name: 'Security::ApprovalPolicyRuleProjectLink'
+    has_many :projects, through: :approval_policy_rule_project_links
+    has_many :software_license_policies
+    has_one :approval_project_rule
+    has_many :approval_merge_request_rules
+    has_many :violations, class_name: 'Security::ScanResultPolicyViolation'
+
     validates :typed_content, json_schema: { filename: "approval_policy_rule_content" }
   end
 end

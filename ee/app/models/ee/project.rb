@@ -139,6 +139,16 @@ module EE
         foreign_key: 'project_id',
         inverse_of: :project
 
+      has_many :security_policy_project_links, class_name: 'Security::PolicyProjectLink', inverse_of: :project
+      has_many :security_policies, class_name: 'Security::Policy', through: :security_policy_project_links
+
+      has_many :approval_policy_rule_project_links,
+        class_name: 'Security::ApprovalPolicyRuleProjectLink',
+        inverse_of: :project
+      has_many :approval_policy_rules,
+        class_name: 'Security::ApprovalPolicyRule',
+        through: :approval_policy_rule_project_links
+
       has_many :project_aliases
 
       has_many :upstream_project_subscriptions, class_name: 'Ci::Subscriptions::Project', foreign_key: :downstream_project_id, inverse_of: :downstream_project
