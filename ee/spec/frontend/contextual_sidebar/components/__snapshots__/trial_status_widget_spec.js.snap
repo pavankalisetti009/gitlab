@@ -1,9 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TrialStatusWidget component without the optional containerId prop matches the snapshot for namespace in active trial 1`] = `
+exports[`TrialStatusWidget component rendered content matches the snapshot for namespace in active trial 1`] = `
 <div
   class="gl-align-items-stretch gl-display-flex gl-flex-direction-column gl-w-full"
   data-testid="trial-widget-menu"
+  id="reference-0"
 >
   <div>
     <div
@@ -59,10 +60,11 @@ exports[`TrialStatusWidget component without the optional containerId prop match
 </div>
 `;
 
-exports[`TrialStatusWidget component without the optional containerId prop matches the snapshot for namespace not in active trial 1`] = `
+exports[`TrialStatusWidget component rendered content matches the snapshot for namespace not in active trial 1`] = `
 <div
   class="gl-align-items-stretch gl-display-flex gl-flex-direction-column gl-w-full"
   data-testid="trial-widget-menu"
+  id="reference-0"
 >
   <div
     class="gl-display-flex gl-gap-4 gl-px-2 gl-w-full"

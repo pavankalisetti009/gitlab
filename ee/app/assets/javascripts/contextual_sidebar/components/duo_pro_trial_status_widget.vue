@@ -11,6 +11,7 @@ import {
   DUO_PRO_TRIAL_EXPIRED_WIDGET_BODY,
   DUO_PRO_TRIAL_LEARN_ABOUT_BUTTON_TITLE,
   DUO_PRO_TRIAL_WIDGET_DAYS_TEXT,
+  WIDGET_CONTAINER_ID,
 } from './constants';
 
 const trackingMixin = Tracking.mixin();
@@ -23,7 +24,6 @@ export default {
   },
   mixins: [trackingMixin],
   inject: {
-    containerId: { default: null },
     trialDaysUsed: {},
     trialDuration: {},
     percentageComplete: {},
@@ -36,6 +36,7 @@ export default {
   widgetBodyExpiredTrial: DUO_PRO_TRIAL_EXPIRED_WIDGET_BODY,
   learnAboutButtonTitle: DUO_PRO_TRIAL_LEARN_ABOUT_BUTTON_TITLE,
   gitlabLogo: GITLAB_LOGO_URL,
+  containerId: WIDGET_CONTAINER_ID,
   computed: {
     isTrialActive() {
       return this.percentageComplete <= 100;
@@ -75,7 +76,7 @@ export default {
 
 <template>
   <div
-    :id="containerId"
+    :id="$options.containerId"
     :class="widgetClass"
     :data-group-id="groupId"
     :data-feature-id="featureId"

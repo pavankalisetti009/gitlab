@@ -15,7 +15,6 @@ RSpec.describe GitlabSubscriptions::Trials::StatusWidgetPresenter, :saas, featur
         end
 
         trial_status_widget_data_attrs = {
-          container_id: 'trial-status-sidebar-widget',
           plan_name: 'Ultimate Trial',
           plans_href:
             ::Gitlab::Routing.url_helpers.group_billings_path(group),

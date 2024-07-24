@@ -26,7 +26,6 @@ module GitlabSubscriptions
 
       def widget_data_attributes
         {
-          container_id: 'duo-pro-trial-status-sidebar-widget',
           widget_url: group_add_ons_discover_duo_pro_path(namespace),
           trial_days_used: trial_status.days_used,
           trial_duration: trial_status.duration,

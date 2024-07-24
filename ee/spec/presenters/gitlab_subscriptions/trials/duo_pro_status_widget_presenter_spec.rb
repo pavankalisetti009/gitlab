@@ -27,7 +27,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
         add_on_purchase.expires_on = 60.days.from_now
 
         duo_pro_trial_status_widget_data_attrs = {
-          container_id: 'duo-pro-trial-status-sidebar-widget',
           widget_url:
             ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group),
           trial_days_used: 1,

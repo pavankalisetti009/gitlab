@@ -18,6 +18,7 @@ import {
   DUO_PRO_TRIAL_POPOVER_TRACKING_CATEGORY,
   DUO_PRO_TRIAL_EXPIRED_POPOVER_TRACKING_CATEGORY,
   POPOVER_HIDE_DELAY,
+  WIDGET_CONTAINER_ID,
 } from './constants';
 
 export default {
@@ -33,15 +34,7 @@ export default {
       type: Number,
       default: null,
     },
-    containerId: {
-      type: String,
-      default: '',
-    },
     purchaseNowUrl: {
-      type: String,
-      default: '',
-    },
-    targetId: {
       type: String,
       default: '',
     },
@@ -62,6 +55,7 @@ export default {
   popoverContentExpiredTrial: DUO_PRO_TRIAL_EXPIRED_POPOVER_CONTENT,
   purchaseNowTitle: DUO_PRO_TRIAL_POPOVER_PURCHASE_TITLE,
   hideDelay: { hide: POPOVER_HIDE_DELAY },
+  containerId: WIDGET_CONTAINER_ID,
   popoverClasses: ['gl-p-2'],
   handRaiseLeadAttributes: {
     size: 'small',
@@ -154,8 +148,8 @@ export default {
     ref="popover"
     placement="rightbottom"
     boundary="viewport"
-    :container="containerId"
-    :target="targetId"
+    :container="$options.containerId"
+    :target="$options.containerId"
     :disabled="disabled"
     :delay="$options.hideDelay"
     :css-classes="$options.popoverClasses"
