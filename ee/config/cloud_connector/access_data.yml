@@ -103,3 +103,9 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
       duo_enterprise:
         unit_primitives:
           - summarize_comments
+  observability_all:
+    backend: 'gitlab-observability-backend'
+    bundled_with:
+      observability:
+        unit_primitives:
+          - observability_all

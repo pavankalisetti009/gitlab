@@ -80,6 +80,7 @@ module EE
         mount ::API::Internal::SuggestedReviewers
         mount ::API::Internal::UpcomingReconciliations
         mount ::API::Internal::Ai::XRay::Scan
+        mount ::API::Internal::Observability
 
         mount ::GitlabSubscriptions::API::Internal::API
       end
