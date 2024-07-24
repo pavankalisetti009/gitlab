@@ -73,7 +73,7 @@ export default {
       return this.hasInvalidRules && !this.rule.allowMergeWhenInvalid;
     },
     invalidRulesClasses() {
-      return { 'text-danger': this.isActionRequired, 'text-muted': this.isAutoApproved };
+      return { 'gl-text-danger': this.isActionRequired, 'text-muted': this.isAutoApproved };
     },
   },
   i18n,

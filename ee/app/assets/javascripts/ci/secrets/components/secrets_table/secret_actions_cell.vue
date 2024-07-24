@@ -36,12 +36,12 @@ export default {
     </gl-disclosure-dropdown-item>
     <gl-disclosure-dropdown-item>
       <template #list-item>
-        <span class="text-danger">{{ s__('Secrets|Delete') }}</span>
+        <span class="gl-text-danger">{{ s__('Secrets|Delete') }}</span>
       </template>
     </gl-disclosure-dropdown-item>
     <gl-disclosure-dropdown-item>
       <template #list-item>
-        <span class="text-danger">{{ s__('Secrets|Revoke') }}</span>
+        <span class="gl-text-danger">{{ s__('Secrets|Revoke') }}</span>
       </template>
     </gl-disclosure-dropdown-item>
   </gl-disclosure-dropdown>
