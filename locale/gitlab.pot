@@ -13563,7 +13563,7 @@ msgstr ""
 msgid "ComplianceFrameworks|There can be only one default framework."
 msgstr ""
 
-msgid "ComplianceFrameworks|This project is covered by the rules defined in the compliance framework. Only group owners and maintainers can view details of the compliance framework."
+msgid "ComplianceFrameworks|This project is covered by the rules defined in the compliance framework. Only admins of the parent group can edit the compliance framework."
 msgstr ""
 
 msgid "ComplianceFrameworks|To link this policy and framework,  edit  the policy's scope."
@@ -34175,7 +34175,7 @@ msgstr ""
 msgid "Namespace or project is required"
 msgstr ""
 
-msgid "Namespace reached its allowed limit of %{limit} extra deployments"
+msgid "Namespace reached its allowed limit of %{limit} extra deployments. Learn more: %{docs_link}"
 msgstr ""
 
 msgid "Namespace:"

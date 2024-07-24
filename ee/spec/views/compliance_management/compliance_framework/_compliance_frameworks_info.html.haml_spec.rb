@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'compliance_management/compliance_framework/_compliance_framework_info.html.haml' do
+RSpec.describe 'compliance_management/compliance_framework/_compliance_framework_info.html.haml', feature_category: :compliance_management do
   let(:group) { build_stubbed(:group) }
   let(:framework1) { build_stubbed(:compliance_framework) }
   let(:project) do
@@ -13,7 +13,7 @@ RSpec.describe 'compliance_management/compliance_framework/_compliance_framework
 
   before do
     allow(view).to receive(:show_compliance_frameworks_info?).and_return(true)
-    allow(view).to receive(:can?).with(anything, :maintainer_access, project.root_ancestor).and_return(false)
+    allow(view).to receive(:can?).with(anything, :admin_compliance_framework, project.root_ancestor).and_return(false)
   end
 
   it 'renders compliance framework badges' do
@@ -22,17 +22,17 @@ RSpec.describe 'compliance_management/compliance_framework/_compliance_framework
     expect(rendered).to have_content(framework1.name)
   end
 
-  context 'when user is not a group maintainer' do
+  context 'when user is not a group owner' do
     it 'renders tooltip for badges' do
       render('compliance_management/compliance_framework/compliance_frameworks_info', project: project)
       expect(rendered).to have_css('.has-tooltip')
     end
   end
 
-  context 'when user is a group maintainer' do
+  context 'when user is a group owner' do
     before do
       allow(view).to receive(:show_compliance_frameworks_info?).and_return(true)
-      allow(view).to receive(:can?).with(anything, :maintainer_access, project.root_ancestor).and_return(true)
+      allow(view).to receive(:can?).with(anything, :admin_compliance_framework, project.root_ancestor).and_return(true)
     end
 
     it 'does not render tooltip for badges' do

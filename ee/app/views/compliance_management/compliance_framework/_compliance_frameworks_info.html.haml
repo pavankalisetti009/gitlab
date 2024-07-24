@@ -1,12 +1,12 @@
 - project = local_assigns.fetch(:project)
-- is_maintainer = can?(current_user, :maintainer_access, project.root_ancestor)
-- title = s_('ComplianceFrameworks|This project is covered by the rules defined in the compliance framework. Only group owners and maintainers can view details of the compliance framework.') if !is_maintainer
-- href = compliance_center_path(project) if is_maintainer
+- is_admin = can?(current_user, :admin_compliance_framework, project.root_ancestor)
+- title = s_('ComplianceFrameworks|This project is covered by the rules defined in the compliance framework. Only admins of the parent group can edit the compliance framework.') if !is_admin
+- href = compliance_center_path(project) if is_admin
 
 - if show_compliance_frameworks_info?(@project)
   .project-page-sidebar-block.gl-py-4.gl-border-b.gl-border-gray-50
-    %p.gl-font-bold.gl-text-gray-900.gl-m-0= s_('ComplianceFrameworks|Compliance frameworks applied')
+    %p.gl-font-bold.gl-text-gray-900.gl-mb-2= s_('ComplianceFrameworks|Compliance frameworks applied')
     .gl-mb-4
       - project.compliance_framework_settings.each do |setting|
-        = gl_badge_tag(nil, { href: href, class: ["gl-display-inline-block gl-mr-1 gl-mt-3", ('has-tooltip' if !is_maintainer)], style: "background-color: #{setting.compliance_management_framework.color}; color: #{text_color_for_bg(setting.compliance_management_framework.color)}", data: { container: 'body', testid: 'compliance-frameworks-info' }, title: title }) do
-          = setting.compliance_management_framework.name
+        = gl_badge_tag(nil, { href: href, class: ["gl-inline-block gl-mr-1 gl-mt-2", ('has-tooltip' if !is_admin)], style: "background-color: #{setting.compliance_management_framework.color}; color: #{text_color_for_bg(setting.compliance_management_framework.color)}", data: { container: 'body', testid: 'compliance-frameworks-info' }, title: title }) do
+          = truncate(setting.compliance_management_framework.name, length: 30)

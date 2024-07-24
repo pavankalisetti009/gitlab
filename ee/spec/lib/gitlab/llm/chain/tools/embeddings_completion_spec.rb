@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_category: :duo_chat do
   let_it_be(:user) { create(:user) }
-  let_it_be(:embeddings) { create_list(:vertex_gitlab_documentation, 2) }
+  let_it_be(:embeddings) { build_list(:vertex_gitlab_documentation, 2) }
 
   let(:empty_response_message) do
     "I'm sorry, I couldn't find any documentation to answer your question. Error code: M2000"
@@ -15,7 +15,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:logger) { instance_double('Gitlab::Llm::Logger') }
   let(:instance) { described_class.new(current_user: user, question: question, logger: logger) }
   let(:ai_gateway_request) { ::Gitlab::Llm::Chain::Requests::AiGateway.new(user) }
-  let(:attrs) { embeddings.map(&:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
+  let(:attrs) { embeddings.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
   let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
 
   let(:docs_search_client) { ::Gitlab::Llm::AiGateway::DocsClient.new(user) }

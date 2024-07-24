@@ -115,7 +115,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
       end
 
       include_examples "invalid pages deployment",
-        message: "Namespace reached its allowed limit of 2 extra deployments"
+        message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
     end
 
     context "when overuse is from multiple projects" do
@@ -130,7 +130,7 @@ RSpec.describe Gitlab::Pages::DeploymentValidations, feature_category: :pages do
       end
 
       include_examples "invalid pages deployment",
-        message: "Namespace reached its allowed limit of 2 extra deployments"
+        message: "Namespace reached its allowed limit of 2 extra deployments. Learn more: http://localhost/help/user/project/pages/index.md#limits"
     end
   end
 
