@@ -69,8 +69,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
           },
           allow_failure: true,
           script: ['/analyze'],
-          before_script: [],
-          after_script: [],
           artifacts: { access: 'developer', reports: { dast: 'gl-dast-report.json' } },
           dast_configuration: { site_profile: site_profile.name, scanner_profile: scanner_profile.name },
           rules: [
@@ -85,6 +83,38 @@ RSpec.describe Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConf
       }
 
       expect(pipeline_configuration).to eq(expected_configuration)
+    end
+
+    context 'when scan_settings.ignore_default_before_after_script is set' do
+      let(:scan_settings) { { ignore_default_before_after_script: ignore_default_before_after_script } }
+
+      let(:actions) do
+        [
+          {
+            scan: 'dast',
+            site_profile: site_profile.name,
+            scanner_profile: scanner_profile.name,
+            tags: ['runner-tag'],
+            scan_settings: scan_settings
+          }
+        ]
+      end
+
+      context 'when setting is set to true' do
+        let_it_be(:ignore_default_before_after_script) { true }
+
+        it 'overrides before_script and after_script with empty array' do
+          expect(pipeline_configuration[:'dast-on-demand-0']).to include(before_script: [], after_script: [])
+        end
+      end
+
+      context 'when setting is set to false' do
+        let_it_be(:ignore_default_before_after_script) { false }
+
+        it 'does not override before_script and after_script with empty array' do
+          expect(pipeline_configuration[:'dast-on-demand-0']).not_to include(before_script: [], after_script: [])
+        end
+      end
     end
 
     describe "variable injection and precedence" do
