@@ -128,6 +128,10 @@ export default {
         Sentry.captureException(error);
       },
       skip() {
+        if (this.glFeatures.assignCustomRolesToGroupLinks) {
+          return !this.isVisible;
+        }
+
         return this.isGroupInvite || !this.isVisible;
       },
     },

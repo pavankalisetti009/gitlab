@@ -15,6 +15,13 @@ module EE
 
         private
 
+        override :remove_unallowed_params
+        def remove_unallowed_params
+          group_link_params.delete(:member_role_id) unless can_assign_custom_roles_to_group_links?
+
+          super
+        end
+
         def log_audit_event(group_link)
           changes = group_link.previous_changes.symbolize_keys.except(:updated_at)
           return unless changes.present?
@@ -30,7 +37,8 @@ module EE
             additional_details: {
               changes: [
                 access_change(changes[:group_access]),
-                expiry_change(changes[:expires_at])
+                expiry_change(changes[:expires_at]),
+                member_role_change(changes[:member_role_id])
               ].compact
             }.compact
           }
@@ -56,6 +64,21 @@ module EE
             from: change.first.to_s,
             to: change.last.to_s
           }
+        end
+
+        def member_role_change(change = nil)
+          return if change.blank?
+
+          {
+            change: :member_role,
+            from: change.first.to_s,
+            to: change.last.to_s
+          }
+        end
+
+        def can_assign_custom_roles_to_group_links?
+          group_link.shared_group.custom_roles_enabled? &&
+            ::Feature.enabled?(:assign_custom_roles_to_group_links, current_user)
         end
       end
     end

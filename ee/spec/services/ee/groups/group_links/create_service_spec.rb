@@ -3,19 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: :groups_and_projects do
-  subject { described_class.new(group, shared_with_group, user, opts) }
-
   let_it_be(:shared_with_group) { create(:group, :private) }
-  let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
 
+  let_it_be(:user) { create(:user) }
+
   let(:role) { Gitlab::Access::DEVELOPER }
-  let(:opts) do
-    {
-      shared_group_access: role,
-      expires_at: nil
-    }
-  end
+  let(:opts) { { shared_group_access: role, expires_at: nil } }
+
+  subject(:create_service) { described_class.new(group, shared_with_group, user, opts).execute }
 
   describe 'audit event creation' do
     let(:audit_context) do
@@ -37,19 +33,15 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
     it 'sends an audit event' do
       expect(::Gitlab::Audit::Auditor).to receive(:audit).with(audit_context).once
 
-      subject.execute
+      create_service
     end
   end
 
   context 'when current user has admin_group_member custom permission' do
-    let_it_be(:member, reload: true) { create(:group_member, group: group, user: user) }
-    let_it_be(:member_role, reload: true) do
-      create(:member_role, namespace: group, admin_group_member: true)
-    end
+    let_it_be_with_reload(:member) { create(:group_member, group: group, user: user) }
+    let_it_be_with_reload(:member_role) { create(:member_role, namespace: group, admin_group_member: true) }
 
     shared_examples 'adding members using custom permission' do
-      subject(:share_group) { described_class.new(group, shared_with_group, user, opts).execute }
-
       before do
         shared_with_group.add_guest(user)
 
@@ -69,7 +61,7 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
           let(:role) { current_role }
 
           it 'adds a group link' do
-            expect { share_group }.to change { group.shared_with_group_links.count }.by(1)
+            expect { create_service }.to change { group.shared_with_group_links.count }.by(1)
           end
         end
 
@@ -77,7 +69,7 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
           let(:role) { higher_role }
 
           it 'fails to add the group link' do
-            expect { share_group }.not_to change { group.shared_with_group_links.count }
+            expect { create_service }.not_to change { group.shared_with_group_links.count }
           end
         end
       end
@@ -91,7 +83,7 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
           let(:role) { current_role }
 
           it 'fails to add the group link' do
-            expect { share_group }.not_to change { group.shared_with_group_links.count }
+            expect { create_service }.not_to change { group.shared_with_group_links.count }
           end
         end
       end
@@ -123,6 +115,74 @@ RSpec.describe Groups::GroupLinks::CreateService, '#execute', feature_category: 
       let(:higher_role) { Gitlab::Access::OWNER }
 
       it_behaves_like 'adding members using custom permission'
+    end
+
+    context 'when assigning a member role to group link' do
+      let_it_be(:member_role) { create(:member_role, namespace: group) }
+
+      let(:opts) { { shared_group_access: Gitlab::Access::DEVELOPER, member_role_id: member_role.id } }
+
+      before do
+        group.add_owner(user)
+        shared_with_group.add_guest(user)
+      end
+
+      context 'when custom_roles feature is enabled' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: true)
+          end
+
+          it 'assigns member role to group link' do
+            expect(create_service[:link][:member_role_id]).to eq(member_role.id)
+          end
+
+          context 'when the member role is in a different namespace' do
+            let_it_be(:member_role) { create(:member_role, namespace: create(:group)) }
+
+            it 'returns error' do
+              expect(create_service[:status]).to eq(:error)
+              expect(create_service[:message]).to eq("Group must be in same hierarchy as custom role's namespace")
+            end
+          end
+
+          context 'when the member role is created on the instance-level' do
+            let_it_be(:member_role) { create(:member_role, :instance) }
+
+            before do
+              stub_saas_features(gitlab_com_subscriptions: false)
+            end
+
+            it 'assigns member role to group link' do
+              expect(create_service[:link][:member_role_id]).to eq(member_role.id)
+            end
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: false)
+          end
+
+          it 'does not assign member role to group link' do
+            expect(create_service[:link][:member_role_id]).to be_nil
+          end
+        end
+      end
+
+      context 'when custom_roles feature is disabled' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it 'does not assign member role to group link' do
+          expect(create_service[:link][:member_role_id]).to be_nil
+        end
+      end
     end
   end
 end

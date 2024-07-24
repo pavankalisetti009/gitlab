@@ -194,6 +194,34 @@ describe('EEInviteModalBase', () => {
         expect(groupMemberRolesResponse).toHaveBeenCalledTimes(0);
         expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
       });
+
+      describe('when assignCustomRolesToGroupLinks is true', () => {
+        it('fetches custom roles', async () => {
+          createComponent({
+            props: { isGroupInvite: true },
+            glFeatures: { assignCustomRolesToGroupLinks: true },
+          });
+
+          await waitForPromises();
+
+          expect(groupMemberRolesResponse).toHaveBeenCalledTimes(1);
+          expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
+        });
+      });
+
+      describe('when assignCustomRolesToGroupLinks is false', () => {
+        it('fetches custom roles', async () => {
+          createComponent({
+            props: { isGroupInvite: true },
+            glFeatures: { assignCustomRolesToGroupLinks: false },
+          });
+
+          await waitForPromises();
+
+          expect(groupMemberRolesResponse).toHaveBeenCalledTimes(0);
+          expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
+        });
+      });
     });
   });
 

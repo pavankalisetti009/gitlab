@@ -1904,6 +1904,8 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
   describe "POST /groups/:id/share" do
     let_it_be(:invited_group) { create(:group) }
 
+    subject(:share) { post api("/groups/#{group.id}/share", user), params: params }
+
     context 'when block seat overages is enabled', :saas do
       before_all do
         create(:gitlab_subscription, :premium, namespace: group)
@@ -1914,21 +1916,81 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
         stub_feature_flags(block_seat_overages: true)
       end
 
-      it 'does not allow sharing with a group outside the hierarchy' do
-        post api("/groups/#{group.id}/share", user), params: { group_id: invited_group.id, group_access: Gitlab::Access::DEVELOPER }
+      context 'when the invited group is outside the hierarchy' do
+        let(:params) { { group_id: invited_group.id, group_access: Gitlab::Access::DEVELOPER } }
 
-        expect(response).to have_gitlab_http_status(:not_found)
-        expect(json_response).to eq({ 'message' => 'Not Found' })
-        expect(group.reload.shared_with_groups).to be_empty
+        it 'does not allow sharing' do
+          share
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response).to eq({ 'message' => 'Not Found' })
+          expect(group.reload.shared_with_groups).to be_empty
+        end
       end
 
-      it 'does allow sharing with a group within the hierarchy' do
-        subgroup = create(:group, parent: group)
-        other_subgroup = create(:group, parent: group)
-        post api("/groups/#{subgroup.id}/share", user), params: { group_id: other_subgroup.id, group_access: Gitlab::Access::DEVELOPER }
+      context 'when the invited group is inside the hierarchy' do
+        let_it_be(:group) { create(:group, parent: group) }
+        let_it_be(:other_subgroup) { create(:group, parent: group) }
 
-        expect(response).to have_gitlab_http_status(:created)
-        expect(subgroup.reload.shared_with_groups).to eq([other_subgroup])
+        let(:params) { { group_id: other_subgroup.id, group_access: Gitlab::Access::DEVELOPER } }
+
+        it 'allows sharing' do
+          share
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(group.reload.shared_with_groups).to eq([other_subgroup])
+        end
+      end
+    end
+
+    context 'when assigning a member role' do
+      let_it_be(:member_role) { create(:member_role, :instance) }
+
+      let(:params) { { group_id: invited_group.id, group_access: Gitlab::Access::DEVELOPER, member_role_id: member_role.id } }
+
+      context 'when custom_roles feature is enabled' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: true)
+          end
+
+          it 'assigns member role to group link' do
+            share
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response['shared_with_groups'][0]['member_role_id']).to eq(member_role.id)
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links: false)
+          end
+
+          it 'does not assign member role to group link' do
+            share
+
+            expect(response).to have_gitlab_http_status(:created)
+            expect(json_response['shared_with_groups'][0]['member_role_id']).to be_nil
+          end
+        end
+      end
+
+      context 'when custom_roles feature is disabled' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it 'does not assign member role to group link' do
+          share
+
+          expect(response).to have_gitlab_http_status(:created)
+          expect(json_response['shared_with_groups'][0]['member_role_id']).to be_nil
+        end
       end
     end
   end
