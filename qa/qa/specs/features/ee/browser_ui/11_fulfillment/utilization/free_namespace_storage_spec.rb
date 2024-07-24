@@ -108,24 +108,25 @@ module QA
           'shows correct used up storage for namespace',
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/375059'
         ) do
-          Gitlab::Page::Group::Settings::UsageQuotas.perform do |usage_quota|
-            project.visit!
-            Flow::Pipeline.visit_latest_pipeline
+          project.visit!
+          Flow::Pipeline.visit_latest_pipeline
 
-            Page::Project::Pipeline::Show.perform do |pipeline|
-              pipeline.click_job('container-registry')
-            end
+          Page::Project::Pipeline::Show.perform do |pipeline|
+            pipeline.click_job('container-registry')
+          end
 
-            Page::Project::Job::Show.perform do |job|
-              expect(job).to be_successful(timeout: 800)
-            end
+          Page::Project::Job::Show.perform do |job|
+            expect(job).to be_successful(timeout: 800)
+          end
 
-            free_plan_group.visit!
+          free_plan_group.visit!
 
-            Runtime::Feature.enable(:namespace_storage_limit, group: free_plan_group)
+          Runtime::Feature.enable(:namespace_storage_limit, group: free_plan_group)
 
-            Page::Group::Menu.perform(&:go_to_usage_quotas)
-            usage_quota.storage_tab
+          Page::Group::Menu.perform(&:go_to_usage_quotas)
+
+          EE::Page::Group::Settings::UsageQuotas.perform do |usage_quota|
+            usage_quota.click_storage_tab
 
             aggregate_failures do
               expect(usage_quota.project_repository_size).to match(%r{\d+\.?\d+ [KMG]?i?B})

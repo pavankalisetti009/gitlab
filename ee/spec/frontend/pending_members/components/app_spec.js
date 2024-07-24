@@ -29,7 +29,7 @@ describe('PendingMembersApp', () => {
   let wrapper;
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findPendingMembers = () => wrapper.findAllByTestId('pending-members');
+  const findPendingMembers = () => wrapper.findAllByTestId('pending-members-content');
   const findPagination = () => wrapper.findComponent(GlKeysetPagination);
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findAlert = () => wrapper.findComponent(GlAlert);

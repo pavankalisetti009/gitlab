@@ -292,7 +292,7 @@ export default {
           v-else
           :key="item.id"
           class="gl-p-5 gl-border-0 gl-border-b-1! gl-border-gray-100 gl-border-solid gl-display-flex gl-justify-content-space-between"
-          data-testid="pending-members"
+          data-testid="pending-members-content"
         >
           <gl-avatar-link target="blank" :href="item.webUrl" :alt="item.name">
             <gl-avatar-labeled
@@ -311,7 +311,7 @@ export default {
             v-gl-modal-directive="`approve-confirmation-modal-${item.id}`"
             :loading="item.loading"
             :disabled="item.approved"
-            data-testid="approve-member"
+            data-testid="approve-member-button"
           >
             {{ $options.LABEL_APPROVE }}
           </gl-button>
