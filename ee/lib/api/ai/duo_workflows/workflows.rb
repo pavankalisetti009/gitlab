@@ -54,8 +54,9 @@ module API
               end
               post '/:id/checkpoints' do
                 workflow = find_workflow!(params[:id])
+                checkpoint_params = declared_params(include_missing: false).except(:id)
                 service = ::Ai::DuoWorkflows::CreateCheckpointService.new(project: workflow.project,
-                  workflow: workflow, params: declared_params(include_missing: false))
+                  workflow: workflow, params: checkpoint_params)
                 result = service.execute
 
                 bad_request!(result[:message]) if result[:status] == :error

@@ -66,18 +66,23 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   end
 
   describe 'POST /ai/duo_workflows/workflows/:id/checkpoints' do
-    let(:thread_ts) { Time.current.to_s }
-    let(:parent_ts) { (Time.current - 1.second).to_s }
+    let(:current_time) { Time.current }
+    let(:thread_ts) { current_time.to_s }
+    let(:later_thread_ts) { (current_time + 1.second).to_s }
+    let(:parent_ts) { (current_time - 1.second).to_s }
     let(:checkpoint) { { key: 'value' } }
     let(:metadata) { { key: 'value' } }
     let(:params) { { thread_ts: thread_ts, checkpoint: checkpoint, parent_ts: parent_ts, metadata: metadata } }
     let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/checkpoints" }
 
-    it 'creates a new checkpoint' do
+    it 'allows creating multiple checkpoints for a workflow' do
       expect do
         post api(path, user), params: params
         expect(response).to have_gitlab_http_status(:created)
-      end.to change { workflow.reload.checkpoints.count }.by(1)
+
+        post api(path, user), params: params.merge(thread_ts: later_thread_ts, parent_ts: thread_ts)
+        expect(response).to have_gitlab_http_status(:created)
+      end.to change { workflow.reload.checkpoints.count }.by(2)
 
       expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id)
     end
