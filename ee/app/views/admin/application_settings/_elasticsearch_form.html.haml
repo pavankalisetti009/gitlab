@@ -38,7 +38,7 @@
               - if Gitlab::CurrentSettings.elasticsearch_indexing?
                 = f.gitlab_ui_checkbox_component :elasticsearch_indexing, s_('AdminSettings|Elasticsearch indexing'), checkbox_options: { data: { testid: 'indexing-checkbox' } }
                 = render Pajamas::ButtonComponent.new(variant: :confirm, href: admin_elasticsearch_enqueue_index_path, method: :post) do
-                  = _('Index all projects')
+                  = _('Index the instance')
 
             .form-group
               - first_pending_migration = Elastic::DataMigrationService.pending_migrations.first if elasticsearch_available

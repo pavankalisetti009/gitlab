@@ -9,34 +9,14 @@ RSpec.describe Admin::ElasticsearchController, feature_category: :global_search 
   describe 'POST #enqueue_index' do
     before do
       sign_in(admin)
-      allow(Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
     end
 
     it 'starts indexing' do
-      expect(helper).to(receive(:index_exists?)).and_return(true)
-      expect_next_instance_of(::Elastic::IndexProjectsService) do |service|
-        expect(service).to receive(:execute)
-      end
+      expect(::Search::Elastic::ReindexingService).to receive(:execute)
 
       post :enqueue_index
 
-      expect(controller).to set_flash[:notice].to include('/admin/sidekiq/queues/elastic_commit_indexer')
       expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
-    end
-
-    context 'without an index' do
-      before do
-        allow(helper).to(receive(:index_exists?)).and_return(false)
-      end
-
-      it 'does nothing and returns 404' do
-        expect(::Elastic::IndexProjectsService).not_to receive(:new)
-
-        post :enqueue_index
-
-        expect(controller).to set_flash[:warning].to include('create an index before enabling indexing')
-        expect(response).to redirect_to advanced_search_admin_application_settings_path(anchor: 'js-elasticsearch-settings')
-      end
     end
   end
 
