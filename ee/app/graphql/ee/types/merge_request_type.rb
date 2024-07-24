@@ -43,11 +43,7 @@ module EE
 
         field :suggested_reviewers, ::Types::AppliedMl::SuggestedReviewersType,
           null: true,
-          alpha: { milestone: '15.4' },
-          description: 'Suggested reviewers for merge request. ' \
-            'Returns `null` if `suggested_reviewers` feature flag is disabled. ' \
-            'This flag is disabled by default and only available on GitLab.com ' \
-            'because the feature is experimental and is subject to change without notice.'
+          description: 'Suggested reviewers for merge request.'
 
         field :blocking_merge_requests, ::Types::MergeRequests::BlockingMergeRequestsType,
           null: true,
