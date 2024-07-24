@@ -9,6 +9,7 @@ module Gitlab
       # automatically discovered from the current machine
       class SourceContext
         # Defaults defined in `config/initializers/1_settings.rb`
+        DEFAULT_SHARED_PATH = 'shared'
         DEFAULT_CI_BUILDS_PATH = 'builds/'
         DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts/'
         DEFAULT_SECURE_FILES_PATH = 'ci_secure_files/'
@@ -112,12 +113,9 @@ module Gitlab
         # We use this to determine the storage location when everything else fails
         # @return [Pathname]
         def gitlab_shared_path
-          shared_path = gitlab_config.dig(env, 'shared', 'path')
+          shared_path = gitlab_config.dig(env, 'shared', 'path') || DEFAULT_SHARED_PATH
 
-          return Pathname(shared_path) if shared_path.present?
-
-          raise Gitlab::Backup::Cli::Error,
-            "GitLab configuration file: `gitlab.yml` is missing 'shared.path' configuration"
+          Pathname(shared_path)
         end
 
         # Return a fullpath for a given path

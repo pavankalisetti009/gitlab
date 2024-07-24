@@ -299,11 +299,10 @@ RSpec.describe Gitlab::Backup::Cli::SourceContext do
 
   describe '#gitlab_shared_path' do
     context 'with shared path not configured in gitlab.yml' do
-      it 'raises an error' do
+      it 'returns the default value' do
         FileUtils.touch(fake_gitlab_basepath.join('config/gitlab.yml'))
 
-        expect { context.send(:gitlab_shared_path) }.to raise_error(::Gitlab::Backup::Cli::Error)
-                                                          .with_message(/missing 'shared.path'/)
+        expect(context.send(:gitlab_shared_path)).to eq(Pathname('shared'))
       end
     end
 
