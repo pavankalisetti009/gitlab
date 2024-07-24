@@ -9,6 +9,11 @@ module Gitlab
 
           timestamp_column('vulnerability_state_transitions.created_at')
 
+          # Override sql so that it doesn't use the Vulnerabilities::Read table name
+          def to_sql
+            relation.select("COUNT(*)").to_sql
+          end
+
           # We must override value since we are not able to batch this query due to usage of the count subquery
           def value
             relation.count
