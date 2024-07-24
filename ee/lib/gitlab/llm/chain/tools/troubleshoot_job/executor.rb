@@ -10,6 +10,12 @@ module Gitlab
             include Concerns::AiDependent
             include ::Gitlab::Utils::StrongMemoize
 
+            # We use 1 Charater per 1 Token because we can't copy the tokenizer logic easily
+            # So we go lower the characters per token to compensate for that.
+            # For more context see: https://github.com/javirandor/anthropic-tokenizer and
+            # https://gitlab.com/gitlab-org/gitlab/-/issues/474146
+            APPROX_MAX_INPUT_CHARS = 100_000
+
             NAME = 'TroubleshootJob'
             RESOURCE_NAME = 'Ci::Build'
             HUMAN_NAME = 'Troubleshoot Job'
@@ -102,7 +108,7 @@ module Gitlab
 
             def selected_text_options
               {
-                selected_text: job_log,
+                selected_text: truncated_job_log,
                 language_info: language_info
               }
             end
@@ -114,6 +120,20 @@ module Gitlab
               # 1000 lines, ~100 char per line (can be more), ~4 tokens per character
               # ~25000 tokens
               job.trace.raw(last_lines: 1000)
+            end
+            strong_memoize_attr :job_log
+
+            def truncated_job_log
+              log_size_allowed = APPROX_MAX_INPUT_CHARS - prompt_size_without_log
+              job_log.last(log_size_allowed)
+            end
+
+            def user_prompt
+              PROMPT_TEMPLATE[1][1]
+            end
+
+            def prompt_size_without_log
+              user_prompt.size
             end
 
             def job
