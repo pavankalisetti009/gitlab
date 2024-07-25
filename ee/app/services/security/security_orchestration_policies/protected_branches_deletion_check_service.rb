@@ -34,12 +34,12 @@ module Security
       strong_memoize_attr :rules
 
       def applicable_scan_result_policies
-        policy_scope_service = Security::SecurityOrchestrationPolicies::PolicyScopeService.new(project: project)
+        policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
 
         project
           .all_security_orchestration_policy_configurations
           .flat_map(&:active_scan_result_policies)
-          .select { |policy| policy_scope_service.policy_applicable?(policy) }
+          .select { |policy| policy_scope_checker.policy_applicable?(policy) }
       end
     end
   end

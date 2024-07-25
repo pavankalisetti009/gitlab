@@ -75,13 +75,13 @@ module Security
       end
       strong_memoize_attr :active_policies
 
-      def policy_scope_service
-        ::Security::SecurityOrchestrationPolicies::PolicyScopeService.new(project: project)
+      def policy_scope_checker
+        ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: project)
       end
-      strong_memoize_attr :policy_scope_service
+      strong_memoize_attr :policy_scope_checker
 
       def policy_applicable?(policy)
-        policy_scope_service.policy_applicable?(policy)
+        policy_scope_checker.policy_applicable?(policy)
       end
 
       def policy_branch_service

@@ -36,7 +36,7 @@ module Gitlab
         end
 
         def policy_applicable?(policy)
-          ::Security::SecurityOrchestrationPolicies::PolicyScopeService
+          ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker
             .new(project: @project)
             .policy_applicable?(policy)
         end
