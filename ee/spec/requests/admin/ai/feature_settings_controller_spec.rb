@@ -55,10 +55,10 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(response.body).to match(
-        /Code Generations.+Self-Hosted Model \(mistral-7b-ollama-api\)/m
+        /Code generation.+Self-hosted model \(mistral-7b-ollama-api\)/m
       )
       expect(response.body).to match(
-        /Code Completions.+GitLab AI Vendor/m
+        /Code completion.+AI vendor/m
       )
     end
 
@@ -129,7 +129,7 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
       it 'renders edit page' do
         expect { post admin_ai_feature_settings_path, params: params }.not_to change { ::Ai::FeatureSetting.count }
 
-        expect(response.body).to include('Edit Code Completions')
+        expect(response.body).to include('Code completion')
       end
     end
 
@@ -178,7 +178,7 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
       it 'renders edit page' do
         patch admin_ai_feature_setting_path(feature_setting), params: params
 
-        expect(response.body).to include('Edit Code Completions')
+        expect(response.body).to include('Code completion')
       end
     end
 
