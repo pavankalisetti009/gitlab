@@ -1,9 +1,10 @@
 <script>
-import { GlCard, GlLink, GlButton, GlIcon, GlFormGroup } from '@gitlab/ui';
+import { GlLink, GlButton, GlFormGroup } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import Container from '../rules/rules.vue';
 import ScanResultPolicy from './scan_result_policy.vue';
 import PolicyDetails from './policy_details.vue';
@@ -20,12 +21,11 @@ export default {
   },
   components: {
     Container,
-    GlCard,
+    CrudComponent,
     GlLink,
     GlButton,
     ScanResultPolicy,
     PolicyDetails,
-    GlIcon,
     GlFormGroup,
   },
   inject: ['fullPath', 'newPolicyPath'],
@@ -55,35 +55,17 @@ export default {
 
 <template>
   <gl-form-group>
-    <gl-card
-      class="gl-new-card"
-      header-class="gl-new-card-header"
-      body-class="gl-new-card-body gl-px-0"
-    >
-      <template #header>
-        <div class="gl-new-card-title-wrapper gl-flex-direction-column">
-          <h5 class="gl-new-card-title">
-            {{ $options.i18n.securityApprovals }}
-            <span class="gl-new-card-count">
-              <gl-icon name="shield" class="gl-mr-2" />
-              {{ policies.length }}
-            </span>
-          </h5>
-          <p class="gl-new-card-description">
-            {{ $options.i18n.description }}
-            <gl-link
-              :href="$options.scanResultPolicyHelpPagePath"
-              target="_blank"
-              class="gl-font-sm"
-              >{{ $options.i18n.learnMore }}.</gl-link
-            >
-          </p>
-        </div>
-        <div class="gl-new-card-actions">
-          <gl-button category="secondary" size="small" :href="newPolicyPath">
-            {{ $options.i18n.createPolicy }}
-          </gl-button>
-        </div>
+    <crud-component :title="$options.i18n.securityApprovals" icon="shield" :count="policies.length">
+      <template #description>
+        {{ $options.i18n.description }}
+        <gl-link :href="$options.scanResultPolicyHelpPagePath" target="_blank" class="gl-text-sm"
+          >{{ $options.i18n.learnMore }}.</gl-link
+        >
+      </template>
+      <template #actions>
+        <gl-button category="secondary" size="small" :href="newPolicyPath">
+          {{ $options.i18n.createPolicy }}
+        </gl-button>
       </template>
 
       <container :rules="policies">
@@ -111,6 +93,6 @@ export default {
           </template>
         </template>
       </container>
-    </gl-card>
+    </crud-component>
   </gl-form-group>
 </template>

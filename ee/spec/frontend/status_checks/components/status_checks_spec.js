@@ -1,8 +1,9 @@
-import { GlCard, GlTable } from '@gitlab/ui';
+import { GlTable } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import Actions from 'ee/status_checks/components/actions.vue';
 import Branch from 'ee/status_checks/components/branch.vue';
 import ModalCreate from 'ee/status_checks/components/modal_create.vue';
@@ -35,6 +36,7 @@ describe('Status checks', () => {
   const findCreateModal = () => wrapper.findComponent(ModalCreate);
   const findDeleteModal = () => wrapper.findComponent(ModalDelete);
   const findUpdateModal = () => wrapper.findComponent(ModalUpdate);
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findTable = () => wrapper.findComponent(GlTable);
   const findHeaders = () => findTable().find('thead').find('tr').findAll('th');
   const findBranch = (trIdx) => wrapper.findAllComponents(Branch).at(trIdx);
@@ -56,14 +58,22 @@ describe('Status checks', () => {
       expect(findCell(0, 0).text()).toBe(i18n.emptyTableText);
     });
 
+    it('passes correct props to CRUD component', () => {
+      createWrapper(shallowMount);
+
+      expect(findCrudComponent().props('title')).toBe('Status checks');
+      expect(findCrudComponent().props('icon')).toBe('check-circle');
+      expect(findCrudComponent().props('count')).toEqual(0);
+    });
+
     it('creates the create modal', () => {
-      createWrapper(shallowMount, { stubs: { GlCard } });
+      createWrapper(shallowMount, { stubs: { CrudComponent } });
 
       expect(findCreateModal().exists()).toBe(true);
     });
 
     it('creates the update modal', () => {
-      createWrapper(shallowMount, { stubs: { GlCard } });
+      createWrapper(shallowMount, { stubs: { CrudComponent } });
 
       expect(findUpdateModal().exists()).toBe(true);
     });

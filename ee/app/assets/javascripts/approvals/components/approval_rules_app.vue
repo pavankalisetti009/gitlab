@@ -1,9 +1,10 @@
 <script>
-import { GlButton, GlCard, GlIcon, GlLoadingIcon } from '@gitlab/ui';
+import { GlButton, GlLoadingIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { __ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import showToast from '~/vue_shared/plugins/global_toast';
 import DrawerRuleCreate from './rule_drawer/create_rule.vue';
 import ModalRuleRemove from './rule_modal/remove_rule.vue';
@@ -13,9 +14,8 @@ export default {
   components: {
     DrawerRuleCreate,
     ModalRuleRemove,
+    CrudComponent,
     GlButton,
-    GlCard,
-    GlIcon,
     GlLoadingIcon,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -90,35 +90,24 @@ export default {
 </script>
 
 <template>
-  <gl-card
-    class="gl-new-card"
-    header-class="gl-new-card-header"
-    body-class="gl-new-card-body gl-px-0"
-    footer-class="gl-new-card-footer"
+  <crud-component
+    :title="__('Approval rules')"
+    icon="approval"
+    :count="rulesLength"
+    class="gl-mt-3"
     data-testid="mr-approval-rules"
   >
-    <template #header>
-      <div class="gl-new-card-title-wrapper">
-        <h5 class="gl-new-card-title">
-          {{ __('Approval rules') }}
-          <span class="gl-new-card-count">
-            <gl-icon name="approval" class="gl-mr-2" />
-            <span data-testid="rules-count">{{ rulesLength }}</span>
-          </span>
-        </h5>
-      </div>
-      <div v-if="canAddApprovalRule" class="gl-new-card-actions">
-        <gl-button
-          :class="{ 'gl-mr-3': targetBranch, 'gl-mr-0': !targetBranch }"
-          :disabled="isLoading"
-          category="secondary"
-          size="small"
-          data-testid="add-approval-rule"
-          @click="handleAddRule()"
-        >
-          {{ __('Add approval rule') }}
-        </gl-button>
-      </div>
+    <template v-if="canAddApprovalRule" #actions>
+      <gl-button
+        :class="{ 'gl-mr-3': targetBranch, 'gl-mr-0': !targetBranch }"
+        :disabled="isLoading"
+        category="secondary"
+        size="small"
+        data-testid="add-approval-rule"
+        @click="handleAddRule()"
+      >
+        {{ __('Add approval rule') }}
+      </gl-button>
     </template>
 
     <gl-loading-icon v-if="!hasLoaded" size="sm" class="gl-m-5" />
@@ -149,5 +138,5 @@ export default {
       @close="closeCreateDrawer"
     />
     <modal-rule-remove :modal-id="removeModalId" />
-  </gl-card>
+  </crud-component>
 </template>

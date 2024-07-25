@@ -1,9 +1,10 @@
 <script>
-import { GlCard, GlIcon, GlLink, GlSprintf, GlTable } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlTable } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { __, s__ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { EMPTY_STATUS_CHECK } from '../constants';
 import Actions from './actions.vue';
 import Branch from './branch.vue';
@@ -27,8 +28,7 @@ export default {
   components: {
     Actions,
     Branch,
-    GlCard,
-    GlIcon,
+    CrudComponent,
     GlLink,
     GlSprintf,
     GlTable,
@@ -84,30 +84,18 @@ export default {
 </script>
 
 <template>
-  <gl-card
-    class="gl-new-card"
-    header-class="gl-new-card-header"
-    body-class="gl-new-card-body gl-px-0"
-  >
-    <template #header>
-      <div class="gl-new-card-title-wrapper gl-flex-direction-column">
-        <h5 class="gl-new-card-title">
-          {{ $options.i18n.title }}
-          <span class="gl-new-card-count">
-            <gl-icon name="check-circle" class="gl-mr-2" />
-            {{ statusChecks.length }}
-          </span>
-        </h5>
-        <p class="gl-new-card-description">
-          <gl-sprintf :message="$options.i18n.description">
-            <template #link>
-              <gl-link class="gl-font-sm" :href="$options.helpUrl" target="_blank">{{
-                __('Learn more')
-              }}</gl-link>
-            </template>
-          </gl-sprintf>
-        </p>
-      </div>
+  <crud-component :title="$options.i18n.title" icon="check-circle" :count="statusChecks.length">
+    <template #description>
+      <gl-sprintf :message="$options.i18n.description">
+        <template #link>
+          <gl-link class="gl-text-sm" :href="$options.helpUrl" target="_blank">{{
+            __('Learn more')
+          }}</gl-link>
+        </template>
+      </gl-sprintf>
+    </template>
+
+    <template #actions>
       <modal-create />
     </template>
 
@@ -134,5 +122,5 @@ export default {
 
     <modal-delete ref="deleteModal" :status-check="statusCheckToDelete" />
     <modal-update ref="updateModal" :status-check="statusCheckToUpdate" />
-  </gl-card>
+  </crud-component>
 </template>

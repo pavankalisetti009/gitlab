@@ -4,6 +4,7 @@ import Vuex from 'vuex';
 import { GlButton } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import { __ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ScanResultPolicies from 'ee/approvals/components/security_orchestration/scan_result_policies.vue';
 import securityOrchestrationModule from 'ee/approvals/stores/modules/security_orchestration';
 import { gqClient } from 'ee/security_orchestration/utils';
@@ -45,9 +46,18 @@ describe('ScanResultPolicies', () => {
 
   const findAllScanResultPolicies = () => wrapper.findAllComponents(ScanResultPolicy);
   const findAllPolicyDetails = () => wrapper.findAllComponents(PolicyDetails);
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
 
   beforeEach(() => {
     store = { modules: { securityOrchestrationModule: securityOrchestrationModule() } };
+  });
+
+  it('passes correct props to CRUD component', () => {
+    factory();
+
+    expect(findCrudComponent().props('title')).toBe('Security Approvals');
+    expect(findCrudComponent().props('icon')).toBe('shield');
+    expect(findCrudComponent().props('count')).toEqual(0);
   });
 
   describe('when no policy is available', () => {
