@@ -1,5 +1,6 @@
 import { GlLabel, GlButton, GlPopover } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 
@@ -40,7 +41,7 @@ describe('FrameworkBadge component', () => {
       expect(routerPushMock).toHaveBeenCalledWith({
         name: ROUTE_EDIT_FRAMEWORK,
         params: {
-          id: complianceFramework.id,
+          id: getIdFromGraphQLId(complianceFramework.id),
         },
       });
     });

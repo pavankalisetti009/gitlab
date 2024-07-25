@@ -169,6 +169,7 @@ export const createComplianceViolationsResponse = ({ count = 1, pageInfo = {} } 
 });
 
 export const complianceFramework = {
+  id: 'gid://gitlab/ComplianceManagement::Framework/1',
   color: '#009966',
   description: 'General Data Protection Regulation',
   name: 'GDPR',
@@ -337,7 +338,7 @@ export const createComplianceFrameworksReportResponse = ({
           pageInfo: mockPageInfo(),
           nodes: Array(count)
             .fill(null)
-            .map((_, id) => createFramework({ id, projects, groupPath })),
+            .map((_, id) => createFramework({ id: id + 1, projects, groupPath })),
           __typename: 'ComplianceFrameworkConnection',
         },
         __typename: 'Namespace',

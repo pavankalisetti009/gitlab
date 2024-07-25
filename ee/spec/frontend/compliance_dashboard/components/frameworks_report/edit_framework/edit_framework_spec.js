@@ -114,8 +114,8 @@ describe('Edit Framework Form', () => {
     const values = Object.fromEntries(new FormData(wrapper.find('form').element));
 
     expect(values).toStrictEqual({
-      name: 'Some framework 0',
-      description: 'This is a framework 0',
+      name: 'Some framework 1',
+      description: 'This is a framework 1',
       pipeline_configuration_full_path: '',
       // JSDOM issue, checking manually:
       // default: true,

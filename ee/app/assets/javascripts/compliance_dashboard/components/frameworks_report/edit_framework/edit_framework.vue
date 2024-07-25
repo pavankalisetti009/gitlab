@@ -1,7 +1,6 @@
 <script>
 import { GlAlert, GlButton, GlForm, GlLoadingIcon, GlTooltip } from '@gitlab/ui';
 
-import { convertToGraphQLId } from '~/graphql_shared/utils';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import { SAVE_ERROR } from 'ee/groups/settings/compliance_frameworks/constants';
@@ -9,6 +8,7 @@ import {
   getSubmissionParams,
   initialiseFormData,
 } from 'ee/groups/settings/compliance_frameworks/utils';
+import { convertFrameworkIdToGraphQl } from '../../../utils';
 
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
 import updateComplianceFrameworkMutation from '../../../graphql/mutations/update_compliance_framework.mutation.graphql';
@@ -125,9 +125,7 @@ export default {
     },
 
     graphqlId() {
-      return this.$route.params.id
-        ? convertToGraphQLId('ComplianceManagement::Framework', this.$route.params.id)
-        : null;
+      return this.$route.params.id ? convertFrameworkIdToGraphQl(this.$route.params.id) : null;
     },
 
     disableSubmitBtn() {

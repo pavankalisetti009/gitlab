@@ -2,6 +2,7 @@
 import { GlButton, GlLabel, GlPopover } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ROUTE_EDIT_FRAMEWORK } from '../../constants';
 
 export default {
@@ -57,7 +58,10 @@ export default {
   },
   methods: {
     editFromPopover() {
-      this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: this.framework.id } });
+      this.$router.push({
+        name: ROUTE_EDIT_FRAMEWORK,
+        params: { id: getIdFromGraphQLId(this.framework.id) },
+      });
     },
   },
   i18n: {
