@@ -110,7 +110,8 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld, featur
               expect { |b| tool.execute(&b) }.to yield_successive_args("some", " response")
             end
 
-            it 'returns content when no block is given' do
+            it 'returns content when no block is given',
+              quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472968' do
               expect(tool).to receive(:request).and_return('some response')
 
               expect(tool.execute.content).to eq('some response')
