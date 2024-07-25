@@ -40,6 +40,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - resolve_vulnerability
           - generate_issue_description
           - summarize_issue_discussions
+          - generate_commit_message
   vertex_ai_proxy:
     backend: 'gitlab-ai-gateway'
     bundled_with:
