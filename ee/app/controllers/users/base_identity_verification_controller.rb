@@ -32,9 +32,7 @@ module Users
 
     def show; end
 
-    def restricted
-      not_found unless Feature.enabled?(:prevent_registration_from_china)
-    end
+    def restricted; end
 
     def verification_state
       Gitlab::PollingInterval.set_header(response, interval: 10_000)

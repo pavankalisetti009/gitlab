@@ -1,9 +1,0 @@
----
-name: prevent_registration_from_china
-feature_issue_url: https://gitlab.com/gitlab-org/modelops/anti-abuse/team-tasks/-/issues/635
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147697
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/450796
-milestone: '16.11'
-group: group::anti-abuse
-type: gitlab_com_derisk
-default_enabled: false

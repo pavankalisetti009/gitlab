@@ -33,9 +33,7 @@ module Users
       format(message, interval: interval)
     end
 
-    def restricted_country?(country_code, namespace = nil)
-      return false unless ::Feature.enabled?(:prevent_registration_from_china, namespace, type: :gitlab_com_derisk)
-
+    def restricted_country?(country_code)
       ComplianceManagement::Pipl::COVERED_COUNTRY_CODES.include?(country_code)
     end
 
