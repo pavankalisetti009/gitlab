@@ -4,6 +4,7 @@ module API
   module Internal
     module Search
       class Zoekt < ::API::Base
+        TASK_PULL_FREQUENCY = '500ms'
         before { authenticate_by_gitlab_shell_token! }
 
         feature_category :global_search
@@ -37,6 +38,7 @@ module API
                     { id: node.id }.tap do |resp|
                       if Feature.enabled?(:zoekt_send_tasks)
                         resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
+                        resp[:pull_frequency] = TASK_PULL_FREQUENCY if Feature.enabled?(:zoekt_reduced_pull_frequency)
                       end
                     end
                   else

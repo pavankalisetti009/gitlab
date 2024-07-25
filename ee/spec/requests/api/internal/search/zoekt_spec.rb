@@ -49,7 +49,9 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             request
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => nil, 'tasks' => [] })
+            expect(json_response).to eq(
+              { 'id' => nil, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+            )
           end
         end
 
@@ -62,7 +64,9 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
             request
 
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id, 'tasks' => [] })
+            expect(json_response).to eq(
+              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+            )
           end
         end
       end
@@ -83,7 +87,27 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
           get api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
 
           expect(response).to have_gitlab_http_status(:ok)
-          expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks })
+          expect(json_response).to eq(
+            { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+          )
+        end
+
+        context 'when zoekt_reduced_pull_frequency is disabled' do
+          before do
+            stub_feature_flags(zoekt_reduced_pull_frequency: false)
+          end
+
+          it 'does not adds pull_frequency in the response' do
+            expect(::Search::Zoekt::Node).to receive(:find_or_initialize_by_task_request)
+                                               .with(valid_params).and_return(node)
+            expect(node).to receive(:save).and_return(true)
+
+            get api(endpoint), params: valid_params, headers: gitlab_shell_internal_api_request_header
+
+            expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
+            expect(response).to have_gitlab_http_status(:ok)
+            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks })
+          end
         end
 
         context 'when zoekt_send_tasks is disabled' do
