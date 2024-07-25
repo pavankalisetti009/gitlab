@@ -31822,6 +31822,21 @@ msgstr ""
 msgid "Match not found; try refining your search query."
 msgstr ""
 
+msgid "MatrixIntegration|Leave blank to use your current token."
+msgstr ""
+
+msgid "MatrixIntegration|New token"
+msgstr ""
+
+msgid "MatrixIntegration|Send notifications about project events to Matrix."
+msgstr ""
+
+msgid "MatrixIntegration|Send notifications about project events to Matrix. %{link_start}Learn More%{link_end}."
+msgstr ""
+
+msgid "MatrixIntegration|Unique authentication token."
+msgstr ""
+
 msgid "Mattermost"
 msgstr ""
 
@@ -53139,6 +53154,9 @@ msgstr ""
 msgid "The Issue Tracker is the place to add things that need to be improved or solved in a project. You can register or sign in to create issues for this project."
 msgstr ""
 
+msgid "The Matrix access token (for example, `syt-zyx57W2v1u123ew11`)."
+msgstr ""
+
 msgid "The Mattermost token."
 msgstr ""
 
@@ -56696,6 +56714,9 @@ msgid "Unhelpful or irrelevant"
 msgstr ""
 
 msgid "Unique identifier for the target chat or the username of the target channel (in the format `@channelusername`)."
+msgstr ""
+
+msgid "Unique identifier for the target room (in the format `!qPKKM111FFKKsfoCVy:matrix.org`)."
 msgstr ""
 
 msgid "Units|d"
