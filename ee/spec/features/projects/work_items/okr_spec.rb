@@ -159,8 +159,8 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
     context 'in hierarchy' do
       it 'shows no children', :aggregate_failures do
         within_testid('work-item-tree') do
-          expect(page).to have_content('Child objectives and key results')
-          expect(page).to have_content('No objectives or key results are currently assigned.')
+          expect(page).to have_content('Child items')
+          expect(page).to have_content('No child items are currently assigned.')
         end
       end
 

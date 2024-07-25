@@ -60367,9 +60367,6 @@ msgstr ""
 msgid "WorkItem|Child items"
 msgstr ""
 
-msgid "WorkItem|Child objectives and key results"
-msgstr ""
-
 msgid "WorkItem|Child removal reverted"
 msgstr ""
 
@@ -60517,7 +60514,7 @@ msgstr ""
 msgid "WorkItem|No child items are currently assigned. Use child items to break down this issue into smaller parts."
 msgstr ""
 
-msgid "WorkItem|No epics or issues are currently assigned."
+msgid "WorkItem|No child items are currently assigned. Use child items to break down work into smaller parts."
 msgstr ""
 
 msgid "WorkItem|No iteration"
@@ -60530,12 +60527,6 @@ msgid "WorkItem|No matching results"
 msgstr ""
 
 msgid "WorkItem|No milestone"
-msgstr ""
-
-msgid "WorkItem|No objectives or key results are currently assigned."
-msgstr ""
-
-msgid "WorkItem|No tasks are currently assigned. Use tasks to break down this issue into smaller parts."
 msgstr ""
 
 msgid "WorkItem|None"
@@ -60695,9 +60686,6 @@ msgid "WorkItem|Task deleted"
 msgstr ""
 
 msgid "WorkItem|Task reverted"
-msgstr ""
-
-msgid "WorkItem|Tasks"
 msgstr ""
 
 msgid "WorkItem|Teal"
