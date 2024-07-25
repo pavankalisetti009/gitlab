@@ -101,6 +101,8 @@ module EE
       super.merge(
         'meta.search.filters.source_branch' => filter_params[:source_branch],
         'meta.search.filters.not_source_branch' => filter_params.dig(:not, :source_branch),
+        'meta.search.filters.target_branch' => filter_params[:target_branch],
+        'meta.search.filters.not_target_branch' => filter_params.dig(:not, :target_branch),
         'meta.search.filters.author_username' => filter_params[:author_username],
         'meta.search.filters.not_author_username' => filter_params.dig(:not, :author_username))
     end
@@ -125,7 +127,11 @@ module EE
 
     override :filter_params
     def filter_params
-      super.merge(params.permit(:source_branch, :author_username, not: [:source_branch, :author_username]))
+      permitted_filter_params = [:source_branch, :target_branch, :author_username]
+      super.merge(params.permit(
+        *permitted_filter_params,
+        not: permitted_filter_params
+      ))
     end
   end
 end

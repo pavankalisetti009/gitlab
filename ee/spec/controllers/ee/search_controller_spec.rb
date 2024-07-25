@@ -300,6 +300,8 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
         expect(payload[:metadata]['meta.search.filters.source_branch']).to eq('included-branch')
         expect(payload[:metadata]['meta.search.filters.not_source_branch']).to eq('excluded-branch')
+        expect(payload[:metadata]['meta.search.filters.target_branch']).to eq('included-branch')
+        expect(payload[:metadata]['meta.search.filters.not_target_branch']).to eq('excluded-branch')
         expect(payload[:metadata]['meta.search.filters.author_username']).to eq('included-username')
         expect(payload[:metadata]['meta.search.filters.not_author_username']).to eq('excluded-username')
       end
@@ -308,9 +310,11 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         scope: 'issues',
         search: 'hello world',
         source_branch: 'included-branch',
+        target_branch: 'included-branch',
         author_username: 'included-username',
         not: {
           source_branch: 'excluded-branch',
+          target_branch: 'excluded-branch',
           author_username: 'excluded-username'
         }
       }

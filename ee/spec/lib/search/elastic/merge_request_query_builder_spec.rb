@@ -87,46 +87,80 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
     end
 
     describe 'source_branch' do
+      it 'does not apply filters by default' do
+        assert_names_in_query(build, without: %w[filters:source_branch filters:not_source_branch])
+      end
+
+      context 'when source_branch option is provided' do
+        let(:options) { base_options.merge(source_branch: 'hello') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:source_branch])
+        end
+      end
+
+      context 'when not_source_branch option is provided' do
+        let(:options) { base_options.merge(not_source_branch: 'world') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_source_branch])
+        end
+      end
+
       context 'when search_mr_filter_source_branch flag is false' do
         before do
           stub_feature_flags(search_mr_filter_source_branch: false)
         end
 
-        it 'does not apply filters by default' do
+        it 'does not apply filters' do
           assert_names_in_query(build, without: %w[filters:source_branch filters:not_source_branch])
         end
 
         context 'when source_branch options are provided' do
           let(:options) { base_options.merge(source_branch: 'hello', not_source_branch: 'world') }
 
-          it 'does not apply filters by default' do
+          it 'does not apply filters' do
             assert_names_in_query(build, without: %w[filters:source_branch filters:not_source_branch])
           end
         end
       end
+    end
 
-      context 'when search_mr_filter_source_branch flag is true' do
+    describe 'target_branch' do
+      it 'does not apply filters by default' do
+        assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
+      end
+
+      context 'when target_branch option is provided' do
+        let(:options) { base_options.merge(target_branch: 'hello') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:target_branch])
+        end
+      end
+
+      context 'when not_target_branch option is provided' do
+        let(:options) { base_options.merge(not_target_branch: 'world') }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_target_branch])
+        end
+      end
+
+      context 'when search_mr_filter_target_branch flag is false' do
         before do
-          stub_feature_flags(search_mr_filter_source_branch: true)
+          stub_feature_flags(search_mr_filter_target_branch: false)
         end
 
-        it 'does not apply filters by default' do
-          assert_names_in_query(build, without: %w[filters:source_branch filters:not_source_branch])
+        it 'does not apply filters' do
+          assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
         end
 
-        context 'when source_branch option is provided' do
-          let(:options) { base_options.merge(source_branch: 'hello') }
+        context 'when target_branch options are provided' do
+          let(:options) { base_options.merge(target_branch: 'hello', not_target_branch: 'world') }
 
-          it 'does not apply filters by default' do
-            assert_names_in_query(build, with: %w[filters:source_branch])
-          end
-        end
-
-        context 'when not_source_branch option is provided' do
-          let(:options) { base_options.merge(not_source_branch: 'world') }
-
-          it 'does not apply filters by default' do
-            assert_names_in_query(build, with: %w[filters:not_source_branch])
+          it 'does not apply filters' do
+            assert_names_in_query(build, without: %w[filters:target_branch filters:not_target_branch])
           end
         end
       end
@@ -135,12 +169,32 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
     describe 'author' do
       let_it_be(:user) { create(:user) }
 
+      it 'does not apply filters by default' do
+        assert_names_in_query(build, without: %w[filters:author filters:not_author])
+      end
+
+      context 'when author_username option is provided' do
+        let(:options) { base_options.merge(author_username: user.username) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:author])
+        end
+      end
+
+      context 'when not_author_username option is provided' do
+        let(:options) { base_options.merge(not_author_username: user.username) }
+
+        it 'applies the filter' do
+          assert_names_in_query(build, with: %w[filters:not_author])
+        end
+      end
+
       context 'when search_mr_filter_author flag is false' do
         before do
           stub_feature_flags(search_mr_filter_author: false)
         end
 
-        it 'does not apply filters by default' do
+        it 'does not apply filters' do
           assert_names_in_query(build, without: %w[filters:author filters:not_author])
         end
 
@@ -149,34 +203,8 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
             base_options.merge(author_username: user.username, not_author_username: user.username)
           end
 
-          it 'does not apply filters by default' do
+          it 'does not apply filters' do
             assert_names_in_query(build, without: %w[filters:author filters:not_author])
-          end
-        end
-      end
-
-      context 'when search_mr_filter_author flag is true' do
-        before do
-          stub_feature_flags(search_mr_filter_author: true)
-        end
-
-        it 'does not apply filters by default' do
-          assert_names_in_query(build, without: %w[filters:author filters:not_author])
-        end
-
-        context 'when author_username option is provided' do
-          let(:options) { base_options.merge(author_username: user.username) }
-
-          it 'does not apply filters by default' do
-            assert_names_in_query(build, with: %w[filters:author])
-          end
-        end
-
-        context 'when not_author_username option is provided' do
-          let(:options) { base_options.merge(not_author_username: user.username) }
-
-          it 'does not apply filters by default' do
-            assert_names_in_query(build, with: %w[filters:not_author])
           end
         end
       end

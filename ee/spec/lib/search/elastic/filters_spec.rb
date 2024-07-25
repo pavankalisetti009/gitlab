@@ -12,7 +12,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_source_branch' do
+  describe '.by_source_branch' do
     subject(:by_source_branch) { described_class.by_source_branch(query_hash: query_hash, options: options) }
 
     context 'when options[:source_branch] and options[:not_source_branch] are empty' do
@@ -83,7 +83,78 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_author' do
+  describe '.by_target_branch' do
+    subject(:by_target_branch) { described_class.by_target_branch(query_hash: query_hash, options: options) }
+
+    context 'when options[:target_branch] and options[:not_target_branch] are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:target_branch] and options[:not_target_branch] are both provided' do
+      let(:options) { { target_branch: 'branch-1', not_target_branch: 'branch-2' } }
+
+      it 'adds the target branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { target_branch: { _name: 'filters:target_branch', value: 'branch-1' } } },
+              { bool: {
+                must_not: {
+                  term: { target_branch: { _name: 'filters:not_target_branch', value: 'branch-2' } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_target_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_target_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:target_branch] is provided' do
+      let(:options) { { target_branch: 'foo-bar-branch' } }
+
+      it 'adds the target branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should: [{ term: { target_branch: { _name: 'filters:target_branch', value: 'foo-bar-branch' } } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_target_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_target_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:not_target_branch] is provided' do
+      let(:options) { { not_target_branch: 'hello-branch' } }
+
+      it 'adds the target branch filter to query_hash' do
+        expected_filter = [
+          { bool:
+            { should:
+              [{ bool: {
+                must_not: {
+                  term: { target_branch: { _name: 'filters:not_target_branch', value: 'hello-branch' } }
+                }
+              } }],
+              minimum_should_match: 1 } }
+        ]
+
+        expect(by_target_branch.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_target_branch.dig(:query, :bool, :must)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_target_branch.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+  end
+
+  describe '.by_author' do
     let_it_be(:included_user) { create(:user) }
     let_it_be(:excluded_user) { create(:user) }
 
@@ -157,7 +228,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_not_hidden' do
+  describe '.by_not_hidden' do
     subject(:by_not_hidden) { described_class.by_not_hidden(query_hash: query_hash, options: options) }
 
     context 'when options[:current_user] is empty' do
@@ -197,7 +268,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_state' do
+  describe '.by_state' do
     subject(:by_state) { described_class.by_state(query_hash: query_hash, options: options) }
 
     context 'when options[:state] is empty' do
@@ -232,7 +303,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_archived' do
+  describe '.by_archived' do
     subject(:by_archived) { described_class.by_archived(query_hash: query_hash, options: options) }
 
     context 'when options[:include_archived] is empty or false' do
@@ -285,7 +356,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_label_ids' do
+  describe '.by_label_ids' do
     let_it_be(:label_title) { 'My label' }
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
@@ -506,7 +577,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_confidentiality' do
+  describe '.by_confidentiality' do
     let_it_be(:authorized_project) { create(:project, developers: [user]) }
     let_it_be(:private_project) { create(:project, :private) }
 
@@ -652,7 +723,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
   end
 
-  describe '#by_authorization' do
+  describe '.by_authorization' do
     let_it_be(:public_group) { create(:group, :public) }
     let_it_be(:authorized_project) { create(:project, group: public_group, developers: [user]) }
     let_it_be(:private_project) { create(:project, :private, group: public_group) }

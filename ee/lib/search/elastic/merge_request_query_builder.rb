@@ -8,28 +8,17 @@ module Search
       DOC_TYPE = 'merge_request'
 
       def build
-        query_hash =
-          if query =~ /!(\d+)\z/
-            ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
-          else
-            # iid field can be added here as lenient option will
-            # pardon format errors, like integer out of range.
-            fields = %w[iid^3 title^2 description]
-
-            if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
-                Feature.enabled?(:search_uses_match_queries, options[:current_user])
-              ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
-            else
-              ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
-            end
-          end
-
+        query_hash = build_query_hash(query: query, options: options)
         query_hash = ::Search::Elastic::Filters.by_authorization(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_state(query_hash: query_hash, options: options)
         query_hash = ::Search::Elastic::Filters.by_archived(query_hash: query_hash, options: options)
 
         if Feature.enabled?(:search_mr_filter_source_branch, options[:current_user])
           query_hash = ::Search::Elastic::Filters.by_source_branch(query_hash: query_hash, options: options)
+        end
+
+        if Feature.enabled?(:search_mr_filter_target_branch, options[:current_user])
+          query_hash = ::Search::Elastic::Filters.by_target_branch(query_hash: query_hash, options: options)
         end
 
         if Feature.enabled?(:search_mr_filter_author, options[:current_user])
@@ -61,6 +50,23 @@ module Search
           project_id_field: :target_project_id,
           authorization_use_traversal_ids: false # https://gitlab.com/gitlab-org/gitlab/-/issues/351279
         }
+      end
+
+      def build_query_hash(query:, options:)
+        if query =~ /!(\d+)\z/
+          ::Search::Elastic::Queries.by_iid(iid: Regexp.last_match(1), doc_type: DOC_TYPE)
+        else
+          # iid field can be added here as lenient option will
+          # pardon format errors, like integer out of range.
+          fields = %w[iid^3 title^2 description]
+
+          if !::Search::Elastic::Queries::ADVANCED_QUERY_SYNTAX_REGEX.match?(query) &&
+              Feature.enabled?(:search_uses_match_queries, options[:current_user])
+            ::Search::Elastic::Queries.by_multi_match_query(fields: fields, query: query, options: options)
+          else
+            ::Search::Elastic::Queries.by_simple_query_string(fields: fields, query: query, options: options)
+          end
+        end
       end
     end
   end
