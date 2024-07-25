@@ -1039,4 +1039,216 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       end
     end
   end
+
+  context 'with hierarchy widget input' do
+    let(:widgets_response) { mutation_response['workItem']['widgets'] }
+    let(:fields) do
+      <<~FIELDS
+        workItem {
+          description
+          widgets {
+            type
+            ... on WorkItemWidgetHierarchy {
+              parent {
+                id
+              }
+              children {
+                edges {
+                  node {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        }
+        errors
+      FIELDS
+    end
+
+    before do
+      stub_licensed_features(epics: true, subepics: true)
+    end
+
+    context 'when updating parent' do
+      let_it_be(:work_item_epic, reload: true) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be(:work_item_issue, reload: true) { create(:work_item, :issue, project: project) }
+
+      let_it_be(:new_parent) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+      let(:input) { { 'hierarchyWidget' => { 'parentId' => new_parent.to_global_id.to_s } } }
+
+      it 'updates work item parent and synced epic parent when moving child is epic' do
+        expect do
+          post_graphql_mutation(mutation_for(work_item_epic), current_user: reporter)
+        end.to change { work_item_epic.reload.work_item_parent }.from(nil).to(new_parent)
+            .and change { work_item_epic.synced_epic.reload.parent }.from(nil).to(new_parent.synced_epic)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(widgets_response).to include({ 'type' => 'HIERARCHY', 'children' => { 'edges' => [] },
+                                              'parent' => { 'id' => new_parent.to_global_id.to_s } })
+      end
+
+      it 'updates work item parent when moving child is issue' do
+        expect do
+          post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+        end.to change { work_item_issue.reload.work_item_parent }.from(nil).to(new_parent)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(widgets_response).to include({ 'type' => 'HIERARCHY', 'children' => { 'edges' => [] },
+                                              'parent' => { 'id' => new_parent.to_global_id.to_s } })
+      end
+
+      context 'when a parent is already present' do
+        let_it_be(:existing_parent) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+        let_it_be(:work_item_epic_link) do
+          create(:parent_link, work_item: work_item_epic, work_item_parent: existing_parent, relative_position: 10)
+        end
+
+        let_it_be(:work_item_issue_link) do
+          create(:parent_link, work_item: work_item_issue, work_item_parent: existing_parent, relative_position: 20)
+        end
+
+        before do
+          work_item_epic.synced_epic.update!(parent: existing_parent.synced_epic)
+          create(:epic_issue, epic: existing_parent.synced_epic, issue: work_item_issue)
+        end
+
+        it 'syncs with legacy epic if child is epic' do
+          expect do
+            post_graphql_mutation(mutation_for(work_item_epic), current_user: reporter)
+          end.to change { work_item_epic.reload.work_item_parent }.from(existing_parent).to(new_parent)
+             .and change { work_item_epic.synced_epic.reload.parent }.from(existing_parent.synced_epic)
+                                                                    .to(new_parent.synced_epic)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(widgets_response).to include({ 'type' => 'HIERARCHY', 'children' => { 'edges' => [] },
+                                                'parent' => { 'id' => new_parent.to_global_id.to_s } })
+        end
+
+        it 'syncs with epic_issue if child is issue' do
+          expect do
+            post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+          end.to change { work_item_issue.reload.work_item_parent }.from(existing_parent).to(new_parent)
+             .and change { work_item_issue.epic_issue.reload.epic }.from(existing_parent.synced_epic)
+                                                            .to(new_parent.synced_epic)
+
+          expect(response).to have_gitlab_http_status(:success)
+          expect(widgets_response).to include({ 'type' => 'HIERARCHY', 'children' => { 'edges' => [] },
+                                                'parent' => { 'id' => new_parent.to_global_id.to_s } })
+        end
+
+        context 'and new parent has existing children' do
+          let_it_be(:child_in_new_parent) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+          let(:input) do
+            { 'hierarchyWidget' => {
+              'parentId' => new_parent.to_global_id.to_s,
+              adjacentWorkItemId: child_in_new_parent.to_global_id.to_s,
+              relativePosition: "AFTER"
+            } }
+          end
+
+          before do
+            create(:parent_link, work_item: child_in_new_parent, work_item_parent: new_parent, relative_position: 10)
+            child_in_new_parent.synced_epic.update!(parent: new_parent.synced_epic)
+          end
+
+          context 'when moving child is an epic' do
+            it 'syncs with legacy epic' do
+              expect do
+                post_graphql_mutation(mutation_for(work_item_epic), current_user: reporter)
+              end.to change { work_item_epic.reload.work_item_parent }.from(existing_parent).to(new_parent)
+                 .and change { work_item_epic.synced_epic.reload.parent }.from(existing_parent.synced_epic)
+                                                                         .to(new_parent.synced_epic)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(new_parent.work_item_children_by_relative_position.pluck(:id))
+                .to match_array([child_in_new_parent.id, work_item_epic.id])
+            end
+
+            it 'does not move child if syncing parent fails' do
+              allow_next_found_instance_of(::Epic) do |instance|
+                allow(instance).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new)
+              end
+
+              expect do
+                post_graphql_mutation(mutation_for(work_item_epic), current_user: reporter)
+              end.to not_change { work_item_epic.reload.work_item_parent }
+                 .and not_change { work_item_epic.synced_epic.reload.parent }
+                 .and not_change { work_item_epic_link.reload }
+
+              expect(mutation_response["errors"]).to include("Couldn't re-order due to an internal error.")
+            end
+          end
+
+          context 'when moving child is an issue' do
+            it 'syncs with epic_issue' do
+              expect do
+                post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+              end.to change { work_item_issue.reload.work_item_parent }.from(existing_parent).to(new_parent)
+                 .and change { work_item_issue.epic_issue.reload.epic }.from(existing_parent.synced_epic)
+                                                                       .to(new_parent.synced_epic)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(new_parent.work_item_children_by_relative_position.pluck(:id))
+                .to match_array([child_in_new_parent.id, work_item_issue.id])
+            end
+
+            it 'does not move child if syncing parent fails' do
+              allow_next_found_instance_of(::EpicIssue) do |instance|
+                allow(instance).to receive(:save!).and_raise(ActiveRecord::RecordInvalid.new)
+              end
+
+              expect do
+                post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+              end.to not_change { work_item_issue.reload.work_item_parent }
+                 .and not_change { work_item_issue.epic_issue.reload.epic }
+                 .and not_change { work_item_issue_link.reload }
+
+              expect(mutation_response["errors"]).to include("Couldn't re-order due to an internal error.")
+            end
+          end
+
+          context 'when changing parent fails' do
+            before do
+              allow_next_found_instance_of(::WorkItems::ParentLink) do |instance|
+                allow(instance).to receive(:save).and_return(false)
+
+                errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:work_item, 'error message') }
+                allow(instance).to receive(:errors).and_return(errors)
+              end
+            end
+
+            it 'does not sync change to legacy epic parent when moving an epic' do
+              expect do
+                post_graphql_mutation(mutation_for(work_item_epic), current_user: reporter)
+              end.to not_change { work_item_epic.reload.work_item_parent }
+                 .and not_change { work_item_epic.synced_epic.reload.parent }
+                 .and not_change { work_item_epic_link.reload }
+
+              expect(mutation_response["errors"])
+                .to include("#{work_item_epic.to_reference} cannot be added: error message")
+            end
+
+            it 'does not sync change to epic_issue when moving an issue' do
+              expect do
+                post_graphql_mutation(mutation_for(work_item_issue), current_user: reporter)
+              end.to not_change { work_item_issue.reload.work_item_parent }
+                 .and not_change { work_item_issue.epic_issue.reload.epic }
+                 .and not_change { work_item_issue_link.reload }
+
+              expect(mutation_response["errors"])
+                .to include("#{work_item_issue.to_reference} cannot be added: error message")
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def mutation_for(item)
+    graphql_mutation(:workItemUpdate, input.merge('id' => item.to_global_id.to_s), fields)
+  end
 end
