@@ -7,7 +7,7 @@ RSpec.describe WorkItems::Widgets::RolledupDatesFinder, :aggregate_failures, fea
   let_it_be(:user) { create(:user, developer_of: group) }
   let_it_be_with_reload(:epic_work_item) { create(:work_item, :epic, namespace: group) }
 
-  let_it_be(:child_work_item) do
+  let_it_be_with_reload(:child_work_item) do
     create(
       :work_item,
       :issue,
