@@ -16,6 +16,10 @@ describe('SamlSettingsForm', () => {
   });
 
   const findGroupSamlSetting = () => samlSettingsForm.settings.find((s) => s.name === 'group-saml');
+  const findDisablePasswordAuthenticationForEnterpriseUsersSetting = () =>
+    samlSettingsForm.settings.find(
+      (s) => s.name === 'disable-password-authentication-for-enterprise-users',
+    );
   const findEnforcedSsoSetting = () =>
     samlSettingsForm.settings.find((s) => s.name === 'enforced-sso');
   const findEnforcedGitActivity = () =>
@@ -94,11 +98,17 @@ describe('SamlSettingsForm', () => {
   });
 
   it('correctly disables multiple dependent toggles', () => {
+    expect(
+      findDisablePasswordAuthenticationForEnterpriseUsersSetting().el.hasAttribute('disabled'),
+    ).toBe(false);
     expect(findEnforcedSsoSetting().el.hasAttribute('disabled')).toBe(false);
     expect(findEnforcedGitActivity().el.hasAttribute('disabled')).toBe(false);
 
     uncheckSetting(findGroupSamlSetting());
 
+    expect(
+      findDisablePasswordAuthenticationForEnterpriseUsersSetting().el.hasAttribute('disabled'),
+    ).toBe(true);
     expect(findEnforcedSsoSetting().el.hasAttribute('disabled')).toBe(true);
     expect(findEnforcedGitActivity().el.hasAttribute('disabled')).toBe(true);
   });

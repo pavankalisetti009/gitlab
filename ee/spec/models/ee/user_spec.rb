@@ -1535,6 +1535,34 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#valid_password?' do
+    subject(:validate_password) { user.valid_password?(password) }
+
+    context 'when password authentication disabled by enterprise group' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+      let(:password) { user.password }
+
+      it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '#allow_password_authentication?' do
+    context 'when password authentication disabled by enterprise group' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+      it 'is false' do
+        expect(user.allow_password_authentication?).to eq false
+      end
+    end
+  end
+
   describe '#allow_password_authentication_for_web?' do
     context 'when user has managing group linked' do
       before do
@@ -1563,6 +1591,17 @@ RSpec.describe User, feature_category: :system_access do
         it 'is true' do
           expect(user.allow_password_authentication_for_web?).to eq true
         end
+      end
+    end
+
+    context 'when password authentication disabled by enterprise group' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+      it 'is false' do
+        expect(user.allow_password_authentication_for_web?).to eq false
       end
     end
   end
@@ -1595,6 +1634,17 @@ RSpec.describe User, feature_category: :system_access do
         it 'is true' do
           expect(user.allow_password_authentication_for_git?).to eq true
         end
+      end
+    end
+
+    context 'when password authentication disabled by enterprise group' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+      it 'is false' do
+        expect(user.allow_password_authentication_for_git?).to eq false
       end
     end
   end
@@ -1755,6 +1805,43 @@ RSpec.describe User, feature_category: :system_access do
           expect(user.authorized_by_provisioning_group?(group)).to eq false
         end
       end
+    end
+  end
+
+  describe '#password_authentication_disabled_by_enterprise_group?' do
+    subject(:password_authentication_disabled_by_enterprise_group?) { user.password_authentication_disabled_by_enterprise_group? }
+
+    let_it_be(:user) { create(:user) }
+
+    let_it_be(:root_group) { create(:group) }
+
+    let_it_be(:root_group_with_saml_provider) { create(:group) }
+    let_it_be(:saml_provider) { create(:saml_provider, group: root_group_with_saml_provider) }
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:enterprise_group, :saml_enabled?, :disable_password_authentication_for_enterprise_users?, :result) do
+      nil                                 | nil   | nil   | false
+      ref(:root_group)                    | nil   | nil   | false
+      ref(:root_group_with_saml_provider) | false | false | false
+      ref(:root_group_with_saml_provider) | false | true  | false
+      ref(:root_group_with_saml_provider) | true  | false | false
+      ref(:root_group_with_saml_provider) | true  | true  | true
+    end
+
+    with_them do
+      before do
+        user.user_detail.update!(enterprise_group: enterprise_group)
+
+        if enterprise_group&.saml_provider
+          enterprise_group.saml_provider.update!(
+            enabled: saml_enabled?,
+            disable_password_authentication_for_enterprise_users: disable_password_authentication_for_enterprise_users?
+          )
+        end
+      end
+
+      it { is_expected.to eq(result) }
     end
   end
 

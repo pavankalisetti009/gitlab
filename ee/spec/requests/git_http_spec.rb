@@ -253,6 +253,42 @@ RSpec.describe 'Git HTTP requests', feature_category: :source_code_management do
     end
   end
 
+  context 'when password authentication disabled by enterprise group' do
+    let_it_be(:enterprise_group) { create(:group) }
+    let_it_be(:saml_provider) { create(:saml_provider, group: enterprise_group, enabled: true, disable_password_authentication_for_enterprise_users: true) }
+
+    let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+    let_it_be(:project) { create(:project, :repository, :private, group: enterprise_group) }
+
+    let(:env) { { user: user.username, password: user.password } }
+    let(:path) { "#{project.full_path}.git" }
+
+    before do
+      project.add_developer(user)
+    end
+
+    it 'responds with status 401 Unauthorized for pull action' do
+      download(path, **env) do |response|
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    it 'responds with status 401 Unauthorized for push action' do
+      upload(path, **env) do |response|
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'when username and personal access token are provided' do
+      let(:access_token) { create(:personal_access_token, user: user) }
+      let(:env) { { user: user.username, password: access_token.token } }
+
+      it_behaves_like 'pulls are allowed'
+      it_behaves_like 'pushes are allowed'
+    end
+  end
+
   describe 'when namespace storage limits are enforced', :saas do
     let_it_be(:user) { create(:user) }
     let_it_be(:group, refind: true) { create(:group) }

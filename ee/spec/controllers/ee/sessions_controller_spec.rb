@@ -148,5 +148,27 @@ RSpec.describe SessionsController, :geo, feature_category: :system_access do
         expect(flash[:alert]).to include(I18n.t('devise.failure.invalid'))
       end
     end
+
+    context 'when password authentication disabled by enterprise group' do
+      let_it_be(:enterprise_group) { create(:group) }
+      let_it_be(:saml_provider) do
+        create(
+          :saml_provider,
+          group: enterprise_group,
+          enabled: true,
+          disable_password_authentication_for_enterprise_users: true
+        )
+      end
+
+      let_it_be(:user) { create(:enterprise_user, enterprise_group: enterprise_group) }
+
+      it 'does not authenticate the user' do
+        post(:create, params: { user: { login: user.username, password: user.password } })
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(@request.env['warden']).not_to be_authenticated
+        expect(flash[:alert]).to include(I18n.t('devise.failure.invalid'))
+      end
+    end
   end
 end

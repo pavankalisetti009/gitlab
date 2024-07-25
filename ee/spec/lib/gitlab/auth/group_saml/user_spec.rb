@@ -2,7 +2,7 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_category: :system_access do
-  let(:uid) { 1234 }
+  let(:uid) { '1234' }
   let(:saml_provider) { create(:saml_provider) }
   let(:group) { saml_provider.group }
   let(:auth_hash) { OmniAuth::AuthHash.new(uid: uid, provider: 'group_saml', info: info_hash, extra: { raw_info: OneLogin::RubySaml::Attributes.new }) }
@@ -113,6 +113,10 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
           expect { find_and_update }.to change { User.count }.by(1)
         end
 
+        it 'updates group membership' do
+          expect { find_and_update }.to change { group.members.count }.by(1)
+        end
+
         it 'does not confirm the user' do
           is_expected.not_to be_confirmed
         end
@@ -165,84 +169,39 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
           expect(response.errors['email']).to include(_('has already been taken'))
         end
 
-        context 'when user was provisioned by this group' do
+        context 'when user is an enterprise user of the group' do
           before do
-            user.update!(provisioned_by_group: group)
+            user.user_detail.update!(enterprise_group: saml_provider.group)
           end
 
-          it 'updates membership' do
+          it 'updates group membership' do
             expect { find_and_update }.to change { group.members.count }.by(1)
           end
 
-          it 'returns a user' do
+          it 'returns the user' do
             expect(find_and_update).to eq user
           end
 
-          it 'updates identity' do
-            expect { find_and_update }.to change { user.group_saml_identities.count }.by(1)
+          it 'adds group_saml identity' do
+            expect { find_and_update }
+              .to change { Identity.exists?(user: user, extern_uid: uid, provider: :group_saml, saml_provider_id: group.saml_provider.id) }
+              .from(false).to(true)
           end
 
-          context 'when user attributes are present' do
-            before do
-              user.update!(can_create_group: false, projects_limit: 10)
+          context 'when user has group_saml identity with different extern_uid' do
+            let!(:existing_group_saml_identity) { create(:group_saml_identity, user: user, extern_uid: 'some-other-name-id', saml_provider: saml_provider) }
 
-              auth_hash[:extra][:raw_info] =
-                OneLogin::RubySaml::Attributes.new(
-                  'can_create_group' => %w[true], 'projects_limit' => %w[20]
-                )
-            end
-
-            context 'when user is managed by group', :saas do
-              before do
-                stub_licensed_features(domain_verification: true)
-                user.user_detail.update!(enterprise_group: group)
-              end
-
-              it 'updates the user can_create_group attribute' do
-                expect(find_and_update.can_create_group).to eq(true)
-              end
-
-              it 'updates the user projects_limit attribute' do
-                expect(find_and_update.projects_limit).to eq(20)
-              end
-            end
-
-            context 'when user is not managed by group' do
-              it 'does not update the user can_create_group attribute' do
-                expect(find_and_update.can_create_group).to eq(false)
-              end
-
-              it 'does not update the user projects_limit attribute' do
-                expect(find_and_update.projects_limit).to eq(10)
-              end
-            end
-          end
-
-          context 'with block_password_auth_for_saml_users feature flag disabled' do
-            before do
-              stub_feature_flags(block_password_auth_for_saml_users: false)
-            end
-
-            it 'does not update membership' do
-              expect { find_and_update }.not_to change { group.members.count }
-            end
-
-            it 'returns a user with errors' do
-              response = find_and_update
-
-              expect(response).to be_a(User)
-              expect(response.errors['email']).to include(_('has already been taken'))
-            end
-
-            it 'does not update identity' do
-              expect { find_and_update }.not_to change { user.group_saml_identities.count }
+            it "updates the identity's extern_uid" do
+              expect { find_and_update }
+                .to change { existing_group_saml_identity.reload.extern_uid }
+                .from('some-other-name-id').to(uid)
             end
           end
         end
 
-        context 'when user was provisioned by different group' do
+        context 'when user is an enterprise user of another group' do
           before do
-            user.update!(provisioned_by_group: create(:group))
+            user.user_detail.update!(enterprise_group: create(:group))
           end
 
           it 'does not update membership' do
@@ -256,8 +215,16 @@ RSpec.describe Gitlab::Auth::GroupSaml::User, :aggregate_failures, feature_categ
             expect(response.errors['email']).to include(_('has already been taken'))
           end
 
-          it 'does not update identity' do
-            expect { find_and_update }.not_to change { user.group_saml_identities.count }
+          it 'does not add group_saml identity' do
+            expect { find_and_update }.not_to change { Identity.count }
+          end
+
+          context 'when user has group_saml identity with different extern_uid' do
+            let!(:existing_group_saml_identity) { create(:group_saml_identity, user: user, extern_uid: 'some-other-name-id', saml_provider: saml_provider) }
+
+            it "does not update the identity's extern_uid" do
+              expect { find_and_update }.not_to change { existing_group_saml_identity.reload.extern_uid }
+            end
           end
         end
       end

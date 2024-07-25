@@ -36,6 +36,13 @@ export default class SamlSettingsForm {
         el: this.form.querySelector('.js-group-saml-enabled-input'),
       },
       {
+        name: 'disable-password-authentication-for-enterprise-users',
+        el: this.form.querySelector(
+          '.js-group-saml-disable-password-authentication-for-enterprise-users-input',
+        ),
+        dependsOn: 'group-saml',
+      },
+      {
         name: 'enforced-sso',
         el: this.form.querySelector('.js-group-saml-enforced-sso-input'),
         dependsOn: 'group-saml',

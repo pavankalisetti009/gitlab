@@ -25591,6 +25591,9 @@ msgstr ""
 msgid "GroupSAML|Are you sure you want to reset the SCIM token? SCIM provisioning will stop working until the new token is updated."
 msgstr ""
 
+msgid "GroupSAML|Before disabling password authentication, enable SAML authentication."
+msgstr ""
+
 msgid "GroupSAML|Before enforcing SSO, enable SAML authentication."
 msgstr ""
 
@@ -25610,6 +25613,9 @@ msgid "GroupSAML|Could not create SAML group link: %{errors}."
 msgstr ""
 
 msgid "GroupSAML|Default membership role"
+msgstr ""
+
+msgid "GroupSAML|Disable password authentication for enterprise users"
 msgstr ""
 
 msgid "GroupSAML|Enable SAML authentication for this group"
