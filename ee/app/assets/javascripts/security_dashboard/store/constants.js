@@ -17,6 +17,8 @@ export const SEVERITY_LEVELS = {
   unknown: s__('severity|Unknown'),
 };
 
+export const SEVERITY_LEVELS_KEYS = Object.keys(SEVERITY_LEVELS);
+
 // The GraphQL type (`VulnerabilitySeverity`) for severities is an enum with uppercase values
 export const SEVERITY_LEVELS_GRAPHQL = Object.keys(SEVERITY_LEVELS).map((k) => k.toUpperCase());
 
@@ -29,6 +31,8 @@ export const REPORT_TYPES_DEFAULT = {
   sast: s__('ciReport|SAST'),
   secret_detection: s__('ciReport|Secret Detection'),
 };
+
+export const REPORT_TYPES_DEFAULT_KEYS = Object.keys(REPORT_TYPES_DEFAULT);
 
 export const REPORT_TYPES_CONTAINER_SCANNING_FOR_REGISTRY = {
   container_scanning_for_registry: s__('ciReport|Container Scanning for Registry'),
