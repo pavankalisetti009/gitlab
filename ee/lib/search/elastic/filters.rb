@@ -34,6 +34,34 @@ module Search
           end
         end
 
+        def by_target_branch(query_hash:, options:)
+          target_branch = options[:target_branch]
+          not_target_branch = options[:not_target_branch]
+
+          return query_hash unless target_branch || not_target_branch
+
+          context.name(:filters) do
+            should = []
+            if target_branch
+              should << { term: { target_branch: { _name: context.name(:target_branch), value: target_branch } } }
+            end
+
+            if not_target_branch
+              should << {
+                bool: {
+                  must_not: {
+                    term: { target_branch: { _name: context.name(:not_target_branch), value: not_target_branch } }
+                  }
+                }
+              }
+            end
+
+            add_filter(query_hash, :query, :bool, :filter) do
+              { bool: { should: should, minimum_should_match: 1 } }
+            end
+          end
+        end
+
         def by_author(query_hash:, options:)
           author_username = options[:author_username]
           not_author_username = options[:not_author_username]
