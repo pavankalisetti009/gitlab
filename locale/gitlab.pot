@@ -15006,7 +15006,7 @@ msgstr ""
 msgid "Control whether to display customer experience improvement content and third-party offers in GitLab."
 msgstr ""
 
-msgid "Control which CI/CD job tokens can be used to authenticate with this project."
+msgid "Control which projects can use CI/CD job tokens to authenticate with this project."
 msgstr ""
 
 msgid "Converts item to %{type}. Widgets not supported in new type are removed."
