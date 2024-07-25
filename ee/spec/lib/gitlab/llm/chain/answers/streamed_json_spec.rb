@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
-require 'fast_spec_helper'
+# require 'fast_spec_helper' -- this no longer runs under fast_spec_helper
+require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo_chat do
   describe "#next_chunk" do
