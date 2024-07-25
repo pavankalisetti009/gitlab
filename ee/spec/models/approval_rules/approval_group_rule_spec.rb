@@ -102,7 +102,8 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
       end
     end
 
-    context 'when only feature flag `group_protected_branches` is disabled' do
+    context 'when only feature flag `group_protected_branches` is disabled',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470289' do
       before do
         stub_feature_flags(group_protected_branches: false)
       end
@@ -110,7 +111,8 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
       it_behaves_like 'return protected branches'
     end
 
-    context 'when only feature flag `allow_protected_branches_for_group` is disabled' do
+    context 'when only feature flag `allow_protected_branches_for_group` is disabled',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470291' do
       before do
         stub_feature_flags(allow_protected_branches_for_group: false)
       end
@@ -118,7 +120,8 @@ RSpec.describe ApprovalRules::ApprovalGroupRule, feature_category: :source_code_
       it_behaves_like 'return protected branches'
     end
 
-    context 'when feature flags `group_protected_branches` and `allow_protected_branches_for_group` are enabled' do
+    context 'when feature flags `group_protected_branches` and `allow_protected_branches_for_group` are enabled',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/470293' do
       it_behaves_like 'return protected branches'
 
       it 'returns a collection excluding protected branches from a sub group' do
