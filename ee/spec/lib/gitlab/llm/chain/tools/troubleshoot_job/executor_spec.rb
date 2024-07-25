@@ -129,6 +129,18 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
 
           tool.execute
         end
+
+        context 'when log does not exist' do
+          before do
+            build.trace.erase!
+          end
+
+          it 'returns an error message' do
+            expect(tool.execute.content).to include(
+              "There is no job log to troubleshoot"
+            )
+          end
+        end
       end
 
       context 'when the feature is disabled' do

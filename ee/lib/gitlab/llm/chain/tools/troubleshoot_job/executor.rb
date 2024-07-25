@@ -77,6 +77,8 @@ module Gitlab
                               elsif !job.failed?
                                 _('This command is used for troubleshooting jobs and can only be invoked from ' \
                                   'a failed job log page.')
+                              elsif !job.trace.exist?
+                                _('There is no job log to troubleshoot.')
                               end
 
               return error_with_message(error_message) if error_message
