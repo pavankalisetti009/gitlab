@@ -54,7 +54,7 @@ module GitlabSubscriptions
       end
 
       def namespaces_eligible_for_trial
-        Users::DuoProTrialEligibleNamespacesFinder.new(user).execute
+        Users::AddOnTrialEligibleNamespacesFinder.new(user, add_on: :duo_pro).execute
       end
 
       def trial_user_params
