@@ -37,8 +37,11 @@ export const APPROVAL_POLICY_DEFAULT_POLICY = {
   name: '',
   description: '',
   enabled: true,
-  rules: [{ type: '', id: 'rule_0' }],
-  actions: [{ type: 'require_approval', approvals_required: 1, id: 'action_0' }],
+  rules: [{ type: '', id: 'rule_2' }],
+  actions: [
+    { type: 'require_approval', approvals_required: 1, id: 'action_0' },
+    { type: 'send_bot_message', enabled: true, id: 'action_1' },
+  ],
   approval_settings: {
     block_branch_modification: true,
     prevent_pushing_and_force_pushing: true,
@@ -53,14 +56,6 @@ export const APPROVAL_POLICY_DEFAULT_POLICY = {
 export const APPROVAL_POLICY_DEFAULT_POLICY_WITH_SCOPE = {
   ...APPROVAL_POLICY_DEFAULT_POLICY,
   policy_scope: { projects: { excluding: [] } },
-};
-
-export const APPROVAL_POLICY_DEFAULT_POLICY_WITH_BOT_MESSAGE = {
-  ...APPROVAL_POLICY_DEFAULT_POLICY,
-  actions: [
-    ...APPROVAL_POLICY_DEFAULT_POLICY.actions,
-    { type: 'send_bot_message', enabled: true, id: 'action_1' },
-  ],
 };
 
 export const SCAN_EXECUTION_DEFAULT_POLICY = {

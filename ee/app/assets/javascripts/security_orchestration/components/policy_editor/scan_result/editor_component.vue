@@ -3,7 +3,6 @@ import { isEmpty, uniqBy } from 'lodash';
 import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
 import { joinPaths, visitUrl, setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
 
 import {
@@ -25,7 +24,6 @@ import DimDisableContainer from '../dim_disable_container.vue';
 import ScanFilterSelector from '../scan_filter_selector.vue';
 import SettingsSection from './settings/settings_section.vue';
 import ActionSection from './action/action_section.vue';
-import ApproverAction from './action/approver_action.vue';
 import RuleSection from './rule/rule_section.vue';
 import FallbackSection from './fallback_section.vue';
 import { CLOSED } from './constants';
@@ -79,10 +77,6 @@ export default {
     settingWarningDescription: s__(
       "SecurityOrchestration|For any MR that matches this policy's rules, only the override project approval settings apply and bot message enabled. No additional approvals are required.",
     ),
-    oldSettingWarningTitle: s__('SecurityOrchestration|Only overriding settings will take effect'),
-    oldSettingWarningDescription: s__(
-      "SecurityOrchestration|For any MR that matches this policy's rules, only the override project approval settings apply. No additional approvals are required.",
-    ),
     settingErrorTitle: s__('SecurityOrchestration|Cannot create an empty policy'),
     settingErrorDescription: s__(
       "SecurityOrchestration|This policy doesn't contain any actions or override project approval settings. You cannot create an empty policy.",
@@ -90,7 +84,6 @@ export default {
   },
   components: {
     ActionSection,
-    ApproverAction,
     DimDisableContainer,
     FallbackSection,
     GlAlert,
@@ -101,7 +94,6 @@ export default {
     ScanFilterSelector,
     SettingsSection,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
@@ -128,14 +120,7 @@ export default {
     },
   },
   data() {
-    const includeBotComment =
-      this.glFeatures.approvalPolicyDisableBotComment ||
-      this.glFeatures.approvalPolicyDisableBotCommentGroup;
-
-    const newPolicyYaml = getPolicyYaml({
-      includeBotComment,
-      isGroup: isGroup(this.namespaceType),
-    });
+    const newPolicyYaml = getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
 
     const yamlEditorValue = this.existingPolicy ? policyToYaml(this.existingPolicy) : newPolicyYaml;
 
@@ -202,9 +187,9 @@ export default {
       return this.policy.actions?.some(({ type }) => type === REQUIRE_APPROVAL_TYPE);
     },
     hasEmptyActions() {
-      return this.showBotMessageAction
-        ? this.policy.actions?.every(({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled)
-        : !this.policy.actions?.length;
+      return this.policy.actions?.every(
+        ({ type, enabled }) => type === BOT_MESSAGE_TYPE && !enabled,
+      );
     },
     hasEmptyRules() {
       return this.policy.rules?.length === 0 || this.policy.rules?.at(0)?.type === '';
@@ -243,25 +228,11 @@ export default {
         };
       }
 
-      if (this.showBotMessageAction) {
-        return {
-          variant: 'warning',
-          title: this.$options.i18n.settingWarningTitle,
-          description: this.$options.i18n.settingWarningDescription,
-        };
-      }
-
       return {
         variant: 'warning',
-        title: this.$options.i18n.oldSettingWarningTitle,
-        description: this.$options.i18n.oldSettingWarningDescription,
+        title: this.$options.i18n.settingWarningTitle,
+        description: this.$options.i18n.settingWarningDescription,
       };
-    },
-    showBotMessageAction() {
-      return (
-        this.glFeatures.approvalPolicyDisableBotComment ||
-        this.glFeatures.approvalPolicyDisableBotCommentGroup
-      );
     },
   },
   watch: {
@@ -276,32 +247,6 @@ export default {
   methods: {
     ruleHasBranchesProperty(rule) {
       return BRANCHES_KEY in rule;
-    },
-    oldAddAction(type) {
-      // TODO: Remove with the approvalPolicyDisableBotComment feature flags
-      const newAction = buildAction(type);
-      this.policy = {
-        ...this.policy,
-        actions: this.policy.actions ? [...this.policy.actions, newAction] : [newAction],
-      };
-      this.updateYamlEditorValue(this.policy);
-    },
-    oldRemoveAction(index) {
-      // TODO: Remove with the approvalPolicyDisableBotComment feature flags
-      const { actions, ...newPolicy } = this.policy;
-      actions.splice(index, 1);
-      this.policy = { ...newPolicy, ...(actions.length ? { actions } : {}) };
-      this.updateYamlEditorValue(this.policy);
-      this.updatePolicyApprovers({});
-    },
-    oldUpdateAction(actionIndex, values) {
-      // TODO: Remove with the approvalPolicyDisableBotComment feature flags
-      this.policy.actions.splice(actionIndex, 1, values);
-      this.errors = {
-        ...this.errors,
-        action: [],
-      };
-      this.updateYamlEditorValue(this.policy);
     },
     addAction(type) {
       if (type === BOT_MESSAGE_TYPE && this.hasDisabledBotMessageAction) {
@@ -550,51 +495,29 @@ export default {
           <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
         </template>
 
-        <div v-if="showBotMessageAction">
-          <action-section
-            v-for="(action, index) in actionsForRuleMode"
-            :key="action.id"
-            :data-testid="`action-${index}`"
-            class="gl-mb-4"
-            :action-index="index"
-            :init-action="action"
-            :errors="errors.action"
-            :existing-approvers="existingApprovers"
-            @error="handleParsingError"
-            @updateApprovers="updatePolicyApprovers"
-            @changed="updateAction"
-            @remove="removeApproverAction"
-          />
+        <action-section
+          v-for="(action, index) in actionsForRuleMode"
+          :key="action.id"
+          :data-testid="`action-${index}`"
+          class="gl-mb-4"
+          :action-index="index"
+          :init-action="action"
+          :errors="errors.action"
+          :existing-approvers="existingApprovers"
+          @error="handleParsingError"
+          @updateApprovers="updatePolicyApprovers"
+          @changed="updateAction"
+          @remove="removeApproverAction"
+        />
 
-          <scan-filter-selector
-            v-if="availableActionListboxItems.length"
-            class="gl-w-full"
-            :button-text="$options.i18n.buttonText"
-            :header="$options.i18n.filterHeaderText"
-            :filters="availableActionListboxItems"
-            @select="addAction"
-          />
-        </div>
-        <div v-else-if="Boolean(policy.actions)">
-          <approver-action
-            v-for="(action, index) in policy.actions"
-            :key="action.id"
-            :data-testid="`action-${index}`"
-            class="gl-mb-4"
-            :init-action="action"
-            :errors="errors.action"
-            :existing-approvers="existingApprovers"
-            @error="handleParsingError"
-            @updateApprovers="updatePolicyApprovers"
-            @changed="oldUpdateAction(index, $event)"
-            @remove="oldRemoveAction(index)"
-          />
-        </div>
-        <div v-else class="gl-bg-gray-10 gl-rounded-base gl-p-5 gl-mb-5">
-          <gl-button variant="link" data-testid="add-action" icon="plus" @click="oldAddAction">
-            {{ $options.i18n.ADD_ACTION_LABEL }}
-          </gl-button>
-        </div>
+        <scan-filter-selector
+          v-if="availableActionListboxItems.length"
+          class="gl-w-full"
+          :button-text="$options.i18n.buttonText"
+          :header="$options.i18n.filterHeaderText"
+          :filters="availableActionListboxItems"
+          @select="addAction"
+        />
       </dim-disable-container>
     </template>
     <template #settings>

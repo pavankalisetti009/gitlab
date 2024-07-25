@@ -30,6 +30,8 @@ actions:
     approvals_required: 1
     user_approvers:
       - the.one
+  - type: send_bot_message
+    enabled: true
 `;
 
 export const mockDefaultBranchesScanResultManifest =
@@ -60,22 +62,11 @@ export const mockDefaultBranchesScanResultObject = {
       user_approvers: ['the.one'],
       id: actionId,
     },
+    { type: 'send_bot_message', enabled: true, id: `action_0` },
   ],
   fallback_behavior: {
     fail: 'open',
   },
-};
-
-export const mockBotMessageScanResultObject = {
-  type: 'approval_policy',
-  name: 'Add bot message',
-  description: '',
-  enabled: true,
-  rules: [],
-  actions: [
-    { type: 'require_approval', approvals_required: 1 },
-    { type: 'send_bot_message', enabled: true },
-  ],
 };
 
 export const mockDeprecatedScanResultManifest = `type: scan_result_policy
