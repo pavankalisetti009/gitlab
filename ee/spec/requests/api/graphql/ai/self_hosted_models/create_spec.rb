@@ -48,22 +48,46 @@ RSpec.describe 'Creating a self-hosted model', feature_category: :custom_models 
   end
 
   context 'when user is allowed to write changes' do
-    let(:expected_result) do
-      {
-        "name" => 'ollama1-mistral',
-        "endpoint" => 'http://localhost:8080',
-        "model" => 'mistral',
-        "hasApiToken" => true
-      }
-    end
-
     it_behaves_like 'it calls the manage_ai_settings policy'
 
-    it 'creates a self-hosted model' do
-      post_graphql_mutation(mutation, current_user: current_user)
+    context 'when there are errors with creating the self-hosted model' do
+      let(:input) do
+        {
+          "name" => '',
+          "endpoint" => 'http://localhost:8080',
+          "model" => 'MISTRAL',
+          "api_token" => "test_api_token"
+        }
+      end
 
-      expect(response).to have_gitlab_http_status(:success)
-      expect(mutation_response['selfHostedModel']).to include(**expected_result)
+      it 'returns an error message' do
+        post_graphql_mutation(mutation, current_user: current_user)
+
+        expect(mutation_response['selfHostedModel']).to be(nil)
+        expect(mutation_response['errors']).to include("Validation failed: Name can't be blank")
+      end
+
+      it 'does not create a self-hosted model' do
+        expect { request }.not_to change { ::Ai::SelfHostedModel.count }
+      end
+    end
+
+    context 'when there are no errors' do
+      let(:expected_result) do
+        {
+          "name" => 'ollama1-mistral',
+          "endpoint" => 'http://localhost:8080',
+          "model" => 'mistral',
+          "hasApiToken" => true
+        }
+      end
+
+      it 'creates a self-hosted model' do
+        post_graphql_mutation(mutation, current_user: current_user)
+
+        expect(response).to have_gitlab_http_status(:success)
+        expect(mutation_response['selfHostedModel']).to include(**expected_result)
+      end
     end
   end
 end

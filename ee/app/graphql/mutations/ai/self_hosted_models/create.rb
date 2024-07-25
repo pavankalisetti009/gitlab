@@ -35,7 +35,12 @@ module Mutations
 
           {
             self_hosted_model: model,
-            errors: errors_on_object(model)
+            errors: [] # Errors are rescued below
+          }
+        rescue ActiveRecord::RecordInvalid => e
+          {
+            self_hosted_model: nil,
+            errors: [e.message]
           }
         end
       end
