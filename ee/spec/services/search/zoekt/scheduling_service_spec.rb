@@ -336,6 +336,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           index = zkt_enabled_namespace2.indices.last
           expect(index).not_to be_nil
           expect(index.namespace_id).to eq zkt_enabled_namespace2.root_namespace_id
+          expect(index.reserved_storage_bytes).not_to be_nil
           expect(index).to be_pending
         end
 
