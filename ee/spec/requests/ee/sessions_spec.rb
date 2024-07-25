@@ -41,19 +41,6 @@ RSpec.describe 'Sessions', feature_category: :system_access do
           expect(response.cookies['gitlab_tier']).to be_present
         end
       end
-
-      context 'when the add_gitlab_tier_cookie feature flag is disabled' do
-        before do
-          stub_feature_flags(add_gitlab_tier_cookie: false)
-        end
-
-        it 'does not set the tier cookie' do
-          post user_session_path(user: { login: user.username, password: user.password })
-
-          expect(response.cookies['gitlab_user']).to be_present
-          expect(response.cookies['gitlab_tier']).to be_nil
-        end
-      end
     end
 
     context 'when the gitlab_com_subscriptions saas feature is not available' do

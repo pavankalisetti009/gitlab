@@ -16,8 +16,6 @@ module EE
             expires: expiration_time
           }
 
-        return if ::Feature.disabled?(:add_gitlab_tier_cookie, ::Feature.current_request)
-
         tiers = GitlabSubscriptions::CurrentActivePlansForUserFinder.new(user).execute.pluck(:name) # rubocop:disable Database/AvoidUsingPluckWithoutLimit -- False positive as limit is defined in finder
 
         auth.cookies[:gitlab_tier] = {
