@@ -9646,7 +9646,8 @@ CREATE TABLE deploy_tokens (
     write_registry boolean DEFAULT false NOT NULL,
     read_package_registry boolean DEFAULT false NOT NULL,
     write_package_registry boolean DEFAULT false NOT NULL,
-    creator_id bigint
+    creator_id bigint,
+    read_virtual_registry boolean DEFAULT false NOT NULL
 );
 
 CREATE SEQUENCE deploy_tokens_id_seq
