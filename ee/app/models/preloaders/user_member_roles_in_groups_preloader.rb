@@ -76,7 +76,7 @@ module Preloaders
         .where(permission_condition)
         .to_sql
 
-      if Feature.enabled?(:assign_custom_roles_to_group_links, user)
+      if Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
         group_link_member = GroupGroupLink.select(permission_columns)
           .joins(:member_role)
           .where('group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)')

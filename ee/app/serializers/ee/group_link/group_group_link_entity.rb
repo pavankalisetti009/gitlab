@@ -20,7 +20,7 @@ module EE
 
         def can_assign_custom_roles_to_group_links?(group_link)
           group_link.shared_group.custom_roles_enabled? &&
-            ::Feature.enabled?(:assign_custom_roles_to_group_links, current_user)
+            ::Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
         end
 
         def custom_roles(group_link)
