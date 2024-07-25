@@ -584,7 +584,7 @@ gem 'gitlab-mail_room', '~> 0.0.24', require: 'mail_room', feature_category: :sh
 gem 'email_reply_trimmer', '~> 0.1' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'html2text' # rubocop:todo Gemfile/MissingFeatureCategory
 
-gem 'stackprof', '~> 0.2.25', require: false # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'stackprof', '~> 0.2.26', require: false, feature_category: :shared
 gem 'rbtrace', '~> 0.4', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'memory_profiler', '~> 1.0', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'activerecord-explain-analyze', '~> 0.1', require: false # rubocop:todo Gemfile/MissingFeatureCategory
