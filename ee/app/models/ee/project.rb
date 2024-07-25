@@ -1305,7 +1305,19 @@ module EE
       licensed_feature_available?(:ai_features) || licensed_feature_available?(:ai_chat)
     end
 
+    def path_locks_changed_epoch
+      get_epoch_from(path_locks_changed_epoch_cache_key)
+    end
+
+    def refresh_path_locks_changed_epoch
+      refresh_epoch_cache(path_locks_changed_epoch_cache_key)
+    end
+
     private
+
+    def path_locks_changed_epoch_cache_key
+      "project:#{id}:path_locks_changed_epoch"
+    end
 
     def latest_ingested_sbom_pipeline_id_redis_key
       "latest_ingested_sbom_pipeline_id/#{id}"
