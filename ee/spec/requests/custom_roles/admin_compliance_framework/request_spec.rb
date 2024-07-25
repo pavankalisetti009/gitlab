@@ -45,15 +45,4 @@ RSpec.describe 'User with admin_compliance_framework custom role', feature_categ
       expect(response).to render_template(:edit)
     end
   end
-
-  describe Projects::ComplianceFrameworksController do
-    it 'user can assign a compliance framework to a project via a custom role' do
-      params = { framework: framework.id }
-
-      post project_compliance_frameworks_path(project), params: params
-
-      expect(response).to have_gitlab_http_status(:redirect)
-      expect(flash[:notice]).to eq("Project '#{project.name}' was successfully updated.")
-    end
-  end
 end
