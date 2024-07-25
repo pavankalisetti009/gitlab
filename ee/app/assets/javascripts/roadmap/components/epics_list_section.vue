@@ -84,7 +84,8 @@ export default {
     epicsWithAssociatedParents() {
       return this.epics.filter((epic) => {
         if (epic.hasParent) {
-          if (epic.parent.startDate && epic.parent.dueDate) {
+          // In case `epic.parent` is null, user doesn't have access to parent and in that case, we just show current epic as is.
+          if (epic.parent?.startDate && epic.parent?.dueDate) {
             return this.epicIds.indexOf(epic.parent.id) < 0;
           }
           return epic.ancestors.nodes.every((ancestor) => this.epicIds.indexOf(ancestor.id) < 0);
@@ -142,9 +143,15 @@ export default {
           scrollToCurrentDay(this.$el);
         });
 
-        if (!Object.keys(this.emptyRowContainerStyles).length) {
-          this.emptyRowContainerStyles = this.getEmptyRowContainerStyles();
-        }
+        // Without setTimeout (or any form of deferred execution), when `getEmptyRowContainerStyles` function called,
+        // the props that the function relies on aren't available yet, so props like `bufferSize`, `displayedEpics`
+        // are still in process of initialization, and in that case, `emptyRowContainerStyles` is never initialised
+        // causing the element not to get the style definition it needs. Also, using `$nextTick` doesn't help here.
+        setTimeout(() => {
+          if (!Object.keys(this.emptyRowContainerStyles).length) {
+            this.emptyRowContainerStyles = this.getEmptyRowContainerStyles();
+          }
+        });
       });
 
       this.syncClientWidth();
