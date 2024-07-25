@@ -1,8 +1,9 @@
-import { GlCard, GlIcon, GlLoadingIcon } from '@gitlab/ui';
+import { GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import DrawerRuleCreate from 'ee/approvals/components/rule_drawer/create_rule.vue';
 import ModalRuleRemove from 'ee/approvals/components/rule_modal/remove_rule.vue';
@@ -29,7 +30,7 @@ describe('EE Approvals App', () => {
       store: new Vuex.Store(store),
       propsData,
       stubs: {
-        GlCard,
+        CrudComponent,
       },
       provide: {
         glFeatures: {
@@ -43,8 +44,8 @@ describe('EE Approvals App', () => {
   const findResetButton = () => wrapper.find('[data-testid="reset-to-defaults"]');
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findRules = () => wrapper.find(`.${TEST_RULES_CLASS}`);
-  const findRulesCount = () => wrapper.findByTestId('rules-count');
-  const findRulesCountIcon = () => wrapper.findComponent(GlIcon);
+  const findRulesCount = () => wrapper.findByTestId('crud-count');
+  const findRulesCountIcon = () => wrapper.findByTestId('crud-icon');
   const findRuleCreateDrawer = () => wrapper.findComponent(DrawerRuleCreate);
 
   beforeEach(() => {
