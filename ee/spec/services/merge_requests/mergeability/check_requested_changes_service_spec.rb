@@ -36,14 +36,6 @@ RSpec.describe MergeRequests::Mergeability::CheckRequestedChangesService, featur
     end
   end
 
-  context 'when feature flag is disabled' do
-    before do
-      stub_feature_flags(mr_reviewer_requests_changes: false)
-    end
-
-    it { expect(result.status).to eq Gitlab::MergeRequests::Mergeability::CheckResult::INACTIVE_STATUS }
-  end
-
   context 'when license is invalid' do
     before do
       stub_licensed_features(requested_changes_block_merge_request: false)

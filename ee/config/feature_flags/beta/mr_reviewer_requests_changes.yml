@@ -1,9 +1,0 @@
----
-name: mr_reviewer_requests_changes
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/430728
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146895
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/451211
-milestone: '16.11'
-group: group::code review
-type: beta
-default_enabled: true
