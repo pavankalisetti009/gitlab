@@ -148,12 +148,19 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
       end
     end
 
-    describe 'start dates' do
+    describe 'dates' do
       let_it_be(:expected_start_date) { Time.current.to_date }
       let_it_be(:expected_due_date) { expected_start_date + 2.days }
+      let_it_be(:milestone) { create(:milestone) }
+      let_it_be(:start_date_sourcing_epic) { create(:epic) }
+      let_it_be(:due_date_sourcing_epic) { create(:epic) }
+
       let_it_be_with_reload(:epic) do
         create(:epic, :with_synced_work_item, group: group, start_date_fixed: expected_start_date,
-          due_date_fixed: expected_due_date, start_date_is_fixed: true, due_date_is_fixed: true
+          due_date_fixed: expected_due_date, start_date_is_fixed: true, due_date_is_fixed: true,
+          start_date_sourcing_milestone_id: milestone.id, due_date_sourcing_milestone_id: milestone.id,
+          start_date_sourcing_epic: start_date_sourcing_epic,
+          due_date_sourcing_epic: due_date_sourcing_epic
         )
       end
 
@@ -164,14 +171,25 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
             :fixed,
             work_item: work_item,
             start_date: expected_start_date,
-            due_date: expected_due_date)
+            due_date: expected_due_date,
+            start_date_sourcing_milestone_id: milestone.id,
+            due_date_sourcing_milestone_id: milestone.id,
+            start_date_sourcing_work_item_id: start_date_sourcing_epic.issue_id,
+            due_date_sourcing_work_item_id: due_date_sourcing_epic.issue_id
+          )
         end
 
         it { is_expected.to be_empty }
       end
 
       context 'when it is different' do
-        it { is_expected.to include("start_date_fixed", "due_date_fixed", "start_date_is_fixed", "due_date_is_fixed") }
+        it do
+          is_expected.to include(
+            "start_date_fixed", "due_date_fixed", "start_date_is_fixed", "due_date_is_fixed",
+            "start_date_sourcing_milestone", "due_date_sourcing_milestone",
+            "start_date_sourcing_epic", "due_date_sourcing_epic"
+          )
+        end
       end
     end
 

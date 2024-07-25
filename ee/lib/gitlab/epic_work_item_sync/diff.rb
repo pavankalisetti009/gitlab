@@ -43,10 +43,7 @@ module Gitlab
         check_parent
         check_child_issues
         check_relative_position
-        check_start_date_is_fixed
-        check_start_date_fixed
-        check_due_date_is_fixed
-        check_due_date_fixed
+        check_dates
         check_related_epic_links
 
         mismatched_attributes
@@ -109,30 +106,61 @@ module Gitlab
         mismatched_attributes.push("relative_position")
       end
 
-      def check_start_date_is_fixed
-        return if epic.start_date_is_fixed == work_item.dates_source&.start_date_is_fixed
-        return if epic.start_date_is_fixed.nil? && work_item.dates_source.start_date_is_fixed == false
+      def check_dates
+        work_item_dates_source = work_item.dates_source
+
+        check_start_date_is_fixed(work_item_dates_source)
+        check_start_date_fixed(work_item_dates_source)
+        check_due_date_is_fixed(work_item_dates_source)
+        check_due_date_fixed(work_item_dates_source)
+        check_source_milestone(work_item_dates_source)
+        check_source_epic(work_item_dates_source)
+      end
+
+      def check_start_date_is_fixed(dates_source)
+        return if epic.start_date_is_fixed == dates_source&.start_date_is_fixed
+        return if epic.start_date_is_fixed.nil? && dates_source.start_date_is_fixed == false
 
         mismatched_attributes.push("start_date_is_fixed")
       end
 
-      def check_start_date_fixed
-        return if epic.start_date_fixed == work_item.dates_source&.start_date_fixed
+      def check_start_date_fixed(dates_source)
+        return if epic.start_date_fixed == dates_source&.start_date_fixed
 
         mismatched_attributes.push("start_date_fixed")
       end
 
-      def check_due_date_is_fixed
-        return if epic.due_date_is_fixed == work_item.dates_source&.due_date_is_fixed
-        return if epic.due_date_is_fixed.nil? && work_item.dates_source.due_date_is_fixed == false
+      def check_due_date_is_fixed(dates_source)
+        return if epic.due_date_is_fixed == dates_source&.due_date_is_fixed
+        return if epic.due_date_is_fixed.nil? && dates_source.due_date_is_fixed == false
 
         mismatched_attributes.push("due_date_is_fixed")
       end
 
-      def check_due_date_fixed
-        return if epic.due_date_fixed == work_item.dates_source&.due_date_fixed
+      def check_due_date_fixed(dates_source)
+        return if epic.due_date_fixed == dates_source&.due_date_fixed
 
         mismatched_attributes.push("due_date_fixed")
+      end
+
+      def check_source_milestone(dates_source)
+        if epic.start_date_sourcing_milestone_id != dates_source&.start_date_sourcing_milestone_id
+          mismatched_attributes.push("start_date_sourcing_milestone")
+        end
+
+        return if epic.due_date_sourcing_milestone_id == dates_source&.due_date_sourcing_milestone_id
+
+        mismatched_attributes.push("due_date_sourcing_milestone")
+      end
+
+      def check_source_epic(dates_source)
+        if epic.start_date_sourcing_epic&.issue_id != dates_source&.start_date_sourcing_work_item_id
+          mismatched_attributes.push("start_date_sourcing_epic")
+        end
+
+        return if epic.due_date_sourcing_epic&.issue_id == dates_source&.due_date_sourcing_work_item_id
+
+        mismatched_attributes.push("due_date_sourcing_epic")
       end
 
       def check_related_epic_links
