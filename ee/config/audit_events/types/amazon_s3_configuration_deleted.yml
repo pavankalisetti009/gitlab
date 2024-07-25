@@ -7,4 +7,4 @@ feature_category: audit_events
 milestone: '16.5'
 saved_to_database: true
 streamed: true
-scope: ["Group"]
+scope: [Group]
