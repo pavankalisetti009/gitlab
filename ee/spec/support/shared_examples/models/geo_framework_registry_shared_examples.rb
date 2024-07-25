@@ -269,6 +269,7 @@ RSpec.shared_examples 'a Geo framework registry' do
           class: registry.class.name,
           registry_id: registry.id,
           model_record_id: registry.model_record_id,
+          from: 'started',
           to: 'synced'
         )
       )
