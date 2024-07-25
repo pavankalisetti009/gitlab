@@ -53431,9 +53431,6 @@ msgstr ""
 msgid "The invitation has already been accepted."
 msgstr ""
 
-msgid "The invitation is not valid"
-msgstr ""
-
 msgid "The invitation was successfully resent."
 msgstr ""
 
@@ -57845,6 +57842,12 @@ msgstr ""
 msgid "UserMapping|Reassigning"
 msgstr ""
 
+msgid "UserMapping|Reassignment approved"
+msgstr ""
+
+msgid "UserMapping|Reassignment cancelled"
+msgstr ""
+
 msgid "UserMapping|Reassignment details:"
 msgstr ""
 
@@ -57855,6 +57858,9 @@ msgid "UserMapping|Reassignment has not started."
 msgstr ""
 
 msgid "UserMapping|Reassignment in progress."
+msgstr ""
+
+msgid "UserMapping|Reassignment rejected"
 msgstr ""
 
 msgid "UserMapping|Reassignment status"
@@ -57884,6 +57890,18 @@ msgstr ""
 msgid "UserMapping|Select user"
 msgstr ""
 
+msgid "UserMapping|The invitation could not be accepted."
+msgstr ""
+
+msgid "UserMapping|The invitation could not be declined."
+msgstr ""
+
+msgid "UserMapping|The invitation is not valid"
+msgstr ""
+
+msgid "UserMapping|The reassignment has been cancelled by the group owner."
+msgstr ""
+
 msgid "UserMapping|There was a problem cancelling placeholder user reassignment."
 msgstr ""
 
@@ -57900,6 +57918,12 @@ msgid "UserMapping|To learn more about reassignments, %{link_start}visit the doc
 msgstr ""
 
 msgid "UserMapping|To learn more about reassignments, visit the docs (%{help_link}). If you don't recognize this request, report abuse (%{report_link})."
+msgstr ""
+
+msgid "UserMapping|You have approved the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}. Reassignment processing is in progress. You&#39;ll have access to the group soon."
+msgstr ""
+
+msgid "UserMapping|You have rejected the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}."
 msgstr ""
 
 msgid "UserProfile|%{count} %{file}"
