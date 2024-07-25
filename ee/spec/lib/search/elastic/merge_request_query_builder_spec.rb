@@ -181,6 +181,54 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
         end
       end
     end
+
+    describe 'labels' do
+      let_it_be(:label) { create(:label, project: authorized_project) }
+
+      before do
+        set_elasticsearch_migration_to(:reindex_merge_requests_to_backfill_label_ids, including: true)
+      end
+
+      context 'when search_mr_filter_label_ids flag is false' do
+        before do
+          stub_feature_flags(search_mr_filter_label_ids: false)
+        end
+
+        it 'does not include labels filter by default' do
+          assert_names_in_query(build, without: %w[filters:label_ids])
+        end
+
+        context 'when label_name option is provided' do
+          let(:options) { base_options.merge(label_name: [label.name]) }
+
+          it 'does not include labels filter' do
+            assert_names_in_query(build, without: %w[filters:label_ids])
+          end
+        end
+      end
+
+      it 'does not include labels filter by default' do
+        assert_names_in_query(build, without: %w[filters:label_ids])
+      end
+
+      context 'when label_name option is provided' do
+        let(:options) { base_options.merge(label_name: [label.name]) }
+
+        it 'applies label filters' do
+          assert_names_in_query(build, with: %w[filters:label_ids])
+        end
+
+        context 'when the migration is not finished' do
+          before do
+            set_elasticsearch_migration_to(:reindex_merge_requests_to_backfill_label_ids, including: false)
+          end
+
+          it 'does not include labels filter' do
+            assert_names_in_query(build, without: %w[filters:label_ids])
+          end
+        end
+      end
+    end
   end
 
   it_behaves_like 'a sorted query'
