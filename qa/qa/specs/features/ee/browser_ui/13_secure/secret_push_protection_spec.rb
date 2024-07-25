@@ -8,6 +8,7 @@ module QA
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
       end
 
+      # In reverse so that the test itself does not flag up a secret detection issue
       let(:reverse_token_prefix) { 'taplg' }
       let(:test_token) { '-JUST20LETTERSANDNUMB' }
 

@@ -48,18 +48,21 @@ module QA
 
     context 'when Advanced SAST is enabled' do
       it 'finds a vulnerability', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/471561' do
-        Resource::Repository::ProjectPush.fabricate! do |push|
-          push.project = project
-          push.file_name = '.gitlab-ci.yml'
-          push.file_content = File.read(
-            File.join(
-              EE::Runtime::Path.fixtures_path, 'secure_advanced_sast_files',
-              '.gitlab-ci.yml'
-            )
-          )
-          push.commit_message = 'Commit .gitlab-ci.yml'
-          push.new_branch = false
-        end
+        create(:commit,
+          project: project,
+          branch: project.default_branch,
+          commit_message: 'Commit .gitlab-ci.yml',
+          actions: [
+            {
+              action: 'create',
+              file_path: '.gitlab-ci.yml',
+              content: File.read(
+                File.join(
+                  EE::Runtime::Path.fixtures_path, 'secure_advanced_sast_files',
+                  '.gitlab-ci.yml'
+                ))
+            }
+          ])
 
         Flow::Login.sign_in_unless_signed_in
         project.visit!
