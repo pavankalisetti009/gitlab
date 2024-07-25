@@ -1,5 +1,9 @@
 import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 
+const BOT_ACTION = `  - type: send_bot_message
+    enabled: true
+`;
+
 const SETTINGS = `approval_settings:
   block_branch_modification: true
   prevent_pushing_and_force_pushing: true
@@ -42,6 +46,7 @@ actions:
     role_approvers:
       - developer
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -57,6 +62,7 @@ actions:
     user_approvers_ids:
       - ${USER.id}
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -75,6 +81,7 @@ actions:
     group_approvers_ids:
       - ${GROUP.id}
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -92,6 +99,7 @@ actions:
   - type: require_approval
     approvals_required: 1
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -110,6 +118,7 @@ actions:
   - type: require_approval
     approvals_required: 1
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);
 
@@ -125,5 +134,6 @@ actions:
   - type: require_approval
     approvals_required: 1
 `
+  .concat(BOT_ACTION)
   .concat(SETTINGS)
   .concat(FALLBACK);

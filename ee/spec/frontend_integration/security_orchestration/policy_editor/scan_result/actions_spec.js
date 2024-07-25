@@ -68,7 +68,7 @@ describe('Scan result policy actions', () => {
     it('should render action section', () => {
       expect(findApproverAction().exists()).toBe(true);
       expect(findYamlPreview(wrapper).text()).toContain(
-        'actions:\n  - type: require_approval\n    approvals_required: 1',
+        'actions:\n  - type: require_approval\n    approvals_required: 1\n  - type: send_bot_message\n    enabled: true',
       );
     });
   });
