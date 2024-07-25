@@ -16,6 +16,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
+msgid " %{link_start}Learn More%{link_end}."
+msgstr ""
+
 msgid " %{start} to %{end}"
 msgstr ""
 
@@ -3137,10 +3140,10 @@ msgstr ""
 msgid "Add comment to review"
 msgstr ""
 
-msgid "Add commit messages as comments to Asana tasks. %{docs_link}"
+msgid "Add commit messages as comments to Asana tasks."
 msgstr ""
 
-msgid "Add commit messages as comments to Pivotal Tracker stories. %{docs_link}"
+msgid "Add commit messages as comments to Pivotal Tracker stories."
 msgstr ""
 
 msgid "Add customer relation contacts"
@@ -8008,7 +8011,7 @@ msgstr ""
 msgid "BambooService|Run CI/CD pipelines with Atlassian Bamboo."
 msgstr ""
 
-msgid "BambooService|Run CI/CD pipelines with Atlassian Bamboo. You must set up automatic revision labeling and a repository trigger in Bamboo. %{docs_link}"
+msgid "BambooService|Run CI/CD pipelines with Atlassian Bamboo. You must set up automatic revision labeling and a repository trigger in Bamboo."
 msgstr ""
 
 msgid "BambooService|User with API access to the Bamboo server."
@@ -28291,7 +28294,7 @@ msgstr ""
 msgid "Integrations|Send notifications about project events to Unify Circuit."
 msgstr ""
 
-msgid "Integrations|Send notifications about project events to a Unify Circuit conversation. %{docs_link}"
+msgid "Integrations|Send notifications about project events to a Unify Circuit conversation."
 msgstr ""
 
 msgid "Integrations|Standard"
@@ -28959,9 +28962,6 @@ msgstr ""
 msgid "IssueTracker|Use Bugzilla as this project's issue tracker."
 msgstr ""
 
-msgid "IssueTracker|Use Bugzilla as this project's issue tracker. %{docs_link}"
-msgstr ""
-
 msgid "IssueTracker|Use ClickUp as this project's issue tracker. %{docs_link}"
 msgstr ""
 
@@ -28971,13 +28971,7 @@ msgstr ""
 msgid "IssueTracker|Use IBM Engineering Workflow Management as this project's issue tracker."
 msgstr ""
 
-msgid "IssueTracker|Use IBM Engineering Workflow Management as this project's issue tracker. %{docs_link}"
-msgstr ""
-
 msgid "IssueTracker|Use JetBrains YouTrack as this project's issue tracker."
-msgstr ""
-
-msgid "IssueTracker|Use JetBrains YouTrack as this project's issue tracker. %{docs_link}"
 msgstr ""
 
 msgid "IssueTracker|Use Phorge as this project's issue tracker."
@@ -28986,7 +28980,7 @@ msgstr ""
 msgid "IssueTracker|Use Phorge as this project's issue tracker. %{link_start}Learn more.%{link_end}"
 msgstr ""
 
-msgid "IssueTracker|Use Redmine as the issue tracker. %{docs_link}"
+msgid "IssueTracker|Use Redmine as the issue tracker."
 msgstr ""
 
 msgid "IssueTracker|Use Redmine as this project's issue tracker."
@@ -43311,9 +43305,6 @@ msgstr ""
 msgid "PumbleIntegration|Send notifications about project events to Pumble."
 msgstr ""
 
-msgid "PumbleIntegration|Send notifications about project events to Pumble. %{docs_link}"
-msgstr ""
-
 msgid "Purchase more minutes"
 msgstr ""
 
@@ -45260,7 +45251,7 @@ msgstr ""
 msgid "Run CI/CD pipelines for external repositories"
 msgstr ""
 
-msgid "Run CI/CD pipelines with Jenkins when you push to a repository, or when a merge request is created, updated, or merged. %{docs_link}"
+msgid "Run CI/CD pipelines with Jenkins when you push to a repository, or when a merge request is created, updated, or merged."
 msgstr ""
 
 msgid "Run CI/CD pipelines with Jenkins."
@@ -49417,9 +49408,6 @@ msgstr ""
 msgid "Send notifications about project events to Mattermost channels."
 msgstr ""
 
-msgid "Send notifications about project events to Mattermost channels. %{docs_link}"
-msgstr ""
-
 msgid "Send notifications about project events to a Discord channel. %{docs_link}"
 msgstr ""
 
@@ -51351,9 +51339,6 @@ msgstr ""
 msgid "SquashTmIntegration|Update Squash TM requirements when GitLab issues are modified."
 msgstr ""
 
-msgid "SquashTmIntegration|Update Squash TM requirements when GitLab issues are modified. %{docs_link}"
-msgstr ""
-
 msgid "Stack trace"
 msgstr ""
 
@@ -52716,9 +52701,6 @@ msgid "TelegramIntegration|New token"
 msgstr ""
 
 msgid "TelegramIntegration|Send notifications about project events to Telegram."
-msgstr ""
-
-msgid "TelegramIntegration|Send notifications about project events to Telegram. %{docs_link}"
 msgstr ""
 
 msgid "TelegramIntegration|Unique authentication token."
@@ -59492,9 +59474,6 @@ msgid "WebIDE|You need permission to edit files directly in this project."
 msgstr ""
 
 msgid "WebexTeamsService|Send notifications about project events to Webex Teams."
-msgstr ""
-
-msgid "WebexTeamsService|Send notifications about project events to a Webex Teams conversation. %{docs_link}"
 msgstr ""
 
 msgid "WebexTeamsService|Webex Teams"
