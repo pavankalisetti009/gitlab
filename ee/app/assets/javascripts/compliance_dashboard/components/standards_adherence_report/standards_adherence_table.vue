@@ -204,7 +204,7 @@ export default {
     margin-left: 10px;
 
     .gl-dark & {
-      color: var(--gl-text-color);
+      color: var(--gl-text-color-default);
     }
   }
 }

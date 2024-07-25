@@ -161,7 +161,7 @@ $badge-height: $gl-spacing-scale-7;
   .flex-grid {
     .grid-cell {
       .property-label {
-        color: var(--gl-text-color-secondary, $gl-text-color-secondary);
+        color: var(--gl-text-color-subtle);
       }
 
       .btn-help {
@@ -169,7 +169,7 @@ $badge-height: $gl-spacing-scale-7;
       }
 
       .property-value {
-        color: var(--gl-text-color, $gl-text-color);
+        color: var(--gl-text-color-default);
 
         &.number {
           font-size: 20px;
