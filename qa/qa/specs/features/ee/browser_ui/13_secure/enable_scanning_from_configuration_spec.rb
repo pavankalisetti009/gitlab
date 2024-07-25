@@ -23,13 +23,12 @@ module QA
       let(:project) { create(:project, name: 'project-with-secure', description: 'Project with Secure') }
 
       before do
-        Resource::Repository::ProjectPush.fabricate! do |project_push|
-          project_push.project = project
-          project_push.commit_message = 'Create Secure compatible application to serve premade reports'
-          project_push.directory = Pathname.new(
+        build(:commit, project: project,
+          commit_message:  'Create Secure compatible application to serve premade reports') do |commit|
+          commit.add_directory(Pathname.new(
             EE::Runtime::Path.fixture('secure_scanning_enable_from_ui_files')
-          )
-        end
+          ))
+        end.fabricate_via_api!
 
         Flow::Login.sign_in_unless_signed_in
         project.visit!

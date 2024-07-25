@@ -32,10 +32,16 @@ module QA
 
       before do
         webgoat.register!
-        Resource::Repository::ProjectPush.fabricate! do |push|
-          push.project = test_project
-          push.file_name = '.gitlab-ci.yml'
-          push.file_content = <<~YML
+
+        create(:commit,
+          project: test_project,
+          branch: test_project.default_branch,
+          commit_message: 'Commit .gitlab-ci.yml',
+          actions: [
+            {
+              action: 'create',
+              file_path: '.gitlab-ci.yml',
+              content: <<~YML
             stages:          # List of stages for jobs, and their order of execution
               - build
 
@@ -43,10 +49,9 @@ module QA
               stage: build
               script:
                 - echo "Compiling the code..."
-          YML
-          push.commit_message = 'Commit .gitlab-ci.yml'
-          push.new_branch = false
-        end
+              YML
+            }
+          ])
 
         # observe pipeline creation
         Flow::Login.sign_in_unless_signed_in
