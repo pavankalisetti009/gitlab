@@ -22,10 +22,17 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
         # unit_primitives. At the moment, unit_primitive name is used as a scope when ServiceToken is being issued
         unit_primitives:
           - code_suggestions
+      duo_enterprise:
+        unit_primitives:
+          - code_suggestions
   duo_chat:
     backend: 'gitlab-ai-gateway'
     bundled_with:
       duo_pro:
+        unit_primitives:
+          - duo_chat
+          - documentation_search
+      duo_enterprise:
         unit_primitives:
           - duo_chat
           - documentation_search

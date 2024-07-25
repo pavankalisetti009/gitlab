@@ -6,10 +6,13 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
   describe '#read_available_services' do
     let_it_be(:cs_cut_off_date) { Time.zone.parse("2024-02-15 00:00:00 UTC").utc }
     let_it_be(:cs_unit_primitives) { [:code_suggestions] }
-    let_it_be(:cs_bundled_with) { { "duo_pro" => cs_unit_primitives } }
+    let_it_be(:cs_bundled_with) { { "duo_enterprise" => cs_unit_primitives, "duo_pro" => cs_unit_primitives } }
 
     let_it_be(:duo_chat_unit_primitives) { [:duo_chat, :documentation_search] }
-    let_it_be(:duo_chat_bundled_with) { { "duo_pro" => duo_chat_unit_primitives } }
+    let_it_be(:duo_chat_bundled_with) do
+      { "duo_enterprise" => duo_chat_unit_primitives, "duo_pro" => duo_chat_unit_primitives }
+    end
+
     let_it_be(:backend) { 'gitlab-ai-gateway' }
     let_it_be(:gob_backend) { 'gitlab-observability-backend' }
 
