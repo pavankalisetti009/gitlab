@@ -7,16 +7,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
     let_it_be(:root_namespace) { create(:group) }
     let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
     let_it_be(:purchase_xid) { 'S-A00000001' }
+    let_it_be(:existing_trial) { false }
 
     let(:params) do
       {
         quantity: 10,
         started_on: Date.current.to_s,
         expires_on: (Date.current + 1.year).to_s,
-        purchase_xid: purchase_xid,
-        trial: true
-      }
+        purchase_xid: purchase_xid
+      }.merge(extra_params)
     end
+
+    let(:extra_params) { { trial: true } }
+    let(:expected_trial_value) { true }
 
     subject(:result) { described_class.new(namespace, add_on, params).execute }
 
@@ -33,7 +36,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
             started_at: started_at,
             expires_on: expires_on,
             purchase_xid: purchase_xid,
-            trial: false
+            trial: existing_trial
           )
         end
 
@@ -50,7 +53,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
           end.to change { add_on_purchase.quantity }.from(5).to(10)
             .and change { add_on_purchase.started_at }.from(started_at).to(params[:started_on].to_date)
             .and change { add_on_purchase.expires_on }.from(expires_on).to(params[:expires_on].to_date)
-            .and change { add_on_purchase.trial }.from(false).to(true)
+
+          expect(add_on_purchase.reload.trial).to eq(expected_trial_value)
         end
 
         it 'enqueues RefreshUserAssignmentsWorker' do
@@ -115,6 +119,27 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
       end
 
       include_examples 'record exists'
+
+      context 'when trial param is not provided' do
+        let(:extra_params) { {} }
+        let(:expected_trial_value) { true }
+
+        context 'when existing add_on is a trial' do
+          let_it_be(:existing_trial) { true }
+
+          include_examples 'record exists'
+        end
+      end
+
+      context 'when trial param is provided as false' do
+        let(:extra_params) { { trial: false } }
+        let(:expected_trial_value) { false }
+        let_it_be(:existing_trial) { true }
+
+        context 'when existing add_on is a trial' do
+          include_examples 'record exists'
+        end
+      end
     end
 
     context 'when not on .com' do
