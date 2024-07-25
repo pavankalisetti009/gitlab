@@ -44,7 +44,6 @@ module Security
 
         def scan_template_path(scan_type, template)
           scan_template_ci_path = SCAN_TEMPLATES[scan_type]
-          return scan_template_ci_path unless @opts[:scan_execution_policies_with_latest_templates]
           return scan_template_ci_path if template != LATEST_TEMPLATE_TYPE
 
           "#{scan_template_ci_path}.#{LATEST_TEMPLATE_TYPE}"

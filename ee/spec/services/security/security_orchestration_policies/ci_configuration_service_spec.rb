@@ -11,7 +11,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
     let(:context) { 'context' }
     let(:index) { 0 }
     let(:opts) do
-      { allow_restricted_variables_at_policy_level: true, scan_execution_policies_with_latest_templates: true }
+      { allow_restricted_variables_at_policy_level: true }
     end
 
     subject(:execute_service) { described_class.new(project).execute(action, ci_variables, context, index) }
@@ -37,32 +37,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
         end
 
         let(:opts) do
-          { allow_restricted_variables_at_policy_level: false, scan_execution_policies_with_latest_templates: true }
-        end
-
-        it 'configures a template scan with disabled flag' do
-          expect_next_instance_of(Security::SecurityOrchestrationPolicies::CiAction::Template,
-            action,
-            ci_variables,
-            context,
-            index,
-            opts
-          ) do |instance|
-            expect(instance).to receive(:config)
-          end
-
-          execute_service
-        end
-      end
-
-      context 'when scan_execution_policies_with_latest_templates is disabled' do
-        before do
-          stub_feature_flags(scan_execution_policies_with_latest_templates: false)
-          stub_feature_flags(scan_execution_policies_with_latest_templates_group: false)
-        end
-
-        let(:opts) do
-          { allow_restricted_variables_at_policy_level: true, scan_execution_policies_with_latest_templates: false }
+          { allow_restricted_variables_at_policy_level: false }
         end
 
         it 'configures a template scan with disabled flag' do

@@ -15,13 +15,9 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
     let(:ci_context) { Gitlab::Ci::Config::External::Context.new(user: user) }
     let(:user) { create(:user) }
     let(:opts) do
-      {
-        allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level,
-        scan_execution_policies_with_latest_templates: scan_execution_policies_with_latest_templates
-      }
+      { allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level }
     end
 
-    let(:scan_execution_policies_with_latest_templates) { true }
     let(:allow_restricted_variables_at_policy_level) { true }
 
     shared_examples 'with template name for scan type' do
@@ -43,18 +39,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
           config
         end
-
-        context 'when scan_execution_policies_with_latest_templates feature flag is disabled' do
-          let(:scan_execution_policies_with_latest_templates) { false }
-
-          it 'fetches default template content using ::TemplateFinder' do
-            expect(::TemplateFinder).to receive(:build)
-              .with(:gitlab_ci_ymls, nil, name: template_name)
-              .and_call_original
-
-            config
-          end
-        end
       end
 
       context 'when selected default template' do
@@ -68,18 +52,6 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             .and_call_original
 
           config
-        end
-
-        context 'when scan_execution_policies_with_latest_templates feature flag is disabled' do
-          let(:scan_execution_policies_with_latest_templates) { false }
-
-          it 'fetches default template content using ::TemplateFinder' do
-            expect(::TemplateFinder).to receive(:build)
-              .with(:gitlab_ci_ymls, nil, name: template_name)
-              .and_call_original
-
-            config
-          end
         end
       end
     end

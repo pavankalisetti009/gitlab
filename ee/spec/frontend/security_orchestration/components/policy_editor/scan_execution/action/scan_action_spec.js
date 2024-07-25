@@ -197,55 +197,37 @@ describe('PolicyActionBuilder', () => {
     });
 
     describe('template filter', () => {
-      describe('without the feature flag', () => {
-        it('does not render', () => {
-          factory();
-          expect(findTemplateFilter().exists()).toBe(false);
-        });
+      it('renders', () => {
+        factory();
+        expect(findTemplateFilter().exists()).toBe(true);
       });
 
-      describe('with the feature flag', () => {
-        describe.each([
-          'scanExecutionPoliciesWithLatestTemplates',
-          'scanExecutionPoliciesWithLatestTemplatesGroup',
-        ])('%s feature flag', (featureFlag) => {
-          it('renders', () => {
-            factory({
-              provide: { glFeatures: { [featureFlag]: true } },
-            });
-            expect(findTemplateFilter().exists()).toBe(true);
-          });
-
-          it('emits "changed" with the updated value when updated', () => {
-            factory({
-              propsData: {
-                initAction: {
-                  ...DEFAULT_ACTION,
-                  template: LATEST_TEMPLATE,
-                },
-              },
-              provide: { glFeatures: { [featureFlag]: true } },
-            });
-            findTemplateFilter().vm.$emit('input', { template: DEFAULT_TEMPLATE });
-            expect(wrapper.emitted('changed')).toEqual([
-              [{ ...DEFAULT_ACTION, template: DEFAULT_TEMPLATE }],
-            ]);
-          });
-
-          it('emits "changed" with the updated value when removed', () => {
-            factory({
-              propsData: {
-                initAction: {
-                  ...DEFAULT_ACTION,
-                  template: LATEST_TEMPLATE,
-                },
-              },
-              provide: { glFeatures: { [featureFlag]: true } },
-            });
-            findTemplateFilter().vm.$emit('remove');
-            expect(wrapper.emitted('changed')).toEqual([[{ ...DEFAULT_ACTION }]]);
-          });
+      it('emits "changed" with the updated value when updated', () => {
+        factory({
+          propsData: {
+            initAction: {
+              ...DEFAULT_ACTION,
+              template: LATEST_TEMPLATE,
+            },
+          },
         });
+        findTemplateFilter().vm.$emit('input', { template: DEFAULT_TEMPLATE });
+        expect(wrapper.emitted('changed')).toEqual([
+          [{ ...DEFAULT_ACTION, template: DEFAULT_TEMPLATE }],
+        ]);
+      });
+
+      it('emits "changed" with the updated value when removed', () => {
+        factory({
+          propsData: {
+            initAction: {
+              ...DEFAULT_ACTION,
+              template: LATEST_TEMPLATE,
+            },
+          },
+        });
+        findTemplateFilter().vm.$emit('remove');
+        expect(wrapper.emitted('changed')).toEqual([[{ ...DEFAULT_ACTION }]]);
       });
     });
 

@@ -98,12 +98,6 @@ export default {
     isProject() {
       return isProject(this.namespaceType);
     },
-    hasTemplateSelector() {
-      return (
-        this.glFeatures.scanExecutionPoliciesWithLatestTemplates ||
-        this.glFeatures.scanExecutionPoliciesWithLatestTemplatesGroup
-      );
-    },
     siteProfile() {
       return this.initAction.site_profile?.trim() ?? '';
     },
@@ -242,7 +236,6 @@ export default {
         />
 
         <template-selector
-          v-if="hasTemplateSelector"
           :selected="initAction.template"
           @input="triggerChanged"
           @remove="removeFilter($options.TEMPLATE)"

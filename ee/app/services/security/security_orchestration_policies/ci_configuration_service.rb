@@ -15,8 +15,7 @@ module Security
         action_class = ACTION_CLASSES[action[:scan]] || CiAction::Unknown
 
         opts = {
-          allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level?,
-          scan_execution_policies_with_latest_templates: scan_execution_policies_with_latest_templates?
+          allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level?
         }
 
         action_class.new(action, ci_variables, context, index, opts).config
@@ -26,15 +25,6 @@ module Security
 
       def allow_restricted_variables_at_policy_level?
         Feature.enabled?(:allow_restricted_variables_at_policy_level, project, type: :beta)
-      end
-
-      def scan_execution_policies_with_latest_templates?
-        Feature.enabled?(:scan_execution_policies_with_latest_templates, project, type: :beta) ||
-          Feature.enabled?(
-            :scan_execution_policies_with_latest_templates_group,
-            project.group,
-            type: :beta
-          )
       end
     end
   end
