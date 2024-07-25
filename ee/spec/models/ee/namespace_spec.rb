@@ -385,6 +385,44 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
     end
 
+    describe '.in_specific_plans', :saas do
+      let_it_be(:free_namespace) { create(:namespace_with_plan, plan: :free_plan) }
+      let_it_be(:premium_namespace) { create(:namespace_with_plan, plan: :premium_plan) }
+      let_it_be(:ultimate_namespace) { create(:namespace_with_plan, plan: :ultimate_plan) }
+
+      it 'returns namespaces with the specified plan names' do
+        result = described_class.in_specific_plans(%w[ultimate premium])
+
+        expect(result).to include(ultimate_namespace, premium_namespace)
+        expect(result).not_to include(free_namespace)
+      end
+
+      it 'returns an empty relation when no matching plans are found' do
+        result = described_class.in_specific_plans('gold')
+
+        expect(result).to be_empty
+      end
+
+      it 'returns all namespaces when all plan names are specified' do
+        result = described_class.in_specific_plans(%w[free ultimate premium])
+
+        expect(result).to include(free_namespace, ultimate_namespace, premium_namespace)
+      end
+
+      it 'does not return namespaces without subscriptions' do
+        namespace_without_subscription = create(:namespace)
+        result = described_class.in_specific_plans(%w[free ultimate premium])
+
+        expect(result).not_to include(namespace_without_subscription)
+      end
+
+      it 'allows chaining with other scopes' do
+        result = described_class.id_in(ultimate_namespace).in_specific_plans(['ultimate'])
+
+        expect(result).to contain_exactly(ultimate_namespace)
+      end
+    end
+
     describe '.not_duo_pro_or_no_add_on', :saas do
       let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, plan: :ultimate_plan) }
       let_it_be(:namespace_with_duo_pro) { create(:group_with_plan, plan: :ultimate_plan) }
@@ -398,6 +436,23 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
 
       it 'includes correct namespaces' do
         expect(described_class.not_duo_pro_or_no_add_on)
+          .to match_array([namespace_with_paid_plan, namespace_with_other_addon, regular_namespace])
+      end
+    end
+
+    describe '.not_duo_enterprise_or_no_add_on', :saas do
+      let_it_be(:namespace_with_paid_plan) { create(:group_with_plan, plan: :ultimate_plan) }
+      let_it_be(:namespace_with_duo) { create(:group_with_plan, plan: :ultimate_plan) }
+      let_it_be(:namespace_with_other_addon) { create(:group_with_plan, plan: :ultimate_plan) }
+      let_it_be(:regular_namespace) { create(:group) }
+
+      before_all do
+        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace_with_duo)
+        create(:gitlab_subscription_add_on_purchase, :product_analytics, namespace: namespace_with_other_addon)
+      end
+
+      it 'includes correct namespaces' do
+        expect(described_class.not_duo_enterprise_or_no_add_on)
           .to match_array([namespace_with_paid_plan, namespace_with_other_addon, regular_namespace])
       end
     end
