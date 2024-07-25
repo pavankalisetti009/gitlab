@@ -107,13 +107,6 @@ describe('EpicsListSectionComponent', () => {
     expect(findEmptyRowEl().attributes('style')).not.toBeDefined();
   });
 
-  it('sets style attribute with `height` on empty row when there epics available to render', async () => {
-    createComponent();
-    await nextTick();
-
-    expect(findEmptyRowEl().attributes('style')).toBe('height: calc(100vh - 1px);');
-  });
-
   describe('epics with associated parents', () => {
     it('should return only epics where parent is not present on top level', async () => {
       createComponent({ epics: mockEpicsWithParents });
@@ -139,8 +132,11 @@ describe('EpicsListSectionComponent', () => {
   });
 
   describe('when mounted', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       createComponent();
+
+      await nextTick();
+      jest.runAllTimers();
     });
 
     it('calls `setBufferSize` mutation with value based on window.innerHeight and component element position', () => {

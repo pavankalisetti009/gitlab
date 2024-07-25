@@ -372,6 +372,28 @@ export const rawEpics = [
     group: mockGroup2,
   },
   {
+    id: 'gid://gitlab/Epic/42',
+    iid: 18,
+    description: null,
+    title: 'Epic with inaccessible parent',
+    startDate: '2017-12-26',
+    endDate: '2018-03-10',
+    webUrl: '/groups/gitlab-org/marketing/-/epics/18',
+    descendantCounts: defaultDescendantCounts,
+    hasParent: true,
+    color: '#ff0000',
+    textColor: '#ffffff',
+    parent: null,
+    ancestors: {
+      nodes: [
+        {
+          id: 'gid://gitlab/Epic/40',
+        },
+      ],
+    },
+    group: mockGroup2,
+  },
+  {
     id: 'gid://gitlab/Epic/40',
     iid: 1,
     description: null,
