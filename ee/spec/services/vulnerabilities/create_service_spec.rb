@@ -69,7 +69,6 @@ RSpec.describe Vulnerabilities::CreateService, feature_category: :vulnerability_
           state: finding.state,
           severity: finding.severity,
           severity_overridden: false,
-          confidence: finding.confidence,
           confidence_overridden: false,
           report_type: finding.report_type,
           present_on_default_branch: true,

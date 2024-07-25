@@ -82,7 +82,6 @@ FactoryBot.define do
       )
     end
     severity { :high }
-    confidence { :medium }
     detection_method { :gitlab_security_report }
     scanner { association(:vulnerabilities_scanner, project: project) }
     metadata_version { 'sast:1.0' }
@@ -226,7 +225,6 @@ FactoryBot.define do
     trait :with_secret_detection do
       after(:build) do |finding|
         finding.severity = "critical"
-        finding.confidence = "unknown"
         finding.report_type = "secret_detection"
         finding.name = "AWS API key"
         finding.metadata_version = "3.0"
@@ -253,7 +251,6 @@ FactoryBot.define do
     trait :with_secret_detection_in_no_git_mode do
       after(:build) do |finding|
         finding.severity = "critical"
-        finding.confidence = "unknown"
         finding.report_type = "secret_detection"
         finding.name = "AWS API key"
         finding.metadata_version = "3.0"

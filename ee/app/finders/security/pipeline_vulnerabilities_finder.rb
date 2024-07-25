@@ -77,7 +77,7 @@ module Security
     def normalize_report_findings(report_findings, vulnerabilities)
       report_findings.map do |report_finding|
         finding_hash = report_finding.to_hash
-          .except(:compare_key, :identifiers, :location, :scanner, :links, :signatures, :flags, :evidence)
+          .except(:confidence, :compare_key, :identifiers, :location, :scanner, :links, :signatures, :flags, :evidence)
 
         finding = Vulnerabilities::Finding.new(finding_hash)
         # assigning Vulnerabilities to Findings to enable the computed state
@@ -127,7 +127,6 @@ module Security
       findings.select do |finding|
         next unless in_selected_state?(finding)
         next if !include_dismissed? && dismissal_feedback?(finding)
-        next unless confidence_levels.include?(finding.confidence)
         next unless severity_levels.include?(finding.severity)
         next if scanners.present? && scanners.exclude?(finding.scanner.external_id)
 
@@ -180,10 +179,6 @@ module Security
 
     def dismissal_feedback_by_project_fingerprint(finding)
       dismissal_feedback_by_fingerprint[finding.project_fingerprint]
-    end
-
-    def confidence_levels
-      @confidence_levels ||= Array(params.fetch(:confidence, Vulnerabilities::Finding.confidences.keys))
     end
 
     def report_types

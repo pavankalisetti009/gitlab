@@ -10,9 +10,9 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
   let_it_be(:user) { create(:user) }
 
   let!(:project) { create(:project) } # cannot use let_it_be here: caching causes problems with permission-related tests
-  let!(:updated_finding) { create(:vulnerabilities_finding, project: project, name: finding_name, severity: :critical, confidence: :confirmed, vulnerability: vulnerability) }
+  let!(:updated_finding) { create(:vulnerabilities_finding, project: project, name: finding_name, severity: :critical, vulnerability: vulnerability) }
 
-  let!(:vulnerability) { create(:vulnerability, project: project, severity: :low, severity_overridden: severity_overridden, confidence: :ignore, confidence_overridden: confidence_overridden) }
+  let!(:vulnerability) { create(:vulnerability, project: project, severity: :low, severity_overridden: severity_overridden, confidence_overridden: confidence_overridden) }
   let(:finding_name) { 'New title' }
   let(:severity_overridden) { false }
   let(:confidence_overridden) { false }
@@ -36,15 +36,14 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
       end
     end
 
-    context 'when neither severity nor confidence are overridden' do
-      it 'updates the vulnerability from updated finding (title, severity and confidence only)', :aggregate_failures do
+    context 'when severity is not overridden' do
+      it 'updates the vulnerability from updated finding (title and severity only)', :aggregate_failures do
         expect { subject }.not_to change { project.vulnerabilities.count }
-        expect(vulnerability.previous_changes.keys).to contain_exactly(*%w[updated_at title title_html severity confidence])
+        expect(vulnerability.previous_changes.keys).to contain_exactly(*%w[updated_at title title_html severity])
         expect(vulnerability).to(
           have_attributes(
             title: 'New title',
-            severity: 'critical',
-            confidence: 'confirmed'
+            severity: 'critical'
           ))
       end
     end
@@ -52,13 +51,12 @@ RSpec.describe Vulnerabilities::UpdateService, feature_category: :vulnerability_
     context 'when severity is overridden' do
       let(:severity_overridden) { true }
 
-      it 'updates the vulnerability from updated finding (title and confidence only)' do
+      it 'updates the vulnerability from updated finding (title only)' do
         expect { subject }.not_to change { project.vulnerabilities.count }
-        expect(vulnerability.previous_changes.keys).to contain_exactly(*%w[updated_at title title_html confidence])
+        expect(vulnerability.previous_changes.keys).to contain_exactly(*%w[updated_at title title_html])
         expect(vulnerability).to(
           have_attributes(
-            title: 'New title',
-            confidence: 'confirmed'
+            title: 'New title'
           ))
       end
     end

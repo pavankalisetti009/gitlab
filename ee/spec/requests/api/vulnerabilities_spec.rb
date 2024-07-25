@@ -131,7 +131,6 @@ RSpec.describe API::Vulnerabilities, feature_category: :vulnerability_management
             state: 'detected',
             severity: finding.severity,
             severity_overridden: false,
-            confidence: finding.confidence,
             confidence_overridden: false,
             report_type: finding.report_type
           ))

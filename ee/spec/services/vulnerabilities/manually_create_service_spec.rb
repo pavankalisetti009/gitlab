@@ -54,7 +54,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
             name: "Test vulnerability",
             state: "detected",
             severity: "unknown",
-            confidence: "unknown",
             identifiers: [identifier_attributes],
             scanner: scanner_attributes,
             solution: "Explanation of how to fix the vulnerability.",
@@ -107,7 +106,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect(vulnerability.report_type).to eq("generic")
         expect(vulnerability.state).to eq(params.dig(:vulnerability, :state))
         expect(vulnerability.severity).to eq(params.dig(:vulnerability, :severity))
-        expect(vulnerability.confidence).to eq(params.dig(:vulnerability, :confidence))
       end
 
       it 'creates associated objects', :aggregate_failures do
@@ -149,7 +147,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect(vulnerability.report_type).to eq("generic")
         expect(vulnerability.state).to eq(params.dig(:vulnerability, :state))
         expect(vulnerability.severity).to eq(params.dig(:vulnerability, :severity))
-        expect(vulnerability.confidence).to eq(params.dig(:vulnerability, :confidence))
         expect(vulnerability.description).to eq(params.dig(:vulnerability, :description))
         expect(vulnerability.finding_description).to eq(params.dig(:vulnerability, :description))
         expect(vulnerability.solution).to eq(params.dig(:vulnerability, :solution))
@@ -157,7 +154,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         finding = vulnerability.finding
         expect(finding.report_type).to eq("generic")
         expect(finding.severity).to eq(params.dig(:vulnerability, :severity))
-        expect(finding.confidence).to eq(params.dig(:vulnerability, :confidence))
         expect(finding.description).to eq(params.dig(:vulnerability, :description))
         expect(finding.solution).to eq(params.dig(:vulnerability, :solution))
         expect(finding.location).to be_empty
@@ -199,7 +195,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
               name: "Test vulnerability",
               state: "confirmed",
               severity: "unknown",
-              confidence: "unknown",
               confirmed_at: Time.now.iso8601,
               identifiers: [identifier_attributes],
               scanner: scanner_attributes
@@ -223,7 +218,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
               name: "Test vulnerability",
               state: "detected",
               severity: "unknown",
-              confidence: "unknown",
               confirmed_at: Time.now.iso8601,
               identifiers: [identifier_attributes],
               scanner: scanner_attributes
@@ -245,7 +239,6 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
               name: "Test vulnerability",
               state: state,
               severity: "unknown",
-              confidence: "unknown",
               identifiers: [identifier_attributes],
               scanner: scanner_attributes
             }

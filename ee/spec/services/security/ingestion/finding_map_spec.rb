@@ -49,7 +49,6 @@ RSpec.describe Security::Ingestion::FindingMap, feature_category: :vulnerability
         name: 'Cipher with no integrity',
         report_type: :sast,
         severity: :high,
-        confidence: :medium,
         metadata_version: 'sast:1.0',
         details: {},
         raw_metadata: report_finding.raw_metadata,
