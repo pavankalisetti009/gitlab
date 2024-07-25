@@ -1,9 +1,0 @@
----
-name: scan_execution_policies_with_latest_templates_group
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/415427
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/154468
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/468981
-milestone: '17.2'
-group: group::security policies
-type: beta
-default_enabled: true
