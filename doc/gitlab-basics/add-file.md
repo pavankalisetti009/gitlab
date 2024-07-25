@@ -436,3 +436,4 @@ git status
 
 - [Add file from the UI](../user/project/repository/index.md#add-a-file-from-the-ui)
 - [Add file from the Web IDE](../user/project/repository/web_editor.md#upload-a-file)
+- [Sign commits](../user/project/repository/signed_commits/gpg.md)
