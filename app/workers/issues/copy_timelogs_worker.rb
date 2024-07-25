@@ -9,6 +9,7 @@ module Issues
     idempotent!
     feature_category :team_planning
 
+    BATCH_SIZE = 100
     def perform(from_issue_id, to_issue_id)
       Gitlab::AppLogger.info("Copying timelogs from issue #{from_issue_id} to issue #{to_issue_id}")
 
@@ -16,13 +17,14 @@ module Issues
       to_issue = Issue.find_by_id(to_issue_id)
       return if from_issue.nil? || to_issue.nil? || from_issue.timelogs.empty?
 
-      new_attributes = { id: nil, project_id: to_issue.project_id, issue_id: to_issue.id }
-      new_timelogs = from_issue.timelogs.dup
-
+      reset_attributes = { project_id: to_issue.project_id, issue_id: to_issue.id }
       ApplicationRecord.transaction do
-        new_timelogs.each do |timelog|
-          timelog.assign_attributes(new_attributes)
-          Timelog.create!(timelog.attributes)
+        from_issue.timelogs.each_slice(BATCH_SIZE) do |timelogs|
+          new_timelogs_attributes = timelogs.map do |timelog|
+            timelog.attributes.except('id').merge(reset_attributes)
+          end
+
+          Timelog.insert_all!(new_timelogs_attributes)
         end
       end
     end
