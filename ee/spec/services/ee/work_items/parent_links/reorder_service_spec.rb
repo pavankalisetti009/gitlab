@@ -96,6 +96,34 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       end
     end
 
+    shared_context 'with new parent that has children' do
+      let_it_be_with_reload(:new_parent) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be_with_reload(:new_sibling1) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+      let_it_be_with_reload(:new_sibling2) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
+      let_it_be_with_reload(:new_parent_link) do
+        create(:parent_link, work_item: new_parent, work_item_parent: parent, relative_position: 30)
+      end
+
+      let_it_be_with_reload(:new_sibling1_link1) do
+        create(:parent_link, work_item: new_sibling1, work_item_parent: new_parent, relative_position: 10)
+      end
+
+      let_it_be_with_reload(:new_sibling1_link2) do
+        create(:parent_link, work_item: new_sibling2, work_item_parent: new_parent, relative_position: 20)
+      end
+
+      let(:params) { base_params.merge(adjacent_work_item: new_sibling2, relative_position: "BEFORE") }
+
+      before do
+        new_parent.synced_epic.update!(parent: parent.synced_epic, relative_position: 50)
+        new_sibling1.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 10)
+        new_sibling2.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 20)
+      end
+
+      subject(:move_child) { described_class.new(new_parent, user, params).execute }
+    end
+
     before do
       stub_licensed_features(subepics: true)
       stub_feature_flags(work_item_epics: true)
@@ -148,6 +176,18 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
         end
 
         it_behaves_like 'reorders the hierarchy'
+
+        context 'when changing parent and reordering' do
+          include_context 'with new parent that has children'
+
+          it 'updates work item parent and legacy epic parent' do
+            expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+                                 .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
+                                                                                    .to(new_parent.synced_epic)
+
+            expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+          end
+        end
 
         context 'when synced_work_item param is set' do
           let(:synced_moving_object) { nil }
@@ -204,6 +244,18 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       end
 
       it_behaves_like 'reorders the hierarchy'
+
+      context 'when changing parent and reordering' do
+        include_context 'with new parent that has children'
+
+        it 'updates work item parent and epic_issue epic' do
+          expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+                               .and change { work_item.epic_issue.reload.epic }.from(parent.synced_epic)
+                                                                               .to(new_parent.synced_epic)
+
+          expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+        end
+      end
 
       context 'when synced EpicIssue for the moving work item do not exist' do
         let(:synced_moving_object) { nil }
