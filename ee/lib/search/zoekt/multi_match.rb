@@ -6,8 +6,8 @@ module Search
       MAX_CHUNKS_PER_FILE = 50
       DEFAULT_REQUESTED_CHUNK_SIZE = 3
       NEW_CHUNK_THRESHOLD = 2
-      HIGHLIGHT_START_TAG = 'gitlabzoekt→'
-      HIGHLIGHT_END_TAG = '←gitlabzoekt'
+      HIGHLIGHT_START_TAG = 'gitlabzoekt_start_'
+      HIGHLIGHT_END_TAG = '_gitlabzoekt_end'
 
       def initialize(requested_chunk_size = DEFAULT_REQUESTED_CHUNK_SIZE)
         requested_chunk_size ||= DEFAULT_REQUESTED_CHUNK_SIZE
@@ -35,7 +35,7 @@ module Search
           break false if current_page == page_limit
 
           results[current_page] ||= []
-          chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches])
+          chunks, match_count = chunks_for_each_file_with_limited_match_count(file[:LineMatches], file[:FileName])
           results[current_page] << {
             path: file[:FileName],
             project_id: file[:Repository].to_i,
@@ -50,7 +50,7 @@ module Search
 
       private
 
-      def chunks_for_each_file_with_limited_match_count(linematches)
+      def chunks_for_each_file_with_limited_match_count(linematches, file_name)
         chunks = []
         generate_chunk = true # It is set to true at the start to generate the first chunk
         chunk = { lines: {}, match_count_in_chunk: 0 }
@@ -60,17 +60,17 @@ module Search
 
           if generate_chunk
             chunk = { lines: {}, match_count_in_chunk: 0 }
-            generate_context_blobs(match, chunk, :before)
+            generate_context_blobs(match, chunk, :before, file_name)
           end
 
           chunk[:lines][match[:LineNumber]] = {
             text: Base64.decode64(match[:Line]).force_encoding('UTF-8'),
-            rich_text: highlight_match(match[:Line], match[:LineFragments])
+            rich_text: highlight_match(match[:Line], match[:LineFragments], file_name)
           }
           match_count_per_line = match[:LineFragments].count
           chunk[:match_count_in_chunk] += match_count_per_line
           # Generate lines after the match for the context
-          generate_context_blobs(match, chunk, :after)
+          generate_context_blobs(match, chunk, :after, file_name)
           generate_chunk = linematches[count_idx.next].nil? ||
             (linematches[count_idx.next][:LineNumber] - match[:LineNumber]).abs > NEW_CHUNK_THRESHOLD
 
@@ -84,7 +84,7 @@ module Search
         [chunks, limited_match_count_per_file]
       end
 
-      def generate_context_blobs(match, chunk, context)
+      def generate_context_blobs(match, chunk, context, file_name)
         context_encoded_string = if context == :before
                                    return if match[:LineNumber] == 1 # There is no before context if first line is match
 
@@ -96,21 +96,21 @@ module Search
         decoded_context_array = if context_encoded_string.empty?
                                   [context_encoded_string]
                                 else
-                                  Base64.decode64(context_encoded_string).split("\n", -1)
+                                  Base64.decode64(context_encoded_string).force_encoding('UTF-8').split("\n", -1)
                                 end
 
         if context == :before
           decoded_context_array.reverse_each.with_index(1) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] - line_idx]
               chunk[:lines][match[:LineNumber] - line_idx] =
-                { text: line.force_encoding('UTF-8'), rich_text: line.force_encoding('UTF-8') }
+                { text: line, rich_text: syntax_decorate(file_name, line) }
             end
           end
         else
           decoded_context_array.each.with_index(1) do |line, line_idx|
             unless chunk[:lines][match[:LineNumber] + line_idx]
               chunk[:lines][match[:LineNumber] + line_idx] =
-                { text: line.force_encoding('UTF-8'), rich_text: line.force_encoding('UTF-8') }
+                { text: line, rich_text: syntax_decorate(file_name, line) }
             end
           end
         end
@@ -125,16 +125,20 @@ module Search
         }
       end
 
-      def highlight_match(match_line, match_line_fragments)
+      def highlight_match(match_line, match_line_fragments, file_name)
         ranges = match_line_fragments.map do |fragment|
           fragment[:LineOffset]..(fragment[:LineOffset] + fragment[:MatchLength] - 1)
         end
         line = Gitlab::StringRangeMarker.new(Base64.decode64(match_line).force_encoding('UTF-8')).mark(ranges) do |text|
           "#{HIGHLIGHT_START_TAG}#{text}#{HIGHLIGHT_END_TAG}"
         end
+        syntax_decorated_line = syntax_decorate(file_name, line)
         replacements = { HIGHLIGHT_START_TAG => '<b>', HIGHLIGHT_END_TAG => '</b>' }
-        escaped_line = html_escape_once(line)
-        escaped_line.gsub(%r{(#{HIGHLIGHT_START_TAG}|#{HIGHLIGHT_END_TAG})}o, replacements)
+        syntax_decorated_line.gsub(%r{(#{HIGHLIGHT_START_TAG}|#{HIGHLIGHT_END_TAG})}o, replacements)
+      end
+
+      def syntax_decorate(file_name, line)
+        Gitlab::Highlight.highlight(file_name, line)
       end
     end
   end
