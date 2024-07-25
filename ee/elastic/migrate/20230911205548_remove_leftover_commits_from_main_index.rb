@@ -62,3 +62,5 @@ class RemoveLeftoverCommitsFromMainIndex < Elastic::Migration
     :commit
   end
 end
+
+RemoveLeftoverCommitsFromMainIndex.prepend ::Elastic::MigrationObsolete
