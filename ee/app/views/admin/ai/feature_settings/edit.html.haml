@@ -1,5 +1,5 @@
 - feature = @feature_setting.feature
-- edit_feature_title = s_("AdminAiPoweredFeatures|Edit %{feature_name}") % { feature_name: feature.titleize }
+- edit_feature_title = s_("AdminAiPoweredFeatures|%{feature_name}") % { feature_name: feature.humanize.singularize }
 - add_to_breadcrumbs s_("AdminAiPoweredFeatures|AI-powered features"), admin_ai_feature_settings_path
 - breadcrumb_title edit_feature_title
 - page_title edit_feature_title

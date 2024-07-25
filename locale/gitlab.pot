@@ -3490,28 +3490,40 @@ msgstr ""
 msgid "AdminAIPoweredFeatures|AI-powered features"
 msgstr ""
 
-msgid "AdminAIPoweredFeatures|AI-powered features that can be enabled, disabled or linked to a cloud-based or self-hosted model."
+msgid "AdminAIPoweredFeatures|AI-powered features that can be enabled, disabled, or linked to a cloud-based or self-hosted model."
+msgstr ""
+
+msgid "AdminAiPoweredFeatures|%{feature_name}"
+msgstr ""
+
+msgid "AdminAiPoweredFeatures|AI vendor"
 msgstr ""
 
 msgid "AdminAiPoweredFeatures|AI-powered features"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Choose the AI model for %{feature_name} feature"
+msgid "AdminAiPoweredFeatures|Choose the AI model to use with %{feature_name}."
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Disables %{feature_name} for the instance."
+msgid "AdminAiPoweredFeatures|Disabled"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Edit %{feature_name}"
+msgid "AdminAiPoweredFeatures|Model provider"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Enables %{feature_name} empowered by a GitLab AI Vendor. The model must be configured for the instance."
+msgid "AdminAiPoweredFeatures|Self-hosted model"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Enables %{feature_name} empowered by a Self-Hosted model"
+msgid "AdminAiPoweredFeatures|Turn off"
 msgstr ""
 
-msgid "AdminAiPoweredFeatures|Model Provider"
+msgid "AdminAiPoweredFeatures|Turn off %{feature_name} for the instance."
+msgstr ""
+
+msgid "AdminAiPoweredFeatures|Turn on %{feature_name}, powered by a GitLab-selected AI Vendor. The model must be configured for the instance."
+msgstr ""
+
+msgid "AdminAiPoweredFeatures|Turn on %{feature_name}, powered by a self-hosted model."
 msgstr ""
 
 msgid "AdminArea|%{billable_users_link_start}Learn more%{billable_users_link_end} about what defines a billable user"
