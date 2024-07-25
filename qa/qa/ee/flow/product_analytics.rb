@@ -20,13 +20,11 @@ module QA
             project.visit!
             QA::Page::Project::Menu.perform(&:go_to_analytics_settings)
             EE::Page::Project::Settings::Analytics.perform do |analytics_settings|
-              analytics_settings.expand_data_sources do |data_sources|
-                data_sources.fill_snowplow_configurator(QA::Runtime::Env.pa_configurator_url)
-                data_sources.fill_collector_host(QA::Runtime::Env.pa_collector_host)
-                data_sources.fill_cube_api_url(QA::Runtime::Env.pa_cube_api_url)
-                data_sources.fill_cube_api_key(QA::Runtime::Env.pa_cube_api_key)
-                data_sources.save_changes
-              end
+              analytics_settings.fill_snowplow_configurator(QA::Runtime::Env.pa_configurator_url)
+              analytics_settings.fill_collector_host(QA::Runtime::Env.pa_collector_host)
+              analytics_settings.fill_cube_api_url(QA::Runtime::Env.pa_cube_api_url)
+              analytics_settings.fill_cube_api_key(QA::Runtime::Env.pa_cube_api_key)
+              analytics_settings.save_changes
             end
 
             QA::Page::Project::Menu.perform(&:go_to_analytics_dashboards)
