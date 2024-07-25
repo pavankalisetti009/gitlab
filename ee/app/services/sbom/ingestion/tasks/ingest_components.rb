@@ -12,6 +12,18 @@ module Sbom
 
         private
 
+        def existing_records
+          @existing_records ||= occurrence_maps.map do |occurrence_map|
+            Sbom::Component.by_unique_attributes(*occurrence_map.to_h.values_at(:name, :purl_type, :component_type))
+          end.reduce(:or)
+        end
+
+        def existing_record(map_data)
+          existing_records.find do |component|
+            COMPONENT_ATTRIBUTES.all? { |attribute| map_data[attribute] == component[attribute] }
+          end
+        end
+
         def after_ingest
           each_pair do |occurrence_map, row|
             occurrence_map.component_id = row.first
@@ -19,8 +31,16 @@ module Sbom
         end
 
         def attributes
-          insertable_maps.map do |occurrence_map|
-            occurrence_map.to_h.slice(*COMPONENT_ATTRIBUTES)
+          insertable_maps.filter_map do |occurrence_map|
+            map_data = occurrence_map.to_h.slice(*COMPONENT_ATTRIBUTES)
+            existing_record = existing_record(map_data)
+
+            if existing_record.present?
+              occurrence_map.component_id = existing_record.id
+              next
+            end
+
+            map_data
           end
         end
       end
