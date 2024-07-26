@@ -1,0 +1,3 @@
+- if merge_trains_available? && can?(@current_user, :read_merge_train, @project)
+  = render Pajamas::ButtonComponent.new(href: project_merge_trains_path(@project)) do
+    = _("Merge trains")
