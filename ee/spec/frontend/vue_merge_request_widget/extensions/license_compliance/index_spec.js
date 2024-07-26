@@ -125,7 +125,7 @@ describe('License Compliance extension', () => {
       expect(findWidget().props('helpPopover')).toEqual({
         content: {
           learnMorePath:
-            '/help/user/compliance/license_approval_policies#criteria-comparing-licenses-detected-in-the-merge-request-branch-to-licenses-detected-in-the-default-branch',
+            '/help/user/compliance/license_approval_policies#criteria-to-compare-licenses-detected-in-the-merge-request-branch-to-licenses-in-the-default-branch',
           text: 'Detects known vulnerabilities in your software dependencies.',
         },
         options: {
