@@ -35144,6 +35144,7 @@ Detailed representation of whether a GitLab merge request can be merged.
 | <a id="detailedmergestatusdraft_status"></a>`DRAFT_STATUS` | Merge request must not be draft before merging. |
 | <a id="detailedmergestatusexternal_status_checks"></a>`EXTERNAL_STATUS_CHECKS` | Status checks must pass. |
 | <a id="detailedmergestatusjira_association"></a>`JIRA_ASSOCIATION` | Either the title or description must reference a Jira issue. |
+| <a id="detailedmergestatuslocked_lfs_files"></a>`LOCKED_LFS_FILES` | Merge request includes locked LFS files. |
 | <a id="detailedmergestatusmergeable"></a>`MERGEABLE` | Branch can be merged. |
 | <a id="detailedmergestatusneed_rebase"></a>`NEED_REBASE` | Merge request needs to be rebased. |
 | <a id="detailedmergestatusnot_approved"></a>`NOT_APPROVED` | Merge request must be approved before merging. |
@@ -35919,6 +35920,7 @@ Representation of mergeability check identifier.
 | <a id="mergeabilitycheckidentifierdiscussions_not_resolved"></a>`DISCUSSIONS_NOT_RESOLVED` | Checks whether the merge request has open discussions. |
 | <a id="mergeabilitycheckidentifierdraft_status"></a>`DRAFT_STATUS` | Checks whether the merge request is draft. |
 | <a id="mergeabilitycheckidentifierjira_association_missing"></a>`JIRA_ASSOCIATION_MISSING` | Checks whether the title or description references a Jira issue. |
+| <a id="mergeabilitycheckidentifierlocked_lfs_files"></a>`LOCKED_LFS_FILES` | Checks whether the merge request contains locked LFS files that are locked by users other than the merge request author. |
 | <a id="mergeabilitycheckidentifiermerge_request_blocked"></a>`MERGE_REQUEST_BLOCKED` | Checks whether the merge request is blocked. |
 | <a id="mergeabilitycheckidentifierneed_rebase"></a>`NEED_REBASE` | Checks whether the merge request needs to be rebased. |
 | <a id="mergeabilitycheckidentifiernot_approved"></a>`NOT_APPROVED` | Checks whether the merge request is approved. |
