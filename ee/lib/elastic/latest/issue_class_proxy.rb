@@ -11,7 +11,7 @@ module Elastic
         search(query_hash, options)
       end
 
-      # rubocop: disable CodeReuse/ActiveRecord
+      # rubocop: disable CodeReuse/ActiveRecord -- no ActiveRecord relation
       override :preload_indexing_data
       def preload_indexing_data(relation)
         relation.includes(:author, :issue_assignees, :labels, project: [:project_feature, :namespace])
