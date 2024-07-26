@@ -110,7 +110,7 @@ export default {
       <form ref="settingsForm" @submit.prevent="updateStatusPageSettings">
         <gl-form-group class="gl-pl-0 mb-3">
           <gl-form-checkbox v-model="enabled">
-            <span class="bold">{{ $options.i18n.activeLabel }}</span></gl-form-checkbox
+            <span class="gl-font-bold">{{ $options.i18n.activeLabel }}</span></gl-form-checkbox
           >
         </gl-form-group>
 

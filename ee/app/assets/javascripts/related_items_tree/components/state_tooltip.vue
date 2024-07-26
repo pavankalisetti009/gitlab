@@ -72,11 +72,11 @@ export default {
 
 <template>
   <gl-tooltip :target="getTargetRef()">
-    <div ref="statePath" class="bold">
+    <div ref="statePath" class="gl-font-bold">
       {{ path }}
     </div>
     <div class="text-tertiary">
-      <span ref="stateText" class="bold">
+      <span ref="stateText" class="gl-font-bold">
         {{ stateText }}
       </span>
       {{ stateTimeInWords }}

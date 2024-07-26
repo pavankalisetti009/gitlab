@@ -124,7 +124,7 @@ export default {
       <a :href="milestone.webPath" class="milestone-url gl-block">
         <span
           :id="`milestone-item-${milestone.id}`"
-          class="milestone-item-title str-truncated-100 bold position-sticky"
+          class="milestone-item-title str-truncated-100 gl-font-bold position-sticky"
           >{{ milestone.title }}</span
         >
         <span class="timeline-bar position-relative gl-block"></span>

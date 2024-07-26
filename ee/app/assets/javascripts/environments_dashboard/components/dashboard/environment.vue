@@ -179,7 +179,7 @@ export default {
       </div>
 
       <div v-else class="gl-h-full gl-flex justify-content-center gl-items-center">
-        <div class="text-plain text-metric text-center bold">
+        <div class="text-plain gl-text-sm gl-text-center gl-font-bold">
           {{ $options.noDeploymentMessage }}
         </div>
       </div>

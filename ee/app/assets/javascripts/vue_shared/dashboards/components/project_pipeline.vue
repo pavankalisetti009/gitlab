@@ -77,7 +77,7 @@ export default {
         <ci-icon :status="upstreamPipeline.details.status" class="js-upstream-pipeline-status" />
       </gl-link>
       <gl-tooltip :target="() => $refs.upstreamStatus">
-        <div class="bold">{{ $options.relations.upstream }}</div>
+        <div class="gl-font-bold">{{ $options.relations.upstream }}</div>
         <div>{{ upstreamPipeline.details.status.tooltip }}</div>
         <div class="text-tertiary">{{ upstreamPipeline.project.full_name }}</div>
       </gl-tooltip>
@@ -92,7 +92,7 @@ export default {
       class="gl-inline-block align-middle"
     />
     <gl-tooltip :target="() => $refs.status">
-      <div class="bold">{{ $options.relations.current }}</div>
+      <div class="gl-font-bold">{{ $options.relations.current }}</div>
       <div>{{ lastPipeline.details.status.tooltip }}</div>
     </gl-tooltip>
 
@@ -113,7 +113,7 @@ export default {
           <ci-icon :status="pipeline.details.status" class="js-downstream-pipeline-status" />
         </gl-link>
         <gl-tooltip :target="() => $refs.downstreamStatus[index]">
-          <div class="bold">{{ $options.relations.downstream }}</div>
+          <div class="gl-font-bold">{{ $options.relations.downstream }}</div>
           <div>{{ pipeline.details.status.tooltip }}</div>
           <div class="text-tertiary">{{ pipeline.project.full_name }}</div>
         </gl-tooltip>
@@ -122,7 +122,7 @@ export default {
         <gl-link
           ref="extraDownstream"
           :href="lastPipeline.details.status.details_path"
-          class="dashboard-card-footer-extra rounded-circle gl-inline-block bold align-middle text-white text-center js-downstream-extra-icon"
+          class="dashboard-card-footer-extra rounded-circle gl-inline-block gl-font-bold align-middle text-white text-center js-downstream-extra-icon"
         >
           {{ extraDownstreamText }}
         </gl-link>

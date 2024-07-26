@@ -57,7 +57,7 @@ export default {
         :href="environment.environment_path"
         :title="environment.name"
       >
-        <span class="js-environment-name bold"> {{ environment.name }}</span>
+        <span class="js-environment-name gl-font-bold"> {{ environment.name }}</span>
       </gl-link>
       <gl-badge v-if="environment.within_folder" class="dashboard-card-icon">{{
         environment.size
