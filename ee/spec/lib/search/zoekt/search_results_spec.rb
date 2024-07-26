@@ -389,14 +389,6 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
           let(:filters) { { include_forked: true } }
 
           it_behaves_like 'a non-filtered search'
-
-          context 'when search_add_fork_filter_to_zoekt flag is disabled' do
-            before do
-              stub_feature_flags(search_add_fork_filter_to_zoekt: false)
-            end
-
-            it_behaves_like 'a non-filtered search'
-          end
         end
 
         context 'when include_forked filter is set to false' do
@@ -422,14 +414,6 @@ RSpec.describe ::Search::Zoekt::SearchResults, :zoekt, feature_category: :global
 
               expect(search).to be_empty
             end
-          end
-
-          context 'when search_add_fork_filter_to_zoekt flag is disabled' do
-            before do
-              stub_feature_flags(search_add_fork_filter_to_zoekt: false)
-            end
-
-            it_behaves_like 'a non-filtered search'
           end
         end
       end
