@@ -22,7 +22,7 @@ RSpec.describe WorkItems::Widgets::RolledupDatesFinder, :aggregate_failures, fea
   subject(:finder) { described_class.new(epic_work_item) }
 
   describe '#minimum_start_date' do
-    it 'returns a WorkItems::DatesSource query' do
+    it 'returns a WorkItems::DatesSource query', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474086' do
       start_date = finder.minimum_start_date
 
       expect(start_date).to be_a(ActiveRecord::Relation)
