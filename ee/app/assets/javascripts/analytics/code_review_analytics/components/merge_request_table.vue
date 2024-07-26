@@ -152,7 +152,7 @@ export default {
 
     <template #cell(line_changes)="items">
       <span class="font-weight-bold cgreen"> +{{ items.item.diff_stats.additions }} </span>
-      <span class="font-weight-bold cred"> -{{ items.item.diff_stats.deletions }} </span>
+      <span class="font-weight-bold gl-text-red-500"> -{{ items.item.diff_stats.deletions }} </span>
     </template>
   </gl-table-lite>
 </template>
