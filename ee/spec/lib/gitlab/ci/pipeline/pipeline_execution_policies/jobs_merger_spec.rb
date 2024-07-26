@@ -98,6 +98,29 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger, feat
         expect(custom_stage.position).to eq(4)
         expect(custom_stage.statuses.map(&:name)).to contain_exactly('docker')
       end
+
+      it_behaves_like 'internal event tracking' do
+        let(:event) { 'execute_job_pipeline_execution_policy' }
+        let(:category) { described_class.name }
+        let_it_be(:project) { project }
+        let_it_be(:user) { nil }
+        let_it_be(:namespace) { project.group }
+      end
+
+      context 'when the policy has multiple jobs' do
+        let(:pipeline_execution_policies) do
+          build_list(:ci_pipeline_execution_policy, 1,
+            pipeline: build_mock_policy_pipeline({ 'custom' => %w[docker rspec] }))
+        end
+
+        it 'triggers one event per job' do
+          expect { execute }.to trigger_internal_events('execute_job_pipeline_execution_policy')
+                                  .with(category: described_class.name,
+                                    project: project,
+                                    namespace:  project.group)
+                                  .exactly(2).times
+        end
+      end
     end
 
     context 'when custom policy stage is not defined in the main pipeline' do
@@ -109,6 +132,10 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger, feat
         execute
 
         expect(pipeline.stages.map(&:name)).to contain_exactly('build', 'test')
+      end
+
+      it_behaves_like 'internal event not tracked' do
+        let(:event) { 'execute_job_pipeline_execution_policy' }
       end
     end
   end
@@ -154,6 +181,10 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger, feat
 
     it 'does not change pipeline stages' do
       expect { execute }.not_to change { pipeline.stages }
+    end
+
+    it_behaves_like 'internal event not tracked' do
+      let(:event) { 'execute_job_pipeline_execution_policy' }
     end
   end
 end
