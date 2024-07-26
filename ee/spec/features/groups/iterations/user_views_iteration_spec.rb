@@ -154,7 +154,7 @@ RSpec.describe 'User views iteration', :js, feature_category: :team_planning do
       visit_iteration(iteration)
 
       expect(page).to have_title('Not Found')
-      expect(page).to have_content('Page Not Found')
+      expect(page).to have_content('Page not found')
     end
   end
 

@@ -47,7 +47,7 @@ RSpec.describe 'Profile > Account', feature_category: :user_profile do
       click_link "Disconnect"
 
       visit group_path(group)
-      expect(page).to have_content('Page Not Found')
+      expect(page).to have_content('Page not found')
     end
 
     context 'group has disabled SAML' do

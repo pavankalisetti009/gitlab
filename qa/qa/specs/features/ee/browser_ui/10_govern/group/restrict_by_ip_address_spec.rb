@@ -41,11 +41,11 @@ module QA
             Flow::Login.sign_in(as: user)
 
             group.sandbox.visit!(skip_resp_code_check: true)
-            expect(page).to have_text('Page Not Found')
+            expect(page).to have_text('Page not found')
             page.go_back
 
             group.visit!(skip_resp_code_check: true)
-            expect(page).to have_text('Page Not Found')
+            expect(page).to have_text('Page not found')
             page.go_back
           end
         end

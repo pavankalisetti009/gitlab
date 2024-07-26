@@ -17,13 +17,13 @@ RSpec.describe 'Pending project memberships', :js, feature_category: :groups_and
     it 'a pending project member gets a 404 for a private project' do
       visit project_path(project)
 
-      expect(page).to have_content "Page Not Found"
+      expect(page).to have_content "Page not found"
     end
 
     it "a pending project member gets a 404 for the project's private group" do
       visit group_path(group)
 
-      expect(page).to have_content "Page Not Found"
+      expect(page).to have_content "Page not found"
     end
 
     it "a project member can see the project's private group once the membership transitions to active" do
@@ -42,7 +42,7 @@ RSpec.describe 'Pending project memberships', :js, feature_category: :groups_and
 
         visit group_path(group)
 
-        expect(page).to have_content "Page Not Found"
+        expect(page).to have_content "Page not found"
       end
     end
   end
@@ -84,7 +84,7 @@ RSpec.describe 'Pending project memberships', :js, feature_category: :groups_and
     it 'a pending project member sees the root group as if not a member' do
       visit group_path(group)
 
-      expect(page).to have_content "Page Not Found"
+      expect(page).to have_content "Page not found"
     end
   end
 end

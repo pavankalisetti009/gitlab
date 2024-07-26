@@ -43,7 +43,7 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
     sign_in(user)
     visit_project_analytics_dashboards_list(project)
 
-    expect(page).to have_content _("Page Not Found")
+    expect(page).to have_content _("Page not found")
   end
 
   context 'with a valid user' do

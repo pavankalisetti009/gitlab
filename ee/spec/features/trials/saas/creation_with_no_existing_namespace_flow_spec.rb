@@ -184,7 +184,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
       click_button 'Start your free trial'
 
-      expect(page).to have_content('Page Not Found')
+      expect(page).to have_content('Page not found')
     end
   end
 
