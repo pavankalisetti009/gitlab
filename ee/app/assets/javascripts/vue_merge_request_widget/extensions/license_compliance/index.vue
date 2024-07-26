@@ -255,10 +255,9 @@ export default {
     options: { title: s__('ciReport|License scan results') },
     content: {
       text: s__('ciReport|Detects known vulnerabilities in your software dependencies.'),
-      // eslint-disable-next-line local-rules/require-valid-help-page-path
       learnMorePath: helpPagePath('user/compliance/license_approval_policies', {
         anchor:
-          'criteria-comparing-licenses-detected-in-the-merge-request-branch-to-licenses-detected-in-the-default-branch',
+          'criteria-to-compare-licenses-detected-in-the-merge-request-branch-to-licenses-in-the-default-branch',
       }),
     },
   },
