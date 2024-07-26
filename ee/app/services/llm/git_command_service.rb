@@ -7,14 +7,8 @@ module Llm
     MAX_RESPONSE_TOKENS = 300
 
     def valid?
-      if Feature.enabled?(:move_git_service_to_ai_gateway, user)
-        options[:prompt].size < INPUT_CONTENT_LIMIT &&
-          user.can?(:access_glab_ask_git_command)
-      else
-        super &&
-          ::License.feature_available?(:glab_ask_git_command) &&
-          options[:prompt].size < INPUT_CONTENT_LIMIT
-      end
+      options[:prompt].size < INPUT_CONTENT_LIMIT &&
+        user.can?(:access_glab_ask_git_command)
     end
 
     private
@@ -24,19 +18,9 @@ module Llm
     end
 
     def perform
-      if Feature.enabled?(:move_git_service_to_ai_gateway, user)
-        payload = Gitlab::Llm::VertexAi::Client
-          .new(user, unit_primitive: 'glab_ask_git_command')
-          .chat(content: prompt)
-      else
-        config = ::Gitlab::Llm::VertexAi::Configuration.new(
-          model_config: ::Gitlab::Llm::VertexAi::ModelConfigurations::CodeChat.new(user: user),
-          user: user,
-          unit_primitive: 'glab_ask_git_command'
-        )
-
-        payload = { url: config.url, headers: config.headers, body: config.payload(prompt).to_json }
-      end
+      payload = Gitlab::Llm::VertexAi::Client
+              .new(user, unit_primitive: 'glab_ask_git_command')
+              .chat(content: prompt)
 
       success(payload)
     end

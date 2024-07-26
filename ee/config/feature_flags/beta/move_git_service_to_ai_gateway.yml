@@ -1,9 +1,0 @@
----
-name: move_git_service_to_ai_gateway
-feature_issue_url:
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/157077
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/467443
-milestone: '17.2'
-group: group::code review
-type: beta
-default_enabled: true
