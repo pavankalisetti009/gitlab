@@ -2,6 +2,7 @@
 import { GlLoadingIcon } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
+import { reportToSentry } from '~/ci/utils';
 import MergeTrainsFeedbackBanner from './components/merge_trains_feedback_banner.vue';
 import MergeTrainBranchSelector from './components/merge_train_branch_selector.vue';
 import MergeTrainTabs from './components/merge_train_tabs.vue';
@@ -51,10 +52,11 @@ export default {
 
         return { train: {} };
       },
-      error() {
+      error(err) {
         createAlert({
           message: s__('Pipelines|An error occurred while trying to fetch the active merge train.'),
         });
+        reportToSentry(this.$options.name, err);
       },
     },
     completedMergeTrains: {
@@ -75,12 +77,13 @@ export default {
 
         return { train: {} };
       },
-      error() {
+      error(err) {
         createAlert({
           message: s__(
             'Pipelines|An error occurred while trying to fetch the completed merge train.',
           ),
         });
+        reportToSentry(this.$options.name, err);
       },
     },
   },
@@ -133,15 +136,17 @@ export default {
           const errorMessage = errors[0];
 
           createAlert({ message: errorMessage });
+          reportToSentry(this.$options.name, errorMessage);
         } else {
           this.$apollo.queries.activeMergeTrains.refetch();
         }
-      } catch {
+      } catch (err) {
         createAlert({
           message: s__(
             'Pipelines|An error occurred while trying to remove the car from the train.',
           ),
         });
+        reportToSentry(this.$options.name, err);
       }
     },
   },
