@@ -257,7 +257,7 @@ export default {
           :target="() => $refs.childEpicsCount"
           data-testid="child-epics-count-tooltip"
         >
-          <span :class="{ bold: hasFiltersApplied }">{{ childEpicsCountText }}</span>
+          <span :class="{ 'gl-font-bold': hasFiltersApplied }">{{ childEpicsCountText }}</span>
           <span v-if="hasFiltersApplied" class="gl-block">{{ childEpicsSearchText }}</span>
         </gl-tooltip>
       </template>

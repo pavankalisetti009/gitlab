@@ -41,7 +41,7 @@ export default {
       {{ formattedTime }}
     </time>
     <gl-tooltip :target="() => $refs.timeAgo">
-      <div class="bold">{{ tooltipText }}</div>
+      <div class="gl-font-bold">{{ tooltipText }}</div>
       <div>{{ timeTitle }}</div>
     </gl-tooltip>
   </div>

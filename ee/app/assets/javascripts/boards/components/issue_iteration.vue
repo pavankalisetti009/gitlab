@@ -35,7 +35,7 @@ export default {
       placement="bottom"
       data-testid="issue-iteration-info"
     >
-      <div class="bold">{{ __('Iteration') }}</div>
+      <div class="gl-font-bold">{{ __('Iteration') }}</div>
       <div v-if="showIterationCadenceTitle" data-testid="issue-iteration-cadence-title">
         {{ iteration.iterationCadence.title }}
       </div>

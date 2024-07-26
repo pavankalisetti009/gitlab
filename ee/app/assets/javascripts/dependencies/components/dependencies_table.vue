@@ -198,7 +198,7 @@ export default {
         :icon="detailsShowing ? 'chevron-up' : 'chevron-down'"
         @click="rowExpanded(toggleDetails, item)"
       />
-      <span class="bold">{{ item.name }}</span
+      <span class="gl-font-bold">{{ item.name }}</span
       >&nbsp;{{ item.version }}
     </template>
 
