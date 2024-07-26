@@ -102,8 +102,7 @@ export default {
       return null;
     },
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  codeOwnerHelpPage: helpPagePath('user/project/code_owners'),
+  codeOwnerHelpPage: helpPagePath('user/project/codeowners/index'),
 };
 </script>
 
