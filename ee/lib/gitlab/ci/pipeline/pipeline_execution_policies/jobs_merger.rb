@@ -14,12 +14,15 @@ module Gitlab
 
         class JobsMerger
           include ::Gitlab::Utils::StrongMemoize
+          include ::Gitlab::InternalEventsTracking
 
           def initialize(pipeline:, pipeline_execution_policies:, declared_stages:)
             @pipeline = pipeline
             @pipeline_execution_policies = pipeline_execution_policies
             @declared_stages = declared_stages
             @pipeline_stages_by_name = pipeline.stages.index_by(&:name)
+            @project = pipeline.project
+            @namespace = project.namespace
           end
 
           def execute
@@ -32,7 +35,8 @@ module Gitlab
 
           private
 
-          attr_reader :pipeline, :pipeline_execution_policies, :declared_stages, :pipeline_stages_by_name
+          attr_reader :pipeline, :pipeline_execution_policies, :declared_stages, :pipeline_stages_by_name, :project,
+            :namespace
 
           def inject_jobs_from(policy_pipeline)
             policy_pipeline.pipeline.stages.each do |policy_stage|
@@ -57,6 +61,12 @@ module Gitlab
               job.assign_attributes(pipeline: pipeline, stage_idx: to_stage.position)
               job.set_execution_policy_job!
               to_stage.statuses << job
+
+              track_internal_event(
+                'execute_job_pipeline_execution_policy',
+                project: project,
+                namespace: namespace
+              )
             end
           end
 
