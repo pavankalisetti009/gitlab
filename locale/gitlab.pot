@@ -3729,7 +3729,13 @@ msgstr ""
 msgid "AdminSelfHostedModels|API token (if needed)"
 msgstr ""
 
+msgid "AdminSelfHostedModels|Add a new AI model that can be used for GitLab Duo features."
+msgstr ""
+
 msgid "AdminSelfHostedModels|Add self-hosted language models to use as backups for GitLab Duo features."
+msgstr ""
+
+msgid "AdminSelfHostedModels|Add self-hosted models"
 msgstr ""
 
 msgid "AdminSelfHostedModels|An API key is set"

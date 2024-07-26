@@ -30,3 +30,11 @@ export const mockAiSelfHostedModelsQueryResponse = {
     },
   },
 };
+
+export const SELF_HOSTED_MODEL_OPTIONS = [
+  { modelValue: 'MIXTRAL', modelName: 'Mixtral' },
+  { modelValue: 'MISTRAL', modelName: 'Mistral' },
+  { modelValue: 'CODEGEMMA', modelName: 'Codegemma' },
+  { modelValue: 'CODESTRAL', modelName: 'Codestral' },
+  { modelValue: 'CODELLAMA', modelName: 'Codellama' },
+];
