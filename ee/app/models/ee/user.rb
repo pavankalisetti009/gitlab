@@ -521,7 +521,6 @@ module EE
     override :allow_password_authentication_for_web?
     def allow_password_authentication_for_web?(*)
       return false if group_managed_account?
-      return false if user_authorized_by_provisioning_group?
       return false if password_authentication_disabled_by_enterprise_group?
 
       super
@@ -530,7 +529,6 @@ module EE
     override :allow_password_authentication_for_git?
     def allow_password_authentication_for_git?(*)
       return false if group_managed_account?
-      return false if user_authorized_by_provisioning_group?
       return false if password_authentication_disabled_by_enterprise_group?
 
       super
@@ -541,19 +539,6 @@ module EE
       return false unless enterprise_group.saml_provider
 
       enterprise_group.saml_provider.enabled? && enterprise_group.saml_provider.disable_password_authentication_for_enterprise_users?
-    end
-
-    override :password_based_login_forbidden?
-    def password_based_login_forbidden?
-      user_authorized_by_provisioning_group? || super
-    end
-
-    def user_authorized_by_provisioning_group?
-      user_detail.provisioned_by_group? && ::Feature.enabled?(:block_password_auth_for_saml_users, user_detail.provisioned_by_group, type: :ops)
-    end
-
-    def authorized_by_provisioning_group?(group)
-      user_authorized_by_provisioning_group? && provisioned_by_group == group
     end
 
     def enterprise_user_of_group?(group)

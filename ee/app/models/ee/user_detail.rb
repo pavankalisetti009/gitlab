@@ -16,9 +16,5 @@ module EE
         prefix: true
       )
     end
-
-    def provisioned_by_group?
-      !!provisioned_by_group
-    end
   end
 end
