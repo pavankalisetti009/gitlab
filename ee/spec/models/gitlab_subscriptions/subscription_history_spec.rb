@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptionHistory, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::SubscriptionHistory, feature_category: :seat_cost_management do
   describe '.create_from_change' do
     context 'when supplied an invalid change type' do
       it 'raises an error' do
@@ -66,11 +66,11 @@ RSpec.describe GitlabSubscriptionHistory, feature_category: :seat_cost_managemen
           'seats' => 15
         )
 
-        expect(record.attributes.keys).to include(*GitlabSubscriptionHistory::TRACKED_ATTRIBUTES)
+        expect(record.attributes.keys).to include(*GitlabSubscriptions::SubscriptionHistory::TRACKED_ATTRIBUTES)
 
         expect(record.attributes.keys).not_to include(
           'non_existent_attribute',
-          *GitlabSubscriptionHistory::OMITTED_ATTRIBUTES
+          *GitlabSubscriptions::SubscriptionHistory::OMITTED_ATTRIBUTES
         )
       end
     end
