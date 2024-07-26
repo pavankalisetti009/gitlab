@@ -11,10 +11,10 @@ module Security
     sidekiq_options retry: true
     feature_category :security_policy_management
 
-    HISTOGRAM_BUCKETS = [120, 240, 360, 480, 600, 720, 840, 960].freeze
+    HISTOGRAM = :gitlab_security_policies_scan_result_process_duration_seconds
 
     def perform(project_id, configuration_id)
-      measure(project_id, configuration_id) do
+      measure(HISTOGRAM, project_id: project_id, configuration_id: configuration_id) do
         project = Project.find_by_id(project_id)
         configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
         break unless project && configuration
@@ -50,20 +50,6 @@ module Security
       end
     end
 
-    def measure(project_id, configuration_id)
-      lo = ::Gitlab::Metrics::System.monotonic_time
-      yield
-      hi = ::Gitlab::Metrics::System.monotonic_time
-
-      histogram.observe({ project_id: project_id, configuration_id: configuration_id }, hi - lo)
-    end
-
-    def histogram
-      Gitlab::Metrics.histogram(
-        :gitlab_security_policies_scan_result_process_duration_seconds,
-        'The amount of time to process scan result policies',
-        {},
-        HISTOGRAM_BUCKETS)
-    end
+    delegate :measure, to: Security::SecurityOrchestrationPolicies::ObserveHistogramsService
   end
 end

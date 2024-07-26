@@ -3,6 +3,8 @@
 module Security
   module SecurityOrchestrationPolicies
     class ScanPipelineService
+      HISTOGRAM = :gitlab_security_policies_scan_execution_configuration_rendering_seconds
+
       SCAN_VARIABLES = {
         secret_detection: {
           'SECRET_DETECTION_HISTORIC_SCAN' => 'false'
@@ -36,27 +38,29 @@ module Security
       end
 
       def execute(actions)
-        actions = actions.select do |action|
-          valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)
+        measure(HISTOGRAM, project_id: project.id, action_count: actions.size) do
+          actions = actions.select do |action|
+            valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)
+          end
+
+          on_demand_scan_actions, other_actions = actions.partition do |action|
+            on_demand_scan_type?(action[:scan].to_s)
+          end
+
+          pipeline_scan_configs = other_actions.map.with_index do |action, index|
+            prepare_policy_configuration(action, index)
+          end
+
+          on_demand_configs = prepare_on_demand_policy_configuration(on_demand_scan_actions)
+
+          pipeline_variables = collect_config_variables(other_actions, pipeline_scan_configs)
+          on_demand_variables = collect_config_variables(on_demand_scan_actions, on_demand_configs)
+          variables = pipeline_variables.merge(on_demand_variables)
+
+          { pipeline_scan: pipeline_scan_configs.reduce({}, :merge),
+            on_demand: on_demand_configs.reduce({}, :merge),
+            variables: variables }
         end
-
-        on_demand_scan_actions, other_actions = actions.partition do |action|
-          on_demand_scan_type?(action[:scan].to_s)
-        end
-
-        pipeline_scan_configs = other_actions.map.with_index do |action, index|
-          prepare_policy_configuration(action, index)
-        end
-
-        on_demand_configs = prepare_on_demand_policy_configuration(on_demand_scan_actions)
-
-        pipeline_variables = collect_config_variables(other_actions, pipeline_scan_configs)
-        on_demand_variables = collect_config_variables(on_demand_scan_actions, on_demand_configs)
-        variables = pipeline_variables.merge(on_demand_variables)
-
-        { pipeline_scan: pipeline_scan_configs.reduce({}, :merge),
-          on_demand: on_demand_configs.reduce({}, :merge),
-          variables: variables }
       end
 
       private
@@ -119,6 +123,8 @@ module Security
       def allow_restricted_variables?
         Feature.enabled?(:allow_restricted_variables_at_policy_level, project, type: :beta)
       end
+
+      delegate :measure, to: Security::SecurityOrchestrationPolicies::ObserveHistogramsService
     end
   end
 end
