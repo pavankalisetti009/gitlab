@@ -40,13 +40,11 @@ module EE
                 command.pipeline_execution_policies = []
                 pipeline_execution_policy_configs.each do |config|
                   response = create_pipeline(config.content)
+                  pipeline = response.payload
 
                   if response.success?
-                    command.pipeline_execution_policies << PipelineExecutionPolicy.new(
-                      response.payload,
-                      config.strategy
-                    )
-                  elsif pipeline_filtered_by_rules?(response.payload)
+                    command.pipeline_execution_policies << PipelineExecutionPolicy.new(pipeline, config.strategy)
+                  elsif pipeline.filtered_as_empty?
                     # no-op: we ignore empty pipelines
                   else
                     return error("Pipeline execution policy error: #{response.message}", failure_reason: :config_error)
@@ -76,11 +74,6 @@ module EE
                     ignore_skip_ci: true # We can exit early from `Chain::Skip` by setting this parameter
                     # Additional parameters will be added in https://gitlab.com/gitlab-org/gitlab/-/issues/462004
                   )
-              end
-
-              def pipeline_filtered_by_rules?(pipeline)
-                pipeline.failure_reason.present? &&
-                  !::Enums::Ci::Pipeline.persistable_failure_reason?(pipeline.failure_reason.to_sym)
               end
             end
           end
