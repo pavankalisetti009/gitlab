@@ -3,6 +3,7 @@ import { GlLoadingIcon, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { v4 as uuidv4 } from 'uuid';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import glAbilitiesMixin from '~/vue_shared/mixins/gl_abilities_mixin';
+import { sendDuoChatCommand } from 'ee/ai/utils';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import { createAlert } from '~/alert';
@@ -14,8 +15,6 @@ import download from '~/lib/utils/downloader';
 import { visitUrl } from '~/lib/utils/url_utility';
 import UsersCache from '~/lib/utils/users_cache';
 import { __, s__ } from '~/locale';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from '../graphql/ai_resolve_vulnerability.mutation.graphql';
 import {
@@ -247,14 +246,9 @@ export default {
       }
     },
     explainVulnerability() {
-      duoChatGlobalState.isShown = true;
-
-      this.$apollo.mutate({
-        mutation: chatMutation,
-        variables: {
-          question: '/vulnerability_explain',
-          resourceId: this.vulnerabilityGraphqlId,
-        },
+      sendDuoChatCommand({
+        question: '/vulnerability_explain',
+        resourceId: this.vulnerabilityGraphqlId,
       });
     },
     resolveVulnerability() {

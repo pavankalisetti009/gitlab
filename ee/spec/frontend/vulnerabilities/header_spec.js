@@ -5,6 +5,7 @@ import MockAdapter from 'axios-mock-adapter';
 import VueApollo from 'vue-apollo';
 import { createMockSubscription } from 'mock-apollo-client';
 import { createMockDirective } from 'helpers/vue_mock_directive';
+import * as aiUtils from 'ee/ai/utils';
 import aiResponseSubscription from 'ee/graphql_shared/subscriptions/ai_completion_response.subscription.graphql';
 import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulnerability.mutation.graphql';
 import Api from 'ee/api';
@@ -25,9 +26,6 @@ import { convertObjectPropsToSnakeCase } from '~/lib/utils/common_utils';
 import download from '~/lib/utils/downloader';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { visitUrl } from '~/lib/utils/url_utility';
-import chatMutation from 'ee/ai/graphql/chat.mutation.graphql';
-import { MOCK_TANUKI_BOT_MUTATATION_RES } from 'ee_jest/ai/tanuki_bot/mock_data';
-import { duoChatGlobalState } from '~/super_sidebar/constants';
 import {
   getVulnerabilityStatusMutationResponse,
   dismissalDescriptions,
@@ -51,6 +49,8 @@ jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn(),
 }));
+jest.mock('ee/ai/utils');
+jest.spyOn(aiUtils, 'sendDuoChatCommand');
 
 describe('Vulnerability Header', () => {
   let wrapper;
@@ -637,18 +637,11 @@ describe('Vulnerability Header', () => {
     });
 
     describe('explain with AI button', () => {
-      let chatMutationHandlerMock;
-
       const findExplainWithAIButton = () => findSplitButton().props('buttons')[1];
 
       beforeEach(() => {
-        chatMutationHandlerMock = jest.fn().mockResolvedValue(MOCK_TANUKI_BOT_MUTATATION_RES);
-
-        const apolloProvider = createApolloProvider([chatMutation, chatMutationHandlerMock]);
-
         createWrapper({
           vulnerability: getVulnerability(),
-          apolloProvider,
         });
       });
 
@@ -662,19 +655,13 @@ describe('Vulnerability Header', () => {
         });
       });
 
-      it('opens the global DuoChat drawer when clicked', async () => {
-        expect(duoChatGlobalState.isShown).toBe(false);
+      it('calls sendDuoChatCommand with the correct parameters when clicked', async () => {
+        expect(aiUtils.sendDuoChatCommand).not.toHaveBeenCalled();
 
-        await clickButton('explain-vulnerability');
-
-        expect(duoChatGlobalState.isShown).toBe(true);
-      });
-
-      it('calls the correct mutation with the correct parameters when clicked', async () => {
         await clickButton('explain-vulnerability');
         await waitForPromises();
 
-        expect(chatMutationHandlerMock).toHaveBeenCalledWith({
+        expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
           question: '/vulnerability_explain',
           resourceId: `gid://gitlab/Vulnerability/${defaultVulnerability.id}`,
         });
