@@ -1,4 +1,9 @@
-- page_title s_('AdminSelfHostedModels|New self-hosted model')
-%h1.page-title.gl-font-size-h-display
-  = s_('AdminSelfHostedModels|New self-hosted model')
-= render 'form', url: admin_ai_self_hosted_models_path, back_path: admin_ai_self_hosted_models_path
+- page_title s_('AdminSelfHostedModels|Add self-hosted models')
+- if Feature.enabled?(:custom_models_vue_app, current_user)
+  - model_options = Ai::SelfHostedModel.models.map { |name, _| { modelValue: name.upcase, modelName: name.capitalize } }
+
+  #js-new-self-hosted-model{ data: { view_model: { basePath: admin_ai_self_hosted_models_path, modelOptions: model_options }.to_json } }
+- else
+  %h1.page-title.gl-text-size-h-display
+    = s_('AdminSelfHostedModels|Add self-hosted models')
+  = render 'form', url: admin_ai_self_hosted_models_path, back_path: admin_ai_self_hosted_models_path
