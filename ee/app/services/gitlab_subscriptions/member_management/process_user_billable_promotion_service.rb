@@ -3,47 +3,131 @@
 module GitlabSubscriptions
   module MemberManagement
     class ProcessUserBillablePromotionService < BaseService
-      include ::GitlabSubscriptions::MemberManagement::PromotionManagementUtils
-
-      FAILED_TO_APPLY_PROMOTIONS = 'FAILED_TO_APPLY_PROMOTIONS'
-
-      attr_reader :current_user
+      include GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
       def initialize(current_user, user, status)
         @current_user = current_user
         @user = user
         @status = status
+        @failed_member_approvals = []
+        @successful_promotion_count = 0
       end
 
       def execute
-        return error('Unauthorized') unless
-          current_user.present? && promotion_management_applicable? && current_user.can_admin_all_resources?
+        return error('Unauthorized') unless authorized?
 
-        apply_member_approvals
-        success
-      rescue ActiveRecord::RecordInvalid
-        error(FAILED_TO_APPLY_PROMOTIONS)
+        case status
+        when :denied
+          deny_member_approvals
+        when :approved
+          apply_member_approvals
+        else
+          error("Invalid #{status}")
+        end
+      rescue ActiveRecord::ActiveRecordError => e
+        Gitlab::AppLogger.error(message: "Failed to update member approval status to #{status}: #{e.message}")
+        Gitlab::ErrorTracking.track_exception(e)
+        error("Failed to update member approval status to #{status}")
       end
 
       private
 
-      attr_reader :user, :status
+      attr_reader :current_user, :user, :status
+      attr_accessor :failed_member_approvals, :successful_promotion_count
+
+      def authorized?
+        current_user.present? &&
+          promotion_management_applicable? &&
+          current_user.can_admin_all_resources?
+      end
 
       def apply_member_approvals
-        ::Members::MemberApproval.pending_member_approvals_for_user(user.id).each do |member_approval|
-          member_approval.update!(status: status)
+        pending_approvals.find_each do |member_approval|
+          response = process_member_approval(member_approval)
+
+          if response[:status] == :error
+            failed_member_approvals << member_approval
+            Gitlab::AppLogger.error(message: "Failed to apply pending promotions: #{response[:message]}")
+          else
+            member_approval.update!(status: :approved)
+            self.successful_promotion_count += 1
+          end
+        end
+
+        return error("Failed to apply promotions") if all_promotions_failed?
+
+        approve_failed_member_approvals
+        success_status = failed_member_approvals.present? ? :partial_success : :success
+
+        success(success_status)
+      end
+
+      def process_member_approval(member_approval)
+        source = get_source_from_member_namespace(member_approval.member_namespace)
+        params = member_approval_params(member_approval, source)
+
+        Members::InviteService.new(current_user, params).execute
+      end
+
+      def pending_approvals
+        Members::MemberApproval.pending_member_approvals_for_user(user.id)
+      end
+
+      def all_promotions_failed?
+        successful_promotion_count == 0 && failed_member_approvals.present?
+      end
+
+      def member_approval_params(member_approval, source)
+        params = member_approval.metadata.symbolize_keys
+        params.merge!(
+          user_id: [user.id],
+          source: source,
+          access_level: member_approval.new_access_level,
+          invite_source: self.class.name
+        )
+      end
+
+      def get_source_from_member_namespace(member_namespace)
+        case member_namespace
+        when ::Namespaces::ProjectNamespace
+          member_namespace.project
+        when ::Group
+          member_namespace
         end
       end
 
-      def success
-        ServiceResponse.success(payload: {
-          user: user,
-          status: status
-        })
+      def deny_member_approvals
+        pending_approvals.each_batch do |batch|
+          batch.update_all(updated_at: Time.current, status: :denied)
+        end
+
+        success
+      end
+
+      def approve_failed_member_approvals
+        failed_member_approvals.each do |member_approval|
+          member_approval.update!(status: :approved)
+        end
+      end
+
+      def success(result = :success)
+        ServiceResponse.success(
+          message: "Successfully processed request",
+          payload: {
+            result: result,
+            user: user,
+            status: status
+          }
+        )
       end
 
       def error(message)
-        ServiceResponse.error(message: message)
+        ServiceResponse.error(
+          message: message,
+          payload: {
+            result: :failed
+          }
+        )
       end
     end
   end
