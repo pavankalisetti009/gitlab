@@ -68,7 +68,7 @@ export default {
       <template v-if="!isLoading">
         <gl-empty-state
           v-if="!totalItems"
-          :title="__(`You don't have any open merge requests`)"
+          :title="__(`No open merge requests`)"
           :primary-button-text="__('New merge request')"
           :primary-button-link="newMergeRequestUrl"
           :svg-path="emptyStateSvgPath"
@@ -76,13 +76,7 @@ export default {
         >
           <template #description>
             <div class="gl-text-center">
-              <p>
-                {{
-                  __(
-                    'Code Review Analytics displays a table of open merge requests considered to be in code review. There are currently no merge requests in review for this project and/or filters.',
-                  )
-                }}
-              </p>
+              <p>{{ __('Create a merge request, or edit your criteria and try again.') }}</p>
             </div>
           </template>
         </gl-empty-state>

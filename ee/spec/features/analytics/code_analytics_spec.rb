@@ -46,7 +46,7 @@ RSpec.describe 'CodeReviewAnalytics', :js, feature_category: :devops_reports do
     it "shows empty state #{expect_button ? 'with' : 'without'} \"New merge request\" button" do
       visit project_analytics_code_reviews_path(project)
 
-      expect(page).to have_content("You don't have any open merge requests")
+      expect(page).to have_content("No open merge requests")
 
       if expect_button
         expect(page).to have_link('New merge request')
