@@ -33083,9 +33083,6 @@ msgstr ""
 msgid "Metric"
 msgstr ""
 
-msgid "Metric:"
-msgstr ""
-
 msgid "MetricChart|Please select a metric"
 msgstr ""
 
