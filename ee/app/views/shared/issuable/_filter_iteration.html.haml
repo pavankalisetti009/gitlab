@@ -16,6 +16,5 @@
   %ul.filter-dropdown{ data: { dropdown: true, dynamic: true } }
     %li.filter-dropdown-item
       = render Pajamas::ButtonComponent.new(variant: :link) do
-        -# haml-lint:disable NoPlainNodes
-        %span.dropdown-light-content
+        %span.js-dropdown-light-content.gl-text-subtle
           {{title}}
