@@ -694,8 +694,9 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
       it 'does not call track! for work_items that should not be indexed' do
         expect(logger).to receive(:info).with(/Indexing work_items/).twice
-        expect(Elastic::ProcessBookkeepingService).to receive(:track!).with(work_item_1, work_item_3)
-
+        expect(Elastic::ProcessBookkeepingService).to receive(:track!) do |*work_items|
+          expect(work_items).to match_array([work_item_1, work_item_3])
+        end
         service.execute(:index_work_items)
       end
     end
