@@ -34572,9 +34572,6 @@ msgstr ""
 msgid "New Application"
 msgstr ""
 
-msgid "New Branch"
-msgstr ""
-
 msgid "New Epic"
 msgstr ""
 
