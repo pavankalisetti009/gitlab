@@ -92,6 +92,8 @@ class Groups::EpicsController < Groups::ApplicationController
     @work_item = ::WorkItems::WorkItemsFinder.new(current_user,
       group_id: group.id).execute.with_work_item_type.find_by_iid(epic.iid)
 
+    push_force_frontend_feature_flag(:work_items_rolledup_dates, group&.work_items_rolledup_dates_feature_flag_enabled?)
+
     render 'groups/work_items/show'
   end
 
