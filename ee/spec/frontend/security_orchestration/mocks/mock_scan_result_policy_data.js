@@ -450,11 +450,15 @@ export const mockProjectWithAllApproverTypesScanResultPolicy = {
   },
 };
 
-export const mockProjectFallbackOpenScanResultManifest =
-  mockDefaultBranchesScanResultManifest.concat(`fallback_behavior:\n  fail: open`);
-
 export const mockProjectFallbackClosedScanResultManifest =
   mockDefaultBranchesScanResultManifest.concat(`fallback_behavior:\n  fail: closed`);
+
+export const mockProjectFallbackClosedScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  fallback_behavior: {
+    fail: 'closed',
+  },
+};
 
 export const mockScanResultPoliciesResponse = [
   mockProjectScanResultPolicy,
