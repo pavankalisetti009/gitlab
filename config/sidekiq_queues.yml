@@ -451,8 +451,6 @@
   - 1
 - - issues_close
   - 2
-- - issues_copy_timelogs
-  - 1
 - - issues_placement
   - 2
 - - issues_rebalancing
@@ -846,6 +844,8 @@
 - - web_hooks_log_execution
   - 1
 - - wikis_git_garbage_collect
+  - 1
+- - work_items_copy_timelogs
   - 1
 - - work_items_import_work_items_csv
   - 1
