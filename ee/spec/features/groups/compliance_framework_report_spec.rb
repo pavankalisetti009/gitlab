@@ -160,7 +160,7 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
 
       it 'renders 404 for compliance center path' do
         visit group_security_compliance_framework_reports_path(group)
-        expect(page).to have_content('Not Found')
+        expect(page).to have_content('Page not found')
       end
     end
   end

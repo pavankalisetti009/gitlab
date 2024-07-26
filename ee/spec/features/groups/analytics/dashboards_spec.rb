@@ -15,7 +15,7 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
     sign_in(user)
     visit group_analytics_dashboards_path(group)
 
-    expect(page).to have_content _("You don't have the permission to access this page")
+    expect(page).to have_content _(" You do not have the permission to access this page")
   end
 
   context 'with a valid user' do

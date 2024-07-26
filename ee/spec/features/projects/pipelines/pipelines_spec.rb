@@ -35,7 +35,7 @@ RSpec.describe 'Pipelines', :js, feature_category: :continuous_integration do
         end
 
         visit new_project_pipeline_path(project)
-        expect(page).to have_content('Page Not Found')
+        expect(page).to have_content('Page not found')
       end
     end
   end

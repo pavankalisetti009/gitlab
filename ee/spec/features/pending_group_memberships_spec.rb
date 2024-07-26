@@ -53,7 +53,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit project_path(project)
 
-      expect(page).to have_content "Page Not Found"
+      expect(page).to have_content "Page not found"
     end
 
     it 'a group member can see a private project in the group once the pending membership transitions to active' do
@@ -77,7 +77,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member gets a 404 for a private group with a project' do
@@ -86,7 +86,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
   end
 
@@ -99,7 +99,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of the root group sees a subgroup as if not a member' do
@@ -107,7 +107,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(subgroup)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of the root group sees a subgroup project as if not a member' do
@@ -116,7 +116,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit project_path(project)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of a subgroup sees a root group as if not a member' do
@@ -124,7 +124,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of a subgroup sees a project as if not a member' do
@@ -133,7 +133,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit project_path(project)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a member with an active group membership and a pending subgroup membership sees a subgroup project as if the pending membership does not exist' do
@@ -163,7 +163,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(other_group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of the invited group sees the shared group as if not a member when the shared group has a project' do
@@ -172,7 +172,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(other_group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it 'a pending member of the invited group sees a project in the shared group as if not a member' do
@@ -181,7 +181,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit project_path(project)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
   end
 
@@ -199,7 +199,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit group_path(other_group)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
 
     it "a pending member of the invited group sees the shared project as if not a member" do
@@ -207,7 +207,7 @@ RSpec.describe 'Pending group memberships', :js, feature_category: :groups_and_p
 
       visit project_path(project)
 
-      expect(page).to have_content 'Page Not Found'
+      expect(page).to have_content 'Page not found'
     end
   end
 end

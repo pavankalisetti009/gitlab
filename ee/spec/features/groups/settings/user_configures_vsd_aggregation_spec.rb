@@ -63,7 +63,7 @@ RSpec.describe 'Groups > Settings > Analytics > User configures VSD aggregation'
       it 'renders 404 not found' do
         visit group_settings_analytics_path(group)
 
-        expect(page).to have_content('Page Not Found')
+        expect(page).to have_content('Page not found')
       end
     end
 
