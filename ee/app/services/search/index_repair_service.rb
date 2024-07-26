@@ -45,11 +45,14 @@ module Search
           project_id: project.id
         )
       )
+      index_repair_counter.increment(base_metrics_labels(Project))
 
       ::Elastic::ProcessBookkeepingService.track!(project)
     end
 
     def repair_index_for_blobs
+      index_repair_counter.increment(base_metrics_labels(Repository))
+
       ElasticCommitIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, false, { force: true })
       ElasticWikiIndexerWorker.perform_in(rand(DELAY_INTERVAL), project.id, project.class.name, { force: true })
     end
@@ -104,6 +107,15 @@ module Search
 
     def logger
       @logger ||= ::Gitlab::Elasticsearch::Logger.build
+    end
+
+    def base_metrics_labels(klass)
+      { document_type: klass.es_type }
+    end
+
+    def index_repair_counter
+      @index_repair_counter ||= ::Gitlab::Metrics.counter(:search_advanced_index_repair_total,
+        'Count of search index repair operations.')
     end
   end
 end

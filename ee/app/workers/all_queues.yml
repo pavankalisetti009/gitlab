@@ -516,6 +516,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:search_elastic_metrics_update_cron
+  :worker_name: Search::Elastic::MetricsUpdateCronWorker
+  :feature_category: :global_search
+  :has_external_dependencies: false
+  :urgency: :throttled
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:search_index_curation
   :worker_name: Search::IndexCurationWorker
   :feature_category: :global_search
