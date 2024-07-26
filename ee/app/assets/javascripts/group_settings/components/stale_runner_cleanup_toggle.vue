@@ -55,8 +55,7 @@ export default {
       return this.$apollo.queries.staleRunnerCleanupEnabled.loading;
     },
     staleRunnerCleanupHelpPagePath() {
-      // eslint-disable-next-line local-rules/require-valid-help-page-path
-      return helpPagePath('ci/runners/configure_runners', {
+      return helpPagePath('ci/runners/runners_scope', {
         anchor: 'view-stale-runner-cleanup-logs',
       });
     },
