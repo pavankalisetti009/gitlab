@@ -7,6 +7,8 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
+        include EachBatch
+
         validate :validate_unique_pending_approval, on: [:create, :update]
 
         scope :pending_member_approvals, ->(member_namespace_id) do

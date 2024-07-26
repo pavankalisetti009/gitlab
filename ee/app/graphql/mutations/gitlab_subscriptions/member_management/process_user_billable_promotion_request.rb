@@ -23,14 +23,12 @@ module Mutations
           raise_resource_not_available_error! unless
             promotion_management_applicable? && current_user.can_admin_all_resources?
 
-          user = ::Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(user_id))
+          user = Gitlab::Graphql::Lazy.force(GitlabSchema.find_by_gid(user_id))
 
           result = ::GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService
                        .new(current_user, user, status).execute
 
-          return { result: :success, errors: [] } if result.success?
-
-          { result: :failed, errors: result.errors }
+          { result: result.payload[:result], errors: result.errors }
         end
       end
     end
