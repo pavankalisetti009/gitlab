@@ -149,7 +149,7 @@ module Issues
     def copy_timelogs
       return if original_entity.timelogs.empty?
 
-      Issues::CopyTimelogsWorker.perform_async(original_entity.id, new_entity.id)
+      WorkItems::CopyTimelogsWorker.perform_async(original_entity.id, new_entity.id)
     end
 
     def mark_as_moved

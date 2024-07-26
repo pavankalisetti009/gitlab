@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module Issues
+module WorkItems
   class CopyTimelogsWorker
     include ApplicationWorker
 
@@ -19,7 +19,7 @@ module Issues
 
       reset_attributes = { project_id: to_issue.project_id, issue_id: to_issue.id }
       ApplicationRecord.transaction do
-        from_issue.timelogs.each_slice(BATCH_SIZE) do |timelogs|
+        from_issue.timelogs.each_batch(of: BATCH_SIZE) do |timelogs|
           new_timelogs_attributes = timelogs.map do |timelog|
             timelog.attributes.except('id').merge(reset_attributes)
           end
