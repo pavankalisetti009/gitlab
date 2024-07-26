@@ -1020,8 +1020,7 @@ module EE
 
     # Disable personal access tokens for enterprise users of this group
     def disable_personal_access_tokens?
-      ::Feature.enabled?(:enterprise_disable_personal_access_tokens, self) &&
-        root? &&
+      root? &&
         licensed_feature_available?(:disable_personal_access_tokens) &&
         namespace_settings.disable_personal_access_tokens?
     end

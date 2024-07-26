@@ -175,24 +175,6 @@ RSpec.describe Gitlab::Auth::AuthFinders, feature_category: :system_access do
           expect(find_user_from_access_token).to eq user
         end
       end
-
-      context 'when the feature flag enterprise_disable_personal_access_tokens is disabled' do
-        before do
-          stub_feature_flags(enterprise_disable_personal_access_tokens: false)
-        end
-
-        context 'when personal access tokens are disabled for the group for enterprise users' do
-          let(:user) { create(:enterprise_user) }
-
-          before do
-            user.enterprise_group.update!(disable_personal_access_tokens: true)
-          end
-
-          it 'returns user' do
-            expect(find_user_from_access_token).to eq user
-          end
-        end
-      end
     end
   end
 
