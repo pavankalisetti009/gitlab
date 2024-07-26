@@ -19054,6 +19054,9 @@ msgstr ""
 msgid "Disable group runners"
 msgstr ""
 
+msgid "Disable personal access tokens"
+msgstr ""
+
 msgid "Disable two-factor authentication"
 msgstr ""
 

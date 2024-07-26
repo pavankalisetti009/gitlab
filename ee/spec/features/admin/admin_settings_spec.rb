@@ -248,6 +248,29 @@ RSpec.describe 'Admin updates EE-only settings' do
     end
   end
 
+  context 'Disable personal access tokens', feature_category: :system_access do
+    it 'does not show the setting when the feature is not licensed' do
+      stub_licensed_features(disable_personal_access_tokens: false)
+
+      expect(page).not_to have_css('#application_setting_disable_personal_access_tokens')
+    end
+
+    it 'enables personal access tokens' do
+      current_settings.update_attribute(:disable_personal_access_tokens, true)
+
+      visit general_admin_application_settings_path
+
+      within_testid('admin-visibility-access-settings') do
+        uncheck _('Disable personal access tokens')
+        click_button _('Save changes')
+      end
+
+      expect(page).to have_content _('Application settings saved successfully')
+      expect(find('#application_setting_disable_personal_access_tokens')).not_to be_checked
+      expect(current_settings.disable_personal_access_tokens).to eq(false)
+    end
+  end
+
   context 'package registry settings', feature_category: :package_registry do
     before do
       visit ci_cd_admin_application_settings_path
