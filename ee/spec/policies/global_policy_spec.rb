@@ -793,18 +793,17 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     let(:policy) { :access_glab_ask_git_command }
 
     context 'for self-managed' do
-      where(:flag_enabled, :licensed, :free_access, :allowed_for, :enabled_for_user) do
-        false | false | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | false | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | true  | false | false | be_disallowed(:access_glab_ask_git_command)
-        true  | true  | false | true  | be_allowed(:access_glab_ask_git_command)
-        true  | true  | true  | false | be_allowed(:access_glab_ask_git_command)
+      where(:licensed, :free_access, :allowed_for, :enabled_for_user) do
+        false | false | false | be_disallowed(:access_glab_ask_git_command)
+        true  | false | false | be_disallowed(:access_glab_ask_git_command)
+        true  | false | true  | be_allowed(:access_glab_ask_git_command)
+        true  | true  | false | be_allowed(:access_glab_ask_git_command)
+        true  | true  | true  | be_allowed(:access_glab_ask_git_command)
       end
 
       with_them do
         before do
           stub_licensed_features(glab_ask_git_command: licensed)
-          stub_feature_flags(move_git_service_to_ai_gateway: flag_enabled)
 
           service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:glab_ask_git_command, nil, nil)
           allow(CloudConnector::AvailableServices).to receive(:find_by_name)
@@ -818,19 +817,16 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       end
 
       context 'for SaaS', :saas do
-        where(:flag_enabled, :free_access, :any_group_with_ai_available, :allowed_for, :enabled_for_user) do
-          false | false | false | false | be_disallowed(:access_glab_ask_git_command)
-          true  | false | false | false | be_disallowed(:access_glab_ask_git_command)
-          true  | true  | false | false | be_disallowed(:access_glab_ask_git_command)
-          true  | false | false | false | be_disallowed(:access_glab_ask_git_command)
-          true  | false | false | true  | be_allowed(:access_glab_ask_git_command)
-          true  | true  | true  | false | be_allowed(:access_glab_ask_git_command)
+        where(:free_access, :any_group_with_ai_available, :allowed_for, :enabled_for_user) do
+          false | false | false | be_disallowed(:access_glab_ask_git_command)
+          true  | false | false | be_disallowed(:access_glab_ask_git_command)
+          false | false | true  | be_allowed(:access_glab_ask_git_command)
+          true  | true  | false | be_allowed(:access_glab_ask_git_command)
+          true  | true  | true  | be_allowed(:access_glab_ask_git_command)
         end
 
         with_them do
           before do
-            stub_feature_flags(move_git_service_to_ai_gateway: flag_enabled)
-
             service_data = CloudConnector::SelfManaged::AvailableServiceData.new(:glab_ask_git_command, nil, nil)
             allow(CloudConnector::AvailableServices).to receive(:find_by_name)
                                                           .with(:glab_ask_git_command)

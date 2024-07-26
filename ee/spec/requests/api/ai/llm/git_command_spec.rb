@@ -23,143 +23,43 @@ RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :source_code_m
 
     include_context 'with ai features enabled for group'
 
-    context 'when the move_git_service_to_ai_gateway feature flag is enabled' do
-      context 'when the endpoint is called too many times' do
-        it 'returns too many requests response' do
-          expect(Gitlab::ApplicationRateLimiter).to(
-            receive(:throttled?).with(:ai_action, scope: [current_user]).and_return(true)
-          )
+    context 'when the endpoint is called too many times' do
+      it 'returns too many requests response' do
+        expect(Gitlab::ApplicationRateLimiter).to(
+          receive(:throttled?).with(:ai_action, scope: [current_user]).and_return(true)
+        )
 
-          make_request
+        make_request
 
-          expect(response).to have_gitlab_http_status(:too_many_requests)
-        end
-      end
-
-      context 'when allowed to use the service' do
-        let(:service_response) do
-          ServiceResponse.new(
-            status: :success,
-            payload: { predictions:
-                       [{ safetyAttributes: [{
-                         "blocked" => false,
-                         "categories" => [],
-                         "scores" => []
-                       }],
-                          candidates:
-                          [{ "content" =>
-                           "interesting AI content",
-                             "author" => "1" }] }] })
-        end
-
-        it 'responds with Workhorse send-url headers' do
-          allow(::Llm::GitCommandService)
-            .to receive_message_chain(:new, :execute)
-            .and_return(service_response)
-
-          make_request
-
-          expect(response.body).to include("\"candidates\":[{\"content\":\"interesting AI content\"")
-          expect(response).to have_gitlab_http_status(:success)
-        end
+        expect(response).to have_gitlab_http_status(:too_many_requests)
       end
     end
 
-    context 'when the move_git_service_to_ai_gateway feature flag is disabled' do
-      before do
-        stub_feature_flags(move_git_service_to_ai_gateway: false)
+    context 'when allowed to use the service' do
+      let(:service_response) do
+        ServiceResponse.new(
+          status: :success,
+          payload: { predictions:
+                     [{ safetyAttributes: [{
+                       "blocked" => false,
+                       "categories" => [],
+                       "scores" => []
+                     }],
+                        candidates:
+                        [{ "content" =>
+                         "interesting AI content",
+                           "author" => "1" }] }] })
       end
 
-      context 'when delegates AI request to Workhorse' do
-        let(:header) do
-          {
-            'Authorization' => ['Bearer access token'],
-            'Content-Type' => ['application/json'],
-            'Accept' => ["application/json"],
-            'Host' => ['cloud.gitlab.com'],
-            'X-Gitlab-Authentication-Type' => ['oidc'],
-            'X-Gitlab-Global-User-Id' => anything,
-            'X-Gitlab-Host-Name' => anything,
-            'X-Gitlab-Instance-Id' => anything,
-            'X-Gitlab-Rails-Send-Start' => anything,
-            'X-Gitlab-Realm' => anything,
-            'X-Gitlab-Unit-Primitive' => ['glab_ask_git_command'],
-            'X-Gitlab-Version' => anything,
-            'X-Request-ID' => anything
-          }
-        end
+      it 'responds with Workhorse send-url headers' do
+        allow(::Llm::GitCommandService)
+          .to receive_message_chain(:new, :execute)
+          .and_return(service_response)
 
-        let(:expected_params) do
-          expected_content = <<~PROMPT
-        Provide the appropriate git commands for: list 10 commit titles.
+        make_request
 
-        Respond with git commands wrapped in separate ``` blocks.
-        Provide explanation for each command in a separate block.
-
-        ##
-        Example:
-
-        ```
-        git log -10
-        ```
-
-        This command will list the last 10 commits in the current branch.
-          PROMPT
-
-          {
-            'URL' => "https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/codechat-bison:predict",
-            'Header' => header,
-            'AllowRedirects' => false,
-            'Method' => 'POST',
-            'Body' => {
-              instances: [{
-                messages: [{
-                  author: "content",
-                  content: expected_content
-                }]
-              }],
-              parameters: {
-                temperature: 0.2,
-                maxOutputTokens: 2048,
-                topK: 40,
-                topP: 0.95
-              }
-            }.to_json
-          }
-        end
-
-        before do
-          stub_ee_application_setting(vertex_ai_host: 'host', vertex_ai_project: 'c')
-
-          allow_next_instance_of(::Gitlab::Llm::VertexAi::Configuration) do |instance|
-            allow(instance).to receive(:access_token).and_return('access token')
-          end
-        end
-
-        it 'responds with Workhorse send-url headers' do
-          make_request
-
-          expect(response.body).to eq('""')
-          expect(response).to have_gitlab_http_status(:ok)
-
-          send_url_prefix, encoded_data = response.headers['Gitlab-Workhorse-Send-Data'].split(':')
-          data = Gitlab::Json.parse(Base64.urlsafe_decode64(encoded_data))
-
-          expect(send_url_prefix).to eq('send-url')
-          expect(data).to include(expected_params)
-        end
-      end
-
-      context 'when the endpoint is called too many times' do
-        it 'returns too many requests response' do
-          expect(Gitlab::ApplicationRateLimiter).to(
-            receive(:throttled?).with(:ai_action, scope: [current_user]).and_return(true)
-          )
-
-          make_request
-
-          expect(response).to have_gitlab_http_status(:too_many_requests)
-        end
+        expect(response.body).to include("\"candidates\":[{\"content\":\"interesting AI content\"")
+        expect(response).to have_gitlab_http_status(:success)
       end
     end
   end

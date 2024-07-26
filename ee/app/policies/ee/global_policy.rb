@@ -69,10 +69,6 @@ module EE
         self_hosted_models.free_access? || self_hosted_models.allowed_for?(@user)
       end
 
-      condition(:glab_ask_git_command_enabled) do
-        ::Feature.enabled?(:move_git_service_to_ai_gateway, @user)
-      end
-
       condition(:user_allowed_to_use_glab_ask_git_command) do
         next true if glab_ask_git_command_data.allowed_for?(@user)
 
@@ -85,7 +81,7 @@ module EE
         end
       end
 
-      rule { glab_ask_git_command_enabled & user_allowed_to_use_glab_ask_git_command }.policy do
+      rule { user_allowed_to_use_glab_ask_git_command }.policy do
         enable :access_glab_ask_git_command
       end
 
