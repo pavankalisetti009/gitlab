@@ -10,15 +10,15 @@ module Gitlab
       class SourceContext
         # Defaults defined in `config/initializers/1_settings.rb`
         DEFAULT_SHARED_PATH = 'shared'
-        DEFAULT_CI_BUILDS_PATH = 'builds/'
-        DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts/'
-        DEFAULT_SECURE_FILES_PATH = 'ci_secure_files/'
-        DEFAULT_CI_LFS_PATH = 'lfs-objects/'
-        DEFAULT_PACKAGES = 'packages/'
-        DEFAULT_PAGES = 'pages/'
-        DEFAULT_REGISTRY_PATH = 'registry/'
-        DEFAULT_TERRAFORM_STATE_PATH = 'terraform_state/'
-        DEFAULT_UPLOADS_PATH = 'public/' # based on GitLab's root folder
+        DEFAULT_CI_BUILDS_PATH = 'builds'
+        DEFAULT_JOBS_ARTIFACTS_PATH = 'artifacts'
+        DEFAULT_SECURE_FILES_PATH = 'ci_secure_files'
+        DEFAULT_CI_LFS_PATH = 'lfs-objects'
+        DEFAULT_PACKAGES = 'packages'
+        DEFAULT_PAGES = 'pages'
+        DEFAULT_REGISTRY_PATH = 'registry'
+        DEFAULT_TERRAFORM_STATE_PATH = 'terraform_state'
+        DEFAULT_UPLOADS_PATH = 'public' # based on GitLab's root folder
 
         def gitlab_version
           File.read(gitlab_basepath.join("VERSION")).strip.freeze
