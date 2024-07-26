@@ -271,8 +271,12 @@ module EE
     end
 
     override :namespace_work_items_enabled?
-    def namespace_work_items_enabled?
-      super || (::Feature.enabled?(:work_item_epics, self, type: :beta) && licensed_feature_available?(:epics))
+    def namespace_work_items_enabled?(user = nil)
+      super || (
+          ::Feature.enabled?(:work_item_epics, self, type: :beta) &&
+          ::Feature.enabled?(:work_item_epics_rollout, user) &&
+          licensed_feature_available?(:epics)
+        )
     end
 
     class_methods do

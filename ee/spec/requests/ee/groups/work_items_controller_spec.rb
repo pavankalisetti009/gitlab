@@ -35,10 +35,22 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
         stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
       end
 
-      it 'returns not found' do
-        show
+      context 'when work item type is epic' do
+        it 'redirects to /epic/:iid' do
+          show
 
-        expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+        end
+      end
+
+      context 'when work item type is not epic' do
+        let_it_be(:work_item) { create(:work_item, :issue, namespace: group) }
+
+        it 'returns not found' do
+          show
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
       end
     end
 
@@ -47,10 +59,22 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
         stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
-      it 'returns not found' do
-        show
+      context 'when work item type is epic' do
+        it 'redirects to /epic/:iid' do
+          show
 
-        expect(response).to have_gitlab_http_status(:not_found)
+          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+        end
+      end
+
+      context 'when work item type is not epic' do
+        let_it_be(:work_item) { create(:work_item, :issue, namespace: group) }
+
+        it 'returns not found' do
+          show
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
       end
     end
   end

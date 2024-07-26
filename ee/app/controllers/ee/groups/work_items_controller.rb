@@ -20,17 +20,25 @@ module EE
         include DescriptionDiffActions
       end
 
-      private
+      def show
+        # Once we rollout epic work items, links to `/work_items/:iid` might be already used. However there could be the
+        # scenario where we rollback the feature flag to enable epic work items. In this case, we want users to still
+        # see their epics and therefore redirect them to `/epics/:iid`.
+        return redirect_to group_epic_path(group, issuable.iid) if epic_work_item? && !namespace_work_items_enabled?
 
-      override :namespace_work_items_enabled?
-      def namespace_work_items_enabled?
-        super && ::Feature.enabled?(:work_item_epics_rollout, current_user)
+        super
       end
+
+      private
 
       def issuable
         ::WorkItem.find_by_namespace_and_iid!(group, params[:iid])
       end
       strong_memoize_attr :issuable
+
+      def epic_work_item?
+        issuable.work_item_type == ::WorkItems::Type.default_by_type(:epic)
+      end
 
       def authorize_read_work_item!
         access_denied! unless can?(current_user, :read_work_item, issuable)

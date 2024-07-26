@@ -84,7 +84,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
       context 'when feature flag is false' do
         before do
-          stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false)
+          stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false, namespace_level_work_items: false)
         end
 
         it 'exposes the workItemEpics flag' do

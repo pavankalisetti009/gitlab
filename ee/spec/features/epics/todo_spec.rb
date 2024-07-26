@@ -12,7 +12,8 @@ RSpec.describe 'Manually create a todo item from epic', :js, feature_category: :
   context 'with notifications_todos_buttons feature flag disabled' do
     before do
       stub_licensed_features(epics: true)
-      stub_feature_flags(notifications_todos_buttons: false, work_item_epics_rollout: false)
+      stub_feature_flags(notifications_todos_buttons: false, work_item_epics_rollout: false,
+        namespace_level_work_items: false)
 
       sign_in(user)
       visit group_epic_path(group, epic)
@@ -55,7 +56,8 @@ RSpec.describe 'Manually create a todo item from epic', :js, feature_category: :
   context 'with notifications_todos_buttons feature flag enabled' do
     before do
       stub_licensed_features(epics: true)
-      stub_feature_flags(notifications_todos_buttons: true, work_item_epics_rollout: false)
+      stub_feature_flags(notifications_todos_buttons: true, work_item_epics_rollout: false,
+        namespace_level_work_items: false)
 
       sign_in(user)
       visit group_epic_path(group, epic)
