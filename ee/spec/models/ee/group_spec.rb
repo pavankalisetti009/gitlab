@@ -3839,12 +3839,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
   describe '#namespace_work_items_enabled?' do
     let_it_be(:group) { create(:group) }
+    let_it_be(:current_user) { create(:user) }
 
-    subject { group.namespace_work_items_enabled? }
+    subject { group.namespace_work_items_enabled?(current_user) }
 
-    context 'when namespace_level_work_items and work_item_epics feature flags are enabled' do
+    context 'when all feature flags are enabled' do
       before do
-        stub_feature_flags(work_item_epics: true, namespace_level_work_items: true)
+        stub_feature_flags(work_item_epics: true, namespace_level_work_items: true, work_item_epics_rollout: true)
       end
 
       it { is_expected.to eq(true) }
@@ -3860,7 +3861,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
           stub_licensed_features(epics: true)
         end
 
-        it { is_expected.to eq(true) }
+        context 'when work_item_epics_rollout is enabled' do
+          before do
+            stub_feature_flags(work_item_epics_rollout: current_user)
+          end
+
+          it { is_expected.to eq(true) }
+        end
+
+        context 'when work_item_epics_rollout is disabled' do
+          before do
+            stub_feature_flags(work_item_epics_rollout: false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
       end
 
       context 'when epics are not available' do
@@ -3874,7 +3889,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when namespace_level_work_items is enabled and work_item_epics is disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: true, work_item_epics_rollout: false)
       end
 
       it { is_expected.to eq(true) }
@@ -3882,7 +3897,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
     context 'when namespace_level_work_items and work_item_epics feature flags are disabled' do
       before do
-        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false, work_item_epics_rollout: false)
       end
 
       it { is_expected.to eq(false) }

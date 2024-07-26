@@ -19,7 +19,6 @@ class Groups::EpicsController < Groups::ApplicationController
 
   before_action do
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
-    push_frontend_feature_flag(:namespace_level_work_items, @group)
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
   end
 
@@ -69,7 +68,7 @@ class Groups::EpicsController < Groups::ApplicationController
   private
 
   def epic_work_items_enabled?
-    @group&.namespace_work_items_enabled? && ::Feature.enabled?(:work_item_epics_rollout, current_user)
+    !!@group&.namespace_work_items_enabled?(current_user)
   end
 
   # rubocop: disable CodeReuse/ActiveRecord

@@ -158,7 +158,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
           context 'when work_item_epics_rollout is true' do
             before do
-              stub_feature_flags(work_item_epics_rollout: user)
+              stub_feature_flags(work_item_epics_rollout: user, namespace_level_work_items: false)
             end
 
             it 'renders work item template' do
@@ -177,7 +177,7 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
 
           context 'when work_item_epics_rollout is false' do
             before do
-              stub_feature_flags(work_item_epics_rollout: false)
+              stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
             end
 
             it 'renders work item template' do

@@ -64,12 +64,26 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
         stub_licensed_features(epics: true)
       end
 
+      context 'when namespace_level_work_items flags is enabled' do
+        before do
+          stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false, namespace_level_work_items: true)
+        end
+
+        it_behaves_like 'work item menu'
+      end
+
       context 'when work_item_epics and namespace_level_work_items flags are disabled' do
         before do
           stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
         end
 
-        it_behaves_like 'legacy epic menu'
+        context 'and work_item_epics_rollout flag is enabled' do
+          before do
+            stub_feature_flags(work_item_epics_rollout: user)
+          end
+
+          it_behaves_like 'legacy epic menu'
+        end
 
         context 'and work_item_epics_rollout flag is disabled' do
           before do
@@ -80,12 +94,18 @@ RSpec.describe Nav::NewDropdownHelper, feature_category: :navigation do
         end
       end
 
-      context 'when work_item_epics and namespace_level_work_items flags are enabled' do
+      context 'when work_item_epics is enabled and namespace_level_work_items is disabled' do
         before do
-          stub_feature_flags(work_item_epics: true, namespace_level_work_items: true)
+          stub_feature_flags(work_item_epics: true, namespace_level_work_items: false)
         end
 
-        it_behaves_like 'work item menu'
+        context 'and work_item_epics_rollout flag is enabled' do
+          before do
+            stub_feature_flags(work_item_epics_rollout: user)
+          end
+
+          it_behaves_like 'work item menu'
+        end
 
         context 'and work_item_epics_rollout flag is disabled' do
           before do

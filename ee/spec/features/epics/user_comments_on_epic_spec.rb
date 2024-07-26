@@ -12,7 +12,7 @@ RSpec.describe 'User comments on epic', :js, feature_category: :portfolio_manage
 
   before do
     stub_licensed_features(epics: true)
-    stub_feature_flags(work_item_epics_rollout: false)
+    stub_feature_flags(work_item_epics_rollout: false, namespace_level_work_items: false)
     sign_in(user)
 
     visit group_epic_path(group, epic)

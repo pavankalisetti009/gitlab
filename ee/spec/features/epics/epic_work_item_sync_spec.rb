@@ -24,7 +24,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
   end
 
   before do
-    stub_feature_flags(work_item_epics: true, work_item_epics_rollout: false)
+    stub_feature_flags(work_item_epics: true, work_item_epics_rollout: false, namespace_level_work_items: false)
     stub_licensed_features(epics: true, subepics: true, epic_colors: true)
 
     sign_in(user)
