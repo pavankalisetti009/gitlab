@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_state, feature_category: :global_search do
   let(:logger) { instance_double('Logger') }
   let(:service) { described_class.new(task.to_s) }
-  let_it_be(:node) { create(:zoekt_node, :enough_free_space) }
+  let_it_be_with_reload(:node) { create(:zoekt_node, :enough_free_space) }
 
   subject(:execute_task) { service.execute }
 
@@ -55,7 +55,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
 
     context 'when on .com', :saas do
-      let_it_be(:zoekt_index) { create(:zoekt_index) }
+      let_it_be(:zoekt_index) { create(:zoekt_index, node: node) }
 
       context 'when nodes have enough storage' do
         it 'returns false' do
@@ -87,10 +87,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
             'node_used_bytes' => 90000000,
             'node_expected_used_bytes' => 89999000,
             'total_repository_size' => 1000,
-            'meta' => {
-              "zoekt.node_name" => node_out_of_storage.metadata['name'],
-              "zoekt.node_id" => node_out_of_storage.id
-            } }
+            'meta' => node_out_of_storage.metadata_json.merge('zoekt.used_bytes' => 89999000) }
           )
 
           expect { execute_task }.to change { Search::Zoekt::Index.count }.from(2).to(1)
@@ -260,10 +257,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
                                                           'message' => 'Space is not available in Node',
                                                           'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id,
-                                                          'meta' => {
-                                                            "zoekt.node_name" => node.metadata['name'],
-                                                            "zoekt.node_id" => node.id
-                                                          } }
+                                                          'meta' => node.metadata_json }
           )
           expect { execute_task }.not_to change { Search::Zoekt::Index.count }
           expect(zkt_enabled_namespace.indices).to be_empty
@@ -290,10 +284,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
             expect(logger).to receive(:error).with({ 'class' => described_class.to_s, 'task' => task,
                                                     'message' => 'Space is not available in Node',
                                                     'zoekt_enabled_namespace_id' => zkt_enabled_namespace2.id,
-                                                    'meta' => {
-                                                      "zoekt.node_name" => node.metadata['name'],
-                                                      "zoekt.node_id" => node.id
-                                                    } }
+                                                    'meta' => node.metadata_json }
             )
             expect { execute_task }.not_to change { Search::Zoekt::Index.count }
             expect(zkt_enabled_namespace.indices).to be_empty
@@ -474,11 +465,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
           it 'moves the index to initializing and do the logging' do
             node = idx_in_progress.node
+            meta = node.metadata_json.merge('zoekt.index_id' => idx_in_progress.id)
             expect(logger).to receive(:info).with({ 'class' => described_class.to_s, 'namespace_id' => namespace.id,
                                                     'message' => 'index moved to initializing',
-                                                    'meta' => { 'zoekt.index_id' => idx_in_progress.id,
-                                                                'zoekt.node_id' => node.id,
-                                                                'zoekt.node_name' => node.metadata['name'] },
+                                                    'meta' => meta,
                                                     'repo_count' => idx_in_progress.zoekt_repositories.count,
                                                     'project_count' => namespace.all_projects.count, 'task' => task }
             )
@@ -543,6 +533,36 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         expect(::Search::Zoekt::ReplicaStateService).not_to receive(:execute)
         expect(execute_task).to eq(false)
       end
+    end
+  end
+
+  describe '#report_metrics' do
+    let(:logger) { instance_double(::Search::Zoekt::Logger) }
+    let(:task) { :report_metrics }
+
+    before do
+      allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
+      allow(logger).to receive(:info) # avoid a flaky test if there are multiple zoekt nodes
+    end
+
+    it 'logs zoekt metadata and tasks info for nodes' do
+      create_list(:zoekt_task, 4, :pending, node: node)
+      create(:zoekt_task, :done, node: node)
+      create(:zoekt_task, :orphaned, node: node)
+      create_list(:zoekt_task, 2, :failed, node: node)
+
+      expect(logger).to receive(:info).with(a_hash_including(
+        'class' => described_class.name,
+        'meta' => a_hash_including(node.metadata_json.stringify_keys),
+        'indices_count' => node.indices.count,
+        'task_count_pending' => 4,
+        'task_count_failed' => 2,
+        'task_count_done' => 1,
+        'task_count_orphaned' => 1,
+        'task' => :report_metrics
+      ))
+
+      execute_task
     end
   end
 end

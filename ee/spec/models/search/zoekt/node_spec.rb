@@ -6,7 +6,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
   let_it_be(:indexed_namespace1) { create(:namespace) }
   let_it_be(:indexed_namespace2) { create(:namespace) }
   let_it_be(:unindexed_namespace) { create(:namespace) }
-  let_it_be(:node) do
+  let_it_be_with_reload(:node) do
     create(:zoekt_node, index_base_url: 'http://example.com:1234/', search_base_url: 'http://example.com:4567/')
   end
 
@@ -112,6 +112,34 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     it 'returns a NodeBackoff' do
       expect(::Search::Zoekt::NodeBackoff).to receive(:new).with(node).and_return(:backoff)
       expect(node.backoff).to eq(:backoff)
+    end
+  end
+
+  describe '.metadata_json' do
+    it 'returns a json with metadata' do
+      node.update!(metadata: { name: 'test_name', task_count: 100, concurrency: 10 })
+      expected_json = {
+        'zoekt.node_name' => 'test_name',
+        'zoekt.node_id' => node.id,
+        'zoekt.used_bytes' => node.used_bytes,
+        'zoekt.total_bytes' => node.total_bytes,
+        'zoekt.task_count' => 100,
+        'zoekt.concurrency' => 10
+      }
+
+      expect(node.metadata_json).to eq(expected_json)
+    end
+
+    it 'does not return empty keys' do
+      node.update!(metadata: { name: 'another_name' })
+      expected_json = {
+        'zoekt.node_name' => 'another_name',
+        'zoekt.node_id' => node.id,
+        'zoekt.used_bytes' => node.used_bytes,
+        'zoekt.total_bytes' => node.total_bytes
+      }
+
+      expect(node.metadata_json).to eq(expected_json)
     end
   end
 end

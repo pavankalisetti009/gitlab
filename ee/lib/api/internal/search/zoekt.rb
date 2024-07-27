@@ -63,7 +63,7 @@ module API
                     additional_payload: params[:additional_payload], success: params[:success], action: 'callback',
                     error_message: params[:error]
                   }
-                  log_data[:meta] = { 'zoekt.node_name' => node.metadata['name'], 'zoekt.node_id' => node.id } if node
+                  log_data[:meta] = node.metadata_json if node
                   log_hash = build_structured_payload(**log_data)
                   params[:success] ? logger.info(log_hash) : logger.error(log_hash)
                   break unprocessable_entity! unless node
