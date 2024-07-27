@@ -298,6 +298,8 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         context 'object storage' do
           before do
             stub_uploads_object_storage(FileUploader)
+            # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/474656
+            allow(Gitlab::QueryLimiting).to receive(:threshold).and_return(201)
           end
 
           it 'creates the project from project template', :sidekiq_might_not_need_inline do
