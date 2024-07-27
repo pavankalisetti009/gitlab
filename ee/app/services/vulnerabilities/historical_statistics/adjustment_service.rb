@@ -53,7 +53,11 @@ module Vulnerabilities
       end
 
       def execute
-        ApplicationRecord.connection.execute(upsert_sql)
+        ::Gitlab::Database.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
+        ) do
+          ApplicationRecord.connection.execute(upsert_sql)
+        end
       end
 
       private

@@ -672,7 +672,7 @@ module EE
     end
 
     def vulnerability_historical_statistics
-      ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted)
+      ::Vulnerabilities::HistoricalStatistic.for_project(projects_for_group_and_its_subgroups_without_deleted).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140')
     end
 
     def max_personal_access_token_lifetime_from_now
