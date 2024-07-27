@@ -38,15 +38,28 @@ module Vulnerabilities
     ].freeze
 
     def perform(project_id)
-      Vulnerability.with_project(project_id).each_batch(of: BATCH_SIZE) do |batch|
-        vulnerability_ids = batch.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- there's no simple way to create a scope to use with EachBatch
-        finding_ids = Vulnerabilities::Finding.ids_by_vulnerability(vulnerability_ids)
+      ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+        %w[
+          vulnerability_finding_links
+          vulnerability_occurrence_pipelines
+          vulnerability_findings_remediations
+          vulnerability_reads
+          vulnerability_occurrences
+          vulnerability_feedback
+          vulnerability_historical_statistics
+        ],
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
+      ) do
+        Vulnerability.with_project(project_id).each_batch(of: BATCH_SIZE) do |batch|
+          vulnerability_ids = batch.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- there's no simple way to create a scope to use with EachBatch
+          finding_ids = Vulnerabilities::Finding.ids_by_vulnerability(vulnerability_ids)
 
-        Vulnerability.transaction do
-          drop_by_finding_id(finding_ids)
-          drop_by_project_id(project_id)
-          drop_by_vulnerability_id(vulnerability_ids)
-          batch.delete_all
+          Vulnerability.transaction do
+            drop_by_finding_id(finding_ids)
+            drop_by_project_id(project_id)
+            drop_by_vulnerability_id(vulnerability_ids)
+            batch.delete_all
+          end
         end
       end
     end
@@ -56,7 +69,10 @@ module Vulnerabilities
     def drop_by_project_id(project_id)
       MODELS_TO_DROP_BY_PROJECT_ID.each do |model|
         loop do
-          deleted = model.by_projects(project_id).limit(BATCH_SIZE).delete_all
+          deleted = model.by_projects(project_id)
+                         .allow_cross_joins_across_databases(url: "https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved")
+                         .limit(BATCH_SIZE)
+                         .delete_all
           break if deleted == 0
         end
       end
@@ -65,7 +81,10 @@ module Vulnerabilities
     def drop_by_finding_id(finding_ids)
       MODELS_TO_DROP_BY_FINDING_ID.each do |model|
         loop do
-          deleted = model.by_finding_id(finding_ids).limit(BATCH_SIZE).delete_all
+          deleted = model.by_finding_id(finding_ids)
+                         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474142')
+                         .limit(BATCH_SIZE)
+                         .delete_all
           break if deleted == 0
         end
       end
@@ -74,7 +93,10 @@ module Vulnerabilities
     def drop_by_vulnerability_id(vulnerability_ids)
       MODELS_TO_DROP_BY_VULNERABILITY_ID.each do |model|
         loop do
-          deleted = model.by_vulnerability(vulnerability_ids).limit(BATCH_SIZE).delete_all
+          deleted = model.by_vulnerability(vulnerability_ids)
+                         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474142')
+                         .limit(BATCH_SIZE)
+                         .delete_all
           break if deleted == 0
         end
       end
