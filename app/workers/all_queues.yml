@@ -3396,15 +3396,6 @@
   :weight: 2
   :idempotent: true
   :tags: []
-- :name: issues_copy_timelogs
-  :worker_name: Issues::CopyTimelogsWorker
-  :feature_category: :team_planning
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: issues_placement
   :worker_name: Issues::PlacementWorker
   :feature_category: :team_planning
@@ -4196,6 +4187,15 @@
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: false
+  :tags: []
+- :name: work_items_copy_timelogs
+  :worker_name: WorkItems::CopyTimelogsWorker
+  :feature_category: :team_planning
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
   :tags: []
 - :name: work_items_import_work_items_csv
   :worker_name: WorkItems::ImportWorkItemsCsvWorker
