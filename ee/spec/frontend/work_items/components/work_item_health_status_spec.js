@@ -30,8 +30,6 @@ describe('WorkItemHealthStatus component', () => {
 
   const workItemId = 'gid://gitlab/WorkItem/1';
   const workItemType = 'Task';
-  const workItemQueryResponse = workItemByIidResponseFactory({ canUpdate: true, canDelete: true });
-  const workItemQueryHandler = jest.fn().mockResolvedValue(workItemQueryResponse);
 
   const findHeader = () => wrapper.find('h3');
   const findSidebarDropdownWidget = () => wrapper.findComponent(WorkItemSidebarDropdownWidget);
@@ -41,21 +39,25 @@ describe('WorkItemHealthStatus component', () => {
     findSidebarDropdownWidget().vm.$emit('dropdownShown');
   };
 
-  const createComponent = ({
+  const createComponent = async ({
     canUpdate = true,
     hasIssuableHealthStatusFeature = true,
     healthStatus,
     mutationHandler = jest.fn().mockResolvedValue(updateWorkItemMutationResponse),
-    isGroup = false,
   } = {}) => {
+    const workItemQueryResponse = workItemByIidResponseFactory({
+      canUpdate,
+      canDelete: true,
+      healthStatus,
+    });
+    const workItemQueryHandler = jest.fn().mockResolvedValue(workItemQueryResponse);
+
     wrapper = mountExtended(WorkItemHealthStatus, {
       apolloProvider: createMockApollo([
         [workItemByIidQuery, workItemQueryHandler],
         [updateWorkItemMutation, mutationHandler],
       ]),
       propsData: {
-        canUpdate,
-        healthStatus,
         workItemId,
         workItemIid: '1',
         workItemType,
@@ -63,9 +65,10 @@ describe('WorkItemHealthStatus component', () => {
       },
       provide: {
         hasIssuableHealthStatusFeature,
-        isGroup,
       },
     });
+
+    await waitForPromises();
   };
 
   it('has "Health status" label for single select', () => {
@@ -220,8 +223,8 @@ describe('WorkItemHealthStatus component', () => {
         ${HEALTH_STATUS_NEEDS_ATTENTION} | ${healthStatusTextMap[HEALTH_STATUS_NEEDS_ATTENTION]}
         ${HEALTH_STATUS_AT_RISK}         | ${healthStatusTextMap[HEALTH_STATUS_AT_RISK]}
         ${null}                          | ${HEALTH_STATUS_I18N_NONE}
-      `('renders "$text" when health status = "$healthStatus"', ({ healthStatus, text }) => {
-        createComponent({ healthStatus });
+      `('renders "$text" when health status = "$healthStatus"', async ({ healthStatus, text }) => {
+        await createComponent({ healthStatus });
 
         expect(wrapper.text()).toContain(text);
       });
@@ -233,11 +236,14 @@ describe('WorkItemHealthStatus component', () => {
         ${HEALTH_STATUS_ON_TRACK}        | ${'success'}
         ${HEALTH_STATUS_NEEDS_ATTENTION} | ${'warning'}
         ${HEALTH_STATUS_AT_RISK}         | ${'danger'}
-      `('uses "$variant" when health status = "$healthStatus"', ({ healthStatus, variant }) => {
-        createComponent({ healthStatus });
+      `(
+        'uses "$variant" when health status = "$healthStatus"',
+        async ({ healthStatus, variant }) => {
+          await createComponent({ healthStatus });
 
-        expect(findBadge().props('variant')).toBe(variant);
-      });
+          expect(findBadge().props('variant')).toBe(variant);
+        },
+      );
     });
   });
 });

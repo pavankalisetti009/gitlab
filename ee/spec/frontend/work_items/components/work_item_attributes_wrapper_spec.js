@@ -144,7 +144,9 @@ describe('EE WorkItemAttributesWrapper component', () => {
       findWorkItemWeight().vm.$emit('error', updateError);
       await nextTick();
 
-      expect(wrapper.emitted('error')).toEqual([[updateError]]);
+      expect(wrapper.emitted('error')).toEqual(
+        expect.arrayContaining([expect.arrayContaining([updateError])]),
+      );
     });
   });
 

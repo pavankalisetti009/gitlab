@@ -13,11 +13,15 @@ import {
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
   CLEAR_VALUE,
+  WIDGET_TYPE_HEALTH_STATUS,
+  i18n,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
+import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import updateNewWorkItemMutation from '~/work_items/graphql/update_new_work_item.mutation.graphql';
-import { newWorkItemId } from '~/work_items/utils';
+import { newWorkItemId, newWorkItemFullPath } from '~/work_items/utils';
+import { findWidget } from '~/issues/list/utils';
 import Tracking from '~/tracking';
 
 export default {
@@ -36,16 +40,6 @@ export default {
     fullPath: {
       type: String,
       required: true,
-    },
-    healthStatus: {
-      type: String,
-      required: false,
-      default: null,
-    },
-    canUpdate: {
-      type: Boolean,
-      required: false,
-      default: false,
     },
     workItemId: {
       type: String,
@@ -83,6 +77,40 @@ export default {
     selectedHealthStatus() {
       return this.healthStatus || null;
     },
+    healthStatus() {
+      return findWidget(WIDGET_TYPE_HEALTH_STATUS, this.workItem)?.healthStatus;
+    },
+    createFlow() {
+      return this.workItemId === newWorkItemId(this.workItemType);
+    },
+    workItemFullPath() {
+      return this.createFlow
+        ? newWorkItemFullPath(this.fullPath, this.workItemType)
+        : this.fullPath;
+    },
+    canUpdate() {
+      return this.workItem?.userPermissions?.updateWorkItem;
+    },
+  },
+  apollo: {
+    workItem: {
+      query: workItemByIidQuery,
+      variables() {
+        return {
+          fullPath: this.workItemFullPath,
+          iid: this.workItemIid,
+        };
+      },
+      update(data) {
+        return data.workspace?.workItem || {};
+      },
+      skip() {
+        return !this.workItemIid;
+      },
+      error() {
+        this.$emit('error', i18n.fetchError);
+      },
+    },
   },
   methods: {
     updateHealthStatus(healthStatus) {
@@ -94,7 +122,7 @@ export default {
 
       this.updateInProgress = true;
 
-      if (this.workItemId === newWorkItemId(this.workItemType)) {
+      if (this.createFlow) {
         this.$apollo.mutate({
           mutation: updateNewWorkItemMutation,
           variables: {
@@ -156,6 +184,7 @@ export default {
     >
       <template #readonly>
         <issue-health-status
+          v-if="selectedHealthStatus"
           data-testid="work-item-health-status-value"
           :health-status="selectedHealthStatus"
         />
