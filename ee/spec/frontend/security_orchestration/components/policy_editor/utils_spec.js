@@ -25,7 +25,7 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
-import createScanExecutionPolicy from 'ee/security_orchestration/graphql/mutations/create_scan_execution_policy.mutation.graphql';
+import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
 
@@ -63,7 +63,7 @@ const mockApolloResponses = (shouldReject) => {
         },
       });
     }
-    if (mutation === createScanExecutionPolicy) {
+    if (mutation === createPolicy) {
       return Promise.resolve({
         data: {
           scanExecutionPolicyCommit: {
