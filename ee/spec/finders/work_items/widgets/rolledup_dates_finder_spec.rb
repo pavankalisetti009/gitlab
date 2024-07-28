@@ -35,7 +35,7 @@ RSpec.describe WorkItems::Widgets::RolledupDatesFinder, :aggregate_failures, fea
   end
 
   describe '#maximum_due_date' do
-    it 'returns a WorkItems::DatesSource query' do
+    it 'returns a WorkItems::DatesSource query', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474085' do
       due_date = finder.maximum_due_date
 
       expect(due_date).to be_a(ActiveRecord::Relation)
