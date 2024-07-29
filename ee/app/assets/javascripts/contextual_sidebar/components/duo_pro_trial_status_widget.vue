@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlProgressBar, GlButton } from '@gitlab/ui';
+import { GlProgressBar, GlButton } from '@gitlab/ui';
 import GITLAB_LOGO_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
@@ -18,7 +18,6 @@ const trackingMixin = Tracking.mixin();
 
 export default {
   components: {
-    GlLink,
     GlProgressBar,
     GlButton,
   },
@@ -83,43 +82,41 @@ export default {
     :data-dismiss-endpoint="dismissEndpoint"
     data-testid="duo-pro-trial-widget-root-element"
   >
-    <gl-link :href="widgetUrl" class="gl-mt-2 !gl-text-gray-900 !gl-no-underline">
-      <div
-        data-testid="duo-pro-trial-widget-menu"
-        class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
-        @click="onWidgetClick"
-      >
-        <div v-if="isTrialActive">
-          <div class="gl-flex gl-w-full">
-            <span class="nav-icon-container svg-container gl-mr-3">
-              <img :src="$options.gitlabLogo" width="16" class="svg" />
-            </span>
-            <span class="nav-item-name gl-grow">
-              {{ widgetTitle }}
-            </span>
-            <span class="gl-whitespace-nowrap gl-overflow-hidden gl-text-sm gl-mr-auto">
-              {{ widgetRemainingDays }}
-            </span>
-          </div>
-
-          <div class="gl-flex gl-items-stretch gl-mt-2">
-            <gl-progress-bar :value="percentageComplete" class="gl-grow" aria-hidden="true" />
-          </div>
+    <div
+      data-testid="duo-pro-trial-widget-menu"
+      class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
+      @click="onWidgetClick"
+    >
+      <div v-if="isTrialActive">
+        <div class="gl-flex gl-w-full">
+          <span class="nav-icon-container svg-container gl-mr-3">
+            <img :src="$options.gitlabLogo" width="16" class="svg" />
+          </span>
+          <span class="nav-item-name gl-grow">
+            {{ widgetTitle }}
+          </span>
+          <span class="gl-whitespace-nowrap gl-overflow-hidden gl-text-sm gl-mr-auto">
+            {{ widgetRemainingDays }}
+          </span>
         </div>
 
-        <div v-else class="gl-flex gl-gap-4 gl-w-full gl-px-2">
-          <div>
-            <div class="gl-font-bold">
-              {{ widgetTitle }}
-            </div>
-            <div class="gl-mt-3">
-              {{ $options.widgetBodyExpiredTrial }}
-              {{ $options.learnAboutButtonTitle }}
-            </div>
+        <div class="gl-flex gl-items-stretch gl-mt-2">
+          <gl-progress-bar :value="percentageComplete" class="gl-grow" aria-hidden="true" />
+        </div>
+      </div>
+
+      <div v-else class="gl-flex gl-gap-4 gl-w-full gl-px-2">
+        <div>
+          <div class="gl-font-bold">
+            {{ widgetTitle }}
+          </div>
+          <div class="gl-mt-3">
+            {{ $options.widgetBodyExpiredTrial }}
+            {{ $options.learnAboutButtonTitle }}
           </div>
         </div>
       </div>
-    </gl-link>
+    </div>
 
     <gl-button
       v-if="isDismissable && !isTrialActive"
