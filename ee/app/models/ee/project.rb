@@ -1313,6 +1313,12 @@ module EE
       refresh_epoch_cache(path_locks_changed_epoch_cache_key)
     end
 
+    def mark_as_vulnerable!
+      return if project_setting.has_vulnerabilities?
+
+      project_setting.update!(has_vulnerabilities: true)
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key

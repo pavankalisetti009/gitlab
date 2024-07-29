@@ -95,6 +95,10 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
         expect { subject }.to change(Vulnerability, :count).by(1)
       end
 
+      it 'marks the project as vulnerable' do
+        expect { subject }.to change { project.reload.project_setting.has_vulnerabilities? }.to(true)
+      end
+
       it 'creates a Vulnerability with correct attributes' do
         expect(vulnerability.report_type).to eq("generic")
         expect(vulnerability.state).to eq(params.dig(:vulnerability, :state))
@@ -276,6 +280,10 @@ RSpec.describe Vulnerabilities::ManuallyCreateService, feature_category: :vulner
 
       it 'returns an error' do
         expect(subject.error?).to be_truthy
+      end
+
+      it 'does not mark project as vulnerable' do
+        expect { subject }.not_to change { project.reload.project_setting.has_vulnerabilities? }.from(false)
       end
     end
   end

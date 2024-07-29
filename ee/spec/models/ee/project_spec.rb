@@ -4680,4 +4680,12 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(project.path_locks_changed_epoch).to eq(refreshed_epoch)
     end
   end
+
+  describe '#mark_as_vulnerable!' do
+    subject(:mark_as_vulnerable!) { project.mark_as_vulnerable! }
+
+    it 'marks the project as vulnerable' do
+      expect { mark_as_vulnerable! }.to change { project.project_setting.has_vulnerabilities }.to(true)
+    end
+  end
 end

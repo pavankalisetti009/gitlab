@@ -56,7 +56,7 @@ module Security
       end
 
       def mark_project_as_vulnerable!
-        project.project_setting.update!(has_vulnerabilities: true)
+        project.mark_as_vulnerable!
       end
 
       def set_latest_pipeline!
