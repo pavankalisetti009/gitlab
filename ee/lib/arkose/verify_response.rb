@@ -28,6 +28,10 @@ module Arkose
       response["error"]
     end
 
+    def email_intelligence_error
+      response&.dig('email_intelligence', 'error')
+    end
+
     # Arkose can opt to not show a challenge ("Transparent mode") to the user if
     # they are deemed safe. When this happens `solved` is still `true`
     # (challenge_solved? => true) even though the user didn't actually solve a
@@ -116,6 +120,14 @@ module Arkose
 
     def is_bot # rubocop:disable Naming/PredicateName -- Match field name. Can also return nil if Arkose returns unexpected response
       response&.dig('ip_intelligence', 'is_bot')
+    end
+
+    def detumbled_email_address
+      response&.dig('email_intelligence', 'email_assessment', 'detumbled_email_address')
+    end
+
+    def email_risk_score
+      response&.dig('email_intelligence', 'email_assessment', 'email_risk_score')
     end
   end
 end

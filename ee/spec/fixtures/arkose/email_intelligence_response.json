@@ -1,108 +1,106 @@
 {
   "session_details": {
-    "solved": true,
-    "session": "22612c147bb418c8.2570749403",
-    "session_created": "2021-08-29T23:13:03+00:00",
-    "check_answer": "2021-08-29T23:13:16+00:00",
-    "verified": "2021-08-30T00:19:32+00:00",
-    "attempted": true,
-    "security_level": 30,
+    "solved": false,
+    "session": "40317e3c2916dae71.5569119402",
+    "session_created": "2024-07-19T23:56:53Z",
+    "check_answer": null,
+    "verified": "2024-07-19T23:57:24Z",
+    "attempted": false,
+    "security_level": 0,
     "session_is_legit": false,
-    "previously_verified": true,
-    "session_timed_out": true,
+    "previously_verified": false,
+    "session_timed_out": false,
     "suppress_limited": false,
     "theme_arg_invalid": false,
     "suppressed": false,
     "punishable_actioned": false,
-    "telltale_user": "eng-1362-game3-py-0.",
+    "telltale_user": "g-dp-spoofing-fp-hash-and-fp-missing",
+    "telltale_origin": null,
     "failed_low_sec_validation": false,
     "lowsec_error": null,
     "lowsec_level_denied": null,
-    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36",
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36",
     "ip_rep_list": null,
+    "optional": null,
     "game_number_limit_reached": false,
     "user_language_shown": "en",
-    "device_id": "gaFCZkxoGZYW6",
+    "device_id": null,
     "telltale_list": [
-      "eng-1362",
-      "eng-1362-game3-py-0."
+      "g-header-anomaly-accept-language-mismatch",
+      "g-reputation-medium-abuse-velocity",
+      "g-workflow-standard-mode-missing-base64-data",
+      "g-dp-spoofing-fp-hash-and-fp-missing"
     ],
-    "optional": null,
-    "challenge_type": "visual"
+    "challenge_type": null
   },
   "fingerprint": {
     "browser_characteristics": {
       "browser_name": "Chrome",
-      "browser_version": "92.0.4515.159",
-      "color_depth": 24,
+      "browser_version": "88.0.4324.182",
+      "color_depth": null,
       "session_storage": false,
       "indexed_database": false,
-      "canvas_fingerprint": 1652956012
+      "canvas_fingerprint": null
     },
     "device_characteristics": {
-      "operating_system": null,
-      "operating_system_version": null,
-      "screen_resolution": [
-        1920,
-        1080
-      ],
-      "max_resolution_supported": [
-        1920,
-        1057
-      ],
+      "operating_system": "GNU/Linux",
+      "operating_system_version": "",
+      "screen_resolution": null,
+      "max_resolution_supported": null,
       "behavior": false,
-      "cpu_class": "unknown",
-      "platform": "MacIntel",
+      "cpu_class": null,
+      "platform": null,
       "touch_support": false,
-      "hardware_concurrency": 8
+      "hardware_concurrency": null
     },
     "user_preferences": {
-      "timezone_offset": -600
+      "timezone_offset": null
     }
   },
   "ip_intelligence": {
-    "user_ip": "10.211.121.196",
+    "user_ip": "45.26.45.153",
     "is_tor": false,
-    "is_vpn": true,
-    "is_proxy": true,
-    "is_bot": true,
-    "country": "AU",
-    "region": "New South Wales",
-    "city": "Sydney",
-    "isp": "Amazon.com",
+    "is_vpn": false,
+    "is_proxy": false,
+    "is_bot": false,
+    "country": "US",
+    "region": "Nevada",
+    "city": "Reno",
+    "isp": "AT&T Internet",
     "public_access_point": false,
-    "connection_type": "Data Center",
-    "latitude": "-38.85120035",
-    "longitude": "106.21220398",
-    "timezone": "Australia/Sydney"
+    "connection_type": "Residential",
+    "latitude": "39.49",
+    "longitude": "-119.75",
+    "timezone": "America/Los_Angeles"
   },
   "session_risk": {
     "risk_category": "BOT-STD",
-    "risk_band": "High",
+    "risk_band": "Medium",
     "global": {
-      "score": "15",
+      "score": 72,
       "telltales": [
         {
-          "name": "g-h-cfp-1000000000",
-          "weight": "7"
+          "name": "g-header-anomaly-accept-language-mismatch",
+          "weight": 20
         },
         {
-          "name": "g-os-impersonation-win",
-          "weight": "8"
+          "name": "g-reputation-medium-abuse-velocity",
+          "weight": 30
+        },
+        {
+          "name": "g-workflow-standard-mode-missing-base64-data",
+          "weight": 50
+        },
+        {
+          "name": "g-dp-spoofing-fp-hash-and-fp-missing",
+          "weight": 60
         }
       ]
     },
     "custom": {
-      "score": "100",
+      "score": 0,
       "telltales": [
-        {
-          "name": "outdated-browser-customer-2",
-          "weight": "100"
-        },
-        {
-          "name": "outdated-os-customer",
-          "weight": "100"
-        }
+
       ]
     }
   },
@@ -112,7 +110,7 @@
       "detumbled_email_address": "exampleuser@gmail.com",
       "deenumerated_email_address": "exampleuser@gmail.com",
       "suggested_action": "email_no_risk",
-      "email_risk_score": 20,
+      "email_risk_score": 0,
       "email_domain": "gmail.com",
       "email_handle_length": 12,
       "is_tumbled_email": false,
@@ -147,7 +145,7 @@
       "handle_num_consonants": 6,
       "handle_num_numeric_chars": 0,
       "handle_num_special_chars": 0,
-      "handle_qwerty_typing_distance": 32.3,
+      "handle_qwerty_typing_distance": 32.34,
       "handle_dvorak_typing_distance": 49.2
     },
     "total_email_counts": {
@@ -174,7 +172,7 @@
     }
   },
   "data_exchange": {
-    "blob_decrypted": true,
-    "blob_received": true
+    "blob_decrypted": null,
+    "blob_received": false
   }
 }
