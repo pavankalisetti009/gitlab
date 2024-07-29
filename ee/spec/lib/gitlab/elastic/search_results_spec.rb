@@ -90,17 +90,17 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     subject(:aggregations) { results.aggregations(scope) }
 
     where(:scope, :expected_aggregation_name, :feature_flag) do
-      'projects' | nil | false
-      'milestones' | nil | false
-      'notes' | nil | false
-      'issues' | 'labels' | false
-      'merge_requests' | nil | false
-      'wiki_blobs' | nil | false
-      'commits' | nil | false
-      'users' | nil | false
-      'epics' | nil | false
-      'unknown' | nil | false
-      'blobs' | 'language' | false
+      'projects'       | nil        | false
+      'milestones'     | nil        | false
+      'notes'          | nil        | false
+      'issues'         | 'labels'   | false
+      'merge_requests' | 'labels'   | :search_mr_filter_label_ids
+      'wiki_blobs'     | nil        | false
+      'commits'        | nil        | false
+      'users'          | nil        | false
+      'epics'          | nil        | false
+      'unknown'        | nil        | false
+      'blobs'          | 'language' | false
     end
 
     with_them do

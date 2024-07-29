@@ -46,7 +46,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       end
     end
 
-    context 'i_search_advanced' do
+    context 'on i_search_advanced' do
       let(:target_event) { 'i_search_advanced' }
 
       subject(:request) { get controller_action, params: request_params }
@@ -56,7 +56,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       end
     end
 
-    context 'i_search_paid' do
+    context 'on i_search_paid' do
       let(:target_event) { 'i_search_paid' }
 
       context 'on Gitlab.com', :snowplow do
@@ -72,12 +72,12 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         end
       end
 
-      context 'self-managed instance' do
+      context 'on self-managed instance' do
         before do
           allow(::Gitlab).to receive(:com?).and_return(false)
         end
 
-        context 'license is available' do
+        context 'when license is available' do
           before do
             stub_licensed_features(elastic_search: true)
           end
@@ -89,7 +89,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
           end
         end
 
-        context 'feature is available through usage ping features' do
+        context 'when feature is available through usage ping features' do
           before do
             allow(License).to receive(:current).and_return(nil)
             stub_ee_application_setting(usage_ping_enabled: true)
@@ -105,7 +105,8 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
         it 'does not track if there is no license available' do
           stub_licensed_features(elastic_search: false)
-          expect(Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with(target_event, values: instance_of(String))
+          expect(Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with(target_event,
+            values: instance_of(String))
 
           get controller_action, params: request_params, format: :html
         end
@@ -172,7 +173,8 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
   describe 'GET #aggregations' do
     it_behaves_like 'when the user cannot read cross project', :aggregations, { search: 'hello', scope: 'blobs' }
     it_behaves_like 'with external authorization service enabled', :aggregations, { search: 'hello', scope: 'blobs' }
-    it_behaves_like 'support for elasticsearch timeouts', :aggregations, { search: 'hello', scope: 'blobs' }, :search_aggregations, :html
+    it_behaves_like 'support for elasticsearch timeouts', :aggregations, { search: 'hello', scope: 'blobs' },
+      :search_aggregations, :html
 
     it_behaves_like 'rate limited endpoint', rate_limit_key: :search_rate_limit do
       let(:current_user) { user }
@@ -182,7 +184,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       end
     end
 
-    context 'blobs scope' do
+    context 'for blobs scope' do
       context 'when elasticsearch is disabled' do
         it 'returns an empty array' do
           get :aggregations, params: { search: 'test', scope: 'blobs' }
@@ -216,7 +218,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
       end
     end
 
-    context 'issue scope' do
+    context 'for issue scope' do
       context 'when elasticsearch is disabled' do
         it 'returns an empty array' do
           get :aggregations, params: { search: 'test', scope: 'issues' }
@@ -240,6 +242,36 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
 
         it 'returns aggregations' do
           get :aggregations, params: { search: 'test', scope: 'issues' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response.first['name']).to eq('labels')
+          expect(json_response.first['buckets'].length).to eq(1)
+        end
+      end
+    end
+
+    context 'for merge request scope' do
+      context 'when elasticsearch is disabled' do
+        it 'returns an empty array' do
+          get :aggregations, params: { search: 'test', scope: 'merge_requests' }
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response).to be_empty
+        end
+      end
+
+      context 'when elasticsearch is enabled', :sidekiq_inline do
+        before do
+          stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
+
+          project = create(:project, developers: user)
+          create(:labeled_merge_request, title: 'test', source_project: project, labels: [create(:label)])
+
+          ensure_elasticsearch_index!
+        end
+
+        it 'returns aggregations' do
+          get :aggregations, params: { search: 'test', scope: 'merge_requests' }
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response.first['name']).to eq('labels')
