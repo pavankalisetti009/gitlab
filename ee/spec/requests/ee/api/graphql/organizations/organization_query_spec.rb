@@ -11,11 +11,12 @@ RSpec.describe 'getting organization information', feature_category: :cell do
   let_it_be(:organization_owner) { create(:organization_owner) }
   let_it_be(:organization) { organization_owner.organization }
   let_it_be(:user) { organization_owner.user }
-  let_it_be(:project) { create(:project, organization: organization, developers: user) }
+  let_it_be(:group) { create(:group, organization: organization, developers: user) }
+  let_it_be(:project) { create(:project, group: group, organization: organization, developers: user) }
 
   let_it_be(:saml_group) do
-    saml_provider = create(:saml_provider)
-    create(:group, organization: organization, saml_provider: saml_provider, developers: user) do |group|
+    create(:group, organization: organization, developers: user) do |group|
+      create(:saml_provider, group: group)
       create(:group_saml_identity, saml_provider: group.saml_provider, user: user)
     end
   end
@@ -54,6 +55,40 @@ RSpec.describe 'getting organization information', feature_category: :cell do
         request_organization
 
         expect(projects).to match_array(a_graphql_entity_for(project))
+      end
+    end
+  end
+
+  context 'when requesting groups' do
+    let(:groups) { graphql_data_at(:organization, :groups, :nodes) }
+    let(:organization_fields) do
+      <<~FIELDS
+        groups(first: 1, sort: "id_desc") {
+          nodes {
+            id
+          }
+        }
+      FIELDS
+    end
+
+    context 'when current user has an active SAML session' do
+      before do
+        active_saml_sessions = { saml_group.saml_provider.id => Time.current }
+        allow(::Gitlab::Auth::GroupSaml::SsoState).to receive(:active_saml_sessions).and_return(active_saml_sessions)
+      end
+
+      it 'includes SAML groups' do
+        request_organization
+
+        expect(groups).to contain_exactly(a_graphql_entity_for(saml_group))
+      end
+    end
+
+    context 'when current user has no active SAML session' do
+      it 'excludes SAML group' do
+        request_organization
+
+        expect(groups).to contain_exactly(a_graphql_entity_for(group))
       end
     end
   end

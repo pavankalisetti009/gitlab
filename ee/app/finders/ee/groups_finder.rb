@@ -10,7 +10,20 @@ module EE
     def filter_groups(groups)
       groups = super(groups)
       groups = by_marked_for_deletion_on(groups)
+      groups = by_saml_sso_session(groups)
       by_repository_storage(groups)
+    end
+
+    def by_saml_sso_session(groups)
+      return groups unless filter_expired_saml_session_groups?
+
+      groups.by_not_in_root_id(current_user.expired_sso_session_saml_providers.select(:group_id))
+    end
+
+    def filter_expired_saml_session_groups?
+      return false if current_user.nil? || current_user.can_read_all_resources?
+
+      params.fetch(:filter_expired_saml_session_groups, false)
     end
 
     def by_repository_storage(groups)
