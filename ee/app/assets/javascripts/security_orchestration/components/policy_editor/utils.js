@@ -2,7 +2,7 @@ import { intersection, uniqBy, uniqueId } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { sprintf, s__ } from '~/locale';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
-import createScanExecutionPolicy from 'ee/security_orchestration/graphql/mutations/create_scan_execution_policy.mutation.graphql';
+import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import getFile from 'ee/security_orchestration/graphql/queries/get_file.query.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
@@ -75,7 +75,7 @@ const updatePolicy = async ({
       scanExecutionPolicyCommit: { branch, errors, validationErrors },
     },
   } = await gqClient.mutate({
-    mutation: createScanExecutionPolicy,
+    mutation: createPolicy,
     variables: {
       mode: action,
       name,
