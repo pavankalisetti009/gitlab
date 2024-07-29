@@ -1832,6 +1832,7 @@ export const workItemHierarchyTreeEmptyResponse = {
         id: '1',
         fullPath: 'test-project-path',
         name: 'Project name',
+        fullName: 'Project name',
       },
       widgets: [
         {
@@ -1944,6 +1945,7 @@ export const workItemHierarchyTreeResponse = {
         id: '1',
         fullPath: 'test-project-path',
         name: 'Project name',
+        fullName: 'Project name',
       },
       widgets: [
         {
