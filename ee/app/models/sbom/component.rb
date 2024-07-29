@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Sbom
-  class Component < ApplicationRecord
+  class Component < ::Gitlab::Database::SecApplicationRecord
     enum component_type: ::Enums::Sbom.component_types
     enum purl_type: ::Enums::Sbom.purl_types
 

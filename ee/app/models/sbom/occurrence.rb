@@ -6,7 +6,12 @@ module Sbom
     include EachBatch
     include IgnorableColumns
 
-    belongs_to :component, optional: false
+    belongs_to :component, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::Component
+      -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
+      },
+      optional: false
+    belongs_to :source_package
     belongs_to :component_version
     belongs_to :project, optional: false
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
@@ -110,6 +115,7 @@ module Sbom
 
     scope :filter_by_components, ->(components) do
       where(component: components)
+      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
     end
 
     scope :filter_by_source_packages, ->(source_packages) do
@@ -127,7 +133,10 @@ module Sbom
     end
 
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
-      relation = includes(project: :namespace).where(component_version_id: component_id, project: group.all_projects)
+      relation = includes(project: :namespace)
+         .where(component_version_id: component_id, project: group.all_projects)
+         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
+
       if search.present?
         relation.where('input_file_path ILIKE ?', "%#{sanitize_sql_like(search.to_s)}%") # rubocop:disable GitlabSecurity/SqlInjection -- This cop is a false positive as we are using parameterization via ?
       else
@@ -135,7 +144,10 @@ module Sbom
       end
     end
 
-    scope :with_component, -> { includes(:component) }
+    scope :with_component, -> {
+      includes(:component)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
+    }
     scope :with_licenses, -> do
       columns = LICENSE_COLUMNS.map { |column| "#{column} TEXT" }.join(", ")
       sbom_licenses = Arel.sql(<<~SQL.squish)
@@ -152,7 +164,8 @@ module Sbom
     scope :with_pipeline_project_and_namespace, -> { preload(pipeline: { project: :namespace }) }
     scope :with_vulnerabilities, -> { preload(:vulnerabilities) }
     scope :with_component_source_version_and_project, -> do
-      includes(:component, :source, :component_version, :project).allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
+      includes(:component, :source, :component_version, :project)
+      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
     end
     scope :filter_by_non_nil_component_version, -> { where.not(component_version: nil) }
 
