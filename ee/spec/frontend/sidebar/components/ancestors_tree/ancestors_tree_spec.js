@@ -2,7 +2,6 @@ import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import { escape } from 'lodash';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { __ } from '~/locale';
 import AncestorsTree from 'ee/sidebar/components/ancestors_tree/ancestors_tree.vue';
 
 describe('AncestorsTreeContainer', () => {
@@ -114,6 +113,6 @@ describe('AncestorsTreeContainer', () => {
 
     expect(wrapper.findAll('.vertical-timeline-row')).toHaveLength(ancestors2.length + 1);
     expect(findParentWarning().exists()).toBe(true);
-    expect(findParentWarning().text()).toBe(__("You don't have permission to view this epic"));
+    expect(findParentWarning().text()).toBe("You don't have permission to view this epic");
   });
 });

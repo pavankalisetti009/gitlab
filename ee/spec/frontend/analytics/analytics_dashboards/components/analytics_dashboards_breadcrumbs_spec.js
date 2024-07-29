@@ -4,7 +4,6 @@ import Vue from 'vue';
 import { GlBreadcrumb } from '@gitlab/ui';
 import AnalyticsDashboardsBreadcrumbs from 'ee/analytics/analytics_dashboards/components/analytics_dashboards_breadcrumbs.vue';
 import createRouter from 'ee/analytics/analytics_dashboards/router';
-import { s__ } from '~/locale';
 
 describe('AnalyticsDashboardsBreadcrumbs', () => {
   const base = '/dashboard';
@@ -13,7 +12,7 @@ describe('AnalyticsDashboardsBreadcrumbs', () => {
   };
 
   const rootBreadcrumb = {
-    text: s__('Analytics|Analytics dashboards'),
+    text: 'Analytics dashboards',
     to: '/',
   };
 

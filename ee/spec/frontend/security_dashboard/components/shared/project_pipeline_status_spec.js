@@ -5,7 +5,6 @@ import PipelineStatusBadge from 'ee/security_dashboard/components/shared/pipelin
 import ProjectPipelineStatus from 'ee/security_dashboard/components/shared/project_pipeline_status.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
-import { s__ } from '~/locale';
 import { DEFAULT_DATE_TIME_FORMAT } from '~/lib/utils/datetime/locale_dateformat';
 
 const defaultPipeline = {
@@ -99,9 +98,9 @@ describe('Project Pipeline Status Component', () => {
 
     it.each`
       hasParsingErrors | hasParsingWarnings | expectedMessage
-      ${true}          | ${true}            | ${s__('SecurityReports|Parsing errors and warnings in pipeline')}
-      ${true}          | ${false}           | ${s__('SecurityReports|Parsing errors in pipeline')}
-      ${false}         | ${true}            | ${s__('SecurityReports|Parsing warnings in pipeline')}
+      ${true}          | ${true}            | ${'Parsing errors and warnings in pipeline'}
+      ${true}          | ${false}           | ${'Parsing errors in pipeline'}
+      ${false}         | ${true}            | ${'Parsing warnings in pipeline'}
     `(
       'shows a notice if there are parsing errors',
       ({ hasParsingErrors, hasParsingWarnings, expectedMessage }) => {

@@ -2,7 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlToggle } from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { s__, sprintf } from '~/locale';
+import { sprintf } from '~/locale';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -147,7 +147,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
   it('shows correct label on the toggle', () => {
     createComponent({ props: {} });
     expect(findToggle().props('label')).toBe(
-      sprintf(s__('CodeSuggestions|%{addOnName} status'), { addOnName: CODE_SUGGESTIONS_TITLE }),
+      sprintf('%{addOnName} status', { addOnName: CODE_SUGGESTIONS_TITLE }),
     );
   });
 
@@ -158,7 +158,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
     it('shows correct label on the toggle', () => {
       expect(findToggle().props('label')).toBe(
-        sprintf(s__('CodeSuggestions|%{addOnName} status'), { addOnName: DUO_ENTERPRISE_TITLE }),
+        sprintf('%{addOnName} status', { addOnName: DUO_ENTERPRISE_TITLE }),
       );
     });
   });

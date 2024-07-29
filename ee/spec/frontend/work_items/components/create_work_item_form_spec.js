@@ -5,7 +5,6 @@ import { shallowMount } from '@vue/test-utils';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import CreateWorkItemForm from 'ee/work_items/components/create_work_item_form.vue';
-import { __ } from '~/locale';
 import { WORK_ITEM_TYPE_VALUE_OBJECTIVE } from '~/work_items/constants';
 import namespaceWorkItemTypesQuery from '~/work_items/graphql/namespace_work_item_types.query.graphql';
 import createWorkItemMutation from '~/work_items/graphql/create_work_item.mutation.graphql';
@@ -63,11 +62,11 @@ describe('Create work item Objective component', () => {
     });
 
     it('renders title input', () => {
-      expect(findTitleInput().attributes('placeholder')).toBe(__('Title'));
+      expect(findTitleInput().attributes('placeholder')).toBe('Title');
     });
 
     it('renders title label', () => {
-      expect(findFormGroup().attributes('label')).toBe(__('Title'));
+      expect(findFormGroup().attributes('label')).toBe('Title');
       expect(findFormGroup().attributes('label-for')).toBe(findTitleInput().attributes('id'));
     });
 

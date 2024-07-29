@@ -1,5 +1,4 @@
 import { GlIcon, GlTooltip } from '@gitlab/ui';
-import { __ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
@@ -42,11 +41,11 @@ describe('WorkItemLinkChildMetadataEE', () => {
     });
 
     it('renders progressTitle in bold', () => {
-      expect(wrapper.findByTestId('progressTitle').text().trim()).toBe(__('Progress'));
+      expect(wrapper.findByTestId('progressTitle').text().trim()).toBe('Progress');
     });
 
     it('renders progressText in bold', () => {
-      expect(wrapper.findByTestId('progressText').text().trim()).toBe(__('Last updated'));
+      expect(wrapper.findByTestId('progressText').text().trim()).toBe('Last updated');
     });
 
     it('renders lastUpdatedInWords', () => {

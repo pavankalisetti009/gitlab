@@ -4,7 +4,6 @@ import Vue from 'vue';
 import { GlBreadcrumb } from '@gitlab/ui';
 import SecretsBreadcrumbs from 'ee/ci/secrets/components/secrets_breadcrumbs.vue';
 import createRouter from 'ee/ci/secrets/router';
-import { s__ } from '~/locale';
 import { INDEX_ROUTE_NAME, DETAILS_ROUTE_NAME } from 'ee/ci/secrets/constants';
 
 const defaultProps = {
@@ -14,7 +13,7 @@ const defaultProps = {
 
 describe('SecretsBreadcrumbs', () => {
   const rootBreadcrumb = {
-    text: s__('Secrets|Secrets'),
+    text: 'Secrets',
     to: { name: INDEX_ROUTE_NAME },
   };
   const secretDetailsBreadcrumb = {

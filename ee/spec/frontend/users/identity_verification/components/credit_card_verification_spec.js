@@ -2,7 +2,6 @@ import { GlSprintf, GlLink } from '@gitlab/ui';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
-import { s__ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
@@ -36,8 +35,7 @@ describe('CreditCardVerification', () => {
 
   const findZuora = () => wrapper.findComponent(Zuora);
   const findSubmitButton = () => wrapper.find('[type="submit"]');
-  const findPhoneExemptionLink = () =>
-    wrapper.findByText(s__('IdentityVerification|Verify with a phone number instead?'));
+  const findPhoneExemptionLink = () => wrapper.findByText('Verify with a phone number instead?');
   const findCaptcha = () => wrapper.findComponent(Captcha);
 
   const createComponent = ({ provide, props } = { provide: {}, props: {} }) => {

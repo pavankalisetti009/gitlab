@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__, sprintf } from '~/locale';
+import { sprintf } from '~/locale';
 import addOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
 import CodeSuggestionsIntro from 'ee/usage_quotas/code_suggestions/components/code_suggestions_intro.vue';
 import CodeSuggestionsInfo from 'ee/usage_quotas/code_suggestions/components/code_suggestions_info_card.vue';
@@ -173,10 +173,9 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf(
-              s__('CodeSuggestions|Manage seat assignments for %{addOnName} across your instance.'),
-              { addOnName: CODE_SUGGESTIONS_TITLE },
-            ),
+            sprintf('Manage seat assignments for %{addOnName} across your instance.', {
+              addOnName: CODE_SUGGESTIONS_TITLE,
+            }),
           );
         });
       });
@@ -246,10 +245,9 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf(
-            s__('CodeSuggestions|Manage seat assignments for %{addOnName} across your instance.'),
-            { addOnName: CODE_SUGGESTIONS_TITLE },
-          ),
+          sprintf('Manage seat assignments for %{addOnName} across your instance.', {
+            addOnName: CODE_SUGGESTIONS_TITLE,
+          }),
         );
       });
 
@@ -267,10 +265,9 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf(
-              s__('CodeSuggestions|Manage seat assignments for %{addOnName} across your instance.'),
-              { addOnName: DUO_ENTERPRISE_TITLE },
-            ),
+            sprintf('Manage seat assignments for %{addOnName} across your instance.', {
+              addOnName: DUO_ENTERPRISE_TITLE,
+            }),
           );
         });
       });
@@ -371,10 +368,9 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf(
-            s__('CodeSuggestions|Manage seat assignments for %{addOnName} across your instance.'),
-            { addOnName: CODE_SUGGESTIONS_TITLE },
-          ),
+          sprintf('Manage seat assignments for %{addOnName} across your instance.', {
+            addOnName: CODE_SUGGESTIONS_TITLE,
+          }),
         );
       });
 

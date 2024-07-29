@@ -2,7 +2,6 @@ import { GlEmptyState, GlLoadingIcon, GlLink } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
-import { s__ } from '~/locale';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DependenciesApp from 'ee/dependencies/components/app.vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
@@ -263,9 +262,9 @@ describe('DependenciesApp component', () => {
 
         describe.each`
           namespaceType             | expectedTooltip
-          ${NAMESPACE_ORGANIZATION} | ${s__('Dependencies|Export as CSV')}
-          ${NAMESPACE_PROJECT}      | ${s__('Dependencies|Export as JSON')}
-          ${NAMESPACE_GROUP}        | ${s__('Dependencies|Export as JSON')}
+          ${NAMESPACE_ORGANIZATION} | ${'Export as CSV'}
+          ${NAMESPACE_PROJECT}      | ${'Export as JSON'}
+          ${NAMESPACE_GROUP}        | ${'Export as JSON'}
         `('with namespaceType set to $namespaceType', ({ namespaceType, expectedTooltip }) => {
           beforeEach(async () => {
             factory({

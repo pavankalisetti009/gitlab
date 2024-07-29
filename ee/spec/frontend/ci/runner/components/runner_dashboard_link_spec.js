@@ -1,5 +1,4 @@
 import { GlButton } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RunnerDashboardLink from 'ee_component/ci/runner/components/runner_dashboard_link.vue';
 
@@ -26,7 +25,7 @@ describe('RunnerDashboardLink', () => {
     });
 
     it('renders button', () => {
-      expect(findButton().text()).toContain(s__('Runners|Fleet dashboard'));
+      expect(findButton().text()).toContain('Fleet dashboard');
       expect(findButton().props('variant')).toBe('link');
       expect(findButton().attributes('href')).toBe(runnerDashboardPath);
     });

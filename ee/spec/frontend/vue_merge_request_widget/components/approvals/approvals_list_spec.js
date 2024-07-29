@@ -10,7 +10,6 @@ import approvalRulesQuery from 'ee/vue_merge_request_widget/components/approvals
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ApprovalsList from 'ee/vue_merge_request_widget/components/approvals/approvals_list.vue';
 import ApprovedIcon from 'ee/vue_merge_request_widget/components/approvals/approved_icon.vue';
-import { s__ } from '~/locale';
 import UserAvatarList from '~/vue_shared/components/user_avatar/user_avatar_list.vue';
 import NumberOfApprovals from 'ee/vue_merge_request_widget/components/approvals/number_of_approvals.vue';
 import ApprovalsUsersList from 'ee/vue_merge_request_widget/components/approvals/approvals_users_list.vue';
@@ -190,7 +189,7 @@ describe('EE MRWidget approvals list', () => {
         const commentedBy = summary.findAllComponents(ApprovalsUsersList).at(0);
 
         expect(commentedBy.props()).toEqual({
-          label: s__('MRApprovals|Commented by'),
+          label: 'Commented by',
           users: rule.commentedBy.nodes,
         });
       });
@@ -199,7 +198,7 @@ describe('EE MRWidget approvals list', () => {
         const approvedBy = summary.findAllComponents(ApprovalsUsersList).at(1);
 
         expect(approvedBy.props()).toEqual({
-          label: s__('MRApprovals|Approved by'),
+          label: 'Approved by',
           users: rule.approvedBy.nodes,
         });
       });

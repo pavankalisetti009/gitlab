@@ -1,4 +1,3 @@
-import { s__ } from '~/locale';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import RunnerDetail from '~/ci/runner/components/runner_detail.vue';
 
@@ -41,7 +40,7 @@ describe('RunnerMaintenanceNoteDetail', () => {
         provide,
       });
 
-      expect(findRunnerDetail().props('label')).toBe(s__('Runners|Maintenance note'));
+      expect(findRunnerDetail().props('label')).toBe('Maintenance note');
       expect(findRunnerDetail().text()).toBe(value);
     });
 
@@ -56,7 +55,7 @@ describe('RunnerMaintenanceNoteDetail', () => {
         provide,
       });
 
-      expect(findRunnerDetail().props('label')).toBe(s__('Runners|Maintenance note'));
+      expect(findRunnerDetail().props('label')).toBe('Maintenance note');
       expect(findRunnerDetail().find('dd').text()).toBe('None');
     });
   });

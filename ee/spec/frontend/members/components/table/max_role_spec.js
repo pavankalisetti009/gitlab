@@ -10,7 +10,6 @@ import waitForPromises from 'helpers/wait_for_promises';
 import MaxRole from '~/members/components/table/max_role.vue';
 import { MEMBERS_TAB_TYPES } from '~/members/constants';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__ } from '~/locale';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { upgradedMember as member } from '../../mock_data';
 
@@ -81,7 +80,7 @@ describe('MaxRole', () => {
       expect(findRoleText().text()).toBe('custom role 1');
 
       expect(findBadge().exists()).toBe(true);
-      expect(findBadge().text()).toBe(s__('MemberRole|Custom role'));
+      expect(findBadge().text()).toBe('Custom role');
     });
 
     it('renders a tooltip', () => {

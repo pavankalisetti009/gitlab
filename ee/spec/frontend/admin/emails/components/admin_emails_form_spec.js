@@ -3,7 +3,6 @@ import { nextTick } from 'vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import AdminEmailsForm from 'ee/admin/emails/components/admin_emails_form.vue';
 import * as RestApi from '~/rest_api';
-import { __ } from '~/locale';
 import waitForPromises from 'helpers/wait_for_promises';
 
 jest.mock('~/lib/utils/csrf', () => ({ token: 'mock-csrf-token' }));
@@ -105,7 +104,7 @@ describe('AdminEmailsForm', () => {
         expect(findGlListbox().props('items')).toEqual([
           {
             value: 'all',
-            text: __('All groups and projects'),
+            text: 'All groups and projects',
           },
           { value: 'group-1', text: 'Group Foo' },
           { value: 'group-2', text: 'Group Bar' },

@@ -1,4 +1,3 @@
-import { s__ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { UPGRADE_STATUS_AVAILABLE } from 'ee/ci/runner/constants';
 
@@ -43,7 +42,7 @@ describe('RunnerHeader', () => {
       });
 
       it('displays upgrade available badge', () => {
-        expect(findRunnerUpgradeStatusBadge().text()).toContain(s__('Runners|Upgrade available'));
+        expect(findRunnerUpgradeStatusBadge().text()).toContain('Upgrade available');
       });
     });
   });

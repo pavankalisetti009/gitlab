@@ -18,7 +18,6 @@ import {
   LEARN_MORE_TEXT,
   MAX_DAST_PROFILES_COUNT,
 } from 'ee/on_demand_scans/constants';
-import { s__ } from '~/locale';
 import ScanTypeBadge from 'ee/security_configuration/dast_profiles/components/dast_scan_type_badge.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
 import { PROJECT_ON_DEMAND_SCAN_COUNTS_ETAG_MOCK } from '../../mocks';
@@ -136,12 +135,12 @@ describe('Saved tab', () => {
 
     expect(cloneDeep(findBaseTab().props())).toEqual({
       isActive: true,
-      title: s__('OnDemandScans|Scan library'),
+      title: 'Scan library',
       itemsCount,
       maxItemsCount: MAX_DAST_PROFILES_COUNT,
       query: dastProfilesQuery,
       queryVariables: {},
-      emptyStateTitle: s__('OnDemandScans|There are no saved scans.'),
+      emptyStateTitle: 'There are no saved scans.',
       emptyStateText: LEARN_MORE_TEXT,
       fields: SAVED_TAB_TABLE_FIELDS,
     });
@@ -231,7 +230,7 @@ describe('Saved tab', () => {
       });
     });
 
-    const topLevelErrorMessage = s__('OnDemandScans|Could not run the scan. Please try again.');
+    const topLevelErrorMessage = 'Could not run the scan. Please try again.';
 
     describe.each`
       errorType            | errorMessage            | requestHander
@@ -324,9 +323,8 @@ describe('Saved tab', () => {
       });
     });
 
-    const topLevelErrorMessage = s__(
-      'OnDemandScans|Could not delete saved scan. Please refresh the page, or try again later.',
-    );
+    const topLevelErrorMessage =
+      'Could not delete saved scan. Please refresh the page, or try again later.';
 
     describe.each`
       errorType            | errorMessage            | requestHander

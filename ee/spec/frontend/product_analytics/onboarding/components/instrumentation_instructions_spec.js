@@ -6,7 +6,6 @@ import {
   TEST_COLLECTOR_HOST,
   TEST_TRACKING_KEY,
 } from 'ee_jest/analytics/analytics_dashboards/mock_data';
-import { s__ } from '~/locale';
 
 describe('ProductAnalyticsInstrumentationInstructions', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -64,15 +63,13 @@ describe('ProductAnalyticsInstrumentationInstructions', () => {
     describe('static text', () => {
       it('renders the further browser SDK info text', () => {
         expect(findFurtherBrowserSDKInfo().attributes('message')).toBe(
-          s__('ProductAnalytics|For more information, see the %{linkStart}docs%{linkEnd}.'),
+          'For more information, see the %{linkStart}docs%{linkEnd}.',
         );
       });
 
       it('renders the summary text', () => {
         expect(findSummaryText().attributes('message')).toBe(
-          s__(
-            'ProductAnalytics|After your application has been instrumented and data is being collected, you can visualize and monitor behaviors in your %{linkStart}analytics dashboards%{linkEnd}.',
-          ),
+          'After your application has been instrumented and data is being collected, you can visualize and monitor behaviors in your %{linkStart}analytics dashboards%{linkEnd}.',
         );
       });
     });

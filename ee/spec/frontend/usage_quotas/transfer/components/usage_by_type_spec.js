@@ -2,7 +2,6 @@ import { GlSkeletonLoader, GlTableLite, GlIcon, GlLink } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import UsageByType from 'ee/usage_quotas/transfer/components/usage_by_type.vue';
 import SectionedPercentageBar from '~/usage_quotas/components/sectioned_percentage_bar.vue';
-import { s__, __ } from '~/locale';
 import {
   EGRESS_TYPE_ARTIFACTS,
   EGRESS_TYPE_REPOSITORY,
@@ -62,25 +61,25 @@ describe('UsageByType', () => {
       expect(findSectionedPercentageBar().props('sections')).toEqual([
         expect.objectContaining({
           id: EGRESS_TYPE_ARTIFACTS,
-          label: __('Artifacts'),
+          label: 'Artifacts',
           value: 4029020,
           formattedValue: '3.84 MiB',
         }),
         expect.objectContaining({
           id: EGRESS_TYPE_REPOSITORY,
-          label: __('Repository'),
+          label: 'Repository',
           value: 3276391,
           formattedValue: '3.12 MiB',
         }),
         expect.objectContaining({
           id: EGRESS_TYPE_PACKAGES,
-          label: __('Packages'),
+          label: 'Packages',
           value: 4096992,
           formattedValue: '3.91 MiB',
         }),
         expect.objectContaining({
           id: EGRESS_TYPE_REGISTRY,
-          label: s__('UsageQuota|Registry'),
+          label: 'Registry',
           value: 2780286,
           formattedValue: '2.65 MiB',
         }),

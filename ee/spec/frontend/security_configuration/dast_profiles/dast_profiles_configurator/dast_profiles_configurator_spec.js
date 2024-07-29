@@ -2,7 +2,6 @@ import { merge } from 'lodash';
 import { GlLink } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import ProfileConflictAlert from 'ee/on_demand_scans_form/components/profile_selector/profile_conflict_alert.vue';
-import { s__ } from '~/locale';
 import DastProfilesConfigurator from 'ee/security_configuration/dast_profiles/dast_profiles_configurator/dast_profiles_configurator.vue';
 import ScannerProfileSelector from 'ee/security_configuration/dast_profiles/dast_profile_selector/scanner_profile_selector.vue';
 import SiteProfileSelector from 'ee/security_configuration/dast_profiles/dast_profile_selector/site_profile_selector.vue';
@@ -96,7 +95,7 @@ describe('DastProfilesConfigurator', () => {
 
   describe('when default state', () => {
     it('renders properly', async () => {
-      const sectionHeader = s__('OnDemandScans|DAST configuration');
+      const sectionHeader = 'OnDemandScans|DAST configuration';
       createComponent({ configurationHeader: sectionHeader });
       await waitForPromises();
 

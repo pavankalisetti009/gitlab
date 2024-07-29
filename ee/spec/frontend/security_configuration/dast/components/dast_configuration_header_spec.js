@@ -1,5 +1,4 @@
 import { GlBadge, GlLink } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DastConfigurationHeader from 'ee/security_configuration/dast/components/dast_configuration_header.vue';
 
@@ -22,8 +21,8 @@ describe('EE DAST Configuration Header', () => {
   const findHeaderText = () => wrapper.findByTestId('dast-header-text');
 
   it('renders header elements disabled', () => {
-    const badgeLabel = s__('DastConfig|Not enabled');
-    const badgeText = s__('DastConfig|No previous scans found for this project');
+    const badgeLabel = 'Not enabled';
+    const badgeText = 'No previous scans found for this project';
 
     createComponent();
 
@@ -34,8 +33,8 @@ describe('EE DAST Configuration Header', () => {
   });
 
   it('should show latest pipeline info if dast is disabled but used before', () => {
-    const badgeLabel = s__('DastConfig|Not enabled');
-    const badgeText = s__('DastConfig|Last scan triggered');
+    const badgeLabel = 'Not enabled';
+    const badgeText = 'Last scan triggered';
 
     createComponent({
       dastEnabled: false,
@@ -51,7 +50,7 @@ describe('EE DAST Configuration Header', () => {
 
   it('should be enabled if dast is enabled', () => {
     const dastEnabled = true;
-    const badgeLabel = s__('DastConfig|Enabled');
+    const badgeLabel = 'Enabled';
 
     createComponent({
       dastEnabled,

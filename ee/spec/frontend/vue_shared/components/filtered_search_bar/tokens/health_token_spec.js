@@ -1,13 +1,12 @@
 import { GlFilteredSearchTokenSegment, GlFilteredSearchSuggestion } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import { OPTIONS_NONE_ANY } from '~/vue_shared/components/filtered_search_bar/constants';
-import { __ } from '~/locale';
 import HealthToken from 'ee/vue_shared/components/filtered_search_bar/tokens/health_token.vue';
 import { HEALTH_SUGGESTIONS } from 'ee/vue_shared/components/filtered_search_bar//constants';
 import { mockHealthToken } from '../mock_data';
 
 describe('HealthToken', () => {
-  const healthStatus = { title: __('On track'), value: 'onTrack' };
+  const healthStatus = { title: 'On track', value: 'onTrack' };
   let wrapper;
 
   const createComponent = ({

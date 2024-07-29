@@ -1,5 +1,4 @@
 import { GlCard, GlIcon } from '@gitlab/ui';
-import { __ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { SCANNER_TYPE, SITE_TYPE } from 'ee/on_demand_scans/constants';
 import DastProfileSummaryCard from 'ee/security_configuration/dast_profiles/dast_profile_selector/dast_profile_summary_card.vue';
@@ -93,8 +92,8 @@ describe('DastProfileSummaryCard', () => {
 
   describe.each`
     profileType     | expectedResult
-    ${SCANNER_TYPE} | ${__('Edit scanner profile')}
-    ${SITE_TYPE}    | ${__('Edit site profile')}
+    ${SCANNER_TYPE} | ${'Edit scanner profile'}
+    ${SITE_TYPE}    | ${'Edit site profile'}
   `('Edit button title', ({ profileType, expectedResult }) => {
     beforeEach(() => {
       createComponent({

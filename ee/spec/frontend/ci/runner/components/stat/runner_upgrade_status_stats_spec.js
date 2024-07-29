@@ -1,6 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlPopover } from '@gitlab/ui';
-import { s__ } from '~/locale';
 import RunnerUpgradeStatusStats from 'ee_component/ci/runner/components/stat/runner_upgrade_status_stats.vue';
 import RunnerSingleStat from '~/ci/runner/components/stat/runner_single_stat.vue';
 import { INSTANCE_TYPE } from '~/ci/runner/constants';
@@ -34,13 +33,13 @@ describe('RunnerStats', () => {
     const statOptions = [
       {
         index: 0,
-        title: s__('Runners|Upgrade available'),
+        title: 'Upgrade available',
         variant: 'info',
         variables: { upgradeStatus: UPGRADE_STATUS_AVAILABLE },
       },
       {
         index: 1,
-        title: s__('Runners|Upgrade recommended'),
+        title: 'Upgrade recommended',
         variant: 'warning',
         variables: { upgradeStatus: UPGRADE_STATUS_RECOMMENDED },
       },

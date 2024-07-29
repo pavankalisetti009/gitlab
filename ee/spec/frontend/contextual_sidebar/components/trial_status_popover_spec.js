@@ -8,7 +8,6 @@ import TrialStatusPopover from 'ee/contextual_sidebar/components/trial_status_po
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { __ } from '~/locale';
 
 Vue.config.ignoredElements = ['gl-emoji'];
 
@@ -74,13 +73,13 @@ describe('TrialStatusPopover component', () => {
     it('correctly displays when days remaining is 1', () => {
       wrapper = createComponent({ providers: { daysRemaining: 1 }, mountFn: mount });
 
-      expect(wrapper.text()).toContain(__("You've got 1 day remaining on GitLab Ultimate!"));
+      expect(wrapper.text()).toContain("You've got 1 day remaining on GitLab Ultimate!");
     });
 
     it('correct displays when days remaining is 30', () => {
       wrapper = createComponent({ providers: { daysRemaining: 30 }, mountFn: mount });
 
-      expect(wrapper.text()).toContain(__("You've got 30 days remaining on GitLab Ultimate!"));
+      expect(wrapper.text()).toContain("You've got 30 days remaining on GitLab Ultimate!");
     });
 
     it('displays correct message when namespace is not in active trial', () => {
@@ -114,7 +113,7 @@ describe('TrialStatusPopover component', () => {
     it('displays correct message when namespace is in active trial', () => {
       wrapper = createComponent({ providers: { daysRemaining: 5 }, mountFn: mount });
 
-      expect(wrapper.text()).toContain(__('To keep those features after your trial ends'));
+      expect(wrapper.text()).toContain('To keep those features after your trial ends');
     });
 
     it('displays correct message when namespace is not in active trial', () => {
@@ -230,7 +229,7 @@ describe('TrialStatusPopover component', () => {
     it('renders the link', () => {
       wrapper = createComponent({ providers: { daysRemaining: 5 }, mountFn: mount });
 
-      expect(wrapper.text()).toContain(__('Learn about features'));
+      expect(wrapper.text()).toContain('Learn about features');
       expect(findLearnAboutFeaturesBtn().exists()).toBe(true);
       expect(findLearnAboutFeaturesBtn().attributes('href')).toBe('discover-path');
     });

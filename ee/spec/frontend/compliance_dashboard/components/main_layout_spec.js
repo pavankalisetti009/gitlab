@@ -2,7 +2,6 @@ import { mount } from '@vue/test-utils';
 import { GlTabs } from '@gitlab/ui';
 import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
-import { __ } from '~/locale';
 import MainLayout from 'ee/compliance_dashboard/components/main_layout.vue';
 import ReportHeader from 'ee/compliance_dashboard/components/shared/report_header.vue';
 import { stubComponent } from 'helpers/stub_component';
@@ -104,10 +103,9 @@ describe('ComplianceReportsApp component', () => {
 
     it('passes the expected values to the header', () => {
       expect(findHeader().props()).toMatchObject({
-        heading: __('Compliance center'),
-        subheading: __(
+        heading: 'Compliance center',
+        subheading:
           'Report and manage standards adherence, violations, and compliance frameworks for the group.',
-        ),
         documentationPath: '/help/user/compliance/compliance_center/index.md',
       });
     });
@@ -146,10 +144,9 @@ describe('ComplianceReportsApp component', () => {
 
     it('passes the expected values to the header', () => {
       expect(findHeader().props()).toMatchObject({
-        heading: __('Compliance center'),
-        subheading: __(
+        heading: 'Compliance center',
+        subheading:
           'Report and manage standards adherence, violations, and compliance frameworks for the group.',
-        ),
         documentationPath: '/help/user/compliance/compliance_center/index.md',
       });
     });

@@ -3,7 +3,6 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import { GlButton } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
-import { __ } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import ScanResultPolicies from 'ee/approvals/components/security_orchestration/scan_result_policies.vue';
 import securityOrchestrationModule from 'ee/approvals/stores/modules/security_orchestration';
@@ -28,7 +27,7 @@ const queryResponse = {
 };
 const emptyQueryResponse = { data: { project: { scanResultPolicies: { nodes: [] } } } };
 
-const NO_SECURITY_POLICIES_MESSAGE = __("You don't have any security policies yet");
+const NO_SECURITY_POLICIES_MESSAGE = "You don't have any security policies yet";
 
 describe('ScanResultPolicies', () => {
   let wrapper;
