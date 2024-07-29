@@ -27,7 +27,7 @@ module QA
         end
       end
 
-      it 'is not allowed to push code via the CLI',
+      it 'is not allowed to push code via the CLI', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347873' do
         expect do
           Resource::Repository::Push.fabricate! do |push|
