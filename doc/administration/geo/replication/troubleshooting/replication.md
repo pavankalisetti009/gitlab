@@ -237,13 +237,14 @@ The following Geo data types exist:
   - `Upload`
   - `DependencyProxy::Manifest`
   - `DependencyProxy::Blob`
-- **Repository types:**
-  - `ContainerRepositoryRegistry`
+- **Git Repository types:**
   - `DesignManagement::Repository`
   - `ProjectRepository`
   - `ProjectWikiRepository`
   - `SnippetRepository`
   - `GroupWikiRepository`
+- **Other types:**
+  - `ContainerRepository`
 
 The main kinds of classes are Registry, Model, and Replicator. If you have an instance of one of these classes, you can get the others. The Registry and Model mostly manage PostgreSQL DB state. The Replicator knows how to replicate/verify (or it can call a service to do it):
 
