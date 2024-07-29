@@ -46,6 +46,36 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
       visit root_path
     end
 
+    it 'shows the disabled button with project tooltip when chat is disabled on project level' do
+      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return('project')
+
+      visit root_path
+
+      expect(page).to have_selector(
+        'span.has-tooltip[title*="An administrator has turned off GitLab Duo for this project"]'
+      )
+      expect(page).to have_button('GitLab Duo Chat', disabled: true)
+    end
+
+    it 'shows the disabled button with group tooltip when chat is disabled on group level' do
+      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return('group')
+
+      visit root_path
+
+      expect(page).to have_selector(
+        'span.has-tooltip[title*="An administrator has turned off GitLab Duo for this group"]'
+      )
+      expect(page).to have_button('GitLab Duo Chat', disabled: true)
+    end
+
+    it 'shows the enabled button when chat is enabled' do
+      allow(::Gitlab::Llm::TanukiBot).to receive(:chat_disabled_reason).and_return(nil)
+
+      visit root_path
+
+      expect(page).to have_button('GitLab Duo Chat', disabled: false)
+    end
+
     it 'returns response after asking a question', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/462444' do
       open_chat
       chat_request(question)
