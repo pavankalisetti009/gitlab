@@ -336,6 +336,17 @@ RSpec.describe Issue, feature_category: :team_planning do
         expect(relation.project_level.first.project.association(:namespace)).to be_loaded
       end
     end
+
+    describe '.searchable' do
+      subject(:relation) { described_class.searchable }
+
+      it 'returns only issues with project_id populated' do
+        issue_without_project_id = create(:issue, :with_synced_epic)
+
+        expect(described_class.all).to include(issue_without_project_id)
+        expect(relation).not_to include(issue_without_project_id)
+      end
+    end
   end
 
   describe 'validations' do

@@ -167,6 +167,16 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
       described_class.maintain_indexed_associations(project, ['notes'])
     end
+
+    it 'correctly scopes associated issue objects to not include issues nil project_id' do
+      author = create(:user)
+      issue_searchable = create(:issue, project: project, author: author)
+      create(:issue, :with_synced_epic, author: author)
+
+      expect(described_class).to receive(:track!).with(issue_searchable)
+
+      described_class.maintain_indexed_associations(author, ['issues'])
+    end
   end
 
   describe '.maintain_indexed_group_associations' do
