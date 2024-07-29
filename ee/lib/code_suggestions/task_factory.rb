@@ -67,8 +67,7 @@ module CodeSuggestions
         instruction: instruction,
         project: project,
         model_name: ANTHROPIC_MODEL,
-        current_user: current_user,
-        skip_dependency_descriptions: Feature.enabled?(:code_suggestions_skip_dependency_descriptions, current_user)
+        current_user: current_user
       )
     end
 
