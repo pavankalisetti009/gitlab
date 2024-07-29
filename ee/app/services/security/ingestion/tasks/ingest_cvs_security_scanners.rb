@@ -5,11 +5,10 @@ module Security
     module Tasks
       class IngestCvsSecurityScanners < AbstractTask
         include Gitlab::Ingestion::BulkInsertableTask
-        include Gitlab::Utils::StrongMemoize
 
         self.model = Vulnerabilities::Scanner
         self.unique_by = %i[project_id external_id].freeze
-        self.uses = %i[id project_id]
+        self.uses = %i[project_id id]
 
         private
 
@@ -31,11 +30,8 @@ module Security
         end
 
         def indexed_return_data
-          return_data.to_h do |(scanner_id, project_id)|
-            [project_id, scanner_id]
-          end
+          @indexed_return_data ||= return_data.to_h
         end
-        strong_memoize_attr :indexed_return_data
 
         def get_scanner_id(finding_map)
           indexed_return_data[finding_map.project.id]
