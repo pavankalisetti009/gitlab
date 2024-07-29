@@ -40,6 +40,9 @@ module TrialHelpers
       uid: user.id
     }
 
+    # TODO: remove with duo_enterprise_trials cleanup
+    service_params[:user] = user if apply_trial_service_class == GitlabSubscriptions::Trials::ApplyDuoProService
+
     trial_success = if success
                       ServiceResponse.success
                     else

@@ -5,15 +5,15 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_max_formatted_output_length, feature_category: :plan_provisioning do
   let_it_be(:user) { create(:user) }
   let_it_be(:user_without_eligible_groups) { create(:user) }
-  let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
-  let_it_be(:another_free_group) { create(:group) }
-  let_it_be(:another_ultimate_group) { create(:group_with_plan, plan: :ultimate_plan) }
+  let_it_be(:group) { create(:group_with_plan, plan: :premium_plan, owners: user) }
+  let_it_be(:another_free_group) { create(:group, owners: user) }
+  let_it_be(:another_premium_group) { create(:group_with_plan, plan: :premium_plan, developers: user) }
+  let_it_be(:ineligible_paid_group) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
 
   let(:subscriptions_trials_saas_feature) { true }
 
   before_all do
     create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro)
-    group.add_owner(user)
   end
 
   before do
@@ -27,21 +27,19 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
     context 'when free group owner' do
       let(:base_params) { { namespace_id: another_free_group.id } }
 
-      it 'returns forbidden' do
-        another_free_group.add_owner(user)
-
-        is_expected.to have_gitlab_http_status(:forbidden)
-      end
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
 
-    context 'when ultimate group developer' do
-      let(:base_params) { { namespace_id: another_ultimate_group.id } }
+    context 'when ultimate group owner' do
+      let(:base_params) { { namespace_id: ineligible_paid_group.id } }
 
-      it 'returns forbidden' do
-        another_ultimate_group.add_developer(user)
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
 
-        is_expected.to have_gitlab_http_status(:forbidden)
-      end
+    context 'when eligible paid plan group developer' do
+      let(:base_params) { { namespace_id: another_premium_group.id } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
   end
 
@@ -65,12 +63,22 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       it { is_expected.to redirect_to_sign_in }
     end
 
-    context 'when authenticated as a user with eligible namespaces' do
+    context 'when authenticated as a user' do
       before do
         login_as(user)
       end
 
       it { is_expected.to render_lead_form }
+
+      context 'when feature flag duo_enterprise_trials is disabled' do
+        let(:base_params) { { namespace_id: ineligible_paid_group.id } }
+
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it { is_expected.to render_lead_form }
+      end
 
       context 'with tracking page render' do
         it_behaves_like 'internal event tracking' do
@@ -113,6 +121,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
   end
 
   describe 'POST create' do
+    let(:group_for_trial) { group }
     let(:step) { GitlabSubscriptions::Trials::CreateDuoProService::LEAD }
     let(:lead_params) do
       {
@@ -129,7 +138,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
 
     let(:trial_params) do
       {
-        namespace_id: group.id.to_s,
+        namespace_id: group_for_trial.id.to_s,
         trial_entity: '_trial_entity_',
         organization_id: anything
       }.with_indifferent_access
@@ -148,19 +157,17 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       end
     end
 
-    context 'when authenticated as a user with eligible namespaces' do
+    context 'when authenticated as a user' do
       before do
         login_as(user)
       end
 
       context 'when successful' do
         before do
-          expect_create_success(group)
+          expect_create_success(group_for_trial)
         end
 
-        it 'redirects to the group usage quotas page with code suggestions usage tab anchor' do
-          expect(post_create).to redirect_to(group_settings_gitlab_duo_usage_index_path(group))
-        end
+        it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
 
         it 'shows valid flash message', :freeze_time do
           post_create
@@ -175,6 +182,16 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
                 'to GitLab Duo Pro seats.'
             ), exp_date: expires_on)
           )
+        end
+
+        context 'when feature flag duo_enterprise_trials is disabled' do
+          let(:group_for_trial) { ineligible_paid_group }
+
+          before do
+            stub_feature_flags(duo_enterprise_trials: false)
+          end
+
+          it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
         end
       end
 
@@ -194,9 +211,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
         context 'when lead creation fails' do
           let(:failure_reason) { :lead_failed }
 
-          it 'renders lead form' do
-            expect(post_create).to have_gitlab_http_status(:ok).and render_lead_form
-          end
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
         end
 
         context 'when lead creation is successful, but we need to select a namespace next to apply trial' do
@@ -209,11 +224,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
             }
           end
 
-          it 'redirects to new with trial step' do
-            post_create
-
-            expect(response).to redirect_to(new_trials_duo_pro_path(payload[:trial_selection_params]))
-          end
+          it { is_expected.to redirect_to(new_trials_duo_pro_path(payload[:trial_selection_params])) }
         end
 
         context 'with trial failure' do

@@ -238,6 +238,9 @@ module Features
         uid: user.id
       }
 
+      # TODO: remove with duo_enterprise_trials cleanup
+      service_params[:user] = user if trial_type == DUO_PRO_TRIAL
+
       trial_success = if success
                         ServiceResponse.success
                       else

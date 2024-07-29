@@ -28,14 +28,14 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
       ).execute
     end
 
-    it_behaves_like 'when on the lead step', :ultimate_plan
-    it_behaves_like 'when on trial step', :ultimate_plan
+    it_behaves_like 'when on the lead step', :premium_plan
+    it_behaves_like 'when on trial step', :premium_plan
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
 
     context 'for tracking the lead step', :clean_gitlab_redis_shared_state do
       let_it_be(:namespace) do
-        create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab') { |record| record.add_owner(user) }
+        create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user)
       end
 
       it 'tracks when lead creation is successful' do
@@ -83,7 +83,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     context 'for tracking the trial step', :clean_gitlab_redis_shared_state do
       let(:step) { described_class::TRIAL }
       let_it_be(:namespace) do
-        create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab') { |record| record.add_owner(user) }
+        create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user)
       end
 
       let(:namespace_id) { namespace.id.to_s }
@@ -129,13 +129,12 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     end
 
     context 'when namespace_id is provided' do
-      let_it_be(:namespace) do
-        create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab') { |record| record.add_owner(user) }
-      end
-
-      let(:trial_params) { { namespace_id: namespace.id.to_s } }
+      let_it_be(:ultimate_namespace) { create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab_ul', owners: user) }
 
       context 'when it is an eligible namespace' do
+        let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user) }
+        let(:trial_params) { { namespace_id: namespace.id.to_s } }
+
         before do
           expect_create_lead_success(trial_user_params)
           expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
@@ -144,8 +143,31 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
         it { is_expected.to be_success }
       end
 
-      context 'when it is not an eligible namespace' do
+      context 'when feature flag duo_enterprise_trials is disabled' do
+        let(:namespace) { ultimate_namespace }
+        let(:trial_params) { { namespace_id: namespace.id.to_s } }
+
+        before do
+          expect_create_lead_success(trial_user_params)
+          expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it { is_expected.to be_success }
+      end
+
+      context 'when it is non existing namespace' do
         let(:trial_params) { { namespace_id: non_existing_record_id.to_s } }
+
+        specify do
+          expect(execute).to be_error
+          expect(execute.reason).to eq(:not_found)
+        end
+      end
+
+      context 'when it is an ineligible namespace' do
+        let(:namespace) { ultimate_namespace }
+        let(:trial_params) { { namespace_id: namespace.id.to_s } }
 
         specify do
           expect(execute).to be_error

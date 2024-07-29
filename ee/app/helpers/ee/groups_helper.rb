@@ -130,14 +130,6 @@ module EE
       }
     end
 
-    def duo_pro_trial_link(group)
-      if GitlabSubscriptions::DuoPro.no_add_on_purchase_for_namespace?(group)
-        return { duo_pro_trial_href: new_trials_duo_pro_path(namespace_id: group.id) }
-      end
-
-      {}
-    end
-
     def product_analytics_usage_quota_app_data(group)
       {
         namespace_path: group.full_path,
@@ -173,6 +165,17 @@ module EE
       {
         full_path: group.full_path
       }
+    end
+
+    private
+
+    def duo_pro_trial_link(group)
+      if GitlabSubscriptions::DuoPro.no_add_on_purchase_for_namespace?(group) &&
+          GitlabSubscriptions::DuoPro.namespace_eligible?(group, current_user)
+        return { duo_pro_trial_href: new_trials_duo_pro_path(namespace_id: group.id) }
+      end
+
+      {}
     end
   end
 end

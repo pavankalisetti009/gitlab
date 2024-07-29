@@ -451,14 +451,25 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
   describe '#code_suggestions_usage_app_data' do
     subject(:code_suggestions_usage_app_data) { helper.code_suggestions_usage_app_data(group) }
 
+    let(:include_trial_link) { true }
+    let(:trial_link) do
+      { duo_pro_trial_href: ::Gitlab::Routing.url_helpers.new_trials_duo_pro_path(namespace_id: group.id) }
+    end
+
     let(:data) do
       {
         full_path: group.full_path,
         group_id: group.id,
-        duo_pro_trial_href: ::Gitlab::Routing.url_helpers.new_trials_duo_pro_path(namespace_id: group.id),
         add_duo_pro_href: ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(group.id),
         hand_raise_lead: helper.code_suggestions_usage_app_hand_raise_lead_data
-      }
+      }.merge(trial_link)
+    end
+
+    before do
+      allow(GitlabSubscriptions::DuoPro)
+        .to receive(:no_add_on_purchase_for_namespace?).with(group).and_return(include_trial_link)
+      allow(GitlabSubscriptions::DuoPro)
+        .to receive(:namespace_eligible?).with(group, current_user).and_return(include_trial_link)
     end
 
     context 'when duo pro bulk assignment is available' do
@@ -475,6 +486,13 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
 
       it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'false')) }
+    end
+
+    context 'when duo_enterprise_trials is disabled' do
+      let(:include_trial_link) { false }
+      let(:trial_link) { {} }
+
+      it { is_expected.to eql(data.merge(duo_pro_bulk_user_assignment_available: 'true')) }
     end
   end
 
@@ -495,24 +513,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     context 'when an active duo pro trial does not exist' do
       it 'returns empty' do
         expect(helper.active_duo_pro_trial_data(group)).to eq({})
-      end
-    end
-  end
-
-  describe '#duo_pro_trial_link' do
-    it 'returns the trial link when group has no previous or active duo pro trial' do
-      expect(helper.duo_pro_trial_link(group)).to eq({
-        duo_pro_trial_href: new_trials_duo_pro_path(namespace_id: group.id)
-      })
-    end
-
-    context 'when group has a previous or active duo pro trial' do
-      before do
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: group)
-      end
-
-      it 'returns empty' do
-        expect(helper.duo_pro_trial_link(group)).to eq({})
       end
     end
   end

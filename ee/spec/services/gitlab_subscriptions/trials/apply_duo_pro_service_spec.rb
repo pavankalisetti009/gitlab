@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_category: :subscription_management do
   let_it_be(:user) { create(:user) }
-  let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+  let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan, owners: user) }
 
   let(:trial_user_information) { { namespace_id: namespace.id } }
   let(:apply_trial_params) do
@@ -19,7 +19,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
       allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_addon_trial).and_return(response)
     end
 
-    subject(:execute) { described_class.execute(apply_trial_params) }
+    subject(:execute) { described_class.execute(apply_trial_params.merge(user: user)) }
 
     context 'when trial is applied successfully' do
       let(:response) { { success: true } }
@@ -31,7 +31,7 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
   end
 
   describe '#execute' do
-    subject(:execute) { described_class.new(**apply_trial_params).execute }
+    subject(:execute) { described_class.new(**apply_trial_params.merge(user: user)).execute }
 
     context 'when valid to generate a trial' do
       before do
@@ -74,6 +74,27 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
         end
       end
 
+      context 'when namespace is higher than premium' do
+        let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+
+        it 'returns an error response with errors' do
+          expect(execute).to be_error.and have_attributes(message: /Not valid to generate a trial/)
+        end
+      end
+
+      context 'when feature flag duo_enterprise_trials is disabled' do
+        let_it_be(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+          allow(Gitlab::SubscriptionPortal::Client).to receive(:generate_addon_trial).and_return({ success: true })
+        end
+
+        it 'returns success: true' do
+          expect(execute).to be_success
+        end
+      end
+
       context 'when namespace is not paid' do
         let_it_be(:namespace) { create(:group) }
 
@@ -105,7 +126,9 @@ RSpec.describe GitlabSubscriptions::Trials::ApplyDuoProService, :saas, feature_c
   end
 
   describe '#valid_to_generate_trial?' do
-    subject(:valid_to_generate_trial) { described_class.new(**apply_trial_params).valid_to_generate_trial? }
+    subject(:valid_to_generate_trial) do
+      described_class.new(**apply_trial_params.merge(user: user)).valid_to_generate_trial?
+    end
 
     context 'when it is valid to generate a trial' do
       it { is_expected.to be true }

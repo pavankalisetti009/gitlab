@@ -98,16 +98,21 @@ module GitlabSubscriptions
       def apply_trial_flow
         trial_params[:namespace_id] = namespace.id
 
-        result = apply_trial_service_class.new(
-          uid: user.id,
-          trial_user_information: trial_user_information_params
-        ).execute
+        result = apply_trial_service_class.new(**apply_trial_params).execute
 
         if result.success?
           after_trial_success_hook
         else
           after_trial_error_hook(result)
         end
+      end
+
+      # TODO: revert to call directly with duo_enterprise_trials cleanup
+      def apply_trial_params
+        {
+          uid: user.id,
+          trial_user_information: trial_user_information_params
+        }
       end
 
       def after_trial_success_hook

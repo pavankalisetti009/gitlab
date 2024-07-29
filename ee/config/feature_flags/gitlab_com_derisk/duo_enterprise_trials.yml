@@ -1,0 +1,9 @@
+---
+name: duo_enterprise_trials
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/468774
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159939
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/473208
+milestone: '17.3'
+group: group::acquisition
+type: gitlab_com_derisk
+default_enabled: false

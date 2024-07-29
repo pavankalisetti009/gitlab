@@ -4,29 +4,44 @@ require "spec_helper"
 
 RSpec.describe GitlabSubscriptions::DuoProCardComponent, :saas, :aggregate_failures, type: :component, feature_category: :subscription_management do
   include SubscriptionPortalHelpers
+  using RSpec::Parameterized::TableSyntax
 
   let(:user) { build_stubbed(:user) }
   let(:namespace) { build_stubbed(:namespace) }
 
   subject(:component) { described_class.new(namespace: namespace, user: user) }
 
-  before do
-    render_inline(component)
-  end
-
-  context 'when there is an active add-on purchase for the namespace' do
-    before do
-      allow(GitlabSubscriptions::DuoPro)
-        .to receive(:no_active_add_on_purchase_for_namespace?).with(namespace).and_return(false)
+  context 'when it does not render the component' do
+    where(:active_add_on_purchase?, :namespace_eligible?, :render?) do
+      true  | false | false
+      false | true  | false
+      false | false | false
     end
 
-    it 'does not render' do
-      expect(page).to have_content('')
+    with_them do
+      before do
+        allow(GitlabSubscriptions::DuoPro)
+          .to receive(:no_active_add_on_purchase_for_namespace?).with(namespace).and_return(active_add_on_purchase?)
+        allow(GitlabSubscriptions::DuoPro)
+          .to receive(:namespace_eligible?).with(namespace, user).and_return(namespace_eligible?)
+      end
+
+      it 'does not render' do
+        render_inline(component)
+
+        expect(page).to have_content('')
+      end
     end
   end
 
   context 'when there is no active add-on purchase for the namespace' do
+    before do
+      allow(GitlabSubscriptions::DuoPro).to receive(:namespace_eligible?).with(namespace, user).and_return(true)
+    end
+
     it 'renders the component' do
+      render_inline(component)
+
       data_attributes = {
         glm_content: 'code-suggestions',
         product_interaction: 'Requested Contact-Duo Pro Add-On',
