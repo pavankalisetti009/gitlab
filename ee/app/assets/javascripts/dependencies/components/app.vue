@@ -8,6 +8,7 @@ import {
   GlLink,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import { getTimeago } from '~/lib/utils/datetime_utility';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapGetters, mapState } from 'vuex';
 import { __, s__ } from '~/locale';
@@ -46,6 +47,8 @@ export default {
     'exportEndpoint',
     'pageInfo',
     'namespaceType',
+    'latestSuccessfulScanPath',
+    'scanFinishedAt',
   ],
   props: {
     sbomReportsErrors: {
@@ -62,7 +65,6 @@ export default {
   computed: {
     ...mapState(['currentList', 'listTypes']),
     ...mapGetters([
-      'generatedAtTimeAgo',
       'isInitialized',
       'isJobFailed',
       'isIncomplete',
@@ -109,6 +111,9 @@ export default {
         : s__(
             'Dependencies|Software Bill of Materials (SBOM) based on the latest successful scan of each project.',
           );
+    },
+    generatedAtTimeAgo() {
+      return this.scanFinishedAt ? getTimeago().format(this.scanFinishedAt) : '';
     },
   },
   created() {
@@ -175,7 +180,7 @@ export default {
 
     <dependency-list-job-failed-alert
       v-if="isJobFailed && !isJobFailedAlertDismissed"
-      :job-path="reportInfo.jobPath"
+      :job-path="latestSuccessfulScanPath"
       @dismiss="dismissJobFailedAlert"
     />
 
@@ -201,9 +206,12 @@ export default {
         <p class="gl-mb-0">
           <gl-sprintf :message="message">
             <template #link="{ content }">
-              <gl-link v-if="reportInfo.jobPath" ref="jobLink" :href="reportInfo.jobPath">{{
-                content
-              }}</gl-link>
+              <gl-link
+                v-if="latestSuccessfulScanPath"
+                ref="jobLink"
+                :href="latestSuccessfulScanPath"
+                >{{ content }}</gl-link
+              >
               <template v-else>{{ content }}</template>
             </template>
           </gl-sprintf>

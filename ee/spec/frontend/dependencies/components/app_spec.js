@@ -19,7 +19,6 @@ import {
 import { REPORT_STATUS } from 'ee/dependencies/store/modules/list/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
-import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import axios from '~/lib/utils/axios_utils';
 
 describe('DependenciesApp component', () => {
@@ -38,6 +37,8 @@ describe('DependenciesApp component', () => {
     pageInfo: {},
     namespaceType: 'project',
     vulnerabilitiesEndpoint: `/vulnerabilities`,
+    latestSuccessfulScanPath: '/group/project/-/pipelines/1',
+    scanFinishedAt: getDateInPast(new Date(), 7),
   };
 
   const basicProps = {
@@ -71,8 +72,6 @@ describe('DependenciesApp component', () => {
     });
     store.state[allNamespace].pageInfo.total = total;
     store.state[allNamespace].reportInfo.status = REPORT_STATUS.ok;
-    store.state[allNamespace].reportInfo.generatedAt = getDateInPast(new Date(), 7);
-    store.state[allNamespace].reportInfo.jobPath = '/jobs/foo/321';
   };
 
   const setStateJobFailed = () => {
@@ -83,7 +82,6 @@ describe('DependenciesApp component', () => {
     });
     store.state[allNamespace].pageInfo.total = 0;
     store.state[allNamespace].reportInfo.status = REPORT_STATUS.jobFailed;
-    store.state[allNamespace].reportInfo.jobPath = '/jobs/foo/321';
   };
 
   const setStateListIncomplete = () => {
@@ -282,9 +280,6 @@ describe('DependenciesApp component', () => {
 
       describe('with namespaceType set to group', () => {
         beforeEach(async () => {
-          mock
-            .onGet(basicAppProvides.endpoint)
-            .reply(HTTP_STATUS_OK, { dependencies: [], report: { status: REPORT_STATUS.OK } });
           factory({ provide: { namespaceType: 'group' } });
 
           await nextTick();
@@ -300,7 +295,7 @@ describe('DependenciesApp component', () => {
       });
 
       it('shows a link to the latest job', () => {
-        expect(findHeaderJobLink().attributes('href')).toBe('/jobs/foo/321');
+        expect(findHeaderJobLink().attributes('href')).toBe('/group/project/-/pipelines/1');
       });
 
       it('shows when the last job ran', () => {
@@ -315,10 +310,15 @@ describe('DependenciesApp component', () => {
         expectComponentWithProps(DependenciesActions, { namespace: allNamespace });
       });
 
-      describe('given the user has public permissions', () => {
+      describe('where there is no pipeline info', () => {
         beforeEach(async () => {
-          store.state[allNamespace].reportInfo.generatedAt = '';
-          store.state[allNamespace].reportInfo.jobPath = '';
+          factory({
+            provide: {
+              latestSuccessfulScanPath: null,
+              scanFinishedAt: null,
+            },
+          });
+          setStateLoaded();
 
           await nextTick();
         });
@@ -346,7 +346,7 @@ describe('DependenciesApp component', () => {
 
       it('passes the correct props to the job failure alert', () => {
         expectComponentWithProps(DependencyListJobFailedAlert, {
-          jobPath: '/jobs/foo/321',
+          jobPath: '/group/project/-/pipelines/1',
         });
       });
 

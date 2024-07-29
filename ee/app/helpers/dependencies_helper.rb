@@ -2,12 +2,16 @@
 
 module DependenciesHelper
   def project_dependencies_data(project)
+    pipeline = project.latest_ingested_sbom_pipeline
+
     shared_dependencies_data.merge({
       has_dependencies: project.has_dependencies?.to_s,
       endpoint: project_dependencies_path(project, format: :json),
       export_endpoint: expose_path(api_v4_projects_dependency_list_exports_path(id: project.id)),
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
-      sbom_reports_errors: sbom_report_ingestion_errors(project).to_json
+      sbom_reports_errors: sbom_report_ingestion_errors(pipeline).to_json,
+      latest_successful_scan_path: (project_pipeline_path(project, pipeline) if pipeline),
+      scan_finished_at: pipeline&.finished_at
     })
   end
 
@@ -45,7 +49,7 @@ module DependenciesHelper
     }
   end
 
-  def sbom_report_ingestion_errors(project)
-    project.latest_ingested_sbom_pipeline&.sbom_report_ingestion_errors || []
+  def sbom_report_ingestion_errors(pipeline)
+    pipeline&.sbom_report_ingestion_errors || []
   end
 end

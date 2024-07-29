@@ -15,44 +15,51 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
 
   describe '#project_dependencies_data' do
     let_it_be(:project) { build_stubbed(:project) }
+    let_it_be(:pipeline) { build_stubbed(:ci_pipeline, project: project) }
+
     let(:expected_sbom_reports_errors) { "[]" }
     let(:expectations) do
       {
         endpoint: "/#{project.full_path}/-/dependencies.json",
         export_endpoint: "/api/v4/projects/#{project.id}/dependency_list_exports",
         vulnerabilities_endpoint: "/api/v4/occurrences/vulnerabilities",
-        sbom_reports_errors: expected_sbom_reports_errors
+        sbom_reports_errors: expected_sbom_reports_errors,
+        latest_successful_scan_path: "/#{project.full_path}/-/pipelines/#{pipeline.id}",
+        scan_finished_at: pipeline.finished_at
       }
     end
 
     subject { helper.project_dependencies_data(project) }
 
+    before do
+      allow(project).to receive(:latest_ingested_sbom_pipeline).and_return(pipeline)
+    end
+
     it_behaves_like 'a helper method that returns shared dependencies data'
 
     it 'returns the exepected data' do
-      is_expected.to include(expectations)
+      is_expected.to include(**expectations)
     end
 
-    context 'with sbom pipeline' do
-      let(:sbom_pipeline) { build_stubbed(:ci_pipeline, project: project) }
+    context 'with sbom reports errors' do
+      let(:sbom_errors) { [["Unsupported CycloneDX spec version. Must be one of: 1.4, 1.5"]] }
+      let(:expected_sbom_reports_errors) { sbom_errors.to_json }
 
       before do
-        allow(project).to receive(:latest_ingested_sbom_pipeline).and_return(sbom_pipeline)
+        allow(pipeline).to receive(:sbom_report_ingestion_errors).and_return(sbom_errors)
       end
 
-      context 'without sbom reports errors' do
-        it { is_expected.to include(expectations) }
-      end
+      it { is_expected.to include(**expectations) }
+    end
 
-      context 'with sbom reports errors' do
-        let(:sbom_errors) { [["Unsupported CycloneDX spec version. Must be one of: 1.4, 1.5"]] }
-        let(:expected_sbom_reports_errors) { sbom_errors.to_json }
+    context 'when project does not have an sbom pipeline' do
+      let_it_be(:pipeline) { nil }
 
-        before do
-          allow(sbom_pipeline).to receive(:sbom_report_ingestion_errors).and_return(sbom_errors)
-        end
-
-        it { is_expected.to include(expectations) }
+      it 'returns nil values for pipeline keys' do
+        is_expected.to include(
+          latest_successful_scan_path: nil,
+          scan_finished_at: nil
+        )
       end
     end
   end
