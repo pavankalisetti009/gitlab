@@ -66,15 +66,17 @@ module Gitlab
           end
 
           def http_get(path, headers, query = {})
-            process_http_call { Gitlab::HTTP.get("#{base_url}/#{path}", query: query, headers: headers) }
+            request_headers = headers.with_defaults({ 'User-Agent' => Gitlab::Qa.user_agent }).compact
+
+            process_http_call { Gitlab::HTTP.get("#{base_url}/#{path}", query: query, headers: request_headers) }
           end
 
           def http_post(path, headers, params = {})
-            process_http_call { Gitlab::HTTP.post("#{base_url}/#{path}", body: params.to_json, headers: headers) }
-          end
+            request_headers = headers.with_defaults({ 'User-Agent' => Gitlab::Qa.user_agent }).compact
 
-          def http_put(path, headers, params = {})
-            process_http_call { Gitlab::HTTP.put("#{base_url}/#{path}", body: params.to_json, headers: headers) }
+            process_http_call do
+              Gitlab::HTTP.post("#{base_url}/#{path}", body: params.to_json, headers: request_headers)
+            end
           end
 
           def process_http_call
