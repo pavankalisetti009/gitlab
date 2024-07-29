@@ -258,7 +258,12 @@ export default {
 </script>
 
 <template>
-  <gl-loading-icon v-if="isLoading" size="lg" />
+  <div
+    v-if="isLoading"
+    class="gl-flex gl-items-center gl-justify-center issues-analytics-chart-loader"
+  >
+    <gl-loading-icon size="lg" />
+  </div>
   <gl-alert v-else-if="shouldShowError" variant="danger" :dismissible="false">
     {{ $options.i18n.errorMessage }}
   </gl-alert>

@@ -1,4 +1,4 @@
-import { GlLoadingIcon, GlTableLite } from '@gitlab/ui';
+import { GlSkeletonLoader, GlTableLite } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
@@ -75,8 +75,8 @@ describe('IssuesAnalyticsTable', () => {
       await nextTick();
     });
 
-    it('displays a loading icon', () => {
-      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(true);
+    it('displays a skeleton loader', () => {
+      expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(true);
     });
 
     it('does not display the table', () => {
@@ -91,7 +91,7 @@ describe('IssuesAnalyticsTable', () => {
     });
 
     it('hides the loading state', () => {
-      expect(wrapper.findComponent(GlLoadingIcon).exists()).toBe(false);
+      expect(wrapper.findComponent(GlSkeletonLoader).exists()).toBe(false);
     });
 
     it('displays the table', () => {
