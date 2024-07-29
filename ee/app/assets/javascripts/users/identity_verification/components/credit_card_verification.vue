@@ -1,11 +1,11 @@
 <script>
-import { GlButton, GlIcon } from '@gitlab/ui';
+import { GlButton, GlIcon, GlSprintf, GlLink } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
 import Zuora from 'ee/billings/components/zuora_simple.vue';
-import { I18N_GENERIC_ERROR, RELATED_TO_BANNED_USER } from '../constants';
+import { I18N_GENERIC_ERROR, RELATED_TO_BANNED_USER, CONTACT_SUPPORT_URL } from '../constants';
 import Captcha from './identity_verification_captcha.vue';
 
 export const EVENT_CATEGORY = 'IdentityVerification::CreditCard';
@@ -16,6 +16,8 @@ export default {
   components: {
     GlButton,
     GlIcon,
+    GlLink,
+    GlSprintf,
     Zuora,
     Captcha,
   },
@@ -138,14 +140,18 @@ export default {
     formInfo: s__(
       'IdentityVerification|GitLab will not charge or store your payment information, it will only be used for verification.',
     ),
+    contactSupport: s__(
+      'IdentityVerification|Having trouble? %{supportLinkStart}Contact support%{supportLinkEnd}.',
+    ),
     formSubmit: s__('IdentityVerification|Verify payment method'),
     verifyWithPhone: s__('IdentityVerification|Verify with a phone number instead?'),
   },
+  links: { contactSupportUrl: CONTACT_SUPPORT_URL },
   zuoraFormHeight: 328,
 };
 </script>
 <template>
-  <div class="gl-display-flex gl-flex-direction-column">
+  <div class="gl-flex gl-flex-col">
     <zuora
       ref="zuora"
       :current-user-id="currentUserId"
@@ -158,9 +164,22 @@ export default {
       @success="handleValidationSuccess"
     />
 
-    <div class="gl-display-flex gl-mt-4 gl-mx-4 gl-text-secondary">
-      <gl-icon class="gl-flex-shrink-0 gl-mt-2" name="information-o" :size="14" />
-      <span class="gl-ml-2">{{ $options.i18n.formInfo }}</span>
+    <div class="gl-flex gl-mt-4 gl-mx-4 gl-text-secondary gl-text-sm">
+      <gl-icon class="gl-flex-shrink-0 gl-mt-2 gl-mr-2" name="information-o" :size="14" />
+
+      <div>
+        <p class="gl-mb-2">{{ $options.i18n.formInfo }}</p>
+
+        <p class="gl-mb-2">
+          <gl-sprintf :message="$options.i18n.contactSupport">
+            <template #supportLink="{ content }">
+              <gl-link :href="$options.links.contactSupportUrl" target="_blank">{{
+                content
+              }}</gl-link>
+            </template>
+          </gl-sprintf>
+        </p>
+      </div>
     </div>
 
     <captcha
@@ -185,7 +204,7 @@ export default {
       v-if="offerPhoneNumberExemption"
       block
       variant="link"
-      class="gl-mt-5 gl-font-sm"
+      class="gl-mt-5 gl-text-sm"
       @click="$emit('exemptionRequested')"
       >{{ $options.i18n.verifyWithPhone }}</gl-button
     >

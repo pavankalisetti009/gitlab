@@ -16,6 +16,7 @@ import VerifyPhoneVerificationCode from 'ee/users/identity_verification/componen
 import {
   I18N_VERIFICATION_CODE_NAN_ERROR,
   I18N_VERIFICATION_CODE_BLANK_ERROR,
+  CONTACT_SUPPORT_URL,
 } from 'ee/users/identity_verification/constants';
 
 jest.mock('~/alert');
@@ -38,6 +39,7 @@ describe('Verify phone verification code input component', () => {
 
   const findVerifyCodeButton = () => wrapper.findByText('Verify phone number');
   const findGoBackLink = () => wrapper.findByText('enter a new phone number');
+  const findContactSupportLink = () => wrapper.findByTestId('contact-support-link');
 
   const enterCode = (value) => findVerificationCodeInput().vm.$emit('input', value);
   const submitForm = () => findForm().vm.$emit('submit', { preventDefault: jest.fn() });
@@ -78,6 +80,13 @@ describe('Verify phone verification code input component', () => {
   afterEach(() => {
     axiosMock.restore();
     createAlert.mockClear();
+  });
+
+  it('contains a link to contact support', () => {
+    expect(findContactSupportLink().attributes('href')).toEqual(CONTACT_SUPPORT_URL);
+    expect(wrapper.text()).toContain(
+      'Having trouble? Send a new code, enter a new phone number, or contact support.',
+    );
   });
 
   describe('Verification Code input field', () => {
@@ -160,6 +169,13 @@ describe('Verify phone verification code input component', () => {
         createComponent({
           props: { sendCodeAllowed: false, sendCodeAllowedAfter: '2000-01-01T01:02:03Z' },
         });
+      });
+
+      it('contains a link to contact support', () => {
+        expect(findContactSupportLink().attributes('href')).toEqual(CONTACT_SUPPORT_URL);
+        expect(wrapper.text()).toContain(
+          'Having trouble? Send a new code in , enter a new phone number, or contact support.',
+        );
       });
 
       it('renders the correct text and GlCountdown', () => {

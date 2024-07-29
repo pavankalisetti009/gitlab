@@ -26742,15 +26742,6 @@ msgstr ""
 msgid "IdentityVerification|Country or region"
 msgstr ""
 
-msgid "IdentityVerification|Didn't receive a code?"
-msgstr ""
-
-msgid "IdentityVerification|Didn't receive a code? %{codeLinkStart}Send a new code%{codeLinkEnd} or %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}"
-msgstr ""
-
-msgid "IdentityVerification|Didn't receive a code? Send a new code in %{timer} or %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}"
-msgstr ""
-
 msgid "IdentityVerification|Email update is only offered once."
 msgstr ""
 
@@ -26767,6 +26758,18 @@ msgid "IdentityVerification|For added security, you'll need to verify your ident
 msgstr ""
 
 msgid "IdentityVerification|GitLab will not charge or store your payment information, it will only be used for verification."
+msgstr ""
+
+msgid "IdentityVerification|Having trouble? %{codeLinkStart}Send a new code%{codeLinkEnd}, %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}, or %{supportLinkStart}contact support%{supportLinkEnd}."
+msgstr ""
+
+msgid "IdentityVerification|Having trouble? %{resendLinkStart}Send a new code%{resendLinkEnd} or %{supportLinkStart}contact support%{supportLinkEnd}."
+msgstr ""
+
+msgid "IdentityVerification|Having trouble? %{supportLinkStart}Contact support%{supportLinkEnd}."
+msgstr ""
+
+msgid "IdentityVerification|Having trouble? Send a new code in %{timer}, %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}, or %{supportLinkStart}contact support%{supportLinkEnd}."
 msgstr ""
 
 msgid "IdentityVerification|Help us keep GitLab secure"
@@ -26812,9 +26815,6 @@ msgid "IdentityVerification|Resend code"
 msgstr ""
 
 msgid "IdentityVerification|Select country or region"
-msgstr ""
-
-msgid "IdentityVerification|Send a new code"
 msgstr ""
 
 msgid "IdentityVerification|Send code"

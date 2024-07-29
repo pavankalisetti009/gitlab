@@ -1,5 +1,7 @@
 import { s__, sprintf } from '~/locale';
 
+export const CONTACT_SUPPORT_URL =
+  'https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=360000803379';
 // follows E.164 standard - https://en.wikipedia.org/wiki/E.164
 export const MAX_PHONE_NUMBER_LENGTH = 12;
 export const DEFAULT_COUNTRY = 'US';
