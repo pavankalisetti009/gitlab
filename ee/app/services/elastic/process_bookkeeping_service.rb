@@ -130,10 +130,7 @@ module Elastic
           association = object.association(association_name)
           scope = association.scope
           klass = association.klass
-
-          if klass == Note
-            scope = scope.searchable
-          end
+          scope = scope.searchable if [Note, Issue].include? klass
 
           yield klass, scope
         end
