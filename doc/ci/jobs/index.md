@@ -105,10 +105,6 @@ The job status order is:
 - skipped
 - created
 
-For example:
-
-![Pipeline mini graph sorting](img/pipelines_mini_graph_sorting.png)
-
 ## Job name limitations
 
 You can't use these keywords as job names:
