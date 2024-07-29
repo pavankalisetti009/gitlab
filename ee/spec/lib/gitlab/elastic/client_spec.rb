@@ -172,19 +172,16 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
       end
 
       before do
+        described_class.clear_memoization(:instance_credentials)
         allow_next_instance_of(Aws::CredentialProviderChain) do |instance|
           allow(instance).to receive(:resolve).and_return(credentials)
         end
       end
 
-      after do
-        described_class.clear_memoization(:instance_credentials)
-      end
-
       context 'when aws sdk provides credentials' do
         let(:credentials) { double(:aws_credentials, set?: true) }
 
-        it 'return the credentials', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/468573' do
+        it 'return the credentials' do
           expect(creds).to eq(credentials)
         end
       end
@@ -211,13 +208,10 @@ RSpec.describe Gitlab::Elastic::Client, feature_category: :global_search do
     let(:creds) { described_class.aws_credential_provider }
 
     before do
+      described_class.clear_memoization(:instance_credentials)
       allow_next_instance_of(Aws::CredentialProviderChain) do |instance|
         allow(instance).to receive(:resolve).and_return(credentials)
       end
-    end
-
-    after do
-      described_class.clear_memoization(:instance_credentials)
     end
 
     context 'when Aws::CredentialProviderChain returns set credentials' do
