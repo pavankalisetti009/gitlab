@@ -1,7 +1,7 @@
 <script>
 import {
   GlTableLite,
-  GlLoadingIcon,
+  GlSkeletonLoader,
   GlLink,
   GlIcon,
   GlAvatarLink,
@@ -42,7 +42,7 @@ export default {
   name: 'IssuesAnalyticsTable',
   components: {
     GlTableLite,
-    GlLoadingIcon,
+    GlSkeletonLoader,
     GlLink,
     GlIcon,
     GlAvatarLink,
@@ -201,7 +201,7 @@ export default {
 };
 </script>
 <template>
-  <gl-loading-icon v-if="isLoading" size="lg" />
+  <gl-skeleton-loader v-if="isLoading" :width="400" :lines="4" />
   <gl-table-lite
     v-else-if="shouldDisplayTable"
     :fields="$options.tableHeaderFields"
