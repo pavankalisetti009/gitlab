@@ -6,7 +6,7 @@ import { s__, sprintf } from '~/locale';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { validateVerificationCode } from '../validations';
-import { UNKNOWN_TELESIGN_ERROR } from '../constants';
+import { UNKNOWN_TELESIGN_ERROR, CONTACT_SUPPORT_URL } from '../constants';
 
 export default {
   name: 'VerifyPhoneVerificationCode',
@@ -24,14 +24,15 @@ export default {
     verificationCode: s__('IdentityVerification|Verification code'),
     description: s__("IdentityVerification|We've sent a verification code to +%{phoneNumber}"),
     noCode: s__(
-      "IdentityVerification|Didn't receive a code? %{codeLinkStart}Send a new code%{codeLinkEnd} or %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}",
+      'IdentityVerification|Having trouble? %{codeLinkStart}Send a new code%{codeLinkEnd}, %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}, or %{supportLinkStart}contact support%{supportLinkEnd}.',
     ),
     resendCodeIn: s__(
-      "IdentityVerification|Didn't receive a code? Send a new code in %{timer} or %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}",
+      'IdentityVerification|Having trouble? Send a new code in %{timer}, %{phoneLinkStart}enter a new phone number%{phoneLinkEnd}, or %{supportLinkStart}contact support%{supportLinkEnd}.',
     ),
     resendSuccess: s__('IdentityVerification|We sent a new code to +%{phoneNumber}'),
     verifyButton: s__('IdentityVerification|Verify phone number'),
   },
+  links: { contactSupportUrl: CONTACT_SUPPORT_URL },
   inject: ['phoneSendCodePath', 'phoneVerifyCodePath', 'phoneNumber'],
   props: {
     latestPhoneNumber: {
@@ -196,6 +197,14 @@ export default {
         <template #phoneLink="{ content }">
           <gl-link @click="goBack">{{ content }}</gl-link>
         </template>
+        <template #supportLink="{ content }">
+          <gl-link
+            :href="$options.links.contactSupportUrl"
+            target="_blank"
+            data-testid="contact-support-link"
+            >{{ content }}</gl-link
+          >
+        </template>
       </gl-sprintf>
       <gl-sprintf v-else :message="$options.i18n.resendCodeIn">
         <template #timer>
@@ -203,6 +212,14 @@ export default {
         </template>
         <template #phoneLink="{ content }">
           <gl-link @click="goBack">{{ content }}</gl-link>
+        </template>
+        <template #supportLink="{ content }">
+          <gl-link
+            :href="$options.links.contactSupportUrl"
+            target="_blank"
+            data-testid="contact-support-link"
+            >{{ content }}</gl-link
+          >
         </template>
       </gl-sprintf>
     </div>

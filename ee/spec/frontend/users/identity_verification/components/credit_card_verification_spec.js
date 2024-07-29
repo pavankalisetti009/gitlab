@@ -1,3 +1,4 @@
+import { GlSprintf, GlLink } from '@gitlab/ui';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
@@ -18,6 +19,7 @@ import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/h
 import {
   I18N_GENERIC_ERROR,
   RELATED_TO_BANNED_USER,
+  CONTACT_SUPPORT_URL,
 } from 'ee/users/identity_verification/constants';
 
 jest.mock('~/alert');
@@ -55,6 +57,7 @@ describe('CreditCardVerification', () => {
         Zuora: stubComponent(Zuora, {
           methods: { submit: zuoraSubmitSpy },
         }),
+        GlSprintf,
       },
     });
 
@@ -77,6 +80,8 @@ describe('CreditCardVerification', () => {
     expect(findZuora().exists()).toBe(true);
     expect(findSubmitButton().exists()).toBe(true);
     expect(findSubmitButton().props('disabled')).toBe(true);
+    expect(wrapper.text()).toContain('Having trouble? Contact support.');
+    expect(wrapper.findComponent(GlLink).attributes('href')).toEqual(CONTACT_SUPPORT_URL);
   });
 
   describe('when zuora emits success', () => {

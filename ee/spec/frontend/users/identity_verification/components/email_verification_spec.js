@@ -1,7 +1,7 @@
 import { GlForm, GlFormInput, GlButton, GlLink } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { s__ } from '~/locale';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
@@ -11,6 +11,7 @@ import {
   I18N_EMAIL_INVALID_CODE,
   I18N_GENERIC_ERROR,
   I18N_EMAIL_RESEND_SUCCESS,
+  CONTACT_SUPPORT_URL,
 } from 'ee/users/identity_verification/constants';
 
 jest.mock('~/alert');
@@ -28,7 +29,7 @@ describe('EmailVerification', () => {
   };
 
   const createComponent = () => {
-    wrapper = mount(EmailVerification, { provide: PROVIDE });
+    wrapper = mountExtended(EmailVerification, { provide: PROVIDE });
   };
 
   const findHeader = () => wrapper.find('p');
@@ -37,6 +38,7 @@ describe('EmailVerification', () => {
   const findSubmitButton = () => wrapper.findComponent(GlButton);
   const findErrorMessage = () => wrapper.find('.invalid-feedback');
   const findResendLink = () => wrapper.findComponent(GlLink);
+  const findContactSupportLink = () => wrapper.findByTestId('contact-support-link');
 
   const enterCode = (code) => findCodeInput().setValue(code);
   const submitForm = () => findForm().trigger('submit');
@@ -54,6 +56,11 @@ describe('EmailVerification', () => {
   describe('rendering the form', () => {
     it('contains the obfuscated email address', () => {
       expect(findHeader().text()).toContain(PROVIDE.email.obfuscated);
+    });
+
+    it('contains a link to contact support', () => {
+      expect(wrapper.text()).toContain('Having trouble? Send a new code or contact support.');
+      expect(findContactSupportLink().attributes('href')).toEqual(CONTACT_SUPPORT_URL);
     });
   });
 

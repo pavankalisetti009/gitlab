@@ -8,6 +8,7 @@ import {
   I18N_EMAIL_INVALID_CODE,
   I18N_GENERIC_ERROR,
   I18N_EMAIL_RESEND_SUCCESS,
+  CONTACT_SUPPORT_URL,
 } from '../constants';
 
 const SUCCESS_RESPONSE = 'success';
@@ -113,9 +114,13 @@ export default {
     ),
     header: s__("IdentityVerification|We've sent a verification code to %{email}"),
     code: s__('IdentityVerification|Verification code'),
-    noCode: s__("IdentityVerification|Didn't receive a code?"),
-    resend: s__('IdentityVerification|Send a new code'),
+    noCode: s__(
+      'IdentityVerification|Having trouble? %{resendLinkStart}Send a new code%{resendLinkEnd} or %{supportLinkStart}contact support%{supportLinkEnd}.',
+    ),
     verify: s__('IdentityVerification|Verify email address'),
+  },
+  links: {
+    contactSupportUrl: CONTACT_SUPPORT_URL,
   },
 };
 </script>
@@ -146,10 +151,21 @@ export default {
           trim
         />
       </gl-form-group>
-      <div class="gl-font-sm gl-text-secondary">
+      <div class="gl-text-sm gl-text-secondary">
         <gl-icon name="information-o" :size="12" />
-        {{ $options.i18n.noCode }}
-        <gl-link class="gl-font-sm" @click="resend"> {{ $options.i18n.resend }}</gl-link>
+        <gl-sprintf :message="$options.i18n.noCode">
+          <template #resendLink="{ content }">
+            <gl-link class="gl-text-sm" @click="resend">{{ content }}</gl-link>
+          </template>
+          <template #supportLink="{ content }">
+            <gl-link
+              :href="$options.links.contactSupportUrl"
+              target="_blank"
+              data-testid="contact-support-link"
+              >{{ content }}</gl-link
+            >
+          </template>
+        </gl-sprintf>
       </div>
       <gl-button
         class="gl-mt-5 gl-mb-3"
