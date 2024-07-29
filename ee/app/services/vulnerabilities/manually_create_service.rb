@@ -34,6 +34,7 @@ module Vulnerabilities
         finding.update!(vulnerability_id: vulnerability.id)
 
         vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
+        project.mark_as_vulnerable!
 
         Statistics::UpdateService.update_for(vulnerability)
 
