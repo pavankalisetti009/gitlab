@@ -498,7 +498,7 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       {
         track_action: 'click_button',
         track_label: 'start_trial',
-        testid: 'start-your-free-trial'
+        testid: 'start-your-free-trial-button'
       }
     end
 
