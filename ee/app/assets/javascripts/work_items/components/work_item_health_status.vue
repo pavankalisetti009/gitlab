@@ -12,6 +12,7 @@ import {
   I18N_WORK_ITEM_ERROR_UPDATING,
   sprintfWorkItem,
   TRACKING_CATEGORY_SHOW,
+  CLEAR_VALUE,
 } from '~/work_items/constants';
 import WorkItemSidebarDropdownWidget from '~/work_items/components/shared/work_item_sidebar_dropdown_widget.vue';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
@@ -99,7 +100,7 @@ export default {
           variables: {
             input: {
               fullPath: this.fullPath,
-              healthStatus,
+              healthStatus: healthStatus || CLEAR_VALUE,
               workItemType: this.workItemType,
             },
           },
