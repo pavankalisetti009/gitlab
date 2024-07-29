@@ -49,7 +49,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
           model_name = event_model.issuable_model.name.underscore.pluralize
           initial_events = event_model
             .order_by_end_event(:asc)
-            .sort_by(&:stage_event_hash_id) # items are grouped by stage_event_hash_id
+            .sort_by { |e| [e.stage_event_hash_id, e[event_model.issuable_id_column]] }
 
           cursor_data = {
             "#{model_name}_stage_event_hash_id": nil,
