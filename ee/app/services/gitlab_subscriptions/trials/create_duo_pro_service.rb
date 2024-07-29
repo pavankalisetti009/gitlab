@@ -70,6 +70,12 @@ module GitlabSubscriptions
       def track_event(action)
         Gitlab::InternalEvents.track_event(action, user: user, namespace: namespace)
       end
+
+      override :apply_trial_params
+      def apply_trial_params
+        # TODO: remove with duo_enterprise_trials cleanup
+        super.merge(user: user)
+      end
     end
   end
 end

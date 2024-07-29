@@ -113,11 +113,19 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(rendered).not_to have_link('Start a free Ultimate trial')
       end
 
-      it_behaves_like 'with duo pro component'
+      it_behaves_like 'without duo pro component'
+
+      context 'when duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it_behaves_like 'with duo pro component'
+      end
     end
 
     context 'with a paid plan' do
-      let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan) }
+      let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
 
       it 'renders the billing plans' do
         render

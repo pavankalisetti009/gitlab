@@ -77,8 +77,7 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
     end
 
     it 'tracks create group events' do
-      group = create(:group_with_plan, plan: :ultimate_plan)
-      group.add_owner(user)
+      group = create(:group_with_plan, plan: :premium_plan, owners: user)
 
       sign_in user
       visit new_trials_duo_pro_path(step: GitlabSubscriptions::Trials::CreateService::TRIAL)

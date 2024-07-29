@@ -19,7 +19,8 @@ module GitlabSubscriptions
     delegate :sprite_icon, to: :helpers
 
     def render?
-      GitlabSubscriptions::DuoPro.no_active_add_on_purchase_for_namespace?(namespace)
+      GitlabSubscriptions::DuoPro.namespace_eligible?(namespace, user) &&
+        GitlabSubscriptions::DuoPro.no_active_add_on_purchase_for_namespace?(namespace)
     end
 
     def hand_raise_lead_data

@@ -66,20 +66,6 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
     end
   end
 
-  shared_examples 'code_suggestions connect with sales' do
-    before do
-      visit page_path
-    end
-
-    it 'renders in-app hand raise lead for code suggestions' do
-      find_by_testid('code-suggestions-hand-raise-lead-button').click
-
-      fill_in_and_submit_hand_raise_lead(
-        user, namespace, glm_content: 'code-suggestions', product_interaction: 'Requested Contact-Duo Pro Add-On'
-      )
-    end
-  end
-
   shared_examples 'non-upgradable plan' do
     before do
       visit page_path
@@ -322,9 +308,25 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
         end
 
         it_behaves_like 'does not display the billing plans'
-        it_behaves_like 'code_suggestions connect with sales'
         it_behaves_like 'plan with subscription table'
         it_behaves_like 'subscription table with management buttons'
+      end
+
+      context 'on premium' do
+        let(:plan) { premium_plan }
+        let!(:subscription) { create(:gitlab_subscription, namespace: namespace, hosted_plan: plan, seats: 15) }
+
+        before do
+          visit page_path
+        end
+
+        it 'renders in-app hand raise lead for code suggestions' do
+          find_by_testid('code-suggestions-hand-raise-lead-button').click
+
+          fill_in_and_submit_hand_raise_lead(
+            user, namespace, glm_content: 'code-suggestions', product_interaction: 'Requested Contact-Duo Pro Add-On'
+          )
+        end
       end
 
       context 'on bronze' do
@@ -354,7 +356,6 @@ RSpec.describe 'Billing plan pages', :feature, :saas, :js, feature_category: :su
           end
         end
 
-        it_behaves_like 'code_suggestions connect with sales'
         it_behaves_like 'plan with subscription table'
       end
 

@@ -21,7 +21,11 @@ module Users
     def by_add_on(items)
       case add_on
       when :duo_pro
-        items.not_in_default_plan.not_duo_pro_or_no_add_on
+        if Feature.enabled?(:duo_enterprise_trials, user)
+          eligible_premium_namespaces(items)
+        else
+          eligible_non_free_namespaces(items)
+        end
       when :duo_enterprise
         items.in_specific_plans(GitlabSubscriptions::DuoEnterprise::ELIGIBLE_PLANS).not_duo_enterprise_or_no_add_on
       end
@@ -36,6 +40,14 @@ module Users
       else
         raise ArgumentError, "Unknown add_on: #{add_on}"
       end
+    end
+
+    def eligible_premium_namespaces(items)
+      items.in_specific_plans(GitlabSubscriptions::DuoPro::ELIGIBLE_PLAN).not_duo_pro_or_no_add_on
+    end
+
+    def eligible_non_free_namespaces(items)
+      items.not_in_default_plan.not_duo_pro_or_no_add_on
     end
   end
 end
