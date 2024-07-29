@@ -4,7 +4,6 @@ import { WIDGET, WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/co
 import TrialStatusWidget from 'ee/contextual_sidebar/components/trial_status_widget.vue';
 import { useMockLocationHelper } from 'helpers/mock_window_location_helper';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
-import { __ } from '~/locale';
 
 describe('TrialStatusWidget component', () => {
   let wrapper;
@@ -96,7 +95,7 @@ describe('TrialStatusWidget component', () => {
     it('renders the link', () => {
       wrapper = createComponent();
 
-      expect(wrapper.text()).toContain(__('Learn about features'));
+      expect(wrapper.text()).toContain('Learn about features');
       expect(findLearnAboutFeaturesBtn().exists()).toBe(true);
       expect(findLearnAboutFeaturesBtn().attributes('href')).toBe('discover-path');
     });

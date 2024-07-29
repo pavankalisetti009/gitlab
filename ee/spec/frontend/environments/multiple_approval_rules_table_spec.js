@@ -2,7 +2,6 @@ import { GlTableLite, GlAvatar, GlAvatarLink, GlFormRadio } from '@gitlab/ui';
 import mockDeploymentFixture from 'test_fixtures/graphql/environments/graphql/queries/deployment.query.graphql.json';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import MultipleApprovalRulesTable from 'ee/environments/components/multiple_approval_rules_table.vue';
-import { s__ } from '~/locale';
 import { stubComponent } from 'helpers/stub_component';
 
 describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
@@ -58,13 +57,13 @@ describe('ee/environments/components/multiple_approval_rules_table.vue', () => {
     });
 
     it('should show access level for maintainers', () => {
-      const cell = wrapper.findByRole('cell', { name: s__('DeploymentApprovals|Maintainers') });
+      const cell = wrapper.findByRole('cell', { name: 'Maintainers' });
       expect(cell.exists()).toBe(true);
     });
 
     it('should show access level for developers', () => {
       const cell = wrapper.findByRole('cell', {
-        name: s__('DeploymentApprovals|Developers + Maintainers'),
+        name: 'Developers + Maintainers',
       });
       expect(cell.exists()).toBe(true);
     });

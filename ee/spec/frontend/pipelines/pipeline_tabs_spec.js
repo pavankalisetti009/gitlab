@@ -4,7 +4,6 @@ import findingsQuery from 'ee/security_dashboard/graphql/queries/pipeline_findin
 import { dataset } from 'ee_jest/security_dashboard/mock_data/pipeline_report_dataset';
 import { createAlert } from '~/alert';
 import { HTTP_STATUS_FORBIDDEN, HTTP_STATUS_UNAUTHORIZED } from '~/lib/utils/http_status';
-import { __ } from '~/locale';
 
 const mockCeOptions = {
   foo: 'bar',
@@ -75,7 +74,7 @@ describe('createAppOptions', () => {
     const options = createAppOptions(`#${EL_ID}`, null);
 
     expect(createAlert).toHaveBeenCalledWith({
-      message: __("Unable to parse the vulnerability report's options."),
+      message: "Unable to parse the vulnerability report's options.",
       error: expect.any(Error),
     });
     expect(options).toMatchObject(mockCeOptions);

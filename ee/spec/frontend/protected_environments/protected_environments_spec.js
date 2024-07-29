@@ -3,7 +3,6 @@ import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { s__ } from '~/locale';
 import { state } from 'ee/protected_environments/store/edit/state';
 import ProtectedEnvironments from 'ee/protected_environments/protected_environments.vue';
 import CreateProtectedEnvironment from 'ee/protected_environments/create_protected_environment.vue';
@@ -109,9 +108,7 @@ describe('ee/protected_environments/protected_environments.vue', () => {
     it('shows a header with the title protected environments', async () => {
       await createComponent();
 
-      expect(wrapper.findByTestId('crud-title').text()).toContain(
-        s__('ProtectedEnvironments|Protected environments'),
-      );
+      expect(wrapper.findByTestId('crud-title').text()).toContain('Protected environments');
     });
 
     it('shows a header counting the number of protected environments', async () => {
@@ -163,7 +160,7 @@ describe('ee/protected_environments/protected_environments.vue', () => {
 
       await findEnvironmentButton(environment.name).trigger('click');
 
-      button = wrapper.findByRole('button', { name: s__('ProtectedEnvironments|Unprotect') });
+      button = wrapper.findByRole('button', { name: 'Unprotect' });
       modal = wrapper.findComponent(GlModal);
     });
 

@@ -1,6 +1,5 @@
 import { GlSprintf, GlCollapsibleListbox } from '@gitlab/ui';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
-import { __ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PolicyActionBuilder from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_action.vue';
 import ProjectDastProfileSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/project_dast_profile_selector.vue';
@@ -106,7 +105,7 @@ describe('PolicyActionBuilder', () => {
     expect(findActionSeperator().exists()).toBe(false);
     expect(findDropdown().props()).toMatchObject({
       selected: DEFAULT_SCANNER,
-      headerText: __('Select a scanner'),
+      headerText: 'Select a scanner',
     });
   });
 

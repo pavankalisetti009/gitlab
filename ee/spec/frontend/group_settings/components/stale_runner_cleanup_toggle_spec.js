@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import { GlToggle } from '@gitlab/ui';
 import VueApollo from 'vue-apollo';
-import { s__ } from '~/locale';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_via_gl_modal';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
@@ -119,7 +118,7 @@ describe('StaleRunnerCleanupToggle', () => {
 
   describe.each`
     count | message
-    ${0}  | ${s__('Runners|This group currently has no stale runners.')}
+    ${0}  | ${'This group currently has no stale runners.'}
     ${1}  | ${'1'}
     ${2}  | ${'2'}
   `('When there are $count stale runner(s)', ({ count, message }) => {

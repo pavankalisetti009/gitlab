@@ -6,7 +6,6 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { mockTracking } from 'helpers/tracking_helper';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { __ } from '~/locale';
 import { TRACKING_CATEGORY_SHOW } from '~/work_items/constants';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import { updateWorkItemMutationResponse } from 'jest/work_items/mock_data';
@@ -146,13 +145,13 @@ describe('WorkItemWeight component', () => {
     it('shows None when no weight is set', () => {
       createComponent();
 
-      expect(wrapper.text()).toContain(__('None'));
+      expect(wrapper.text()).toContain('None');
     });
 
     it('shows weight when weight is set', () => {
       createComponent({ weight: 4 });
 
-      expect(wrapper.text()).not.toContain(__('None'));
+      expect(wrapper.text()).not.toContain('None');
       expect(wrapper.text()).toContain('4');
     });
   });

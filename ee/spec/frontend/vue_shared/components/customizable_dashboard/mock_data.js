@@ -1,4 +1,3 @@
-import { __ } from '~/locale';
 import { getUniquePanelId } from 'ee/vue_shared/components/customizable_dashboard/utils';
 
 const cubeLineChart = {
@@ -33,14 +32,14 @@ export const dashboard = {
   userDefined: true,
   panels: [
     {
-      title: __('Test A'),
+      title: 'Test A',
       gridAttributes: { width: 3, height: 3 },
       visualization: cubeLineChart,
       queryOverrides: null,
       id: getUniquePanelId(),
     },
     {
-      title: __('Test B'),
+      title: 'Test B',
       gridAttributes: { width: 2, height: 4, minHeight: 2, minWidth: 2 },
       visualization: cubeLineChart,
       queryOverrides: {
@@ -58,7 +57,7 @@ export const builtinDashboard = {
   description: 'This is a built-in description',
   panels: [
     {
-      title: __('Test A'),
+      title: 'Test A',
       gridAttributes: { width: 3, height: 3 },
       visualization: cubeLineChart,
       queryOverrides: {},
@@ -73,7 +72,7 @@ export const betaDashboard = {
   status: 'beta',
   panels: [
     {
-      title: __('Test A'),
+      title: 'Test A',
       gridAttributes: { width: 3, height: 3 },
       visualization: cubeLineChart,
       queryOverrides: {},
@@ -89,7 +88,7 @@ export const mockDateRangeFilterChangePayload = {
 };
 
 export const mockPanel = {
-  title: __('Test A'),
+  title: 'Test A',
   gridAttributes: {
     width: 1,
     height: 2,

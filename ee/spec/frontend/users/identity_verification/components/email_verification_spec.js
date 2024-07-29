@@ -2,7 +2,6 @@ import { GlForm, GlFormInput, GlButton, GlLink } from '@gitlab/ui';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import { s__ } from '~/locale';
 import { createAlert, VARIANT_SUCCESS } from '~/alert';
 import { HTTP_STATUS_NOT_FOUND, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import EmailVerification from 'ee/users/identity_verification/components/email_verification.vue';
@@ -90,7 +89,7 @@ describe('EmailVerification', () => {
         ${'shows no error messages before submitting the form'}          | ${'123456'} | ${false} | ${true}   | ${false}   | ${''}
         ${'shows empty code error message when submitting the form'}     | ${''}       | ${true}  | ${false}  | ${true}    | ${I18N_EMAIL_EMPTY_CODE}
         ${'shows invalid error message when submitting the form'}        | ${'xxx'}    | ${true}  | ${false}  | ${true}    | ${I18N_EMAIL_INVALID_CODE}
-        ${'shows incorrect code error message returned from the server'} | ${'123456'} | ${true}  | ${true}   | ${true}    | ${s__('IdentityVerification|The code is incorrect. Enter it again, or send a new code.')}
+        ${'shows incorrect code error message returned from the server'} | ${'123456'} | ${true}  | ${true}   | ${true}    | ${'IdentityVerification|The code is incorrect. Enter it again, or send a new code.'}
       `(`$scenario with code $code`, async ({ code, submit, codeValid, errorShown, message }) => {
         enterCode(code);
 

@@ -13,7 +13,6 @@ import AddApprovers from 'ee/protected_environments/add_approvers.vue';
 import CreateProtectedEnvironment from 'ee/protected_environments/create_protected_environment.vue';
 import { HTTP_STATUS_BAD_REQUEST, HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
-import { __ } from '~/locale';
 
 const SEARCH_URL = '/search';
 const PROJECT_ID = '0';
@@ -121,7 +120,7 @@ describe('ee/protected_environments/create_protected_environment.vue', () => {
 
       expect(dropdown.props()).toMatchObject({
         accessLevel: ACCESS_LEVELS.DEPLOY,
-        label: __('Select users'),
+        label: 'Select users',
       });
     });
 
@@ -213,7 +212,7 @@ describe('ee/protected_environments/create_protected_environment.vue', () => {
 
       expect(dropdown.props()).toMatchObject({
         accessLevelsData,
-        label: __('Select users'),
+        label: 'Select users',
       });
     });
 

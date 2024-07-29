@@ -3,7 +3,6 @@ import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
-import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import waitForPromises from 'helpers/wait_for_promises';
 import { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
@@ -78,7 +77,7 @@ describe('IdentityVerificationWizard', () => {
     });
 
     it('displays the header', () => {
-      expect(findHeader().text()).toBe(s__('IdentityVerification|Help us keep GitLab secure'));
+      expect(findHeader().text()).toBe('Help us keep GitLab secure');
     });
 
     it('displays the description', () => {

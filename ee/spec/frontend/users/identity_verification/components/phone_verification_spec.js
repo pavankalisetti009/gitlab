@@ -2,7 +2,6 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { s__ } from '~/locale';
 import PhoneVerification from 'ee/users/identity_verification/components/phone_verification.vue';
 import InternationalPhoneInput from 'ee/users/identity_verification/components/international_phone_input.vue';
 import VerifyPhoneVerificationCode from 'ee/users/identity_verification/components/verify_phone_verification_code.vue';
@@ -35,8 +34,7 @@ describe('Phone Verification component', () => {
 
   const findInternationalPhoneInput = () => wrapper.findComponent(InternationalPhoneInput);
   const findVerifyCodeInput = () => wrapper.findComponent(VerifyPhoneVerificationCode);
-  const findPhoneExemptionLink = () =>
-    wrapper.findByText(s__('IdentityVerification|Verify with a credit card instead?'));
+  const findPhoneExemptionLink = () => wrapper.findByText('Verify with a credit card instead?');
 
   const findCaptcha = () => findInternationalPhoneInput().findComponent(Captcha);
 

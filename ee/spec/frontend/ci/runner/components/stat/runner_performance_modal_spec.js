@@ -2,7 +2,6 @@ import { GlCard, GlSprintf, GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { __ } from '~/locale';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
@@ -46,7 +45,7 @@ describe('RunnerPerformanceModal', () => {
     createComponent();
 
     expect(findModal().props()).toMatchObject({
-      actionCancel: { text: __('Cancel') },
+      actionCancel: { text: 'Cancel' },
       modalId: MOCK_MODAL_ID,
       noFocusOnShow: true,
       size: 'sm',

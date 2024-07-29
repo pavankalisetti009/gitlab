@@ -1,7 +1,6 @@
 import { GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import mockTimezones from 'test_fixtures/timezones/full.json';
-import { s__ } from '~/locale';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BaseRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/base_rule_component.vue';
 import ScheduleRuleComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/schedule_rule_component.vue';
@@ -18,7 +17,7 @@ import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 describe('ScheduleRuleComponent', () => {
   let wrapper;
-  const ruleLabel = s__('ScanExecutionPolicy|if');
+  const ruleLabel = 'ScanExecutionPolicy|if';
   const initRule = {
     type: SCAN_EXECUTION_SCHEDULE_RULE,
     branches: [],

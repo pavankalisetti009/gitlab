@@ -1,7 +1,6 @@
 import { GlIcon, GlBadge, GlButton, GlPopover, GlSprintf, GlLink } from '@gitlab/ui';
 import FeatureListItem from 'ee/analytics/analytics_dashboards/components/list/feature_list_item.vue';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
-import { __ } from '~/locale';
 import { RENDER_ALL_SLOTS_TEMPLATE, stubComponent } from 'helpers/stub_component';
 
 describe('FeatureListItem', () => {
@@ -55,7 +54,7 @@ describe('FeatureListItem', () => {
     });
 
     it('renders the button with default text', () => {
-      expect(findButton().text()).toBe(__('Set up'));
+      expect(findButton().text()).toBe('Set up');
     });
   });
 

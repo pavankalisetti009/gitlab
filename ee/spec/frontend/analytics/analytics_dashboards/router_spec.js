@@ -4,7 +4,6 @@ import AnalyticsDashboard from 'ee/analytics/analytics_dashboards/components/ana
 import ProductAnalyticsOnboardingView from 'ee/product_analytics/onboarding/onboarding_view.vue';
 import ProductAnalyticsOnboardingSetup from 'ee/product_analytics/onboarding/onboarding_setup.vue';
 import AnalyticsVisualizationDesigner from 'ee/analytics/analytics_dashboards/components/analytics_visualization_designer.vue';
-import { s__ } from '~/locale';
 
 describe('Dashboards list router', () => {
   const base = '/dashboard';
@@ -33,10 +32,10 @@ describe('Dashboards list router', () => {
 
     it.each`
       path                               | component                          | name
-      ${'/'}                             | ${DashboardsList}                  | ${s__('Analytics|Analytics dashboards')}
-      ${'/visualization-designer'}       | ${AnalyticsVisualizationDesigner}  | ${s__('Analytics|Visualization designer')}
-      ${'/product-analytics-onboarding'} | ${ProductAnalyticsOnboardingView}  | ${s__('ProductAnalytics|Product analytics onboarding')}
-      ${'/product-analytics-setup'}      | ${ProductAnalyticsOnboardingSetup} | ${s__('ProductAnalytics|Product analytics onboarding')}
+      ${'/'}                             | ${DashboardsList}                  | ${'Analytics dashboards'}
+      ${'/visualization-designer'}       | ${AnalyticsVisualizationDesigner}  | ${'Visualization designer'}
+      ${'/product-analytics-onboarding'} | ${ProductAnalyticsOnboardingView}  | ${'Product analytics onboarding'}
+      ${'/product-analytics-setup'}      | ${ProductAnalyticsOnboardingSetup} | ${'Product analytics onboarding'}
       ${'/test-dashboard-1'}             | ${AnalyticsDashboard}              | ${'Test dashboard 1'}
       ${'/test-dashboard-2'}             | ${AnalyticsDashboard}              | ${'Test dashboard 2'}
     `('sets component as $component.name for path "$path"', async ({ path, component, name }) => {

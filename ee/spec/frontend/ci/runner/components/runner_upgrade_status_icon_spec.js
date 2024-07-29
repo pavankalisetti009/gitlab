@@ -1,6 +1,5 @@
 import { GlIcon } from '@gitlab/ui';
 import { mount } from '@vue/test-utils';
-import { s__ } from '~/locale';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 
 import RunnerUpgradeStatusIcon from 'ee/ci/runner/components/runner_upgrade_status_icon.vue';
@@ -58,7 +57,7 @@ describe('RunnerUpgradeStatusIcon', () => {
         });
 
         expect(findIcon().props('name')).toBe('upgrade');
-        expect(getTooltipValue()).toBe(s__('Runners|An upgrade is available for this runner'));
+        expect(getTooltipValue()).toBe('An upgrade is available for this runner');
       });
 
       it('Displays upgrade recommended icon', () => {
@@ -69,7 +68,7 @@ describe('RunnerUpgradeStatusIcon', () => {
         });
 
         expect(findIcon().props('name')).toBe('upgrade');
-        expect(getTooltipValue()).toBe(s__('Runners|An upgrade is recommended for this runner'));
+        expect(getTooltipValue()).toBe('An upgrade is recommended for this runner');
       });
 
       it('Displays no icon', () => {

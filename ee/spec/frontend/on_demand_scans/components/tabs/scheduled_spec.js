@@ -15,7 +15,6 @@ import {
   LEARN_MORE_TEXT,
   MAX_DAST_PROFILES_COUNT,
 } from 'ee/on_demand_scans/constants';
-import { __, s__ } from '~/locale';
 import { stripTimezoneFromISODate } from '~/lib/utils/datetime/date_format_utility';
 import DastScanSchedule from 'ee/security_configuration/dast_profiles/components/dast_scan_schedule.vue';
 import { PROJECT_ON_DEMAND_SCAN_COUNTS_ETAG_MOCK } from '../../mocks';
@@ -89,12 +88,12 @@ describe('Scheduled tab', () => {
 
     expect(cloneDeep(findBaseTab().props())).toEqual({
       isActive: true,
-      title: __('Scheduled'),
+      title: 'Scheduled',
       itemsCount,
       maxItemsCount: MAX_DAST_PROFILES_COUNT,
       query: scheduledDastProfilesQuery,
       queryVariables: {},
-      emptyStateTitle: s__('OnDemandScans|There are no scheduled scans.'),
+      emptyStateTitle: 'There are no scheduled scans.',
       emptyStateText: LEARN_MORE_TEXT,
       fields: SCHEDULED_TAB_TABLE_FIELDS,
     });

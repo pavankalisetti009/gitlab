@@ -4,13 +4,12 @@ import Vue from 'vue';
 import { GlBreadcrumb } from '@gitlab/ui';
 import WorkspacesBreadcrumbs from 'ee/workspaces/user/components/workspaces_breadcrumbs.vue';
 import createRouter from 'ee/workspaces/user/router';
-import { s__ } from '~/locale';
 
 describe('workspaces/user/components/workspaces_breadcrumbs', () => {
   const base = '/-/remote_development/workspaces';
 
   const rootBreadcrumb = {
-    text: s__('Workspaces|Workspaces'),
+    text: 'Workspaces',
     to: 'index',
   };
 

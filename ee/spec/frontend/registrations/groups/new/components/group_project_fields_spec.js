@@ -13,7 +13,6 @@ import { DEFAULT_GROUP_PATH, DEFAULT_PROJECT_PATH } from 'ee/registrations/group
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { HTTP_STATUS_INTERNAL_SERVER_ERROR, HTTP_STATUS_OK } from '~/lib/utils/http_status';
-import { s__ } from '~/locale';
 import GitlabExperiment from '~/experimentation/components/gitlab_experiment.vue';
 
 jest.mock('~/alert');
@@ -143,7 +142,7 @@ describe('GroupProjectFields', () => {
         const tooltip = getBinding(findInputByTestId('group-name').element, 'gl-tooltip');
 
         expect(tooltip.value.placement).toBe('bottom');
-        expect(tooltip.value.title).toBe(s__('ProjectsNew|Projects are organized into groups'));
+        expect(tooltip.value.title).toBe('Projects are organized into groups');
       });
     });
 
@@ -158,7 +157,7 @@ describe('GroupProjectFields', () => {
         const tooltip = getBinding(findInputByTestId('group-name').element, 'gl-tooltip');
 
         expect(tooltip.value.placement).toBe('right');
-        expect(tooltip.value.title).toBe(s__('ProjectsNew|Projects are organized into groups'));
+        expect(tooltip.value.title).toBe('Projects are organized into groups');
       });
     });
   });
@@ -211,7 +210,7 @@ describe('GroupProjectFields', () => {
           await waitForPromises();
 
           expect(createAlert).toHaveBeenCalledWith({
-            message: s__('ProjectsNew|Unable to suggest a path. Please refresh and try again.'),
+            message: 'Unable to suggest a path. Please refresh and try again.',
           });
         });
       });
@@ -226,9 +225,7 @@ describe('GroupProjectFields', () => {
           await waitForPromises();
 
           expect(createAlert).toHaveBeenCalledWith({
-            message: s__(
-              'ProjectsNew|An error occurred while checking group path. Please refresh and try again.',
-            ),
+            message: 'An error occurred while checking group path. Please refresh and try again.',
           });
         });
       });
