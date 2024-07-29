@@ -78,15 +78,6 @@ export default {
       v-else-if="showProviderSetup"
       :loading-instance="loadingInstance"
       @initialized="onInitialized"
-      @error="
-        showError(
-          $event,
-          false,
-          s__(
-            'ProductAnalytics|An error occurred while fetching project settings. Refresh the page to try again.',
-          ),
-        )
-      "
     />
 
     <onboarding-setup

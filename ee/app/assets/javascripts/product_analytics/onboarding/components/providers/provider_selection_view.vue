@@ -1,5 +1,12 @@
 <script>
-import { GlEmptyState, GlLink, GlLoadingIcon, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
+import {
+  GlAlert,
+  GlEmptyState,
+  GlLink,
+  GlLoadingIcon,
+  GlSkeletonLoader,
+  GlSprintf,
+} from '@gitlab/ui';
 
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { setUrlFragment, visitUrl } from '~/lib/utils/url_utility';
@@ -13,6 +20,7 @@ export default {
   name: 'ProviderSelectionView',
   components: {
     GitlabManagedProviderCard,
+    GlAlert,
     GlEmptyState,
     GlLink,
     GlLoadingIcon,
@@ -36,6 +44,7 @@ export default {
       isInitializingInstance: this.loadingInstance,
       instanceInitializingSvgPath: null,
       projectLevelAnalyticsProviderSettings: null,
+      hasProjectSettingsError: false,
     };
   },
   computed: {
@@ -44,6 +53,9 @@ export default {
     },
     isLoadingSettings() {
       return this.$apollo.queries.projectLevelAnalyticsProviderSettings.loading;
+    },
+    isOptionsHeaderVisible() {
+      return this.canSelectGitlabManagedProvider && !this.hasProjectSettingsError;
     },
   },
   methods: {
@@ -89,11 +101,12 @@ export default {
         };
       },
       update(data) {
+        this.hasProjectSettingsError = false;
         const { __typename, ...projectSettings } = data?.project?.productAnalyticsSettings || {};
         return projectSettings;
       },
-      error(err) {
-        this.$emit('error', err);
+      error() {
+        this.hasProjectSettingsError = true;
       },
     },
   },
@@ -142,7 +155,7 @@ export default {
           </template>
         </gl-sprintf>
       </p>
-      <h2 v-if="canSelectGitlabManagedProvider">{{ __('Select an option') }}</h2>
+      <h2 v-if="isOptionsHeaderVisible">{{ __('Select an option') }}</h2>
       <div class="gl-display-flex gl-flex-wrap gl-md-flex-nowrap gl-gap-5">
         <template v-if="isLoadingSettings">
           <div class="gl-w-1/2">
@@ -153,7 +166,19 @@ export default {
           </div>
         </template>
 
-        <template v-else-if="projectLevelAnalyticsProviderSettings">
+        <gl-alert
+          v-else-if="hasProjectSettingsError"
+          variant="danger"
+          class="gl-w-full"
+          data-testid="provider-settings-error-alert"
+          >{{
+            s__(
+              'ProductAnalytics|An error occurred while fetching project settings. Refresh the page to try again.',
+            )
+          }}</gl-alert
+        >
+
+        <template v-else>
           <self-managed-provider-card
             :project-analytics-settings-path="projectAnalyticsSettingsPath"
             :project-settings="projectLevelAnalyticsProviderSettings"
