@@ -88,7 +88,15 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
         expect { execute }.to change { Ci::Pipeline.count }.by(1)
       end
 
-      it_behaves_like 'does not creates a throttled log entry'
+      it 'does not create a throttled log entry' do
+        # We expect some logs from Gitlab::Ci::Pipeline::CommandLogger,
+        # but no logs from create_throttled_log_entry
+        expect(Gitlab::AppJsonLogger).to receive(:info).with(
+          hash_including("class" => "Gitlab::Ci::Pipeline::CommandLogger")
+        )
+
+        execute
+      end
 
       it_behaves_like 'internal event tracking' do
         let(:event) { 'container_scanning_for_registry_pipeline' }
