@@ -254,7 +254,7 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       'milestones'     | nil        | false
       'notes'          | nil        | false
       'issues'         | 'labels'   | false
-      'merge_requests' | nil        | false
+      'merge_requests' | 'labels'   | :search_mr_filter_label_ids
       'wiki_blobs'     | nil        | false
       'commits'        | nil        | false
       'users'          | nil        | false

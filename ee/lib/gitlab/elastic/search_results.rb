@@ -287,6 +287,8 @@ module Gitlab
           blob_aggregations
         when 'issues'
           issue_aggregations
+        when 'merge_requests'
+          merge_request_aggregations
         else
           []
         end
@@ -485,6 +487,22 @@ module Gitlab
         ::Gitlab::Search::AggregationParser.call(results.aggregations)
       end
       strong_memoize_attr :issue_aggregations
+
+      def merge_request_aggregations
+        if Feature.enabled?(:search_mr_filter_label_ids, current_user) &&
+            ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
+          options = base_options.merge(aggregation: true, klass: MergeRequest)
+
+          merge_requests_query = ::Search::Elastic::MergeRequestQueryBuilder.build(query: query, options: options)
+          results = ::Gitlab::Search::Client.execute_search(query: merge_requests_query, options: options) do |response|
+            ::Search::Elastic::ResponseMapper.new(response, options)
+          end
+          ::Gitlab::Search::AggregationParser.call(results.aggregations)
+        else
+          []
+        end
+      end
+      strong_memoize_attr :merge_request_aggregations
 
       def merge_request_scope_options
         filters.slice(

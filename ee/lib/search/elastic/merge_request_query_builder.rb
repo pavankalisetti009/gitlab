@@ -32,6 +32,8 @@ module Search
         if Feature.enabled?(:search_mr_filter_label_ids, options[:current_user]) &&
             ::Elastic::DataMigrationService.migration_has_finished?(:reindex_merge_requests_to_backfill_label_ids)
           query_hash = ::Search::Elastic::Filters.by_label_ids(query_hash: query_hash, options: options)
+
+          return ::Search::Elastic::Aggregations.by_label_ids(query_hash: query_hash) if options[:aggregation]
         end
 
         query_hash = ::Search::Elastic::Formats.source_fields(query_hash: query_hash, options: options)
