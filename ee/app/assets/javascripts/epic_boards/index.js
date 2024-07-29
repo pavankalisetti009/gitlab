@@ -18,6 +18,38 @@ import { queryToObject } from '~/lib/utils/url_utility';
 
 Vue.use(VueApollo);
 
+defaultClient.cache.policies.addTypePolicies({
+  EpicList: {
+    fields: {
+      epics: {
+        keyArgs: ['filters'],
+      },
+    },
+  },
+  EpicConnection: {
+    merge(existing = { nodes: [] }, incoming, { args }) {
+      if (!args?.after) {
+        return incoming;
+      }
+      return {
+        ...incoming,
+        nodes: [...existing.nodes, ...incoming.nodes],
+      };
+    },
+  },
+  BoardEpicConnection: {
+    merge(existing = { nodes: [] }, incoming, { args }) {
+      if (!args.after) {
+        return incoming;
+      }
+      return {
+        ...incoming,
+        nodes: [...existing.nodes, ...incoming.nodes],
+      };
+    },
+  },
+});
+
 const apolloProvider = new VueApollo({
   defaultClient,
 });
