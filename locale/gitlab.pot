@@ -60177,6 +60177,9 @@ msgstr ""
 msgid "WorkItems|An error occurred while fetching children"
 msgstr ""
 
+msgid "WorkItems|Ancestors not available"
+msgstr ""
+
 msgid "WorkItem|%{count} more assignees"
 msgstr ""
 
@@ -60220,6 +60223,9 @@ msgid "WorkItem|All activity"
 msgstr ""
 
 msgid "WorkItem|Ancestor"
+msgstr ""
+
+msgid "WorkItem|Ancestor not available"
 msgstr ""
 
 msgid "WorkItem|Apricot"
@@ -60643,6 +60649,12 @@ msgid "WorkItem|Work items"
 msgstr ""
 
 msgid "WorkItem|Yes, close %{workItemType}"
+msgstr ""
+
+msgid "WorkItem|You don't have the necessary permission to view the ancestor."
+msgstr ""
+
+msgid "WorkItem|You don't have the necessary permission to view the ancestors."
 msgstr ""
 
 msgid "WorkItem|You're only seeing %{boldStart}other activity%{boldEnd} in the feed. To add a comment, switch to one of the following options."
