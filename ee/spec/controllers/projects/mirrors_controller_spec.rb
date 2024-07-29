@@ -169,14 +169,14 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
     context 'JSON' do
       it 'processes a successful update' do
-        do_put(project, { import_url: 'https://updated.example.com' }, format: :json)
+        do_put(project, { mirror: true, import_url: 'https://updated.example.com' }, format: :json)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(json_response['import_url']).to eq('https://updated.example.com')
       end
 
       it 'processes an unsuccessful update' do
-        do_put(project, { import_url: 'ftp://invalid.invalid' }, format: :json)
+        do_put(project, { mirror: true, import_url: 'ftp://invalid.invalid' }, format: :json)
 
         expect(response).to have_gitlab_http_status(:unprocessable_entity)
         expect(json_response['import_url'].first).to match(/is blocked/)
@@ -185,14 +185,14 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
       it "preserves the import_data object when the ID isn't in the request" do
         import_data_id = project.import_data.id
 
-        do_put(project, { import_data_attributes: { password: 'update' } }, format: :json)
+        do_put(project, { mirror: true, import_data_attributes: { password: 'update' } }, format: :json)
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(project.reload_import_data.id).to eq(import_data_id)
       end
 
       it 'sets ssh_known_hosts_verified_at and verified_by when the update sets known hosts' do
-        do_put(project, { import_data_attributes: { ssh_known_hosts: 'update' } }, format: :json)
+        do_put(project, { mirror: true, import_data_attributes: { ssh_known_hosts: 'update' } }, format: :json)
 
         expect(response).to have_gitlab_http_status(:ok)
 
@@ -204,7 +204,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
       it 'unsets ssh_known_hosts_verified_at and verified_by when the update unsets known hosts' do
         project.import_data.update!(ssh_known_hosts: 'foo')
 
-        do_put(project, { import_data_attributes: { ssh_known_hosts: '' } }, format: :json)
+        do_put(project, { mirror: true, import_data_attributes: { ssh_known_hosts: '' } }, format: :json)
 
         expect(response).to have_gitlab_http_status(:ok)
 
@@ -217,7 +217,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
         other_user = create(:user)
         project.add_maintainer(other_user)
 
-        do_put(project, { mirror_user_id: other_user.id }, format: :json)
+        do_put(project, { mirror: true, mirror_user_id: other_user.id }, format: :json)
 
         expect(project.reload.mirror_user).to eq(first_owner)
       end
@@ -225,7 +225,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
     context 'with a valid URL for a pull' do
       it 'processes a successful update' do
-        do_put(project, username_only_import_url: "https://updated.example.com")
+        do_put(project, mirror: true, username_only_import_url: "https://updated.example.com")
 
         expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
         expect(flash[:notice]).to match(/successfully updated/)
@@ -234,7 +234,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
     context 'with a invalid URL for a pull' do
       it 'processes an unsuccessful update' do
-        do_put(project, username_only_import_url: "ftp://invalid.invalid'")
+        do_put(project, mirror: true, username_only_import_url: "ftp://invalid.invalid'")
 
         expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
         expect(flash[:alert]).to match(/is blocked/)
@@ -243,7 +243,7 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
     context 'with an invalid port for a pull' do
       it 'processes an unsuccessful update' do
-        do_put(project, username_only_import_url: 'https://updated.example.com:wrong_port')
+        do_put(project, mirror: true, username_only_import_url: 'https://updated.example.com:wrong_port')
 
         expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
         expect(flash[:alert]).to match(/is blocked/)
@@ -252,14 +252,14 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
     context 'setting up project mirror branches setting' do
       it 'mirror all branches' do
-        do_put(project, only_mirror_protected_branches: false, mirror_branch_regex: nil)
+        do_put(project, mirror: true, only_mirror_protected_branches: false, mirror_branch_regex: nil)
         project.reload
         expect(project.only_mirror_protected_branches).to be_falsey
         expect(project.mirror_branch_regex).to be_nil
       end
 
       it 'enable mirror_branch_regex would ignore only_mirror_protected_branches' do
-        do_put(project, only_mirror_protected_branches: true, mirror_branch_regex: 'text')
+        do_put(project, mirror: true, only_mirror_protected_branches: true, mirror_branch_regex: 'text')
         project.reload
         expect(project.only_mirror_protected_branches).to be_falsey
         expect(project.mirror_branch_regex).to eq('text')
@@ -267,14 +267,14 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
 
       it 'enable mirror_branch_regex would disable only_protected_branches' do
         project.update!(only_mirror_protected_branches: true)
-        do_put(project, mirror_branch_regex: 'text')
+        do_put(project, mirror: true, mirror_branch_regex: 'text')
         project.reload
         expect(project.only_mirror_protected_branches).to be_falsey
         expect(project.mirror_branch_regex).to eq 'text'
       end
 
       it 'do not allow invalid regex' do
-        do_put(project, mirror_branch_regex: '\\')
+        do_put(project, mirror: true, mirror_branch_regex: '\\')
         expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
         expect(flash[:alert]).to match(/Project setting mirror branch regex not valid RE2 syntax: trailing/)
       end

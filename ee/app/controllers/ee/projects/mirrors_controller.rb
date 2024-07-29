@@ -6,6 +6,15 @@ module EE
       extend ::Gitlab::Utils::Override
       extend ActiveSupport::Concern
 
+      override :update
+      def update
+        if pull_mirror_change?
+          deprecated_pull_mirror_procedure
+        else
+          super
+        end
+      end
+
       override :update_now
       def update_now
         if params[:sync_remote]
@@ -30,6 +39,39 @@ module EE
       end
 
       private
+
+      def pull_mirror_change?
+        pull_mirror_update? || pull_mirror_destroy?
+      end
+
+      def pull_mirror_update?
+        ::Gitlab::Utils.to_boolean(safe_mirror_params['mirror'])
+      end
+
+      def pull_mirror_destroy?
+        ::Gitlab::Utils.to_boolean(safe_mirror_params['mirror']) == false
+      end
+
+      def deprecated_pull_mirror_procedure
+        result = ::Projects::UpdateService.new(project, current_user, safe_mirror_params).execute
+
+        if result[:status] == :success
+          flash[:notice] = notice_message
+        else
+          flash[:alert] = project.errors.full_messages.join(', ').html_safe # rubocop:disable Rails/OutputSafety -- Old code will be removed after refactoring
+        end
+
+        respond_to do |format|
+          format.html { redirect_to_repository_settings(project, anchor: 'js-push-remote-settings') }
+          format.json do
+            if project.errors.present?
+              render json: project.errors, status: :unprocessable_entity
+            else
+              render json: ProjectMirrorSerializer.new.represent(project)
+            end
+          end
+        end
+      end
 
       override :notice_message
       def notice_message
