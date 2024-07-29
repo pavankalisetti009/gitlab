@@ -1,6 +1,6 @@
 ---
 name: job_artifact_downloaded
-description: Triggered when a user download a job artifact from a project
+description: Triggered when a user downloads a job artifact from a project
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/250663
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/129608
 feature_category: build_artifacts
