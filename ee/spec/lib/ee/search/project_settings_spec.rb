@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe "Search results for settings", :js, feature_category: :global_search, type: :feature do
+RSpec.describe "Search results for project settings", :js, feature_category: :global_search, type: :feature do
   before do
     stub_licensed_features(
       issuable_default_templates: true,
@@ -16,5 +16,5 @@ RSpec.describe "Search results for settings", :js, feature_category: :global_sea
     )
   end
 
-  it_behaves_like 'all sections exist and have correct anchor links'
+  it_behaves_like 'all project settings sections exist and have correct anchor links'
 end

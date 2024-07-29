@@ -2,13 +2,13 @@
 
 module EE
   module Search
-    module Settings
+    module ProjectSettings
       extend ActiveSupport::Concern
 
       extend ::Gitlab::Utils::Override
 
-      override :project_general_settings
-      def project_general_settings(project)
+      override :general_settings
+      def general_settings
         return super unless project.licensed_feature_available?(:issuable_default_templates)
 
         super.concat [
@@ -17,8 +17,8 @@ module EE
         ]
       end
 
-      override :project_repository_settings
-      def project_repository_settings(project)
+      override :repository_settings
+      def repository_settings
         settings = super
 
         if project.licensed_feature_available?(:target_branch_rules)
@@ -40,8 +40,8 @@ module EE
         settings
       end
 
-      override :project_merge_request_settings
-      def project_merge_request_settings(project)
+      override :merge_request_settings
+      def merge_request_settings
         settings = super
 
         if project.licensed_feature_available?(:target_branch_rules)
@@ -61,8 +61,8 @@ module EE
         settings
       end
 
-      override :project_ci_cd_settings
-      def project_ci_cd_settings(project)
+      override :ci_cd_settings
+      def ci_cd_settings
         settings = super
 
         if project.licensed_feature_available?(:protected_environments)
@@ -89,8 +89,8 @@ module EE
         settings
       end
 
-      override :project_monitor_settings
-      def project_monitor_settings(project)
+      override :monitor_settings
+      def monitor_settings
         return super unless project.licensed_feature_available?(:status_page)
 
         super.concat [
