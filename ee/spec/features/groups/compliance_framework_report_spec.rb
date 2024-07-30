@@ -150,6 +150,19 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
             expect(page).not_to have_content(compliance_framework_for_bulk_action1.name)
           end
         end
+
+        context 'with export compliance frameworks report' do
+          it 'sends email successfully', :sidekiq_inline, :aggregate_failures do
+            visit group_security_compliance_dashboard_path(group, vueroute: :projects)
+            wait_for_requests
+            find_by_testid('export-icon').click
+            click_link('Export frameworks report')
+            wait_for_requests
+            export_email = ActionMailer::Base.deliveries.last
+            expect(export_email.to).to include(admin_user.email)
+            expect(export_email.subject).to include('Frameworks export')
+          end
+        end
       end
     end
 
