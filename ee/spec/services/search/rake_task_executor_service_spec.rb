@@ -280,22 +280,6 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
     end
 
-    context 'when epics are not in a standalone index' do
-      let(:counts) { [400, 1500, 10_000_000, 50_000_000, 100_000_000, 4_000] }
-      let(:counted_items) { described_class::CLASSES_TO_COUNT - [Epic] }
-
-      before do
-        allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
-          .with(:backfill_epics).and_return(false)
-      end
-
-      it 'does not include epics index in shard size estimates' do
-        expect(logger).not_to receive(:info).with(/gitlab-test-epics/)
-
-        service.execute(:estimate_shard_sizes)
-      end
-    end
-
     it 'outputs shard size estimates' do
       expected_work_items = <<~ESTIMATE
         - gitlab-test-work_items:

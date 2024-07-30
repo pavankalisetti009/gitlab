@@ -171,7 +171,6 @@ module Search
       klasses = CLASSES_TO_COUNT
 
       klasses -= [WorkItem] unless work_item_index_available?
-      klasses -= [Epic] unless ::Elastic::DataMigrationService.migration_has_finished?(:backfill_epics)
 
       counts = ::Gitlab::Database::Count.approximate_counts(klasses)
 

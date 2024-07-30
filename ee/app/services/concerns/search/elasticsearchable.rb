@@ -6,7 +6,6 @@ module Search
 
     def use_elasticsearch?
       return false if params[:basic_search]
-      return false unless advanced_epic_search?
 
       ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: elasticsearchable_scope)
     end
@@ -17,12 +16,6 @@ module Search
 
     def global_elasticsearchable_scope?
       SCOPES_ADVANCED_SEARCH_ALWAYS_ENABLED.include?(params[:scope])
-    end
-
-    def advanced_epic_search?
-      return true unless params[:scope] == 'epics'
-
-      ::Elastic::DataMigrationService.migration_has_finished?(:backfill_epics)
     end
   end
 end
