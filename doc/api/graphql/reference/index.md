@@ -13637,6 +13637,30 @@ The edge type for [`LinkedWorkItemType`](#linkedworkitemtype).
 | <a id="linkedworkitemtypeedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="linkedworkitemtypeedgenode"></a>`node` | [`LinkedWorkItemType`](#linkedworkitemtype) | The item at the end of the edge. |
 
+#### `MemberApprovalConnection`
+
+The connection type for [`MemberApproval`](#memberapproval).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="memberapprovalconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="memberapprovalconnectionedges"></a>`edges` | [`[MemberApprovalEdge]`](#memberapprovaledge) | A list of edges. |
+| <a id="memberapprovalconnectionnodes"></a>`nodes` | [`[MemberApproval]`](#memberapproval) | A list of nodes. |
+| <a id="memberapprovalconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `MemberApprovalEdge`
+
+The edge type for [`MemberApproval`](#memberapproval).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="memberapprovaledgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="memberapprovaledgenode"></a>`node` | [`MemberApproval`](#memberapproval) | The item at the end of the edge. |
+
 #### `MemberInterfaceConnection`
 
 The connection type for [`MemberInterface`](#memberinterface).
@@ -22192,6 +22216,7 @@ GPG signature for a signed commit.
 | <a id="grouppackagesettings"></a>`packageSettings` | [`PackageSettings`](#packagesettings) | Package settings for the namespace. |
 | <a id="groupparent"></a>`parent` | [`Group`](#group) | Parent group. |
 | <a id="grouppath"></a>`path` | [`String!`](#string) | Path of the namespace. |
+| <a id="grouppendingmemberapprovals"></a>`pendingMemberApprovals` **{warning-solid}** | [`MemberApprovalConnection`](#memberapprovalconnection) | **Introduced** in GitLab 17.3. **Status**: Experiment. Pending member promotions of the group. |
 | <a id="grouppendingmembers"></a>`pendingMembers` **{warning-solid}** | [`PendingGroupMemberConnection`](#pendinggroupmemberconnection) | **Introduced** in GitLab 16.6. **Status**: Experiment. A pending membership of a user within this group. |
 | <a id="grouppermanentdeletiondate"></a>`permanentDeletionDate` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Date when group will be deleted if delayed group deletion is enabled. |
 | <a id="groupproductanalyticsstoredeventslimit"></a>`productAnalyticsStoredEventsLimit` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 16.9. **Status**: Experiment. Number of product analytics events namespace is permitted to store per cycle. |
@@ -24662,6 +24687,25 @@ Maven metadata.
 | <a id="mavenmetadataid"></a>`id` | [`PackagesMavenMetadatumID!`](#packagesmavenmetadatumid) | ID of the metadatum. |
 | <a id="mavenmetadatapath"></a>`path` | [`String!`](#string) | Path of the Maven package. |
 | <a id="mavenmetadataupdatedat"></a>`updatedAt` | [`Time!`](#time) | Date of most recent update. |
+
+### `MemberApproval`
+
+Represents a Member Approval queued for role promotion.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="memberapprovalcreatedat"></a>`createdAt` | [`Time`](#time) | Timestamp when the member approval was created. |
+| <a id="memberapprovalmember"></a>`member` | [`MemberInterface`](#memberinterface) | Member associated with the member approval object. |
+| <a id="memberapprovalmemberroleid"></a>`memberRoleId` | [`ID`](#id) | ID of the member role. |
+| <a id="memberapprovalnewaccesslevel"></a>`newAccessLevel` | [`AccessLevel`](#accesslevel) | New GitLab::Access level requested for the member. |
+| <a id="memberapprovaloldaccesslevel"></a>`oldAccessLevel` | [`AccessLevel`](#accesslevel) | Existing GitLab::Access level for the member. |
+| <a id="memberapprovalrequestedby"></a>`requestedBy` | [`UserCore`](#usercore) | User who requested the member promotion. |
+| <a id="memberapprovalreviewedby"></a>`reviewedBy` | [`UserCore`](#usercore) | User who reviewed the member promotion. |
+| <a id="memberapprovalstatus"></a>`status` | [`String`](#string) | Status for the member approval request (approved, denied, pending). |
+| <a id="memberapprovalupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp when the member approval was last updated. |
+| <a id="memberapprovaluser"></a>`user` | [`UserCore`](#usercore) | User that is associated with the member approval object. |
 
 ### `MemberRole`
 
@@ -28244,6 +28288,7 @@ Project-level settings for product analytics provider.
 | <a id="projectpackagesprotectionrules"></a>`packagesProtectionRules` **{warning-solid}** | [`PackagesProtectionRuleConnection`](#packagesprotectionruleconnection) | **Introduced** in GitLab 16.6. **Status**: Experiment. Packages protection rules for the project. |
 | <a id="projectpath"></a>`path` | [`String!`](#string) | Path of the project. |
 | <a id="projectpathlocks"></a>`pathLocks` | [`PathLockConnection`](#pathlockconnection) | The project's path locks. (see [Connections](#connections)) |
+| <a id="projectpendingmemberapprovals"></a>`pendingMemberApprovals` **{warning-solid}** | [`MemberApprovalConnection`](#memberapprovalconnection) | **Introduced** in GitLab 17.3. **Status**: Experiment. Pending member promotions of the project. |
 | <a id="projectpermanentdeletiondate"></a>`permanentDeletionDate` **{warning-solid}** | [`String`](#string) | **Introduced** in GitLab 16.11. **Status**: Experiment. Date when project will be deleted if delayed project deletion is enabled. |
 | <a id="projectpipelineanalytics"></a>`pipelineAnalytics` | [`PipelineAnalytics`](#pipelineanalytics) | Pipeline analytics. |
 | <a id="projectpipelinetriggers"></a>`pipelineTriggers` **{warning-solid}** | [`PipelineTriggerConnection`](#pipelinetriggerconnection) | **Introduced** in GitLab 16.3. **Status**: Experiment. List of pipeline trigger tokens. |

@@ -300,6 +300,13 @@ module EE
           description: 'Date when group will be deleted if delayed group deletion is enabled.',
           alpha: { milestone: '16.11' }
 
+        field :pending_member_approvals,
+          EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
+          null: true,
+          alpha: { milestone: '17.3' },
+          resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
+          description: 'Pending member promotions of the group.'
+
         def billable_members_count(requested_hosted_plan: nil)
           object.billable_members_count(requested_hosted_plan)
         end
