@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { TABLE_TYPE_DEFAULT } from 'ee/billings/constants';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import * as types from './mutation_types';
@@ -24,13 +23,15 @@ export default {
 
     state.tables[stateTableKey].rows.forEach((row) => {
       row.columns.forEach((col) => {
+        const setValue = (source) => Object.assign(col, source);
+
         if (Object.prototype.hasOwnProperty.call(usage, col.id)) {
-          Vue.set(col, 'value', usage[col.id]);
+          setValue({ value: usage[col.id] });
           if (stateTableKey === TABLE_TYPE_DEFAULT) {
-            Vue.set(col, 'type', stateTableKey);
+            setValue({ type: stateTableKey });
           }
         } else if (Object.prototype.hasOwnProperty.call(billing, col.id)) {
-          Vue.set(col, 'value', billing[col.id]);
+          setValue({ value: billing[col.id] });
         }
       });
     });
