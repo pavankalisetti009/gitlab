@@ -22,6 +22,12 @@ module Types
         type: GraphQL::Types::String,
         null: false,
         description: 'External URL for the status check.'
+
+      field :hmac,
+        type: GraphQL::Types::Boolean,
+        null: false,
+        description: 'Whether or not HMAC secret is enabled for the status check.',
+        method: :hmac?
     end
   end
 end

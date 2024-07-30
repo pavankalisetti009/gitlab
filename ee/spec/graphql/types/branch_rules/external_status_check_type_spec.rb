@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSchema.types['ExternalStatusCheck'], feature_category: :source_code_management do
   subject { described_class }
 
-  let(:fields) { %i[id name external_url] }
+  let(:fields) { %i[id name external_url hmac] }
 
   it { expect(described_class).to require_graphql_authorizations(:read_external_status_check) }
 
