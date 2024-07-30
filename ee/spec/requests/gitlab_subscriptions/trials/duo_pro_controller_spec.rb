@@ -139,8 +139,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
     let(:trial_params) do
       {
         namespace_id: group_for_trial.id.to_s,
-        trial_entity: '_trial_entity_',
-        organization_id: anything
+        trial_entity: '_trial_entity_'
       }.with_indifferent_access
     end
 

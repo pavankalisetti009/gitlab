@@ -17,7 +17,7 @@ FactoryBot.define do
 
     trait :trial do
       trial { true }
-      expires_on { GitlabSubscriptions::Trials::DuoPro::DURATION.from_now }
+      expires_on { GitlabSubscriptions::Trials::AddOns::DURATION.from_now }
     end
 
     trait :active_trial do

@@ -15,7 +15,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
       { trial_user: lead_params(user, extra_lead_params) }
     end
 
-    let(:lead_service_class) { GitlabSubscriptions::Trials::CreateDuoProLeadService }
+    let(:lead_service_class) { GitlabSubscriptions::Trials::CreateAddOnLeadService }
     let(:apply_trial_service_class) { GitlabSubscriptions::Trials::ApplyDuoProService }
 
     before_all do
@@ -33,147 +33,22 @@ RSpec.describe GitlabSubscriptions::Trials::CreateDuoProService, feature_categor
     it_behaves_like 'with an unknown step'
     it_behaves_like 'with no step'
 
-    context 'for tracking the lead step', :clean_gitlab_redis_shared_state do
-      let_it_be(:namespace) do
-        create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user)
-      end
+    it_behaves_like 'for tracking the lead step', :premium_plan, :duo_pro
+    it_behaves_like 'for tracking the trial step', :premium_plan, :duo_pro
 
-      it 'tracks when lead creation is successful' do
+    it_behaves_like 'creating add-on when namespace_id is provided', :premium_plan, :ultimate_plan
+
+    context 'when feature flag duo_enterprise_trials is disabled and namespace_id is provided' do
+      let(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+      let(:trial_params) { { namespace_id: namespace.id.to_s } }
+
+      before do
         expect_create_lead_success(trial_user_params)
-        expect_apply_trial_fail(user, namespace, extra_params: existing_group_attrs(namespace))
-
-        expect { execute }.to trigger_internal_events(
-          'duo_pro_lead_creation_success'
-        ).with(user: user, category: 'InternalEventTracking')
-        .and trigger_internal_events(
-          'duo_pro_trial_registration_failure'
-        ).with(user: user, namespace: namespace, category: 'InternalEventTracking')
-        .and not_trigger_internal_events(
-          'duo_pro_trial_registration_success',
-          'duo_pro_lead_creation_failure'
-        ).and increment_usage_metrics(
-          'counts.count_total_duo_pro_lead_creation_success',
-          'counts.count_total_duo_pro_trial_registration_failure'
-        ).and not_increment_usage_metrics(
-          'counts.count_total_duo_pro_trial_registration_success',
-          'counts.count_total_duo_pro_lead_creation_failure'
-        )
+        expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
+        stub_feature_flags(duo_enterprise_trials: false)
       end
 
-      it 'tracks when lead creation fails' do
-        expect_create_lead_fail(trial_user_params)
-
-        expect { execute }.to trigger_internal_events(
-          'duo_pro_lead_creation_failure'
-        ).with(user: user, category: 'InternalEventTracking')
-        .and not_trigger_internal_events(
-          'duo_pro_lead_creation_success',
-          'duo_pro_trial_registration_failure',
-          'duo_pro_trial_registration_success'
-        ).and increment_usage_metrics(
-          'counts.count_total_duo_pro_lead_creation_failure'
-        ).and not_increment_usage_metrics(
-          'counts.count_total_duo_pro_lead_creation_success',
-          'counts.count_total_duo_pro_trial_registration_failure',
-          'counts.count_total_duo_pro_trial_registration_success'
-        )
-      end
-    end
-
-    context 'for tracking the trial step', :clean_gitlab_redis_shared_state do
-      let(:step) { described_class::TRIAL }
-      let_it_be(:namespace) do
-        create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user)
-      end
-
-      let(:namespace_id) { namespace.id.to_s }
-      let(:extra_params) { { trial_entity: '_entity_' } }
-      let(:trial_params) { { namespace_id: namespace_id }.merge(extra_params) }
-
-      it 'tracks when trial registration is successful' do
-        expect_apply_trial_success(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
-
-        expect { execute }.to trigger_internal_events(
-          'duo_pro_trial_registration_success'
-        ).with(user: user, namespace: namespace, category: 'InternalEventTracking')
-        .and not_trigger_internal_events(
-          'duo_pro_lead_creation_success',
-          'duo_pro_lead_creation_failure',
-          'duo_pro_trial_registration_failure'
-        ).and increment_usage_metrics(
-          'counts.count_total_duo_pro_trial_registration_success'
-        ).and not_increment_usage_metrics(
-          'counts.count_total_duo_pro_lead_creation_success',
-          'counts.count_total_duo_pro_lead_creation_failure'
-        )
-      end
-
-      it 'tracks when trial registration fails' do
-        expect_apply_trial_fail(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
-
-        expect { execute }.to trigger_internal_events(
-          'duo_pro_trial_registration_failure'
-        ).with(user: user, namespace: namespace, category: 'InternalEventTracking')
-        .and not_trigger_internal_events(
-          'duo_pro_lead_creation_success',
-          'duo_pro_lead_creation_failure',
-          'duo_pro_trial_registration_success'
-        ).and increment_usage_metrics(
-          'counts.count_total_duo_pro_trial_registration_failure'
-        ).and not_increment_usage_metrics(
-          'counts.count_total_duo_pro_lead_creation_success',
-          'counts.count_total_duo_pro_lead_creation_failure',
-          'counts.count_total_duo_pro_trial_registration_success'
-        )
-      end
-    end
-
-    context 'when namespace_id is provided' do
-      let_it_be(:ultimate_namespace) { create(:group_with_plan, plan: :ultimate_plan, name: 'gitlab_ul', owners: user) }
-
-      context 'when it is an eligible namespace' do
-        let_it_be(:namespace) { create(:group_with_plan, plan: :premium_plan, name: 'gitlab', owners: user) }
-        let(:trial_params) { { namespace_id: namespace.id.to_s } }
-
-        before do
-          expect_create_lead_success(trial_user_params)
-          expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
-        end
-
-        it { is_expected.to be_success }
-      end
-
-      context 'when feature flag duo_enterprise_trials is disabled' do
-        let(:namespace) { ultimate_namespace }
-        let(:trial_params) { { namespace_id: namespace.id.to_s } }
-
-        before do
-          expect_create_lead_success(trial_user_params)
-          expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
-          stub_feature_flags(duo_enterprise_trials: false)
-        end
-
-        it { is_expected.to be_success }
-      end
-
-      context 'when it is non existing namespace' do
-        let(:trial_params) { { namespace_id: non_existing_record_id.to_s } }
-
-        specify do
-          expect(execute).to be_error
-          expect(execute.reason).to eq(:not_found)
-        end
-      end
-
-      context 'when it is an ineligible namespace' do
-        let(:namespace) { ultimate_namespace }
-        let(:trial_params) { { namespace_id: namespace.id.to_s } }
-
-        specify do
-          expect(execute).to be_error
-          expect(execute.reason).to eq(:not_found)
-        end
-      end
+      it { is_expected.to be_success }
     end
   end
 

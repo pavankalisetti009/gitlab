@@ -47,7 +47,7 @@ module GitlabSubscriptions
             "add-on. You can now try GitLab Duo Pro for free for %{days} days, no credit card required."
         ),
         {
-          days: GitlabSubscriptions::Trials::DuoPro::DURATION_NUMBER
+          days: GitlabSubscriptions::Trials::AddOns::DURATION_NUMBER
         },
         tag_pair(duo_pro_info_link, :duoLinkStart, :duoLinkEnd)
       )

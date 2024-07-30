@@ -197,3 +197,169 @@ RSpec.shared_examples 'returns an error of not_found and does not create lead or
     expect(execute.reason).to eq(:not_found)
   end
 end
+
+RSpec.shared_examples 'for tracking the lead step' do |plan_name, add_on|
+  let_it_be(:namespace) do
+    create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
+  end
+
+  it 'tracks when lead creation is successful', :clean_gitlab_redis_shared_state do
+    expect_create_lead_success(trial_user_params)
+    expect_apply_trial_fail(user, namespace, extra_params: existing_group_attrs(namespace))
+
+    expect do
+      execute
+    end
+      .to(
+        trigger_internal_events("#{add_on}_lead_creation_success")
+          .with(user: user, category: 'InternalEventTracking')
+          .and(
+            trigger_internal_events("#{add_on}_trial_registration_failure")
+              .with(user: user, namespace: namespace, category: 'InternalEventTracking')
+              .and(
+                not_trigger_internal_events(
+                  "#{add_on}_trial_registration_success", "#{add_on}_lead_creation_failure"
+                )
+              )
+              .and(
+                increment_usage_metrics(
+                  "counts.count_total_#{add_on}_lead_creation_success",
+                  "counts.count_total_#{add_on}_trial_registration_failure"
+                )
+              )
+              .and(
+                not_increment_usage_metrics(
+                  "counts.count_total_#{add_on}_trial_registration_success",
+                  "counts.count_total_#{add_on}_lead_creation_failure"
+                )
+              )
+          )
+      )
+  end
+
+  it 'tracks when lead creation fails', :clean_gitlab_redis_shared_state do
+    expect_create_lead_fail(trial_user_params)
+
+    expect do
+      execute
+    end
+      .to(
+        trigger_internal_events("#{add_on}_lead_creation_failure")
+          .with(user: user, category: 'InternalEventTracking')
+          .and(
+            not_trigger_internal_events(
+              "#{add_on}_lead_creation_success",
+              "#{add_on}_trial_registration_failure",
+              "#{add_on}_trial_registration_success"
+            )
+          )
+          .and(increment_usage_metrics("counts.count_total_#{add_on}_lead_creation_failure"))
+          .and(
+            not_increment_usage_metrics(
+              "counts.count_total_#{add_on}_lead_creation_success",
+              "counts.count_total_#{add_on}_trial_registration_failure",
+              "counts.count_total_#{add_on}_trial_registration_success"
+            )
+          )
+      )
+  end
+end
+
+RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
+  let(:step) { described_class::TRIAL }
+  let_it_be(:namespace) do
+    create(:group_with_plan, plan: plan_name, name: 'gitlab', owners: user)
+  end
+
+  let(:namespace_id) { namespace.id.to_s }
+  let(:extra_params) { { trial_entity: '_entity_' } }
+  let(:trial_params) { { namespace_id: namespace_id }.merge(extra_params) }
+
+  it 'tracks when trial registration is successful', :clean_gitlab_redis_shared_state do
+    expect_apply_trial_success(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
+
+    expect do
+      execute
+    end
+      .to(
+        trigger_internal_events('duo_pro_trial_registration_success')
+          .with(user: user, namespace: namespace, category: 'InternalEventTracking')
+          .and(
+            not_trigger_internal_events(
+              "#{add_on}_lead_creation_success",
+              "#{add_on}_lead_creation_failure",
+              "#{add_on}_trial_registration_failure"
+            )
+          )
+          .and(increment_usage_metrics("counts.count_total_#{add_on}_trial_registration_success"))
+          .and(
+            not_increment_usage_metrics(
+              "counts.count_total_#{add_on}_lead_creation_success",
+              "counts.count_total_#{add_on}_lead_creation_failure"
+            )
+          )
+      )
+  end
+
+  it 'tracks when trial registration fails', :clean_gitlab_redis_shared_state do
+    expect_apply_trial_fail(user, namespace, extra_params: extra_params.merge(existing_group_attrs(namespace)))
+
+    expect do
+      execute
+    end
+      .to(
+        trigger_internal_events("#{add_on}_trial_registration_failure")
+          .with(user: user, namespace: namespace, category: 'InternalEventTracking')
+          .and(
+            not_trigger_internal_events(
+              "#{add_on}_lead_creation_success",
+              "#{add_on}_lead_creation_failure",
+              "#{add_on}_trial_registration_success"
+            )
+          )
+          .and(increment_usage_metrics("counts.count_total_#{add_on}_trial_registration_failure"))
+          .and(
+            not_increment_usage_metrics(
+              "counts.count_total_#{add_on}_lead_creation_success",
+              "counts.count_total_#{add_on}_lead_creation_failure",
+              "counts.count_total_#{add_on}_trial_registration_success"
+            )
+          )
+      )
+  end
+end
+
+RSpec.shared_examples 'creating add-on when namespace_id is provided' do |eligible_plan, ineligible_plan|
+  let_it_be(:ineligible_namespace) { create(:group_with_plan, plan: ineligible_plan, name: 'gitlab_ie', owners: user) }
+
+  context 'when it is an eligible namespace' do
+    let_it_be(:namespace) { create(:group_with_plan, plan: eligible_plan, name: 'gitlab', owners: user) }
+    let(:trial_params) { { namespace_id: namespace.id.to_s } }
+
+    before do
+      expect_create_lead_success(trial_user_params)
+      expect_apply_trial_success(user, namespace, extra_params: existing_group_attrs(namespace))
+    end
+
+    it { is_expected.to be_success }
+  end
+
+  context 'when it is non existing namespace' do
+    let(:trial_params) { { namespace_id: non_existing_record_id.to_s } }
+
+    specify do
+      expect(execute).to be_error
+      expect(execute.reason).to eq(:not_found)
+    end
+  end
+
+  context 'when it is an ineligible namespace' do
+    let(:namespace) { ineligible_namespace }
+    let(:trial_params) { { namespace_id: namespace.id.to_s } }
+
+    specify do
+      expect(execute).to be_error
+      expect(execute.reason).to eq(:not_found)
+    end
+  end
+end
