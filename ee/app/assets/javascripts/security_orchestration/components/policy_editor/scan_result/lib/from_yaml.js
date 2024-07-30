@@ -25,7 +25,13 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
        * the UI for new attributes may not be available.
        */
 
-      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'fallback_behavior'];
+      const primaryKeys = [
+        ...PRIMARY_POLICY_KEYS,
+        'rules',
+        'actions',
+        'approval_settings',
+        'fallback_behavior',
+      ];
 
       const rulesKeys = [
         'type',

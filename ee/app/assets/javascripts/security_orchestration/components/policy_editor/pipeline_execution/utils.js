@@ -1,5 +1,6 @@
 import { safeDump, safeLoad } from 'js-yaml';
 import { hasInvalidKey } from '../utils';
+import { PRIMARY_POLICY_KEYS } from '../constants';
 
 /*
   Construct a policy object expected by the policy editor from a yaml manifest.
@@ -16,15 +17,8 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
        * schema. These values should not be retrieved from the backend schema because
        * the UI for new attributes may not be available.
        */
-      const primaryKeys = [
-        'type',
-        'name',
-        'description',
-        'enabled',
-        'pipeline_config_strategy',
-        'policy_scope',
-        'content',
-      ];
+      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'pipeline_config_strategy', 'content'];
+
       const contentKeys = ['include'];
       const pipelineConfigStrategies = ['inject_ci', 'override_project_ci'];
 
