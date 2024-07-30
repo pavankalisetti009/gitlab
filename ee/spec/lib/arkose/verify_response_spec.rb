@@ -70,21 +70,6 @@ RSpec.describe Arkose::VerifyResponse, feature_category: :instance_resiliency do
     it { is_expected.to eq 'DENIED ACCESS' }
   end
 
-  describe '#email_intelligence_error' do
-    let(:error_message) { 'email intelligence not enabled on key' }
-    let(:json_response) { { 'email_intelligence' => { 'error' => error_message } } }
-
-    subject { described_class.new(json_response).email_intelligence_error }
-
-    it { is_expected.to eq 'email intelligence not enabled on key' }
-
-    context 'when there is no error' do
-      let(:json_response) { { 'email_intelligence' => {} } }
-
-      it { is_expected.to be_nil }
-    end
-  end
-
   describe '#challenge_solved?' do
     subject { described_class.new(json_response).challenge_solved? }
 
@@ -217,8 +202,6 @@ RSpec.describe Arkose::VerifyResponse, feature_category: :instance_resiliency do
         :country                       | 'AU'
         :is_bot                        | true
         :is_vpn                        | true
-        :detumbled_email_address       | 'exampleuser@gmail.com'
-        :email_risk_score              | 20
       end
 
       with_them do
