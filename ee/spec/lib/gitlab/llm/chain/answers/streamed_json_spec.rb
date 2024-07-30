@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-# require 'fast_spec_helper' -- this no longer runs under fast_spec_helper
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo_chat do
@@ -34,17 +33,24 @@ RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo
 
     context "when streaming beginning of the answer" do
       let(:chunk) do
-        {
-          type: "final_answer_delta",
-          data: {
-            thought: "Thought: I should provide a direct response.",
-            text: "I"
-          }
-        }.to_json
+        { type: "final_answer_delta", data: { text: "I" } }.to_json
       end
 
       it 'returns stream payload' do
         is_expected.to eq({ id: 1, content: "I" })
+      end
+    end
+
+    context "when streaming multiple chunks of final answer" do
+      let(:chunk) do
+        [
+          { type: "final_answer_delta", data: { text: "Hello" } },
+          { type: "final_answer_delta", data: { text: " there" } }
+        ].map(&:to_json).join("\n")
+      end
+
+      it 'returns stream payload' do
+        is_expected.to eq({ id: 1, content: "Hello there" })
       end
     end
   end

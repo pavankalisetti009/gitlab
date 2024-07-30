@@ -17,16 +17,15 @@ RSpec.describe Gitlab::Llm::Chain::Parsers::SingleActionParser, feature_category
           {
             type: "final_answer_delta",
             data: {
-              thought: "Thought: I don't need any specific GitLab resources to answer this.",
               text: "To"
             }
           },
-          { type: "final_answer_delta", data: { thought: "", text: " perform" } },
-          { type: "final_answer_delta", data: { thought: "", text: " a" } },
-          { type: "final_answer_delta", data: { thought: "", text: " Git" } },
-          { type: "final_answer_delta", data: { thought: "", text: " re" } },
-          { type: "final_answer_delta", data: { thought: "", text: "base" } },
-          { type: "final_answer_delta", data: { thought: "", text: "," } }
+          { type: "final_answer_delta", data: { text: " perform" } },
+          { type: "final_answer_delta", data: { text: " a" } },
+          { type: "final_answer_delta", data: { text: " Git" } },
+          { type: "final_answer_delta", data: { text: " re" } },
+          { type: "final_answer_delta", data: { text: "base" } },
+          { type: "final_answer_delta", data: { text: "," } }
         ]
       end
 

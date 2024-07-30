@@ -143,8 +143,6 @@ module Gitlab
             }
           end
 
-          # TODO: remove issue condition when next issue is implemented
-          # https://gitlab.com/gitlab-org/gitlab/-/issues/468905
           def current_resource_type
             context.current_page_type
           rescue ArgumentError
