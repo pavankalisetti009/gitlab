@@ -27,6 +27,28 @@ RSpec.describe API::Notes, :aggregate_failures, feature_category: :portfolio_man
       let(:note) { epic_note }
     end
 
+    context 'when epic is locked' do
+      let(:params) { { body: 'hi!' } }
+
+      before do
+        epic.work_item.update!(discussion_locked: true)
+      end
+
+      it 'creates a new note when user is a group member' do
+        post api("/groups/#{group.id}/epics/#{epic.id}/notes", user), params: params
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['body']).to eq('hi!')
+        expect(json_response['author']['username']).to eq(user.username)
+      end
+
+      it 'does not create a new note when user is not a group member' do
+        post api("/groups/#{group.id}/epics/#{epic.id}/notes", private_user), params: params
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
     context 'when issue was promoted to epic' do
       let!(:promoted_issue_epic) { create(:epic, group: group, author: owner, created_at: 1.day.ago) }
       let!(:owner) { create(:group_member, :owner, user: create(:user), group: group).user }

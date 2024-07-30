@@ -359,6 +359,45 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
       end
     end
 
+    context 'when epic is locked' do
+      let_it_be(:group) { create(:group, :public) }
+      let_it_be(:epic) do
+        create(:work_item, :epic_with_legacy_epic, namespace: group, discussion_locked: true).synced_epic
+      end
+
+      context 'user who is not a group member' do
+        it_behaves_like 'cannot comment on epics'
+        it_behaves_like 'cannot edit epic comments'
+      end
+
+      context 'user who is guest' do
+        before do
+          group.add_guest(user)
+        end
+
+        it_behaves_like 'can comment on epics'
+        it_behaves_like 'cannot edit epic comments'
+      end
+
+      context 'user who is reporter' do
+        before do
+          group.add_reporter(user)
+        end
+
+        it_behaves_like 'can comment on epics'
+        it_behaves_like 'cannot edit epic comments'
+      end
+
+      context 'when user is maintainer' do
+        before do
+          group.add_maintainer(user)
+        end
+
+        it_behaves_like 'can comment on epics'
+        it_behaves_like 'can edit epic comments'
+      end
+    end
+
     context 'when related_epics feature is not available' do
       let(:group) { create(:group) }
 
