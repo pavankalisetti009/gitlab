@@ -12773,9 +12773,6 @@ msgstr ""
 msgid "Code Quality scans found %{findings}."
 msgstr ""
 
-msgid "Code Review"
-msgstr ""
-
 msgid "Code block"
 msgstr ""
 
@@ -32732,9 +32729,6 @@ msgstr ""
 msgid "Merge Request"
 msgstr ""
 
-msgid "Merge Request Analytics"
-msgstr ""
-
 msgid "Merge Requests"
 msgstr ""
 
@@ -44615,9 +44609,6 @@ msgid "RepositoriesAnalytics|There was an error fetching the projects."
 msgstr ""
 
 msgid "Repository"
-msgstr ""
-
-msgid "Repository Analytics"
 msgstr ""
 
 msgid "Repository Graph"

@@ -5,6 +5,7 @@ import ThroughputChart from 'ee/analytics/merge_request_analytics/components/thr
 import ThroughputTable from 'ee/analytics/merge_request_analytics/components/throughput_table.vue';
 import DateRange from '~/analytics/shared/components/daterange.vue';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 
 describe('MergeRequestAnalyticsApp', () => {
   let wrapper;
@@ -23,9 +24,9 @@ describe('MergeRequestAnalyticsApp', () => {
   });
 
   it('displays the page title', () => {
-    const pageTitle = wrapper.find('[data-testid="pageTitle"').text();
+    const pageTitle = wrapper.findComponent(PageHeading).props('heading');
 
-    expect(pageTitle).toBe('Merge Request Analytics');
+    expect(pageTitle).toBe('Merge request analytics');
   });
 
   it('displays the filter bar component', () => {

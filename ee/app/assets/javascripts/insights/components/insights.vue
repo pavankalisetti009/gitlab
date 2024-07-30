@@ -11,6 +11,7 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import {
   EMPTY_STATE_TITLE,
   EMPTY_STATE_DESCRIPTION,
@@ -23,6 +24,7 @@ import InsightsPage from './insights_page.vue';
 
 export default {
   components: {
+    PageHeading,
     GlAlert,
     GlLoadingIcon,
     InsightsPage,
@@ -139,16 +141,16 @@ export default {
 </script>
 <template>
   <div class="insights-container gl-mt-3">
-    <div class="gl-mb-5">
-      <h3>{{ __('Insights') }}</h3>
-    </div>
-    <p>
-      <gl-sprintf :message="$options.i18n.insightsConfigurationText">
-        <template #link="{ content }">
-          <gl-link :href="$options.insightsDocumentationLink">{{ content }}</gl-link>
-        </template>
-      </gl-sprintf>
-    </p>
+    <page-heading :heading="__('Insights')">
+      <template #description>
+        <gl-sprintf :message="$options.i18n.insightsConfigurationText">
+          <template #link="{ content }">
+            <gl-link :href="$options.insightsDocumentationLink">{{ content }}</gl-link>
+          </template>
+        </gl-sprintf>
+      </template>
+    </page-heading>
+
     <div v-if="configLoading" class="insights-config-loading gl-text-center">
       <gl-loading-icon :inline="true" size="lg" />
     </div>

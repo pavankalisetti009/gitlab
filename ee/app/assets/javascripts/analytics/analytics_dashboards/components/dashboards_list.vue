@@ -4,6 +4,7 @@ import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import getAllCustomizableDashboardsQuery from '../graphql/queries/get_all_customizable_dashboards.query.graphql';
 import DashboardListItem from './list/dashboard_list_item.vue';
 
@@ -16,6 +17,7 @@ const ONBOARDING_FEATURE_COMPONENTS = {
 export default {
   name: 'DashboardsList',
   components: {
+    PageHeading,
     GlButton,
     GlLink,
     GlAlert,
@@ -140,23 +142,19 @@ export default {
 
 <template>
   <div>
-    <header
-      class="gl-display-flex gl-justify-content-space-between gl-lg-flex-direction-row gl-flex-direction-column gl-align-items-flex-start gl-my-6"
-    >
-      <div>
-        <h2 class="gl-mt-0" data-testid="title">{{ s__('Analytics|Analytics dashboards') }}</h2>
-        <p data-testid="description" class="gl-mb-0">
-          {{
-            isProject
-              ? s__('Analytics|Dashboards are created by editing the projects dashboard files.')
-              : s__('Analytics|Dashboards are created by editing the groups dashboard files.')
-          }}
-          <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{
-            __('Learn more.')
-          }}</gl-link>
-        </p>
-      </div>
-      <div v-if="showVizDesignerButton || showNewDashboardButton">
+    <page-heading :heading="s__('Analytics|Analytics dashboards')">
+      <template #description>
+        {{
+          isProject
+            ? s__('Analytics|Dashboards are created by editing the projects dashboard files.')
+            : s__('Analytics|Dashboards are created by editing the groups dashboard files.')
+        }}
+        <gl-link data-testid="help-link" :href="$options.helpPageUrl">{{
+          __('Learn more.')
+        }}</gl-link>
+      </template>
+
+      <template v-if="showVizDesignerButton || showNewDashboardButton" #actions>
         <gl-button
           v-if="showVizDesignerButton"
           to="visualization-designer"
@@ -172,8 +170,8 @@ export default {
         >
           {{ s__('Analytics|New dashboard') }}
         </router-link>
-      </div>
-    </header>
+      </template>
+    </page-heading>
     <gl-alert
       v-if="showCustomDashboardSetupBanner"
       :dismissible="false"

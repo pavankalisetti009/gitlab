@@ -9,6 +9,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { InternalEvents } from '~/tracking';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -38,8 +39,8 @@ describe('DashboardsList', () => {
   const findListItems = () => wrapper.findAllComponents(DashboardListItem);
   const findListLoadingSkeletons = () => wrapper.findAllComponents(GlSkeletonLoader);
   const findProductAnalyticsOnboarding = () => wrapper.findComponent(ProductAnalyticsOnboarding);
-  const findPageTitle = () => wrapper.findByTestId('title');
-  const findPageDescription = () => wrapper.findByTestId('description');
+  const findPageTitle = () => wrapper.findByTestId('page-heading');
+  const findPageDescription = () => wrapper.findByTestId('page-heading-description');
   const findHelpLink = () => wrapper.findByTestId('help-link');
   const findNewDashboardButton = () => wrapper.findByTestId('new-dashboard-button');
   const findVisualizationDesignerButton = () =>
@@ -63,6 +64,7 @@ describe('DashboardsList', () => {
       apolloProvider: mockApollo,
       stubs: {
         RouterLink: true,
+        PageHeading,
       },
       mocks: {
         $router,
