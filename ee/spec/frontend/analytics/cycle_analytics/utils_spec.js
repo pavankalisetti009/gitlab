@@ -216,7 +216,7 @@ describe('Value Stream Analytics utils', () => {
 
       const formattedDurationOverviewChartData = [
         ['2023-04-01', null],
-        ['2023-04-02', 3],
+        ['2023-04-02', 259200],
         ['2023-04-03', 0],
       ];
 
@@ -283,7 +283,7 @@ describe('Value Stream Analytics utils', () => {
         name: 'Issue',
         data: [
           ['2019-01-01', null],
-          ['2019-01-02', 3],
+          ['2019-01-02', 259200],
         ],
       },
       {

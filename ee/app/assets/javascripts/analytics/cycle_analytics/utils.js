@@ -7,7 +7,7 @@ import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { medianTimeToParsedSeconds } from '~/analytics/cycle_analytics/utils';
 import { createAlert } from '~/alert';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { newDate, dayAfter, secondsToDays, getDatesInRange } from '~/lib/utils/datetime_utility';
+import { newDate, dayAfter, getDatesInRange } from '~/lib/utils/datetime_utility';
 import { isNumeric } from '~/lib/utils/number_utils';
 import {
   HTTP_STATUS_FORBIDDEN,
@@ -209,10 +209,9 @@ export const getDurationChartData = (data, startDate, endDate) => {
     if (!valuesForDay.length) {
       eventData.push([currentISODate, null]);
     } else {
-      const averagedData =
+      const averagedDataInSeconds =
         valuesForDay.reduce((total, value) => total + value, 0) / valuesForDay.length;
-      const averagedDataInDays = secondsToDays(averagedData);
-      eventData.push([currentISODate, averagedDataInDays]);
+      eventData.push([currentISODate, averagedDataInSeconds]);
     }
   }
 
@@ -263,7 +262,7 @@ export const formatDurationOverviewChartData = (data, groupedDataByDay) => {
       return [currentISODate, isNonNullSeries ? 0 : null];
     }
 
-    return [currentISODate, secondsToDays(value)];
+    return [currentISODate, value];
   });
 };
 

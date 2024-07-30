@@ -463,7 +463,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
     it 'will have data available' do
       duration_overview_chart = find_by_testid('vsa-duration-overview-chart')
       expect(duration_overview_chart).not_to have_text(_("There is no data available. Please change your selection."))
-      expect(duration_overview_chart).to have_text(s_('CycleAnalytics|Average time to completion (days)'))
+      expect(duration_overview_chart).to have_text(s_('CycleAnalytics|Average time to completion'))
 
       tasks_by_type_chart_content = page.find('.js-tasks-by-type-chart')
       expect(tasks_by_type_chart_content).not_to have_text(_("There is no data available. Please change your selection."))

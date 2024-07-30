@@ -327,8 +327,8 @@ export const flattenedDurationData = [
 ];
 
 export const durationChartPlottableData = [
-  ['2019-01-01', 17],
-  ['2019-01-02', 40],
+  ['2019-01-01', 1503333.3333333333],
+  ['2019-01-02', 3425666.6666666665],
 ];
 
 export const pathNavIssueMetric = 172800;
@@ -375,15 +375,15 @@ export const durationOverviewChartPlottableData = [
   {
     name: 'Issue',
     data: [
-      ['2019-01-01', 13],
-      ['2019-01-02', 27],
+      ['2019-01-01', 1134000],
+      ['2019-01-02', 2321000],
     ],
   },
   {
     name: 'Plan',
     data: [
-      ['2019-01-01', 25],
-      ['2019-01-02', 42],
+      ['2019-01-01', 2142000],
+      ['2019-01-02', 3635000],
     ],
   },
 ];

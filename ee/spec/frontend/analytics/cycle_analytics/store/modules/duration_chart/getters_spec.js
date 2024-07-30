@@ -13,8 +13,8 @@ const rootState = {
 describe('DurationChart getters', () => {
   const [selectedStage] = transformedDurationData;
   const selectedStageDurationData = [
-    ['2019-01-01', 13],
-    ['2019-01-02', 27],
+    ['2019-01-01', 1134000],
+    ['2019-01-02', 2321000],
   ];
 
   const stateWithDurationData = {
