@@ -19004,9 +19004,6 @@ msgid_plural "Diffs|%d deletions"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "Diffs|Expand all lines"
-msgstr ""
-
 msgid "Diffs|Hide whitespace changes"
 msgstr ""
 
@@ -21633,6 +21630,9 @@ msgid "Expand all"
 msgstr ""
 
 msgid "Expand all files"
+msgstr ""
+
+msgid "Expand all lines"
 msgstr ""
 
 msgid "Expand eligible approvers"
@@ -59224,9 +59224,6 @@ msgid "Vulnerability|What is code flow?"
 msgstr ""
 
 msgid "Vulnerability|You can also %{message}."
-msgstr ""
-
-msgid "Vulnerability|code area"
 msgstr ""
 
 msgid "Vulnerability|code_flow"
