@@ -20086,12 +20086,6 @@ msgstr ""
 msgid "Enable GitLab Prometheus metrics endpoint"
 msgstr ""
 
-msgid "Enable Gitpod"
-msgstr ""
-
-msgid "Enable Gitpod?"
-msgstr ""
-
 msgid "Enable Invisible Captcha during sign up"
 msgstr ""
 
@@ -24215,9 +24209,6 @@ msgid "Gitpod|Gitpod URL"
 msgstr ""
 
 msgid "Gitpod|The URL to your Gitpod instance configured to read your GitLab projects, such as https://gitpod.example.com."
-msgstr ""
-
-msgid "Gitpod|To use Gitpod you must first enable the feature in the integrations section of your %{linkStart}user preferences%{linkEnd}."
 msgstr ""
 
 msgid "Gitpod|To use the integration, each user must also enable Gitpod on their GitLab account. %{help_link_start}How do I enable it?%{help_link_end}"
