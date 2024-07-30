@@ -88,16 +88,12 @@ RSpec.describe Dashboard::Operations::ListService, feature_category: :continuous
         end
 
         context 'with alerts' do
-          let(:alert_prd1) { create(:prometheus_alert, project: project, environment: production) }
-          let(:alert_prd2) { create(:prometheus_alert, project: project, environment: production) }
-          let(:alert_stg) { create(:prometheus_alert, project: project, environment: staging) }
-
           let!(:alert_events) do
             [
-              create(:alert_management_alert, prometheus_alert: alert_prd1, environment: production, project: project),
-              create(:alert_management_alert, prometheus_alert: alert_prd2, environment: production, project: project),
-              create(:alert_management_alert, prometheus_alert: alert_stg, environment: staging, project: project),
-              create(:alert_management_alert, :resolved, prometheus_alert: alert_prd2, environment: production, project: project)
+              create(:alert_management_alert, environment: production, project: project),
+              create(:alert_management_alert, environment: production, project: project),
+              create(:alert_management_alert, environment: staging, project: project),
+              create(:alert_management_alert, :resolved, environment: production, project: project)
             ]
           end
 
@@ -111,8 +107,7 @@ RSpec.describe Dashboard::Operations::ListService, feature_category: :continuous
             before do
               project2 = create(:project)
               production2 = create(:environment, name: 'production', project: project2)
-              alert2_prd = create(:prometheus_alert, project: project2, environment: production2)
-              create(:alert_management_alert, prometheus_alert: alert2_prd, environment: production2, project: project2)
+              create(:alert_management_alert, environment: production2, project: project2)
 
               user.ops_dashboard_projects << project2
 
