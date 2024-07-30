@@ -20360,9 +20360,6 @@ msgstr ""
 msgid "Enter the following to confirm:"
 msgstr ""
 
-msgid "Enter the number of seconds, or other human-readable input, like \"1 hour\". This timeout takes precedence over lower timeouts set for the project."
-msgstr ""
-
 msgid "Enter the password for password-protected Elasticsearch servers."
 msgstr ""
 
@@ -27818,9 +27815,6 @@ msgid "Index root namespaces automatically"
 msgstr ""
 
 msgid "Indexing status"
-msgstr ""
-
-msgid "Indicates whether this runner can pick jobs without tags"
 msgstr ""
 
 msgid "Indirect"
@@ -38226,9 +38220,6 @@ msgstr ""
 msgid "Paused"
 msgstr ""
 
-msgid "Paused runners don't accept new jobs"
-msgstr ""
-
 msgid "Peer review by"
 msgstr ""
 
@@ -46196,12 +46187,6 @@ msgstr ""
 msgid "Runners|This runner has not run any jobs."
 msgstr ""
 
-msgid "Runners|This runner is associated with specific projects."
-msgstr ""
-
-msgid "Runners|This runner is available to all projects and subgroups in a group."
-msgstr ""
-
 msgid "Runners|This runner is outdated, an upgrade is recommended"
 msgstr ""
 
@@ -46265,9 +46250,6 @@ msgstr ""
 msgid "Runners|Usage (min)"
 msgstr ""
 
-msgid "Runners|Use Group runners when you want all projects in a group to have access to a set of runners."
-msgstr ""
-
 msgid "Runners|Use Terraform to create the required infrastructure in Google Cloud, install GitLab Runner, and register it to this GitLab project."
 msgstr ""
 
@@ -46323,9 +46305,6 @@ msgid "Runners|Yes, disable instance runners"
 msgstr ""
 
 msgid "Runners|Yes, start deleting stale runners"
-msgstr ""
-
-msgid "Runners|You can set up a project runner to be used by multiple projects but you cannot make this an instance or group runner."
 msgstr ""
 
 msgid "Runners|You have used %{quotaUsed} out of %{quotaLimit} of your instance runners compute minutes."
@@ -54750,9 +54729,6 @@ msgstr ""
 msgid "This resource has no inactive %{accessTokenTypePlural}."
 msgstr ""
 
-msgid "This runner will only run on pipelines triggered on protected branches"
-msgstr ""
-
 msgid "This setting can be overridden in each project."
 msgstr ""
 
@@ -59860,9 +59836,6 @@ msgstr ""
 msgid "When a deployment job is successful, prevent older deployment jobs that are still pending."
 msgstr ""
 
-msgid "When a runner is locked, it cannot be assigned to other projects"
-msgstr ""
-
 msgid "When all the merge checks for this merge request pass, it will %{linkStart}automatically merge%{linkEnd}."
 msgstr ""
 
@@ -61294,9 +61267,6 @@ msgid "You can only transfer the project to namespaces you manage."
 msgstr ""
 
 msgid "You can resolve the merge conflict using either the Interactive mode, by choosing %{use_ours} or %{use_theirs} buttons, or by editing the files directly. Commit these changes into %{branch_name}."
-msgstr ""
-
-msgid "You can set up jobs to only use runners with specific tags. Separate tags with commas."
 msgstr ""
 
 msgid "You can specify notification level per group or per project."
