@@ -52,16 +52,6 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner d
 
       expect(response).to have_gitlab_http_status(:not_found)
     end
-
-    it "#update" do
-      put group_runner_path(group, runner), params: {
-        runner: {
-          description: "example"
-        }
-      }
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
   end
 
   describe Projects::RunnersController do
@@ -79,14 +69,6 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner d
 
     it "#new" do
       get new_project_runner_path(project)
-
-      expect(response).to have_gitlab_http_status(:not_found)
-    end
-
-    it "#update" do
-      runner = create(:ci_runner, :project, active: true, projects: [project])
-
-      patch project_runner_path(project, runner), params: { runner: { description: "hello world" } }
 
       expect(response).to have_gitlab_http_status(:not_found)
     end

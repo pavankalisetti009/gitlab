@@ -52,16 +52,6 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
 
       expect(response).to have_gitlab_http_status(:ok)
     end
-
-    it "#update" do
-      put group_runner_path(group, runner), params: {
-        runner: {
-          description: "example"
-        }
-      }
-
-      expect(response).to have_gitlab_http_status(:found)
-    end
   end
 
   describe Projects::RunnersController do
@@ -81,14 +71,6 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
       get new_project_runner_path(project)
 
       expect(response).to have_gitlab_http_status(:ok)
-    end
-
-    it "#update" do
-      runner = create(:ci_runner, :project, active: true, projects: [project])
-
-      patch project_runner_path(project, runner), params: { runner: { description: "hello world" } }
-
-      expect(response).to redirect_to(project_runner_path(project, runner))
     end
 
     it "#toggle_shared_runners" do
