@@ -45,11 +45,10 @@ export default {
 <template>
   <settings-block
     id="js-merge-request-approval-settings"
+    :title="$options.i18n.groupSettingsHeader"
     :default-expanded="defaultExpanded"
-    :large-title="false"
     data-testid="merge-request-approval-settings"
   >
-    <template #title> {{ $options.i18n.groupSettingsHeader }}</template>
     <template #description>
       <gl-sprintf :message="$options.i18n.groupSettingsDescription">
         <template #separationLink="{ content }">

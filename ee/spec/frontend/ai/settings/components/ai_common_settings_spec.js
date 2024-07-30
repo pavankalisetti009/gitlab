@@ -21,11 +21,10 @@ describe('AiCommonSettings', () => {
   });
 
   it('passes props to settings-block component', () => {
-    createComponent({ largeTitle: true });
+    createComponent();
     expect(findSettingsBlock().props()).toEqual({
       defaultExpanded: false,
       id: null,
-      largeTitle: true,
       title: 'GitLab Duo features',
     });
   });
