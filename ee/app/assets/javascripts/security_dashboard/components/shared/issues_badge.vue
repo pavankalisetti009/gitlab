@@ -35,7 +35,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-inline-block">
+  <div class="gl-inline-block">
     <gl-badge ref="issueBadge" icon="issues" class="gl-px-3">
       {{ numberOfIssues }}
     </gl-badge>
@@ -43,7 +43,7 @@ export default {
       <template #title>
         {{ popoverTitle }}
       </template>
-      <ul class="gl-list-none gl-p-0 gl-m-0">
+      <ul class="gl-m-0 gl-list-none gl-p-0">
         <li v-for="{ issue } in issues" :key="issue.iid">
           <issue-link :issue="issue" :is-jira="isJira" />
         </li>

@@ -51,8 +51,8 @@ export default {
       <template #title>
         <span>{{ s__('AutoRemediation| 1 Merge Request') }}</span>
       </template>
-      <ul class="gl-list-none gl-pl-0 gl-mb-0">
-        <li class="gl-align-items-center gl-display-flex gl-mb-2">
+      <ul class="gl-mb-0 gl-list-none gl-pl-0">
+        <li class="gl-mb-2 gl-flex gl-items-center">
           <gl-icon
             :name="getIcon(mergeRequest.state)"
             :size="16"
