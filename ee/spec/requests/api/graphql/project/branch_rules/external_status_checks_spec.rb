@@ -69,6 +69,8 @@ RSpec.describe 'getting external status checks for a branch rule', feature_categ
         expect(external_status_check_data['name']).to eq(external_status_check.name)
 
         expect(external_status_check_data['externalUrl']).to eq(external_status_check.external_url)
+
+        expect(external_status_check_data['hmac']).to eq(external_status_check.hmac?)
       end
     end
   end

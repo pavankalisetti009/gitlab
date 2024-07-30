@@ -146,7 +146,8 @@ RSpec.describe 'getting list of branch rules for a project', feature_category: :
             expect(external_checks_data).to eq([{
               'id' => all_branches_external_status_check.to_global_id.to_s,
               'name' => all_branches_external_status_check.name,
-              'externalUrl' => all_branches_external_status_check.external_url
+              'externalUrl' => all_branches_external_status_check.external_url,
+              'hmac' => false
             }])
             expect(all_protected_branches_rule_data).to include(
               'id' => all_protected_branches_rule.to_global_id.to_s,
