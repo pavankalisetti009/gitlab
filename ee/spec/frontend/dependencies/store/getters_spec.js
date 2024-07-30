@@ -23,7 +23,6 @@ describe('Dependencies getters', () => {
     getterName
     ${'isJobFailed'}
     ${'isIncomplete'}
-    ${'hasNoDependencies'}
   `('$getterName', ({ getterName }) => {
     it(`delegates to the current list module's ${getterName} getter`, () => {
       const mockValue = {};

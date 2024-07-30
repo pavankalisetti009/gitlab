@@ -101,7 +101,7 @@ describe('DependenciesApp component', () => {
   const findHeader = () => wrapper.find('section > header');
   const findExportButton = () => wrapper.findByTestId('export');
   const findHeaderHelpLink = () => findHeader().findComponent(GlLink);
-  const findHeaderJobLink = () => wrapper.findComponent({ ref: 'jobLink' });
+  const findHeaderScanLink = () => wrapper.findComponent({ ref: 'scanLink' });
   const findTimeAgoMessage = () => wrapper.findByTestId('time-ago-message');
 
   const expectComponentWithProps = (Component, props = {}) => {
@@ -285,20 +285,20 @@ describe('DependenciesApp component', () => {
           await nextTick();
         });
 
-        it('does not show a link to the latest job', () => {
-          expect(findHeaderJobLink().exists()).toBe(false);
+        it('does not show a link to the latest scan', () => {
+          expect(findHeaderScanLink().exists()).toBe(false);
         });
 
-        it('does not show when the last job ran', () => {
+        it('does not show when the last scan ran', () => {
           expect(findTimeAgoMessage().exists()).toBe(false);
         });
       });
 
-      it('shows a link to the latest job', () => {
-        expect(findHeaderJobLink().attributes('href')).toBe('/group/project/-/pipelines/1');
+      it('shows a link to the latest scan', () => {
+        expect(findHeaderScanLink().attributes('href')).toBe('/group/project/-/pipelines/1');
       });
 
-      it('shows when the last job ran', () => {
+      it('shows when the last scan ran', () => {
         expect(findTimeAgoMessage().text()).toBe('• 1 week ago');
       });
 
@@ -327,12 +327,12 @@ describe('DependenciesApp component', () => {
           expectHeader();
         });
 
-        it('does not show when the last job ran', () => {
+        it('does not show when the last scan ran', () => {
           expect(findHeader().text()).not.toContain('1 week ago');
         });
 
-        it('does not show a link to the latest job', () => {
-          expect(findHeaderJobLink().exists()).toBe(false);
+        it('does not show a link to the latest scan', () => {
+          expect(findHeaderScanLink().exists()).toBe(false);
         });
       });
     });

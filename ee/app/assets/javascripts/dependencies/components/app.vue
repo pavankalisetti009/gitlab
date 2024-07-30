@@ -8,9 +8,9 @@ import {
   GlLink,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { getTimeago } from '~/lib/utils/datetime_utility';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapGetters, mapState } from 'vuex';
+import { getTimeago } from '~/lib/utils/datetime_utility';
 import { __, s__ } from '~/locale';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
@@ -64,13 +64,7 @@ export default {
   },
   computed: {
     ...mapState(['currentList', 'listTypes']),
-    ...mapGetters([
-      'isInitialized',
-      'isJobFailed',
-      'isIncomplete',
-      'reportInfo',
-      'totals',
-    ]),
+    ...mapGetters(['isInitialized', 'isJobFailed', 'isIncomplete', 'reportInfo', 'totals']),
     ...mapState(DEPENDENCY_LIST_TYPES.all.namespace, ['pageInfo']),
     ...mapState({
       fetchingInProgress(state) {
@@ -208,7 +202,7 @@ export default {
             <template #link="{ content }">
               <gl-link
                 v-if="latestSuccessfulScanPath"
-                ref="jobLink"
+                ref="scanLink"
                 :href="latestSuccessfulScanPath"
                 >{{ content }}</gl-link
               >
