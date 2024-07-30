@@ -4688,4 +4688,12 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect { mark_as_vulnerable! }.to change { project.project_setting.has_vulnerabilities }.to(true)
     end
   end
+
+  describe '#compliance_management_frameworks_names' do
+    let_it_be(:project) { create(:project, :with_multiple_compliance_frameworks) }
+
+    it 'returns names of all compliance frameworks' do
+      expect(project.compliance_management_frameworks_names).to contain_exactly('SOX', 'GDPR')
+    end
+  end
 end
