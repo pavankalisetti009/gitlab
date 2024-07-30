@@ -106,9 +106,12 @@ export default {
     <template #cell(mr_details)="items">
       <div class="gl-flex flex-column flex-grow align-items-end align-items-sm-start">
         <div class="gl-max-w-34 str-truncated my-2">
-          <gl-link :href="items.item.web_url" target="_blank" class="font-weight-bold text-plain">{{
-            items.item.title
-          }}</gl-link>
+          <gl-link
+            :href="items.item.web_url"
+            target="_blank"
+            class="gl-font-bold gl-text-default hover:gl-text-default"
+            >{{ items.item.title }}</gl-link
+          >
         </div>
         <ul class="horizontal-list list-items-separated text-secondary mb-0">
           <li>!{{ items.item.iid }}</li>
