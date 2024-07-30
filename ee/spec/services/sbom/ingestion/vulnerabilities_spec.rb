@@ -67,21 +67,19 @@ RSpec.describe Sbom::Ingestion::Vulnerabilities, feature_category: :dependency_m
 
           let(:severity) { :critical }
 
-          it do
-            is_expected.to eq({
-              vulnerability_ids: [finding_2.vulnerability_id, finding.vulnerability_id],
-              highest_severity: finding_2.severity
-            })
+          it 'calculates the expected hash values' do
+            expect(vulnerabilities_fetched[:highest_severity]).to eq finding_2.severity
+            expect(vulnerabilities_fetched[:vulnerability_ids]).to match_array [finding_2.vulnerability_id,
+              finding.vulnerability_id]
           end
 
           context 'with vulnerability findings with a lower severity' do
             let(:severity) { :low }
 
-            it do
-              is_expected.to eq({
-                vulnerability_ids: [finding.vulnerability_id, finding_2.vulnerability_id],
-                highest_severity: finding.severity
-              })
+            it 'calculates the expected hash values' do
+              expect(vulnerabilities_fetched[:highest_severity]).to eq finding.severity
+              expect(vulnerabilities_fetched[:vulnerability_ids]).to match_array [finding_2.vulnerability_id,
+                finding.vulnerability_id]
             end
           end
         end

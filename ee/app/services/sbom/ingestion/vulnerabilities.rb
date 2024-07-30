@@ -37,10 +37,12 @@ module Sbom
             dependency_path(finding)
           ]
 
-          # since we fetch the findings ordered by `severity: :desc`,
-          # the first finding will be the highest severity
           info[key] ||= { vulnerability_ids: [], highest_severity: finding.severity }
           info[key][:vulnerability_ids] << finding.vulnerability_id
+
+          current_severity_value = ::Enums::Vulnerability::SEVERITY_LEVELS[info.dig(key, :highest_severity)]
+          new_severity_value = ::Enums::Vulnerability::SEVERITY_LEVELS[finding.severity]
+          info[key][:highest_severity] = finding.severity if new_severity_value > current_severity_value
         end
       end
 
@@ -57,14 +59,12 @@ module Sbom
         pipeline
           .vulnerability_findings
           .by_report_types(%i[container_scanning dependency_scanning])
-          .ordered
       end
 
       def vulnerability_findings_from_project
         project
           .vulnerability_findings
           .by_report_types(%i[container_scanning dependency_scanning])
-          .ordered
       end
 
       def dependency_path(finding)
