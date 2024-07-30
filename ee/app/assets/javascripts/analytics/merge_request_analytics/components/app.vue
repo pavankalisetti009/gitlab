@@ -3,6 +3,7 @@ import DateRange from '~/analytics/shared/components/daterange.vue';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { DEFAULT_NUMBER_OF_DAYS } from '../constants';
 import FilterBar from './filter_bar.vue';
 import ThroughputChart from './throughput_chart.vue';
@@ -11,6 +12,7 @@ import ThroughputTable from './throughput_table.vue';
 export default {
   name: 'MergeRequestAnalyticsApp',
   components: {
+    PageHeading,
     DateRange,
     FilterBar,
     ThroughputChart,
@@ -48,7 +50,7 @@ export default {
 </script>
 <template>
   <div class="merge-request-analytics-wrapper">
-    <h3 data-testid="pageTitle" class="gl-mb-5">{{ __('Merge Request Analytics') }}</h3>
+    <page-heading :heading="__('Merge request analytics')" />
     <div
       class="gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row gl-justify-content-space-between gl-bg-gray-10 gl-border-t-solid gl-border-t-1 gl-border-t-gray-100 gl-border-b-solid gl-border-b-1 gl-border-b-gray-100 gl-py-3"
     >

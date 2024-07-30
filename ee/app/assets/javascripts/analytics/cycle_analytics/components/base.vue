@@ -11,6 +11,7 @@ import StageTable from '~/analytics/cycle_analytics/components/stage_table.vue';
 import ValueStreamFilters from '~/analytics/cycle_analytics/components/value_stream_filters.vue';
 import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
+import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { METRICS_REQUESTS } from '../constants';
 import DurationChart from './duration_chart.vue';
 import TypeOfWorkCharts from './type_of_work_charts.vue';
@@ -23,6 +24,7 @@ import DurationOverviewChart from './duration_overview_chart.vue';
 export default {
   name: 'CycleAnalytics',
   components: {
+    PageHeading,
     DurationChart,
     GlEmptyState,
     TypeOfWorkCharts,
@@ -208,9 +210,7 @@ export default {
       :can-edit="canEdit"
     />
     <template v-else>
-      <div class="gl-mb-6">
-        <h3>{{ __('Value Stream Analytics') }}</h3>
-      </div>
+      <page-heading :heading="__('Value stream analytics')" />
       <div
         class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row gl-sm-align-items-center gl-justify-content-space-between gl-mb-6 gl-gap-3"
       >
