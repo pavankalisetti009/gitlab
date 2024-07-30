@@ -36,7 +36,7 @@ module QA
 
       describe 'enable dependency scanning from configuration' do
         it(
-          'runs dependency scanning job when enabled from configuration',
+          'runs dependency scanning job when enabled from configuration', :blocking,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347621'
         ) do
           Page::Project::Menu.perform(&:go_to_security_configuration)
