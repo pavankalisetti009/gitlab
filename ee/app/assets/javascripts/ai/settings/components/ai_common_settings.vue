@@ -10,18 +10,11 @@ export default {
     GlSprintf,
     SettingsBlock,
   },
-  props: {
-    largeTitle: {
-      type: Boolean,
-      required: false,
-      default: true,
-    },
-  },
   aiFeaturesHelpPath: helpPagePath('user/ai_features'),
 };
 </script>
 <template>
-  <settings-block :title="s__('AiPowered|GitLab Duo features')" :large-title="largeTitle">
+  <settings-block :title="s__('AiPowered|GitLab Duo features')">
     <template #description>
       <gl-sprintf
         :message="

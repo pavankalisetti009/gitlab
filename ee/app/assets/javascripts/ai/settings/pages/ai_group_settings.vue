@@ -9,5 +9,5 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings :large-title="false" />
+  <ai-common-settings />
 </template>
