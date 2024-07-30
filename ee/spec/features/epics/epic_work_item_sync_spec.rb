@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_management do
   include WorkItemFeedbackHelpers
+  include ListboxHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -234,10 +235,11 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
         click_link('Dark red')
         wait_for_requests
 
-        find_by_testid('edit-parent').click
-        within_testid('work-item-parent-form') do
-          set_parent(parent_epic.title)
+        within(find_by_testid('work-item-parent')) do
+          click_button 'Edit'
         end
+
+        set_parent(parent_epic.title)
 
         work_item.reload
         epic = work_item.synced_epic
@@ -253,12 +255,13 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
     end
 
     def set_parent(parent_text)
-      find('[data-testid="listbox-search-input"] .gl-listbox-search-input',
-        visible: true).send_keys "\"#{parent_text}\""
-      wait_for_requests
+      within_testid('work-item-parent') do
+        send_keys(parent_text)
+        wait_for_requests
 
-      find('.gl-new-dropdown-item', text: parent_text).click
-      wait_for_all_requests
+        select_listbox_item(parent_text)
+        wait_for_requests
+      end
     end
   end
 end
