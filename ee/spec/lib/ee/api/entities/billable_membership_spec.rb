@@ -12,7 +12,7 @@ RSpec.describe ::EE::API::Entities::BillableMembership, feature_category: :seat_
       created_at: membership.created_at,
       expires_at: membership.expires_at,
       access_level: {
-        string_value: 'Developer',
+        string_value: role_name,
         integer_value: 30,
         custom_role: custom_role
       }
@@ -22,6 +22,7 @@ RSpec.describe ::EE::API::Entities::BillableMembership, feature_category: :seat_
   context 'without custom role' do
     let(:membership) { create(:group_member, :developer) }
     let(:custom_role) { nil }
+    let(:role_name) { 'Developer' }
 
     subject(:entity_representation) { described_class.new(membership).as_json }
 
@@ -34,6 +35,7 @@ RSpec.describe ::EE::API::Entities::BillableMembership, feature_category: :seat_
     let(:role) { create(:member_role, :developer, admin_merge_request: true) }
     let(:membership) { create(:group_member, :developer, member_role: role) }
     let(:custom_role) { { id: role.id, name: role.name } }
+    let(:role_name) { role.name }
 
     subject(:entity_representation) { described_class.new(membership).as_json }
 
