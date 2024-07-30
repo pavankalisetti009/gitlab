@@ -52465,7 +52465,7 @@ msgstr ""
 msgid "TagsPage|Deleting the %{strongStart}%{tagName}%{strongEnd} tag cannot be undone."
 msgstr ""
 
-msgid "TagsPage|Do you want to create a release with the new tag? You can do that in the %{link_start}New release page%{link_end}."
+msgid "TagsPage|Do you want to create a release with the new tag? You can do that in the %{link_start}new release page%{link_end}."
 msgstr ""
 
 msgid "TagsPage|Edit release"
