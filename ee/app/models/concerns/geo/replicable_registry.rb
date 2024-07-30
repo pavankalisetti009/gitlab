@@ -60,7 +60,9 @@ module Geo::ReplicableRegistry
 
   # Overridden by Geo::VerifiableRegistry
   def after_synced
-    log_debug("Sync state transition", { registry_id: id, model_record_id: model_record_id, to: 'synced' })
+    log_debug("Sync state transition", {
+      registry_id: id, model_record_id: model_record_id, from: 'started', to: 'synced'
+    })
   end
 
   def replicator_class
