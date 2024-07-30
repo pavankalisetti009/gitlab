@@ -57790,7 +57790,7 @@ msgstr ""
 msgid "UserMapping|The invitation could not be declined."
 msgstr ""
 
-msgid "UserMapping|The invitation is not valid"
+msgid "UserMapping|The invitation is no longer valid."
 msgstr ""
 
 msgid "UserMapping|The reassignment has been cancelled by the group owner."
