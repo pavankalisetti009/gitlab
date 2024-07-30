@@ -3,4 +3,16 @@ import pipelineHeaderFinishedComputeMinutes from 'test_fixtures/graphql/pipeline
 import pipelineHeaderSuccess from 'test_fixtures/graphql/pipelines/pipeline_header_success.json';
 import pipelineHeaderRunning from 'test_fixtures/graphql/pipelines/pipeline_header_running.json';
 
+export const pipelineHeaderMergeTrain = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/250',
+      pipeline: {
+        ...pipelineHeaderSuccess.data.project.pipeline,
+        mergeRequestEventType: 'MERGE_TRAIN',
+      },
+    },
+  },
+};
+
 export { pipelineHeaderFinishedComputeMinutes, pipelineHeaderRunning, pipelineHeaderSuccess };

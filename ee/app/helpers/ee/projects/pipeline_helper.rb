@@ -29,7 +29,10 @@ module EE
       def js_pipeline_header_data(project, pipeline)
         super.merge(
           identity_verification_required: identity_verification_required?(pipeline).to_s,
-          identity_verification_path: identity_verification_path
+          identity_verification_path: identity_verification_path,
+          merge_trains_available: project.licensed_feature_available?(:merge_trains).to_s,
+          can_read_merge_train: can?(current_user, :read_merge_train, project).to_s,
+          merge_trains_path: project_merge_trains_path(project)
         )
       end
 
