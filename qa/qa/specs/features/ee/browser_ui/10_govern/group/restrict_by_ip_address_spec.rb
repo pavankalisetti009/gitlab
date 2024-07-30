@@ -70,7 +70,7 @@ module QA
           end
 
           after do
-            key.remove_via_api!
+            key&.remove_via_api!
           end
 
           it 'denies access', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347921' do
@@ -116,7 +116,7 @@ module QA
           end
 
           after do
-            key.remove_via_api!
+            key&.remove_via_api!
           end
 
           it 'allows access', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347924' do

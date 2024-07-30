@@ -24,7 +24,7 @@ module QA
       end
 
       after do
-        key.remove_via_api!
+        key&.remove_via_api!
       end
 
       it 'proxies wiki commit to primary site and is viewable in UI on secondary Geo sites',
