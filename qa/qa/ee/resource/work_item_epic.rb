@@ -35,7 +35,19 @@ module QA
         end
 
         def fabricate!
-          raise NotImplementedError
+          group.visit!
+
+          QA::Page::Group::Menu.perform(&:go_to_epics)
+
+          QA::EE::Page::Group::WorkItem::Epic::Index.perform(&:click_new_epic)
+
+          QA::EE::Page::Group::WorkItem::Epic::New.perform do |new_epic_page|
+            new_epic_page.set_title(title)
+            new_epic_page.enable_confidential_epic if @confidential
+            new_epic_page.create_new_epic
+          end
+
+          QA::EE::Page::Group::WorkItem::Epic::Index.perform(&:click_first_epic)
         end
 
         def gid
@@ -62,6 +74,7 @@ module QA
             }
             state
             title
+            webUrl
             widgets {
               ... on WorkItemWidgetRolledupDates
               {
@@ -134,6 +147,63 @@ module QA
         # @return [String]
         def api_post_path
           "/graphql"
+        end
+
+        # Graphql mutation for work item epic creation
+        #
+        # @return [String]
+        def api_post_body
+          <<~GQL
+            mutation {
+              workItemCreate(input: {
+                namespacePath: "#{group.full_path}"
+                title: "#{@title}"
+                descriptionWidget: {
+                  description: "#{@description}"
+                }
+                confidential: #{@confidential}
+                workItemTypeId: "#{get_work_item_type_id}"
+                }) {
+                workItem {
+                  #{gql_attributes}
+                }
+                errors
+              }
+            }
+          GQL
+        end
+
+        def get_work_item_type_id
+          response = process_work_item_type_api_response(
+            api_post_to(
+              '/graphql',
+              <<~GQL
+                query getWorkItemTypeId {
+                  workspace: group(fullPath: "#{@group.full_path}") {
+                    workItemTypes(name: EPIC) {
+                      edges {
+                        node {
+                          id
+                        }
+                      }
+                    }
+                  }
+                }
+              GQL
+            )
+          )
+          response.dig(:work_item_types, :edges, 0, :node, :id)
+        end
+
+        def process_api_response(parsed_response)
+          parsed_response = extract_graphql_resource(parsed_response, 'work_item') if parsed_response.key?(:work_item)
+
+          super(parsed_response)
+        end
+
+        def process_work_item_type_api_response(parsed_response)
+          self.api_response = parsed_response
+          self.api_resource = transform_api_resource(parsed_response.deep_dup)
         end
 
         # Return subset of variable date fields for comparing work item epics with legacy epics
