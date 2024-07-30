@@ -42475,15 +42475,6 @@ msgstr ""
 msgid "Project|already in use"
 msgstr ""
 
-msgid "PrometheusAlerts|exceeded"
-msgstr ""
-
-msgid "PrometheusAlerts|is equal to"
-msgstr ""
-
-msgid "PrometheusAlerts|is less than"
-msgstr ""
-
 msgid "PrometheusService|Active"
 msgstr ""
 
