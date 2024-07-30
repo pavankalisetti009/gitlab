@@ -44,12 +44,8 @@ RSpec.describe Search::Elasticsearchable, feature_category: :global_search do
       context 'when scope is epics' do
         let(:params) { { scope: 'epics' } }
 
-        [true, false].each do |matcher|
-          it 'is equal to advanced_epic_search?' do
-            allow(class_instance).to receive(:advanced_epic_search?).and_return(matcher)
-
-            expect(class_instance.use_elasticsearch?).to eq(matcher)
-          end
+        it 'is true' do
+          expect(class_instance).to be_use_elasticsearch
         end
       end
 
@@ -66,38 +62,6 @@ RSpec.describe Search::Elasticsearchable, feature_category: :global_search do
 
         it 'returns true' do
           expect(class_instance).to be_use_elasticsearch
-        end
-      end
-    end
-  end
-
-  describe "#advanced_epic_search?" do
-    it 'is true when the scope is not epics' do
-      expect(class_instance).to be_advanced_epic_search
-    end
-
-    context 'when scope is epics' do
-      let(:params) { { scope: 'epics' } }
-
-      context 'if backfill epics migration is finished' do
-        before do
-          allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:backfill_epics).and_return(true)
-        end
-
-        it 'is true' do
-          expect(class_instance).to be_advanced_epic_search
-        end
-      end
-
-      context 'if backfill epics migration is not finished' do
-        before do
-          allow(Elastic::DataMigrationService).to receive(:migration_has_finished?)
-            .with(:backfill_epics).and_return(false)
-        end
-
-        it 'is false' do
-          expect(class_instance).not_to be_advanced_epic_search
         end
       end
     end

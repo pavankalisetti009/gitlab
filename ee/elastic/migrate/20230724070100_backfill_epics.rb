@@ -57,3 +57,5 @@ class BackfillEpics < Elastic::Migration
     migration_state[:max_processed_id]
   end
 end
+
+BackfillEpics.prepend ::Elastic::MigrationObsolete
