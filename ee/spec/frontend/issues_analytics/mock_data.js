@@ -118,7 +118,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
   namespace: ${isProject ? 'project' : 'group'}(fullPath: $fullPath) {
     id
     ${queryAlias}: flowMetrics {
-      Nov_2022: ${metricType}(
+      query_2022_11: ${metricType}(
         from: "2022-11-01"
         to: "2022-12-01"
         assigneeUsernames: $assigneeUsernames
@@ -133,7 +133,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Dec_2022: ${metricType}(
+      query_2022_12: ${metricType}(
         from: "2022-12-01"
         to: "2023-01-01"
         assigneeUsernames: $assigneeUsernames
@@ -148,7 +148,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Jan_2023: ${metricType}(
+      query_2023_1: ${metricType}(
         from: "2023-01-01"
         to: "2023-02-01"
         assigneeUsernames: $assigneeUsernames
@@ -163,7 +163,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Feb_2023: ${metricType}(
+      query_2023_2: ${metricType}(
         from: "2023-02-01"
         to: "2023-03-01"
         assigneeUsernames: $assigneeUsernames
@@ -178,7 +178,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Mar_2023: ${metricType}(
+      query_2023_3: ${metricType}(
         from: "2023-03-01"
         to: "2023-04-01"
         assigneeUsernames: $assigneeUsernames
@@ -193,7 +193,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Apr_2023: ${metricType}(
+      query_2023_4: ${metricType}(
         from: "2023-04-01"
         to: "2023-05-01"
         assigneeUsernames: $assigneeUsernames
@@ -208,7 +208,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      May_2023: ${metricType}(
+      query_2023_5: ${metricType}(
         from: "2023-05-01"
         to: "2023-06-01"
         assigneeUsernames: $assigneeUsernames
@@ -223,7 +223,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Jun_2023: ${metricType}(
+      query_2023_6: ${metricType}(
         from: "2023-06-01"
         to: "2023-07-01"
         assigneeUsernames: $assigneeUsernames
@@ -238,7 +238,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Jul_2023: ${metricType}(
+      query_2023_7: ${metricType}(
         from: "2023-07-01"
         to: "2023-08-01"
         assigneeUsernames: $assigneeUsernames
@@ -253,7 +253,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Aug_2023: ${metricType}(
+      query_2023_8: ${metricType}(
         from: "2023-08-01"
         to: "2023-09-01"
         assigneeUsernames: $assigneeUsernames
@@ -268,7 +268,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Sep_2023: ${metricType}(
+      query_2023_9: ${metricType}(
         from: "2023-09-01"
         to: "2023-10-01"
         assigneeUsernames: $assigneeUsernames
@@ -283,7 +283,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Oct_2023: ${metricType}(
+      query_2023_10: ${metricType}(
         from: "2023-10-01"
         to: "2023-11-01"
         assigneeUsernames: $assigneeUsernames
@@ -298,7 +298,7 @@ export const getMockIssuesAnalyticsCountsQuery = ({
       ) {
         value
       }
-      Nov_2023: ${metricType}(
+      query_2023_11: ${metricType}(
         from: "2023-11-01"
         to: "2023-11-20"
         assigneeUsernames: $assigneeUsernames
@@ -321,55 +321,55 @@ export const getMockIssuesAnalyticsCountsQuery = ({
 export const getMockIssuesOpenedCountsResponse = ({ isProject = false, isEmpty = false } = {}) => ({
   id: 'fake-id',
   issuesOpenedCounts: {
-    Nov_2022: {
+    query_2022_11: {
       value: isEmpty ? 0 : 18,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Dec_2022: {
+    query_2022_12: {
       value: isEmpty ? 0 : 38,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jan_2023: {
+    query_2023_1: {
       value: isEmpty ? 0 : 51,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Feb_2023: {
+    query_2023_2: {
       value: isEmpty ? 0 : 39,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Mar_2023: {
+    query_2023_3: {
       value: isEmpty ? 0 : 45,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Apr_2023: {
+    query_2023_4: {
       value: isEmpty ? 0 : 40,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    May_2023: {
+    query_2023_5: {
       value: isEmpty ? 0 : 44,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jun_2023: {
+    query_2023_6: {
       value: isEmpty ? 0 : 44,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jul_2023: {
+    query_2023_7: {
       value: isEmpty ? 0 : 34,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Aug_2023: {
+    query_2023_8: {
       value: isEmpty ? 0 : 48,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Sep_2023: {
+    query_2023_9: {
       value: isEmpty ? 0 : 40,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Oct_2023: {
+    query_2023_10: {
       value: isEmpty ? 0 : 39,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Nov_2023: {
+    query_2023_11: {
       value: isEmpty ? 0 : 20,
       __typename: 'ValueStreamAnalyticsMetric',
     },
@@ -383,55 +383,55 @@ export const getMockIssuesOpenedCountsResponse = ({ isProject = false, isEmpty =
 export const getMockIssuesClosedCountsResponse = ({ isProject = false, isEmpty = false } = {}) => ({
   id: 'fake-id',
   issuesClosedCounts: {
-    Nov_2022: {
+    query_2022_11: {
       value: isEmpty ? 0 : 0,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Dec_2022: {
+    query_2022_12: {
       value: isEmpty ? 0 : 0,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jan_2023: {
+    query_2023_1: {
       value: isEmpty ? 0 : 1,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Feb_2023: {
+    query_2023_2: {
       value: isEmpty ? 0 : 3,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Mar_2023: {
+    query_2023_3: {
       value: isEmpty ? 0 : 4,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Apr_2023: {
+    query_2023_4: {
       value: isEmpty ? 0 : 9,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    May_2023: {
+    query_2023_5: {
       value: isEmpty ? 0 : 13,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jun_2023: {
+    query_2023_6: {
       value: isEmpty ? 0 : 12,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Jul_2023: {
+    query_2023_7: {
       value: isEmpty ? 0 : 14,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Aug_2023: {
+    query_2023_8: {
       value: isEmpty ? 0 : 21,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Sep_2023: {
+    query_2023_9: {
       value: isEmpty ? 0 : 24,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Oct_2023: {
+    query_2023_10: {
       value: isEmpty ? 0 : 45,
       __typename: 'ValueStreamAnalyticsMetric',
     },
-    Nov_2023: {
+    query_2023_11: {
       value: isEmpty ? 0 : 60,
       __typename: 'ValueStreamAnalyticsMetric',
     },

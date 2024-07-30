@@ -93,6 +93,7 @@ export const generateChartDateRangeData = (startDate, endDate, format = dateForm
       toDate: formatDate(toDate),
       month: abbrMonthNames[fromDate.getMonth()],
       year: fromDate.getFullYear(),
+      identifier: `query_${fromDate.getFullYear()}_${fromDate.getMonth() + 1}`,
     });
   }
 
