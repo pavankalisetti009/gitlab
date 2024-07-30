@@ -71,7 +71,8 @@ def hello_world():
         model_provider: described_class::MODEL_PROVIDER,
         model_name: model_name,
         prompt_version: prompt_version,
-        model_endpoint: 'http://localhost:11434'
+        model_endpoint: 'http://localhost:11434',
+        model_api_key: "token"
       }
     end
 

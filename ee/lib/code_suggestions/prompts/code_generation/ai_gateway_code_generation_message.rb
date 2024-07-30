@@ -1,0 +1,55 @@
+# frozen_string_literal: true
+
+module CodeSuggestions
+  module Prompts
+    module CodeGeneration
+      class AiGatewayCodeGenerationMessage < CodeSuggestions::Prompts::Base
+        GATEWAY_PROMPT_VERSION = 2
+        MODEL_PROVIDER = 'litellm'
+        AGENT_ID = 'code_suggestions/generations'
+        DEFAULT_INSTRUCTION = 'Generate the best possible code based on instructions.'
+
+        attr_reader :feature_setting
+
+        def initialize(feature_setting:, params:)
+          @feature_setting = feature_setting
+
+          super(params)
+        end
+
+        def request_params
+          self_hosted_model = feature_setting&.self_hosted_model
+
+          {
+            model_provider: self.class::MODEL_PROVIDER,
+            prompt: prompt,
+            model_endpoint: self_hosted_model&.endpoint,
+            model_api_key: self_hosted_model&.api_token,
+            model_name: self_hosted_model&.model
+          }.merge(extra_params)
+        end
+
+        private
+
+        def extra_params
+          {
+            prompt_version: self.class::GATEWAY_PROMPT_VERSION,
+            agent_id: AGENT_ID
+          }
+        end
+
+        def prompt
+          params[:instruction] || DEFAULT_INSTRUCTION
+        end
+
+        def pick_prefix
+          prefix.last(500)
+        end
+
+        def pick_suffix
+          suffix.first(500)
+        end
+      end
+    end
+  end
+end

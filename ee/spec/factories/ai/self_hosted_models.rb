@@ -5,5 +5,6 @@ FactoryBot.define do
     endpoint { 'http://localhost:11434/v1' }
     model { :mistral }
     name { 'mistral-7b-ollama-api' }
+    api_token { 'token' }
   end
 end

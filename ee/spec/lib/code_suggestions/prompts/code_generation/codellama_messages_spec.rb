@@ -2,8 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, feature_category: :custom_models do
-  let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
+RSpec.describe CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages, feature_category: :custom_models do
+  let_it_be(:self_hosted_model) do
+    create(:ai_self_hosted_model, model: :codellama, name: 'codellama-13b')
+  end
+
+  let_it_be(:feature_setting) do
+    create(:ai_feature_setting, provider: :self_hosted, self_hosted_model: self_hosted_model)
+  end
 
   let(:prompt_version) { 3 }
 
@@ -24,7 +30,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, featur
   end
 
   let(:file_name) { 'hello.rb' }
-  let(:model_name) { 'mistral' }
+  let(:model_name) { 'codellama' }
   let(:comment) { 'Generate a binary search method.' }
   let(:instruction) { instance_double(CodeSuggestions::Instruction, instruction: comment, trigger_type: 'comment') }
 
@@ -55,7 +61,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, featur
     allow(language).to receive(:name).and_return(language_name)
   end
 
-  subject(:mistral_prompt) { described_class.new(feature_setting: feature_setting, params: params) }
+  subject(:codellama_prompt) { described_class.new(feature_setting: feature_setting, params: params) }
 
   describe '#request_params' do
     let(:request_params) do
@@ -70,18 +76,14 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, featur
 
     let(:system_prompt) do
       <<~PROMPT.chomp
-      <s>[INST] You are a tremendously accurate and skilled code generation agent. We want to generate new Ruby code inside the file 'hello.rb'. Your task is to provide valid code without any additional explanations, comments, or feedback.[/INST]
+      [INST]<<SYS>> You are a tremendously accurate and skilled code generation agent. We want to generate new Ruby code inside the file 'hello.rb'. Your task is to provide valid code without any additional explanations, comments, or feedback. <</SYS>>
 
-      <s>[INST]
       Class BinarySearch
 
       [SUGGESTION]
       def use_binary_search
       end
 
-      [/INST]</s>
-
-      <s>[INST]
 
       The new code you will generate will start at the position of the cursor, which is currently indicated by the [SUGGESTION] tag.
       The comment directly before the cursor position is the instruction, all other comments are not instructions.
@@ -95,7 +97,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, featur
 
       If you are not able to generate code based on the given instructions, return an empty result.
 
-      [/INST]</s>
+      [/INST]
       PROMPT
     end
 
@@ -109,7 +111,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, featur
     context 'when instruction is present' do
       context 'with a model api key present' do
         it 'returns expected request params' do
-          expect(mistral_prompt.request_params).to eq(request_params.merge(prompt: expected_prompt))
+          expect(codellama_prompt.request_params).to eq(request_params.merge(prompt: expected_prompt))
         end
       end
     end

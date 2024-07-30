@@ -110,7 +110,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => "<|fim_prefix|>some prefix<|fim_suffix|>some suffix<|fim_middle|>",
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codegemma"
+          "model_name" => "codegemma",
+          "model_api_key" => "token"
         }
       end
 
@@ -167,7 +168,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => "<s>[SUFFIX]some suffix[PREFIX]some prefix",
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codestral"
+          "model_name" => "codestral",
+          "model_api_key" => "token"
         }
       end
 
@@ -224,7 +226,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => "<PRE> some prefix <SUF>some suffix <MID>",
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codellama:code"
+          "model_name" => "codellama:code",
+          "model_api_key" => "token"
         }
       end
 
@@ -318,7 +321,8 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => nil,
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codellama:code"
+          "model_name" => "codellama:code",
+          "model_api_key" => "token"
         }
       end
 
