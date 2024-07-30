@@ -14235,12 +14235,6 @@ msgid_plural "ContainerRegistry|%{count} tags"
 msgstr[0] ""
 msgstr[1] ""
 
-msgid "ContainerRegistry|%{strongStart}Disabled%{strongEnd} - Tags will not be automatically deleted."
-msgstr ""
-
-msgid "ContainerRegistry|%{strongStart}Enabled%{strongEnd} - Tags that match the rules on this page are automatically scheduled for deletion."
-msgstr ""
-
 msgid "ContainerRegistry|%{title} was successfully scheduled for deletion"
 msgstr ""
 
@@ -14376,6 +14370,9 @@ msgstr ""
 msgid "ContainerRegistry|Digest: %{imageId}"
 msgstr ""
 
+msgid "ContainerRegistry|Disabled - tags will not be automatically deleted."
+msgstr ""
+
 msgid "ContainerRegistry|Docker connection error"
 msgstr ""
 
@@ -14383,6 +14380,9 @@ msgid "ContainerRegistry|Edit cleanup rules"
 msgstr ""
 
 msgid "ContainerRegistry|Enable cleanup policy"
+msgstr ""
+
+msgid "ContainerRegistry|Enabled - tags that match the rules on this page are automatically scheduled for deletion."
 msgstr ""
 
 msgid "ContainerRegistry|GitLab is unable to validate this signature automatically. Validate the signature manually before trusting it."
