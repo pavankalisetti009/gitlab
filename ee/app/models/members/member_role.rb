@@ -2,7 +2,6 @@
 
 class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   include GitlabSubscriptions::SubscriptionHelper
-  include IgnorableColumns
 
   MAX_COUNT_PER_GROUP_HIERARCHY = 10
 
@@ -58,22 +57,6 @@ class MemberRole < ApplicationRecord # rubocop:disable Gitlab/NamespacedClass
   end
 
   before_destroy :prevent_delete_after_member_associated
-
-  ignore_columns %i[
-    admin_cicd_variables
-    admin_group_member
-    admin_merge_request
-    admin_terraform_state
-    admin_vulnerability
-    archive_project
-    manage_group_access_tokens
-    manage_project_access_tokens
-    read_code
-    read_dependency
-    read_vulnerability
-    remove_group
-    remove_project
-  ], remove_with: '17.3', remove_after: '2024-08-15'
 
   jsonb_accessor :permissions, Gitlab::CustomRoles::Definition.all.keys.index_with(:boolean)
 
