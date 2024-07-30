@@ -22179,6 +22179,7 @@ GPG signature for a signed commit.
 | <a id="groupgroupmemberscount"></a>`groupMembersCount` | [`Int!`](#int) | Count of direct members of this group. |
 | <a id="groupid"></a>`id` | [`ID!`](#id) | ID of the namespace. |
 | <a id="groupisadjourneddeletionenabled"></a>`isAdjournedDeletionEnabled` **{warning-solid}** | [`Boolean!`](#boolean) | **Introduced** in GitLab 16.11. **Status**: Experiment. Indicates if delayed group deletion is enabled. |
+| <a id="groupislinkedtosubscription"></a>`isLinkedToSubscription` | [`Boolean`](#boolean) | Indicates if group is linked to a subscription. |
 | <a id="grouplfsenabled"></a>`lfsEnabled` | [`Boolean`](#boolean) | Indicates if Large File Storage (LFS) is enabled for namespace. |
 | <a id="grouplockduofeaturesenabled"></a>`lockDuoFeaturesEnabled` **{warning-solid}** | [`Boolean`](#boolean) | **Introduced** in GitLab 16.10. **Status**: Experiment. Indicates if the GitLab Duo features enabled setting is enforced for all subgroups. |
 | <a id="grouplockmathrenderinglimitsenabled"></a>`lockMathRenderingLimitsEnabled` | [`Boolean`](#boolean) | Indicates if math rendering limits are locked for all descendant groups. |

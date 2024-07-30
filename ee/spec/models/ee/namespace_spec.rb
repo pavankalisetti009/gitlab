@@ -87,7 +87,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#prevent_delete?' do
+  describe '#linked_to_subscription?' do
     where(:paid, :trial, :expected) do
       true  | false | true
       false | false | false
@@ -102,7 +102,7 @@ RSpec.describe Namespace, feature_category: :groups_and_projects do
       end
 
       it 'returns expected boolean value' do
-        expect(namespace.prevent_delete?).to eq(expected)
+        expect(namespace.linked_to_subscription?).to eq(expected)
       end
     end
   end

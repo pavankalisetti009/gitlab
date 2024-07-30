@@ -34,7 +34,7 @@ module EE
       private
 
       def check_subscription!
-        return unless group.prevent_delete?
+        return unless group.linked_to_subscription?
 
         render json: { message: _('This group is linked to a subscription') }, status: :bad_request
       end

@@ -25116,6 +25116,9 @@ msgstr ""
 msgid "Group by:"
 msgstr ""
 
+msgid "Group can't be be deleted"
+msgstr ""
+
 msgid "Group comment templates"
 msgstr ""
 
@@ -54259,6 +54262,9 @@ msgid "This group and its subgroups and projects will be placed in a 'pending de
 msgstr ""
 
 msgid "This group can be restored until %{date}. %{linkStart}Learn more%{linkEnd}."
+msgstr ""
+
+msgid "This group can't be deleted because it is linked to a subscription. To delete this group, %{linkStart}link the subscription%{linkEnd} with a different group."
 msgstr ""
 
 msgid "This group can't be removed because it is linked to a subscription. To remove this group, %{linkStart}link the subscription%{linkEnd} with a different group."
