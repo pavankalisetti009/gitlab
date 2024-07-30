@@ -58,11 +58,15 @@ module Search
       end
 
       def utilization
+        return unless load_utilization
+
         ((load_utilization * LOAD_FACTOR) + (heap_utilization * HEAP_FACTOR)).round(3).clamp(0, 100)
       end
 
       def load_utilization
         load_average = avg_load_average
+        return unless avg_load_average
+
         ((load_average / (load_average + LOAD_THRESHOLD)) * 100).clamp(0, 100)
       end
 
@@ -72,6 +76,8 @@ module Search
       end
 
       def avg_load_average
+        return unless node_load_averages.any?
+
         highest_load_averages = node_load_averages.max(NODE_LIMIT)
         average(highest_load_averages).clamp(0, 100)
       end
@@ -82,7 +88,7 @@ module Search
       end
 
       def node_load_averages
-        node_stats.map { |node| node.last['os']['cpu']['load_average']['1m'] }
+        node_stats.map { |node| node.last.dig('os', 'cpu', 'load_average', '1m') }
       end
 
       def node_heap_used_percentages

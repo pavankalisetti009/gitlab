@@ -75,8 +75,16 @@ RSpec.describe Search::ClusterHealthCheck::Elastic, feature_category: :global_se
     context 'if the response is not in the expected format' do
       let(:cpu) { {} }
 
-      it 'raises the error' do
-        expect { utilization }.to raise_error(StandardError)
+      it 'returns nil' do
+        expect(utilization).to be_nil
+      end
+    end
+
+    context 'if the response is from windows' do
+      let(:cpu) { { 'cpu' => { 'percent' => 10 } } }
+
+      it 'returns nil' do
+        expect(utilization).to be_nil
       end
     end
 
