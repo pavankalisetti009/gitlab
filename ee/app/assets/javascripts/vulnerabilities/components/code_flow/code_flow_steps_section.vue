@@ -81,7 +81,6 @@ export default {
       });
     },
   },
-
   mounted() {
     // Use renderGFM() to add syntax highlighting to the markdown.
     renderGFM(this.$refs.markdownContent);
@@ -104,6 +103,49 @@ export default {
     selectStep(vulnerabilityItem) {
       this.selectedStepNumber = vulnerabilityItem.stepNumber;
       this.selectedVulnerability = vulnerabilityItem;
+      this.markdownBlobData();
+    },
+    markdownRowContent() {
+      // Highlights the selected markdown row content
+      const elements = document.querySelectorAll('[id^="TEXT-MARKER"]');
+      elements.forEach((el) => {
+        el.classList.remove('selected-inline-section-marker');
+      });
+      const element = document.querySelectorAll(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+      if (element) {
+        element.forEach((el) => el.classList.add('selected-inline-section-marker'));
+      }
+    },
+    markdownStepNumber() {
+      // Highlights the step number in the markdown
+      const elements = document.querySelectorAll('[id^="TEXT-MARKER"]');
+      elements.forEach((el) => {
+        const firstSpan = el.querySelector('span.inline-item-mark');
+        firstSpan?.classList.remove('selected-inline-item-mark');
+      });
+      const element = document.querySelector(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+      if (element) {
+        element.querySelector('span.inline-item-mark').classList.add('selected-inline-item-mark');
+      }
+    },
+    markdownRowNumber() {
+      // Highlights the row number in the markdown
+      const elements = document.querySelectorAll('[id^="NUM-MARKER"]');
+      elements.forEach((el) => {
+        el.classList.remove('selected-inline-number-mark');
+        el.classList.add('unselected-inline-number-mark');
+      });
+
+      const element = document.querySelector(`[id^=NUM-MARKER${this.selectedStepNumber}]`);
+      if (element) {
+        element.classList.add('selected-inline-number-mark');
+        element.classList.remove('unselected-inline-number-mark');
+      }
+    },
+    markdownBlobData() {
+      this.markdownRowContent();
+      this.markdownStepNumber();
+      this.markdownRowNumber();
     },
     getNextIndex(isNext) {
       return isNext ? this.selectedStepNumber + 1 : this.selectedStepNumber - 1;
@@ -118,6 +160,7 @@ export default {
         (item) => item.stepNumber === this.getNextIndex(isNextVulnerability),
       );
       this.selectedStepNumber = this.selectedVulnerability.stepNumber;
+      this.markdownBlobData();
     },
     showNodeTypePopover(nodeType) {
       return nodeType === 'source'
@@ -239,7 +282,9 @@ export default {
               >
                 {{ vulnerabilityItem.stepNumber }}
               </gl-badge>
-              <span class="align-content-center gl-mr-auto">
+              <span
+                class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-overflow-ellipsis gl-whitespace-nowrap"
+              >
                 <gl-badge
                   v-if="['source', 'sink'].includes(vulnerabilityItem.nodeType)"
                   :id="vulnerabilityItem.nodeType"
