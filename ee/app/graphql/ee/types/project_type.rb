@@ -431,6 +431,13 @@ module EE
           resolver: ::Resolvers::MergeTrains::TrainsResolver,
           description: 'Merge trains available to the project. ',
           alpha: { milestone: '17.1' }
+
+        field :pending_member_approvals,
+          EE::Types::GitlabSubscriptions::MemberManagement::MemberApprovalType.connection_type,
+          null: true,
+          alpha: { milestone: '17.3' },
+          resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
+          description: 'Pending member promotions of the project.'
       end
 
       def tracking_key
