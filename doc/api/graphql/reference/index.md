@@ -16921,7 +16921,7 @@ Describes an alert from the project's Alert Management.
 | <a id="alertmanagementalertissueiid"></a>`issueIid` **{warning-solid}** | [`String`](#string) | **Deprecated** in GitLab 13.10. Use issue field. |
 | <a id="alertmanagementalertmetricsdashboardurl"></a>`metricsDashboardUrl` **{warning-solid}** | [`String`](#string) | **Deprecated** in GitLab 16.0. Returns no data. Underlying feature was removed in 16.0. |
 | <a id="alertmanagementalertmonitoringtool"></a>`monitoringTool` | [`String`](#string) | Monitoring tool the alert came from. |
-| <a id="alertmanagementalertprometheusalert"></a>`prometheusAlert` | [`PrometheusAlert`](#prometheusalert) | Alert condition for Prometheus. |
+| <a id="alertmanagementalertprometheusalert"></a>`prometheusAlert` **{warning-solid}** | [`PrometheusAlert`](#prometheusalert) | **Deprecated** in GitLab 17.3. Returns no data. Underlying feature was removed in 16.0. |
 | <a id="alertmanagementalertrunbook"></a>`runbook` | [`String`](#string) | Runbook for the alert as defined in alert details. |
 | <a id="alertmanagementalertservice"></a>`service` | [`String`](#string) | Service the alert came from. |
 | <a id="alertmanagementalertseverity"></a>`severity` | [`AlertManagementSeverity`](#alertmanagementseverity) | Severity of the alert. |
