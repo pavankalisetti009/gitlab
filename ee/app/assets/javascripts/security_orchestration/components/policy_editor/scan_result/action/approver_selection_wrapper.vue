@@ -1,5 +1,14 @@
 <script>
-import { GlButton, GlForm, GlFormInput, GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import {
+  GlButton,
+  GlForm,
+  GlFormInput,
+  GlCollapsibleListbox,
+  GlSprintf,
+  GlBadge,
+  GlTooltipDirective,
+} from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
 import SectionLayout from '../../section_layout.vue';
 import {
@@ -14,8 +23,12 @@ import RoleSelect from './role_select.vue';
 import UserSelect from './user_select.vue';
 
 export default {
+  directives: {
+    GlTooltip: GlTooltipDirective,
+  },
   components: {
     SectionLayout,
+    GlBadge,
     GlButton,
     GlForm,
     GlFormInput,
@@ -99,6 +112,13 @@ export default {
     showRemoveButton() {
       return this.numOfApproverTypes > 1;
     },
+    listBoxItems() {
+      return APPROVER_TYPE_LIST_ITEMS.map(({ value, text }) => ({
+        value,
+        text,
+        disabled: this.availableTypes.find((item) => item.value === value) === undefined,
+      }));
+    },
   },
   methods: {
     addApproverType() {
@@ -113,6 +133,9 @@ export default {
       this.$emit('updateApprovers', updatedExistingApprovers);
     },
     handleSelectedApproverType(newType) {
+      const alreadySelected = this.availableTypes.find((v) => v.value === newType) === undefined;
+      if (alreadySelected) return;
+
       this.$emit('updateApproverType', {
         newApproverType: newType,
         oldApproverType: this.approverType,
@@ -124,6 +147,8 @@ export default {
   },
   i18n: {
     ADD_APPROVER_LABEL,
+    disabledLabel: __('disabled'),
+    disabledTitle: s__('SecurityOrchestration|You can select this option only once.'),
   },
 };
 </script>
@@ -165,12 +190,38 @@ export default {
         <gl-collapsible-listbox
           class="gl-mx-0 md:gl-ml-3 md:gl-mr-3 gl-mb-3 md:gl-mb-0 gl-block md:gl-inline-flex"
           data-testid="available-types"
-          :items="availableTypes"
+          :items="listBoxItems"
           :selected="selected"
           :toggle-text="approverTypeToggleText"
           :disabled="!hasAvailableTypes"
           @select="handleSelectedApproverType"
-        />
+        >
+          <template #list-item="{ item }">
+            <span
+              class="gl-flex"
+              data-testid="list-item-content"
+              :class="{ '!gl-cursor-default': item.disabled }"
+            >
+              <span
+                :id="item.value"
+                data-testid="list-item-text"
+                class="gl-pr-3"
+                :class="{ 'gl-text-gray-500': item.disabled }"
+              >
+                {{ item.text }}
+              </span>
+              <gl-badge
+                v-if="item.disabled"
+                v-gl-tooltip.right.viewport
+                :title="$options.i18n.disabledTitle"
+                class="gl-ml-auto"
+                variant="neutral"
+              >
+                {{ $options.i18n.disabledLabel }}
+              </gl-badge>
+            </span>
+          </template>
+        </gl-collapsible-listbox>
 
         <template v-if="approverType">
           <component

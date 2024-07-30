@@ -1,5 +1,5 @@
 import { nextTick } from 'vue';
-import { GlForm, GlFormInput, GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { GlForm, GlFormInput, GlCollapsibleListbox, GlSprintf, GlBadge } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import SectionLayout from 'ee/security_orchestration/components/policy_editor/section_layout.vue';
 import { GROUP_TYPE, USER_TYPE } from 'ee/security_orchestration/constants';
@@ -50,6 +50,8 @@ describe('ApproverSelectionWrapper', () => {
   const findGroupSelect = () => wrapper.findComponent(GroupSelect);
   const findUserSelect = () => wrapper.findComponent(UserSelect);
   const findAddButton = () => wrapper.findByTestId('add-approver');
+  const findApproverTypeDropdownContent = () => wrapper.findByTestId('list-item-content');
+  const findApproverTypeDropdownText = () => wrapper.findByTestId('list-item-text');
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
   const findMessage = () => wrapper.findComponent(GlSprintf);
 
@@ -210,6 +212,74 @@ describe('ApproverSelectionWrapper', () => {
       });
       await nextTick();
       expect(findMessage().attributes('message')).toBe(MULTIPLE_APPROVER_TYPES_HUMANIZED_TEMPLATE);
+    });
+  });
+
+  describe('approve type selector', () => {
+    it('renders the approve type selector', () => {
+      factory();
+      expect(findApproverTypeDropdown().exists()).toBe(true);
+      expect(findApproverTypeDropdown().props('items')).toEqual(
+        APPROVER_TYPE_LIST_ITEMS.map((item) => ({ ...item, disabled: false })),
+      );
+    });
+
+    it('marks as disabled already selected items', () => {
+      factory({
+        propsData: {
+          availableTypes: [APPROVER_TYPE_LIST_ITEMS[0], APPROVER_TYPE_LIST_ITEMS[1]],
+        },
+        stubs: { GlCollapsibleListbox },
+      });
+
+      expect(findApproverTypeDropdown().findComponent(GlBadge).attributes('title')).toBe(
+        'You can select this option only once.',
+      );
+      expect(findApproverTypeDropdown().findComponent(GlBadge).text()).toBe('disabled');
+      expect(findApproverTypeDropdown().props('items')[2]).toEqual({
+        text: 'Groups',
+        value: GROUP_TYPE,
+        disabled: true,
+      });
+    });
+
+    it('does not emit event for already selected item', () => {
+      factory({
+        propsData: {
+          availableTypes: [APPROVER_TYPE_LIST_ITEMS[0], APPROVER_TYPE_LIST_ITEMS[1]],
+        },
+      });
+
+      findApproverTypeDropdown().vm.$emit('select', GROUP_TYPE);
+
+      expect(wrapper.emitted('updateApproverType')).toBeUndefined();
+
+      findApproverTypeDropdown().vm.$emit('select', USER_TYPE);
+
+      expect(wrapper.emitted('updateApproverType')).toEqual([
+        [{ newApproverType: 'user', oldApproverType: '' }],
+      ]);
+    });
+
+    it('does not render disable state when items are not selected', () => {
+      factory({
+        stubs: { GlCollapsibleListbox },
+      });
+
+      expect(findApproverTypeDropdownContent().classes()).not.toContain('!gl-cursor-default');
+      expect(findApproverTypeDropdownText().classes()).not.toContain('gl-text-gray-500');
+    });
+
+    it('renders disable state when items are not selected', () => {
+      factory({
+        propsData: {
+          availableTypes: [APPROVER_TYPE_LIST_ITEMS[1], APPROVER_TYPE_LIST_ITEMS[2]],
+        },
+        stubs: { GlCollapsibleListbox },
+      });
+
+      expect(findApproverTypeDropdownContent().classes()).toContain('!gl-cursor-default');
+      expect(findApproverTypeDropdownText().classes()).toContain('gl-text-gray-500');
     });
   });
 });
