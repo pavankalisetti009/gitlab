@@ -29401,6 +29401,21 @@ msgstr ""
 msgid "JiraCloudApp|Copy and paste your JSM Service ID here. Use comma (,) to separate multiple IDs."
 msgstr ""
 
+msgid "JiraCloudApp|Deployment Gating"
+msgstr ""
+
+msgid "JiraCloudApp|Enable Deployment Gating"
+msgstr ""
+
+msgid "JiraCloudApp|Enable to approve or reject blocked GitLab deployments from Jira Service Management."
+msgstr ""
+
+msgid "JiraCloudApp|Enter the environment (%{names}) where you want to enable deployment gating. Use comma (,) to separate multiple environments."
+msgstr ""
+
+msgid "JiraCloudApp|Environment Tiers"
+msgstr ""
+
 msgid "JiraCloudApp|GitLab for Jira Cloud app"
 msgstr ""
 
@@ -29417,6 +29432,12 @@ msgid "JiraCloudApp|This integration is enabled automatically when a group is li
 msgstr ""
 
 msgid "JiraCloudApp|cannot have more than %{limit} service IDs"
+msgstr ""
+
+msgid "JiraCloudApp|environment names should be provided if deployment gating has been enabled"
+msgstr ""
+
+msgid "JiraCloudApp|only available environment names: %{names}"
 msgstr ""
 
 msgid "JiraConnect|Are you a GitLab administrator?"
