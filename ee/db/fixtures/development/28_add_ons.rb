@@ -2,7 +2,7 @@
 
 Gitlab::Seeder.quiet do
   GitlabSubscriptions::AddOn.names.each_key do |name|
-    GitlabSubscriptions::AddOn.create!(name: name, description: GitlabSubscriptions::AddOn.descriptions[name.to_sym])
+    GitlabSubscriptions::AddOn.find_or_create_by_name(name)
 
     print '.'
   end

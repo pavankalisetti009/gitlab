@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::Trials::CreateDuoProLeadService, feature_category: :subscription_management do
+RSpec.describe GitlabSubscriptions::Trials::CreateAddOnLeadService, feature_category: :subscription_management do
   let_it_be(:user) { create(:user, last_name: 'Jones') }
 
   describe '#execute' do

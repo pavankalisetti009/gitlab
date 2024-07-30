@@ -137,7 +137,7 @@ module Features
       create_lead_class =
         case trial_type
         when DUO_PRO_TRIAL
-          GitlabSubscriptions::Trials::CreateDuoProLeadService
+          GitlabSubscriptions::Trials::CreateAddOnLeadService
         else
           GitlabSubscriptions::CreateLeadService
         end
@@ -226,12 +226,19 @@ module Features
     end
 
     def stub_apply_trial(trial_type: '', namespace_id: anything, success: true, extra_params: {})
+      appended_extra_params =
+        case trial_type
+        when DUO_PRO_TRIAL
+          {}
+        else
+          { organization_id: anything }
+        end.merge(extra_params)
+
       trial_user_params = {
         namespace_id: namespace_id,
         gitlab_com_trial: true,
-        sync_to_gl: true,
-        organization_id: anything
-      }.merge(extra_params)
+        sync_to_gl: true
+      }.merge(appended_extra_params)
 
       service_params = {
         trial_user_information: trial_user_params,

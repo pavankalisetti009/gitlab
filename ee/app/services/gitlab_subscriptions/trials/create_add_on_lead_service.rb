@@ -2,7 +2,7 @@
 
 module GitlabSubscriptions
   module Trials
-    class CreateDuoProLeadService
+    class CreateAddOnLeadService
       def execute(company_params)
         response = client.generate_addon_trial(company_params)
 

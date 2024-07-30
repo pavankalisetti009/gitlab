@@ -2,52 +2,8 @@
 
 module GitlabSubscriptions
   module Trials
-    class CreateDuoProService < ::GitlabSubscriptions::Trials::BaseCreateService
-      include Gitlab::Utils::StrongMemoize
-      extend ::Gitlab::Utils::Override
-
-      override :execute
-      def execute
-        return not_found unless DuoPro.eligible_namespace?(trial_params[:namespace_id], namespaces_eligible_for_trial)
-
-        super
-      end
-
+    class CreateDuoProService < ::GitlabSubscriptions::Trials::BaseCreateAddOnService
       private
-
-      def trial_flow
-        return not_found if trial_params[:namespace_id].blank?
-
-        existing_namespace_flow
-      end
-
-      def after_lead_success_hook
-        track_event('duo_pro_lead_creation_success')
-
-        super
-      end
-
-      def after_lead_error_hook(_result)
-        track_event('duo_pro_lead_creation_failure')
-
-        super
-      end
-
-      def after_trial_success_hook
-        track_event('duo_pro_trial_registration_success')
-
-        super
-      end
-
-      def after_trial_error_hook(_result)
-        track_event('duo_pro_trial_registration_failure')
-
-        super
-      end
-
-      def lead_service_class
-        GitlabSubscriptions::Trials::CreateDuoProLeadService
-      end
 
       def apply_trial_service_class
         GitlabSubscriptions::Trials::ApplyDuoProService
@@ -57,18 +13,14 @@ module GitlabSubscriptions
         Users::AddOnTrialEligibleNamespacesFinder.new(user, add_on: :duo_pro).execute
       end
 
-      def trial_user_params
-        super.merge(
-          {
-            product_interaction: 'duo_pro_trial',
-            preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-            opt_in: user.onboarding_status_email_opt_in
-          }
-        )
+      override :product_interaction
+      def product_interaction
+        'duo_pro_trial'
       end
 
-      def track_event(action)
-        Gitlab::InternalEvents.track_event(action, user: user, namespace: namespace)
+      override :tracking_prefix
+      def tracking_prefix
+        'duo_pro'
       end
 
       override :apply_trial_params

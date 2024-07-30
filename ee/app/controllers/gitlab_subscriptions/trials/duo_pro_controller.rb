@@ -80,7 +80,7 @@ module GitlabSubscriptions
       def eligible_namespaces_exist?
         return false if eligible_namespaces.none?
 
-        GitlabSubscriptions::Trials::DuoPro.eligible_namespace?(params[:namespace_id], eligible_namespaces)
+        GitlabSubscriptions::Trials::AddOns.eligible_namespace?(params[:namespace_id], eligible_namespaces)
       end
 
       def namespace
@@ -100,8 +100,7 @@ module GitlabSubscriptions
       end
 
       def trial_params
-        params.permit(:new_group_name, :namespace_id, :trial_entity, :glm_source, :glm_content)
-        .with_defaults(organization_id: Current.organization_id).to_h
+        params.permit(:namespace_id, :trial_entity, :glm_source, :glm_content).to_h
       end
 
       def success_flash_message
@@ -117,7 +116,7 @@ module GitlabSubscriptions
             '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Pro seats.'
           ),
           assign_link_pair,
-          exp_date: GitlabSubscriptions::Trials::DuoPro::DURATION.from_now.strftime('%Y-%m-%d')
+          exp_date: GitlabSubscriptions::Trials::AddOns::DURATION.from_now.strftime('%Y-%m-%d')
         )
       end
     end
