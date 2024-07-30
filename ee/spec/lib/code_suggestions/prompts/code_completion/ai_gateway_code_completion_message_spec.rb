@@ -45,7 +45,8 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletion
         prompt_version: 2,
         prompt: 'dummy prompt',
         model_endpoint: 'http://example.com/endpoint',
-        model_name: 'codestral'
+        model_name: 'codestral',
+        model_api_key: "token"
       }
 
       expect(dummy_message.request_params).to eq(expected_params)

@@ -22,6 +22,13 @@ module CodeSuggestions
 
       def prompt
         if self_hosted?
+          # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global development flag for migrating the prompts
+          if ::Feature.enabled?(:ai_custom_models_prompts_migration)
+            return CodeSuggestions::Prompts::CodeGeneration::AiGatewayCodeGenerationMessage.new(
+              feature_setting: feature_setting, params: params)
+          end
+          # rubocop:enable Gitlab/FeatureFlagWithoutActor
+
           model_name = feature_setting&.self_hosted_model&.model&.to_sym
           case model_name
           when :codellama

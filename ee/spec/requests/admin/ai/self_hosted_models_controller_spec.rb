@@ -60,8 +60,8 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
 
     context 'when no self_hosted_model has an api_token set' do
       before do
-        create(:ai_self_hosted_model, name: 'test1')
-        create(:ai_self_hosted_model, name: 'test2')
+        create(:ai_self_hosted_model, name: 'test1', api_token: nil)
+        create(:ai_self_hosted_model, name: 'test2', api_token: nil)
       end
 
       it 'returns a list of AI powered features' do
@@ -76,7 +76,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
 
     context 'when a self_hosted_model has an api_token set' do
       before do
-        create(:ai_self_hosted_model, name: 'test1')
+        create(:ai_self_hosted_model, name: 'test1', api_token: nil)
         create(:ai_self_hosted_model, name: 'test2', api_token: 'this_is_a_test')
       end
 
@@ -97,7 +97,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
   describe 'GET #edit' do
     let(:page) { Nokogiri::HTML(response.body) }
     let(:self_hosted_model) do
-      create(:ai_self_hosted_model, model: :mixtral)
+      create(:ai_self_hosted_model, model: :mixtral, api_token: nil)
     end
 
     subject :perform_request do

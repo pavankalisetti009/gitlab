@@ -3,28 +3,19 @@
 module CodeSuggestions
   module Prompts
     module CodeGeneration
-      class MistralMessages < CodeSuggestions::Prompts::Base
+      class MistralMessages < AiGatewayCodeGenerationMessage
         GATEWAY_PROMPT_VERSION = 3
-        MODEL_PROVIDER = 'litellm'
-
-        def request_params
-          {
-            model_provider: self.class::MODEL_PROVIDER,
-            prompt_version: self.class::GATEWAY_PROMPT_VERSION,
-            prompt: prompt,
-            model_endpoint: params[:model_endpoint]
-          }.tap do |opts|
-            opts[:model_name] = params[:model_name] if params[:model_name].present?
-            opts[:model_api_key] = params[:model_api_key] if params[:model_api_key].present?
-          end
-        end
 
         private
 
+        def extra_params
+          {
+            prompt_version: self.class::GATEWAY_PROMPT_VERSION
+          }
+        end
+
         def prompt
-          [
-            { role: :user, content: instructions }
-          ]
+          [{ role: :user, content: instructions }]
         end
 
         def instructions
@@ -53,14 +44,6 @@ module CodeSuggestions
 
             [/INST]</s>
           PROMPT
-        end
-
-        def pick_prefix
-          prefix.last(500)
-        end
-
-        def pick_suffix
-          suffix.first(500)
         end
       end
     end

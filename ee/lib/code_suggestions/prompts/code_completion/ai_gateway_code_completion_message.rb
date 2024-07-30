@@ -20,7 +20,8 @@ module CodeSuggestions
 
           super.merge({
             model_name: self_hosted_model.model,
-            model_endpoint: self_hosted_model.endpoint
+            model_endpoint: self_hosted_model.endpoint,
+            model_api_key: self_hosted_model.api_token
           })
         end
 
@@ -32,6 +33,7 @@ module CodeSuggestions
             model_endpoint: params[:model_endpoint]
           }.tap do |opts|
             opts[:model_name] = params[:model_name] if params[:model_name].present?
+            opts[:model_api_key] = params[:model_api_key] if params[:model_api_key].present?
           end
         end
 
