@@ -9,15 +9,15 @@ import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
 import { isNumeric } from '~/lib/utils/number_utils';
+import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
 import { capitalizeFirstCharacter } from '~/lib/utils/text_utility';
-import { n__, sprintf, __ } from '~/locale';
+import { sprintf, __ } from '~/locale';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import {
   DURATION_STAGE_TIME_DESCRIPTION,
   DURATION_STAGE_TIME_LABEL,
   DURATION_CHART_X_AXIS_TITLE,
   DURATION_CHART_Y_AXIS_TITLE,
-  DURATION_CHART_Y_AXIS_TOOLTIP_TITLE,
   DURATION_CHART_TOOLTIP_NO_DATA,
 } from '../constants';
 import NoDataAvailableState from './no_data_available_state.vue';
@@ -80,6 +80,7 @@ export default {
     },
     chartOptions() {
       return {
+        grid: { containLabel: true },
         xAxis: {
           name: this.$options.i18n.xAxisTitle,
           type: 'time',
@@ -89,9 +90,10 @@ export default {
         },
         yAxis: {
           name: this.$options.i18n.yAxisTitle,
+          nameGap: 65,
           type: 'value',
           axisLabel: {
-            formatter: (value) => value,
+            formatter: (value) => humanizeTimeInterval(value, { abbreviated: true }),
           },
         },
         dataZoom: [
@@ -111,18 +113,16 @@ export default {
       this.tooltipContent = isNumeric(metric)
         ? [
             {
-              title: this.$options.i18n.yAxisTooltipTitle,
-              value: n__('%d day', '%d days', metric),
+              title: this.$options.i18n.yAxisTitle,
+              value: humanizeTimeInterval(metric),
             },
           ]
         : [];
     },
   },
-  durationChartTooltipDateFormat: dateFormats.defaultDate,
   i18n: {
     xAxisTitle: DURATION_CHART_X_AXIS_TITLE,
     yAxisTitle: DURATION_CHART_Y_AXIS_TITLE,
-    yAxisTooltipTitle: DURATION_CHART_Y_AXIS_TOOLTIP_TITLE,
     noData: DURATION_CHART_TOOLTIP_NO_DATA,
   },
 };

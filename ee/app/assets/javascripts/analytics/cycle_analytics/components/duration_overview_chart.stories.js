@@ -1,6 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import DurationOverviewChart from './duration_overview_chart.vue';
-import { durationChartData } from './stories_constants';
+import { durationOverviewChartData } from './stories_constants';
 
 export default {
   component: DurationOverviewChart,
@@ -18,7 +18,7 @@ const createStoryWithState = ({ durationChart: { getters, state } = {} }) => {
         durationChart: {
           namespaced: true,
           getters: {
-            durationOverviewChartPlottableData: () => durationChartData,
+            durationOverviewChartPlottableData: () => durationOverviewChartData,
             ...getters,
           },
           state: {

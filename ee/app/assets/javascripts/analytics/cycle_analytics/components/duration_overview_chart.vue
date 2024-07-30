@@ -6,9 +6,9 @@ import { GlAlert, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleton_loader.vue';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
-import { buildNullSeries, formatDurationOverviewTooltipMetric } from 'ee/analytics/shared/utils';
+import { humanizeTimeInterval } from '~/lib/utils/datetime_utility';
+import { buildNullSeries } from 'ee/analytics/shared/utils';
 import { isNumeric } from '~/lib/utils/number_utils';
-import { n__ } from '~/locale';
 import {
   DURATION_CHART_Y_AXIS_TITLE,
   DURATION_TOTAL_TIME_DESCRIPTION,
@@ -84,6 +84,7 @@ export default {
     },
     chartOptions() {
       return {
+        grid: { containLabel: true },
         xAxis: {
           name: '',
           type: 'time',
@@ -93,9 +94,10 @@ export default {
         },
         yAxis: {
           name: this.$options.i18n.yAxisTitle,
+          nameGap: 65,
           type: 'value',
           axisLabel: {
-            formatter: (value) => value,
+            formatter: (value) => humanizeTimeInterval(value, { abbreviated: true }),
           },
         },
       };
@@ -144,9 +146,7 @@ export default {
         return {
           seriesId,
           label: seriesName,
-          value: isNumeric(metric)
-            ? n__('%d day', '%d days', formatDurationOverviewTooltipMetric(metric))
-            : this.$options.i18n.noData,
+          value: isNumeric(metric) ? humanizeTimeInterval(metric) : this.$options.i18n.noData,
           color,
         };
       });

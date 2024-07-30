@@ -197,7 +197,7 @@ RSpec.describe 'Project > Value stream analytics', :js, feature_category: :value
                 'Try adjusting the filters, or creating an issue or merge request to collect more data')
             )
             page.within(duration_chart_selector) do
-              expect(page).to have_content('Average time to completion (days)')
+              expect(page).to have_content('Average time to completion')
             end
           end
         end

@@ -5,7 +5,6 @@ import {
   buildNullSeries,
   toLocalDate,
   pairDataAndLabels,
-  formatDurationOverviewTooltipMetric,
   linearRegression,
 } from 'ee/analytics/shared/utils';
 
@@ -402,20 +401,6 @@ describe('pairDataAndLabels', () => {
     result.forEach((res, index) => {
       expect(res).toEqual(expectedDatasets[index]);
     });
-  });
-});
-
-describe('formatDurationOverviewTooltipMetric', () => {
-  it.each`
-    num          | expected
-    ${2.2453}    | ${2.2}
-    ${0.98445}   | ${0.98}
-    ${0.08345}   | ${0.083}
-    ${0.0094423} | ${0.0094}
-  `('should display $num as $expected', ({ num, expected }) => {
-    const formattedNum = formatDurationOverviewTooltipMetric(num);
-
-    expect(formattedNum).toBe(expected);
   });
 });
 

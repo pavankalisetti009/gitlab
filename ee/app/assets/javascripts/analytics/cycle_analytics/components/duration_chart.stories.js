@@ -1,6 +1,6 @@
 import { withVuexStore } from 'storybook_addons/vuex_store';
 import DurationChart from './duration_chart.vue';
-import { selectedStageData, selectedStage } from './stories_constants';
+import { durationChartData, selectedStage } from './stories_constants';
 
 export default {
   component: DurationChart,
@@ -20,7 +20,7 @@ const Template = (args, { argTypes, createVuexStore }) => ({
       durationChart: {
         namespaced: true,
         getters: {
-          durationChartPlottableData: () => selectedStageData,
+          durationChartPlottableData: () => durationChartData,
         },
         state: {
           isLoading: false,
