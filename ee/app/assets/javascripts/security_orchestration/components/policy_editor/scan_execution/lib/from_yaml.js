@@ -7,6 +7,7 @@ import {
 import { addIdsToPolicy, isValidPolicy, hasInvalidCron } from '../../utils';
 import {
   BRANCH_TYPE_KEY,
+  PRIMARY_POLICY_KEYS,
   RULE_MODE_SCANNERS,
   VALID_SCAN_EXECUTION_BRANCH_TYPE_OPTIONS,
 } from '../../constants';
@@ -68,6 +69,8 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
     const policy = addIdsToPolicy(safeLoad(manifest, { json: true }));
 
     if (validateRuleMode) {
+      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'actions', 'rules'];
+
       /**
        * These values are what is supported by rule mode. If the yaml has any other values,
        * rule mode will be disabled. This validation should not be used to check whether
@@ -99,7 +102,7 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
         actionsKeys.push('ci_configuration');
       }
 
-      return isValidPolicy({ policy, rulesKeys, actionsKeys }) &&
+      return isValidPolicy({ policy, primaryKeys, rulesKeys, actionsKeys }) &&
         !hasInvalidCron(policy) &&
         !hasInvalidBranchType(policy.rules) &&
         !hasInvalidTemplate(policy.actions) &&
