@@ -39,13 +39,13 @@ export default {
 </script>
 
 <template>
-  <div v-if="canViewFalsePositive" class="gl-display-inline-block">
+  <div v-if="canViewFalsePositive" class="gl-inline-block">
     <gl-badge ref="badge" icon="false-positive" variant="warning" />
     <gl-popover ref="popover" :target="target" :title="$options.i18n.title" placement="top">
       <gl-sprintf :message="$options.i18n.message">
         <template #link="{ content }">
           <gl-link
-            class="gl-font-sm"
+            class="gl-text-sm"
             :href="$options.DOC_PATH_VULNERABILITY_DETAILS"
             target="_blank"
           >

@@ -23,7 +23,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-inline-block">
+  <div class="gl-inline-block">
     <gl-badge ref="badge" variant="info" icon="check-circle-dashed" />
     <gl-popover
       ref="popover"

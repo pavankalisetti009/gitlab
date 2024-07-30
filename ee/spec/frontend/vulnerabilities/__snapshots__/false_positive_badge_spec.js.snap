@@ -2,7 +2,7 @@
 
 exports[`False positive badge component should render the alert badge 1`] = `
 <div
-  class="gl-display-inline-block"
+  class="gl-inline-block"
 >
   <gl-badge-stub
     icon="false-positive"
