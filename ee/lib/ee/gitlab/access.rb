@@ -29,9 +29,14 @@ module EE
         end
 
         override :human_access
-        def human_access(access)
-          options_with_minimal_access.key(access)
+        def human_access(access, member_role = nil)
+          member_role&.name || options_with_minimal_access.key(access)
         end
+      end
+
+      override :human_access
+      def human_access
+        ::Gitlab::Access.human_access(access_field, member_role)
       end
 
       override :human_access_labeled
