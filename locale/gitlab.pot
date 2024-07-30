@@ -40169,9 +40169,6 @@ msgstr ""
 msgid "Prioritize label"
 msgstr ""
 
-msgid "Prioritized"
-msgstr ""
-
 msgid "Prioritized labels"
 msgstr ""
 
