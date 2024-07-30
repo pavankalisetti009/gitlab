@@ -167,6 +167,7 @@ module Sbom
       includes(:component, :source, :component_version, :project)
       .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
     end
+    scope :with_project_setting, -> { preload(project: :project_setting) }
     scope :filter_by_non_nil_component_version, -> { where.not(component_version: nil) }
 
     scope :order_by_severity, ->(direction) do
