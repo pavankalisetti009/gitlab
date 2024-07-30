@@ -196,6 +196,13 @@ module EE
           description: 'List of self-hosted LLM servers.',
           resolver: ::Resolvers::Ai::SelfHostedModels::SelfHostedModelsResolver,
           alpha: { milestone: '17.1' }
+
+        field :cloud_connector_status,
+          ::Types::CloudConnector::StatusType,
+          null: true,
+          description: 'Run a series of status checks for Cloud Connector features.',
+          resolver: ::Resolvers::CloudConnector::StatusResolver,
+          alpha: { milestone: '17.3' }
       end
 
       def vulnerability(id:)
