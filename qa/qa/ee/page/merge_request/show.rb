@@ -20,7 +20,7 @@ module QA
                 element 'approver-list-content'
               end
 
-              view 'ee/app/assets/javascripts/vue_merge_request_widget/extensions/security_reports/mr_widget_security_reports.vue' do
+              view 'ee/app/assets/javascripts/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue' do
                 element 'vulnerability-report-grouped'
                 element 'sast-scan-report'
                 element 'dependency-scan-report'

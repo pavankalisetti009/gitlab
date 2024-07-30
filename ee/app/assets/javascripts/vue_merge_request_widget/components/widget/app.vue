@@ -4,22 +4,18 @@ import CEWidgetApp from '~/vue_merge_request_widget/components/widget/app.vue';
 export default {
   components: {
     MrBrowserPerformanceWidget: () =>
-      import('ee/vue_merge_request_widget/extensions/browser_performance/index.vue'),
+      import('ee/vue_merge_request_widget/widgets/browser_performance/index.vue'),
     MrLoadPerformanceWidget: () =>
-      import('ee/vue_merge_request_widget/extensions/load_performance/index.vue'),
-    MrMetricsWidget: () => import('ee/vue_merge_request_widget/extensions/metrics/index.vue'),
+      import('ee/vue_merge_request_widget/widgets/load_performance/index.vue'),
+    MrMetricsWidget: () => import('ee/vue_merge_request_widget/widgets/metrics/index.vue'),
     MrSecurityWidgetEE: () =>
-      import(
-        'ee/vue_merge_request_widget/extensions/security_reports/mr_widget_security_reports.vue'
-      ),
+      import('ee/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue'),
     MrSecurityWidgetCE: () =>
-      import(
-        '~/vue_merge_request_widget/extensions/security_reports/mr_widget_security_reports.vue'
-      ),
+      import('~/vue_merge_request_widget/widgets/security_reports/mr_widget_security_reports.vue'),
     MrStatusChecksWidget: () =>
-      import('ee/vue_merge_request_widget/extensions/status_checks/index.vue'),
+      import('ee/vue_merge_request_widget/widgets/status_checks/index.vue'),
     MrLicenseComplianceWidget: () =>
-      import('ee/vue_merge_request_widget/extensions/license_compliance/index.vue'),
+      import('ee/vue_merge_request_widget/widgets/license_compliance/index.vue'),
   },
 
   extends: CEWidgetApp,
