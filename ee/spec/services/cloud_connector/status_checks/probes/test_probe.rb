@@ -9,7 +9,7 @@ module CloudConnector
           @success = success
         end
 
-        def execute
+        def execute(*)
           return failure('NOK') unless @success
 
           success('OK')

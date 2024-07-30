@@ -11,15 +11,18 @@ module CloudConnector
       DEFAULT_PROBES = [
         CloudConnector::StatusChecks::Probes::LicenseProbe.new,
         CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_HOST, 443),
-        CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_HOST, 443)
+        CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_HOST, 443),
+        CloudConnector::StatusChecks::Probes::EndToEndProbe.new
       ].freeze
 
-      def initialize(probes: DEFAULT_PROBES)
+      def initialize(user:, probes: DEFAULT_PROBES)
+        @user = user
         @probes = probes
       end
 
       def execute
-        probe_results = @probes.map(&:execute)
+        execution_context = { user: @user }
+        probe_results = @probes.map { |probe| probe.execute(**execution_context) }
         success = probe_results.all?(&:success?)
         payload = { probe_results: probe_results }
 
