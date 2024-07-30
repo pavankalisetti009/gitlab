@@ -14253,6 +14253,9 @@ msgstr ""
 msgid "ContainerRegistry|-- tags"
 msgstr ""
 
+msgid "ContainerRegistry|A protection rule exists for this container repository."
+msgstr ""
+
 msgid "ContainerRegistry|Add protection rule"
 msgstr ""
 
