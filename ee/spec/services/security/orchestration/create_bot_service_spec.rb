@@ -83,6 +83,8 @@ RSpec.describe Security::Orchestration::CreateBotService, feature_category: :sec
       expect(bot_user.user_type).to eq('security_policy_bot')
       expect(bot_user.external).to eq(true)
       expect(bot_user.avatar).to be_instance_of AvatarUploader
+      expect(bot_user.private_profile).to eq(true)
+      expect(bot_user.confirmed_at).to be_present
       expect(bot_user.namespace.organization).to eq(project.organization)
     end
 
