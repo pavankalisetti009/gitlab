@@ -15664,6 +15664,7 @@ The connection type for [`Todo`](#todo).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="todoconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
 | <a id="todoconnectionedges"></a>`edges` | [`[TodoEdge]`](#todoedge) | A list of edges. |
 | <a id="todoconnectionnodes"></a>`nodes` | [`[Todo]`](#todo) | A list of nodes. |
 | <a id="todoconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
