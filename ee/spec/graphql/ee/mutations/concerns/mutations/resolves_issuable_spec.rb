@@ -9,12 +9,11 @@ RSpec.describe Mutations::ResolvesIssuable do
     end
   end
 
-  let_it_be(:group)    { create(:group) }
-  let_it_be(:user)     { create(:user) }
-  let_it_be(:context)  { { current_user: user } }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:epic) { create(:epic, group: group) }
 
-  let(:mutation) { mutation_class.new(object: nil, context: context, field: nil) }
+  let(:mutation) { mutation_class.new(object: nil, context: query_context, field: nil) }
 
   context 'with epics' do
     let(:parent)   { issuable.group }
