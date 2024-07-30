@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:user) { create :user }
   let_it_be(:group) { create :group }
   let_it_be(:member) { build :group_member, source: group, user: user }
@@ -833,6 +835,59 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     it 'returns only members above guest or guests with elevated role' do
       expect(described_class.with_elevated_guests).to match_array([member1, member2])
       expect(described_class.with_elevated_guests).not_to include(member3)
+    end
+  end
+
+  describe '.with_group_group_sharing_access' do
+    let_it_be(:shared_group) { create(:group) }
+
+    include_context 'with member roles assigned to group links' do
+      let(:group) { shared_group }
+    end
+
+    where(:invited_group, :member, :expected_access_level, :expected_member_role) do
+      ref(:sre_group) | ref(:kate)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
+      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
+      ref(:sre_group) | ref(:mark)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
+      ref(:sre_group) | ref(:jake)  | Gitlab::Access::DEVELOPER | nil
+      ref(:sre_group) | ref(:mary)  | Gitlab::Access::GUEST | nil
+      ref(:developers_group) | ref(:sarah) | Gitlab::Access::DEVELOPER | nil
+      ref(:developers_group) | ref(:bob)   | Gitlab::Access::DEVELOPER | nil
+      ref(:developers_group) | ref(:owen)  | Gitlab::Access::GUEST | nil
+    end
+
+    with_them do
+      context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+        it 'returns minimum access level and expected member role' do
+          members = invited_group
+                      .members
+                      .with_group_group_sharing_access(shared_group)
+                      .id_in(member.id)
+                      .to_a
+
+          expect(members.size).to eq(1)
+          expect(members.first.access_level).to eq(expected_access_level)
+          expect(members.first.member_role_id).to eq(expected_member_role&.id)
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links: false)
+        end
+
+        it 'returns  minimum access level and ignores member role of the group link' do
+          members = invited_group
+                      .members
+                      .with_group_group_sharing_access(shared_group)
+                      .id_in(member.id)
+                      .to_a
+
+          expect(members.size).to eq(1)
+          expect(members.first.access_level).to eq(expected_access_level)
+          expect(members.first.member_role_id).to eq(member.member_role_id)
+        end
+      end
     end
   end
 end

@@ -71,28 +71,31 @@ module Preloaders
 
       permissions_as_false = permissions.map { |p| "false AS #{p}" }.join(', ')
 
-      project_member = Member.select(permission_columns)
-        .left_outer_joins(:member_role)
-        .where("members.source_type = 'Project' AND members.source_id = project_ids.project_id")
+      member = Member.select(permission_columns)
         .with_user(user)
         .where(permission_condition)
+
+      project_member = member
+        .left_outer_joins(:member_role)
+        .where("members.source_type = 'Project' AND members.source_id = project_ids.project_id")
         .to_sql
 
-      namespace_member = Member.select(permission_columns)
+      namespace_member = member
         .left_outer_joins(:member_role)
         .where(
           "members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)"
         )
-        .with_user(user)
-        .where(permission_condition)
         .to_sql
 
       if Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
-        group_link_member = GroupGroupLink.select(permission_columns)
-          .joins(:member_role)
+        group_link_member = member
+          .joins('LEFT OUTER JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
+          .joins('LEFT OUTER JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
           .where('group_group_links.shared_group_id IN (SELECT UNNEST(project_ids.namespace_ids) as ids)')
-          .where(shared_with_group_id: user.member_namespaces.select(:id))
-          .where(permission_condition)
+          .where('
+            (members.access_level > group_group_links.group_access) OR
+            (members.access_level = group_group_links.group_access AND members.member_role_id IS NOT NULL)
+          ')
           .to_sql
       end
 

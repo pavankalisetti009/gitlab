@@ -69,19 +69,24 @@ module Preloaders
 
       permissions_as_false = permissions.map { |p| "false AS #{p}" }.join(', ')
 
-      group_member = Member.select(permission_columns)
-        .left_outer_joins(:member_role)
-        .where("members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(namespace_ids) as ids)")
+      member = Member.select(permission_columns)
         .with_user(user)
         .where(permission_condition)
+
+      group_member = member
+        .left_outer_joins(:member_role)
+        .where("members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(namespace_ids) as ids)")
         .to_sql
 
       if Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
-        group_link_member = GroupGroupLink.select(permission_columns)
-          .joins(:member_role)
-          .where('group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)')
-          .where(shared_with_group_id: user.member_namespaces.select(:id))
-          .where(permission_condition)
+        group_link_member = member
+          .joins('LEFT OUTER JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
+          .joins('LEFT OUTER JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
+          .where("group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)")
+          .where(
+            "(members.access_level > group_group_links.group_access) OR " \
+              "(members.access_level = group_group_links.group_access AND members.member_role_id IS NOT NULL)"
+          )
           .to_sql
       end
 
