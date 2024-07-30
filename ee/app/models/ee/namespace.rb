@@ -506,8 +506,8 @@ module EE
       user_namespace? && !paid?
     end
 
-    override :prevent_delete?
-    def prevent_delete?
+    override :linked_to_subscription?
+    def linked_to_subscription?
       super && !trial?
     end
 

@@ -68,7 +68,7 @@ module EE
     private
 
     def check_subscription!
-      if group.prevent_delete?
+      if group.linked_to_subscription?
         redirect_to edit_group_path(group),
           status: :found,
           alert: _('This group is linked to a subscription')
