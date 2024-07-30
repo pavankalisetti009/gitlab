@@ -111,6 +111,31 @@ RSpec.describe Groups::Epics::NotesController, feature_category: :portfolio_mana
         post :create, params: request_params.except(:format)
       end
     end
+
+    context 'when epic is locked' do
+      before do
+        epic.work_item.update!(discussion_locked: true)
+      end
+
+      it 'creates new note when user is a group member' do
+        sign_in(user)
+
+        expect { post :create, params: request_params }.to change { Note.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(parsed_response[:errors]).to be_nil
+        expect(parsed_response[:note]).to eq('some note')
+        expect(parsed_response[:author][:username]).to eq(user.username)
+      end
+
+      it 'does not create a note when user is not a group member' do
+        sign_in(create(:user))
+
+        expect { post :create, params: request_params }.to not_change { Note.count }
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
   end
 
   describe 'PUT update' do

@@ -5,6 +5,8 @@ class EpicPolicy < BasePolicy
 
   delegate { @subject.group }
 
+  condition(:is_group_member) { @subject.group.member?(@user) }
+
   condition(:service_desk_enabled) do
     @subject.group.has_project_with_service_desk_enabled?
   end
@@ -46,6 +48,8 @@ class EpicPolicy < BasePolicy
   condition(:relations_for_non_members_available, scope: :subject) do
     ::Feature.enabled?(:epic_relations_for_non_members,  @subject.group)
   end
+
+  condition(:locked, scope: :subject, score: 0) { @subject.work_item.discussion_locked? }
 
   rule { can?(:read_epic) }.policy do
     enable :read_epic_iid
@@ -137,6 +141,12 @@ class EpicPolicy < BasePolicy
 
   rule { can?(:read_epic_relation) & subepics_available }.policy do
     enable :create_epic_tree_relation
+  end
+
+  rule { locked & ~is_group_member }.policy do
+    prevent :create_note
+    prevent :admin_note
+    prevent :award_emoji
   end
 
   def summarize_comments_service
