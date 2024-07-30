@@ -14,8 +14,10 @@ module WorkItems
       Gitlab::AppLogger.info("Copying timelogs from issue #{from_issue_id} to issue #{to_issue_id}")
 
       from_issue = Issue.find_by_id(from_issue_id)
+      return if from_issue.nil? || from_issue.timelogs.empty?
+
       to_issue = Issue.find_by_id(to_issue_id)
-      return if from_issue.nil? || to_issue.nil? || from_issue.timelogs.empty?
+      return if to_issue.nil?
 
       reset_attributes = { project_id: to_issue.project_id, issue_id: to_issue.id }
       ApplicationRecord.transaction do
