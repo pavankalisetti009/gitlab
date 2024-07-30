@@ -6,9 +6,22 @@
     %h2.gl-text-size-h1.gl-mb-5{ class: 'gl-w-3/4' }
       = s_('DuoProDiscover|Ship software faster and more securely with AI integrated into your entire DevSecOps lifecycle.')
     .gl-flex
-      = render Pajamas::ButtonComponent.new(href: group_settings_gitlab_duo_usage_index_path(@group), category: :primary, variant: :confirm, button_options: { class: 'gl-mr-3', data: { cta_tracking: { action: 'click_buy_now', label: 'duo_pro_active_trial' } } }) do |c|
+      = render Pajamas::ButtonComponent.new(href: group_settings_gitlab_duo_usage_index_path(@group), category: :primary, variant: :confirm, button_options: { class: 'gl-mr-3', data: { track_action: 'click_buy_now', track_label: 'duo_pro_active_trial' } }) do |c|
         = _('Buy now')
       .js-hand-raise-lead-trigger{ data: discover_duo_pro_hand_raise_lead_data(@group) }
-  .container.gl-p-0
+  .container.gl-p-0.ml-6
     %a{ href: "https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479", target: '_blank' }
       = image_tag("duo_pro/video-thumbnail.png", width: 500, style: 'border-radius:4px;')
+
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
+  .container.gl-mt-5
+    %h3.gl-text-lg.gl-mb-6
+      = s_("DuoProDiscover|Why GitLab Duo?")
+    .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-2
+      - duo_pro_discover_card_collection(@group).each do |attributes|
+        = render Pajamas::CardComponent.new(card_options: { class: 'gl-rounded-lg gl-p-2' }, body_options: { class: 'gl-pt-0' }, header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' }) do |c|
+          - c.with_header do
+            = attributes[:header]
+          - c.with_body do
+            = attributes[:body]
+
