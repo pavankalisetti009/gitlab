@@ -320,6 +320,16 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="querycivariablessort"></a>`sort` | [`CiVariableSort`](#civariablesort) | Sort order of results. |
 
+### `Query.cloudConnectorStatus`
+
+Run a series of status checks for Cloud Connector features.
+
+DETAILS:
+**Introduced** in GitLab 17.3.
+**Status**: Experiment.
+
+Returns [`CloudConnectorStatus`](#cloudconnectorstatus).
+
 ### `Query.containerRepository`
 
 Find a container repository.
@@ -18782,6 +18792,25 @@ GitLab CI/CD configuration template.
 | ---- | ---- | ----------- |
 | <a id="citemplatecontent"></a>`content` | [`String!`](#string) | Contents of the CI template. |
 | <a id="citemplatename"></a>`name` | [`String!`](#string) | Name of the CI template. |
+
+### `CloudConnectorProbeResult`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cloudconnectorproberesultmessage"></a>`message` | [`String`](#string) | Additional message or details about the probe result. |
+| <a id="cloudconnectorproberesultname"></a>`name` | [`String`](#string) | Name of the probe. |
+| <a id="cloudconnectorproberesultsuccess"></a>`success` | [`Boolean`](#boolean) | Indicates if the probe was successful. |
+
+### `CloudConnectorStatus`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cloudconnectorstatusproberesults"></a>`probeResults` | [`[CloudConnectorProbeResult!]`](#cloudconnectorproberesult) | Results of individual probes run during verification. |
+| <a id="cloudconnectorstatussuccess"></a>`success` | [`Boolean`](#boolean) | Indicates if the setup verification was successful. |
 
 ### `ClusterAgent`
 
