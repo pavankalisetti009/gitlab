@@ -3,12 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Security::ScanExecutionPoliciesFinder, feature_category: :security_policy_management do
-  let!(:policy) { build(:scan_execution_policy, name: 'Run DAST in every pipeline') }
+  let!(:policy) { build(:scan_execution_policy, name: 'Run DAST in every pipeline', policy_scope: policy_scope) }
   let!(:policy_yaml) do
     build(:orchestration_policy_yaml, scan_execution_policy: [policy])
   end
 
-  include_context 'with scan policies information'
+  include_context 'with security policies information'
 
   subject { described_class.new(actor, object, params).execute }
 
@@ -108,5 +108,5 @@ RSpec.describe Security::ScanExecutionPoliciesFinder, feature_category: :securit
     end
   end
 
-  it_behaves_like 'scan policies finder'
+  it_behaves_like 'security policies finder'
 end

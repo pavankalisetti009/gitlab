@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
-RSpec.shared_context 'with scan policies information' do
+RSpec.shared_context 'with security policies information' do
   let_it_be(:group) { create(:group) }
   let_it_be(:object) { create(:project, group: group) }
 
   let(:relationship) { nil }
   let(:action_scan_types) { nil }
+  let(:include_unscoped) { nil }
+
+  let(:policy_scope) { {} }
 
   let!(:policy_management_project) do
     create(
@@ -26,7 +29,8 @@ RSpec.shared_context 'with scan policies information' do
   let(:params) do
     {
       relationship: relationship,
-      action_scan_types: action_scan_types
+      action_scan_types: action_scan_types,
+      include_unscoped: include_unscoped
     }
   end
 

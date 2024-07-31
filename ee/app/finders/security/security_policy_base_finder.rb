@@ -60,7 +60,9 @@ module Security
     def merge_project_relationship(config)
       return [] unless config.respond_to? policy_type
 
-      config.public_send(policy_type).map do |policy| # rubocop:disable GitlabSecurity/PublicSend -- necessary
+      policies(config).filter_map do |policy|
+        next if !params[:include_unscoped] && !policy_scope_applicable?(policy)
+
         policy.merge(
           config: config,
           project: config.project,
@@ -68,6 +70,24 @@ module Security
           inherited: config.source != object
         )
       end
+    end
+
+    def policies(config)
+      case policy_type
+      when :pipeline_execution_policy
+        config.pipeline_execution_policy
+      when :scan_execution_policy
+        config.scan_execution_policy
+      when :scan_result_policies
+        config.scan_result_policies
+      end
+    end
+
+    def policy_scope_applicable?(policy)
+      return true unless object.is_a?(Project)
+
+      policy_scope_checker = Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: object)
+      policy_scope_checker.policy_applicable?(policy)
     end
   end
 end

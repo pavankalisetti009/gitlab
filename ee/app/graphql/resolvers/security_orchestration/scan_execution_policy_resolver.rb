@@ -17,6 +17,12 @@ module Resolvers
         required: false,
         default_value: :direct
 
+      argument :include_unscoped, GraphQL::Types::Boolean,
+        description: 'Filter policies that are scoped to the project.',
+        alpha: { milestone: '17.3' },
+        required: false,
+        default_value: true
+
       def resolve(**args)
         policies = Security::ScanExecutionPoliciesFinder.new(context[:current_user], project, args).execute
         construct_scan_execution_policies(policies)
