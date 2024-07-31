@@ -28,10 +28,10 @@ RSpec.describe ComplianceManagement::UpdateDefaultFrameworkWorker, feature_categ
       stub_licensed_features(custom_compliance_frameworks: true, compliance_framework: true)
     end
 
-    it 'invokes ComplianceManagement::Frameworks::AssignProjectService' do
-      params = [project, admin_bot, { framework: framework.id }]
+    it 'invokes ComplianceManagement::Frameworks::UpdateProjectService' do
+      params = [project, admin_bot, [framework]]
 
-      expect_next_instance_of(ComplianceManagement::Frameworks::AssignProjectService, *params) do |assign_service|
+      expect_next_instance_of(ComplianceManagement::Frameworks::UpdateProjectService, *params) do |assign_service|
         expect(assign_service).to receive(:execute).and_call_original
       end
 
