@@ -285,15 +285,17 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
   describe '#user_cap_enabled?', feature_category: :consumables_cost_management do
     using RSpec::Parameterized::TableSyntax
 
-    where(:new_user_signups_cap, :root_namespace, :expectation) do
-      nil | true  | false
-      nil | false | false
-      10  | true  | true
-      10  | false | false
+    where(:seat_control, :new_user_signups_cap, :root_namespace, :expectation) do
+      :off      | nil | false | false
+      :off      | nil | true  | false
+      :off      | 10  | false | false
+      :off      | 10  | true  | false
+      :user_cap | 10  | false | false
+      :user_cap | 10  | true  | true
     end
 
     with_them do
-      let(:setting) { build(:namespace_settings, new_user_signups_cap: new_user_signups_cap) }
+      let(:setting) { build(:namespace_settings, seat_control: seat_control, new_user_signups_cap: new_user_signups_cap) }
       let(:group) { build(:group, namespace_settings: setting) }
 
       before do

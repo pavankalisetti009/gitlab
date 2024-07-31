@@ -804,6 +804,8 @@ module EE
     def user_cap_reached?(use_cache: false)
       return false unless user_cap_available?
 
+      return false unless root_ancestor.namespace_settings&.seat_control_user_cap?
+
       user_cap = root_ancestor.namespace_settings&.new_user_signups_cap
       return false unless user_cap
 

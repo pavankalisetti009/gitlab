@@ -88,15 +88,15 @@ module EE
       end
 
       def user_cap_enabled?
-        new_user_signups_cap.present? && namespace.root?
+        seat_control_user_cap? && namespace.root?
       end
 
       private
 
       def enabling_user_cap?
-        return false unless persisted? && new_user_signups_cap_changed?
+        return false unless persisted? && seat_control_changed?
 
-        new_user_signups_cap_was.nil?
+        seat_control_user_cap?
       end
 
       def user_cap_allowed
@@ -112,7 +112,7 @@ module EE
       end
 
       def set_seat_control
-        self.seat_control = if user_cap_enabled?
+        self.seat_control = if new_user_signups_cap.present?
                               :user_cap
                             else
                               :off
