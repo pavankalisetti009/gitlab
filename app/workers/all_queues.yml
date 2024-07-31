@@ -4192,7 +4192,7 @@
   :worker_name: WorkItems::CopyTimelogsWorker
   :feature_category: :team_planning
   :has_external_dependencies: false
-  :urgency: :low
+  :urgency: :high
   :resource_boundary: :unknown
   :weight: 1
   :idempotent: true

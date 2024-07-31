@@ -8,6 +8,7 @@ module WorkItems
     deduplicate :until_executed
     idempotent!
     feature_category :team_planning
+    urgency :high
 
     BATCH_SIZE = 100
     def perform(from_issue_id, to_issue_id)
