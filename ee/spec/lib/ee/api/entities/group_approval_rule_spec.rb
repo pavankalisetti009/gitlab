@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe EE::API::Entities::GroupApprovalRule, feature_category: :source_code_management do
   subject(:hash) { described_class.new(approval_rule).as_json }
 
-  let(:approval_rule) { build(:approval_group_rule) }
+  let_it_be(:approval_rule) { create(:approval_group_rule) }
 
   it 'exposes attributes' do
     expect(hash.keys).to match_array(%i[
