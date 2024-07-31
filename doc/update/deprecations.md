@@ -1236,7 +1236,7 @@ In GitLab 11.11 the Windows Batch executor, the CMD shell was deprecated in GitL
 
 - Announced in GitLab <span class="milestone">16.2</span>
 - Removal in GitLab <span class="milestone">17.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/41518).
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/415185).
 
 </div>
 
