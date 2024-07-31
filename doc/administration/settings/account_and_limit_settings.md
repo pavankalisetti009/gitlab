@@ -111,7 +111,7 @@ To prevent this from happening, you can set a hard limit for your repositories' 
 This limit can be set globally, per group, or per project, with per project limits
 taking the highest priority.
 
-There are numerous use cases where you might set up a limit for repository size.
+Numerous use cases exist where you might set up a limit for repository size.
 For instance, consider the following workflow:
 
 1. Your team develops apps which require large files to be stored in
@@ -178,7 +178,7 @@ For details, see [cookies used for sign-in](../../user/profile/index.md#cookies-
 
 > - Ability to turn the **Remember me** setting on and off [introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/369133) in GitLab 16.0.
 
-Users can select the **Remember me** checkbox on sign-in, and their session will remain active for an indefinite period of time when accessed from that specific browser. You can turn off this setting if you need sessions to expire for security or compliance purposes. Turning off this setting will ensure users' sessions expire after the number of minutes of inactivity set when you [customize your session duration](#customize-the-default-session-duration).
+Users can select the **Remember me** checkbox on sign-in, and their session remains active for an indefinite period of time when accessed from that specific browser. You can turn off this setting if you need sessions to expire for security or compliance purposes. Turning off this setting ensures users' sessions expire after the number of minutes of inactivity set when you [customize your session duration](#customize-the-default-session-duration).
 
 1. On the left sidebar, at the bottom, select **Admin**.
 1. Select **Settings > General**.
