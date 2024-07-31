@@ -272,6 +272,7 @@ module EE
       scope :with_designs, -> { where(id: ::DesignManagement::Design.select(:project_id).distinct) }
       scope :with_deleting_user, -> { includes(:deleting_user) }
       scope :with_compliance_framework_settings, -> { preload(:compliance_framework_settings) }
+      scope :with_compliance_management_frameworks, -> { preload(:compliance_management_frameworks) }
       scope :has_vulnerabilities, -> { joins(:project_setting).merge(::ProjectSetting.has_vulnerabilities) }
       scope :has_vulnerability_statistics, -> { joins(:vulnerability_statistic) }
       scope :with_vulnerability_statistics, -> { includes(:vulnerability_statistic) }
@@ -1317,6 +1318,10 @@ module EE
       return if project_setting.has_vulnerabilities?
 
       project_setting.update!(has_vulnerabilities: true)
+    end
+
+    def compliance_management_frameworks_names
+      compliance_management_frameworks.pluck(:name)
     end
 
     private

@@ -72,6 +72,13 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_multiple_compliance_frameworks do
+      after(:build) do |project|
+        create(:compliance_framework_project_setting, project: project)
+        create(:compliance_framework_project_setting, :sox, project: project)
+      end
+    end
+
     trait :with_cve_request do
       transient do
         cve_request_enabled { true }

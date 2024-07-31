@@ -18,8 +18,16 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     context 'when project has a compliance framework' do
       let(:project) { create(:project, :with_sox_compliance_framework) }
 
-      it 'is an array containing a single compliance framework' do
-        expect(subject[:compliance_frameworks]).to contain_exactly('SOX')
+      it 'is an array containing all the compliance frameworks' do
+        expect(subject[:compliance_frameworks]).to match_array(['SOX'])
+      end
+    end
+
+    context 'when project has compliance frameworks' do
+      let_it_be(:project) { create(:project, :with_multiple_compliance_frameworks) }
+
+      it 'is an array containing all the compliance frameworks' do
+        expect(subject[:compliance_frameworks]).to contain_exactly('SOX', 'GDPR')
       end
     end
 
