@@ -34,7 +34,7 @@ describe('ExperimentFeaturesBanner', () => {
       'https://gitlab.com/gitlab-org/gitlab/-/issues/434425',
     );
     expect(findLink().attributes('href')).toBe(
-      '/help/user/application_security/policies/scan-execution-policies#experimental-features',
+      '/help/user/application_security/policies/scan_execution_policies#experimental-features',
     );
   });
 
