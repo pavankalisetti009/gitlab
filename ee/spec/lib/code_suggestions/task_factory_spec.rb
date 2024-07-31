@@ -11,6 +11,12 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
     let(:prefix) { 'some prefix' }
     let(:suffix) { 'some suffix' }
     let(:user_instruction) { nil }
+    let(:expected_project) { nil }
+
+    let(:instruction) do
+      instance_double(CodeSuggestions::Instruction, instruction: 'instruction', trigger_type: 'comment')
+    end
+
     let(:params) do
       {
         current_file: {
@@ -22,7 +28,11 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
         user_instruction: user_instruction,
         context: [
           { type: 'file', name: 'main.go', content: 'package main' }
-        ]
+        ],
+        instruction: instruction,
+        prefix: prefix,
+        project: expected_project,
+        current_user: current_user
       }
     end
 
@@ -55,7 +65,6 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
 
     context 'when code completion' do
       let(:expected_class) { ::CodeSuggestions::Tasks::CodeCompletion }
-      let(:expected_project) { nil }
       let(:expected_params) do
         {
           params: params,
@@ -90,22 +99,11 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
 
     context 'when code generation' do
       let(:expected_class) { ::CodeSuggestions::Tasks::CodeGeneration }
-      let(:expected_project) { nil }
       let(:expected_params) do
         {
-          params: params.merge(
-            instruction: instruction,
-            prefix: prefix,
-            project: expected_project,
-            model_name: described_class::ANTHROPIC_MODEL,
-            current_user: current_user
-          ),
+          params: params,
           unsafe_passthrough_params: {}
         }
-      end
-
-      let(:instruction) do
-        instance_double(CodeSuggestions::Instruction, instruction: 'instruction', trigger_type: 'comment')
       end
 
       before do
@@ -175,7 +173,6 @@ RSpec.describe CodeSuggestions::TaskFactory, feature_category: :code_suggestions
               instruction: instruction,
               prefix: prefix,
               project: expected_project,
-              model_name: described_class::ANTHROPIC_MODEL,
               current_user: current_user
             ),
             unsafe_passthrough_params: {}

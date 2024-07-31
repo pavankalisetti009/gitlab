@@ -42,7 +42,6 @@ RSpec.shared_examples 'anthropic prompt' do
       prefix: prefix,
       instruction: instruction,
       current_file: unsafe_params['current_file'].with_indifferent_access,
-      model_name: model_name,
       context: context
     }
   end
@@ -115,7 +114,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }
@@ -175,7 +174,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }
@@ -297,26 +296,12 @@ RSpec.shared_examples 'anthropic prompt' do
 
         it 'returns expected request params' do
           request_params = {
-            model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+            model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
+            model_name: model_name,
             prompt_version: prompt_version
           }
 
           expect(subject.request_params).to eq(request_params.merge(prompt: expected_prompt))
-        end
-
-        context 'when model_name is missing' do
-          before do
-            params.delete(:model_name)
-          end
-
-          it 'does not include model_name in request params' do
-            request_params = {
-              model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
-              prompt_version: prompt_version
-            }
-
-            expect(subject.request_params).to eq(request_params.merge(prompt: expected_prompt))
-          end
         end
       end
 
@@ -422,7 +407,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
         it 'returns expected request params' do
           request_params = {
-            model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+            model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
             model_name: model_name,
             prompt_version: prompt_version
           }
@@ -464,7 +449,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }
@@ -512,7 +497,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }
@@ -562,7 +547,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }
@@ -612,7 +597,7 @@ RSpec.shared_examples 'anthropic prompt' do
 
       it 'returns expected request params' do
         request_params = {
-          model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+          model_provider: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::MODEL_PROVIDER,
           model_name: model_name,
           prompt_version: prompt_version
         }

@@ -6,19 +6,16 @@ module CodeSuggestions
       extend ::Gitlab::Utils::Override
       include Gitlab::Utils::StrongMemoize
 
-      attr_reader :feature_setting
-
-      def initialize(params: nil, unsafe_passthrough_params: nil)
-        @feature_setting = ::Ai::FeatureSetting.find_by_feature(:code_generations)
-        super(params: params, unsafe_passthrough_params: unsafe_passthrough_params)
-      end
-
       override :endpoint_name
       def endpoint_name
         'generations'
       end
 
       private
+
+      def feature_setting_name
+        :code_generations
+      end
 
       def prompt
         if self_hosted?
