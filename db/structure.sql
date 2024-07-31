@@ -777,6 +777,22 @@ RETURN NEW;
 END
 $$;
 
+CREATE FUNCTION trigger_02450faab875() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+IF NEW."project_id" IS NULL THEN
+  SELECT "project_id"
+  INTO NEW."project_id"
+  FROM "vulnerability_occurrences"
+  WHERE "vulnerability_occurrences"."id" = NEW."occurrence_id";
+END IF;
+
+RETURN NEW;
+
+END
+$$;
+
 CREATE FUNCTION trigger_038fe84feff7() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -19443,7 +19459,8 @@ CREATE TABLE vulnerability_occurrence_identifiers (
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     occurrence_id bigint NOT NULL,
-    identifier_id bigint NOT NULL
+    identifier_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE vulnerability_occurrence_identifiers_id_seq
@@ -31933,6 +31950,8 @@ CREATE TRIGGER table_sync_trigger_cd362c20e2 AFTER INSERT OR DELETE OR UPDATE ON
 CREATE TRIGGER tags_loose_fk_trigger AFTER DELETE ON tags REFERENCING OLD TABLE AS old_table FOR EACH STATEMENT EXECUTE FUNCTION insert_into_loose_foreign_keys_deleted_records();
 
 CREATE TRIGGER trigger_01b3fc052119 BEFORE INSERT OR UPDATE ON approval_merge_request_rules FOR EACH ROW EXECUTE FUNCTION trigger_01b3fc052119();
+
+CREATE TRIGGER trigger_02450faab875 BEFORE INSERT OR UPDATE ON vulnerability_occurrence_identifiers FOR EACH ROW EXECUTE FUNCTION trigger_02450faab875();
 
 CREATE TRIGGER trigger_038fe84feff7 BEFORE INSERT OR UPDATE ON approvals FOR EACH ROW EXECUTE FUNCTION trigger_038fe84feff7();
 
