@@ -375,7 +375,8 @@ RSpec.describe VulnerabilitiesHelper, feature_category: :vulnerability_managemen
         dismissal_feedback: anything,
         state_transitions: kind_of(Array),
         issue_links: kind_of(Array),
-        merge_request_links: kind_of(Array)
+        merge_request_links: kind_of(Array),
+        ai_resolution_available: kind_of(String)
       )
 
       expect(subject[:location]['blob_path']).to match(kind_of(String))

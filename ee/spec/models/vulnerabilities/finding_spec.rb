@@ -1567,6 +1567,52 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     end
   end
 
+  describe 'constants' do
+    it 'HIGH_CONFIDENCE_AI_RESOLUTION_CWES matches the list of supported CWEs' do
+      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES).to match_array %w[
+        CWE-23
+        CWE-80
+        CWE-116
+        CWE-118
+        CWE-119
+        CWE-120
+        CWE-126
+        CWE-190
+        CWE-200
+        CWE-208
+        CWE-209
+        CWE-272
+        CWE-287
+        CWE-297
+        CWE-305
+        CWE-310
+        CWE-311
+        CWE-323
+        CWE-327
+        CWE-328
+        CWE-330
+        CWE-338
+        CWE-345
+        CWE-346
+        CWE-369
+        CWE-378
+        CWE-489
+        CWE-521
+        CWE-539
+        CWE-599
+        CWE-611
+        CWE-676
+        CWE-704
+        CWE-754
+        CWE-770
+        CWE-1004
+        CWE-1275
+      ]
+
+      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.count).to be(37)
+    end
+  end
+
   describe '.by_location_fingerprints' do
     let(:finding) { create(:vulnerabilities_finding) }
 
@@ -1666,6 +1712,20 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:ci_pipeline) }
       let_it_be(:model) { create(:vulnerabilities_finding, latest_pipeline_id: parent.id) }
+    end
+  end
+
+  describe '#ai_resolution_available?' do
+    let(:finding) { build(:vulnerabilities_finding) }
+
+    it 'returns true when the finding is a supported CWE' do
+      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-23')
+      expect(finding.ai_resolution_available?).to be true
+    end
+
+    it 'returns false when the finding is an unsupported CWE' do
+      finding.identifiers << build(:vulnerabilities_identifier, external_type: 'cwe', name: 'CWE-1')
+      expect(finding.ai_resolution_available?).to be false
     end
   end
 end
