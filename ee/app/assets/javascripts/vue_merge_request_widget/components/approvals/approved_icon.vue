@@ -16,7 +16,7 @@ export default {
 
 <template>
   <div>
-    <gl-icon v-if="isApproved" name="mobile-issue-close" class="text-success" :size="16" />
+    <gl-icon v-if="isApproved" name="mobile-issue-close" class="gl-text-success" :size="16" />
     <div v-else class="square s16"></div>
   </div>
 </template>
