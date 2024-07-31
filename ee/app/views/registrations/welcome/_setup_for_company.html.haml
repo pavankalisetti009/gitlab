@@ -4,8 +4,8 @@
   .row
     .form-group.col-sm-12
       = f.label :setup_for_company, onboarding_status.setup_for_company_label_text, class: 'label-bold'
-      .gl-display-flex.gl-flex-direction-column.gl-lg-flex-direction-row
-        .gl-flex-grow-1
-          = f.gitlab_ui_radio_component :setup_for_company, true, _('My company or team'), radio_options: { required: true, class: "js-setup-for-company js-track-error", data: {track_action_for_errors: 'welcome_form'} }
-        .gl-flex-grow-1{ data: { testid: 'setup-for-just-me-content' } }
+      .gl-flex.gl-flex-col
+        .gl-grow{ data: { testid: 'setup-for-just-me-content' } }
           = f.gitlab_ui_radio_component :setup_for_company, false, _('Just me'), radio_options: { required: true, class: "js-setup-for-me", data: { testid: 'setup-for-just-me-radio' } }
+        .gl-grow
+          = f.gitlab_ui_radio_component :setup_for_company, true, _('My company or team'), help_text: onboarding_status.setup_for_company_help_text, radio_options: { required: true, class: "js-setup-for-company js-track-error", data: {track_action_for_errors: 'welcome_form'} }

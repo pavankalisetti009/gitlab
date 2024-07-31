@@ -23,6 +23,12 @@ RSpec.describe Onboarding::InviteRegistration, type: :undefined, feature_categor
     it { is_expected.to eq(_('Get started!')) }
   end
 
+  describe '.setup_for_company_help_text' do
+    subject { described_class.setup_for_company_help_text }
+
+    it { is_expected.to be_nil }
+  end
+
   describe '.redirect_to_company_form?' do
     it { is_expected.not_to be_redirect_to_company_form }
   end

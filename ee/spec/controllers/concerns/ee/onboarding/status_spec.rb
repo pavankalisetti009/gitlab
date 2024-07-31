@@ -14,6 +14,7 @@ RSpec.describe Onboarding::Status, feature_category: :onboarding do
     it { is_expected.to delegate_method(:tracking_label).to(:registration_type) }
     it { is_expected.to delegate_method(:product_interaction).to(:registration_type) }
     it { is_expected.to delegate_method(:setup_for_company_label_text).to(:registration_type) }
+    it { is_expected.to delegate_method(:setup_for_company_help_text).to(:registration_type) }
     it { is_expected.to delegate_method(:redirect_to_company_form?).to(:registration_type) }
     it { is_expected.to delegate_method(:eligible_for_iterable_trigger?).to(:registration_type) }
     it { is_expected.to delegate_method(:show_opt_in_to_email?).to(:registration_type) }

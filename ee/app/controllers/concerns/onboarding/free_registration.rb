@@ -27,6 +27,10 @@ module Onboarding
       _('Who will be using GitLab?')
     end
 
+    def self.setup_for_company_help_text
+      _('Enables a free GitLab Ultimate trial when you create a new project.')
+    end
+
     # predicate methods
 
     def self.redirect_to_company_form?

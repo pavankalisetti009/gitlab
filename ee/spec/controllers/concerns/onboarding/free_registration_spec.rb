@@ -29,6 +29,12 @@ RSpec.describe Onboarding::FreeRegistration, type: :undefined, feature_category:
     it { is_expected.to eq(_('Who will be using GitLab?')) }
   end
 
+  describe '.setup_for_company_help_text' do
+    subject { described_class.setup_for_company_help_text }
+
+    it { is_expected.to eq(_('Enables a free GitLab Ultimate trial when you create a new project.')) }
+  end
+
   describe '.redirect_to_company_form?' do
     it { is_expected.not_to be_redirect_to_company_form }
   end

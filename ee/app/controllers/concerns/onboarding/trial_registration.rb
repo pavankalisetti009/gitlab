@@ -27,6 +27,10 @@ module Onboarding
       _('Who will be using this GitLab trial?')
     end
 
+    def self.setup_for_company_help_text
+      nil
+    end
+
     # predicate methods
 
     def self.redirect_to_company_form?
