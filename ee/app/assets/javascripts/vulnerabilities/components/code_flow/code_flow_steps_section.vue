@@ -104,6 +104,7 @@ export default {
       this.selectedStepNumber = vulnerabilityItem.stepNumber;
       this.selectedVulnerability = vulnerabilityItem;
       this.markdownBlobData();
+      this.scrollToSpecificCodeFlow();
     },
     markdownRowContent() {
       // Highlights the selected markdown row content
@@ -161,6 +162,20 @@ export default {
       );
       this.selectedStepNumber = this.selectedVulnerability.stepNumber;
       this.markdownBlobData();
+      this.scrollToSpecificCodeFlow();
+    },
+    scrollToSpecificCodeFlow() {
+      const element = document.querySelector(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+      if (element) {
+        const subScroller = document.querySelector(`[id=code-flows-container]`);
+        const subScrollerRect = subScroller.getBoundingClientRect();
+        const elementRect = element.getBoundingClientRect();
+        const offsetTop = elementRect.top - subScrollerRect.top + subScroller.scrollTop;
+        subScroller.scrollTo({
+          top: offsetTop - subScroller.clientHeight / 2 + element.clientHeight / 2,
+          behavior: 'smooth',
+        });
+      }
     },
     showNodeTypePopover(nodeType) {
       return nodeType === 'source'
@@ -191,7 +206,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-col gl-w-4/10">
+  <div class="gl-flex gl-flex-col gl-w-4/10 gl-overflow-auto gl-z-0 gl-pl-2">
     <div>
       <div class="gl-flex gl-justify-between">
         <span class="gl-text-lg item-title">{{ __('Description') }}</span>
@@ -230,7 +245,7 @@ export default {
           <div class="gl-text-lg item-title">{{ $options.i18n.steps }}</div>
           <div class="gl-pt-2" data-testid="steps-header">{{ stepsHeader }}</div>
         </div>
-        <gl-button-group>
+        <gl-button-group class="gl-pr-2">
           <gl-button
             icon="chevron-up"
             :aria-label="__(`Previous step`)"

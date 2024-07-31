@@ -57,7 +57,6 @@ export const CLIENT_SUBSCRIPTION_ID = uuidv4();
 
 export default {
   name: 'VulnerabilityHeader',
-
   components: {
     GlLoadingIcon,
     StatusBadge,
@@ -76,7 +75,6 @@ export default {
       required: true,
     },
   },
-
   data() {
     return {
       isProcessingAction: false,
@@ -86,7 +84,6 @@ export default {
       errorAlert: null,
     };
   },
-
   computed: {
     actionButtons() {
       const { glFeatures } = this;
@@ -152,6 +149,40 @@ export default {
       return convertToGraphQLId(TYPENAME_VULNERABILITY, this.vulnerability.id);
     },
   },
+  watch: {
+    'vulnerability.state': {
+      immediate: true,
+      handler(state) {
+        const id = this.vulnerability[`${state}ById`];
+
+        if (!id) {
+          return;
+        }
+
+        this.isLoadingUser = true;
+
+        UsersCache.retrieveById(id)
+          .then((userData) => {
+            this.user = userData;
+          })
+          .catch(() => {
+            createAlert({
+              message: s__('VulnerabilityManagement|Something went wrong, could not get user.'),
+            });
+          })
+          .finally(() => {
+            this.isLoadingUser = false;
+          });
+      },
+    },
+  },
+  mounted() {
+    this.adjustHeaderHeight();
+    window.addEventListener('resize', this.adjustHeaderHeight);
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.adjustHeaderHeight);
+  },
   apollo: {
     $subscribe: {
       aiCompletionResponse: {
@@ -184,34 +215,6 @@ export default {
       },
     },
   },
-  watch: {
-    'vulnerability.state': {
-      immediate: true,
-      handler(state) {
-        const id = this.vulnerability[`${state}ById`];
-
-        if (!id) {
-          return;
-        }
-
-        this.isLoadingUser = true;
-
-        UsersCache.retrieveById(id)
-          .then((userData) => {
-            this.user = userData;
-          })
-          .catch(() => {
-            createAlert({
-              message: s__('VulnerabilityManagement|Something went wrong, could not get user.'),
-            });
-          })
-          .finally(() => {
-            this.isLoadingUser = false;
-          });
-      },
-    },
-  },
-
   methods: {
     async changeVulnerabilityState({ action, dismissalReason }) {
       this.isLoadingVulnerability = true;
@@ -270,7 +273,6 @@ export default {
           this.handleError(e.message);
         });
     },
-
     createMergeRequest() {
       this.isProcessingAction = true;
 
@@ -330,12 +332,19 @@ export default {
       this.isProcessingAction = false;
       this.errorAlert = createAlert({ message: error });
     },
+    adjustHeaderHeight() {
+      const headerRef = this.$refs.vulnerabilityHeader;
+      if (headerRef) {
+        const headerHeight = headerRef.offsetHeight;
+        this.$emit('header-height-updated', headerHeight);
+      }
+    },
   },
 };
 </script>
 
 <template>
-  <div data-testid="vulnerability-header">
+  <div ref="vulnerabilityHeader" data-testid="vulnerability-header">
     <resolution-alert
       v-if="showResolutionAlert"
       :vulnerability-id="vulnerability.id"
