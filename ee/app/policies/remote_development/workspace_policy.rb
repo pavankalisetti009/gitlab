@@ -3,8 +3,8 @@
 module RemoteDevelopment
   # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-25400
   class WorkspacePolicy < BasePolicy
-    condition(:can_access_workspaces_feature) { user&.can?(:access_workspaces_feature, :global) }
-    condition(:can_admin_cluster_agent_for_workspace) { user&.can?(:admin_cluster, workspace.agent) }
+    condition(:can_access_workspaces_feature) { can?(:access_workspaces_feature, :global) }
+    condition(:can_admin_cluster_agent_for_workspace) { can?(:admin_cluster, workspace.agent) }
     condition(:can_admin_owned_workspace) { workspace_owner? && has_developer_access_to_workspace_project? }
 
     # NOTE: We use the following guidelines to make this policy more performant and easier to debug
