@@ -48,6 +48,7 @@ module EE
                   ::Gitlab::CurrentSettings.zoekt_indexing_enabled? && ::License.feature_available?(:zoekt_code_search)
                 }
           store.subscribe ::PackageMetadata::GlobalAdvisoryScanWorker, to: ::PackageMetadata::IngestedAdvisoryEvent
+          store.subscribe ::Sbom::ProcessVulnerabilitiesWorker, to: ::Sbom::SbomIngestedEvent
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::NamespaceSettings::AiRelatedSettingsChangedEvent
           store.subscribe ::Llm::NamespaceAccessCacheResetWorker, to: ::Members::MembersAddedEvent
           store.subscribe ::Security::RefreshProjectPoliciesWorker,
