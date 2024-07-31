@@ -775,6 +775,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
       let(:headers) { {} }
+      let(:duo_seat_count) { '0' }
       let(:base_headers) do
         {
           'X-Gitlab-Global-User-Id' => global_user_id,
@@ -782,7 +783,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
           'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
           'X-Gitlab-Realm' => gitlab_realm,
           'X-Gitlab-Version' => Gitlab.version_info.to_s,
-          'X-Gitlab-Authentication-Type' => 'oidc'
+          'X-Gitlab-Authentication-Type' => 'oidc',
+          'X-Gitlab-Duo-Seat-Count' => duo_seat_count
         }
       end
 
@@ -813,6 +815,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       context 'when user belongs to a namespace with an active code suggestions purchase' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+        let(:duo_seat_count) { '1' }
 
         let(:headers) do
           {

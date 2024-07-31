@@ -33,6 +33,7 @@ module GitlabSubscriptions
     scope :for_gitlab_duo_pro, -> { where(subscription_add_on_id: AddOn.code_suggestions.pick(:id)) }
     scope :for_product_analytics, -> { where(subscription_add_on_id: AddOn.product_analytics.pick(:id)) }
     scope :for_duo_enterprise, -> { where(subscription_add_on_id: AddOn.duo_enterprise.pick(:id)) }
+    scope :for_duo_pro_or_duo_enterprise, -> { for_gitlab_duo_pro.or(for_duo_enterprise) }
     scope :for_user, ->(user) { by_namespace(user.billable_gitlab_duo_pro_root_group_ids) }
     scope :assigned_to_user, ->(user) do
       active.joins(:assigned_users).merge(UserAddOnAssignment.by_user(user))
@@ -61,6 +62,10 @@ module GitlabSubscriptions
 
     def self.uniq_add_on_names
       joins(:add_on).pluck(:name).uniq
+    end
+
+    def self.maximum_duo_seat_count
+      active.for_duo_pro_or_duo_enterprise.pluck(:quantity).max || 0
     end
 
     def already_assigned?(user)
