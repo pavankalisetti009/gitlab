@@ -35777,6 +35777,7 @@ State of a review of a GitLab merge request.
 | <a id="mergerequestreviewstateapproved"></a>`APPROVED` | Merge request reviewer has approved the changes. |
 | <a id="mergerequestreviewstaterequested_changes"></a>`REQUESTED_CHANGES` | Merge request reviewer has requested changes. |
 | <a id="mergerequestreviewstatereviewed"></a>`REVIEWED` | Merge request reviewer has reviewed. |
+| <a id="mergerequestreviewstatereview_started"></a>`REVIEW_STARTED` | Merge request reviewer has started a review. |
 | <a id="mergerequestreviewstateunapproved"></a>`UNAPPROVED` | Merge request reviewer removed their approval of the changes. |
 | <a id="mergerequestreviewstateunreviewed"></a>`UNREVIEWED` | Awaiting review from merge request reviewer. |
 

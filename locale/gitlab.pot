@@ -7860,9 +7860,6 @@ msgstr ""
 msgid "Average per day: %{average}"
 msgstr ""
 
-msgid "Awaiting review"
-msgstr ""
-
 msgid "Awaiting user signup"
 msgstr ""
 
@@ -33029,6 +33026,9 @@ msgstr ""
 msgid "MergeRequests|started a thread on commit %{linkStart}%{commitDisplay}%{linkEnd}"
 msgstr ""
 
+msgid "MergeRequest|Awaiting review"
+msgstr ""
+
 msgid "MergeRequest|Can't fetch the diff needed to update this view. Please reload this page."
 msgstr ""
 
@@ -33063,6 +33063,18 @@ msgid "MergeRequest|No files found"
 msgstr ""
 
 msgid "MergeRequest|Reviewed by @%{username} but not yet approved"
+msgstr ""
+
+msgid "MergeRequest|Reviewer approved changes"
+msgstr ""
+
+msgid "MergeRequest|Reviewer commented"
+msgstr ""
+
+msgid "MergeRequest|Reviewer requested changes"
+msgstr ""
+
+msgid "MergeRequest|Reviewer started review"
 msgstr ""
 
 msgid "MergeRequest|Search (e.g. *.vue) (%{MODIFIER_KEY}P)"
@@ -45060,15 +45072,6 @@ msgid "Reviewer"
 msgid_plural "%d Reviewers"
 msgstr[0] ""
 msgstr[1] ""
-
-msgid "Reviewer approved changes"
-msgstr ""
-
-msgid "Reviewer commented"
-msgstr ""
-
-msgid "Reviewer requested changes"
-msgstr ""
 
 msgid "Reviewers"
 msgstr ""
