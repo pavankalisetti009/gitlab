@@ -3,7 +3,7 @@
 RSpec.shared_examples 'call runner to handle the provision of add-ons' do
   it 'calls the runner to handle the provision of add-ons' do
     expect_next_instance_of(
-      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServicesRunner
+      GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Duo
     ) do |runner|
       expect(runner).to receive(:execute).once.and_call_original
     end
@@ -33,13 +33,13 @@ end
 
 RSpec.shared_examples 'provision service expires add-on purchase' do
   context 'with existing add-on purchase' do
-    let_it_be(:expiration_date) { Date.current + 3.months }
-    let_it_be(:existing_add_on_purchase) do
+    let(:expires_on) { Date.current + 3.months }
+    let(:add_on_purchase) do
       create(
         :gitlab_subscription_add_on_purchase,
         namespace: namespace,
         add_on: add_on,
-        expires_on: expiration_date
+        expires_on: expires_on
       )
     end
 
@@ -57,8 +57,8 @@ RSpec.shared_examples 'provision service expires add-on purchase' do
     it 'expires the existing add-on purchase' do
       expect do
         result
-        existing_add_on_purchase.reload
-      end.to change { existing_add_on_purchase.expires_on }.from(expiration_date).to(Date.yesterday)
+        add_on_purchase.reload
+      end.to change { add_on_purchase.expires_on }.from(expires_on).to(Date.yesterday)
     end
 
     it_behaves_like 'provision service have empty success response'
@@ -84,7 +84,7 @@ RSpec.shared_examples 'provision service updates the existing add-on purchase' d
         namespace,
         add_on,
         {
-          add_on_purchase: existing_add_on_purchase,
+          add_on_purchase: add_on_purchase,
           quantity: quantity,
           expires_on: current_license.block_changes_at,
           purchase_xid: subscription_name
@@ -96,7 +96,7 @@ RSpec.shared_examples 'provision service updates the existing add-on purchase' d
     expect(current_license.block_changes_at).to eq(current_license.expires_at + 14.days)
     expect(result[:status]).to eq(:success)
     expect(result[:add_on_purchase]).to have_attributes(
-      id: existing_add_on_purchase.id,
+      id: add_on_purchase.id,
       expires_on: current_license.block_changes_at,
       quantity: quantity,
       purchase_xid: subscription_name

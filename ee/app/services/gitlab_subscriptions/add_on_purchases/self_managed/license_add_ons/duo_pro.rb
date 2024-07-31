@@ -3,11 +3,11 @@
 module GitlabSubscriptions
   module AddOnPurchases
     module SelfManaged
-      module ProvisionServices
-        class CodeSuggestions < BaseProvisionService
+      module LicenseAddOns
+        class DuoPro < Base
           private
 
-          def quantity_from_restrictions(restrictions)
+          def seat_count_on_license
             restrictions[:code_suggestions_seat_count].to_i
           end
 

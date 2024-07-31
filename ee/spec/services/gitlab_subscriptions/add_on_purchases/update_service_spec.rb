@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_failures, feature_category: :plan_provisioning do
   describe '#execute' do
     let_it_be(:root_namespace) { create(:group) }
-    let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
+    let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
     let_it_be(:purchase_xid) { 'S-A00000001' }
     let_it_be(:existing_trial) { false }
 
@@ -75,6 +75,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::UpdateService, :aggregate_fa
 
             expect(result[:status]).to eq(:success)
             expect(result[:add_on_purchase]).to eq(add_on_purchase)
+          end
+        end
+
+        context 'when the add-on purchase and a new add-on are passed' do
+          let_it_be(:add_on_new) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+          let(:params) do
+            super().merge(add_on_purchase: add_on_purchase)
+          end
+
+          subject(:result) { described_class.new(namespace, add_on_new, params).execute }
+
+          it "updates the add-on" do
+            expect { result }.to change { add_on_purchase.reload.add_on }.from(add_on).to(add_on_new)
           end
         end
 
