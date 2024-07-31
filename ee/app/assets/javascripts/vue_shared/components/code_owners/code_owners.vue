@@ -191,7 +191,7 @@ export default {
       :id="$options.helpPopoverId"
       :aria-label="$options.i18n.helpText"
       name="question-o"
-      class="gl-ml-auto gl-my-3 gl-mr-3 gl-text-blue-500 gl-cursor-pointer"
+      class="gl-ml-auto gl-my-3 gl-mr-3 gl-text-blue-500 gl-cursor-pointer gl-flex-shrink-0"
       data-testid="help-popover-trigger"
     />
     <gl-popover
