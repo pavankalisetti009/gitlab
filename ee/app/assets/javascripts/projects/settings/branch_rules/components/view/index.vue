@@ -4,6 +4,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import RuleViewFoss from '~/projects/settings/branch_rules/components/view/index.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
+import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import { I18N } from '~/projects/settings/branch_rules/components/view/constants';
 
 const approvalsHelpDocLink = helpPagePath('user/project/merge_requests/approvals/index');
@@ -14,7 +15,7 @@ const statusChecksHelpDocLink = helpPagePath('user/project/merge_requests/status
 // eslint-disable-next-line @gitlab/no-runtime-template-compiler
 export default {
   name: 'EERuleView',
-  components: { ApprovalRulesApp, ProjectRules }, // used in the CE template
+  components: { ApprovalRulesApp, ProjectRules, StatusChecks }, // used in the CE template
   extends: RuleViewFoss,
   i18n: I18N,
   approvalsHelpDocLink,
