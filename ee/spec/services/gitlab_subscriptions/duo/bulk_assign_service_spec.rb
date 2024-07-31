@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::Duo::BulkAssignService, feature_category: :seat_cost_management do
   describe '#execute' do
     let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
 
@@ -55,7 +55,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
           let(:expected_logs) do
             {
               add_on_purchase_id: add_on_purchase.id,
-              message: 'Duo Pro Bulk User Assignment',
+              message: 'Duo Bulk User Assignment',
               response_type: 'error',
               payload: { errors: 'INVALID_USER_ID_PRESENT', user_ids: Set[100_0000] }
             }
@@ -80,7 +80,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
           let(:expected_logs) do
             {
               add_on_purchase_id: add_on_purchase.id,
-              message: 'Duo Pro Bulk User Assignment',
+              message: 'Duo Bulk User Assignment',
               response_type: 'error',
               payload: { errors: 'INVALID_USER_ID_PRESENT', user_ids: Set[non_existing_record_id] }
             }
@@ -116,10 +116,10 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
           end
 
           let(:expected_logs) do
-            assigned_users_ids = namespace.gitlab_duo_pro_eligible_user_ids
+            assigned_users_ids = namespace.gitlab_duo_eligible_user_ids
             {
               add_on_purchase_id: add_on_purchase.id,
-              message: 'Duo Pro Bulk User Assignment',
+              message: 'Duo Bulk User Assignment',
               response_type: 'success',
               payload: { users: assigned_users_ids }
             }
@@ -211,7 +211,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
               let_it_be(:expected_logs) do
                 {
                   add_on_purchase_id: add_on_purchase.id,
-                  message: 'Duo Pro Bulk User Assignment',
+                  message: 'Duo Bulk User Assignment',
                   response_type: 'error',
                   payload: { errors: 'NOT_ENOUGH_SEATS' }
                 }
@@ -247,7 +247,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
           let(:expected_logs) do
             {
               add_on_purchase_id: add_on_purchase.id,
-              message: 'Duo Pro Bulk User Assignment',
+              message: 'Duo Bulk User Assignment',
               response_type: 'error',
               payload: { errors: error_message }
             }
@@ -272,6 +272,30 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
             bulk_assign
           end
         end
+
+        context 'without Duo add-on' do
+          let(:add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+          let(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, quantity: 5, namespace: namespace, add_on: add_on)
+          end
+
+          let(:expected_logs) do
+            {
+              add_on_purchase_id: add_on_purchase.id,
+              message: 'Duo Bulk User Assignment',
+              response_type: 'error',
+              payload: { errors: 'INCOMPATIBLE_ADD_ON' }
+            }
+          end
+
+          it 'does not assign users and logs error' do
+            expect(Gitlab::AppLogger).to receive(:error).with(expected_logs)
+
+            response = bulk_assign
+            expect(response).to be_error
+            expect(response.message).to eq('INCOMPATIBLE_ADD_ON')
+          end
+        end
       end
     end
 
@@ -290,7 +314,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
       let(:expected_error_log) do
         {
           add_on_purchase_id: add_on_purchase.id,
-          message: 'Duo Pro Bulk User Assignment',
+          message: 'Duo Bulk User Assignment',
           response_type: 'error',
           payload: { errors: error_message, user_ids: user_ids }
         }
@@ -299,7 +323,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
       let(:expected_success_log) do
         {
           add_on_purchase_id: add_on_purchase.id,
-          message: 'Duo Pro Bulk User Assignment',
+          message: 'Duo Bulk User Assignment',
           response_type: 'success',
           payload: { users: user_ids.reverse }
         }
@@ -438,7 +462,7 @@ RSpec.describe GitlabSubscriptions::DuoPro::BulkAssignService, feature_category:
           let(:expected_error_log) do
             {
               add_on_purchase_id: add_on_purchase.id,
-              message: 'Duo Pro Bulk User Assignment',
+              message: 'Duo Bulk User Assignment',
               response_type: 'error',
               payload: { errors: error_message }
             }

@@ -11,7 +11,7 @@ module GitlabSubscriptions
       end
 
       def execute
-        return ::User.none unless add_on_type == :code_suggestions
+        return ::User.none unless GitlabSubscriptions::AddOn::DUO_ADD_ONS.include?(add_on_type)
 
         users = ::User.active.without_bots.without_ghosts
 

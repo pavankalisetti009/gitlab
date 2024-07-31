@@ -938,7 +938,7 @@ module EE
         billed_shared_project_user?(user)
     end
 
-    def gitlab_duo_pro_eligible_user_ids
+    def gitlab_duo_eligible_user_ids
       # all billable users and guests are eligible to be assigned gitlab duo
       billed_user_ids_including_guests[:user_ids]
     end

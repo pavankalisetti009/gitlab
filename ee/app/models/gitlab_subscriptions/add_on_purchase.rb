@@ -104,7 +104,7 @@ module GitlabSubscriptions
     end
 
     def saas_eligible_user_ids
-      @eligible_user_ids ||= namespace.gitlab_duo_pro_eligible_user_ids
+      @eligible_user_ids ||= namespace.gitlab_duo_eligible_user_ids
     end
 
     def self_managed_eligible_users_relation

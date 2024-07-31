@@ -32,7 +32,7 @@ module Mutations
         authorize :admin_add_on_purchase
 
         def resolve(**args)
-          result = ::GitlabSubscriptions::DuoPro::BulkAssignService.new(
+          result = ::GitlabSubscriptions::Duo::BulkAssignService.new(
             add_on_purchase: add_on_purchase,
             user_ids: args[:user_ids]
           ).execute
