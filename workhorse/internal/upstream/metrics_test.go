@@ -62,9 +62,9 @@ func TestInstrumentGeoProxyRoute(t *testing.T) {
 	runMetricsTestCases(t, ts, testCases)
 
 	require.Equal(t, 1, testutil.CollectAndCount(httpGeoProxiedRequestsTotal))
-	require.InDelta(t, 1, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", remote.regexpStr, remote.routeID, remote.backendID)), 0.1)
-	require.InDelta(t, 0, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", local.regexpStr, local.routeID, local.backendID)), 0.1)
-	require.InDelta(t, 0, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", main.regexpStr, main.routeID, main.backendID)), 0.1)
+	require.InDelta(t, 1, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", remote.regexpStr, remote.routeID, string(remote.backendID))), 0.1)
+	require.InDelta(t, 0, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", local.regexpStr, local.routeID, string(local.backendID))), 0.1)
+	require.InDelta(t, 0, testutil.ToFloat64(httpGeoProxiedRequestsTotal.WithLabelValues("200", "get", main.regexpStr, main.routeID, string(main.backendID))), 0.1)
 }
 
 func handleRouteWithMatchers(u *upstream, metadata routeMetadata, matchers ...func(*routeOptions)) routeEntry {

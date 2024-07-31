@@ -36,13 +36,13 @@ func instrumentRoute(next http.Handler, _ string, metadata routeMetadata) http.H
 		map[string]string{
 			"route":      metadata.regexpStr,
 			"route_id":   metadata.routeID,
-			"backend_id": metadata.backendID}))
+			"backend_id": string(metadata.backendID)}))
 }
 
 func instrumentGeoProxyRoute(next http.Handler, _ string, metadata routeMetadata) http.Handler {
 	return promhttp.InstrumentHandlerCounter(httpGeoProxiedRequestsTotal.MustCurryWith(map[string]string{
 		"route":      metadata.regexpStr,
 		"route_id":   metadata.routeID,
-		"backend_id": metadata.backendID}),
+		"backend_id": string(metadata.backendID)}),
 		next)
 }
