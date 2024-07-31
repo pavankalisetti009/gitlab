@@ -2,6 +2,8 @@
 
 FactoryBot.define do
   factory :sbom_component, class: 'Sbom::Component' do
+    association :organization, factory: :organization
+
     component_type { :library }
     purl_type { :npm }
 

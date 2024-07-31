@@ -4,22 +4,25 @@ require 'spec_helper'
 
 RSpec.describe Sbom::Ingestion::Tasks::IngestComponents, feature_category: :dependency_management do
   describe '#execute' do
+    let!(:organization) { create(:organization, :default) }
+
     let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
 
     let(:occurrence_maps) { create_list(:sbom_occurrence_map, 4) }
-    let!(:existing_component) { create(:sbom_component, **occurrence_maps.first.to_h.slice(:component_type, :name)) }
+    let(:occurrence_map) { create(:sbom_occurrence_map) }
+    let!(:existing_component) { create(:sbom_component, **occurrence_map.to_h.slice(:component_type, :name)) }
 
     subject(:ingest_components) { described_class.execute(pipeline, occurrence_maps) }
 
     it_behaves_like 'bulk insertable task'
 
     it 'is idempotent' do
-      expect { ingest_components }.to change(Sbom::Component, :count).by(3)
+      expect { ingest_components }.to change(Sbom::Component, :count).by(4)
       expect { ingest_components }.not_to change(Sbom::Component, :count)
     end
 
     it 'sets the component_id' do
-      expected_component_ids = Array.new(3) { an_instance_of(Integer) }.unshift(existing_component.id)
+      expected_component_ids = Array.new(4) { an_instance_of(Integer) }
 
       expect { ingest_components }.to change { occurrence_maps.map(&:component_id) }
         .from(Array.new(4)).to(expected_component_ids)
@@ -107,6 +110,21 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestComponents, feature_category: :depe
           name: 'flask-sqlalchemy',
           purl_type: 'pypi',
           component_type: 'library'
+        )
+      end
+    end
+
+    describe 'attributes' do
+      let(:ingested_source_package) { Sbom::Component.last }
+
+      it 'sets the correct attributes for the component' do
+        ingest_components
+
+        expect(ingested_source_package.attributes).to include(
+          'name' => occurrence_maps.last.name,
+          'purl_type' => occurrence_maps.last.purl_type,
+          'component_type' => 'library',
+          'organization_id' => pipeline.project.namespace.organization_id
         )
       end
     end
