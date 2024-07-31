@@ -129,7 +129,7 @@ module Vulnerabilities
       where(
         false_positive ? 'EXISTS (?)' : 'NOT EXISTS (?)',
         ::Vulnerabilities::Flag.select(1).false_positive.where(flags[:vulnerability_occurrence_id].eq(arel_table[:id]))
-      )
+      ).allow_cross_joins_across_databases(url: "https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved")
     end
 
     scope :with_fix_available, ->(fix_available) do

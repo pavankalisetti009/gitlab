@@ -30,10 +30,25 @@ module Vulnerabilities
 
         vulnerability_finding = build_vulnerability_finding(security_finding)
 
-        Vulnerabilities::Finding.transaction do
-          save_identifiers(vulnerability_finding.identifiers)
+        ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            vulnerabilities
+            vulnerability_flags
+            vulnerability_finding_evidences
+            vulnerability_finding_links
+            vulnerability_finding_signatures
+            vulnerability_identifiers
+            vulnerability_occurrences
+            vulnerability_occurrence_identifiers
+            vulnerability_occurrence_pipelines
+          ],
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474632'
+        ) do
+          Vulnerabilities::Finding.transaction do
+            save_identifiers(vulnerability_finding.identifiers)
 
-          raise ActiveRecord::Rollback unless vulnerability_finding.save
+            raise ActiveRecord::Rollback unless vulnerability_finding.save
+          end
         end
 
         vulnerability_finding
