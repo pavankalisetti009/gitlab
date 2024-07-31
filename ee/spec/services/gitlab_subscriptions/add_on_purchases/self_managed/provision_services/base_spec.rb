@@ -2,37 +2,59 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::BaseProvisionService,
+RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Base,
   :aggregate_failures, feature_category: :plan_provisioning do
   describe '#execute' do
-    it { expect { described_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
-
-    context 'with child class insufficient implemented' do
+    context 'without quantity implemented' do
       let!(:current_license) { create_current_license(cloud_licensing_enabled: true) }
 
-      let(:provision_dummy_add_on_service_class) do
+      it { expect { described_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
+    end
+
+    context 'without add_on_purchase implemented' do
+      let!(:current_license) { create_current_license(cloud_licensing_enabled: true) }
+
+      let(:provision_service_class) do
         Class.new(described_class) do
-          def name
-            # One of the enums for name of GitlabSubscriptions::AddOn
-            :code_suggestions
+          define_method :quantity do
+            0
           end
         end
       end
 
-      specify do
-        expect { provision_dummy_add_on_service_class.new.execute }
-          .to raise_error described_class::MethodNotImplementedError
-      end
+      it { expect { provision_service_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
     end
 
-    context 'with child class' do
-      subject(:result) { provision_dummy_add_on_service_class.new.execute }
+    context 'without add_on implemented' do
+      let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
+      let_it_be(:current_license) { create_current_license(cloud_licensing_enabled: true) }
 
-      let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
+      let(:provision_service_class) do
+        current_add_on_purchase = add_on_purchase
+
+        Class.new(described_class) do
+          define_method :quantity do
+            1
+          end
+
+          define_method :add_on_purchase do
+            current_add_on_purchase
+          end
+        end
+      end
+
+      it { expect { provision_service_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
+    end
+
+    context 'with implemented class' do
+      subject(:result) { provision_services_base_class.new.execute }
+
+      let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let_it_be(:add_on_purchase) { nil }
       let_it_be(:default_organization) { create(:organization, :default) }
       let_it_be(:namespace) { nil }
-      let_it_be(:quantity) { 5 }
-      let_it_be(:subscription_name) { 'A-S00000002' }
+      let_it_be(:quantity) { 1 }
+      let_it_be(:subscription_name) { 'A-S00000001' }
 
       let!(:current_license) do
         create_current_license(
@@ -43,17 +65,22 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::BaseProvisionSe
         )
       end
 
-      let(:provision_dummy_add_on_service_class) do
-        quantity_from_restrictions = quantity
+      let(:provision_services_base_class) do
+        current_add_on = add_on
+        current_add_on_purchase = add_on_purchase
+        current_quantity = quantity
 
         Class.new(described_class) do
-          define_method :quantity_from_restrictions do |_|
-            quantity_from_restrictions
+          define_method :add_on_purchase do
+            current_add_on_purchase
           end
 
-          def name
-            # One of the enums for name of GitlabSubscriptions::AddOn
-            :code_suggestions
+          define_method :add_on do
+            current_add_on
+          end
+
+          define_method :quantity do
+            current_quantity
           end
         end
       end
@@ -81,24 +108,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::BaseProvisionSe
         it_behaves_like 'provision service expires add-on purchase'
       end
 
-      context 'when add-on record does not exist' do
-        before do
-          GitlabSubscriptions::AddOn.destroy_all # rubocop: disable Cop/DestroyAll -- clean-up
-        end
-
-        it 'creates the add-on record' do
-          expect { result }.to change { GitlabSubscriptions::AddOn.count }.by(1)
-        end
-      end
-
       context 'when add-on purchase exists' do
-        let(:expiration_date) { Date.current + 3.months }
-        let!(:existing_add_on_purchase) do
+        let(:expires_on) { Date.current + 3.months }
+        let!(:add_on_purchase) do
           create(
             :gitlab_subscription_add_on_purchase,
             namespace: namespace,
             add_on: add_on,
-            expires_on: expiration_date
+            expires_on: expires_on
           )
         end
 
@@ -107,7 +124,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::BaseProvisionSe
         end
 
         context 'when existing add-on purchase is expired' do
-          let(:expiration_date) { Date.current - 3.months }
+          let(:expires_on) { Date.current - 3.months }
 
           it_behaves_like 'provision service updates the existing add-on purchase'
         end
