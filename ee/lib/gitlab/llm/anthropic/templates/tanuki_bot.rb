@@ -48,7 +48,7 @@ module Gitlab
 
             {
               prompt: conversation,
-              options: { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_SONNET }.merge(OPTIONS)
+              options: { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }.merge(OPTIONS)
             }
           end
 
