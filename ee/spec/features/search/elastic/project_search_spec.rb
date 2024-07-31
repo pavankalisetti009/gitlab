@@ -117,7 +117,7 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 
       it 'displays that exact code search is disabled' do
         expect(page).to have_content('Advanced search is disabled')
-        expect(page).to have_link('Learn more.', href: help_page_path('user/search/advanced_search', anchor: 'use-the-advanced-search-syntax'))
+        expect(page).to have_link('Learn more.', href: help_page_path('user/search/advanced_search', anchor: 'syntax'))
       end
     end
 
