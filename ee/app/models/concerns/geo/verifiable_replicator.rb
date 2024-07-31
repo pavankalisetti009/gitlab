@@ -120,6 +120,7 @@ module Geo
       # @return [Boolean] whether any rows needed to be inserted or deleted
       def backfill_verification_state_table
         return false unless Gitlab::Geo.primary?
+        return false unless verification_enabled?
 
         Geo::VerificationStateBackfillService.new(model, batch_size: verification_state_backfill_batch_size).execute
       rescue StandardError => e
