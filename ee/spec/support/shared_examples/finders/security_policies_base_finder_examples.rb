@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.shared_examples 'scan policies finder' do
+RSpec.shared_examples 'security policies finder' do
   subject { described_class.new(actor, object, params).execute }
 
   shared_examples 'when user does not have developer role in project/group' do
@@ -50,7 +50,7 @@ RSpec.shared_examples 'scan policies finder' do
 
         context 'when user has developer role in the project' do
           before do
-            object.add_developer(actor)
+            object.add_developer(actor) # rubocop:disable RSpec/BeforeAllRoleAssignment -- let(:actor) is used here
           end
 
           it 'returns policies with project' do
@@ -76,6 +76,52 @@ RSpec.shared_examples 'scan policies finder' do
                 })])
             end
           end
+
+          context 'when include_unscoped is false' do
+            let(:include_unscoped) { false }
+
+            context 'when project is not included in the scope' do
+              let(:policy_scope) do
+                {
+                  compliance_frameworks: [],
+                  projects: {
+                    including: [],
+                    excluding: [{
+                      id: object.id
+                    }]
+                  }
+                }
+              end
+
+              it 'returns empty collection' do
+                is_expected.to be_empty
+              end
+            end
+
+            context 'when project is included in the scope' do
+              let(:policy_scope) do
+                {
+                  compliance_frameworks: [],
+                  projects: {
+                    including: [{
+                      id: object.id
+                    }],
+                    excluding: []
+                  }
+                }
+              end
+
+              it 'returns policies with project' do
+                is_expected.to match_array([policy.merge(
+                  {
+                    config: policy_configuration,
+                    project: object,
+                    namespace: nil,
+                    inherited: false
+                  })])
+              end
+            end
+          end
         end
       end
 
@@ -97,7 +143,7 @@ RSpec.shared_examples 'scan policies finder' do
 
         context 'when user has developer role in the group' do
           before do
-            object.add_developer(actor)
+            object.add_developer(actor) # rubocop:disable RSpec/BeforeAllRoleAssignment -- let(:actor) is used here
           end
 
           context 'when relationship argument is not provided' do
