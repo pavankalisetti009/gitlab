@@ -13,7 +13,23 @@ module Vulnerabilities
       raise Gitlab::Access::AccessDeniedError unless can?(@current_user, :read_security_resource, @project)
 
       with_vulnerability_finding do |vulnerability_finding|
-        ServiceResponse.success(payload: { vulnerability: find_or_create_vulnerability(vulnerability_finding) })
+        ::Gitlab::Database.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved'
+        ) do
+          ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+            %i[
+              vulnerabilities
+              vulnerability_finding_signatures
+              vulnerability_identifiers
+              vulnerability_occurrences
+              vulnerability_occurrence_identifiers
+              vulnerability_occurrence_pipelines
+            ],
+            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474644'
+          ) do
+            ServiceResponse.success(payload: { vulnerability: find_or_create_vulnerability(vulnerability_finding) })
+          end
+        end
       end
     end
 

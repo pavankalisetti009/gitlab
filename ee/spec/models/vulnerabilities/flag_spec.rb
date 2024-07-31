@@ -23,4 +23,11 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
       expect(flag).to be_valid
     end
   end
+
+  context 'with loose foreign key on vulnerability_flags.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_flag, project_id: parent.id) }
+    end
+  end
 end

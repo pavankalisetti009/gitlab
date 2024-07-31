@@ -40,13 +40,13 @@ module Vulnerabilities
     def perform(project_id)
       ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
         %w[
-          vulnerability_finding_links
-          vulnerability_occurrence_pipelines
-          vulnerability_findings_remediations
-          vulnerability_reads
-          vulnerability_occurrences
           vulnerability_feedback
+          vulnerability_finding_links
+          vulnerability_findings_remediations
+          vulnerability_occurrences
+          vulnerability_occurrence_pipelines
           vulnerability_historical_statistics
+          vulnerability_reads
         ],
         url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
       ) do

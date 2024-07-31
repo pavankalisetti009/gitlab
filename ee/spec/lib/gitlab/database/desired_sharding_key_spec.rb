@@ -54,6 +54,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
 
   context 'for tables that already have a backfilled, non-nullable sharding key on their parent' do
     it 'must be possible to backfill it via backfill_via' do
+      # "https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins"
+      known_crossjoins = %w[vulnerability_flags]
+
       desired_sharding_key_entries_not_awaiting_backfill_on_parent.each do |entry|
         entry.desired_sharding_key.each do |desired_column, details|
           table = entry.table_name
@@ -67,12 +70,22 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
           connection.execute("ALTER TABLE #{table} ADD COLUMN IF NOT EXISTS #{sharding_key} bigint")
 
           # Confirming it at least produces a valid query
-          connection.execute <<~SQL
-                             EXPLAIN UPDATE #{table}
-                             SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
-                             FROM #{parent_table}
-                             WHERE #{table}.#{foreign_key} = #{parent_table}.id
+          query = <<~SQL
+            EXPLAIN UPDATE #{table}
+            SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
+            FROM #{parent_table}
+            WHERE #{table}.#{foreign_key} = #{parent_table}.id
           SQL
+
+          if known_crossjoins.include?(table)
+            ::Gitlab::Database.allow_cross_joins_across_databases(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+            ) do
+              connection.execute(query)
+            end
+          else
+            connection.execute(query)
+          end
         end
       end
     end
