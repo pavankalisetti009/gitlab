@@ -42,10 +42,6 @@ RSpec.describe Gitlab::UsageData, feature_category: :service_ping do
       create(:ci_build, name: 'apifuzzer_fuzz_dnd', pipeline: pipeline)
       create(:ci_pipeline, source: :ondemand_dast_scan, project: projects[0])
 
-      create(:prometheus_alert, project: projects[0])
-      create(:prometheus_alert, project: projects[0])
-      create(:prometheus_alert, project: projects[1])
-
       create(:jira_integration, project: projects[0], issues_enabled: true, project_key: 'GL', project_keys: ['GL'])
 
       create(:issue, project: projects[1])
