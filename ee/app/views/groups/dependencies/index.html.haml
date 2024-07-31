@@ -1,16 +1,4 @@
 - breadcrumb_title _('Dependency list')
 - page_title _('Dependency list')
 
-#js-dependencies-app{
-  data: {
-    endpoint: group_dependencies_path(@group, format: :json),
-    licenses_endpoint: licenses_group_dependencies_path(@group),
-    locations_endpoint: locations_group_dependencies_path(@group),
-    export_endpoint: expose_path(api_v4_groups_dependency_list_exports_path(id: @group.id)),
-    vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
-    documentation_path: help_page_path('user/application_security/dependency_list/index'),
-    support_documentation_path: help_page_path('user/application_security/dependency_scanning/index', anchor: 'supported-languages-and-package-managers'),
-    empty_state_svg_path: image_path('illustrations/Dependency-list-empty-state.svg'),
-    below_group_limit: @below_group_limit.to_s
-  }
-}
+#js-dependencies-app{ data: group_dependencies_data(@group, @below_group_limit) }
