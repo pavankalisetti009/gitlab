@@ -1,0 +1,9 @@
+---
+name: work_items_epics_show_assignees
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/473248
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/161299
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/475223
+milestone: '17.3'
+group: group::product planning
+type: development
+default_enabled: false
