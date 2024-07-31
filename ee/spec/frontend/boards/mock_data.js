@@ -772,7 +772,6 @@ export const mockTokens = (fetchLabels, fetchIterations) => [
     type: TOKEN_TYPE_ITERATION,
     icon: 'iteration',
     title: TOKEN_TITLE_ITERATION,
-    operators: OPERATORS_IS_NOT,
     unique: true,
     fetchIterations,
     token: IterationToken,
@@ -792,7 +791,6 @@ export const mockTokens = (fetchLabels, fetchIterations) => [
     title: TOKEN_TITLE_HEALTH,
     token: HealthToken,
     unique: false,
-    operators: OPERATORS_IS_NOT,
   },
 ];
 
