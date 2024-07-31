@@ -17,6 +17,47 @@ module Vulnerabilities
     REPORT_TYPES_WITH_LOCATION_IMAGE = %w[container_scanning cluster_image_scanning].freeze
     SECRET_DETECTION_DEFAULT_COMMIT_SHA = "0000000"
 
+    # https://gitlab.com/gitlab-org/gitlab/-/issues/472861
+    HIGH_CONFIDENCE_AI_RESOLUTION_CWES = %w[
+      CWE-23
+      CWE-80
+      CWE-116
+      CWE-118
+      CWE-119
+      CWE-120
+      CWE-126
+      CWE-190
+      CWE-200
+      CWE-208
+      CWE-209
+      CWE-272
+      CWE-287
+      CWE-297
+      CWE-305
+      CWE-310
+      CWE-311
+      CWE-323
+      CWE-327
+      CWE-328
+      CWE-330
+      CWE-338
+      CWE-345
+      CWE-346
+      CWE-369
+      CWE-378
+      CWE-489
+      CWE-521
+      CWE-539
+      CWE-599
+      CWE-611
+      CWE-676
+      CWE-704
+      CWE-754
+      CWE-770
+      CWE-1004
+      CWE-1275
+    ].freeze
+
     paginates_per FINDINGS_PER_PAGE
 
     sha_attribute :project_fingerprint
@@ -499,6 +540,10 @@ module Vulnerabilities
 
     def identifier_names
       identifiers.pluck(:name)
+    end
+
+    def ai_resolution_available?
+      HIGH_CONFIDENCE_AI_RESOLUTION_CWES.include?(cwe_value&.upcase)
     end
 
     protected
