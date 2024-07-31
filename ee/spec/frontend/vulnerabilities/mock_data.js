@@ -187,7 +187,6 @@ export const TEST_ALL_BLOBS_INFO_GRAPHQL_SUCCESS_RESPONSE = {
               environmentFormattedExternalUrl: null,
               environmentExternalUrlForRouteMap: null,
               canModifyBlob: false,
-              canModifyBlobWithWebIde: false,
               canCurrentUserPushToBranch: false,
               archived: false,
               storedExternally: null,
