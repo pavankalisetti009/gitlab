@@ -22534,7 +22534,7 @@ msgstr ""
 msgid "File templates"
 msgstr ""
 
-msgid "File too large. Secure Files must be less than %{limit} MB."
+msgid "File too large. Secure files must be less than %{limit} MB."
 msgstr ""
 
 msgid "File upload error."
@@ -47400,7 +47400,7 @@ msgstr ""
 msgid "Secure Code Warrior"
 msgstr ""
 
-msgid "Secure Files"
+msgid "Secure files"
 msgstr ""
 
 msgid "Secure token that identifies an external storage request."
@@ -47433,7 +47433,7 @@ msgstr ""
 msgid "SecureFiles|Platforms"
 msgstr ""
 
-msgid "SecureFiles|Secure File %{name} will be permanently deleted. Are you sure?"
+msgid "SecureFiles|Secure file %{name} will be permanently deleted. Are you sure?"
 msgstr ""
 
 msgid "SecureFiles|Serial"
@@ -57321,9 +57321,6 @@ msgstr ""
 msgid "Use Regular Expression"
 msgstr ""
 
-msgid "Use Secure Files to store files used by your pipelines such as Android keystores, or Apple provisioning profiles and signing certificates."
-msgstr ""
-
 msgid "Use a one-time password authenticator on your mobile device or computer to enable two-factor authentication (2FA)."
 msgstr ""
 
@@ -57358,6 +57355,9 @@ msgid "Use one line per URI"
 msgstr ""
 
 msgid "Use primary email (%{email})"
+msgstr ""
+
+msgid "Use secure files to store files used by your pipelines such as Android keystores, or Apple provisioning profiles and signing certificates."
 msgstr ""
 
 msgid "Use shortcuts"
