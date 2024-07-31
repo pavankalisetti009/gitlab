@@ -3,11 +3,50 @@
 require 'spec_helper'
 
 RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be(:token, reload: true) { create(:personal_access_token) }
 
   subject(:response) { described_class.new(token.user, token).execute }
 
-  context 'when max lifetime is set to less than 1 week' do
+  context 'when target user is a service account' do
+    let_it_be(:service_account) { create(:user, :service_account) }
+    let_it_be(:service_token, reload: true) { create(:personal_access_token, user: service_account) }
+
+    context 'when expires_at is nil' do
+      let(:params) { { expires_at: nil } }
+
+      subject(:response) { described_class.new(service_account, service_token, nil, params).execute }
+
+      where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
+        true | true | described_class::EXPIRATION_PERIOD.from_now.to_date
+        true | false | nil
+        false | true | described_class::EXPIRATION_PERIOD.from_now.to_date
+        false | false | nil
+      end
+
+      with_them do
+        before do
+          stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+          stub_licensed_features(service_accounts: true)
+          stub_ee_application_setting(
+            service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
+        end
+
+        it "rotates user's own token", :freeze_time do
+          expect(response).to be_success
+
+          new_token = response.payload[:personal_access_token]
+
+          expect(new_token.token).not_to eq(service_token.token)
+          expect(new_token.expires_at).to eq(expires_at)
+          expect(new_token.user).to eq(service_account)
+        end
+      end
+    end
+  end
+
+  context 'when max lifetime is set to less than 1 week', :freeze_time do
     before do
       allow(Gitlab::CurrentSettings).to receive(:max_personal_access_token_lifetime_from_now)
         .and_return(2.days.from_now)
@@ -17,13 +56,13 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
 
     subject(:response) { described_class.new(token.user, token).execute }
 
-    it "rotates user's own token", :freeze_time do
+    it "rotates user's own token" do
       expect(response).to be_success
 
       new_token = response.payload[:personal_access_token]
 
       expect(new_token.token).not_to eq(token.token)
-      expect(new_token.expires_at).to eq(Date.today + 2.days)
+      expect(new_token.expires_at).to eq(Date.current + 2.days)
       expect(new_token.user).to eq(token.user)
     end
   end
@@ -44,8 +83,8 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
       new_token = response.payload[:personal_access_token]
 
       expect(new_token.token).not_to eq(token.token)
-      expect(new_token.expires_at).not_to eq(Date.today + 10.days)
-      expect(new_token.expires_at).to eq(Date.today + 7.days)
+      expect(new_token.expires_at).not_to eq(Date.current + 10.days)
+      expect(new_token.expires_at).to eq(Date.current + 7.days)
       expect(new_token.user).to eq(token.user)
     end
   end

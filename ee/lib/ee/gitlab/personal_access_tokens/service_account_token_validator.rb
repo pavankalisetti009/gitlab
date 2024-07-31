@@ -11,7 +11,9 @@ module EE
         attr_accessor :service_account_user
 
         def expiry_enforced?
-          return true unless License.feature_available?(:service_accounts) && service_account_user.service_account?
+          unless License.feature_available?(:service_accounts) && service_account_user.service_account?
+            return ::Gitlab::CurrentSettings.require_personal_access_token_expiry?
+          end
 
           if saas?
             return true unless service_account_scoped_to_group

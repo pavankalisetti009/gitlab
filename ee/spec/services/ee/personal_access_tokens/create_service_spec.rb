@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
+
   shared_examples_for 'an unsuccessfully created token' do
     it { expect(create_token.success?).to be false }
     it { expect(create_token.message).to eq('Not permitted to create') }
@@ -111,17 +113,22 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
               context 'when expires_at is nil' do
                 let(:params) { valid_params.merge(expires_at: nil) }
 
-                context 'when service_access_tokens_expiration_enforced is false' do
+                where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
+                  true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                  true | false | nil
+                  false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                  false | false | nil
+                end
+                with_them do
                   before do
-                    stub_ee_application_setting(service_access_tokens_expiration_enforced: false)
+                    stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+                    stub_ee_application_setting(
+                      service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
                   end
 
-                  it { expect(token.expires_at).to be_nil }
-                end
-
-                it "sets expires_at to default value when setting is true" do
-                  expect(token.expires_at)
-                  .to eq max_personal_access_token_lifetime
+                  it 'optionally sets token expiry based on settings' do
+                    expect(token.expires_at).to eq(expires_at)
+                  end
                 end
               end
             end
@@ -158,19 +165,22 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
                 let(:params) { valid_params.merge(group: group, expires_at: nil) }
 
                 context 'when saas', :saas, :enable_admin_mode do
-                  context 'when service_access_tokens_expiration_enforced is false' do
+                  where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
+                    true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                    true | false | nil
+                    false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                    false | false | nil
+                  end
+                  with_them do
                     before do
-                      group.namespace_settings.update!(service_access_tokens_expiration_enforced: false)
+                      stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+                      group.namespace_settings.update!(
+                        service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
                     end
 
-                    it { expect(create_token.payload[:personal_access_token].expires_at).to be_nil }
-                  end
-
-                  context 'when service_access_tokens_expiration_enforced is true' do
-                    it {
-                      expect(create_token.payload[:personal_access_token].expires_at)
-                    .to eq max_personal_access_token_lifetime
-                    }
+                    it 'optionally sets token expiry based on settings' do
+                      expect(token.expires_at).to eq(expires_at)
+                    end
                   end
                 end
 

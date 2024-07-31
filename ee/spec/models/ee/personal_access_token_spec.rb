@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe PersonalAccessToken, feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
+
   describe 'associations' do
     subject { create(:personal_access_token) }
 
@@ -64,7 +66,7 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
     let(:user) { build(:user) }
     let(:personal_access_token) { build(:personal_access_token, user: user) }
 
-    context 'with expiration policy' do
+    context 'with max token lifetime configured' do
       let(:instance_level_pat_expiration_policy) { 30 }
       let(:instance_level_max_expiration_date) { Date.current + instance_level_pat_expiration_policy }
 
@@ -80,74 +82,6 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
           expect(personal_access_token.errors.full_messages.to_sentence).to include(
             "Expiration date must be before #{max_expiration_date}"
           )
-        end
-
-        context 'expires_at is nil' do
-          before do
-            personal_access_token.expires_at = nil
-          end
-
-          context 'user is not service accounts' do
-            it 'is invalid' do
-              expect(personal_access_token).not_to be_valid
-              expect(personal_access_token.errors[:expires_at]).to include("can't be blank")
-            end
-          end
-
-          context 'user is service accounts' do
-            before do
-              stub_licensed_features(service_accounts: true)
-            end
-
-            context 'when saas', :saas do
-              let(:group) { create(:group) }
-              let(:user) { create(:service_account, provisioned_by_group: group) }
-
-              context 'when namespace enforces token expiration' do
-                before do
-                  group.namespace_settings.update!(service_access_tokens_expiration_enforced: true)
-                end
-
-                it 'is invalid' do
-                  expect(personal_access_token).to be_invalid
-                end
-              end
-
-              context 'when namespace does not enforce token expiration' do
-                before do
-                  group.namespace_settings.update!(service_access_tokens_expiration_enforced: false)
-                end
-
-                it 'is invalid' do
-                  expect(personal_access_token).to be_valid
-                end
-              end
-            end
-
-            context 'when self-managed' do
-              let(:user) { build(:service_account) }
-
-              context 'when application setting does not enforce token expiration' do
-                before do
-                  stub_ee_application_setting(service_access_tokens_expiration_enforced: false)
-                end
-
-                it 'is valid' do
-                  expect(personal_access_token).to be_valid
-                end
-              end
-
-              context 'when application setting enforces token expiration' do
-                before do
-                  stub_ee_application_setting(service_access_tokens_expiration_enforced: true)
-                end
-
-                it 'is invalid' do
-                  expect(personal_access_token).to be_invalid
-                end
-              end
-            end
-          end
         end
       end
 
@@ -184,6 +118,70 @@ RSpec.describe PersonalAccessToken, feature_category: :system_access do
               it_behaves_like 'PAT expiry rules are enforced' do
                 let(:max_expiration_date) { instance_level_max_expiration_date }
               end
+            end
+          end
+        end
+      end
+    end
+
+    context 'with conditional presence validation on token expiry' do
+      before do
+        personal_access_token.expires_at = nil
+      end
+
+      context 'user is not service accounts' do
+        it 'is invalid' do
+          expect(personal_access_token).not_to be_valid
+          expect(personal_access_token.errors[:expires_at]).to include("can't be blank")
+        end
+      end
+
+      context 'user is service accounts' do
+        before do
+          stub_licensed_features(service_accounts: true)
+        end
+
+        context 'for group-level service accounts token expiry setting on saas', :saas do
+          let(:group) { create(:group) }
+          let(:user) { create(:service_account, provisioned_by_group: group) }
+
+          where(:require_token_expiry, :require_token_expiry_for_service_accounts, :is_valid) do
+            true | true | false
+            true | false | true
+            false | true | false
+            false | false | true
+          end
+          with_them do
+            before do
+              stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+              group.namespace_settings.update!(
+                service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
+            end
+
+            it 'validates the token' do
+              expect(personal_access_token.valid?).to eq(is_valid)
+            end
+          end
+        end
+
+        context 'for instance-level service accounts token expiry setting' do
+          let(:user) { build(:service_account) }
+
+          where(:require_token_expiry, :require_token_expiry_for_service_accounts, :is_valid) do
+            true | true | false
+            true | false | true
+            false | true | false
+            false | false | true
+          end
+          with_them do
+            before do
+              stub_application_setting(require_personal_access_token_expiry: require_token_expiry)
+              stub_ee_application_setting(
+                service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
+            end
+
+            it 'validates the token' do
+              expect(personal_access_token.valid?).to eq(is_valid)
             end
           end
         end
