@@ -23,6 +23,12 @@ RSpec.describe Onboarding::SubscriptionRegistration, type: :undefined, feature_c
     it { is_expected.to eq(_('Who will be using this GitLab subscription?')) }
   end
 
+  describe '.setup_for_company_help_text' do
+    subject { described_class.setup_for_company_help_text }
+
+    it { is_expected.to be_nil }
+  end
+
   describe '.redirect_to_company_form?' do
     it { is_expected.not_to be_redirect_to_company_form }
   end

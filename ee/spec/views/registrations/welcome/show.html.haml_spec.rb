@@ -11,6 +11,7 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       ::Onboarding::Status,
       hide_setup_for_company_field?: hide_setup_for_company_field?,
       setup_for_company_label_text: '_text_',
+      setup_for_company_help_text: '_help_text_',
       show_joining_project?: show_joining_project?,
       show_opt_in_to_email?: show_opt_in_to_email?,
       welcome_submit_button_text: '_button_text_'
@@ -57,6 +58,10 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
       is_expected.not_to have_selector('label[for="user_setup_for_company"]')
     end
 
+    it 'the text for the :setup_for_company help text' do
+      is_expected.not_to have_text('_help_text_')
+    end
+
     it 'has a hidden input for setup_for_company' do
       is_expected.to have_field('user[setup_for_company]', type: :hidden)
     end
@@ -83,6 +88,10 @@ RSpec.describe 'registrations/welcome/show', feature_category: :onboarding do
 
     it 'has setup_for_company label' do
       is_expected.to have_selector('label[for="user_setup_for_company"]')
+    end
+
+    it 'the text for the :setup_for_company help text' do
+      is_expected.to have_text('_help_text_')
     end
   end
 end

@@ -16,6 +16,7 @@ module EE
       delegate :tracking_label, :product_interaction, to: :registration_type
       # translation delegations
       delegate :setup_for_company_label_text, to: :registration_type
+      delegate :setup_for_company_help_text, to: :registration_type
       # predicate delegations
       delegate :redirect_to_company_form?, :eligible_for_iterable_trigger?, to: :registration_type
       delegate :show_opt_in_to_email?, :show_joining_project?, :apply_trial?, to: :registration_type

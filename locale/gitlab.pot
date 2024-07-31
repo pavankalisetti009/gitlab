@@ -20228,6 +20228,9 @@ msgstr ""
 msgid "Enabled OAuth authentication sources"
 msgstr ""
 
+msgid "Enables a free GitLab Ultimate trial when you create a new project."
+msgstr ""
+
 msgid "End Time"
 msgstr ""
 
@@ -30206,7 +30209,7 @@ msgstr ""
 msgid "Join a project"
 msgstr ""
 
-msgid "Join your team on GitLab and contribute to an existing project"
+msgid "Join your team on GitLab and contribute to an existing project."
 msgstr ""
 
 msgid "Joined %{user_created_time}"
