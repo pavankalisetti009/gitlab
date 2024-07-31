@@ -1,6 +1,19 @@
 import { MESSAGE_TYPES, SOURCE_TYPES } from 'ee/ai/tanuki_bot/constants';
 import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
+export const MOCK_SLASH_COMMANDS = [
+  {
+    name: '/reset',
+    shouldSubmit: true,
+    description: 'Reset conversation and ignore the previous messages.',
+  },
+  {
+    name: '/clear',
+    shouldSubmit: true,
+    description: 'Delete all messages in this conversation.',
+  },
+];
+
 export const MOCK_SOURCE_TYPES = {
   HANDBOOK: {
     title: 'GitLab Handbook',

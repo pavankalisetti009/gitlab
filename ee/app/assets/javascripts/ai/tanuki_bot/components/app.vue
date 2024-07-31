@@ -21,7 +21,7 @@ import {
   GENIE_CHAT_CLEAN_MESSAGE,
   GENIE_CHAT_CLEAR_MESSAGE,
 } from 'ee/ai/constants';
-import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES } from '../constants';
+import { TANUKI_BOT_TRACKING_EVENT_NAME, MESSAGE_TYPES, SLASH_COMMANDS } from '../constants';
 
 export default {
   name: 'TanukiBotChatApp',
@@ -41,6 +41,7 @@ export default {
       __('How do I create a template?'),
     ],
   },
+  SLASH_COMMANDS,
   helpPagePath: helpPagePath('policy/experiment-beta-support', { anchor: 'beta' }),
   components: {
     GlDuoChat,
@@ -280,6 +281,7 @@ export default {
     <gl-duo-chat
       v-if="duoChatGlobalState.isShown"
       id="duo-chat"
+      :slash-commands="$options.SLASH_COMMANDS"
       :title="$options.i18n.gitlabChat"
       :messages="messages"
       :error="error"
