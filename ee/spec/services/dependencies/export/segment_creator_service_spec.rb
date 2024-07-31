@@ -16,6 +16,7 @@ RSpec.describe Dependencies::Export::SegmentCreatorService, feature_category: :d
       stub_const("#{described_class}::BATCH_SIZE", 1)
 
       allow(Gitlab::Export::SegmentedExportWorker).to receive(:perform_async)
+      allow(Gitlab::Export::SegmentedExportFinalisationWorker).to receive(:perform_async)
     end
 
     it 'creates export parts' do
@@ -50,6 +51,18 @@ RSpec.describe Dependencies::Export::SegmentCreatorService, feature_category: :d
         .to have_received(:perform_async).with(export.to_global_id, [export.export_parts.fourth.id])
       expect(Gitlab::Export::SegmentedExportWorker)
         .to have_received(:perform_async).with(export.to_global_id, [export.export_parts.fifth.id])
+    end
+
+    context 'when there are no vulnerabilities for the vulnerable' do
+      let(:group_without_vulnerabilities) { create(:group, organization: organization) }
+      let(:export) { create(:dependency_list_export, exportable: group_without_vulnerabilities, project: nil) }
+
+      it 'does not raise an error' do
+        expect { create_segments }.not_to raise_error
+
+        expect(Gitlab::Export::SegmentedExportFinalisationWorker)
+          .to have_received(:perform_async).with(export.to_global_id)
+      end
     end
 
     context 'when an error happens' do

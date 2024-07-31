@@ -18,7 +18,7 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
         dependency_list_export.start!
 
         create_export_parts
-        schedule_segment_exporters
+        schedule_finalization_or_segment_exporter
       rescue StandardError
         dependency_list_export.reset_state!
 
@@ -42,6 +42,14 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
         end
       end
 
+      def schedule_finalization_or_segment_exporter
+        segment_count == 0 ? schedule_export_finalization : schedule_segment_exporters
+      end
+
+      def schedule_export_finalization
+        ::Gitlab::Export::SegmentedExportFinalisationWorker.perform_async(dependency_list_export.to_global_id)
+      end
+
       def schedule_segment_exporters
         segments.each do |segment|
           ::Gitlab::Export::SegmentedExportWorker.perform_async(dependency_list_export.to_global_id, segment)
@@ -62,13 +70,11 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
       # Segments are array of export part IDs.
       # Each segment is handled by a separate Sidekiq job.
       def segments
-        return [] if segment_count == 0
-
         export_parts.map(&:id).in_groups(segment_count, false)
       end
 
       def segment_count
-        [export_parts.length, SEGMENTED_EXPORT_WORKERS].min
+        @segment_count ||= [export_parts.length, SEGMENTED_EXPORT_WORKERS].min
       end
     end
   end
