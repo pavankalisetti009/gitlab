@@ -6,6 +6,9 @@ module CodeSuggestions
       class AnthropicMessages < CodeSuggestions::Prompts::Base
         include Gitlab::Utils::StrongMemoize
 
+        MODEL_PROVIDER = 'anthropic'
+        MODEL_NAME = 'claude-3-5-sonnet-20240620'
+
         # although claude-2's prompt limit is much bigger, response time grows with prompt size,
         # so we don't attempt to use the whole size of prompt window
         MAX_INPUT_CHARS = 50000
@@ -14,12 +17,11 @@ module CodeSuggestions
 
         def request_params
           {
-            model_provider: ::CodeSuggestions::TaskFactory::ANTHROPIC,
+            model_provider: self.class::MODEL_PROVIDER,
+            model_name: self.class::MODEL_NAME,
             prompt_version: self.class::GATEWAY_PROMPT_VERSION,
             prompt: prompt
-          }.tap do |opts|
-            opts[:model_name] = params[:model_name] if params[:model_name].present?
-          end
+          }
         end
 
         private

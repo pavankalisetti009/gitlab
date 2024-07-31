@@ -4,10 +4,6 @@ module CodeSuggestions
   class TaskFactory
     include Gitlab::Utils::StrongMemoize
 
-    VERTEX_AI = :vertex_ai
-    ANTHROPIC = :anthropic
-    ANTHROPIC_MODEL = 'claude-3-5-sonnet-20240620'
-
     def initialize(current_user, params:, unsafe_passthrough_params: {})
       @current_user = current_user
       @params = params
@@ -59,14 +55,10 @@ module CodeSuggestions
     strong_memoize_attr(:language)
 
     def code_generation_params(instruction)
-      self_hosted = ::Ai::FeatureSetting.find_by_feature(:code_generations).present?
-      return params if self_hosted
-
       params.merge(
         prefix: prefix,
         instruction: instruction,
         project: project,
-        model_name: ANTHROPIC_MODEL,
         current_user: current_user
       )
     end

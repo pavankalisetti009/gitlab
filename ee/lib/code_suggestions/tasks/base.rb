@@ -6,6 +6,7 @@ module CodeSuggestions
       AI_GATEWAY_CONTENT_SIZE = 100_000
 
       def initialize(params: {}, unsafe_passthrough_params: {})
+        @feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_setting_name)
         @params = params
         @unsafe_passthrough_params = unsafe_passthrough_params
       end
@@ -40,9 +41,14 @@ module CodeSuggestions
 
       private
 
-      attr_reader :params, :unsafe_passthrough_params
+      attr_reader :params, :unsafe_passthrough_params, :feature_setting
 
       def endpoint_name
+        raise NotImplementedError
+      end
+
+      # override this method in Tasks::Completion/Generation classes
+      def feature_setting_name
         raise NotImplementedError
       end
 
