@@ -3,11 +3,15 @@ import { GlSingleStat } from '@gitlab/ui/dist/charts';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import UsageOverview from 'ee/analytics/analytics_dashboards/components/visualizations/usage_overview.vue';
-import { mockUsageOverviewData, mockUsageMetrics, mockUsageMetricsNoData } from '../../mock_data';
+import {
+  mockGroupUsageOverviewData,
+  mockGroupUsageMetrics,
+  mockUsageMetricsNoData,
+} from '../../mock_data';
 
 describe('Usage Overview Visualization', () => {
   let wrapper;
-  const defaultProps = { data: mockUsageOverviewData, options: {} };
+  const defaultProps = { data: mockGroupUsageOverviewData, options: {} };
   const defaultProvide = { overviewCountsAggregationEnabled: true };
 
   const findNamespaceTile = () => wrapper.findByTestId('usage-overview-namespace');
@@ -80,11 +84,11 @@ describe('Usage Overview Visualization', () => {
 
     describe('metrics', () => {
       it('should render each metric', () => {
-        expect(findMetrics()).toHaveLength(mockUsageMetrics.length);
+        expect(findMetrics()).toHaveLength(mockGroupUsageMetrics.length);
       });
 
       it('should render each metric as a single stat', () => {
-        mockUsageMetrics.forEach(({ value, options }, idx) => {
+        mockGroupUsageMetrics.forEach(({ value, options }, idx) => {
           expect(findMetricTitle(idx).text()).toBe(options.title);
           expect(findMetricIcon(idx).props('name')).toBe(options.titleIcon);
           expect(findMetricValue(idx).text()).toBe(String(value));
@@ -110,7 +114,7 @@ describe('Usage Overview Visualization', () => {
     });
 
     it('should render each metric a `0` for each metric', () => {
-      expect(findMetrics()).toHaveLength(mockUsageMetrics.length);
+      expect(findMetrics()).toHaveLength(mockGroupUsageMetrics.length);
 
       findMetrics().wrappers.forEach((v) => {
         expect(v.text()).toContain('0');
@@ -118,7 +122,7 @@ describe('Usage Overview Visualization', () => {
     });
 
     it('should render each metric as a single stat with value 0', () => {
-      mockUsageMetrics.forEach((_, idx) => {
+      mockGroupUsageMetrics.forEach((_, idx) => {
         expect(findMetricValue(idx).text()).toBe('0');
       });
     });
@@ -140,7 +144,7 @@ describe('Usage Overview Visualization', () => {
     });
 
     it('with no data should render `-` for each metric', () => {
-      expect(findMetrics()).toHaveLength(mockUsageMetrics.length);
+      expect(findMetrics()).toHaveLength(mockGroupUsageMetrics.length);
 
       findMetrics().wrappers.forEach((v) => {
         expect(v.text()).toContain('-');

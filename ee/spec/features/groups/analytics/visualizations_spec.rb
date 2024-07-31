@@ -67,6 +67,7 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
 
     it_behaves_like 'renders usage overview metrics' do
       let(:panel_title) { "#{group.name} group" }
+      let(:usage_overview_metrics) { expected_usage_overview_metrics }
     end
   end
 
