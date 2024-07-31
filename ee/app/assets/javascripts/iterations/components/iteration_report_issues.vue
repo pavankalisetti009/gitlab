@@ -302,7 +302,7 @@ export default {
       </template>
 
       <template #cell(assignees)="{ item: { assignees } }">
-        <div class="gl-flex gl-flex-col gl-gap-3 max-sm:gl-items-end">
+        <div class="gl-flex gl-flex-col gl-gap-3 gl-items-end sm:gl-items-start">
           <div
             v-for="assignee in assignees"
             :key="assignee.username"
