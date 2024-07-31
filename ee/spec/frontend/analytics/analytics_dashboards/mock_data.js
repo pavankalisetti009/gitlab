@@ -676,7 +676,7 @@ export const mockQueryBuilderValues = {
   ],
 };
 
-export const mockUsageMetricsQueryResponse = {
+export const mockGroupUsageMetricsQueryResponse = {
   group: {
     id: 'gid://gitlab/Group/225',
     fullName: 'GitLab Org',
@@ -720,9 +720,39 @@ export const mockUsageMetricsQueryResponse = {
       recordedAt: '2022-11-27T23:59:59Z',
     },
   },
+  project: null,
 };
 
-export const mockUsageNamespaceData = {
+export const mockProjectUsageMetricsQueryResponse = {
+  group: null,
+  project: {
+    id: 'gid://gitlab/Project/7',
+    nameWithNamespace: 'GitLab Org / GitLab',
+    avatarUrl: '/avatar.png',
+    visibility: 'internal',
+    __typename: 'Project',
+    issues: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'ISSUES',
+      count: 133,
+      recordedAt: '2023-11-26T23:59:59Z',
+    },
+    pipelines: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'PIPELINES',
+      count: 150,
+      recordedAt: undefined,
+    },
+    merge_requests: {
+      __typename: 'ValueStreamDashboardCount',
+      identifier: 'MERGE_REQUESTS',
+      count: 200,
+      recordedAt: '2022-11-27T23:59:59Z',
+    },
+  },
+};
+
+export const mockUsageGroupNamespaceData = {
   id: 225,
   avatarUrl: '/avatar.png',
   fullName: 'GitLab Org',
@@ -732,7 +762,17 @@ export const mockUsageNamespaceData = {
     'Public - The group and any public projects can be viewed without any authentication.',
 };
 
-export const mockUsageMetrics = [
+export const mockUsageProjectNamespaceData = {
+  id: 7,
+  avatarUrl: '/avatar.png',
+  fullName: 'GitLab Org / GitLab',
+  namespaceType: 'Project',
+  visibilityLevelIcon: 'shield',
+  visibilityLevelTooltip:
+    'Internal - The project can be accessed by any logged in user except external users.',
+};
+
+export const mockGroupUsageMetrics = [
   {
     identifier: 'groups',
     value: 58,
@@ -789,6 +829,36 @@ export const mockUsageMetrics = [
   },
 ];
 
+export const mockProjectUsageMetrics = [
+  {
+    identifier: 'issues',
+    value: 133,
+    recordedAt: '2023-11-26T23:59:59Z',
+    options: {
+      title: 'Issues',
+      titleIcon: 'issues',
+    },
+  },
+  {
+    identifier: 'merge_requests',
+    value: 200,
+    recordedAt: '2022-11-27T23:59:59Z',
+    options: {
+      title: 'Merge requests',
+      titleIcon: 'merge-request',
+    },
+  },
+  {
+    identifier: 'pipelines',
+    value: 150,
+    recordedAt: undefined,
+    options: {
+      title: 'Pipelines',
+      titleIcon: 'pipeline',
+    },
+  },
+];
+
 export const mockUsageMetricsNoData = [
   {
     identifier: 'groups',
@@ -828,9 +898,14 @@ export const mockUsageMetricsNoData = [
   },
 ];
 
-export const mockUsageOverviewData = {
-  namespace: mockUsageNamespaceData,
-  metrics: mockUsageMetrics,
+export const mockGroupUsageOverviewData = {
+  namespace: mockUsageGroupNamespaceData,
+  metrics: mockGroupUsageMetrics,
+};
+
+export const mockProjectUsageOverviewData = {
+  namespace: mockUsageProjectNamespaceData,
+  metrics: mockProjectUsageMetrics,
 };
 
 export const invalidVisualization = {

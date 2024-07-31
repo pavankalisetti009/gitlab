@@ -11,8 +11,12 @@ import {
   USAGE_OVERVIEW_IDENTIFIER_PIPELINES,
 } from '~/analytics/shared/constants';
 import { toYmd } from '~/analytics/shared/utils';
-import { GROUP_VISIBILITY_TYPE, VISIBILITY_TYPE_ICON } from '~/visibility_level/constants';
-import { TYPENAME_GROUP } from '~/graphql_shared/constants';
+import { __ } from '~/locale';
+import {
+  GROUP_VISIBILITY_TYPE,
+  PROJECT_VISIBILITY_TYPE,
+  VISIBILITY_TYPE_ICON,
+} from '~/visibility_level/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { defaultClient } from '../graphql/client';
 import getUsageOverviewQuery from '../graphql/queries/get_usage_overview.query.graphql';
@@ -28,16 +32,31 @@ const USAGE_OVERVIEW_IDENTIFIERS = [
 
 /**
  * Takes the usage overview query response, extracts information
- * about the top-level namespace and formats it for rendering.
+ * about the namespace and formats it for rendering.
  */
-export const extractUsageNamespaceData = (data) => ({
-  id: getIdFromGraphQLId(data?.id),
-  avatarUrl: data?.avatarUrl,
-  fullName: data?.fullName,
-  namespaceType: TYPENAME_GROUP,
-  visibilityLevelIcon: VISIBILITY_TYPE_ICON[data.visibility] ?? null,
-  visibilityLevelTooltip: GROUP_VISIBILITY_TYPE[data.visibility] ?? null,
-});
+export const extractUsageNamespaceData = ({ data = {}, isProjectNamespace = false } = {}) => {
+  const baseNamespaceData = {
+    id: getIdFromGraphQLId(data?.id),
+    avatarUrl: data?.avatarUrl,
+    visibilityLevelIcon: VISIBILITY_TYPE_ICON[data?.visibility],
+  };
+
+  if (isProjectNamespace) {
+    return {
+      ...baseNamespaceData,
+      fullName: data?.nameWithNamespace,
+      namespaceType: __('Project'),
+      visibilityLevelTooltip: PROJECT_VISIBILITY_TYPE[data?.visibility],
+    };
+  }
+
+  return {
+    ...baseNamespaceData,
+    fullName: data?.fullName,
+    namespaceType: __('Group'),
+    visibilityLevelTooltip: GROUP_VISIBILITY_TYPE[data?.visibility],
+  };
+};
 
 /**
  * Takes a usage metrics query response, extracts the values and
@@ -104,9 +123,13 @@ export const prepareQuery = (queryKeysToInclude = []) => {
  * Fetch usage overview metrics for a given namespace
  */
 export default async function fetch({
-  namespace: fullPath,
-  queryOverrides: { filters: { include = USAGE_OVERVIEW_IDENTIFIERS } = {} } = {},
+  namespace,
+  queryOverrides: {
+    namespace: namespaceOverride,
+    filters: { include = USAGE_OVERVIEW_IDENTIFIERS } = {},
+  } = {},
 }) {
+  const fullPath = namespaceOverride || namespace;
   const variableOverrides = prepareQuery(include);
   const { startDate, endDate } = USAGE_OVERVIEW_DEFAULT_DATE_RANGE;
 
@@ -122,13 +145,16 @@ export default async function fetch({
 
   return request
     .then(({ data = {} }) => {
-      if (!data.group) {
+      const usageOverviewData = data?.group || data?.project;
+      const isProjectNamespace = Boolean(data?.project);
+
+      if (!usageOverviewData) {
         return { metrics: usageOverviewNoData };
       }
 
       return {
-        namespace: extractUsageNamespaceData(data.group),
-        metrics: extractUsageMetrics(data.group),
+        namespace: extractUsageNamespaceData({ data: usageOverviewData, isProjectNamespace }),
+        metrics: extractUsageMetrics(usageOverviewData),
       };
     })
     .catch(() => {

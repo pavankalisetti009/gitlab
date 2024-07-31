@@ -14,20 +14,25 @@ import fetch, {
 } from 'ee/analytics/analytics_dashboards/data_sources/usage_overview';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import {
-  mockUsageMetricsQueryResponse,
-  mockUsageNamespaceData,
-  mockUsageMetrics,
+  mockGroupUsageMetricsQueryResponse,
+  mockProjectUsageMetricsQueryResponse,
+  mockUsageGroupNamespaceData,
+  mockGroupUsageMetrics,
   mockUsageMetricsNoData,
-  mockUsageOverviewData,
+  mockGroupUsageOverviewData,
+  mockUsageProjectNamespaceData,
+  mockProjectUsageOverviewData,
+  mockProjectUsageMetrics,
 } from '../../mock_data';
 
 describe('Usage overview Data Source', () => {
   let obj;
 
-  const namespace = 'some-group-path';
-  const queryKeys = [USAGE_OVERVIEW_IDENTIFIER_GROUPS, USAGE_OVERVIEW_IDENTIFIER_MERGE_REQUESTS];
-  const mockQuery = { filters: { include: queryKeys } };
-  const { group: mockGroupUsageMetricsQueryResponse } = mockUsageMetricsQueryResponse;
+  const namespace = 'some-namespace-path';
+  const queryKeys = [USAGE_OVERVIEW_IDENTIFIER_ISSUES, USAGE_OVERVIEW_IDENTIFIER_MERGE_REQUESTS];
+  const mockFilters = { filters: { include: queryKeys } };
+  const { group: mockGroupUsageMetricsData } = mockGroupUsageMetricsQueryResponse;
+  const { project: mockProjectUsageMetricsData } = mockProjectUsageMetricsQueryResponse;
   const identifiers = [
     USAGE_OVERVIEW_IDENTIFIER_GROUPS,
     USAGE_OVERVIEW_IDENTIFIER_PROJECTS,
@@ -38,28 +43,41 @@ describe('Usage overview Data Source', () => {
   ];
 
   describe('extractUsageMetrics', () => {
-    it('returns an array of metrics', () => {
-      expect(extractUsageMetrics(mockGroupUsageMetricsQueryResponse)).toEqual(mockUsageMetrics);
-    });
+    describe.each`
+      usageOverviewType          | usageMetricsData               | expectedUsageMetrics
+      ${'group usage metrics'}   | ${mockGroupUsageMetricsData}   | ${mockGroupUsageMetrics}
+      ${'project usage metrics'} | ${mockProjectUsageMetricsData} | ${mockProjectUsageMetrics}
+    `('for $usageOverviewType', ({ usageMetricsData, expectedUsageMetrics }) => {
+      it('returns an array of metrics', () => {
+        expect(extractUsageMetrics(usageMetricsData)).toEqual(expectedUsageMetrics);
+      });
 
-    it('returns all the available metrics with their metadata', () => {
-      const metrics = extractUsageMetrics(mockGroupUsageMetricsQueryResponse);
+      it('returns all the available metrics with their metadata', () => {
+        const metrics = extractUsageMetrics(usageMetricsData);
 
-      metrics.forEach((metric) => {
-        const { identifier, options } = metric;
-        expect(identifiers.includes(identifier)).toBe(true);
-        expect(metric.value).toBe(mockGroupUsageMetricsQueryResponse[identifier].count);
-        expect(options).toBe(USAGE_OVERVIEW_METADATA[identifier].options);
+        metrics.forEach((metric) => {
+          const { identifier, options } = metric;
+          expect(identifiers.includes(identifier)).toBe(true);
+          expect(metric.value).toBe(usageMetricsData[identifier].count);
+          expect(options).toBe(USAGE_OVERVIEW_METADATA[identifier].options);
+        });
       });
     });
   });
 
   describe('extractUsageNamespaceData', () => {
-    it('returns the namespace data as expected', () => {
-      expect(extractUsageNamespaceData(mockGroupUsageMetricsQueryResponse)).toEqual(
-        mockUsageNamespaceData,
-      );
-    });
+    it.each`
+      namespaceType | isProjectNamespace | usageMetricsData               | expectedNamespaceData
+      ${'group'}    | ${false}           | ${mockGroupUsageMetricsData}   | ${mockUsageGroupNamespaceData}
+      ${'project'}  | ${true}            | ${mockProjectUsageMetricsData} | ${mockUsageProjectNamespaceData}
+    `(
+      'returns the $namespaceType namespace data as expected',
+      ({ isProjectNamespace, usageMetricsData, expectedNamespaceData }) => {
+        expect(extractUsageNamespaceData({ data: usageMetricsData, isProjectNamespace })).toEqual(
+          expectedNamespaceData,
+        );
+      },
+    );
   });
 
   describe('prepareQuery', () => {
@@ -86,8 +104,8 @@ describe('Usage overview Data Source', () => {
       const res = prepareQuery(queryKeys);
 
       expect(res).toEqual({
-        includeGroups: true,
-        includeIssues: false,
+        includeGroups: false,
+        includeIssues: true,
         includeProjects: false,
         includeUsers: false,
         includeMergeRequests: true,
@@ -97,88 +115,101 @@ describe('Usage overview Data Source', () => {
   });
 
   describe('fetch', () => {
-    it(`will request the namespace's usage overview metrics`, async () => {
-      jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
+    describe.each`
+      namespaceDescription    | namespaceOverride                 | expectedNamespace
+      ${'default namespace'}  | ${undefined}                      | ${namespace}
+      ${'namespace override'} | ${'some-namespace-override-path'} | ${'some-namespace-override-path'}
+    `('with a $namespaceDescription', ({ namespaceOverride, expectedNamespace }) => {
+      it(`will request the namespace's usage overview metrics`, async () => {
+        jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
 
-      obj = await fetch({ namespace, queryOverrides: mockQuery });
+        obj = await fetch({ namespace, queryOverrides: { namespace: namespaceOverride } });
 
-      expect(defaultClient.query).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variables: {
-            fullPath: 'some-group-path',
-            startDate: expect.anything(),
-            endDate: expect.anything(),
-            includeGroups: true,
-            includeMergeRequests: true,
-            includeIssues: false,
-            includeProjects: false,
-            includePipelines: false,
-            includeUsers: false,
-          },
-        }),
-      );
-    });
-
-    it('will only request the specified metrics', async () => {
-      jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
-
-      obj = await fetch({
-        namespace,
-        queryOverrides: { filters: { include: [USAGE_OVERVIEW_IDENTIFIER_MERGE_REQUESTS] } },
+        expect(defaultClient.query).toHaveBeenCalledWith(
+          expect.objectContaining({
+            variables: {
+              fullPath: expectedNamespace,
+              startDate: expect.anything(),
+              endDate: expect.anything(),
+              includeGroups: true,
+              includeMergeRequests: true,
+              includeIssues: true,
+              includeProjects: true,
+              includePipelines: true,
+              includeUsers: true,
+            },
+          }),
+        );
       });
 
-      expect(defaultClient.query).toHaveBeenCalledWith(
-        expect.objectContaining({
-          variables: {
-            fullPath: 'some-group-path',
-            startDate: expect.anything(),
-            endDate: expect.anything(),
-            includeMergeRequests: true,
-            includeGroups: false,
-            includeIssues: false,
-            includeProjects: false,
-            includePipelines: false,
-            includeUsers: false,
+      it('will only request the specified metrics', async () => {
+        jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
+
+        obj = await fetch({
+          namespace,
+          queryOverrides: {
+            namespace: namespaceOverride,
+            filters: { include: [USAGE_OVERVIEW_IDENTIFIER_MERGE_REQUESTS] },
           },
-        }),
-      );
+        });
+
+        expect(defaultClient.query).toHaveBeenCalledWith(
+          expect.objectContaining({
+            variables: {
+              fullPath: expectedNamespace,
+              startDate: expect.anything(),
+              endDate: expect.anything(),
+              includeMergeRequests: true,
+              includeGroups: false,
+              includeIssues: false,
+              includeProjects: false,
+              includePipelines: false,
+              includeUsers: false,
+            },
+          }),
+        );
+      });
     });
 
-    it.each`
-      label                  | data                             | params
-      ${'with no data'}      | ${{}}                            | ${{ namespace, queryOverrides: mockQuery }}
-      ${'with no namespace'} | ${mockUsageMetricsQueryResponse} | ${{ namespace: null, queryOverrides: mockQuery }}
-    `('$label returns the no data object', async ({ params }) => {
-      jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
+    describe.each`
+      namespaceTypeDescription    | queryResponse                           | usageOverviewData
+      ${'for group namespaces'}   | ${mockGroupUsageMetricsQueryResponse}   | ${mockGroupUsageOverviewData}
+      ${'for project namespaces'} | ${mockProjectUsageMetricsQueryResponse} | ${mockProjectUsageOverviewData}
+    `('$namespaceTypeDescription', ({ queryResponse, usageOverviewData }) => {
+      it.each`
+        label                  | data             | params
+        ${'with no data'}      | ${{}}            | ${{ namespace, queryOverrides: mockFilters }}
+        ${'with no namespace'} | ${queryResponse} | ${{ namespace: null, queryOverrides: mockFilters }}
+      `('$label returns the no data object', async ({ params }) => {
+        jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: {} });
 
-      obj = await fetch(params);
+        obj = await fetch(params);
 
-      expect(obj).toMatchObject({ metrics: mockUsageMetricsNoData });
+        expect(obj).toMatchObject({ metrics: mockUsageMetricsNoData });
+      });
+
+      describe('successfully completes', () => {
+        beforeEach(async () => {
+          jest.spyOn(defaultClient, 'query').mockResolvedValue({ data: queryResponse });
+
+          obj = await fetch({ namespace, queryOverrides: mockFilters });
+        });
+
+        it('will fetch the usage overview data', () => {
+          expect(obj).toMatchObject(usageOverviewData);
+        });
+      });
     });
 
     describe('with an error', () => {
       beforeEach(() => {
-        jest.spyOn(defaultClient, 'query').mockRejectedValue();
+        jest.spyOn(defaultClient, 'query').mockRejectedValue({});
 
-        obj = fetch({ namespace, queryOverrides: mockQuery });
+        obj = fetch({ namespace, queryOverrides: mockFilters });
       });
 
-      it('returns the no data object', async () => {
+      it('throws Error object with correct message', async () => {
         await expect(() => obj).rejects.toThrow('Failed to load usage overview data');
-      });
-    });
-
-    describe('successfully completes', () => {
-      beforeEach(async () => {
-        jest
-          .spyOn(defaultClient, 'query')
-          .mockResolvedValue({ data: mockUsageMetricsQueryResponse });
-
-        obj = await fetch({ namespace, queryOverrides: mockQuery });
-      });
-
-      it('will fetch the usage overview data', () => {
-        expect(obj).toMatchObject(mockUsageOverviewData);
       });
     });
   });
