@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class Training < ApplicationRecord
+  class Training < ::Gitlab::Database::SecApplicationRecord
     self.table_name = 'security_trainings'
 
     belongs_to :project, optional: false
