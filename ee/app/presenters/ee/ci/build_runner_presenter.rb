@@ -11,6 +11,10 @@ module EE
           secret['azure_key_vault']['server'] = azure_key_vault_server(secret) if secret['azure_key_vault']
           secret['gcp_secret_manager']['server'] = gcp_secret_manager_server(secret) if secret['gcp_secret_manager']
 
+          if ::Feature.enabled?(:ci_akeyless_secret, project) && (secret['akeyless'])
+            secret['akeyless']['server'] = akeyless_server(secret)
+          end
+
           secret
         end
       end
@@ -51,6 +55,10 @@ module EE
           'workload_identity_federation_provider_id' => variable_value('GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID'),
           'jwt' => secret['token']
         }
+      end
+
+      def akeyless_server(secret)
+        # TODO in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147283
       end
 
       def azure_key_vault_server(secret)
