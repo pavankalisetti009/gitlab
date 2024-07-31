@@ -4,16 +4,10 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import RuleViewFoss from '~/projects/settings/branch_rules/components/view/index.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
-import {
-  I18N,
-  APPROVALS_HELP_PATH,
-  STATUS_CHECKS_HELP_PATH,
-} from '~/projects/settings/branch_rules/components/view/constants';
+import { I18N } from '~/projects/settings/branch_rules/components/view/constants';
 
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-const approvalsHelpDocLink = helpPagePath(APPROVALS_HELP_PATH);
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-const statusChecksHelpDocLink = helpPagePath(STATUS_CHECKS_HELP_PATH);
+const approvalsHelpDocLink = helpPagePath('user/project/merge_requests/approvals/index');
+const statusChecksHelpDocLink = helpPagePath('user/project/merge_requests/status_checks');
 
 // This is a false violation of @gitlab/no-runtime-template-compiler, since it
 // extends a valid Vue single file component.

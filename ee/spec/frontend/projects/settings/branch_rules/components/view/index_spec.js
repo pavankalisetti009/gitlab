@@ -27,6 +27,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
   getParameterByName: jest.fn().mockReturnValue('main'),
   mergeUrlParams: jest.fn().mockReturnValue('/branches?state=all&search=main'),
   joinPaths: jest.fn(),
+  setUrlFragment: jest.fn(),
 }));
 
 Vue.use(VueApollo);
