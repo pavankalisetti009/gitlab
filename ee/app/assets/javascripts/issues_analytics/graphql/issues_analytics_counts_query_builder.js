@@ -22,8 +22,8 @@ export default ({ queryAlias, startDate = null, endDate = null, isProject = fals
   if (!dateRangeData.length) return '';
 
   const countsByMonth = dateRangeData.map(
-    ({ fromDate, toDate, month, year }) => `
-      ${month}_${year}: ${ISSUES_ANALYTICS_METRIC_TYPES[queryAlias]}(
+    ({ fromDate, toDate, identifier }) => `
+      ${identifier}: ${ISSUES_ANALYTICS_METRIC_TYPES[queryAlias]}(
         from: "${fromDate}",
         to: "${toDate}"
         assigneeUsernames: $assigneeUsernames

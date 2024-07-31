@@ -52,18 +52,21 @@ describe('Issues Analytics utils', () => {
           toDate: '2023-08-01',
           month: 'Jul',
           year: 2023,
+          identifier: 'query_2023_7',
         },
         {
           fromDate: '2023-08-01',
           toDate: '2023-09-01',
           month: 'Aug',
           year: 2023,
+          identifier: 'query_2023_8',
         },
         {
           fromDate: '2023-09-01',
           toDate: '2023-09-15',
           month: 'Sep',
           year: 2023,
+          identifier: 'query_2023_9',
         },
       ]);
     });
@@ -80,6 +83,7 @@ describe('Issues Analytics utils', () => {
           toDate: '2023-09-01',
           month: 'Aug',
           year: 2023,
+          identifier: 'query_2023_8',
         },
       ]);
     });
