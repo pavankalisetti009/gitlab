@@ -1965,6 +1965,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: sbom_process_vulnerabilities
+  :worker_name: Sbom::ProcessVulnerabilitiesWorker
+  :feature_category: :software_composition_analysis
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: sbom_sync_archived_status
   :worker_name: Sbom::SyncArchivedStatusWorker
   :feature_category: :dependency_management

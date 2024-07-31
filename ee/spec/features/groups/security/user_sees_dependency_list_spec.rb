@@ -19,7 +19,9 @@ RSpec.describe "User sees dependency list", :js, feature_category: :vulnerabilit
     Gitlab::ExclusiveLease.skipping_transaction_check do
       # `before_all` runs in a transaction which triggers LeaseWithinTransactionError.
       # Skip the check since it only happens in tests.
-      ::Sbom::Ingestion::IngestReportsService.execute(ci_pipeline)
+      Sidekiq::Worker.skipping_transaction_check do
+        ::Sbom::Ingestion::IngestReportsService.execute(ci_pipeline)
+      end
     end
     group.add_owner(owner)
     sign_in(owner)
