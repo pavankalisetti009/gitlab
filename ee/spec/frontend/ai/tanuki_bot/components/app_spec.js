@@ -36,6 +36,7 @@ import {
   MOCK_CHAT_CACHED_MESSAGES_RES,
   GENERATE_MOCK_TANUKI_RES,
   MOCK_CHUNK_MESSAGE,
+  MOCK_SLASH_COMMANDS,
 } from '../mock_data';
 
 Vue.use(Vuex);
@@ -169,6 +170,11 @@ describeSkipVue3(skipReason, () => {
 
     it('sets correct `badge-type` and `badge-help-page-url` props on the chat component', () => {
       expect(findGlDuoChat().props('badgeType')).toBe(null);
+    });
+
+    it('passes the correct slashCommands prop to GlDuoChat', () => {
+      createComponent();
+      expect(findGlDuoChat().props('slashCommands')).toEqual(MOCK_SLASH_COMMANDS);
     });
 
     it('renders the duo-chat-callout component', () => {

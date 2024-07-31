@@ -19493,6 +19493,9 @@ msgstr ""
 msgid "DuoChat|Ask a question about GitLab"
 msgstr ""
 
+msgid "DuoChat|Delete all messages in this conversation."
+msgstr ""
+
 msgid "DuoChat|For example, %{linkStart}what is a fork%{linkEnd}?"
 msgstr ""
 
@@ -19503,6 +19506,9 @@ msgid "DuoChat|Give feedback"
 msgstr ""
 
 msgid "DuoChat|How to use GitLab"
+msgstr ""
+
+msgid "DuoChat|Reset conversation and ignore the previous messages."
 msgstr ""
 
 msgid "DuoChat|The issue, epic, or code you're viewing"
