@@ -11,7 +11,7 @@ module GitlabSubscriptions
     end
 
     def execute
-      return User.none unless add_on_type == :code_suggestions && group.root?
+      return User.none unless GitlabSubscriptions::AddOn::DUO_ADD_ONS.include?(add_on_type) && group.root?
 
       members = Member
                   .with(group_namespaces_cte.to_arel) # rubocop:disable CodeReuse/ActiveRecord

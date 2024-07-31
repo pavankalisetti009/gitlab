@@ -1,22 +1,26 @@
 # frozen_string_literal: true
 
 module GitlabSubscriptions
-  module DuoPro
+  module Duo
     class BulkAssignService < BaseService
       include ::GitlabSubscriptions::SubscriptionHelper
       include Gitlab::Utils::StrongMemoize
 
       ERROR_NOT_ENOUGH_SEATS = 'NOT_ENOUGH_SEATS'
       ERROR_INVALID_USER_ID_PRESENT = 'INVALID_USER_ID_PRESENT'
+      ERROR_INCOMPATIBLE_ADD_ON = 'INCOMPATIBLE_ADD_ON'
 
       NotEnoughSeatsError = Class.new(StandardError)
 
       def initialize(add_on_purchase:, user_ids:)
         @add_on_purchase = add_on_purchase
         @user_ids = user_ids.to_set
+        @duo_type = add_on_purchase.add_on.name.to_sym
       end
 
       def execute
+        return invalid_add_on unless GitlabSubscriptions::AddOn::DUO_ADD_ONS.include?(duo_type)
+
         ineligible_user_ids = user_ids - eligible_user_ids
         return invalid_user_id_present if ineligible_user_ids.any?
 
@@ -49,7 +53,7 @@ module GitlabSubscriptions
 
       private
 
-      attr_reader :add_on_purchase, :user_ids
+      attr_reader :add_on_purchase, :user_ids, :duo_type
 
       def invalid_user_id_present
         Gitlab::AppLogger.error(log_events(type: 'error',
@@ -64,6 +68,11 @@ module GitlabSubscriptions
 
       def ensure_seat_availability
         raise NotEnoughSeatsError unless seats_available?
+      end
+
+      def invalid_add_on
+        Gitlab::AppLogger.error(log_events(type: 'error', payload: { errors: ERROR_INCOMPATIBLE_ADD_ON }))
+        ServiceResponse.error(message: ERROR_INCOMPATIBLE_ADD_ON)
       end
 
       def seats_available?
@@ -87,12 +96,12 @@ module GitlabSubscriptions
       strong_memoize_attr :eligible_user_ids
 
       def saas_eligible_user_ids
-        namespace.gitlab_duo_pro_eligible_user_ids & user_ids
+        namespace.gitlab_duo_eligible_user_ids & user_ids
       end
 
       # rubocop: disable CodeReuse/ActiveRecord, Database/AvoidUsingPluckWithoutLimit -- Safe because query filters based on passed user_ids
       def sm_eligible_user_ids
-        GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(add_on_type: :code_suggestions).execute
+        GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder.new(add_on_type: duo_type).execute
           .where(id: user_ids)
           .pluck(:id)
       end
@@ -105,7 +114,7 @@ module GitlabSubscriptions
       def log_events(type:, payload:)
         {
           add_on_purchase_id: add_on_purchase.id,
-          message: 'Duo Pro Bulk User Assignment',
+          message: 'Duo Bulk User Assignment',
           response_type: type,
           payload: payload
         }

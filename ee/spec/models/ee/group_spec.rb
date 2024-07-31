@@ -2087,10 +2087,10 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#gitlab_duo_pro_eligible_user_ids', :saas do
+  describe '#gitlab_duo_eligible_user_ids', :saas do
     include_context 'for billable users setup'
 
-    subject(:eligible_user_ids) { group.gitlab_duo_pro_eligible_user_ids }
+    subject(:eligible_user_ids) { group.gitlab_duo_eligible_user_ids }
 
     it 'includes distinct active users' do
       expect(eligible_user_ids).to match_array([

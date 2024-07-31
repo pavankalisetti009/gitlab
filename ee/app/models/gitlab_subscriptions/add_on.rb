@@ -17,6 +17,8 @@ module GitlabSubscriptions
       duo_enterprise: 3
     }
 
+    DUO_ADD_ONS = %i[code_suggestions duo_enterprise].freeze
+
     # Note: If a new enum is added, make sure to update this method to reflect that as well.
     def self.descriptions
       {
