@@ -165,7 +165,7 @@ module Gitlab
         def slash_command
           return unless prompt_message.slash_command?
 
-          Gitlab::Llm::Chain::SlashCommand.for(message: prompt_message, tools: COMMAND_TOOLS)
+          Gitlab::Llm::Chain::SlashCommand.for(message: prompt_message, context: context, tools: COMMAND_TOOLS)
         end
         strong_memoize_attr :slash_command
       end

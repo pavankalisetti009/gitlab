@@ -87,7 +87,8 @@ RSpec.shared_examples 'slash command tool' do
         command_options: command_prompt_options,
         user_input: user_input,
         platform_origin: platform_origin,
-        tool: nil)
+        tool: nil,
+        context: context)
     end
 
     it_behaves_like 'prompt is called with command options'

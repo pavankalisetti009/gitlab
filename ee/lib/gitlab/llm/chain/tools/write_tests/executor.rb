@@ -57,7 +57,8 @@ module Gitlab
                 description: 'Write tests for the code',
                 instruction: 'Write tests for the code user selected inside <selected_code></selected_code> tags.',
                 instruction_with_input: 'Write tests %<input>s for the code user selected inside ' \
-                                        '<selected_code></selected_code> tags.'
+                                        '<selected_code></selected_code> tags.',
+                instruction_without_selected_code: 'Write tests for the code provided by the user: %<input>s.'
               }
             }.freeze
 
