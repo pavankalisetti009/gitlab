@@ -13,6 +13,7 @@ module EE
         has_many :sbom_occurrences, through: :active_projects, class_name: 'Sbom::Occurrence'
         has_many :vulnerability_exports, class_name: 'Vulnerabilities::Export'
         has_many :sbom_sources, class_name: 'Sbom::Source'
+        has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
       end
     end
   end
