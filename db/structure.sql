@@ -14445,7 +14445,8 @@ ALTER SEQUENCE packages_debian_publications_id_seq OWNED BY packages_debian_publ
 CREATE TABLE packages_dependencies (
     id bigint NOT NULL,
     name character varying(255) NOT NULL,
-    version_pattern character varying(255) NOT NULL
+    version_pattern character varying(255) NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE packages_dependencies_id_seq
@@ -28603,7 +28604,9 @@ CREATE UNIQUE INDEX index_packages_debian_publications_on_package_id ON packages
 
 CREATE INDEX index_packages_debian_publications_on_project_id ON packages_debian_publications USING btree (project_id);
 
-CREATE UNIQUE INDEX index_packages_dependencies_on_name_and_version_pattern ON packages_dependencies USING btree (name, version_pattern);
+CREATE UNIQUE INDEX index_packages_dependencies_on_name_version_pattern_project_id ON packages_dependencies USING btree (name, version_pattern, project_id) WHERE (project_id IS NOT NULL);
+
+CREATE INDEX index_packages_dependencies_on_project_id ON packages_dependencies USING btree (project_id);
 
 CREATE INDEX index_packages_dependency_links_on_dependency_id ON packages_dependency_links USING btree (dependency_id);
 
@@ -30214,6 +30217,8 @@ CREATE INDEX tmp_idx_for_vulnerability_feedback_migration ON vulnerability_feedb
 CREATE INDEX tmp_idx_orphaned_approval_merge_request_rules ON approval_merge_request_rules USING btree (id) WHERE ((report_type = ANY (ARRAY[2, 4])) AND (security_orchestration_policy_configuration_id IS NULL));
 
 CREATE INDEX tmp_idx_orphaned_approval_project_rules ON approval_project_rules USING btree (id) WHERE ((report_type = ANY (ARRAY[2, 4])) AND (security_orchestration_policy_configuration_id IS NULL));
+
+CREATE UNIQUE INDEX tmp_idx_packages_dependencies_on_name_version_pattern ON packages_dependencies USING btree (name, version_pattern) WHERE (project_id IS NULL);
 
 CREATE INDEX tmp_index_ci_job_artifacts_on_expire_at_where_locked_unknown ON ci_job_artifacts USING btree (expire_at, job_id) WHERE ((locked = 2) AND (expire_at IS NOT NULL));
 
@@ -33326,6 +33331,9 @@ ALTER TABLE ONLY todos
 
 ALTER TABLE ONLY packages_debian_project_architectures
     ADD CONSTRAINT fk_cd96fce0a1 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY packages_dependencies
+    ADD CONSTRAINT fk_cea1124da7 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY compliance_framework_security_policies
     ADD CONSTRAINT fk_cf3c0ac207 FOREIGN KEY (policy_configuration_id) REFERENCES security_orchestration_policy_configurations(id) ON DELETE CASCADE;
