@@ -321,6 +321,36 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
     end
 
+    describe '.for_duo_pro_or_duo_enterprise' do
+      subject(:duo_pro_or_duo_enterprise_add_on_purchases) { described_class.for_duo_pro_or_duo_enterprise }
+
+      it { expect(duo_pro_or_duo_enterprise_add_on_purchases).to be_empty }
+
+      context 'with duo_enterprise purchase' do
+        let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
+
+        it { expect(duo_pro_or_duo_enterprise_add_on_purchases).to eq [duo_enterprise_add_on] }
+      end
+
+      context 'with duo_pro purchase' do
+        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+
+        it { expect(duo_pro_or_duo_enterprise_add_on_purchases).to eq [gitlab_duo_pro_add_on] }
+      end
+
+      context 'with other purchases' do
+        let!(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise) }
+        let!(:gitlab_duo_pro_add_on) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro) }
+        let!(:product_analytics_add_on) { create(:gitlab_subscription_add_on_purchase, :product_analytics) }
+
+        it 'returns both gitlab_duo_pro and duo_enterprise add-ons' do
+          expect(duo_pro_or_duo_enterprise_add_on_purchases).to match_array(
+            [duo_enterprise_add_on, gitlab_duo_pro_add_on]
+          )
+        end
+      end
+    end
+
     describe '.for_user', :saas do
       subject(:user_purchases) { described_class.for_user(user) }
 
@@ -469,6 +499,65 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
     it 'returns nil when there are no stale records' do
       expect(next_candidate).to eq(nil)
+    end
+  end
+
+  describe '.maximum_duo_seat_count' do
+    context 'when there is no duo add-on' do
+      let(:expected_maximum_duo_seat_count) { 0 }
+
+      it 'returns the default of 0' do
+        expect(described_class.maximum_duo_seat_count).to eq(expected_maximum_duo_seat_count)
+      end
+    end
+
+    context 'when there is a duo pro add-on' do
+      let(:expected_maximum_duo_seat_count) { 10 }
+
+      it 'returns the number of seats purchased' do
+        create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro,
+          quantity: expected_maximum_duo_seat_count)
+
+        expect(described_class.maximum_duo_seat_count).to eq(expected_maximum_duo_seat_count)
+      end
+    end
+
+    context 'when there is a duo enterprise add-on' do
+      let(:expected_maximum_duo_seat_count) { 20 }
+
+      it 'returns the number of seats purchased' do
+        create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise,
+          quantity: expected_maximum_duo_seat_count)
+
+        expect(described_class.maximum_duo_seat_count).to eq(expected_maximum_duo_seat_count)
+      end
+    end
+
+    context 'when there is both a duo pro add-on and a duo enterprise trial add-on' do
+      let(:expected_duo_enterprise_seat_count) { 15 }
+      let(:expected_duo_pro_seat_count) { 5 }
+
+      it 'returns the maximum number of seats purchased for the add-on with the most seats' do
+        create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise, :trial,
+          quantity: expected_duo_enterprise_seat_count)
+        create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro, quantity: expected_duo_pro_seat_count)
+
+        expect(described_class.maximum_duo_seat_count).to eq(expected_duo_enterprise_seat_count)
+      end
+    end
+
+    context 'when there is both a duo pro trial add-on and a duo enterprise add-on' do
+      let(:expected_duo_enterprise_seat_count) { 10 }
+      let(:expected_duo_pro_seat_count) { 40 }
+
+      it 'returns the maximum number of seats purchased for the add-on with the most seats' do
+        create(:gitlab_subscription_add_on_purchase, :active, :duo_enterprise,
+          quantity: expected_duo_enterprise_seat_count)
+        create(:gitlab_subscription_add_on_purchase, :active, :gitlab_duo_pro, :trial,
+          quantity: expected_duo_pro_seat_count)
+
+        expect(described_class.maximum_duo_seat_count).to eq(expected_duo_pro_seat_count)
+      end
     end
   end
 

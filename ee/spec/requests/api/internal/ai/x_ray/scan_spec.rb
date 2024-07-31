@@ -16,6 +16,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
   let(:hostname) { "localhost" }
   let(:headers) { {} }
   let(:namespace_workhorse_headers) { {} }
+  let(:duo_seat_count) { "1" }
 
   before do
     allow(Gitlab::GlobalAnonymousId).to receive(:user_id).and_return(global_user_id)
@@ -43,7 +44,8 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "X-Gitlab-Global-User-Id" => [global_user_id],
         "X-Gitlab-Version" => [Gitlab.version_info.to_s],
         "X-Request-ID" => [an_instance_of(String)],
-        "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)]
+        "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)],
+        "X-Gitlab-Duo-Seat-Count" => [duo_seat_count]
       }
     end
 

@@ -41,7 +41,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Host-Name' => Gitlab.config.gitlab.host,
         'X-Gitlab-Instance-Id' => an_instance_of(String),
         'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
-        'X-Gitlab-Version' => Gitlab.version_info.to_s
+        'X-Gitlab-Version' => Gitlab.version_info.to_s,
+        'X-Gitlab-Duo-Seat-Count' => "0"
       }
     end
 
