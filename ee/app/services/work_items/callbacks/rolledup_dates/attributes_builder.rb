@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module WorkItems
-  module Widgets
-    module RolledupDatesService
+  module Callbacks
+    class RolledupDates
       class AttributesBuilder
         def self.build(work_item, params)
           new(work_item, params).build

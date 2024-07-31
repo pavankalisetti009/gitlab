@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe WorkItems::Widgets::RolledupDatesService::AttributesBuilder, feature_category: :portfolio_management do
+RSpec.describe WorkItems::Callbacks::RolledupDates::AttributesBuilder, feature_category: :portfolio_management do
   let_it_be_with_reload(:work_item) { create(:work_item, :epic) }
 
   let(:start_date) { 1.day.ago.to_date }
