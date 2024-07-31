@@ -153,9 +153,8 @@ module EE
 
       def activate_pending_members
         settings = group.namespace_settings
-        return unless settings.new_user_signups_cap.nil?
 
-        if settings.previous_changes.include?(:new_user_signups_cap)
+        if settings.previous_changes[:seat_control] == %w[user_cap off]
           ::Members::ActivateService.for_group(group).execute(current_user: current_user)
         end
       end
