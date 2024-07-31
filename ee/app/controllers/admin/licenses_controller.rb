@@ -12,23 +12,14 @@ class Admin::LicensesController < Admin::ApplicationController
   urgency :low
 
   def create
-    return upload_license_error if license_params[:data].blank? && license_params[:data_file].blank?
+    service_response = GitlabSubscriptions::UploadLicenseService.new(license_params, admin_subscription_path).execute
+    @license = service_response.payload[:license]
 
-    @license = License.new(license_params)
-
-    return upload_license_error(cloud_license: true) if @license.online_cloud_license?
-
-    if @license.save
-      notice = if @license.started?
-                 _('The license was successfully uploaded and is now active. You can see the details below.')
-               else
-                 _('The license was successfully uploaded and will be active from %{starts_at}. You can see the details below.' % { starts_at: @license.starts_at })
-               end
-
-      flash[:notice] = notice
-      redirect_to(admin_subscription_path)
+    if service_response.success?
+      flash[:notice] = service_response.message
+      redirect_to admin_subscription_path
     else
-      flash[:alert] = @license.errors.full_messages.join.html_safe
+      flash[:alert] = service_response.message
       redirect_to general_admin_application_settings_path
     end
   end
@@ -67,23 +58,5 @@ class Admin::LicensesController < Admin::ApplicationController
     license_params = params.require(:license).permit(:data_file, :data)
     license_params.delete(:data) if license_params[:data_file]
     license_params
-  end
-
-  def upload_license_error(cloud_license: false)
-    flash[:alert] = if cloud_license
-                      ERB::Util.html_escape(
-                        _(
-                          "It looks like you're attempting to activate your subscription. Use " \
-                            "%{a_start}the Subscription page%{a_end} instead."
-                        )
-                      ) % { a_start: "<a href=\"#{admin_subscription_path}\">".html_safe, a_end: '</a>'.html_safe }
-                    else
-                      ERB::Util.html_escape(
-                        _('The license you uploaded is invalid. If the issue persists, contact support at %{link}.')
-                      ) % { link: '<a href="https://support.gitlab.com">https://support.gitlab.com</a>'.html_safe }
-                    end
-
-    @license = License.new
-    redirect_to general_admin_application_settings_path
   end
 end

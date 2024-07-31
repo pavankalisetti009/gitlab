@@ -12,100 +12,38 @@ RSpec.describe Admin::LicensesController, feature_category: :plan_provisioning d
   describe 'Upload license' do
     render_views
 
-    it 'redirects back when no license is entered/uploaded' do
-      expect do
-        post :create, params: { license: { data: '' } }
-      end.not_to change { License.count }
-
-      expect(response).to redirect_to general_admin_application_settings_path
-      expect(flash[:alert]).to include(
-        'The license you uploaded is invalid. If the issue persists, contact support at ' \
-          '<a href="https://support.gitlab.com">https://support.gitlab.com</a>'
-      )
-    end
-
-    context 'when the license is for a cloud license' do
-      context 'with offline cloud license' do
-        it 'redirects to the subscription page when a valid license is entered/uploaded' do
-          license = build_license(cloud_licensing_enabled: true, offline_cloud_licensing_enabled: true)
-
-          expect do
-            post :create, params: { license: { data: license.data } }
-          end.to change { License.count }.by(1)
-
-          expect(response).to redirect_to(admin_subscription_path)
-        end
-      end
-
-      context 'with online cloud license' do
-        it 'redirects back' do
-          license = build_license(cloud_licensing_enabled: true)
-
-          expect do
-            post :create, params: { license: { data: license.data } }
-          end.not_to change { License.count }
-
-          expect(response).to redirect_to general_admin_application_settings_path
-          expect(flash[:alert]).to include(
-            html_escape("It looks like you're attempting to activate your subscription. Use %{link} instead.") % {
-              link: "<a href=\"#{admin_subscription_path}\">the Subscription page</a>".html_safe
-            }
-          )
-        end
-      end
-    end
-
-    it 'renders new with an alert when an invalid license is entered/uploaded' do
+    it 'redirects with an alert when entered/uploaded license is invalid' do
       expect do
         post :create, params: { license: { data: 'GA!89-)GaRBAGE' } }
       end.not_to change { License.count }
 
       expect(response).to redirect_to general_admin_application_settings_path
-      expect(flash[:alert]).to include(_('The license key is invalid. Make sure it is exactly as you received it from GitLab Inc.'))
+      expect(flash[:alert]).to include(
+        _('The license key is invalid. Make sure it is exactly as you received it from GitLab Inc.')
+      )
     end
 
-    it 'redirects to the subscription page when a valid license is entered/uploaded' do
-      license = build_license
+    it 'redirects to the subscription page when entered/uploaded license is valid' do
+      gl_license = build(
+        :gitlab_license,
+        :legacy,
+        restrictions: {
+          trial: false,
+          plan: License::PREMIUM_PLAN,
+          active_user_count: 1,
+          previous_user_count: 1
+        }
+      )
+      license = build(:license, data: gl_license.export)
 
       expect do
         post :create, params: { license: { data: license.data } }
       end.to change { License.count }.by(1)
 
       expect(response).to redirect_to(admin_subscription_path)
-    end
-
-    context 'Trials' do
-      before do
-        stub_env('IN_MEMORY_APPLICATION_SETTINGS', 'false')
-      end
-
-      it 'redirects to the subscription page when a valid trial license is entered/uploaded' do
-        license = build_license(restrictions: { trial: true })
-
-        expect do
-          post :create, params: { license: { data: license.data } }
-        end.to change { License.count }.by(1)
-
-        expect(response).to redirect_to(admin_subscription_path)
-      end
-    end
-
-    def build_license(cloud_licensing_enabled: false, offline_cloud_licensing_enabled: false, restrictions: {})
-      license_restrictions = {
-        trial: false,
-        plan: License::PREMIUM_PLAN,
-        active_user_count: 1,
-        previous_user_count: 1
-      }.merge(restrictions)
-
-      gl_license = build(
-        :gitlab_license,
-        cloud_licensing_enabled: cloud_licensing_enabled,
-        offline_cloud_licensing_enabled: offline_cloud_licensing_enabled,
-        restrictions: license_restrictions
+      expect(flash[:notice]).to include(
+        _('The license was successfully uploaded and is now active. You can see the details below.')
       )
-
-      build(:license, data: gl_license.export)
     end
   end
 
