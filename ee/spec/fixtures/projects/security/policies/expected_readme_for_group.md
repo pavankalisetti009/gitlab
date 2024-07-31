@@ -31,7 +31,7 @@ scan_execution_policy:
     site_profile: Site Profile D
 ```
 
-You can read more about the format and policies schema in the [documentation](http://localhost/help/user/application_security/policies/scan-execution-policies#scan-execution-policy-schema).
+You can read more about the format and policies schema in the [documentation](http://localhost/help/user/application_security/policies/scan_execution_policies#scan-execution-policy-schema).
 
 ## Default branch protection settings
 

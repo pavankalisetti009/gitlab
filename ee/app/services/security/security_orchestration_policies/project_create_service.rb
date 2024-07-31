@@ -98,7 +98,7 @@ module Security
       end
 
       def scan_execution_policies_docs_link
-        url_helpers.help_page_url('user/application_security/policies/scan-execution-policies',
+        url_helpers.help_page_url('user/application_security/policies/scan_execution_policies',
           anchor: 'scan-execution-policy-schema')
       end
 

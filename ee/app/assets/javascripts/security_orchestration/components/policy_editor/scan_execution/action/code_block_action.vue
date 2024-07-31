@@ -28,7 +28,7 @@ import CodeBlockFilePath from './code_block_file_path.vue';
 import CodeBlockImport from './code_block_import.vue';
 
 export default {
-  SCAN_EXECUTION_PATH: helpPagePath('user/application_security/policies/scan-execution-policies', {
+  SCAN_EXECUTION_PATH: helpPagePath('user/application_security/policies/scan_execution_policies', {
     anchor: 'scan-action-type',
   }),
   ACTION_AND_LABEL,

@@ -2178,7 +2178,7 @@ Required pipeline configuration will be removed in GitLab 17.0. This impacts sel
 
 You should replace required pipeline configuration with either:
 
-- [Security policies scoped to compliance frameworks](https://docs.gitlab.com/ee/user/application_security/policies/scan-execution-policies.html#security-policy-scopes), which are experimental.
+- [Security policies scoped to compliance frameworks](https://docs.gitlab.com/ee/user/application_security/policies/scan_execution_policies.html#security-policy-scopes), which are experimental.
 - [Compliance pipelines](https://docs.gitlab.com/ee/user/group/compliance_pipelines.html), which are available now.
 
 We recommend these alternative solutions because they provides greater flexibility, allowing required pipelines to be assigned to specific

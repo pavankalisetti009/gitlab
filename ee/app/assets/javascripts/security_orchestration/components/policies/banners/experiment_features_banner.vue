@@ -7,7 +7,7 @@ import { s__ } from '~/locale';
 
 export default {
   EXPERIMENTAL_FEATURES_PATH: helpPagePath(
-    'user/application_security/policies/scan-execution-policies',
+    'user/application_security/policies/scan_execution_policies',
     {
       anchor: 'experimental-features',
     },
