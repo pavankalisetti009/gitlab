@@ -72,7 +72,7 @@ module GitlabSubscriptions
       end
 
       def sanitized_params
-        sanitized_params = params.slice(:access_level, :expires_at, :member_role_id)
+        sanitized_params = params.slice(:expires_at, :member_role_id).to_h
         sanitized_params[:access_level] = new_access_level
         sanitized_params[:existing_members_hash] = existing_members_hash
         sanitized_params[:source_namespace] = source_namespace

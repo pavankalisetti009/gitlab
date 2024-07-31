@@ -81,18 +81,20 @@ RSpec.describe OmniauthCallbacksController, type: :controller, feature_category:
 
     context 'when auth hash is missing required groups' do
       let(:connect_config) do
-        ActiveSupport::InheritableOptions.new({
-          'name' => provider,
-          'args' => {
-            'name' => provider,
-            'client_options' => {
-              'identifier' => 'gitlab-test-client',
-              'gitlab' => {
-                'required_groups' => ['Owls']
+        ActiveSupport::InheritableOptions.new(
+          HashWithIndifferentAccess.new({
+            name: provider,
+            args: {
+              name: provider,
+              client_options: {
+                identifier: 'gitlab-test-client',
+                gitlab: {
+                  required_groups: ['Owls']
+                }
               }
             }
-          }
-        })
+          })
+        )
       end
 
       before do
@@ -123,15 +125,17 @@ RSpec.describe OmniauthCallbacksController, type: :controller, feature_category:
     context 'when linking to existing profile' do
       let(:user) { create(:user) }
       let(:connect_config) do
-        ActiveSupport::InheritableOptions.new({
-          'name' => provider,
-          'args' => {
-            'name' => provider,
-            'client_options' => {
-              'identifier' => 'gitlab-test-client'
+        ActiveSupport::InheritableOptions.new(
+          HashWithIndifferentAccess.new({
+            name: provider,
+            args: {
+              name: provider,
+              client_options: {
+                identifier: 'gitlab-test-client'
+              }
             }
-          }
-        })
+          })
+        )
       end
 
       before do
