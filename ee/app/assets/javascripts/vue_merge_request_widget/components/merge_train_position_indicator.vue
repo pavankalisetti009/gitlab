@@ -30,6 +30,11 @@ export default {
       required: false,
       default: null,
     },
+    mergeTrainCar: {
+      type: Object,
+      required: false,
+      default: null,
+    },
   },
   computed: {
     isMergeRequestOpen() {
@@ -56,15 +61,15 @@ export default {
     },
   },
   watch: {
-    mergeTrainIndex(newIndex, oldIndex) {
+    mergeTrainCar(currentCar, oldCar) {
       if (!this.isMergeRequestOpen) {
         return;
       }
 
-      const wasInTrain = isNumber(oldIndex);
-      const isInTrain = isNumber(newIndex);
-
-      if (wasInTrain && !isInTrain) {
+      // if an old merge train car existed and the current
+      // merge train car is null then the MR was removed
+      // from the merge train.
+      if (oldCar && !currentCar) {
         this.$toast?.show(s__('mrWidget|Merge request was removed from the merge train.'));
       }
     },
