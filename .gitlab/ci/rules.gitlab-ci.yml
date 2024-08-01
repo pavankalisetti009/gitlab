@@ -713,7 +713,8 @@
   - "ee/{lib/,spec/}tasks/gitlab/custom_roles/*"
 
 .cng-orchestrator-patterns: &cng-orchestrator-patterns
-  - qa/gems/gitlab-cng/**/*.rb
+  - "qa/gems/gitlab-cng/**/*.rb"
+  - "qa/gems/gitlab-cng/{Gemfile,Gemfile.lock}"
 
 ##################
 # Conditions set #
