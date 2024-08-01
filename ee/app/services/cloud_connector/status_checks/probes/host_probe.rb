@@ -13,7 +13,7 @@ module CloudConnector
           @port = port
         end
 
-        def execute
+        def execute(*)
           return success("#{@host} reachable") if reachable?
 
           failure("#{@host} unreachable")

@@ -4,7 +4,7 @@ module CloudConnector
   module StatusChecks
     module Probes
       class BaseProbe
-        def execute
+        def execute(**_context)
           raise "#{self.class} must implement #execute"
         end
 

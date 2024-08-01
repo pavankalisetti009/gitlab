@@ -21,7 +21,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::BaseProbe, feature_category
     context 'when implemented in subclass' do
       let(:test_probe_class) do
         Class.new(described_class) do
-          def execute; end
+          def execute(*); end
         end
       end
 
@@ -34,7 +34,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::BaseProbe, feature_category
   describe '#success' do
     let(:test_probe_class) do
       Class.new(described_class) do
-        def execute
+        def execute(*)
           success('Test success message')
         end
       end
@@ -52,7 +52,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::BaseProbe, feature_category
   describe '#failure' do
     let(:test_probe_class) do
       Class.new(described_class) do
-        def execute
+        def execute(*)
           failure('Test failure message')
         end
       end

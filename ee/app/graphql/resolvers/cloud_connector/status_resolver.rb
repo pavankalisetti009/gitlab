@@ -11,7 +11,7 @@ module Resolvers
         return unless current_user
         return unless Feature.enabled?(:cloud_connector_status, current_user)
 
-        ::CloudConnector::StatusChecks::StatusService.new.execute
+        ::CloudConnector::StatusChecks::StatusService.new(user: current_user).execute
       end
     end
   end
