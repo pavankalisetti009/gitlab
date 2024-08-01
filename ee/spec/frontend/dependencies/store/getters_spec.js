@@ -19,23 +19,6 @@ describe('Dependencies getters', () => {
     });
   });
 
-  describe.each`
-    getterName
-    ${'isJobFailed'}
-    ${'isIncomplete'}
-  `('$getterName', ({ getterName }) => {
-    it(`delegates to the current list module's ${getterName} getter`, () => {
-      const mockValue = {};
-      const currentList = 'fooList';
-      const state = { currentList };
-      const rootGetters = {
-        [`${currentList}/${getterName}`]: mockValue,
-      };
-
-      expect(getters[getterName](state, rootGetters)).toBe(mockValue);
-    });
-  });
-
   describe('totals', () => {
     it('returns a map of list module namespaces to total counts', () => {
       const state = {

@@ -17828,9 +17828,6 @@ msgstr ""
 msgid "Dependencies|Filtering unavailable"
 msgstr ""
 
-msgid "Dependencies|Job failed to generate the dependency list"
-msgstr ""
-
 msgid "Dependencies|Learn more about dependency paths"
 msgstr ""
 
@@ -17859,9 +17856,6 @@ msgid "Dependencies|Software Bill of Materials (SBOM) based on the %{linkStart}l
 msgstr ""
 
 msgid "Dependencies|Software Bill of Materials (SBOM) based on the latest successful scan of each project."
-msgstr ""
-
-msgid "Dependencies|The %{codeStartTag}dependency_scanning%{codeEndTag} job has failed and cannot generate the list. Please ensure the job is running properly and run the pipeline again."
 msgstr ""
 
 msgid "Dependencies|The component dependency path is based on the lock file. There may be several paths. In these cases, the longest path is displayed."
@@ -17898,9 +17892,6 @@ msgid "Dependencies|Toggle vulnerability list"
 msgstr ""
 
 msgid "Dependencies|Unknown path"
-msgstr ""
-
-msgid "Dependencies|Unsupported file(s) detected"
 msgstr ""
 
 msgid "Dependencies|Vulnerable components"
@@ -36840,9 +36831,6 @@ msgid "One or more of you personal access tokens were revoked"
 msgstr ""
 
 msgid "One or more of your %{provider} projects cannot be imported into GitLab directly because they use Subversion or Mercurial for version control, rather than Git."
-msgstr ""
-
-msgid "One or more of your dependency files are not supported, and the dependency list may be incomplete. Below is a list of supported file types."
 msgstr ""
 
 msgid "One or more of your personal access tokens has expired."
@@ -58710,9 +58698,6 @@ msgid "View issues"
 msgstr ""
 
 msgid "View it on GitLab"
-msgstr ""
-
-msgid "View job"
 msgstr ""
 
 msgid "View job currently using resource"

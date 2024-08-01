@@ -1,7 +1,5 @@
 export const isInitialized = ({ currentList, ...state }) => state[currentList].initialized;
 export const reportInfo = ({ currentList, ...state }) => state[currentList].reportInfo;
-export const isJobFailed = ({ currentList }, getters) => getters[`${currentList}/isJobFailed`];
-export const isIncomplete = ({ currentList }, getters) => getters[`${currentList}/isIncomplete`];
 
 export const totals = (state) =>
   state.listTypes.reduce(
