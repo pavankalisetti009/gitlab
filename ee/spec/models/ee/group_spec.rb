@@ -3837,9 +3837,55 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#epic_and_work_item_associations_unification_enabled?' do
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:sub_group) { create(:group, parent: root_group) }
+    let_it_be(:other_group) { create(:group) }
+
+    context 'for the sub group' do
+      subject { sub_group.epic_and_work_item_associations_unification_enabled? }
+
+      context 'when epic_and_work_item_associations_unification enabled' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: root_group)
+        end
+
+        it { is_expected.to eq(true) }
+
+        context 'for the other group not in the hierarchy' do
+          subject { other_group.epic_and_work_item_associations_unification_enabled? }
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when epic_and_work_item_associations_unification disabled' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+
+    context 'for the root group' do
+      subject { root_group.epic_and_work_item_associations_unification_enabled? }
+
+      context 'when epic_and_work_item_associations_unification enabled' do
+        before do
+          stub_feature_flags(epic_and_work_item_associations_unification: root_group)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
+  end
+
   describe '#namespace_work_items_enabled?' do
-    let_it_be(:group) { create(:group) }
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:sub_group) { create(:group, parent: root_group) }
     let_it_be(:current_user) { create(:user) }
+    let(:group) { sub_group }
 
     subject { group.namespace_work_items_enabled?(current_user) }
 
@@ -3851,9 +3897,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       it { is_expected.to eq(true) }
     end
 
-    context 'when namespace_level_work_items is disabled and work_item_epics is enabled' do
+    context 'when namespace_level_work_items is disabled and work_item_epics is enabled at the root group' do
       before do
-        stub_feature_flags(work_item_epics: true, namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics: root_group, namespace_level_work_items: false)
       end
 
       context 'when epics are available' do
@@ -3866,7 +3912,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
             stub_feature_flags(work_item_epics_rollout: current_user)
           end
 
-          it { is_expected.to eq(true) }
+          context 'for a sub group' do
+            it { is_expected.to eq(true) }
+          end
+
+          context 'for the root group' do
+            let(:group) { root_group }
+
+            it { is_expected.to eq(true) }
+          end
+
+          context 'for group outside the hierarchy' do
+            let(:group) { create(:group) }
+
+            it { is_expected.to eq(false) }
+          end
         end
 
         context 'when work_item_epics_rollout is disabled' do
