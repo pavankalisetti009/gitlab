@@ -9,8 +9,9 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
 
   describe 'GET /groups/:group/-/work_items/:iid' do
     let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
+    let(:iid) { work_item.iid }
 
-    subject(:show) { get group_work_item_path(group, work_item.iid) }
+    subject(:show) { get group_work_item_path(group, iid) }
 
     before do
       sign_in(current_user)
@@ -27,6 +28,31 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
 
         expect(response).to have_gitlab_http_status(:ok)
         expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
+      end
+
+      context 'when the new page gets requested' do
+        let(:iid) { 'new' }
+
+        it 'renders show' do
+          show
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to render_template(:show)
+        end
+      end
+    end
+
+    context 'when namespace_level_work_items is disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false, work_item_epics_rollout: false, namespace_level_work_items: false)
+      end
+
+      let(:iid) { 'new' }
+
+      it 'returns not found' do
+        show
+
+        expect(response).to have_gitlab_http_status(:not_found)
       end
     end
 
