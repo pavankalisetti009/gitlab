@@ -81,7 +81,7 @@ export default {
     ),
     discoverUpgradeLabel: s__('Discover|Upgrade now'),
     discoverTrialLabel: s__('Discover|Start a free trial'),
-    carouselCaptions: [
+    captions: [
       s__(
         'Discover|Check your application for security vulnerabilities that may lead to unauthorized access, data leaks, and denial of services.',
       ),
@@ -103,15 +103,15 @@ export default {
 
 <template>
   <div class="discover-box">
-    <h2 class="discover-title gl-text-center gl-text-gray-900 gl-mx-auto">
+    <h2 class="gl-my-8 gl-text-center gl-text-gray-900 gl-mx-auto">
       {{ $options.i18n.discoverTitle }}
     </h2>
-    <div class="discover-carousels gl-text-center">
+    <div class="gl-text-center">
       <img :src="$options.securityDependencyImageUrl" class="gl-mb-8 gl-max-w-full" />
-      <p v-for="caption in $options.i18n.carouselCaptions" :key="caption">
+      <p v-for="caption in $options.i18n.captions" :key="caption">
         {{ caption }}
       </p>
-      <div class="discover-footer gl-mx-auto gl-my-0">
+      <div class="gl-mx-auto gl-my-0">
         <p class="gl-text-gray-900 gl-text-center mb-7">
           <gl-sprintf :message="$options.i18n.discoverPlanCaption">
             <template #link="{ content }">
