@@ -41015,6 +41015,9 @@ msgstr ""
 msgid "Profiles|https://website.com"
 msgstr ""
 
+msgid "Profiles|must contain only a bluesky did:plc identifier."
+msgstr ""
+
 msgid "Profiles|username"
 msgstr ""
 
