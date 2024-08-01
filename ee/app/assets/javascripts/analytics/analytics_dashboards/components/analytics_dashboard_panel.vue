@@ -94,6 +94,7 @@ export default {
         },
       ],
       currentRequestNumber: 0,
+      visualizationOptionOverrides: {},
     };
   },
   computed: {
@@ -132,6 +133,12 @@ export default {
         rootNamespaceName: this.rootNamespaceName,
         rootNamespaceFullPath: this.rootNamespaceFullPath,
       });
+    },
+    visualizationOptions() {
+      return {
+        ...this.visualization.options,
+        ...this.visualizationOptionOverrides,
+      };
     },
   },
   watch: {
@@ -187,6 +194,11 @@ export default {
           filters,
           onRequestDelayed: () => {
             this.loadingDelayed = true;
+          },
+          // NOTE: the `setVisualizationOverrides` callback allows us to update visualization options before render but after
+          //       the data fetch, allowing us to include fetched data in the visualization options
+          setVisualizationOverrides: ({ visualizationOptionOverrides = {} }) => {
+            this.visualizationOptionOverrides = visualizationOptionOverrides;
           },
         });
 
@@ -280,7 +292,7 @@ export default {
         v-else
         class="gl-overflow-hidden"
         :data="data"
-        :options="visualization.options"
+        :options="visualizationOptions"
         @set-alerts="setAlerts"
         @showTooltip="handleShowTooltip"
       />

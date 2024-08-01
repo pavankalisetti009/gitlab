@@ -61,8 +61,19 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
         get_graphql(query, current_user: user)
 
         expect(
-          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 0, :visualization, :type)
+          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 1, :visualization, :type)
         ).to eq('AiImpactTable')
+      end
+
+      it 'returns the `Code suggestions tile` visualizations' do
+        get_graphql(query, current_user: user)
+
+        expect(
+          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 0, :visualization, :type)
+        ).to eq('SingleStat')
+        expect(
+          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 0, :title)
+        ).to eq('Code Suggestions: Unique users')
       end
     end
 

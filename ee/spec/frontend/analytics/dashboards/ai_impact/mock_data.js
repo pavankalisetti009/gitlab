@@ -200,3 +200,12 @@ export const mockTableZeroValues = [
   mockTableRow(0, 0, 0, 0, 0, [0, 0]),
   mockTableRow(0, 0, 0, 0, 0, [0, 0]),
 ];
+
+export const mockAiMetricsResponseData = {
+  aiMetrics: {
+    codeContributorsCount: 8,
+    codeSuggestionsContributorsCount: 5,
+    __typename: 'AiMetrics',
+  },
+  __typename: 'Group',
+};
