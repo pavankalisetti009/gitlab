@@ -20,7 +20,7 @@ module EE
         end
 
         # Authorize access to Troubleshoot Job
-        condition(:troubleshoot_job_with_ai_authorized, scope: :subject) do
+        condition(:troubleshoot_job_with_ai_authorized) do
           ::Gitlab::Llm::Chain::Utils::ChatAuthorizer.resource(
             resource: subject.project,
             user: @user
