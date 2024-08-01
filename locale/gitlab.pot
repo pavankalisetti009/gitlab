@@ -52375,6 +52375,9 @@ msgstr ""
 msgid "Table of contents"
 msgstr ""
 
+msgid "Tables containing block elements (like multiple paragraphs, lists or blockquotes) are not supported in Markdown and will be converted to HTML."
+msgstr ""
+
 msgid "Tag"
 msgstr ""
 
@@ -53106,9 +53109,6 @@ msgid "The connection will time out after %{timeout}. For repositories that take
 msgstr ""
 
 msgid "The contact does not belong to the issue group's root ancestor"
-msgstr ""
-
-msgid "The content editor may change the markdown formatting style of the document, which may not match your original markdown style."
 msgstr ""
 
 msgid "The content for this wiki page failed to load. To fix this error, reload the page."
