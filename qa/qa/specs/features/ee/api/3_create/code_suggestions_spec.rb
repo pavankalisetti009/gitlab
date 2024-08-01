@@ -15,7 +15,8 @@ module QA
             model: {
               engine: anything,
               name: anything,
-              lang: 'ruby'
+              lang: 'ruby',
+              tokens_consumption_metadata: anything
             },
             object: 'text_completion',
             created: anything
