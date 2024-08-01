@@ -18,7 +18,12 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
     stub_request(:post, verify_api_url)
       .with(
-        body: /.*/,
+        body: {
+          # Match a request only when all expected values in the payload have the correct types
+          private_key: an_instance_of(String),
+          session_token: an_instance_of(String),
+          log_data: an_instance_of(String)
+        },
         headers: {
           'Accept' => '*/*'
         }
