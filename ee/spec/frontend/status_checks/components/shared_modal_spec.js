@@ -2,7 +2,7 @@ import { GlButton, GlModal } from '@gitlab/ui';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
-import Form from 'ee/status_checks/components/form.vue';
+import StatusCheckForm from 'ee/status_checks/components/status_check_form.vue';
 import SharedModal from 'ee/status_checks/components/shared_modal.vue';
 import { EMPTY_STATUS_CHECK } from 'ee/status_checks/constants';
 import { stubComponent } from 'helpers/stub_component';
@@ -69,7 +69,7 @@ describe('Shared modal', () => {
             hide: hideMock,
           },
         }),
-        StatusCheckForm: stubComponent(Form, {
+        StatusCheckForm: stubComponent(StatusCheckForm, {
           methods: {
             submit: submitMock,
           },
@@ -79,7 +79,7 @@ describe('Shared modal', () => {
   };
 
   const findModal = () => wrapper.findComponent(GlModal);
-  const findForm = () => wrapper.findComponent(Form);
+  const findForm = () => wrapper.findComponent(StatusCheckForm);
 
   describe('Modal', () => {
     describe('defaults', () => {
