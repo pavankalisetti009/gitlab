@@ -383,9 +383,17 @@ Filters for the `dora_performers_score` visualization.
 
 Filters for the `usage_overview` visualization.
 
+##### Group and subgroup namespaces
+
 |Filter|Description|Supported values|
 |---|---|---|
 |`include`|Limits the metrics returned, by default displays all available| `groups`, `projects`, `issues`, `merge_requests`, `pipelines`, `users`|
+
+##### Project namespaces
+
+|Filter|Description|Supported values|
+|---|---|---|
+|`include`|Limits the metrics returned, by default displays all available| `issues`, `merge_requests`, `pipelines`|
 
 ## Dashboard metrics and drill-down reports
 
