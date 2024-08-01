@@ -57,53 +57,35 @@ describe('MergeTrainPositionIndicator', () => {
     expect(wrapper.text()).toBe('');
   });
 
-  describe('when position in the train changes', () => {
+  describe('when car status changes in the train', () => {
+    const mockCar = { id: 'gid://gitlab/MergeTrains::Car/1' };
+
     beforeEach(() => {
       mockToast = jest.fn();
     });
 
-    describe.each([0, 1])('when open MR is at %d position', (index) => {
-      beforeEach(() => {
-        createComponent({ mergeTrainIndex: index, mergeRequestState: STATUS_OPEN });
-      });
-
-      it('shows toast when removed from train', async () => {
-        expect(mockToast).not.toHaveBeenCalled();
-
-        await wrapper.setProps({ mergeTrainIndex: null, mergeRequestState: STATUS_OPEN });
-
-        expect(mockToast).toHaveBeenCalledTimes(1);
-        expect(mockToast).toHaveBeenCalledWith('Merge request was removed from the merge train.');
-      });
-
-      it('does not show toast when removed from train due to merge', async () => {
-        await wrapper.setProps({ mergeTrainIndex: null, mergeRequestState: STATUS_MERGED });
-        expect(mockToast).not.toHaveBeenCalled();
-      });
-    });
-
-    describe.each([0, 1])('when merged MR is at %d position', (index) => {
-      beforeEach(() => {
-        createComponent({ mergeTrainIndex: index, mergeRequestState: STATUS_MERGED });
-      });
-
-      it('does not show toast when removed from train', async () => {
-        await wrapper.setProps({ mergeTrainIndex: null, mergeRequestState: STATUS_MERGED });
+    it.each`
+      currentCar | oldCar     | toastShown | mrState
+      ${mockCar} | ${null}    | ${false}   | ${STATUS_OPEN}
+      ${null}    | ${null}    | ${false}   | ${STATUS_OPEN}
+      ${null}    | ${mockCar} | ${true}    | ${STATUS_OPEN}
+      ${null}    | ${mockCar} | ${false}   | ${STATUS_MERGED}
+    `(
+      'toast message is shown: $toastShown',
+      async ({ currentCar, oldCar, toastShown, mrState }) => {
+        createComponent({ mergeTrainCar: oldCar, mergeRequestState: mrState });
 
         expect(mockToast).not.toHaveBeenCalled();
-      });
-    });
 
-    describe.each([0, 1])('when open MR is not in train', (newIndex) => {
-      beforeEach(() => {
-        createComponent({ mergeTrainIndex: null, mergeRequestState: STATUS_OPEN });
-      });
+        await wrapper.setProps({ mergeTrainCar: currentCar });
 
-      it(`does not show toast when added to train at ${newIndex} position`, async () => {
-        await wrapper.setProps({ mergeTrainIndex: newIndex, mergeRequestState: STATUS_OPEN });
-
-        expect(mockToast).not.toHaveBeenCalled();
-      });
-    });
+        if (toastShown) {
+          expect(mockToast).toHaveBeenCalledTimes(1);
+          expect(mockToast).toHaveBeenCalledWith('Merge request was removed from the merge train.');
+        } else {
+          expect(mockToast).not.toHaveBeenCalled();
+        }
+      },
+    );
   });
 });

@@ -2,4 +2,7 @@ fragment MergeTrainPosition on MergeRequest {
   id
   mergeTrainsCount
   mergeTrainIndex
+  mergeTrainCar {
+    id
+  }
 }

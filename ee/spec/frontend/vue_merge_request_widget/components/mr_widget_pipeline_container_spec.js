@@ -27,23 +27,20 @@ describe('MrWidgetPipelineContainer', () => {
 
   describe('merge train indicator', () => {
     it('should render merge train indicator', async () => {
-      createComponent({
-        store: {
-          mergeRequestState: STATUS_OPEN,
-          mergeTrainIndex: 0,
-          mergeTrainsCount: 1,
-          mergeTrainsPath: '/train/1',
-        },
-      });
-
-      await waitForPromises();
-
-      expect(wrapper.findComponent(MergeTrainPositionIndicator).props()).toEqual({
+      const expectedProps = {
         mergeRequestState: STATUS_OPEN,
         mergeTrainIndex: 0,
         mergeTrainsCount: 1,
         mergeTrainsPath: '/train/1',
+        mergeTrainCar: null,
+      };
+      createComponent({
+        store: expectedProps,
       });
+
+      await waitForPromises();
+
+      expect(wrapper.findComponent(MergeTrainPositionIndicator).props()).toEqual(expectedProps);
     });
   });
 });
