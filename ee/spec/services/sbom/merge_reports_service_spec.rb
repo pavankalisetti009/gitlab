@@ -109,7 +109,7 @@ RSpec.describe Sbom::MergeReportsService, :freeze_time, feature_category: :depen
         context 'when tools is not present' do
           let(:metadata_1) { build(:ci_reports_sbom_metadata, tools: []) }
           let(:metadata_2) { build(:ci_reports_sbom_metadata, tools: {}) }
-          let(:metadata_3) { build(:ci_reports_sbom_metadata, tools: []) }
+          let(:metadata_3) { build(:ci_reports_sbom_metadata, tools: nil) }
 
           it "returns an empty list" do
             merged_report = execute
@@ -130,7 +130,9 @@ RSpec.describe Sbom::MergeReportsService, :freeze_time, feature_category: :depen
         context 'with mixed object structures for tools' do
           let(:deprecated_tools) { [{ vendor: "Gitlab", name: "Gemnasium", version: "5.1.0" }] }
           let(:tools) do
-            { components: [{ type: "application", group: "aquasecurity", name: "trivy", version: "2.34.0" }] }
+            { "components" => [
+              { "type" => "application", "group" => "aquasecurity", "name" => "trivy", "version" => "2.34.0" }
+            ] }
           end
 
           let(:metadata_1) { build(:ci_reports_sbom_metadata, tools: deprecated_tools) }
