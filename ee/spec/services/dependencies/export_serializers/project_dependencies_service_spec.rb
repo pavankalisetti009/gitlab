@@ -36,6 +36,9 @@ RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feat
 
     context 'when project has dependencies' do
       let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, :with_vulnerabilities, :mit, project: project) }
+      let_it_be(:unexpected_occurrences) do
+        create(:sbom_occurrence, :registry_occurrence, :with_vulnerabilities, project: project)
+      end
 
       def json_dependency(occurrence)
         vulnerabilities = occurrence.vulnerabilities.map do |vulnerability|
@@ -69,6 +72,10 @@ RSpec.describe Dependencies::ExportSerializers::ProjectDependenciesService, feat
         expected_dependencies = occurrences.map { |occurrence| json_dependency(occurrence) }
 
         expect(dependencies.as_json).to match_array(expected_dependencies)
+      end
+
+      it 'returns data only for DEFAULT_SOURCES' do
+        expect(dependencies.pluck(:name)).not_to include(unexpected_occurrences.component_name)
       end
 
       it 'does not have N+1 queries', :request_store do
