@@ -241,7 +241,15 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-1/10",
+  },
+  {
+    "end": 2020-03-31T00:00:00.000Z,
+    "key": "chart",
+    "label": "Trend",
+    "start": 2019-10-01T00:00:00.000Z,
+    "tdClass": "!gl-py-2",
+    "thClass": "gl-w-1/20",
   },
 ]
 `;
@@ -299,7 +307,15 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-1/10",
+  },
+  {
+    "end": 2021-07-01T00:00:00.000Z,
+    "key": "chart",
+    "label": "Trend",
+    "start": 2021-01-01T00:00:00.000Z,
+    "tdClass": "!gl-py-2",
+    "thClass": "gl-w-1/20",
   },
 ]
 `;
@@ -357,7 +373,15 @@ exports[`AI impact Dashboard utils generateTableColumns returns the expected tab
     "description": "Past 6 Months",
     "key": "change",
     "label": "Change (%)",
-    "thClass": "gl-w-2/10",
+    "thClass": "gl-w-1/10",
+  },
+  {
+    "end": 2021-03-31T00:00:00.000Z,
+    "key": "chart",
+    "label": "Trend",
+    "start": 2020-10-01T00:00:00.000Z,
+    "tdClass": "!gl-py-2",
+    "thClass": "gl-w-1/20",
   },
 ]
 `;

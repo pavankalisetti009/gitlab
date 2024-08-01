@@ -71,7 +71,15 @@ export const generateTableColumns = (now) => [
     key: 'change',
     label: sprintf(__('Change (%%)')),
     description: __('Past 6 Months'),
-    thClass: 'gl-w-2/10',
+    thClass: 'gl-w-1/10',
+  },
+  {
+    key: 'chart',
+    label: __('Trend'),
+    start: nMonthsBefore(now, 6),
+    end: now,
+    thClass: 'gl-w-1/20',
+    tdClass: '!gl-py-2',
   },
 ];
 

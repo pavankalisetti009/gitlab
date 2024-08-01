@@ -55977,6 +55977,9 @@ msgstr ""
 msgid "Tree view"
 msgstr ""
 
+msgid "Trend"
+msgstr ""
+
 msgid "Trending"
 msgstr ""
 

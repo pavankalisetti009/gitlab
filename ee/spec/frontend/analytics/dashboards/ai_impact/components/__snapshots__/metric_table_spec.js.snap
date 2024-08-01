@@ -18,7 +18,48 @@ exports[`Metric table for the change_failure_rate table row when the data is loa
        
         60.0%
        
-  100.0%"
+  100.0%
+    %"
+`;
+
+exports[`Metric table for the change_failure_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      20,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      40,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      60,
+    ],
+    [
+      "Apr 6 - May 6",
+      20,
+    ],
+    [
+      "May 6 - Jun 6",
+      40,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      60,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "%",
+}
 `;
 
 exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the metric values 1`] = `
@@ -39,7 +80,48 @@ exports[`Metric table for the code_suggestions_usage_rate table row when the dat
        The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
         25.0%
        The usage data may be incomplete due to backend calculations starting after upgrade to GitLab 16.11. For more information, see epic 12978.
-  100.0%"
+  100.0%
+    %"
+`;
+
+exports[`Metric table for the code_suggestions_usage_rate table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      5,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      10,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      25,
+    ],
+    [
+      "Apr 6 - May 6",
+      5,
+    ],
+    [
+      "May 6 - Jun 6",
+      10,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      25,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "%",
+}
 `;
 
 exports[`Metric table for the cycle_time table row when the data is loaded renders the metric values 1`] = `
@@ -60,7 +142,48 @@ exports[`Metric table for the cycle_time table row when the data is loaded rende
        
         4.0 d
        
-  100.0%"
+  100.0%
+    days"
+`;
+
+exports[`Metric table for the cycle_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      1,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      2,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      4,
+    ],
+    [
+      "Apr 6 - May 6",
+      1,
+    ],
+    [
+      "May 6 - Jun 6",
+      2,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      4,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "days",
+}
 `;
 
 exports[`Metric table for the deployment_frequency table row when the data is loaded renders the metric values 1`] = `
@@ -81,7 +204,48 @@ exports[`Metric table for the deployment_frequency table row when the data is lo
        
         40.0/d
        
-  100.0%"
+  100.0%
+    /day"
+`;
+
+exports[`Metric table for the deployment_frequency table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      10,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      20,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      40,
+    ],
+    [
+      "Apr 6 - May 6",
+      10,
+    ],
+    [
+      "May 6 - Jun 6",
+      20,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      40,
+    ],
+  ],
+  "gradient": [
+    "#499767",
+    "#5252B5",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "/day",
+}
 `;
 
 exports[`Metric table for the lead_time table row when the data is loaded renders the metric values 1`] = `
@@ -102,7 +266,48 @@ exports[`Metric table for the lead_time table row when the data is loaded render
        
         4.0 d
        
-  100.0%"
+  100.0%
+    days"
+`;
+
+exports[`Metric table for the lead_time table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      1,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      2,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      4,
+    ],
+    [
+      "Apr 6 - May 6",
+      1,
+    ],
+    [
+      "May 6 - Jun 6",
+      2,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      4,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "days",
+}
 `;
 
 exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the metric values 1`] = `
@@ -124,4 +329,44 @@ exports[`Metric table for the vulnerability_critical table row when the data is 
         10
        
   50.0%"
+`;
+
+exports[`Metric table for the vulnerability_critical table row when the data is loaded renders the sparkline chart with expected props 1`] = `
+{
+  "connectNulls": true,
+  "data": [
+    [
+      "Jan 6 - Feb 6",
+      40,
+    ],
+    [
+      "Feb 6 - Mar 6",
+      20,
+    ],
+    [
+      "Mar 6 - Apr 6",
+      10,
+    ],
+    [
+      "Apr 6 - May 6",
+      40,
+    ],
+    [
+      "May 6 - Jun 6",
+      20,
+    ],
+    [
+      "Jun 6 - Jul 6",
+      10,
+    ],
+  ],
+  "gradient": [
+    "#5252B5",
+    "#499767",
+  ],
+  "height": 30,
+  "showLastYValue": false,
+  "smooth": 0.2,
+  "tooltipLabel": "",
+}
 `;
