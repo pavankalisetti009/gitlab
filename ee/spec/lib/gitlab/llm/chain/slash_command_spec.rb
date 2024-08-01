@@ -50,20 +50,6 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
             .and have_attributes(platform_origin: 'vs_code_extension')
         end
       end
-
-      context 'with user agent attribute' do
-        let(:message) do
-          build(:ai_chat_message, user: instance_double(User), content: content, user_agent: user_agent)
-        end
-
-        let(:user_agent) { 'vs-code-gitlab-workflow/3.11.1 VSCode/1.52.1 Node.js/12.14.1 (darwin; x64)' }
-
-        it 'returns vs_code_extension as platform origin' do
-          is_expected
-            .to be_an_instance_of(described_class)
-            .and have_attributes(platform_origin: 'vs_code_extension')
-        end
-      end
     end
   end
 
