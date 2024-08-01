@@ -51,7 +51,7 @@ export default {
         // eslint-disable-next-line @gitlab/require-i18n-strings
         rel: 'noopener noreferrer',
         'data-track-action': 'click_button',
-        'data-track-property': this.slide,
+        'data-track-property': 0,
       };
     },
     upgradeButtonProps() {

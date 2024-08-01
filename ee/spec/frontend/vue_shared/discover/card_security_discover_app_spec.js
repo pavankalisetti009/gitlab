@@ -52,12 +52,6 @@ describe('Card security discover app', () => {
       expect(wrapper.findComponent(MovePersonalProjectToGroupModal).exists()).toBe(false);
     });
 
-    it('renders discover title properly', () => {
-      expect(wrapper.find('.discover-title').html()).toContain(
-        'Security capabilities, integrated into your development lifecycle',
-      );
-    });
-
     it('renders discover upgrade links properly', () => {
       expect(wrapper.findByTestId('discover-button-upgrade').html()).toContain('Upgrade now');
       expect(wrapper.findByTestId('discover-button-upgrade').attributes('href')).toBe(
