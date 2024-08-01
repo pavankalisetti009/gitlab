@@ -62,17 +62,5 @@ RSpec.describe Audit::ApplicationSettingChangesAuditor, feature_category: :audit
         expect { application_setting_auditor_instance.execute }.not_to change { AuditEvent.count }
       end
     end
-
-    context 'when encrypted column is updated' do
-      it 'creates an event for encrypted columns' do
-        application_setting.update!(anthropic_api_key: 'ANTHROPIC_API_KEY')
-
-        expect { application_setting_auditor_instance.execute }.to change { AuditEvent.count }.by(1)
-
-        event = AuditEvent.last
-        expect(event.details[:change]).to eq "anthropic_api_key"
-        expect(event.details[:to]).to eq nil # For encrypted column encrypted_ column contains the cipher
-      end
-    end
   end
 end

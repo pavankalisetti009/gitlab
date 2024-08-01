@@ -1668,15 +1668,6 @@
   :weight: 1
   :idempotent: true
   :tags: []
-- :name: llm_vertex_ai_access_token_refresh
-  :worker_name: Llm::VertexAiAccessTokenRefreshWorker
-  :feature_category: :ai_abstraction_layer
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: members_destroyer_clean_up_group_protected_branch_rules
   :worker_name: MembersDestroyer::CleanUpGroupProtectedBranchRulesWorker
   :feature_category: :groups_and_projects

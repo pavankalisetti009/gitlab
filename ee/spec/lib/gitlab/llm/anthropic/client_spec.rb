@@ -51,8 +51,6 @@ RSpec.describe Gitlab::Llm::Anthropic::Client, feature_category: :ai_abstraction
   let(:unit_primitive) { 'explain_vulnerability' }
 
   before do
-    stub_application_setting(anthropic_api_key: api_key)
-
     available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: api_key)
     allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
 
