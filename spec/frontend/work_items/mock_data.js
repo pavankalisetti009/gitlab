@@ -48,6 +48,50 @@ export const mockLabels = [
   },
 ];
 
+export const mockCrmContacts = [
+  {
+    __typename: 'CustomerRelationsContact',
+    id: 'gid://gitlab/CustomerRelations::Contact/213',
+    firstName: 'Jenee',
+    lastName: "O'Reilly",
+    email: "Jenee.O'Reilly-12@example.org",
+    phone: null,
+    description: null,
+    active: true,
+    organization: {
+      __typename: 'CustomerRelationsOrganization',
+      id: 'gid://gitlab/CustomerRelations::Organization/55',
+      name: 'Anderson LLC-4',
+    },
+  },
+  {
+    __typename: 'CustomerRelationsContact',
+    id: 'gid://gitlab/CustomerRelations::Contact/216',
+    firstName: 'Kassie',
+    lastName: 'Oberbrunner',
+    email: 'Kassie.Oberbrunner-15@example.org',
+    phone: null,
+    description: null,
+    active: true,
+    organization: {
+      __typename: 'CustomerRelationsOrganization',
+      id: 'gid://gitlab/CustomerRelations::Organization/55',
+      name: 'Anderson LLC-4',
+    },
+  },
+  {
+    __typename: 'CustomerRelationsContact',
+    id: 'gid://gitlab/CustomerRelations::Contact/232',
+    firstName: 'Liza',
+    lastName: 'Osinski',
+    email: 'Liza.Osinski-31@example.org',
+    phone: null,
+    description: null,
+    active: true,
+    organization: null,
+  },
+];
+
 export const mockMilestone = {
   __typename: 'Milestone',
   id: 'gid://gitlab/Milestone/30',
@@ -917,8 +961,10 @@ export const workItemResponseFactory = ({
   labelsWidgetPresent = true,
   hierarchyWidgetPresent = true,
   linkedItemsWidgetPresent = true,
+  crmContactsWidgetPresent = true,
   colorWidgetPresent = true,
   labels = mockLabels,
+  crmContacts = mockCrmContacts,
   allowsScopedLabels = false,
   lastEditedAt = null,
   lastEditedBy = null,
@@ -1244,6 +1290,18 @@ export const workItemResponseFactory = ({
         developmentWidgetPresent
           ? {
               ...developmentItems,
+            }
+          : {
+              type: 'MOCK TYPE',
+            },
+        crmContactsWidgetPresent
+          ? {
+              __typename: 'WorkItemWidgetCrmContacts',
+              type: 'CRM_CONTACTS',
+              contacts: {
+                nodes: crmContacts,
+                __typename: 'CustomerRelationsContactConnection',
+              },
             }
           : {
               type: 'MOCK TYPE',
@@ -2629,6 +2687,23 @@ export const getProjectLabelsResponse = (labels) => ({
       __typename: 'Project',
       labels: {
         nodes: labels,
+      },
+    },
+  },
+});
+
+export const getGroupCrmContactsResponse = (contacts) => ({
+  data: {
+    group: {
+      id: '1',
+      contacts: {
+        nodes: contacts,
+        pageInfo: {
+          hasNextPage: false,
+          endCursor: null,
+          hasPreviousPage: false,
+          startCursor: null,
+        },
       },
     },
   },
@@ -4740,6 +4815,14 @@ export const createWorkItemQueryResponse = {
             },
             totalTimeSpent: 0,
             __typename: 'WorkItemWidgetTimeTracking',
+          },
+          {
+            type: 'CRM_CONTACTS',
+            contacts: {
+              nodes: [],
+              __typename: 'CustomerRelationsContactConnection',
+            },
+            __typename: 'WorkItemWidgetCrmContacts',
           },
         ],
         __typename: 'WorkItem',

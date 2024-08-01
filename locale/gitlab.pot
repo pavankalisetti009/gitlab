@@ -235,6 +235,11 @@ msgid_plural "%d completed issues"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d contact"
+msgid_plural "%d contacts"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d contribution"
 msgid_plural "%d contributions"
 msgstr[0] ""
@@ -16017,6 +16022,9 @@ msgid "Crm|Organization has been updated."
 msgstr ""
 
 msgid "Crm|Organizations"
+msgstr ""
+
+msgid "Crm|Select contacts"
 msgstr ""
 
 msgid "Cron time zone"
@@ -60523,6 +60531,9 @@ msgid "WorkItem|Something went wrong when deleting the %{workItemType}. Please t
 msgstr ""
 
 msgid "WorkItem|Something went wrong when deleting the task. Please try again."
+msgstr ""
+
+msgid "WorkItem|Something went wrong when fetching CRM contacts. Please try again."
 msgstr ""
 
 msgid "WorkItem|Something went wrong when fetching child items. Please refresh this page."
