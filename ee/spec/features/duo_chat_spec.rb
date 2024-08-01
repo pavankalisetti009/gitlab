@@ -8,7 +8,6 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
   before do
     stub_feature_flags(duo_chat_requires_licensed_seat: false)
     group.add_developer(user)
-    stub_application_setting(anthropic_api_key: 'somekey')
   end
 
   context 'when group does not have an AI features license' do

@@ -8,10 +8,6 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
       expect(visible_attributes).to include(*%i[max_personal_access_token_lifetime])
     end
 
-    it 'contains anthropic_api_key value' do
-      expect(visible_attributes).to include(*%i[anthropic_api_key])
-    end
-
     it 'contains duo_features_enabled parameters' do
       expect(visible_attributes).to include(*%i[duo_features_enabled lock_duo_features_enabled])
     end

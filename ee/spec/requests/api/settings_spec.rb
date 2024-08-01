@@ -195,15 +195,6 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
         end
       end
     end
-
-    context 'anthropic api key setting' do
-      it 'updates anthropic_api_key' do
-        put api('/application/settings', admin, admin_mode: true), params: { anthropic_api_key: 'ANTHROPIC_API_KEY' }
-
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(json_response['anthropic_api_key']).to eq('ANTHROPIC_API_KEY')
-      end
-    end
   end
 
   shared_examples 'settings for licensed features' do
