@@ -32,7 +32,7 @@ describe('GitLab Duo Chat Store Mutations', () => {
       it.each`
         messageData                                                                              | expectedState
         ${MOCK_USER_MESSAGE}                                                                     | ${[MOCK_USER_MESSAGE]}
-        ${MOCK_FAILING_USER_MESSAGE}                                                             | ${[{ ...MOCK_FAILING_USER_MESSAGE, requestId: expect.any(String) }]}
+        ${MOCK_FAILING_USER_MESSAGE}                                                             | ${[MOCK_FAILING_USER_MESSAGE]}
         ${{ content: 'foo', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: undefined }}        | ${[{ content: 'foo', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: undefined }]}
         ${{ content: 'foo', source: 'bar', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: 1 }} | ${[{ content: 'foo', source: 'bar', role: GENIE_CHAT_MODEL_ROLES.assistant, chunkId: 1 }]}
         ${{}}                                                                                    | ${[]}

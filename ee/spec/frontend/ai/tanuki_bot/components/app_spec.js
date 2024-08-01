@@ -393,8 +393,12 @@ describeSkipVue3(skipReason, () => {
     });
 
     it('does not call addDuoChatMessage', () => {
-      expect(actionSpies.addDuoChatMessage).not.toHaveBeenCalled();
-      expect(findGlDuoChat().props('error')).toBe(`Error: ${errorText}`);
+      expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          errors: [`Error: ${errorText}`],
+        }),
+      );
     });
 
     describe('when mutation fails', () => {
@@ -414,7 +418,12 @@ describeSkipVue3(skipReason, () => {
             content: MOCK_USER_MESSAGE.content,
           }),
         );
-        expect(findGlDuoChat().props('error')).toBe(`Error: ${errorText}`);
+        expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            errors: [`Error: ${errorText}`],
+          }),
+        );
       });
     });
   });
@@ -473,6 +482,7 @@ describeSkipVue3(skipReason, () => {
 
       createComponent();
       await waitForPromises();
+      actionSpies.addDuoChatMessage.mockClear();
 
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
@@ -535,6 +545,7 @@ describeSkipVue3(skipReason, () => {
       duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
+      actionSpies.addDuoChatMessage.mockClear();
 
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
@@ -576,7 +587,7 @@ describeSkipVue3(skipReason, () => {
       });
       await waitForPromises();
       perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-
+      actionSpies.addDuoChatMessage.mockClear();
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
       await waitForPromises();
@@ -609,6 +620,7 @@ describeSkipVue3(skipReason, () => {
         },
       });
       await waitForPromises();
+      actionSpies.addDuoChatMessage.mockClear();
 
       findGlDuoChat().vm.$emit('chat-cancel');
 
