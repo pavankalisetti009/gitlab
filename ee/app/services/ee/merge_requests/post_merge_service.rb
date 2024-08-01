@@ -26,6 +26,7 @@ module EE
 
         sync_security_scan_orchestration_policies(target_project)
         trigger_blocked_merge_requests_merge_status_updated(merge_request)
+        track_policies_fallback_behavior(merge_request)
       end
 
       private
@@ -76,6 +77,12 @@ module EE
           .each do |configuration|
           Security::SyncScanPoliciesWorker.perform_async(configuration.id)
         end
+      end
+
+      def track_policies_fallback_behavior(merge_request)
+        return unless project.licensed_feature_available?(:security_orchestration_policies)
+
+        Security::ScanResultPolicies::FallbackBehaviorTrackingWorker.perform_async(merge_request.id)
       end
 
       def trigger_blocked_merge_requests_merge_status_updated(merge_request)

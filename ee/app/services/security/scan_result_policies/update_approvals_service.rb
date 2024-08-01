@@ -47,6 +47,10 @@ module Security
         )
       end
 
+      def scan_removed?(approval_rule)
+        missing_scans(approval_rule).any?
+      end
+
       private
 
       def validation_context
@@ -117,10 +121,6 @@ module Security
         return scan_types_diff if scanners.empty?
 
         scan_types_diff & scanners
-      end
-
-      def scan_removed?(approval_rule)
-        missing_scans(approval_rule).any?
       end
 
       def pipeline_security_scan_types

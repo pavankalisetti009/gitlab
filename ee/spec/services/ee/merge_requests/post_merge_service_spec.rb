@@ -167,11 +167,23 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
         subject
       end
 
+      it 'executes Security::ScanResultPolicies::FailOpenTrackingService' do
+        expect(Security::ScanResultPolicies::FallbackBehaviorTrackingWorker).to receive(:perform_async).with(merge_request.id)
+
+        subject
+      end
+
       context 'without licensed feature' do
         let(:security_orchestration_enabled) { false }
 
         it 'does not execute Security::SyncScanResultPolicyWorker for each configuration project' do
           expect(Security::SyncScanPoliciesWorker).not_to receive(:perform_async)
+
+          subject
+        end
+
+        it 'does not execute Security::ScanResultPolicies::FailOpenTrackingService' do
+          expect(Security::ScanResultPolicies::FallbackBehaviorTrackingWorker).not_to receive(:perform_async)
 
           subject
         end
