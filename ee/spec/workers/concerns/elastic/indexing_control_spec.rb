@@ -4,24 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
   let!(:project) { create(:project, :repository) }
-
-  let(:worker) do
-    Class.new do
-      def perform(project_id)
-        project = Project.find(project_id)
-
-        Gitlab::Elastic::Indexer.new(project).run
-      end
-
-      def self.name
-        'DummyIndexingWorker'
-      end
-
-      include ApplicationWorker
-      prepend Elastic::IndexingControl
-    end.new
-  end
-
   let(:worker_args) { [project.id] }
   let(:worker_context) do
     { 'correlation_id' => 'context_correlation_id', 'meta.sidekiq_destination_shard_redis' => 'main' }
@@ -34,13 +16,18 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
       end
     end
 
-    it 'includes all workers with Elastic::IndexingControl enabled', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444965' do
-      workers = ObjectSpace.each_object(::Class).select { |klass| klass < described_class }
+    it 'includes all workers with Elastic::IndexingControl enabled' do
+      # do not include the dummy class created in this spec to avoid flaky spec
+      workers = ObjectSpace.each_object(::Class).select do |klass|
+        next if klass.singleton_class?
+
+        klass < described_class && klass.name != 'TestIndexingControlWorker'
+      end
 
       expect(described_class::WORKERS).to match_array(workers)
     end
 
-    it 'includes all workers with feature_category :global_search and without pause_control', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/444966' do
+    it 'includes all workers with feature_category :global_search and without pause_control' do
       exceptions = [
         ConcurrencyLimit::ResumeWorker,
         Elastic::MigrationWorker,
@@ -51,14 +38,15 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
         ElasticNamespaceRolloutWorker,
         PauseControl::ResumeWorker,
         Search::ElasticIndexEmbeddingBulkCronWorker,
-        Search::Elastic::TriggerIndexingWorker,
-        Search::Zoekt::DefaultBranchChangedWorker
+        Search::Elastic::TriggerIndexingWorker
       ]
 
       workers = ObjectSpace.each_object(::Class).select do |klass|
         klass < ApplicationWorker &&
           klass.get_feature_category == :global_search &&
           klass.get_pause_control.nil? &&
+          klass.name != 'TestIndexingControlWorker' &&
+          !klass.name&.start_with?('Search::Zoekt') &&
           exceptions.exclude?(klass)
       end
 
@@ -67,13 +55,31 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
   end
 
   context 'with stub_const' do
+    let_it_be(:worker) do
+      Class.new do
+        def perform(project_id)
+          project = Project.find(project_id)
+
+          Gitlab::Elastic::Indexer.new(project).run
+        end
+
+        def self.name
+          'TestIndexingControlWorker'
+        end
+
+        include ApplicationWorker
+        prepend Elastic::IndexingControl
+      end.new
+    end
+
     before do
       stub_const("Elastic::IndexingControl::WORKERS", [worker.class])
     end
 
     describe '.non_cached_pause_indexing?' do
       it 'calls current_without_cache' do
-        expect(ApplicationSetting).to receive(:where).with(elasticsearch_pause_indexing: true).and_return(ApplicationSetting.none)
+        expect(ApplicationSetting).to receive(:where).with(elasticsearch_pause_indexing: true)
+          .and_return(ApplicationSetting.none)
 
         expect(described_class.non_cached_pause_indexing?).to be_falsey
       end
@@ -81,18 +87,20 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
 
     describe '.resume_processing!' do
       before do
-        expect(described_class).to receive(:non_cached_pause_indexing?).and_return(false)
+        allow(described_class).to receive(:non_cached_pause_indexing?).and_return(false)
       end
 
       it 'triggers job processing if there are jobs' do
-        expect(Elastic::IndexingControlService).to receive(:has_jobs_in_waiting_queue?).with(worker.class).and_return(true)
+        expect(Elastic::IndexingControlService).to receive(:has_jobs_in_waiting_queue?).with(worker.class)
+          .and_return(true)
         expect(Elastic::IndexingControlService).to receive(:resume_processing!).with(worker.class)
 
         described_class.resume_processing!
       end
 
       it 'does nothing if no jobs available' do
-        expect(Elastic::IndexingControlService).to receive(:has_jobs_in_waiting_queue?).with(worker.class).and_return(false)
+        expect(Elastic::IndexingControlService).to receive(:has_jobs_in_waiting_queue?).with(worker.class)
+          .and_return(false)
         expect(Elastic::IndexingControlService).not_to receive(:resume_processing!)
 
         described_class.resume_processing!
@@ -101,12 +109,13 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
 
     context 'with elasticsearch indexing paused' do
       before do
-        expect(described_class).to receive(:non_cached_pause_indexing?).and_return(true)
+        allow(described_class).to receive(:non_cached_pause_indexing?).and_return(true)
       end
 
       it 'adds jobs to the waiting queue' do
         expect_any_instance_of(Gitlab::Elastic::Indexer).not_to receive(:run)
-        expect(Elastic::IndexingControlService).to receive(:add_to_waiting_queue!).with(worker.class, worker_args, worker_context)
+        expect(Elastic::IndexingControlService).to receive(:add_to_waiting_queue!)
+          .with(worker.class, worker_args, worker_context)
 
         Gitlab::ApplicationContext.with_raw_context(worker_context) do
           worker.perform(*worker_args)
@@ -125,7 +134,7 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
 
     context 'with elasticsearch indexing unpaused' do
       before do
-        expect(described_class).to receive(:non_cached_pause_indexing?).and_return(false)
+        allow(described_class).to receive(:non_cached_pause_indexing?).and_return(false)
       end
 
       it 'performs the job' do
