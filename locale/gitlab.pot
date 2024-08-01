@@ -16,9 +16,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-msgid " %{link_start}Learn More%{link_end}."
-msgstr ""
-
 msgid " %{start} to %{end}"
 msgstr ""
 
@@ -8133,9 +8130,6 @@ msgstr ""
 msgid "Because you enabled auto-banning, we have also automatically banned this user from %{scope}. If this is a mistake, you can unban them: %{url}."
 msgstr ""
 
-msgid "Before enabling this integration, create a webhook for the space in Google Chat where you want to receive notifications from this project. %{docs_link}"
-msgstr ""
-
 msgid "Before inserting code, be sure to read the comment that separated each code group."
 msgstr ""
 
@@ -14147,9 +14141,6 @@ msgstr ""
 msgid "ConfluenceService|Link to a Confluence Workspace from the sidebar. Enabling this integration replaces the \"Wiki\" sidebar link with a link to the Confluence Workspace. The GitLab wiki is still available at the original URL."
 msgstr ""
 
-msgid "ConfluenceService|Your GitLab wiki is still available at %{wiki_link}. To re-enable the link to the GitLab wiki, disable this integration."
-msgstr ""
-
 msgid "Congratulations, your free trial is activated."
 msgstr ""
 
@@ -17139,7 +17130,7 @@ msgstr ""
 msgid "Database update failed"
 msgstr ""
 
-msgid "DatadogIntegration|%{linkOpen}API key%{linkClose} used for authentication with Datadog."
+msgid "DatadogIntegration|%{link_start}API key%{link_end} used for authentication with Datadog."
 msgstr ""
 
 msgid "DatadogIntegration|(Advanced) The full URL for your Datadog site."
@@ -17157,10 +17148,7 @@ msgstr ""
 msgid "DatadogIntegration|For self-managed deployments, set the %{codeOpen}env%{codeClose} tag for all the data sent to Datadog. %{linkOpen}How do I use tags?%{linkClose}"
 msgstr ""
 
-msgid "DatadogIntegration|How do I set up this integration?"
-msgstr ""
-
-msgid "DatadogIntegration|Send CI/CD pipeline information to Datadog to monitor for job failures and troubleshoot performance issues. %{docs_link}"
+msgid "DatadogIntegration|Send CI/CD pipeline information to Datadog to monitor for job failures and troubleshoot performance issues."
 msgstr ""
 
 msgid "DatadogIntegration|Service"
@@ -22831,6 +22819,9 @@ msgstr ""
 msgid "For more information, go to the "
 msgstr ""
 
+msgid "For more information, see the %{link_start}documentation%{link_end}."
+msgstr ""
+
 msgid "For more information, see the developer console. Try to reload the page or sign out and in again. If the issue persists, %{reportIssueStart}report a problem%{reportIssueEnd}."
 msgstr ""
 
@@ -26513,6 +26504,9 @@ msgid "How do I rename an environment?"
 msgstr ""
 
 msgid "How do I set up a Google Chat webhook?"
+msgstr ""
+
+msgid "How do I set up this integration?"
 msgstr ""
 
 msgid "How do I set up this service?"
@@ -49309,9 +49303,6 @@ msgid "Send message"
 msgstr ""
 
 msgid "Send notifications about project events to Mattermost channels."
-msgstr ""
-
-msgid "Send notifications about project events to a Discord channel. %{docs_link}"
 msgstr ""
 
 msgid "Send notifications for broken pipelines."
