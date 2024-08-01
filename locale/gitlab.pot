@@ -44930,6 +44930,9 @@ msgstr ""
 msgid "Resolved by"
 msgstr ""
 
+msgid "Resolved by "
+msgstr ""
+
 msgid "Resolved by %{name}"
 msgstr ""
 

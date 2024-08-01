@@ -2841,6 +2841,10 @@ export const mockWorkItemNotesResponse = {
                       authorIsContributor: false,
                       discussion: {
                         id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723561234',
+                        resolved: false,
+                        resolvable: false,
+                        resolvedBy: null,
+                        __typename: 'Discussion',
                       },
                       userPermissions: {
                         adminNote: false,
@@ -2942,6 +2946,10 @@ export const mockWorkItemNotesResponse = {
                       authorIsContributor: false,
                       discussion: {
                         id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
+                        resolved: false,
+                        resolvable: false,
+                        resolvedBy: null,
+                        __typename: 'Discussion',
                       },
                       userPermissions: {
                         adminNote: false,
@@ -3053,6 +3061,10 @@ export const mockWorkItemNotesByIidResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723561234',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3107,6 +3119,10 @@ export const mockWorkItemNotesByIidResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723568765',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3161,6 +3177,10 @@ export const mockWorkItemNotesByIidResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3271,6 +3291,10 @@ export const mockMoreWorkItemNotesResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da1112356a59e',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3325,6 +3349,10 @@ export const mockMoreWorkItemNotesResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da1272356a59e',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3378,6 +3406,10 @@ export const mockMoreWorkItemNotesResponse = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3449,6 +3481,9 @@ export const createWorkItemNoteResponse = {
                 authorIsContributor: false,
                 discussion: {
                   id: 'gid://gitlab/Discussion/c872ba2d7d3eb780d2255138d67ca8b04f65b122',
+                  resolved: false,
+                  resolvable: true,
+                  resolvedBy: null,
                   __typename: 'Discussion',
                 },
                 author: {
@@ -3506,6 +3541,10 @@ export const mockWorkItemCommentNote = {
   authorIsContributor: false,
   discussion: {
     id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723569876',
+    resolved: false,
+    resolvable: true,
+    resolvedBy: null,
+    __typename: 'Discussion',
   },
   userPermissions: {
     adminNote: false,
@@ -3603,6 +3642,9 @@ export const mockWorkItemNotesResponseWithComments = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/2bb1162fd0d39297d1a68fdd7d4083d3780af0f3',
+                          resolved: false,
+                          resolvable: true,
+                          resolvedBy: null,
                           __typename: 'Discussion',
                         },
                         author: {
@@ -3645,6 +3687,9 @@ export const mockWorkItemNotesResponseWithComments = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/2bb1162fd0d39297d1a68fdd7d4083d3780af0f3',
+                          resolved: false,
+                          resolvable: true,
+                          resolvedBy: null,
                           __typename: 'Discussion',
                         },
                         author: {
@@ -3696,6 +3741,10 @@ export const mockWorkItemNotesResponseWithComments = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
+                          resolved: false,
+                          resolvable: true,
+                          resolvedBy: null,
+                          __typename: 'Discussion',
                         },
                         userPermissions: {
                           adminNote: false,
@@ -3771,6 +3820,10 @@ export const workItemNotesCreateSubscriptionResponse = {
               authorIsContributor: false,
               discussion: {
                 id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
+                resolved: false,
+                resolvable: false,
+                resolvedBy: null,
+                __typename: 'Discussion',
               },
               userPermissions: {
                 adminNote: false,
@@ -3851,6 +3904,10 @@ export const workItemNotesUpdateSubscriptionResponse = {
       authorIsContributor: false,
       discussion: {
         id: 'gid://gitlab/Discussion/9c17769ca29798eddaed539d010da12723560987',
+        resolved: false,
+        resolvable: false,
+        resolvedBy: null,
+        __typename: 'Discussion',
       },
       userPermissions: {
         adminNote: false,
@@ -3908,6 +3965,9 @@ export const workItemSystemNoteWithMetadata = {
   authorIsContributor: false,
   discussion: {
     id: 'gid://gitlab/Discussion/7d4a46ea0525e2eeed451f7b718b0ebe73205374',
+    resolved: false,
+    resolvable: false,
+    resolvedBy: null,
     __typename: 'Discussion',
   },
   author: {
@@ -4001,6 +4061,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/aa72f4c2f3eef66afa6d79a805178801ce4bd89f',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
                           __typename: 'Discussion',
                         },
                         author: {
@@ -4066,6 +4129,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/a7d3cf7bd72f7a98f802845f538af65cb11a02cc',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
                           __typename: 'Discussion',
                         },
                         author: {
@@ -4131,6 +4197,9 @@ export const workItemNotesWithSystemNotesWithChangedDescription = {
                         authorIsContributor: false,
                         discussion: {
                           id: 'gid://gitlab/Discussion/391eed1ee0a258cc966a51dde900424f3b51b95d',
+                          resolved: false,
+                          resolvable: false,
+                          resolvedBy: null,
                           __typename: 'Discussion',
                         },
                         author: {
@@ -4676,6 +4745,124 @@ export const createWorkItemQueryResponse = {
         __typename: 'WorkItem',
       },
       __typename: 'Namespace',
+    },
+  },
+};
+
+export const mockToggleResolveDiscussionResponse = {
+  data: {
+    discussionToggleResolve: {
+      discussion: {
+        id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
+        notes: {
+          nodes: [
+            {
+              id: 'gid://gitlab/DiscussionNote/2506',
+              body: 'test3',
+              bodyHtml: '<p data-sourcepos="1:1-1:5" dir="auto">test3</p>',
+              system: false,
+              internal: false,
+              systemNoteIconName: null,
+              createdAt: '2024-07-19T05:52:01Z',
+              lastEditedAt: '2024-07-26T10:06:02Z',
+              url: 'http://127.0.0.1:3000/flightjs/Flight/-/issues/134#note_2506',
+              authorIsContributor: false,
+              maxAccessLevelOfAuthor: 'Owner',
+              lastEditedBy: null,
+              discussion: {
+                id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
+                resolved: true,
+                resolvable: true,
+                resolvedBy: {
+                  id: 'gid://gitlab/User/1',
+                  name: 'Administrator',
+                  __typename: 'UserCore',
+                },
+                __typename: 'Discussion',
+              },
+              author: {
+                id: 'gid://gitlab/User/1',
+                avatarUrl:
+                  'https://www.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
+                name: 'Administrator',
+                username: 'root',
+                webUrl: 'http://127.0.0.1:3000/root',
+                webPath: '/root',
+                __typename: 'UserCore',
+              },
+              awardEmoji: {
+                nodes: [],
+                __typename: 'AwardEmojiConnection',
+              },
+              userPermissions: {
+                adminNote: true,
+                awardEmoji: true,
+                readNote: true,
+                createNote: true,
+                resolveNote: true,
+                repositionNote: true,
+                __typename: 'NotePermissions',
+              },
+              systemNoteMetadata: null,
+              __typename: 'Note',
+            },
+            {
+              id: 'gid://gitlab/DiscussionNote/2539',
+              body: 'comment',
+              bodyHtml: '<p data-sourcepos="1:1-1:7" dir="auto">comment</p>',
+              system: false,
+              internal: false,
+              systemNoteIconName: null,
+              createdAt: '2024-07-23T05:07:46Z',
+              lastEditedAt: '2024-07-26T10:06:02Z',
+              url: 'http://127.0.0.1:3000/flightjs/Flight/-/issues/134#note_2539',
+              authorIsContributor: false,
+              maxAccessLevelOfAuthor: 'Owner',
+              lastEditedBy: null,
+              discussion: {
+                id: 'gid://gitlab/Discussion/c4be5bec43a737e0966dbc4c040b1517e7febfa9',
+                resolved: true,
+                resolvable: true,
+                resolvedBy: {
+                  id: 'gid://gitlab/User/1',
+                  name: 'Administrator',
+                  __typename: 'UserCore',
+                },
+                __typename: 'Discussion',
+              },
+              author: {
+                id: 'gid://gitlab/User/1',
+                avatarUrl:
+                  'https://www.gravatar.com/avatar/258d8dc916db8cea2cafb6c3cd0cb0246efe061421dbd83ec3a350428cabda4f?s=80&d=identicon',
+                name: 'Administrator',
+                username: 'root',
+                webUrl: 'http://127.0.0.1:3000/root',
+                webPath: '/root',
+                __typename: 'UserCore',
+              },
+              awardEmoji: {
+                nodes: [],
+                __typename: 'AwardEmojiConnection',
+              },
+              userPermissions: {
+                adminNote: true,
+                awardEmoji: true,
+                readNote: true,
+                createNote: true,
+                resolveNote: true,
+                repositionNote: true,
+                __typename: 'NotePermissions',
+              },
+              systemNoteMetadata: null,
+              __typename: 'Note',
+            },
+          ],
+          __typename: 'NoteConnection',
+        },
+        __typename: 'Discussion',
+      },
+      errors: [],
+      __typename: 'DiscussionToggleResolvePayload',
     },
   },
 };
