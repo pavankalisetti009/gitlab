@@ -11,6 +11,7 @@ module EE
           description: 'Number of approvals left.'
 
         field :approvals_required, GraphQL::Types::Int,
+          calls_gitaly: true,
           null: true, description: 'Number of approvals required.'
 
         field :merge_train_car, ::Types::MergeTrains::CarType,
