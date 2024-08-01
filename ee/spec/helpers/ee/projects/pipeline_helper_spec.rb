@@ -274,6 +274,7 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
   describe '#js_pipeline_header_data' do
     before do
       project.add_developer(user)
+      allow(helper).to receive(:current_user).and_return(user)
     end
 
     subject(:pipeline_header_data) { helper.js_pipeline_header_data(project, pipeline) }
@@ -285,7 +286,10 @@ RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition
         pipeline_iid: pipeline.iid,
         pipelines_path: project_pipelines_path(project),
         identity_verification_required: 'false',
-        identity_verification_path: identity_verification_path
+        identity_verification_path: identity_verification_path,
+        merge_trains_available: 'false',
+        can_read_merge_train: 'true',
+        merge_trains_path: project_merge_trains_path(project)
       })
     end
 

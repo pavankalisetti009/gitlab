@@ -39305,6 +39305,9 @@ msgstr ""
 msgid "Pipelines|Validating GitLab CI configuration…"
 msgstr ""
 
+msgid "Pipelines|View merge train details"
+msgstr ""
+
 msgid "Pipelines|Visualize"
 msgstr ""
 
