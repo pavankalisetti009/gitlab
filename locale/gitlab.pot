@@ -60246,9 +60246,6 @@ msgstr ""
 msgid "WorkItem|Are you sure you want to delete the %{workItemType}? This action cannot be reversed."
 msgstr ""
 
-msgid "WorkItem|Assign parent"
-msgstr ""
-
 msgid "WorkItem|Blocked by"
 msgstr ""
 
@@ -60268,6 +60265,9 @@ msgid "WorkItem|Child removal reverted"
 msgstr ""
 
 msgid "WorkItem|Child removed"
+msgstr ""
+
+msgid "WorkItem|Clear"
 msgstr ""
 
 msgid "WorkItem|Close %{workItemType}"
@@ -60486,6 +60486,9 @@ msgstr ""
 msgid "WorkItem|Select a project"
 msgstr ""
 
+msgid "WorkItem|Select parent"
+msgstr ""
+
 msgid "WorkItem|Select type"
 msgstr ""
 
@@ -60628,9 +60631,6 @@ msgid "WorkItem|Turn off confidentiality"
 msgstr ""
 
 msgid "WorkItem|Turn on confidentiality"
-msgstr ""
-
-msgid "WorkItem|Unassign"
 msgstr ""
 
 msgid "WorkItem|Undo"
