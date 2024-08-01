@@ -39,7 +39,7 @@ module ProductAnalytics
     ].freeze
 
     AI_IMPACT_DASHBOARD_PATH = 'ee/lib/gitlab/analytics/ai_impact_dashboard/visualizations'
-    AI_IMPACT_DASHBOARD_VISUALIZATIONS = %w[ai_impact_table].freeze
+    AI_IMPACT_DASHBOARD_VISUALIZATIONS = %w[ai_impact_table code_suggestions_usage_rate_over_time].freeze
 
     def self.for(container:, user:)
       config_project =

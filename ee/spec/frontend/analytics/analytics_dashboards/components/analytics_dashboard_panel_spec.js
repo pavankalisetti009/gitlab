@@ -474,6 +474,25 @@ describe('AnalyticsDashboardPanel', () => {
         expect(findPanelRetryButton().exists()).toBe(false);
       });
     });
+
+    describe('setVisualizationOverrides callback', () => {
+      const visualizationOptionOverrides = { description: 'found 10 items' };
+      const optsRes = { ...mockPanel.visualization.options, ...visualizationOptionOverrides };
+
+      beforeEach(() => {
+        mockFetch.mockImplementation(({ setVisualizationOverrides }) => {
+          setVisualizationOverrides({ visualizationOptionOverrides });
+          return Promise.resolve([{ name: 'foo' }]);
+        });
+
+        createWrapper();
+        return waitForPromises();
+      });
+
+      it('can update visualizationOptions', () => {
+        expect(findVisualization().props('options')).toEqual(optsRes);
+      });
+    });
   });
 
   describe('when multiple requests are made', () => {

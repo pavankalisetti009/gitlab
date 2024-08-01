@@ -11,6 +11,7 @@ export const environmentTierDocumentationHref = helpPagePath('ci/environments/in
 /* eslint-disable @gitlab/require-i18n-strings */
 export const LAST_WEEK = 'LAST_WEEK';
 export const LAST_MONTH = 'LAST_MONTH';
+export const LAST_30_DAYS = 'LAST_30_DAYS';
 export const LAST_90_DAYS = 'LAST_90_DAYS';
 export const LAST_180_DAYS = 'LAST_180_DAYS';
 /* eslint-enable @gitlab/require-i18n-strings */
@@ -26,12 +27,14 @@ export const startOfTomorrow = dayAfter(startOfToday, { utc: true });
 
 const lastWeek = nDaysBefore(startOfTomorrow, 7, { utc: true });
 const lastMonth = nMonthsBefore(startOfTomorrow, 1, { utc: true });
+const last30Days = nDaysBefore(startOfTomorrow, 30, { utc: true });
 const last90Days = nDaysBefore(startOfTomorrow, 90, { utc: true });
 const last180Days = nDaysBefore(startOfTomorrow, 180, { utc: true });
 
 export const DORA_METRIC_QUERY_RANGES = {
   LAST_WEEK: lastWeek,
   LAST_MONTH: lastMonth,
+  LAST_30_DAYS: last30Days,
   LAST_90_DAYS: last90Days,
   LAST_180_DAYS: last180Days,
 };
