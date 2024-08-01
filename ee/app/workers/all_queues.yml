@@ -2235,6 +2235,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: security_scan_result_policies_fallback_behavior_tracking
+  :worker_name: Security::ScanResultPolicies::FallbackBehaviorTrackingWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: security_scan_result_policies_sync_any_merge_request_approval_rules
   :worker_name: Security::ScanResultPolicies::SyncAnyMergeRequestApprovalRulesWorker
   :feature_category: :security_policy_management
