@@ -64,12 +64,21 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
         it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
       end
 
-      context 'when feature is not licensed' do
+      context 'when feature is not licensed for a project' do
         before do
-          stub_licensed_features(troubleshoot_job: false)
+          # Mock the project specifically because there was a bug where we used a global feature check
+          allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(false)
         end
 
         it { is_expected.to be_disallowed(:troubleshoot_job_with_ai) }
+      end
+
+      context 'when feature is licensed for a project' do
+        before do
+          allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(true)
+        end
+
+        it { is_expected.to be_allowed(:troubleshoot_job_with_ai) }
       end
     end
 
@@ -100,18 +109,25 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
 
     context 'when on .org or .com', :saas do
       using RSpec::Parameterized::TableSyntax
-      where(:group_with_ai_membership, :free_access, :user_access, :allowed) do
-        true  | true   | true  | true
-        true  | false  | true  | true
-        false | false  | true  | true
-        false | false  | false | false
-        true  | true   | false | true
-        false | true   | false | false
+      where(:group_with_ai_membership, :free_access, :user_access, :licensed, :allowed) do
+        true  | true   | true  | true  | true
+        true  | false  | true  | true  | true
+        false | false  | true  | true  | true
+        false | false  | false | true  | false
+        true  | true   | false | true  | true
+        false | true   | false | true  | false
+        true  | true   | true  | false | false
+        true  | false  | true  | false | false
+        false | false  | true  | false | false
+        false | false  | false | false | false
+        true  | true   | false | false | false
+        false | true   | false | false | false
       end
 
       with_them do
         before do
           allow(user).to receive(:any_group_with_ai_available?).and_return(group_with_ai_membership)
+          allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(licensed)
         end
 
         let(:cloud_connector_free_access) { free_access }
