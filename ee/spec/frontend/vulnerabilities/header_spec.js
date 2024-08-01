@@ -11,6 +11,7 @@ import aiResolveVulnerability from 'ee/vulnerabilities/graphql/ai_resolve_vulner
 import Api from 'ee/api';
 import vulnerabilityStateMutations from 'ee/security_dashboard/graphql/mutate_vulnerability_state';
 import SplitButton from 'ee/vue_shared/security_reports/components/split_button.vue';
+import VulnerabilityActionsDropdown from 'ee/vulnerabilities/components/vulnerability_actions_dropdown.vue';
 import StatusBadge from 'ee/vue_shared/security_reports/components/status_badge.vue';
 import Header, { CLIENT_SUBSCRIPTION_ID } from 'ee/vulnerabilities/components/header.vue';
 import ResolutionAlert from 'ee/vulnerabilities/components/resolution_alert.vue';
@@ -81,13 +82,19 @@ describe('Vulnerability Header', () => {
 
   const diff = 'some diff to download';
 
-  const getVulnerability = ({ canCreateMergeRequest, canDownloadPatch, canAdmin = true } = {}) => ({
+  const getVulnerability = ({
+    canCreateMergeRequest,
+    canDownloadPatch,
+    canAdmin = true,
+    ...otherProperties
+  } = {}) => ({
     remediations: canCreateMergeRequest || canDownloadPatch ? [{ diff }] : null,
     state: canDownloadPatch ? 'detected' : 'resolved',
     mergeRequestLinks: canCreateMergeRequest || canDownloadPatch ? [] : [{}],
     mergeRequestFeedback: canCreateMergeRequest ? null : {},
     canAdmin,
     ...(canDownloadPatch && canCreateMergeRequest === undefined ? { createMrUrl: '' } : {}),
+    ...otherProperties,
   });
 
   const createApolloProvider = (...queries) => {
@@ -105,6 +112,7 @@ describe('Vulnerability Header', () => {
   const findGlLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findStatusBadge = () => wrapper.findComponent(StatusBadge);
   const findSplitButton = () => wrapper.findComponent(SplitButton);
+  const findActionsDropdown = () => wrapper.findComponent(VulnerabilityActionsDropdown);
   const findStateButton = () => wrapper.findComponent(GlCollapsibleListbox);
   const findResolutionAlert = () => wrapper.findComponent(ResolutionAlert);
   const findStatusDescription = () => wrapper.findComponent(StatusDescription);
@@ -131,6 +139,7 @@ describe('Vulnerability Header', () => {
         glFeatures: {
           explainVulnerabilityTool: true,
           resolveVulnerabilityAiGateway: true,
+          vulnerabilityResolutionGa: true,
           ...glFeatures,
         },
         glAbilities: {
@@ -335,336 +344,29 @@ describe('Vulnerability Header', () => {
     });
   });
 
-  describe('action buttons', () => {
-    const clickButton = (eventName) => {
-      findSplitButton().vm.$emit(eventName);
-      return nextTick();
-    };
-
-    describe('split action button', () => {
-      it('renders the correct amount of buttons', async () => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: true,
-            canDownloadPatch: true,
-          }),
-        });
-        await waitForPromises();
-        const buttons = findSplitButton().props('buttons');
-        expect(buttons).toHaveLength(4);
-      });
-
-      it.each`
-        index | name                            | tagline
-        ${0}  | ${'Resolve with merge request'} | ${'Automatically apply the patch in a new branch'}
-        ${1}  | ${'Download patch to resolve'}  | ${'Download the patch to apply it manually'}
-        ${2}  | ${'Resolve with merge request'} | ${'Use GitLab Duo AI to generate a merge request with a suggested solution'}
-        ${3}  | ${'Explain vulnerability'}      | ${'Use GitLab Duo AI to provide insights about the vulnerability and suggested solutions'}
-      `('passes the button for $name at index $index', async ({ index, name, tagline }) => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: true,
-            canDownloadPatch: true,
-          }),
-        });
-        await waitForPromises();
-
-        const buttons = findSplitButton().props('buttons');
-        expect(buttons[index].name).toBe(name);
-        expect(buttons[index].tagline).toBe(tagline);
-      });
-
-      it('does not display if there are no actions', () => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: false,
-            canDownloadPatch: false,
-          }),
-          glAbilities: {
-            explainVulnerabilityWithAi: false,
-            resolveVulnerabilityWithAi: false,
-          },
-        });
-
-        expect(findSplitButton().exists()).toBe(false);
-      });
-
-      it.each`
-        state                      | name
-        ${'canCreateMergeRequest'} | ${'Resolve with merge request'}
-        ${'canDownloadPatch'}      | ${'Download patch to resolve'}
-      `('passes only the $name button if that is the only action', ({ state, name }) => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            [state]: true,
-          }),
-          glAbilities: {
-            explainVulnerabilityWithAi: false,
-            resolveVulnerabilityWithAi: false,
-          },
-        });
-
-        const buttons = findSplitButton().props('buttons');
-        expect(buttons).toHaveLength(1);
-        expect(buttons[0].name).toBe(name);
-      });
-    });
-
-    describe('create merge request button', () => {
-      beforeEach(() => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: true,
-          }),
-        });
-      });
-
-      it('submits correct data for creating a merge request', async () => {
-        const vulnerability = {
-          ...defaultVulnerability,
-          canCreateMergeRequest: true,
-          canDownloadPatch: true,
-        };
-
-        createWrapper({
-          vulnerability: getVulnerability(vulnerability),
-          glAbilities: {
-            resolveVulnerabilityWithAi: false,
-          },
-        });
-        await waitForPromises();
-        const mergeRequestPath = '/group/project/merge_request/123';
-        mockAxios.onPost(vulnerability.createMrUrl).reply(HTTP_STATUS_OK, {
-          merge_request_path: mergeRequestPath,
-          merge_request_links: [{ merge_request_path: mergeRequestPath }],
-        });
-        await clickButton('create-merge-request');
-        await waitForPromises();
-
-        expect(visitUrl).toHaveBeenCalledWith(mergeRequestPath);
-        expect(mockAxios.history.post).toHaveLength(1);
-        expect(JSON.parse(mockAxios.history.post[0].data)).toMatchObject({
-          vulnerability_feedback: {
-            feedback_type: FEEDBACK_TYPES.MERGE_REQUEST,
-            category: vulnerability.reportType,
-            project_fingerprint: vulnerability.projectFingerprint,
-            finding_uuid: vulnerability.uuid,
-            vulnerability_data: {
-              ...convertObjectPropsToSnakeCase(defaultVulnerability),
-              category: vulnerability.reportType,
-              target_branch: vulnerability.pipeline.sourceBranch,
-            },
-          },
-        });
-      });
-
-      it('shows an error message when merge request creation fails', async () => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: true,
-            canDownloadPatch: true,
-          }),
-        });
-        await waitForPromises();
-        mockAxios
-          .onPost(defaultVulnerability.create_mr_url)
-          .reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
-        await clickButton('create-merge-request');
-        await waitForPromises();
-
-        expect(mockAxios.history.post).toHaveLength(1);
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'There was an error creating the merge request. Please try again.',
-        });
-      });
-    });
-
-    describe('can download patch button', () => {
-      beforeEach(() => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canDownloadPatch: true,
-          }),
-        });
-      });
-
-      it('calls download utility correctly', async () => {
-        createWrapper({
-          vulnerability: getVulnerability({
-            canCreateMergeRequest: true,
-            canDownloadPatch: true,
-          }),
-        });
-        await waitForPromises();
-        await clickButton('download-patch');
-
-        expect(download).toHaveBeenCalledWith({
-          fileData: diff,
-          fileName: `remediation.patch`,
-        });
-      });
-    });
-
-    describe('resolve with AI button', () => {
-      let mockSubscription;
-      let subscriptionSpy;
-
-      const findResolveWithAIButton = () => findSplitButton().props('buttons')[0];
-
-      const createWrapperWithAiApollo = ({
-        mutationResponse = MUTATION_AI_ACTION_DEFAULT_RESPONSE,
-      } = {}) => {
-        mockSubscription = createMockSubscription();
-        subscriptionSpy = jest.fn().mockReturnValue(mockSubscription);
-
-        const apolloProvider = createMockApollo([[aiResolveVulnerability, mutationResponse]]);
-        apolloProvider.defaultClient.setRequestHandler(aiResponseSubscription, subscriptionSpy);
-
-        createWrapper({
-          vulnerability: getVulnerability(),
-          apolloProvider,
-        });
-
-        return waitForPromises();
-      };
-
-      const createWrapperAndClickButton = (params) => {
-        createWrapperWithAiApollo(params);
-        findSplitButton().vm.$emit('start-subscription');
-        return nextTick();
-      };
-
-      const sendSubscriptionMessage = (aiCompletionResponse) => {
-        mockSubscription.next({ data: { aiCompletionResponse } });
-        return waitForPromises();
-      };
-
-      // When the subscription is ready, a null aiCompletionResponse is sent
-      const waitForSubscriptionToBeReady = () => sendSubscriptionMessage(null);
-
-      beforeEach(() => {
-        gon.current_user_id = 1;
-      });
-
-      it('passes the category and tanuki icon', () => {
-        createWrapper({
-          vulnerability: getVulnerability(),
-        });
-
-        expect(findResolveWithAIButton()).toMatchObject({
-          icon: 'tanuki-ai',
-          category: 'primary',
-        });
-      });
-
-      // Note: when the `resolveVulnerability` is removed, these tests can be deleted as well
-      it('does not pass the experimental badge or tooltip', () => {
-        createWrapper({
-          vulnerability: getVulnerability(),
-        });
-
-        expect(findResolveWithAIButton()).toHaveProperty('badge');
-        expect(findResolveWithAIButton()).toHaveProperty('tooltip');
-      });
-
-      it('continues to show the loading state into the redirect call', async () => {
-        await createWrapperWithAiApollo();
-
-        const resolveAIButton = findSplitButton();
-        expect(resolveAIButton.props('loading')).toBe(false);
-
-        await clickButton('start-subscription');
-        expect(resolveAIButton.props('loading')).toBe(true);
-
-        await waitForSubscriptionToBeReady();
-        expect(resolveAIButton.props('loading')).toBe(true);
-
-        await sendSubscriptionMessage(MOCK_SUBSCRIPTION_RESPONSE);
-        expect(resolveAIButton.props('loading')).toBe(true);
-        expect(visitUrl).toHaveBeenCalledTimes(1);
-      });
-
-      it('redirects after it receives the AI response', async () => {
-        await createWrapperAndClickButton();
-        await waitForSubscriptionToBeReady();
-        expect(visitUrl).not.toHaveBeenCalled();
-
-        await sendSubscriptionMessage(MOCK_SUBSCRIPTION_RESPONSE);
-        expect(visitUrl).toHaveBeenCalledTimes(1);
-        expect(visitUrl).toHaveBeenCalledWith(MOCK_SUBSCRIPTION_RESPONSE.content);
-      });
-
-      it('calls the mutation with the correct input', async () => {
-        await createWrapperAndClickButton();
-        await waitForSubscriptionToBeReady();
-
-        expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalledWith({
-          resourceId: 'gid://gitlab/Vulnerability/1',
-          clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
-        });
-      });
-
-      it.each`
-        type                    | mutationResponse                       | subscriptionMessage               | expectedError
-        ${'mutation global'}    | ${MUTATION_AI_ACTION_GLOBAL_ERROR}     | ${null}                           | ${'mutation global error'}
-        ${'mutation ai action'} | ${MUTATION_AI_ACTION_ERROR}            | ${null}                           | ${'mutation ai action error'}
-        ${'subscription'}       | ${MUTATION_AI_ACTION_DEFAULT_RESPONSE} | ${AI_SUBSCRIPTION_ERROR_RESPONSE} | ${'subscription error'}
-      `(
-        'unsubscribes and shows only an error when there is a $type error',
-        async ({ mutationResponse, subscriptionMessage, expectedError }) => {
-          await createWrapperAndClickButton({ mutationResponse });
-          await waitForSubscriptionToBeReady();
-          await sendSubscriptionMessage(subscriptionMessage);
-
-          expect(findSplitButton().props('loading')).toBe(false);
-          expect(visitUrl).not.toHaveBeenCalled();
-          expect(createAlert.mock.calls[0][0].message.toString()).toContain(expectedError);
+  describe('actions dropdown', () => {
+    it.each([true, false])('passes the correct props to the dropdown', async (actionsEnabled) => {
+      createWrapper({
+        vulnerability: getVulnerability({
+          canCreateMergeRequest: actionsEnabled,
+          canDownloadPatch: actionsEnabled,
+          aiResolutionAvailable: actionsEnabled,
+        }),
+        glAbilities: {
+          resolveVulnerabilityWithAi: actionsEnabled,
+          explainVulnerabilityWithAi: actionsEnabled,
         },
-      );
-
-      it('starts the subscription, waits for the subscription to be ready, then runs the mutation', async () => {
-        await createWrapperWithAiApollo({
-          canCreateMergeRequest: true,
-          canDownloadPatch: true,
-        });
-        await clickButton('start-subscription');
-        expect(subscriptionSpy).toHaveBeenCalled();
-        expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).not.toHaveBeenCalled();
-
-        await waitForSubscriptionToBeReady();
-        expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
-      });
-    });
-
-    describe('explain with AI button', () => {
-      const findExplainWithAIButton = () => findSplitButton().props('buttons')[1];
-
-      beforeEach(() => {
-        createWrapper({
-          vulnerability: getVulnerability(),
-        });
       });
 
-      it('receives the correct button props', () => {
-        expect(findExplainWithAIButton()).toMatchObject({
-          icon: 'tanuki-ai',
-          category: 'primary',
-          name: 'Explain vulnerability',
-          tagline:
-            'Use GitLab Duo AI to provide insights about the vulnerability and suggested solutions',
-        });
-      });
+      await waitForPromises();
 
-      it('calls sendDuoChatCommand with the correct parameters when clicked', async () => {
-        expect(aiUtils.sendDuoChatCommand).not.toHaveBeenCalled();
-
-        await clickButton('explain-vulnerability');
-        await waitForPromises();
-
-        expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
-          question: '/vulnerability_explain',
-          resourceId: `gid://gitlab/Vulnerability/${defaultVulnerability.id}`,
-        });
+      expect(findActionsDropdown().props()).toMatchObject({
+        loading: false,
+        showDownloadPatch: actionsEnabled,
+        showCreateMergeRequest: actionsEnabled,
+        showExplainWithAi: actionsEnabled,
+        showResolveWithAi: actionsEnabled,
+        aiResolutionAvailable: actionsEnabled,
       });
     });
   });
@@ -672,17 +374,18 @@ describe('Vulnerability Header', () => {
   describe('when user does not have "resolveVulnerabilityAi" ability', () => {
     it('does not pass the Resolve with AI button', async () => {
       createWrapper({
-        glFeatures: {
-          resolveVulnerabilityAiGateway: false,
-          resolveVulnerability: false,
-        },
-        glAbilities: {
-          resolveVulnerabilityWithAi: false,
-        },
         vulnerability: getVulnerability({
           canCreateMergeRequest: true,
           canDownloadPatch: true,
         }),
+        glFeatures: {
+          resolveVulnerabilityAiGateway: false,
+          resolveVulnerability: false,
+          vulnerabilityResolutionGa: false,
+        },
+        glAbilities: {
+          resolveVulnerabilityWithAi: false,
+        },
       });
       await waitForPromises();
 
@@ -702,6 +405,7 @@ describe('Vulnerability Header', () => {
           explainVulnerabilityTool: false,
           resolveVulnerabilityAiGateway: false,
           resolveVulnerability: true,
+          vulnerabilityResolutionGa: false,
         },
         vulnerability: getVulnerability(),
       });
@@ -722,6 +426,7 @@ describe('Vulnerability Header', () => {
       createWrapper({
         glFeatures: {
           explainVulnerabilityTool: false,
+          vulnerabilityResolutionGa: false,
         },
         vulnerability: getVulnerability(),
       });
@@ -730,6 +435,399 @@ describe('Vulnerability Header', () => {
       const buttons = findSplitButton().props('buttons');
       expect(buttons).toHaveLength(1);
       expect(buttons[0].name).not.toBe('Explain with AI');
+    });
+  });
+
+  describe('when the "vulnerabilityResolutionGa" feature flag is disabled', () => {
+    it('shows the split button and does not show the dropdown button with the list of available actions', () => {
+      createWrapper({
+        glFeatures: {
+          vulnerabilityResolutionGa: false,
+        },
+        vulnerability: getVulnerability({
+          canCreateMergeRequest: true,
+          canDownloadPatch: true,
+        }),
+      });
+
+      expect(findActionsDropdown().exists()).toBe(false);
+      expect(findSplitButton().exists()).toBe(true);
+    });
+
+    describe('action buttons', () => {
+      const clickButton = (eventName) => {
+        findSplitButton().vm.$emit(eventName);
+        return nextTick();
+      };
+
+      describe('split action button', () => {
+        it('renders the correct amount of buttons', async () => {
+          createWrapper({
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: true,
+              canDownloadPatch: true,
+            }),
+          });
+          await waitForPromises();
+          const buttons = findSplitButton().props('buttons');
+          expect(buttons).toHaveLength(4);
+        });
+
+        it.each`
+          index | name                            | tagline
+          ${0}  | ${'Resolve with merge request'} | ${'Automatically apply the patch in a new branch'}
+          ${1}  | ${'Download patch to resolve'}  | ${'Download the patch to apply it manually'}
+          ${2}  | ${'Resolve with merge request'} | ${'Use GitLab Duo AI to generate a merge request with a suggested solution'}
+          ${3}  | ${'Explain vulnerability'}      | ${'Use GitLab Duo AI to provide insights about the vulnerability and suggested solutions'}
+        `('passes the button for $name at index $index', async ({ index, name, tagline }) => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: true,
+              canDownloadPatch: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+          await waitForPromises();
+
+          const buttons = findSplitButton().props('buttons');
+          expect(buttons[index].name).toBe(name);
+          expect(buttons[index].tagline).toBe(tagline);
+        });
+
+        it('does not display if there are no actions', () => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: false,
+              canDownloadPatch: false,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+            glAbilities: {
+              explainVulnerabilityWithAi: false,
+              resolveVulnerabilityWithAi: false,
+            },
+          });
+
+          expect(findSplitButton().exists()).toBe(false);
+        });
+
+        it.each`
+          state                      | name
+          ${'canCreateMergeRequest'} | ${'Resolve with merge request'}
+          ${'canDownloadPatch'}      | ${'Download patch to resolve'}
+        `('passes only the $name button if that is the only action', ({ state, name }) => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              [state]: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+            glAbilities: {
+              explainVulnerabilityWithAi: false,
+              resolveVulnerabilityWithAi: false,
+            },
+          });
+
+          const buttons = findSplitButton().props('buttons');
+          expect(buttons).toHaveLength(1);
+          expect(buttons[0].name).toBe(name);
+        });
+      });
+
+      describe('create merge request button', () => {
+        beforeEach(() => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+        });
+
+        it('submits correct data for creating a merge request', async () => {
+          const vulnerability = {
+            ...defaultVulnerability,
+            canCreateMergeRequest: true,
+            canDownloadPatch: true,
+          };
+
+          createWrapper({
+            vulnerability: getVulnerability(vulnerability),
+            glAbilities: {
+              resolveVulnerabilityWithAi: false,
+            },
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+          await waitForPromises();
+          const mergeRequestPath = '/group/project/merge_request/123';
+          mockAxios.onPost(vulnerability.createMrUrl).reply(HTTP_STATUS_OK, {
+            merge_request_path: mergeRequestPath,
+            merge_request_links: [{ merge_request_path: mergeRequestPath }],
+          });
+          await clickButton('create-merge-request');
+          await waitForPromises();
+
+          expect(visitUrl).toHaveBeenCalledWith(mergeRequestPath);
+          expect(mockAxios.history.post).toHaveLength(1);
+          expect(JSON.parse(mockAxios.history.post[0].data)).toMatchObject({
+            vulnerability_feedback: {
+              feedback_type: FEEDBACK_TYPES.MERGE_REQUEST,
+              category: vulnerability.reportType,
+              project_fingerprint: vulnerability.projectFingerprint,
+              finding_uuid: vulnerability.uuid,
+              vulnerability_data: {
+                ...convertObjectPropsToSnakeCase(defaultVulnerability),
+                category: vulnerability.reportType,
+                target_branch: vulnerability.pipeline.sourceBranch,
+              },
+            },
+          });
+        });
+
+        it('shows an error message when merge request creation fails', async () => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: true,
+              canDownloadPatch: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+          await waitForPromises();
+          mockAxios
+            .onPost(defaultVulnerability.create_mr_url)
+            .reply(HTTP_STATUS_INTERNAL_SERVER_ERROR);
+          await clickButton('create-merge-request');
+          await waitForPromises();
+
+          expect(mockAxios.history.post).toHaveLength(1);
+          expect(createAlert).toHaveBeenCalledWith({
+            message: 'There was an error creating the merge request. Please try again.',
+          });
+        });
+      });
+
+      describe('can download patch button', () => {
+        beforeEach(() => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canDownloadPatch: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+        });
+
+        it('calls download utility correctly', async () => {
+          createWrapper({
+            vulnerability: getVulnerability({
+              canCreateMergeRequest: true,
+              canDownloadPatch: true,
+            }),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+          await waitForPromises();
+          await clickButton('download-patch');
+
+          expect(download).toHaveBeenCalledWith({
+            fileData: diff,
+            fileName: `remediation.patch`,
+          });
+        });
+      });
+
+      describe('resolve with AI button', () => {
+        let mockSubscription;
+        let subscriptionSpy;
+
+        const findResolveWithAIButton = () => findSplitButton().props('buttons')[0];
+
+        const createWrapperWithAiApollo = ({
+          mutationResponse = MUTATION_AI_ACTION_DEFAULT_RESPONSE,
+        } = {}) => {
+          mockSubscription = createMockSubscription();
+          subscriptionSpy = jest.fn().mockReturnValue(mockSubscription);
+
+          const apolloProvider = createMockApollo([[aiResolveVulnerability, mutationResponse]]);
+          apolloProvider.defaultClient.setRequestHandler(aiResponseSubscription, subscriptionSpy);
+
+          createWrapper({
+            vulnerability: getVulnerability(),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+            apolloProvider,
+          });
+
+          return waitForPromises();
+        };
+
+        const createWrapperAndClickButton = (params) => {
+          createWrapperWithAiApollo(params);
+          findSplitButton().vm.$emit('start-subscription');
+          return nextTick();
+        };
+
+        const sendSubscriptionMessage = (aiCompletionResponse) => {
+          mockSubscription.next({ data: { aiCompletionResponse } });
+          return waitForPromises();
+        };
+
+        // When the subscription is ready, a null aiCompletionResponse is sent
+        const waitForSubscriptionToBeReady = () => sendSubscriptionMessage(null);
+
+        beforeEach(() => {
+          gon.current_user_id = 1;
+        });
+
+        it('passes the category and tanuki icon', () => {
+          createWrapper({
+            vulnerability: getVulnerability(),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+
+          expect(findResolveWithAIButton()).toMatchObject({
+            icon: 'tanuki-ai',
+            category: 'primary',
+          });
+        });
+
+        // Note: when the `resolveVulnerability` is removed, these tests can be deleted as well
+        it('does not pass the experimental badge or tooltip', () => {
+          createWrapper({
+            vulnerability: getVulnerability(),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+
+          expect(findResolveWithAIButton()).toHaveProperty('badge');
+          expect(findResolveWithAIButton()).toHaveProperty('tooltip');
+        });
+
+        it('continues to show the loading state into the redirect call', async () => {
+          await createWrapperWithAiApollo();
+
+          const resolveAIButton = findSplitButton();
+          expect(resolveAIButton.props('loading')).toBe(false);
+
+          await clickButton('start-subscription');
+          expect(resolveAIButton.props('loading')).toBe(true);
+
+          await waitForSubscriptionToBeReady();
+          expect(resolveAIButton.props('loading')).toBe(true);
+
+          await sendSubscriptionMessage(MOCK_SUBSCRIPTION_RESPONSE);
+          expect(resolveAIButton.props('loading')).toBe(true);
+          expect(visitUrl).toHaveBeenCalledTimes(1);
+        });
+
+        it('redirects after it receives the AI response', async () => {
+          await createWrapperAndClickButton();
+          await waitForSubscriptionToBeReady();
+          expect(visitUrl).not.toHaveBeenCalled();
+
+          await sendSubscriptionMessage(MOCK_SUBSCRIPTION_RESPONSE);
+          expect(visitUrl).toHaveBeenCalledTimes(1);
+          expect(visitUrl).toHaveBeenCalledWith(MOCK_SUBSCRIPTION_RESPONSE.content);
+        });
+
+        it('calls the mutation with the correct input', async () => {
+          await createWrapperAndClickButton();
+          await waitForSubscriptionToBeReady();
+
+          expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalledWith({
+            resourceId: 'gid://gitlab/Vulnerability/1',
+            clientSubscriptionId: CLIENT_SUBSCRIPTION_ID,
+          });
+        });
+
+        it.each`
+          type                    | mutationResponse                       | subscriptionMessage               | expectedError
+          ${'mutation global'}    | ${MUTATION_AI_ACTION_GLOBAL_ERROR}     | ${null}                           | ${'mutation global error'}
+          ${'mutation ai action'} | ${MUTATION_AI_ACTION_ERROR}            | ${null}                           | ${'mutation ai action error'}
+          ${'subscription'}       | ${MUTATION_AI_ACTION_DEFAULT_RESPONSE} | ${AI_SUBSCRIPTION_ERROR_RESPONSE} | ${'subscription error'}
+        `(
+          'unsubscribes and shows only an error when there is a $type error',
+          async ({ mutationResponse, subscriptionMessage, expectedError }) => {
+            await createWrapperAndClickButton({ mutationResponse });
+            await waitForSubscriptionToBeReady();
+            await sendSubscriptionMessage(subscriptionMessage);
+
+            expect(findSplitButton().props('loading')).toBe(false);
+            expect(visitUrl).not.toHaveBeenCalled();
+            expect(createAlert.mock.calls[0][0].message.toString()).toContain(expectedError);
+          },
+        );
+
+        it('starts the subscription, waits for the subscription to be ready, then runs the mutation', async () => {
+          await createWrapperWithAiApollo({
+            canCreateMergeRequest: true,
+            canDownloadPatch: true,
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+          await clickButton('start-subscription');
+          expect(subscriptionSpy).toHaveBeenCalled();
+          expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).not.toHaveBeenCalled();
+
+          await waitForSubscriptionToBeReady();
+          expect(MUTATION_AI_ACTION_DEFAULT_RESPONSE).toHaveBeenCalled();
+        });
+      });
+
+      describe('explain with AI button', () => {
+        const findExplainWithAIButton = () => findSplitButton().props('buttons')[1];
+
+        beforeEach(() => {
+          createWrapper({
+            vulnerability: getVulnerability(),
+            glFeatures: {
+              vulnerabilityResolutionGa: false,
+            },
+          });
+        });
+
+        it('receives the correct button props', () => {
+          expect(findExplainWithAIButton()).toMatchObject({
+            icon: 'tanuki-ai',
+            category: 'primary',
+            name: 'Explain vulnerability',
+            tagline:
+              'Use GitLab Duo AI to provide insights about the vulnerability and suggested solutions',
+          });
+        });
+
+        it('calls sendDuoChatCommand with the correct parameters when clicked', async () => {
+          expect(aiUtils.sendDuoChatCommand).not.toHaveBeenCalled();
+
+          await clickButton('explain-vulnerability');
+          await waitForPromises();
+
+          expect(aiUtils.sendDuoChatCommand).toHaveBeenCalledWith({
+            question: '/vulnerability_explain',
+            resourceId: `gid://gitlab/Vulnerability/${defaultVulnerability.id}`,
+          });
+        });
+      });
     });
   });
 });
