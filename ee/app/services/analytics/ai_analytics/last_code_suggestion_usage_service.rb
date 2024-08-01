@@ -5,11 +5,11 @@ module Analytics
     class LastCodeSuggestionUsageService
       QUERY = <<~SQL
         SELECT
-          max(timestamp) AS last_used_at, user_id
-        FROM code_suggestion_daily_usages
+          max(date) AS last_used_at, user_id
+        FROM code_suggestion_daily_events
           WHERE user_id IN ({user_ids:Array(UInt64)})
-          AND timestamp >= {from:Date}
-          AND timestamp <= {to:Date}
+          AND date >= {from:Date}
+          AND date <= {to:Date}
         GROUP BY user_id
       SQL
       private_constant :QUERY

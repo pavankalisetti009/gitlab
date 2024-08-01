@@ -18,14 +18,22 @@ module Analytics
       private_constant :QUERY
 
       CODE_CONTRIBUTORS_COUNT_QUERY = "SELECT count(*) FROM code_contributors"
+
+      code_suggestion_usage_events = ::Ai::CodeSuggestionsUsage::EVENTS.values_at(
+        'code_suggestions_requested',
+        'code_suggestion_shown_in_ide',
+        'code_suggestion_direct_access_token_refresh'
+      ).join(', ')
+
       private_constant :CODE_CONTRIBUTORS_COUNT_QUERY
 
-      CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL
+      CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY = <<~SQL.freeze
         SELECT COUNT(DISTINCT user_id)
-          FROM code_suggestion_daily_usages
+          FROM code_suggestion_daily_events
           WHERE user_id IN (SELECT author_id FROM code_contributors)
-          AND timestamp >= {from:Date}
-          AND timestamp <= {to:Date}
+          AND date >= {from:Date}
+          AND date <= {to:Date}
+          AND event IN (#{code_suggestion_usage_events})
       SQL
       private_constant :CODE_SUGGESTIONS_CONTRIBUTORS_COUNT_QUERY
 
