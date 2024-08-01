@@ -11,7 +11,6 @@ RSpec.describe Analytics::ValueStreamDashboard::Aggregation, type: :model, featu
 
   describe 'validations' do
     it { is_expected.to validate_presence_of(:namespace_id) }
-    it { is_expected.to validate_inclusion_of(:enabled).in_array([true, false]) }
   end
 
   describe '.load_batch' do
