@@ -42,6 +42,26 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
           end
         end
       end
+
+      context 'when type is epic' do
+        let_it_be_with_refind(:work_item_type) { create(:work_item_type, :epic) }
+
+        context 'when work_items_epics_show_assignees is enabled' do
+          it 'returns Assigness widget' do
+            expect(returned_widgets.map(&:widget_class)).to include(::WorkItems::Widgets::Assignees)
+          end
+        end
+
+        context 'when work_items_epics_show_assignees is disabled' do
+          before do
+            stub_feature_flags(work_items_epics_show_assignees: false)
+          end
+
+          it 'does not return Assignees widget' do
+            expect(returned_widgets.map(&:widget_class)).not_to include(::WorkItems::Widgets::Assignees)
+          end
+        end
+      end
     end
 
     where(feature_widget: WorkItems::Type::LICENSED_WIDGETS.transform_values { |v| Array(v) }.to_a)
