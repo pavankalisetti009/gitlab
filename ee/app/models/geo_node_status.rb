@@ -214,7 +214,6 @@ class GeoNodeStatus < ApplicationRecord
     load_status_message
     load_primary_data
     load_secondary_data
-    load_verification_data
   end
 
   def current_cursor_last_event_id
@@ -329,9 +328,7 @@ class GeoNodeStatus < ApplicationRecord
     self.repositories_checked_count = Project.where.not(last_repository_check_at: nil).count
     self.repositories_checked_failed_count = Project.where(last_repository_check_failed: true).count
 
-    Gitlab::Geo::REPLICATOR_CLASSES.each do |replicator|
-      public_send("#{replicator.replicable_name_plural}_count=", replicator.primary_total_count) # rubocop:disable GitlabSecurity/PublicSend
-    end
+    load_primary_ssf_replicable_data
   end
 
   def load_secondary_data
@@ -342,16 +339,37 @@ class GeoNodeStatus < ApplicationRecord
     self.cursor_last_event_date = Geo::EventLog.find_by(id: self.cursor_last_event_id)&.created_at
     self.projects_count = Geo::ProjectRepositoryReplicator.registry_count
 
-    load_ssf_replicable_data
+    load_secondary_ssf_replicable_data
     load_secondary_usage_data
   end
 
-  def load_ssf_replicable_data
+  # We must use Gitlab::Geo.verification_enabled_replicator_classes instead of
+  # Gitlab::Geo.replication_enabled_replicator_classes because if replication is
+  # enabled on the primary, then the verification is enabled. The other way is
+  # not valid. We can have replication disabled on the primary, but the primary
+  # checksumming can be enabled separately.
+  def load_primary_ssf_replicable_data
+    Gitlab::Geo.verification_enabled_replicator_classes.each do |replicator|
+      public_send("#{replicator.replicable_name_plural}_count=", replicator.primary_total_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_checksummed_count=", replicator.checksummed_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_checksum_failed_count=", replicator.checksum_failed_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_checksum_total_count=", replicator.checksum_total_count) # rubocop:disable GitlabSecurity/PublicSend
+    end
+  end
+
+  # It is fine to use Gitlab::Geo.replication_enabled_replicator_classes on the
+  # secondary site because if replication is disabled on the primary, then the
+  # verification is also disabled on the secondary since it will not have the
+  # data to verify.
+  def load_secondary_ssf_replicable_data
     Gitlab::Geo.replication_enabled_replicator_classes.each do |replicator|
       public_send("#{replicator.replicable_name_plural}_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_registry_count=", replicator.registry_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_synced_count=", replicator.synced_count) # rubocop:disable GitlabSecurity/PublicSend
       public_send("#{replicator.replicable_name_plural}_failed_count=", replicator.failed_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_verified_count=", replicator.verified_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_verification_failed_count=", replicator.verification_failed_count) # rubocop:disable GitlabSecurity/PublicSend
+      public_send("#{replicator.replicable_name_plural}_verification_total_count=", replicator.verification_total_count) # rubocop:disable GitlabSecurity/PublicSend
     end
   end
 
@@ -361,32 +379,6 @@ class GeoNodeStatus < ApplicationRecord
 
     self.class.usage_data_fields.each do |field|
       status[field] = usage_data.payload[field]
-    end
-  end
-
-  def load_verification_data
-    if Gitlab::Geo.primary?
-      load_primary_verification_data
-    elsif Gitlab::Geo.secondary?
-      load_secondary_verification_data
-    end
-  end
-
-  def load_primary_verification_data
-    Gitlab::Geo::REPLICATOR_CLASSES.each do |replicator|
-      next unless replicator.verification_enabled?
-
-      public_send("#{replicator.replicable_name_plural}_checksummed_count=", replicator.checksummed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_checksum_failed_count=", replicator.checksum_failed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_checksum_total_count=", replicator.checksum_total_count) # rubocop:disable GitlabSecurity/PublicSend
-    end
-  end
-
-  def load_secondary_verification_data
-    ::Gitlab::Geo.verification_enabled_replicator_classes.each do |replicator|
-      public_send("#{replicator.replicable_name_plural}_verified_count=", replicator.verified_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_verification_failed_count=", replicator.verification_failed_count) # rubocop:disable GitlabSecurity/PublicSend
-      public_send("#{replicator.replicable_name_plural}_verification_total_count=", replicator.verification_total_count) # rubocop:disable GitlabSecurity/PublicSend
     end
   end
 
