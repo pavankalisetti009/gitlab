@@ -24,6 +24,7 @@ module Projects
         push_frontend_ability(ability: :explain_vulnerability_with_ai, resource: vulnerability, user: current_user)
         push_frontend_ability(ability: :resolve_vulnerability_with_ai, resource: vulnerability, user: current_user)
 
+        push_frontend_feature_flag(:vulnerability_resolution_ga, vulnerability.project)
         push_frontend_feature_flag(:explain_vulnerability_tool, vulnerability.project)
         push_frontend_feature_flag(:resolve_vulnerability_ai_gateway, vulnerability.project)
         pipeline = vulnerability.finding.first_finding_pipeline

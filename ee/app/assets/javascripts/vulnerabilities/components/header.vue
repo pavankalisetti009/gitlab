@@ -63,6 +63,7 @@ export default {
     ResolutionAlert,
     StatusDescription,
     VulnerabilityStateDropdown: () => import('./vulnerability_state_dropdown.vue'),
+    VulnerabilityActionsDropdown: () => import('./vulnerability_actions_dropdown.vue'),
     SplitButton: () => import('ee/vue_shared/security_reports/components/split_button.vue'),
   },
   directives: {
@@ -378,13 +379,26 @@ export default {
           @change="changeVulnerabilityState"
         />
         <split-button
-          v-if="actionButtons.length"
+          v-if="!glFeatures.vulnerabilityResolutionGa && actionButtons.length"
           :buttons="actionButtons"
           :loading="isProcessingAction"
           @create-merge-request="createMergeRequest"
           @download-patch="downloadPatch"
           @start-subscription="startSubscription"
           @explain-vulnerability="explainVulnerability"
+        />
+        <vulnerability-actions-dropdown
+          v-if="glFeatures.vulnerabilityResolutionGa"
+          :loading="isProcessingAction"
+          :show-download-patch="canDownloadPatch"
+          :show-create-merge-request="canCreateMergeRequest"
+          :show-resolve-with-ai="glAbilities.resolveVulnerabilityWithAi"
+          :show-explain-with-ai="glAbilities.explainVulnerabilityWithAi"
+          :ai-resolution-available="vulnerability.aiResolutionAvailable"
+          @create-merge-request="createMergeRequest"
+          @download-patch="downloadPatch"
+          @explain-vulnerability="explainVulnerability"
+          @resolve-vulnerability="startSubscription"
         />
       </div>
     </div>
