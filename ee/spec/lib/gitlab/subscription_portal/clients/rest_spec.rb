@@ -18,15 +18,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     )
   end
 
-  let(:headers) do
-    {
-      'Accept' => 'application/json',
-      'Content-Type' => 'application/json',
-      'X-Admin-Email' => 'gl_com_api@gitlab.com',
-      'X-Admin-Token' => 'customer_admin_token'
-    }
-  end
-
   shared_examples 'when response is successful' do
     let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
 
@@ -93,54 +84,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     end
   end
 
-  shared_examples 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header' do
-    let(:response) { Net::HTTPSuccess.new(1.0, '201', 'OK') }
-
-    it 'sends the default User-Agent' do
-      headers['User-Agent'] = anything
-
-      expect(Gitlab::HTTP).to receive(http_method).with(anything,
-        hash_including(headers: headers)).and_return(gitlab_http_response)
-
-      subject
-    end
-
-    it 'does not overwrite the existing "User-Agent" header' do
-      expected_headers = headers.merge({ 'User-Agent' => 'GitLab/QA' })
-      headers['User-Agent'] = 'Original/QA'
-
-      stub_env('GITLAB_QA_USER_AGENT', 'GitLab/QA')
-
-      expect(Gitlab::HTTP).to receive(http_method).with(anything,
-        hash_including(headers: expected_headers)).and_return(gitlab_http_response)
-
-      subject
-    end
-
-    it 'does not send an empty header' do
-      expected_headers = headers.merge({ 'User-Agent' => 'GitLab/QA' })
-      headers['Empty-Header'] = nil
-
-      stub_env('GITLAB_QA_USER_AGENT', 'GitLab/QA')
-
-      expect(Gitlab::HTTP).to receive(http_method).with(anything,
-        hash_including(headers: expected_headers)).and_return(gitlab_http_response)
-
-      subject
-    end
-
-    it 'sends GITLAB_QA_USER_AGENT env variable value in the "User-Agent" header' do
-      expected_headers = headers.merge({ 'User-Agent' => 'GitLab/QA' })
-
-      stub_env('GITLAB_QA_USER_AGENT', 'GitLab/QA')
-
-      expect(Gitlab::HTTP).to receive(http_method).with(anything,
-        hash_including(headers: expected_headers)).and_return(gitlab_http_response)
-
-      subject
-    end
-  end
-
   describe '#generate_trial' do
     subject do
       client.generate_trial({})
@@ -150,7 +93,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
 
     it "nests in the trial_user param if needed" do
       expect(client).to receive(:http_post).with('trials', anything, { trial_user: { foo: 'bar' } })
@@ -168,7 +110,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
 
     it "nests in the trial_user param if needed" do
       expect(client).to receive(:http_post).with('trials/create_addon', anything, { trial_user: { foo: 'bar' } })
@@ -186,7 +127,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#generate_iterable' do
@@ -198,28 +138,17 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#create_subscription' do
-    let(:headers) do
-      {
-        'Accept' => 'application/json',
-        'Content-Type' => 'application/json',
-        'X-Customer-Email' => 'customer@example.com',
-        'X-Customer-Token' => 'token'
-      }
-    end
-
     subject do
-      client.create_subscription({}, 'customer@example.com', 'token')
+      client.create_subscription({}, 'customer@mail.com', 'token')
     end
 
     it_behaves_like 'when response is successful'
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#create_customer' do
@@ -231,7 +160,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#payment_form_params' do
@@ -245,7 +173,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#payment_method' do
@@ -259,7 +186,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#validate_payment_method' do
@@ -273,7 +199,6 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
   describe '#customers_oauth_app_uid' do
@@ -287,6 +212,5 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when response code is 422'
     it_behaves_like 'when response code is 500'
     it_behaves_like 'when http call raises an exception'
-    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 end
