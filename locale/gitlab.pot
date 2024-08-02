@@ -9148,9 +9148,6 @@ msgstr ""
 msgid "Branch %{branch_name} was created. To set up auto deploy, choose a GitLab CI Yaml template and commit your changes. %{link_to_autodeploy_doc}"
 msgstr ""
 
-msgid "Branch Rules"
-msgstr ""
-
 msgid "Branch already exists"
 msgstr ""
 
