@@ -111,12 +111,19 @@ export default {
     actionPrimary() {
       return {
         text: this.$options.i18n.modalPrimary,
-        attributes: { variant: 'confirm', disabled: !this.canSubmit },
+        attributes: {
+          variant: 'confirm',
+          disabled: !this.canSubmit,
+          class: 'gl-w-full sm:gl-w-auto',
+        },
       };
     },
     actionCancel() {
       return {
         text: this.$options.i18n.modalCancel,
+        attributes: {
+          class: 'gl-w-full sm:gl-w-auto',
+        },
       };
     },
     tracking() {
@@ -236,6 +243,7 @@ export default {
     :title="$options.i18n.modalTitle"
     :action-primary="actionPrimary"
     :action-cancel="actionCancel"
+    footer-class="gl-flex gl-flex-col sm:gl-flex-row"
     @primary="submit"
     @cancel="track('hand_raise_form_canceled')"
   >
