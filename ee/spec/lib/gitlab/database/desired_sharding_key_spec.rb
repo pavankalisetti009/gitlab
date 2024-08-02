@@ -53,41 +53,40 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
   end
 
   context 'for tables that already have a backfilled, non-nullable sharding key on their parent' do
+    let(:known_cross_joins) do
+      {
+        'vulnerability_flags' => {
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+        },
+        'dast_site_validations' => { 'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985' }
+      }
+    end
+
     it 'must be possible to backfill it via backfill_via' do
-      # "https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins"
-      known_crossjoins = %w[vulnerability_flags]
+      desired_sharding_key_entries_not_awaiting_backfill_on_parent
+        .each do |entry|
+          entry.desired_sharding_key.each do |desired_column, details|
+            table = entry.table_name
+            connection = Gitlab::Database.schemas_to_base_models[entry.gitlab_schema].first.connection
+            sharding_key = desired_column
+            parent = details['backfill_via']['parent']
+            foreign_key = parent['foreign_key']
+            parent_table = parent['table']
+            parent_sharding_key = parent['sharding_key']
 
-      desired_sharding_key_entries_not_awaiting_backfill_on_parent.each do |entry|
-        entry.desired_sharding_key.each do |desired_column, details|
-          table = entry.table_name
-          connection = Gitlab::Database.schemas_to_base_models[entry.gitlab_schema].first.connection
-          sharding_key = desired_column
-          parent = details['backfill_via']['parent']
-          foreign_key = parent['foreign_key']
-          parent_table = parent['table']
-          parent_sharding_key = parent['sharding_key']
+            connection.execute("ALTER TABLE #{table} ADD COLUMN IF NOT EXISTS #{sharding_key} bigint")
 
-          connection.execute("ALTER TABLE #{table} ADD COLUMN IF NOT EXISTS #{sharding_key} bigint")
-
-          # Confirming it at least produces a valid query
-          query = <<~SQL
-            EXPLAIN UPDATE #{table}
-            SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
-            FROM #{parent_table}
-            WHERE #{table}.#{foreign_key} = #{parent_table}.id
-          SQL
-
-          if known_crossjoins.include?(table)
-            ::Gitlab::Database.allow_cross_joins_across_databases(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
-            ) do
-              connection.execute(query)
+            with_possibly_allowed_cross_join(table, parent_table) do
+              # Confirming it at least produces a valid query
+              connection.execute <<~SQL
+              EXPLAIN UPDATE #{table}
+              SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
+                FROM #{parent_table}
+              WHERE #{table}.#{foreign_key} = #{parent_table}.id
+              SQL
             end
-          else
-            connection.execute(query)
           end
         end
-      end
     end
 
     it 'the parent.belongs_to must be a model with the parent.sharding_key column' do
@@ -221,5 +220,15 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
 
   def desired_sharding_keys_of(table_name)
     Gitlab::Database::Dictionary.entries.find_by_table_name(table_name).desired_sharding_key
+  end
+
+  def with_possibly_allowed_cross_join(table, parent_table)
+    if known_cross_joins.dig(table, parent_table).present?
+      ::Gitlab::Database.allow_cross_joins_across_databases(url: known_cross_joins[table][parent_table]) do
+        yield
+      end
+    else
+      yield
+    end
   end
 end
