@@ -2,7 +2,9 @@
 
 require "spec_helper"
 
-RSpec.describe EE::EmailsHelper do
+RSpec.describe EE::EmailsHelper, feature_category: :shared do
+  include NotifyHelper
+
   describe '#action_title' do
     using RSpec::Parameterized::TableSyntax
 
@@ -83,6 +85,28 @@ RSpec.describe EE::EmailsHelper do
 
       it 'returns false' do
         expect(subject).to eq(false)
+      end
+    end
+  end
+
+  describe '#closure_reason_text' do
+    context 'when work item is of epic type' do
+      let_it_be(:user) { build_stubbed(:user) }
+      let_it_be(:work_item) { build_stubbed(:work_item, :epic) }
+
+      before do
+        helper.instance_variable_set(:@issue, work_item)
+        helper.instance_variable_set(:@recipient, user)
+      end
+
+      subject do
+        helper.closure_reason_text(closed_via, format: :html, name: 'Gitlab User')
+      end
+
+      context 'when closed_via is nil' do # For now is the only possible scenario for epic work items
+        let(:closed_via) { nil }
+
+        it { is_expected.to include('Epic was closed by Gitlab User') }
       end
     end
   end
