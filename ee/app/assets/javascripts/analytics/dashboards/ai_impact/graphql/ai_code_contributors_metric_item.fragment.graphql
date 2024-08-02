@@ -1,0 +1,6 @@
+# Queries only the code contributors metrics, used for the metric table
+
+fragment AiCodeContributorsMetricItem on AiMetrics {
+  codeContributorsCount
+  codeSuggestionsContributorsCount
+}

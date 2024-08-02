@@ -11,6 +11,14 @@ panels:
       width: 3
       height: 1
     options: {}
+  - title: "Code Suggestions: Acceptance rate"
+    visualization: code_suggestions_acceptance_rate_over_time
+    gridAttributes:
+      yPos: 0
+      xPos: 3
+      width: 3
+      height: 1
+    options: {}
   - title: 'Metric trends for %{namespaceType}: %{namespaceName}'
     visualization: ai_impact_table
     gridAttributes:

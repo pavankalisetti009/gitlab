@@ -19,7 +19,7 @@ import {
 import FlowMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/flow_metrics.query.graphql';
 import DoraMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/dora_metrics.query.graphql';
 import VulnerabilitiesQuery from 'ee/analytics/dashboards/ai_impact/graphql/vulnerabilities.query.graphql';
-import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
+import AiCodeContributorsMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_code_contributors_metrics.query.graphql';
 import MetricTable from 'ee/analytics/dashboards/ai_impact/components/metric_table.vue';
 import MetricTableCell from 'ee/analytics/dashboards/components/metric_table_cell.vue';
 import TrendIndicator from 'ee/analytics/dashboards/components/trend_indicator.vue';
@@ -71,7 +71,7 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
-        [AiMetricsQuery, aiMetricsRequest],
+        [AiCodeContributorsMetricsQuery, aiMetricsRequest],
       ],
       {},
       {
@@ -91,7 +91,7 @@ describe('Metric table', () => {
         [FlowMetricsQuery, flowMetricsRequest],
         [DoraMetricsQuery, doraMetricsRequest],
         [VulnerabilitiesQuery, vulnerabilityMetricsRequest],
-        [AiMetricsQuery, aiMetricsRequest],
+        [AiCodeContributorsMetricsQuery, aiMetricsRequest],
       ],
       {},
       {

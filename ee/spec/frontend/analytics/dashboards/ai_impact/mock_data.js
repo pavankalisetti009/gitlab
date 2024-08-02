@@ -207,6 +207,8 @@ export const mockAiMetricsResponseData = {
   aiMetrics: {
     codeContributorsCount: 8,
     codeSuggestionsContributorsCount: 5,
+    codeSuggestionsAcceptedCount: 2,
+    codeSuggestionsShownCount: 5,
     __typename: 'AiMetrics',
   },
   __typename: 'Group',

@@ -68,11 +68,18 @@ describe('AI Impact Over Time Data Source', () => {
     });
 
     describe('queryOverrides', () => {
-      const mockQuery = async (dateRange, namespaceParam = 'cool namespace') => {
+      const mockQuery = (
+        dateRange,
+        {
+          namespace: namespaceParam = 'cool namespace',
+          metric = 'code_suggestions_usage_rate',
+        } = {},
+      ) => {
         mockResolvedQuery();
 
-        await fetch({
+        return fetch({
           ...defaultParams,
+          query: { ...defaultParams.query, metric },
           queryOverrides: { dateRange, namespace: namespaceParam },
         });
       };
@@ -87,8 +94,20 @@ describe('AI Impact Over Time Data Source', () => {
         });
       });
 
+      it('can override the metric queried', async () => {
+        res = await mockQuery(LAST_WEEK, { metric: 'code_suggestions_acceptance_rate' });
+
+        expectQueryWithVariables({
+          startDate: new Date('2020-06-30'),
+          endDate: new Date('2020-07-07'),
+          fullPath: namespace,
+        });
+
+        expect(res).toBe('40.0');
+      });
+
       it('can override the namespace', async () => {
-        res = await mockQuery(LAST_WEEK, 'cool-namespace/sub-namespace');
+        res = await mockQuery(LAST_WEEK, { namespace: 'cool-namespace/sub-namespace' });
 
         expectQueryWithVariables({
           startDate: new Date('2020-06-30'),

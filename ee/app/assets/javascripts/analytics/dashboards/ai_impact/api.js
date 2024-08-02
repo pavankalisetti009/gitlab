@@ -1,6 +1,6 @@
 import { __ } from '~/locale';
 import { AI_METRICS } from '~/analytics/shared/constants';
-import { calculateCodeSuggestionsUsageRate } from './utils';
+import { calculateRate } from './utils';
 
 /**
  * @typedef {Object} TableMetric
@@ -31,9 +31,9 @@ export const extractGraphqlAiData = ({
   codeContributorsCount = null,
   codeSuggestionsContributorsCount = null,
 } = {}) => {
-  const codeSuggestionsUsageRate = calculateCodeSuggestionsUsageRate({
-    codeSuggestionsContributorsCount,
-    codeContributorsCount,
+  const codeSuggestionsUsageRate = calculateRate({
+    numerator: codeSuggestionsContributorsCount,
+    denominator: codeContributorsCount,
   });
 
   let tooltip = __('No data');
