@@ -9,6 +9,7 @@ import MembersTabs from '~/members/components/members_tabs.vue';
 import { TABS } from 'ee_else_ce/members/tabs_metadata';
 import { MEMBERS_TAB_TYPES, TAB_QUERY_PARAM_VALUES } from 'ee_else_ce/members/constants';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import { groupDefaultProvide as promotionRequestsGroupDefaultProvide } from '../promotion_requests/mock_data';
 
 describe('MembersTabs', () => {
   Vue.use(Vuex);
@@ -60,6 +61,7 @@ describe('MembersTabs', () => {
         canManageAccessRequests: true,
         canExportMembers: true,
         exportCsvPath: '',
+        ...promotionRequestsGroupDefaultProvide,
       },
     });
 

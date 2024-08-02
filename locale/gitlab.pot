@@ -42586,6 +42586,9 @@ msgstr ""
 msgid "PromotionRequests|An error occured while loading the role promotion requests. Refresh the page to try again"
 msgstr ""
 
+msgid "PromotionRequests|An error occurred while loading promotion requests. Reload the page to try again."
+msgstr ""
+
 msgid "PromotionRequests|An error occurred while processing the request"
 msgstr ""
 
