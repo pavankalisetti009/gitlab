@@ -1,5 +1,19 @@
 # frozen_string_literal: true
 
+RSpec.shared_examples 'skips the push check' do
+  include_context 'secrets check context'
+
+  it "does not call format_response on the next instance" do
+    # Instead of expecting `validate!` to return nil to be sure the check was skipped,
+    # we check the next instance of the class will not receive `format_response` method.
+    expect_next_instance_of(described_class) do |instance|
+      expect(instance).not_to receive(:format_response)
+    end
+
+    secrets_check.validate!
+  end
+end
+
 RSpec.shared_examples 'scan passed' do
   include_context 'secrets check context'
 
