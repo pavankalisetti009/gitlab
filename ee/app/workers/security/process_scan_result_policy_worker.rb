@@ -14,7 +14,7 @@ module Security
     HISTOGRAM = :gitlab_security_policies_scan_result_process_duration_seconds
 
     def perform(project_id, configuration_id)
-      measure(HISTOGRAM, project_id: project_id, configuration_id: configuration_id) do
+      measure(HISTOGRAM) do
         project = Project.find_by_id(project_id)
         configuration = Security::OrchestrationPolicyConfiguration.find_by_id(configuration_id)
         break unless project && configuration

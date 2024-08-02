@@ -3,6 +3,9 @@
 module Security
   module SecurityOrchestrationPolicies
     class ScanPipelineService
+      include Gitlab::Loggable
+
+      EMPTY_RESULT = { pipeline_scan: {}, on_demand: {}, variables: {} }.freeze
       HISTOGRAM = :gitlab_security_policies_scan_execution_configuration_rendering_seconds
 
       SCAN_VARIABLES = {
@@ -38,7 +41,9 @@ module Security
       end
 
       def execute(actions)
-        measure(HISTOGRAM, project_id: project.id, action_count: actions.size) do
+        return EMPTY_RESULT if actions.empty?
+
+        measure(HISTOGRAM, callback: ->(duration) { log_duration(duration, actions.size) }) do
           actions = actions.select do |action|
             valid_scan_type?(action[:scan]) && pipeline_scan_type?(action[:scan].to_s)
           end
@@ -122,6 +127,14 @@ module Security
 
       def allow_restricted_variables?
         Feature.enabled?(:allow_restricted_variables_at_policy_level, project, type: :beta)
+      end
+
+      def log_duration(duration, action_count)
+        Gitlab::AppJsonLogger.debug(
+          build_structured_payload(
+            duration: duration,
+            project_id: project.id,
+            action_count: action_count))
       end
 
       delegate :measure, to: Security::SecurityOrchestrationPolicies::ObserveHistogramsService
