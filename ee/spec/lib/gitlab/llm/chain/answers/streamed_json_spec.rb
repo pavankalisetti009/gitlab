@@ -15,16 +15,7 @@ RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo
     end
 
     context "when stream does not contain the final answer" do
-      let(:chunk) do
-        {
-          type: "action",
-          data: {
-            thought: "Thought: I need to retrieve the issue content using the \"issue_reader\" tool.",
-            tool: "issue_reader",
-            tool_input: "what is the title of this issue"
-          }
-        }.to_json
-      end
+      let(:chunk) { create(:action_chunk) }
 
       it 'returns nil' do
         is_expected.to be_nil
@@ -32,9 +23,7 @@ RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo
     end
 
     context "when streaming beginning of the answer" do
-      let(:chunk) do
-        { type: "final_answer_delta", data: { text: "I" } }.to_json
-      end
+      let(:chunk) { create(:final_answer_chunk, chunk: "I") }
 
       it 'returns stream payload' do
         is_expected.to eq({ id: 1, content: "I" })
@@ -42,12 +31,7 @@ RSpec.describe Gitlab::Llm::Chain::Answers::StreamedJson, feature_category: :duo
     end
 
     context "when streaming multiple chunks of final answer" do
-      let(:chunk) do
-        [
-          { type: "final_answer_delta", data: { text: "Hello" } },
-          { type: "final_answer_delta", data: { text: " there" } }
-        ].map(&:to_json).join("\n")
-      end
+      let(:chunk) { create(:final_answer_multi_chunk, chunks: ["Hello", " there"]) }
 
       it 'returns stream payload' do
         is_expected.to eq({ id: 1, content: "Hello there" })
