@@ -28,6 +28,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           resolve_vulnerability
           generate_issue_description
           summarize_issue_discussions
+          generate_commit_message
         ]
       }
     end

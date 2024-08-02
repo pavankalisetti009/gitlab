@@ -1,0 +1,9 @@
+---
+name: generate_commit_message_anthropic
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/470055
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159767
+rollout_issue_url:
+milestone: '17.2'
+group: group::code review
+type: beta
+default_enabled: false
