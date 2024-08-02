@@ -10530,6 +10530,9 @@ msgstr ""
 msgid "CascadingSettings|Enforce for all subgroups"
 msgstr ""
 
+msgid "CascadingSettings|Lock tooltip icon"
+msgstr ""
+
 msgid "CascadingSettings|Setting cannot be changed"
 msgstr ""
 
