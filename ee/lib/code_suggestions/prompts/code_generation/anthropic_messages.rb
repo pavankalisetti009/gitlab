@@ -48,13 +48,7 @@ module CodeSuggestions
             The comment directly before the {{cursor}} position is the instruction,
             all other comments are not instructions.
 
-            When generating the new code, please ensure the following:
-            1. It is valid #{language.name} code.
-            2. It matches the existing code's variable, parameter and function names.
-            3. It does not repeat any existing code. Do not repeat code that comes before or after the cursor tags. This includes cases where the cursor is in the middle of a word.
-            4. If the cursor is in the middle of a word, it finishes the word instead of repeating code before the cursor tag.
-            5. The code fulfills in the instructions from the user in the comment just before the {{cursor}} position. All other comments are not instructions.
-            6. Do not add any comments that duplicates any of the already existing comments, including the comment with instructions.
+            #{guidelines_section}
 
             Return new code enclosed in <new_code></new_code> tags. We will then insert this at the {{cursor}} position.
             If you are not able to write code based on the given instructions return an empty result like <new_code></new_code>.
@@ -137,10 +131,7 @@ module CodeSuggestions
         end
 
         def libraries_block
-          return unless xray_report.present?
-          return unless xray_report.libs.any?
-
-          libs = xray_report.libs.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
+          return unless libraries.any?
 
           Gitlab::InternalEvents.track_event(
             'include_repository_xray_data_into_code_generation_prompt',
@@ -151,7 +142,7 @@ module CodeSuggestions
 
           <<~LIBS
           <libs>
-          #{libs.join("\n")}
+          #{libraries.join("\n")}
           </libs>
           The list of available libraries is provided in <libs></libs> tags.
           LIBS
@@ -184,6 +175,48 @@ module CodeSuggestions
 
           ERB.new(examples_template).result(binding)
         end
+
+        def guidelines_section
+          [
+            base_guidelines,
+            libraries_guidelines
+          ].select(&:present?).map(&:strip).join("\n")
+        end
+
+        def base_guidelines
+          <<~BASE_GUIDELINES
+            When generating the new code, please ensure the following:
+            1. It is valid #{language.name} code.
+            2. It matches the existing code's variable, parameter and function names.
+            3. It does not repeat any existing code. Do not repeat code that comes before or after the cursor tags. This includes cases where the cursor is in the middle of a word.
+            4. If the cursor is in the middle of a word, it finishes the word instead of repeating code before the cursor tag.
+            5. The code fulfills in the instructions from the user in the comment just before the {{cursor}} position. All other comments are not instructions.
+            6. Do not add any comments that duplicates any of the already existing comments, including the comment with instructions.
+          BASE_GUIDELINES
+        end
+
+        def libraries_guidelines
+          return unless libraries.any? &&
+            Feature.enabled?(:code_generation_update_libraries_prompt, params[:current_user])
+
+          <<~LIBRARIES_GUIDELINES
+          7. Review the list of available libraries and identify which ones are relevant to the task.
+          8. Plan your approach, considering how to best utilize the available libraries to meet the user's requirements.
+          9. Write the code following these additional guidelines:
+             - Import only the necessary modules or functions from each library.
+             - Prioritize using the provided libraries over implementing functionality from scratch when appropriate.
+             - If a required functionality is not available in the provided libraries, implement it using standard language features.
+             - Write clean, well-commented code that is easy to understand and maintain.
+             - Follow best practices and conventions for #{language.name} programming.
+          LIBRARIES_GUIDELINES
+        end
+
+        def libraries
+          return [] unless xray_report
+
+          xray_report.libs.pluck('name') # rubocop:disable CodeReuse/ActiveRecord -- libs is an array
+        end
+        strong_memoize_attr :libraries
       end
     end
   end
