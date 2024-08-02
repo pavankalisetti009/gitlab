@@ -1,11 +1,12 @@
 <script>
-// eslint-disable-next-line no-restricted-imports
-import { mapState } from 'vuex';
-import { GlTableLite } from '@gitlab/ui';
+import { GlTable, GlKeysetPagination, GlAlert } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import MembersPagination from '~/members/components/table/members_pagination.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
-import UserAvatar from '~/members/components/avatars/user_avatar.vue';
+import { CONTEXT_TYPE } from '~/members/constants';
+import { DEFAULT_PER_PAGE } from '~/api';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import ProjectPendingMemberApprovalsQuery from '../graphql/project_pending_member_approvals.query.graphql';
+import GroupPendingMemberApprovalsQuery from '../graphql/group_pending_member_approvals.query.graphql';
 
 const FIELDS = [
   {
@@ -32,32 +33,80 @@ const FIELDS = [
 export default {
   name: 'PromotionRequestsTabApp',
   components: {
-    MembersPagination,
-    GlTableLite,
+    GlTable,
+    GlKeysetPagination,
+    GlAlert,
     UserDate,
-    UserAvatar,
   },
-  props: {
-    namespace: {
-      type: String,
-      required: true,
-    },
-    tabQueryParamValue: {
-      type: String,
-      required: true,
+  inject: ['context', 'group', 'project'],
+  data() {
+    return {
+      isLoading: true,
+      error: null,
+      pendingMemberApprovals: {},
+      cursor: {
+        first: DEFAULT_PER_PAGE,
+        last: null,
+        after: null,
+        before: null,
+      },
+    };
+  },
+  apollo: {
+    // NOTE: Promotion requests may exist in two different contexts: group and project member
+    // management pages. Pending promotions data interface is the same for both contexts, but the
+    // queries are different.
+    pendingMemberApprovals: {
+      query() {
+        return this.context === CONTEXT_TYPE.GROUP
+          ? GroupPendingMemberApprovalsQuery
+          : ProjectPendingMemberApprovalsQuery;
+      },
+      variables() {
+        const fullPath = this.context === CONTEXT_TYPE.GROUP ? this.group.path : this.project.path;
+        return {
+          ...this.cursor,
+          fullPath,
+        };
+      },
+      update(data) {
+        return this.context === CONTEXT_TYPE.GROUP
+          ? data.group.pendingMemberApprovals
+          : data.project.pendingMemberApprovals;
+      },
+      error(error) {
+        this.isLoading = false;
+        this.error = s__(
+          'PromotionRequests|An error occurred while loading promotion requests. Reload the page to try again.',
+        );
+        Sentry.captureException({ error, component: this.$options.name });
+      },
+      result() {
+        this.isLoading = false;
+      },
     },
   },
   computed: {
-    ...mapState({
-      users(state) {
-        return state[this.namespace].data;
-      },
-      pagination(state) {
-        return state[this.namespace].pagination;
-      },
-    }),
     currentUserId() {
       return gon.current_user_id;
+    },
+  },
+  methods: {
+    onPrev(before) {
+      this.isLoading = true;
+      this.cursor = {
+        first: DEFAULT_PER_PAGE,
+        last: null,
+        before,
+      };
+    },
+    onNext(after) {
+      this.isLoading = true;
+      this.cursor = {
+        first: null,
+        last: DEFAULT_PER_PAGE,
+        after,
+      };
     },
   },
   FIELDS,
@@ -65,9 +114,18 @@ export default {
 </script>
 <template>
   <div>
-    <gl-table-lite :items="users" :fields="$options.FIELDS">
+    <gl-alert
+      v-if="error"
+      variant="danger"
+      sticky
+      :dismissible="false"
+      class="gl-top-10 gl-z-1 gl-my-4"
+      >{{ error }}</gl-alert
+    >
+    <gl-table :busy="isLoading" :items="pendingMemberApprovals.nodes" :fields="$options.FIELDS">
       <template #cell(user)="{ item }">
-        <user-avatar :member="item" :is-current-user="item.user.id === currentUserId" />
+        <span v-if="item.user">{{ item.user.name }}</span>
+        <span v-else>{{ __('Orphaned member') }}</span>
       </template>
       <template #cell(requested_role)="{ item }">
         {{ item.newAccessLevel.stringValue }}
@@ -78,7 +136,14 @@ export default {
       <template #cell(requested_on)="{ item }">
         <user-date :date="item.createdAt" />
       </template>
-    </gl-table-lite>
-    <members-pagination :pagination="pagination" :tab-query-param-value="tabQueryParamValue" />
+    </gl-table>
+    <div class="gl-flex gl-flex-col gl-items-center gl-mt-4">
+      <gl-keyset-pagination
+        v-bind="pendingMemberApprovals.pageInfo"
+        :disabled="isLoading"
+        @prev="onPrev"
+        @next="onNext"
+      />
+    </div>
   </div>
 </template>

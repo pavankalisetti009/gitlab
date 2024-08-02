@@ -1,9 +1,6 @@
 import { member, dataAttribute as CEDataAttribute } from 'jest/members/mock_data';
 import { MEMBERS_TAB_TYPES } from 'ee/members/constants';
-import {
-  data as promotionRequestsData,
-  pagination as promotionRequestsPagination,
-} from './promotion_requests/mock_data';
+import { pagination as promotionRequestsPagination } from './promotion_requests/mock_data';
 
 // eslint-disable-next-line import/export
 export * from 'jest/members/mock_data';
@@ -75,7 +72,6 @@ export const ldapOverriddenMember = { ...ldapMember, isOverridden: true };
 export const dataAttribute = JSON.stringify({
   ...JSON.parse(CEDataAttribute),
   [MEMBERS_TAB_TYPES.promotionRequest]: {
-    data: promotionRequestsData,
     pagination: promotionRequestsPagination,
   },
 });

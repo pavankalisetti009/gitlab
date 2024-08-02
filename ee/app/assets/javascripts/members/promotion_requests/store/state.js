@@ -1,4 +1,3 @@
-export default ({ data, pagination }) => ({
-  data,
+export default ({ pagination }) => ({
   pagination,
 });

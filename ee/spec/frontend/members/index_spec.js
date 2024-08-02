@@ -1,4 +1,4 @@
-import { MEMBERS_TAB_TYPES } from 'ee/members/constants';
+import { CONTEXT_TYPE, MEMBERS_TAB_TYPES } from 'ee/members/constants';
 import promotionRequestsTabStore from 'ee/members/promotion_requests/store';
 import { dataAttribute } from 'ee_jest/members/mock_data';
 import { initMembersApp } from '~/members/index';
@@ -15,7 +15,7 @@ describe('initMembersApp', () => {
   let vm;
 
   const setup = () => {
-    vm = initMembersApp(el, {
+    vm = initMembersApp(el, CONTEXT_TYPE.GROUP, {
       [MEMBERS_TAB_TYPES.user]: {},
       [MEMBERS_TAB_TYPES.promotionRequest]: {},
     });
