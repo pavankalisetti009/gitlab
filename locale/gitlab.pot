@@ -16724,12 +16724,6 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-msgid "DashboardProjects|All"
-msgstr ""
-
-msgid "DashboardProjects|Personal"
-msgstr ""
-
 msgid "Dashboard|%{firstProject} and %{secondProject}"
 msgstr ""
 
