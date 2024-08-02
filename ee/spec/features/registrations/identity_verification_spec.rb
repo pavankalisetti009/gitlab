@@ -285,6 +285,23 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
   end
 
+  shared_examples 'allows the user to complete registration when Arkose is disabled' do |flow: :standard|
+    before do
+      stub_feature_flags(arkose_labs: false)
+      sign_up(flow: flow, arkose: { disable: true })
+    end
+
+    it 'allows the user to complete the registration without solving an Arkose challenge' do
+      expect_to_see_identity_verification_page
+
+      verify_email
+
+      expect_verification_completed
+
+      expect_to_see_dashboard_page
+    end
+  end
+
   describe 'Standard flow' do
     before do
       visit new_user_registration_path
@@ -296,6 +313,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification'
     end
 
+    it_behaves_like 'allows the user to complete registration when Arkose is disabled'
     it_behaves_like 'allows the user to complete registration when Arkose is down'
   end
 
@@ -345,6 +363,20 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       end
     end
 
+    context 'when Arkose is disabled' do
+      before do
+        stub_feature_flags(arkose_labs: false)
+        sign_up(flow: :invite, arkose: { disable: true })
+      end
+
+      it 'allows the user to complete registration' do
+        expect(page).to have_current_path(group_path(invitation.group))
+        expect(page).to have_content(
+          "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
+        )
+      end
+    end
+
     context 'when Arkose is down' do
       before do
         sign_up(flow: :invite, arkose: { token_verification_response: :failed, service_down: true })
@@ -370,6 +402,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification', flow: :trial
     end
 
+    it_behaves_like 'allows the user to complete registration when Arkose is disabled', flow: :trial
     it_behaves_like 'allows the user to complete registration when Arkose is down', flow: :trial
   end
 
@@ -386,6 +419,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification', flow: :saml
     end
 
+    it_behaves_like 'allows the user to complete registration when Arkose is disabled', flow: :saml
     it_behaves_like 'allows the user to complete registration when Arkose is down', flow: :saml
   end
 
@@ -402,6 +436,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification'
     end
 
+    it_behaves_like 'allows the user to complete registration when Arkose is disabled'
     it_behaves_like 'allows the user to complete registration when Arkose is down'
   end
 
@@ -447,7 +482,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     if saml
       provider = 'google_oauth2'
 
-      stub_arkose_token_verification(**opts[:arkose])
+      stub_arkose_token_verification(**opts[:arkose]) unless opts[:arkose][:disable]
 
       mock_auth_hash(provider, 'external_uid', user_email)
       stub_omniauth_setting(block_auto_created_users: false)
@@ -459,7 +494,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       submit_button_text = trial ? 'Continue' : 'Register'
 
       fill_in_sign_up_form(new_user, submit_button_text, invite: invite) do
-        solve_arkose_verify_challenge(**opts[:arkose])
+        solve_arkose_verify_challenge(**opts[:arkose]) unless opts[:arkose][:disable]
       end
     end
   end

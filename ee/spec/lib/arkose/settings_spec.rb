@@ -109,7 +109,17 @@ RSpec.describe Arkose::Settings, feature_category: :instance_resiliency do
         create(:group_saml_identity, user: user) if group_saml_user
       end
 
-      it { is_expected.to eq result }
+      context 'when arkose labs is enabled' do
+        it { is_expected.to eq result }
+      end
+
+      context 'when arkose labs is disabled' do
+        before do
+          stub_feature_flags(arkose_labs: false)
+        end
+
+        it { is_expected.to eq false }
+      end
     end
   end
 

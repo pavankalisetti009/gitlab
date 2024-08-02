@@ -27,6 +27,8 @@ module Arkose
     end
 
     def self.enabled?(user:, user_agent:)
+      return false unless ::Feature.enabled?(:arkose_labs, user, type: :ops)
+
       arkose_public_api_key.present? &&
         arkose_private_api_key.present? &&
         ::Gitlab::CurrentSettings.arkose_labs_namespace.present? &&
