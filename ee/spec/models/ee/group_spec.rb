@@ -3253,6 +3253,21 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#has_dependencies?' do
+    subject { group.has_dependencies? }
+
+    it 'returns false when group does not have dependencies' do
+      is_expected.to eq(false)
+    end
+
+    it 'returns true when group does have dependencies' do
+      project = create(:project, group: group)
+      create(:sbom_occurrence, project: project)
+
+      is_expected.to eq(true)
+    end
+  end
+
   describe '#sbom_occurrences' do
     let(:with_totals) { true }
 

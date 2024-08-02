@@ -21,10 +21,8 @@ describe('Dependencies getters', () => {
 
   describe.each`
     getterName
-    ${'isJobNotSetUp'}
     ${'isJobFailed'}
     ${'isIncomplete'}
-    ${'hasNoDependencies'}
     ${'generatedAtTimeAgo'}
   `('$getterName', ({ getterName }) => {
     it(`delegates to the current list module's ${getterName} getter`, () => {

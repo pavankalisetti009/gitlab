@@ -3,6 +3,7 @@
 module DependenciesHelper
   def project_dependencies_data(project)
     shared_dependencies_data.merge({
+      has_dependencies: project.has_dependencies?.to_s,
       endpoint: project_dependencies_path(project, format: :json),
       export_endpoint: expose_path(api_v4_projects_dependency_list_exports_path(id: project.id)),
       vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path)
@@ -11,6 +12,7 @@ module DependenciesHelper
 
   def group_dependencies_data(group, below_group_limit)
     shared_dependencies_data.merge({
+      has_dependencies: group.has_dependencies?.to_s,
       endpoint: group_dependencies_path(group, format: :json),
       licenses_endpoint: licenses_group_dependencies_path(group),
       locations_endpoint: locations_group_dependencies_path(group),
@@ -22,6 +24,7 @@ module DependenciesHelper
 
   def explore_dependencies_data(organization, page_info)
     shared_dependencies_data.merge({
+      has_dependencies: organization.has_dependencies?.to_s,
       page_info: page_info,
       endpoint: explore_dependencies_path(format: :json),
       licenses_endpoint: nil,
@@ -35,8 +38,6 @@ module DependenciesHelper
   def shared_dependencies_data
     {
       documentation_path: help_page_path('user/application_security/dependency_list/index'),
-      support_documentation_path: help_page_path('user/application_security/dependency_scanning/index',
-        anchor: 'supported-languages-and-package-managers'),
       empty_state_svg_path: image_path('illustrations/Dependency-list-empty-state.svg')
     }
   end

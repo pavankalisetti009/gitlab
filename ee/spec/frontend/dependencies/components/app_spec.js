@@ -29,12 +29,12 @@ describe('DependenciesApp component', () => {
   const { namespace: allNamespace } = DEPENDENCY_LIST_TYPES.all;
 
   const basicAppProps = {
+    hasDependencies: true,
     endpoint: '/foo',
     exportEndpoint: '/bar',
     emptyStateSvgPath: '/bar.svg',
     documentationPath: TEST_HOST,
     pageInfo: {},
-    supportDocumentationPath: `${TEST_HOST}/dependency_scanning#supported-languages`,
     namespaceType: 'project',
     vulnerabilitiesEndpoint: `/vulnerabilities`,
   };
@@ -52,16 +52,6 @@ describe('DependenciesApp component', () => {
         provide: { ...basicAppProps, ...provide },
       }),
     );
-  };
-
-  const setStateJobNotRun = () => {
-    Object.assign(store.state[allNamespace], {
-      initialized: true,
-      isLoading: false,
-      dependencies: [],
-    });
-    store.state[allNamespace].pageInfo.total = 0;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.jobNotSetUp;
   };
 
   const setStateLoaded = () => {
@@ -98,16 +88,6 @@ describe('DependenciesApp component', () => {
     });
     store.state[allNamespace].pageInfo.total = 1;
     store.state[allNamespace].reportInfo.status = REPORT_STATUS.incomplete;
-  };
-
-  const setStateNoDependencies = () => {
-    Object.assign(store.state[allNamespace], {
-      initialized: true,
-      isLoading: false,
-      dependencies: [],
-    });
-    store.state[allNamespace].pageInfo.total = 0;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.noDependencies;
   };
 
   const findJobFailedAlert = () => wrapper.findComponent(DependencyListJobFailedAlert);
@@ -222,9 +202,10 @@ describe('DependenciesApp component', () => {
       expectNoDependenciesTables();
     });
 
-    describe('given the dependency list job has not yet run', () => {
+    describe('if project has no dependencies', () => {
       beforeEach(async () => {
-        setStateJobNotRun();
+        factory({ provide: { hasDependencies: false } });
+        setStateLoaded();
 
         await nextTick();
       });
@@ -401,19 +382,6 @@ describe('DependenciesApp component', () => {
         it('does not render the incomplete-list alert', () => {
           expect(findIncompleteListAlert().exists()).toBe(false);
         });
-      });
-    });
-
-    describe('given there are no dependencies detected', () => {
-      beforeEach(() => {
-        setStateNoDependencies();
-      });
-
-      it('shows only the empty state', () => {
-        expectComponentWithProps(GlEmptyState, { svgPath: basicAppProps.emptyStateSvgPath });
-        expectComponentPropsToMatchSnapshot(GlEmptyState);
-        expectNoHeader();
-        expectNoDependenciesTables();
       });
     });
   });
