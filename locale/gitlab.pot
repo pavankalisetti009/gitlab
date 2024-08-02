@@ -577,6 +577,9 @@ msgstr ""
 msgid "%{authorsName}'s thread"
 msgstr ""
 
+msgid "%{author} commented %{time}"
+msgstr ""
+
 msgid "%{author} has added you as an approver."
 msgstr ""
 
