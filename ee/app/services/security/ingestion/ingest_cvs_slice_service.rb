@@ -16,6 +16,7 @@ module Security
         IngestFindingEvidence
         IngestVulnerabilityFlags
         IngestVulnerabilityReads
+        MarkCvsProjectsAsVulnerable
         IngestVulnerabilityStatistics
         HooksExecution
       ].freeze

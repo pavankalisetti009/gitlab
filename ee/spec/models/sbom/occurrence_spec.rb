@@ -151,6 +151,21 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.with_project_setting' do
+    let!(:occurrence) { create(:sbom_occurrence) }
+
+    it 'pre-loads relations to avoid executing additional queries' do
+      record = described_class.with_project_setting.first
+
+      queries = ActiveRecord::QueryRecorder.new do
+        record.project
+        record.project.project_setting
+      end
+
+      expect(queries.count).to be_zero
+    end
+  end
+
   describe '.with_pipeline_project_and_namespace' do
     before do
       create(:sbom_occurrence, component: create(:sbom_component))
