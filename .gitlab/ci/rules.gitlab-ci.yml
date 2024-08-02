@@ -1722,7 +1722,6 @@
     PROCESS_TEST_RESULTS: "true"
     KNAPSACK_GENERATE_REPORT: "true"
     QA_SAVE_TEST_METRICS: "true"
-    QA_EXPORT_TEST_METRICS: "false"  # on main runs, metrics are exported to separate bucket via rake task for better consistency
 
 .qa:rules:e2e-schedule-blocking:
   rules:
@@ -1780,7 +1779,6 @@
         CREATE_TEST_FAILURE_ISSUES: "true"
         PROCESS_TEST_RESULTS: "true"
         QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"
 
 .qa:rules:package-and-test-ce:follow-up:
   rules:
@@ -1799,7 +1797,6 @@
         CREATE_TEST_FAILURE_ISSUES: "true"
         PROCESS_TEST_RESULTS: "true"
         QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"
 
 .qa:rules:e2e:test-on-gdk:
   rules:
@@ -1819,7 +1816,6 @@
         PROCESS_TEST_RESULTS: "true"
         KNAPSACK_GENERATE_REPORT: "true"
         QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"
         COVERBAND_ENABLED: "true"
 
 .qa:rules:e2e:test-on-cng:
@@ -1833,7 +1829,6 @@
         KNAPSACK_GENERATE_REPORT: "true"
         PROCESS_TEST_RESULTS: "true"
         QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"
       allow_failure: true
     # - <<: *if-merge-request-targeting-stable-branch
     #   when: never
@@ -1859,7 +1854,6 @@
         PROCESS_TEST_RESULTS: "true"
         CREATE_TEST_FAILURE_ISSUES: "true"
         QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"
 
 # These provide a manual way to trigger follow-up:e2e:package-and-test-ee
 # It is fine if they're overlapping with the automatic ones.
@@ -2827,9 +2821,6 @@
       allow_failure: true
     - <<: *if-dot-com-gitlab-org-schedule
       allow_failure: true
-      variables:
-        QA_SAVE_TEST_METRICS: "true"
-        QA_EXPORT_TEST_METRICS: "false"  # on main runs, metrics are exported to separate bucket via rake task for better consistency
 
 .review:rules:review-cleanup:
   rules:
