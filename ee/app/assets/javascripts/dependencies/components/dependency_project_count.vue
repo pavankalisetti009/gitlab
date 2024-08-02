@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlTruncate, GlCollapsibleListbox, GlAvatar } from '@gitlab/ui';
+import { GlLink, GlIcon, GlTruncate, GlCollapsibleListbox, GlAvatar } from '@gitlab/ui';
 import { debounce } from 'lodash';
 import { n__, sprintf } from '~/locale';
 import { joinPaths } from '~/lib/utils/url_utility';
@@ -18,6 +18,7 @@ export default {
   name: 'DependencyProjectCount',
   components: {
     GlLink,
+    GlIcon,
     GlTruncate,
     GlCollapsibleListbox,
     GlAvatar,
@@ -43,14 +44,13 @@ export default {
   },
   computed: {
     headerText() {
-      const projectCount = this.projectCount || 0;
       return sprintf(
         n__(
           'Dependencies|%{projectCount} project',
           'Dependencies|%{projectCount} projects',
-          projectCount,
+          this.projectCount,
         ),
-        { projectCount },
+        { projectCount: this.projectCount },
       );
     },
     availableProjects() {
@@ -111,42 +111,37 @@ export default {
 </script>
 
 <template>
-  <span>
-    <gl-collapsible-listbox
-      v-if="belowGroupLimit"
-      :header-text="headerText"
-      :items="availableProjects"
-      :searching="loading"
-      :searchable="searchEnabled"
-      @hidden="onHide"
-      @search="search"
-      @shown="onShown"
-    >
-      <template #toggle>
-        <span class="md:gl-whitespace-nowrap gl-text-blue-500">
-          <gl-truncate
-            class="gl-hidden md:gl-inline-flex"
-            position="start"
-            :text="headerText"
-            with-tooltip
-          />
-        </span>
-      </template>
-      <template #list-item="{ item }">
-        <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 gl-hover-text-decoration-none">
-          <gl-avatar
-            class="gl-align-middle"
-            :alt="item.name"
-            :size="16"
-            :entity-id="getEntityId(item)"
-            :entity-name="item.name"
-            :src="item.avatarUrl"
-            :shape="$options.AVATAR_SHAPE_OPTION_RECT"
-          />
-          <gl-truncate position="end" :text="item.name" with-tooltip class="gl-min-w-0" />
-        </gl-link>
-      </template>
-    </gl-collapsible-listbox>
-    <dependency-project-count-popover v-else :target-id="targetId" :target-text="headerText" />
-  </span>
+  <gl-collapsible-listbox
+    v-if="belowGroupLimit"
+    :header-text="headerText"
+    :items="availableProjects"
+    :searching="loading"
+    :searchable="searchEnabled"
+    @hidden="onHide"
+    @search="search"
+    @shown="onShown"
+  >
+    <template #toggle>
+      <span class="md:gl-whitespace-nowrap gl-text-blue-500" data-testid="toggle-text">
+        <gl-icon name="project" />
+        <span class="md:gl-hidden">{{ projectCount }}</span>
+        <span class="gl-hidden md:gl-inline-flex">{{ headerText }}</span>
+      </span>
+    </template>
+    <template #list-item="{ item }">
+      <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 gl-hover-text-decoration-none">
+        <gl-avatar
+          class="gl-align-middle"
+          :alt="item.name"
+          :size="16"
+          :entity-id="getEntityId(item)"
+          :entity-name="item.name"
+          :src="item.avatarUrl"
+          :shape="$options.AVATAR_SHAPE_OPTION_RECT"
+        />
+        <gl-truncate position="end" :text="item.name" with-tooltip class="gl-min-w-0" />
+      </gl-link>
+    </template>
+  </gl-collapsible-listbox>
+  <dependency-project-count-popover v-else :target-id="targetId" :target-text="headerText" />
 </template>

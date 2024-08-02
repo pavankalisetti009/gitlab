@@ -208,11 +208,11 @@ export default {
 
     <template #cell(location)="{ item }">
       <dependency-location-count
-        v-if="item.occurrenceCount !== undefined"
+        v-if="item.occurrenceCount"
         :location-count="item.occurrenceCount"
         :component-id="item.componentId"
       />
-      <dependency-location v-else :location="item.location" />
+      <dependency-location v-else-if="item.location" :location="item.location" />
     </template>
 
     <template #cell(license)="{ item }">
@@ -221,7 +221,6 @@ export default {
 
     <template #cell(projects)="{ item }">
       <dependency-project-count
-        v-if="!isProjectNamespace"
         :project-count="item.projectCount"
         :component-id="item.componentId"
       />

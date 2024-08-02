@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlLink, GlTruncate, GlCollapsibleListbox, GlAvatar } from '@gitlab/ui';
-import { shallowMount, mount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import DependencyProjectCount from 'ee/dependencies/components/dependency_project_count.vue';
 import DependencyProjectCountPopover from 'ee/dependencies/components/dependency_project_count_popover.vue';
@@ -38,7 +38,7 @@ describe('Dependency Project Count component', () => {
 
   const apolloResolver = jest.fn().mockResolvedValue(payload);
 
-  const createComponent = ({ propsData, mountFn = shallowMount, belowGroupLimit = true } = {}) => {
+  const createComponent = ({ propsData, belowGroupLimit = true, stubs = {} } = {}) => {
     const endpoint = 'groups/endpoint/-/dependencies.json';
 
     const basicProps = {
@@ -48,18 +48,25 @@ describe('Dependency Project Count component', () => {
 
     const handlers = [[dependenciesProjectsQuery, apolloResolver]];
 
-    wrapper = mountFn(DependencyProjectCount, {
+    wrapper = shallowMountExtended(DependencyProjectCount, {
       apolloProvider: createMockApollo(handlers),
       propsData: { ...basicProps, ...propsData },
       provide: { endpoint, belowGroupLimit },
-      stubs: { GlLink, GlTruncate },
+      stubs: { GlLink, GlTruncate, ...stubs },
     });
   };
 
+  const findToggleText = () => wrapper.findByTestId('toggle-text');
   const findProjectLink = () => wrapper.findComponent(GlLink);
   const findProjectAvatar = () => wrapper.findComponent(GlAvatar);
   const findProjectList = () => wrapper.findComponent(GlCollapsibleListbox);
   const findProjectCountPopover = () => wrapper.findComponent(DependencyProjectCountPopover);
+
+  it('renders toggle text', () => {
+    createComponent();
+
+    expect(findToggleText().html()).toMatchSnapshot();
+  });
 
   describe('with a single project', () => {
     beforeEach(() => {
@@ -121,7 +128,7 @@ describe('Dependency Project Count component', () => {
           propsData: {
             projectCount: 2,
           },
-          mountFn: mount,
+          stubs: { GlCollapsibleListbox },
         });
       });
 
@@ -168,7 +175,7 @@ describe('Dependency Project Count component', () => {
               propsData: {
                 projectCount: 2,
               },
-              mountFn: mount,
+              stubs: { GlCollapsibleListbox },
             });
             findProjectList().vm.$emit('shown');
             await waitForPromises();

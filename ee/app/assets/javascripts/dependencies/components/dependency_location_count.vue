@@ -41,15 +41,14 @@ export default {
   },
   computed: {
     locationText() {
-      const locationCount = this.locationCount || 0;
       return sprintf(
         n__(
           'Dependencies|%{locationCount} location',
           'Dependencies|%{locationCount} locations',
-          locationCount,
+          this.locationCount,
         ),
         {
-          locationCount,
+          locationCount: this.locationCount,
         },
       );
     },
@@ -109,14 +108,10 @@ export default {
     @shown="onShown"
   >
     <template #toggle>
-      <span class="md:gl-whitespace-nowrap gl-text-blue-500">
+      <span class="md:gl-whitespace-nowrap gl-text-blue-500" data-testid="toggle-text">
         <gl-icon name="doc-text" />
-        <gl-truncate
-          class="gl-hidden md:gl-inline-flex"
-          position="start"
-          :text="locationText"
-          with-tooltip
-        />
+        <span class="md:gl-hidden">{{ locationCount }}</span>
+        <span class="gl-hidden md:gl-inline-flex">{{ locationText }}</span>
       </span>
     </template>
     <template #list-item="{ item }">
