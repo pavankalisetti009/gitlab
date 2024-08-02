@@ -21,7 +21,7 @@ describe('Settings', () => {
     factory({ settings: mockApprovalSettingsScanResultObject.approval_settings });
     expect(findHeader().exists()).toBe(true);
     expect(findSettings()).toHaveLength(2);
-    expect(findSettings().at(0).text()).toBe('Prevent branch modification');
+    expect(findSettings().at(0).text()).toBe('Prevent project branch modification');
     expect(findSettings().at(1).text()).toBe('Prevent pushing and force pushing');
   });
 

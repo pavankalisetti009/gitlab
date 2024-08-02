@@ -1,9 +1,13 @@
 import { GlAccordionItem, GlFormCheckbox, GlLink, GlSprintf } from '@gitlab/ui';
 import SettingsItem from 'ee/security_orchestration/components/policy_editor/scan_result/settings/settings_item.vue';
+import BlockGroupBranchModification from 'ee/security_orchestration/components/policy_editor/scan_result/settings/block_group_branch_modification.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { ALL_PROTECTED_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
-import { BLOCK_BRANCH_MODIFICATION } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
+import {
+  BLOCK_BRANCH_MODIFICATION,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
+} from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 
 describe('SettingsItem', () => {
   let wrapper;
@@ -31,17 +35,16 @@ describe('SettingsItem', () => {
 
   const findAllCheckBoxes = () => wrapper.findAllComponents(GlFormCheckbox);
   const findAccordionItem = () => wrapper.findComponent(GlAccordionItem);
+  const findBlockGroupBranchModification = () =>
+    wrapper.findComponent(BlockGroupBranchModification);
   const findDescriptionText = () => wrapper.findByTestId('settings-group-text');
   const findDescriptionLink = () => wrapper.findComponent(GlLink);
   const findBlockBranchModificationSettingPopover = () =>
     wrapper.findByTestId('block_branch_modification-popover');
 
-  beforeEach(() => {
-    createComponent();
-  });
-
   describe('checkboxes', () => {
     it('should render checkboxes based on settings', () => {
+      createComponent();
       expect(findAccordionItem().props('title')).toBe('Test title');
       expect(findAllCheckBoxes()).toHaveLength(2);
       expect(findAllCheckBoxes().at(0).attributes('checked')).toBe('true');
@@ -49,6 +52,7 @@ describe('SettingsItem', () => {
     });
 
     it('emits selected setting when updated', () => {
+      createComponent();
       findAllCheckBoxes().at(0).vm.$emit('change', true);
 
       expect(wrapper.emitted('update')).toEqual([[{ key: 'test', value: true }]]);
@@ -84,6 +88,45 @@ describe('SettingsItem', () => {
         expect(findDescriptionText().exists()).toBe(textVisible);
       },
     );
+
+    describe('block group branch modification', () => {
+      it('does not show the block group branch modification for project settings', () => {
+        createComponent();
+        expect(findBlockGroupBranchModification().exists()).toBe(false);
+      });
+
+      it('does show the block group branch modification for project settings when it is disabled', () => {
+        createComponent({ propsData: { settings: { [BLOCK_GROUP_BRANCH_MODIFICATION]: false } } });
+        expect(findBlockGroupBranchModification().exists()).toBe(true);
+        expect(findAllCheckBoxes().at(0).attributes('checked')).toBe(undefined);
+      });
+
+      it('does show the block group branch modification for project settings when it is enabled', () => {
+        createComponent({ propsData: { settings: { [BLOCK_GROUP_BRANCH_MODIFICATION]: true } } });
+        expect(findBlockGroupBranchModification().exists()).toBe(true);
+        expect(findBlockGroupBranchModification().props()).toMatchObject({
+          enabled: true,
+          exceptions: [],
+        });
+        expect(findAllCheckBoxes().at(0).attributes('checked')).toBe('true');
+      });
+
+      it('does show the block group branch modification for project settings when it is enabled with exceptions', () => {
+        createComponent({
+          propsData: {
+            settings: {
+              [BLOCK_GROUP_BRANCH_MODIFICATION]: { enabled: true, exceptions: ['releases/*'] },
+            },
+          },
+        });
+        expect(findBlockGroupBranchModification().exists()).toBe(true);
+        expect(findBlockGroupBranchModification().props()).toMatchObject({
+          enabled: true,
+          exceptions: ['releases/*'],
+        });
+        expect(findAllCheckBoxes().at(0).attributes('checked')).toBe('true');
+      });
+    });
   });
 
   describe('popovers', () => {

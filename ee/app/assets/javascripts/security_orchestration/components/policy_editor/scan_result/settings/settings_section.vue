@@ -6,6 +6,7 @@ import { getBaseURL, joinPaths } from '~/lib/utils/url_utility';
 import {
   MERGE_REQUEST_CONFIGURATION_KEYS,
   BLOCK_BRANCH_MODIFICATION,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   PREVENT_PUSHING_AND_FORCE_PUSHING,
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 import SettingsItem from './settings_item.vue';
@@ -41,8 +42,19 @@ export default {
   },
   computed: {
     protectedBranchSettings() {
-      const settings = [PREVENT_PUSHING_AND_FORCE_PUSHING, BLOCK_BRANCH_MODIFICATION];
-      return this.groupSettingsBy(settings);
+      const basicSettings = this.groupSettingsBy([
+        PREVENT_PUSHING_AND_FORCE_PUSHING,
+        BLOCK_BRANCH_MODIFICATION,
+      ]);
+      const blockGroupBranchSettings = this.groupSettingsBy([BLOCK_GROUP_BRANCH_MODIFICATION]);
+
+      /**
+       * blockGroupBranchSettings must be at the end of the list
+       */
+      return {
+        ...basicSettings,
+        ...blockGroupBranchSettings,
+      };
     },
     mergeRequestSettings() {
       return this.groupSettingsBy(MERGE_REQUEST_CONFIGURATION_KEYS);

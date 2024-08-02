@@ -6,8 +6,10 @@ import {
   collidingKeysScanResultManifest,
   mockDefaultBranchesScanResultManifest,
   mockDefaultBranchesScanResultObject,
-  mockApprovalSettingsScanResultManifest,
+  mockProjectApprovalSettingsScanResultManifest,
   mockApprovalSettingsScanResultObject,
+  mockGroupApprovalSettingsScanResultManifest,
+  mockGroupApprovalSettingsScanResultObject,
   mockApprovalSettingsPermittedInvalidScanResultManifest,
   mockApprovalSettingsPermittedInvalidScanResultObject,
   mockPolicyScopeScanResultManifest,
@@ -36,7 +38,8 @@ describe('fromYaml', () => {
     it.each`
       title                                                               | manifest                                                  | output
       ${'without approval_settings'}                                      | ${mockDefaultBranchesScanResultManifest}                  | ${mockDefaultBranchesScanResultObject}
-      ${'with approval_settings'}                                         | ${mockApprovalSettingsScanResultManifest}                 | ${mockApprovalSettingsScanResultObject}
+      ${'with approval_settings'}                                         | ${mockProjectApprovalSettingsScanResultManifest}          | ${mockApprovalSettingsScanResultObject}
+      ${'with the `BLOCK_GROUP_BRANCH_MODIFICATION` approval_setting'}    | ${mockGroupApprovalSettingsScanResultManifest}            | ${mockGroupApprovalSettingsScanResultObject}
       ${'without actions'}                                                | ${zeroActionsScanResultManifest}                          | ${zeroActionsScanResultObject}
       ${'with fail: closed'}                                              | ${mockProjectFallbackClosedScanResultManifest}            | ${mockProjectFallbackClosedScanResultObject}
       ${'with `approval_settings` containing permitted invalid settings'} | ${mockApprovalSettingsPermittedInvalidScanResultManifest} | ${mockApprovalSettingsPermittedInvalidScanResultObject}
