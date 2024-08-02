@@ -33,4 +33,20 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     it { is_expected.to include(matching_sbom_component) }
     it { is_expected.not_to include(non_matching_sbom_component) }
   end
+
+  describe '.by_unique_attributes' do
+    let_it_be(:matching_component) do
+      create(:sbom_component, component_type: :library, purl_type: :npm, name: 'component-1')
+    end
+
+    let_it_be(:non_matching_component) do
+      create(:sbom_component, component_type: :library, purl_type: :golang, name: 'component-2')
+    end
+
+    subject(:results) { described_class.by_unique_attributes('component-1', :npm, :library) }
+
+    it 'returns only the matching component' do
+      expect(results.to_a).to eq([matching_component])
+    end
+  end
 end

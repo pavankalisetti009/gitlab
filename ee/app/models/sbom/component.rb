@@ -14,5 +14,9 @@ module Sbom
     scope :by_purl_type_and_name, ->(purl_type, name) do
       where(name: name, purl_type: purl_type)
     end
+
+    scope :by_unique_attributes, ->(name, purl_type, component_type) do
+      where(name: name, purl_type: purl_type, component_type: component_type)
+    end
   end
 end

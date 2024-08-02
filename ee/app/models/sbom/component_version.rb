@@ -6,5 +6,9 @@ module Sbom
     has_many :occurrences, inverse_of: :component_version
 
     validates :version, presence: true, length: { maximum: 255 }
+
+    scope :by_component_id_and_version, ->(component_id, version) do
+      where(component_id: component_id, version: version)
+    end
   end
 end

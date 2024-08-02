@@ -25,6 +25,10 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestComponents, feature_category: :depe
         .from(Array.new(4)).to(expected_component_ids)
     end
 
+    it 'does not update existing component' do
+      expect { ingest_components }.not_to change { existing_component.reload.updated_at }
+    end
+
     context 'when there are duplicate components' do
       let(:components) do
         [

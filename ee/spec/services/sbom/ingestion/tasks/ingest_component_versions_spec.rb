@@ -26,6 +26,10 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestComponentVersions, feature_category
         expect { ingest_component_versions }.to change(Sbom::ComponentVersion, :count).by(3)
       end
 
+      it 'does not update existing version' do
+        expect { ingest_component_versions }.not_to change { existing_version.reload.updated_at }
+      end
+
       it 'sets the component_id' do
         expected_component_ids = Array.new(3) { an_instance_of(Integer) }.unshift(existing_version.id)
 
