@@ -102,10 +102,7 @@ describe('AdminEmailsForm', () => {
         await waitForPromises();
 
         expect(findGlListbox().props('items')).toEqual([
-          {
-            value: 'all',
-            text: 'All groups and projects',
-          },
+          { value: 'all', text: 'All groups and projects' },
           { value: 'group-1', text: 'Group Foo' },
           { value: 'group-2', text: 'Group Bar' },
           { value: 'project-1', text: 'Project Foo' },
