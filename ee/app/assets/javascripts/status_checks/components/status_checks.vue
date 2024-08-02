@@ -1,5 +1,5 @@
 <script>
-import { GlLink, GlSprintf, GlTable } from '@gitlab/ui';
+import { GlLink, GlSprintf, GlTable, GlIcon } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -19,6 +19,8 @@ export const i18n = {
   ),
   apiHeader: __('API'),
   branchHeader: __('Target branches'),
+  sharedSecretHeader: __('HMAC enabled'),
+  sharedSecret: __('Shared secret'),
   actionsHeader: __('Actions'),
   emptyTableText: s__('StatusCheck|No status checks are defined yet.'),
   nameHeader: s__('StatusCheck|Service name'),
@@ -30,6 +32,7 @@ export default {
     Branch,
     CrudComponent,
     GlLink,
+    GlIcon,
     GlSprintf,
     GlTable,
     ModalCreate,
@@ -72,6 +75,11 @@ export default {
       thClass: 'gl-w-2/10',
     },
     {
+      key: 'sharedSecret',
+      label: i18n.sharedSecretHeader,
+      thClass: 'gl-w-2/10',
+    },
+    {
       key: 'actions',
       label: i18n.actionsHeader,
       thClass: 'gl-text-right',
@@ -111,7 +119,15 @@ export default {
       <template #cell(protectedBranches)="{ item }">
         <branch :branches="item.protectedBranches" />
       </template>
-      <template #cell(actions)="{ item }">
+      <template #cell(sharedSecret)="{ item: { hmac } }">
+        <gl-icon
+          v-if="hmac"
+          :aria-label="$options.i18n.sharedSecret"
+          name="check-circle-filled"
+          class="gl-text-green-700"
+        />
+      </template>
+      <template #cell(actions)="{ item = {} }">
         <actions
           :status-check="item"
           @open-delete-modal="openDeleteModal"

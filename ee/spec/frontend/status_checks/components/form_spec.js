@@ -12,6 +12,7 @@ const statusCheck = {
   protectedBranches: TEST_PROTECTED_BRANCHES,
   name: 'Foo',
   externalUrl: 'https://foo.com',
+  sharedSecret: 'secret',
 };
 const sentryError = new Error('Network error');
 
@@ -44,6 +45,7 @@ describe('Status checks form', () => {
   const findUrlInput = () => wrapper.findByTestId('url');
   const findUrlValidation = () => wrapper.findByTestId('url-group');
   const findBranchesValidation = () => wrapper.findByTestId('branches-group');
+  const findSharedSecretInput = () => wrapper.findByTestId('shared-secret');
   const findBranchesErrorAlert = () => wrapper.findComponent(GlAlert);
 
   const findValidations = () => [
@@ -61,6 +63,7 @@ describe('Status checks form', () => {
       expect(findNameInput().props('value')).toBe('');
       expect(findProtectedBranchesSelector().props('selectedBranches')).toStrictEqual([]);
       expect(findProtectedBranchesSelector().props('multiple')).toBe(true);
+      expect(findSharedSecretInput().exists()).toBe(true);
       expect(findUrlInput().props('value')).toBe('');
     });
 
@@ -91,6 +94,19 @@ describe('Status checks form', () => {
       expect(findUrlValidation().props('invalidFeedback')).toBe('Please provide a valid URL.');
     });
 
+    it.each`
+      hmac     | description
+      ${false} | ${'Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC.'}
+      ${true}  | ${'There is currently a secret configured for this status check.'}
+    `('disables HMAC secret field when HMAC is enabled', ({ hmac, description }) => {
+      createWrapper({
+        statusCheck: { ...statusCheck, hmac },
+      });
+
+      expect(Boolean(findSharedSecretInput().attributes('disabled'))).toBe(hmac);
+      expect(findSharedSecretInput().attributes('description')).toBe(description);
+    });
+
     it('shows the invalid URL error if the URL is unsafe', async () => {
       createWrapper({
         statusCheck: { ...statusCheck, externalUrl: 'ftp://foo.com' },
@@ -116,6 +132,7 @@ describe('Status checks form', () => {
           branches: statusCheck.protectedBranches,
           name: statusCheck.name,
           url: statusCheck.externalUrl,
+          sharedSecret: statusCheck.sharedSecret,
         },
       ]);
 
@@ -136,6 +153,7 @@ describe('Status checks form', () => {
           branches: statusCheck.protectedBranches,
           name: statusCheck.name,
           url: statusCheck.externalUrl,
+          sharedSecret: 'secret',
         },
       ]);
       expect(inputsAreValid()).toBe(true);

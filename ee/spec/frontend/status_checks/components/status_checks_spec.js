@@ -1,4 +1,4 @@
-import { GlTable } from '@gitlab/ui';
+import { GlTable, GlIcon } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue, { nextTick } from 'vue';
 // eslint-disable-next-line no-restricted-imports
@@ -17,8 +17,13 @@ import { stubComponent } from 'helpers/stub_component';
 Vue.use(Vuex);
 
 const statusChecks = [
-  { name: 'Foo', externalUrl: 'http://foo.com/api', protectedBranches: [] },
-  { name: 'Bar', externalUrl: 'http://bar.com/api', protectedBranches: [{ name: 'main' }] },
+  { name: 'Foo', externalUrl: 'http://foo.com/api', protectedBranches: [], hmac: false },
+  {
+    name: 'Bar',
+    externalUrl: 'http://bar.com/api',
+    protectedBranches: [{ name: 'main' }],
+    hmac: true,
+  },
 ];
 
 describe('Status checks', () => {
@@ -86,11 +91,12 @@ describe('Status checks', () => {
     });
 
     it('renders the headers', () => {
-      expect(findHeaders()).toHaveLength(4);
+      expect(findHeaders()).toHaveLength(5);
       expect(findHeaders().at(0).text()).toBe(i18n.nameHeader);
       expect(findHeaders().at(1).text()).toBe(i18n.apiHeader);
       expect(findHeaders().at(2).text()).toBe(i18n.branchHeader);
-      expect(findHeaders().at(3).text()).toBe(i18n.actionsHeader);
+      expect(findHeaders().at(3).text()).toBe(i18n.sharedSecretHeader);
+      expect(findHeaders().at(4).text()).toBe(i18n.actionsHeader);
     });
 
     describe.each(statusChecks)('status check %#', (statusCheck) => {
@@ -102,6 +108,10 @@ describe('Status checks', () => {
 
       it('renders the URL', () => {
         expect(findCell(index, 1).text()).toBe(statusCheck.externalUrl);
+      });
+
+      it('renders the hmac enabled icon', () => {
+        expect(findCell(index, 3).findComponent(GlIcon).exists()).toBe(statusCheck.hmac);
       });
 
       it('renders the branch', () => {

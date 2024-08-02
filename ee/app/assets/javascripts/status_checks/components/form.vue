@@ -33,13 +33,19 @@ export default {
     },
   },
   data() {
-    const { protectedBranches: branches, name, externalUrl: url } = this.statusCheck;
+    const {
+      protectedBranches: branches,
+      name,
+      externalUrl: url,
+      sharedSecret = '',
+    } = this.statusCheck;
 
     return {
       branches,
       branchesToAdd: [],
       branchesApiFailed: false,
       name,
+      sharedSecret,
       showValidation: false,
       url,
     };
@@ -86,6 +92,14 @@ export default {
 
       return this.$options.i18n.validations.invalidUrl;
     },
+    sharedSecretDescription() {
+      return this.statusCheck.hmac
+        ? this.$options.i18n.form.sharedSecretExistingDescription
+        : this.$options.i18n.form.sharedSecretDescription;
+    },
+    hmacEnabled() {
+      return this.statusCheck.hmac;
+    },
   },
   watch: {
     branchesToAdd(value) {
@@ -97,9 +111,9 @@ export default {
       this.showValidation = true;
 
       if (this.isValid) {
-        const { branches, name, url } = this;
+        const { branches, name, url, sharedSecret } = this;
 
-        this.$emit('submit', { branches, name, url });
+        this.$emit('submit', { branches, name, url, sharedSecret });
       }
     },
     setBranchApiError({ hasErrored, error }) {
@@ -122,6 +136,13 @@ export default {
       protectedBranchLabel: s__('StatusCheck|Target branch'),
       protectedBranchDescription: s__(
         'StatusCheck|Apply this status check to all branches or a specific protected branch.',
+      ),
+      sharedSecretLabel: s__('StatusCheck|HMAC Shared Secret'),
+      sharedSecretDescription: s__(
+        'StatusCheck|Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC.',
+      ),
+      sharedSecretExistingDescription: s__(
+        'StatusCheck|There is currently a secret configured for this status check.',
       ),
     },
     validations: {
@@ -180,6 +201,19 @@ export default {
           :selected-branches="branches"
           multiple
           @apiError="setBranchApiError"
+        />
+      </gl-form-group>
+      <gl-form-group
+        :disabled="hmacEnabled"
+        :label="$options.i18n.form.sharedSecretLabel"
+        :description="sharedSecretDescription"
+        data-testid="shared-secret"
+      >
+        <gl-form-input
+          v-model="sharedSecret"
+          autocomplete="off"
+          name="shared-secret"
+          type="password"
         />
       </gl-form-group>
     </form>

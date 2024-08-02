@@ -26064,6 +26064,9 @@ msgstr ""
 msgid "HAR file path or URL"
 msgstr ""
 
+msgid "HMAC enabled"
+msgstr ""
+
 msgid "HTTP Archive (HAR)"
 msgstr ""
 
@@ -49977,6 +49980,9 @@ msgstr ""
 msgid "Shared runners enabled cannot be enabled until identity verification is completed"
 msgstr ""
 
+msgid "Shared secret"
+msgstr ""
+
 msgid "SharedRunnersMinutesSettings|Reset compute usage"
 msgstr ""
 
@@ -51466,10 +51472,16 @@ msgstr ""
 msgid "StatusCheck|Failed to load status checks"
 msgstr ""
 
+msgid "StatusCheck|HMAC Shared Secret"
+msgstr ""
+
 msgid "StatusCheck|Invoke an external API as part of the pipeline process."
 msgstr ""
 
 msgid "StatusCheck|No status checks are defined yet."
+msgstr ""
+
+msgid "StatusCheck|Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC."
 msgstr ""
 
 msgid "StatusCheck|Service name"
@@ -51494,6 +51506,9 @@ msgid "StatusCheck|Status to check"
 msgstr ""
 
 msgid "StatusCheck|Target branch"
+msgstr ""
+
+msgid "StatusCheck|There is currently a secret configured for this status check."
 msgstr ""
 
 msgid "StatusCheck|URL parameters are hidden for security reasons. For details of URL parameters, see the configuration for the status check service."

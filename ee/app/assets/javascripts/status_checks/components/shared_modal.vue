@@ -57,7 +57,8 @@ export default {
     async handleFormSubmit(formData) {
       this.submitting = true;
 
-      const { branches, name, url } = formData;
+      const { branches, name, url, sharedSecret } = formData;
+      const hasExistingHmac = Boolean(this.statusCheck?.hmac);
 
       try {
         await this.action({
@@ -65,6 +66,7 @@ export default {
           id: this.statusCheck?.id,
           name,
           protectedBranchIds: branches.map((x) => x.id).filter((x) => x !== ALL_BRANCHES.id),
+          ...(hasExistingHmac ? {} : { sharedSecret }),
         });
 
         this.$refs.modal.hide();

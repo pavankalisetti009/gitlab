@@ -21,11 +21,14 @@ const statusCheck = {
   id: 1,
   name: 'Foo',
   protectedBranches: TEST_PROTECTED_BRANCHES,
+  sharedSecret: 'secret',
+  hmac: true,
 };
 const formData = {
   branches: statusCheck.protectedBranches,
   name: statusCheck.name,
   url: statusCheck.externalUrl,
+  sharedSecret: statusCheck.sharedSecret,
 };
 
 describe('Shared modal', () => {
@@ -138,6 +141,7 @@ describe('Shared modal', () => {
           id: expected?.id,
           name: formData.name,
           protectedBranchIds: formData.branches.map(({ id }) => id),
+          ...(given?.hmac ? {} : { sharedSecret: formData.sharedSecret }),
         });
 
         expect(hideMock).toHaveBeenCalled();
@@ -160,6 +164,7 @@ describe('Shared modal', () => {
           externalUrl: formData.url,
           id: expected?.id,
           name: formData.name,
+          ...(given?.hmac ? {} : { sharedSecret: formData.sharedSecret }),
           protectedBranchIds: formData.branches.map(({ id }) => id),
         });
 
