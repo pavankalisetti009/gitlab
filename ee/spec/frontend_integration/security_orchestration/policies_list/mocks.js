@@ -1,7 +1,6 @@
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 export const DEFAULT_PROVIDE = {
-  customCiToggleEnabled: false,
   assignedPolicyProject: null,
   disableSecurityPolicyProject: false,
   disableScanPolicyUpdate: false,

@@ -249,40 +249,6 @@ export const mockPolicyScopeScanExecutionObject = {
   },
 };
 
-export const mockCodeBlockFilePathScanExecutionManifest = `type: scan_execution_policy
-name: Test File Path
-enabled: false
-rules:
-  - type: pipeline
-    branches:
-      - main
-actions:
-  - scan: sast
-  - scan: custom
-    ci_configuration:
-      include:
-        file: file
-`;
-
-export const mockCodeBlockFilePathScanExecutionObject = {
-  type: 'scan_execution_policy',
-  name: 'Test File Path',
-  enabled: false,
-  rules: [{ type: 'pipeline', branches: ['main'], id: ruleId }],
-  actions: [
-    { scan: 'sast', id: actionId },
-    {
-      scan: 'custom',
-      ci_configuration: {
-        include: {
-          file: 'file',
-        },
-      },
-      id: actionId,
-    },
-  ],
-};
-
 export const mockTemplateScanExecutionManifest =
   mockDastScanExecutionManifest.concat(`    template: default\n`);
 

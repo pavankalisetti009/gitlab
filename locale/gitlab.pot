@@ -46568,9 +46568,6 @@ msgstr ""
 msgid "Scan pushed document contents for policy breaks. %{docs_link}"
 msgstr ""
 
-msgid "ScanExecutionPolicy|%{boldStart}Run%{boldEnd} %{typeSelector} %{actionType}"
-msgstr ""
-
 msgid "ScanExecutionPolicy|%{boldStart}Run%{boldEnd} %{typeSelector} from the project %{projectSelector} with ref %{refSelector}"
 msgstr ""
 
@@ -46638,9 +46635,6 @@ msgid "ScanExecutionPolicy|DAST site profiles"
 msgstr ""
 
 msgid "ScanExecutionPolicy|File reference (Optional) %{refSelector}"
-msgstr ""
-
-msgid "ScanExecutionPolicy|If there are any conflicting variables with the local pipeline configuration (Ex, gitlab-ci.yml) then variables defined here will take precedence. %{linkStart}Learn more%{linkEnd}."
 msgstr ""
 
 msgid "ScanExecutionPolicy|Inject"
@@ -47973,9 +47967,6 @@ msgstr ""
 msgid "SecurityOrchestration|Enforce %{linkStart}security policies%{linkEnd} for this project."
 msgstr ""
 
-msgid "SecurityOrchestration|Enforce custom CI with pipeline execution action for scan execution policies. %{linkStart}How do I implement this feature?%{linkEnd}"
-msgstr ""
-
 msgid "SecurityOrchestration|Enforce policy on all groups, subgroups, and projects linked to the security policy project. %{linkStart}How does scoping work?%{linkEnd}"
 msgstr ""
 
@@ -48049,9 +48040,6 @@ msgid "SecurityOrchestration|Inherited"
 msgstr ""
 
 msgid "SecurityOrchestration|Inherited from %{namespace}"
-msgstr ""
-
-msgid "SecurityOrchestration|Introducing Pipeline Execution Policy Action experimental feature"
 msgstr ""
 
 msgid "SecurityOrchestration|Invalid Compliance Framework ID(s)"
@@ -48303,9 +48291,6 @@ msgid "SecurityOrchestration|Several merge request approval policy criteria have
 msgstr ""
 
 msgid "SecurityOrchestration|Severity is %{severity}."
-msgstr ""
-
-msgid "SecurityOrchestration|Share feedback"
 msgstr ""
 
 msgid "SecurityOrchestration|Show all included projects"

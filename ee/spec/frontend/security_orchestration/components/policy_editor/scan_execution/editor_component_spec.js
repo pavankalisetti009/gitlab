@@ -3,11 +3,9 @@ import VueApollo from 'vue-apollo';
 import { GlEmptyState } from '@gitlab/ui';
 import { uniqueId } from 'lodash';
 import EditorComponent from 'ee/security_orchestration/components/policy_editor/scan_execution/editor_component.vue';
-import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_execution/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_execution/rule/rule_section.vue';
 import ActionBuilder from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_action.vue';
 import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
-import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -47,7 +45,6 @@ import {
   POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY,
   RUNNER_TAGS_PARSING_ERROR,
   DAST_SCANNERS_PARSING_ERROR,
-  EXECUTE_YAML_ACTION,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
 
@@ -109,7 +106,6 @@ describe('EditorComponent', () => {
         namespacePath: defaultProjectPath,
         namespaceType: NAMESPACE_TYPES.GROUP,
         scanPolicyDocumentationPath,
-        customCiToggleEnabled: true,
         glFeatures,
         ...provide,
       },
@@ -135,9 +131,6 @@ describe('EditorComponent', () => {
   const findAllActionBuilders = () => wrapper.findAllComponents(ActionBuilder);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
   const findAllRuleSections = () => wrapper.findAllComponents(RuleSection);
-  const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
-  const findActionSection = () => wrapper.findComponent(ActionSection);
-  const findAllActionSections = () => wrapper.findAllComponents(ActionSection);
   const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
 
   const selectScheduleRule = async () => {
@@ -420,46 +413,6 @@ enabled: true`;
         expect(findPolicyEditorLayout().props('parsingError')).toBe(expectedErrorMessage);
       },
     );
-  });
-
-  describe('execute yaml block section', () => {
-    it.each`
-      compliancePipelineInPolicies | customCiToggleEnabled | output
-      ${true}                      | ${true}               | ${true}
-      ${true}                      | ${false}              | ${false}
-      ${false}                     | ${true}               | ${false}
-      ${false}                     | ${false}              | ${false}
-    `(
-      'should render the correct action builder when compliancePipelineInPolicies is $compliancePipelineInPolicies and  customCiToggleEnabled is $customCiToggleEnabled',
-      ({ compliancePipelineInPolicies, customCiToggleEnabled, output }) => {
-        factory({
-          provide: {
-            glFeatures: { compliancePipelineInPolicies },
-            customCiToggleEnabled,
-          },
-        });
-
-        expect(findActionSection().exists()).toBe(output);
-        expect(findScanFilterSelector().exists()).toBe(output);
-        expect(findAddActionButton().exists()).toBe(!output);
-      },
-    );
-
-    it('should add custom action', async () => {
-      uniqueId.mockRestore();
-      factory({
-        provide: {
-          glFeatures: { compliancePipelineInPolicies: true },
-          customCiToggleEnabled: true,
-        },
-      });
-
-      expect(findAllActionSections()).toHaveLength(1);
-
-      await findScanFilterSelector().vm.$emit('select', EXECUTE_YAML_ACTION);
-
-      expect(findAllActionSections()).toHaveLength(2);
-    });
   });
 
   describe('performance warning modal', () => {
