@@ -39,7 +39,6 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
             expect(response.body).to include('data-documentation-path')
             expect(response.body).to include('data-empty-state-svg-path')
             expect(response.body).to include('data-endpoint')
-            expect(response.body).to include('data-support-documentation-path')
             expect(response.body).to include('data-export-endpoint')
             expect(response.body).to include('data-below-group-limit')
           end

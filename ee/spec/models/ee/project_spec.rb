@@ -2445,6 +2445,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#has_dependencies?' do
+    subject { project.has_dependencies? }
+
+    it 'returns false when project does not have dependencies' do
+      is_expected.to eq(false)
+    end
+
+    it 'returns true when project does have dependencies' do
+      create(:sbom_occurrence, project: project)
+
+      is_expected.to eq(true)
+    end
+  end
+
   describe '#latest_ingested_security_pipeline' do
     let_it_be(:project, refind: true) { create(:project) }
     let_it_be(:pipeline_1) { create(:ee_ci_pipeline, :with_dast_report, :success, project: project) }

@@ -13,7 +13,7 @@ import { mapActions, mapGetters, mapState } from 'vuex';
 import { __, s__ } from '~/locale';
 import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
-import { REPORT_STATUS, SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
+import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import DependencyListIncompleteAlert from './dependency_list_incomplete_alert.vue';
 import DependencyListJobFailedAlert from './dependency_list_job_failed_alert.vue';
@@ -37,10 +37,10 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   inject: [
+    'hasDependencies',
     'emptyStateSvgPath',
     'documentationPath',
     'endpoint',
-    'supportDocumentationPath',
     'exportEndpoint',
     'pageInfo',
     'namespaceType',
@@ -56,10 +56,8 @@ export default {
     ...mapGetters([
       'generatedAtTimeAgo',
       'isInitialized',
-      'isJobNotSetUp',
       'isJobFailed',
       'isIncomplete',
-      'hasNoDependencies',
       'reportInfo',
       'totals',
     ]),
@@ -85,30 +83,6 @@ export default {
         const { namespace } = this.listTypes[index] || {};
         this.setCurrentList(namespace);
       },
-    },
-    showEmptyState() {
-      return this.isJobNotSetUp || this.hasNoDependencies;
-    },
-    emptyStateOptions() {
-      const map = {
-        [REPORT_STATUS.jobNotSetUp]: {
-          title: __('View dependency details for your project'),
-          description: __(
-            'The dependency list details information about the components used within your project.',
-          ),
-          linkText: __('More Information'),
-          link: this.documentationPath,
-        },
-        [REPORT_STATUS.noDependencies]: {
-          title: __('Dependency List has no entries'),
-          description: __(
-            'It seems like the Dependency Scanning job ran successfully, but no dependencies have been detected in your project.',
-          ),
-          linkText: __('View supported languages and frameworks'),
-          link: this.supportDocumentationPath,
-        },
-      };
-      return map[this.reportInfo.status];
     },
     isProjectNamespace() {
       return this.namespaceType === NAMESPACE_PROJECT;
@@ -154,6 +128,13 @@ export default {
       this.isJobFailedAlertDismissed = true;
     },
   },
+  i18n: {
+    emptyStateTitle: __('View dependency details for your project'),
+    emptyStateDescription: __(
+      'The dependency list details information about the components used within your project.',
+    ),
+    emptyStateLinkText: __('More Information'),
+  },
 };
 </script>
 
@@ -161,16 +142,16 @@ export default {
   <gl-loading-icon v-if="!isInitialized" size="lg" class="mt-4" />
 
   <gl-empty-state
-    v-else-if="showEmptyState"
-    :title="emptyStateOptions.title"
+    v-else-if="!hasDependencies"
+    :title="$options.i18n.emptyStateTitle"
     :svg-path="emptyStateSvgPath"
     :svg-height="null"
     data-testid="dependency-list-empty-state-description-content"
   >
     <template #description>
-      {{ emptyStateOptions.description }}
-      <gl-link target="_blank" :href="emptyStateOptions.link">
-        {{ emptyStateOptions.linkText }}
+      {{ $options.i18n.emptyStateDescription }}
+      <gl-link target="_blank" :href="documentationPath">
+        {{ $options.i18n.emptyStateLinkText }}
       </gl-link>
     </template>
   </gl-empty-state>

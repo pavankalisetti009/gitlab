@@ -9,13 +9,13 @@ export default (namespaceType) => {
   const el = document.querySelector('#js-dependencies-app');
 
   const {
+    hasDependencies,
     emptyStateSvgPath,
     documentationPath,
     endpoint,
     licensesEndpoint,
     exportEndpoint,
     vulnerabilitiesEndpoint,
-    supportDocumentationPath,
     locationsEndpoint,
     belowGroupLimit,
     pageInfo,
@@ -24,13 +24,13 @@ export default (namespaceType) => {
   const store = createStore();
 
   const provide = {
+    hasDependencies: parseBoolean(hasDependencies),
     emptyStateSvgPath,
     documentationPath,
     endpoint,
     licensesEndpoint,
     exportEndpoint,
     vulnerabilitiesEndpoint,
-    supportDocumentationPath,
     namespaceType,
     pageInfo: pageInfo ? convertObjectPropsToCamelCase(JSON.parse(pageInfo)) : {},
     belowGroupLimit: parseBoolean(belowGroupLimit),

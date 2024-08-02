@@ -6,8 +6,8 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
   shared_examples 'a helper method that returns shared dependencies data' do
     it 'returns data shared between all views' do
       is_expected.to include(
+        has_dependencies: 'false',
         documentation_path: a_string_including("user/application_security/dependency_list/index"),
-        support_documentation_path: a_string_including("user/application_security/dependency_scanning/index"),
         empty_state_svg_path: match(%r{illustrations/Dependency-list-empty-state.*\.svg})
       )
     end
@@ -30,7 +30,7 @@ RSpec.describe DependenciesHelper, feature_category: :dependency_management do
   end
 
   describe '#group_dependencies_data' do
-    let_it_be(:group) { build_stubbed(:group) }
+    let_it_be(:group) { build_stubbed(:group, traversal_ids: [1]) }
     let(:below_group_limit) { true }
 
     subject { helper.group_dependencies_data(group, below_group_limit) }
