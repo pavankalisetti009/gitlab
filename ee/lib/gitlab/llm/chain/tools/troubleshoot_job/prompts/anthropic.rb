@@ -13,7 +13,7 @@ module Gitlab
                 {
                   prompt: Utils::Prompt.role_conversation(
                     Utils::Prompt.format_conversation(
-                      Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor::PROMPT_TEMPLATE,
+                      Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor.prompt_template,
                       variables
                     )
                   )

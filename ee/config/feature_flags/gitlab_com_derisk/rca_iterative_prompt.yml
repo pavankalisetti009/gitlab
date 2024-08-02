@@ -1,0 +1,9 @@
+---
+name: rca_iterative_prompt
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/473333
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/161532
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/476594
+milestone: '17.3'
+group: group::pipeline execution
+type: gitlab_com_derisk
+default_enabled: false
