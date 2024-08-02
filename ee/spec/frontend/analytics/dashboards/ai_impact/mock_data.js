@@ -209,6 +209,8 @@ export const mockAiMetricsResponseData = {
     codeSuggestionsContributorsCount: 5,
     codeSuggestionsAcceptedCount: 2,
     codeSuggestionsShownCount: 5,
+    duoChatContributorsCount: 5,
+    duoProAssignedUsersCount: 10,
     __typename: 'AiMetrics',
   },
   __typename: 'Group',
