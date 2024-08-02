@@ -3,39 +3,36 @@
 - count = is_upstream_mode ? @project.upstream_projects_count : @project.downstream_projects_count
 - subscriptions = is_upstream_mode ? @project.upstream_project_subscriptions : @project.downstream_project_subscriptions
 - empty_text = is_upstream_mode ? _("This project is not subscribed to any project pipelines.") : _("No project subscribes to the pipelines in this project.")
-- add_form_class = 'gl-hidden' if !form_errors(@project)
 - hide_class = 'gl-hidden' if form_errors(@project)
 
-= render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card js-toggle-container', data: { testid: "#{mode}-project-subscriptions" } }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
-  - c.with_header do
-    .gl-new-card-title-wrapper.gl-flex-direction-column
-      %h3.gl-new-card-title
-        = title
-        .gl-new-card-count
-          = sprite_icon('pipeline', css_class: 'gl-mr-2')
-          = count
-    .gl-new-card-actions
-      - if is_upstream_mode
-        = render Pajamas::ButtonComponent.new(size: :small, button_options: { class: "js-toggle-button js-toggle-content #{hide_class}", data: { testid: "add-new-subscription-btn" } }) do
-          = _('Add new')
-  - c.with_body do
+= render ::Layouts::CrudComponent.new(title,
+  icon: 'pipeline',
+  count: count,
+  form_options: { class: 'gl-hidden js-toggle-content', form_errors: form_errors(@project) },
+  options: { class: 'gl-mt-5 js-toggle-container', data: { testid: "#{mode}-project-subscriptions" } }) do |c|
+  - c.with_actions do
     - if is_upstream_mode
-      .gl-new-card-add-form.gl-m-3.js-toggle-content{ class: add_form_class }
-        %h4.gl-mt-0
-          = _('Add new pipeline subscription')
-        = form_with url: project_subscriptions_path(@project), id: 'pipeline-subscriptions-form', method: :post, authenticity_token: true do |f|
-          %fieldset
-            .form-group
-              = f.label :upstream_project_path do
-                = _("Project path")
-                = link_to sprite_icon('question-o'), help_page_path('ci/pipelines/index', anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt'), target: '_blank', rel: 'noopener noreferrer'
-              = f.text_field :upstream_project_path, class: "form-control", data: { testid: "upstream-project-path-field" }
-            .gl-mt-3
-              = render Pajamas::ButtonComponent.new(variant: :confirm, type: :submit, button_options: { data: { testid: "subscribe-button" } }) do
-                = _('Subscribe')
-              = render Pajamas::ButtonComponent.new(button_options: { type: 'reset', class: 'gl-ml-3 js-toggle-button' }) do
-                = _('Cancel')
+      = render Pajamas::ButtonComponent.new(size: :small, button_options: { class: "js-toggle-button js-toggle-content #{hide_class}", data: { testid: "add-new-subscription-btn" } }) do
+        = _('Add new')
 
+  - c.with_form do
+    - if is_upstream_mode
+      %h4.gl-mt-0
+        = _('Add new pipeline subscription')
+      = form_with url: project_subscriptions_path(@project), id: 'pipeline-subscriptions-form', method: :post, authenticity_token: true do |f|
+        %fieldset
+          .form-group
+            = f.label :upstream_project_path do
+              = _("Project path")
+              = link_to sprite_icon('question-o'), help_page_path('ci/pipelines/index', anchor: 'trigger-a-pipeline-when-an-upstream-project-is-rebuilt'), target: '_blank', rel: 'noopener noreferrer'
+            = f.text_field :upstream_project_path, class: "form-control", data: { testid: "upstream-project-path-field" }
+          .gl-flex.gl-gap-3.gl-mt-3
+            = render Pajamas::ButtonComponent.new(variant: :confirm, type: :submit, button_options: { data: { testid: "subscribe-button" } }) do
+              = _('Subscribe')
+            = render Pajamas::ButtonComponent.new(button_options: { type: 'reset', class: 'js-toggle-button' }) do
+              = _('Cancel')
+
+  - c.with_body do
     %table.table.b-table.gl-table.b-table-stacked-md{ role: 'table' }
       %thead
         %tr
@@ -49,4 +46,4 @@
             = render 'projects/settings/subscriptions/project', project: subscription_project, subscription: subscription, mode: mode
         - else
           %tr
-            %td.gl-text-center{ colspan: 3, class: 'gl-text-secondary!' }= empty_text
+            %td.gl-text-center{ colspan: 3, class: '!gl-text-subtle' }= empty_text

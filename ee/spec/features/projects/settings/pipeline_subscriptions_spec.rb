@@ -31,7 +31,7 @@ RSpec.describe 'Project Subscriptions', :js, feature_category: :pipeline_composi
 
   it 'renders the list of downstream projects' do
     within_testid('downstream-project-subscriptions') do
-      expect(find('.gl-new-card-count').text).to eq '1'
+      expect(find_by_testid('crud-count').text).to eq '1'
     end
 
     expect(page).to have_content(downstream_project.name)
@@ -54,7 +54,7 @@ RSpec.describe 'Project Subscriptions', :js, feature_category: :pipeline_composi
       end
 
       within_testid('upstream-project-subscriptions') do
-        expect(find('.gl-new-card-count').text).to eq '1'
+        expect(find_by_testid('crud-count').text).to eq '1'
       end
 
       expect(page).to have_content(upstream_project.name)
@@ -74,7 +74,7 @@ RSpec.describe 'Project Subscriptions', :js, feature_category: :pipeline_composi
       end
 
       within_testid('upstream-project-subscriptions') do
-        expect(find('.gl-new-card-count').text).to eq '0'
+        expect(find_by_testid('crud-count').text).to eq '0'
         expect(page).to have_content('This project is not subscribed to any project pipelines.')
       end
     end

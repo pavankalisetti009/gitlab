@@ -4,7 +4,7 @@
   %td{ data: { label: _('Project') }, class: '!gl-align-middle' }
     = link_to project.name, project_path(project)
   %td{ data: { label: _('Namespace') } }
-    .gl-display-flex.gl-align-items-center
+    .gl-flex.gl-items-center
       = avatar_without_link(project.namespace, size: 32)
       = project.namespace.name
   - if is_upstream_mode
