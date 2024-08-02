@@ -2079,6 +2079,21 @@ To update the rendered references if the assignee, milestone, or health status c
 Issue [420807](https://gitlab.com/gitlab-org/gitlab/-/issues/420807) tracks improving how these
 references refresh.
 
+### Show comment preview when hovering on a link
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/29663) in GitLab 17.3 [with a flag](../administration/feature_flags.md) named `comment_tooltips`. Disabled by default.
+
+FLAG:
+The availability of this feature is controlled by a feature flag.
+For more information, see the history.
+This feature is available for testing, but not ready for production use.
+
+When this feature is enabled, hovering over a link to a comment shows the author and
+part of the comment.
+
+When this feature is disabled, hovering over a link to a comment shows information about the item,
+such as issue or epic.
+
 ### Embedding Observability dashboards
 
 You can embed GitLab Observability UI dashboards descriptions and comments, for example in epics, issues, and MRs.

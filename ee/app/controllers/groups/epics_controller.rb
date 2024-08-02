@@ -13,6 +13,7 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action :authorize_update_issuable!, only: :update
   before_action :authorize_create_epic!, only: [:create, :new]
   before_action :verify_group_bulk_edit_enabled!, only: [:bulk_update]
+  before_action :set_comment_tooltips_feature_flag, only: :show
   before_action :set_summarize_notes_feature_flag, only: :show
   before_action :set_work_item_epics_feature_flag, only: :show
   after_action :log_epic_show, only: :show
@@ -156,6 +157,10 @@ class Groups::EpicsController < Groups::ApplicationController
 
   def verify_group_bulk_edit_enabled!
     render_404 unless group.licensed_feature_available?(:group_bulk_edit)
+  end
+
+  def set_comment_tooltips_feature_flag
+    push_force_frontend_feature_flag(:comment_tooltips, current_user)
   end
 
   def set_work_item_epics_feature_flag
