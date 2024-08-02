@@ -24,8 +24,10 @@ RSpec.shared_examples 'merge validation hooks' do |args|
   end
 
   context 'commit message validation for required characters' do
+    let(:regex) { 'unmatched pattern .*' }
+
     before do
-      allow(project).to receive(:push_rule) { build(:push_rule, commit_message_regex: 'unmatched pattern .*') }
+      allow(project).to receive(:push_rule) { build(:push_rule, commit_message_regex: regex) }
     end
 
     it_behaves_like 'hook validations are skipped when push rules unlicensed'
@@ -38,6 +40,43 @@ RSpec.shared_examples 'merge validation hooks' do |args|
         expect(merge_request.merge_error).to eq(hooks_error)
       else
         expect(merge_request.merge_error).to be_nil
+      end
+    end
+
+    context 'when the commit message matches the rule' do
+      let(:params) { super().merge(commit_message: commit_message) }
+      let(:regex) { 'abc.*' }
+      let(:commit_message) { 'abcd' }
+
+      it 'returns true when valid' do
+        expect(service.hooks_validation_pass?(merge_request)).to be(true)
+      end
+    end
+
+    context 'when the commit message is not given' do
+      let(:params) { super().merge(commit_message: nil) }
+
+      context 'when the default message does not match the rule' do
+        let(:regex) { "#{merge_request.default_merge_commit_message}abc" }
+
+        it 'returns false and matches validation error' do
+          expect(hooks_pass?).to be(false)
+          expect(hooks_error).not_to be_empty
+
+          if args[:persisted]
+            expect(merge_request.merge_error).to eq(hooks_error)
+          else
+            expect(merge_request.merge_error).to be_nil
+          end
+        end
+      end
+
+      context 'when the default message matches the rule' do
+        let(:regex) { "#{merge_request.default_merge_commit_message}.*" }
+
+        it 'returns true when valid' do
+          expect(service.hooks_validation_pass?(merge_request)).to be(true)
+        end
       end
     end
   end
@@ -130,11 +169,13 @@ RSpec.shared_examples 'merge validation hooks' do |args|
 
   shared_examples 'squashing commits' do
     let(:squash_commit_message) { 'Squashed messages' }
-    let(:params) { super().merge(squash_commit_message: squash_commit_message) }
+    let(:params) { super().merge(squash_commit_message: squash_commit_message, commit_message: commit_message) }
+    let(:commit_message) { regex }
+    let(:regex) { params[:commit_message] }
 
     context 'and the project has a push rule for required characters' do
       before do
-        allow(project).to receive(:push_rule) { build(:push_rule, commit_message_regex: params[:commit_message]) }
+        allow(project).to receive(:push_rule) { build(:push_rule, commit_message_regex: regex) }
       end
 
       it 'returns false and saves error when invalid' do
@@ -145,6 +186,42 @@ RSpec.shared_examples 'merge validation hooks' do |args|
           expect(merge_request.merge_error).to eq(hooks_error(squashing: true))
         else
           expect(merge_request.merge_error).to be_nil
+        end
+      end
+
+      context 'when the squash commit message matches the rule' do
+        let(:regex) { 'abc.*' }
+        let(:squash_commit_message) { 'abcd' }
+
+        it 'returns true when valid' do
+          expect(hooks_pass?(squashing: true)).to be(true)
+        end
+      end
+
+      context 'when the squash commit message is not given' do
+        context 'when the default message does not match the rule' do
+          let(:regex) { "#{merge_request.default_squash_commit_message}abc" }
+          let(:squash_commit_message) { nil }
+
+          it 'returns false and saves error when invalid' do
+            expect(hooks_pass?(squashing: true)).to be(false)
+            expect(hooks_error(squashing: true)).not_to be_empty
+
+            if args[:persisted]
+              expect(merge_request.merge_error).to eq(hooks_error(squashing: true))
+            else
+              expect(merge_request.merge_error).to be_nil
+            end
+          end
+        end
+
+        context 'when the default message matches the rule' do
+          let(:regex) { "#{merge_request.default_squash_commit_message}.*" }
+          let(:squash_commit_message) { nil }
+
+          it 'returns true when valid' do
+            expect(hooks_pass?(squashing: true)).to be(true)
+          end
         end
       end
     end
