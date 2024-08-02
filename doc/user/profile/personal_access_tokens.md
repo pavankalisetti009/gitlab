@@ -97,6 +97,9 @@ Prerequisites:
 
 In GitLab 15.7 and later, you can [use the application settings API to disable personal access tokens](../../api/settings.md#list-of-settings-that-can-be-accessed-via-api-calls).
 
+NOTE:
+After you have used the API to disable personal access tokens, those tokens cannot be used in subsequent API calls to manage this setting. To re-enable personal access tokens, you must use the [GitLab Rails console](../../administration/operations/rails_console.md). You can also upgrade to GitLab 17.3 or later so you can use the Admin UI instead.
+
 In GitLab 17.3 and later, you can disable personal access tokens in the Admin UI:
 
 1. On the left sidebar, at the bottom, select **Admin**.
