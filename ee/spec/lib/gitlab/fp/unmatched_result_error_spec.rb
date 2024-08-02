@@ -2,7 +2,7 @@
 
 require 'fast_spec_helper'
 
-RSpec.describe Gitlab::Fp::UnmatchedResultError, :rd_fast, feature_category: :shared do
+RSpec.describe Gitlab::Fp::UnmatchedResultError, feature_category: :shared do
   let(:unmatched_message_class) { stub_const('UnmatchedMessage', Class.new(Gitlab::Fp::Message)) }
   let(:unmatched_message) { unmatched_message_class.new }
 

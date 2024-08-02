@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../../../rd_fast_spec_helper'
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Persistence::OrphanedWorkspacesObserver, :rd_fast, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Persistence::OrphanedWorkspacesObserver, feature_category: :remote_development do
   let(:agent) { instance_double("Clusters::Agent", id: 1) }
   let(:update_type) { RemoteDevelopment::Workspaces::Reconcile::UpdateTypes::PARTIAL }
   let(:logger) { instance_double(::Logger) }

@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../rd_fast_spec_helper'
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Workspaces::States, :rd_fast, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Workspaces::States, feature_category: :remote_development do
   let(:object) { Object.new.extend(described_class) }
 
   describe '.valid_desired_state?' do

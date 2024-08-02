@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative '../../lib/remote_development/rd_fast_spec_helper'
+require "fast_spec_helper"
 require_relative '../../../../app/services/service_response'
 require_relative '../../../app/services/remote_development/service_response_factory'
 require_relative '../../../app/services/remote_development/common_service'
 require_relative '../../../app/services/remote_development/logger'
 
-RSpec.describe ::RemoteDevelopment::CommonService, :rd_fast, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::CommonService, feature_category: :remote_development do
   let(:domain_main_class) do
     Class.new do
       cattr_accessor :response_hash

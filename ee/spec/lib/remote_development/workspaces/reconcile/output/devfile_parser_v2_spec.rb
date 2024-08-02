@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../../../rd_fast_spec_helper'
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Output::DevfileParserV2, :rd_fast, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Output::DevfileParserV2, feature_category: :remote_development do
   include_context 'with remote development shared fixtures'
 
   let(:dns_zone) { "workspaces.localdev.me" }

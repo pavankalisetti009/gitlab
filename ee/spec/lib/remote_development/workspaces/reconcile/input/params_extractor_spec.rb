@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../../../rd_fast_spec_helper'
+require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Input::ParamsExtractor, :rd_fast, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Input::ParamsExtractor, feature_category: :remote_development do
   let(:agent) { instance_double("Clusters::Agent") }
   let(:original_params) do
     {
