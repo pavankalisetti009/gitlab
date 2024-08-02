@@ -1,6 +1,6 @@
 function toggleGroupVisibility(providerValue) {
   const show = providerValue === 'group_saml';
-  document.querySelector('.js-providerId-group').classList.toggle('gl-display-none', !show);
+  document.querySelector('.js-providerId-group').classList.toggle('gl-hidden', !show);
 }
 
 export function toggleProviderIdGroup() {

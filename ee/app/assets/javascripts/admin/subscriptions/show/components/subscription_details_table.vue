@@ -98,7 +98,7 @@ export default {
     :fields="$options.fields"
     :items="details"
     class="gl-m-0!"
-    thead-class="gl-display-none"
+    thead-class="gl-hidden"
     :tbody-tr-attr="rowAttr"
     :tbody-tr-class="rowClass"
   >

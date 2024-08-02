@@ -3,8 +3,8 @@
 - count = is_upstream_mode ? @project.upstream_projects_count : @project.downstream_projects_count
 - subscriptions = is_upstream_mode ? @project.upstream_project_subscriptions : @project.downstream_project_subscriptions
 - empty_text = is_upstream_mode ? _("This project is not subscribed to any project pipelines.") : _("No project subscribes to the pipelines in this project.")
-- add_form_class = 'gl-display-none' if !form_errors(@project)
-- hide_class = 'gl-display-none' if form_errors(@project)
+- add_form_class = 'gl-hidden' if !form_errors(@project)
+- hide_class = 'gl-hidden' if form_errors(@project)
 
 = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card js-toggle-container', data: { testid: "#{mode}-project-subscriptions" } }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
   - c.with_header do

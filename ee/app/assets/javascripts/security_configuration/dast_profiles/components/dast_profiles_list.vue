@@ -310,7 +310,7 @@ export default {
       :static="true"
       :lazy="true"
       ok-variant="danger"
-      body-class="gl-display-none"
+      body-class="gl-hidden"
       @ok="handleDelete"
       @cancel="handleCancel"
     />

@@ -220,7 +220,7 @@ export default {
     {
       key: 'viewDetails',
       label: '',
-      thClass: 'gl-display-none',
+      thClass: 'gl-hidden',
       tdClass: 'md:gl-hidden view-details',
     },
   ],

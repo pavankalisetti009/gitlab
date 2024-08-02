@@ -7,7 +7,7 @@
   = gl_loading_icon(size: 'lg')
   .gl-text-center.gl-mt-7
     %h4= _('Reauthenticating with SAML provider.')
-  = saml_link _('Sign in with single sign-on'), @group_path, id: 'js-auto-redirect-to-provider', html_class: 'gl-display-none', redirect: @redirect_path
+  = saml_link _('Sign in with single sign-on'), @group_path, id: 'js-auto-redirect-to-provider', html_class: 'gl-hidden', redirect: @redirect_path
 - else
   = render 'devise/shared/tab_single', tab_title: _('SAML single sign-on')
   - if user_signed_in?

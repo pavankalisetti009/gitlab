@@ -182,7 +182,7 @@ export default {
         type="file"
         name="corpus_file"
         :accept="$options.VALID_CORPUS_MIMETYPE.mimetype"
-        class="gl-display-none"
+        class="gl-hidden"
         @change="onFileUploadChange"
       />
     </gl-form-group>

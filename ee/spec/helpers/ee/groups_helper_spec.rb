@@ -644,7 +644,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     let(:result) { "<span class=\"js-helper-text gl-clearfix\">#{text}</span>" }
 
     specify { expect(helper.saml_sso_settings_generate_helper_text(display_none: false, text: text)).to eq result }
-    specify { expect(helper.saml_sso_settings_generate_helper_text(display_none: true, text: text)).to include('gl-display-none') }
+    specify { expect(helper.saml_sso_settings_generate_helper_text(display_none: true, text: text)).to include('gl-hidden') }
   end
 
   describe '#group_transfer_app_data' do

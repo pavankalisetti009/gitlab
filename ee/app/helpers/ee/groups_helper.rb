@@ -158,7 +158,7 @@ module EE
     end
 
     def saml_sso_settings_generate_helper_text(display_none:, text:)
-      content_tag(:span, text, class: ['js-helper-text', 'gl-clearfix', ('gl-display-none' if display_none)])
+      content_tag(:span, text, class: ['js-helper-text', 'gl-clearfix', ('gl-hidden' if display_none)])
     end
 
     def group_transfer_app_data(group)
