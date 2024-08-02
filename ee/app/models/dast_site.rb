@@ -17,7 +17,12 @@ class DastSite < ApplicationRecord
   private
 
   def cleanup_dast_site_token
-    DastSiteToken.where(project_id: project.id, url: url).delete_all
+    Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+      %w[dast_site_tokens],
+      url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985'
+    ) do
+      DastSiteToken.where(project_id: project.id, url: url).delete_all
+    end
   end
 
   def dast_site_validation_project_id_fk

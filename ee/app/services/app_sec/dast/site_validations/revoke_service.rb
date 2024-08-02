@@ -14,7 +14,11 @@ module AppSec
             url_base: url_base
           )
 
-          result = finder.execute.delete_all
+          result = ::Gitlab::Database.allow_cross_joins_across_databases(
+            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985'
+          ) do
+            finder.execute.delete_all
+          end
 
           ServiceResponse.success(payload: { count: result })
         rescue MissingParamError => err

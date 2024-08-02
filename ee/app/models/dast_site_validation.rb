@@ -10,7 +10,9 @@ class DastSiteValidation < ApplicationRecord
   validates :validation_strategy, presence: true
 
   scope :by_project_id, ->(project_id) do
-    joins(:dast_site_token).where(dast_site_tokens: { project_id: project_id })
+    joins(:dast_site_token)
+      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985')
+      .where(dast_site_tokens: { project_id: project_id })
   end
 
   scope :by_url_base, ->(url_base) do

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class DastSiteToken < ApplicationRecord
+class DastSiteToken < Gitlab::Database::SecApplicationRecord
   include AppSec::Dast::UrlAddressable
 
   belongs_to :project

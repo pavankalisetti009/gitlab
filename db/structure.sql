@@ -35439,9 +35439,6 @@ ALTER TABLE ONLY boards_epic_board_recent_visits
 ALTER TABLE ONLY audit_events_streaming_instance_event_type_filters
     ADD CONSTRAINT fk_rails_e7bb18c0e1 FOREIGN KEY (instance_external_audit_event_destination_id) REFERENCES audit_events_instance_external_audit_event_destinations(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY dast_site_tokens
-    ADD CONSTRAINT fk_rails_e84f721a8e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY group_deploy_keys_groups
     ADD CONSTRAINT fk_rails_e87145115d FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
