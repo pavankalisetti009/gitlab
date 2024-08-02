@@ -168,6 +168,35 @@ The change will be introduced in GitLab 16.6 behind a feature flag. If you are i
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### CodeClimate-based Code Quality scanning will be removed
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.3</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/471677).
+
+</div>
+
+In GitLab 18.0, we will remove CodeClimate-based Code Quality scanning.
+However, you'll still be able to import results from quality tools by [providing a report as an artifact](https://docs.gitlab.com/ee/ci/testing/code_quality.html#implement-a-custom-tool), just as you can today.
+In addition, you can also see this [epic](https://gitlab.com/groups/gitlab-org/-/epics/8790) for new directions considered for Code Quality.
+
+We expect to implement this change by:
+
+1. Changing the [`Code-Quality.gitlab-ci.yml` CI/CD template](https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Jobs/Code-Quality.gitlab-ci.yml) to no longer execute scans. Today, this template runs CodeClimate-based scans. (We plan to change the template rather than delete it to reduce the impact on any pipelines that still `include` the template after 18.0.)
+1. No longer running CodeClimate-based scanning as part of Auto DevOps.
+
+Effective immediately, CodeClimate-based scanning will receive only [limited updates](https://docs.gitlab.com/ee/update/terminology.html#deprecation).
+After End of Support in GitLab 18.0, we won't provide further updates.
+However, we won't delete previously published container images or remove the ability to run them by using custom CI/CD pipeline job definitions.
+
+For more details and required actions, see the [deprecation issue for this change](https://gitlab.com/gitlab-org/gitlab/-/issues/471677#action-required).
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Compliance pipelines
 
 <div class="deprecation-notes">
