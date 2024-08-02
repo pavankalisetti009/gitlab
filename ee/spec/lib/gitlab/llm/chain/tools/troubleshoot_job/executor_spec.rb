@@ -143,16 +143,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
         end
       end
 
-      context 'when the feature is disabled' do
-        before do
-          stub_feature_flags(root_cause_analysis_duo: false)
-        end
-
-        it 'returns an error message' do
-          expect(tool.execute.content).to eq('This feature is not enabled yet.')
-        end
-      end
-
       context 'when the job is not failed' do
         let(:build) { create(:ci_build, :running, project: project) }
 

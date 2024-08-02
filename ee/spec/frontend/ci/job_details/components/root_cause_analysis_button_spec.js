@@ -23,12 +23,6 @@ describe('Root cause analysis button', () => {
         ...props,
       },
       provide: {
-        aiRootCauseAnalysisAvailable: true,
-        duoFeaturesEnabled: true,
-        glFeatures: {
-          aiBuildFailureCause: true,
-          rootCauseAnalysisDuo: true,
-        },
         glAbilities: {
           troubleshootJobWithAi: true,
         },

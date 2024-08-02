@@ -27,14 +27,13 @@ module EE
           ).allowed?
         end
 
-        condition(:troubleshoot_job_available, scope: :subject) do
-          ::Feature.enabled?(:root_cause_analysis_duo, @user) &&
-            subject.project.licensed_feature_available?(:troubleshoot_job)
+        condition(:troubleshoot_job_licensed, scope: :subject) do
+          subject.project.licensed_feature_available?(:troubleshoot_job)
         end
 
         rule do
           can?(:read_build_trace) &
-            troubleshoot_job_available &
+            troubleshoot_job_licensed &
             troubleshoot_job_cloud_connector_authorized &
             troubleshoot_job_with_ai_authorized
         end.enable(:troubleshoot_job_with_ai)

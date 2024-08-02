@@ -22,13 +22,6 @@ RSpec.describe Projects::JobsController, feature_category: :continuous_integrati
         end
       end
 
-      it 'pushes the root_cause_analysis_duo feature flag' do
-        expect(controller).to receive(:push_frontend_feature_flag).with(:root_cause_analysis_duo, user)
-        expect(controller).to receive(:push_frontend_feature_flag).and_call_original
-
-        get_show(id: job.id, format: :json)
-      end
-
       it 'sets the ApplicationContext with an ai_resource key' do
         get_show(id: job.id, format: :json)
 

@@ -24,9 +24,6 @@ describe('EE JobLogTopBar', () => {
         ...props,
       },
       provide: {
-        aiRootCauseAnalysisAvailable: true,
-        duoFeaturesEnabled: true,
-        rootCauseAnalysisDuo: false,
         jobGid: 'gid://gitlab/Ci::Build/123',
         glAbilities: {
           troubleshootJobWithAi: false,

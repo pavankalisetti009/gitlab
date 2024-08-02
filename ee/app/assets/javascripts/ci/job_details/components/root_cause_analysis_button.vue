@@ -9,23 +9,12 @@ export default {
     GlButton,
   },
   mixins: [glAbilitiesMixin(), glFeatureFlagMixin()],
-  inject: ['aiRootCauseAnalysisAvailable', 'duoFeaturesEnabled', 'jobGid'],
+  inject: ['jobGid'],
   props: {
     jobFailed: {
       type: Boolean,
       required: false,
       default: false,
-    },
-  },
-  computed: {
-    rootCauseAnalysisDuoIsAvailable() {
-      return (
-        this.glFeatures.aiBuildFailureCause &&
-        this.aiRootCauseAnalysisAvailable &&
-        this.duoFeaturesEnabled &&
-        this.glFeatures.rootCauseAnalysisDuo &&
-        this.glAbilities.troubleshootJobWithAi
-      );
     },
   },
   methods: {
@@ -40,7 +29,7 @@ export default {
 </script>
 <template>
   <gl-button
-    v-if="rootCauseAnalysisDuoIsAvailable && jobFailed"
+    v-if="glAbilities.troubleshootJobWithAi && jobFailed"
     icon="tanuki-ai"
     class="gl-mr-3"
     variant="confirm"

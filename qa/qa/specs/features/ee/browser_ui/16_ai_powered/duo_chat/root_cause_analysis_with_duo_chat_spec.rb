@@ -35,7 +35,6 @@ module QA
 
       before do
         Runtime::Feature.enable(:ai_build_failure_cause, project: project)
-        Runtime::Feature.enable(:root_cause_analysis_duo, project: project)
 
         Flow::Login.sign_in
         clear_chat
