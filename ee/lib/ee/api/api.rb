@@ -40,6 +40,7 @@ module EE
         mount ::API::ProviderIdentity
         mount ::API::GroupHooks
         mount ::API::MergeRequestApprovalSettings
+        mount ::API::MergeRequestDependencies
         mount ::API::Scim::GroupScim
         mount ::API::Scim::InstanceScim
         mount ::API::ServiceAccounts
