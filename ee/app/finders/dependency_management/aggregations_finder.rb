@@ -32,7 +32,7 @@ module DependencyManagement
         '[]') AS licenses
       SQL
 
-      Sbom::Occurrence.with(namespaces_cte.to_arel)
+      Sbom::Occurrence
         .select(
           *group_columns,
           'MIN(outer_occurrences.id)::bigint AS id',
@@ -77,13 +77,13 @@ module DependencyManagement
       )
     end
 
-    def namespaces_cte
-      ::Gitlab::SQL::CTE.new(:namespaces, namespace.self_and_descendants.select(:traversal_ids))
+    def namespaces
+      Sbom::Occurrence.for_namespace_and_descendants(namespace).unarchived.loose_index_scan(column: :traversal_ids)
     end
 
     def inner_occurrences
       relation = Sbom::Occurrence
-        .where('sbom_occurrences.traversal_ids = namespaces.traversal_ids::bigint[]')
+        .where('sbom_occurrences.traversal_ids = namespaces.traversal_ids')
         .unarchived
 
       relation = filter_by_licences(relation)
@@ -116,7 +116,7 @@ module DependencyManagement
       end
 
       Sbom::Occurrence.select(distinct(on: distinct_columns, table_name: 'inner_occurrences'))
-      .from("namespaces, LATERAL (#{inner_occurrences.to_sql}) inner_occurrences")
+      .from("(#{namespaces.to_sql}) AS namespaces, LATERAL (#{inner_occurrences.to_sql}) inner_occurrences")
       .order(*order)
       .limit(page_size + 1)
     end
