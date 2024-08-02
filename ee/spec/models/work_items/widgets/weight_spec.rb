@@ -47,6 +47,22 @@ RSpec.describe WorkItems::Widgets::Weight, feature_category: :team_planning do
     describe '#rolled_up_weight' do
       subject(:rolled_up_weight) { work_item.get_widget(:weight).rolled_up_weight }
 
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:work_item, refind: true) { create(:work_item, :epic, namespace: group) }
+
+      let_it_be(:direct_child_issue) { create(:work_item, :issue, project: project, weight: 2) }
+      let_it_be(:sub_epic) { create(:work_item, :epic, namespace: group) }
+      let_it_be(:sub_epic_issue) { create(:work_item, :issue, project: project, weight: 5) }
+      let_it_be(:sub_epic_issue_task) { create(:work_item, :task, project: project, weight: 1) }
+
+      before_all do
+        create(:parent_link, work_item_parent: work_item, work_item: direct_child_issue)
+        create(:parent_link, work_item_parent: work_item, work_item: sub_epic)
+        create(:parent_link, work_item_parent: sub_epic, work_item: sub_epic_issue)
+        create(:parent_link, work_item_parent: sub_epic_issue, work_item: sub_epic_issue_task)
+      end
+
       context 'when work item does not support rolled up weight' do
         let(:widget_options) { { editable: false, rollup: false } }
 
@@ -58,8 +74,29 @@ RSpec.describe WorkItems::Widgets::Weight, feature_category: :team_planning do
       context 'when work item supports rolled up weight' do
         let(:widget_options) { { editable: false, rollup: true } }
 
-        it 'returns 0' do
-          expect(rolled_up_weight).to eq(0)
+        it 'returns the sum of all descendant issue weights' do
+          expect(rolled_up_weight).to eq(7)
+        end
+
+        context 'when work item has no descendants' do
+          before do
+            WorkItems::ParentLink.delete_all
+          end
+
+          it 'returns nil' do
+            expect(rolled_up_weight).to be_nil
+          end
+        end
+
+        context 'when descendant issues have no weight set' do
+          before do
+            direct_child_issue.update!(weight: nil)
+            sub_epic_issue.update!(weight: nil)
+          end
+
+          it 'returns nil' do
+            expect(rolled_up_weight).to be_nil
+          end
         end
       end
     end

@@ -20,8 +20,11 @@ module WorkItems
       def rolled_up_weight
         return unless widget_options[:rollup]
 
-        # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/439559
-        0
+        # We cannot use `#sum(:weight)` because ActiveRecord returns 0 when PG returns NULL.
+        # We need to distinguish between a sum of 0 and the absence of descendant weights.
+        work_item.descendants
+          .where(work_item_type_id: WorkItems::Type.default_issue_type)
+          .pick('SUM(weight)')
       end
     end
   end
