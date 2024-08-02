@@ -23,7 +23,6 @@ RSpec.describe ReindexWikisToFixRoutingAndBackfillArchived, :elastic_clean, :sid
   let_it_be(:project_wiki3) { create(:project_wiki, project: project3) }
 
   before do
-    stub_feature_flags(wiki_redirection: false)
     stub_ee_application_setting(elasticsearch_search: true, elasticsearch_indexing: true)
     allow(::Gitlab::CurrentSettings).to receive(:elasticsearch_indexes_project?).with(anything).and_return true
     allow(::Gitlab::CurrentSettings).to receive(:elasticsearch_indexes_namespace?).with(anything).and_return true
@@ -72,10 +71,10 @@ RSpec.describe ReindexWikisToFixRoutingAndBackfillArchived, :elastic_clean, :sid
 
       it 'performs logging and calls ElasticWikiIndexerWorker' do
         expect(migration).to receive(:log)
-          .with("Setting migration_state to #{{ documents_remaining: 2 * total_rids }.to_json}").once
+          .with("Setting migration_state to #{{ documents_remaining: 3 * total_rids }.to_json}").once
         expect(migration).to receive(:log).with("Setting migration_state to #{{ batch_size: batch_size }.to_json}").once
         expect(migration).to receive(:log).with('Checking if migration is finished',
-          { total_remaining: 2 * total_rids }).once
+          { total_remaining: 3 * total_rids }).once
         delay = a_value_between(0, migration.throttle_delay.seconds)
         expect(ElasticWikiIndexerWorker).to receive(:perform_in).exactly(batch_size).times.with(delay, anything,
           anything, force: true)
