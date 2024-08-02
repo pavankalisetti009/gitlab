@@ -82,18 +82,19 @@ RSpec.describe Elastic::NamespaceUpdateWorker, feature_category: :global_search 
       end
     end
 
-    describe 'for epics' do
+    describe 'for epics and work items' do
       let_it_be(:group) { create(:group) }
       let_it_be(:namespace) { create(:namespace) }
 
-      it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_group_associations! if the namespace is a group' do
-        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_group_associations!).with(group).once
+      it 'calls ProcessBookkeepingService.maintain_indexed_namespace_associations! if the namespace is a group' do
+        expect(Elastic::ProcessBookkeepingService).to receive(
+          :maintain_indexed_namespace_associations!).with(group).once
 
         subject.perform(group.id)
       end
 
-      it 'does not call maintain_indexed_group_associations! if the namespace is not a group' do
-        expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_group_associations!)
+      it 'calls maintain_indexed_namespace_associations! even if the namespace is not a group for work items' do
+        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
 
         subject.perform(namespace.id)
       end

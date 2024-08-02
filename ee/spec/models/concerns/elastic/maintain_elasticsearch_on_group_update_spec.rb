@@ -57,16 +57,18 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
       end
 
       context 'when visibility_level is changed' do
-        it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_group_associations!' do
-          expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_group_associations!).with(group).once
+        it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
+          expect(Elastic::ProcessBookkeepingService).to receive(
+            :maintain_indexed_namespace_associations!).with(group).once
 
           group.update_attribute(:visibility_level, new_visibility_level)
         end
       end
 
       context 'when visibility_level is not changed' do
-        it 'does not call Elastic::ProcessBookkeepingService.maintain_indexed_group_associations!' do
-          expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_group_associations!).with(group)
+        it 'does not call Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!' do
+          expect(Elastic::ProcessBookkeepingService).not_to receive(
+            :maintain_indexed_namespace_associations!).with(group)
 
           group.update_attribute(:name, "#{group.name}_new")
         end

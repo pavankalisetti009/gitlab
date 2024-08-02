@@ -37,7 +37,7 @@ module Elastic
     end
 
     def maintain_indexed_associations
-      Elastic::ProcessBookkeepingService.maintain_indexed_group_associations!(self)
+      Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!(self)
     end
 
     def delete_group_associations

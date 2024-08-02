@@ -44,9 +44,7 @@ class ElasticNamespaceIndexerWorker # rubocop:disable Scalability/IdempotentWork
   end
 
   def index_group_associations(namespace)
-    return unless namespace.group_namespace?
-
-    Elastic::ProcessBookkeepingService.maintain_indexed_group_associations!(namespace)
+    Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations!(namespace)
   end
 
   def delete_from_index(namespace)
