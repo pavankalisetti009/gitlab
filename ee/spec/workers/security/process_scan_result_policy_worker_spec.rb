@@ -62,12 +62,11 @@ RSpec.describe Security::ProcessScanResultPolicyWorker, feature_category: :secur
     describe 'metrics' do
       let(:histograms) { Security::SecurityOrchestrationPolicies::ObserveHistogramsService::HISTOGRAMS }
       let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
-      let(:labels) { { project_id: configuration.project_id, configuration_id: configuration.id } }
 
       specify do
         hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
 
-        expect(hist).to receive(:observe).with(labels, kind_of(Float)).and_call_original
+        expect(hist).to receive(:observe).with({}, kind_of(Float)).and_call_original
 
         worker.perform(configuration.project_id, configuration.id)
       end

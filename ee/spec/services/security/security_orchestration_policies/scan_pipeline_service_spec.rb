@@ -45,9 +45,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
       end
     end
 
-    context 'when there is an invalid action' do
-      let(:actions) { [{ scan: 'invalid' }] }
-
+    shared_examples 'does not create scan jobs' do
       it 'does not create scan job' do
         expect(::Security::SecurityOrchestrationPolicies::CiConfigurationService).not_to receive(:new)
         expect(::Security::SecurityOrchestrationPolicies::OnDemandScanPipelineConfigurationService).not_to receive(:new)
@@ -55,6 +53,32 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
         [pipeline_scan_config, on_demand_config].each do |config|
           expect(config.keys).to eq([])
         end
+      end
+    end
+
+    shared_examples 'returns empty result' do
+      it 'returns empty result' do
+        expect(subject.values_at(:pipeline_scan, :on_demand, :variables)).to all(be_empty)
+      end
+    end
+
+    context 'when there is an invalid action' do
+      let(:actions) { [{ scan: 'invalid' }] }
+
+      include_examples 'does not create scan jobs'
+      include_examples 'returns empty result'
+    end
+
+    context 'when there are no actions' do
+      let(:actions) { [] }
+
+      include_examples 'does not create scan jobs'
+      include_examples 'returns empty result'
+
+      it 'does not observe histogram' do
+        expect(::Security::SecurityOrchestrationPolicies::ObserveHistogramsService).not_to receive(:measure)
+
+        subject
       end
     end
 
@@ -191,14 +215,28 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ScanPipelineService,
     end
 
     describe 'metrics' do
-      let(:actions) { [{ scan: 'secret_detection' }, { scan: 'container_scanning' }] }
+      let(:actions) { [{ scan: 'container_scanning' }] }
       let(:description) { histograms.dig(described_class::HISTOGRAM, :description) }
-      let(:labels) { { project_id: project.id, action_count: actions.count } }
 
       specify do
         hist = Security::SecurityOrchestrationPolicies::ObserveHistogramsService.histogram(described_class::HISTOGRAM)
 
-        expect(hist).to receive(:observe).with(labels, kind_of(Float)).and_call_original
+        expect(hist).to receive(:observe).with({}, kind_of(Float)).and_call_original
+
+        subject
+      end
+    end
+
+    describe 'logging' do
+      let(:actions) { [{ scan: 'container_scanning' }] }
+
+      it 'logs duration, project ID and action count' do
+        expect(Gitlab::AppJsonLogger).to receive(:debug).with(
+          hash_including(
+            "class" => described_class.name,
+            "duration" => kind_of(Float),
+            "project_id" => project.id,
+            "action_count" => 1))
 
         subject
       end
