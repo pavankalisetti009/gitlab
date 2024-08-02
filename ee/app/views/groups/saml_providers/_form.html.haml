@@ -7,7 +7,7 @@
       - enable_saml_help_text = s_('GroupSAML|Before enforcing SSO, enable SAML authentication.')
       - web_activity_warning_link_start = '<a href="%{url}" target="_blank" rel="noopener noreferrer">'.html_safe % { url: help_page_path('user/group/saml_sso/index', anchor: 'sso-enforcement') }
       - web_activity_warning_text = html_escape(s_('GroupSAML|%{strongOpen}Warning%{strongClose} - Enable %{linkStart}SSO enforcement%{linkEnd} to reduce security risks.')) % { strongOpen: '<strong>'.html_safe, strongClose: '</strong>'.html_safe, linkStart: web_activity_warning_link_start, linkEnd: '</a>'.html_safe }
-      - web_activity_warning_tag = '<span class="js-warning %{class}">%{text}</span>'.html_safe % { class: saml_provider.enforced_sso? && 'gl-display-none', text: web_activity_warning_text }
+      - web_activity_warning_tag = '<span class="js-warning %{class}">%{text}</span>'.html_safe % { class: saml_provider.enforced_sso? && 'gl-hidden', text: web_activity_warning_text }
       - web_activity_help_text = '%{enable_saml_help_text_tag}%{web_activity_warning_tag}'.html_safe % { enable_saml_help_text_tag: saml_sso_settings_generate_helper_text(display_none: saml_provider.enabled?, text: enable_saml_help_text), web_activity_warning_tag: web_activity_warning_tag }
       = f.gitlab_ui_checkbox_component :enforced_sso, s_('GroupSAML|Enforce SSO-only authentication for web activity for this group'), help_text: web_activity_help_text, checkbox_options: { checked: saml_provider.new_record? || saml_provider.enforced_sso?, class: 'js-group-saml-enforced-sso-input', data: { testid: 'enforced-sso-checkbox' } }
 

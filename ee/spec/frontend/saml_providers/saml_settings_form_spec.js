@@ -44,12 +44,12 @@ describe('SamlSettingsForm', () => {
   };
 
   const expectTestButtonDisabled = () => {
-    expect(samlSettingsForm.testButtonDisabled.classList.contains('gl-display-none')).toBe(false);
-    expect(samlSettingsForm.testButton.classList.contains('gl-display-none')).toBe(true);
+    expect(samlSettingsForm.testButtonDisabled.classList.contains('gl-hidden')).toBe(false);
+    expect(samlSettingsForm.testButton.classList.contains('gl-hidden')).toBe(true);
   };
   const expectTestButtonEnabled = () => {
-    expect(samlSettingsForm.testButtonDisabled.classList.contains('gl-display-none')).toBe(true);
-    expect(samlSettingsForm.testButton.classList.contains('gl-display-none')).toBe(false);
+    expect(samlSettingsForm.testButtonDisabled.classList.contains('gl-hidden')).toBe(true);
+    expect(samlSettingsForm.testButton.classList.contains('gl-hidden')).toBe(false);
   };
 
   describe('updateView', () => {
@@ -76,21 +76,21 @@ describe('SamlSettingsForm', () => {
 
   it('correctly disables dependent toggle and shows helper text', () => {
     expect(findEnforcedSsoSetting().el.hasAttribute('disabled')).toBe(false);
-    expect(findEnforcedSsoSetting().helperText.classList.contains('gl-display-none')).toBe(true);
+    expect(findEnforcedSsoSetting().helperText.classList.contains('gl-hidden')).toBe(true);
 
     uncheckSetting(findGroupSamlSetting());
 
     expect(findEnforcedSsoSetting().el.hasAttribute('disabled')).toBe(true);
-    expect(findEnforcedSsoSetting().helperText.classList.contains('gl-display-none')).toBe(false);
+    expect(findEnforcedSsoSetting().helperText.classList.contains('gl-hidden')).toBe(false);
     expect(findEnforcedSsoSetting().value).toBe(true);
   });
 
   it('correctly shows warning text when checkbox is unchecked', () => {
-    expect(findEnforcedSsoSetting().warning.classList.contains('gl-display-none')).toBe(true);
+    expect(findEnforcedSsoSetting().warning.classList.contains('gl-hidden')).toBe(true);
 
     uncheckSetting(findEnforcedSsoSetting());
 
-    expect(findEnforcedSsoSetting().warning.classList.contains('gl-display-none')).toBe(false);
+    expect(findEnforcedSsoSetting().warning.classList.contains('gl-hidden')).toBe(false);
   });
 
   it('correctly disables multiple dependent toggles', () => {

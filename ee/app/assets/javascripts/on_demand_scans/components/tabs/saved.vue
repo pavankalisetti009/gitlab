@@ -286,7 +286,7 @@ export default {
       :title="$options.i18n.deleteModalTitle"
       :ok-title="$options.i18n.deleteButtonLabel"
       ok-variant="danger"
-      body-class="gl-display-none"
+      body-class="gl-hidden"
       lazy
       @ok="deleteProfile"
       @cancel="cancelDeletion"

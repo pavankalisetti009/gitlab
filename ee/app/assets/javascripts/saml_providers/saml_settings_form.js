@@ -21,9 +21,9 @@ function getCallout(el) {
 
 function toggleElementVisibility(el, show) {
   if (show) {
-    el?.classList.remove('gl-display-none');
+    el?.classList.remove('gl-hidden');
   } else {
-    el?.classList.add('gl-display-none');
+    el?.classList.add('gl-hidden');
   }
 }
 

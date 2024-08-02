@@ -4,10 +4,10 @@ export function initRemoveButtonBehavior() {
   function removeRowSuccessCallback() {
     this.closest('tr').classList.add('!gl-hidden');
 
-    const labelsCount = document.querySelectorAll('.js-domain-row:not(.gl-display-none\\!)').length;
+    const labelsCount = document.querySelectorAll('.js-domain-row:not(.gl-hidden\\!)').length;
 
     if (labelsCount < 1 && emptyState) {
-      emptyState.classList.remove('gl-display-none');
+      emptyState.classList.remove('gl-hidden');
     }
   }
 

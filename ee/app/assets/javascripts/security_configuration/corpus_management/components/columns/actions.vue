@@ -65,7 +65,7 @@ export default {
 
     <gl-modal
       header-class="gl-border-b-initial"
-      body-class="gl-display-none"
+      body-class="gl-hidden"
       size="sm"
       :title="$options.i18n.deleteCorpusMessage"
       :modal-id="directiveName"
