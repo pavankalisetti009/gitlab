@@ -180,15 +180,13 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-py-5 gl-border-b">
-    <gl-filtered-search
-      :value="value"
-      :available-tokens="availableTokens"
-      :placeholder="s__('Analytics|Start by choosing a measure')"
-      :clear-button-title="__('Clear')"
-      terms-as-tokens
-      @submit="onSubmit"
-      @input="onInput"
-    />
-  </div>
+  <gl-filtered-search
+    :value="value"
+    :available-tokens="availableTokens"
+    :placeholder="s__('Analytics|Start by choosing a measure')"
+    :clear-button-title="__('Clear')"
+    terms-as-tokens
+    @submit="onSubmit"
+    @input="onInput"
+  />
 </template>
