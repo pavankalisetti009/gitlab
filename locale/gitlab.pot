@@ -6245,9 +6245,6 @@ msgstr ""
 msgid "Analytics|Visualization title"
 msgstr ""
 
-msgid "Analytics|Visualization type"
-msgstr ""
-
 msgid "Analytics|Visualization was saved successfully"
 msgstr ""
 

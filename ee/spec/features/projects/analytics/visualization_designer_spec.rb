@@ -36,7 +36,7 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
     it 'renders the type selector' do
       visit_page
 
-      expect(page).to have_content('Visualization type')
+      expect(page).to have_content('Data table')
     end
   end
 

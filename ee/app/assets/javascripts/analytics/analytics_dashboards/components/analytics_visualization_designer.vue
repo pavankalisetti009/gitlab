@@ -320,7 +320,7 @@ export default {
         </gl-sprintf>
       </p>
     </header>
-    <section class="gl-display-flex gl-mb-6">
+    <section class="gl-flex">
       <div class="gl-display-flex flex-fill gl-flex-direction-column">
         <gl-form-group
           :label="s__('Analytics|Visualization title')"
@@ -343,18 +343,6 @@ export default {
             :state="!titleValidationError"
             required
             @input="validateTitle"
-          />
-        </gl-form-group>
-        <gl-form-group
-          :label="s__('Analytics|Visualization type')"
-          class="gl-w-full gl-md-max-w-70p gl-lg-w-30p gl-min-w-20 gl-m-0"
-          data-testid="visualization-type-form-group"
-        >
-          <visualization-type-selector
-            ref="typeSelector"
-            v-model="selectedVisualizationType"
-            data-testid="visualization-type-dropdown"
-            @input="onVisualizationTypeChange"
           />
         </gl-form-group>
       </div>
@@ -380,15 +368,29 @@ export default {
         @vizStateChange="onVizStateChange"
       >
         <template #builder="{ availableMeasures, availableDimensions, availableTimeDimensions }">
-          <visualization-filtered-search
-            :query="queryState.query"
-            :available-measures="availableMeasures"
-            :available-dimensions="availableDimensions"
-            :available-time-dimensions="availableTimeDimensions"
-            data-testid="visualization-filtered-search"
-            @input="onFilterChange"
-            @submit="onFilterChange"
-          />
+          <div class="gl-flex gl-w-full gl-gap-3 gl-py-4 gl-flex-col md:gl-flex-row gl-border-b">
+            <gl-form-group
+              class="gl-w-full md:gl-max-w-20 gl-m-0"
+              data-testid="visualization-type-form-group"
+            >
+              <visualization-type-selector
+                ref="typeSelector"
+                v-model="selectedVisualizationType"
+                data-testid="visualization-type-dropdown"
+                @input="onVisualizationTypeChange"
+              />
+            </gl-form-group>
+            <visualization-filtered-search
+              :query="queryState.query"
+              :available-measures="availableMeasures"
+              :available-dimensions="availableDimensions"
+              :available-time-dimensions="availableTimeDimensions"
+              data-testid="visualization-filtered-search"
+              class="gl-py-3 gl-w-full"
+              @input="onFilterChange"
+              @submit="onFilterChange"
+            />
+          </div>
         </template>
 
         <template #default="{ resultSet, isQueryPresent, loading }">
