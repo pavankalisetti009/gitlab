@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Dependency Project Count component renders toggle text 1`] = `
+<span
+  class="gl-text-blue-500 md:gl-whitespace-nowrap"
+  data-testid="toggle-text"
+>
+  <gl-icon-stub
+    name="project"
+    size="16"
+    variant="current"
+  />
+  <span
+    class="md:gl-hidden"
+  >
+    1
+  </span>
+  <span
+    class="gl-hidden md:gl-inline-flex"
+  >
+    1 project
+  </span>
+</span>
+`;

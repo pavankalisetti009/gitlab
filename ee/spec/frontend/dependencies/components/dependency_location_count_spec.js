@@ -45,7 +45,7 @@ describe('Dependency Location Count component', () => {
     });
   };
 
-  const findIcon = () => wrapper.findComponent(GlIcon);
+  const findToggleText = () => wrapper.findByTestId('toggle-text');
   const findLocationList = () => wrapper.findComponent(GlCollapsibleListbox);
   const findLocationInfo = () => wrapper.findComponent(GlLink);
   const findUnknownLocationInfo = () => wrapper.findByTestId('unknown-path');
@@ -59,11 +59,10 @@ describe('Dependency Location Count component', () => {
     mockAxios.restore();
   });
 
-  it('renders location text and icon', () => {
+  it('renders toggle text', () => {
     createComponent();
 
-    expect(findLocationList().props('headerText')).toBe('2 locations');
-    expect(findIcon().props('name')).toBe('doc-text');
+    expect(findToggleText().html()).toMatchSnapshot();
   });
 
   it.each`
