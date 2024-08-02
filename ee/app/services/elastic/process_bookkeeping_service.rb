@@ -114,12 +114,13 @@ module Elastic
         end
       end
 
-      def maintain_indexed_group_associations!(*groups)
-        groups.each do |group|
-          next unless group.is_a?(Group)
-          next unless group.use_elasticsearch?
+      def maintain_indexed_namespace_associations!(*namespaces, associations_to_index: [:epics, :work_items])
+        namespaces.each do |namespace|
+          next unless namespace.use_elasticsearch?
 
-          ElasticAssociationIndexerWorker.perform_async(group.class.name, group.id, [:epics])
+          # Epics are only for group level namespaces
+          filtered_associations = namespace.group_namespace? ? associations_to_index : associations_to_index - [:epics]
+          ElasticAssociationIndexerWorker.perform_async(namespace.class.name, namespace.id, filtered_associations)
         end
       end
 

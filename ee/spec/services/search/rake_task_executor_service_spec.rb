@@ -689,10 +689,10 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
   describe '#index_epics' do
     let!(:epic) { create(:epic) }
 
-    it 'calls maintain_indexed_group_associations for groups' do
+    it 'calls maintain_indexed_namespace_associations for groups' do
       expect(logger).to receive(:info).with(/Indexing epics/).twice
-      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_group_associations!)
-        .with(epic.group)
+      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
+        .with(epic.group, associations_to_index: [:epics])
 
       service.execute(:index_epics)
     end
@@ -702,7 +702,7 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
 
       create_list(:epic, 3)
 
-      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_group_associations!)
+      expect(Elastic::ProcessInitialBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
 
       expect { service.execute(:index_epics) }.to issue_same_number_of_queries_as(control)
     end
@@ -719,11 +719,13 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
         stub_ee_application_setting(elasticsearch_limit_indexing: true)
       end
 
-      it 'does not call maintain_indexed_group_associations for groups that should not be indexed' do
+      it 'does not call maintain_indexed_namespace_associations for groups that should not be indexed' do
         expect(logger).to receive(:info).with(/Indexing epics/).twice
-        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_group_associations!)
-          .with(group1, group3)
-
+        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!) do |*params|
+          expect(params.count).to eq(3)
+          expect([params[0], params[1]]).to contain_exactly(group1, group3)
+          expect(params[2]).to eq(associations_to_index: [:epics])
+        end
         service.execute(:index_epics)
       end
     end

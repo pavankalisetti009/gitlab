@@ -179,20 +179,20 @@ RSpec.describe Elastic::ProcessBookkeepingService,
     end
   end
 
-  describe '.maintain_indexed_group_associations' do
+  describe '.maintain_indexed_namespace_associations' do
     let_it_be(:group) { create(:group) }
     let_it_be(:epic) { create(:epic, group: group) }
 
     it 'does not call ElasticAssociationIndexerWorker' do
       expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
 
-      described_class.maintain_indexed_group_associations!(group)
+      described_class.maintain_indexed_namespace_associations!(group)
     end
 
     it 'does not call ElasticAssociationIndexerWorker for projects' do
       expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
 
-      described_class.maintain_indexed_group_associations!(create(:project))
+      described_class.maintain_indexed_namespace_associations!(create(:project))
     end
 
     context 'if the group is use_elasticsearch?' do
@@ -202,9 +202,9 @@ RSpec.describe Elastic::ProcessBookkeepingService,
 
       it 'calls ElasticAssociationIndexerWorker' do
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with("Group", group.id, [:epics])
+          .with("Group", group.id, [:epics, :work_items])
 
-        described_class.maintain_indexed_group_associations!(group)
+        described_class.maintain_indexed_namespace_associations!(group)
       end
     end
 
@@ -216,7 +216,7 @@ RSpec.describe Elastic::ProcessBookkeepingService,
       it 'does not call ElasticAssociationIndexerWorker' do
         expect(ElasticAssociationIndexerWorker).not_to receive(:perform_async)
 
-        described_class.maintain_indexed_group_associations!(group)
+        described_class.maintain_indexed_namespace_associations!(group)
       end
     end
   end

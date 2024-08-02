@@ -352,7 +352,8 @@ module Search
                end
 
       groups.each_batch do |batch|
-        ::Elastic::ProcessInitialBookkeepingService.maintain_indexed_group_associations!(*batch)
+        ::Elastic::ProcessInitialBookkeepingService.maintain_indexed_namespace_associations!(*batch,
+          associations_to_index: [:epics])
       end
 
       logger.info("Indexing epics... #{Rainbow('done').green}")

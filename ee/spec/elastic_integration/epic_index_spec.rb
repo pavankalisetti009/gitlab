@@ -213,10 +213,11 @@ RSpec.describe 'Epic index', feature_category: :global_search do
       it 'tracks the epic via ElasticAssociationIndexerWorker' do
         allow(ElasticWikiIndexerWorker).to receive(:perform_async)
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics])
+          .with(anything, group.id, [:epics, :work_items])
           .and_call_original
 
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic.work_item).once
 
         group.update!(visibility_level: Gitlab::VisibilityLevel::PRIVATE)
       end
@@ -247,10 +248,11 @@ RSpec.describe 'Epic index', feature_category: :global_search do
       it 'tracks the epic via Elastic::NamespaceUpdateWorker if the new parent has indexing enabled' do
         expect(Elastic::NamespaceUpdateWorker).to receive(:perform_async).with(group.id).and_call_original
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics])
+          .with(anything, group.id, [:epics, :work_items])
           .and_call_original
 
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic.work_item).once
         group.update!(parent: another_group)
       end
     end
@@ -266,9 +268,10 @@ RSpec.describe 'Epic index', feature_category: :global_search do
         expect(Search::ElasticGroupAssociationDeletionWorker).to receive(:perform_async)
           .with(group.id, parent_group.id, { include_descendants: true }).once
         expect(ElasticAssociationIndexerWorker).to receive(:perform_async)
-          .with(anything, group.id, [:epics])
+          .with(anything, group.id, [:epics, :work_items])
           .and_call_original
 
+        expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic.work_item).once
         expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:track!).with(epic).once
         Groups::TransferService.new(group, user).execute(another_group)

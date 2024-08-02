@@ -14,7 +14,7 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
     it 'returns true' do
       expect(Elastic::ProcessInitialBookkeepingService).not_to receive(:backfill_projects!)
       expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
-      expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_group_associations!)
+      expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_namespace_associations!)
 
       expect(worker.perform(1, "index")).to be_truthy
     end
@@ -37,14 +37,15 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
         worker.perform(namespace.id, :index)
       end
 
-      it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_group_associations! for group namespaces' do
-        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_group_associations!).with(*group).once
+      it 'calls Elastic::ProcessBookkeepingService.maintain_indexed_namespace_associations! for group namespaces' do
+        expect(Elastic::ProcessBookkeepingService).to receive(
+          :maintain_indexed_namespace_associations!).with(*group).once
 
         worker.perform(group.id, :index)
       end
 
-      it 'does not call maintain_indexed_group_associations! for non-group namespaces' do
-        expect(Elastic::ProcessBookkeepingService).not_to receive(:maintain_indexed_group_associations!)
+      it 'calls maintain_indexed_namespace_associations! for non-group namespaces for work_items' do
+        expect(Elastic::ProcessBookkeepingService).to receive(:maintain_indexed_namespace_associations!)
 
         worker.perform(namespace.id, :index)
       end
