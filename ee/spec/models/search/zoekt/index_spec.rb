@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Zoekt::Index, feature_category: :global_search do
+RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   let_it_be(:namespace) { create(:group) }
   let_it_be_with_reload(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
   let_it_be(:zoekt_node) { create(:zoekt_node) }
@@ -18,6 +18,8 @@ RSpec.describe ::Search::Zoekt::Index, feature_category: :global_search do
     it { is_expected.to belong_to(:replica).inverse_of(:indices) }
     it { is_expected.to have_many(:zoekt_repositories).inverse_of(:zoekt_index) }
   end
+
+  it { expect(described_class.new.reserved_storage_bytes).to eq 10.gigabytes }
 
   describe 'validations' do
     it 'validates that zoekt_enabled_namespace root_namespace_id matches namespace_id' do
