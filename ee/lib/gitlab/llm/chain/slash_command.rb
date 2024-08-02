@@ -27,16 +27,11 @@ module Gitlab
         end
 
         def self.platform_origin(message)
-          if vs_code_extension?(message)
+          if message.platform_origin == VS_CODE_EXTENSION
             VS_CODE_EXTENSION
           else
             WEB
           end
-        end
-
-        def self.vs_code_extension?(message)
-          message.platform_origin == VS_CODE_EXTENSION ||
-            message.user_agent&.match?(Gitlab::Regex.vs_code_user_agent_regex)
         end
 
         attr_reader :name, :user_input, :tool, :platform_origin
