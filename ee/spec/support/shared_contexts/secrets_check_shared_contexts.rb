@@ -119,10 +119,6 @@ RSpec.shared_context 'secrets check context' do
   before_all do
     project.add_developer(user)
   end
-
-  subject(:secrets_check) { described_class.new(changes_access) }
-
-  let(:delete_branch) { described_class.new(delete_changes_access) }
 end
 
 RSpec.shared_context 'secret detection error and log messages context' do

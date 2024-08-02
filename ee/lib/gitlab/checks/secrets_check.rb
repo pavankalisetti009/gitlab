@@ -42,11 +42,11 @@ module Gitlab
       def validate!
         # Return early and do not perform the check:
         #   1. unless license is ultimate
-        #   2. unless application setting is enabled (regardless of whether it's a gitlab dedicated instance or not)
-        #   3. unless we are on GitLab.com or a Dedicated instance
-        #   4. unless feature flag is enabled for this project (when instance type is GitLab.com)
-        #   5. if it is a delete branch/tag operation, as it would require scanning the entire revision history
-        #   6. if options are passed for us to skip the check
+        #   2. unless application setting is enabled
+        #   3. unless instance is a Gitlab Dedicated instance or feature flag is enabled for this project
+        #   4. unless project setting is enabled
+        #   4. if it is a delete branch/tag operation, as it would require scanning the entire revision history
+        #   5. if options are passed for us to skip the check
 
         return unless project.licensed_feature_available?(:pre_receive_secret_detection)
 
