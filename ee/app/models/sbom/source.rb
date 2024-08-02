@@ -14,6 +14,7 @@ module Sbom
     }.merge(DEFAULT_SOURCES)
 
     belongs_to :organization, class_name: 'Organizations::Organization'
+    has_many :occurrences, inverse_of: :source
 
     validates :source_type, presence: true
     validates :source, presence: true, json_schema: { filename: 'sbom_source' }

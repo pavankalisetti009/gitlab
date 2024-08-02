@@ -2,6 +2,8 @@
 
 module Sbom
   class Component < ::Gitlab::Database::SecApplicationRecord
+    has_many :occurrences, inverse_of: :component
+
     enum component_type: ::Enums::Sbom.component_types
     enum purl_type: ::Enums::Sbom.purl_types
 
