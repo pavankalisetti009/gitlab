@@ -29,8 +29,6 @@ export default {
     state.pageInfo = pageInfo;
     state.isLoading = false;
     state.errorLoading = false;
-    state.reportInfo.jobPath = reportInfo.job_path;
-    state.reportInfo.generatedAt = reportInfo.generated_at;
 
     // keep the initial report status to prevent the empty state from being displayed when filters are applied
     if (!state.initialized) {
@@ -46,8 +44,6 @@ export default {
     state.pageInfo = {};
     state.reportInfo = {
       status: REPORT_STATUS.ok,
-      jobPath: '',
-      generatedAt: '',
     };
     state.initialized = true;
   },

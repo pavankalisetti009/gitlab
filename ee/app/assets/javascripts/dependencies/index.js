@@ -20,6 +20,8 @@ export default (namespaceType) => {
     belowGroupLimit,
     pageInfo,
     sbomReportsErrors,
+    latestSuccessfulScanPath,
+    scanFinishedAt,
   } = el.dataset;
 
   const store = createStore();
@@ -35,6 +37,8 @@ export default (namespaceType) => {
     namespaceType,
     pageInfo: pageInfo ? convertObjectPropsToCamelCase(JSON.parse(pageInfo)) : {},
     belowGroupLimit: parseBoolean(belowGroupLimit),
+    latestSuccessfulScanPath,
+    scanFinishedAt,
   };
 
   if (namespaceType === NAMESPACE_GROUP) {
