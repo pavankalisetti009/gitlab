@@ -93,10 +93,7 @@ export default {
           groupsFetch,
         ]);
 
-        const all = {
-          text: __('All groups and projects'),
-          value: 'all',
-        };
+        const all = { text: __('All groups and projects'), value: 'all' };
 
         this.items = [
           ...(this.recipientsSearchTerm === '' ? [all] : []),
