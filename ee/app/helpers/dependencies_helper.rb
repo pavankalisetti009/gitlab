@@ -6,7 +6,8 @@ module DependenciesHelper
       has_dependencies: project.has_dependencies?.to_s,
       endpoint: project_dependencies_path(project, format: :json),
       export_endpoint: expose_path(api_v4_projects_dependency_list_exports_path(id: project.id)),
-      vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path)
+      vulnerabilities_endpoint: expose_path(api_v4_occurrences_vulnerabilities_path),
+      sbom_reports_errors: sbom_report_ingestion_errors(project).to_json
     })
   end
 
@@ -35,10 +36,16 @@ module DependenciesHelper
     })
   end
 
+  private
+
   def shared_dependencies_data
     {
       documentation_path: help_page_path('user/application_security/dependency_list/index'),
       empty_state_svg_path: image_path('illustrations/Dependency-list-empty-state.svg')
     }
+  end
+
+  def sbom_report_ingestion_errors(project)
+    project.latest_ingested_sbom_pipeline&.sbom_report_ingestion_errors || []
   end
 end

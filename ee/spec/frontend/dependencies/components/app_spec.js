@@ -7,6 +7,7 @@ import DependenciesApp from 'ee/dependencies/components/app.vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
 import DependencyListIncompleteAlert from 'ee/dependencies/components/dependency_list_incomplete_alert.vue';
 import DependencyListJobFailedAlert from 'ee/dependencies/components/dependency_list_job_failed_alert.vue';
+import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
 import { DEPENDENCY_LIST_TYPES } from 'ee/dependencies/store/constants';
@@ -28,7 +29,7 @@ describe('DependenciesApp component', () => {
 
   const { namespace: allNamespace } = DEPENDENCY_LIST_TYPES.all;
 
-  const basicAppProps = {
+  const basicAppProvides = {
     hasDependencies: true,
     endpoint: '/foo',
     exportEndpoint: '/bar',
@@ -39,7 +40,11 @@ describe('DependenciesApp component', () => {
     vulnerabilitiesEndpoint: `/vulnerabilities`,
   };
 
-  const factory = ({ provide } = {}) => {
+  const basicProps = {
+    sbomReportsErrors: [],
+  };
+
+  const factory = ({ provide, props } = {}) => {
     store = createStore();
     jest.spyOn(store, 'dispatch').mockImplementation();
 
@@ -49,7 +54,8 @@ describe('DependenciesApp component', () => {
       mount(DependenciesApp, {
         store,
         stubs,
-        provide: { ...basicAppProps, ...provide },
+        provide: { ...basicAppProvides, ...provide },
+        propsData: { ...basicProps, ...props },
       }),
     );
   };
@@ -149,9 +155,9 @@ describe('DependenciesApp component', () => {
 
     it('dispatches the correct initial actions', () => {
       expect(store.dispatch.mock.calls).toEqual([
-        ['setDependenciesEndpoint', basicAppProps.endpoint],
-        ['setExportDependenciesEndpoint', basicAppProps.exportEndpoint],
-        ['setNamespaceType', basicAppProps.namespaceType],
+        ['setDependenciesEndpoint', basicAppProvides.endpoint],
+        ['setExportDependenciesEndpoint', basicAppProvides.exportEndpoint],
+        ['setNamespaceType', basicAppProvides.namespaceType],
         ['setPageInfo', expect.anything()],
         ['setSortField', 'severity'],
       ]);
@@ -211,7 +217,7 @@ describe('DependenciesApp component', () => {
       });
 
       it('shows only the empty state', () => {
-        expectComponentWithProps(GlEmptyState, { svgPath: basicAppProps.emptyStateSvgPath });
+        expectComponentWithProps(GlEmptyState, { svgPath: basicAppProvides.emptyStateSvgPath });
         expectComponentPropsToMatchSnapshot(GlEmptyState);
         expectEmptyStateDescription();
         expectEmptyStateLink();
@@ -277,7 +283,7 @@ describe('DependenciesApp component', () => {
       describe('with namespaceType set to group', () => {
         beforeEach(async () => {
           mock
-            .onGet(basicAppProps.endpoint)
+            .onGet(basicAppProvides.endpoint)
             .reply(HTTP_STATUS_OK, { dependencies: [], report: { status: REPORT_STATUS.OK } });
           factory({ provide: { namespaceType: 'group' } });
 
@@ -383,6 +389,27 @@ describe('DependenciesApp component', () => {
           expect(findIncompleteListAlert().exists()).toBe(false);
         });
       });
+    });
+
+    describe('given SBOM report errors are present', () => {
+      const sbomErrors = [['Invalid SBOM report']];
+
+      beforeEach(async () => {
+        factory({
+          props: { sbomReportsErrors: sbomErrors },
+        });
+        setStateLoaded();
+
+        await nextTick();
+      });
+
+      it('passes the correct props to the sbom-report-errort alert', () => {
+        expectComponentWithProps(SbomReportsErrorsAlert, {
+          errors: sbomErrors,
+        });
+      });
+
+      it('shows the dependencies table with the correct props', expectDependenciesTable);
     });
   });
 });
