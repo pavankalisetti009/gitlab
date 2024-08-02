@@ -1,6 +1,6 @@
 ---
 name: cluster_agent_delete_failed
-description: Event triggered when a user attempts to delete a cluster agent but it failed
+description: Triggered when a user attempts to delete a cluster agent but it failed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/462749
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159593
 feature_category: deployment_management

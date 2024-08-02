@@ -1,6 +1,6 @@
 ---
 name: compliance_framework_removed
-description: Triggered when a framework label is removed from a project.
+description: Triggered when a compliance framework is removed from a project
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/464160
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/157893
 milestone: '17.2'

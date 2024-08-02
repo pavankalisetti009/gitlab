@@ -1,5 +1,6 @@
+---
 name: create_instance_event_streaming_destination
-description: Event triggered when an instance level external audit event destination is created
+description: Event triggered when an external audit event destination for an instance is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/404730
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/123882
 feature_category: audit_events

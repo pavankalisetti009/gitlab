@@ -1,6 +1,6 @@
 ---
 name: cluster_agent_create_failed
-description: Event triggered when a user attempts to create a cluster agent but it failed
+description: Triggered when a user attempts to create a cluster agent but it failed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/462749
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159593
 feature_category: deployment_management

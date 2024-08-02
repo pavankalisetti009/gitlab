@@ -1,6 +1,6 @@
 ---
 name: create_status_check
-description: Event triggered when an external status check is created
+description: Triggered when an external status check is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/355805
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/84624
 feature_category: compliance_management
