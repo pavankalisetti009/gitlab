@@ -79,6 +79,7 @@ export default {
     discoverTitle: s__(
       'Discover|Security capabilities, integrated into your development lifecycle',
     ),
+    discoverImageAltText: s__("Discover|An example of GitLab's Dependency List feature"),
     discoverUpgradeLabel: s__('Discover|Upgrade now'),
     discoverTrialLabel: s__('Discover|Start a free trial'),
     captions: [
@@ -107,7 +108,11 @@ export default {
       {{ $options.i18n.discoverTitle }}
     </h2>
     <div class="gl-text-center">
-      <img :src="$options.securityDependencyImageUrl" class="gl-mb-8 gl-max-w-full" />
+      <img
+        :src="$options.securityDependencyImageUrl"
+        class="gl-mb-8 gl-max-w-full"
+        :alt="$options.i18n.captions[0]"
+      />
       <p v-for="caption in $options.i18n.captions" :key="caption">
         {{ caption }}
       </p>
