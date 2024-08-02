@@ -6,24 +6,30 @@ module Sbom
     include EachBatch
     include IgnorableColumns
 
-    belongs_to :component, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::Component
+    belongs_to :component,
       -> {
         allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
       },
-      optional: false
-    belongs_to :source_package
-    belongs_to :component_version
+      optional: false,
+      inverse_of: :occurrences
+    belongs_to :component_version,
+      -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
+      },
+      inverse_of: :occurrences
     belongs_to :project, optional: false
     belongs_to :pipeline, class_name: 'Ci::Pipeline'
-    belongs_to :source, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::Source
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
-      }
-    belongs_to :source_package, # rubocop: disable Rails/InverseOf -- has_many not present on Sbom::SourcePackage
+    belongs_to :source,
       -> {
         allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
       },
-      optional: true
+      inverse_of: :occurrences
+    belongs_to :source_package,
+      -> {
+        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
+      },
+      optional: true,
+      inverse_of: :occurrences
 
     has_many :occurrences_vulnerabilities,
       class_name: 'Sbom::OccurrencesVulnerability',
@@ -160,7 +166,10 @@ module Sbom
     scope :with_project_route, -> { includes(project: :route).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/420046") }
     scope :with_project_namespace, -> { includes(project: [namespace: :route]) }
     scope :with_source, -> { includes(:source).allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins') }
-    scope :with_version, -> { includes(:component_version) }
+    scope :with_version, -> do
+      includes(:component_version)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
+    end
     scope :with_pipeline_project_and_namespace, -> { preload(pipeline: { project: :namespace }) }
     scope :with_vulnerabilities, -> { preload(:vulnerabilities) }
     scope :with_component_source_version_and_project, -> do
@@ -168,7 +177,10 @@ module Sbom
       .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
     end
     scope :with_project_setting, -> { preload(project: :project_setting) }
-    scope :filter_by_non_nil_component_version, -> { where.not(component_version: nil) }
+    scope :filter_by_non_nil_component_version, -> do
+      where.not(component_version: nil)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
+    end
 
     scope :order_by_severity, ->(direction) do
       order(highest_severity_arel_nodes(direction))

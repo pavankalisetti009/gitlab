@@ -2,6 +2,8 @@
 
 module Sbom
   class SourcePackage < ::Gitlab::Database::SecApplicationRecord
+    has_many :occurrences, inverse_of: :source_package
+
     enum purl_type: ::Enums::Sbom.purl_types
 
     belongs_to :organization, class_name: 'Organizations::Organization'
