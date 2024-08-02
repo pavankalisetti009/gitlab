@@ -46901,13 +46901,19 @@ msgstr ""
 msgid "ScanResultPolicy|Pre-existing"
 msgstr ""
 
+msgid "ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection}"
+msgstr ""
+
+msgid "ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} matching the wildcard pattern: %{projectSelection}"
+msgstr ""
+
 msgid "ScanResultPolicy|Prevent approval by commit author"
 msgstr ""
 
 msgid "ScanResultPolicy|Prevent approval by merge request's author"
 msgstr ""
 
-msgid "ScanResultPolicy|Prevent branch modification"
+msgid "ScanResultPolicy|Prevent project branch modification"
 msgstr ""
 
 msgid "ScanResultPolicy|Prevent pushing and force pushing"
@@ -46973,7 +46979,10 @@ msgstr ""
 msgid "ScanResultPolicy|When enabled, merge request authors cannot approve their own MRs."
 msgstr ""
 
-msgid "ScanResultPolicy|When enabled, prevents a user from removing a branch from the protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy."
+msgid "ScanResultPolicy|When enabled, prevents a user from removing a branch from the group protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy."
+msgstr ""
+
+msgid "ScanResultPolicy|When enabled, prevents a user from removing a branch from the project protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy."
 msgstr ""
 
 msgid "ScanResultPolicy|When enabled, prevents pushing and force pushing to a protected branch if that branch is included in the security policy."
@@ -47988,6 +47997,9 @@ msgstr ""
 msgid "SecurityOrchestration|Every time a pipeline runs for %{branches}%{branchExceptionsString}"
 msgstr ""
 
+msgid "SecurityOrchestration|Ex: development/*"
+msgstr ""
+
 msgid "SecurityOrchestration|Exception branches"
 msgstr ""
 
@@ -48561,6 +48573,9 @@ msgid "SecurityOrchestration|compliance frameworks"
 msgstr ""
 
 msgid "SecurityOrchestration|default"
+msgstr ""
+
+msgid "SecurityOrchestration|except branches"
 msgstr ""
 
 msgid "SecurityOrchestration|except projects"

@@ -2,6 +2,7 @@
 import { GlAccordionItem, GlFormCheckbox, GlTooltipDirective, GlLink, GlSprintf } from '@gitlab/ui';
 import {
   BLOCK_BRANCH_MODIFICATION,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   SETTINGS_HUMANIZED_STRINGS,
   SETTINGS_LINKS,
   SETTINGS_POPOVER_STRINGS,
@@ -10,6 +11,7 @@ import {
 import { ALL_PROTECTED_BRANCHES } from 'ee/security_orchestration/components/policy_editor/constants';
 import { isProject } from 'ee/security_orchestration/components/utils';
 import SettingPopover from './setting_popover.vue';
+import BlockGroupBranchModification from './block_group_branch_modification.vue';
 
 export default {
   SETTINGS_LINKS,
@@ -18,6 +20,7 @@ export default {
   SETTINGS_POPOVER_STRINGS,
   name: 'SettingsItem',
   components: {
+    BlockGroupBranchModification,
     GlAccordionItem,
     GlFormCheckbox,
     GlLink,
@@ -74,8 +77,17 @@ export default {
     },
   },
   methods: {
+    getExceptions(value) {
+      return value?.exceptions;
+    },
     getSettingValue(setting) {
       return this.settings[setting] || false;
+    },
+    getEnabled(value) {
+      return value?.enabled || value;
+    },
+    hasSpecialComponent(value) {
+      return value === BLOCK_GROUP_BRANCH_MODIFICATION;
     },
     showPopover(setting) {
       switch (setting) {
@@ -105,11 +117,27 @@ export default {
     </p>
 
     <div v-for="(value, key) in settings" :key="key">
-      <gl-form-checkbox :id="key" :checked="value" @change="updateSetting(key, $event)">
-        <span v-gl-tooltip.viewport.right :title="$options.SETTINGS_TOOLTIP[key]">
+      <span v-gl-tooltip.viewport.hover.right :title="$options.SETTINGS_TOOLTIP[key]">
+        <gl-form-checkbox
+          :id="key"
+          class="gl-inline-block"
+          :checked="getEnabled(value)"
+          @change="updateSetting(key, $event)"
+        />
+        <span v-if="hasSpecialComponent(key)">
+          <block-group-branch-modification
+            class="gl-inline-block"
+            :enabled="getEnabled(value)"
+            :exceptions="getExceptions(value)"
+            @change="updateSetting(key, $event)"
+          >
+            {{ $options.SETTINGS_HUMANIZED_STRINGS[key] }}
+          </block-group-branch-modification>
+        </span>
+        <span v-else>
           {{ $options.SETTINGS_HUMANIZED_STRINGS[key] }}
         </span>
-      </gl-form-checkbox>
+      </span>
 
       <setting-popover
         v-if="$options.SETTINGS_POPOVER_STRINGS[key]"

@@ -1,7 +1,9 @@
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 export const BLOCK_BRANCH_MODIFICATION = 'block_branch_modification';
+export const BLOCK_GROUP_BRANCH_MODIFICATION = 'block_group_branch_modification';
 export const PREVENT_PUSHING_AND_FORCE_PUSHING = 'prevent_pushing_and_force_pushing';
 export const PREVENT_APPROVAL_BY_AUTHOR = 'prevent_approval_by_author';
 export const PREVENT_APPROVAL_BY_COMMIT_AUTHOR = 'prevent_approval_by_commit_author';
@@ -14,12 +16,18 @@ export const protectedBranchesConfiguration = {
 };
 
 // This defines behavior for existing policies. They shouldn't automatically opt-in to use this setting.
+export const groupProtectedBranchesConfiguration = {
+  [BLOCK_GROUP_BRANCH_MODIFICATION]: false,
+};
+
+// This defines behavior for existing policies. They shouldn't automatically opt-in to use this setting.
 export const pushingBranchesConfiguration = {
   [PREVENT_PUSHING_AND_FORCE_PUSHING]: false,
 };
 
 export const PROTECTED_BRANCHES_CONFIGURATION_KEYS = [
   BLOCK_BRANCH_MODIFICATION,
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   PREVENT_PUSHING_AND_FORCE_PUSHING,
 ];
 
@@ -38,8 +46,15 @@ export const mergeRequestConfiguration = {
   [REQUIRE_PASSWORD_TO_APPROVE]: false,
 };
 
+export const BLOCK_GROUP_BRANCH_MODIFICATION_WITH_BRANCH_HUMANIZED_STRING = s__(
+  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection} matching the wildcard pattern: %{projectSelection}',
+);
+export const BLOCK_GROUP_BRANCH_MODIFICATION_HUMANIZED_STRING = s__(
+  'ScanResultPolicy|Prevent %{linkStart}group branch%{linkEnd} modification %{exceptSelection}',
+);
+
 export const SETTINGS_HUMANIZED_STRINGS = {
-  [BLOCK_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent branch modification'),
+  [BLOCK_BRANCH_MODIFICATION]: s__('ScanResultPolicy|Prevent project branch modification'),
   [PREVENT_PUSHING_AND_FORCE_PUSHING]: s__('ScanResultPolicy|Prevent pushing and force pushing'),
   [PREVENT_APPROVAL_BY_AUTHOR]: s__("ScanResultPolicy|Prevent approval by merge request's author"),
   [PREVENT_APPROVAL_BY_COMMIT_AUTHOR]: s__('ScanResultPolicy|Prevent approval by commit author'),
@@ -51,7 +66,10 @@ export const SETTINGS_HUMANIZED_STRINGS = {
 
 export const SETTINGS_TOOLTIP = {
   [BLOCK_BRANCH_MODIFICATION]: s__(
-    'ScanResultPolicy|When enabled, prevents a user from removing a branch from the protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy.',
+    'ScanResultPolicy|When enabled, prevents a user from removing a branch from the project protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy.',
+  ),
+  [BLOCK_GROUP_BRANCH_MODIFICATION]: s__(
+    'ScanResultPolicy|When enabled, prevents a user from removing a branch from the group protected branches list, deleting a protected branch, or changing the default branch if that branch is included in the security policy.',
   ),
   [PREVENT_PUSHING_AND_FORCE_PUSHING]: s__(
     'ScanResultPolicy|When enabled, prevents pushing and force pushing to a protected branch if that branch is included in the security policy.',
@@ -101,19 +119,33 @@ export const PERMITTED_INVALID_SETTINGS = {
  * Build settings based on provided flags, scalable for more flags in future
  * @returns {Object} final settings
  */
-const buildConfig = () => ({
-  ...protectedBranchesConfiguration,
-  ...pushingBranchesConfiguration,
-  ...mergeRequestConfiguration,
-});
+const buildConfig = ({
+  namespaceType = NAMESPACE_TYPES.PROJECT,
+  scanResultPolicyBlockGroupBranchModification = false,
+}) => {
+  if (namespaceType === NAMESPACE_TYPES.GROUP && scanResultPolicyBlockGroupBranchModification) {
+    return {
+      ...protectedBranchesConfiguration,
+      ...groupProtectedBranchesConfiguration,
+      ...pushingBranchesConfiguration,
+      ...mergeRequestConfiguration,
+    };
+  }
+
+  return {
+    ...protectedBranchesConfiguration,
+    ...pushingBranchesConfiguration,
+    ...mergeRequestConfiguration,
+  };
+};
 
 /**
  * Map dynamic approval settings to defined list and update only enable property
  * @param settings
  * @returns {Object}
  */
-export const buildSettingsList = ({ settings } = { settings: {} }) => {
-  const configuration = buildConfig();
+export const buildSettingsList = ({ settings, options = {} } = { settings: {}, options: {} }) => {
+  const configuration = buildConfig(options);
 
   return Object.keys(configuration).reduce((acc, setting) => {
     const hasEnabledProperty = settings ? setting in settings : false;
@@ -121,3 +153,19 @@ export const buildSettingsList = ({ settings } = { settings: {} }) => {
     return acc;
   }, {});
 };
+
+const mapToListBoxItems = (textMap) =>
+  Object.entries(textMap).map(([value, text]) => ({
+    value,
+    text,
+  }));
+
+export const WITHOUT_EXCEPTIONS = 'without_exceptions';
+export const EXCEPT_BRANCHES = 'except_branches';
+
+export const EXCEPTION_BRANCH_TYPE_TEXTS = {
+  [WITHOUT_EXCEPTIONS]: s__('SecurityOrchestration|without exceptions'),
+  [EXCEPT_BRANCHES]: s__('SecurityOrchestration|except branches'),
+};
+
+export const EXCEPTION_BRANCH_TYPE_LISTBOX_ITEMS = mapToListBoxItems(EXCEPTION_BRANCH_TYPE_TEXTS);

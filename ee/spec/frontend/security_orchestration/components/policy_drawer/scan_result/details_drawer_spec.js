@@ -11,7 +11,7 @@ import {
   enabledSendBotMessageActionScanResultManifest,
   mockProjectScanResultPolicy,
   mockProjectWithAllApproverTypesScanResultPolicy,
-  mockApprovalSettingsScanResultPolicy,
+  mockProjectApprovalSettingsScanResultPolicy,
   mockProjectFallbackClosedScanResultManifest,
   mockNoFallbackScanResultManifest,
   zeroActionsScanResultManifest,
@@ -63,9 +63,9 @@ describe('DetailsDrawer component', () => {
 
     describe('settings', () => {
       it('passes the settings to the "Settings" component if settings are present', () => {
-        factory({ props: { policy: mockApprovalSettingsScanResultPolicy } });
+        factory({ props: { policy: mockProjectApprovalSettingsScanResultPolicy } });
         expect(findSettings().props('settings')).toEqual(
-          mockApprovalSettingsScanResultPolicy.approval_settings,
+          mockProjectApprovalSettingsScanResultPolicy.approval_settings,
         );
       });
 

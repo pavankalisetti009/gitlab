@@ -224,53 +224,16 @@ export const mockGroupScanResultPolicy = {
   },
 };
 
-export const mockApprovalSettingsScanResultManifest = `type: approval_policy
-name: critical vulnerability CS approvals
-description: This policy enforces critical vulnerability CS approvals
-enabled: true
-rules:
-  - type: scan_finding
-    branches: []
-    scanners:
-      - container_scanning
-    vulnerabilities_allowed: 1
-    severity_levels:
-      - critical
-    vulnerability_states:
-      - newly_detected
-actions:
-  - type: require_approval
-    approvals_required: 1
-    user_approvers:
-      - the.one
-approval_settings:
-  block_branch_modification: true
-  prevent_pushing_and_force_pushing: true
-`;
-
-export const mockApprovalSettingsPermittedInvalidScanResultManifest = `type: approval_policy
-name: critical vulnerability CS approvals
-description: This policy enforces critical vulnerability CS approvals
-enabled: true
-rules:
-  - type: scan_finding
-    branches: []
-    scanners:
-      - container_scanning
-    vulnerabilities_allowed: 1
-    severity_levels:
-      - critical
-    vulnerability_states:
-      - newly_detected
-actions:
-  - type: require_approval
-    approvals_required: 1
-    user_approvers:
-      - the.one
+export const mockApprovalSettingsPermittedInvalidScanResultManifest =
+  mockNoFallbackScanResultManifest
+    .concat(
+      `
 approval_settings:
   block_protected_branch_modification:
     enabled: true
-`;
+`,
+    )
+    .concat('fallback_behavior:\n  fail: open');
 
 export const mockPolicyScopeScanResultManifest = `type: approval_policy
 name: policy scope
@@ -296,83 +259,21 @@ export const mockPolicyScopeScanResultObject = {
 };
 
 export const mockApprovalSettingsScanResultObject = {
-  type: 'approval_policy',
-  name: 'critical vulnerability CS approvals',
-  description: 'This policy enforces critical vulnerability CS approvals',
-  enabled: true,
-  rules: [
-    {
-      type: 'scan_finding',
-      branches: [],
-      scanners: ['container_scanning'],
-      vulnerabilities_allowed: 1,
-      severity_levels: ['critical'],
-      vulnerability_states: ['newly_detected'],
-      id: ruleId,
-    },
-  ],
-  actions: [
-    {
-      type: 'require_approval',
-      approvals_required: 1,
-      user_approvers: ['the.one'],
-      id: actionId,
-    },
-  ],
+  ...mockDefaultBranchesScanResultObject,
   approval_settings: {
     block_branch_modification: true,
     prevent_pushing_and_force_pushing: true,
   },
 };
 
-export const mockApprovalSettingsScanResultPolicy = {
-  __typename: 'ScanResultPolicy',
-  name: 'low vulnerability SAST approvals',
-  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
-  yaml: mockApprovalSettingsScanResultManifest,
-  editPath: '/policies/policy-name/edit?type="approval_policy"',
-  enabled: true,
-  userApprovers: [{ name: 'the.one' }],
-  allGroupApprovers: [],
-  roleApprovers: [],
-  approval_settings: { block_branch_modification: true, prevent_pushing_and_force_pushing: true },
-  source: {
-    __typename: 'ProjectSecurityPolicySource',
-    project: {
-      fullPath: 'project/path/second',
-    },
-  },
-};
-
 export const mockApprovalSettingsPermittedInvalidScanResultObject = {
-  type: 'approval_policy',
-  name: 'critical vulnerability CS approvals',
-  description: 'This policy enforces critical vulnerability CS approvals',
-  enabled: true,
-  rules: [
-    {
-      type: 'scan_finding',
-      branches: [],
-      scanners: ['container_scanning'],
-      vulnerabilities_allowed: 1,
-      severity_levels: ['critical'],
-      vulnerability_states: ['newly_detected'],
-      id: ruleId,
-    },
-  ],
-  actions: [
-    {
-      type: 'require_approval',
-      approvals_required: 1,
-      user_approvers: ['the.one'],
-      id: actionId,
-    },
-  ],
+  ...mockDefaultBranchesScanResultObject,
   approval_settings: {
     block_protected_branch_modification: {
       enabled: true,
     },
   },
+  fallback_behavior: { fail: 'open' },
 };
 
 export const collidingKeysScanResultManifest = `---
@@ -460,6 +361,65 @@ export const mockProjectFallbackClosedScanResultObject = {
   },
 };
 
+export const mockProjectApprovalSettingsScanResultManifest = mockDefaultBranchesScanResultManifest
+  .concat(
+    `
+approval_settings:
+  block_branch_modification: true
+  prevent_pushing_and_force_pushing: true
+`,
+  )
+  .concat(`fallback_behavior:\n  fail: open`);
+
+export const mockGroupApprovalSettingsScanResultManifest = mockDefaultBranchesScanResultManifest
+  .concat(
+    `
+approval_settings:
+  block_branch_modification: true
+  block_group_branch_modification:
+    enabled: true
+    exceptions:
+      - release/*
+  prevent_pushing_and_force_pushing: true
+`,
+  )
+  .concat(`fallback_behavior:\n  fail: open`);
+
+export const mockGroupApprovalSettingsScanResultObject = {
+  ...mockDefaultBranchesScanResultObject,
+  approval_settings: {
+    block_branch_modification: true,
+    block_group_branch_modification: {
+      enabled: true,
+      exceptions: ['release/*'],
+    },
+    prevent_pushing_and_force_pushing: true,
+  },
+};
+
+const defaultScanResultPolicy = {
+  __typename: 'ScanResultPolicy',
+  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
+  editPath: '/policies/policy-name/edit?type="approval_policy"',
+  enabled: true,
+  userApprovers: [{ name: 'the.one' }],
+  allGroupApprovers: [],
+  roleApprovers: [],
+  source: {
+    __typename: 'ProjectSecurityPolicySource',
+    project: {
+      fullPath: 'project/path/second',
+    },
+  },
+};
+
+export const mockProjectApprovalSettingsScanResultPolicy = {
+  ...defaultScanResultPolicy,
+  name: 'low vulnerability SAST approvals',
+  yaml: mockProjectApprovalSettingsScanResultManifest,
+  approval_settings: { block_branch_modification: true, prevent_pushing_and_force_pushing: true },
+};
+
 export const mockScanResultPoliciesResponse = [
   mockProjectScanResultPolicy,
   mockGroupScanResultPolicy,
@@ -487,6 +447,6 @@ export const createRequiredApprovers = (count) => {
   return approvers;
 };
 
-export const mockFallbackInvalidScanResultManifest =
-  mockDefaultBranchesScanResultManifest.concat(`fallback_behavior:
-  fail: something_else`);
+export const mockFallbackInvalidScanResultManifest = mockDefaultBranchesScanResultManifest.concat(
+  `fallback_behavior:\n  fail: something_else`,
+);

@@ -4,6 +4,7 @@ import { addIdsToPolicy, hasInvalidKey, isValidPolicy } from '../../utils';
 import { PRIMARY_POLICY_KEYS } from '../../constants';
 import { OPEN, CLOSED } from '../constants';
 import {
+  BLOCK_GROUP_BRANCH_MODIFICATION,
   VALID_APPROVAL_SETTINGS,
   PERMITTED_INVALID_SETTINGS,
   PERMITTED_INVALID_SETTINGS_KEY,
@@ -71,7 +72,9 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
       ]);
 
       const hasInvalidSettingStructure = !isEqual(settings, PERMITTED_INVALID_SETTINGS)
-        ? !Object.values(settings).every((setting) => isBoolean(setting))
+        ? !Object.entries(settings).every(
+            ([key, value]) => isBoolean(value) || key === BLOCK_GROUP_BRANCH_MODIFICATION,
+          )
         : false;
 
       const hasInvalidActions =

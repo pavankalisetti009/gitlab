@@ -1,6 +1,7 @@
 <script>
 import { isEmpty, uniqBy } from 'lodash';
 import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { joinPaths, visitUrl, setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
@@ -94,6 +95,7 @@ export default {
     ScanFilterSelector,
     SettingsSection,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'disableScanPolicyUpdate',
     'policyEditorEmptyStateSvgPath',
@@ -120,7 +122,10 @@ export default {
     },
   },
   data() {
-    const newPolicyYaml = getPolicyYaml({ isGroup: isGroup(this.namespaceType) });
+    const newPolicyYaml = getPolicyYaml({
+      withGroupSettings: this.glFeatures.scanResultPolicyBlockGroupBranchModification,
+      isGroup: isGroup(this.namespaceType),
+    });
 
     const yamlEditorValue = this.existingPolicy ? policyToYaml(this.existingPolicy) : newPolicyYaml;
 
@@ -170,7 +175,14 @@ export default {
       return isProject(this.namespaceType);
     },
     settings() {
-      return buildSettingsList({ settings: this.policy.approval_settings });
+      return buildSettingsList({
+        settings: this.policy.approval_settings,
+        options: {
+          namespaceType: this.namespaceType,
+          scanResultPolicyBlockGroupBranchModification:
+            this.glFeatures.scanResultPolicyBlockGroupBranchModification,
+        },
+      });
     },
     originalName() {
       return this.existingPolicy?.name;
