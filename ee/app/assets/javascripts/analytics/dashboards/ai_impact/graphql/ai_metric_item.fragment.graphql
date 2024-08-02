@@ -1,4 +1,8 @@
+# Queries for all the AI metrics values
+
 fragment AiMetricItem on AiMetrics {
   codeContributorsCount
   codeSuggestionsContributorsCount
+  codeSuggestionsShownCount
+  codeSuggestionsAcceptedCount
 }

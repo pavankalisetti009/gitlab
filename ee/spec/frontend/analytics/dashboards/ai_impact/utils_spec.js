@@ -4,7 +4,7 @@ import {
   generateSkeletonTableData,
   calculateChange,
   generateTableRows,
-  calculateCodeSuggestionsUsageRate,
+  calculateRate,
   getRestrictedTableMetrics,
   generateTableAlerts,
 } from 'ee/analytics/dashboards/ai_impact/utils';
@@ -75,27 +75,20 @@ describe('AI impact Dashboard utils', () => {
     });
   });
 
-  describe('calculateCodeSuggestionsUsageRate', () => {
-    it('returns null when counts are undefined', () => {
-      expect(calculateCodeSuggestionsUsageRate()).toBeNull();
+  describe('calculateRate', () => {
+    it('returns null when counts are invalid', () => {
+      expect(calculateRate({ numerator: -2, denominator: 10 })).toBeNull();
+      expect(calculateRate({ numerator: 1, denominator: 0 })).toBeNull();
+
+      expect(calculateRate({ numerator: 0, denominator: 1 })).toBe(0);
     });
 
     it('returns null when there is no code suggestions usage data', () => {
-      expect(
-        calculateCodeSuggestionsUsageRate({
-          codeSuggestionsContributorsCount: 0,
-          codeContributorsCount: 0,
-        }),
-      ).toBeNull();
+      expect(calculateRate({ numerator: 0, denominator: 0 })).toBeNull();
     });
 
     it('returns the code suggestions usage rate as expected', () => {
-      expect(
-        calculateCodeSuggestionsUsageRate({
-          codeSuggestionsContributorsCount: 3,
-          codeContributorsCount: 4,
-        }),
-      ).toEqual(75);
+      expect(calculateRate({ numerator: 3, denominator: 4 })).toEqual(75);
     });
   });
 

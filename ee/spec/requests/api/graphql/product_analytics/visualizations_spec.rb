@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require 'rspec-parameterized'
 
 RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_category: :product_analytics_visualization do
   include GraphqlHelpers
@@ -53,27 +54,30 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
     end
 
     context 'when clickhouse is enabled' do
+      using RSpec::Parameterized::TableSyntax
+
       before do
         allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
       end
 
-      it 'returns the `AiImpactTable` visualization' do
-        get_graphql(query, current_user: user)
-
-        expect(
-          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 1, :visualization, :type)
-        ).to eq('AiImpactTable')
+      where(:node_idx, :panel_type, :panel_title) do
+        0 | 'SingleStat' | 'Code Suggestions: Unique users'
+        1 | 'SingleStat' | 'Code Suggestions: Acceptance rate'
+        2 | 'AiImpactTable' | 'Metric trends for %{namespaceType}: %{namespaceName}'
       end
 
-      it 'returns the `Code suggestions tile` visualizations' do
-        get_graphql(query, current_user: user)
+      with_them do
+        it "returns the each visualization" do
+          get_graphql(query, current_user: user)
 
-        expect(
-          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 0, :visualization, :type)
-        ).to eq('SingleStat')
-        expect(
-          graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, 0, :title)
-        ).to eq('Code Suggestions: Unique users')
+          expect(
+            graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, node_idx, :visualization,
+              :type)
+          ).to eq(panel_type)
+          expect(
+            graphql_data_at(:project, :customizable_dashboards, :nodes, 0, :panels, :nodes, node_idx, :title)
+          ).to eq(panel_title)
+        end
       end
     end
 

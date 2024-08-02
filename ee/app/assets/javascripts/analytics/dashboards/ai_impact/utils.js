@@ -182,22 +182,20 @@ export const generateTableRows = (timePeriods) =>
   }, {});
 
 /**
- * Calculates the percentage of code contributors that used the GitLab Duo Code Suggestions features.
+ * Calculates a rate, given a numerator and a denominator
+ * returns null if the values given are invalid, or a division by 0 is attempted
  *
- * @param {number} codeSuggestionsContributorsCount - Number of code contributors that used GitLab Duo Code Suggestions features.
- * @param {number} codeContributorsCount - Number of code contributors
- * @returns {number|null} - Percentage of code contributors that used the GitLab Duo Code Suggestions features or null if either count is invalid
+ * @param {number} numerator - The value to be divided (above the line)
+ * @param {number} denominator - The number to be divided by (below the line)
+ * @returns {number|null} - Percentage or null if either count is invalid
  */
-export const calculateCodeSuggestionsUsageRate = ({
-  codeSuggestionsContributorsCount,
-  codeContributorsCount,
-} = {}) => {
+export const calculateRate = ({ numerator, denominator }) => {
   const hasValidCounts =
-    isPositiveInteger(codeSuggestionsContributorsCount) && codeContributorsCount > 0;
+    isPositiveInteger(numerator) && isPositiveInteger(denominator) && denominator > 0;
 
   if (!hasValidCounts) return null;
 
-  return (codeSuggestionsContributorsCount / codeContributorsCount) * 100;
+  return (numerator / denominator) * 100;
 };
 
 /**
