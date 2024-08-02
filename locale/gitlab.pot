@@ -35076,6 +35076,9 @@ msgstr ""
 msgid "No groups found"
 msgstr ""
 
+msgid "No groups or projects found"
+msgstr ""
+
 msgid "No issues found"
 msgstr ""
 
@@ -53695,10 +53698,10 @@ msgstr ""
 msgid "There are no GPG keys with access to your account."
 msgstr ""
 
-msgid "There are no SSH keys associated with this account."
+msgid "There are no SSH keys associated with this account"
 msgstr ""
 
-msgid "There are no SSH keys with access to your account."
+msgid "There are no SSH keys with access to your account"
 msgstr ""
 
 msgid "There are no approval rules for the given `represent_as` parameter. Use a valid User/Group/Role name instead."
@@ -54769,9 +54772,6 @@ msgid "This user has no active %{accessTokenTypePlural}."
 msgstr ""
 
 msgid "This user has no identities"
-msgstr ""
-
-msgid "This user has no personal projects."
 msgstr ""
 
 msgid "This user has previously committed to the %{name} project."

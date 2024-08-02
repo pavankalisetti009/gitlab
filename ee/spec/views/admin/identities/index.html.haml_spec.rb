@@ -24,10 +24,10 @@ RSpec.describe 'admin/identities/index.html.haml', :aggregate_failures do
       assign(:identities, [])
     end
 
-    it 'shows information text' do
+    it 'shows empty state' do
       render
 
-      expect(rendered).to include('<td colspan="6">').exactly(1)
+      expect(rendered).to include('data-testid="identities-empty-state"')
       expect(rendered).to include(_('This user has no identities'))
     end
   end
