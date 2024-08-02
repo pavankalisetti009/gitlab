@@ -72,9 +72,7 @@ module Gitlab
 
             override :perform
             def perform
-              error_message = if disabled?
-                                _('This feature is not enabled yet.')
-                              elsif !job.failed?
+              error_message = if !job.failed?
                                 _('This command is used for troubleshooting jobs and can only be invoked from ' \
                                   'a failed job log page.')
                               elsif !job.trace.exist?
@@ -102,10 +100,6 @@ module Gitlab
                 request_id: context.request_id,
                 action: unit_primitive
               }
-            end
-
-            def disabled?
-              Feature.disabled?(:root_cause_analysis_duo, context.current_user)
             end
 
             def selected_text_options
