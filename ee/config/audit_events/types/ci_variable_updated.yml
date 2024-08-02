@@ -1,6 +1,6 @@
 ---
 name: ci_variable_updated
-description: Triggered when a project's CI variable is updated
+description: Triggered when a CI/CD variable is updated for a project
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/363090
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/91983
 feature_category: continuous_integration

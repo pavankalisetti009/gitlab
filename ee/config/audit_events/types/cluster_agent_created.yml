@@ -1,6 +1,6 @@
 ---
 name: cluster_agent_created
-description: Event triggered when a user creates a cluster agent
+description: Triggered when a user creates a cluster agent
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/462749
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159593
 feature_category: deployment_management

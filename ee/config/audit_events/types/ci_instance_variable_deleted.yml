@@ -1,6 +1,6 @@
 ---
 name: ci_instance_variable_deleted
-description: When an instance level CI variable is deleted
+description: Triggered when a CI/CD variable is deleted for an instance
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/8070
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/131882
 feature_category: continuous_integration
