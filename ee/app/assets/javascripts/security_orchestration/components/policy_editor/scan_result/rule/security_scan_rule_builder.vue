@@ -333,7 +333,7 @@ export default {
               <template #scanners>
                 <rule-multi-select
                   v-model="scannersToAdd"
-                  class="gl-display-inline! gl-align-middle"
+                  class="!gl-inline gl-align-middle"
                   :item-type-name="$options.i18n.scanners"
                   :items="$options.REPORT_TYPES_DEFAULT"
                   data-testid="scanners-select"

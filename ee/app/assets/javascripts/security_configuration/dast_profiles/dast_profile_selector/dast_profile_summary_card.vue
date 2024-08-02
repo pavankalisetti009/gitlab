@@ -65,7 +65,7 @@ export default {
     <template #header>
       <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
         <div>
-          <h3 class="gl-font-lg gl-my-0 gl-display-inline">
+          <h3 class="gl-font-lg gl-my-0 gl-inline">
             <slot name="title"></slot>
           </h3>
           <span

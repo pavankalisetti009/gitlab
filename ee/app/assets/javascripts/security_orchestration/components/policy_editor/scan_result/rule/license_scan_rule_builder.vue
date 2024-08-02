@@ -121,7 +121,7 @@ export default {
         <status-filter :show-remove-button="false" class="gl-bg-white!">
           <rule-multi-select
             v-model="licenseStatuses"
-            class="gl-display-inline! gl-align-middle"
+            class="!gl-inline gl-align-middle"
             :item-type-name="$options.i18n.licenseStatuses"
             :items="$options.licenseStatuses"
             @error="$emit('error', $event)"

@@ -71,7 +71,7 @@ export default {
   <div v-if="alert" :class="$options.classes" data-testid="alert">
     <gl-sprintf :message="$options.translations.alertText">
       <template #severity>
-        <severity-badge v-if="severity" :severity="severity" class="gl-display-inline" />
+        <severity-badge v-if="severity" :severity="severity" class="gl-inline" />
       </template>
       <template #startedAt>
         <span v-gl-tooltip :title="tooltipTitle(alert.startedAt)">
