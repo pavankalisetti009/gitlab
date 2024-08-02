@@ -17,6 +17,7 @@ import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
 import DependenciesActions from './dependencies_actions.vue';
 import DependencyListIncompleteAlert from './dependency_list_incomplete_alert.vue';
 import DependencyListJobFailedAlert from './dependency_list_job_failed_alert.vue';
+import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from './paginated_dependencies_table.vue';
 
 export default {
@@ -32,6 +33,7 @@ export default {
     DependencyListIncompleteAlert,
     DependencyListJobFailedAlert,
     PaginatedDependenciesTable,
+    SbomReportsErrorsAlert,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -45,6 +47,12 @@ export default {
     'pageInfo',
     'namespaceType',
   ],
+  props: {
+    sbomReportsErrors: {
+      type: Array,
+      required: true,
+    },
+  },
   data() {
     return {
       isIncompleteAlertDismissed: false,
@@ -83,6 +91,9 @@ export default {
         const { namespace } = this.listTypes[index] || {};
         this.setCurrentList(namespace);
       },
+    },
+    showSbomReportsErrors() {
+      return this.sbomReportsErrors.length > 0;
     },
     isProjectNamespace() {
       return this.namespaceType === NAMESPACE_PROJECT;
@@ -166,6 +177,12 @@ export default {
       v-if="isJobFailed && !isJobFailedAlertDismissed"
       :job-path="reportInfo.jobPath"
       @dismiss="dismissJobFailedAlert"
+    />
+
+    <sbom-reports-errors-alert
+      v-if="showSbomReportsErrors"
+      :errors="sbomReportsErrors"
+      class="gl-my-5"
     />
 
     <header class="md:gl-flex gl-align-items-flex-start gl-my-5">

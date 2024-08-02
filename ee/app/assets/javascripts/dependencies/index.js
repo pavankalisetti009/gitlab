@@ -19,6 +19,7 @@ export default (namespaceType) => {
     locationsEndpoint,
     belowGroupLimit,
     pageInfo,
+    sbomReportsErrors,
   } = el.dataset;
 
   const store = createStore();
@@ -40,6 +41,10 @@ export default (namespaceType) => {
     provide.locationsEndpoint = locationsEndpoint;
   }
 
+  const props = {
+    sbomReportsErrors: sbomReportsErrors ? JSON.parse(sbomReportsErrors) : [],
+  };
+
   return new Vue({
     el,
     name: 'DependenciesAppRoot',
@@ -50,7 +55,9 @@ export default (namespaceType) => {
     apolloProvider,
     provide,
     render(createElement) {
-      return createElement(DependenciesApp);
+      return createElement(DependenciesApp, {
+        props,
+      });
     },
   });
 };
