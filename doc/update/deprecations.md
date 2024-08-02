@@ -882,6 +882,23 @@ This is one small step towards moving away from CI/CD templates in preference of
 
 <div class="deprecation " data-milestone="17.4">
 
+### Group vulnerability report by OWASP top 10 2017 is deprecated
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.0</span>
+- Removal in GitLab <span class="milestone">17.4</span>
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/458835).
+
+</div>
+
+Grouping the vulnerability report by OWASP top 10 2017 is deprecated, replaced by grouping by OWASP top 10 2021.
+In the future we will support the most recent version of OWASP top 10 for grouping on the vulnerability report.
+
+</div>
+
+<div class="deprecation " data-milestone="17.4">
+
 ### Removed Needs tab from the pipeline view
 
 <div class="deprecation-notes">
@@ -923,23 +940,6 @@ The updated images will be smaller and will be affected by fewer vulnerabilities
 GitLab's [Statement of Support](https://about.gitlab.com/support/statement-of-support/#ci-cd-templates) excludes undocumented customizations, including those that rely on specific contents of the analyzer image.
 For example, installing additional packages in a `before_script` is not a supported modification.
 Nevertheless, if you rely on this type of customization, see the [deprecation issue for this change](https://gitlab.com/gitlab-org/gitlab/-/issues/471869#action-required) to learn how to respond to this change or to provide feedback about your current customizations.
-
-</div>
-
-<div class="deprecation " data-milestone="17.3">
-
-### Group vulnerability report by OWASP top 10 2017 is deprecated
-
-<div class="deprecation-notes">
-
-- Announced in GitLab <span class="milestone">17.0</span>
-- Removal in GitLab <span class="milestone">17.3</span>
-- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/458835).
-
-</div>
-
-Grouping the vulnerability report by OWASP top 10 2017 is deprecated, replaced by grouping by OWASP top 10 2021.
-In the future we will support the most recent version of OWASP top 10 for grouping on the vulnerability report.
 
 </div>
 </div>
