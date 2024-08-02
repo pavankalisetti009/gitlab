@@ -12,9 +12,13 @@ module ExternalStatusChecks
     end
 
     def execute
+      body = Gitlab::Json::LimitedEncoder.encode(data, limit: REQUEST_BODY_SIZE_LIMIT)
+      headers = { 'Content-Type': 'application/json' }
+      headers['X-GitLab-Signature'] = OpenSSL::HMAC.hexdigest('sha256', rule.shared_secret, body) if rule.hmac?
+
       response = Gitlab::HTTP.post(
         rule.external_url,
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: Gitlab::Json::LimitedEncoder.encode(data, limit: REQUEST_BODY_SIZE_LIMIT))
 
       if response.success?
