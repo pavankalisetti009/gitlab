@@ -39,9 +39,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
       )
     end
 
-    let(:answer_chunk) do
-      "{\"type\":\"final_answer_delta\",\"data\":{\"thought\":\"Thought: direct answer.\",\"text\":\"Ans\"}}"
-    end
+    let(:answer_chunk) { create(:final_answer_chunk, chunk: "Ans") }
 
     before do
       allow(context).to receive(:ai_request).and_return(ai_request_double)
@@ -49,9 +47,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
     end
 
     context "when answer is final" do
-      let(:another_chunk) do
-        "{\"type\":\"final_answer_delta\",\"data\":{\"thought\":\"\",\"text\":\"wer\"}}"
-      end
+      let(:another_chunk) { create(:final_answer_chunk, chunk: "wer") }
 
       let(:response_double) do
         "#{answer_chunk}\n#{another_chunk}"

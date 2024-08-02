@@ -111,16 +111,7 @@ RSpec.describe Gitlab::Llm::Chain::Answer, feature_category: :duo_chat do
         )
       end
 
-      let(:input) do
-        {
-          type: "action",
-          data: {
-            thought: "Thought: I need to retrieve the issue content using the \"issue_reader\" tool.",
-            tool: "issue_reader",
-            tool_input: "what is the title of this issue"
-          }
-        }.to_json
-      end
+      let(:input) { create(:action_chunk, tool: "issue_reader") }
 
       it 'returns intermediate answer with parsed values and a tool' do
         expect(answer.is_final?).to eq(false)
