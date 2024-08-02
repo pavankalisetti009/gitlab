@@ -24,6 +24,7 @@ module GitlabSubscriptions
         # 'internal/gitlab_subscriptions', in https://gitlab.com/gitlab-org/gitlab/-/issues/463741.
         # They will then be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/473625.
         mount ::API::GitlabSubscriptions::AddOnPurchases
+        mount ::API::GitlabSubscriptions::Subscriptions
 
         # this API is deprecated, it will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/473625.
         # Please use GitlabSubscriptions::API::Internal::UpcomingReconciliations instead.
