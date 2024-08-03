@@ -76,10 +76,7 @@ export default {
   methods: {
     ...mapActions('allDependencies', ['setSearchFilterParameters', 'fetchDependencies']),
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index', {
-    anchor: 'view-a-groups-dependencies',
-  }),
+  GROUP_LEVEL_DEPENDENCY_LIST_DOC: helpPagePath('user/application_security/dependency_list/index'),
   i18n: {
     searchInputPlaceholder: s__('Dependencies|Search or filter dependencies...'),
     popoverTitle: s__('Dependencies|Filtering unavailable'),

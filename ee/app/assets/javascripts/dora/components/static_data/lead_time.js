@@ -33,7 +33,6 @@ export const chartDescriptionText = s__(
   'DORA4Metrics|The chart displays the median time between a merge request being merged and deployed to production environment(s) that are based on the %{linkStart}deployment_tier%{linkEnd} value.',
 );
 
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics.html', {
-  anchor: 'lead-time-charts',
+export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics', {
+  anchor: 'view-dora-lead-time-for-changes-chart',
 });

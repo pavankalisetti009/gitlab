@@ -29,7 +29,6 @@ export const chartDescriptionText = s__(
   'DORA4Metrics|Median time an incident was open in a production environment over the given time period.',
 );
 
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics.html', {
-  anchor: 'time-to-restore-service-charts',
+export const chartDocumentationHref = helpPagePath('user/analytics/ci_cd_analytics', {
+  anchor: 'view-dora-time-to-restore-service-chart',
 });

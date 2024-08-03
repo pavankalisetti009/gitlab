@@ -59,7 +59,7 @@ describe('ProductAnalyticsUsageQuotaApp', () => {
         expect(findEmptyState().props()).toMatchObject({
           description:
             'This group has no projects with product analytics onboarded in the current period.',
-          primaryButtonLink: '/help/user/product_analytics/index#instrument-a-gitlab-project',
+          primaryButtonLink: '/help/user/product_analytics/index#onboard-a-gitlab-project',
           primaryButtonText: 'Learn how to onboard projects',
           svgPath: '/empty-state.svg',
           title: 'No projects found',

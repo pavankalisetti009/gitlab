@@ -101,8 +101,7 @@ export default {
       }
     },
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  helpPagePath: helpPagePath('user/ai_features', { anchor: 'root-cause-analysis' }),
+  helpPagePath: helpPagePath('user/gitlab_duo/index', { anchor: 'root-cause-analysis' }),
   i18n: {
     drawerTitle: __('Root cause analysis'),
     bannerTitle: __('What is root cause analysis?'),

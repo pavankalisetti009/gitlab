@@ -67,7 +67,7 @@ describe('ProductAnalyticsGroupUsage', () => {
     createComponent();
 
     expect(findUsageQuotaLearnMoreLink().attributes('href')).toBe(
-      '/help/user/product_analytics/index#product-analytics-usage-quota',
+      '/help/user/product_analytics/index#view-product-analytics-usage-quota',
     );
   });
 

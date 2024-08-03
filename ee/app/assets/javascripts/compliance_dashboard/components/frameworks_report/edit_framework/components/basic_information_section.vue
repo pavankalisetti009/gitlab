@@ -108,8 +108,7 @@ export default {
     },
 
     compliancePipelineConfigurationHelpPath() {
-      // eslint-disable-next-line local-rules/require-valid-help-page-path
-      return helpPagePath('user/group/compliance_frameworks.md', {
+      return helpPagePath('user/group/compliance_pipelines', {
         anchor: 'example-configuration',
       });
     },

@@ -75,9 +75,8 @@ export default {
       visitUrl(this.projectAnalyticsSettingsPath, true);
     },
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
   docsPath: helpPagePath('user/product_analytics/index', {
-    anchor: 'onboard-a-gitLab-project',
+    anchor: 'onboard-a-gitlab-project',
   }),
 };
 </script>
