@@ -63,8 +63,7 @@ export default {
       this.skip = false;
     },
   },
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  helpPagePath: helpPagePath('ci/runners/configure_runners', {
+  helpPagePath: helpPagePath('ci/runners/runners_scope', {
     anchor: 'view-statistics-for-runner-performance',
   }),
   actionCancel: { text: __('Cancel') },

@@ -6,8 +6,7 @@ import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import EmptyState from 'ee/security_configuration/dast_profiles/dast_profile_selector/empty_state.vue';
 
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-const SCANNER_PROFILE_INFO = helpPagePath('user/application_security/dast/index', {
+const SCANNER_PROFILE_INFO = helpPagePath('user/application_security/dast/on-demand_scan', {
   anchor: 'site-profile',
 });
 

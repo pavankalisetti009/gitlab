@@ -64,8 +64,7 @@ export default {
       tokenId: null,
       validationMethod: DAST_SITE_VALIDATION_METHOD_TEXT_FILE,
       validationPath: '',
-      // eslint-disable-next-line local-rules/require-valid-help-page-path
-      helpUrl: helpPagePath('user/application_security/dast/proxy-based', {
+      helpUrl: helpPagePath('user/application_security/dast/on-demand_scan', {
         anchor: 'site-profile-validation',
       }),
     };

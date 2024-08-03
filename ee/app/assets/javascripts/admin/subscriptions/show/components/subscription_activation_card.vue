@@ -10,9 +10,8 @@ import {
 import SubscriptionActivationErrors from './subscription_activation_errors.vue';
 import SubscriptionActivationForm from './subscription_activation_form.vue';
 
-// eslint-disable-next-line local-rules/require-valid-help-page-path
-export const activateSubscriptionUrl = helpPagePath('administration/license.html', {
-  anchor: 'activate-gitlab-ee-with-an-activation-code',
+export const activateSubscriptionUrl = helpPagePath('administration/license', {
+  anchor: 'activate-gitlab-ee',
 });
 
 export default {

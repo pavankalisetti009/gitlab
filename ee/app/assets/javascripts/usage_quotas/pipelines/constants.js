@@ -64,9 +64,8 @@ export const LABEL_BUY_ADDITIONAL_MINUTES = s__('UsageQuota|Buy additional compu
 export const LABEL_CI_MINUTES_DISABLED = s__(
   'UsageQuota|No compute usage data because %{linkStart}Instance runners%{linkEnd} are disabled, or there are no projects in this group.',
 );
-// eslint-disable-next-line local-rules/require-valid-help-page-path
 export const ADDITIONAL_MINUTES_HELP_LINK = helpPagePath('ci/pipelines/compute_minutes', {
-  anchor: 'purchase-additional-units-of-compute',
+  anchor: 'purchase-additional-compute-minutes',
 });
 export const SHARED_RUNNERS_DOC_LINK = helpPagePath('ci/runners/index.md');
 export const CI_MINUTES_HELP_LINK = helpPagePath('ci/pipelines/compute_minutes');

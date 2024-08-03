@@ -51,7 +51,7 @@ describe('Move project to group modal', () => {
     it('shows button and links to proper docs', () => {
       expect(findPrimaryAction().text).toBe('Learn to move a project to a group');
       expect(findPrimaryAction().attributes.href).toBe(
-        helpPagePath('tutorials/move_personal_project_to_a_group'),
+        helpPagePath('tutorials/move_personal_project_to_group/index'),
       );
     });
   });

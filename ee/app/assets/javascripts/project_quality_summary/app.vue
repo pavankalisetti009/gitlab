@@ -104,10 +104,7 @@ export default {
   i18n,
   testRunsHelpPath: helpPagePath('ci/testing/unit_test_reports'),
   codeQualityHelpPath: helpPagePath('ci/testing/code_quality'),
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  coverageHelpPath: helpPagePath('ci/pipelines/settings', {
-    anchor: 'add-test-coverage-results-to-a-merge-request',
-  }),
+  coverageHelpPath: helpPagePath('ci/testing/test_coverage_visualization'),
 };
 </script>
 <template>

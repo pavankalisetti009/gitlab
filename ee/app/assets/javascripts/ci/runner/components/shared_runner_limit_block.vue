@@ -36,9 +36,8 @@ export default {
       );
     },
     runnersPath() {
-      // eslint-disable-next-line local-rules/require-valid-help-page-path
-      return helpPagePath('ci/runners/configure_runners.html', {
-        anchor: 'set-maximum-job-timeout-for-a-runner',
+      return helpPagePath('ci/runners/configure_runners', {
+        anchor: 'set-the-maximum-job-timeout',
       });
     },
   },
