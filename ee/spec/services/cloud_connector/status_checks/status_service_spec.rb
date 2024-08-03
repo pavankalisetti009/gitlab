@@ -20,6 +20,7 @@ RSpec.describe CloudConnector::StatusChecks::StatusService, feature_category: :c
       an_instance_of(CloudConnector::StatusChecks::Probes::HostProbe).and(
         have_attributes(host: 'customers.staging.gitlab.com', port: 443)
       ),
+      an_instance_of(CloudConnector::StatusChecks::Probes::AccessProbe),
       an_instance_of(CloudConnector::StatusChecks::Probes::EndToEndProbe)
     ])
   end

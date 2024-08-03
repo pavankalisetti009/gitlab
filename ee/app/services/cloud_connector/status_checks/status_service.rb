@@ -12,6 +12,7 @@ module CloudConnector
         CloudConnector::StatusChecks::Probes::LicenseProbe.new,
         CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_HOST, 443),
         CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_HOST, 443),
+        CloudConnector::StatusChecks::Probes::AccessProbe.new,
         CloudConnector::StatusChecks::Probes::EndToEndProbe.new
       ].freeze
 

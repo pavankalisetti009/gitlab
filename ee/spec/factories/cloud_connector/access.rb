@@ -18,5 +18,13 @@ FactoryBot.define do
         ]
       }
     end
+
+    trait :current do
+      updated_at { Time.current }
+    end
+
+    trait :stale do
+      updated_at { Time.current - ::CloudConnector::Access::STALE_PERIOD - 1.minute }
+    end
   end
 end
