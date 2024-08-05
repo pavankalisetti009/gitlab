@@ -67,7 +67,7 @@ export default {
 };
 </script>
 <template>
-  <div class="dashboard-card-footer py-1 px-2 mt-3 bg-white">
+  <div class="dashboard-card-footer gl-py-2 gl-px-3 gl-mt-5 gl-bg-default">
     <template v-if="upstreamPipeline">
       <gl-link
         ref="upstreamStatus"
