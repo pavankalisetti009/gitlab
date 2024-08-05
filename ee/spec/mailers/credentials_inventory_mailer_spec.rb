@@ -13,7 +13,7 @@ RSpec.describe CredentialsInventoryMailer do
     subject(:email) { described_class.personal_access_token_revoked_email(token: token, revoked_by: administrator) }
 
     it { is_expected.to have_subject 'Your Personal Access Token was revoked' }
-    it { is_expected.to have_body_text 'The following Personal Access Token was revoked by an administrator, Revoker' }
+    it { is_expected.to have_body_text 'The following personal access token was revoked by an administrator, Revoker' }
     it { is_expected.to have_body_text token.name }
     it { is_expected.to have_body_text "Created on #{token.created_at.to_date.to_fs(:medium)}" }
     it { is_expected.to have_body_text 'Scopes: api, sudo' }

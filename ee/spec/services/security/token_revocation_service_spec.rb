@@ -81,7 +81,7 @@ RSpec.describe Security::TokenRevocationService, '#execute', feature_category: :
         .with(
           vulnerability,
           Users::Internal.security_bot,
-          s_("TokenRevocation|This Personal Access Token has been automatically revoked on detection. " \
+          s_("TokenRevocation|This personal access token has been automatically revoked on detection. " \
              "Consider investigating and rotating before marking this vulnerability as resolved.")
         )
 

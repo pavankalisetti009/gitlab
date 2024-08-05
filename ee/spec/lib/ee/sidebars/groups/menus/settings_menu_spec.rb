@@ -395,7 +395,7 @@ RSpec.describe Sidebars::Groups::Menus::SettingsMenu, feature_category: :navigat
         :admin_push_rules              | 'Repository'
         :admin_runners                 | 'CI/CD'
         :manage_deploy_tokens          | 'Repository'
-        :manage_group_access_tokens    | 'Access Tokens'
+        :manage_group_access_tokens    | 'Access tokens'
         :manage_merge_request_settings | 'General'
         :remove_group                  | 'General'
         :admin_integrations            | 'Integrations'
