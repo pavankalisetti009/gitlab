@@ -91,6 +91,7 @@ module EE
       end
 
       def mr_approval_setting_password_required?(merge_request)
+        return true if merge_request.require_password_to_approve?
         return false unless root_group.is_a? Group
 
         ComplianceManagement::MergeRequestApprovalSettings::Resolver

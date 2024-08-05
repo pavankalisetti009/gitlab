@@ -28,6 +28,7 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
       stub_feature_flags ff_require_saml_auth_to_approve: false
 
       create(:saml_provider, group: project.group, enforced_sso: enforced_sso, enabled: true)
+      merge_request.clear_memoization(:policy_approval_settings)
     end
 
     before_all do
@@ -169,6 +170,56 @@ RSpec.describe MergeRequests::ApprovalService, feature_category: :code_review_wo
             end
           end
         end
+      end
+    end
+
+    context 'with MR approval policy that sets `require_password_to_approve`' do
+      let_it_be(:policy) do
+        create(
+          :scan_result_policy_read,
+          :require_password_to_approve,
+          commits: :any,
+          project: merge_request.target_project)
+      end
+
+      let_it_be(:policy_violation) do
+        create(
+          :scan_result_policy_violation,
+          project: project,
+          merge_request: merge_request,
+          scan_result_policy_read: policy)
+      end
+
+      shared_examples 'enforces policy' do
+        subject(:service) { described_class.new(project: project, current_user: user, params: params) }
+
+        context 'when incorrect password is specified' do
+          let(:params) { { approval_password: 'incorrect' } }
+
+          it 'does not approve' do
+            expect { service.execute(merge_request) }.not_to change { merge_request.approvals.count }
+          end
+        end
+
+        context 'when correct password is specified' do
+          let(:params) { { approval_password: user.password } }
+
+          it 'approves' do
+            expect { service.execute(merge_request) }.to change { merge_request.approvals.count }.by(1)
+          end
+        end
+      end
+
+      context 'with `ff_require_saml_auth_to_approve` feature enabled' do
+        before do
+          stub_feature_flags(ff_require_saml_auth_to_approve: true)
+        end
+
+        it_behaves_like 'enforces policy'
+      end
+
+      context 'with `ff_require_saml_auth_to_approve` feature disabled' do
+        it_behaves_like 'enforces policy'
       end
     end
   end
