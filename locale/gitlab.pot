@@ -43981,6 +43981,9 @@ msgstr ""
 msgid "Release|Create tag %{tag}"
 msgstr ""
 
+msgid "Release|Edit release"
+msgstr ""
+
 msgid "Release|Getting started with releases"
 msgstr ""
 
@@ -43994,6 +43997,9 @@ msgid "Release|Leave blank to use the tag name as the release title."
 msgstr ""
 
 msgid "Release|More information"
+msgstr ""
+
+msgid "Release|New release"
 msgstr ""
 
 msgid "Release|Or type a new tag name"
