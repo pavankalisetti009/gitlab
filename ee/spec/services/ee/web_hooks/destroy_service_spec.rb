@@ -23,6 +23,7 @@ RSpec.describe WebHooks::DestroyService, :sidekiq_inline, feature_category: :web
           author_name: current_user.name,
           author_id: current_user.id,
           target_type: "ProjectHook",
+          target_details: "Hook #{hook.id}",
           details: include(custom_message: "Deleted project hook")
         )
       end
