@@ -24,6 +24,15 @@ module EE
           expires: expiration_time
         }
       end
+
+      def unset_marketing_user_cookies(auth)
+        return unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+        domain = ::Gitlab.config.gitlab.host
+
+        auth.cookies.delete(:gitlab_user, domain: domain)
+        auth.cookies.delete(:gitlab_tier, domain: domain)
+      end
     end
 
     def self.prepended(base)

@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe ActiveSession, feature_category: :system_access do
-  describe '.set_marketing_user_cookies', :freeze_time do
-    let_it_be(:user) { create(:user, :with_namespace) }
-    let(:auth) { double(cookies: {}) } # rubocop:todo RSpec/VerifiedDoubles -- similar to the foss class for now
+  let_it_be(:user) { create(:user, :with_namespace) }
+  let(:auth) { instance_double(Warden::Proxy, cookies: cookies) }
+  let(:cookies) { {} }
 
+  describe '.set_marketing_user_cookies', :freeze_time do
     subject(:set_marketing_user_cookies) { described_class.set_marketing_user_cookies(auth, user) }
 
     context 'when the gitlab_com_subscriptions saas feature is available' do
@@ -63,6 +64,37 @@ RSpec.describe ActiveSession, feature_category: :system_access do
 
         expect(auth.cookies[:gitlab_user]).to be_nil
         expect(auth.cookies[:gitlab_tier]).to be_nil
+      end
+    end
+  end
+
+  describe '.unset_marketing_user_cookies' do
+    let(:cookie_domain) { ::Gitlab.config.gitlab.host }
+
+    subject(:unset_marketing_user_cookies) { described_class.unset_marketing_user_cookies(auth) }
+
+    context 'when the gitlab_com_subscriptions saas feature is available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it 'unsets the marketing cookies with the correct domain' do
+        expect(cookies).to receive(:delete).with(:gitlab_user, domain: cookie_domain)
+        expect(cookies).to receive(:delete).with(:gitlab_tier, domain: cookie_domain)
+
+        unset_marketing_user_cookies
+      end
+    end
+
+    context 'when the gitlab_com_subscriptions saas feature is not available' do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it 'does not unset marketing cookies' do
+        expect(cookies).not_to receive(:delete)
+
+        unset_marketing_user_cookies
       end
     end
   end
