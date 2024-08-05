@@ -55,6 +55,24 @@ RSpec.describe CustomersDot::ProxyController, type: :request, feature_category: 
       end
 
       it_behaves_like 'customersdot proxy'
+
+      context 'with invalid CSRF token', :allow_forgery_protection do
+        let(:headers) { default_headers.merge({ 'X-CSRF-Token' => 'invalid' }) }
+
+        it 'does not allow access' do
+          expect { post customers_dot_proxy_graphql_path }.to raise_exception(
+            ActionController::InvalidAuthenticityToken
+          )
+        end
+      end
+
+      context 'with empty CSRF token', :allow_forgery_protection do
+        it 'does not allow access' do
+          expect { post customers_dot_proxy_graphql_path }.to raise_exception(
+            ActionController::InvalidAuthenticityToken
+          )
+        end
+      end
     end
 
     context 'with no user signed in' do
