@@ -24350,6 +24350,9 @@ msgstr ""
 msgid "GlobalSearch|Commands %{superKey} %{link2Start}k%{link2End}"
 msgstr ""
 
+msgid "GlobalSearch|Could not load search results. Please refresh the page to try again."
+msgstr ""
+
 msgid "GlobalSearch|Explore"
 msgstr ""
 

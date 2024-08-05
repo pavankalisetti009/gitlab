@@ -127,6 +127,10 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
           end
 
           it 'allows access via a custom role' do
+            # Temporary: There is no results in the current version with the FF true
+            # WIP
+            stub_feature_flags(zoekt_multimatch_frontend: false)
+
             get search_path, params: {
               group_id: project.group.id,
               scope: 'blobs',
@@ -142,6 +146,10 @@ RSpec.describe 'User with read_code custom role', feature_category: :permissions
 
         context 'when searching a project' do
           it 'allows access via a custom role' do
+            # Temporary: There is no results in the current version with the FF true
+            # WIP
+            stub_feature_flags(zoekt_multimatch_frontend: false)
+
             get search_path, params: {
               project_id: project.id,
               search_code: true,

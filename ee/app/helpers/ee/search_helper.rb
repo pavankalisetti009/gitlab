@@ -116,6 +116,11 @@ module EE
       super
     end
 
+    override :should_show_zoekt_results?
+    def should_show_zoekt_results?(scope, search_type)
+      (scope == 'blobs' && search_type == 'zoekt' && ::Feature.enabled?(:zoekt_multimatch_frontend, current_user)) || super
+    end
+
     private
 
     def recent_epics_autocomplete(term)
