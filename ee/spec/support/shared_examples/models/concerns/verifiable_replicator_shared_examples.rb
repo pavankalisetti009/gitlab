@@ -408,7 +408,7 @@ RSpec.shared_examples 'a verifiable replicator' do
   end
 
   describe '.backfill_verification_state_table' do
-    context 'when on secondary' do
+    context 'on a Geo secondary site' do
       before do
         stub_secondary_node
       end
@@ -418,14 +418,71 @@ RSpec.shared_examples 'a verifiable replicator' do
       end
     end
 
-    it 'calls VerificationStateBackfillService' do
-      stub_primary_node
+    context 'on a Geo primary site' do
+      let(:replication_feature_flag) { "geo_#{replicator.replicable_name}_replication" }
+      let(:force_primary_checksumming_feature_flag) { "geo_#{replicator.replicable_name}_force_primary_checksumming" }
 
-      expect_next_instance_of(Geo::VerificationStateBackfillService) do |service|
-        expect(service).to receive(:execute).and_return(true)
+      before do
+        stub_primary_node
       end
 
-      described_class.backfill_verification_state_table
+      context 'when replication feature flag is enabled' do
+        before do
+          stub_feature_flags(replication_feature_flag => true)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'calls Geo::VerificationStateBackfillService' do
+            stub_feature_flags(force_primary_checksumming_feature_flag => true)
+
+            expect_next_instance_of(Geo::VerificationStateBackfillService) do |service|
+              expect(service).to receive(:execute).and_return(true)
+            end
+
+            described_class.backfill_verification_state_table
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'calls Geo::VerificationStateBackfillService' do
+            stub_feature_flags(force_primary_checksumming_feature_flag => false)
+
+            expect_next_instance_of(Geo::VerificationStateBackfillService) do |service|
+              expect(service).to receive(:execute).and_return(true)
+            end
+
+            described_class.backfill_verification_state_table
+          end
+        end
+      end
+
+      context 'when replication feature flag is disabled' do
+        before do
+          stub_feature_flags(replication_feature_flag => false)
+        end
+
+        context 'when force primary checksumming feature flag is enabled' do
+          it 'calls Geo::VerificationStateBackfillService' do
+            stub_feature_flags(force_primary_checksumming_feature_flag => true)
+
+            expect_next_instance_of(Geo::VerificationStateBackfillService) do |service|
+              expect(service).to receive(:execute).and_return(true)
+            end
+
+            described_class.backfill_verification_state_table
+          end
+        end
+
+        context 'when force primary checksumming feature flag is disabled' do
+          it 'does not call Geo::VerificationStateBackfillService' do
+            stub_feature_flags(force_primary_checksumming_feature_flag => false)
+
+            expect(Geo::VerificationStateBackfillService).not_to receive(:new)
+
+            described_class.backfill_verification_state_table
+          end
+        end
+      end
     end
   end
 
