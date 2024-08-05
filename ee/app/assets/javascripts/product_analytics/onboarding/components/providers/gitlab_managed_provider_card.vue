@@ -5,24 +5,29 @@ import CloudTanukiIllustrationPath from '@gitlab/svgs/dist/illustrations/cloud-t
 import { PROMO_URL } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 
+import getProductAnalyticsProjectSettings from '../../../graphql/queries/get_product_analytics_project_settings.query.graphql';
 import productAnalyticsProjectSettingsUpdate from '../../../graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
+import { projectSettingsValidator } from './utils';
 
 export default {
   name: 'GitlabManagedProviderCard',
   components: { GlButton, GlFormCheckbox, GlLink, GlModal, GlSprintf },
   inject: {
-    projectLevelAnalyticsProviderSettings: {
-      default: () => ({}),
-    },
     analyticsSettingsPath: {},
     managedClusterPurchased: {
       default: false,
     },
     namespaceFullPath: {},
   },
+  props: {
+    projectSettings: {
+      type: Object,
+      required: true,
+      validator: projectSettingsValidator,
+    },
+  },
   data() {
     return {
-      projectSettings: this.projectLevelAnalyticsProviderSettings,
       hasAgreedToGCPZone: false,
       gcpZoneError: null,
       clearSettingsModalIsVisible: false,
@@ -79,24 +84,48 @@ export default {
     onCancelClearSettings() {
       this.clearSettingsModalIsVisible = false;
     },
-    async onConfirmClearSettings() {
+    async clearProductAnalyticsProjectSettings() {
       this.clearSettingsModalHasError = false;
       this.clearSettingsModalIsLoading = true;
+
+      const nullProjectSettings = {
+        productAnalyticsConfiguratorConnectionString: null,
+        productAnalyticsDataCollectorHost: null,
+        cubeApiBaseUrl: null,
+        cubeApiKey: null,
+      };
 
       const { data } = await this.$apollo.mutate({
         mutation: productAnalyticsProjectSettingsUpdate,
         variables: {
           fullPath: this.namespaceFullPath,
-          productAnalyticsConfiguratorConnectionString: null,
-          productAnalyticsDataCollectorHost: null,
-          cubeApiBaseUrl: null,
-          cubeApiKey: null,
+          ...nullProjectSettings,
+        },
+        update: (store) => {
+          const cacheData = store.readQuery({
+            query: getProductAnalyticsProjectSettings,
+            variables: { projectPath: this.namespaceFullPath },
+          });
+
+          store.writeQuery({
+            query: getProductAnalyticsProjectSettings,
+            variables: { projectPath: this.namespaceFullPath },
+            data: {
+              ...cacheData,
+              project: {
+                ...cacheData.project,
+                productAnalyticsSettings: {
+                  ...cacheData.project.productAnalyticsSettings,
+                  ...nullProjectSettings,
+                },
+              },
+            },
+          });
         },
       });
 
       this.clearSettingsModalIsLoading = false;
-      const { errors, __typename, ...updatedProjectSetting } =
-        data.productAnalyticsProjectSettingsUpdate;
+      const { errors } = data.productAnalyticsProjectSettingsUpdate;
 
       if (errors?.length) {
         this.clearSettingsModalHasError = true;
@@ -104,7 +133,6 @@ export default {
       }
 
       this.clearSettingsModalIsVisible = false;
-      this.projectSettings = updatedProjectSetting;
       await this.onSelected();
     },
   },
@@ -189,7 +217,7 @@ export default {
       data-testid="clear-project-level-settings-confirmation-modal"
       modal-id="clear-project-level-settings-confirmation-modal"
       :title="s__('ProductAnalytics|Reset existing project provider settings')"
-      @primary="onConfirmClearSettings"
+      @primary="clearProductAnalyticsProjectSettings"
       @canceled="onCancelClearSettings"
     >
       {{

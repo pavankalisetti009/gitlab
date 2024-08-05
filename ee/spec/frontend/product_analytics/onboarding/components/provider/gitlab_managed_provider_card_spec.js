@@ -1,5 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+
 import { GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 
 import { PROMO_URL } from '~/lib/utils/url_utility';
@@ -10,11 +11,13 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import GitlabManagedProviderCard from 'ee/product_analytics/onboarding/components/providers/gitlab_managed_provider_card.vue';
 import productAnalyticsProjectSettingsUpdate from 'ee/product_analytics/graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
+import getProductAnalyticsProjectSettings from 'ee/product_analytics/graphql/queries/get_product_analytics_project_settings.query.graphql';
 import {
   getEmptyProjectLevelAnalyticsProviderSettings,
   getPartialProjectLevelAnalyticsProviderSettings,
   getProductAnalyticsProjectSettingsUpdateResponse,
   TEST_PROJECT_FULL_PATH,
+  TEST_PROJECT_ID,
 } from '../../../mock_data';
 
 Vue.use(VueApollo);
@@ -24,7 +27,9 @@ jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_action');
 describe('GitlabManagedProviderCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
+  let mockApollo;
 
+  const mockGetProjectSettings = jest.fn();
   const mockMutate = jest.fn();
 
   const findContactSalesBtn = () => wrapper.findByTestId('contact-sales-team-btn');
@@ -37,11 +42,19 @@ describe('GitlabManagedProviderCard', () => {
   const findModalError = () =>
     wrapper.findByTestId('clear-project-level-settings-confirmation-modal-error');
 
-  const createWrapper = (provide = {}) => {
+  const createWrapper = (props = {}, provide = {}) => {
+    mockApollo = createMockApollo([
+      [getProductAnalyticsProjectSettings, mockGetProjectSettings],
+      [productAnalyticsProjectSettingsUpdate, mockMutate],
+    ]);
+
     wrapper = shallowMountExtended(GitlabManagedProviderCard, {
-      apolloProvider: createMockApollo([[productAnalyticsProjectSettingsUpdate, mockMutate]]),
+      apolloProvider: mockApollo,
+      propsData: {
+        projectSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
+        ...props,
+      },
       provide: {
-        projectLevelAnalyticsProviderSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
         analyticsSettingsPath: `/${TEST_PROJECT_FULL_PATH}/-/settings/analytics`,
         managedClusterPurchased: true,
         namespaceFullPath: TEST_PROJECT_FULL_PATH,
@@ -77,7 +90,7 @@ describe('GitlabManagedProviderCard', () => {
   });
 
   describe('when group does not have product analytics provider purchase', () => {
-    beforeEach(() => createWrapper({ managedClusterPurchased: false }));
+    beforeEach(() => createWrapper({}, { managedClusterPurchased: false }));
 
     it('does not show the GitLab-managed provider setup button', () => {
       expect(findConnectGitLabProviderBtn().exists()).toBe(false);
@@ -97,13 +110,23 @@ describe('GitlabManagedProviderCard', () => {
   describe('when group has product analytics provider purchase', () => {
     describe('when some project provider settings are already configured', () => {
       beforeEach(() => {
+        const projectSettings = getPartialProjectLevelAnalyticsProviderSettings();
         createWrapper({
-          projectLevelAnalyticsProviderSettings: getPartialProjectLevelAnalyticsProviderSettings(),
+          projectSettings,
+        });
+        mockApollo.clients.defaultClient.cache.readQuery = jest.fn().mockReturnValue({
+          project: {
+            id: TEST_PROJECT_ID,
+            productAnalyticsSettings: projectSettings,
+          },
         });
       });
-
       describe('when clicking setup', () => {
         it('should confirm with user that resetting settings is required', async () => {
+          createWrapper({
+            projectSettings: getPartialProjectLevelAnalyticsProviderSettings(),
+          });
+
           await initProvider();
 
           expect(findClearSettingsModal().props('visible')).toBe(true);
@@ -183,6 +206,9 @@ describe('GitlabManagedProviderCard', () => {
               mockMutate.mockResolvedValue(getProductAnalyticsProjectSettingsUpdateResponse());
               await initProvider();
               await confirmRemoveSetting();
+              await wrapper.setProps({
+                projectSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
+              });
               return waitForPromises();
             });
 
@@ -202,7 +228,7 @@ describe('GitlabManagedProviderCard', () => {
     describe('when project has no existing settings configured', () => {
       beforeEach(() =>
         createWrapper({
-          projectLevelAnalyticsProviderSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
+          projectSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
         }),
       );
 

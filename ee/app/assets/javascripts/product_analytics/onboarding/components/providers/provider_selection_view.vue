@@ -1,10 +1,11 @@
 <script>
-import { GlEmptyState, GlLink, GlLoadingIcon, GlSprintf } from '@gitlab/ui';
+import { GlEmptyState, GlLink, GlLoadingIcon, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { setUrlFragment, visitUrl } from '~/lib/utils/url_utility';
 
 import initializeProductAnalyticsMutation from '../../../graphql/mutations/initialize_product_analytics.mutation.graphql';
+import getProductAnalyticsProjectSettings from '../../../graphql/queries/get_product_analytics_project_settings.query.graphql';
 import SelfManagedProviderCard from './self_managed_provider_card.vue';
 import GitlabManagedProviderCard from './gitlab_managed_provider_card.vue';
 
@@ -15,6 +16,7 @@ export default {
     GlEmptyState,
     GlLink,
     GlLoadingIcon,
+    GlSkeletonLoader,
     GlSprintf,
     SelfManagedProviderCard,
   },
@@ -22,7 +24,6 @@ export default {
     analyticsSettingsPath: {},
     canSelectGitlabManagedProvider: {},
     namespaceFullPath: {},
-    projectLevelAnalyticsProviderSettings: {},
   },
   props: {
     loadingInstance: {
@@ -32,23 +33,27 @@ export default {
   },
   data() {
     return {
-      loading: this.loadingInstance,
-      loadingStateSvgPath: null,
+      isInitializingInstance: this.loadingInstance,
+      instanceInitializingSvgPath: null,
+      projectLevelAnalyticsProviderSettings: null,
     };
   },
   computed: {
     projectAnalyticsSettingsPath() {
       return setUrlFragment(this.analyticsSettingsPath, '#js-analytics-data-sources');
     },
+    isLoadingSettings() {
+      return this.$apollo.queries.projectLevelAnalyticsProviderSettings.loading;
+    },
   },
   methods: {
-    onConfirm(loadingStateSvgPath) {
-      this.loadingStateSvgPath = loadingStateSvgPath;
-      this.loading = true;
+    onConfirm(instanceInitializingSvgPath) {
+      this.instanceInitializingSvgPath = instanceInitializingSvgPath;
+      this.isInitializingInstance = true;
       this.initialize();
     },
     onError(err) {
-      this.loading = false;
+      this.isInitializingInstance = false;
       this.$emit('error', err);
     },
     async initialize() {
@@ -75,6 +80,23 @@ export default {
       visitUrl(this.projectAnalyticsSettingsPath, true);
     },
   },
+  apollo: {
+    projectLevelAnalyticsProviderSettings: {
+      query: getProductAnalyticsProjectSettings,
+      variables() {
+        return {
+          projectPath: this.namespaceFullPath,
+        };
+      },
+      update(data) {
+        const { __typename, ...projectSettings } = data?.project?.productAnalyticsSettings || {};
+        return projectSettings;
+      },
+      error(err) {
+        this.$emit('error', err);
+      },
+    },
+  },
   docsPath: helpPagePath('user/product_analytics/index', {
     anchor: 'onboard-a-gitlab-project',
   }),
@@ -84,10 +106,11 @@ export default {
 <template>
   <section>
     <gl-empty-state
-      v-if="loading"
+      v-if="isInitializingInstance"
       :title="s__('ProductAnalytics|Creating your product analytics instance...')"
-      :svg-path="loadingStateSvgPath"
+      :svg-path="instanceInitializingSvgPath"
       :svg-height="null"
+      data-testid="provider-selection-instance-loading"
     >
       <template #description>
         <p class="gl-max-w-80">
@@ -102,7 +125,6 @@ export default {
         <gl-loading-icon size="lg" class="gl-mt-5" />
       </template>
     </gl-empty-state>
-
     <section v-else>
       <h1>{{ s__('ProductAnalytics|Analyze your product with Product Analytics') }}</h1>
       <p>
@@ -122,12 +144,28 @@ export default {
       </p>
       <h2 v-if="canSelectGitlabManagedProvider">{{ __('Select an option') }}</h2>
       <div class="gl-display-flex gl-flex-wrap gl-md-flex-nowrap gl-gap-5">
-        <self-managed-provider-card
-          :project-analytics-settings-path="projectAnalyticsSettingsPath"
-          @confirm="onConfirm"
-          @open-settings="openSettings"
-        />
-        <gitlab-managed-provider-card v-if="canSelectGitlabManagedProvider" @confirm="onConfirm" />
+        <template v-if="isLoadingSettings">
+          <div class="gl-w-1/2">
+            <gl-skeleton-loader data-testid="provider-card-skeleton-loader" />
+          </div>
+          <div v-if="canSelectGitlabManagedProvider" class="gl-w-1/2">
+            <gl-skeleton-loader data-testid="provider-card-skeleton-loader" />
+          </div>
+        </template>
+
+        <template v-else-if="projectLevelAnalyticsProviderSettings">
+          <self-managed-provider-card
+            :project-analytics-settings-path="projectAnalyticsSettingsPath"
+            :project-settings="projectLevelAnalyticsProviderSettings"
+            @confirm="onConfirm"
+            @open-settings="openSettings"
+          />
+          <gitlab-managed-provider-card
+            v-if="canSelectGitlabManagedProvider"
+            :project-settings="projectLevelAnalyticsProviderSettings"
+            @confirm="onConfirm"
+          />
+        </template>
       </div>
     </section>
   </section>

@@ -28,8 +28,6 @@ describe('ProductAnalyticsOnboardingView', () => {
     push: jest.fn(),
   };
 
-  const errorMessage = 'some error';
-
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findProviderSelection = () => wrapper.findComponent(ProviderSelectionView);
   const findSetupView = () => wrapper.findComponent(ProductAnalyticsOnboardingSetup);
@@ -58,7 +56,7 @@ describe('ProductAnalyticsOnboardingView', () => {
   };
 
   const expectAlertOnError = async ({ finder, captureError, message }) => {
-    const error = new Error(errorMessage);
+    const error = new Error('oh no!');
 
     finder().vm.$emit('error', error);
 
@@ -149,8 +147,9 @@ describe('ProductAnalyticsOnboardingView', () => {
     it('creates an alert on error with the error message', () => {
       expectAlertOnError({
         finder: findProviderSelection,
-        captureError: true,
-        message: errorMessage,
+        captureError: false,
+        message:
+          'An error occurred while fetching project settings. Refresh the page to try again.',
       });
     });
   });

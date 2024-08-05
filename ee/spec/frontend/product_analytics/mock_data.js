@@ -70,3 +70,17 @@ export const getEmptyProjectLevelAnalyticsProviderSettings = () => ({
   cubeApiBaseUrl: null,
   cubeApiKey: null,
 });
+
+export const getProductAnalyticsProjectSettingsResponse = (
+  settings = getEmptyProjectLevelAnalyticsProviderSettings(),
+  projectId = 'gid://gitlab/Project/2',
+) => ({
+  data: {
+    project: {
+      id: projectId,
+      productAnalyticsSettings: {
+        ...settings,
+      },
+    },
+  },
+});

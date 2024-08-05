@@ -28,7 +28,6 @@ module Analytics
         root_namespace_name: namespace.root_ancestor.name,
         root_namespace_full_path: namespace.root_ancestor.full_path,
         ai_generate_cube_query_enabled: ai_generate_cube_query_enabled.to_s,
-        project_level_analytics_provider_settings: project_level_analytics_provider_settings_json(namespace),
         is_instance_configured_with_self_managed_analytics_provider:
           instance_configured_with_self_managed_analytics_provider?(namespace).to_s,
         default_use_instance_configuration: default_use_instance_configuration?(namespace).to_s,
@@ -151,19 +150,6 @@ module Analytics
         end
 
       "#{settings_path}#js-analytics-dashboards-settings"
-    end
-
-    def project_level_analytics_provider_settings_json(namespace)
-      return unless project?(namespace)
-      return unless can_configure_project_settings?(namespace)
-
-      {
-        product_analytics_configurator_connection_string:
-          namespace.project_setting.product_analytics_configurator_connection_string,
-        product_analytics_data_collector_host: namespace.project_setting.product_analytics_data_collector_host,
-        cube_api_base_url: namespace.project_setting.cube_api_base_url,
-        cube_api_key: namespace.project_setting.cube_api_key
-      }.to_json
     end
 
     def instance_configured_with_self_managed_analytics_provider?(namespace)
