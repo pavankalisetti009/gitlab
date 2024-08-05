@@ -15,6 +15,21 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
       sign_in(user)
     end
 
+    it 'creates a group work item' do
+      visit "#{group_work_items_path(group)}/new" # We don't have a route helper since routing is done via Vue
+
+      select "Issue", from: "work-item-type"
+      fill_in _("Title"), with: "Test work item"
+
+      click_button _("Create issue")
+
+      wait_for_requests
+
+      within_testid("work-item-title") do
+        expect(page).to have_text "Test work item"
+      end
+    end
+
     context 'for epic work items' do
       let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
 
