@@ -1309,10 +1309,13 @@ msgstr ""
 msgid "%{strongStart}%{you}%{strongEnd}%{break}%{name} requested changes"
 msgstr ""
 
+msgid "%{strongStart}%{you}%{strongEnd}%{break}%{name} started a review"
+msgstr ""
+
 msgid "%{strongStart}%{you}%{strongEnd}%{break}Approved by %{name}"
 msgstr ""
 
-msgid "%{strongStart}%{you}%{strongEnd}%{break}Assigned to %{name}."
+msgid "%{strongStart}%{you}%{strongEnd}%{break}Assigned to %{name}"
 msgstr ""
 
 msgid "%{strongStart}%{you}%{strongEnd}%{break}Review requested from %{name}"
