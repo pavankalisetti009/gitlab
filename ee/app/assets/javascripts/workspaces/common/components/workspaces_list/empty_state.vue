@@ -3,11 +3,11 @@ import { GlEmptyState, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
 export const i18n = {
-  title: s__('Workspaces|Develop anywhere'),
-  description:
-    s__(`Workspaces|GitLab Workspaces is a powerful collaborative platform that provides a
-                      comprehensive set of tools for software development
-                      teams to manage their entire development lifecycle.`),
+  title: s__('Workspaces|Instant development environments'),
+  description: s__(
+    `Workspaces|Each workspace is a secure cloud environment for your GitLab project.
+      Quickly switch between projects, live preview, and compile code on any device.`,
+  ),
   primaryButtonText: s__('Workspaces|New workspace'),
 };
 
