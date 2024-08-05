@@ -54,7 +54,7 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
         context 'when updating repository_access_level' do
           it 'initiates commits reindexing when expected' do
             if worker_expected
-              expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { force: true })
+              expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { 'force' => true })
             else
               expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
             end

@@ -31,7 +31,7 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
           expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(project.id, project.class.name, { 'force' => true })
 
           if commit_indexing_expected
-            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { force: true })
+            expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { 'force' => true })
           else
             expect(ElasticCommitIndexerWorker).not_to receive(:perform_async)
           end

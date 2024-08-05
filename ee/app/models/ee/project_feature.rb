@@ -48,7 +48,7 @@ module EE
         end
 
         if elasticsearch_project_blobs_need_updating? && !::Gitlab::Geo.secondary?
-          ElasticCommitIndexerWorker.perform_async(project.id, false, { force: true })
+          ElasticCommitIndexerWorker.perform_async(project.id, false, { 'force' => true })
         end
 
         return unless elasticsearch_project_wikis_need_updating?
