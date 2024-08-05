@@ -63,11 +63,13 @@ module Vulnerabilities
       end
 
       def insert_attributes
-        stat_diff.changed_attributes.map { |attribute| quote_column_name(attribute) }.join(', ')
+        "total, #{vulnerability.severity}"
       end
 
       def insert_values
-        stat_diff.changed_values.map { |value| quote(value) }.join(', ')
+        # when inserting new vulnerability statistics records, initialize the
+        # total and corresponding vulnerability severity level count to 1
+        "1, 1"
       end
 
       def letter_grade
