@@ -66,7 +66,7 @@ RSpec.describe 'User with manage_project_access_tokens custom role', feature_cat
         get project_path(project)
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(response.body).to include('Access Token')
+        expect(response.body).to include('Access token')
       end
     end
   end

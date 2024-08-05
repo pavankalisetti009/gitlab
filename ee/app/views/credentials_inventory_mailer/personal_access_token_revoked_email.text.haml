@@ -1,4 +1,4 @@
-= _("The following Personal Access Token was revoked by an administrator, %{username}.") % { username: @revoked_by.username }
+= _("The following personal access token was revoked by an administrator, %{username}.") % { username: @revoked_by.username }
 
 = @token.name
 
@@ -9,4 +9,4 @@
 
 = _("Scopes: %{scope_list}") % { scope_list: @token.scopes.join(', ') }
 
-= html_escape(_("You can create a new Personal Access Token by visiting %{link}")) % { link: user_settings_personal_access_tokens_url.html_safe }
+= html_escape(_("You can create a new personal access token by visiting %{link}")) % { link: user_settings_personal_access_tokens_url.html_safe }
