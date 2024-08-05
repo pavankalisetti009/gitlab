@@ -57,7 +57,10 @@ RSpec.describe Security::OrchestrationConfigurationRemoveBotWorker, feature_cate
           end
 
           it 'calls the users destroy service to carry out the deletion' do
-            expect(Users::DestroyService).to receive(:new).and_call_original
+            expect_next_instance_of(Users::DestroyService) do |service|
+              expect(service).to receive(:execute).with(security_policy_bot, hard_delete: false,
+                skip_authorization: true)
+            end
 
             run_worker
           end
