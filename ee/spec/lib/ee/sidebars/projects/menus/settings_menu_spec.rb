@@ -79,7 +79,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
       end
     end
 
-    describe 'Access Tokens' do
+    describe 'Access tokens' do
       let(:item_id) { :access_tokens }
 
       describe 'when the user is not an admin but has manage_resource_access_tokens custom permission' do
@@ -90,7 +90,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
         end
 
         it 'includes access token menu item' do
-          expect(subject.title).to eql('Access Tokens')
+          expect(subject.title).to eql('Access tokens')
         end
       end
     end
@@ -117,7 +117,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
       :admin_runners                 | 'CI/CD'
       :manage_deploy_tokens          | 'Repository'
       :manage_merge_request_settings | 'Merge requests'
-      :manage_project_access_tokens  | 'Access Tokens'
+      :manage_project_access_tokens  | 'Access tokens'
       :admin_integrations            | 'Integrations'
     end
 

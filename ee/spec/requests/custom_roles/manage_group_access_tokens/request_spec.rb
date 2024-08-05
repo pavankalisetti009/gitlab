@@ -80,7 +80,7 @@ RSpec.describe 'User with manage_group_access_tokens custom role', feature_categ
         get group_path(group)
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(response.body).to include('Access Tokens')
+        expect(response.body).to include('Access tokens')
       end
     end
   end
