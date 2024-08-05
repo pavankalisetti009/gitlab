@@ -183,16 +183,6 @@ RSpec.describe AutoMerge::MergeTrainService, feature_category: :merge_trains do
       let(:pipeline) { create(:ci_pipeline) }
       let(:job) { create(:ci_build, :running, pipeline: pipeline) }
 
-      context 'when ci_canceling_status is disabled' do
-        before do
-          stub_feature_flags(ci_canceling_status: false)
-        end
-
-        it 'cancels the jobs in the pipeline' do
-          expect { subject }.to change { job.reload.status }.from('running').to('canceled')
-        end
-      end
-
       it 'sets the job to a canceled status' do
         expect { subject }.to change { job.reload.status }.from('running').to('canceled')
       end

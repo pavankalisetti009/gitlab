@@ -97,11 +97,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   describe 'updates compute minutes', feature_category: :hosted_runners do
     let(:job) { create(:ci_build, :running, pipeline: pipeline) }
 
-    context 'when ci_canceling_status is disabled' do
-      before do
-        stub_feature_flags(ci_canceling_status: false)
-      end
-
+    context 'when cancelling supported' do
       %w[success drop cancel].each do |event|
         it "for event #{event}" do
           expect(Ci::Minutes::UpdateBuildMinutesService)
@@ -114,14 +110,20 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
 
     # TODO: ensure minutes are still tracked when set to
     # canceled but not when transitioning to canceling
-    context 'when ci_canceling_status is enabled' do
-      %w[success drop].each do |event|
-        it "for event #{event}" do
-          expect(Ci::Minutes::UpdateBuildMinutesService)
-            .to receive(:new).and_call_original
+    %w[success drop].each do |event|
+      it "for event #{event}" do
+        expect(Ci::Minutes::UpdateBuildMinutesService)
+          .to receive(:new).and_call_original
 
-          job.public_send(event)
-        end
+        job.public_send(event)
+      end
+
+      it 'updates minutes after canceling transitions to canceled' do
+        expect(Ci::Minutes::UpdateBuildMinutesService)
+          .to receive(:new).and_call_original
+
+        job.public_send(:cancel)
+        job.public_send(:drop)
       end
     end
   end
