@@ -209,38 +209,6 @@ export default {
   <div class="gl-flex gl-flex-col gl-w-4/10 gl-overflow-auto gl-z-0 gl-pl-2">
     <div>
       <div class="gl-flex gl-justify-between">
-        <span class="gl-text-lg item-title">{{ __('Description') }}</span>
-        <span
-          id="what-is-code-flow"
-          data-testid="what-is-code-flow"
-          class="gl-text-blue-400 gl-cursor-default"
-        >
-          {{ $options.i18n.codeFlowInfoButton }}
-        </span>
-        <gl-popover
-          triggers="hover focus"
-          placement="top"
-          target="what-is-code-flow"
-          :content="$options.i18n.codeFlowInfoAnswer"
-          data-testid="what-is-code-flow-popover"
-          :show="false"
-        />
-      </div>
-      <div class="gl-pt-3">
-        <span
-          v-if="descriptionHtml"
-          ref="markdownContent"
-          v-safe-html="descriptionHtml"
-          data-testid="description"
-        ></span>
-        <span v-else data-testid="description">
-          {{ description }}
-        </span>
-      </div>
-    </div>
-
-    <div>
-      <div class="gl-flex gl-justify-between">
         <div>
           <div class="gl-text-lg item-title">{{ $options.i18n.steps }}</div>
           <div class="gl-pt-2" data-testid="steps-header">{{ stepsHeader }}</div>
