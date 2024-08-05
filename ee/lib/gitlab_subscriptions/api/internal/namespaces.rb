@@ -4,7 +4,7 @@ module GitlabSubscriptions
   module API
     module Internal
       class Namespaces < ::API::Base
-        feature_category :subscription_management
+        feature_category :plan_provisioning
         urgency :low
 
         namespace :internal do
