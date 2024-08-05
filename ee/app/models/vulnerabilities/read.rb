@@ -6,6 +6,7 @@ module Vulnerabilities
     include EachBatch
     include UnnestedInFilters::Dsl
     include FromUnion
+    include SafelyChangeColumnDefault
 
     declarative_enum DismissalReasonEnum
 
@@ -13,6 +14,8 @@ module Vulnerabilities
 
     self.table_name = "vulnerability_reads"
     self.primary_key = :vulnerability_id
+
+    columns_changing_default :owasp_top_10
 
     belongs_to :vulnerability, inverse_of: :vulnerability_read
     belongs_to :project
