@@ -36,14 +36,6 @@ export const SORT_ORDERS = {
   [SORT_FIELD_LICENSE]: SORT_DESCENDING,
 };
 
-export const REPORT_STATUS = {
-  ok: 'ok',
-  jobNotSetUp: 'job_not_set_up',
-  jobFailed: 'job_failed',
-  noDependencies: 'no_dependencies',
-  incomplete: 'no_dependency_files',
-};
-
 export const FILTER = {
   all: 'all',
   vulnerable: 'vulnerable',

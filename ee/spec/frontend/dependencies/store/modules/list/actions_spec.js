@@ -151,7 +151,6 @@ describe('Dependencies actions', () => {
             type: types.RECEIVE_DEPENDENCIES_SUCCESS,
             payload: {
               dependencies: mockDependenciesResponse.dependencies,
-              reportInfo: mockDependenciesResponse.report,
               pageInfo,
             },
           },
@@ -173,7 +172,6 @@ describe('Dependencies actions', () => {
               type: types.RECEIVE_DEPENDENCIES_SUCCESS,
               payload: {
                 dependencies: mockDependenciesResponse.dependencies,
-                reportInfo: mockDependenciesResponse.report,
                 pageInfo: {
                   type: 'cursor',
                   currentCursor: cursorHeaders['X-Page'],

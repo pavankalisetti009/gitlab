@@ -54,7 +54,7 @@ export default {
   },
   computed: {
     ...mapState(['currentList', 'listTypes']),
-    ...mapGetters(['isInitialized', 'isJobFailed', 'isIncomplete', 'reportInfo', 'totals']),
+    ...mapGetters(['isInitialized', 'totals']),
     ...mapState(DEPENDENCY_LIST_TYPES.all.namespace, ['pageInfo']),
     ...mapState({
       fetchingInProgress(state) {

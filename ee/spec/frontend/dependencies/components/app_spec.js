@@ -14,7 +14,6 @@ import {
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
 } from 'ee/dependencies/constants';
-import { REPORT_STATUS } from 'ee/dependencies/store/modules/list/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -69,7 +68,6 @@ describe('DependenciesApp component', () => {
         .map((_, id) => ({ id })),
     });
     store.state[allNamespace].pageInfo.total = total;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.ok;
   };
 
   const findDependenciesTables = () => wrapper.findAllComponents(PaginatedDependenciesTable);

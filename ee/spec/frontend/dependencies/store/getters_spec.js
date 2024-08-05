@@ -4,7 +4,6 @@ describe('Dependencies getters', () => {
   describe.each`
     getterName         | propertyName
     ${'isInitialized'} | ${'initialized'}
-    ${'reportInfo'}    | ${'reportInfo'}
   `('$getterName', ({ getterName, propertyName }) => {
     it(`returns the value from the current list module's state`, () => {
       const mockValue = {};

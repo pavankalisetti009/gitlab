@@ -1,4 +1,4 @@
-import { REPORT_STATUS, SORT_ORDERS, SORT_ASCENDING, SORT_DESCENDING } from './constants';
+import { SORT_ORDERS, SORT_ASCENDING, SORT_DESCENDING } from './constants';
 import * as types from './mutation_types';
 
 export default {
@@ -24,17 +24,11 @@ export default {
     state.isLoading = true;
     state.errorLoading = false;
   },
-  [types.RECEIVE_DEPENDENCIES_SUCCESS](state, { dependencies, reportInfo, pageInfo }) {
+  [types.RECEIVE_DEPENDENCIES_SUCCESS](state, { dependencies, pageInfo }) {
     state.dependencies = dependencies;
     state.pageInfo = pageInfo;
     state.isLoading = false;
     state.errorLoading = false;
-
-    // keep the initial report status to prevent the empty state from being displayed when filters are applied
-    if (!state.initialized) {
-      state.reportInfo.status = reportInfo.status;
-    }
-
     state.initialized = true;
   },
   [types.RECEIVE_DEPENDENCIES_ERROR](state) {
@@ -42,9 +36,6 @@ export default {
     state.errorLoading = true;
     state.dependencies = [];
     state.pageInfo = {};
-    state.reportInfo = {
-      status: REPORT_STATUS.ok,
-    };
     state.initialized = true;
   },
   [types.SET_SEARCH_FILTER_PARAMETERS](state, parameters) {
