@@ -8,7 +8,7 @@ import {
   INFO,
   UNKNOWN,
   SEVERITY_COUNT_LIMIT,
-} from '~/vulnerabilities/constants';
+} from 'ee/vulnerabilities/constants';
 import { s__ } from '~/locale';
 import { SEVERITY_CLASS_NAME_MAP } from './constants';
 

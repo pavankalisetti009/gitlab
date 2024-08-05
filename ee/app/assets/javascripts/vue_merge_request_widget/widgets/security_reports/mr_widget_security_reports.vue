@@ -9,7 +9,7 @@ import SummaryHighlights from 'ee/vue_shared/security_reports/components/summary
 import { EXTENSION_ICONS } from '~/vue_merge_request_widget/constants';
 import { capitalizeFirstCharacter, convertToCamelCase } from '~/lib/utils/text_utility';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { CRITICAL, HIGH } from '~/vulnerabilities/constants';
+import { CRITICAL, HIGH } from 'ee/vulnerabilities/constants';
 import { DynamicScroller, DynamicScrollerItem } from 'vendor/vue-virtual-scroller';
 import SummaryText, { MAX_NEW_VULNERABILITIES } from './summary_text.vue';
 import SecurityTrainingPromoWidget from './security_training_promo_widget.vue';

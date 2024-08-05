@@ -1,10 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import {
-  CRITICAL,
-  HIGH,
-  MEDIUM,
-  LOW,
-} from 'ee/security_dashboard/store/modules/vulnerabilities/constants';
+import { CRITICAL, HIGH, MEDIUM, LOW } from 'ee/vulnerabilities/constants';
 import SecurityIssueBody from 'ee/vue_shared/security_reports/components/security_issue_body.vue';
 import SeverityBadge from 'ee/vue_shared/security_reports/components/severity_badge.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
