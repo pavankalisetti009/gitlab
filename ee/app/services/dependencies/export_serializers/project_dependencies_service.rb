@@ -22,10 +22,18 @@ module Dependencies
       delegate :project, :author, to: :dependency_list_export, private: true
 
       def dependencies_list
-        ::Sbom::DependenciesFinder.new(project).execute
+        ::Sbom::DependenciesFinder.new(project, params: default_filters).execute
           .with_component
           .with_version
           .with_vulnerabilities
+      end
+
+      def default_filters
+        { source_types: default_source_type_filters }
+      end
+
+      def default_source_type_filters
+        ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
       end
 
       def report_fetch_service
