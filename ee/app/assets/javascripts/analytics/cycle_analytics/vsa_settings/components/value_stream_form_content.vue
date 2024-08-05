@@ -7,7 +7,7 @@ import { filterStagesByHiddenStatus } from '~/analytics/cycle_analytics/utils';
 import { swapArrayItems } from '~/lib/utils/array_utility';
 import { sprintf } from '~/locale';
 import Tracking from '~/tracking';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import {
   STAGE_SORT_DIRECTION,
   i18n,
@@ -188,20 +188,28 @@ export default {
           return;
         }
 
-        const msg = this.isEditing
-          ? this.$options.i18n.FORM_EDITED
-          : this.$options.i18n.FORM_CREATED;
-        this.$toast.show(sprintf(msg, { name: this.name }));
         this.nameErrors = [];
         this.stageErrors = initializeStageErrors(this.defaultStageConfig, this.selectedPreset);
         this.track('submit_form', {
           label: this.isEditing ? 'edit_value_stream' : 'create_value_stream',
         });
 
-        if (!this.isEditing && this.valueStreamPath) {
+        if (this.isEditing) {
+          this.$toast.show(sprintf(this.$options.i18n.FORM_EDITED, { name: this.name }));
+
+          return;
+        }
+
+        if (this.valueStreamPath) {
           this.isRedirecting = true;
 
-          visitUrl(this.valueStreamPath);
+          visitUrlWithAlerts(this.valueStreamPath, [
+            {
+              id: 'value-stream-created-success',
+              message: sprintf(this.$options.i18n.SETTINGS_FORM_CREATED, { name: this.name }),
+              variant: 'success',
+            },
+          ]);
         }
       });
     },
