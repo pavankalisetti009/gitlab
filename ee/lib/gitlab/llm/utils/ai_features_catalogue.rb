@@ -19,7 +19,7 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::Vulnerabilities::ResolveVulnerability,
             feature_category: :vulnerability_management,
             execute_method: ::Llm::ResolveVulnerabilityService,
-            maturity: :experimental,
+            maturity: :ga,
             self_managed: true,
             internal: false
           },
