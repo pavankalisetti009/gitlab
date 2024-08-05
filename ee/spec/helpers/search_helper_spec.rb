@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe SearchHelper, feature_category: :global_search do
+  include Devise::Test::ControllerHelpers
   describe '#search_filter_input_options' do
     let(:options) { helper.search_filter_input_options(:issues) }
 
@@ -466,5 +467,15 @@ RSpec.describe SearchHelper, feature_category: :global_search do
     end
 
     it { expect(wiki_blob_link(wiki_blob)).to eq("/groups/#{group.path}/-/wikis/#{wiki_blob.path}") }
+  end
+
+  describe '#should_show_zoekt_results?' do
+    it 'returns false for any scope and search type' do
+      expect(helper.should_show_zoekt_results?(:any_scope, :any_type)).to be false
+    end
+
+    it 'returns true for blobs scope and zoekt search type' do
+      expect(helper.should_show_zoekt_results?('blobs', 'zoekt')).to be true
+    end
   end
 end
