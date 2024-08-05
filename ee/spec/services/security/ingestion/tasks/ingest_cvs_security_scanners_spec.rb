@@ -52,6 +52,12 @@ RSpec.describe Security::Ingestion::Tasks::IngestCvsSecurityScanners, feature_ca
       it 'uses existing scanners' do
         expect { task.execute }.to change { Vulnerabilities::Scanner.count }.by(0)
       end
+
+      it 'does not attempt to upsert scanners' do
+        travel_to(1.day.from_now) do
+          expect { task.execute }.not_to change { Vulnerabilities::Scanner.first.updated_at }
+        end
+      end
     end
 
     context 'with duplicate maps' do
