@@ -46,7 +46,7 @@ export default {
 <template>
   <gl-badge
     v-if="mergeRequest.approvalsRequired"
-    v-gl-tooltip="tooltipTitle"
+    v-gl-tooltip.viewport.top="tooltipTitle"
     :icon="badgeIcon"
     :variant="badgeVariant"
   >
