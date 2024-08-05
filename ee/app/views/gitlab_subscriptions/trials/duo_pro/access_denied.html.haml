@@ -2,13 +2,13 @@
 
 = render "layouts/head"
 
-= image_tag('illustrations/empty-state/empty-private-md.svg', alt: '403', lazy: false)
 
 .gl-max-w-80.gl-mx-auto.gl-text-center
+  = image_tag('illustrations/empty-state/empty-access-md.svg', alt: '403', lazy: false)
   %h1.gl-font-size-h-display
-    = s_('DuoProTrial|You do not have access to the GitLab Duo Pro trial')
+    = s_('DuoProTrial|You do not have access to trial GitLab Duo')
   .gl-mt-3
-    = s_('DuoProTrial|To register for a trial of GitLab Duo Pro, you must be an Owner of a top-level group that has an active paid subscription or is on an Ultimate trial.')
+    = s_('DuoProTrial|To start a GitLab Duo trial, you must have the Owner role of a top-level group that has an active subscription or trial.')
   .gl-mt-3.gl-flex.gl-items-center.gl-justify-center.gl-flex-col.gl-gap-3{ class: 'sm:gl-flex-row' }
     .js-go-back.gl-w-full{ class: 'sm:gl-w-auto' }
       = render Pajamas::ButtonComponent.new(variant: :confirm, button_options: { class: 'gl-w-full' }) do

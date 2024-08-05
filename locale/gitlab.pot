@@ -19734,13 +19734,13 @@ msgstr ""
 msgid "DuoProTrial|To regain access to features like Code Suggestions and Chat, purchase the subscription add-on for GitLab Duo Pro."
 msgstr ""
 
-msgid "DuoProTrial|To register for a trial of GitLab Duo Pro, you must be an Owner of a top-level group that has an active paid subscription or is on an Ultimate trial."
+msgid "DuoProTrial|To start a GitLab Duo trial, you must have the Owner role of a top-level group that has an active subscription or trial."
 msgstr ""
 
 msgid "DuoProTrial|We just need some additional information to activate your trial."
 msgstr ""
 
-msgid "DuoProTrial|You do not have access to the GitLab Duo Pro trial"
+msgid "DuoProTrial|You do not have access to trial GitLab Duo"
 msgstr ""
 
 msgid "DuoProTrial|You no longer have access to GitLab Duo Pro features"
