@@ -9,15 +9,20 @@ class PushRule < ApplicationRecord
 
   MatchError = Class.new(StandardError)
 
-  REGEX_COLUMNS = %i[
+  # Max size: 511 characters
+  SHORT_REGEX_COLUMNS = %i[
     force_push_regex
     delete_branch_regex
     commit_message_regex
-    commit_message_negative_regex
     author_email_regex
     file_name_regex
     branch_name_regex
   ].freeze
+
+  # Max size: 2047 characters
+  LONG_REGEX_COLUMNS = %i[commit_message_negative_regex].freeze
+
+  REGEX_COLUMNS = SHORT_REGEX_COLUMNS + LONG_REGEX_COLUMNS
 
   AUDIT_LOG_ALLOWLIST = {
     commit_committer_check: 'reject unverified users',
@@ -40,11 +45,8 @@ class PushRule < ApplicationRecord
 
   validates :max_file_size, numericality: { greater_than_or_equal_to: 0, only_integer: true }
   validates(*REGEX_COLUMNS, untrusted_regexp: true)
-  validates(
-    *REGEX_COLUMNS,
-    length: { maximum: 511 },
-    if: ->(record) { ::Feature.enabled?(:add_validation_for_push_rules, record.project) }
-  )
+  validates(*SHORT_REGEX_COLUMNS, length: { maximum: 511 })
+  validates(*LONG_REGEX_COLUMNS, length: { maximum: 2047 })
 
   before_update :convert_to_re2
 
