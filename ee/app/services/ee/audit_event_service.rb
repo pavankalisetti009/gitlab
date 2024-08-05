@@ -118,7 +118,11 @@ module EE
 
       payload[:ip_address] = ip_address if admin_audit_event_enabled?
 
-      ::AuditEvent.create(payload)
+      event = ::AuditEvent.create(payload)
+
+      log_to_new_tables([event], event.class.to_s) if event.persisted?
+
+      event
     end
 
     # Builds the @details attribute for user
