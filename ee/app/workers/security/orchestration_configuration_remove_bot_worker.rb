@@ -21,7 +21,7 @@ module Security
       security_policy_bot = project.security_policy_bot
       return if security_policy_bot.nil?
 
-      Users::DestroyService.new(current_user).execute(security_policy_bot, hard_delete: true, skip_authorization: true)
+      Users::DestroyService.new(current_user).execute(security_policy_bot, hard_delete: false, skip_authorization: true)
     end
   end
 end
