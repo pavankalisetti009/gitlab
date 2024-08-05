@@ -15,8 +15,9 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
         'node.url' => 'http://localhost:6090',
         'node.name' => 'm1.local',
         'disk.all' => 994662584320,
-        'disk.used' => 532673712128,
-        'disk.free' => 461988872192
+        'disk.free' => 461988872192,
+        'disk.indexed' => 2416879,
+        'disk.used' => 532673712128
       }
     end
 

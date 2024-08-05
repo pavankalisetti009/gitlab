@@ -47,8 +47,8 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'node.name' => 'm1.local',
         'node.url' => 'http://localhost:6080',
         'disk.all' => 994662584320,
-        'disk.used' => 532673712128,
         'disk.free' => 461988872192,
+        'disk.used' => 532673712128,
         'node.task_count' => 5,
         'node.concurrency' => 10
       }
@@ -78,6 +78,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           expect(tasked_node.last_seen_at).to eq(Time.zone.now)
           expect(tasked_node.used_bytes).to eq(params['disk.used'])
           expect(tasked_node.total_bytes).to eq(params['disk.all'])
+          expect(tasked_node.indexed_bytes).to eq 0
           expect(tasked_node.metadata['name']).to eq(params['node.name'])
           expect(tasked_node.metadata['task_count']).to eq(params['node.task_count'])
           expect(tasked_node.metadata['concurrency']).to eq(params['node.concurrency'])
@@ -96,6 +97,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
           expect(tasked_node.last_seen_at).to eq(Time.zone.now)
           expect(tasked_node.used_bytes).to eq(params['disk.used'])
           expect(tasked_node.total_bytes).to eq(params['disk.all'])
+          expect(tasked_node.indexed_bytes).to eq 0
           expect(tasked_node.metadata['name']).to eq(params['node.name'])
         end
 
@@ -104,6 +106,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
 
           expect(tasked_node.save).to eq(true)
         end
+      end
+    end
+
+    context 'when disk.indexed is present' do
+      let(:params) { base_params.merge('disk.indexed' => 2416879) }
+
+      it 'sets indexed_bytes to the disk.indexed from params' do
+        expect(tasked_node.indexed_bytes).to eq(params['disk.indexed'])
       end
     end
   end
@@ -121,6 +131,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       expected_json = {
         'zoekt.node_name' => 'test_name',
         'zoekt.node_id' => node.id,
+        'zoekt.indexed_bytes' => 0,
         'zoekt.used_bytes' => node.used_bytes,
         'zoekt.total_bytes' => node.total_bytes,
         'zoekt.task_count' => 100,
@@ -135,6 +146,7 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
       expected_json = {
         'zoekt.node_name' => 'another_name',
         'zoekt.node_id' => node.id,
+        'zoekt.indexed_bytes' => 0,
         'zoekt.used_bytes' => node.used_bytes,
         'zoekt.total_bytes' => node.total_bytes
       }

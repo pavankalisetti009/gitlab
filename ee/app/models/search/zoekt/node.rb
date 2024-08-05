@@ -30,15 +30,16 @@ module Search
         find_or_initialize_by(uuid: params.fetch(:uuid)).tap do |s|
           # Note: if zoekt node makes task_request with a different `node.url`,
           # we will respect that and make change here.
-          s.index_base_url = params.fetch("node.url")
-          s.search_base_url = params['node.search_url'] || params.fetch("node.url")
+          s.index_base_url = params.fetch('node.url')
+          s.search_base_url = params['node.search_url'] || params.fetch('node.url')
 
           s.last_seen_at = Time.zone.now
-          s.used_bytes = params.fetch("disk.used")
-          s.total_bytes = params.fetch("disk.all")
-          s.metadata['name'] = params.fetch("node.name")
-          s.metadata['task_count'] = params["node.task_count"].to_i if params["node.task_count"].present?
-          s.metadata['concurrency'] = params["node.concurrency"].to_i if params["node.concurrency"].present?
+          s.total_bytes = params.fetch('disk.all')
+          s.indexed_bytes = params['disk.indexed'] if params['disk.indexed'].present?
+          s.used_bytes = params.fetch('disk.used')
+          s.metadata['name'] = params.fetch('node.name')
+          s.metadata['task_count'] = params['node.task_count'].to_i if params['node.task_count'].present?
+          s.metadata['concurrency'] = params['node.concurrency'].to_i if params['node.concurrency'].present?
         end
       end
 
@@ -51,6 +52,7 @@ module Search
           'zoekt.node_name' => metadata['name'],
           'zoekt.node_id' => id,
           'zoekt.used_bytes' => used_bytes,
+          'zoekt.indexed_bytes' => indexed_bytes,
           'zoekt.total_bytes' => total_bytes,
           'zoekt.task_count' => metadata['task_count'],
           'zoekt.concurrency' => metadata['concurrency']
