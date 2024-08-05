@@ -1344,7 +1344,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       group.add_maintainer(create(:user, :security_bot))
       group.add_maintainer(create(:user, :automation_bot))
       group.add_maintainer(create(:user, :admin_bot))
-      group.add_guest(create(:user, :security_policy_bot))
       create(:group_member, :developer)
       create(:project_member, :developer, source: create(:project, namespace: group))
       create(:group_member, :invited, :developer, source: group)
@@ -2110,7 +2109,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   describe '#capacity_left_for_user?' do
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user) }
-    let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
 
     where(:current_user, :user_cap_available, :user_cap_reached, :existing_membership, :result) do
       ref(:user)                | false           | false              | false               | true
@@ -2120,13 +2118,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       ref(:user)                | true            | false              | true                | true
       ref(:user)                | true            | true               | true                | true
       ref(:user)                | true            | true               | false               | false
-      ref(:security_policy_bot) | false           | false              | false               | true
-      ref(:security_policy_bot) | false           | false              | true                | true
-      ref(:security_policy_bot) | false           | true               | true                | true
-      ref(:security_policy_bot) | true            | false              | false               | true
-      ref(:security_policy_bot) | true            | false              | true                | true
-      ref(:security_policy_bot) | true            | true               | true                | true
-      ref(:security_policy_bot) | true            | true               | false               | true
       nil                       | false           | false              | false               | true
       nil                       | true            | false              | false               | true
       nil                       | true            | true               | false               | false
@@ -2143,6 +2134,34 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to eq(result) }
+    end
+
+    context 'with security_policy_bot as a member in the group project' do
+      let_it_be(:group_project) { create(:project, group: group) }
+      let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
+
+      where(:current_user, :user_cap_available, :user_cap_reached, :existing_membership, :result) do
+        ref(:security_policy_bot) | false           | false              | false               | true
+        ref(:security_policy_bot) | false           | false              | true                | true
+        ref(:security_policy_bot) | false           | true               | true                | true
+        ref(:security_policy_bot) | true            | false              | false               | true
+        ref(:security_policy_bot) | true            | false              | true                | true
+        ref(:security_policy_bot) | true            | true               | true                | true
+        ref(:security_policy_bot) | true            | true               | false               | true
+      end
+
+      subject { group.capacity_left_for_user?(current_user) }
+
+      with_them do
+        before do
+          create(:project_member, source: group_project, user: current_user) if existing_membership
+
+          allow(group).to receive(:user_cap_available?).and_return(user_cap_available)
+          allow(group).to receive(:user_cap_reached?).and_return(user_cap_reached)
+        end
+
+        it { is_expected.to eq(result) }
+      end
     end
   end
 

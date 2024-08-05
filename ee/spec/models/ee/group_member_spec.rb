@@ -86,6 +86,16 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
         end
       end
     end
+
+    context 'when user is a security_policy_bot' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:bot_group_member) { build(:group_member, source: group, user: create(:user, :security_policy_bot)) }
+
+      it 'is invalid' do
+        expect(bot_group_member).to be_invalid
+        expect(bot_group_member.errors[:member_user_type]).to include("Security policy bot cannot be added as a group member")
+      end
+    end
   end
 
   describe 'scopes' do
