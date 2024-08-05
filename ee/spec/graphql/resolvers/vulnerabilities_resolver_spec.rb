@@ -211,15 +211,18 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
         project.add_developer(user)
       end
 
-      let(:vulnerable) { nil }
+      let(:vulnerable) { InstanceSecurityDashboard.new(user, project_ids: [project.id]) }
 
-      context 'when there is a current user' do
+      context 'when user has valid projects' do
         it "returns vulnerabilities for all projects on the current user's instance security dashboard" do
           is_expected.to contain_exactly(critical_vulnerability, high_vulnerability, low_vulnerability)
         end
+
+        it_behaves_like 'vulnerability filterable', :params
       end
 
-      context 'and there is no current user' do
+      context 'when user does not have valid projects' do
+        let(:user) { create(:user) }
         let(:current_user) { nil }
 
         it 'returns no vulnerabilities' do
