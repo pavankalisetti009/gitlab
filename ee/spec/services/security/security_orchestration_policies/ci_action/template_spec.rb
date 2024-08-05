@@ -217,6 +217,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             :"eslint-sast-0",
             :"flawfinder-sast-0",
             :"kubesec-sast-0",
+            :"gitlab-advanced-sast-0",
             :"gosec-sast-0",
             :"mobsf-android-sast-0",
             :"mobsf-ios-sast-0",
@@ -234,7 +235,8 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
             'SECURE_ANALYZERS_PREFIX' => '$CI_TEMPLATE_REGISTRY_HOST/security-products',
             'SAST_IMAGE_SUFFIX' => '',
             'SAST_EXCLUDED_ANALYZERS' => '',
-            'SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp',
+            'DEFAULT_SAST_EXCLUDED_PATHS' => 'spec, test, tests, tmp',
+            'SAST_EXCLUDED_PATHS' => '$DEFAULT_SAST_EXCLUDED_PATHS',
             'SCAN_KUBERNETES_MANIFESTS' => 'false'
           }
 

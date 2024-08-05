@@ -361,6 +361,8 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
                     '**/*.jsx',
                     '**/*.ts',
                     '**/*.tsx',
+                    '**/*.cjs',
+                    '**/*.mjs',
                     '**/*.c',
                     '**/*.cc',
                     '**/*.cpp',
@@ -378,9 +380,7 @@ RSpec.describe Gitlab::Ci::Config::SecurityOrchestrationPolicies::Processor, fea
                     '**/*.swift',
                     '**/*.m',
                     '**/*.rb',
-                    '**/*.kt',
-                    '**/*.cjs',
-                    '**/*.mjs'
+                    '**/*.kt'
                   ] }
               ]
             )
