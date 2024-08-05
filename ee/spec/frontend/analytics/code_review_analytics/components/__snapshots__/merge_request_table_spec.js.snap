@@ -228,7 +228,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       >
         <div>
           <span
-            class="cgreen font-weight-bold"
+            class="font-weight-bold gl-text-green-600"
           >
             +504
           </span>
