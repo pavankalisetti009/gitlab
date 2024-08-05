@@ -178,9 +178,10 @@ module EE
     end
 
     def size_limit_message(project)
-      show_lfs = project.lfs_enabled? ? ', including LFS files' : ''
+      repository_size_limit_link = link_to _('Learn more'), help_page_path('administration/settings/account_and_limit_settings.html', anchor: 'repository-size-limit')
+      message = project.lfs_enabled? ? _("Max size of this project's repository, including LFS files. %{repository_size_limit_link}.") : _("Max size of this project's repository. %{repository_size_limit_link}.")
 
-      "Max size of this project's repository#{show_lfs}. For no limit, enter 0. To inherit the group/global value, leave blank."
+      safe_format(message, repository_size_limit_link: repository_size_limit_link)
     end
 
     override :membership_locked?
