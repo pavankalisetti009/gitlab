@@ -1,7 +1,7 @@
 import { s__ } from '~/locale';
 
 export const DROPZONE_DESCRIPTION_TEXT = s__(
-  'Licenses|Drag your license file here or %{linkStart}click to upload%{linkEnd}.',
+  'Licenses|Drag your license file here or %{linkStart}select a file to upload%{linkEnd}.',
 );
 export const FILE_UPLOAD_ERROR_MESSAGE = s__('Licenses|The file could not be uploaded.');
 export const FILE_DROP_ERROR_MESSAGE = s__(

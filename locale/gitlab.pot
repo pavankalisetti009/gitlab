@@ -31364,7 +31364,7 @@ msgstr ""
 msgid "Licenses|Acceptable license to be used in the project"
 msgstr ""
 
-msgid "Licenses|Drag your license file here or %{linkStart}click to upload%{linkEnd}."
+msgid "Licenses|Drag your license file here or %{linkStart}select a file to upload%{linkEnd}."
 msgstr ""
 
 msgid "Licenses|Drop your license file to start the upload."
