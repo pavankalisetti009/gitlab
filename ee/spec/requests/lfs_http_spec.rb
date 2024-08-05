@@ -447,7 +447,7 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
   end
 
   def authorize_deploy_key
-    ActionController::HttpAuthentication::Basic.encode_credentials("lfs+deploy-key-#{key.id}", Gitlab::LfsToken.new(key).token)
+    ActionController::HttpAuthentication::Basic.encode_credentials("lfs+deploy-key-#{key.id}", Gitlab::LfsToken.new(key, project).token)
   end
 
   def post_lfs_json(url, body = nil, headers = nil)
