@@ -19,7 +19,7 @@ module EE
         def move_link(link, adjacent_work_item, relative_position)
           parent_changed = link.changes.include?(:work_item_parent_id)
           create_missing_synced_link!(adjacent_work_item)
-          return unless adjacent_work_item.parent_link || parent_changed
+          return unless adjacent_work_item&.parent_link || parent_changed
           return super unless sync_to_epic?(link)
 
           ApplicationRecord.transaction do
@@ -30,6 +30,8 @@ module EE
         end
 
         def create_missing_synced_link!(adjacent_work_item)
+          return unless adjacent_work_item
+
           adjacent_parent_link = adjacent_work_item.parent_link
           # if issuable is an epic, we can create the missing parent link between epic work item and adjacent_work_item
           return unless adjacent_parent_link.blank? && adjacent_work_item.synced_epic
@@ -81,6 +83,8 @@ module EE
         end
 
         def reorder_synced_object(synced_moving_object, adjacent_work_item, relative_position)
+          return unless adjacent_work_item
+
           synced_adjacent_object = synced_object_for(adjacent_work_item)
           return unless synced_adjacent_object
 

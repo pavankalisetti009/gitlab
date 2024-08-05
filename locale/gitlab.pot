@@ -9175,6 +9175,9 @@ msgstr ""
 msgid "Both SSH and HTTP(S)"
 msgstr ""
 
+msgid "Both adjacentWorkItemId and relativePosition are required."
+msgstr ""
+
 msgid "Branch"
 msgstr ""
 
@@ -53209,6 +53212,9 @@ msgid "The XML file must be less than %{max_size} MB."
 msgstr ""
 
 msgid "The `/merge` quick action requires the SHA of the head of the branch."
+msgstr ""
+
+msgid "The adjacent work item's parent must match the moving work item's parent."
 msgstr ""
 
 msgid "The application will be used where the client secret can be kept confidential. Native mobile apps and Single Page Apps are considered non-confidential."
