@@ -1,11 +1,15 @@
 <script>
 import { s__ } from '~/locale';
 import selfHostedModelCreateMutation from '../graphql/mutations/create_self_hosted_model.mutation.graphql';
+import SelfHostedModelForm from './self_hosted_model_form.vue';
 
 const MUTATION_NAME = 'aiSelfHostedModelCreate';
 
 export default {
   name: 'NewSelfHostedModel',
+  components: {
+    SelfHostedModelForm,
+  },
   props: {
     basePath: {
       type: String,
@@ -34,9 +38,10 @@ export default {
     <p class="gl-pt-3 gl-pb-2">
       {{ $options.i18n.description }}
     </p>
-    <!--
-      TODO: Add form for creating self hosted model.
-      The form will be passed props basePath, modelOptions and mutationData.
-    -->
+    <self-hosted-model-form
+      :base-path="basePath"
+      :model-options="modelOptions"
+      :mutation-data="$options.mutationData"
+    />
   </div>
 </template>
