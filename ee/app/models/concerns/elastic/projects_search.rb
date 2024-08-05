@@ -41,7 +41,7 @@ module Elastic
         end
 
         if (updated_attributes & WIKI_TRACKED_FIELDS).any?
-          ElasticWikiIndexerWorker.perform_async(id, self.class.name, { force: true })
+          ElasticWikiIndexerWorker.perform_async(id, self.class.name, { 'force' => true })
         end
 
         super

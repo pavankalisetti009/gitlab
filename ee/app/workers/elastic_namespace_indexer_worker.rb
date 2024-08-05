@@ -39,7 +39,7 @@ class ElasticNamespaceIndexerWorker # rubocop:disable Scalability/IdempotentWork
   def index_group_wikis(namespace)
     namespace.self_and_descendants.find_each.with_index do |grp, idx|
       interval = idx % ElasticWikiIndexerWorker::MAX_JOBS_PER_HOUR
-      ElasticWikiIndexerWorker.perform_in(interval, grp.id, grp.class.name, { force: true })
+      ElasticWikiIndexerWorker.perform_in(interval, grp.id, grp.class.name, { 'force' => true })
     end
   end
 

@@ -82,7 +82,8 @@ RSpec.describe ProjectFeature, feature_category: :groups_and_projects do
         context 'when updating wiki_access_level' do
           it 'enqueues a worker to index commit data' do
             if worker_expected
-              expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(project.id, 'Project', { force: true })
+              expect(ElasticWikiIndexerWorker).to receive(:perform_async)
+                .with(project.id, 'Project', { 'force' => true })
             else
               expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
             end

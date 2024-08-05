@@ -239,8 +239,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
           expect(project).not_to receive(:maintain_elasticsearch_update)
           expect(project).not_to receive(:maintain_elasticsearch_destroy)
           expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { force: true })
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { force: true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
           expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!).with(project.id).and_call_original
           expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!).with(group.id).and_call_original
 
@@ -258,8 +258,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
           expect(project).not_to receive(:maintain_elasticsearch_update)
           expect(project).not_to receive(:maintain_elasticsearch_destroy)
           expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { force: true })
-          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { force: true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
           expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_project!).with(project.id).and_call_original
           expect(::Gitlab::CurrentSettings).to receive(:invalidate_elasticsearch_indexes_cache_for_namespace!).with(group.id).and_call_original
 
@@ -281,8 +281,8 @@ RSpec.describe Groups::TransferService, '#execute', feature_category: :groups_an
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project1)
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project2)
         expect(::Elastic::ProcessInitialBookkeepingService).to receive(:backfill_projects!).with(project3)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { force: true })
-        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { force: true })
+        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
+        expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(elastic_wiki_indexer_worker_random_delay_range, sub_g.id, sub_g.class.name, { 'force' => true })
 
         transfer_service.execute(new_group)
 

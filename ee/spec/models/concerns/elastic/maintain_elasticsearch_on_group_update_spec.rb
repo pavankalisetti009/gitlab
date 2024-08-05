@@ -13,14 +13,14 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
         end
 
         it 'calls ElasticWikiIndexerWorker' do
-          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(anything, 'Group', force: true)
+          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(anything, 'Group', 'force' => true)
           create(:group, :wiki_repo)
         end
       end
 
       context 'when elasticsearch is disabled' do
         it 'does not call ElasticWikiIndexerWorker' do
-          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(anything, 'Group', force: true)
+          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(anything, 'Group', 'force' => true)
           create(:group, :wiki_repo)
         end
       end
@@ -35,12 +35,13 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
         end
 
         it 'calls ElasticWikiIndexerWorker when group visibility_level is changed' do
-          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group.id, group.class.name, force: true)
+          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group.id, group.class.name, 'force' => true)
           group.update_attribute(:visibility_level, new_visibility_level)
         end
 
         it 'does not call ElasticWikiIndexerWorker when attribute other than visibility_level is changed' do
-          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(group.id, group.class.name, force: true)
+          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
+            .with(group.id, group.class.name, 'force' => true)
           group.update_attribute(:name, "#{group.name}_new")
         end
       end
@@ -51,7 +52,7 @@ RSpec.describe Elastic::MaintainElasticsearchOnGroupUpdate, feature_category: :g
         end
 
         it 'does not call ElasticWikiIndexerWorker' do
-          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(group.id, 'Group', force: true)
+          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(group.id, 'Group', 'force' => true)
           group.update_attribute(:visibility_level, new_visibility_level)
         end
       end

@@ -826,10 +826,10 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
 
       it 'calls ElasticWikiIndexerWorker for groups' do
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group1.id, group1.class.name, force: true)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group2.id, group2.class.name, force: true)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group3.id, group3.class.name, force: true)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(subgrp.id, subgrp.class.name, force: true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group1.id, group1.class.name, 'force' => true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group2.id, group2.class.name, 'force' => true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group3.id, group3.class.name, 'force' => true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(subgrp.id, subgrp.class.name, 'force' => true)
 
         index_group_wikis
       end
@@ -849,11 +849,11 @@ RSpec.describe ::Search::RakeTaskExecutorService, :elastic_helpers, :silence_std
       end
 
       it 'calls ElasticWikiIndexerWorker for groups which has elasticsearch enabled' do
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group1.id, group1.class.name, force: true)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group3.id, group3.class.name, force: true)
-        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(subgrp.id, subgrp.class.name, force: true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group1.id, group1.class.name, 'force' => true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group3.id, group3.class.name, 'force' => true)
+        expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(subgrp.id, subgrp.class.name, 'force' => true)
         expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
-          .with group2.id, group2.class.name, force: true
+          .with group2.id, group2.class.name, 'force' => true
 
         index_group_wikis
       end

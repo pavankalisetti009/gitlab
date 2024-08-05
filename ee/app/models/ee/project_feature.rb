@@ -53,7 +53,7 @@ module EE
 
         return unless elasticsearch_project_wikis_need_updating?
 
-        ElasticWikiIndexerWorker.perform_async(project.id, project.class.name, { force: true })
+        ElasticWikiIndexerWorker.perform_async(project.id, project.class.name, { 'force' => true })
       end
 
       def elasticsearch_project_milestones_need_updating?

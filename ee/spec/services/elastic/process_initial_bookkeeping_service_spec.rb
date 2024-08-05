@@ -28,7 +28,7 @@ RSpec.describe Elastic::ProcessInitialBookkeepingService, feature_category: :glo
         it 'indexes itself and initiates wiki reindexing, commits reindexing when indexing is excepted' do
           expect(described_class).to receive(:track!).with(project)
           expect(described_class).to receive(:maintain_indexed_associations).with(project, Elastic::ProcessInitialBookkeepingService::INDEXED_PROJECT_ASSOCIATIONS)
-          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(project.id, project.class.name, { force: true })
+          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(project.id, project.class.name, { 'force' => true })
 
           if commit_indexing_expected
             expect(ElasticCommitIndexerWorker).to receive(:perform_async).with(project.id, false, { force: true })
