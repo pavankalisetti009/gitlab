@@ -1085,6 +1085,20 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="querysnippetstype"></a>`type` | [`TypeEnum`](#typeenum) | Type of snippet. |
 | <a id="querysnippetsvisibility"></a>`visibility` | [`VisibilityScopesEnum`](#visibilityscopesenum) | Visibility of the snippet. |
 
+### `Query.standardRoles`
+
+Standard roles available for the instance, available only for self-managed.
+
+DETAILS:
+**Introduced** in GitLab 17.3.
+**Status**: Experiment.
+
+Returns [`StandardRoleConnection`](#standardroleconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
 ### `Query.subscriptionFutureEntries`
 
 Fields related to entries in future subscriptions.
@@ -15487,6 +15501,29 @@ The edge type for [`SnippetRepositoryRegistry`](#snippetrepositoryregistry).
 | ---- | ---- | ----------- |
 | <a id="snippetrepositoryregistryedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="snippetrepositoryregistryedgenode"></a>`node` | [`SnippetRepositoryRegistry`](#snippetrepositoryregistry) | The item at the end of the edge. |
+
+#### `StandardRoleConnection`
+
+The connection type for [`StandardRole`](#standardrole).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="standardroleconnectionedges"></a>`edges` | [`[StandardRoleEdge]`](#standardroleedge) | A list of edges. |
+| <a id="standardroleconnectionnodes"></a>`nodes` | [`[StandardRole]`](#standardrole) | A list of nodes. |
+| <a id="standardroleconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `StandardRoleEdge`
+
+The edge type for [`StandardRole`](#standardrole).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="standardroleedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="standardroleedgenode"></a>`node` | [`StandardRole`](#standardrole) | The item at the end of the edge. |
 
 #### `SubmoduleConnection`
 
@@ -31648,6 +31685,18 @@ SSH signature for a signed commit.
 | <a id="sshsignatureproject"></a>`project` | [`Project`](#project) | Project of the associated commit. |
 | <a id="sshsignatureuser"></a>`user` | [`UserCore`](#usercore) | User associated with the key. |
 | <a id="sshsignatureverificationstatus"></a>`verificationStatus` | [`VerificationStatus`](#verificationstatus) | Indicates verification status of the associated key or certificate. |
+
+### `StandardRole`
+
+Represents a standard role.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="standardroleaccesslevel"></a>`accessLevel` | [`Int!`](#int) | Access level as a number. |
+| <a id="standardrolememberscount"></a>`membersCount` **{warning-solid}** | [`Int!`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Total number of members with the standard role. |
+| <a id="standardrolename"></a>`name` | [`String!`](#string) | Access level as a string. |
 
 ### `StandardsAdherenceChecksStatus`
 

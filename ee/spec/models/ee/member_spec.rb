@@ -167,6 +167,18 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
       it { is_expected.to contain_exactly(membership_without_custom_role) }
     end
+
+    describe '.count_by_role' do
+      subject(:count_by_role) { described_class.count_by_role.as_json }
+
+      it 'groups by role' do
+        result = count_by_role
+        expect(result.count).to eq(1)
+
+        expect(result.first['access_level']).to eq(40)
+        expect(result.first['members_count']).to eq(1)
+      end
+    end
   end
 
   describe '#notification_service' do
