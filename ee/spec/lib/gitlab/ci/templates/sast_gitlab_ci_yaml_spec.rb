@@ -89,5 +89,57 @@ RSpec.describe 'SAST.gitlab-ci.yml', feature_category: :continuous_integration d
         end
       end
     end
+
+    context 'when project has Ultimate license' do
+      let(:license) { build(:license, plan: License::ULTIMATE_PLAN) }
+
+      before do
+        allow(License).to receive(:current).and_return(license)
+      end
+
+      describe 'language detection' do
+        using RSpec::Parameterized::TableSyntax
+
+        where(:case_name, :files, :variables, :jobs) do
+          'Golang with advanced SAST'              | { 'main.go' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'Java with advanced SAST'                | { 'app.java' => '' }         | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'Javascript with advanced SAST'          | { 'app.js' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'C# with advanced SAST'                  | { 'app.cs' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'Python with advanced SAST'              | { 'app.py' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'Ruby with advanced SAST'                | { 'config/routes.rb' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[semgrep-sast]
+          'Python and Ruby with advanced SAST'     | { 'app.py' => '', 'config/routes.rb' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' } | %w[gitlab-advanced-sast semgrep-sast]
+          'Golang without advanced SAST'           | { 'main.go' => '' }          | {}                                                           | %w[semgrep-sast]
+          'Golang with disabled advanced SAST'     | { 'main.go' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'Java with disabled advanced SAST'       | { 'app.java' => '' }         | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'Python with disabled advanced SAST'     | { 'app.py' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'Ruby with disabled advanced SAST'       | { 'config/routes.rb' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'Javascript with disabled advanced SAST' | { 'app.js' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'C# with disabled advanced SAST'         | { 'app.cs' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                          | %w[semgrep-sast]
+        end
+
+        with_them do
+          before do
+            variables.each do |(key, value)|
+              create(:ci_variable, project: project, key: key, value: value)
+            end
+          end
+
+          it_behaves_like 'acts as branch pipeline', params[:jobs]
+
+          it 'excludes already-covered extensions when both gitlab-advanced-sast and semgrep-sast run' do
+            gitlab_advanced_sast_extensions = %w[.py .go .java .js .jsx .ts .tsx .cjs .mjs .cs]
+
+            if build_names.include?('gitlab-advanced-sast') && build_names.include?('semgrep-sast')
+              # expect the variable SAST_EXCLUDED_PATHS of semgrep-sast to contain the list of extensions supported by gitlab-advanced-sast
+              variables = pipeline.builds.find_by(name: 'semgrep-sast').variables
+              sast_excluded_paths = variables.find { |v| v.key == 'SAST_EXCLUDED_PATHS' }.value
+              gitlab_advanced_sast_extensions.each do |ext|
+                expect(sast_excluded_paths).to include("**/*#{ext}")
+              end
+            end
+          end
+        end
+      end
+    end
   end
 end
