@@ -56,16 +56,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
         subject(:data) { helper.analytics_dashboards_list_app_data(project) }
 
         def expected_data(has_permission, pointer_project = project)
-          project_level_analytics_provider_settings = nil
-          if user_can_admin_project
-            project_level_analytics_provider_settings = {
-              product_analytics_configurator_connection_string: nil,
-              product_analytics_data_collector_host: nil,
-              cube_api_base_url: nil,
-              cube_api_key: nil
-            }.to_json
-          end
-
           {
             is_project: 'true',
             is_group: 'false',
@@ -91,7 +81,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
             features: (enabled && has_permission ? [:product_analytics] : []).to_json,
             router_base: '/-/analytics/dashboards',
             ai_generate_cube_query_enabled: 'false',
-            project_level_analytics_provider_settings: project_level_analytics_provider_settings,
             is_instance_configured_with_self_managed_analytics_provider: 'true',
             default_use_instance_configuration: 'true',
             overview_counts_aggregation_enabled: "false"
@@ -154,7 +143,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           features: [].to_json,
           router_base: "/groups/#{sub_group.full_path}/-/analytics/dashboards",
           ai_generate_cube_query_enabled: 'false',
-          project_level_analytics_provider_settings: nil,
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false"
@@ -221,7 +209,6 @@ RSpec.describe Analytics::AnalyticsDashboardsHelper, feature_category: :product_
           features: [].to_json,
           router_base: "/groups/#{group.full_path}/-/analytics/dashboards",
           ai_generate_cube_query_enabled: 'false',
-          project_level_analytics_provider_settings: nil,
           is_instance_configured_with_self_managed_analytics_provider: 'true',
           default_use_instance_configuration: 'true',
           overview_counts_aggregation_enabled: "false"

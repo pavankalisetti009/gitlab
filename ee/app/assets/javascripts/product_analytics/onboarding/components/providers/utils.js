@@ -21,3 +21,17 @@ export function getRedirectConfirmationMessage(
     false,
   );
 }
+
+export function projectSettingsValidator(prop) {
+  const expected = [
+    'productAnalyticsConfiguratorConnectionString',
+    'productAnalyticsDataCollectorHost',
+    'cubeApiBaseUrl',
+    'cubeApiKey',
+  ];
+
+  return (
+    Object.keys(prop).length === expected.length &&
+    expected.every((key) => key in prop && (typeof prop[key] === 'string' || prop[key] === null))
+  );
+}

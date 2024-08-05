@@ -27,13 +27,14 @@ describe('SelfManagedProviderCard', () => {
 
   const mockConfirmAction = (confirmed) => confirmAction.mockResolvedValueOnce(confirmed);
 
-  const createWrapper = (provide = {}) => {
+  const createWrapper = (props = {}, provide = {}) => {
     wrapper = shallowMountExtended(SelfManagedProviderCard, {
       propsData: {
         projectAnalyticsSettingsPath: '/settings/analytics',
+        projectSettings: getProjectLevelAnalyticsProviderSettings(),
+        ...props,
       },
       provide: {
-        projectLevelAnalyticsProviderSettings: getProjectLevelAnalyticsProviderSettings(),
         isInstanceConfiguredWithSelfManagedAnalyticsProvider: true,
         ...provide,
       },
@@ -101,9 +102,12 @@ describe('SelfManagedProviderCard', () => {
 
   describe('when instance config is a GitLab-managed provider', () => {
     it('should not show "Use instance-level settings" checkbox', () => {
-      createWrapper({
-        isInstanceConfiguredWithSelfManagedAnalyticsProvider: false,
-      });
+      createWrapper(
+        {},
+        {
+          isInstanceConfiguredWithSelfManagedAnalyticsProvider: false,
+        },
+      );
 
       expect(findUseInstanceConfigurationCheckbox().exists()).toBe(false);
     });
@@ -117,9 +121,12 @@ describe('SelfManagedProviderCard', () => {
     `(
       'when state is $defaultUseInstanceConfiguration',
       ({ defaultUseInstanceConfiguration, expectedCheckedState }) => {
-        createWrapper({
-          defaultUseInstanceConfiguration,
-        });
+        createWrapper(
+          {},
+          {
+            defaultUseInstanceConfiguration,
+          },
+        );
 
         expect(findUseInstanceConfigurationCheckbox().attributes('checked')).toBe(
           expectedCheckedState,
@@ -131,7 +138,7 @@ describe('SelfManagedProviderCard', () => {
   describe('when no project provider settings are configured', () => {
     beforeEach(() => {
       return createWrapper({
-        projectLevelAnalyticsProviderSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
+        projectSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
       });
     });
 
@@ -173,7 +180,7 @@ describe('SelfManagedProviderCard', () => {
   describe('when some project provider settings are configured', () => {
     beforeEach(() => {
       return createWrapper({
-        projectLevelAnalyticsProviderSettings: getPartialProjectLevelAnalyticsProviderSettings(),
+        projectSettings: getPartialProjectLevelAnalyticsProviderSettings(),
       });
     });
 
@@ -195,7 +202,7 @@ describe('SelfManagedProviderCard', () => {
   describe('when all project provider settings are configured', () => {
     beforeEach(() => {
       return createWrapper({
-        projectLevelAnalyticsProviderSettings: getProjectLevelAnalyticsProviderSettings(),
+        projectSettings: getProjectLevelAnalyticsProviderSettings(),
       });
     });
 

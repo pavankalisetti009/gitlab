@@ -6,13 +6,12 @@ import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import { s__ } from '~/locale';
 
 import ProviderSettingsPreview from './provider_settings_preview.vue';
-import { getRedirectConfirmationMessage } from './utils';
+import { getRedirectConfirmationMessage, projectSettingsValidator } from './utils';
 
 export default {
   name: 'SelfManagedProviderCard',
   components: { GlButton, GlFormCheckbox, GlLink, GlSprintf, ProviderSettingsPreview },
   inject: {
-    projectLevelAnalyticsProviderSettings: {},
     isInstanceConfiguredWithSelfManagedAnalyticsProvider: {
       default: false,
     },
@@ -25,6 +24,11 @@ export default {
       type: String,
       required: true,
     },
+    projectSettings: {
+      type: Object,
+      required: true,
+      validator: projectSettingsValidator,
+    },
   },
   data() {
     return {
@@ -33,10 +37,10 @@ export default {
   },
   computed: {
     hasAllProjectLevelSettings() {
-      return Object.values(this.projectLevelAnalyticsProviderSettings).every(Boolean);
+      return Object.values(this.projectSettings).every(Boolean);
     },
     hasEmptyProjectLevelSettings() {
-      return !Object.values(this.projectLevelAnalyticsProviderSettings).some(Boolean);
+      return !Object.values(this.projectSettings).some(Boolean);
     },
     hasValidProviderConfig() {
       if (this.useInstanceConfiguration) {
@@ -125,11 +129,11 @@ export default {
         <p>{{ s__('ProductAnalytics|Your instance will be created on this provider:') }}</p>
         <provider-settings-preview
           :configurator-connection-string="
-            projectLevelAnalyticsProviderSettings.productAnalyticsConfiguratorConnectionString
+            projectSettings.productAnalyticsConfiguratorConnectionString
           "
-          :collector-host="projectLevelAnalyticsProviderSettings.productAnalyticsDataCollectorHost"
-          :cube-api-base-url="projectLevelAnalyticsProviderSettings.cubeApiBaseUrl"
-          :cube-api-key="projectLevelAnalyticsProviderSettings.cubeApiKey"
+          :collector-host="projectSettings.productAnalyticsDataCollectorHost"
+          :cube-api-base-url="projectSettings.cubeApiBaseUrl"
+          :cube-api-key="projectSettings.cubeApiKey"
         />
       </template>
       <template v-else>

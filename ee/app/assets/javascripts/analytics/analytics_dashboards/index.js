@@ -46,7 +46,6 @@ export default () => {
     dataSourceClickhouse,
     aiGenerateCubeQueryEnabled,
     topicsExploreProjectsPath,
-    projectLevelAnalyticsProviderSettings,
     isInstanceConfiguredWithSelfManagedAnalyticsProvider,
     defaultUseInstanceConfiguration,
     overviewCountsAggregationEnabled,
@@ -120,9 +119,6 @@ export default () => {
       dataSourceClickhouse: parseBoolean(dataSourceClickhouse),
       currentUserId: window.gon?.current_user_id,
       topicsExploreProjectsPath,
-      projectLevelAnalyticsProviderSettings: convertObjectPropsToCamelCase(
-        JSON.parse(projectLevelAnalyticsProviderSettings || '{}'),
-      ),
       isInstanceConfiguredWithSelfManagedAnalyticsProvider: parseBoolean(
         isInstanceConfiguredWithSelfManagedAnalyticsProvider,
       ),

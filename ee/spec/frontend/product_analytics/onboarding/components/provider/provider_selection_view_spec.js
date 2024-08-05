@@ -1,18 +1,23 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlEmptyState, GlLoadingIcon, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
 
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { visitUrl } from '~/lib/utils/url_utility';
 
+import getProductAnalyticsProjectSettings from 'ee/product_analytics/graphql/queries/get_product_analytics_project_settings.query.graphql';
 import initializeProductAnalyticsMutation from 'ee/product_analytics/graphql/mutations/initialize_product_analytics.mutation.graphql';
 import ProviderSelectionView from 'ee/product_analytics/onboarding/components/providers/provider_selection_view.vue';
 import GitLabManagedProviderCard from 'ee/product_analytics/onboarding/components/providers/gitlab_managed_provider_card.vue';
 import SelfManagedProviderCard from 'ee/product_analytics/onboarding/components/providers/self_managed_provider_card.vue';
 
-import { createInstanceResponse } from '../../../mock_data';
+import {
+  createInstanceResponse,
+  getEmptyProjectLevelAnalyticsProviderSettings,
+  getProductAnalyticsProjectSettingsResponse,
+} from '../../../mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -27,19 +32,30 @@ describe('ProviderSelectionView', () => {
 
   const fatalError = new Error('GraphQL networkError');
   const apiErrorMsg = 'Product analytics initialization is already complete';
-  const mockApolloSuccess = jest.fn().mockResolvedValue(createInstanceResponse([]));
-  const mockApolloApiError = jest.fn().mockResolvedValue(createInstanceResponse([apiErrorMsg]));
-  const mockApolloFatalError = jest.fn().mockRejectedValue(fatalError);
+  const mockCreateInstanceSuccess = jest.fn().mockResolvedValue(createInstanceResponse([]));
+  const mockCreateInstanceError = jest
+    .fn()
+    .mockResolvedValue(createInstanceResponse([apiErrorMsg]));
+  const mockCreateInstanceFatalError = jest.fn().mockRejectedValue(fatalError);
+  const getProductAnalyticsSettingsMock = jest
+    .fn()
+    .mockResolvedValue(getProductAnalyticsProjectSettingsResponse());
 
   const findGlEmptyState = () => wrapper.findComponent(GlEmptyState);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
+  const findInstanceLoadingState = () =>
+    wrapper.findByTestId('provider-selection-instance-loading');
   const findHelpLink = () => wrapper.findComponent(GlLink);
+  const findProviderCardSkeletonLoaders = () =>
+    wrapper.findAllByTestId('provider-card-skeleton-loader');
   const findSelfManagedProviderCard = () => wrapper.findComponent(SelfManagedProviderCard);
   const findGitLabManagedProviderCard = () => wrapper.findComponent(GitLabManagedProviderCard);
 
-  const createWrapper = (apolloMock = mockApolloSuccess, provide = {}) => {
+  const createWrapper = (createInstanceMock = mockCreateInstanceSuccess, provide = {}) => {
     wrapper = shallowMountExtended(ProviderSelectionView, {
-      apolloProvider: createMockApollo([[initializeProductAnalyticsMutation, apolloMock]]),
+      apolloProvider: createMockApollo([
+        [initializeProductAnalyticsMutation, createInstanceMock],
+        [getProductAnalyticsProjectSettings, getProductAnalyticsSettingsMock],
+      ]),
       propsData: {
         loadingInstance: false,
       },
@@ -58,36 +74,80 @@ describe('ProviderSelectionView', () => {
   };
 
   describe('default behaviour', () => {
-    beforeEach(() => {
-      createWrapper();
+    describe('while project settings are loading', () => {
+      beforeEach(() => createWrapper());
+
+      it('should render a description', () => {
+        expect(wrapper.text()).toContain(
+          'Set up Product Analytics to track how your product is performing. Combine analytics with your GitLab data to better understand where you can improve your product and development processes.',
+        );
+      });
+
+      it('should show provider cards loading state', () => {
+        expect(findProviderCardSkeletonLoaders()).toHaveLength(2);
+
+        expect(findSelfManagedProviderCard().exists()).toBe(false);
+        expect(findGitLabManagedProviderCard().exists()).toBe(false);
+      });
+
+      it('does not render the instance loading state', () => {
+        expect(findInstanceLoadingState().exists()).toBe(false);
+      });
+
+      it('renders the help link', () => {
+        expect(findHelpLink().attributes('href')).toBe(
+          '/help/user/product_analytics/index#onboard-a-gitlab-project',
+        );
+      });
     });
 
-    it('should render a description', () => {
-      expect(wrapper.text()).toContain(
-        'Set up Product Analytics to track how your product is performing. Combine analytics with your GitLab data to better understand where you can improve your product and development processes.',
-      );
-    });
+    describe('once project settings have loaded', () => {
+      describe('when response is successful', () => {
+        let projectSettings;
 
-    it('should offer provider selection', () => {
-      expect(wrapper.text()).toContain('Select an option');
-      expect(findSelfManagedProviderCard().exists()).toBe(true);
-      expect(findGitLabManagedProviderCard().exists()).toBe(true);
-    });
+        beforeEach(() => {
+          projectSettings = getEmptyProjectLevelAnalyticsProviderSettings();
+          getProductAnalyticsSettingsMock.mockResolvedValue(
+            getProductAnalyticsProjectSettingsResponse(projectSettings),
+          );
+          createWrapper();
+          return waitForPromises();
+        });
 
-    it('does not render the loading icon', () => {
-      expect(findLoadingIcon().exists()).toBe(false);
-    });
+        it('should show provider cards', () => {
+          expect(findProviderCardSkeletonLoaders()).toHaveLength(0);
 
-    it('renders the help link', () => {
-      expect(findHelpLink().attributes('href')).toBe(
-        '/help/user/product_analytics/index#onboard-a-gitlab-project',
-      );
+          expect(findSelfManagedProviderCard().props()).toStrictEqual(
+            expect.objectContaining({ projectSettings }),
+          );
+          expect(findGitLabManagedProviderCard().props()).toStrictEqual(
+            expect.objectContaining({ projectSettings }),
+          );
+        });
+      });
+
+      describe('when response is unsuccessful', () => {
+        const error = new Error('Oh no project settings failed to load!');
+
+        beforeEach(() => {
+          getProductAnalyticsSettingsMock.mockRejectedValue(error);
+          createWrapper();
+          return waitForPromises();
+        });
+
+        it('should emit error', () => {
+          const emitted = wrapper.emitted('error');
+
+          expect(emitted).toHaveLength(1);
+          expect(emitted.at(0)).toEqual([error]);
+        });
+      });
     });
   });
 
   describe('when GitLab-managed provider is unavailable', () => {
     beforeEach(() => {
-      createWrapper(mockApolloSuccess, { canSelectGitlabManagedProvider: false });
+      createWrapper(mockCreateInstanceSuccess, { canSelectGitlabManagedProvider: false });
     });
 
     it('does not render a title mentioning options', () => {
@@ -106,8 +166,12 @@ describe('ProviderSelectionView', () => {
   `('$scenario', ({ findComponent, loadingStateSvgPath }) => {
     describe('when component emits "confirm" event', () => {
       describe('when initialization succeeds', () => {
-        beforeEach(() => {
+        beforeEach(async () => {
+          getProductAnalyticsSettingsMock.mockResolvedValue(
+            getProductAnalyticsProjectSettingsResponse(),
+          );
           createWrapper();
+          await waitForPromises();
           findComponent().vm.$emit('confirm', loadingStateSvgPath);
           return waitForPromises();
         });
@@ -116,29 +180,33 @@ describe('ProviderSelectionView', () => {
           expect(wrapper.emitted('initialized')).toStrictEqual([[]]);
         });
 
-        it('should show loading state', () => {
+        it('should show instance loading state', () => {
           expect(findGlEmptyState().props()).toMatchObject({
             title: 'Creating your product analytics instance...',
             svgPath: loadingStateSvgPath,
           });
-          expect(findLoadingIcon().exists()).toBe(true);
+          expect(findInstanceLoadingState().exists()).toBe(true);
         });
       });
 
       describe('when initialize fails', () => {
         describe.each`
           type       | error                     | apolloMock
-          ${'api'}   | ${new Error(apiErrorMsg)} | ${mockApolloApiError}
-          ${'fatal'} | ${fatalError}             | ${mockApolloFatalError}
+          ${'api'}   | ${new Error(apiErrorMsg)} | ${mockCreateInstanceError}
+          ${'fatal'} | ${fatalError}             | ${mockCreateInstanceFatalError}
         `('with a $type error', ({ error, apolloMock }) => {
-          beforeEach(() => {
+          beforeEach(async () => {
+            getProductAnalyticsSettingsMock.mockResolvedValue(
+              getProductAnalyticsProjectSettingsResponse(),
+            );
             createWrapper(apolloMock);
+            await waitForPromises();
             findComponent().vm.$emit('confirm');
             return waitForPromises();
           });
 
-          it('does not render the loading icon', () => {
-            expect(findLoadingIcon().exists()).toBe(false);
+          it('does not render the instance loading state', () => {
+            expect(findInstanceLoadingState().exists()).toBe(false);
           });
 
           it('emits the captured error', () => {
@@ -150,8 +218,13 @@ describe('ProviderSelectionView', () => {
   });
 
   describe('when self-managed provider component emits "open-settings" event', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
+      getProductAnalyticsSettingsMock.mockResolvedValue(
+        getProductAnalyticsProjectSettingsResponse(),
+      );
       createWrapper();
+      await waitForPromises();
+
       findSelfManagedProviderCard().vm.$emit('open-settings');
       return waitForPromises();
     });

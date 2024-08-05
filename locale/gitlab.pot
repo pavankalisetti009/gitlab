@@ -40356,6 +40356,9 @@ msgstr ""
 msgid "ProductAnalytics|An error occurred while fetching data. Refresh the page to try again."
 msgstr ""
 
+msgid "ProductAnalytics|An error occurred while fetching project settings. Refresh the page to try again."
+msgstr ""
+
 msgid "ProductAnalytics|Analytics events by month"
 msgstr ""
 
