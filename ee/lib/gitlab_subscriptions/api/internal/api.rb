@@ -4,8 +4,14 @@ module GitlabSubscriptions
   module API
     module Internal
       class API < ::API::Base
+        helpers GitlabSubscriptions::API::Internal::Helpers
+
         before do
-          authenticated_as_admin!
+          if jwt_request?
+            authenticate_from_jwt!
+          else
+            authenticated_as_admin!
+          end
         end
 
         mount ::GitlabSubscriptions::API::Internal::Members
