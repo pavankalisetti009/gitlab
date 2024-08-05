@@ -11,6 +11,12 @@ import {
   ADD_ON_ERROR_DICTIONARY,
 } from 'ee/usage_quotas/error_constants';
 import {
+  DUO_PRO,
+  DUO_ENTERPRISE,
+  ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
+} from 'ee/usage_quotas/code_suggestions/constants';
+import {
   eligibleSMUsers,
   pageInfoWithMorePages,
 } from 'ee_jest/usage_quotas/code_suggestions/mock_data';
@@ -26,6 +32,8 @@ describe('Add On Eligible User List', () => {
   let wrapper;
 
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
+  const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
+
   const error = new Error('Error');
   const addOnEligibleUsersResponse = {
     data: {
@@ -36,13 +44,23 @@ describe('Add On Eligible User List', () => {
       },
     },
   };
-  const defaultQueryVariables = {
-    addOnType: 'CODE_SUGGESTIONS',
-    addOnPurchaseIds: [addOnPurchaseId],
+
+  const defaultPaginationParams = {
     first: 20,
     last: null,
     after: null,
     before: null,
+  };
+
+  const defaultQueryVariables = {
+    addOnType: ADD_ON_CODE_SUGGESTIONS,
+    addOnPurchaseIds: [addOnPurchaseId],
+    ...defaultPaginationParams,
+  };
+  const defaultDuoEnterpriseQueryVariables = {
+    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
+    ...defaultPaginationParams,
   };
 
   const addOnEligibleUsersDataHandler = jest.fn().mockResolvedValue(addOnEligibleUsersResponse);
@@ -51,12 +69,13 @@ describe('Add On Eligible User List', () => {
   const createMockApolloProvider = (handler) =>
     createMockApollo([[getAddOnEligibleUsers, handler]]);
 
-  const createComponent = (handler = addOnEligibleUsersDataHandler) => {
+  const createComponent = ({ props = {}, handler = addOnEligibleUsersDataHandler } = {}) => {
     wrapper = extendedWrapper(
       shallowMount(SelfManagedAddOnEligibleUserList, {
         apolloProvider: createMockApolloProvider(handler),
         propsData: {
           addOnPurchaseId,
+          ...props,
         },
       }),
     );
@@ -77,7 +96,7 @@ describe('Add On Eligible User List', () => {
     it('displays add-on eligible user list', () => {
       const expectedProps = {
         addOnPurchaseId,
-        duoTier: 'pro',
+        duoTier: DUO_PRO,
         isLoading: false,
         pageInfo: pageInfoWithMorePages,
         search: '',
@@ -91,15 +110,29 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultQueryVariables);
     });
 
+    describe('with Duo Enterprise add-on tier', () => {
+      beforeEach(() => {
+        return createComponent({
+          props: { duoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
+        });
+      });
+
+      it('calls addOnEligibleUsers query with appropriate params', () => {
+        expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(
+          defaultDuoEnterpriseQueryVariables,
+        );
+      });
+    });
+
     describe('when there is an error fetching add on eligible users', () => {
       beforeEach(() => {
-        return createComponent(addOnEligibleUsersErrorHandler);
+        return createComponent({ handler: addOnEligibleUsersErrorHandler });
       });
 
       it('displays add-on eligible user list', () => {
         const expectedProps = {
           addOnPurchaseId,
-          duoTier: 'pro',
+          duoTier: DUO_PRO,
           isLoading: false,
           pageInfo: undefined,
           search: '',

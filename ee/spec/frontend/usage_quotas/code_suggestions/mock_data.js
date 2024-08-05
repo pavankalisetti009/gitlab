@@ -3,45 +3,72 @@ import {
   ADD_ON_DUO_ENTERPRISE,
 } from 'ee/usage_quotas/code_suggestions/constants';
 
-export const noAssignedAddonData = {
+export const noAssignedDuoProAddonData = {
   data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_CODE_SUGGESTIONS,
-      assignedQuantity: 0,
-      purchasedQuantity: 20,
-      __typename: 'AddOnPurchase',
-    },
+    addOnPurchases: [
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
+        name: ADD_ON_CODE_SUGGESTIONS,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+    ],
   },
 };
 
-export const noAssignedEnterpriseAddonData = {
+export const noAssignedDuoEnterpriseAddonData = {
   data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_DUO_ENTERPRISE,
-      assignedQuantity: 0,
-      purchasedQuantity: 20,
-      __typename: 'AddOnPurchase',
-    },
+    addOnPurchases: [
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
+        name: ADD_ON_DUO_ENTERPRISE,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+    ],
+  },
+};
+
+export const noAssignedDuoAddonsData = {
+  data: {
+    addOnPurchases: [
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
+        name: ADD_ON_CODE_SUGGESTIONS,
+        assignedQuantity: 0,
+        purchasedQuantity: 15,
+        __typename: 'AddOnPurchase',
+      },
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4',
+        name: ADD_ON_DUO_ENTERPRISE,
+        assignedQuantity: 0,
+        purchasedQuantity: 20,
+        __typename: 'AddOnPurchase',
+      },
+    ],
   },
 };
 
 export const noPurchasedAddonData = {
   data: {
-    addOnPurchase: null,
+    addOnPurchases: [],
   },
 };
 
 export const purchasedAddonFuzzyData = {
   data: {
-    addOnPurchase: {
-      id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-      name: ADD_ON_CODE_SUGGESTIONS,
-      assignedQuantity: 0,
-      purchasedQuantity: null,
-      __typename: 'AddOnPurchase',
-    },
+    addOnPurchases: [
+      {
+        id: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
+        name: ADD_ON_CODE_SUGGESTIONS,
+        assignedQuantity: 0,
+        purchasedQuantity: null,
+        __typename: 'AddOnPurchase',
+      },
+    ],
   },
 };
 
@@ -55,7 +82,7 @@ export const mockSMUserWithAddOnAssignment = {
   lastActivityOn: '2023-08-25',
   maxRole: null,
   addOnAssignments: {
-    nodes: [{ addOnPurchase: { name: 'CODE_SUGGESTIONS' } }],
+    nodes: [{ addOnPurchase: { name: ADD_ON_CODE_SUGGESTIONS } }],
     __typename: 'UserAddOnAssignmentConnection',
   },
   __typename: 'AddOnUser',

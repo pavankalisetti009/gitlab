@@ -3,7 +3,7 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf } from '~/locale';
-import addOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
+import addOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import CodeSuggestionsIntro from 'ee/usage_quotas/code_suggestions/components/code_suggestions_intro.vue';
 import CodeSuggestionsInfo from 'ee/usage_quotas/code_suggestions/components/code_suggestions_info_card.vue';
 import CodeSuggestionsStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
@@ -23,8 +23,9 @@ import {
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
 import {
-  noAssignedAddonData,
-  noAssignedEnterpriseAddonData,
+  noAssignedDuoProAddonData,
+  noAssignedDuoEnterpriseAddonData,
+  noAssignedDuoAddonsData,
   noPurchasedAddonData,
   purchasedAddonFuzzyData,
 } from '../mock_data';
@@ -38,16 +39,17 @@ describe('GitLab Duo Usage', () => {
 
   const error = new Error('Something went wrong');
 
-  const noAssignedAddonDataHandler = jest.fn().mockResolvedValue(noAssignedAddonData);
+  const noAssignedAddonDataHandler = jest.fn().mockResolvedValue(noAssignedDuoProAddonData);
   const noAssignedEnterpriseAddonDataHandler = jest
     .fn()
-    .mockResolvedValue(noAssignedEnterpriseAddonData);
+    .mockResolvedValue(noAssignedDuoEnterpriseAddonData);
+  const noAssignedDuoAddonsDataHandler = jest.fn().mockResolvedValue(noAssignedDuoAddonsData);
   const noPurchasedAddonDataHandler = jest.fn().mockResolvedValue(noPurchasedAddonData);
   const purchasedAddonFuzzyDataHandler = jest.fn().mockResolvedValue(purchasedAddonFuzzyData);
   const purchasedAddonErrorHandler = jest.fn().mockRejectedValue(error);
 
   const createMockApolloProvider = (handler = noPurchasedAddonDataHandler) =>
-    createMockApollo([[addOnPurchaseQuery, handler]]);
+    createMockApollo([[addOnPurchasesQuery, handler]]);
 
   const findCodeSuggestionsIntro = () => wrapper.findComponent(CodeSuggestionsIntro);
   const findCodeSuggestionsInfo = () => wrapper.findComponent(CodeSuggestionsInfo);
@@ -77,7 +79,6 @@ describe('GitLab Duo Usage', () => {
     });
     it('calls addOnPurchase query with appropriate props', () => {
       expect(noAssignedAddonDataHandler).toHaveBeenCalledWith({
-        addOnType: 'CODE_SUGGESTIONS',
         namespaceId: null,
       });
     });
@@ -92,7 +93,6 @@ describe('GitLab Duo Usage', () => {
     });
     it('calls addOnPurchase query with appropriate props', () => {
       expect(noAssignedAddonDataHandler).toHaveBeenCalledWith({
-        addOnType: 'CODE_SUGGESTIONS',
         namespaceId: 'gid://gitlab/Group/289561',
       });
     });
@@ -210,6 +210,38 @@ describe('GitLab Duo Usage', () => {
           return createComponent({
             handler: noAssignedEnterpriseAddonDataHandler,
             provideProps: { groupId: '289561' },
+          });
+        });
+
+        it('renders code suggestions statistics card for duo enterprise', () => {
+          expect(findCodeSuggestionsStatistics().props()).toEqual({
+            usageValue: 0,
+            totalValue: 20,
+            duoTier: DUO_ENTERPRISE,
+          });
+        });
+
+        it('renders code suggestions info card for duo enterprise', () => {
+          expect(findCodeSuggestionsInfo().exists()).toBe(true);
+          expect(findCodeSuggestionsInfo().props()).toEqual({
+            groupId: '289561',
+            duoTier: DUO_ENTERPRISE,
+          });
+        });
+      });
+
+      describe('with both Duo Pro and Enterprise add-ons enabled', () => {
+        beforeEach(() => {
+          return createComponent({
+            handler: noAssignedDuoAddonsDataHandler,
+            provideProps: { groupId: '289561' },
+          });
+        });
+
+        it('renders addon user list for duo enterprise', () => {
+          expect(findSaasAddOnEligibleUserList().props()).toEqual({
+            addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4',
+            duoTier: DUO_ENTERPRISE,
           });
         });
 

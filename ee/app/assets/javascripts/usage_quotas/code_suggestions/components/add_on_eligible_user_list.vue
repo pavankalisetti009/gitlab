@@ -167,7 +167,7 @@ export default {
       return s__('Billing|No users to display.');
     },
     duoPlan() {
-      return this.duoTier === 'enterprise' ? 'duoEnterpriseAddon' : 'codeSuggestionsAddon';
+      return this.duoTier === DUO_ENTERPRISE ? 'duoEnterpriseAddon' : 'codeSuggestionsAddon';
     },
     tableFieldsConfiguration() {
       let fieldConfig = ['user', this.duoPlan, 'emailWide', 'lastActivityTimeWide'];

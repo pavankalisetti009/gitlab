@@ -10,6 +10,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import CodeSuggestionsAddonAssignment from 'ee/usage_quotas/code_suggestions/components/code_suggestions_addon_assignment.vue';
 import {
   ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
   CODE_SUGGESTIONS_TITLE,
   DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
@@ -32,8 +33,13 @@ describe('CodeSuggestionsAddonAssignment', () => {
 
   const userIdForAssignment = mockUserWithNoAddOnAssignment.id;
   const userIdForUnassignment = mockUserWithAddOnAssignment.id;
+
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
+  const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3';
+
   const codeSuggestionsAddOn = { addOnPurchase: { name: ADD_ON_CODE_SUGGESTIONS } };
+  const duoEnterpriseAddOn = { addOnPurchase: { name: ADD_ON_DUO_ENTERPRISE } };
+
   const addOnPurchase = {
     id: addOnPurchaseId,
     name: ADD_ON_CODE_SUGGESTIONS,
@@ -41,11 +47,25 @@ describe('CodeSuggestionsAddonAssignment', () => {
     assignedQuantity: 2,
     __typename: 'AddOnPurchase',
   };
+  const duoEnterpriseAddOnPurchase = {
+    id: duoEnterpriseAddOnPurchaseId,
+    name: ADD_ON_DUO_ENTERPRISE,
+    purchasedQuantity: 3,
+    assignedQuantity: 2,
+    __typename: 'AddOnPurchase',
+  };
+
   const addOnEligibleUsersQueryVariables = {
     fullPath: 'namespace/full-path',
-    addOnType: 'CODE_SUGGESTIONS',
+    addOnType: ADD_ON_CODE_SUGGESTIONS,
     addOnPurchaseIds: [addOnPurchaseId],
   };
+  const duoEnterpriseAddOnEligibleUsersQueryVariables = {
+    fullPath: 'namespace/full-path',
+    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
+  };
+
   const addOnAssignmentSuccess = {
     clientMutationId: '1',
     errors: [],
@@ -59,6 +79,20 @@ describe('CodeSuggestionsAddonAssignment', () => {
       __typename: 'AddOnUser',
     },
   };
+  const duoEnterpriseAddOnAssignmentSuccess = {
+    clientMutationId: '1',
+    errors: [],
+    addOnPurchase: duoEnterpriseAddOnPurchase,
+    user: {
+      id: userIdForAssignment,
+      addOnAssignments: {
+        nodes: duoEnterpriseAddOn,
+        __typename: 'UserAddOnAssignmentConnection',
+      },
+      __typename: 'AddOnUser',
+    },
+  };
+
   const addOnUnassignmentSuccess = {
     clientMutationId: '1',
     errors: [],
@@ -72,6 +106,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
       __typename: 'AddOnUser',
     },
   };
+
   const knownAddOnAssignmentError = {
     clientMutationId: '1',
     errors: ['NO_SEATS_AVAILABLE'],
@@ -94,11 +129,19 @@ describe('CodeSuggestionsAddonAssignment', () => {
   const assignAddOnHandler = jest.fn().mockResolvedValue({
     data: { userAddOnAssignmentCreate: addOnAssignmentSuccess },
   });
+  const duoEnterpriseAssignAddOnHandler = jest.fn().mockResolvedValue({
+    data: { userAddOnAssignmentCreate: duoEnterpriseAddOnAssignmentSuccess },
+  });
+
   const unassignAddOnHandler = jest.fn().mockResolvedValue({
     data: { userAddOnAssignmentRemove: addOnUnassignmentSuccess },
   });
 
-  const createMockApolloProvider = (addonAssignmentCreateHandler, addOnAssignmentRemoveHandler) => {
+  const createMockApolloProvider = (
+    addonAssignmentCreateHandler,
+    addOnAssignmentRemoveHandler,
+    addOnAssignmentQueryVariables,
+  ) => {
     const mockApollo = createMockApollo([
       [userAddOnAssignmentCreateMutation, addonAssignmentCreateHandler],
       [userAddOnAssignmentRemoveMutation, addOnAssignmentRemoveHandler],
@@ -107,7 +150,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     // Needed to check if cache update is successful on successful mutation
     mockApollo.clients.defaultClient.cache.writeQuery({
       query: getAddOnEligibleUsers,
-      variables: addOnEligibleUsersQueryVariables,
+      variables: addOnAssignmentQueryVariables,
       data: mockAddOnEligibleUsers.data,
     });
 
@@ -120,10 +163,12 @@ describe('CodeSuggestionsAddonAssignment', () => {
     props = {},
     addonAssignmentCreateHandler = assignAddOnHandler,
     addOnAssignmentRemoveHandler = unassignAddOnHandler,
-  }) => {
+    addOnAssignmentQueryVariables = addOnEligibleUsersQueryVariables,
+  } = {}) => {
     mockApolloClient = createMockApolloProvider(
       addonAssignmentCreateHandler,
       addOnAssignmentRemoveHandler,
+      addOnAssignmentQueryVariables,
     );
     wrapper = shallowMount(CodeSuggestionsAddonAssignment, {
       apolloProvider: mockApolloClient,
@@ -136,16 +181,19 @@ describe('CodeSuggestionsAddonAssignment', () => {
     });
   };
 
-  const getAddOnAssignmentStatusForUserFromCache = (userId) => {
+  const getAddOnAssignmentStatusForUserFromCache = (
+    userId,
+    variables = addOnEligibleUsersQueryVariables,
+  ) => {
     return mockApolloClient.clients.defaultClient.cache
-      .readQuery({ query: getAddOnEligibleUsers, variables: addOnEligibleUsersQueryVariables })
+      .readQuery({ query: getAddOnEligibleUsers, variables })
       .namespace.addOnEligibleUsers.nodes.find((node) => node.id === userId).addOnAssignments.nodes;
   };
 
   const findToggle = () => wrapper.findComponent(GlToggle);
 
   it('shows correct label on the toggle', () => {
-    createComponent({ props: {} });
+    createComponent();
     expect(findToggle().props('label')).toBe(
       sprintf('%{addOnName} status', { addOnName: CODE_SUGGESTIONS_TITLE }),
     );
@@ -184,7 +232,7 @@ describe('CodeSuggestionsAddonAssignment', () => {
     });
   });
 
-  describe('when assigning an addon', () => {
+  describe('when assigning a Duo Pro add-on', () => {
     beforeEach(() => {
       jest.spyOn(Tracking, 'event');
 
@@ -231,6 +279,45 @@ describe('CodeSuggestionsAddonAssignment', () => {
         'enable_gitlab_duo_pro_for_seat',
         expect.any(Object),
       );
+    });
+  });
+
+  describe('when assigning a Duo Enterprise add-on', () => {
+    beforeEach(() => {
+      createComponent({
+        props: {
+          addOnAssignments: [],
+          duoTier: DUO_ENTERPRISE,
+          userId: userIdForAssignment,
+          addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
+        },
+        addonAssignmentCreateHandler: duoEnterpriseAssignAddOnHandler,
+        addOnAssignmentQueryVariables: duoEnterpriseAddOnEligibleUsersQueryVariables,
+      });
+
+      findToggle().vm.$emit('change', true);
+    });
+
+    it('updates the cache with latest add-on assignment status', async () => {
+      await waitForPromises();
+
+      expect(
+        getAddOnAssignmentStatusForUserFromCache(
+          userIdForAssignment,
+          duoEnterpriseAddOnEligibleUsersQueryVariables,
+        ),
+      ).toEqual(duoEnterpriseAddOn);
+    });
+
+    it('calls addon assigment mutation with appropriate params', () => {
+      expect(duoEnterpriseAssignAddOnHandler).toHaveBeenCalledWith({
+        addOnPurchaseId: duoEnterpriseAddOnPurchaseId,
+        userId: userIdForAssignment,
+      });
+    });
+
+    it('does not call addon un-assigment mutation', () => {
+      expect(unassignAddOnHandler).not.toHaveBeenCalled();
     });
   });
 

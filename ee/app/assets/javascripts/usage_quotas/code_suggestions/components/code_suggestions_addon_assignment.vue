@@ -4,6 +4,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import {
   ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
   CODE_SUGGESTIONS_TITLE,
   DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
@@ -58,9 +59,12 @@ export default {
     isAssigned() {
       return Boolean(
         this.addOnAssignments?.find(
-          (assignment) => assignment.addOnPurchase?.name === ADD_ON_CODE_SUGGESTIONS,
+          (assignment) => assignment.addOnPurchase?.name === this.duoPlan,
         ),
       );
+    },
+    duoPlan() {
+      return this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS;
     },
     addOnAssignmentQueryVariables() {
       return {

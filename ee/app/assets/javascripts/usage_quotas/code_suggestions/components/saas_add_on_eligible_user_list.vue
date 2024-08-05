@@ -25,6 +25,7 @@ import {
   DUO_PRO,
   DUO_ENTERPRISE,
   ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
   SORT_OPTIONS,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
@@ -137,7 +138,8 @@ export default {
     queryVariables() {
       return {
         fullPath: this.fullPath,
-        addOnType: ADD_ON_CODE_SUGGESTIONS,
+        addOnType:
+          this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS,
         addOnPurchaseIds: [this.addOnPurchaseId],
         sort: this.sort,
         ...this.filterOptions,
