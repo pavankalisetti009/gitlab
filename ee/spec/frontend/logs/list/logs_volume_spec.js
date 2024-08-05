@@ -129,6 +129,6 @@ describe('LogsVolume', () => {
     mountComponent({
       mockTooltipParams: { seriesData: [{ data: [[new Date('05-05-2024 15:52:32'), 1]] }] },
     });
-    expect(findChart().text()).toBe('May 5, 2024 3:52pm UTC');
+    expect(findChart().text()).toBe('May 05 2024 15:52:32 UTC');
   });
 });

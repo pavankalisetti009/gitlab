@@ -2,6 +2,7 @@
 import { GlLineChart, GlChartSeriesLabel } from '@gitlab/ui/dist/charts';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime_utility';
+import { UTC_SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 
 export default {
   components: {
@@ -81,7 +82,7 @@ export default {
 
       if (Array.isArray(seriesData[0].data)) {
         const [dateTime] = seriesData[0].data;
-        this.tooltipTitle = formatDate(dateTime, 'mmm d, yyyy H:MM:ss');
+        this.tooltipTitle = formatDate(dateTime, UTC_SHORT_DATE_TIME_FORMAT);
       }
 
       this.tooltipContent = seriesData.map(({ seriesName, color, seriesId, data }) => {

@@ -3,6 +3,7 @@ import { GlLineChart, GlColumnChart } from '@gitlab/ui/dist/charts';
 import { GlSkeletonLoader } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
+import { UTC_SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 import { durationNanoToMs } from '../trace_utils';
 
 const intervalToTimestamp = (interval) => new Date(interval * 1000);
@@ -171,7 +172,7 @@ export default {
       const seriesData = params?.seriesData || [];
       const dataPoints = seriesData[0]?.data || [];
       const timestamp = dataPoints[0];
-      return timestamp ? formatDate(timestamp) : '';
+      return timestamp ? formatDate(timestamp, UTC_SHORT_DATE_TIME_FORMAT) : '';
     },
   },
 

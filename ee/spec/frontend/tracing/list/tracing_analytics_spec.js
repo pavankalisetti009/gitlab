@@ -139,7 +139,7 @@ describe('TracingAnalytics', () => {
 
   describe('tooltip', () => {
     it('renders the tooltip title as a formatted date', () => {
-      const expectedDate = 'Oct 4, 2024 5:14pm UTC';
+      const expectedDate = 'Oct 04 2024 17:14:00 UTC';
       expect(wrapper.findComponent(GlColumnChart).text()).toBe(expectedDate);
       expect(wrapper.findAllComponents(GlLineChart).at(0).text()).toBe(expectedDate);
       expect(wrapper.findAllComponents(GlLineChart).at(1).text()).toBe(expectedDate);

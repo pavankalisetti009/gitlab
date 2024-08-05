@@ -77,7 +77,7 @@ describe('LogsDrawer', () => {
   });
 
   it('displays the correct title', () => {
-    expect(wrapper.findByTestId('drawer-title').text()).toBe('2024-01-28T10:36:08Z');
+    expect(wrapper.findByTestId('drawer-title').text()).toBe('Jan 28 2024 10:36:08.296 UTC');
   });
 
   it.each([

@@ -2,6 +2,7 @@
 import { GlTable, GlBadge, GlIcon } from '@gitlab/ui';
 import { s__, n__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
+import { UTC_FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 import { formatTraceDuration } from '../trace_utils';
 
 export default {
@@ -55,7 +56,7 @@ export default {
     formattedTraces() {
       return this.traces.map((x) => ({
         ...x,
-        timestamp: formatDate(x.timestamp),
+        timestamp: formatDate(x.timestamp, UTC_FULL_DATE_TIME_FORMAT),
         duration: formatTraceDuration(x.duration_nano),
       }));
     },
