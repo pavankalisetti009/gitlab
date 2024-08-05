@@ -34,12 +34,6 @@ RSpec.shared_examples 'member validations' do
           expect(member).to be_valid
         end
 
-        it 'allows adding a security policy project bot as member' do
-          member = entity.add_member(create(:user, :security_policy_bot), Member::GUEST)
-
-          expect(member).to be_valid
-        end
-
         it 'allows adding a service account as a member' do
           member = entity.add_member(create(:service_account, provisioned_by_group: group), Member::DEVELOPER)
 

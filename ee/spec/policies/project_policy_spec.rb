@@ -3252,6 +3252,68 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
   end
 
+  describe 'security_policy_bot policy' do
+    let_it_be(:security_policy_bot) { create(:user, user_type: :security_policy_bot) }
+    let(:current_user) { security_policy_bot }
+
+    context 'when user is authenticated via CI_JOB_TOKEN', :request_store do
+      let(:project) { public_project }
+      let(:job) { build_stubbed(:ci_build, project: scope_project, user: current_user) }
+      let(:scope_project) { project }
+
+      let_it_be(:other_private_project) { create(:project, :private) }
+
+      before do
+        project.add_guest(security_policy_bot)
+        current_user.set_ci_job_token_scope!(job)
+        project.update!(
+          ci_outbound_job_token_scope_enabled: token_scope_enabled,
+          ci_inbound_job_token_scope_enabled: token_scope_enabled
+        )
+        scope_project.update!(
+          ci_outbound_job_token_scope_enabled: token_scope_enabled,
+          ci_inbound_job_token_scope_enabled: token_scope_enabled
+        )
+      end
+
+      context 'when token scope is disabled' do
+        let(:token_scope_enabled) { false }
+
+        context 'when pipeline is executed in project where bot is invited' do
+          it { is_expected.to be_allowed(:create_pipeline) }
+          it { is_expected.to be_allowed(:create_bot_pipeline) }
+          it { is_expected.to be_allowed(:build_download_code) }
+        end
+
+        context 'when pipeline is executed in project where bot is not invited' do
+          let(:scope_project) { other_private_project }
+
+          it { is_expected.to be_allowed(:create_pipeline) }
+          it { is_expected.to be_allowed(:create_bot_pipeline) }
+          it { is_expected.to be_allowed(:build_download_code) }
+        end
+      end
+
+      context 'when token scope is enabled' do
+        let(:token_scope_enabled) { true }
+
+        context 'when pipeline is executed in project where bot is invited' do
+          it { is_expected.to be_allowed(:create_pipeline) }
+          it { is_expected.to be_allowed(:create_bot_pipeline) }
+          it { is_expected.to be_allowed(:build_download_code) }
+        end
+
+        context 'when pipeline is executed in project where bot is not invited' do
+          let(:scope_project) { other_private_project }
+
+          it { is_expected.to be_disallowed(:create_pipeline) }
+          it { is_expected.to be_disallowed(:create_bot_pipeline) }
+          it { is_expected.to be_disallowed(:build_download_code) }
+        end
+      end
+    end
+  end
+
   describe 'generate_description' do
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
     let(:current_user) { guest }
