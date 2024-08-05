@@ -1,4 +1,5 @@
 import { mockAiMetricsResponseData } from 'ee_jest/analytics/dashboards/ai_impact/mock_data';
+import { AI_METRICS } from '~/analytics/shared/constants';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/ai_impact_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
 import { LAST_WEEK, LAST_30_DAYS, LAST_180_DAYS } from 'ee/dora/components/static_data/shared';
@@ -6,7 +7,7 @@ import { LAST_WEEK, LAST_30_DAYS, LAST_180_DAYS } from 'ee/dora/components/stati
 describe('AI Impact Over Time Data Source', () => {
   let res;
 
-  const query = { metric: 'code_suggestions_usage_rate', dateRange: LAST_30_DAYS };
+  const query = { metric: AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE, dateRange: LAST_30_DAYS };
   const namespace = 'cool namespace';
   const defaultParams = {
     namespace,
@@ -72,7 +73,7 @@ describe('AI Impact Over Time Data Source', () => {
         dateRange,
         {
           namespace: namespaceParam = 'cool namespace',
-          metric = 'code_suggestions_usage_rate',
+          metric = AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE,
         } = {},
       ) => {
         mockResolvedQuery();
@@ -94,8 +95,13 @@ describe('AI Impact Over Time Data Source', () => {
         });
       });
 
-      it('can override the metric queried', async () => {
-        res = await mockQuery(LAST_WEEK, { metric: 'code_suggestions_acceptance_rate' });
+      it.each`
+        metric                                         | result
+        ${AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE}      | ${'62.5'}
+        ${AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE} | ${'40.0'}
+        ${AI_METRICS.DUO_PRO_USAGE_RATE}               | ${'50.0'}
+      `('can override the metric with `$metric`', async ({ metric, result }) => {
+        res = await mockQuery(LAST_WEEK, { metric });
 
         expectQueryWithVariables({
           startDate: new Date('2020-06-30'),
@@ -103,7 +109,7 @@ describe('AI Impact Over Time Data Source', () => {
           fullPath: namespace,
         });
 
-        expect(res).toBe('40.0');
+        expect(res).toBe(result);
       });
 
       it('can override the namespace', async () => {
