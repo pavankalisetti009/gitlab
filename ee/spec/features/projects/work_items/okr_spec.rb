@@ -365,7 +365,6 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
       create_okr('key result', 'KR 1')
       create_okr('key result', 'KR 2')
       create_okr('key result', 'KR 3')
-      click_button 'Cancel'
 
       expect(page).to have_css('.tree-item:nth-child(1) .item-title', text: 'KR 3')
       expect(page).to have_css('.tree-item:nth-child(2) .item-title', text: 'KR 2')
