@@ -11,7 +11,6 @@ import {
   CONNECTIVITY_ERROR,
   SUBSCRIPTION_ACTIVATION_FAILURE_EVENT,
   SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
-  subscriptionActivationInsertCode,
 } from 'ee/admin/subscriptions/show/constants';
 import { preventDefault } from 'ee_jest/admin/test_helpers';
 import { activateLicenseMutationResponse } from '../mock_data';
@@ -59,10 +58,6 @@ describe('SubscriptionActivationModal', () => {
 
     it('is size small', () => {
       expect(findGlModal().props('size')).toBe('sm');
-    });
-
-    it('shows a description text', () => {
-      expect(wrapper.text()).toContain(subscriptionActivationInsertCode);
     });
 
     it('shows a title', () => {

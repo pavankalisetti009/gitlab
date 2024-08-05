@@ -12,7 +12,7 @@ export const subscriptionActivationFutureDatedNotificationMessage = s__(
   'SuperSonics|You have successfully added a license that activates on %{date}. Please see the subscription history table below for more details.',
 );
 export const subscriptionActivationInsertCode = __(
-  "If you've purchased or renewed your subscription and have an activation code, please enter it below to start the activation process.",
+  'Find the activation code for a purchased or renewed subscription in the Customers Portal or purchase confirmation email.',
 );
 export const howToActivateSubscription = s__(
   'SuperSonics|Learn how to %{linkStart}activate your subscription%{linkEnd}.',
@@ -63,11 +63,11 @@ export const subscriptionActivationForm = {
   activationCodeFeedback: s__(
     'SuperSonics|The activation code should be a 24-character alphanumeric string',
   ),
-  pasteActivationCode: s__('SuperSonics|Paste your activation code'),
+  pasteActivationCode: s__('SuperSonics|Enter activation code'),
   acceptTerms: s__(
     'SuperSonics|I agree that my use of the GitLab Software is subject to the Subscription Agreement located at the %{linkStart}Terms of Service%{linkEnd}, unless otherwise agreed to in writing with GitLab.',
   ),
-  acceptTermsFeedback: s__('SuperSonics|Please agree to the Subscription Agreement'),
+  acceptTermsFeedback: s__('SuperSonics|Select that you agree before activating the subscription.'),
 };
 
 export const subscriptionSyncStatus = {

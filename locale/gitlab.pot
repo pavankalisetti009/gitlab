@@ -22689,6 +22689,9 @@ msgstr ""
 msgid "Find file"
 msgstr ""
 
+msgid "Find the activation code for a purchased or renewed subscription in the Customers Portal or purchase confirmation email."
+msgstr ""
+
 msgid "FindFile|Switch branch/tag"
 msgstr ""
 
@@ -27084,9 +27087,6 @@ msgid "If you want to remove this email address, visit %{profile_link}"
 msgstr ""
 
 msgid "If you want to remove this email address, visit the %{settings_link_to} page."
-msgstr ""
-
-msgid "If you've purchased or renewed your subscription and have an activation code, please enter it below to start the activation process."
 msgstr ""
 
 msgid "If your HTTP repository is not publicly accessible, add your credentials."
@@ -52167,7 +52167,7 @@ msgstr ""
 msgid "SuperSonics|Add activation code"
 msgstr ""
 
-msgid "SuperSonics|An error occurred while adding your subscription"
+msgid "SuperSonics|An error occurred during activation"
 msgstr ""
 
 msgid "SuperSonics|Buy subscription"
@@ -52177,6 +52177,9 @@ msgid "SuperSonics|Cannot activate instance due to a connectivity issue"
 msgstr ""
 
 msgid "SuperSonics|Customers Portal"
+msgstr ""
+
+msgid "SuperSonics|Enter activation code"
 msgstr ""
 
 msgid "SuperSonics|Export license usage file"
@@ -52206,13 +52209,10 @@ msgstr ""
 msgid "SuperSonics|Online license"
 msgstr ""
 
-msgid "SuperSonics|Paste your activation code"
-msgstr ""
-
-msgid "SuperSonics|Please agree to the Subscription Agreement"
-msgstr ""
-
 msgid "SuperSonics|Ready to get started? A GitLab plan is ideal for scaling organizations and for multi team usage."
+msgstr ""
+
+msgid "SuperSonics|Select that you agree before activating the subscription."
 msgstr ""
 
 msgid "SuperSonics|Start free trial"
