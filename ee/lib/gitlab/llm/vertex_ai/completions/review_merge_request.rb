@@ -79,22 +79,35 @@ module Gitlab
             # create the note on the old line.
             old_line = hunk[:removed].last&.old_pos if hunk[:added].empty?
 
+            position = {
+              base_sha: diff_refs.base_sha,
+              start_sha: diff_refs.start_sha,
+              head_sha: diff_refs.head_sha,
+              old_path: diff_file.old_path,
+              new_path: diff_file.new_path,
+              position_type: 'text',
+              old_line: old_line,
+              new_line: hunk[:added].last&.new_pos,
+              ignore_whitespace_change: false
+            }
+
+            return if review_note_already_exists?(position)
+
             @draft_notes_params << {
               merge_request: merge_request,
               author: review_bot,
               note: response_modifier.response_body,
-              position: {
-                base_sha: diff_refs.base_sha,
-                start_sha: diff_refs.start_sha,
-                head_sha: diff_refs.head_sha,
-                old_path: diff_file.old_path,
-                new_path: diff_file.new_path,
-                position_type: 'text',
-                old_line: old_line,
-                new_line: hunk[:added].last&.new_pos,
-                ignore_whitespace_change: false
-              }
+              position: position
             }
+          end
+
+          def review_note_already_exists?(position)
+            merge_request
+              .notes
+              .diff_notes
+              .authored_by(review_bot)
+              .positions
+              .any? { |pos| pos.to_h >= position }
           end
 
           def create_progress_note
@@ -108,24 +121,25 @@ module Gitlab
           end
 
           def update_progress_note_with_review_summary(draft_notes)
-            summary_note = if draft_notes.blank?
-                             s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
-                           else
-                             response = summary_response_for(user, draft_notes)
-
-                             if response.errors.any? || response.response_body.blank?
-                               s_("DuoCodeReview|I have encountered some issues while I was reviewing. " \
-                                 "Please try again later.")
-                             else
-                               response.response_body
-                             end
-                           end
-
             Notes::UpdateService.new(
               merge_request.project,
               review_bot,
-              note: summary_note
+              note: summary_note(draft_notes)
             ).execute(@progress_note)
+          end
+
+          def summary_note(draft_notes)
+            if draft_notes.blank?
+              s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
+            else
+              response = summary_response_for(user, draft_notes)
+
+              if response.errors.any? || response.response_body.blank?
+                s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
+              else
+                response.response_body
+              end
+            end
           end
 
           def publish_draft_notes

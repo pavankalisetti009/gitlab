@@ -9,58 +9,58 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
   let(:options) { {} }
   let(:response_modifier) { double }
   let(:create_note_allowed?) { true }
-  let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
-  let_it_be(:merge_request) { create(:merge_request) }
-  let_it_be(:user) { create(:user, developer_of: merge_request.project) }
-  let_it_be(:diff_refs) { merge_request.diff_refs }
 
-  let(:ai_reviewable_diff_files) do
-    [
-      instance_double(
-        Gitlab::Diff::File,
-        old_path: 'NEW.md',
-        new_path: 'NEW.md',
-        diff_lines_by_hunk: [
-          {
-            added: [
-              instance_double(Gitlab::Diff::Line, old_pos: 5, new_pos: 3),
-              instance_double(Gitlab::Diff::Line, old_pos: 5, new_pos: 4)
-            ],
-            removed: [
-              instance_double(Gitlab::Diff::Line, old_pos: 3, new_pos: 3),
-              instance_double(Gitlab::Diff::Line, old_pos: 4, new_pos: 3)
-            ]
-          }
-        ]
-      ),
-      instance_double(
-        Gitlab::Diff::File,
-        old_path: 'UPDATED.md',
-        new_path: 'UPDATED.md',
-        diff_lines_by_hunk: [
-          {
-            added: [],
-            removed: [
-              instance_double(Gitlab::Diff::Line, old_pos: 3, new_pos: 3),
-              instance_double(Gitlab::Diff::Line, old_pos: 4, new_pos: 3)
-            ]
-          }
-        ]
-      )
-    ]
+  let(:review_start_note) do
+    s_("DuoCodeReview|Hey :wave: I'm starting to review your merge request and I will let you know when I'm finished.")
   end
+
+  let(:review_no_comment_note) do
+    s_("DuoCodeReview|I finished my review and found nothing to comment on. Nice work! :tada:")
+  end
+
+  let(:review_error_note) do
+    s_("DuoCodeReview|I have encountered some issues while I was reviewing. Please try again later.")
+  end
+
+  let_it_be(:duo_code_review_bot) { create(:user, :duo_code_review_bot) }
+  let_it_be(:project) do
+    create(:project, :custom_repo, files: { 'UPDATED.md' => "existing line 1\nexisting line 2\n" })
+  end
+
+  let_it_be(:user) { create(:user, developer_of: project) }
+  let_it_be(:source_branch) { 'review-merge-request-test' }
+  let_it_be(:merge_request) do
+    project.repository.create_branch(source_branch, project.default_branch)
+    project.repository.update_file(
+      user,
+      'UPDATED.md',
+      "existing line 1\nnew line\n",
+      message: 'Update file',
+      branch_name: source_branch)
+
+    project.repository.create_file(
+      user,
+      'NEW.md',
+      "new line1\nnew line 2\n",
+      message: 'Create file',
+      branch_name: source_branch)
+
+    create(
+      :merge_request,
+      target_project: project,
+      source_project: project,
+      source_branch: source_branch,
+      target_branch: project.default_branch
+    )
+  end
+
+  let_it_be(:diff_refs) { merge_request.diff_refs }
 
   let(:review_prompt_message) do
     build(:ai_message, :review_merge_request, user: user, resource: merge_request, request_id: 'uuid')
   end
 
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
-
-  before do
-    allow(merge_request)
-      .to receive(:ai_reviewable_diff_files)
-      .and_return(ai_reviewable_diff_files)
-  end
 
   describe '#execute' do
     let(:review_prompt) { 'This is a review prompt' }
@@ -147,56 +147,56 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
         }
       end
 
-      it 'builds draft note and publish to create diff note on new and updated files' do
-        new_file_draft_note_params = {
-          merge_request: merge_request,
-          author: duo_code_review_bot,
-          note: review_answer,
-          position: {
-            base_sha: diff_refs.base_sha,
-            start_sha: diff_refs.start_sha,
-            head_sha: diff_refs.head_sha,
-            old_path: 'NEW.md',
-            new_path: 'NEW.md',
-            position_type: 'text',
-            old_line: nil,
-            new_line: 4,
-            ignore_whitespace_change: false
-          }
-        }
-
-        updated_file_draft_note_params = {
-          merge_request: merge_request,
-          author: duo_code_review_bot,
-          note: review_answer,
-          position: {
-            base_sha: diff_refs.base_sha,
-            start_sha: diff_refs.start_sha,
-            head_sha: diff_refs.head_sha,
-            old_path: 'UPDATED.md',
-            new_path: 'UPDATED.md',
-            position_type: 'text',
-            old_line: 4,
-            new_line: nil,
-            ignore_whitespace_change: false
-          }
-        }
-
-        draft_note_1 = instance_double(DraftNote)
-        draft_note_2 = instance_double(DraftNote)
-
-        expect(DraftNote).to receive(:new).with(new_file_draft_note_params).and_return(draft_note_1)
-        expect(DraftNote).to receive(:new).with(updated_file_draft_note_params).and_return(draft_note_2)
-        expect(DraftNote).to receive(:bulk_insert!).with([draft_note_1, draft_note_2], batch_size: 20)
-        expect_next_instance_of(
-          DraftNotes::PublishService,
-          merge_request,
-          duo_code_review_bot
-        ) do |svc|
-          expect(svc).to receive(:execute).with(executing_user: user)
-        end
-
+      it 'creates diff notes on new and updated files' do
         completion.execute
+
+        diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot)
+        expect(diff_notes.count).to eq 2
+
+        new_file_note = diff_notes[0]
+        expect(new_file_note.note).to eq review_answer
+        expect(new_file_note.position.to_h).to eq({
+          base_sha: diff_refs.base_sha,
+          start_sha: diff_refs.start_sha,
+          head_sha: diff_refs.head_sha,
+          old_path: 'NEW.md',
+          new_path: 'NEW.md',
+          position_type: 'text',
+          old_line: nil,
+          new_line: 2,
+          line_range: nil,
+          ignore_whitespace_change: false
+        })
+
+        updated_file_note = diff_notes[1]
+        expect(updated_file_note.note).to eq review_answer
+        expect(updated_file_note.position.to_h).to eq({
+          base_sha: diff_refs.base_sha,
+          start_sha: diff_refs.start_sha,
+          head_sha: diff_refs.head_sha,
+          old_path: 'UPDATED.md',
+          new_path: 'UPDATED.md',
+          position_type: 'text',
+          old_line: nil,
+          new_line: 2,
+          line_range: nil,
+          ignore_whitespace_change: false
+        })
+      end
+
+      context 'when review note alredy exist on the same position' do
+        it 'does not add more notes to the same position' do
+          expect do
+            described_class.new(review_prompt_message, review_prompt_class, options).execute
+          end.to change { merge_request.notes.diff_notes.count }.by(2)
+            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
+
+          expect { completion.execute }
+            .to not_change { merge_request.notes.diff_notes.count }
+            .and change { merge_request.notes.non_diff_notes.count }.by(1) # review summary
+
+          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
+        end
       end
 
       context 'when user is not allowed to create notes' do
@@ -216,9 +216,8 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
         it 'updates progress note with a success message' do
           completion.execute
 
-          expect(Note.count).to eq 1
-          expect(Note.last.note).to eq s_("DuoCodeReview|I finished my review and found nothing to comment on. " \
-            "Nice work! :tada:")
+          expect(merge_request.notes.count).to eq 1
+          expect(merge_request.notes.last.note).to eq(review_no_comment_note)
         end
       end
 
@@ -231,14 +230,13 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
               merge_request.project,
               duo_code_review_bot,
               noteable: merge_request,
-              note: s_("MergeRequests|Hey :wave: I'm starting to review your merge request and " \
-                "I will let you know when I'm finished.")
+              note: review_start_note
             ).and_call_original
             allow(Notes::CreateService).to receive(:new).and_call_original
 
             completion.execute
 
-            expect(Note.last.note).to eq s_("Helpful review summary")
+            expect(merge_request.notes.non_diff_notes.last.note).to eq s_("Helpful review summary")
           end
         end
 
@@ -255,9 +253,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(Note.count).to eq 1
-            expect(Note.last.note).to eq s_("DuoCodeReview|I have encountered some issues while I was reviewing. " \
-              "Please try again later.")
+            expect(merge_request.notes.count).to eq 3
+            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
           end
         end
 
@@ -267,9 +265,9 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
           it 'updates progress note with an error message' do
             completion.execute
 
-            expect(Note.count).to eq 1
-            expect(Note.last.note).to eq s_("DuoCodeReview|I have encountered some issues while I was reviewing. " \
-              "Please try again later.")
+            expect(merge_request.notes.count).to eq 3
+            expect(merge_request.notes.diff_notes.count).to eq 2
+            expect(merge_request.notes.non_diff_notes.last.note).to eq(review_error_note)
           end
         end
       end
@@ -279,37 +277,23 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
           stub_const("#{described_class}::DRAFT_NOTES_COUNT_LIMIT", 1)
         end
 
-        it 'builds draft note and publish to create diff note on new and updated files' do
-          new_file_draft_note_params = {
-            merge_request: merge_request,
-            author: duo_code_review_bot,
-            note: review_answer,
-            position: {
-              base_sha: diff_refs.base_sha,
-              start_sha: diff_refs.start_sha,
-              head_sha: diff_refs.head_sha,
-              old_path: 'NEW.md',
-              new_path: 'NEW.md',
-              position_type: 'text',
-              old_line: nil,
-              new_line: 4,
-              ignore_whitespace_change: false
-            }
-          }
-
-          draft_note_1 = instance_double(DraftNote)
-
-          expect(DraftNote).to receive(:new).with(new_file_draft_note_params).and_return(draft_note_1)
-          expect(DraftNote).to receive(:bulk_insert!).with([draft_note_1], batch_size: 20)
-          expect_next_instance_of(
-            DraftNotes::PublishService,
-            merge_request,
-            duo_code_review_bot
-          ) do |svc|
-            expect(svc).to receive(:execute).with(executing_user: user)
-          end
-
+        it 'creates diff note on the first file only' do
           completion.execute
+          diff_notes = merge_request.notes.diff_notes
+          expect(diff_notes.count).to eq 1
+
+          expect(diff_notes[0].position.to_h).to eq({
+            base_sha: diff_refs.base_sha,
+            start_sha: diff_refs.start_sha,
+            head_sha: diff_refs.head_sha,
+            old_path: 'NEW.md',
+            new_path: 'NEW.md',
+            position_type: 'text',
+            old_line: nil,
+            new_line: 2,
+            line_range: nil,
+            ignore_whitespace_change: false
+          })
         end
       end
     end
