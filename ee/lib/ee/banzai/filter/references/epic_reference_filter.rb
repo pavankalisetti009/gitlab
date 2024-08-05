@@ -12,12 +12,13 @@ module EE
           extend ActiveSupport::Concern
 
           def references_in(text, pattern = object_class.reference_pattern)
-            text.gsub(pattern) do |match|
-              symbol = $~[object_sym]
+            ::Gitlab::Utils::Gsub
+              .gsub_with_limit(text, pattern, limit: ::Banzai::Filter::FILTER_ITEM_LIMIT) do |match_data|
+              symbol = match_data[object_sym]
               if object_class.reference_valid?(symbol)
-                yield match, symbol.to_i, nil, $~[:group], $~
+                yield match_data[0], symbol.to_i, nil, match_data[:group], match_data
               else
-                match
+                match_data[0]
               end
             end
           end

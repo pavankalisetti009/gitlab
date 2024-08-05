@@ -340,4 +340,10 @@ RSpec.describe Banzai::Filter::References::EpicReferenceFilter, feature_category
       end.not_to raise_error
     end
   end
+
+  it_behaves_like 'limits the number of filtered items' do
+    let(:text) { "#{epic.to_reference(group)} #{epic.to_reference(group)} #{epic.to_reference(group)}" }
+    let(:filter_result) { reference_filter(text, project: nil, group: group) }
+    let(:ends_with) { "</a> #{CGI.escapeHTML(epic.to_reference(group))}</p>" }
+  end
 end
