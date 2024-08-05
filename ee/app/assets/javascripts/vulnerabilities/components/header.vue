@@ -370,7 +370,7 @@ export default {
         class="detail-page-header-actions gl-display-flex gl-flex-wrap gl-gap-3 gl-align-items-center"
       >
         <label class="gl-mb-0">{{ __('Status') }}</label>
-        <gl-loading-icon v-if="isLoadingVulnerability" size="sm" class="gl-display-inline" />
+        <gl-loading-icon v-if="isLoadingVulnerability" size="sm" class="gl-inline" />
         <vulnerability-state-dropdown
           v-else
           :state="vulnerability.state"

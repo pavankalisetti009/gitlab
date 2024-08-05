@@ -162,7 +162,7 @@ export default {
         <gl-form-input
           id="group-level-branch-input"
           v-model="enteredBranches"
-          class="gl-display-inline gl-w-30"
+          class="gl-inline gl-w-30"
           type="text"
         />
       </span>
