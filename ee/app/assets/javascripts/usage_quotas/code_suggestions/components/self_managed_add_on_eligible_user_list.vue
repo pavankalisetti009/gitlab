@@ -11,6 +11,7 @@ import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import AddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/add_on_eligible_user_list.vue';
 import {
   ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
   DUO_PRO,
   DUO_ENTERPRISE,
 } from 'ee/usage_quotas/code_suggestions/constants';
@@ -71,7 +72,8 @@ export default {
   computed: {
     queryVariables() {
       return {
-        addOnType: ADD_ON_CODE_SUGGESTIONS,
+        addOnType:
+          this.duoTier === DUO_ENTERPRISE ? ADD_ON_DUO_ENTERPRISE : ADD_ON_CODE_SUGGESTIONS,
         addOnPurchaseIds: [this.addOnPurchaseId],
         ...this.filterOptions,
         ...this.pagination,

@@ -58,6 +58,13 @@ RSpec.describe GitlabSubscriptions::AddOnEligibleUsersFinder, feature_category: 
         end
       end
 
+      context 'when supplied a duo_enterprise add on type' do
+        it 'returns the users of members from all groups in the hierarchy' do
+          expect(described_class.new(root_namespace, add_on_type: :duo_enterprise).execute)
+            .to match_array([direct_member, subgroup_member])
+        end
+      end
+
       context 'when supplied an unrecognised add on type' do
         it 'returns an empty user collection' do
           expect(described_class.new(root_namespace, add_on_type: :invalid_type).execute).to be_empty

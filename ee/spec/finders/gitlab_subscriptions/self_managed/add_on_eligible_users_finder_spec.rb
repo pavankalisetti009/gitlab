@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, feature_category: :seat_cost_management do
   describe '#execute' do
     let(:gitlab_duo_pro_finder) { described_class.new(add_on_type: :code_suggestions) }
+    let(:gitlab_duo_enterprise_finder) { described_class.new(add_on_type: :duo_enterprise) }
 
     let_it_be(:active_user) { create(:user) }
     let_it_be(:bot) { create(:user, :bot) }
@@ -26,8 +27,19 @@ RSpec.describe GitlabSubscriptions::SelfManaged::AddOnEligibleUsersFinder, featu
         pending_approval_user)
     end
 
+    it 'returns billable users for gitlab duo enterprise' do
+      result = gitlab_duo_enterprise_finder.execute
+
+      expect(result).to include(active_user)
+      expect(result).not_to include(bot, ghost, blocked_user, banned_user, pending_approval_user)
+    end
+
     it 'includes guest users for gitlab duo pro' do
       expect(gitlab_duo_pro_finder.execute).to include(guest_user)
+    end
+
+    it 'includes guest users for gitlab duo enterprise' do
+      expect(gitlab_duo_enterprise_finder.execute).to include(guest_user)
     end
 
     it 'filters users by search term if provided' do

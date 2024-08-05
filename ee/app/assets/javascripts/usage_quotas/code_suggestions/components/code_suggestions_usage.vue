@@ -2,9 +2,10 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
-import getAddOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
+import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import {
   ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
   CODE_SUGGESTIONS_TITLE,
   DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
@@ -46,7 +47,6 @@ export default {
     queryVariables() {
       return {
         namespaceId: this.groupGraphQLId,
-        addOnType: ADD_ON_CODE_SUGGESTIONS,
       };
     },
     groupGraphQLId() {
@@ -65,7 +65,7 @@ export default {
       return this.$apollo.queries.addOnPurchase.loading;
     },
     duoTier() {
-      return this.addOnPurchase?.name === 'DUO_ENTERPRISE' ? DUO_ENTERPRISE : DUO_PRO;
+      return this.addOnPurchase?.name === ADD_ON_DUO_ENTERPRISE ? DUO_ENTERPRISE : DUO_PRO;
     },
     showTitleAndSubtitle() {
       if (this.isSaaS && !this.isStandalonePage) {
@@ -90,12 +90,17 @@ export default {
   },
   apollo: {
     addOnPurchase: {
-      query: getAddOnPurchaseQuery,
+      query: getAddOnPurchasesQuery,
       variables() {
         return this.queryVariables;
       },
-      update({ addOnPurchase }) {
-        return addOnPurchase;
+      update({ addOnPurchases }) {
+        return (
+          // Prioritize Duo Enterprise add-on over Duo Pro if both are available to the namespace.
+          // For example, a namespace can have a Duo Pro add-on but also a Duo Enterprise trial add-on.
+          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_DUO_ENTERPRISE) ||
+          addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_CODE_SUGGESTIONS)
+        );
       },
       error(error) {
         const errorWithCause = Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE });

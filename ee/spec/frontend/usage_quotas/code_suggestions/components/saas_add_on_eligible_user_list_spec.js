@@ -18,7 +18,13 @@ import {
   ADD_ON_ERROR_DICTIONARY,
 } from 'ee/usage_quotas/error_constants';
 import SearchAndSortBar from 'ee/usage_quotas/code_suggestions/components/search_and_sort_bar.vue';
-import { SORT_OPTIONS } from 'ee/usage_quotas/code_suggestions/constants';
+import {
+  DUO_PRO,
+  DUO_ENTERPRISE,
+  ADD_ON_CODE_SUGGESTIONS,
+  ADD_ON_DUO_ENTERPRISE,
+  SORT_OPTIONS,
+} from 'ee/usage_quotas/code_suggestions/constants';
 import {
   OPERATORS_IS,
   TOKEN_TITLE_GROUP,
@@ -42,17 +48,29 @@ describe('Add On Eligible User List', () => {
 
   const fullPath = 'namespace/full-path';
   const addOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/1';
-  const duoTier = 'pro';
+  const duoEnterpriseAddOnPurchaseId = 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/2';
+  const duoTier = DUO_PRO;
   const error = new Error('Error');
-  const defaultQueryVariables = {
-    fullPath,
-    addOnType: 'CODE_SUGGESTIONS',
-    addOnPurchaseIds: [addOnPurchaseId],
+
+  const defaultPaginationParams = {
     first: 20,
     last: null,
     after: null,
     before: null,
     sort: null,
+  };
+
+  const defaultQueryVariables = {
+    fullPath,
+    addOnType: ADD_ON_CODE_SUGGESTIONS,
+    addOnPurchaseIds: [addOnPurchaseId],
+    ...defaultPaginationParams,
+  };
+  const defaultDuoEnterpriseQueryVariables = {
+    fullPath,
+    addOnType: ADD_ON_DUO_ENTERPRISE,
+    addOnPurchaseIds: [duoEnterpriseAddOnPurchaseId],
+    ...defaultPaginationParams,
   };
 
   const addOnEligibleUsersDataHandler = jest
@@ -74,15 +92,17 @@ describe('Add On Eligible User List', () => {
     });
   };
 
-  const createComponent = (
+  const createComponent = ({
+    props = {},
     handler = addOnEligibleUsersDataHandler,
     mountFn = shallowMountExtended,
-  ) => {
+  } = {}) => {
     wrapper = mountFn(SaasAddOnEligibleUserList, {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         addOnPurchaseId,
         duoTier,
+        ...props,
       },
       provide: {
         fullPath,
@@ -127,6 +147,20 @@ describe('Add On Eligible User List', () => {
       expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(defaultQueryVariables);
     });
 
+    describe('with Duo Enterprise add-on tier', () => {
+      beforeEach(() => {
+        return createComponent({
+          props: { duoTier: DUO_ENTERPRISE, addOnPurchaseId: duoEnterpriseAddOnPurchaseId },
+        });
+      });
+
+      it('calls addOnEligibleUsers query with appropriate params', () => {
+        expect(addOnEligibleUsersDataHandler).toHaveBeenCalledWith(
+          defaultDuoEnterpriseQueryVariables,
+        );
+      });
+    });
+
     it('passes the correct sort options to <search-and-sort-bar>', () => {
       expect(findSearchAndSortBar().props('sortOptions')).toStrictEqual([]);
     });
@@ -137,7 +171,10 @@ describe('Add On Eligible User List', () => {
 
     describe('with group invited users', () => {
       it('shows the membership type badge', async () => {
-        await createComponent(addOnEligibleUsersWithMembershipTypeDataHandler, mountExtended);
+        await createComponent({
+          handler: addOnEligibleUsersWithMembershipTypeDataHandler,
+          mountFn: mountExtended,
+        });
 
         expect(findMembershipTypeBadge().text()).toBe('Group invite');
       });
@@ -191,7 +228,7 @@ describe('Add On Eligible User List', () => {
 
     describe('when there is an error fetching add on eligible users', () => {
       beforeEach(() => {
-        return createComponent(addOnEligibleUsersErrorHandler);
+        return createComponent({ handler: addOnEligibleUsersErrorHandler });
       });
 
       it('does not display loading state for add-on eligible user list', () => {
