@@ -35,9 +35,6 @@ describe('Vulnerability Code Flow', () => {
   });
 
   it('shows the properties that should always be shown', () => {
-    expect(getById('description').html()).toContain(mockVulnerability.descriptionHtml);
-    expect(getById('what-is-code-flow').exists()).toBe(true);
-    expect(getById('what-is-code-flow-popover').exists()).toBe(true);
     expect(getById('source').exists()).toBe(true);
     expect(getById('sink').exists()).toBe(true);
     expect(getById('steps-header').exists()).toBe(true);
@@ -52,23 +49,12 @@ describe('Vulnerability Code Flow', () => {
     expect(renderGFM).toHaveBeenCalledWith(getById('description').element);
   });
 
-  it('renders description when descriptionHtml is not present', () => {
-    createWrapper({
-      descriptionHtml: null,
-    });
-    expect(getById('description').html()).not.toContain(mockVulnerability.descriptionHtml);
-    expect(getText('description')).toBe(mockVulnerability.description);
-  });
-
   describe('check popovers content', () => {
     it('checks all popovers data', () => {
       expect(findAllPopovers().at(0).attributes('content')).toContain(
-        'Code flow helps trace and flag risky data',
-      );
-      expect(findAllPopovers().at(1).attributes('content')).toContain(
         "A 'source' refers to untrusted inputs like user data",
       );
-      expect(findAllPopovers().at(2).attributes('content')).toContain(
+      expect(findAllPopovers().at(1).attributes('content')).toContain(
         "A 'sink' is where untrusted data is used in a potentially risky way",
       );
     });
