@@ -3,6 +3,21 @@
 RSpec.shared_examples 'quick actions that change work item type ee' do
   include_context 'with work item change type context'
 
+  describe 'type command' do
+    let(:new_type) { 'issue' }
+    let(:command) { "/type #{new_type}" }
+
+    context 'with epic' do
+      let_it_be(:work_item) { create(:work_item, :epic, namespace: group, title: 'Work item Epic') }
+      let(:with_access) { true }
+
+      it 'does not change work item type' do
+        expect { service.execute(command, work_item) }
+          .not_to change { work_item.work_item_type.base_type }
+      end
+    end
+  end
+
   describe 'promote_to command' do
     let(:new_type) { 'objective' }
     let(:command) { "/promote_to #{new_type}" }
