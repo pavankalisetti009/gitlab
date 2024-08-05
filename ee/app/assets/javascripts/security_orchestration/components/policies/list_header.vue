@@ -2,7 +2,6 @@
 import { GlAlert, GlButton, GlIcon, GlSprintf } from '@gitlab/ui';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
-import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
@@ -18,7 +17,6 @@ export default {
     InvalidPoliciesBanner,
     ProjectModal,
   },
-  mixins: [glFeatureFlagMixin()],
   inject: [
     'assignedPolicyProject',
     'disableSecurityPolicyProject',
