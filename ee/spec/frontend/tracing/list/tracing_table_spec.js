@@ -40,7 +40,7 @@ describe('TracingTable', () => {
 
   const expectedTraces = [
     {
-      timestamp: 'Jul 10, 2023 3:02pm UTC',
+      timestamp: 'Jul 10 2023 15:02:30.677 UTC',
       badge: '1 span',
       errorBadge: undefined,
       service_name: 'tracegen',
@@ -49,7 +49,7 @@ describe('TracingTable', () => {
       trace_id: 'trace-1',
     },
     {
-      timestamp: 'Aug 11, 2023 4:03pm UTC',
+      timestamp: 'Aug 11 2023 16:03:40.577 UTC',
       badge: '3 spans / 2 matches',
       errorBadge: '1 error',
       service_name: 'tracegen-2',
@@ -58,7 +58,7 @@ describe('TracingTable', () => {
       trace_id: 'trace-2',
     },
     {
-      timestamp: 'Aug 11, 2023 4:03pm UTC',
+      timestamp: 'Aug 11 2023 16:03:50.577 UTC',
       badge: '3 spans',
       errorBadge: '1 error',
       service_name: 'tracegen-3',

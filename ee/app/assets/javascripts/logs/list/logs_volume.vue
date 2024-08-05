@@ -4,6 +4,7 @@ import { GlSkeletonLoader } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
+import { UTC_SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 import { severityNumberToConfig } from '../utils';
 
 export default {
@@ -84,7 +85,7 @@ export default {
       const seriesData = params?.seriesData || [];
       const dataPoints = seriesData[0]?.data || [];
       const timestamp = dataPoints[0];
-      return timestamp ? formatDate(timestamp) : '';
+      return timestamp ? formatDate(timestamp, UTC_SHORT_DATE_TIME_FORMAT) : '';
     },
   },
 };

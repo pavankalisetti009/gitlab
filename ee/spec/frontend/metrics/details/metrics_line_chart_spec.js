@@ -147,7 +147,7 @@ describe('MetricsLineChart', () => {
 
     describe('title', () => {
       it('sets the title to the x data point of the first series', () => {
-        expect(getTooltipTitle().text()).toBe('Nov 16, 2023 7:10:10');
+        expect(getTooltipTitle().text()).toBe('Nov 16 2023 07:10:10 UTC');
       });
 
       it('handles empty data', async () => {

@@ -68,7 +68,7 @@ export default {
       const distribution = this.heatmapData.distribution[0] || [];
       // timestamps are in nano, we need to convert them to ms
       const timeIntervals = distribution.map((entry) => entry[0] / 1e6);
-      return timeIntervals.map((entry) => formatDate(entry, 'HH:MM'));
+      return timeIntervals.map((entry) => formatDate(entry, `UTC:mmm dd HH:MM`));
     },
     yAxisLabels() {
       return this.heatmapData.buckets;

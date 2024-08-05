@@ -10,6 +10,9 @@ const HEADER_CLASS = 'gl-p-2 gl-font-bold gl-flex gl-justify-center gl-items-cen
 const BODY_CLASS =
   'gl-flex gl-justify-center gl-items-center gl-flex-direction-column gl-my-0 gl-p-4 gl-font-bold gl-text-center gl-flex-grow-1 gl-font-lg';
 
+const DATE_FORMAT = 'mmm d, yyyy';
+const UTC_TIME_FORMAT = 'UTC:H:MM:ss.l Z';
+
 export default {
   CARD_CLASS,
   HEADER_CLASS,
@@ -43,10 +46,10 @@ export default {
       return `${this.trace.service_name} : ${this.trace.operation}`;
     },
     traceDate() {
-      return formatDate(this.trace.timestamp, 'mmm d, yyyy');
+      return formatDate(this.trace.timestamp, DATE_FORMAT);
     },
     traceTime() {
-      return formatDate(this.trace.timestamp, 'H:MM:ss.l Z');
+      return formatDate(this.trace.timestamp, UTC_TIME_FORMAT);
     },
     traceDuration() {
       return formatTraceDuration(this.trace.duration_nano);

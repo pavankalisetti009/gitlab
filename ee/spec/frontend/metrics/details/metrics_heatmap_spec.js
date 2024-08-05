@@ -74,7 +74,11 @@ describe('MetricsHeatmap', () => {
   });
 
   it('sets the x labels to formatted timestamps', () => {
-    expect(findHeatmap().props('xAxisLabels')).toEqual(['01:56', '01:57', '01:58']);
+    expect(findHeatmap().props('xAxisLabels')).toEqual([
+      'Feb 05 01:56',
+      'Feb 05 01:57',
+      'Feb 05 01:58',
+    ]);
   });
 
   it('sets the y labels to buckets', () => {
