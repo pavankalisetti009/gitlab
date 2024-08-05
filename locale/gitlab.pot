@@ -653,6 +653,9 @@ msgstr ""
 msgid "%{completed} of %{total} weight completed"
 msgstr ""
 
+msgid "%{component} is not an allowed sub claim component"
+msgstr ""
+
 msgid "%{cores} cores"
 msgstr ""
 
@@ -64175,6 +64178,9 @@ msgid "project namespace cannot be the parent of another namespace"
 msgstr ""
 
 msgid "project's path"
+msgstr ""
+
+msgid "project_path must be the first element of the sub claim"
 msgstr ""
 
 msgid "projects"
