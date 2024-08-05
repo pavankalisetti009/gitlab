@@ -18,6 +18,7 @@ import {
   SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
   SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT,
   subscriptionActivationForm,
+  subscriptionActivationInsertCode,
 } from '../constants';
 import { getErrorsAsData, getLicenseFromData } from '../utils';
 import activateSubscriptionMutation from '../graphql/mutations/activate_subscription.mutation.graphql';
@@ -49,6 +50,7 @@ export default {
     activationCode: subscriptionActivationForm.activationCode,
     acceptTermsFeedback: subscriptionActivationForm.acceptTermsFeedback,
     pasteActivationCode: subscriptionActivationForm.pasteActivationCode,
+    activationHelp: subscriptionActivationInsertCode,
   },
   directives: {
     validation: validation(feedbackMap),
@@ -85,8 +87,8 @@ export default {
   },
   computed: {
     checkboxLabelClass() {
-      // by default, if the value is not false the text will look green, therefore we force it to gray-900
-      return this.form.fields.terms.state === false ? '' : 'gl-text-gray-900!';
+      // by default, if the value is not null the text will look green or red, therefore we force it to use primary text color
+      return this.form.fields.terms.state === null ? '' : 'gl-text-primary';
     },
   },
   methods: {
@@ -140,13 +142,11 @@ export default {
 <template>
   <gl-form novalidate @submit.prevent="submit">
     <gl-form-group
+      :description="$options.i18n.activationHelp"
       :invalid-feedback="form.fields.activationCode.feedback"
       :state="form.fields.activationCode.state"
       data-testid="form-group-activation-code"
     >
-      <label class="gl-w-full" for="activation-code-group">
-        {{ $options.i18n.activationCode }}
-      </label>
       <gl-form-input
         id="activation-code-group"
         v-model.trim="form.fields.activationCode.value"

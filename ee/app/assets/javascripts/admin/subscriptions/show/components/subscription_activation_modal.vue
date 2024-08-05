@@ -4,7 +4,6 @@ import {
   activateLabel,
   cancelLabel,
   activateSubscription,
-  subscriptionActivationInsertCode,
   SUBSCRIPTION_ACTIVATION_FAILURE_EVENT,
   SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
   SUBSCRIPTION_ACTIVATION_FINALIZED_EVENT,
@@ -13,7 +12,6 @@ import SubscriptionActivationErrors from './subscription_activation_errors.vue';
 import SubscriptionActivationForm from './subscription_activation_form.vue';
 
 export default {
-  bodyText: subscriptionActivationInsertCode,
   title: activateSubscription,
   name: 'SubscriptionActivationModal',
   components: {
@@ -102,7 +100,6 @@ export default {
     @change="handleChange"
   >
     <subscription-activation-errors v-if="error" class="mb-4" :error="error" />
-    <p>{{ $options.bodyText }}</p>
     <subscription-activation-form
       ref="form"
       :hide-submit-button="true"

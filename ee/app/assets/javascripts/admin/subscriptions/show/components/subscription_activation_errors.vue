@@ -51,9 +51,7 @@ export const i18n = Object.freeze({
   EXPIRED_LICENSE_ERROR_MESSAGE: s__(
     'SuperSonics|You can %{purchaseSubscriptionLinkStart}purchase a new subscription%{purchaseSubscriptionLinkEnd} and try again. If you need further assistance, please %{supportLinkStart}contact GitLab Support%{supportLinkEnd}.',
   ),
-  GENERAL_ACTIVATION_ERROR_TITLE: s__(
-    'SuperSonics|An error occurred while adding your subscription',
-  ),
+  GENERAL_ACTIVATION_ERROR_TITLE: s__('SuperSonics|An error occurred during activation'),
   GENERAL_ACTIVATION_ERROR_MESSAGE: s__(
     'SuperSonics|Learn more about %{activationLinkStart}activating your subscription%{activationLinkEnd}. If you need further assistance, %{supportLinkStart}contact GitLab Support%{supportLinkEnd}.',
   ),

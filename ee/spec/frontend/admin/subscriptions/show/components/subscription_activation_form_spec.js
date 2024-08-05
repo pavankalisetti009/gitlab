@@ -77,7 +77,7 @@ describe('SubscriptionActivationForm', () => {
     });
 
     it('applies a class to the checkbox', () => {
-      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-gray-900!');
+      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('');
     });
 
     it('has an `Activate` button', () => {
@@ -113,7 +113,7 @@ describe('SubscriptionActivationForm', () => {
     });
 
     it('applies the correct class and shows help text field', () => {
-      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('');
+      expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-primary');
       expect(findAgreementCheckboxFormGroup().text()).toContain(
         subscriptionActivationForm.acceptTermsFeedback,
       );
@@ -151,9 +151,7 @@ describe('SubscriptionActivationForm', () => {
         });
 
         it('updates the validation class and hides help text field', () => {
-          expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe(
-            'gl-text-gray-900!',
-          );
+          expect(findAgreementCheckboxFormGroupSpan().attributes('class')).toBe('gl-text-primary');
           expect(findAgreementCheckboxFormGroup().text()).not.toContain(
             subscriptionActivationForm.acceptTermsFeedback,
           );

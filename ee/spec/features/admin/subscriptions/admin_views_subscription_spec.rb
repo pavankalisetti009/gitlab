@@ -159,7 +159,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_
         within_modal do
           fill_activation_form
 
-          expect(page).to have_content('An error occurred while adding your subscription')
+          expect(page).to have_content('An error occurred during activation')
         end
       end
 
@@ -210,7 +210,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_
       end
 
       it 'shows the general error message' do
-        expect(page).to have_content('An error occurred while adding your subscription')
+        expect(page).to have_content('An error occurred during activation')
       end
     end
 
