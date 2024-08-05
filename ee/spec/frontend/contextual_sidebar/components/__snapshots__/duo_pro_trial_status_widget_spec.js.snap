@@ -9,49 +9,44 @@ exports[`DuoProTrialStatusWidget component rendered content matches the snapshot
   data-testid="duo-pro-trial-widget-root-element"
   id="reference-0"
 >
-  <gl-link-stub
-    class="!gl-no-underline !gl-text-gray-900 gl-mt-2"
-    href="some/widget/path"
+  <div
+    class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
+    data-testid="duo-pro-trial-widget-menu"
   >
-    <div
-      class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
-      data-testid="duo-pro-trial-widget-menu"
-    >
-      <div>
-        <div
-          class="gl-flex gl-w-full"
+    <div>
+      <div
+        class="gl-flex gl-w-full"
+      >
+        <span
+          class="gl-mr-3 nav-icon-container svg-container"
         >
-          <span
-            class="gl-mr-3 nav-icon-container svg-container"
-          >
-            <img
-              class="svg"
-              src="file-mock"
-              width="16"
-            />
-          </span>
-          <span
-            class="gl-grow nav-item-name"
-          >
-            GitLab Duo Pro Trial
-          </span>
-          <span
-            class="gl-mr-auto gl-overflow-hidden gl-text-sm gl-whitespace-nowrap"
-          >
-            Day 10/60
-          </span>
-        </div>
-        <div
-          class="gl-flex gl-items-stretch gl-mt-2"
-        >
-          <gl-progress-bar-stub
-            aria-hidden="true"
-            class="gl-grow"
-            value="10"
+          <img
+            class="svg"
+            src="file-mock"
+            width="16"
           />
-        </div>
+        </span>
+        <span
+          class="gl-grow nav-item-name"
+        >
+          GitLab Duo Pro Trial
+        </span>
+        <span
+          class="gl-mr-auto gl-overflow-hidden gl-text-sm gl-whitespace-nowrap"
+        >
+          Day 10/60
+        </span>
+      </div>
+      <div
+        class="gl-flex gl-items-stretch gl-mt-2"
+      >
+        <gl-progress-bar-stub
+          aria-hidden="true"
+          class="gl-grow"
+          value="10"
+        />
       </div>
     </div>
-  </gl-link-stub>
+  </div>
 </div>
 `;
