@@ -1001,40 +1001,16 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
       context 'for epic work item type' do
         let(:input) { { 'descriptionWidget' => { 'description' => "/type objective" } } }
+        let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
+        let(:work_item) { epic.work_item }
 
-        context 'when epic work item does not have a synced epic' do
-          let_it_be_with_refind(:work_item) do
-            create(:work_item, :epic, namespace: group)
-          end
+        it 'does not update work item type' do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+            work_item.reload
+          end.not_to change { work_item.work_item_type.base_type }
 
-          it 'updates work item type' do
-            expect do
-              post_graphql_mutation(mutation, current_user: current_user)
-              work_item.reload
-            end.to change { work_item.work_item_type.base_type }.from('epic').to('objective')
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_response['workItem']['workItemType']).to include(
-              { 'name' => 'Objective' }
-            )
-          end
-        end
-
-        context 'when epic work item has a synced epic' do
-          let_it_be(:epic) { create(:epic, :with_synced_work_item, group: group) }
-          let(:work_item) { epic.work_item }
-
-          it 'does not update work item type' do
-            expect do
-              post_graphql_mutation(mutation, current_user: current_user)
-              work_item.reload
-            end.not_to change { work_item.work_item_type.base_type }
-
-            expect(response).to have_gitlab_http_status(:success)
-            expect(mutation_response['errors'].first).to eq(
-              "Work item type cannot be changed to objective when the work item is a legacy epic synced work item"
-            )
-          end
+          expect(response).to have_gitlab_http_status(:success)
         end
       end
     end

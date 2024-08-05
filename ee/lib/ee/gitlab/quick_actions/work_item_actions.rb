@@ -38,6 +38,11 @@ module EE
           super.merge(key_result: 'Objective')
         end
 
+        override :type_change_allowed?
+        def type_change_allowed?
+          true unless quick_action_target.work_item_type.epic?
+        end
+
         def find_frequency(frequency)
           return unless frequency
 
