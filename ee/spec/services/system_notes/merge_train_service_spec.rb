@@ -5,6 +5,9 @@ require 'spec_helper'
 RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains do
   let_it_be(:author) { create(:user) }
   let_it_be(:project) { create(:project) }
+  let_it_be(:project_merge_trains_link) do
+    "[merge train](#{Rails.application.routes.url_helpers.project_merge_trains_url(project)})"
+  end
 
   shared_examples 'creates a removed merge train TODO' do
     it 'creates Todo of MERGE_TRAIN_REMOVED' do
@@ -26,7 +29,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
     end
 
     it "posts the 'merge train' system note" do
-      expect(subject.note).to eq('started a merge train')
+      expect(subject.note).to eq("started a #{project_merge_trains_link}")
     end
 
     context 'when index of the merge request is not zero' do
@@ -35,7 +38,7 @@ RSpec.describe SystemNotes::MergeTrainService, feature_category: :merge_trains d
       end
 
       it "posts the 'merge train' system note" do
-        expect(subject.note).to eq('added this merge request to the merge train at position 2')
+        expect(subject.note).to eq("added this merge request to the #{project_merge_trains_link} at position 2")
       end
     end
   end

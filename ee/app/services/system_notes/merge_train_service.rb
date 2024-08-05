@@ -7,9 +7,9 @@ module SystemNotes
       index = merge_train.index
 
       body = if index == 0
-               'started a merge train'
+               "started a #{merge_train_link}"
              else
-               "added this merge request to the merge train at position #{index + 1}"
+               "added this merge request to the #{merge_train_link} at position #{index + 1}"
              end
 
       create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
@@ -83,6 +83,12 @@ module SystemNotes
       # See https://gitlab.com/gitlab-org/gitlab/issues/29467.
       body = "aborted automatic add to merge train because #{reason}"
       create_note(NoteSummary.new(noteable, project, author, body, action: 'merge'))
+    end
+
+    private
+
+    def merge_train_link
+      "[merge train](#{Rails.application.routes.url_helpers.project_merge_trains_url(project)})"
     end
   end
 end
