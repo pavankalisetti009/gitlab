@@ -82,16 +82,16 @@ RSpec.describe API::Internal::UpcomingReconciliations, :aggregate_failures, :api
           expect(json_response.dig('message', 'error')).to eq(error_message)
         end
       end
-    end
 
-    context 'when not gitlab.com' do
-      it 'returns 403 error' do
-        stub_application_setting(check_namespace_plan: false)
+      context 'when not gitlab.com' do
+        it 'returns 403 error' do
+          stub_application_setting(check_namespace_plan: false)
 
-        put api('/internal/upcoming_reconciliations')
+          put api('/internal/upcoming_reconciliations', admin, admin_mode: true)
 
-        expect(response).to have_gitlab_http_status(:forbidden)
-        expect(json_response.dig('message')).to eq('403 Forbidden - This API is gitlab.com only!')
+          expect(response).to have_gitlab_http_status(:forbidden)
+          expect(json_response.dig('message')).to eq('403 Forbidden - This API is gitlab.com only!')
+        end
       end
     end
   end
