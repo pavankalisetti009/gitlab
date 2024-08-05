@@ -1,7 +1,7 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlCard } from '@gitlab/ui';
 import MockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import RelatedIssues from 'ee/vulnerabilities/components/related_issues.vue';
 import { createAlert } from '~/alert';
 import { TYPE_ISSUE } from '~/issues/constants';
@@ -52,7 +52,7 @@ describe('Vulnerability related issues component', () => {
         ...provide,
       },
       stubs: {
-        GlCard,
+        CrudComponent,
         ...stubs,
       },
     });
