@@ -11,8 +11,7 @@ RSpec.describe Gitlab::Llm::Templates::GenerateCommitMessage, feature_category: 
     it 'includes raw diff' do
       diff_file = merge_request.raw_diffs.to_a[0]
 
-      expect(subject.to_prompt).to include("Filename: #{diff_file.new_path}")
-      expect(subject.to_prompt).to include(diff_file.diff.split("\n")[1])
+      expect(subject.to_prompt[:messages][0][:content]).to include(diff_file.diff.split("\n")[1])
     end
   end
 end
