@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Epic index', feature_category: :global_search do
+RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
   let_it_be(:parent_group) { create(:group) }
   let_it_be(:another_group) { create(:group) }
@@ -129,12 +129,12 @@ RSpec.describe 'Epic index', feature_category: :global_search do
 
         epic = create(:epic, group: group)
         ensure_elasticsearch_index!
-        expect(epics_in_index).to eq([epic.id])
+        expect(items_in_index(epic_index)).to eq([epic.id])
 
         epic.destroy!
 
         ensure_elasticsearch_index!
-        expect(epics_in_index).to be_empty
+        expect(items_in_index(epic_index)).to be_empty
       end
     end
 
@@ -231,12 +231,12 @@ RSpec.describe 'Epic index', feature_category: :global_search do
 
         epic = create(:epic, group: group)
         ensure_elasticsearch_index!
-        expect(epics_in_index).to eq([epic.id])
+        expect(items_in_index(epic_index)).to eq([epic.id])
 
         Groups::DestroyService.new(group, user).execute
 
         ensure_elasticsearch_index!
-        expect(epics_in_index).to be_empty
+        expect(items_in_index(epic_index)).to be_empty
       end
     end
 
@@ -378,12 +378,12 @@ RSpec.describe 'Epic index', feature_category: :global_search do
 
           epic = create(:epic, group: group)
           ensure_elasticsearch_index!
-          expect(epics_in_index).to eq([epic.id])
+          expect(items_in_index(epic_index)).to eq([epic.id])
 
           indexed_namespace.destroy!
 
           ensure_elasticsearch_index!
-          expect(epics_in_index).to be_empty
+          expect(items_in_index(epic_index)).to be_empty
         end
       end
     end
@@ -404,9 +404,5 @@ RSpec.describe 'Epic index', feature_category: :global_search do
         end
       end
     end
-  end
-
-  def epics_in_index
-    client.search(index: epic_index).dig('hits', 'hits').map { |hit| hit['_source']['id'] }
   end
 end
