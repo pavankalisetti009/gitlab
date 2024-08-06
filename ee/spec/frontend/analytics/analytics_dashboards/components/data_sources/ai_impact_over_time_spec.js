@@ -1,4 +1,8 @@
-import { mockAiMetricsResponseData } from 'ee_jest/analytics/dashboards/ai_impact/mock_data';
+import {
+  mockAiMetricsResponseData,
+  mockAiMetricsZeroResponseData,
+  mockAiMetricsNullResponseData,
+} from 'ee_jest/analytics/dashboards/ai_impact/mock_data';
 import { AI_METRICS } from '~/analytics/shared/constants';
 import fetch from 'ee/analytics/analytics_dashboards/data_sources/ai_impact_over_time';
 import { defaultClient } from 'ee/analytics/analytics_dashboards/graphql/client';
@@ -40,6 +44,21 @@ describe('AI Impact Over Time Data Source', () => {
           startDate: new Date('2020-06-07'),
           endDate: new Date('2020-07-07'),
           fullPath: namespace,
+        });
+      });
+
+      describe.each`
+        type             | response                         | result
+        ${'zero values'} | ${mockAiMetricsZeroResponseData} | ${'-'}
+        ${'null values'} | ${mockAiMetricsNullResponseData} | ${'-'}
+      `('with $type data', ({ response, result }) => {
+        beforeEach(async () => {
+          mockResolvedQuery(response);
+          res = await fetch({ namespace, query });
+        });
+
+        it('correctly calculates the value', () => {
+          expect(res).toBe(result);
         });
       });
     });
