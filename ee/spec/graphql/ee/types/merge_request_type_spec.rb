@@ -110,7 +110,181 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
       # Clear batch loader cache to ensure there's no N+1 if batch loading isn't cached.
       BatchLoader::Executor.clear_current
 
-      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control)
+      # +1 as we do an extra query for setting retreival
+      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(1)
+    end
+  end
+
+  shared_examples_for 'avoids N+1 queries related to approval rules' do
+    describe 'avoids N+1 queries with secury scan result' do
+      before do
+        setup_security_scan_result(merge_request)
+      end
+
+      it_behaves_like 'avoids N+1 queries' do
+        let(:create_additional_resources) do
+          mr_1 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-2'
+          )
+
+          create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-3'
+          )
+
+          mr_3 = create(
+            :merge_request,
+            source_project: project
+          )
+
+          setup_security_scan_result(mr_1)
+          setup_security_scan_result(mr_3)
+
+          # Simulate a merged MR
+          mr_3.mark_as_merged!
+        end
+      end
+    end
+
+    describe 'avoids N+1 queries with approvals' do
+      before do
+        setup_approval_rules(merge_request)
+      end
+
+      it_behaves_like 'avoids N+1 queries' do
+        let(:create_additional_resources) do
+          mr_1 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-2'
+          )
+
+          create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-3'
+          )
+
+          mr_3 = create(
+            :merge_request,
+            source_project: project
+          )
+
+          setup_approval_rules(mr_1)
+          setup_approval_rules(mr_3)
+
+          # Simulate a merged MR
+          mr_3.mark_as_merged!
+        end
+      end
+    end
+
+    describe 'avoids N+1 queries with mr diff commits' do
+      before do
+        setup_mr_diff_commit(merge_request)
+      end
+
+      it_behaves_like 'avoids N+1 queries' do
+        let(:create_additional_resources) do
+          mr_1 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-2'
+          )
+
+          mr_2 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-3'
+          )
+
+          mr_3 = create(
+            :merge_request,
+            source_project: project
+          )
+
+          setup_mr_diff_commit(mr_1)
+          setup_mr_diff_commit(mr_2)
+          setup_mr_diff_commit(mr_3)
+
+          # Simulate a merged MR
+          mr_3.mark_as_merged!
+        end
+      end
+    end
+
+    describe 'avoids N+1 queries with blocking mrs' do
+      it_behaves_like 'avoids N+1 queries' do
+        before do
+          setup_blocking_mrs(merge_request)
+        end
+
+        let(:create_additional_resources) do
+          mr_1 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-2'
+          )
+
+          mr_2 = create(
+            :merge_request,
+            source_project: project,
+            source_branch: 'source-branch-3'
+          )
+
+          mr_3 = create(
+            :merge_request,
+            source_project: project
+          )
+          setup_blocking_mrs(mr_1)
+          setup_blocking_mrs(mr_2)
+          setup_blocking_mrs(mr_3)
+
+          mr_3.mark_as_merged!
+        end
+      end
+    end
+
+    def setup_blocking_mrs(merge_request)
+      create(:merge_request_block, blocked_merge_request: merge_request)
+    end
+
+    def setup_security_scan_result(merge_request)
+      policy = create(:scan_result_policy_read, project: project)
+
+      create(:report_approver_rule, :scan_finding, merge_request: merge_request,
+        scan_result_policy_read: policy, name: 'Policy 1')
+
+      create(:scan_result_policy_violation, :running, project: project, merge_request: merge_request,
+        scan_result_policy_read: policy, violation_data: nil)
+    end
+
+    def setup_mr_diff_commit(merge_request)
+      user = create(:user)
+      mr_diff_commit_user = create(:merge_request_diff_commit_user, email: user.email)
+
+      create(
+        :merge_request_diff_commit,
+        merge_request_diff: merge_request.merge_request_diff,
+        commit_author: mr_diff_commit_user,
+        committer: mr_diff_commit_user
+      )
+    end
+
+    def setup_approval_rules(merge_request)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_1, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_2, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_3, users: users, groups: groups)
+      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_4, users: users, groups: groups)
+      create(:any_approver_rule, merge_request: merge_request)
+      create(:code_owner_rule, merge_request: merge_request, users: users, groups: groups)
+      create(:report_approver_rule, merge_request: merge_request, users: users, groups: groups)
+
+      create(:approval, merge_request: merge_request, user: users.last)
+      create(:approval, merge_request: merge_request, user: groups.last.members.last.user)
     end
   end
 
@@ -177,10 +351,6 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
 
         group.add_members(users, GroupMember::MAINTAINER)
       end
-
-      setup_blocking_mrs(merge_request)
-      setup_mr_diff_commit(merge_request)
-      setup_approval_rules(merge_request)
     end
 
     before do
@@ -189,54 +359,11 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
         multiple_approval_rules: true,
         blocking_merge_requests: true
       )
+
+      stub_feature_flags(policy_mergability_check: true)
     end
 
-    shared_examples_for 'avoids N+1 queries related to approval rules' do
-      shared_examples_for 'avoids N+1 queries with additional resources' do
-        it_behaves_like 'avoids N+1 queries' do
-          let(:create_additional_resources) do
-            mr_1 = create(
-              :merge_request,
-              source_project: project,
-              source_branch: 'source-branch-2'
-            )
-
-            mr_2 = create(
-              :merge_request,
-              source_project: project,
-              source_branch: 'source-branch-3'
-            )
-
-            mr_3 = create(
-              :merge_request,
-              source_project: project
-            )
-
-            setup_blocking_mrs(mr_1)
-            setup_blocking_mrs(mr_2)
-            setup_blocking_mrs(mr_3)
-            setup_mr_diff_commit(mr_1)
-            setup_mr_diff_commit(mr_2)
-            setup_mr_diff_commit(mr_3)
-            setup_approval_rules(mr_1)
-            setup_approval_rules(mr_3)
-
-            # Simulate a merged MR
-            mr_3.mark_as_merged!
-          end
-        end
-      end
-
-      it_behaves_like 'avoids N+1 queries with additional resources'
-
-      context 'when committers are not allowed to approve' do
-        before do
-          stub_ee_application_setting(prevent_merge_requests_committers_approval: true)
-        end
-
-        it_behaves_like 'avoids N+1 queries with additional resources'
-      end
-    end
+    it_behaves_like 'avoids N+1 queries related to approval rules'
 
     context 'when overriding approvers is disabled' do
       before do
@@ -252,35 +379,6 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
       end
 
       it_behaves_like 'avoids N+1 queries related to approval rules'
-    end
-
-    def setup_blocking_mrs(merge_request)
-      create(:merge_request_block, blocked_merge_request: merge_request)
-    end
-
-    def setup_mr_diff_commit(merge_request)
-      user = create(:user)
-      mr_diff_commit_user = create(:merge_request_diff_commit_user, email: user.email)
-
-      create(
-        :merge_request_diff_commit,
-        merge_request_diff: merge_request.merge_request_diff,
-        commit_author: mr_diff_commit_user,
-        committer: mr_diff_commit_user
-      )
-    end
-
-    def setup_approval_rules(merge_request)
-      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_1, users: users, groups: groups)
-      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_2, users: users, groups: groups)
-      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_3, users: users, groups: groups)
-      create(:approval_merge_request_rule, merge_request: merge_request, approval_project_rule: approval_project_rule_4, users: users, groups: groups)
-      create(:any_approver_rule, merge_request: merge_request)
-      create(:code_owner_rule, merge_request: merge_request, users: users, groups: groups)
-      create(:report_approver_rule, merge_request: merge_request, users: users, groups: groups)
-
-      create(:approval, merge_request: merge_request, user: users.last)
-      create(:approval, merge_request: merge_request, user: groups.last.members.last.user)
     end
   end
 

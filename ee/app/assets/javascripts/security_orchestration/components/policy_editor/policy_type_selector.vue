@@ -67,9 +67,6 @@ export default {
     'policiesPath',
   ],
   computed: {
-    showPipelineExecutionPolicyType() {
-      return this.glFeatures.pipelineExecutionPolicyType;
-    },
     showVulnerabilityManagementPolicyType() {
       return (
         this.glFeatures.vulnerabilityManagementPolicyType ||
@@ -98,10 +95,7 @@ export default {
           hasMax: this.maxActiveScanExecutionPoliciesReached,
           maxPoliciesAllowed: this.maxScanExecutionPoliciesAllowed,
         },
-      ];
-
-      if (this.showPipelineExecutionPolicyType) {
-        policies.push({
+        {
           text: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.text.toLowerCase(),
           urlParameter: POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
           title: i18n.pipelineExecutionPolicyTitle,
@@ -110,8 +104,8 @@ export default {
           imageSrc: pipelineIllustrationUrl,
           hasMax: this.maxActivePipelineExecutionPoliciesReached,
           maxPoliciesAllowed: this.maxPipelineExecutionPoliciesAllowed,
-        });
-      }
+        },
+      ];
 
       if (this.showVulnerabilityManagementPolicyType) {
         policies.push({

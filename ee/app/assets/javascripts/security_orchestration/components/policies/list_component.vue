@@ -2,7 +2,6 @@
 import { intersection } from 'lodash';
 import { GlIcon, GlLink, GlLoadingIcon, GlSprintf, GlTable, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
@@ -13,7 +12,6 @@ import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  PIPELINE_EXECUTION_FILTER_OPTION,
   POLICY_TYPES_WITH_INHERITANCE,
 } from './constants';
 import BreakingChangesIcon from './breaking_changes_icon.vue';
@@ -46,7 +44,6 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['namespacePath', 'namespaceType', 'disableScanPolicyUpdate'],
   props: {
     hasPolicyProject: {
@@ -90,17 +87,6 @@ export default {
     };
   },
   computed: {
-    policyTypeFilterOptions() {
-      return this.pipelineExecutionPolicyEnabled
-        ? {
-            ...POLICY_TYPE_FILTER_OPTIONS,
-            ...PIPELINE_EXECUTION_FILTER_OPTION,
-          }
-        : POLICY_TYPE_FILTER_OPTIONS;
-    },
-    pipelineExecutionPolicyEnabled() {
-      return this.glFeatures.pipelineExecutionPolicyType;
-    },
     isGroup() {
       return isGroup(this.namespaceType);
     },
@@ -115,7 +101,7 @@ export default {
       }
 
       const policies = policyTypes.map((type) =>
-        getPoliciesWithType(this.policiesByType[type], this.policyTypeFilterOptions[type].text),
+        getPoliciesWithType(this.policiesByType[type], POLICY_TYPE_FILTER_OPTIONS[type].text),
       );
 
       return policies.flat();

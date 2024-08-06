@@ -11,15 +11,25 @@ module EE
         h[:mergeable] = [
           *approved_mergeability_check_preloads,
           *blocked_by_other_mrs_mergeability_check_preloads,
-          *commits_status_mergeability_check_preloads
+          *commits_status_mergeability_check_preloads,
+          *security_policy_evaluation_check_preloads
         ]
 
         h[:detailed_merge_status] = [
           *approved_mergeability_check_preloads,
           *blocked_by_other_mrs_mergeability_check_preloads,
-          *commits_status_mergeability_check_preloads
+          *commits_status_mergeability_check_preloads,
+          *security_policy_evaluation_check_preloads
         ]
       end
+    end
+
+    def security_policy_evaluation_check_preloads
+      [
+        :scan_result_policy_reads_through_violations,
+        :running_scan_result_policy_violations,
+        :scan_result_policy_reads_through_approval_rules
+      ]
     end
 
     def commits_status_mergeability_check_preloads

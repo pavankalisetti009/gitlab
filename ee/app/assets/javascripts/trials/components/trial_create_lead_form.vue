@@ -152,12 +152,18 @@ export default {
         required
       />
     </gl-form-group>
-    <gl-button type="submit" variant="confirm" data-testid="continue-button" class="gl-w-full">
+    <gl-button
+      type="submit"
+      variant="confirm"
+      data-testid="continue-button"
+      class="gl-w-full md:gl-w-auto"
+    >
       {{ submitButtonText }}
     </gl-button>
 
     <div class="gl-mt-4">
       <gl-sprintf :message="$options.i18n.termsText">
+        <template #buttonText>{{ submitButtonText }}</template>
         <template #gitlabSubscriptionAgreement>
           <gl-link :href="$options.i18n.gitlabSubscription.url" target="_blank">
             {{ $options.i18n.gitlabSubscription.text }}

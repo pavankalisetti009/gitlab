@@ -1,21 +1,15 @@
 import { GlCollapsibleListbox, GlListboxItem } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import {
-  POLICY_TYPE_FILTER_OPTIONS,
-  PIPELINE_EXECUTION_FILTER_OPTION,
-} from 'ee/security_orchestration/components/policies/constants';
+import { POLICY_TYPE_FILTER_OPTIONS } from 'ee/security_orchestration/components/policies/constants';
 import TypeFilter from 'ee/security_orchestration/components/policies/filters/type_filter.vue';
 
 describe('TypeFilter component', () => {
   let wrapper;
 
-  const createWrapper = ({ propsData: { value = '' } = {}, provide = {} } = {}) => {
+  const createWrapper = ({ propsData: { value = '' } = {} } = {}) => {
     wrapper = shallowMount(TypeFilter, {
       propsData: {
         value,
-      },
-      provide: {
-        ...provide,
       },
       stubs: {
         GlCollapsibleListbox,
@@ -26,10 +20,6 @@ describe('TypeFilter component', () => {
   const findToggle = () => wrapper.findComponent(GlCollapsibleListbox);
 
   describe('standard policy type', () => {
-    beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: false };
-    });
-
     it.each`
       value                                              | expectedToggleText
       ${POLICY_TYPE_FILTER_OPTIONS.ALL.value}            | ${POLICY_TYPE_FILTER_OPTIONS.ALL.text}
@@ -60,38 +50,27 @@ describe('TypeFilter component', () => {
   });
 
   describe('new pipeline execution policy type', () => {
-    beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: true };
-    });
-
     it('selects the correct option for new pipeline execution type', () => {
       createWrapper({
         propsData: {
-          value: PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value,
+          value: POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value,
         },
-        provide: { glFeatures: { pipelineExecutionPolicyType: true } },
       });
 
       expect(findToggle().props('toggleText')).toBe(
-        PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.text,
+        POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.text,
       );
     });
 
     it('emits an event when an option for pipeline execution type is selected', () => {
-      createWrapper({
-        provide: {
-          glFeatures: {
-            pipelineExecutionPolicyType: true,
-          },
-        },
-      });
+      createWrapper();
 
       expect(wrapper.emitted('input')).toBeUndefined();
 
-      findToggle().vm.$emit('select', PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value);
+      findToggle().vm.$emit('select', POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value);
 
       expect(wrapper.emitted('input')).toEqual([
-        [PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value],
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value],
       ]);
     });
   });

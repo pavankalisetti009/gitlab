@@ -1,7 +1,6 @@
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  PIPELINE_EXECUTION_FILTER_OPTION,
 } from 'ee/security_orchestration/components/policies/constants';
 
 /**
@@ -25,14 +24,7 @@ const validateFilter = (allowedValues, value, lowerCase = false) => {
  * @returns {boolean}
  */
 export const validateTypeFilter = (value) => {
-  const options = gon.features.pipelineExecutionPolicyType
-    ? {
-        ...POLICY_TYPE_FILTER_OPTIONS,
-        ...PIPELINE_EXECUTION_FILTER_OPTION,
-      }
-    : POLICY_TYPE_FILTER_OPTIONS;
-
-  return validateFilter(options, value, true);
+  return validateFilter(POLICY_TYPE_FILTER_OPTIONS, value, true);
 };
 
 /**
