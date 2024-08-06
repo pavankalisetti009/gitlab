@@ -1,18 +1,19 @@
 <script>
-import { GlTable } from '@gitlab/ui';
+import { GlTable, GlLoadingIcon } from '@gitlab/ui';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { ACCESS_LEVEL_LABELS } from '~/access_level/constants';
 import { TABLE_FIELDS } from '../constants';
 import CustomRolesActions from './custom_roles_actions.vue';
 
 export default {
-  components: {
-    GlTable,
-    CustomRolesActions,
-  },
+  components: { GlTable, GlLoadingIcon, CustomRolesActions },
   props: {
     customRoles: {
       type: Array,
+      required: true,
+    },
+    busy: {
+      type: Boolean,
       required: true,
     },
   },
@@ -27,7 +28,11 @@ export default {
 </script>
 
 <template>
-  <gl-table :fields="$options.TABLE_FIELDS" :items="customRoles" stacked="md">
+  <gl-table :fields="$options.TABLE_FIELDS" :items="customRoles" :busy="busy" stacked="md">
+    <template #table-busy>
+      <gl-loading-icon size="md" />
+    </template>
+
     <template #cell(id)="{ item: { id } }">
       {{ $options.getIdFromGraphQLId(id) }}
     </template>

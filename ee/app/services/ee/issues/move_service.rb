@@ -65,6 +65,8 @@ module EE
           parent_link = ::WorkItems::ParentLink.find_by_work_item_id(epic_issue.issue_id)
           next true unless parent_link
 
+          # By creating a new parent link we also set the correct `namespace_id` based on the `work_item_id`
+          # as part of a trigger on the table.
           new_parent_link = ::WorkItems::ParentLink.new(
             work_item_id: new_issue.id,
             work_item_parent_id: parent_link.work_item_parent_id
