@@ -7,7 +7,7 @@ module Gitlab
         VS_CODE_EXTENSION = 'vs_code_extension'
         WEB = 'web'
 
-        def self.for(message:, tools: [])
+        def self.for(message:, context:, tools: [])
           command, user_input = message.slash_command_and_input
           return unless command
 
@@ -23,7 +23,7 @@ module Gitlab
 
           platform_origin = platform_origin(message)
           new(name: command, user_input: user_input, tool: tool, command_options: command_options,
-            platform_origin: platform_origin)
+            context: context, platform_origin: platform_origin)
         end
 
         def self.platform_origin(message)
@@ -34,15 +34,17 @@ module Gitlab
           end
         end
 
-        attr_reader :name, :user_input, :tool, :platform_origin
+        attr_reader :name, :user_input, :tool, :context, :platform_origin
 
-        def initialize(name:, user_input:, tool:, command_options:, platform_origin: nil)
+        def initialize(name:, user_input:, tool:, command_options:, context:, platform_origin: nil)
           @name = name
           @user_input = user_input
           @tool = tool
           @instruction = command_options[:instruction]
           @instruction_with_input = command_options[:instruction_with_input]
+          @instruction_without_selected_code = command_options[:instruction_without_selected_code]
           @platform_origin = platform_origin
+          @context = context
         end
 
         def prompt_options
@@ -54,9 +56,24 @@ module Gitlab
         private
 
         def instruction
-          return @instruction if user_input.blank? || @instruction_with_input.blank?
+          instruction_template = select_instruction_template
+          return formatted_instruction(instruction_template) if instruction_template
 
-          format(@instruction_with_input, input: user_input)
+          @instruction
+        end
+
+        def select_instruction_template
+          return if user_input.blank?
+
+          if @context.current_file[:selected_text].nil? && @instruction_without_selected_code.present?
+            @instruction_without_selected_code
+          elsif @instruction_with_input.present?
+            @instruction_with_input
+          end
+        end
+
+        def formatted_instruction(command_instruction)
+          format(command_instruction, input: user_input)
         end
       end
     end

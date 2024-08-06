@@ -58,7 +58,8 @@ module Gitlab
                 description: 'Refactor the code',
                 instruction: 'Refactor the code user selected inside <selected_code></selected_code> tags.',
                 instruction_with_input: 'Refactor %<input>s in the selected code inside ' \
-                                        '<selected_code></selected_code> tags.'
+                                        '<selected_code></selected_code> tags.',
+                instruction_without_selected_code: 'Refactor the code provided by the user: %<input>s.'
               }
             }.freeze
 

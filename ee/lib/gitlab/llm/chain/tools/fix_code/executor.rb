@@ -60,7 +60,8 @@ module Gitlab
                 instruction: 'Fix any errors in the code user ' \
                   'selected inside <selected_code></selected_code> tags.',
                 instruction_with_input: 'Fix %<input>s in the selected code inside ' \
-                  '<selected_code></selected_code> tags.'
+                  '<selected_code></selected_code> tags.',
+                instruction_without_selected_code: 'Fix the code provided by the user: %<input>s.'
               }
             }.freeze
 

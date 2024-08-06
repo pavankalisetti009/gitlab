@@ -3,14 +3,31 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
+  let_it_be(:user) { create(:user) }
+
   let(:content) { '/explain' }
   let(:tools) { Gitlab::Llm::Completions::Chat::COMMAND_TOOLS }
   let(:message) do
     build(:ai_chat_message, user: instance_double(User), resource: nil, request_id: 'uuid', content: content)
   end
 
+  let(:ai_request_double) { instance_double(Gitlab::Llm::Chain::Requests::AiGateway) }
+  let(:context) do
+    Gitlab::Llm::Chain::GitlabContext.new(
+      current_user: user, container: nil, resource: nil, ai_request: ai_request_double,
+      current_file: {
+        file_name: 'test.py',
+        selected_text: selected_text,
+        content_above_cursor: 'code above',
+        content_below_cursor: 'code below'
+      }
+    )
+  end
+
+  let(:selected_text) { 'selected text' }
+
   describe '.for' do
-    subject { described_class.for(message: message, tools: tools) }
+    subject { described_class.for(message: message, context: context, tools: tools) }
 
     it { is_expected.to be_an_instance_of(described_class) }
 
@@ -56,6 +73,7 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
   describe '#prompt_options' do
     let(:user_input) { nil }
     let(:instruction_with_input) { 'explain %<input>s in the code' }
+    let(:instruction_without_selected_code) { 'Explain the input provided by the user: %<input>s.' }
     let(:params) do
       {
         name: content,
@@ -63,8 +81,10 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
         tool: nil,
         command_options: {
           instruction: 'explain the code',
-          instruction_with_input: instruction_with_input
-        }
+          instruction_with_input: instruction_with_input,
+          instruction_without_selected_code: instruction_without_selected_code
+        },
+        context: context
       }
     end
 
@@ -81,6 +101,24 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
         let(:instruction_with_input) { nil }
 
         it { is_expected.to eq({ input: 'explain the code' }) }
+      end
+
+      context 'when selected_text is empty' do
+        let(:selected_text) { nil }
+
+        it { is_expected.to eq({ input: 'Explain the input provided by the user: method params.' }) }
+
+        context 'when instruction_without_selected_code is not part of command definition' do
+          let(:instruction_without_selected_code) { nil }
+
+          it { is_expected.to eq({ input: 'explain method params in the code' }) }
+
+          context 'when instruction_with_input is not part of command definition' do
+            let(:instruction_with_input) { nil }
+
+            it { is_expected.to eq({ input: 'explain the code' }) }
+          end
+        end
       end
     end
   end
