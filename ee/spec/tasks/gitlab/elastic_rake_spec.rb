@@ -136,7 +136,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
 
       it 'schedules Search::Elastic::TriggerIndexingWorker asynchronously' do
         expect(::Search::Elastic::TriggerIndexingWorker).to receive(:perform_in)
-          .with(1.minute, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
+          .with(1.minute, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => ['projects'] })
 
         task
       end
@@ -145,7 +145,7 @@ RSpec.describe 'gitlab:elastic namespace rake tasks', :silence_stdout, feature_c
         stub_ee_application_setting(elasticsearch_pause_indexing: true)
 
         expect(::Search::Elastic::TriggerIndexingWorker).to receive(:perform_in)
-          .with(1.minute, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => 'projects' })
+          .with(1.minute, Search::Elastic::TriggerIndexingWorker::INITIAL_TASK, { 'skip' => ['projects'] })
         expect(logger).to receive(:warn).with(/WARNING: `elasticsearch_pause_indexing` is enabled/)
 
         task

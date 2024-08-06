@@ -4,7 +4,7 @@ module Search
   module Elastic
     class ReindexingService
       # skip projects, all namespace and project data is handled by `namespaces` task
-      OPTIONS = { 'skip' => 'projects' }.freeze
+      DEFAULT_OPTIONS = { 'skip' => %w[projects] }.freeze
 
       attr_reader :delay
 
@@ -18,7 +18,15 @@ module Search
 
       def execute
         initial_task = Search::Elastic::TriggerIndexingWorker::INITIAL_TASK
-        Search::Elastic::TriggerIndexingWorker.perform_in(delay, initial_task, OPTIONS)
+        Search::Elastic::TriggerIndexingWorker.perform_in(delay, initial_task, options)
+      end
+
+      private
+
+      def options
+        DEFAULT_OPTIONS.dup.tap do |o|
+          o['skip'] = o['skip'] - ['projects'] if ::Gitlab::CurrentSettings.elasticsearch_limit_indexing?
+        end
       end
     end
   end
