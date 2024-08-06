@@ -77,7 +77,8 @@ module EE
         :zoekt_auto_index_root_namespace,
         :zoekt_indexing_enabled,
         :zoekt_indexing_paused,
-        :zoekt_search_enabled
+        :zoekt_search_enabled,
+        :duo_workflow_oauth_application_id
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
       end

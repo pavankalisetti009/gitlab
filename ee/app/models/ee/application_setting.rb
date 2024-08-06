@@ -28,6 +28,10 @@ module EE
 
       jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
 
+      jsonb_accessor :duo_workflow, duo_workflow_oauth_application_id: [:integer]
+
+      validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
+
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
 
       validates :shared_runners_minutes,
