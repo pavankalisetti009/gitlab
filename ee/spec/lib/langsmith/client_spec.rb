@@ -6,7 +6,7 @@ RSpec.describe Langsmith::Client, :aggregate_failures, feature_category: :ai_eva
   subject(:client) { described_class.new }
 
   let(:enabled) { true }
-  let(:endpoint) { 'api.smith.langchain.com' }
+  let(:endpoint) { 'https://api.smith.langchain.com' }
   let(:api_key) { 'secret' }
   let(:project_name) { 'default' }
 
@@ -29,7 +29,7 @@ RSpec.describe Langsmith::Client, :aggregate_failures, feature_category: :ai_eva
       }
     end
 
-    let(:url) { "https://#{endpoint}/runs" }
+    let(:url) { "#{endpoint}/runs" }
     let(:params) { base_params }
 
     let(:expected_body) do
@@ -106,7 +106,7 @@ RSpec.describe Langsmith::Client, :aggregate_failures, feature_category: :ai_eva
     subject(:patch_run) { client.patch_run(**params) }
 
     let(:run_id) { '123' }
-    let(:url) { "https://#{endpoint}/runs/#{run_id}" }
+    let(:url) { "#{endpoint}/runs/#{run_id}" }
 
     let(:base_params) do
       {

@@ -119,4 +119,41 @@ RSpec.describe Langsmith::RunHelpers, :aggregate_failures, feature_category: :ai
       let(:execute_method) { ai_class.build_prompt(question: 'How are you?') }
     end
   end
+
+  describe '.enabled?' do
+    subject { described_class.enabled? }
+
+    it { is_expected.to eq(true) }
+
+    context 'when tracing is disabled' do
+      let(:enabled) { false }
+
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when production environment' do
+      before do
+        allow(Gitlab).to receive(:dev_or_test_env?).and_return(false)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+  end
+
+  describe '.to_headers' do
+    subject(:headers) { described_class.to_headers }
+
+    before do
+      allow_next_instance_of(Langsmith::Client) do |client|
+        allow(client).to receive(:post_run)
+        allow(client).to receive(:patch_run)
+      end
+    end
+
+    it 'return langsmith headers' do
+      ai_class.new.build_prompt(question: 'How are you?')
+
+      expect(headers).to include('langsmith-trace' => an_instance_of(String))
+    end
+  end
 end

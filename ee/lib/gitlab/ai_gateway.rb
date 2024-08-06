@@ -25,6 +25,9 @@ module Gitlab
       }.merge(Gitlab::CloudConnector.headers(user))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
+
+          # Pass the distrubted tracing LangSmith header to AI Gateway.
+          result.merge!(Langsmith::RunHelpers.to_headers) if Langsmith::RunHelpers.enabled?
         end
     end
   end
