@@ -18,9 +18,9 @@ import {
   LEADS_PHONE_NUMBER_LABEL,
 } from 'ee/vue_shared/leads/constants';
 import { BV_SHOW_MODAL } from '~/lib/utils/constants';
+import { TRIAL_COMPANY_SIZE_PROMPT } from 'ee/trials/constants';
 import {
   PQL_COMMENT_LABEL,
-  PQL_COMPANY_SIZE_PROMPT,
   PQL_HAND_RAISE_ACTION_ERROR,
   PQL_HAND_RAISE_ACTION_SUCCESS,
   PQL_HAND_RAISE_MODAL_TRACKING_LABEL,
@@ -210,7 +210,7 @@ export default {
     phoneNumberLabel: LEADS_PHONE_NUMBER_LABEL,
     countryLabel: LEADS_COUNTRY_LABEL,
     countrySelectPrompt: LEADS_COUNTRY_PROMPT,
-    companySizeSelectPrompt: PQL_COMPANY_SIZE_PROMPT,
+    companySizeSelectPrompt: TRIAL_COMPANY_SIZE_PROMPT,
     phoneNumberDescription: PQL_PHONE_DESCRIPTION,
     stateLabel: PQL_STATE_LABEL,
     stateSelectPrompt: PQL_STATE_PROMPT,

@@ -1,0 +1,275 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unlimited_max_formatted_output_length, feature_category: :plan_provisioning do
+  let_it_be(:user) { create(:user) }
+  let_it_be(:user_without_eligible_groups) { create(:user) }
+  let_it_be(:group) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+  let_it_be(:another_free_group) { create(:group, owners: user) }
+  let_it_be(:another_ultimate_group) { create(:group_with_plan, plan: :ultimate_plan, developers: user) }
+  let_it_be(:ineligible_paid_group) { create(:group_with_plan, plan: :premium_plan, owners: user) }
+
+  let(:subscriptions_trials_saas_feature) { true }
+
+  before_all do
+    create(:gitlab_subscription_add_on_purchase, :duo_enterprise)
+  end
+
+  before do
+    stub_saas_features(
+      subscriptions_trials: subscriptions_trials_saas_feature,
+      marketing_google_tag_manager: false
+    )
+  end
+
+  shared_examples 'namespace is not eligible for trial' do
+    context 'when free group owner' do
+      let(:base_params) { { namespace_id: another_free_group.id } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+
+    context 'for an ineligible group owner' do
+      let(:base_params) { { namespace_id: ineligible_paid_group.id } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+
+    context 'when eligible paid plan group developer' do
+      let(:base_params) { { namespace_id: another_ultimate_group.id } }
+
+      it { is_expected.to have_gitlab_http_status(:forbidden) }
+    end
+  end
+
+  shared_examples 'no eligible namespaces' do
+    before do
+      login_as(user_without_eligible_groups)
+    end
+
+    it { is_expected.to have_gitlab_http_status(:forbidden) }
+  end
+
+  describe 'GET new' do
+    let(:base_params) { {} }
+
+    subject(:get_new) do
+      get new_trials_duo_enterprise_path, params: base_params
+      response
+    end
+
+    context 'when not authenticated' do
+      it { is_expected.to redirect_to_sign_in }
+    end
+
+    context 'when authenticated as a user' do
+      before do
+        login_as(user)
+      end
+
+      it { is_expected.to render_lead_form }
+
+      it 'assigns group_name for leads' do
+        get_new
+
+        expect(assigns(:group_name)).to eq(group.name)
+      end
+
+      context 'when feature flag duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      context 'when subscriptions_trials saas feature is not available' do
+        let(:subscriptions_trials_saas_feature) { false }
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      it_behaves_like 'namespace is not eligible for trial'
+    end
+
+    it_behaves_like 'no eligible namespaces'
+  end
+
+  describe 'POST create' do
+    let(:group_for_trial) { group }
+    let(:step) { GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD }
+    let(:lead_params) do
+      {
+        company_name: '_company_name_',
+        company_size: '1-99',
+        first_name: '_first_name_',
+        last_name: '_last_name_',
+        phone_number: '123',
+        country: '_country_',
+        state: '_state_',
+        website_url: '_website_url_'
+      }.with_indifferent_access
+    end
+
+    let(:trial_params) do
+      {
+        namespace_id: group_for_trial.id.to_s,
+        trial_entity: '_trial_entity_'
+      }.with_indifferent_access
+    end
+
+    let(:base_params) { lead_params.merge(trial_params).merge(step: step) }
+
+    subject(:post_create) do
+      post trials_duo_enterprise_path, params: base_params
+      response
+    end
+
+    context 'when not authenticated' do
+      it 'redirects to trial registration' do
+        expect(post_create).to redirect_to_sign_in
+      end
+    end
+
+    context 'when authenticated as a user' do
+      before do
+        login_as(user)
+      end
+
+      context 'when successful' do
+        before do
+          expect_create_success(group_for_trial)
+        end
+
+        it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
+      end
+
+      context 'when feature flag duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      context 'with create service failures' do
+        let(:payload) { {} }
+
+        before do
+          expect_create_failure(failure_reason, payload)
+        end
+
+        context 'when namespace is not found or not allowed to create' do
+          let(:failure_reason) { :not_found }
+
+          it { is_expected.to have_gitlab_http_status(:not_found) }
+        end
+
+        context 'when lead creation fails' do
+          let(:failure_reason) { :lead_failed }
+
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+
+          it 'assigns group_name for leads' do
+            post_create
+
+            expect(assigns(:group_name)).to eq(group_for_trial.name)
+          end
+        end
+
+        context 'when lead creation is successful, but we need to select a namespace next to apply trial' do
+          let(:failure_reason) { :no_single_namespace }
+          let(:payload) do
+            {
+              trial_selection_params: {
+                step: GitlabSubscriptions::Trials::CreateDuoProService::TRIAL
+              }
+            }
+          end
+
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+
+          it 'assigns group_name for leads' do
+            post_create
+
+            expect(assigns(:group_name)).to eq(group_for_trial.name)
+          end
+        end
+
+        context 'with trial failure' do
+          let(:failure_reason) { :trial_failed }
+
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+
+          it 'assigns group_name for leads' do
+            post_create
+
+            expect(assigns(:group_name)).to eq(group_for_trial.name)
+          end
+        end
+
+        context 'with random failure' do
+          let(:failure_reason) { :random_error }
+
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+
+          it 'assigns group_name for leads' do
+            post_create
+
+            expect(assigns(:group_name)).to eq(group_for_trial.name)
+          end
+        end
+      end
+
+      context 'when subscriptions_trials saas feature is not available' do
+        let(:subscriptions_trials_saas_feature) { false }
+
+        it { is_expected.to have_gitlab_http_status(:not_found) }
+      end
+
+      it_behaves_like 'namespace is not eligible for trial'
+    end
+
+    it_behaves_like 'no eligible namespaces'
+  end
+
+  def expect_create_success(namespace)
+    service_params = {
+      step: step,
+      lead_params: lead_params,
+      trial_params: trial_params,
+      user: user
+    }
+
+    expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService, service_params) do |instance|
+      expect(instance).to receive(:execute).and_return(ServiceResponse.success(payload: { namespace: namespace }))
+    end
+  end
+
+  def expect_create_failure(reason, payload = {})
+    expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService) do |instance|
+      response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
+      expect(instance).to receive(:execute).and_return(response)
+    end
+  end
+
+  RSpec::Matchers.define :render_lead_form do
+    match do |response|
+      expect(response).to have_gitlab_http_status(:ok)
+
+      expect(response.body).to include(s_('DuoProTrial|Start your free GitLab Duo Enterprise trial'))
+
+      expect(response.body).to include(
+        s_('DuoProTrial|We just need some additional information to activate your trial.')
+      )
+    end
+  end
+
+  RSpec::Matchers.define :redirect_to_sign_in do
+    match do |response|
+      expect(response).to redirect_to(new_user_session_path)
+      expect(flash[:alert]).to include('You need to sign in or sign up before continuing')
+    end
+  end
+end

@@ -1,5 +1,5 @@
 - @body_class = 'duo-trials gl-bg-brand-charcoal'
-- page_title s_('DuoProTrial|Start your free Duo Pro trial')
+- page_title s_('DuoEnterpriseTrial|Start your free Duo Enterprise trial')
 - content_for :page_specific_javascripts do
   = render 'layouts/google_tag_manager_head'
   = render 'layouts/one_trust'
@@ -11,13 +11,14 @@
       = sprite_icon('tanuki-ai', size: 32, css_class: 'gl-pb-3')
 
       %h2.gl-pb-3.gl-my-0
-        = s_('DuoProTrial|Start your free GitLab Duo Pro trial')
+        - if @group_name.present?
+          = safe_format(s_('DuoEnterpriseTrial|Start your free GitLab Duo Enterprise trial on %{group_name}'), group_name: @group_name)
+        - else
+          = s_('DuoEnterpriseTrial|Start your free GitLab Duo Enterprise trial')
 
       %p.gl-text-gray-700.gl-font-lg
-        = s_('DuoProTrial|We just need some additional information to activate your trial.')
+        = s_('DuoEnterpriseTrial|We just need some additional information to activate your trial.')
 
       = yield :before_form
 
-      #js-trial-create-lead-form{ data: create_duo_pro_lead_form_data }
-
-  = render 'advantages_list'
+      #js-trial-create-lead-form{ data: create_duo_enterprise_lead_form_data }

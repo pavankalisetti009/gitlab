@@ -6,6 +6,7 @@ module Features
   module TrialHelpers
     include ListboxHelpers
     DUO_PRO_TRIAL = 'duo_pro_trial'
+    DUO_ENTERPRISE_TRIAL = 'duo_enterprise_trial'
 
     def expect_to_be_on_group_page(path: 'gitlab', name: 'gitlab')
       expect(page).to have_current_path("/#{path}?trial=true")
@@ -122,6 +123,14 @@ module Features
             opt_in: user.onboarding_status_email_opt_in
           }
         )
+      elsif trial_type == DUO_ENTERPRISE_TRIAL
+        trial_user_params = trial_user_params.merge(
+          {
+            product_interaction: DUO_ENTERPRISE_TRIAL,
+            preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
+            opt_in: user.onboarding_status_email_opt_in
+          }
+        )
       end
 
       lead_params = {
@@ -137,6 +146,8 @@ module Features
       create_lead_class =
         case trial_type
         when DUO_PRO_TRIAL
+          GitlabSubscriptions::Trials::CreateAddOnLeadService
+        when DUO_ENTERPRISE_TRIAL
           GitlabSubscriptions::Trials::CreateAddOnLeadService
         else
           GitlabSubscriptions::CreateLeadService
@@ -160,6 +171,8 @@ module Features
         case trial_type
         when DUO_PRO_TRIAL
           'Continue'
+        when DUO_ENTERPRISE_TRIAL
+          'Activate my trial'
         else
           'Start free GitLab Ultimate trial'
         end
@@ -230,6 +243,8 @@ module Features
         case trial_type
         when DUO_PRO_TRIAL
           {}
+        when DUO_ENTERPRISE_TRIAL
+          {}
         else
           { organization_id: anything }
         end.merge(extra_params)
@@ -259,6 +274,8 @@ module Features
         case trial_type
         when DUO_PRO_TRIAL
           GitlabSubscriptions::Trials::ApplyDuoProService
+        when DUO_ENTERPRISE_TRIAL
+          GitlabSubscriptions::Trials::ApplyDuoEnterpriseService
         else
           GitlabSubscriptions::Trials::ApplyTrialService
         end
@@ -270,6 +287,10 @@ module Features
 
     def submit_duo_pro_trial_company_form(**kwargs)
       submit_company_information_form(**kwargs, trial_type: DUO_PRO_TRIAL)
+    end
+
+    def submit_duo_enterprise_trial_company_form(**kwargs)
+      submit_company_information_form(**kwargs, trial_type: DUO_ENTERPRISE_TRIAL)
     end
 
     def submit_duo_pro_trial_selection_form(**kwargs)

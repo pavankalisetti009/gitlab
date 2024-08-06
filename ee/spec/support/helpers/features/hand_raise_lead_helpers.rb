@@ -45,9 +45,9 @@ module Features
       within_testid('hand-raise-lead-modal') do
         aggregate_failures do
           expect(page).to have_content('Contact our Sales team')
-          expect(page).to have_field('First Name', with: form_data[:first_name])
-          expect(page).to have_field('Last Name', with: form_data[:last_name])
-          expect(page).to have_field('Company Name', with: form_data[:company_name])
+          expect(page).to have_field('First name', with: form_data[:first_name])
+          expect(page).to have_field('Last name', with: form_data[:last_name])
+          expect(page).to have_field('Company name', with: form_data[:company_name])
         end
 
         select form_data[:company_size], from: 'company-size'
