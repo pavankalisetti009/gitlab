@@ -18,10 +18,6 @@ RSpec.describe Projects::Security::ConfigurationPresenter, feature_category: :so
       expect(result[:security_training_enabled]).to be_truthy
     end
 
-    it 'includes a default value for continuous_vulnerability_scans_enabled' do
-      expect(result[:continuous_vulnerability_scans_enabled]).to eq(false)
-    end
-
     it 'includes a default value for container_scanning_for_registry_enabled' do
       expect(result[:container_scanning_for_registry_enabled]).to eq(false)
     end
