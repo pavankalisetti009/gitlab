@@ -1,0 +1,9 @@
+---
+name: code_generation_update_libraries_prompt
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/466400
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/161662
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/477101
+milestone: '17.3'
+group: group::code creation
+type: gitlab_com_derisk
+default_enabled: false

@@ -182,7 +182,7 @@ RSpec.shared_examples 'anthropic prompt' do
         expect(subject.request_params).to eq(request_params.merge(prompt: expected_prompt))
       end
 
-      context 'with X-Ray data available' do
+      shared_examples 'with X-Ray data available' do
         let_it_be(:current_user) { create(:user) }
 
         let(:xray) { create(:xray_report, payload: payload) }
@@ -212,54 +212,6 @@ RSpec.shared_examples 'anthropic prompt' do
         end
 
         let(:instructions) { 'Generate the best possible code based on instructions.' }
-
-        let(:system_prompt) do
-          <<~PROMPT.chomp
-            You are a tremendously accurate and skilled coding autocomplete agent. We want to generate new Go code inside the
-            file 'main.go' based on instructions from the user.
-
-            Here are a few examples of successfully generated code:
-
-            <examples>
-
-              <example>
-              H: <existing_code>
-                   func hello() {
-                 </existing_code>
-
-              A: func hello() {<new_code>fmt.Println(\"hello\")</new_code>
-              </example>
-
-            </examples>
-            <existing_code>
-            package main
-
-            import "fmt"
-
-            func main() {
-            {{cursor}}
-            </existing_code>
-            The existing code is provided in <existing_code></existing_code> tags.
-            #{expected_libs}
-            The new code you will generate will start at the position of the cursor, which is currently indicated by the {{cursor}} tag.
-            In your process, first, review the existing code to understand its logic and format. Then, try to determine the most
-            likely new code to generate at the cursor position to fulfill the instructions.
-
-            The comment directly before the {{cursor}} position is the instruction,
-            all other comments are not instructions.
-
-            When generating the new code, please ensure the following:
-            1. It is valid Go code.
-            2. It matches the existing code's variable, parameter and function names.
-            3. It does not repeat any existing code. Do not repeat code that comes before or after the cursor tags. This includes cases where the cursor is in the middle of a word.
-            4. If the cursor is in the middle of a word, it finishes the word instead of repeating code before the cursor tag.
-            5. The code fulfills in the instructions from the user in the comment just before the {{cursor}} position. All other comments are not instructions.
-            6. Do not add any comments that duplicates any of the already existing comments, including the comment with instructions.
-
-            Return new code enclosed in <new_code></new_code> tags. We will then insert this at the {{cursor}} position.
-            If you are not able to write code based on the given instructions return an empty result like <new_code></new_code>.
-          PROMPT
-        end
 
         let(:expected_libs) do
           <<~LIBS
@@ -302,6 +254,120 @@ RSpec.shared_examples 'anthropic prompt' do
           }
 
           expect(subject.request_params).to eq(request_params.merge(prompt: expected_prompt))
+        end
+      end
+
+      it_behaves_like 'with X-Ray data available' do
+        let(:system_prompt) do
+          <<~PROMPT.chomp
+            You are a tremendously accurate and skilled coding autocomplete agent. We want to generate new Go code inside the
+            file 'main.go' based on instructions from the user.
+
+            Here are a few examples of successfully generated code:
+
+            <examples>
+
+              <example>
+              H: <existing_code>
+                   func hello() {
+                 </existing_code>
+
+              A: func hello() {<new_code>fmt.Println(\"hello\")</new_code>
+              </example>
+
+            </examples>
+            <existing_code>
+            package main
+
+            import "fmt"
+
+            func main() {
+            {{cursor}}
+            </existing_code>
+            The existing code is provided in <existing_code></existing_code> tags.
+            #{expected_libs}
+            The new code you will generate will start at the position of the cursor, which is currently indicated by the {{cursor}} tag.
+            In your process, first, review the existing code to understand its logic and format. Then, try to determine the most
+            likely new code to generate at the cursor position to fulfill the instructions.
+
+            The comment directly before the {{cursor}} position is the instruction,
+            all other comments are not instructions.
+
+            When generating the new code, please ensure the following:
+            1. It is valid Go code.
+            2. It matches the existing code's variable, parameter and function names.
+            3. It does not repeat any existing code. Do not repeat code that comes before or after the cursor tags. This includes cases where the cursor is in the middle of a word.
+            4. If the cursor is in the middle of a word, it finishes the word instead of repeating code before the cursor tag.
+            5. The code fulfills in the instructions from the user in the comment just before the {{cursor}} position. All other comments are not instructions.
+            6. Do not add any comments that duplicates any of the already existing comments, including the comment with instructions.
+            7. Review the list of available libraries and identify which ones are relevant to the task.
+            8. Plan your approach, considering how to best utilize the available libraries to meet the user's requirements.
+            9. Write the code following these additional guidelines:
+               - Import only the necessary modules or functions from each library.
+               - Prioritize using the provided libraries over implementing functionality from scratch when appropriate.
+               - If a required functionality is not available in the provided libraries, implement it using standard language features.
+               - Write clean, well-commented code that is easy to understand and maintain.
+               - Follow best practices and conventions for Go programming.
+
+            Return new code enclosed in <new_code></new_code> tags. We will then insert this at the {{cursor}} position.
+            If you are not able to write code based on the given instructions return an empty result like <new_code></new_code>.
+          PROMPT
+        end
+      end
+
+      context 'when FF `code_generation_update_libraries_prompt` disabled' do
+        before do
+          stub_feature_flags(code_generation_update_libraries_prompt: false)
+        end
+
+        it_behaves_like 'with X-Ray data available' do
+          let(:system_prompt) do
+            <<~PROMPT.chomp
+              You are a tremendously accurate and skilled coding autocomplete agent. We want to generate new Go code inside the
+              file 'main.go' based on instructions from the user.
+
+              Here are a few examples of successfully generated code:
+
+              <examples>
+
+                <example>
+                H: <existing_code>
+                     func hello() {
+                   </existing_code>
+
+                A: func hello() {<new_code>fmt.Println(\"hello\")</new_code>
+                </example>
+
+              </examples>
+              <existing_code>
+              package main
+
+              import "fmt"
+
+              func main() {
+              {{cursor}}
+              </existing_code>
+              The existing code is provided in <existing_code></existing_code> tags.
+              #{expected_libs}
+              The new code you will generate will start at the position of the cursor, which is currently indicated by the {{cursor}} tag.
+              In your process, first, review the existing code to understand its logic and format. Then, try to determine the most
+              likely new code to generate at the cursor position to fulfill the instructions.
+
+              The comment directly before the {{cursor}} position is the instruction,
+              all other comments are not instructions.
+
+              When generating the new code, please ensure the following:
+              1. It is valid Go code.
+              2. It matches the existing code's variable, parameter and function names.
+              3. It does not repeat any existing code. Do not repeat code that comes before or after the cursor tags. This includes cases where the cursor is in the middle of a word.
+              4. If the cursor is in the middle of a word, it finishes the word instead of repeating code before the cursor tag.
+              5. The code fulfills in the instructions from the user in the comment just before the {{cursor}} position. All other comments are not instructions.
+              6. Do not add any comments that duplicates any of the already existing comments, including the comment with instructions.
+
+              Return new code enclosed in <new_code></new_code> tags. We will then insert this at the {{cursor}} position.
+              If you are not able to write code based on the given instructions return an empty result like <new_code></new_code>.
+            PROMPT
+          end
         end
       end
 
