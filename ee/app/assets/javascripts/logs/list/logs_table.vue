@@ -2,7 +2,7 @@
 import { GlTable, GlLabel } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { UTC_FULL_DATE_TIME_FORMAT } from '~/observability/constants';
+import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 import { severityNumberToConfig } from '../utils';
 
 const tdClass = 'gl-px-2! gl-py-3! gl-mx-0';
@@ -58,7 +58,7 @@ export default {
     formattedLogs() {
       return this.logs.map((log) => ({
         ...log,
-        timestamp: formatDate(log.timestamp, UTC_FULL_DATE_TIME_FORMAT),
+        timestamp: formatDate(log.timestamp, FULL_DATE_TIME_FORMAT),
       }));
     },
   },
