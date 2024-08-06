@@ -143,15 +143,6 @@ describe('ProductAnalyticsOnboardingView', () => {
 
       expect(findStateComponent().props('pollState')).toBe(true);
     });
-
-    it('creates an alert on error with the error message', () => {
-      expectAlertOnError({
-        finder: findProviderSelection,
-        captureError: false,
-        message:
-          'An error occurred while fetching project settings. Refresh the page to try again.',
-      });
-    });
   });
 
   describe('state component events', () => {

@@ -2,7 +2,23 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSubscriptions::SubscriptionHistory, feature_category: :seat_cost_management do
+RSpec.describe GitlabSubscriptions::SubscriptionHistory, :saas, feature_category: :seat_cost_management do
+  let_it_be(:group1) { create(:group_with_plan, plan: :premium_plan) }
+
+  describe 'relation to a namespace' do
+    let_it_be(:group2) { create(:group_with_plan, plan: :premium_plan) }
+    let_it_be(:history1) { create(:gitlab_subscription_history, namespace: group1) }
+    let_it_be(:history2) { create(:gitlab_subscription_history, namespace: group2) }
+
+    it { is_expected.to belong_to(:namespace).required }
+
+    it 'returns histories for the given namespace' do
+      expect(described_class.all).to match_array([history1, history2])
+      expect(group1.gitlab_subscription_histories).to match_array([history1])
+      expect(group2.gitlab_subscription_histories).to match_array([history2])
+    end
+  end
+
   describe '.create_from_change' do
     context 'when supplied an invalid change type' do
       it 'raises an error' do
@@ -25,13 +41,28 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, feature_category: :seat
         expect(record.errors.attribute_names).to include(:gitlab_subscription_id)
       end
 
-      it 'returns an error when namespace_id is not present' do
+      it 'returns an error when namespace is not present' do
         record = described_class.create_from_change(
           :gitlab_subscription_updated,
           { 'id' => 1, 'namespace_id' => nil }
         )
 
-        expect(record.errors.attribute_names).to include(:namespace_id)
+        expect(record.errors.full_messages).to include("Namespace must exist")
+      end
+
+      it 'returns an error when namespace does not exist' do
+        record = described_class.create_from_change(
+          :gitlab_subscription_updated,
+          {
+            'id' => 1,
+            'namespace_id' => non_existing_record_id,
+            'seats_in_use' => 10,
+            'trial' => true,
+            'seats' => 15
+          }
+        )
+
+        expect(record.errors.full_messages).to include("Namespace must exist")
       end
     end
 
@@ -43,7 +74,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, feature_category: :seat
           :gitlab_subscription_updated,
           {
             'id' => 1,
-            'namespace_id' => 2,
+            'namespace_id' => group1.id,
             'created_at' => current_time,
             'updated_at' => current_time,
             'non_existent_attribute' => true,
@@ -58,7 +89,7 @@ RSpec.describe GitlabSubscriptions::SubscriptionHistory, feature_category: :seat
 
         expect(record).to have_attributes(
           'gitlab_subscription_id' => 1,
-          'namespace_id' => 2,
+          'namespace_id' => group1.id,
           'gitlab_subscription_created_at' => current_time,
           'gitlab_subscription_updated_at' => current_time,
           'seats_in_use' => 10,

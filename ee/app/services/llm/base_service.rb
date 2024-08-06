@@ -37,17 +37,25 @@ module Llm
     end
 
     def ai_integration_enabled?
-      Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(options[:ai_action] || ai_action)
+      Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(ai_action)
     end
 
     def user_can_send_to_ai?
       return true unless ::Gitlab.com?
 
-      user.any_group_with_ai_available?
+      if ai_action.in?(::Gitlab::Llm::Utils::AiFeaturesCatalogue.ga.keys)
+        user.any_group_with_ga_ai_available?(ai_action)
+      else
+        user.any_group_with_ai_available?
+      end
     end
 
     def prompt_message
       @prompt_message ||= build_prompt_message
+    end
+
+    def ai_action
+      options[:ai_action]
     end
 
     def build_prompt_message(attributes = options)

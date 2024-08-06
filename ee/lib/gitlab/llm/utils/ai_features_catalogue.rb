@@ -100,7 +100,7 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::VertexAi::Templates::GenerateCubeQuery,
             feature_category: :product_analytics_visualization,
             execute_method: ::Llm::ProductAnalytics::GenerateCubeQueryService,
-            maturity: false,
+            maturity: :experimental,
             self_managed: false,
             internal: false
           },
@@ -109,7 +109,7 @@ module Gitlab
             prompt_class: ::Gitlab::Llm::Templates::CategorizeQuestion,
             feature_category: :duo_chat,
             execute_method: ::Llm::Internal::CategorizeChatQuestionService,
-            maturity: false,
+            maturity: :ga,
             self_managed: false,
             internal: true
           },
@@ -127,7 +127,7 @@ module Gitlab
             prompt_class: nil,
             feature_category: :source_code_management,
             execute_method: ::Llm::GitCommandService,
-            maturity: false,
+            maturity: :ga,
             self_managed: true,
             internal: true
           }
@@ -147,6 +147,10 @@ module Gitlab
 
         def self.for_sm
           LIST.select { |_, v| v[:self_managed] == true }
+        end
+
+        def self.ga
+          LIST.select { |_, v| v[:maturity] == :ga }
         end
       end
     end

@@ -106,6 +106,16 @@ RSpec.describe Llm::BaseService, feature_category: :ai_abstraction_layer do
         include_context 'with experiment features disabled for group'
 
         it_behaves_like 'returns an error'
+
+        context 'when feature is in ga' do
+          before do
+            allow(user).to receive(:any_group_with_ga_ai_available?).and_return(true)
+            stub_const('::Gitlab::Llm::Utils::AiFeaturesCatalogue::LIST',
+              { action_name => { self_managed: false, maturity: :ga } })
+          end
+
+          it_behaves_like 'authorizing a resource'
+        end
       end
 
       context 'when ai features are enabled' do
