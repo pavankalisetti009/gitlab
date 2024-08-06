@@ -16,6 +16,12 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
     FIELDS
   end
 
+  before do
+    # Need to stub this by default in order to allow expectations with specific
+    # arguments in tests, as this method is called in various unrelated contexts.
+    allow(::Gitlab::Saas).to receive(:feature_available?).and_call_original
+  end
+
   context 'when the user is not authenticated' do
     it 'returns null' do
       post_graphql(query, current_user: nil)
@@ -71,6 +77,18 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
     context 'when cloud_connector_status feature flag is disabled' do
       before do
         stub_feature_flags(cloud_connector_status: false)
+      end
+
+      it 'returns null' do
+        post_graphql(query, current_user: current_user)
+
+        expect(graphql_data['cloudConnectorStatus']).to be_nil
+      end
+    end
+
+    context 'when on gitlab.com' do
+      before do
+        allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
       end
 
       it 'returns null' do
