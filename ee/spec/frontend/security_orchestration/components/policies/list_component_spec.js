@@ -10,7 +10,6 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/compone
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  PIPELINE_EXECUTION_FILTER_OPTION,
 } from 'ee/security_orchestration/components/policies/constants';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -69,10 +68,6 @@ describe('List component', () => {
   const findPolicyTypeCells = () => wrapper.findAllByTestId('policy-type-cell');
   const findPolicyDrawer = () => wrapper.findByTestId('policyDrawer');
   const findPolicyScopeCells = () => wrapper.findAllByTestId('policy-scope-cell');
-
-  beforeEach(() => {
-    window.gon.features = { pipelineExecutionPolicyType: false };
-  });
 
   describe('initial state while loading', () => {
     it('renders closed editor drawer', () => {
@@ -319,39 +314,27 @@ describe('List component', () => {
         expect(findPolicyTypeFilter().props('value')).toBe(value);
       });
 
-      describe('pipeline execution filter option', () => {
-        beforeEach(() => {
-          window.gon.features = { pipelineExecutionPolicyType: true };
+      it('updates url when type filter is selected', () => {
+        mountWrapper({
+          props: {
+            policiesByType: {
+              [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: mockScanExecutionPoliciesResponse,
+              [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
+              [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
+                mockPipelineExecutionPoliciesResponse,
+            },
+          },
         });
 
-        it('updates url when type filter is selected', () => {
-          mountWrapper({
-            props: {
-              policiesByType: {
-                [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
-                  mockScanExecutionPoliciesResponse,
-                [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
-                [PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value]:
-                  mockPipelineExecutionPoliciesResponse,
-              },
-            },
-            provide: {
-              glFeatures: {
-                pipelineExecutionPolicyType: true,
-              },
-            },
-          });
+        findPolicyTypeFilter().vm.$emit(
+          'input',
+          POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value,
+        );
 
-          findPolicyTypeFilter().vm.$emit(
-            'input',
-            PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value,
-          );
-
-          expect(urlUtils.updateHistory).toHaveBeenCalledWith({
-            title: 'Test title',
-            url: `http://test.host/?type=${PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value.toLowerCase()}`,
-            replace: true,
-          });
+        expect(urlUtils.updateHistory).toHaveBeenCalledWith({
+          title: 'Test title',
+          url: `http://test.host/?type=${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value.toLowerCase()}`,
+          replace: true,
         });
       });
     });

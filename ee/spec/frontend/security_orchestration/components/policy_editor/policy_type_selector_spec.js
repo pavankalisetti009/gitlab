@@ -14,7 +14,7 @@ describe('PolicyTypeSelector component', () => {
         policiesPath,
         maxScanExecutionPoliciesAllowed: 5,
         maxScanResultPoliciesAllowed: 5,
-        maxPipelineExecutionPoliciesAllowed: 1,
+        maxPipelineExecutionPoliciesAllowed: 5,
         maxActiveScanExecutionPoliciesReached: true,
         maxActiveScanResultPoliciesReached: false,
         maxActivePipelineExecutionPoliciesReached: false,
@@ -29,9 +29,10 @@ describe('PolicyTypeSelector component', () => {
 
   describe('cards', () => {
     describe.each`
-      title                                               | description
-      ${PolicyTypeSelector.i18n.scanResultPolicyTitle}    | ${PolicyTypeSelector.i18n.scanResultPolicyDesc}
-      ${PolicyTypeSelector.i18n.scanExecutionPolicyTitle} | ${PolicyTypeSelector.i18n.scanExecutionPolicyDesc}
+      title                                                   | description
+      ${PolicyTypeSelector.i18n.scanResultPolicyTitle}        | ${PolicyTypeSelector.i18n.scanResultPolicyDesc}
+      ${PolicyTypeSelector.i18n.scanExecutionPolicyTitle}     | ${PolicyTypeSelector.i18n.scanExecutionPolicyDesc}
+      ${PolicyTypeSelector.i18n.pipelineExecutionPolicyTitle} | ${PolicyTypeSelector.i18n.pipelineExecutionPolicyDesc}
     `('selection card: $title', ({ title, description }) => {
       beforeEach(() => {
         factory();
@@ -43,28 +44,6 @@ describe('PolicyTypeSelector component', () => {
 
       it(`displays the description`, () => {
         expect(wrapper.findByText(description).exists()).toBe(true);
-      });
-    });
-
-    describe('pipeline execution policy type', () => {
-      beforeEach(() => {
-        factory({
-          glFeatures: {
-            pipelineExecutionPolicyType: true,
-          },
-        });
-      });
-
-      it(`displays the title`, () => {
-        expect(
-          wrapper.findByText(PolicyTypeSelector.i18n.pipelineExecutionPolicyTitle).exists(),
-        ).toBe(true);
-      });
-
-      it(`displays the description`, () => {
-        expect(
-          wrapper.findByText(PolicyTypeSelector.i18n.pipelineExecutionPolicyDesc).exists(),
-        ).toBe(true);
       });
     });
 
@@ -125,9 +104,6 @@ describe('PolicyTypeSelector component', () => {
         factory(
           {
             maxActivePipelineExecutionPoliciesReached: true,
-            glFeatures: {
-              pipelineExecutionPolicyType: true,
-            },
           },
           {
             GlSprintf,
@@ -142,7 +118,7 @@ describe('PolicyTypeSelector component', () => {
           findMaxAllowedPolicyText(
             POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter,
           ).text(),
-        ).toBe('You already have the maximum 1 pipeline execution policy.');
+        ).toBe('You already have the maximum 5 pipeline execution policies.');
         expect(
           findPolicyButton(POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.urlParameter).exists(),
         ).toBe(false);
@@ -165,7 +141,6 @@ describe('PolicyTypeSelector component', () => {
       maxActiveScanExecutionPoliciesReached: false,
       maxActiveScanResultPoliciesReached: false,
       glFeatures: {
-        pipelineExecutionPolicyType: true,
         vulnerabilityManagementPolicyType: true,
       },
     });
