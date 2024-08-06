@@ -117,6 +117,12 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
 
         it_behaves_like 'hides code suggestions path'
       end
+
+      it 'pushes the cloud_connector_status feature flag' do
+        get admin_code_suggestions_path
+
+        expect(response.body).to have_pushed_frontend_feature_flags(cloudConnectorStatus: true)
+      end
     end
   end
 end

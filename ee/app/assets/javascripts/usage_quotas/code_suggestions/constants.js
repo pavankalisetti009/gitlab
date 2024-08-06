@@ -9,6 +9,7 @@ export const codeSuggestionsLearnMoreLink = `${PROMO_URL}/gitlab-duo/`;
 
 export const CODE_SUGGESTIONS_TITLE = s__('CodeSuggestions|GitLab Duo Pro');
 export const DUO_ENTERPRISE_TITLE = s__('CodeSuggestions|GitLab Duo Enterprise');
+export const CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT = s__('CodeSuggestions|Run health check');
 
 export const addOnEligibleUserListTableFields = {
   codeSuggestionsAddon: {
