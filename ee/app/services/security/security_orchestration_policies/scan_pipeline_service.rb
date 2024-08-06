@@ -30,7 +30,7 @@ module Security
         }
       }.freeze
 
-      attr_reader :project, :base_variables, :context
+      attr_reader :project, :base_variables, :context, :template_cache
 
       def initialize(context, base_variables: {})
         default_scan_variables = allow_restricted_variables? ? SCAN_VARIABLES_WITH_RESTRICTED_VARIABLES : SCAN_VARIABLES
@@ -38,6 +38,7 @@ module Security
         @project = context.project
         @context = context
         @base_variables = default_scan_variables.deep_merge(base_variables)
+        @template_cache = TemplateCacheService.new
       end
 
       def execute(actions)
@@ -106,7 +107,7 @@ module Security
         variables = scan_variables_with_action_variables(action, fallback: scan_variables(action))
 
         ::Security::SecurityOrchestrationPolicies::CiConfigurationService
-          .new(project)
+          .new(project: project, params: { template_cache: template_cache })
           .execute(action, variables, context, index)
           .deep_symbolize_keys
       end

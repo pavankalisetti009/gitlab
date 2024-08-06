@@ -15,16 +15,34 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
     let(:ci_context) { Gitlab::Ci::Config::External::Context.new(user: user) }
     let(:user) { create(:user) }
     let(:opts) do
-      { allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level }
+      {
+        allow_restricted_variables_at_policy_level: allow_restricted_variables_at_policy_level,
+        template_cache: template_cache
+      }
     end
 
     let(:allow_restricted_variables_at_policy_level) { true }
+    let(:template_cache) { Security::SecurityOrchestrationPolicies::TemplateCacheService.new }
 
     shared_examples 'with template name for scan type' do
-      it 'fetches template content using ::TemplateFinder' do
-        expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: template_name).and_call_original
+      context "when caching CI templates" do
+        it 'fetches template content from cache' do
+          expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
 
-        config
+          config
+        end
+      end
+
+      context "when not caching CI templates" do
+        before do
+          stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
+        end
+
+        it 'fetches template content using ::TemplateFinder' do
+          expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil, name: template_name).and_call_original
+
+          config
+        end
       end
 
       context 'when selected latest template' do
@@ -32,12 +50,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           action.merge!(template: 'latest')
         end
 
-        it 'fetches latest template content using ::TemplateFinder' do
-          expect(::TemplateFinder).to receive(:build)
-            .with(:gitlab_ci_ymls, nil, name: "#{template_name}.latest")
-            .and_call_original
+        context "when caching CI templates" do
+          it 'fetches template content from cache' do
+            expect(template_cache).to receive(:fetch).with(action[:scan], latest: true).and_call_original
 
-          config
+            config
+          end
+        end
+
+        context "when not caching CI templates" do
+          before do
+            stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
+          end
+
+          it 'fetches template content using ::TemplateFinder' do
+            expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil,
+              name: "#{template_name}.latest").and_call_original
+
+            config
+          end
         end
       end
 
@@ -46,12 +77,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           action.merge!(template: 'default')
         end
 
-        it 'fetches default template content using ::TemplateFinder' do
-          expect(::TemplateFinder).to receive(:build)
-            .with(:gitlab_ci_ymls, nil, name: template_name)
-            .and_call_original
+        context "when caching CI templates" do
+          it 'fetches template content from cache' do
+            expect(template_cache).to receive(:fetch).with(action[:scan], latest: false).and_call_original
 
-          config
+            config
+          end
+        end
+
+        context "when not caching CI templates" do
+          before do
+            stub_feature_flags(scan_execution_policy_cache_ci_templates: false)
+          end
+
+          it 'fetches template content using ::TemplateFinder' do
+            expect(::TemplateFinder).to receive(:build).with(:gitlab_ci_ymls, nil,
+              name: template_name).and_call_original
+
+            config
+          end
         end
       end
     end
@@ -74,6 +118,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
 
       it 'overrides before_script and after_script with empty array' do
         expect(config.values).to all(include(before_script: [], after_script: []))
+      end
+    end
+
+    describe '.scan_template_path' do
+      let(:scan_type) { 'container_scanning' }
+      let(:latest) { false }
+
+      subject(:path) { described_class.scan_template_path(scan_type, latest) }
+
+      it "returns the correct template path" do
+        expect(path).to eq("Jobs/Container-Scanning")
+      end
+
+      context "when using latest template" do
+        let(:latest) { true }
+
+        it "returns the correct template path" do
+          expect(path).to eq("Jobs/Container-Scanning.latest")
+        end
       end
     end
 
@@ -268,78 +331,78 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiAction::Template,
           end
         end
       end
+    end
 
-      context 'when scan type is dependency_scanning', :aggregate_failures do
-        let_it_be(:action) { { scan: 'dependency_scanning', tags: ['runner-tag'] } }
-        let_it_be(:ci_variables) { { 'DEPENDENCY_SCANNING_DISABLED' => nil } }
-        let_it_be(:template_name) { 'Jobs/Dependency-Scanning' }
+    context 'when scan type is dependency_scanning', :aggregate_failures do
+      let_it_be(:action) { { scan: 'dependency_scanning', tags: ['runner-tag'] } }
+      let_it_be(:ci_variables) { { 'DEPENDENCY_SCANNING_DISABLED' => nil } }
+      let_it_be(:template_name) { 'Jobs/Dependency-Scanning' }
 
-        let(:expected_jobs) do
-          [
-            :"dependency-scanning-0",
-            *expected_jobs_with_excluded_variable_rules
-          ]
+      let(:expected_jobs) do
+        [
+          :"dependency-scanning-0",
+          *expected_jobs_with_excluded_variable_rules
+        ]
+      end
+
+      let(:expected_jobs_with_excluded_variable_rules) do
+        [
+          :"gemnasium-dependency-scanning-0",
+          :"gemnasium-maven-dependency-scanning-0",
+          :"gemnasium-python-dependency-scanning-0"
+        ]
+      end
+
+      it 'returns prepared CI configuration for Dependency Scanning' do
+        expected_variables = {
+          'SECURE_ANALYZERS_PREFIX' => "$CI_TEMPLATE_REGISTRY_HOST/security-products",
+          'DS_EXCLUDED_PATHS' => "spec, test, tests, tmp",
+          'DS_MAJOR_VERSION' => 5
+        }
+
+        expect(config[:variables]).to be_nil
+        expect(config[:'dependency-scanning-0'][:variables]).to include(expected_variables)
+        expect(config.keys).to match_array(expected_jobs)
+      end
+
+      it_behaves_like 'with template name for scan type'
+      it_behaves_like 'removes rules which disable jobs'
+
+      context 'when DS_EXCLUDED_ANALYZERS is provided as variable set in the policy' do
+        let_it_be(:ci_variables) { { 'DS_EXCLUDED_ANALYZERS' => 'gemnasium-maven' } }
+
+        context 'when allow_restricted_variables_at_policy_level feature flag is disabled' do
+          let(:allow_restricted_variables_at_policy_level) { false }
+
+          it_behaves_like 'removes rules which disable jobs'
         end
 
-        let(:expected_jobs_with_excluded_variable_rules) do
-          [
-            :"gemnasium-dependency-scanning-0",
-            :"gemnasium-maven-dependency-scanning-0",
-            :"gemnasium-python-dependency-scanning-0"
-          ]
-        end
-
-        it 'returns prepared CI configuration for Dependency Scanning' do
-          expected_variables = {
-            'SECURE_ANALYZERS_PREFIX' => "$CI_TEMPLATE_REGISTRY_HOST/security-products",
-            'DS_EXCLUDED_PATHS' => "spec, test, tests, tmp",
-            'DS_MAJOR_VERSION' => 5
-          }
-
-          expect(config[:variables]).to be_nil
-          expect(config[:'dependency-scanning-0'][:variables]).to include(expected_variables)
-          expect(config.keys).to match_array(expected_jobs)
-        end
-
-        it_behaves_like 'with template name for scan type'
-        it_behaves_like 'removes rules which disable jobs'
-
-        context 'when DS_EXCLUDED_ANALYZERS is provided as variable set in the policy' do
-          let_it_be(:ci_variables) { { 'DS_EXCLUDED_ANALYZERS' => 'gemnasium-maven' } }
-
-          context 'when allow_restricted_variables_at_policy_level feature flag is disabled' do
-            let(:allow_restricted_variables_at_policy_level) { false }
-
-            it_behaves_like 'removes rules which disable jobs'
-          end
-
-          context 'when allow_restricted_variables_at_policy_level feature flag is enabled' do
-            it 'does not remove DS_EXCLUDED_ANALYZERS rule' do
-              config.values_at(*expected_jobs_with_excluded_variable_rules).each do |configuration|
-                expect(configuration[:rules]).to include(hash_including(if: /DS_EXCLUDED_ANALYZERS/))
-              end
+        context 'when allow_restricted_variables_at_policy_level feature flag is enabled' do
+          it 'does not remove DS_EXCLUDED_ANALYZERS rule' do
+            config.values_at(*expected_jobs_with_excluded_variable_rules).each do |configuration|
+              expect(configuration[:rules]).to include(hash_including(if: /DS_EXCLUDED_ANALYZERS/))
             end
           end
         end
       end
+    end
 
-      context 'when scan type is sast_iac', :aggregate_failures do
-        let_it_be(:action) { { scan: 'sast_iac', tags: ['runner-tag'] } }
-        let_it_be(:template_name) { 'Jobs/SAST-IaC' }
+    context 'when scan type is sast_iac', :aggregate_failures do
+      let_it_be(:action) { { scan: 'sast_iac', tags: ['runner-tag'] } }
+      let_it_be(:template_name) { 'Jobs/SAST-IaC' }
 
-        it 'returns prepared CI configuration for SAST IaC' do
-          expected_jobs = [
-            :"iac-sast-0",
-            :"kics-iac-sast-0"
-          ]
+      it 'returns prepared CI configuration for SAST IaC' do
+        expected_jobs = [
+          :"iac-sast-0",
+          :"kics-iac-sast-0"
+        ]
 
-          expect(config[:variables]).to be_nil
-          expect(config.keys).to match_array(expected_jobs)
-        end
-
-        it_behaves_like 'with template name for scan type'
-        it_behaves_like 'removes rules which disable jobs'
+        expect(config[:variables]).to be_nil
+        expect(config.keys).to match_array(expected_jobs)
       end
+
+      it_behaves_like 'with template name for scan type'
+      it_behaves_like 'removes rules which disable jobs'
     end
   end
 end
