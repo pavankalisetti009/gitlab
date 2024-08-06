@@ -291,63 +291,40 @@ RSpec.describe SearchHelper, feature_category: :global_search do
       stub_ee_application_setting(search_using_elasticsearch: true)
     end
 
-    shared_examples 'a highlighted and truncated issuable' do
-      context 'when description is not present' do
-        let(:description) { nil }
+    subject(:highlight_and_truncate_issuable_method) do
+      highlight_and_truncate_issuable(issue, 'test', search_highlight)
+    end
 
-        it 'does nothing' do
-          expect(self).not_to receive(:sanitize)
+    context 'when description is not present' do
+      let(:description) { nil }
 
-          subject
-        end
-      end
+      it 'does nothing' do
+        expect(self).not_to receive(:sanitize)
 
-      context 'when description present' do
-        using RSpec::Parameterized::TableSyntax
-
-        let(:issue_id) { issue.id }
-
-        where(:description, :search_highlight, :expected) do
-          'test' | { ref(:issue_id) => { description: ['gitlabelasticsearch→test←gitlabelasticsearch'] } } | "<mark>test</mark>"
-          '<span style="color: blue;">this test should not be blue</span>' | { ref(:issue_id) => { description: ['<span style="color: blue;">this gitlabelasticsearch→test←gitlabelasticsearch should not be blue</span>'] } } | "this <mark>test</mark> should not be blue"
-          '<a href="#" onclick="alert(\'XSS\')">Click Me test</a>' | { ref(:issue_id) => { description: ['<a href="#" onclick="alert(\'XSS\')">Click Me gitlabelasticsearch→test←gitlabelasticsearch</a>'] } } | "<a href='#'>Click Me <mark>test</mark></a>"
-          '<script type="text/javascript">alert(\'Another XSS\');</script> test' | { ref(:issue_id) => { description: ['<script type="text/javascript">alert(\'Another XSS\');</script> gitlabelasticsearch→test←gitlabelasticsearch'] } } | "alert(&apos;Another XSS&apos;); <mark>test</mark>"
-          'Lorem test ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec.' | { ref(:issue_id) => { description: ['Lorem gitlabelasticsearch→test←gitlabelasticsearch ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec.'] } } | "Lorem <mark>test</mark> ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Don..."
-          '<img src="https://random.foo.com/test.png" width="128" height="128" />some image' | { ref(:issue_id) => { description: ['<img src="https://random.foo.com/gitlabelasticsearch→test←gitlabelasticsearch.png" width="128" height="128" />some image'] } } | 'some image'
-          '<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information test:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>' | { ref(:issue_id) => { description: ['<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information gitlabelasticsearch→test←gitlabelasticsearch:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>'] } } | "<a class='anchor' href='#additional-information'></a>Additional information <mark>test</mark>:"
-        end
-
-        with_them do
-          it 'sanitizes, truncates, and highlights the search term' do
-            expect(subject).to eq(expected)
-          end
-        end
+        highlight_and_truncate_issuable_method
       end
     end
 
-    context 'when search_issue_refactor flag is false' do
-      before do
-        stub_feature_flags(search_issue_refactor: false)
+    context 'when description present' do
+      using RSpec::Parameterized::TableSyntax
+
+      let(:issue_id) { issue.id }
+
+      where(:description, :search_highlight, :expected) do
+        'test' | { ref(:issue_id) => { description: ['gitlabelasticsearch→test←gitlabelasticsearch'] } } | "<mark>test</mark>"
+        '<span style="color: blue;">this test should not be blue</span>' | { ref(:issue_id) => { description: ['<span style="color: blue;">this gitlabelasticsearch→test←gitlabelasticsearch should not be blue</span>'] } } | "this <mark>test</mark> should not be blue"
+        '<a href="#" onclick="alert(\'XSS\')">Click Me test</a>' | { ref(:issue_id) => { description: ['<a href="#" onclick="alert(\'XSS\')">Click Me gitlabelasticsearch→test←gitlabelasticsearch</a>'] } } | "<a href='#'>Click Me <mark>test</mark></a>"
+        '<script type="text/javascript">alert(\'Another XSS\');</script> test' | { ref(:issue_id) => { description: ['<script type="text/javascript">alert(\'Another XSS\');</script> gitlabelasticsearch→test←gitlabelasticsearch'] } } | "alert(&apos;Another XSS&apos;); <mark>test</mark>"
+        'Lorem test ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec.' | { ref(:issue_id) => { description: ['Lorem gitlabelasticsearch→test←gitlabelasticsearch ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec.'] } } | "Lorem <mark>test</mark> ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Don..."
+        '<img src="https://random.foo.com/test.png" width="128" height="128" />some image' | { ref(:issue_id) => { description: ['<img src="https://random.foo.com/gitlabelasticsearch→test←gitlabelasticsearch.png" width="128" height="128" />some image'] } } | 'some image'
+        '<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information test:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>' | { ref(:issue_id) => { description: ['<h2 data-sourcepos="11:1-11:26" dir="auto"><a id="user-content-additional-information" class="anchor" href="#additional-information" aria-hidden="true"></a>Additional information gitlabelasticsearch→test←gitlabelasticsearch:</h2><textarea data-update-url="/freepascal.org/fpc/source/-/issues/6163.json" dir="auto" data-testid="textarea" class="hidden js-task-list-field"></textarea>'] } } | "<a class='anchor' href='#additional-information'></a>Additional information <mark>test</mark>:"
       end
 
-      # Elasticsearch returns Elasticsearch::Model::HashWrapper class for the highlighting
-      subject do
-        highlight_and_truncate_issuable(issue, 'test', Elasticsearch::Model::HashWrapper.new(search_highlight))
+      with_them do
+        it 'sanitizes, truncates, and highlights the search term' do
+          expect(highlight_and_truncate_issuable_method).to eq(expected)
+        end
       end
-
-      it_behaves_like 'a highlighted and truncated issuable'
-    end
-
-    context 'when search_issue_refactor flag is true' do
-      before do
-        stub_feature_flags(search_issue_refactor: true)
-      end
-
-      subject do
-        highlight_and_truncate_issuable(issue, 'test', search_highlight)
-      end
-
-      it_behaves_like 'a highlighted and truncated issuable'
     end
   end
 

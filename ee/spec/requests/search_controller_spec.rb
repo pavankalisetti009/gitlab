@@ -55,21 +55,7 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         # each issue runs an extra query for project routes
         let(:threshold) { 4 }
 
-        context 'when  search_issue_refactor flag is false' do
-          before do
-            stub_feature_flags(search_issue_refactor: false)
-          end
-
-          it_behaves_like 'an efficient database result'
-        end
-
-        context 'when  search_issue_refactor flag is true' do
-          before do
-            stub_feature_flags(search_issue_refactor: true)
-          end
-
-          it_behaves_like 'an efficient database result'
-        end
+        it_behaves_like 'an efficient database result'
       end
 
       context 'for merge_request scope' do
