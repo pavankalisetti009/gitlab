@@ -398,43 +398,69 @@ RSpec.describe Security::ScanResultPolicies::PolicyViolationDetails, feature_cat
   describe '#errors' do
     subject(:errors) { details.errors }
 
-    let_it_be_with_reload(:violation1) do
-      build_violation_details(policy1,
-        'errors' => [
-          { 'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed], missing_scans: ['secret_detection'] }
-        ]
-      )
+    def build_violation_with_error(policy, error, **extra_data)
+      build_violation_details(policy, 'errors' => [{ 'error' => error, **extra_data }])
     end
 
-    before_all do
-      build_violation_details(policy2,
-        'errors' => [
-          { 'error' => Security::ScanResultPolicyViolation::ERRORS[:artifacts_missing] }
-        ]
-      )
+    context 'with SCAN_REMOVED error' do
+      let_it_be(:violation1) do
+        build_violation_with_error(policy1,
+          Security::ScanResultPolicyViolation::ERRORS[:scan_removed], 'missing_scans' => %w[secret_detection])
+      end
+
+      it 'returns associated error messages' do
+        expect(errors.pluck(:message)).to contain_exactly(
+          'There is a mismatch between the scans of the source and target pipelines. ' \
+            'The following scans are missing: Secret detection'
+        )
+      end
     end
 
-    it 'returns associated error messages' do
-      expect(errors.size).to eq 2
-      expect(errors.pluck(:message)).to contain_exactly(
-        'There is a mismatch between the scans of the source and target pipelines. ' \
-        'The following scans are missing: Secret detection',
-        'Pipeline configuration error: Artifacts required by policy `Policy` could not be found (License scanning).'
-      )
+    context 'with ARTIFACTS_MISSING error' do
+      context 'with scan_finding report_type' do
+        let_it_be(:violation1) do
+          build_violation_with_error(policy1, Security::ScanResultPolicyViolation::ERRORS[:artifacts_missing])
+        end
+
+        it 'returns associated error messages' do
+          expect(errors.pluck(:message)).to contain_exactly(
+            'Pipeline configuration error: Security reports required by policy `Policy` could not be found.'
+          )
+        end
+      end
+
+      context 'with license_scanning report_type' do
+        let_it_be(:violation1) do
+          build_violation_with_error(policy2, Security::ScanResultPolicyViolation::ERRORS[:artifacts_missing])
+        end
+
+        it 'returns associated error messages' do
+          expect(errors.pluck(:message)).to contain_exactly(
+            'Pipeline configuration error: SBOM reports required by policy `Policy` could not be found.'
+          )
+        end
+      end
+
+      context 'with unsupported report_type' do
+        let_it_be(:violation1) do
+          build_violation_with_error(policy3, Security::ScanResultPolicyViolation::ERRORS[:artifacts_missing])
+        end
+
+        it 'returns associated error messages' do
+          expect(errors.pluck(:message)).to contain_exactly(
+            'Pipeline configuration error: Artifacts required by policy `Policy` could not be found ' \
+            '(any_merge_request).'
+          )
+        end
+      end
     end
 
     context 'with unsupported error' do
-      before do
-        violation1.update!(violation_data: { 'errors' => [{ 'error' => 'unsupported' }] })
-      end
+      let_it_be(:violation1) { build_violation_with_error(policy2, 'unsupported') }
 
       it 'results in unknown error message' do
-        expect(errors.size).to eq 2
-        expect(errors.pluck(:error)).to contain_exactly('UNKNOWN', 'ARTIFACTS_MISSING')
-        expect(errors.pluck(:message)).to contain_exactly(
-          'Unknown error: unsupported',
-          'Pipeline configuration error: Artifacts required by policy `Policy` could not be found (License scanning).'
-        )
+        expect(errors.pluck(:error)).to contain_exactly('UNKNOWN')
+        expect(errors.pluck(:message)).to contain_exactly('Unknown error: unsupported')
       end
     end
   end

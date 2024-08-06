@@ -13,12 +13,20 @@ module Security
       ComparisonPipelines = Struct.new(:report_type, :source, :target, keyword_init: true)
 
       ERROR_UNKNOWN = 'UNKNOWN'
+      # Hash of error messages mapping by key
+      # Each key can have different messages per report_type and define ERROR_UNKNOWN as a fallback
       ERROR_MESSAGES = {
         'UNKNOWN' => 'Unknown error: %{error}',
         'SCAN_REMOVED' => 'There is a mismatch between the scans of the source and target pipelines. ' \
                           'The following scans are missing: %{scans}',
-        'ARTIFACTS_MISSING' =>
-          'Pipeline configuration error: Artifacts required by policy `%{policy}` could not be found (%{report_type}).'
+        'ARTIFACTS_MISSING' => {
+          'scan_finding' => 'Pipeline configuration error: Security reports required by policy `%{policy}` ' \
+                            'could not be found.',
+          'license_scanning' => 'Pipeline configuration error: SBOM reports required by policy `%{policy}` ' \
+                                'could not be found.',
+          ERROR_UNKNOWN => 'Pipeline configuration error: Artifacts required by policy `%{policy}` ' \
+                                 'could not be found (%{report_type}).'
+        }
       }.freeze
 
       def initialize(merge_request)
@@ -185,11 +193,17 @@ module Security
                  when 'SCAN_REMOVED'
                    { scans: error['missing_scans']&.map(&:humanize)&.join(', ') }
                  when 'ARTIFACTS_MISSING'
-                   { policy: violation.name, report_type: violation.report_type.humanize }
+                   { policy: violation.name, report_type: violation.report_type }
                  else
                    { error: error_key }
                  end
-        format(ERROR_MESSAGES[error_key] || ERROR_MESSAGES[ERROR_UNKNOWN], **params)
+
+        message_for_key = ERROR_MESSAGES[error_key] || ERROR_MESSAGES[ERROR_UNKNOWN]
+        if message_for_key.is_a?(Hash)
+          message_for_key = message_for_key[violation.report_type] || message_for_key[ERROR_UNKNOWN]
+        end
+
+        format(message_for_key, **params)
       end
 
       # Extract data for given keys from violations
