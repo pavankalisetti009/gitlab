@@ -3,7 +3,7 @@ title: AI impact analytics
 description: Visualize the relation between AI usage and SDLC trends.
 version: "2"
 panels:
-  - title: "Duo Pro seats: Assigned and used"
+  - title: "Duo seats: Assigned and used"
     visualization: duo_pro_usage_rate_over_time
     gridAttributes:
       yPos: 0
