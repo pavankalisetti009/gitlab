@@ -60,6 +60,20 @@ RSpec.describe ExternalStatusChecks::DispatchService, feature_category: :source_
         expect(subject.http_status).to eq(500)
       end
     end
+
+    context 'service responds with BlockedUrlError' do
+      before do
+        allow(Gitlab::HTTP).to receive(:post).and_raise(::Gitlab::HTTP_V2::BlockedUrlError)
+      end
+
+      it 'is unsuccessful' do
+        expect(subject.success?).to be false
+      end
+
+      it 'passes back the bad request http status code' do
+        expect(subject.http_status).to eq(:bad_request)
+      end
+    end
   end
 
   private
