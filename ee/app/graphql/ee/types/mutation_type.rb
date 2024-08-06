@@ -157,7 +157,11 @@ module EE
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceHeaders::Destroy
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceEventTypeFilters::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::InstanceEventTypeFilters::Destroy
-        mount_mutation ::Mutations::Security::CiConfiguration::ProjectSetContinuousVulnerabilityScanning
+        mount_mutation ::Mutations::Security::CiConfiguration::ProjectSetContinuousVulnerabilityScanning, deprecated: {
+          milestone: '17.3',
+          reason: 'CVS has been enabled permanently. See [this ' \
+            'epic](https://gitlab.com/groups/gitlab-org/-/epics/11474) for more information'
+        }
         mount_mutation ::Mutations::Security::CiConfiguration::SetPreReceiveSecretDetection
         mount_mutation ::Mutations::Security::CiConfiguration::SetContainerScanningForRegistry
         mount_mutation ::Mutations::AuditEvents::Instance::GoogleCloudLoggingConfigurations::Destroy
