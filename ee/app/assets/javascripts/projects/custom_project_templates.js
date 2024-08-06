@@ -119,7 +119,7 @@ const bindEvents = () => {
   });
 
   document.querySelectorAll('.js-template-group-options').forEach((tmplEl) => {
-    tmplEl.addEventListener('click', function toggleExpandedClass(el) {
+    tmplEl.addEventListener('click', (el) => {
       el.currentTarget.classList.toggle('expanded');
     });
   });
