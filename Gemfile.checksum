@@ -727,7 +727,7 @@
 {"name":"tty-prompt","version":"0.23.1","platform":"ruby","checksum":"fcdbce905238993f27eecfdf67597a636bc839d92192f6a0eef22b8166449ec8"},
 {"name":"tty-reader","version":"0.9.0","platform":"ruby","checksum":"c62972c985c0b1566f0e56743b6a7882f979d3dc32ff491ed490a076f899c2b1"},
 {"name":"tty-screen","version":"0.8.1","platform":"ruby","checksum":"6508657c38f32bdca64880abe201ce237d80c94146e1f9b911cba3c7823659a2"},
-{"name":"typhoeus","version":"1.4.0","platform":"ruby","checksum":"fff9880d5dc35950e7706cf132fd297f377c049101794be1cf01c95567f642d4"},
+{"name":"typhoeus","version":"1.4.1","platform":"ruby","checksum":"1c17db8364bd45ab302dc61e460173c3e69835896be88a3df07c206d5c55ef7c"},
 {"name":"tzinfo","version":"2.0.6","platform":"ruby","checksum":"8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b"},
 {"name":"uber","version":"0.1.0","platform":"ruby","checksum":"5beeb407ff807b5db994f82fa9ee07cfceaa561dad8af20be880bc67eba935dc"},
 {"name":"undercover","version":"0.5.0","platform":"ruby","checksum":"ef99a8478be5466fb13fcd199f659ae308b81f71145a5a4e57428ff67d109fae"},
