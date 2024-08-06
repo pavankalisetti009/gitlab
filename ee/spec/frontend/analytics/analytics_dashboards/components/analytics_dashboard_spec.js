@@ -17,6 +17,7 @@ import AnalyticsDashboardPanel from 'ee/analytics/analytics_dashboards/component
 import CustomizableDashboard from 'ee/vue_shared/components/customizable_dashboard/customizable_dashboard.vue';
 import ProductAnalyticsFeedbackBanner from 'ee/analytics/dashboards/components/product_analytics_feedback_banner.vue';
 import ValueStreamFeedbackBanner from 'ee/analytics/dashboards/components/value_stream_feedback_banner.vue';
+import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import {
   buildDefaultDashboardFilters,
   updateApolloCache,
@@ -50,6 +51,7 @@ import {
   getGraphQLDashboard,
   TEST_INVALID_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
   mockInvalidDashboardErrors,
+  TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE,
 } from '../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -93,6 +95,8 @@ describe('AnalyticsDashboard', () => {
   const findValueStreamFeedbackBanner = () => wrapper.findComponent(ValueStreamFeedbackBanner);
   const findInvalidDashboardAlert = () =>
     wrapper.findByTestId('analytics-dashboard-invalid-config-alert');
+  const findUsageOverviewAggregationWarning = () =>
+    wrapper.findComponent(UsageOverviewBackgroundAggregationWarning);
 
   const mockSaveDashboardImplementation = async (responseCallback, dashboardToSave = dashboard) => {
     saveCustomDashboard.mockImplementation(responseCallback);
@@ -179,6 +183,7 @@ describe('AnalyticsDashboard', () => {
             deletePanel: mockCustomizableDashboardDeletePanel,
           },
           template: `<div>
+            <slot name="alert"></slot>
             <template v-for="panel in initialDashboard.panels">
               <slot name="panel" v-bind="{ panel, filters: defaultFilters, deletePanel, editing: false }"></slot>
             </template>
@@ -276,6 +281,14 @@ describe('AnalyticsDashboard', () => {
       await waitForPromises();
 
       expect(findInvalidDashboardAlert().exists()).toBe(false);
+    });
+
+    it('should not render the usage overview aggregation warning', async () => {
+      createWrapper();
+
+      await waitForPromises();
+
+      expect(findUsageOverviewAggregationWarning().exists()).toBe(false);
     });
 
     it('should add unique panel ids to each panel', async () => {
@@ -967,6 +980,24 @@ describe('AnalyticsDashboard', () => {
 
       expect(confirmMock).toHaveBeenCalledTimes(1);
       expect(nextMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('when usage overview aggregation is not enabled', () => {
+    beforeEach(async () => {
+      mockDashboardResponse(TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE);
+
+      createWrapper({
+        provide: {
+          overviewCountsAggregationEnabled: false,
+        },
+      });
+
+      await waitForPromises();
+    });
+
+    it('renders the usage overview aggregation warning', () => {
+      expect(findUsageOverviewAggregationWarning().exists()).toBe(true);
     });
   });
 });

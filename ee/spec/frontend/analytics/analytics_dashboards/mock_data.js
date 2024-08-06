@@ -289,6 +289,50 @@ export const TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE = {
   },
 };
 
+const mockUsageOverviewPanel = {
+  __typename: 'CustomizableDashboardPanel',
+  title: 'Usage overview',
+  gridAttributes: { yPos: 0, xPos: 0, width: 12, height: 1 },
+  queryOverrides: null,
+  visualization: {
+    __typename: 'CustomizableDashboardVisualization',
+    slug: 'usage_overview',
+    type: 'UsageOverview',
+    options: {},
+    data: {
+      type: 'usage_overview',
+      query: { include: ['groups', 'projects', 'issues', 'merge_requests', 'pipelines'] },
+    },
+    errors: null,
+  },
+};
+
+export const TEST_DASHBOARD_WITH_USAGE_OVERVIEW_GRAPHQL_SUCCESS_RESPONSE = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      customizableDashboards: {
+        nodes: [
+          getGraphQLDashboard(
+            {
+              slug: 'value_streams_dashboard',
+              title: 'Value Streams Dashboard',
+              userDefined: false,
+              panels: {
+                nodes: [mockUsageOverviewPanel],
+                __typename: 'CustomizableDashboardPanelConnection',
+              },
+            },
+            false,
+          ),
+        ],
+        __typename: 'CustomizableDashboardConnection',
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
 export const mockInvalidDashboardErrors = [
   'root is missing required keys: version',
   "property '/panels/0' is missing required keys: queryOverrides",

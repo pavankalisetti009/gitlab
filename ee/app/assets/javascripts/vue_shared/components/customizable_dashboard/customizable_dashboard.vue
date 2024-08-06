@@ -111,11 +111,6 @@ export default {
       required: false,
       default: null,
     },
-    overviewCountsAggregationEnabled: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
@@ -148,14 +143,6 @@ export default {
     },
     showEditDashboardButton() {
       return this.editingEnabled && !this.editing;
-    },
-    dashboardHasUsageOverviewPanel() {
-      return this.dashboard.panels
-        .map(({ visualization: { slug } }) => slug)
-        .includes('usage_overview');
-    },
-    showEnableAggregationWarning() {
-      return this.dashboardHasUsageOverviewPanel && !this.overviewCountsAggregationEnabled;
     },
     showBetaBadge() {
       return this.dashboard.status === DASHBOARD_STATUS_BETA;
@@ -522,6 +509,7 @@ export default {
               {{ s__('Analytics|Add visualization') }}
             </div>
           </button>
+          <slot name="alert"></slot>
           <gridstack-wrapper v-model="dashboard" :editing="editing">
             <template #panel="{ panel }">
               <slot
