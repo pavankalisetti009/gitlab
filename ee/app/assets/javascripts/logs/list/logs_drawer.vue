@@ -4,7 +4,7 @@ import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { UTC_FULL_DATE_TIME_FORMAT } from '~/observability/constants';
+import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 
 const createSectionContent = (obj) =>
   Object.entries(obj)
@@ -73,7 +73,7 @@ export default {
     },
     title() {
       if (!this.log) return '';
-      return formatDate(this.log.timestamp, UTC_FULL_DATE_TIME_FORMAT);
+      return formatDate(this.log.timestamp, FULL_DATE_TIME_FORMAT);
     },
     drawerHeaderHeight() {
       // avoid calculating this in advance because it causes layout thrashing

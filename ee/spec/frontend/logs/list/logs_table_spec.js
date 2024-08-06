@@ -31,7 +31,7 @@ describe('LogsTable', () => {
     mockLogs.forEach((m, i) => {
       const row = getRows().at(i);
       expect(row.find(`[data-testid="log-timestamp"]`).text()).toBe(
-        formatDate(m.timestamp, `UTC:mmm dd yyyy HH:MM:ss.l Z`),
+        formatDate(m.timestamp, `mmm dd yyyy HH:MM:ss.l Z`),
       );
       expect(row.find(`[data-testid="log-service"]`).text()).toBe(m.service_name);
       expect(row.find(`[data-testid="log-message"]`).text()).toBe(m.body);
