@@ -9,6 +9,7 @@ module EE
 
       FEATURES =
         %i[
+          duo_workflow
           ai_vertex_embeddings
           experimentation
           marketing_google_tag_manager
