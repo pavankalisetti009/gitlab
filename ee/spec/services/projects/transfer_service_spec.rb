@@ -65,7 +65,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
         expect(project.namespace).to eq(group)
         expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :project_transfer,
+          task: :delete_project_associations,
           project_id: project.id,
           traversal_id: new_group.elastic_namespace_ancestry
         }).once
@@ -81,7 +81,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
         expect(project.namespace).to eq(group)
         expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :project_transfer,
+          task: :delete_project_associations,
           project_id: project.id,
           traversal_id: user.namespace.elastic_namespace_ancestry
         }).once
@@ -95,7 +95,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
         expect(project.namespace).to eq(user.namespace)
         expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :project_transfer,
+          task: :delete_project_associations,
           project_id: project.id,
           traversal_id: group.elastic_namespace_ancestry
         }).once
@@ -115,7 +115,7 @@ RSpec.describe Projects::TransferService, feature_category: :groups_and_projects
       it 'call to ::Search::Elastic::DeleteWorker to remove duplicate work items' do
         expect(project.namespace).to eq(user.namespace)
         expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
-          task: :project_transfer,
+          task: :delete_project_associations,
           project_id: project.id,
           traversal_id: new_user.namespace.elastic_namespace_ancestry
         }).once

@@ -26,7 +26,7 @@ module EE
         super
 
         ::Search::Elastic::DeleteWorker.perform_async(
-          task: :project_transfer,
+          task: :delete_project_associations,
           traversal_id: project.namespace.elastic_namespace_ancestry,
           project_id: project.id
         )

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category: :global_search do
   describe '#perform' do
     subject(:perform) do
-      described_class.new.perform({ task: :project_transfer })
+      described_class.new.perform({ task: :delete_project_associations })
     end
 
     context 'when Elasticsearch is disabled' do
@@ -36,7 +36,7 @@ RSpec.describe Search::Elastic::DeleteWorker, :elastic_helpers, feature_category
 
       context 'when we pass valid task' do
         it 'call the corresponding service' do
-          expect(::Search::Elastic::Delete::ProjectTransferService).to receive(:execute)
+          expect(::Search::Elastic::Delete::ProjectAssociationsService).to receive(:execute)
           perform
         end
       end
