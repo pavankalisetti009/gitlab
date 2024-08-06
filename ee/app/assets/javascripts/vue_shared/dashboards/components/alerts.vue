@@ -17,8 +17,8 @@ export default {
   computed: {
     alertClasses() {
       return {
-        'text-tertiary': this.count <= 0,
-        'text-warning': this.count > 0,
+        'dashboard-card-icon': this.count <= 0,
+        'gl-text-danger': this.count > 0,
       };
     },
     alertCount() {

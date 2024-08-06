@@ -17,6 +17,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
   let(:ai_gateway_request) { ::Gitlab::Llm::Chain::Requests::AiGateway.new(user) }
   let(:attrs) { embeddings.pluck(:id).map { |x| "CNT-IDX-#{x}" }.join(", ") }
   let(:completion_response) { { 'response' => "#{answer} ATTRS: #{attrs}" } }
+  let(:model) { ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }
 
   let(:docs_search_client) { ::Gitlab::Llm::AiGateway::DocsClient.new(user) }
   let(:docs_search_args) { { query: question } }
@@ -52,7 +53,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
     it 'executes calls and returns ResponseModifier' do
       expect(ai_gateway_request).to receive(:request)
         .with({ prompt: instance_of(Array),
-          options: { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_SONNET, max_tokens: 256 } })
+          options: { model: model, max_tokens: 256 } })
         .once.and_return(completion_response)
       expect(docs_search_client).to receive(:search).with(**docs_search_args).and_return(docs_search_response)
 
@@ -65,7 +66,7 @@ RSpec.describe ::Gitlab::Llm::Chain::Tools::EmbeddingsCompletion, feature_catego
       expect(ai_gateway_request)
         .to receive(:request)
         .with({ prompt: instance_of(Array), options:
-          { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_SONNET, max_tokens: 256 } })
+          { model: model, max_tokens: 256 } })
         .once
         .and_yield(answer)
         .and_return(completion_response)
