@@ -31,13 +31,13 @@ module Gitlab
       end
 
       def failed?(scope)
-        return false unless scope == 'issues' && Feature.enabled?(:search_issue_refactor, current_user)
+        return false unless scope == 'issues'
 
         issues.failed?
       end
 
       def error(scope)
-        return unless scope == 'issues' && Feature.enabled?(:search_issue_refactor, current_user)
+        return unless scope == 'issues'
 
         issues.error
       end
@@ -49,13 +49,7 @@ module Gitlab
         when 'projects'
           eager_load(projects, page, per_page, preload_method, [:route, :namespace, :topics, :creator])
         when 'issues'
-          if Feature.enabled?(:search_issue_refactor, current_user)
-            return issues(page: page, per_page: per_page, preload_method: preload_method).paginated_array
-          end
-
-          eager_load(issues, page, per_page, preload_method,
-            project: [:route, :namespace, :group], labels: [], timelogs: [],
-            assignees: [], synced_epic: [], work_item_type: [])
+          issues(page: page, per_page: per_page, preload_method: preload_method).paginated_array
         when 'merge_requests'
           eager_load(merge_requests, page, per_page, preload_method, target_project: [:route, :namespace])
         when 'milestones'
@@ -84,9 +78,7 @@ module Gitlab
         when 'projects'
           create_map(projects)
         when 'issues'
-          return issues.highlight_map if Feature.enabled?(:search_issue_refactor, current_user)
-
-          create_map(issues)
+          issues.highlight_map
         when 'merge_requests'
           create_map(merge_requests)
         when 'milestones'
@@ -367,10 +359,6 @@ module Gitlab
       end
 
       def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
-        if Feature.disabled?(:search_issue_refactor, current_user)
-          return scope_results :issues, Issue, count_only: count_only
-        end
-
         strong_memoize(memoize_key('issues', count_only: count_only)) do
           options = scope_options(:issues)
             .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
@@ -474,10 +462,6 @@ module Gitlab
       strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
-        if Feature.disabled?(:search_issue_refactor, current_user)
-          return Issue.__elasticsearch__.issue_aggregations(query, base_options)
-        end
-
         options = base_options.merge(aggregation: true, klass: Issue)
 
         issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)

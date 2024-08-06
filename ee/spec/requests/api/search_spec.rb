@@ -250,69 +250,42 @@ RSpec.describe API::Search, :clean_gitlab_redis_rate_limiting, factory_default: 
         ensure_elasticsearch_index!
       end
 
-      context 'when  search_issue_refactor flag is false' do
-        before do
-          stub_feature_flags(search_issue_refactor: false)
-        end
+      it 'avoids N+1 queries' do
+        control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
 
-        it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
+        create_list(:issue, 2, project: project)
+        create_list(:issue, 2, project: create(:project, group: group))
+        create_list(:issue, 2)
 
-          create_list(:issue, 2, project: project)
-          create_list(:issue, 2, project: create(:project, group: group))
-          create_list(:issue, 2)
+        ensure_elasticsearch_index!
 
-          ensure_elasticsearch_index!
-
-          expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
-        end
-
-        it_behaves_like 'pagination', scope: 'issues'
-        it_behaves_like 'orderable by created_at', scope: 'issues'
+        expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
       end
 
-      context 'when  search_issue_refactor flag is true' do
-        before do
-          stub_feature_flags(search_issue_refactor: true)
-        end
+      it_behaves_like 'pagination', scope: 'issues'
+      it_behaves_like 'orderable by created_at', scope: 'issues'
 
-        it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'issues', search: '*' } }
+      unless level == :project
+        context 'for projects scope', :sidekiq_inline do
+          before do
+            project
+            create(:project, :public, name: 'second project', group: group)
 
-          create_list(:issue, 2, project: project)
-          create_list(:issue, 2, project: create(:project, group: group))
-          create_list(:issue, 2)
+            ensure_elasticsearch_index!
+          end
 
-          ensure_elasticsearch_index!
+          it_behaves_like 'pagination', scope: 'projects'
 
-          expect { get api(endpoint, user), params: { scope: 'issues', search: '*' } }.not_to exceed_query_limit(control)
-        end
+          it 'avoids N+1 queries' do
+            control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'projects', search: '*' } }
+            create_list(:project, 3, :public, group: group)
+            create_list(:project, 4, :public)
 
-        it_behaves_like 'pagination', scope: 'issues'
-        it_behaves_like 'orderable by created_at', scope: 'issues'
-      end
-    end
+            ensure_elasticsearch_index!
 
-    unless level == :project
-      context 'for projects scope', :sidekiq_inline do
-        before do
-          project
-          create(:project, :public, name: 'second project', group: group)
-
-          ensure_elasticsearch_index!
-        end
-
-        it_behaves_like 'pagination', scope: 'projects'
-
-        it 'avoids N+1 queries' do
-          control = ActiveRecord::QueryRecorder.new { get api(endpoint, user), params: { scope: 'projects', search: '*' } }
-          create_list(:project, 3, :public, group: group)
-          create_list(:project, 4, :public)
-
-          ensure_elasticsearch_index!
-
-          # Some N+1 queries still exist
-          expect { get api(endpoint, user), params: { scope: 'projects', search: '*' } }.not_to exceed_query_limit(control).with_threshold(4)
+            # Some N+1 queries still exist
+            expect { get api(endpoint, user), params: { scope: 'projects', search: '*' } }.not_to exceed_query_limit(control).with_threshold(4)
+          end
         end
       end
     end
