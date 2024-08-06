@@ -15,13 +15,18 @@ export default {
           (msg) => msg.requestId === newMessageData.requestId && msg.role.toLowerCase() === role,
         );
       const userMessageWithRequestIdIndex = getExistingMessagesIndex(GENIE_CHAT_MODEL_ROLES.user);
-      const userMessageExists = userMessageWithRequestIdIndex > -1;
+      const isErrorMessage = newMessageData?.errors?.length > 0;
+      const isLastMessageError = state.messages[state.messages.length - 1]?.errors?.length > 0;
+      const userMessageExists = !isLastMessageError && userMessageWithRequestIdIndex > -1;
 
       const isUserMessage = newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.user;
       const isAssistantMessage =
         newMessageData.role.toLowerCase() === GENIE_CHAT_MODEL_ROLES.assistant;
 
-      if (isAssistantMessage) {
+      if (isErrorMessage) {
+        state.messages.push({ ...newMessageData });
+        isLastMessage = true;
+      } else if (isAssistantMessage) {
         const assistantMessageWithRequestIdIndex = getExistingMessagesIndex(
           GENIE_CHAT_MODEL_ROLES.assistant,
         );

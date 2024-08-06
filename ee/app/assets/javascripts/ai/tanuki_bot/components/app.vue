@@ -85,7 +85,7 @@ export default {
           }
         },
         error(err) {
-          this.error = err.toString();
+          this.addDuoChatMessage({ errors: [err.toString()] });
         },
         skip() {
           return !this.duoChatGlobalState.isShown;
@@ -123,7 +123,7 @@ export default {
           }
         },
         error(err) {
-          this.error = err.toString();
+          this.addDuoChatMessage({ errors: [err.toString()] });
         },
         skip() {
           return !this.duoChatGlobalState.isShown;
@@ -138,7 +138,7 @@ export default {
         }
       },
       error(err) {
-        this.error = err.toString();
+        this.addDuoChatMessage({ errors: [err.toString()] });
       },
     },
   },
@@ -224,10 +224,10 @@ export default {
           }
         })
         .catch((err) => {
-          this.error = err.toString();
           this.addDuoChatMessage({
             content: question,
           });
+          this.addDuoChatMessage({ errors: [err.toString()] });
           this.setLoading(false);
         });
     },
