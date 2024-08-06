@@ -3946,7 +3946,28 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
     end
 
     with_them do
+      before do
+        stub_licensed_features(container_scanning_for_registry: true)
+      end
+
       it { is_expected.to match_expected_result }
+    end
+
+    context 'when license feature is not available' do
+      where(:current_user, :match_expected_result) do
+        ref(:owner)      | be_disallowed(:enable_container_scanning_for_registry)
+        ref(:maintainer) | be_disallowed(:enable_container_scanning_for_registry)
+        ref(:developer)  | be_disallowed(:enable_container_scanning_for_registry)
+        ref(:non_member) | be_disallowed(:enable_container_scanning_for_registry)
+      end
+
+      with_them do
+        before do
+          stub_licensed_features(container_scanning_for_registry: false)
+        end
+
+        it { is_expected.to match_expected_result }
+      end
     end
   end
 end

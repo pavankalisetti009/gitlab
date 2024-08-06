@@ -14,6 +14,8 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
 
   before do
     image_pushed_event.project = project
+
+    stub_licensed_features(container_scanning_for_registry: true)
   end
 
   describe '#handle_event' do
@@ -34,6 +36,16 @@ RSpec.describe AppSec::ContainerScanning::ScanImageWorker, feature_category: :so
   end
 
   describe '.dispatch?' do
+    context 'when license feature is not available' do
+      before do
+        stub_licensed_features(container_scanning_for_registry: false)
+      end
+
+      it 'returns false' do
+        expect(described_class.dispatch?(image_pushed_event)).to eq(false)
+      end
+    end
+
     context 'when image ends with :latest' do
       it 'returns true' do
         expect(described_class.dispatch?(image_pushed_event)).to eq(true)

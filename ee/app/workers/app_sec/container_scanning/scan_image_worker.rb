@@ -20,7 +20,8 @@ module AppSec
       end
 
       def self.dispatch?(event)
-        !!(event.project&.security_setting&.container_scanning_for_registry_enabled? &&
+        !!(event.project&.licensed_feature_available?(:container_scanning_for_registry) &&
+          event.project&.security_setting&.container_scanning_for_registry_enabled? &&
           !event.project&.repository&.empty? &&
           event.data.fetch(:image).ends_with?(':latest'))
       end
