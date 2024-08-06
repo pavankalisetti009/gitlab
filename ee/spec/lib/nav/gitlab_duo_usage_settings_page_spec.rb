@@ -43,14 +43,16 @@ RSpec.describe Nav::GitlabDuoUsageSettingsPage, feature_category: :duo_chat do
         stub_licensed_features(code_suggestions: true)
         stub_saas_features(gitlab_com_subscriptions: true)
         allow(group).to receive(:has_free_or_no_subscription?) { has_free_or_no_subscription? }
-        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: group_with_duo_pro_trial)
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, trial, namespace: group_with_duo_pro_trial)
       end
 
-      where(:has_free_or_no_subscription?, :group_with_duo_pro_trial, :result) do
-        true  | ref(:another_group) | false
-        false | ref(:another_group) | true
-        true  | ref(:group)         | true
-        false | ref(:group)         | true
+      where(:has_free_or_no_subscription?, :trial, :group_with_duo_pro_trial, :result) do
+        true  | :trial         | ref(:another_group) | false
+        false | :trial         | ref(:another_group) | true
+        true  | :trial         | ref(:group)         | true
+        false | :trial         | ref(:group)         | true
+        true  | :expired_trial | ref(:group)         | true
+        false | :expired_trial | ref(:group)         | true
       end
 
       with_them do
