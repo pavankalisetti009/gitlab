@@ -1,14 +1,12 @@
-import { GlLoadingIcon, GlButton } from '@gitlab/ui';
+import { GlLoadingIcon, GlButton, GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { createAlert } from '~/alert';
 
 import groupMemberRolesQuery from 'ee/invite_members/graphql/queries/group_member_roles.query.graphql';
 import instanceMemberRolesQuery from 'ee/roles_and_permissions/graphql/instance_member_roles.query.graphql';
-import deleteMemberRoleMutation from 'ee/roles_and_permissions/graphql/delete_member_role.mutation.graphql';
 
 import CustomRolesApp from 'ee/roles_and_permissions/components/app.vue';
 import CustomRolesEmptyState from 'ee/roles_and_permissions/components/custom_roles_empty_state.vue';
@@ -21,7 +19,7 @@ Vue.use(VueApollo);
 
 jest.mock('~/alert');
 
-describe('CustomRolesApp', () => {
+describe('Custom roles app', () => {
   let wrapper;
 
   const mockCustomRoleToDelete = mockMemberRoles.data.namespace.memberRoles.nodes[0];
@@ -29,28 +27,18 @@ describe('CustomRolesApp', () => {
   const mockToastShow = jest.fn();
   const groupRolesSuccessQueryHandler = jest.fn().mockResolvedValue(mockMemberRoles);
   const instanceRolesSuccessQueryHandler = jest.fn().mockResolvedValue(mockInstanceMemberRoles);
-  const deleteMutationSuccessHandler = jest.fn().mockResolvedValue({
-    data: {
-      memberRoleDelete: {
-        errors: [],
-        memberRole: { id: mockCustomRoleToDelete.id },
-      },
-    },
-  });
 
   const errorHandler = jest.fn().mockRejectedValue('error');
 
   const createComponent = ({
     groupRolesQueryHandler = groupRolesSuccessQueryHandler,
     instanceRolesQueryHandler = instanceRolesSuccessQueryHandler,
-    deleteMutationHandler = deleteMutationSuccessHandler,
     groupFullPath = 'test-group',
   } = {}) => {
     wrapper = shallowMountExtended(CustomRolesApp, {
       apolloProvider: createMockApollo([
         [groupMemberRolesQuery, groupRolesQueryHandler],
         [instanceMemberRolesQuery, instanceRolesQueryHandler],
-        [deleteMemberRoleMutation, deleteMutationHandler],
       ]),
       provide: {
         groupFullPath,
@@ -63,6 +51,8 @@ describe('CustomRolesApp', () => {
         },
       },
     });
+
+    return waitForPromises();
   };
 
   const findEmptyState = () => wrapper.findComponent(CustomRolesEmptyState);
@@ -85,13 +75,11 @@ describe('CustomRolesApp', () => {
 
   describe('when data has loaded', () => {
     describe('and there are no custom roles', () => {
-      beforeEach(async () => {
+      beforeEach(() =>
         createComponent({
           groupRolesQueryHandler: jest.fn().mockResolvedValue(mockEmptyMemberRoles),
-        });
-
-        await waitForPromises();
-      });
+        }),
+      );
 
       it('renders the empty state', () => {
         expect(findEmptyState().exists()).toBe(true);
@@ -99,11 +87,7 @@ describe('CustomRolesApp', () => {
     });
 
     describe('and there group-level custom roles', () => {
-      beforeEach(async () => {
-        createComponent();
-
-        await waitForPromises();
-      });
+      beforeEach(createComponent);
 
       it('fetches group-level member roles', () => {
         expect(groupRolesSuccessQueryHandler).toHaveBeenCalledWith({
@@ -134,13 +118,7 @@ describe('CustomRolesApp', () => {
     });
 
     describe('and there instance-level custom roles', () => {
-      beforeEach(async () => {
-        createComponent({
-          groupFullPath: null,
-        });
-
-        await waitForPromises();
-      });
+      beforeEach(() => createComponent({ groupFullPath: null }));
 
       it('fetches instance-level member roles', () => {
         expect(instanceRolesSuccessQueryHandler).toHaveBeenCalledWith({});
@@ -156,128 +134,67 @@ describe('CustomRolesApp', () => {
     });
 
     describe('and there is an error fetching the data', () => {
-      beforeEach(async () => {
-        createComponent({
-          groupRolesQueryHandler: errorHandler,
-        });
+      beforeEach(() => createComponent({ groupRolesQueryHandler: errorHandler }));
 
-        await waitForPromises();
+      it('renders the error message', () => {
+        const alert = wrapper.findComponent(GlAlert);
+
+        expect(alert.text()).toBe('Failed to fetch roles.');
+        expect(alert.props()).toMatchObject({
+          variant: 'danger',
+          dismissible: false,
+        });
       });
 
-      it('renders an error message', () => {
-        expect(createAlert).toHaveBeenCalledWith({
-          message: 'Failed to fetch roles.',
-        });
+      it('does not render empty state', () => {
+        expect(findEmptyState().exists()).toBe(false);
+      });
+
+      it('does not render table', () => {
+        expect(findTable().exists()).toBe(false);
       });
     });
   });
 
-  describe('when deleting a custom role', () => {
-    beforeEach(async () => {
-      createComponent();
+  describe('delete role modal', () => {
+    beforeEach(createComponent);
 
-      await waitForPromises();
-    });
-
-    it('renders delete modal with `visible` set to false', () => {
+    it('renders delete modal', () => {
       expect(findDeleteModal().exists()).toBe(true);
-      expect(findDeleteModal().props('visible')).toBe(false);
     });
 
-    describe('when table emits `delete-role` event', () => {
+    describe('when table wants to delete a role', () => {
       beforeEach(() => {
         findTable().vm.$emit('delete-role', mockCustomRoleToDelete);
-        return nextTick();
       });
 
-      it('shows delete modal', () => {
-        expect(findDeleteModal().props('visible')).toBe(true);
+      it('passes role to delete modal', () => {
+        expect(findDeleteModal().props('role')).toBe(mockCustomRoleToDelete);
       });
 
-      describe('when modal emits `delete` event', () => {
-        beforeEach(() => {
-          findDeleteModal().vm.$emit('delete');
-        });
+      it('closes modal when modal emits close event', async () => {
+        findDeleteModal().vm.$emit('close');
+        await nextTick();
 
-        it('calls the delete role mutation', () => {
-          expect(deleteMutationSuccessHandler).toHaveBeenCalledWith({
-            input: {
-              id: mockCustomRoleToDelete.id,
-            },
-          });
-        });
-
-        it('renders the loader', () => {
-          expect(findLoadingIcon().exists()).toBe(true);
-          expect(findTable().exists()).toBe(false);
-        });
-
-        describe('when role is deleted successfully', () => {
-          beforeEach(async () => {
-            await waitForPromises();
-          });
-
-          it('renders toast', () => {
-            expect(mockToastShow).toHaveBeenCalledWith('Role successfully deleted.');
-          });
-
-          it('refetches roles', () => {
-            expect(groupRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
-          });
-
-          it('re-renders the table', () => {
-            expect(findLoadingIcon().exists()).toBe(false);
-            expect(findTable().exists()).toBe(true);
-          });
-        });
+        expect(findDeleteModal().props('role')).toBe(null);
       });
     });
-  });
 
-  describe('when there is a client error deleting the role', () => {
-    beforeEach(async () => {
-      createComponent({
-        deleteMutationHandler: jest.fn().mockResolvedValue({
-          data: {
-            memberRoleDelete: {
-              errors: ['Role is assigned to one or more group members'],
-            },
-          },
-        }),
+    describe('when modal finishes deleting a role', () => {
+      beforeEach(() => {
+        findDeleteModal().vm.$emit('deleted');
       });
 
-      await waitForPromises();
-    });
-
-    it('renders an error message', async () => {
-      findTable().vm.$emit('delete-role', mockCustomRoleToDelete);
-      findDeleteModal().vm.$emit('delete');
-
-      await waitForPromises();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to delete role. Role is assigned to one or more group members',
-      });
-    });
-  });
-
-  describe('when there is a server error deleting the role', () => {
-    beforeEach(async () => {
-      createComponent({
-        deleteMutationHandler: errorHandler,
+      it('shows toast', () => {
+        expect(mockToastShow).toHaveBeenCalledWith('Role successfully deleted.');
       });
 
-      await waitForPromises();
-    });
+      it('closes modal', () => {
+        expect(findDeleteModal().props('role')).toBe(null);
+      });
 
-    it('renders an error message', async () => {
-      findTable().vm.$emit('delete-role', mockCustomRoleToDelete);
-      findDeleteModal().vm.$emit('delete');
-
-      await waitForPromises();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Failed to delete role.',
+      it('refetches custom roles query', () => {
+        expect(groupRolesSuccessQueryHandler).toHaveBeenCalledTimes(2);
       });
     });
   });

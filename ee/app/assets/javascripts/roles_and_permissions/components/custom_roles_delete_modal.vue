@@ -1,30 +1,74 @@
 <script>
-import { GlModal } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
+import { GlModal, GlAlert } from '@gitlab/ui';
+import { __, s__, sprintf } from '~/locale';
+import deleteMemberRoleMutation from 'ee/roles_and_permissions/graphql/delete_member_role.mutation.graphql';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 
 export default {
-  name: 'CustomRolesDeleteModal',
-  i18n: {
-    title: s__('MemberRole|Delete custom role?'),
-    modalBody: s__(
-      'MemberRole|Are you sure you want to delete this custom role? Before you delete this custom role, make sure no group member has this role.',
-    ),
-  },
-  components: {
-    GlModal,
-  },
+  components: { GlModal, GlAlert },
   props: {
-    visible: {
-      type: Boolean,
-      required: true,
+    role: {
+      type: Object,
+      required: false,
+      default: null,
     },
   },
-  primaryActionProps: {
-    text: s__('MemberRole|Delete role'),
-    attributes: { variant: 'danger' },
+  data() {
+    return {
+      isDeletingRole: false,
+      errorMessage: null,
+    };
   },
-  cancelActionProps: {
-    text: __('Cancel'),
+  computed: {
+    primaryActionProps() {
+      return {
+        text: s__('MemberRole|Delete role'),
+        attributes: { variant: 'danger', loading: this.isDeletingRole },
+      };
+    },
+    cancelActionProps() {
+      return {
+        text: __('Cancel'),
+        attributes: { disabled: this.isDeletingRole },
+      };
+    },
+  },
+  methods: {
+    checkModalClose(e) {
+      // If the modal is trying to close due to user interaction but we're still deleting the role, don't close it.
+      if (e.trigger && this.isDeletingRole) {
+        e.preventDefault();
+      }
+    },
+    emitClose() {
+      this.$emit('close');
+      this.isDeletingRole = false;
+      this.errorMessage = null;
+    },
+    async deleteRole() {
+      try {
+        this.isDeletingRole = true;
+        this.errorMessage = null;
+
+        const { data } = await this.$apollo.mutate({
+          mutation: deleteMemberRoleMutation,
+          variables: { input: { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.role.id) } },
+        });
+
+        const error = data.memberRoleDelete.errors[0];
+
+        if (error) {
+          this.errorMessage = sprintf(s__('MemberRole|Failed to delete role. %{error}'), { error });
+          this.isDeletingRole = false;
+        } else {
+          this.$emit('deleted');
+        }
+      } catch (e) {
+        this.errorMessage = s__('MemberRole|Failed to delete role.');
+        this.isDeletingRole = false;
+      }
+    },
   },
 };
 </script>
@@ -32,14 +76,20 @@ export default {
 <template>
   <gl-modal
     modal-id="custom-roles-delete-modal"
-    :visible="visible"
-    :title="$options.i18n.title"
-    :action-primary="$options.primaryActionProps"
-    :action-cancel="$options.cancelActionProps"
+    :visible="Boolean(role)"
+    :title="s__('MemberRole|Delete custom role?')"
+    :action-primary="primaryActionProps"
+    :action-cancel="cancelActionProps"
+    no-focus-on-show
     size="sm"
-    @primary="$emit('delete')"
-    @hidden="$emit('cancel')"
+    @primary.prevent="deleteRole"
+    @hide="checkModalClose"
+    @hidden="emitClose"
   >
-    {{ $options.i18n.modalBody }}
+    {{ s__('MemberRole|Are you sure you want to delete this custom role?') }}
+
+    <gl-alert v-if="errorMessage" variant="danger" :dismissible="false" class="gl-mt-4">
+      {{ errorMessage }}
+    </gl-alert>
   </gl-modal>
 </template>
