@@ -36,7 +36,8 @@ RSpec.describe Llm::GitCommandService, feature_category: :source_code_management
         group.add_developer(user)
       end
 
-      it 'responds successfully with a VertexAI ServiceResponse' do
+      it 'responds successfully with a VertexAI ServiceResponse',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474714' do
         allow(::Gitlab::Llm::VertexAi::Client)
           .to receive_message_chain(:new, :chat)
           .and_return(service_response)
