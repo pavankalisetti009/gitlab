@@ -53,4 +53,11 @@ RSpec.describe Gitlab::Llm::Utils::AiFeaturesCatalogue, feature_category: :ai_ab
         .not_to include(false)
     end
   end
+
+  describe '#ga' do
+    it 'returns ga actions' do
+      expect(described_class.ga.values.pluck(:ga))
+        .not_to include(:experimental, :beta)
+    end
+  end
 end

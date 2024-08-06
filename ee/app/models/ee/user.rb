@@ -19,6 +19,7 @@ module EE
                                       timezone external otp_required_for_login].freeze
     GROUP_WITH_AI_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_AI_ENABLED_CACHE_KEY = 'group_with_ai_enabled'
+    GROUP_WITH_GA_AI_ENABLED_CACHE_KEY = 'group_with_ga_ai_enabled'
 
     GROUP_WITH_AI_CHAT_ENABLED_CACHE_PERIOD = 1.hour
     GROUP_WITH_AI_CHAT_ENABLED_CACHE_KEY = 'group_with_ai_chat_enabled'
@@ -277,11 +278,12 @@ module EE
 
       def clear_group_with_ai_available_cache(ids)
         cache_keys_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_ENABLED_CACHE_KEY] }
+        cache_keys_ga_ai_features = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY] }
         cache_keys_ai_chat = Array.wrap(ids).map { |id| ["users", id, GROUP_WITH_AI_CHAT_ENABLED_CACHE_KEY] }
         cache_keys_ai_chat_group_ids = Array.wrap(ids).map { |id| ["users", id, GROUP_IDS_WITH_AI_CHAT_ENABLED_CACHE_KEY] }
         cache_keys_requires_licensed_seat = Array.wrap(ids).map { |id| ["users", id, GROUP_REQUIRES_LICENSED_SEAT_FOR_CHAT_CACHE_KEY] }
 
-        cache_keys = cache_keys_ai_features + cache_keys_ai_chat + cache_keys_ai_chat_group_ids + cache_keys_requires_licensed_seat
+        cache_keys = cache_keys_ai_features + cache_keys_ga_ai_features + cache_keys_ai_chat + cache_keys_ai_chat_group_ids + cache_keys_requires_licensed_seat
         ::Gitlab::Instrumentation::RedisClusterValidator.allow_cross_slot_commands do
           Rails.cache.delete_multi(cache_keys)
         end
@@ -673,6 +675,21 @@ module EE
     def any_group_with_ai_available?
       Rails.cache.fetch(['users', id, GROUP_WITH_AI_ENABLED_CACHE_KEY], expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD) do
         member_namespaces.namespace_settings_with_ai_features_enabled.with_ai_supported_plan.any?
+      end
+    end
+
+    def any_group_with_ga_ai_available?(service_name)
+      Rails.cache.fetch(['users', id, GROUP_WITH_GA_AI_ENABLED_CACHE_KEY], expires_in: GROUP_WITH_AI_ENABLED_CACHE_PERIOD) do
+        groups = member_namespaces.with_ai_supported_plan
+        groups_that_require_licensed_seat = groups.select do |group|
+          ::Feature.enabled?(:duo_chat_requires_licensed_seat, group)
+        end
+
+        if groups.any? && groups_that_require_licensed_seat.any?
+          ::CloudConnector::AvailableServices.find_by_name(service_name).allowed_for?(self)
+        else
+          groups.any?
+        end
       end
     end
 
