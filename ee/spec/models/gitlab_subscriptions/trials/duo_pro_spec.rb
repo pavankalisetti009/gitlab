@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscription_management do
+  let_it_be(:namespace) { create(:group) }
+
   describe '.show_duo_pro_discover?' do
     subject { described_class.show_duo_pro_discover?(namespace, user) }
 
-    let_it_be(:namespace) { create(:group) }
     let_it_be(:user) { create(:user) }
     let_it_be(:add_on_purchase) do
       create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
@@ -21,19 +22,28 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
         namespace.add_owner(user)
       end
 
-      it { is_expected.to be_truthy }
+      it { is_expected.to be(true) }
+    end
+
+    context 'when on expired trial' do
+      before_all do
+        namespace.add_owner(user)
+        add_on_purchase.update!(expires_on: 1.day.ago)
+      end
+
+      it { is_expected.to be(true) }
     end
 
     context 'when namespace is not present' do
       let(:namespace) { nil }
 
-      it { is_expected.to be_falsey }
+      it { is_expected.to be(false) }
     end
 
     context 'when user is not present' do
       let(:user) { nil }
 
-      it { is_expected.to be_falsey }
+      it { is_expected.to be(false) }
     end
 
     context 'when the `subscriptions_trials` feature is not available' do
@@ -41,21 +51,63 @@ RSpec.describe GitlabSubscriptions::Trials::DuoPro, feature_category: :subscript
         stub_saas_features(subscriptions_trials: false)
       end
 
-      it { is_expected.to be_falsey }
+      it { is_expected.to be(false) }
     end
 
     context 'when namespace does not have an active duo pro trial' do
-      before do
-        add_on_purchase.update!(expires_on: 1.day.ago)
+      before_all do
+        namespace.add_owner(user)
+        add_on_purchase.update!(expires_on: 11.days.ago)
       end
 
-      it { is_expected.to be_falsey }
+      it { is_expected.to be(false) }
+    end
+  end
+
+  describe '.show_duo_usage_settings?' do
+    subject { described_class.show_duo_usage_settings?(namespace) }
+
+    context 'when active add_on' do
+      let_it_be(:add_on_purchase_on) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when on trial' do
+      let_it_be(:add_on_purchase_on) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when on expired trial' do
+      let_it_be(:add_on_purchase_on) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :expired_trial, namespace: namespace)
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when on trial expired 11 days ago' do
+      let_it_be(:add_on_purchase_on) do
+        create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :trial,
+          namespace: namespace,
+          expires_on: 11.days.ago
+        )
+      end
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when namespace does not have an add_on' do
+      it { is_expected.to be(false) }
     end
   end
 
   describe '.add_on_purchase_for_namespace' do
-    let_it_be(:namespace) { create(:group) }
-
     subject(:add_on_purchase_for_namespace) { described_class.add_on_purchase_for_namespace(namespace) }
 
     context 'when there is an add_on_purchase' do

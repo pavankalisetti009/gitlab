@@ -14,6 +14,17 @@ module GitlabSubscriptions
           ).show?
       end
 
+      def self.show_duo_usage_settings?(namespace)
+        add_on_purchase = GitlabSubscriptions::DuoPro.any_add_on_purchase_for_namespace(namespace)
+        return false unless add_on_purchase.present?
+
+        if add_on_purchase.trial?
+          GitlabSubscriptions::Trials::DuoProStatus.new(add_on_purchase: add_on_purchase).show?
+        else
+          add_on_purchase.active?
+        end
+      end
+
       def self.add_on_purchase_for_namespace(namespace)
         GitlabSubscriptions::NamespaceAddOnPurchasesFinder
           .new(namespace, add_on: :duo_pro, trial: true, only_active: false)
