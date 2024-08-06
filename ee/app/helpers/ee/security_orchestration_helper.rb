@@ -48,7 +48,6 @@ module EE::SecurityOrchestrationHelper
       max_active_scan_result_policies_reached: max_active_scan_result_policies_reached?(container).to_s,
       max_scan_result_policies_allowed: scan_result_policies_limit,
       max_scan_execution_policies_allowed: Security::ScanExecutionPolicy::POLICY_LIMIT,
-      custom_ci_toggle_enabled: custom_ci_toggle_enabled?(container).to_s,
       max_ci_component_publishing_policies_allowed: Security::CiComponentPublishingPolicy::POLICY_LIMIT,
       max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container).to_s
     }
@@ -75,11 +74,6 @@ module EE::SecurityOrchestrationHelper
     else
       Feature.enabled?(:pipeline_execution_policy_type, container)
     end
-  end
-
-  def custom_ci_toggle_enabled?(_container)
-    # TODO: Remove when code is removed from frontend: https://gitlab.com/gitlab-org/gitlab/-/issues/473243
-    false
   end
 
   def security_policies_path(container)

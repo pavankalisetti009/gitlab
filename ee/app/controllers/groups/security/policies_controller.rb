@@ -10,7 +10,6 @@ module Groups
       before_action :validate_policy_configuration, only: :edit
 
       before_action do
-        push_frontend_feature_flag(:compliance_pipeline_in_policies, group)
         push_frontend_feature_flag(:pipeline_execution_policy_type, group)
         push_frontend_feature_flag(:vulnerability_management_policy_type_group, group)
       end
