@@ -26,27 +26,24 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     let(:results) { described_class.new(user, query, limit_project_ids) }
     let(:map) { { 1 => 'test <span class="gl-font-weight-bold">highlight</span>' } }
 
-    where(:scope, :results_method, :results_response, :feature_flag, :flag_value, :expected) do
-      'projects'        | :projects       | ref(:proxy_response)      | nil | nil | ref(:map)
-      'milestones'      | :milestones     | ref(:proxy_response)      | nil | nil | ref(:map)
-      'notes'           | :notes          | ref(:proxy_response)      | nil | nil | ref(:map)
-      'issues'          | :issues         | ref(:proxy_response)      | :search_issue_refactor | false  | ref(:map)
-      'issues'          | :issues         | ref(:es_client_response)  | :search_issue_refactor | true   | ref(:map)
-      'issues'          | :issues         | ref(:es_empty_response)   | :search_issue_refactor | true   | {}
-      'merge_requests'  | :merge_requests | ref(:proxy_response)      | nil | nil | ref(:map)
-      'blobs'       | nil | nil | nil | nil | {}
-      'wiki_blobs'  | nil | nil | nil | nil | {}
-      'commits'     | nil | nil | nil | nil | {}
-      'epics'       | nil | nil | nil | nil | {}
-      'users'       | nil | nil | nil | nil | {}
-      'epics'       | nil | nil | nil | nil | {}
-      'unknown'     | nil | nil | nil | nil | {}
+    where(:scope, :results_method, :results_response, :expected) do
+      'projects'        | :projects       | ref(:proxy_response)      | ref(:map)
+      'milestones'      | :milestones     | ref(:proxy_response)      | ref(:map)
+      'notes'           | :notes          | ref(:proxy_response)      | ref(:map)
+      'issues'          | :issues         | ref(:es_client_response)  | ref(:map)
+      'issues'          | :issues         | ref(:es_empty_response)   | {}
+      'merge_requests'  | :merge_requests | ref(:proxy_response)      | ref(:map)
+      'blobs'       | nil | nil | {}
+      'wiki_blobs'  | nil | nil | {}
+      'commits'     | nil | nil | {}
+      'epics'       | nil | nil | {}
+      'users'       | nil | nil | {}
+      'epics'       | nil | nil | {}
+      'unknown'     | nil | nil | {}
     end
 
     with_them do
       it 'returns the expected highlight map' do
-        stub_feature_flags(feature_flag => flag_value) if feature_flag
-
         expect(results).to receive(results_method).and_return(results_response) if results_method
 
         expect(results.highlight_map(scope)).to eq(expected)
@@ -113,14 +110,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         end
 
         it_behaves_like 'loads expected aggregations'
-
-        context 'when search_issue_refactor flag is false' do
-          before do
-            stub_feature_flags(search_issue_refactor: false)
-          end
-
-          it_behaves_like 'loads expected aggregations'
-        end
       end
 
       context 'when feature flag is disabled for user' do
@@ -132,14 +121,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         end
 
         it_behaves_like 'loads expected aggregations'
-
-        context 'when search_issue_refactor flag is false' do
-          before do
-            stub_feature_flags(search_issue_refactor: false)
-          end
-
-          it_behaves_like 'loads expected aggregations'
-        end
       end
     end
   end
@@ -336,346 +317,328 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
   end
 
-  shared_examples 'searches for issues' do
-    describe 'issues', :elastic_delete_by_query do
-      let(:scope) { 'issues' }
-      let_it_be(:issue_1) do
-        create(:issue, project: project_1, title: 'Hello world, here I am!',
-          description: '20200623170000, see details in issue 287661', iid: 1)
-      end
+  describe 'issues', :elastic_delete_by_query do
+    let(:scope) { 'issues' }
+    let_it_be(:issue_1) do
+      create(:issue, project: project_1, title: 'Hello world, here I am!',
+        description: '20200623170000, see details in issue 287661', iid: 1)
+    end
 
-      let_it_be(:issue_2) do
-        create(:issue, project: project_1, title: 'Issue Two', description: 'Hello world, here I am!', iid: 2)
-      end
+    let_it_be(:issue_2) do
+      create(:issue, project: project_1, title: 'Issue Two', description: 'Hello world, here I am!', iid: 2)
+    end
 
-      let_it_be(:issue_3) { create(:issue, project: project_2, title: 'Issue Three', iid: 2) }
+    let_it_be(:issue_3) { create(:issue, project: project_2, title: 'Issue Three', iid: 2) }
+
+    before do
+      Elastic::ProcessInitialBookkeepingService.backfill_projects!(project_1, project_2)
+      ensure_elasticsearch_index!
+    end
+
+    it_behaves_like 'a paginated object', 'issues'
+
+    it 'lists found issues' do
+      results = described_class.new(user, query, limit_project_ids)
+      issues = results.objects('issues')
+
+      expect(issues).to contain_exactly(issue_1, issue_2)
+      expect(results.issues_count).to eq 2
+    end
+
+    it 'returns empty list when issues are not found' do
+      results = described_class.new(user, 'security', limit_project_ids)
+
+      expect(results.objects('issues')).to be_empty
+      expect(results.issues_count).to eq 0
+    end
+
+    it 'lists issue when search by a valid iid' do
+      results = described_class.new(user, '#2', limit_project_ids, public_and_internal_projects: false)
+      issues = results.objects('issues')
+
+      expect(issues).to contain_exactly(issue_2)
+      expect(results.issues_count).to eq 1
+    end
+
+    it 'can also find an issue by iid without the prefixed #' do
+      results = described_class.new(user, '2', limit_project_ids, public_and_internal_projects: false)
+      issues = results.objects('issues')
+
+      expect(issues).to contain_exactly(issue_2)
+      expect(results.issues_count).to eq 1
+    end
+
+    it 'finds the issue with an out of integer range number in its description without exception' do
+      results = described_class.new(user, '20200623170000', limit_project_ids, public_and_internal_projects: false)
+      issues = results.objects('issues')
+
+      expect(issues).to contain_exactly(issue_1)
+      expect(results.issues_count).to eq 1
+    end
+
+    it 'returns empty list when search by invalid iid' do
+      results = described_class.new(user, '#222', limit_project_ids)
+
+      expect(results.objects('issues')).to be_empty
+      expect(results.issues_count).to eq 0
+    end
+
+    it_behaves_like 'can search by title for miscellaneous cases', 'issues'
+
+    it 'executes count only queries' do
+      results = described_class.new(user, query, limit_project_ids)
+      expect(results).to receive(:issues).with(count_only: true).and_call_original
+
+      count = results.issues_count
+
+      expect(count).to eq(2)
+    end
+
+    describe 'filtering' do
+      let_it_be(:project) { create(:project, :public, developers: [user]) }
+      let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
+      let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
+      let_it_be(:confidential_result) { create(:issue, :confidential, project: project, title: 'foo confidential') }
+
+      let(:results) { described_class.new(user, 'foo', [project.id], filters: filters) }
 
       before do
-        Elastic::ProcessInitialBookkeepingService.backfill_projects!(project_1, project_2)
+        ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
         ensure_elasticsearch_index!
       end
 
-      it_behaves_like 'a paginated object', 'issues'
+      include_examples 'search results filtered by state'
+      include_examples 'search results filtered by confidential'
+      include_examples 'search results filtered by labels'
 
-      it 'lists found issues' do
-        results = described_class.new(user, query, limit_project_ids)
+      context 'for projects' do
+        let_it_be(:group) { create(:group) }
+        let_it_be(:unarchived_result) { create(:project, :public, group: group) }
+        let_it_be(:archived_result) { create(:project, :archived, :public, group: group) }
+
+        let(:scope) { 'projects' }
+        let(:results) { described_class.new(user, '*', [unarchived_result.id, archived_result.id], filters: filters) }
+
+        it_behaves_like 'search results filtered by archived' do
+          before do
+            ::Elastic::ProcessBookkeepingService.track!(unarchived_result)
+            ::Elastic::ProcessBookkeepingService.track!(archived_result)
+            ensure_elasticsearch_index!
+          end
+        end
+      end
+    end
+
+    describe 'ordering' do
+      let_it_be(:project) { create(:project, :public) }
+
+      let_it_be(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
+      let_it_be(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
+      let_it_be(:very_old_result) do
+        create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago)
+      end
+
+      let_it_be(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
+      let_it_be(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
+      let_it_be(:very_old_updated) do
+        create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago)
+      end
+
+      let_it_be(:less_popular_result) { create(:issue, project: project, title: 'less popular', upvotes_count: 10) }
+      let_it_be(:popular_result) { create(:issue, project: project, title: 'popular', upvotes_count: 100) }
+      let_it_be(:non_popular_result) { create(:issue, project: project, title: 'non popular', upvotes_count: 1) }
+
+      before do
+        ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
+        ensure_elasticsearch_index!
+      end
+
+      include_examples 'search results sorted' do
+        let(:results_created) { described_class.new(user, 'sorted', [project.id], sort: sort) }
+        let(:results_updated) { described_class.new(user, 'updated', [project.id], sort: sort) }
+      end
+
+      include_examples 'search results sorted by popularity' do
+        let(:results_popular) { described_class.new(user, 'popular', [project.id], sort: sort) }
+      end
+    end
+  end
+
+  describe 'confidential issues', :elastic_delete_by_query do
+    let_it_be(:project_3) { create(:project, :public) }
+    let_it_be(:project_4) { create(:project, :public) }
+    let_it_be(:limit_project_ids) { [project_1.id, project_2.id, project_3.id] }
+    let_it_be(:author) { create(:user) }
+    let_it_be(:assignee) { create(:user) }
+    let_it_be(:non_member) { create(:user) }
+    let_it_be(:member) { create(:user) }
+    let_it_be(:admin) { create(:admin) }
+    let_it_be(:issue) { create(:issue, project: project_1, title: 'Issue 1', iid: 1) }
+    let_it_be(:security_issue_1) do
+      create(:issue, :confidential, project: project_1, title: 'Security issue 1', author: author, iid: 2)
+    end
+
+    let_it_be(:security_issue_2) do
+      create(:issue, :confidential, title: 'Security issue 2',
+        project: project_1, assignees: [assignee], iid: 3)
+    end
+
+    let_it_be(:security_issue_3) do
+      create(:issue, :confidential, project: project_2, title: 'Security issue 3', author: author, iid: 1)
+    end
+
+    let_it_be(:security_issue_4) do
+      create(:issue, :confidential, project: project_3,
+        title: 'Security issue 4', assignees: [assignee], iid: 1)
+    end
+
+    let_it_be(:security_issue_5) do
+      create(:issue, :confidential, project: project_4, title: 'Security issue 5', iid: 1)
+    end
+
+    before do
+      ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project_1, project_2, project_3, project_4)
+      ensure_elasticsearch_index!
+    end
+
+    context 'when searching by term' do
+      let(:query) { 'issue' }
+
+      it 'does not list confidential issues for guests' do
+        results = described_class.new(nil, query, limit_project_ids)
         issues = results.objects('issues')
 
-        expect(issues).to contain_exactly(issue_1, issue_2)
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      it 'does not list confidential issues for non project members' do
+        results = described_class.new(non_member, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      it 'lists confidential issues for author' do
+        results = described_class.new(author, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue, security_issue_1, security_issue_3)
+        expect(results.issues_count).to eq 3
+      end
+
+      it 'lists confidential issues for assignee' do
+        results = described_class.new(assignee, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue, security_issue_2, security_issue_4)
+        expect(results.issues_count).to eq 3
+      end
+
+      it 'lists confidential issues for project members' do
+        project_1.add_developer(member)
+        project_2.add_developer(member)
+
+        results = described_class.new(member, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue, security_issue_1, security_issue_2, security_issue_3)
+        expect(results.issues_count).to eq 4
+      end
+
+      context 'for admin users' do
+        context 'when admin mode enabled', :enable_admin_mode do
+          it 'lists all issues' do
+            results = described_class.new(admin, query, limit_project_ids)
+            issues = results.objects('issues')
+
+            expect(issues).to contain_exactly(issue, security_issue_1,
+              security_issue_2, security_issue_3, security_issue_4, security_issue_5)
+            expect(results.issues_count).to eq 6
+          end
+        end
+
+        context 'when admin mode disabled' do
+          it 'does not list confidential issues' do
+            results = described_class.new(admin, query, limit_project_ids)
+            issues = results.objects('issues')
+
+            expect(issues).to contain_exactly(issue)
+            expect(results.issues_count).to eq 1
+          end
+        end
+      end
+    end
+
+    context 'when searching by iid' do
+      let(:query) { '#1' }
+
+      it 'does not list confidential issues for guests' do
+        results = described_class.new(nil, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      it 'does not list confidential issues for non project members' do
+        results = described_class.new(non_member, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue)
+        expect(results.issues_count).to eq 1
+      end
+
+      it 'lists confidential issues for author' do
+        results = described_class.new(author, query, limit_project_ids)
+        issues = results.objects('issues')
+
+        expect(issues).to contain_exactly(issue, security_issue_3)
         expect(results.issues_count).to eq 2
       end
 
-      it 'returns empty list when issues are not found' do
-        results = described_class.new(user, 'security', limit_project_ids)
-
-        expect(results.objects('issues')).to be_empty
-        expect(results.issues_count).to eq 0
-      end
-
-      it 'lists issue when search by a valid iid' do
-        results = described_class.new(user, '#2', limit_project_ids, public_and_internal_projects: false)
+      it 'lists confidential issues for assignee' do
+        results = described_class.new(assignee, query, limit_project_ids)
         issues = results.objects('issues')
 
-        expect(issues).to contain_exactly(issue_2)
-        expect(results.issues_count).to eq 1
+        expect(issues).to contain_exactly(issue, security_issue_4)
+        expect(results.issues_count).to eq 2
       end
 
-      it 'can also find an issue by iid without the prefixed #' do
-        results = described_class.new(user, '2', limit_project_ids, public_and_internal_projects: false)
+      it 'lists confidential issues for project members' do
+        project_2.add_developer(member)
+        project_3.add_developer(member)
+
+        results = described_class.new(member, query, limit_project_ids)
         issues = results.objects('issues')
 
-        expect(issues).to contain_exactly(issue_2)
-        expect(results.issues_count).to eq 1
+        expect(issues).to contain_exactly(issue, security_issue_3, security_issue_4)
+        expect(results.issues_count).to eq 3
       end
 
-      it 'finds the issue with an out of integer range number in its description without exception' do
-        results = described_class.new(user, '20200623170000', limit_project_ids, public_and_internal_projects: false)
-        issues = results.objects('issues')
+      context 'for admin users' do
+        context 'when admin mode enabled', :enable_admin_mode do
+          it 'lists all issues' do
+            results = described_class.new(admin, query, limit_project_ids)
+            issues = results.objects('issues')
 
-        expect(issues).to contain_exactly(issue_1)
-        expect(results.issues_count).to eq 1
-      end
-
-      it 'returns empty list when search by invalid iid' do
-        results = described_class.new(user, '#222', limit_project_ids)
-
-        expect(results.objects('issues')).to be_empty
-        expect(results.issues_count).to eq 0
-      end
-
-      it_behaves_like 'can search by title for miscellaneous cases', 'issues'
-
-      it 'executes count only queries' do
-        results = described_class.new(user, query, limit_project_ids)
-        expect(results).to receive(:issues).with(count_only: true).and_call_original
-
-        count = results.issues_count
-
-        expect(count).to eq(2)
-      end
-
-      describe 'filtering' do
-        let_it_be(:project) { create(:project, :public, developers: [user]) }
-        let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
-        let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
-        let_it_be(:confidential_result) { create(:issue, :confidential, project: project, title: 'foo confidential') }
-
-        let(:results) { described_class.new(user, 'foo', [project.id], filters: filters) }
-
-        before do
-          ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
-          ensure_elasticsearch_index!
-        end
-
-        include_examples 'search results filtered by state'
-        include_examples 'search results filtered by confidential'
-        include_examples 'search results filtered by labels'
-
-        context 'for projects' do
-          let_it_be(:group) { create(:group) }
-          let_it_be(:unarchived_result) { create(:project, :public, group: group) }
-          let_it_be(:archived_result) { create(:project, :archived, :public, group: group) }
-
-          let(:scope) { 'projects' }
-          let(:results) { described_class.new(user, '*', [unarchived_result.id, archived_result.id], filters: filters) }
-
-          it_behaves_like 'search results filtered by archived' do
-            before do
-              ::Elastic::ProcessBookkeepingService.track!(unarchived_result)
-              ::Elastic::ProcessBookkeepingService.track!(archived_result)
-              ensure_elasticsearch_index!
-            end
+            expect(issues).to contain_exactly(issue, security_issue_3, security_issue_4, security_issue_5)
+            expect(results.issues_count).to eq 4
           end
         end
-      end
 
-      describe 'ordering' do
-        let_it_be(:project) { create(:project, :public) }
+        context 'when admin mode disabled' do
+          it 'does not list confidential issues' do
+            results = described_class.new(admin, query, limit_project_ids)
+            issues = results.objects('issues')
 
-        let_it_be(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
-        let_it_be(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
-        let_it_be(:very_old_result) do
-          create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago)
-        end
-
-        let_it_be(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
-        let_it_be(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
-        let_it_be(:very_old_updated) do
-          create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago)
-        end
-
-        let_it_be(:less_popular_result) { create(:issue, project: project, title: 'less popular', upvotes_count: 10) }
-        let_it_be(:popular_result) { create(:issue, project: project, title: 'popular', upvotes_count: 100) }
-        let_it_be(:non_popular_result) { create(:issue, project: project, title: 'non popular', upvotes_count: 1) }
-
-        before do
-          ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project)
-          ensure_elasticsearch_index!
-        end
-
-        include_examples 'search results sorted' do
-          let(:results_created) { described_class.new(user, 'sorted', [project.id], sort: sort) }
-          let(:results_updated) { described_class.new(user, 'updated', [project.id], sort: sort) }
-        end
-
-        include_examples 'search results sorted by popularity' do
-          let(:results_popular) { described_class.new(user, 'popular', [project.id], sort: sort) }
-        end
-      end
-    end
-
-    describe 'confidential issues', :elastic_delete_by_query do
-      let_it_be(:project_3) { create(:project, :public) }
-      let_it_be(:project_4) { create(:project, :public) }
-      let_it_be(:limit_project_ids) { [project_1.id, project_2.id, project_3.id] }
-      let_it_be(:author) { create(:user) }
-      let_it_be(:assignee) { create(:user) }
-      let_it_be(:non_member) { create(:user) }
-      let_it_be(:member) { create(:user) }
-      let_it_be(:admin) { create(:admin) }
-      let_it_be(:issue) { create(:issue, project: project_1, title: 'Issue 1', iid: 1) }
-      let_it_be(:security_issue_1) do
-        create(:issue, :confidential, project: project_1, title: 'Security issue 1', author: author, iid: 2)
-      end
-
-      let_it_be(:security_issue_2) do
-        create(:issue, :confidential, title: 'Security issue 2',
-          project: project_1, assignees: [assignee], iid: 3)
-      end
-
-      let_it_be(:security_issue_3) do
-        create(:issue, :confidential, project: project_2, title: 'Security issue 3', author: author, iid: 1)
-      end
-
-      let_it_be(:security_issue_4) do
-        create(:issue, :confidential, project: project_3,
-          title: 'Security issue 4', assignees: [assignee], iid: 1)
-      end
-
-      let_it_be(:security_issue_5) do
-        create(:issue, :confidential, project: project_4, title: 'Security issue 5', iid: 1)
-      end
-
-      before do
-        ::Elastic::ProcessInitialBookkeepingService.backfill_projects!(project_1, project_2, project_3, project_4)
-        ensure_elasticsearch_index!
-      end
-
-      context 'when searching by term' do
-        let(:query) { 'issue' }
-
-        it 'does not list confidential issues for guests' do
-          results = described_class.new(nil, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue)
-          expect(results.issues_count).to eq 1
-        end
-
-        it 'does not list confidential issues for non project members' do
-          results = described_class.new(non_member, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue)
-          expect(results.issues_count).to eq 1
-        end
-
-        it 'lists confidential issues for author' do
-          results = described_class.new(author, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_1, security_issue_3)
-          expect(results.issues_count).to eq 3
-        end
-
-        it 'lists confidential issues for assignee' do
-          results = described_class.new(assignee, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_2, security_issue_4)
-          expect(results.issues_count).to eq 3
-        end
-
-        it 'lists confidential issues for project members' do
-          project_1.add_developer(member)
-          project_2.add_developer(member)
-
-          results = described_class.new(member, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_1, security_issue_2, security_issue_3)
-          expect(results.issues_count).to eq 4
-        end
-
-        context 'for admin users' do
-          context 'when admin mode enabled', :enable_admin_mode do
-            it 'lists all issues' do
-              results = described_class.new(admin, query, limit_project_ids)
-              issues = results.objects('issues')
-
-              expect(issues).to contain_exactly(issue, security_issue_1,
-                security_issue_2, security_issue_3, security_issue_4, security_issue_5)
-              expect(results.issues_count).to eq 6
-            end
-          end
-
-          context 'when admin mode disabled' do
-            it 'does not list confidential issues' do
-              results = described_class.new(admin, query, limit_project_ids)
-              issues = results.objects('issues')
-
-              expect(issues).to contain_exactly(issue)
-              expect(results.issues_count).to eq 1
-            end
-          end
-        end
-      end
-
-      context 'when searching by iid' do
-        let(:query) { '#1' }
-
-        it 'does not list confidential issues for guests' do
-          results = described_class.new(nil, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue)
-          expect(results.issues_count).to eq 1
-        end
-
-        it 'does not list confidential issues for non project members' do
-          results = described_class.new(non_member, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue)
-          expect(results.issues_count).to eq 1
-        end
-
-        it 'lists confidential issues for author' do
-          results = described_class.new(author, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_3)
-          expect(results.issues_count).to eq 2
-        end
-
-        it 'lists confidential issues for assignee' do
-          results = described_class.new(assignee, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_4)
-          expect(results.issues_count).to eq 2
-        end
-
-        it 'lists confidential issues for project members' do
-          project_2.add_developer(member)
-          project_3.add_developer(member)
-
-          results = described_class.new(member, query, limit_project_ids)
-          issues = results.objects('issues')
-
-          expect(issues).to contain_exactly(issue, security_issue_3, security_issue_4)
-          expect(results.issues_count).to eq 3
-        end
-
-        context 'for admin users' do
-          context 'when admin mode enabled', :enable_admin_mode do
-            it 'lists all issues' do
-              results = described_class.new(admin, query, limit_project_ids)
-              issues = results.objects('issues')
-
-              expect(issues).to contain_exactly(issue, security_issue_3, security_issue_4, security_issue_5)
-              expect(results.issues_count).to eq 4
-            end
-          end
-
-          context 'when admin mode disabled' do
-            it 'does not list confidential issues' do
-              results = described_class.new(admin, query, limit_project_ids)
-              issues = results.objects('issues')
-
-              expect(issues).to contain_exactly(issue)
-              expect(results.issues_count).to eq 1
-            end
+            expect(issues).to contain_exactly(issue)
+            expect(results.issues_count).to eq 1
           end
         end
       end
     end
-  end
-
-  context 'when search_issue_refactor ff is false' do
-    before do
-      stub_feature_flags(search_issue_refactor: false)
-    end
-
-    it_behaves_like 'searches for issues'
-  end
-
-  context 'when search_issue_refactor ff is true' do
-    before do
-      stub_feature_flags(search_issue_refactor: true)
-    end
-
-    it_behaves_like 'searches for issues'
   end
 
   describe 'notes', :elastic_delete_by_query do
@@ -1110,9 +1073,10 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       end
 
       before_all do
+        # the file cannot be ruby or it affects language filter specs
         project_1.repository.create_file(
           user,
-          'test.rb',
+          'test.java',
           "# a comment
 
           SOME_CONSTANT = 123
@@ -1698,28 +1662,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
       allow(results).to receive(:issues).and_return(response_mapper)
     end
 
-    context 'when search_issue_refactor feature flag is false' do
-      before do
-        stub_feature_flags(search_issue_refactor: false)
-      end
-
-      context 'for issues scope' do
-        let(:scope) { 'issues' }
-
-        it 'returns false' do
-          expect(results.failed?(scope)).to eq false
-        end
-      end
-
-      context 'for other scopes' do
-        let(:scope) { 'blobs' }
-
-        it 'returns false' do
-          expect(results.failed?(scope)).to eq false
-        end
-      end
-    end
-
     context 'for issues scope' do
       let(:scope) { 'issues' }
 
@@ -1743,28 +1685,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
 
     before do
       allow(results).to receive(:issues).and_return(response_mapper)
-    end
-
-    context 'when search_issue_refactor feature flag is false' do
-      before do
-        stub_feature_flags(search_issue_refactor: false)
-      end
-
-      context 'for issues scope' do
-        let(:scope) { 'issues' }
-
-        it 'returns nil' do
-          expect(results.error(scope)).to be_nil
-        end
-      end
-
-      context 'for other scopes' do
-        let(:scope) { 'blobs' }
-
-        it 'returns nil' do
-          expect(results.error(scope)).to be_nil
-        end
-      end
     end
 
     context 'for issues scope' do
