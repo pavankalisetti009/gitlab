@@ -23,6 +23,7 @@ import {
   AI_IMPACT_DASHBOARD,
 } from 'ee/analytics/dashboards/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import UsageOverviewBackgroundAggregationWarning from 'ee/analytics/dashboards/components/usage_overview_background_aggregation_warning.vue';
 import {
   FILE_ALREADY_EXISTS_SERVER_RESPONSE,
   NEW_DASHBOARD,
@@ -56,6 +57,7 @@ export default {
     GlEmptyState,
     GlSkeletonLoader,
     GlAlert,
+    UsageOverviewBackgroundAggregationWarning,
   },
   mixins: [InternalEvents.mixin(), glFeatureFlagsMixin()],
   inject: {
@@ -141,6 +143,14 @@ export default {
     },
     hasDashboardError() {
       return this.hasDashboardLoadError || this.invalidDashboardErrors.length > 0;
+    },
+    dashboardHasUsageOverviewPanel() {
+      return this.currentDashboard?.panels
+        .map(({ visualization: { slug } }) => slug)
+        .includes('usage_overview');
+    },
+    showEnableAggregationWarning() {
+      return this.dashboardHasUsageOverviewPanel && !this.overviewCountsAggregationEnabled;
     },
   },
   watch: {
@@ -399,10 +409,14 @@ export default {
         :show-anon-users-filter="showDashboardFilters"
         :changes-saved="changesSaved"
         :title-validation-error="titleValidationError"
-        :overview-counts-aggregation-enabled="overviewCountsAggregationEnabled"
         @save="saveDashboard"
         @title-input="validateDashboardTitle"
       >
+        <template #alert>
+          <div v-if="showEnableAggregationWarning" class="gl-mx-3">
+            <usage-overview-background-aggregation-warning />
+          </div>
+        </template>
         <template #panel="{ panel, filters, editing, deletePanel }">
           <analytics-dashboard-panel
             :title="panel.title"

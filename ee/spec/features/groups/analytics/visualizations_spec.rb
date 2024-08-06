@@ -58,16 +58,63 @@ RSpec.describe 'Analytics Dashboard Visualizations', :js, feature_category: :val
     before do
       stub_licensed_features(group_level_analytics_dashboard: true)
 
-      create_mock_usage_overview_metrics(project)
-
       sign_in(user)
-
-      visit_group_value_streams_dashboard(group)
     end
 
-    it_behaves_like 'renders usage overview metrics' do
-      let(:panel_title) { "#{group.name} group" }
-      let(:usage_overview_metrics) { expected_usage_overview_metrics }
+    context 'when background aggregation is disabled' do
+      context 'with data' do
+        before do
+          create_mock_usage_overview_metrics(project)
+
+          visit_group_value_streams_dashboard(group)
+        end
+
+        it_behaves_like 'renders usage overview metrics' do
+          let(:panel_title) { "#{group.name} group" }
+          let(:usage_overview_metrics) { expected_usage_overview_metrics }
+        end
+      end
+
+      context 'without data' do
+        before do
+          visit_group_value_streams_dashboard(group)
+        end
+
+        it_behaves_like 'renders usage overview metrics with empty values' do
+          let(:panel_title) { "#{group.name} group" }
+          let(:usage_overview_metrics) { expected_usage_overview_metrics_empty_values }
+        end
+      end
+    end
+
+    context 'when background aggregation is enabled' do
+      before do
+        create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
+      end
+
+      context 'with data' do
+        before do
+          create_mock_usage_overview_metrics(project)
+
+          visit_group_value_streams_dashboard(group)
+        end
+
+        it_behaves_like 'renders usage overview metrics' do
+          let(:panel_title) { "#{group.name} group" }
+          let(:usage_overview_metrics) { expected_usage_overview_metrics }
+        end
+      end
+
+      context 'without data' do
+        before do
+          visit_group_value_streams_dashboard(group)
+        end
+
+        it_behaves_like 'renders usage overview metrics with zero values' do
+          let(:panel_title) { "#{group.name} group" }
+          let(:usage_overview_metrics) { expected_usage_overview_metrics_zero_values }
+        end
+      end
     end
   end
 

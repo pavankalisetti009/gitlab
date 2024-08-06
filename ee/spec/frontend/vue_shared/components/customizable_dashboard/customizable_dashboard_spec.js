@@ -74,7 +74,6 @@ describe('CustomizableDashboard', () => {
           hasError: false,
           visualizations: [],
         },
-        overviewCountsAggregationEnabled: true,
         ...props,
       },
       stubs: {

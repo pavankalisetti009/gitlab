@@ -73,6 +73,7 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
 
         it_behaves_like 'VSD renders as an analytics dashboard'
         it_behaves_like 'renders link to the feedback survey'
+        it_behaves_like 'renders usage overview background aggregation not enabled alert'
       end
 
       context 'with valid custom configuration' do
@@ -128,6 +129,16 @@ RSpec.describe 'Analytics Dashboard', :js, feature_category: :value_stream_manag
           expect(page).to have_content(_('Something is wrong with your panel visualization configuration.'))
           expect(page).to have_link(text: 'troubleshooting documentation')
         end
+      end
+
+      context 'with usage overview background aggregation enabled' do
+        before do
+          create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
+
+          visit_group_value_streams_dashboard(group)
+        end
+
+        it_behaves_like 'does not render usage overview background aggregation not enabled alert'
       end
     end
   end

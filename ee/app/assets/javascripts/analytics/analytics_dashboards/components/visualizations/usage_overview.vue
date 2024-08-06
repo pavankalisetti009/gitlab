@@ -1,9 +1,13 @@
 <script>
 import { compact } from 'lodash';
 import { GlAvatar, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __, sprintf } from '~/locale';
 import dateFormat, { masks } from '~/lib/dateformat';
+import {
+  BACKGROUND_AGGREGATION_DOCS_LINK,
+  BACKGROUND_AGGREGATION_WARNING_TITLE,
+  ENABLE_BACKGROUND_AGGREGATION_WARNING_TEXT,
+} from 'ee/analytics/dashboards/constants';
 import SingleStat from './single_stat.vue';
 
 export default {
@@ -73,13 +77,9 @@ export default {
       'Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
     ),
     lastUpdated: s__('Analytics| Last updated: %{recordedAt}'),
-    backgroundAggregationWarningTitle: s__('DORA4Metrics|Background aggregation not enabled'),
-    description: s__(
-      'DORA4Metrics|To see usage overview, you must %{linkStart}enable background aggregation%{linkEnd}.',
-    ),
-    descriptionLink: helpPagePath('user/analytics/value_streams_dashboard.html', {
-      anchor: 'enable-or-disable-overview-background-aggregation',
-    }),
+    backgroundAggregationWarningTitle: BACKGROUND_AGGREGATION_WARNING_TITLE,
+    description: ENABLE_BACKGROUND_AGGREGATION_WARNING_TEXT,
+    descriptionLink: BACKGROUND_AGGREGATION_DOCS_LINK,
     backgroundAggregationNoData: __('No data available'),
   },
 };
