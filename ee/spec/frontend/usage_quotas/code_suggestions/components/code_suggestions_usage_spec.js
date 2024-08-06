@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -57,6 +57,8 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsSubtitle = () => wrapper.findByTestId('code-suggestions-subtitle');
   const findCodeSuggestionsTitle = () => wrapper.findByTestId('code-suggestions-title');
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
+  const findHealthCheckButton = () => wrapper.findByTestId('health-check-button');
+  const findHealthCheckProbes = () => wrapper.findByTestId('health-check-probes');
   const findSelfManagedAddOnEligibleUserList = () =>
     wrapper.findComponent(SelfManagedAddOnEligibleUserList);
   const findErrorAlert = () => wrapper.findByTestId('add-on-purchase-fetch-error');
@@ -72,6 +74,76 @@ describe('GitLab Duo Usage', () => {
 
     return waitForPromises();
   };
+
+  describe('Cloud Connector health status check', () => {
+    it('does not render the health check button and probes if feature flag is disabled', async () => {
+      createComponent({
+        handler: noAssignedAddonDataHandler,
+        provideProps: {
+          glFeatures: {
+            cloudConnectorStatus: false,
+          },
+        },
+      });
+      await waitForPromises();
+      expect(findHealthCheckButton().exists()).toBe(false);
+      expect(findHealthCheckProbes().exists()).toBe(false);
+    });
+
+    it('does not render the health check probes by default even if feature flag is enabled', async () => {
+      createComponent({
+        handler: noAssignedAddonDataHandler,
+        provideProps: {
+          glFeatures: {
+            cloudConnectorStatus: true,
+          },
+        },
+      });
+      await waitForPromises();
+      expect(findHealthCheckProbes().exists()).toBe(false);
+    });
+
+    it.each`
+      description   | isSaaS   | isStandalonePage | expected
+      ${'does'}     | ${true}  | ${true}          | ${true}
+      ${'does not'} | ${true}  | ${false}         | ${false}
+      ${'does not'} | ${false} | ${true}          | ${true}
+      ${'does not'} | ${false} | ${false}         | ${true}
+    `(
+      '$description render the health check button with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
+      async ({ isSaaS, isStandalonePage, expected } = {}) => {
+        createComponent({
+          handler: noAssignedAddonDataHandler,
+          provideProps: {
+            isStandalonePage,
+            isSaaS,
+            glFeatures: {
+              cloudConnectorStatus: true,
+            },
+          },
+        });
+        await waitForPromises();
+        expect(findHealthCheckButton().exists()).toBe(expected);
+      },
+    );
+
+    it('renders the health check probes once the button is clicked', async () => {
+      createComponent({
+        handler: noAssignedAddonDataHandler,
+        provideProps: {
+          isStandalonePage: true,
+          isSaaS: true,
+          glFeatures: {
+            cloudConnectorStatus: true,
+          },
+        },
+      });
+      await waitForPromises();
+      findHealthCheckButton().vm.$emit('click');
+      await nextTick();
+      expect(findHealthCheckProbes().exists()).toBe(true);
+    });
+  });
 
   describe('when no group id prop is provided', () => {
     beforeEach(() => {

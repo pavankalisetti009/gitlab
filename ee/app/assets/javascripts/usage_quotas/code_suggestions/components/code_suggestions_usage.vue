@@ -1,5 +1,6 @@
 <script>
-import { GlSkeletonLoader } from '@gitlab/ui';
+import { GlSkeletonLoader, GlButton } from '@gitlab/ui';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
@@ -10,6 +11,7 @@ import {
   DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
   DUO_PRO,
+  CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/saas_add_on_eligible_user_list.vue';
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
@@ -23,6 +25,7 @@ import ErrorAlert from 'ee/vue_shared/components/error_alert/error_alert.vue';
 import CodeSuggestionsInfoCard from './code_suggestions_info_card.vue';
 import CodeSuggestionsIntro from './code_suggestions_intro.vue';
 import CodeSuggestionsStatisticsCard from './code_suggestions_usage_statistics_card.vue';
+import HealthCheckList from './health_check_list.vue';
 
 export default {
   name: 'CodeSuggestionsUsage',
@@ -34,13 +37,20 @@ export default {
     CodeSuggestionsIntro,
     CodeSuggestionsStatisticsCard,
     GlSkeletonLoader,
+    HealthCheckList,
+    GlButton,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
+  i18n: {
+    CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT,
+  },
   data() {
     return {
       addOnPurchase: undefined,
       addOnPurchaseFetchError: undefined,
+      cloudConnectorStatus: null,
     };
   },
   computed: {
@@ -87,6 +97,12 @@ export default {
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
     },
+    statusCheckEnabled() {
+      return this.glFeatures.cloudConnectorStatus;
+    },
+    shouldShowHealthCheckStatus() {
+      return this.statusCheckEnabled && this.cloudConnectorStatus !== null;
+    },
   },
   apollo: {
     addOnPurchase: {
@@ -120,6 +136,9 @@ export default {
         },
       });
     },
+    runHealthCheck() {
+      this.cloudConnectorStatus = {};
+    },
   },
 };
 </script>
@@ -149,14 +168,27 @@ export default {
     </section>
     <template v-else>
       <section v-if="showTitleAndSubtitle">
-        <h1 data-testid="code-suggestions-title" class="page-title gl-font-size-h-display">
-          {{ codeSuggestionsTitle }}
-        </h1>
+        <header class="gl-flex gl-justify-between">
+          <h1 data-testid="code-suggestions-title" class="page-title gl-text-size-h-display">
+            {{ codeSuggestionsTitle }}
+          </h1>
+
+          <div v-if="statusCheckEnabled" class="gl-self-center">
+            <gl-button data-testid="health-check-button" @click="runHealthCheck">{{
+              $options.i18n.CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT
+            }}</gl-button>
+          </div>
+        </header>
 
         <p data-testid="code-suggestions-subtitle">
           {{ codeSuggestionsSubtitle }}
         </p>
       </section>
+      <health-check-list
+        v-if="shouldShowHealthCheckStatus"
+        :cloud-connector-status="cloudConnectorStatus"
+        data-testid="health-check-probes"
+      />
       <section v-if="hasCodeSuggestions">
         <section
           class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5 gl-bg-gray-10 gl-p-5"
