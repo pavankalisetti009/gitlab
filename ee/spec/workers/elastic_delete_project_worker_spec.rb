@@ -9,6 +9,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
   # these tests
   let_it_be(:user) { create(:admin) }
   let_it_be(:helper) { Gitlab::Elastic::Helper.default }
+  let_it_be(:work_item_index) { ::Search::Elastic::Types::WorkItem.index_name }
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:milestone) { create(:milestone, project: project) }
@@ -34,6 +35,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     expect(project.reload.index_status).not_to be_nil
     expect(Project.elastic_search('*', **search_options).records).to include(project)
     expect(Issue.elastic_search('*', **search_options).records).to include(issue)
+    expect(items_in_index(work_item_index)).to include(issue.id)
     expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
     expect(Note.elastic_search('*', **search_options).records).to include(note)
     expect(MergeRequest.elastic_search('*', **search_options).records).to include(merge_request)
@@ -41,6 +43,11 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     expect(Repository.find_commits_by_message_with_elastic('*').count).to be > 0
     expect(ProjectWiki.__elasticsearch__.elastic_search_as_wiki_page('*',
       options: { project_id: project.id })).not_to be_empty
+
+    expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+      task: :delete_project_associations,
+      project_id: project.id
+    }).once.and_call_original
 
     worker.perform(project.id, project.es_id)
 
@@ -58,6 +65,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
     # verify that entire main index is empty
     expect(helper.documents_count).to eq(0)
+    expect(items_in_index(work_item_index).count).to eq(0)
 
     expect(project.reload.index_status).to be_nil
   end
@@ -66,6 +74,10 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
     allow(::Gitlab::Elastic::Helper).to receive(:default).and_return(helper)
     allow(helper).to receive(:index_exists?).and_return(false)
 
+    expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+      task: :delete_project_associations,
+      project_id: 1
+    }).once
     expect(helper.client).to receive(:delete_by_query).with(a_hash_including(index: Project.index_name))
     expect(helper.client).to receive(:delete_by_query).with(a_hash_including(index: [helper.target_name]))
     expect(helper.client).to receive(:delete_by_query)
@@ -145,6 +157,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).records).to include(project)
       expect(Issue.elastic_search('*', **search_options).records).to include(issue)
+      expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
       expect(MergeRequest.elastic_search('*', **search_options).records).to include(merge_request)
@@ -152,6 +165,11 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(Repository.find_commits_by_message_with_elastic('*').count).to be > 0
       expect(ProjectWiki.__elasticsearch__.elastic_search_as_wiki_page('*',
         options: { project_id: project.id })).not_to be_empty
+
+      expect(::Search::Elastic::DeleteWorker).to receive(:perform_async).with({
+        task: :delete_project_associations,
+        project_id: project.id
+      }).once.and_call_original
 
       worker.perform(project.id, project.es_id, delete_project: false)
 
@@ -170,6 +188,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       # verify that entire main index is empty
       expect(helper.documents_count).to eq(0)
+      expect(items_in_index(work_item_index).count).to eq(0)
       expect(helper.documents_count(index_name: Project.index_name)).to eq(1)
 
       expect(project.reload.index_status).to be_nil
@@ -187,6 +206,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).records).to include(project)
       expect(Issue.elastic_search('*', **search_options).records).to include(issue)
+      expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
       expect(MergeRequest.elastic_search('*', **search_options).records).to include(merge_request)
@@ -197,6 +217,11 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
 
       expect(helper.client).to receive(:delete).with(a_hash_including(index: Project.index_name)).once.and_call_original
 
+      expect(::Search::Elastic::DeleteWorker).not_to receive(:perform_async).with({
+        task: :delete_project_associations,
+        project_id: project.id
+      })
+
       worker.perform(project.id, project.es_id, project_only: true)
 
       ensure_elasticsearch_index!
@@ -204,6 +229,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(project.reload.index_status).not_to be_nil
       expect(Project.elastic_search('*', **search_options).total_count).to eq(0)
       expect(Issue.elastic_search('*', **search_options).records).to include(issue)
+      expect(items_in_index(work_item_index)).to include(issue.id)
       expect(Milestone.elastic_search('*', **search_options).records).to include(milestone)
       expect(Note.elastic_search('*', **search_options).records).to include(note)
       expect(MergeRequest.elastic_search('*', **search_options).records).to include(merge_request)
@@ -211,7 +237,6 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
       expect(Repository.find_commits_by_message_with_elastic('*').count).to be > 0
       expect(ProjectWiki.__elasticsearch__.elastic_search_as_wiki_page('*',
         options: { project_id: project.id })).not_to be_empty
-
       expect(helper.documents_count(index_name: Project.index_name)).to eq(0)
     end
   end

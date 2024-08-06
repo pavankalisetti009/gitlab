@@ -3,9 +3,10 @@
 FactoryBot.define do
   factory(
     :ci_pipeline_execution_policy,
-    class: '::Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfigs::PipelineExecutionPolicy'
+    class: '::Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy'
   ) do
     pipeline factory: :ci_empty_pipeline
     strategy { :inject_ci }
+    skip_create
   end
 end

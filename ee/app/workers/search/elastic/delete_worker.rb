@@ -14,7 +14,7 @@ module Search
       idempotent!
 
       TASKS = {
-        project_transfer: ::Search::Elastic::Delete::ProjectTransferService
+        delete_project_associations: ::Search::Elastic::Delete::ProjectAssociationsService
       }.freeze
 
       def perform(options = {})
