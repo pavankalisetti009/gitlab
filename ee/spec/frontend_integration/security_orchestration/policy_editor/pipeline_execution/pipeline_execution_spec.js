@@ -20,7 +20,6 @@ describe('Policy Editor', () => {
       provide: {
         ...DEFAULT_PROVIDE,
         glFeatures: {
-          pipelineExecutionPolicyType: true,
           ...glFeatures,
         },
         ...provide,
@@ -34,7 +33,7 @@ describe('Policy Editor', () => {
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
 
-  describe('rendering with ff on', () => {
+  describe('rendering', () => {
     beforeEach(() => {
       createWrapper();
       findSelectPipelineExecutionPolicyButton().vm.$emit('click');
@@ -44,20 +43,6 @@ describe('Policy Editor', () => {
       expect(findEmptyState().exists()).toBe(false);
       expect(findActionSection().exists()).toBe(true);
       expect(findRuleSection().exists()).toBe(true);
-    });
-  });
-
-  describe('rendering with ff off', () => {
-    it('should not render type selector for pipeline execution policy', () => {
-      createWrapper({
-        provide: {
-          glFeatures: {
-            pipelineExecutionPolicyType: false,
-          },
-        },
-      });
-
-      expect(findSelectPipelineExecutionPolicyButton().exists()).toBe(false);
     });
   });
 });

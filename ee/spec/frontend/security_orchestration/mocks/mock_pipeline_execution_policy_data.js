@@ -95,6 +95,7 @@ export const mockGroupPipelineExecutionPolicy = {
     inherited: true,
     namespace: {
       __typename: 'Namespace',
+      id: '1',
       fullPath: 'parent-group-path',
       name: 'parent-group-name',
     },

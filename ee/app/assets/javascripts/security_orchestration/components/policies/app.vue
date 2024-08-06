@@ -3,7 +3,6 @@ import { s__ } from '~/locale';
 import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { createAlert } from '~/alert';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { getParameterByName } from '~/lib/utils/url_utility';
 import {
   extractSourceParameter,
@@ -18,7 +17,7 @@ import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project
 import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
-import { POLICY_TYPE_FILTER_OPTIONS, PIPELINE_EXECUTION_FILTER_OPTION } from './constants';
+import { POLICY_TYPE_FILTER_OPTIONS } from './constants';
 
 const NAMESPACE_QUERY_DICT = {
   scanExecution: {
@@ -50,7 +49,6 @@ export default {
     ListHeader,
     ListComponent,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: ['assignedPolicyProject', 'namespacePath', 'namespaceType'],
   apollo: {
     linkedSppItems: {
@@ -122,9 +120,6 @@ export default {
         return data?.namespace?.pipelineExecutionPolicies?.nodes ?? [];
       },
       error: createPolicyFetchError,
-      skip() {
-        return !this.pipelineExecutionPolicyEnabled;
-      },
     },
   },
   data() {
@@ -148,25 +143,15 @@ export default {
       return {
         [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: this.scanExecutionPolicies,
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: this.scanResultPolicies,
-        ...(this.pipelineExecutionPolicyEnabled
-          ? {
-              [PIPELINE_EXECUTION_FILTER_OPTION.PIPELINE_EXECUTION.value]:
-                this.pipelineExecutionPolicies,
-            }
-          : {}),
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: this.pipelineExecutionPolicies,
       };
     },
     isLoadingPolicies() {
       return (
         this.$apollo.queries.scanExecutionPolicies.loading ||
         this.$apollo.queries.scanResultPolicies.loading ||
-        (this.pipelineExecutionPolicyEnabled
-          ? this.$apollo.queries.pipelineExecutionPolicies.loading
-          : false)
+        this.$apollo.queries.pipelineExecutionPolicies.loading
       );
-    },
-    pipelineExecutionPolicyEnabled() {
-      return this.glFeatures.pipelineExecutionPolicyType;
     },
   },
   methods: {

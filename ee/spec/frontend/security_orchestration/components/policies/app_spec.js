@@ -95,13 +95,8 @@ describe('App', () => {
   });
 
   describe('loading', () => {
-    it('renders the policies list correctly when pipelineExecutionPolicyType is false', () => {
+    it('renders the policies list correctly', () => {
       createWrapper();
-      expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
-    });
-
-    it('renders the policies list correctly when pipelineExecutionPolicyType is true', () => {
-      createWrapper({ provide: { glFeatures: { pipelineExecutionPolicyType: true } } });
       expect(findPoliciesList().props('isLoadingPolicies')).toBe(true);
     });
   });
@@ -124,6 +119,8 @@ describe('App', () => {
       expect(findPoliciesList().props('policiesByType')).toEqual({
         [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: mockScanExecutionPoliciesResponse,
         [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: mockScanResultPoliciesResponse,
+        [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]:
+          mockPipelineExecutionPoliciesResponse,
       });
     });
 
@@ -150,9 +147,10 @@ describe('App', () => {
     });
 
     it.each`
-      type                | groupHandler                    | projectHandler
-      ${'scan execution'} | ${'groupScanExecutionPolicies'} | ${'projectScanExecutionPolicies'}
-      ${'scan result'}    | ${'groupScanResultPolicies'}    | ${'projectScanResultPolicies'}
+      type                    | groupHandler                        | projectHandler
+      ${'scan execution'}     | ${'groupScanExecutionPolicies'}     | ${'projectScanExecutionPolicies'}
+      ${'scan result'}        | ${'groupScanResultPolicies'}        | ${'projectScanResultPolicies'}
+      ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
     `(
       'fetches project-level $type policies instead of group-level',
       ({ groupHandler, projectHandler }) => {
@@ -163,44 +161,6 @@ describe('App', () => {
         });
       },
     );
-
-    describe('when pipelineExecutionPolicyEnabled is false', () => {
-      it.each`
-        type                    | groupHandler                        | projectHandler
-        ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
-      `(
-        'does not fetch group-level or project-level $type policies',
-        ({ groupHandler, projectHandler }) => {
-          expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
-          expect(requestHandlers[groupHandler]).not.toHaveBeenCalledWith();
-        },
-      );
-    });
-
-    describe('when pipelineExecutionPolicyEnabled is true', () => {
-      beforeEach(async () => {
-        gon.features = { pipelineExecutionPolicyType: true };
-
-        createWrapper({
-          provide: { glFeatures: { pipelineExecutionPolicyType: true } },
-        });
-        await waitForPromises();
-      });
-
-      it.each`
-        type                    | groupHandler                        | projectHandler
-        ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
-      `(
-        'fetches project-level $type policies instead of group-level',
-        ({ groupHandler, projectHandler }) => {
-          expect(requestHandlers[groupHandler]).not.toHaveBeenCalled();
-          expect(requestHandlers[projectHandler]).toHaveBeenCalledWith({
-            fullPath: namespacePath,
-            relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-          });
-        },
-      );
-    });
   });
 
   it('renders correctly when a policy project is linked', async () => {
@@ -211,70 +171,30 @@ describe('App', () => {
   });
 
   describe('group-level policies', () => {
-    it('does not fetch linked SPP items', async () => {
+    beforeEach(async () => {
       createWrapper({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
       await waitForPromises();
+    });
+
+    it('does not fetch linked SPP items', () => {
       expect(linkedSppItemsResponseSpy).toHaveBeenCalledTimes(0);
     });
 
-    describe('when pipelineExecutionPolicyEnabled is false', () => {
-      beforeEach(async () => {
-        createWrapper({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
-        await waitForPromises();
-      });
-
-      it.each`
-        type                | groupHandler                    | projectHandler
-        ${'scan execution'} | ${'groupScanExecutionPolicies'} | ${'projectScanExecutionPolicies'}
-        ${'scan result'}    | ${'groupScanResultPolicies'}    | ${'projectScanResultPolicies'}
-      `(
-        'fetches group-level $type policies instead of project-level',
-        ({ groupHandler, projectHandler }) => {
-          expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
-          expect(requestHandlers[groupHandler]).toHaveBeenCalledWith({
-            fullPath: namespacePath,
-            relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-          });
-        },
-      );
-
-      it.each`
-        type                    | groupHandler                        | projectHandler
-        ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
-      `(
-        'fetches group-level $type policies instead of project-level',
-        ({ groupHandler, projectHandler }) => {
-          expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
-          expect(requestHandlers[groupHandler]).not.toHaveBeenCalledWith();
-        },
-      );
-    });
-
-    describe('when pipelineExecutionPolicyEnabled is true', () => {
-      beforeEach(async () => {
-        createWrapper({
-          provide: {
-            namespaceType: NAMESPACE_TYPES.GROUP,
-            glFeatures: { pipelineExecutionPolicyType: true },
-          },
+    it.each`
+      type                    | groupHandler                        | projectHandler
+      ${'scan execution'}     | ${'groupScanExecutionPolicies'}     | ${'projectScanExecutionPolicies'}
+      ${'scan result'}        | ${'groupScanResultPolicies'}        | ${'projectScanResultPolicies'}
+      ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
+    `(
+      'fetches group-level $type policies instead of project-level',
+      ({ groupHandler, projectHandler }) => {
+        expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
+        expect(requestHandlers[groupHandler]).toHaveBeenCalledWith({
+          fullPath: namespacePath,
+          relationship: POLICY_SOURCE_OPTIONS.ALL.value,
         });
-        await waitForPromises();
-      });
-
-      it.each`
-        type                    | groupHandler                        | projectHandler
-        ${'pipeline execution'} | ${'groupPipelineExecutionPolicies'} | ${'projectPipelineExecutionPolicies'}
-      `(
-        'fetches group-level $type policies instead of project-level',
-        ({ groupHandler, projectHandler }) => {
-          expect(requestHandlers[projectHandler]).not.toHaveBeenCalled();
-          expect(requestHandlers[groupHandler]).toHaveBeenCalledWith({
-            fullPath: namespacePath,
-            relationship: POLICY_SOURCE_OPTIONS.ALL.value,
-          });
-        },
-      );
-    });
+      },
+    );
   });
 
   describe('invalid policies', () => {

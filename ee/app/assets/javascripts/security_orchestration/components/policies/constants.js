@@ -29,9 +29,6 @@ export const POLICY_TYPE_FILTER_OPTIONS = {
     value: 'APPROVAL',
     text: s__('SecurityOrchestration|Merge request approval'),
   },
-};
-
-export const PIPELINE_EXECUTION_FILTER_OPTION = {
   PIPELINE_EXECUTION: {
     value: 'PIPELINE_EXECUTION',
     text: PIPELINE_EXECUTION_POLICY_TYPE_HEADER,

@@ -9,6 +9,7 @@ import {
   groupScanResultPolicies,
   projectPipelineResultPolicies,
   groupPipelineResultPolicies,
+  mockLinkedSppItemsResponse,
 } from 'ee_jest/security_orchestration/mocks/mock_apollo';
 import { mockScanExecutionPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from 'ee_jest/security_orchestration/mocks/mock_scan_result_policy_data';
@@ -22,6 +23,7 @@ import projectScanResultPoliciesQuery from 'ee/security_orchestration/graphql/qu
 import groupScanResultPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_scan_result_policies.query.graphql';
 import projectPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/project_pipeline_execution_policies.query.graphql';
 import groupPipelineExecutionPoliciesQuery from 'ee/security_orchestration/graphql/queries/group_pipeline_execution_policies.query.graphql';
+import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { DEFAULT_PROVIDE } from './mocks';
 
@@ -39,6 +41,7 @@ const projectPipelineExecutionPoliciesSpy = projectPipelineResultPolicies(
 const groupPipelineExecutionPoliciesSpy = groupPipelineResultPolicies(
   mockPipelineExecutionPoliciesResponse,
 );
+const linkedSppItemsResponseSpy = mockLinkedSppItemsResponse();
 
 const defaultRequestHandlers = {
   projectScanExecutionPolicies: projectScanExecutionPoliciesSpy,
@@ -47,6 +50,7 @@ const defaultRequestHandlers = {
   groupScanResultPolicies: groupScanResultPoliciesSpy,
   projectPipelineExecutionPolicies: projectPipelineExecutionPoliciesSpy,
   groupPipelineExecutionPolicies: groupPipelineExecutionPoliciesSpy,
+  linkedSppItemsResponse: linkedSppItemsResponseSpy,
 };
 
 describe('Policies List', () => {
@@ -74,13 +78,13 @@ describe('Policies List', () => {
         [groupScanResultPoliciesQuery, requestHandlers.groupScanResultPolicies],
         [projectPipelineExecutionPoliciesQuery, requestHandlers.projectPipelineExecutionPolicies],
         [groupPipelineExecutionPoliciesQuery, requestHandlers.groupPipelineExecutionPolicies],
+        [getSppLinkedProjectsNamespaces, requestHandlers.linkedSppItemsResponse],
       ]),
     });
   };
 
-  describe('project level with pipelineExecutionPolicyType feature flag off', () => {
+  describe('project level', () => {
     beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: false };
       createWrapper();
     });
 
@@ -89,35 +93,7 @@ describe('Policies List', () => {
       expect(findPoliciesList().exists()).toBe(true);
     });
 
-    it('fetches correct policies on project level', () => {
-      expect(requestHandlers.groupScanResultPolicies).not.toHaveBeenCalled();
-      expect(requestHandlers.groupScanExecutionPolicies).not.toHaveBeenCalled();
-      expect(requestHandlers.groupPipelineExecutionPolicies).not.toHaveBeenCalled();
-
-      expect(requestHandlers.projectScanResultPolicies).toHaveBeenCalled();
-      expect(requestHandlers.projectScanExecutionPolicies).toHaveBeenCalled();
-      expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('project level with pipelineExecutionPolicyType feature flag on', () => {
-    beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: true };
-      createWrapper({
-        provide: {
-          glFeatures: {
-            pipelineExecutionPolicyType: true,
-          },
-        },
-      });
-    });
-
-    it('renders the page correctly with ff enabled', () => {
-      expect(findPoliciesHeader().exists()).toBe(true);
-      expect(findPoliciesList().exists()).toBe(true);
-    });
-
-    it('fetches correct policies on project level with ff enabled', () => {
+    it('fetches correct policies', () => {
       expect(requestHandlers.groupScanResultPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.groupScanExecutionPolicies).not.toHaveBeenCalled();
       expect(requestHandlers.groupPipelineExecutionPolicies).not.toHaveBeenCalled();
@@ -128,36 +104,11 @@ describe('Policies List', () => {
     });
   });
 
-  describe('group level with pipelineExecutionPolicyType feature flag off', () => {
+  describe('group level', () => {
     beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: false };
       createWrapper({
         provide: {
           namespaceType: NAMESPACE_TYPES.GROUP,
-        },
-      });
-    });
-
-    it('fetches correct policies', () => {
-      expect(requestHandlers.groupScanResultPolicies).toHaveBeenCalled();
-      expect(requestHandlers.groupScanExecutionPolicies).toHaveBeenCalled();
-      expect(requestHandlers.groupPipelineExecutionPolicies).not.toHaveBeenCalled();
-
-      expect(requestHandlers.projectScanResultPolicies).not.toHaveBeenCalled();
-      expect(requestHandlers.projectScanExecutionPolicies).not.toHaveBeenCalled();
-      expect(requestHandlers.projectPipelineExecutionPolicies).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('group level with pipelineExecutionPolicyType feature flag on', () => {
-    beforeEach(() => {
-      window.gon.features = { pipelineExecutionPolicyType: true };
-      createWrapper({
-        provide: {
-          namespaceType: NAMESPACE_TYPES.GROUP,
-          glFeatures: {
-            pipelineExecutionPolicyType: true,
-          },
         },
       });
     });
