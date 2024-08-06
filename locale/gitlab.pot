@@ -35420,6 +35420,9 @@ msgstr ""
 msgid "Not permitted to destroy framework"
 msgstr ""
 
+msgid "Not permitted to reset user feed token"
+msgstr ""
+
 msgid "Not ready yet. Try again later."
 msgstr ""
 
@@ -40909,6 +40912,9 @@ msgid "Profiles|Expired"
 msgstr ""
 
 msgid "Profiles|Expires"
+msgstr ""
+
+msgid "Profiles|Feed token could not be reset"
 msgstr ""
 
 msgid "Profiles|Feed token was successfully reset"
