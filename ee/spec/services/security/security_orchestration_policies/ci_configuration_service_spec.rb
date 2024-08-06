@@ -6,15 +6,23 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
   feature_category: :security_policy_management do
   describe '#execute' do
     let_it_be(:project) { create(:project) }
+    let_it_be(:template_cache) { Security::SecurityOrchestrationPolicies::TemplateCacheService.new }
     let(:action) { { scan: scan_type } }
     let(:ci_variables) { { KEY: 'value' } }
     let(:context) { 'context' }
     let(:index) { 0 }
     let(:opts) do
-      { allow_restricted_variables_at_policy_level: true }
+      {
+        allow_restricted_variables_at_policy_level: true,
+        template_cache: template_cache
+      }
     end
 
-    subject(:execute_service) { described_class.new(project).execute(action, ci_variables, context, index) }
+    subject(:execute_service) do
+      described_class
+        .new(project: project, params: { template_cache: template_cache })
+        .execute(action, ci_variables, context, index)
+    end
 
     shared_examples_for 'a template scan' do
       it 'configures a template scan' do
@@ -37,7 +45,10 @@ RSpec.describe Security::SecurityOrchestrationPolicies::CiConfigurationService,
         end
 
         let(:opts) do
-          { allow_restricted_variables_at_policy_level: false }
+          {
+            allow_restricted_variables_at_policy_level: false,
+            template_cache: template_cache
+          }
         end
 
         it 'configures a template scan with disabled flag' do
