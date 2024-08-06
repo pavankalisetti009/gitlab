@@ -909,7 +909,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
       end
 
       context 'for SaaS', :saas do
-        where(:flag_enabled, :free_access, :any_group_with_ai_available, :allowed_for, :enabled_for_user) do
+        where(:flag_enabled, :free_access, :any_group_with_ga_ai_available, :allowed_for, :enabled_for_user) do
           false | false | false | false | be_disallowed(:access_generate_commit_message)
           true  | false | false | false | be_disallowed(:access_generate_commit_message)
           true  | true  | false | false | be_disallowed(:access_generate_commit_message)
@@ -928,8 +928,8 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
                                                           .and_return(service_data)
             allow(service_data).to receive(:allowed_for?).with(current_user).and_return(allowed_for)
             allow(service_data).to receive(:free_access?).and_return(free_access)
-            allow(current_user).to receive(:any_group_with_ai_available?)
-                                     .and_return(any_group_with_ai_available)
+            allow(current_user).to receive(:any_group_with_ga_ai_available?)
+                                     .and_return(any_group_with_ga_ai_available)
           end
 
           it { is_expected.to enabled_for_user }

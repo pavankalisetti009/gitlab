@@ -224,7 +224,7 @@ module EE
         next false unless generate_commit_message_data.free_access?
 
         if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          user.any_group_with_ai_available?
+          @user.any_group_with_ga_ai_available?(:generate_commit_message)
         else
           ::License.feature_available?(:generate_commit_message)
         end
