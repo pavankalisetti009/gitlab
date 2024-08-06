@@ -90,10 +90,22 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
 
           it_behaves_like 'does not render contributor count'
 
+          it_behaves_like 'renders usage overview background aggregation not enabled alert'
+
           it 'does not render dora performers score panel' do
             # Currently does not support project namespaces
             expect(page).not_to have_selector("[data-testid='panel-dora-performers-score']")
           end
+        end
+
+        context 'with usage overview background aggregation enabled' do
+          before do
+            create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
+
+            visit_project_value_streams_dashboard(project)
+          end
+
+          it_behaves_like 'does not render usage overview background aggregation not enabled alert'
         end
 
         context 'for comparison table' do
@@ -109,15 +121,60 @@ RSpec.describe 'Analytics Dashboard - Value Streams Dashboard', :js, feature_cat
         end
 
         context 'for usage overview panel' do
-          before do
-            create_mock_usage_overview_metrics(project)
+          context 'when background aggregation is disabled' do
+            context 'with data' do
+              before do
+                create_mock_usage_overview_metrics(project)
 
-            visit_project_value_streams_dashboard(project)
+                visit_project_value_streams_dashboard(project)
+              end
+
+              it_behaves_like 'renders usage overview metrics' do
+                let(:panel_title) { "#{project.name} project" }
+                let(:usage_overview_metrics) { expected_usage_overview_metrics(is_project: true) }
+              end
+            end
+
+            context 'without data' do
+              before do
+                visit_project_value_streams_dashboard(project)
+              end
+
+              it_behaves_like 'renders usage overview metrics with empty values' do
+                let(:panel_title) { "#{project.name} project" }
+                let(:usage_overview_metrics) { expected_usage_overview_metrics_empty_values(is_project: true) }
+              end
+            end
           end
 
-          it_behaves_like 'renders usage overview metrics' do
-            let(:panel_title) { "#{project.name} project" }
-            let(:usage_overview_metrics) { expected_usage_overview_metrics(is_project: true) }
+          context 'when background aggregation is enabled' do
+            before do
+              create(:value_stream_dashboard_aggregation, namespace: group, enabled: true)
+            end
+
+            context 'with data' do
+              before do
+                create_mock_usage_overview_metrics(project)
+
+                visit_project_value_streams_dashboard(project)
+              end
+
+              it_behaves_like 'renders usage overview metrics' do
+                let(:panel_title) { "#{project.name} project" }
+                let(:usage_overview_metrics) { expected_usage_overview_metrics(is_project: true) }
+              end
+            end
+
+            context 'without data' do
+              before do
+                visit_project_value_streams_dashboard(project)
+              end
+
+              it_behaves_like 'renders usage overview metrics with zero values' do
+                let(:panel_title) { "#{project.name} project" }
+                let(:usage_overview_metrics) { expected_usage_overview_metrics_zero_values(is_project: true) }
+              end
+            end
           end
         end
       end

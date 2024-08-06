@@ -154,8 +154,12 @@ export const ALERT_TEXT = s__(
   'DORA4Metrics|To help us improve the Value Stream Management Dashboard, please share feedback about your experience in this %{linkStart}survey%{linkEnd}.',
 );
 
+export const BACKGROUND_AGGREGATION_WARNING_TITLE = s__(
+  'DORA4Metrics|Background aggregation not enabled',
+);
+
 export const ENABLE_BACKGROUND_AGGREGATION_WARNING_TEXT = s__(
-  'DORA4Metrics|To see usage overview, you must %{linkStart}enable background aggregation%{linkEnd}',
+  'DORA4Metrics|To see usage overview, you must %{linkStart}enable background aggregation%{linkEnd}.',
 );
 
 export const BACKGROUND_AGGREGATION_DOCS_LINK = helpPagePath(
