@@ -120,8 +120,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_execution_policies_allowed: 5,
           max_pipeline_execution_policies_allowed: 5,
           max_ci_component_publishing_policies_allowed: 5,
-          max_ci_component_publishing_policies_reached: 'false',
-          custom_ci_toggle_enabled: 'false'
+          max_ci_component_publishing_policies_reached: 'false'
         }
       end
 
@@ -174,10 +173,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           }.to_json))
         end
       end
-
-      describe 'custom_ci_toggle_enabled' do
-        it { is_expected.to match(base_data.merge(custom_ci_toggle_enabled: 'false')) }
-      end
     end
 
     context 'for namespace' do
@@ -213,8 +208,7 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_scan_execution_policies_allowed: 5,
           max_pipeline_execution_policies_allowed: 5,
           max_ci_component_publishing_policies_allowed: 5,
-          max_ci_component_publishing_policies_reached: 'false',
-          custom_ci_toggle_enabled: 'false'
+          max_ci_component_publishing_policies_reached: 'false'
         }
       end
 
