@@ -6,6 +6,10 @@ RSpec.describe 'Setting Project Container Scanning for Registry', feature_catego
   using RSpec::Parameterized::TableSyntax
   include GraphqlHelpers
 
+  before do
+    stub_licensed_features(container_scanning_for_registry: true)
+  end
+
   let(:current_user) { create(:user) }
   let(:security_setting) { create(:project_security_setting, container_scanning_for_registry_enabled: value_before) }
   let(:mutation_name) { :set_container_scanning_for_registry }

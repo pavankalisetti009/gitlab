@@ -501,7 +501,6 @@ module EE
         enable :admin_push_rules
         enable :manage_deploy_tokens
         enable :read_runner_usage
-        enable :enable_container_scanning_for_registry
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -882,6 +881,13 @@ module EE
 
       rule { pre_receive_secret_detection_available & can?(:maintainer_access) }.policy do
         enable :enable_pre_receive_secret_detection
+      end
+
+      condition(:container_scanning_for_registry_available) do
+        @subject.licensed_feature_available?(:container_scanning_for_registry)
+      end
+      rule { container_scanning_for_registry_available & can?(:maintainer_access) }.policy do
+        enable :enable_container_scanning_for_registry
       end
 
       condition(:duo_workflow_available) do
