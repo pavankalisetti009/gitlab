@@ -3,6 +3,7 @@ import { GlSkeletonLoader, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
+import getAddOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import {
   ADD_ON_CODE_SUGGESTIONS,
@@ -48,14 +49,25 @@ export default {
   },
   data() {
     return {
-      addOnPurchase: undefined,
+      addOnPurchaseData: undefined,
       addOnPurchaseFetchError: undefined,
+      deprecatedAddOnPurchaseData: undefined,
+      useDeprecatedAddOnPurchaseQuery: false,
       cloudConnectorStatus: null,
     };
   },
   computed: {
+    addOnPurchase() {
+      return this.addOnPurchaseData ?? this.deprecatedAddOnPurchaseData;
+    },
     queryVariables() {
       return {
+        namespaceId: this.groupGraphQLId,
+      };
+    },
+    deprecatedQueryVariables() {
+      return {
+        addOnType: ADD_ON_CODE_SUGGESTIONS,
         namespaceId: this.groupGraphQLId,
       };
     },
@@ -72,7 +84,10 @@ export default {
       return this.totalValue !== null && this.totalValue > 0;
     },
     isLoading() {
-      return this.$apollo.queries.addOnPurchase.loading;
+      return (
+        this.$apollo.queries.addOnPurchaseData.loading ||
+        this.$apollo.queries.deprecatedAddOnPurchaseData.loading
+      );
     },
     duoTier() {
       return this.addOnPurchase?.name === ADD_ON_DUO_ENTERPRISE ? DUO_ENTERPRISE : DUO_PRO;
@@ -105,7 +120,7 @@ export default {
     },
   },
   apollo: {
-    addOnPurchase: {
+    addOnPurchaseData: {
       query: getAddOnPurchasesQuery,
       variables() {
         return this.queryVariables;
@@ -117,6 +132,25 @@ export default {
           addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_DUO_ENTERPRISE) ||
           addOnPurchases?.find((addOnPurchase) => addOnPurchase.name === ADD_ON_CODE_SUGGESTIONS)
         );
+      },
+      error() {
+        this.useDeprecatedAddOnPurchaseQuery = true;
+      },
+    },
+    // This is a fallback request in case getAddOnPurchases query is not yet available.
+    // Context: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/160561#note_2025278675
+    // This request can be removed after the 17.4 release, tracked here:
+    // https://gitlab.com/gitlab-org/gitlab/-/issues/476858
+    deprecatedAddOnPurchaseData: {
+      query: getAddOnPurchaseQuery,
+      skip() {
+        return !this.useDeprecatedAddOnPurchaseQuery;
+      },
+      variables() {
+        return this.deprecatedQueryVariables;
+      },
+      update({ addOnPurchase }) {
+        return addOnPurchase;
       },
       error(error) {
         const errorWithCause = Object.assign(error, { cause: ADD_ON_PURCHASE_FETCH_ERROR_CODE });
