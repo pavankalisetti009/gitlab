@@ -49,6 +49,7 @@ describe('ProviderSelectionView', () => {
     wrapper.findAllByTestId('provider-card-skeleton-loader');
   const findSelfManagedProviderCard = () => wrapper.findComponent(SelfManagedProviderCard);
   const findGitLabManagedProviderCard = () => wrapper.findComponent(GitLabManagedProviderCard);
+  const findErrorAlert = () => wrapper.findByTestId('provider-settings-error-alert');
 
   const createWrapper = (createInstanceMock = mockCreateInstanceSuccess, provide = {}) => {
     wrapper = shallowMountExtended(ProviderSelectionView, {
@@ -135,11 +136,22 @@ describe('ProviderSelectionView', () => {
           return waitForPromises();
         });
 
-        it('should emit error', () => {
-          const emitted = wrapper.emitted('error');
+        it('displays an error message', () => {
+          expect(findErrorAlert().text()).toBe(
+            'An error occurred while fetching project settings. Refresh the page to try again.',
+          );
+        });
 
-          expect(emitted).toHaveLength(1);
-          expect(emitted.at(0)).toEqual([error]);
+        it('does not render a title mentioning options', () => {
+          expect(wrapper.text()).not.toContain('Select an option');
+        });
+
+        it('does not render the Self-managed provider card', () => {
+          expect(findSelfManagedProviderCard().exists()).toBe(false);
+        });
+
+        it('does not render the GitLab-managed provider card', () => {
+          expect(findGitLabManagedProviderCard().exists()).toBe(false);
         });
       });
     });
