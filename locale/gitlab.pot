@@ -5446,6 +5446,9 @@ msgstr ""
 msgid "All required approvals must be given."
 msgstr ""
 
+msgid "All security policies must be evaluated."
+msgstr ""
+
 msgid "All threads resolved!"
 msgstr ""
 

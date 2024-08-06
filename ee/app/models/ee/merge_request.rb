@@ -75,6 +75,17 @@ module EE
         class_name: 'MergeRequests::RequestedChange',
         inverse_of: :merge_request
 
+      has_many :scan_result_policy_reads_through_violations,
+        through: :scan_result_policy_violations, source: :scan_result_policy_read,
+        class_name: 'Security::ScanResultPolicyRead'
+
+      has_many :scan_result_policy_reads_through_approval_rules,
+        through: :approval_rules, source: :scan_result_policy_read,
+        class_name: 'Security::ScanResultPolicyRead'
+
+      has_many :running_scan_result_policy_violations, -> { running }, class_name:
+        'Security::ScanResultPolicyViolation', inverse_of: :merge_request
+
       delegate :sha, to: :head_pipeline, prefix: :head_pipeline, allow_nil: true
       delegate :sha, to: :base_pipeline, prefix: :base_pipeline, allow_nil: true
       delegate :wrapped_approval_rules, :invalid_approvers_rules, to: :approval_state
@@ -137,10 +148,12 @@ module EE
       def policy_approval_settings
         return {} if scan_result_policy_violations.empty?
 
-        scan_result_policy_violations
-          .including_scan_result_policy_reads
-          .pluck(:project_approval_settings)
-          .reduce({}) { |acc, setting| acc.merge(setting.select { |_, value| value }.symbolize_keys) }
+        scan_result_policy_reads_through_violations
+          .reduce({}) do |acc, read|
+          acc.merge!(read.project_approval_settings.select do |_, value|
+                       value
+                     end.symbolize_keys)
+        end
       end
       strong_memoize_attr :policy_approval_settings
 
@@ -159,8 +172,9 @@ module EE
       # This is an ActiveRecord scope in CE
       def with_api_entity_associations
         super.preload(
-          :blocking_merge_requests,
-          :approval_rules,
+          :blocking_merge_requests, :scan_result_policy_reads_through_violations,
+          :scan_result_policy_reads_through_approval_rules,
+          :approval_rules, :running_scan_result_policy_violations,
           target_project: [:regular_or_any_approver_approval_rules, { group: :saml_provider }]
         )
       end
@@ -195,6 +209,7 @@ module EE
           ::MergeRequests::Mergeability::CheckApprovedService,
           ::MergeRequests::Mergeability::CheckBlockedByOtherMrsService,
           ::MergeRequests::Mergeability::CheckJiraStatusService,
+          ::MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService,
           ::MergeRequests::Mergeability::CheckExternalStatusChecksPassedService
         ] + super
       end
