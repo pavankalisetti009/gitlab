@@ -1,24 +1,24 @@
 <script>
 import {
   GlTable,
-  GlCard,
   GlButton,
   GlFormInput,
   GlFormGroup,
   GlBadge,
   GlTooltipDirective,
 } from '@gitlab/ui';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { __ } from '~/locale';
 import { WORKSPACE_VARIABLE_INPUT_TYPE_ENUM } from '../constants';
 
 export default {
   components: {
     GlTable,
-    GlCard,
     GlButton,
     GlFormInput,
     GlFormGroup,
     GlBadge,
+    CrudComponent,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -115,7 +115,12 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-new-card" header-class="gl-new-card-header" body-class="gl-new-card-body">
+  <crud-component :title="__('Variables')" icon="code" :count="variables.length">
+    <template #actions>
+      <gl-button size="small" data-testid="add-variable" @click="addVariable">{{
+        __('Add variable')
+      }}</gl-button>
+    </template>
     <gl-table
       v-if="hasVariables"
       :fields="$options.fields"
@@ -167,6 +172,8 @@ export default {
         <gl-button
           v-gl-tooltip
           icon="remove"
+          size="small"
+          category="tertiary"
           data-testid="remove-variable"
           :aria-label="__('Remove variable')"
           :title="__('Remove variable')"
@@ -177,15 +184,5 @@ export default {
     <div v-else class="gl-new-card-empty gl-px-3 gl-py-4">
       {{ __('There are no variables yet.') }}
     </div>
-    <template #header>
-      <div class="gl-new-card-title-wrapper">
-        <h3 class="gl-new-card-title">{{ __('Variables') }}</h3>
-      </div>
-      <div class="gl-new-card-actions">
-        <gl-button size="small" data-testid="add-variable" @click="addVariable">{{
-          __('Add variable')
-        }}</gl-button>
-      </div>
-    </template>
-  </gl-card>
+  </crud-component>
 </template>
