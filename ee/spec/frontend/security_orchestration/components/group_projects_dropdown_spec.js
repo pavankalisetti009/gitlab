@@ -22,6 +22,7 @@ describe('GroupProjectsDropdown', () => {
       name: `${id}`,
       fullPath: `project-${id}-full-path`,
       repository: { rootRef: 'main' },
+      group: { id: convertToGraphQLId(TYPENAME_GROUP, id) },
     }));
 
   const generateMockGroups = (ids) =>
@@ -327,6 +328,19 @@ describe('GroupProjectsDropdown', () => {
             expect(findDropdown().props('toggleText')).toBe(expectedText);
           },
         );
+      });
+
+      describe('groups ids', () => {
+        it('filters projects by group ids', async () => {
+          createComponent({
+            propsData: {
+              groupIds: [defaultNodes[0].group.id],
+            },
+          });
+          await waitForPromises();
+
+          expect(findDropdown().props('items')).toEqual(mapItems([defaultNodes[0]]));
+        });
       });
 
       describe('when the fetch query throws an error', () => {

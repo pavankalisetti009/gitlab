@@ -109,6 +109,11 @@ export default {
       required: false,
       default: false,
     },
+    groupIds: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
   },
   data() {
     return {
@@ -122,9 +127,15 @@ export default {
     itemsQuery() {
       return this.$apollo.queries[this.groupsOnly ? 'groups' : 'projects'];
     },
+    filteredProjects() {
+      if (this.groupIds.length === 0) {
+        return this.projects;
+      }
 
+      return this.projects.filter(({ group = {} }) => this.groupIds.includes(group.id));
+    },
     items() {
-      return this.groupsOnly ? this.groups : this.projects;
+      return this.groupsOnly ? this.groups : this.filteredProjects;
     },
     headerText() {
       return this.groupsOnly
