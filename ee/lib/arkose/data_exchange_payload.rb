@@ -19,6 +19,7 @@ module Arkose
     end
 
     def build
+      return unless ::Feature.enabled?(:arkose_labs_data_exchange, :instance, type: :ops)
       return unless shared_key
 
       encrypted_data
@@ -33,10 +34,10 @@ module Arkose
     end
 
     def json_data
-      now = Time.current.to_i
-
       data = {
-        timestamp: now.to_s, # required to be a string
+        # timestamp here is required to be a string
+        # https://support.arkoselabs.com/hc/en-us/articles/4410529474323-Data-Exchange-Enhanced-Detection-and-API-Source-Validation#DataExchange:EnhancedDetectionandAPISourceValidation-StandardJSONFields(RequiredWhenPresent/Applicable)
+        timestamp: ms_since_unix_epoch.to_s,
         "HEADER_user-agent" => request.user_agent,
         "HEADER_origin" => request.origin,
         "HEADER_referer" => request.referer,
@@ -45,7 +46,9 @@ module Arkose
         ip_address: request.ip,
         use_case: use_case,
         api_source_validation: {
-          timestamp: now,
+          # timestamp here is required to be an integer
+          # https://support.arkoselabs.com/hc/en-us/articles/4410529474323-Data-Exchange-Enhanced-Detection-and-API-Source-Validation#DataExchange:EnhancedDetectionandAPISourceValidation-APISourceValidation
+          timestamp: ms_since_unix_epoch,
           token: SecureRandom.uuid
         }
       }
@@ -73,6 +76,10 @@ module Arkose
       encoded_cipher_text_and_tag = Base64.encode64(cipher_text + tag)
 
       "#{encoded_initialization_vector}.#{encoded_cipher_text_and_tag}"
+    end
+
+    def ms_since_unix_epoch
+      @ms_since_epoch ||= (Time.current.utc.to_f * 1000).to_i
     end
   end
 end

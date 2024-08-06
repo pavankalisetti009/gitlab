@@ -21,9 +21,12 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
     )
   end
 
+  let(:one_sec_since_unix_epoch) { Time.zone.at(1) }
+  let(:one_sec_since_unix_epoch_in_ms) { 1000 }
+
   let(:json_data) do
     {
-      timestamp: Time.current.to_i.to_s,
+      timestamp: one_sec_since_unix_epoch_in_ms.to_s,
       "HEADER_user-agent" => request.user_agent,
       "HEADER_origin" => request.origin,
       "HEADER_referer" => request.referer,
@@ -32,7 +35,7 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
       ip_address: request.ip,
       use_case: described_class::USE_CASE_SIGN_UP,
       api_source_validation: {
-        timestamp: Time.current.to_i,
+        timestamp: one_sec_since_unix_epoch_in_ms,
         token: SecureRandom.uuid
       }.stringify_keys
     }.stringify_keys
@@ -69,12 +72,20 @@ RSpec.describe Arkose::DataExchangePayload, feature_category: :instance_resilien
     end
 
     it 'can be decrypted with the right key' do
-      freeze_time do
+      travel_to one_sec_since_unix_epoch do
         decrypted_payload = decrypt(result, key)
         json_payload = Gitlab::Json.parse(decrypted_payload)
 
         expect(json_payload).to include(json_data)
       end
+    end
+
+    context 'when arkose_labs_data_exchange feature flag is disabled' do
+      before do
+        stub_feature_flags(arkose_labs_data_exchange: false)
+      end
+
+      it { is_expected.to be_nil }
     end
 
     context 'when arkose_labs_data_exchange_key application setting is not set' do
