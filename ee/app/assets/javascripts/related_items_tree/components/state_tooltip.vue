@@ -75,7 +75,7 @@ export default {
     <div ref="statePath" class="gl-font-bold">
       {{ path }}
     </div>
-    <div class="text-tertiary">
+    <div class="gl-text-tertiary">
       <span ref="stateText" class="gl-font-bold">
         {{ stateText }}
       </span>
