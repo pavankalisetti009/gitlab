@@ -11,7 +11,7 @@ const BODY_CLASS =
   'gl-flex gl-justify-center gl-items-center gl-flex-direction-column gl-my-0 gl-p-4 gl-font-bold gl-text-center gl-flex-grow-1 gl-font-lg';
 
 const DATE_FORMAT = 'mmm d, yyyy';
-const UTC_TIME_FORMAT = 'UTC:H:MM:ss.l Z';
+const TIME_FORMAT = 'H:MM:ss.l Z';
 
 export default {
   CARD_CLASS,
@@ -49,7 +49,7 @@ export default {
       return formatDate(this.trace.timestamp, DATE_FORMAT);
     },
     traceTime() {
-      return formatDate(this.trace.timestamp, UTC_TIME_FORMAT);
+      return formatDate(this.trace.timestamp, TIME_FORMAT);
     },
     traceDuration() {
       return formatTraceDuration(this.trace.duration_nano);

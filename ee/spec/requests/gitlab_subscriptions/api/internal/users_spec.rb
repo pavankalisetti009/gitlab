@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::API::Internal::Users, :aggregate_failures, :api, feature_category: :subscription_management do
+  include CryptoHelpers
   include GitlabSubscriptions::InternalApiHelpers
 
   describe 'GET /internal/gitlab_subscriptions/users/:id' do
@@ -83,6 +84,92 @@ RSpec.describe GitlabSubscriptions::API::Internal::Users, :aggregate_failures, :
             expect(json_response['message']).to eq("404 User Not Found")
           end
         end
+      end
+    end
+  end
+
+  describe "PUT /internal/gitlab_subscriptions/users/:user_id/credit_card_validation" do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:admin) { create(:admin) }
+    let(:network) { 'American Express' }
+    let(:holder_name) {  'John Smith' }
+    let(:last_digits) {  '1111' }
+    let(:expiration_year) { Date.today.year + 10 }
+    let(:expiration_month) { 1 }
+    let(:expiration_date) { Date.new(expiration_year, expiration_month, -1) }
+    let(:credit_card_validated_at) { Time.utc(2020, 1, 1) }
+    let(:zuora_payment_method_xid) { 'abc123' }
+    let(:stripe_setup_intent_xid) { 'seti_abc123' }
+    let(:stripe_payment_method_xid) { 'pm_abc123' }
+    let(:stripe_card_fingerprint) { 'card123' }
+
+    let(:path) { "/internal/gitlab_subscriptions/users/#{user.id}/credit_card_validation" }
+    let(:params) do
+      {
+        credit_card_validated_at: credit_card_validated_at,
+        credit_card_expiration_year: expiration_year,
+        credit_card_expiration_month: expiration_month,
+        credit_card_holder_name: holder_name,
+        credit_card_type: network,
+        credit_card_mask_number: last_digits,
+        zuora_payment_method_xid: zuora_payment_method_xid,
+        stripe_setup_intent_xid: stripe_setup_intent_xid,
+        stripe_payment_method_xid: stripe_payment_method_xid,
+        stripe_card_fingerprint: stripe_card_fingerprint
+      }
+    end
+
+    context 'when unauthenticated' do
+      it 'returns authentication error' do
+        put api(path), params: {}
+
+        expect(response).to have_gitlab_http_status(:unauthorized)
+      end
+    end
+
+    context 'when authenticated as non-admin' do
+      it "does not allow updating user's credit card validation" do
+        put api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when authenticated as admin' do
+      it "updates user's credit card validation" do
+        put api(path, admin, admin_mode: true), params: params
+
+        user.reload
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(user.credit_card_validation).to have_attributes(
+          credit_card_validated_at: credit_card_validated_at,
+          network_hash: sha256(network.downcase),
+          holder_name_hash: sha256(holder_name.downcase),
+          last_digits_hash: sha256(last_digits),
+          expiration_date_hash: sha256(expiration_date.to_s),
+          zuora_payment_method_xid: zuora_payment_method_xid,
+          stripe_setup_intent_xid: stripe_setup_intent_xid,
+          stripe_payment_method_xid: stripe_payment_method_xid,
+          stripe_card_fingerprint: stripe_card_fingerprint
+        )
+      end
+
+      context 'when the params are not correct' do
+        let(:stripe_payment_method_xid) { SecureRandom.hex(130) }
+
+        it "returns 400 error if credit_card_validated_at is missing" do
+          put api(path, admin, admin_mode: true), params: params
+
+          expect(response).to have_gitlab_http_status(:bad_request)
+        end
+      end
+
+      it 'returns 404 error if user not found' do
+        put api("/user/#{non_existing_record_id}/credit_card_validation", admin, admin_mode: true), params: params
+
+        expect(response).to have_gitlab_http_status(:not_found)
+        expect(json_response['message']).to eq('404 User Not Found')
       end
     end
   end
