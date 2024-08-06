@@ -40593,9 +40593,6 @@ msgstr ""
 msgid "ProductAnalytics|Then, return to this page and continue with the setup."
 msgstr ""
 
-msgid "ProductAnalytics|This feature is in Beta and requires purchasing a quota of events, which you receive on each billing period."
-msgstr ""
-
 msgid "ProductAnalytics|This group has no projects with product analytics onboarded in the current period."
 msgstr ""
 
