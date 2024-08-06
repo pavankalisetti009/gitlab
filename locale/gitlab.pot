@@ -24392,10 +24392,16 @@ msgstr ""
 msgid "GlobalSearch|%{count} default results provided. Use the up and down arrow keys to navigate search results list."
 msgstr ""
 
+msgid "GlobalSearch|%{lessButtonStart}Show less%{lessButtonEnd} - Too many matches found. Showing %{showingMatches} chunks out of %{fileMatches} results. %{fileLinkStart}Open the file to view all.%{fileLinkEnd}"
+msgstr ""
+
 msgid "GlobalSearch|%{linkStart}Exact code search (powered by Zoekt)%{linkEnd} is disabled since %{ref_elem} is not the default branch. %{docs_link}"
 msgstr ""
 
 msgid "GlobalSearch|%{linkStart}Exact code search (powered by Zoekt)%{linkEnd} is enabled."
+msgstr ""
+
+msgid "GlobalSearch|'Epics"
 msgstr ""
 
 msgid "GlobalSearch|Aggregations load error."
@@ -24410,10 +24416,19 @@ msgstr ""
 msgid "GlobalSearch|Change context %{kbdStart}↵%{kbdEnd}"
 msgstr ""
 
+msgid "GlobalSearch|Code"
+msgstr ""
+
 msgid "GlobalSearch|Command palette"
 msgstr ""
 
 msgid "GlobalSearch|Commands %{superKey} %{link2Start}k%{link2End}"
+msgstr ""
+
+msgid "GlobalSearch|Comments"
+msgstr ""
+
+msgid "GlobalSearch|Commits"
 msgstr ""
 
 msgid "GlobalSearch|Could not load search results. Please refresh the page to try again."
@@ -24500,6 +24515,9 @@ msgstr ""
 msgid "GlobalSearch|Merge Requests"
 msgstr ""
 
+msgid "GlobalSearch|Merge request"
+msgstr ""
+
 msgid "GlobalSearch|Merge requests I've created"
 msgstr ""
 
@@ -24509,7 +24527,13 @@ msgstr ""
 msgid "GlobalSearch|Merge requests that I'm a reviewer"
 msgstr ""
 
+msgid "GlobalSearch|Milestones"
+msgstr ""
+
 msgid "GlobalSearch|No labels found"
+msgstr ""
+
+msgid "GlobalSearch|No results found"
 msgstr ""
 
 msgid "GlobalSearch|No results found. Edit your search and try again."
@@ -24519,6 +24543,9 @@ msgid "GlobalSearch|Nothing found…"
 msgstr ""
 
 msgid "GlobalSearch|Only first %{max_shown} of not indexed projects is shown"
+msgstr ""
+
+msgid "GlobalSearch|Open file in repository"
 msgstr ""
 
 msgid "GlobalSearch|Pages or actions"
@@ -24587,10 +24614,19 @@ msgstr ""
 msgid "GlobalSearch|Settings"
 msgstr ""
 
+msgid "GlobalSearch|Show %{matches} more matches"
+msgstr ""
+
+msgid "GlobalSearch|Show less"
+msgstr ""
+
 msgid "GlobalSearch|Show more"
 msgstr ""
 
 msgid "GlobalSearch|Showing top %{maxItems}"
+msgstr ""
+
+msgid "GlobalSearch|Snippets"
 msgstr ""
 
 msgid "GlobalSearch|The search term must be at least 3 characters long."
@@ -24629,7 +24665,19 @@ msgstr ""
 msgid "GlobalSearch|View syntax options."
 msgstr ""
 
+msgid "GlobalSearch|We couldn't find any %{scope} matching %{term}"
+msgstr ""
+
+msgid "GlobalSearch|We couldn't find any %{scope} matching %{term} in group %{group}"
+msgstr ""
+
+msgid "GlobalSearch|We couldn't find any %{scope} matching %{term} in project %{project}"
+msgstr ""
+
 msgid "GlobalSearch|What are you searching for?"
+msgstr ""
+
+msgid "GlobalSearch|Wiki"
 msgstr ""
 
 msgid "GlobalSearch|Your work"
@@ -58666,6 +58714,9 @@ msgid "View"
 msgstr ""
 
 msgid "View File Metadata"
+msgstr ""
+
+msgid "View Line in repository"
 msgstr ""
 
 msgid "View Stage: %{title}"
