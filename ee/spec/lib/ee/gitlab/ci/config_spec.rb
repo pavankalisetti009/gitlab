@@ -211,16 +211,6 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
           expect(config.stages).to eq(['.pipeline-policy-pre', *default_stages, '.pipeline-policy-post'])
         end
       end
-
-      context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-        before do
-          stub_feature_flags(pipeline_execution_policy_type: false)
-        end
-
-        it 'does not inject the reserved stages' do
-          expect(config.stages).to eq(default_stages)
-        end
-      end
     end
 
     context 'when execution_policy_mode is true' do

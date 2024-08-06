@@ -18,13 +18,5 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Command, feature_category: :continuo
 
       it { is_expected.to eq(false) }
     end
-
-    context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_type: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
   end
 end

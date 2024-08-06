@@ -159,18 +159,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfi
       end
     end
 
-    context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_type: false)
-      end
-
-      it 'does not set pipeline_execution_policies' do
-        step.perform!
-
-        expect(command.pipeline_execution_policies).to be_nil
-      end
-    end
-
     context 'when running in execution_policy_dry_run' do
       let(:execution_policy_dry_run) { true }
 

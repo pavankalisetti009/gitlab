@@ -19,7 +19,6 @@ module EE
               include ::Gitlab::InternalEventsTracking
 
               def perform!
-                return if ::Feature.disabled?(:pipeline_execution_policy_type, project.group)
                 return if command.execution_policy_mode? || command.pipeline_execution_policies.blank?
 
                 clear_project_pipeline

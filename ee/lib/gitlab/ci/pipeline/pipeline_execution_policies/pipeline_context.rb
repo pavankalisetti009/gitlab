@@ -26,14 +26,11 @@ module Gitlab
           #   It means that the result pipeline will have PEPs.
           #   We need to inject these stages because some of the policies may use them.
           def inject_policy_reserved_stages?
-            return false if ::Feature.disabled?(:pipeline_execution_policy_type, project&.group)
-
             execution_policy_mode? || has_pipeline_execution_policies?
           end
 
           def valid_stage?(stage)
-            return true if ::Feature.disabled?(:pipeline_execution_policy_type, project&.group) ||
-              execution_policy_mode?
+            return true if execution_policy_mode?
 
             ReservedStagesInjector::STAGES.exclude?(stage)
           end

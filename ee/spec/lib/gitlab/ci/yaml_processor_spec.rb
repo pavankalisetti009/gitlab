@@ -417,14 +417,6 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
 
       shared_examples_for 'stages including policy reserved stages' do
         it { is_expected.to eq(%w[.pipeline-policy-pre .pre build test deploy .post .pipeline-policy-post]) }
-
-        context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_type: false)
-          end
-
-          it { is_expected.to eq(%w[.pre build test deploy .post]) }
-        end
       end
 
       context 'when running in execution_policy_mode' do
@@ -473,16 +465,6 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
 
           context 'with execution_policy_dry_run' do
             let(:execution_policy_dry_run) { true }
-
-            it 'is valid' do
-              expect(result.errors).to be_empty
-            end
-          end
-
-          context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-            before do
-              stub_feature_flags(pipeline_execution_policy_type: false)
-            end
 
             it 'is valid' do
               expect(result.errors).to be_empty
