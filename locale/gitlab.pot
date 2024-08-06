@@ -102,6 +102,11 @@ msgid_plural "%d Approvals"
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "%d Custom role"
+msgid_plural "%d Custom roles"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "%d Module"
 msgid_plural "%d Modules"
 msgstr[0] ""
@@ -661,11 +666,6 @@ msgstr ""
 
 msgid "%{count} %{scope} for term '%{term}'"
 msgstr ""
-
-msgid "%{count} Custom role"
-msgid_plural "%{count} Custom roles"
-msgstr[0] ""
-msgstr[1] ""
 
 msgid "%{count} LOC/commit"
 msgstr ""
@@ -32410,7 +32410,7 @@ msgstr ""
 msgid "MemberRole|Actions"
 msgstr ""
 
-msgid "MemberRole|Are you sure you want to delete this custom role? Before you delete this custom role, make sure no group member has this role."
+msgid "MemberRole|Are you sure you want to delete this custom role?"
 msgstr ""
 
 msgid "MemberRole|Base role"
