@@ -10,9 +10,9 @@ export default {
   inject: ['emptyStateSvgPath'],
   i18n: {
     title: s__('SecurityReports|No vulnerabilities found'),
-    primaryButtonText: s__('SecurityReports|Learn more about setting up your dashboard'),
+    primaryButtonText: s__('SecurityReports|Learn more about security configuration'),
     description: s__(
-      `SecurityReports|Although it's rare to have no vulnerabilities, it can happen. Check your settings to make sure you've set up your dashboard correctly.`,
+      `SecurityReports|Although it's rare to have no vulnerabilities, it can happen. Check your project's security configuration to make sure you've set up your security scans correctly.`,
     ),
   },
   DOC_PATH_SECURITY_CONFIGURATION,

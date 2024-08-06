@@ -23,7 +23,7 @@ export default {
     title: s__('SecurityReports|Monitor vulnerabilities in your project'),
     submitVulnerability: s__('SecurityReports|Submit vulnerability'),
     description: s__(
-      'SecurityReports|Manage and track vulnerabilities identified in your project. Vulnerabilities are shown here when security testing is configured.',
+      'SecurityReports|Manage and track vulnerabilities identified in your project. Vulnerabilities are shown here when security testing is configured and a pipeline has been run on the default branch.',
     ),
     primaryButtonText: s__('SecurityReports|Configure security testing'),
     secondaryButtonText: __('Learn more'),
