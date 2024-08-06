@@ -114,7 +114,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
           "model_endpoint" => "http://localhost:11434/v1",
           "model_name" => "mistral",
           "model_provider" => "litellm",
-          "prompt" => "Generate the best possible code based on instructions.",
+          "prompt" => "",
           "prompt_version" => 2,
           "stream" => false
         }
