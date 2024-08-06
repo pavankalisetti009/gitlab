@@ -12253,6 +12253,15 @@ msgstr ""
 msgid "ClusterAgents|Connect a cluster (deprecated)"
 msgstr ""
 
+msgid "ClusterAgents|Connect to %{agentName}"
+msgstr ""
+
+msgid "ClusterAgents|Connect to a cluster"
+msgstr ""
+
+msgid "ClusterAgents|Connect to agent"
+msgstr ""
+
 msgid "ClusterAgents|Connected"
 msgstr ""
 
@@ -12344,6 +12353,9 @@ msgid "ClusterAgents|Last contact"
 msgstr ""
 
 msgid "ClusterAgents|Learn how to troubleshoot"
+msgstr ""
+
+msgid "ClusterAgents|Learn more about user access."
 msgstr ""
 
 msgid "ClusterAgents|Make sure you are using a valid token."
@@ -12469,6 +12481,12 @@ msgid "ClusterAgents|What is agent activity?"
 msgstr ""
 
 msgid "ClusterAgents|What is default configuration?"
+msgstr ""
+
+msgid "ClusterAgents|You can connect to your cluster from the command line. Configure %{linkStart}kubectl%{linkEnd} command-line access by running the following command:"
+msgstr ""
+
+msgid "ClusterAgents|You can connect to your cluster from the command line. To use this feature, configure %{monotypeStart}user_access%{monotypeEnd} in the agent configuration project."
 msgstr ""
 
 msgid "ClusterAgents|You cannot see this token again after you close this window."
