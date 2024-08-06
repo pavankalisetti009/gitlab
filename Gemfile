@@ -166,6 +166,11 @@ gem 'gitlab-topology-service-client', '~> 0.1',
   path: 'vendor/gems/gitlab-topology-service-client',
   feature_category: :cell
 
+# Duo Workflow
+gem 'gitlab-duo-workflow-service-client', '~> 0.1',
+  path: 'vendor/gems/gitlab-duo-workflow-service-client',
+  feature_category: :duo_workflow
+
 # Generate Fake data
 gem 'ffaker', '~> 2.23' # rubocop:todo Gemfile/MissingFeatureCategory
 
