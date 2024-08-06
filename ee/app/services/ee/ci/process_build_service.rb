@@ -7,7 +7,7 @@ module EE
 
       override :process
       def process(processable)
-        if processable.persisted_environment.try(:needs_approval?)
+        if should_block_processable?(processable)
           # To populate the deployment job as manually executable (i.e. `Ci::Build#playable?`),
           # we have to set `manual` to `ci_builds.when` as well as `ci_builds.status`.
           processable.when = 'manual'
@@ -24,6 +24,16 @@ module EE
         end
 
         super
+      end
+
+      private
+
+      def should_block_processable?(processable)
+        if processable.project.prevent_blocking_non_deployment_jobs?
+          processable.deployment_job? && processable.persisted_environment.try(:needs_approval?)
+        else
+          processable.persisted_environment.try(:needs_approval?)
+        end
       end
     end
   end
