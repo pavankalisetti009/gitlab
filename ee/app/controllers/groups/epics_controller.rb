@@ -22,6 +22,7 @@ class Groups::EpicsController < Groups::ApplicationController
     push_frontend_feature_flag(:preserve_markdown, @group)
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
+    push_force_frontend_feature_flag(:glql_integration, @group&.glql_integration_feature_flag_enabled?)
   end
 
   before_action only: :index do
