@@ -38,15 +38,15 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayCodeGeneration
     end
 
     it 'returns expected request params with instruction' do
-      expect(prompt.request_params).to eq(request_params.merge(prompt: instruction))
+      expect(prompt.request_params).to eq(request_params.merge(prompt: comment))
     end
 
     context 'when instruction is missing' do
       let(:instruction) { nil }
 
-      it 'prefills with default instruction' do
+      it 'sends an empty instruction' do
         expect(prompt.request_params).to eq(
-          request_params.merge(prompt: described_class::DEFAULT_INSTRUCTION)
+          request_params.merge(prompt: "")
         )
       end
     end

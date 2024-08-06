@@ -7,7 +7,6 @@ module CodeSuggestions
         GATEWAY_PROMPT_VERSION = 2
         MODEL_PROVIDER = 'litellm'
         AGENT_ID = 'code_suggestions/generations'
-        DEFAULT_INSTRUCTION = 'Generate the best possible code based on instructions.'
 
         attr_reader :feature_setting
 
@@ -39,7 +38,7 @@ module CodeSuggestions
         end
 
         def prompt
-          params[:instruction] || DEFAULT_INSTRUCTION
+          params[:instruction]&.instruction.presence || ""
         end
 
         def pick_prefix

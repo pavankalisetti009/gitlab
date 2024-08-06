@@ -11,7 +11,7 @@ export default {
   i18n: {
     title: s__('SecurityReports|Monitor vulnerabilities in all of your projects'),
     description: s__(
-      'SecurityReports|Manage and track vulnerabilities identified in your selected projects. Vulnerabilities for selected projects with security testing configured are shown here.',
+      'SecurityReports|Manage and track vulnerabilities identified in your selected projects. Vulnerabilities for selected projects are shown here when security testing is configured and a pipeline has been run on the default branch.',
     ),
     primaryButtonText: __('Add projects'),
     secondaryButtonText: __('Learn more'),
