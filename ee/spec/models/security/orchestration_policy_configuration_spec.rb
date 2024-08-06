@@ -1929,7 +1929,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   end
 
   describe '#delete_scan_finding_rules' do
-    subject(:delete_scan_finding_rules) { security_orchestration_policy_configuration.delete_scan_finding_rules }
+    subject(:delete_scan_finding_rules) { security_orchestration_policy_configuration.send(:delete_scan_finding_rules) }
 
     let(:project) { security_orchestration_policy_configuration.project }
     let(:merge_request) { create(:merge_request, target_project: project, source_project: project) }
@@ -2035,7 +2035,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let_it_be(:policy) { create(:software_license_policy, scan_result_policy_read: read) }
     let_it_be(:other_policy) { create(:software_license_policy, scan_result_policy_read: other_read) }
 
-    subject(:delete) { configuration.delete_software_license_policies }
+    subject(:delete) { configuration.send(:delete_software_license_policies) }
 
     it "deletes software license policies" do
       expect { delete }.to change { SoftwareLicensePolicy.exists?(policy.id) }.to(false)
@@ -2084,8 +2084,10 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         scan_result_policy_read: scan_result_policy_read_other_project)
     end
 
+    subject(:delete) { configuration.send(:delete_software_license_policies_for_project, project) }
+
     it 'deletes project scan_result_policy_reads' do
-      configuration.delete_software_license_policies_for_project(project)
+      delete
 
       software_license_policies = SoftwareLicensePolicy.where(project_id: project.id)
       other_project_software_license_policies = SoftwareLicensePolicy.where(project_id: other_project.id)
@@ -2105,7 +2107,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     let_it_be(:violation) { create(:scan_result_policy_violation, scan_result_policy_read: read) }
     let_it_be(:other_violation) { create(:scan_result_policy_violation, scan_result_policy_read: other_read) }
 
-    subject(:delete) { configuration.delete_policy_violations }
+    subject(:delete) { configuration.send(:delete_policy_violations) }
 
     it "deletes configuration's scan result policy violations" do
       expect { delete }.to change { Security::ScanResultPolicyViolation.exists?(violation.id) }.to(false)

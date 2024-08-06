@@ -213,6 +213,16 @@ RSpec.describe UpdateOrchestrationPolicyConfiguration, feature_category: :securi
         expect { execute }.to change(Security::OrchestrationPolicyRuleSchedule, :count).by(-1)
         expect(configuration.reload.configured_at).to be_like_time(Time.current)
       end
+
+      context 'with existing policy reads' do
+        let_it_be(:policy_read) do
+          create(:scan_result_policy_read, security_orchestration_policy_configuration: configuration)
+        end
+
+        it 'deletes existing policy reads', :sidekiq_inline do
+          expect { execute }.to change { Security::ScanResultPolicyRead.exists?(policy_read.id) }.from(true).to(false)
+        end
+      end
     end
   end
 end
