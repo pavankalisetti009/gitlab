@@ -85,12 +85,12 @@ RSpec.describe 'WorkItem Index', :elastic, :sidekiq_inline, feature_category: :g
 
         work_item = create(:work_item, project: project)
         ensure_elasticsearch_index!
-        expect(work_items_in_index).to eq([work_item.id])
+        expect(items_in_index(index_name)).to eq([work_item.id])
 
         work_item.destroy!
 
         ensure_elasticsearch_index!
-        expect(work_items_in_index).to be_empty
+        expect(items_in_index(index_name)).to be_empty
       end
     end
   end
@@ -159,9 +159,5 @@ RSpec.describe 'WorkItem Index', :elastic, :sidekiq_inline, feature_category: :g
 
       it_behaves_like 'work_items do not get tracked in Elasticsearch'
     end
-  end
-
-  def work_items_in_index
-    client.search(index: index_name).dig('hits', 'hits').map { |hit| hit['_source']['id'] }
   end
 end
