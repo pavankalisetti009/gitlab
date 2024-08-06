@@ -6,7 +6,7 @@ module UpdateOrchestrationPolicyConfiguration
     configuration.invalidate_policy_yaml_cache
 
     unless configuration.policy_configuration_valid?
-      configuration.delete_scan_finding_rules
+      Security::ScanResultPolicies::DeleteScanResultPolicyReadsWorker.perform_async(configuration.id)
 
       configuration.update!(configured_at: Time.current)
       return

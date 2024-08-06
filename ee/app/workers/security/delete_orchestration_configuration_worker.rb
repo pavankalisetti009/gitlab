@@ -21,11 +21,7 @@ module Security
       old_policy_project = Project.find_by_id(old_policy_project_id) || return
 
       Security::OrchestrationPolicyConfiguration.transaction do
-        configuration.delete_scan_finding_rules
-        configuration.delete_software_license_policies
-        configuration.delete_policy_violations
         configuration.delete_scan_result_policy_reads
-
         configuration.delete
       end
 
