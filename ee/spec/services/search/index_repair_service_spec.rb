@@ -25,6 +25,12 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
 
       service.execute
     end
+
+    it 'does not report prometheus metrics' do
+      expect(Gitlab::Metrics).not_to receive(:counter)
+
+      service.execute
+    end
   end
 
   shared_examples 'a service that repairs the blobs index' do
@@ -37,6 +43,16 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         false,
         { force: true }
       )
+
+      service.execute
+    end
+
+    it 'reports prometheus metrics' do
+      index_repair_counter_double = instance_double(Prometheus::Client::Counter)
+      allow(Gitlab::Metrics).to receive(:counter).and_call_original
+      expect(Gitlab::Metrics).to receive(:counter).with(:search_advanced_index_repair_total, anything)
+                                                  .and_return(index_repair_counter_double)
+      expect(index_repair_counter_double).to receive(:increment).with({ document_type: Repository.es_type })
 
       service.execute
     end
@@ -61,6 +77,12 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
       end
 
       expect(ElasticCommitIndexerWorker).not_to receive(:perform_in)
+
+      service.execute
+    end
+
+    it 'does not report prometheus metrics' do
+      expect(Gitlab::Metrics).not_to receive(:counter)
 
       service.execute
     end
@@ -273,6 +295,16 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         }.stringify_keys
 
         expect(logger).to receive(:warn).with(a_hash_including(expected_hash))
+
+        service.execute
+      end
+
+      it 'reports prometheus metrics' do
+        index_repair_counter_double = instance_double(Prometheus::Client::Counter)
+        allow(Gitlab::Metrics).to receive(:counter).and_call_original
+        expect(Gitlab::Metrics).to receive(:counter).with(:search_advanced_index_repair_total, anything)
+                                                    .and_return(index_repair_counter_double)
+        expect(index_repair_counter_double).to receive(:increment).with({ document_type: Project.es_type })
 
         service.execute
       end
