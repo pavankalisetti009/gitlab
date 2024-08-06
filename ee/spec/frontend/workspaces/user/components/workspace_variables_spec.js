@@ -1,4 +1,5 @@
-import { GlCard, GlTable, GlButton, GlFormInput, GlFormGroup } from '@gitlab/ui';
+import { GlTable, GlButton, GlFormInput, GlFormGroup } from '@gitlab/ui';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import WorkspaceVariables from 'ee/workspaces/user/components/workspace_variables.vue';
 import { stubComponent } from 'helpers/stub_component';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -34,7 +35,6 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
       },
       stubs: {
         GlTable,
-        GlCard,
         GlButton,
         GlFormInput,
         GlFormGroup: GlFormGroupStub,
@@ -42,7 +42,7 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
     });
   };
 
-  const findCard = () => extendedWrapper(wrapper.findComponent(GlCard));
+  const findCrudComponent = () => wrapper.findComponent(CrudComponent);
   const findTable = () => extendedWrapper(wrapper.findComponent(GlTable));
   const findAddButton = () =>
     extendedWrapper(wrapper.findByRole('button', { name: /Add variable/i }));
@@ -54,13 +54,10 @@ describe('workspaces/user/components/workspace_variables.vue', () => {
   it('renders empty state', () => {
     const variables = [];
     buildWrapper({ variables });
-    expect(findCard().props()).toMatchObject({
-      bodyClass: expect.stringContaining('gl-new-card-body'),
-      footerClass: expect.stringContaining(''),
-      headerClass: expect.stringContaining(''),
-    });
-    expect(findCard().text()).toContain('Variables');
-    expect(findCard().text()).toContain('There are no variables yet.');
+    expect(findCrudComponent().props('title')).toBe('Variables');
+    expect(findCrudComponent().props('icon')).toBe('code');
+    expect(findCrudComponent().props('count')).toBe(0);
+    expect(findCrudComponent().text()).toContain('There are no variables yet.');
     expect(findAddButton().exists()).toBe(true);
   });
 

@@ -51,7 +51,8 @@ module Gitlab
               '/explain' => {
                 description: 'Explain the code',
                 instruction: 'Explain the code user selected inside <selected_code></selected_code> tags.',
-                instruction_with_input: 'Explain %<input>s user selected inside <selected_code></selected_code> tags.'
+                instruction_with_input: 'Explain %<input>s user selected inside <selected_code></selected_code> tags.',
+                instruction_without_selected_code: 'Explain the input provided by the user: %<input>s.'
               }
             }.freeze
 
