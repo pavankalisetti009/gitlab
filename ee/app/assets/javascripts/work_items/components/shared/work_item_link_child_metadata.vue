@@ -174,7 +174,7 @@ export default {
           <div data-testid="progressTitle" class="gl-font-bold">
             {{ __('Progress') }}
           </div>
-          <div v-if="progressLastUpdatedAtInWords" class="text-tertiary">
+          <div v-if="progressLastUpdatedAtInWords" class="gl-text-tertiary">
             <span data-testid="progressText" class="gl-font-bold">
               {{ __('Last updated') }}
             </span>

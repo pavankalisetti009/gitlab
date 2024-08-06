@@ -82,7 +82,7 @@ export default {
         v-if="milestoneStart || milestoneDue"
         :class="{
           'gl-text-red-300': isMilestonePastDue,
-          'text-tertiary': !isMilestonePastDue,
+          'gl-text-tertiary': !isMilestonePastDue,
         }"
       >
         <div>{{ milestoneDatesHuman }}</div>
