@@ -37,7 +37,7 @@ module QA
           result = repository.push_changes(raise_on_failure: false)
 
           # rubocop:disable Layout/LineLength -- Long regular expression to capture the error from the git commit
-          expect(result).to match(%r{.*(PUSH BLOCKED: Secrets detected in code changes )[\s\S]*(Secret push protection found the following secrets in commit)[\s\S]*(GitLab personal access token)[\s\S]*(To push your changes you must remove the identified secrets.)})
+          expect(result).to match(%r{.*(PUSH BLOCKED: Secrets detected in code changes )[\s\S]*(Secret push protection found the following secrets in commit)[\s\S]*(GitLab [Pp]ersonal [Aa]ccess [Tt]oken)[\s\S]*(To push your changes you must remove the identified secrets.)})
           # rubocop:enable Layout/LineLength
         end
       end
