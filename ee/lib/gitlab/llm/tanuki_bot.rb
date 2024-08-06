@@ -15,15 +15,13 @@ module Gitlab
         authorizer_response.allowed?
       end
 
-      def self.show_breadcrumbs_entry_point?(user:, container: nil)
-        return enabled_for?(user: user, container: container) unless Feature.enabled?(:duo_chat_disabled_button)
+      def self.show_breadcrumbs_entry_point?(user:)
         return false unless chat_enabled?(user)
 
         Gitlab::Llm::Chain::Utils::ChatAuthorizer.user(user: user).allowed?
       end
 
       def self.chat_disabled_reason(user:, container: nil)
-        return unless Feature.enabled?(:duo_chat_disabled_button)
         return unless container
 
         authorizer_response = Gitlab::Llm::Chain::Utils::ChatAuthorizer.container(container: container, user: user)

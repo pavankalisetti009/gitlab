@@ -51,27 +51,11 @@ RSpec.describe "User creates issue", :js, :saas, feature_category: :team_plannin
     context 'when duo features disabled for project' do
       before do
         project.update!(duo_features_enabled: false)
+        visit(new_project_issue_path(project))
       end
 
-      context 'with duo_chat_disabled_button flag disabled' do
-        before do
-          stub_feature_flags(duo_chat_disabled_button: false)
-          visit(new_project_issue_path(project))
-        end
-
-        it 'does not have the GitLab Duo button' do
-          expect(page).not_to have_button('GitLab Duo')
-        end
-      end
-
-      context 'with duo_chat_disabled_button flag enabled' do
-        before do
-          visit(new_project_issue_path(project))
-        end
-
-        it 'does not have the GitLab Duo button' do
-          expect(page).to have_button('GitLab Duo')
-        end
+      it 'has disabled GitLab Duo button' do
+        expect(page).to have_button('GitLab Duo', disabled: true)
       end
     end
   end
