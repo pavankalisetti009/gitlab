@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Search::Elastic::Delete::ProjectTransferService, :elastic_helpers, feature_category: :global_search do
+RSpec.describe ::Search::Elastic::Delete::ProjectAssociationsService, :elastic_helpers, feature_category: :global_search do
   describe '#execute' do
     subject(:execute) do
-      described_class.execute({ task: :project_transfer,
+      described_class.execute({ task: :delete_project_associations,
                             project_id: project.id, traversal_id: 'random-' })
     end
 
@@ -43,6 +43,20 @@ RSpec.describe ::Search::Elastic::Delete::ProjectTransferService, :elastic_helpe
       end
 
       context 'when work_item index is available' do
+        it 'raises exception and returns if both project_id and traversal_id are not passed' do
+          # items are present already
+          expect(items_in_index(work_item_index).count).to eq(1)
+          expect(items_in_index(work_item_index)).to include(work_item.id)
+
+          expect do
+            described_class.execute({ task: :delete_project_associations, project_id: nil, traversal_id: nil })
+          end.to raise_error(ArgumentError)
+          es_helper.refresh_index(index_name: work_item_index)
+
+          # items are not deleted
+          expect(items_in_index(work_item_index)).to include(work_item.id)
+        end
+
         it 'deletes work items not belonging to the passed traversal_id' do
           # items are present already
           expect(items_in_index(work_item_index).count).to eq(1)

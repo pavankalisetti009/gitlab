@@ -3,7 +3,7 @@
 module Search
   module Elastic
     module Delete
-      class ProjectTransferService
+      class ProjectAssociationsService
         include Gitlab::Loggable
 
         attr_reader :options
@@ -36,23 +36,32 @@ module Search
         def remove_work_item_documents(project_id, traversal_id)
           return unless work_item_index_available?
 
-          response = client.delete_by_query(
-            {
-              index: ::Search::Elastic::Types::WorkItem.index_name,
-              conflicts: 'proceed',
-              timeout: '10m',
-              body: {
-                query: {
-                  bool: {
-                    filter: [
-                      { term: { project_id: project_id } },
-                      { bool: { must_not: { prefix: { traversal_ids: { value: traversal_id } } } } }
-                    ]
-                  }
+          filter_list = []
+          filter_list << { term: { project_id: project_id } } unless project_id.nil?
+
+          unless traversal_id.nil?
+            filter_list << { bool: { must_not: { prefix: { traversal_ids: { value: traversal_id } } } } }
+          end
+
+          if filter_list.empty?
+            Gitlab::ErrorTracking.track_and_raise_for_dev_exception(
+              ArgumentError.new('project_id, traversal_id are nil')
+            )
+            return
+          end
+
+          response = client.delete_by_query({
+            index: ::Search::Elastic::Types::WorkItem.index_name,
+            conflicts: 'proceed',
+            timeout: '10m',
+            body: {
+              query: {
+                bool: {
+                  filter: filter_list
                 }
               }
             }
-          )
+          })
 
           log_payload = build_structured_payload(
             project_id: project_id,
