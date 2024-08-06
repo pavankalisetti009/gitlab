@@ -12,8 +12,9 @@ module GitlabSubscriptions
       :gitlab_subscription_destroyed
     ]
 
+    belongs_to :namespace, optional: false
+
     validates :gitlab_subscription_id, presence: true
-    validates :namespace_id, presence: true
 
     PREFIXED_ATTRIBUTES = %w[
       id
