@@ -22,6 +22,16 @@ module TrialsHelper
     )
   end
 
+  def create_duo_enterprise_lead_form_data
+    _lead_form_data.merge(
+      submit_path: trials_duo_enterprise_path(
+        step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
+        namespace_id: params[:namespace_id]
+      ),
+      submit_button_text: s_('Trial|Activate my trial')
+    )
+  end
+
   def create_company_form_data(onboarding_status)
     submit_params = glm_params.merge(passed_through_params.to_unsafe_h)
     {

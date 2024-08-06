@@ -8,9 +8,9 @@ RSpec.describe 'Company Information', :js, feature_category: :activation do
   let_it_be(:user) { create(:user, onboarding_in_progress: true, onboarding_status_initial_registration_type: 'free') }
   let_it_be(:fields) do
     [
-      'First Name',
-      'Last Name',
-      'Company Name',
+      'First name',
+      'Last name',
+      'Company name',
       'Number of employees',
       'Country',
       'Telephone number (optional)',

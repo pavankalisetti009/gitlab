@@ -282,7 +282,7 @@ RSpec.shared_examples 'for tracking the trial step' do |plan_name, add_on|
       execute
     end
       .to(
-        trigger_internal_events('duo_pro_trial_registration_success')
+        trigger_internal_events("#{add_on}_trial_registration_success")
           .with(user: user, namespace: namespace, category: 'InternalEventTracking')
           .and(
             not_trigger_internal_events(

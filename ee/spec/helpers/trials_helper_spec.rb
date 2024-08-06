@@ -119,6 +119,63 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
     end
   end
 
+  describe '#create_duo_enterprise_lead_form_data' do
+    let(:user) { build_stubbed(:user, user_detail: build_stubbed(:user_detail, organization: '_org_')) }
+
+    let(:extra_params) do
+      {
+        first_name: '_params_first_name_',
+        last_name: '_params_last_name_',
+        company_name: '_params_company_name_',
+        company_size: '_company_size_',
+        phone_number: '1234',
+        country: '_country_',
+        state: '_state_'
+      }
+    end
+
+    let(:params) { ActionController::Parameters.new(extra_params) }
+
+    before do
+      allow(helper).to receive(:params).and_return(params)
+      allow(helper).to receive(:current_user).and_return(user)
+    end
+
+    subject(:form_data) { helper.create_duo_enterprise_lead_form_data }
+
+    it 'provides expected form data' do
+      keys = extra_params.keys + [:submit_path, :submit_button_text]
+
+      expect(form_data.keys.map(&:to_sym)).to match_array(keys)
+    end
+
+    it 'allows overriding data with params' do
+      expect(form_data).to match(a_hash_including(extra_params))
+    end
+
+    context 'when namespace_id is in the params' do
+      let(:extra_params) { { namespace_id: non_existing_record_id } }
+
+      it 'provides the submit path with the namespace_id' do
+        expect(form_data[:submit_path]).to eq(trials_duo_enterprise_path(step: :lead, **params.permit!))
+      end
+    end
+
+    context 'when params are empty' do
+      let(:extra_params) { {} }
+
+      it 'uses the values from current user' do
+        current_user_attributes = {
+          first_name: user.first_name,
+          last_name: user.last_name,
+          company_name: user.organization
+        }
+
+        expect(helper.create_duo_enterprise_lead_form_data).to match(a_hash_including(current_user_attributes))
+      end
+    end
+  end
+
   describe '#create_company_form_data' do
     let(:user) { build_stubbed(:user) }
     let(:extra_params) do

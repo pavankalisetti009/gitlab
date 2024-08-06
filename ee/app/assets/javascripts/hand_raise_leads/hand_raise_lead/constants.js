@@ -1,6 +1,5 @@
 import { __, s__ } from '~/locale';
 
-export const PQL_COMPANY_SIZE_PROMPT = __('- Select -');
 export const PQL_PHONE_DESCRIPTION = __('Provide a number our sales team can use to call you.');
 export const PQL_STATE_LABEL = __('State/Province/City');
 export const PQL_STATE_PROMPT = s__('PQL|Please select a city or state');

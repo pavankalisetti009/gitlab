@@ -3,5 +3,6 @@
 scope module: :gitlab_subscriptions do
   namespace :trials do
     resource :duo_pro, only: [:new, :create]
+    resource :duo_enterprise, only: [:new, :create]
   end
 end
