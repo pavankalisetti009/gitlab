@@ -16,7 +16,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_categ
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to eq('No license found')
+        expect(result.message).to match('Contact GitLab customer support to obtain a license')
       end
     end
 
@@ -28,7 +28,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_categ
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to eq('No Online Cloud License found')
+        expect(result.message).to match('Contact GitLab customer support to upgrade your license')
       end
     end
 
@@ -40,7 +40,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::LicenseProbe, feature_categ
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be true
-        expect(result.message).to eq('Online Cloud License found')
+        expect(result.message).to match('Subscription can be synchronized')
       end
     end
   end
