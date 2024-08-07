@@ -1,4 +1,4 @@
-import { GlTable, GlSkeletonLoader } from '@gitlab/ui';
+import { GlTable, GlLoadingIcon } from '@gitlab/ui';
 import { stubComponent } from 'helpers/stub_component';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import AgentsTable from 'ee_component/workspaces/agent_mapping/components/agents_table.vue';
@@ -40,7 +40,7 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
     });
   };
   const findAgentsTable = () => wrapper.findComponent(GlTable);
-  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
   describe('when loading', () => {
     beforeEach(() => {
@@ -51,8 +51,8 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
       });
     });
 
-    it('displays skeleton loader', () => {
-      expect(findSkeletonLoader().exists()).toBe(true);
+    it('displays loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(true);
     });
 
     it('does not display agents table', () => {
@@ -71,8 +71,8 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
         });
       });
 
-      it('does not display skeleton loader', () => {
-        expect(findSkeletonLoader().exists()).toBe(false);
+      it('does not display loading icon', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
       });
 
       it('displays agents table', () => {
@@ -93,8 +93,8 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
         );
       });
 
-      it('does not display skeleton loader', () => {
-        expect(findSkeletonLoader().exists()).toBe(false);
+      it('does not display loading icon', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
       });
 
       it('displays agents table', () => {
@@ -120,8 +120,8 @@ describe('workspaces/agent_mapping/components/agents_table', () => {
       );
     });
 
-    it('does not display skeleton loader', () => {
-      expect(findSkeletonLoader().exists()).toBe(false);
+    it('does not display loading icon', () => {
+      expect(findLoadingIcon().exists()).toBe(false);
     });
 
     it('displays agents table', () => {

@@ -60979,6 +60979,9 @@ msgstr ""
 msgid "Workspaces|Active"
 msgstr ""
 
+msgid "Workspaces|Agents"
+msgstr ""
+
 msgid "Workspaces|Agents connect workspaces to your Kubernetes cluster. To create a workspace with an allowed agent, group members must have at least the Developer role."
 msgstr ""
 
