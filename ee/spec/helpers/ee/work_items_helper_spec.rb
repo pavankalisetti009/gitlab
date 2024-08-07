@@ -83,10 +83,12 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
     before do
       stub_licensed_features(
         epics: feature_available,
+        group_bulk_edit: feature_available,
         issuable_health_status: feature_available,
         issue_weights: feature_available,
-        scoped_labels: feature_available,
-        group_bulk_edit: feature_available
+        okrs: feature_available,
+        quality_management: feature_available,
+        scoped_labels: feature_available
       )
     end
 
@@ -96,14 +98,16 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns true for the features' do
         expect(work_items_list_data).to include(
           {
+            can_bulk_edit_epics: "true",
+            group_issues_path: issues_group_path(group),
             has_epics_feature: "true",
             has_issuable_health_status_feature: "true",
             has_issue_weights_feature: "true",
+            has_okrs_feature: "true",
+            has_quality_management_feature: "true",
             has_scoped_labels_feature: "true",
-            can_bulk_edit_epics: "true",
             labels_fetch_path: group_labels_path(
-              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
-            group_issues_path: issues_group_path(group)
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true)
           }
         )
       end
@@ -115,14 +119,16 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       it 'returns false for the features' do
         expect(work_items_list_data).to include(
           {
+            can_bulk_edit_epics: "false",
+            group_issues_path: issues_group_path(group),
             has_epics_feature: "false",
             has_issuable_health_status_feature: "false",
             has_issue_weights_feature: "false",
+            has_okrs_feature: "false",
+            has_quality_management_feature: "false",
             has_scoped_labels_feature: "false",
-            can_bulk_edit_epics: "false",
             labels_fetch_path: group_labels_path(
-              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
-            group_issues_path: issues_group_path(group)
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true)
           }
         )
       end

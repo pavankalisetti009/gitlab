@@ -10,24 +10,14 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :public, group: group, developers: user) }
 
-  let_it_be(:incident) do
-    create(:incident, project: project)
-  end
-
-  let_it_be(:issue) do
-    create(:issue, project: project)
-  end
-
-  let_it_be(:task) do
-    create(:work_item, :task, project: project)
-  end
-
-  let_it_be(:test_case) do
-    create(:quality_test_case, project: project)
-  end
+  let_it_be(:incident) { create(:incident, project: project) }
+  let_it_be(:issue) { create(:issue, project: project) }
+  let_it_be(:task) { create(:work_item, :task, project: project) }
+  let_it_be(:test_case) { create(:quality_test_case, project: project) }
 
   context 'for signed in user' do
     before do
+      stub_licensed_features(quality_management: true)
       sign_in(user)
       visit group_work_items_path(group)
     end
