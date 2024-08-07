@@ -127,11 +127,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker
         it_behaves_like 'does not remove seat assignment'
       end
 
-      context 'when there is an associated add_on_purchase' do
-        let(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on)
-        end
-
+      shared_examples 'refreshes user seat assignments' do
         before do
           add_on_purchase.assigned_users.create!(user: user_1)
           add_on_purchase.assigned_users.create!(user: user_2)
@@ -146,6 +142,22 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::RefreshUserAssignmentsWorker
         end
 
         it_behaves_like 'updates last_assigned_users_refreshed_at attribute'
+      end
+
+      context 'with Duo Pro add-on purchase' do
+        let(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_managed, add_on: add_on, quantity: 1)
+        end
+
+        it_behaves_like 'refreshes user seat assignments'
+      end
+
+      context "with Duo Enterprise add-on purchase" do
+        let(:add_on_purchase) do
+          create(:gitlab_subscription_add_on_purchase, :self_managed, :duo_enterprise, quantity: 1)
+        end
+
+        it_behaves_like 'refreshes user seat assignments'
       end
     end
 
