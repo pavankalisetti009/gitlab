@@ -65,6 +65,7 @@ RSpec.describe 'Multiple value streams', :js, feature_category: :value_stream_ma
   def expect_successful_save(value_stream_name, expect_redirect)
     if expect_redirect
       expect(find_by_testid('dropdown-value-streams')).to have_text(value_stream_name)
+      expect(page).to have_text(_("'%{name}' Value Stream has been successfully created.") % { name: value_stream_name })
     else
       expect(page).to have_text(_("'%{name}' Value Stream created") % { name: value_stream_name })
     end
