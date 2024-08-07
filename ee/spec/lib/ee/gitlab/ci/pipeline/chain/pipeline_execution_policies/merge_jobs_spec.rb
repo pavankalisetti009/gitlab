@@ -180,20 +180,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
     end
 
-    context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_type: false)
-      end
-
-      it 'does not change pipeline stages' do
-        expect { run_chain }.not_to change { pipeline.stages }
-      end
-
-      it_behaves_like 'internal event not tracked' do
-        let(:event) { 'enforce_pipeline_execution_policy_in_project' }
-      end
-    end
-
     context 'when pipeline_execution_policies is not defined' do
       let(:pipeline_execution_policies) { nil }
 

@@ -267,15 +267,6 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           }.to_json))
         end
       end
-
-      context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-        before do
-          stub_feature_flags(pipeline_execution_policy_type: false)
-        end
-
-        it { is_expected.not_to have_key(:max_active_pipeline_execution_policies_reached) }
-        it { is_expected.not_to have_key(:max_pipeline_execution_policies_allowed) }
-      end
     end
   end
 

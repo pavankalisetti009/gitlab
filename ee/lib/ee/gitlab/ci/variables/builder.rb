@@ -29,7 +29,6 @@ module EE
           attr_reader :scan_execution_policies_variables_builder
 
           def pipeline_execution_policy_variables(job, job_attributes)
-            return [] if ::Feature.disabled?(:pipeline_execution_policy_type, project.group)
             return [] unless job.execution_policy_job?
 
             job_attributes[:yaml_variables] || job.yaml_variables

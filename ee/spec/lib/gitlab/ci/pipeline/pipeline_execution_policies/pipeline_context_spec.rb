@@ -59,14 +59,6 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
       it { is_expected.to eq(true) }
     end
-
-    context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-      before do
-        stub_feature_flags(pipeline_execution_policy_type: false)
-      end
-
-      it { is_expected.to eq(false) }
-    end
   end
 
   describe '#valid_stage?' do
@@ -84,14 +76,6 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
 
         context 'with execution_policy_dry_run' do
           let(:execution_policy_dry_run) { true }
-
-          it { is_expected.to eq(true) }
-        end
-
-        context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_type: false)
-          end
 
           it { is_expected.to eq(true) }
         end

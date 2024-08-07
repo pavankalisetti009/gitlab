@@ -49,15 +49,11 @@ module EE::SecurityOrchestrationHelper
       max_scan_result_policies_allowed: scan_result_policies_limit,
       max_scan_execution_policies_allowed: Security::ScanExecutionPolicy::POLICY_LIMIT,
       max_ci_component_publishing_policies_allowed: Security::CiComponentPublishingPolicy::POLICY_LIMIT,
-      max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container).to_s
+      max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container)
+                                                      .to_s,
+      max_active_pipeline_execution_policies_reached: max_active_pipeline_execution_policies_reached?(container).to_s,
+      max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT
     }
-
-    if pipeline_execution_policy_enabled?(container)
-      policy_data.merge!(
-        max_active_pipeline_execution_policies_reached: max_active_pipeline_execution_policies_reached?(container).to_s,
-        max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT
-      )
-    end
 
     if container.is_a?(::Project)
       policy_data.merge(
@@ -65,14 +61,6 @@ module EE::SecurityOrchestrationHelper
       )
     else
       policy_data
-    end
-  end
-
-  def pipeline_execution_policy_enabled?(container)
-    if container.is_a?(::Project)
-      Feature.enabled?(:pipeline_execution_policy_type, container.group)
-    else
-      Feature.enabled?(:pipeline_execution_policy_type, container)
     end
   end
 

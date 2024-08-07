@@ -41,14 +41,6 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Skip, feature_category: :pipeline_co
         it 'does not break the chain' do
           expect(step.break?).to be false
         end
-
-        context 'when feature flag "pipeline_execution_policy_type" is disabled' do
-          before do
-            stub_feature_flags(pipeline_execution_policy_type: false)
-          end
-
-          it { expect(step.break?).to be true }
-        end
       end
     end
   end

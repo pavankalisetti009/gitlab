@@ -1,8 +1,0 @@
----
-name: pipeline_execution_policy_type
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/issues/454209
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/454210
-milestone: '16.11'
-type: development
-group: group::security policies
-default_enabled: true

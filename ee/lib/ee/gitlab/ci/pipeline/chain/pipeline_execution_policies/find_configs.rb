@@ -26,7 +26,6 @@ module EE
 
               override :perform!
               def perform!
-                return if ::Feature.disabled?(:pipeline_execution_policy_type, project.group)
                 return if command.execution_policy_mode?
                 return if pipeline.dangling?
                 return if pipeline_execution_policy_configs.empty?
