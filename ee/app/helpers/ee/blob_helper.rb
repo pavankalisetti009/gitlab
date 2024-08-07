@@ -7,7 +7,7 @@ module EE
     override :vue_blob_app_data
     def vue_blob_app_data(project, blob, ref)
       super.merge({
-        explain_code_available: ::Llm::ExplainCodeService.new(current_user, project).valid?.to_s,
+        explain_code_available: ::Gitlab::Llm::TanukiBot.enabled_for?(user: current_user, container: project).to_s,
         new_workspace_path: new_remote_development_workspace_path
       })
     end
