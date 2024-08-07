@@ -4,7 +4,7 @@
 # and it is installed at instance level.
 # GitLab SaaS is a special self-managed instance which has a license installed
 # that is mapped to an Ultimate plan.
-class License < MainClusterwide::ApplicationRecord
+class License < ApplicationRecord
   include ActionView::Helpers::NumberHelper
   include Gitlab::Utils::StrongMemoize
 
