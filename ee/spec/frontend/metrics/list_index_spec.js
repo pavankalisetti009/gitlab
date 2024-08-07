@@ -1,21 +1,19 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ListIndex from 'ee/metrics/list_index.vue';
 import MetricsList from 'ee/metrics/list/metrics_list.vue';
-import ProvisionedObservabilityContainer from '~/observability/components/provisioned_observability_container.vue';
+import * as observabilityClient from '~/observability/client';
+import { createMockClient, mockApiConfig } from 'helpers/mock_observability_client';
 
 describe('ListIndex', () => {
   const props = {
     apiConfig: {
-      oauthUrl: 'https://example.com/oauth',
-      tracingUrl: 'https://example.com/tracing',
-      provisioningUrl: 'https://example.com/provisioning',
-      servicesUrl: 'https://example.com/services',
-      operationsUrl: 'https://example.com/operations',
-      metricsUrl: 'https://example.com/metricsUrl',
+      ...mockApiConfig,
     },
   };
 
   let wrapper;
+
+  const observabilityClientMock = createMockClient();
 
   const mountComponent = () => {
     wrapper = shallowMountExtended(ListIndex, {
@@ -23,18 +21,20 @@ describe('ListIndex', () => {
     });
   };
 
-  it('renders ProvisionedObservabilityContainer component', () => {
-    mountComponent();
+  beforeEach(() => {
+    jest.spyOn(observabilityClient, 'buildClient').mockReturnValue(observabilityClientMock);
 
-    expect(wrapper.findComponent(ProvisionedObservabilityContainer).props('apiConfig')).toBe(
-      props.apiConfig,
-    );
+    mountComponent();
   });
 
-  it('renders MetricsList component inside ProvisionedObservabilityContainer', () => {
-    mountComponent();
+  it('renders MetricsList component', () => {
+    expect(wrapper.findComponent(MetricsList).exists()).toBe(true);
+  });
 
-    const observabilityContainer = wrapper.findComponent(ProvisionedObservabilityContainer);
-    expect(observabilityContainer.findComponent(MetricsList).exists()).toBe(true);
+  it('builds the observability client', () => {
+    expect(observabilityClient.buildClient).toHaveBeenCalledWith(props.apiConfig);
+    expect(wrapper.findComponent(MetricsList).props('observabilityClient')).toBe(
+      observabilityClientMock,
+    );
   });
 });

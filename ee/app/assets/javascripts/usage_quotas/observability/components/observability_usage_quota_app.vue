@@ -1,12 +1,11 @@
 <script>
-import ProvisionedObservabilityContainer from '~/observability/components/provisioned_observability_container.vue';
+import { buildClient } from '~/observability/client';
 import ObservabilityUsageQuota from './observability_usage_quota.vue';
 
 export default {
   name: 'ObservabilityUsageQuotaApp',
   components: {
     ObservabilityUsageQuota,
-    ProvisionedObservabilityContainer,
   },
   inject: {
     apiConfig: {
@@ -14,15 +13,16 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      observabilityClient: buildClient(this.apiConfig),
+    };
+  },
 };
 </script>
 
 <template>
   <section>
-    <provisioned-observability-container :api-config="apiConfig">
-      <template #default="{ observabilityClient }">
-        <observability-usage-quota :observability-client="observabilityClient" />
-      </template>
-    </provisioned-observability-container>
+    <observability-usage-quota :observability-client="observabilityClient" />
   </section>
 </template>

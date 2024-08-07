@@ -9,19 +9,19 @@ RSpec.describe Gitlab::Observability, feature_category: :tracing do
   describe '.tracing_url' do
     subject { described_class.tracing_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/traces") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/traces") }
   end
 
   describe '.tracing_analytics_url' do
     subject { described_class.tracing_analytics_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/traces/analytics") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/traces/analytics") }
   end
 
   describe '.services_url' do
     subject { described_class.services_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/services") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/services") }
   end
 
   describe '.operations_url' do
@@ -29,7 +29,7 @@ RSpec.describe Gitlab::Observability, feature_category: :tracing do
 
     it {
       is_expected.to eq(
-        "#{described_class.observability_url}/v3/query/#{project.id}/services/$SERVICE_NAME$/operations"
+        "/api/v4/projects/#{project.id}/observability/v1/services/$SERVICE_NAME$/operations"
       )
     }
   end
@@ -37,36 +37,36 @@ RSpec.describe Gitlab::Observability, feature_category: :tracing do
   describe '.metrics_url' do
     subject { described_class.metrics_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/metrics/autocomplete") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/metrics/autocomplete") }
   end
 
   describe '.metrics_search_url' do
     subject { described_class.metrics_search_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/metrics/search") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/metrics/search") }
   end
 
   describe '.metrics_search_metadata_url' do
     subject { described_class.metrics_search_metadata_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/metrics/searchmetadata") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/metrics/searchmetadata") }
   end
 
   describe '.logs_search_url' do
     subject { described_class.logs_search_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/logs/search") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/logs/search") }
   end
 
   describe '.logs_search_metadata_url' do
     subject { described_class.logs_search_metadata_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/logs/searchmetadata") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/logs/searchmetadata") }
   end
 
   describe '.analytics_url' do
     subject { described_class.analytics_url(project) }
 
-    it { is_expected.to eq("#{described_class.observability_url}/v3/query/#{project.id}/analytics/storage") }
+    it { is_expected.to eq("/api/v4/projects/#{project.id}/observability/v1/analytics/storage") }
   end
 end

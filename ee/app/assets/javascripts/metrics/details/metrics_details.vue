@@ -127,12 +127,7 @@ export default {
       }
       this.loading = true;
       try {
-        const enabled = await this.observabilityClient.isObservabilityEnabled();
-        if (enabled) {
-          await Promise.all([this.fetchMetricSearchMetadata(), await this.fetchMetricData()]);
-        } else {
-          this.goToMetricsIndex();
-        }
+        await Promise.all([this.fetchMetricSearchMetadata(), this.fetchMetricData()]);
       } catch (e) {
         createAlert({
           message: this.$options.i18n.error,
