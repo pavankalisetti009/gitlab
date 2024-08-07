@@ -229,7 +229,7 @@ module Gitlab
 
         found_line_number = 0
         highlight_found = false
-        matched_lines_count = highlight_content.scan(/#{::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG}(.*?)\R/o).size
+        matched_lines_count = highlight_content.scan(/#{::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG}(.*)\R/o).size
 
         highlight_content.each_line.each_with_index do |line, index|
           next unless line.include?(::Elastic::Latest::GitClassProxy::HIGHLIGHT_START_TAG)

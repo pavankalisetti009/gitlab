@@ -21,7 +21,7 @@ module EE
           scope: web_hook.parent || current_user,
           target: web_hook,
           message: "Deleted #{web_hook.model_name.human.downcase}",
-          target_details: { id: web_hook.id, url: web_hook.url }
+          target_details: "Hook #{web_hook.id}"
         }
 
         ::Gitlab::Audit::Auditor.audit(audit_context)

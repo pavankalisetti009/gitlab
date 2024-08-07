@@ -11,6 +11,7 @@ module EE
 
       validate :sso_enforcement, if: -> { group && user }
       validate :group_domain_limitations, if: :group_has_domain_limitations?
+      validate :validate_no_security_policy_bot_as_group_member
 
       scope :by_group_ids, ->(group_ids) { where(source_id: group_ids) }
 
@@ -125,6 +126,12 @@ module EE
       return if ignore_user_limits
 
       super
+    end
+
+    def validate_no_security_policy_bot_as_group_member
+      return unless user&.security_policy_bot?
+
+      errors.add(:member_user_type, _("Security policy bot cannot be added as a group member"))
     end
   end
 end

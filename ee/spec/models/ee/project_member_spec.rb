@@ -67,6 +67,17 @@ RSpec.describe ProjectMember, feature_category: :groups_and_projects do
     end
   end
 
+  describe 'security policy project bot validation' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:security_policy_bot) { create(:user, :security_policy_bot) }
+
+    it 'allows to be added to project' do
+      member = project.add_guest(security_policy_bot)
+
+      expect(member).to be_valid
+    end
+  end
+
   describe 'only one security policy bot validation' do
     let_it_be(:user1) { create(:user, :security_policy_bot) }
     let_it_be(:user2) { create(:user, :security_policy_bot) }

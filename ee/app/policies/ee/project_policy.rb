@@ -801,7 +801,7 @@ module EE
         enable :admin_merge_request_approval_settings
       end
 
-      rule { security_policy_bot }.policy do
+      rule { security_policy_bot & project_allowed_for_job_token }.policy do
         enable :create_pipeline
         enable :create_bot_pipeline
         enable :build_download_code
