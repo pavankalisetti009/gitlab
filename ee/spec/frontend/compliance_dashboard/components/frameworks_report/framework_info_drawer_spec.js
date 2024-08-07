@@ -1,10 +1,14 @@
-import { GlLabel, GlLink, GlTruncate, GlPopover, GlSprintf } from '@gitlab/ui';
+import { GlLabel, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createFramework } from 'ee_jest/compliance_dashboard/mock_data';
 
 describe('FrameworkInfoDrawer component', () => {
   let wrapper;
+
+  const $toast = {
+    show: jest.fn(),
+  };
 
   const GROUP_PATH = 'foo';
 
@@ -16,8 +20,13 @@ describe('FrameworkInfoDrawer component', () => {
     defaultFramework.scanResultPolicies.nodes.length;
 
   const findDefaultBadge = () => wrapper.findComponent(GlLabel);
-  const findTitle = () => wrapper.findComponent(GlTruncate);
+  const findTitle = () => wrapper.findByTestId('framework-name');
   const findEditFrameworkBtn = () => wrapper.findByText('Edit framework');
+
+  const findIdSection = () => wrapper.findByTestId('sidebar-id');
+  const findIdSectionTitle = () => wrapper.findByTestId('sidebar-id-title');
+  const findFrameworkId = () => wrapper.findByTestId('framework-id');
+  const findCopyIdButton = () => findIdSection().findComponent(GlButton);
 
   const findDescriptionTitle = () => wrapper.findByTestId('sidebar-description-title');
   const findDescription = () => wrapper.findByTestId('sidebar-description');
@@ -42,6 +51,9 @@ describe('FrameworkInfoDrawer component', () => {
         },
       },
       provide,
+      mocks: {
+        $toast,
+      },
     });
   };
 
@@ -63,7 +75,7 @@ describe('FrameworkInfoDrawer component', () => {
 
     describe('for drawer body content', () => {
       it('renders the title', () => {
-        expect(findTitle().props()).toMatchObject({ text: defaultFramework.name, position: 'end' });
+        expect(findTitle().text()).toBe(defaultFramework.name);
       });
 
       it('renders the default badge', () => {
@@ -72,6 +84,25 @@ describe('FrameworkInfoDrawer component', () => {
 
       it('renders the edit framework button', () => {
         expect(findEditFrameworkBtn().exists()).toBe(true);
+      });
+
+      it('renders the ID accordion', () => {
+        expect(findIdSectionTitle().text()).toBe('Compliance framework ID');
+      });
+
+      it('renders the ID of the framework', () => {
+        expect(findFrameworkId().text()).toBe('1');
+      });
+
+      it('renders the copy ID button', () => {
+        expect(findCopyIdButton().text()).toBe('Copy ID');
+      });
+
+      it('calls copyIdToClipboard method when copy button is clicked', async () => {
+        jest.spyOn(navigator.clipboard, 'writeText');
+        await findCopyIdButton().vm.$emit('click');
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(1);
+        expect($toast.show).toHaveBeenCalledWith('Framework ID copied to clipboard.');
       });
 
       it('renders the Description accordion', () => {
