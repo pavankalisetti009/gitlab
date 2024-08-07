@@ -55,6 +55,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
   context 'for tables that already have a backfilled, non-nullable sharding key on their parent' do
     let(:known_cross_joins) do
       {
+        'vulnerability_finding_links' => {
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+        },
         'vulnerability_flags' => {
           'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },

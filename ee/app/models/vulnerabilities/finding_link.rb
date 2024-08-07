@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingLink < ApplicationRecord
+  class FindingLink < Gitlab::Database::SecApplicationRecord
     include EachBatch
 
     self.table_name = 'vulnerability_finding_links'

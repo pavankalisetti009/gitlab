@@ -81,7 +81,19 @@ module Gitlab
       def return_data
         strong_memoize(:return_data) do
           if insert_objects.present?
-            unique_by.present? ? bulk_upsert : bulk_insert
+            ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+              %w[
+                vulnerabilities
+                vulnerability_finding_links
+                vulnerability_identifiers
+                vulnerability_occurrence_identifiers
+                vulnerability_occurrence_pipelines
+                vulnerability_occurrences
+              ],
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474635'
+            ) do
+              unique_by.present? ? bulk_upsert : bulk_insert
+            end
           else
             []
           end
