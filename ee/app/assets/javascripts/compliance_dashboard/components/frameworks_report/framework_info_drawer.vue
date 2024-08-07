@@ -1,18 +1,10 @@
 <script>
-import {
-  GlDrawer,
-  GlBadge,
-  GlButton,
-  GlLabel,
-  GlLink,
-  GlSprintf,
-  GlPopover,
-  GlTruncate,
-} from '@gitlab/ui';
+import { GlDrawer, GlBadge, GlButton, GlLabel, GlLink, GlSprintf, GlPopover } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { isTopLevelGroup } from '../../utils';
 
 export default {
@@ -25,7 +17,6 @@ export default {
     GlLink,
     GlSprintf,
     GlPopover,
-    GlTruncate,
   },
   inject: ['groupSecurityPoliciesPath'],
   props: {
@@ -72,6 +63,9 @@ export default {
     policiesTitle() {
       return `${this.$options.i18n.policies} (${this.policies.length})`;
     },
+    normalisedFrameworkId() {
+      return getIdFromGraphQLId(this.framework.id);
+    },
   },
   methods: {
     getPolicyEditUrl(policy) {
@@ -82,6 +76,10 @@ export default {
 
       return `${this.groupSecurityPoliciesPath}/${policy.name}/edit?type=${urlParameter}`;
     },
+    copyIdToClipboard() {
+      navigator?.clipboard?.writeText(this.normalisedFrameworkId);
+      this.$toast.show(this.$options.i18n.copyIdToastText);
+    },
   },
   DRAWER_Z_INDEX,
   i18n: {
@@ -90,6 +88,9 @@ export default {
     editFrameworkButtonMessage: s__(
       'ComplianceFrameworks|The compliance framework must be edited in top-level group %{linkStart}namespace%{linkEnd}',
     ),
+    frameworkIdTitle: s__('ComplianceFrameworksReport|Compliance framework ID'),
+    frameworkIdButtonText: s__('ComplianceFrameworksReport|Copy ID'),
+    copyIdToastText: s__('ComplianceFrameworksReport|Framework ID copied to clipboard.'),
     frameworkDescription: s__('ComplianceFrameworksReport|Description'),
     associatedProjects: s__('ComplianceFrameworksReport|Associated Projects'),
     policies: s__('ComplianceFrameworksReport|Policies'),
@@ -105,61 +106,77 @@ export default {
     @close="$emit('close')"
   >
     <template v-if="framework" #title>
-      <div style="max-width: 350px">
-        <h3 class="gl-mt-0">
-          <gl-truncate :text="framework.name" with-tooltip />
-          <gl-label
-            v-if="defaultFramework"
-            class="gl-vertical-align-top gl-mt-2"
-            :background-color="framework.color"
-            :title="$options.i18n.defaultFramework"
-          />
-        </h3>
-        <gl-popover
-          v-if="editDisabled"
-          target="framework-info-drawer-edit-button"
-          placement="left"
-          boundary="viewport"
-        >
-          <gl-sprintf :message="$options.i18n.editFrameworkButtonMessage">
-            <template #link>
-              <gl-link :href="rootAncestor.complianceCenterPath">
-                {{ rootAncestor.name }}
-              </gl-link>
-            </template>
-          </gl-sprintf>
-        </gl-popover>
-        <span id="framework-info-drawer-edit-button" class="gl-inline-block">
-          <gl-button
-            :disabled="editDisabled"
-            category="primary"
-            variant="confirm"
-            @click="$emit('edit', framework)"
-          >
-            {{ $options.i18n.editFramework }}
-          </gl-button>
-        </span>
+      <div class="gl-display-flex gl-flex-wrap gl-align-items-center gl-gap-4">
+        <h2 class="gl-my-0" data-testid="framework-name">
+          {{ framework.name }}
+        </h2>
+        <gl-label
+          v-if="defaultFramework"
+          :background-color="framework.color"
+          :title="$options.i18n.defaultFramework"
+        />
       </div>
+    </template>
+
+    <template v-if="framework" #header>
+      <gl-popover
+        v-if="editDisabled"
+        target="framework-info-drawer-edit-button"
+        placement="left"
+        boundary="viewport"
+      >
+        <gl-sprintf :message="$options.i18n.editFrameworkButtonMessage">
+          <template #link>
+            <gl-link :href="rootAncestor.complianceCenterPath">
+              {{ rootAncestor.name }}
+            </gl-link>
+          </template>
+        </gl-sprintf>
+      </gl-popover>
+      <span id="framework-info-drawer-edit-button">
+        <gl-button
+          :disabled="editDisabled"
+          class="gl-mt-5"
+          category="primary"
+          variant="confirm"
+          @click="$emit('edit', framework)"
+        >
+          {{ $options.i18n.editFramework }}
+        </gl-button>
+      </span>
     </template>
 
     <template v-if="framework" #default>
       <div>
-        <div>
-          <h5 data-testid="sidebar-description-title" class="gl-mt-0">
+        <div class="gl-mb-5" data-testid="sidebar-id">
+          <div class="gl-flex gl-align-items-center">
+            <h3 class="gl-mt-0" data-testid="sidebar-id-title">
+              {{ $options.i18n.frameworkIdTitle }}
+            </h3>
+          </div>
+          <div class="gl-flex">
+            <span data-testid="framework-id">{{ normalisedFrameworkId }}</span>
+            <gl-button
+              class="gl-ml-3"
+              variant="link"
+              data-testid="copy-id-button"
+              @click="copyIdToClipboard"
+              >{{ $options.i18n.frameworkIdButtonText }}</gl-button
+            >
+          </div>
+        </div>
+        <div class="gl-border-t">
+          <h3 data-testid="sidebar-description-title" class="gl-mt-5">
             {{ $options.i18n.frameworkDescription }}
-          </h5>
+          </h3>
           <span data-testid="sidebar-description">
             {{ framework.description }}
           </span>
         </div>
-        <div class="gl-my-5" data-testid="sidebar-projects">
-          <h5
-            v-if="framework.projects.nodes.length"
-            data-testid="sidebar-projects-title"
-            class="gl-mt-0"
-          >
+        <div class="gl-my-5 gl-border-t" data-testid="sidebar-projects">
+          <h3 data-testid="sidebar-projects-title" class="gl-mt-5">
             {{ associatedProjectsTitle }}
-          </h5>
+          </h3>
           <ul class="gl-pl-6">
             <li
               v-for="associatedProject in framework.projects.nodes"
@@ -170,10 +187,10 @@ export default {
             </li>
           </ul>
         </div>
-        <div class="gl-my-5" data-testid="sidebar-policies">
-          <h5 data-testid="sidebar-policies-title" class="gl-mt-0">
+        <div class="gl-mb-5 gl-border-t" data-testid="sidebar-policies">
+          <h3 data-testid="sidebar-policies-title" class="gl-mt-5">
             {{ policiesTitle }}
-          </h5>
+          </h3>
           <div v-if="policies.length">
             <div
               v-for="(policy, idx) in policies"
