@@ -46,8 +46,10 @@ RSpec.describe Elastic::IndexingControl, feature_category: :global_search do
         klass < ApplicationWorker &&
           klass.get_feature_category == :global_search &&
           klass.get_pause_control.nil? &&
-          klass.name != 'TestIndexingControlWorker' &&
-          !klass.name&.start_with?('Search::Zoekt') &&
+          !klass.name.nil? &&
+          !klass.name.empty? &&
+          !klass.singleton_class? &&
+          !klass.name.start_with?('Search::Zoekt') &&
           exceptions.exclude?(klass)
       end
 
