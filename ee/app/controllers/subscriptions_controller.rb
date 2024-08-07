@@ -39,7 +39,11 @@ class SubscriptionsController < ApplicationController
 
     return unless purchase_url_builder.customers_dot_flow?
 
-    redirect_to purchase_url_builder.build
+    if params[:plan_id]
+      redirect_to purchase_url_builder.build
+    else
+      redirect_to Gitlab::Saas.about_pricing_url
+    end
   end
 
   def buy_minutes
