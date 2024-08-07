@@ -6111,9 +6111,6 @@ msgstr ""
 msgid "Analytics|An error occurred while loading data"
 msgstr ""
 
-msgid "Analytics|An error occurred while loading the %{visualizationTitle} visualization."
-msgstr ""
-
 msgid "Analytics|Analytics dashboards"
 msgstr ""
 
@@ -6310,9 +6307,6 @@ msgid "Analytics|Something went wrong."
 msgstr ""
 
 msgid "Analytics|Start by choosing a measure"
-msgstr ""
-
-msgid "Analytics|Start by choosing a metric"
 msgstr ""
 
 msgid "Analytics|Statistics on namespace usage. Usage data is a cumulative count, and updated monthly."
@@ -17335,6 +17329,9 @@ msgid "DateRange|%{start_date}–%{end_date}"
 msgstr ""
 
 msgid "Dates"
+msgstr ""
+
+msgid "Day"
 msgstr ""
 
 msgid "Day of month"
@@ -33650,6 +33647,9 @@ msgstr ""
 msgid "Minimum role required to cancel a pipeline or job"
 msgstr ""
 
+msgid "Minute"
+msgstr ""
+
 msgid "Minutes"
 msgstr ""
 
@@ -43680,6 +43680,9 @@ msgstr ""
 msgid "QualitySummary|Project quality"
 msgstr ""
 
+msgid "Quarter"
+msgstr ""
+
 msgid "Queued"
 msgstr ""
 
@@ -47488,6 +47491,9 @@ msgid "Seats"
 msgstr ""
 
 msgid "Seats owed"
+msgstr ""
+
+msgid "Second"
 msgstr ""
 
 msgid "Secondary email:"
@@ -59968,6 +59974,9 @@ msgstr ""
 msgid "Wednesday"
 msgstr ""
 
+msgid "Week"
+msgstr ""
+
 msgid "Weekday"
 msgstr ""
 
@@ -61205,6 +61214,9 @@ msgid "Xcode"
 msgstr ""
 
 msgid "YYYY-MM-DD"
+msgstr ""
+
+msgid "Year"
 msgstr ""
 
 msgid "Yes"

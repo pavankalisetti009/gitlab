@@ -1,6 +1,5 @@
 import { nextTick } from 'vue';
 import { GlLink, GlSprintf } from '@gitlab/ui';
-import { __setMockMetadata } from '@cubejs-client/core';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { stubComponent } from 'helpers/stub_component';
@@ -12,6 +11,7 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 
 import { saveProductAnalyticsVisualization } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
+import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 
 import AnalyticsVisualizationDesigner from 'ee/analytics/analytics_dashboards/components/analytics_visualization_designer.vue';
 import VisualizationTypeSelector from 'ee/analytics/analytics_dashboards/components/visualization_designer/analytics_visualization_type_selector.vue';
@@ -22,8 +22,7 @@ import {
 } from 'ee/analytics/analytics_dashboards/constants';
 import { NEW_DASHBOARD_SLUG } from 'ee/vue_shared/components/customizable_dashboard/constants';
 
-import { mockMetaData, TEST_CUSTOM_DASHBOARDS_PROJECT } from '../mock_data';
-import { BuilderComponent, getQueryBuilderStub } from '../stubs';
+import { TEST_CUSTOM_DASHBOARDS_PROJECT, mockFilterOptions } from '../mock_data';
 
 jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_action');
 
@@ -38,6 +37,7 @@ jest.mock('~/alert', () => ({
   })),
 }));
 jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api');
+jest.mock('ee/analytics/analytics_dashboards/data_sources/cube_analytics');
 
 const showToast = jest.fn();
 const routerPush = jest.fn();
@@ -51,7 +51,6 @@ describe('AnalyticsVisualizationDesigner', () => {
   const findTitleInput = () => wrapper.findByTestId('visualization-title-input');
   const findFilteredSearch = () => wrapper.findByTestId('visualization-filtered-search');
   const findSaveButton = () => wrapper.findByTestId('visualization-save-btn');
-  const findQueryBuilder = () => wrapper.findByTestId('query-builder');
   const findTypeSelector = () => wrapper.findComponent(VisualizationTypeSelector);
   const findPageTitle = () => wrapper.findByTestId('page-title');
   const findPageDescription = () => wrapper.findByTestId('page-description');
@@ -84,9 +83,15 @@ describe('AnalyticsVisualizationDesigner', () => {
     return waitForPromises();
   };
 
-  const createWrapper = (
+  const mockFetchFilterOptions = async (responseCallback) => {
+    fetchFilterOptions.mockImplementation(responseCallback);
+
+    await waitForPromises();
+  };
+
+  const createWrapper = async (
     sourceDashboardSlug = '',
-    options = { provide: {}, queryBuilderData: {} },
+    options = { provide: {}, setMetaResponse: true },
   ) => {
     const mocks = {
       $toast: {
@@ -102,11 +107,13 @@ describe('AnalyticsVisualizationDesigner', () => {
       },
     };
 
+    if (options.setMetaResponse) {
+      await mockFetchFilterOptions(() => mockFilterOptions);
+    }
+
     wrapper = shallowMountExtended(AnalyticsVisualizationDesigner, {
       stubs: {
         RouterView: true,
-        BuilderComponent,
-        QueryBuilder: getQueryBuilderStub(options.queryBuilderData),
         GlSprintf,
         VisualizationTypeSelector: stubComponent(VisualizationTypeSelector, {
           template: `<div><button>Dropdown</button></div>`,
@@ -126,9 +133,8 @@ describe('AnalyticsVisualizationDesigner', () => {
   });
 
   describe('when mounted', () => {
-    beforeEach(() => {
-      __setMockMetadata(jest.fn().mockImplementation(() => mockMetaData));
-      createWrapper();
+    beforeEach(async () => {
+      await createWrapper();
     });
 
     it('renders the page title', () => {
@@ -150,6 +156,10 @@ describe('AnalyticsVisualizationDesigner', () => {
 
     it('renders title input', () => {
       expect(findTitleInput().exists()).toBe(true);
+    });
+
+    it('renders the filtered search', () => {
+      expect(findFilteredSearch().exists()).toBe(true);
     });
 
     it('render a cancel button that routes to the dashboard listing page', async () => {
@@ -184,40 +194,29 @@ describe('AnalyticsVisualizationDesigner', () => {
     });
   });
 
-  describe('query builder', () => {
-    beforeEach(() => {
-      __setMockMetadata(jest.fn().mockImplementation(() => mockMetaData));
+  describe('when meta call fails during mounting', () => {
+    const networkError = new Error(`Network error`);
+
+    beforeEach(async () => {
+      await mockFetchFilterOptions(() => {
+        throw networkError;
+      });
+
+      await createWrapper('', { provide: {}, setMetaResponse: false });
     });
 
-    it('shows an alert when a query error occurs', () => {
-      createWrapper();
-
-      const error = new Error();
-      findQueryBuilder().vm.$emit('queryStatus', { error });
-
+    it('alerts the user to the issue', () => {
       expect(createAlert).toHaveBeenCalledWith({
         message: 'An error occurred while loading data',
+        error: networkError,
         captureError: true,
-        error,
       });
-    });
-
-    it('renders the filtered search', () => {
-      createWrapper('', {
-        queryBuilderData: {
-          availableMeasures: [],
-          availableDimensions: mockMetaData.cubes.at(0).dimensions,
-        },
-      });
-
-      expect(findFilteredSearch().exists()).toBe(true);
     });
   });
 
   describe('when saving', () => {
-    beforeEach(() => {
-      __setMockMetadata(jest.fn().mockImplementation(() => mockMetaData));
-      createWrapper();
+    beforeEach(async () => {
+      await createWrapper();
     });
 
     describe('and there is no title', () => {
@@ -276,7 +275,7 @@ describe('AnalyticsVisualizationDesigner', () => {
             'new_title',
             {
               data: {
-                query: { foo: 'bar' },
+                query: { limit: 100, measures: ['Sessions.count'] },
                 type: 'cube_analytics',
               },
               options: {},
@@ -369,11 +368,10 @@ describe('AnalyticsVisualizationDesigner', () => {
     let windowDialogSpy;
     let beforeUnloadEvent;
 
-    beforeEach(() => {
+    beforeEach(async () => {
       beforeUnloadEvent = new Event('beforeunload');
       windowDialogSpy = jest.spyOn(beforeUnloadEvent, 'returnValue', 'set');
-      __setMockMetadata(jest.fn().mockImplementation(() => mockMetaData));
-      createWrapper();
+      await createWrapper();
       confirmAction.mockReturnValue(new Promise(() => {}));
     });
 
@@ -435,8 +433,7 @@ describe('AnalyticsVisualizationDesigner', () => {
 
   describe('when editing for dashboard', () => {
     const setupSaveDashboard = async (dashboard) => {
-      __setMockMetadata(jest.fn().mockImplementation(() => mockMetaData));
-      createWrapper(dashboard);
+      await createWrapper(dashboard);
       await setAllRequiredFieldsWithFilter();
 
       await mockSaveVisualizationImplementation(() => ({ status: HTTP_STATUS_CREATED }));
@@ -471,32 +468,35 @@ describe('AnalyticsVisualizationDesigner', () => {
       ${false}          | ${'hides'}
     `(
       '$visibility the AI cube query generator when "aiGenerateCubeQueryEnabled" is "$providedFlagState"',
-      ({ providedFlagState }) => {
-        createWrapper('', {
+      async ({ providedFlagState }) => {
+        await createWrapper('', {
           provide: {
             aiGenerateCubeQueryEnabled: providedFlagState,
           },
+          setMetaResponse: true,
         });
 
         expect(findAiQueryGenerator().exists()).toBe(providedFlagState);
       },
     );
 
-    it('will not prompt user when there are no existing changes to the query', () => {
-      createWrapper('', {
+    it('will not prompt user when there are no existing changes to the query', async () => {
+      await createWrapper('', {
         provide: {
           aiGenerateCubeQueryEnabled: true,
         },
+        setMetaResponse: true,
       });
 
       expect(findAiQueryGenerator().props('warnBeforeReplacingQuery')).toBe(false);
     });
 
     it('ensures user will be prompted before generating when there are unsaved changes', async () => {
-      createWrapper('', {
+      await createWrapper('', {
         provide: {
           aiGenerateCubeQueryEnabled: true,
         },
+        setMetaResponse: true,
       });
       await setAllRequiredFieldsWithFilter();
 
@@ -512,7 +512,7 @@ describe('AnalyticsVisualizationDesigner', () => {
 
     describe('default behaviour', () => {
       beforeEach(async () => {
-        createWrapper();
+        await createWrapper();
         await setAllRequiredFieldsWithFilter();
         return saveVisualization();
       });
@@ -526,10 +526,11 @@ describe('AnalyticsVisualizationDesigner', () => {
 
     describe('when "aiGenerateCubeQueryEnabled" feature is enabled', () => {
       beforeEach(async () => {
-        createWrapper('', {
+        await createWrapper('', {
           provide: {
             aiGenerateCubeQueryEnabled: true,
           },
+          setMetaResponse: true,
         });
         await setAllRequiredFieldsWithFilter();
         await findAiQueryGenerator().vm.$emit('input', 'Hello world');

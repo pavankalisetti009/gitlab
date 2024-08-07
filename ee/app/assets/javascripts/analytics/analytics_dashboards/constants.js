@@ -1,7 +1,42 @@
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const EVENTS_TYPES = ['pageViews', 'linkClickEvents', 'events'];
+
+export const GRANULARITIES = [
+  {
+    name: 'second',
+    title: __('Second'),
+  },
+  {
+    name: 'minute',
+    title: __('Minute'),
+  },
+  {
+    name: 'hour',
+    title: __('Hour'),
+  },
+  {
+    name: 'day',
+    title: __('Day'),
+  },
+  {
+    name: 'week',
+    title: __('Week'),
+  },
+  {
+    name: 'month',
+    title: __('Month'),
+  },
+  {
+    name: 'quarter',
+    title: __('Quarter'),
+  },
+  {
+    name: 'year',
+    title: __('Year'),
+  },
+];
 
 export const PANEL_VISUALIZATION_HEIGHT = '600px';
 

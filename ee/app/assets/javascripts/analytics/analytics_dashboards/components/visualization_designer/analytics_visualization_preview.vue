@@ -1,8 +1,6 @@
 <script>
-import { GlButton, GlButtonGroup, GlLoadingIcon, GlIcon, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlButtonGroup, GlIcon, GlTooltipDirective } from '@gitlab/ui';
 import { safeDump } from 'js-yaml';
-import { createAlert } from '~/alert';
-import { s__, sprintf } from '~/locale';
 import AnalyticsDashboardPanel from '../analytics_dashboard_panel.vue';
 
 import {
@@ -20,7 +18,6 @@ export default {
     AiCubeQueryFeedback,
     GlButton,
     GlButtonGroup,
-    GlLoadingIcon,
     GlIcon,
     AnalyticsDashboardPanel,
   },
@@ -37,10 +34,6 @@ export default {
       required: true,
     },
     isQueryPresent: {
-      type: Boolean,
-      required: true,
-    },
-    loading: {
       type: Boolean,
       required: true,
     },
@@ -65,44 +58,24 @@ export default {
       return this.resultVisualization && safeDump(this.resultVisualization);
     },
   },
-  methods: {
-    handleVisualizationError(visualizationTitle, error) {
-      createAlert({
-        message: sprintf(
-          s__('Analytics|An error occurred while loading the %{visualizationTitle} visualization.'),
-          { visualizationTitle },
-        ),
-        error,
-        captureError: true,
-      });
-    },
-  },
   PANEL_VISUALIZATION_HEIGHT,
 };
 </script>
 
 <template>
   <div>
-    <div v-if="!isQueryPresent || loading">
+    <div v-if="!isQueryPresent">
       <div class="col-12 gl-mt-4">
         <div class="text-content text-center gl-text-gray-400">
-          <h3 v-if="!isQueryPresent" data-testid="measurement-hl" class="gl-text-gray-400">
-            {{ s__('Analytics|Start by choosing a metric') }}
+          <h3 data-testid="measurement-hl" class="gl-text-gray-400">
+            {{ s__('Analytics|Start by choosing a measure') }}
           </h3>
-          <gl-loading-icon
-            v-else-if="loading"
-            size="lg"
-            class="gl-mt-6"
-            data-testid="loading-icon"
-          />
         </div>
       </div>
     </div>
     <div v-if="resultVisualization && isQueryPresent">
-      <div
-        class="gl-m-5 gl-gap-5 gl-display-flex gl-flex-wrap-reverse gl-justify-content-space-between gl-align-items-center"
-      >
-        <div class="gl-display-flex gl-gap-3">
+      <div class="gl-m-5 gl-gap-5 gl-flex gl-flex-wrap-reverse gl-justify-between gl-items-center">
+        <div class="gl-flex gl-gap-3">
           <gl-button-group>
             <gl-button
               v-for="buttonDisplayType in $options.PANEL_DISPLAY_TYPE_ITEMS"
@@ -140,7 +113,6 @@ export default {
             :style="{ height: $options.PANEL_VISUALIZATION_HEIGHT }"
             data-testid="preview-visualization"
             class="gl-border-none gl-shadow-none"
-            @error="(error) => handleVisualizationError('TITLE', error)"
           />
           <div
             v-else
@@ -157,7 +129,7 @@ export default {
 
         <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.CODE" class="gl-bg-white gl-p-4">
           <pre
-            class="code highlight gl-display-flex gl-bg-transparent gl-border-none"
+            class="code highlight gl-flex gl-bg-transparent gl-border-none"
             data-testid="preview-code"
           ><code>{{ previewYamlConfiguration }}</code></pre>
         </div>

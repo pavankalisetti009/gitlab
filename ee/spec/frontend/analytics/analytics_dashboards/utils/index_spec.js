@@ -1,7 +1,7 @@
 import * as utils from 'ee/analytics/analytics_dashboards/utils';
 import {
   TEST_VISUALIZATION,
-  mockQueryBuilderValues,
+  mockFilterOptions,
 } from 'ee_jest/analytics/analytics_dashboards/mock_data';
 
 describe('Analytics dashboard utils', () => {
@@ -41,67 +41,42 @@ describe('Analytics dashboard utils', () => {
   describe('getDimensionsForSchema', () => {
     it('returns an empty array when no schema is provided', () => {
       expect(
-        utils.getDimensionsForSchema(null, mockQueryBuilderValues.availableDimensions),
-      ).toEqual([]);
+        utils.getDimensionsForSchema(null, mockFilterOptions.availableDimensions),
+      ).toStrictEqual([]);
     });
 
     it('returns an empty array when the schema does not match any dimensions', () => {
       expect(
-        utils.getDimensionsForSchema('InvalidSchema', mockQueryBuilderValues.availableDimensions),
-      ).toEqual([]);
+        utils.getDimensionsForSchema('InvalidSchema', mockFilterOptions.availableDimensions),
+      ).toStrictEqual([]);
     });
 
     it('returns the expected dimensions for a schema', () => {
       expect(
         utils
-          .getDimensionsForSchema('TrackedEvents', mockQueryBuilderValues.availableDimensions)
+          .getDimensionsForSchema('TrackedEvents', mockFilterOptions.availableDimensions)
           .map(({ name }) => name),
-      ).toEqual([
-        'TrackedEvents.pageUrlhosts',
-        'TrackedEvents.pageUrlpath',
-        'TrackedEvents.event',
-        'TrackedEvents.pageTitle',
-        'TrackedEvents.osFamily',
-        'TrackedEvents.osName',
-        'TrackedEvents.osVersion',
-        'TrackedEvents.osVersionMajor',
-        'TrackedEvents.agentName',
-        'TrackedEvents.agentVersion',
-        'TrackedEvents.pageReferrer',
-        'TrackedEvents.pageUrl',
-        'TrackedEvents.useragent',
-        'TrackedEvents.userId',
-        'TrackedEvents.derivedTstamp',
-        'TrackedEvents.browserLanguage',
-        'TrackedEvents.documentLanguage',
-        'TrackedEvents.viewportSize',
-      ]);
+      ).toStrictEqual(['TrackedEvents.pageTitle', 'TrackedEvents.pageUrl']);
     });
   });
 
   describe('getTimeDimensionForSchema', () => {
     it('returns null when no schema is provided', () => {
       expect(
-        utils.getTimeDimensionForSchema(null, mockQueryBuilderValues.availableTimeDimensions),
+        utils.getTimeDimensionForSchema(null, mockFilterOptions.availableTimeDimensions),
       ).toBeNull();
     });
 
     it('returns null when the schema does not match any time dimensions', () => {
       expect(
-        utils.getTimeDimensionForSchema(
-          'InvalidSchema',
-          mockQueryBuilderValues.availableTimeDimensions,
-        ),
+        utils.getTimeDimensionForSchema('InvalidSchema', mockFilterOptions.availableTimeDimensions),
       ).toBeNull();
     });
 
     it('returns the expected time dimension for a schema with a single time dimension', () => {
       expect(
-        utils.getTimeDimensionForSchema(
-          'TrackedEvents',
-          mockQueryBuilderValues.availableTimeDimensions,
-        ),
-      ).toEqual({
+        utils.getTimeDimensionForSchema('TrackedEvents', mockFilterOptions.availableTimeDimensions),
+      ).toStrictEqual({
         name: 'TrackedEvents.derivedTstamp',
         title: 'Tracked Events Derived Tstamp',
         type: 'time',
@@ -124,8 +99,8 @@ describe('Analytics dashboard utils', () => {
 
     it('returns the "Sessions.startAt" time dimension for the "Sessions" schema', () => {
       expect(
-        utils.getTimeDimensionForSchema('Sessions', mockQueryBuilderValues.availableTimeDimensions),
-      ).toEqual({
+        utils.getTimeDimensionForSchema('Sessions', mockFilterOptions.availableTimeDimensions),
+      ).toStrictEqual({
         name: 'Sessions.startAt',
         title: 'Sessions Start at',
         type: 'time',
