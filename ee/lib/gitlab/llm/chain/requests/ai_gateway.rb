@@ -15,6 +15,7 @@ module Gitlab
 
           ENDPOINT = '/v1/chat/agent'
           BASE_ENDPOINT = '/v1/chat'
+          BASE_AGENTS_CHAT_ENDPOINT = '/v1/agents/chat'
           CHAT_V2_ENDPOINT = '/v2/chat/agent'
           DEFAULT_TYPE = 'prompt'
           DEFAULT_SOURCE = 'GitLab EE'
@@ -36,15 +37,9 @@ module Gitlab
 
             v2_chat_schema = Feature.enabled?(:v2_chat_agent_integration, user) && options.delete(:single_action_agent)
 
-            body = if v2_chat_schema
-                     request_body_chat_2(prompt: prompt[:prompt], options: options)
-                   else
-                     request_body(prompt: prompt[:prompt], options: options)
-                   end
-
             response = ai_client.stream(
-              endpoint: endpoint(unit_primitive, v2_chat_schema),
-              body: body
+              endpoint: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
+              body: body(v2_chat_schema, prompt, options)
             ) do |data|
               yield data if block_given?
             end
@@ -83,13 +78,25 @@ module Gitlab
             provider(options)
           end
 
-          def endpoint(unit_primitive, v2_chat_schema)
-            if unit_primitive.present?
+          def endpoint(unit_primitive, v2_chat_schema, use_ai_gateway_agent_prompt)
+            if use_ai_gateway_agent_prompt
+              "#{BASE_AGENTS_CHAT_ENDPOINT}/#{unit_primitive}"
+            elsif unit_primitive.present?
               "#{BASE_ENDPOINT}/#{unit_primitive}"
             elsif v2_chat_schema
               CHAT_V2_ENDPOINT
             else
               ENDPOINT
+            end
+          end
+
+          def body(v2_chat_schema, prompt, options)
+            if v2_chat_schema
+              request_body_chat_2(prompt: prompt[:prompt], options: options)
+            elsif options[:use_ai_gateway_agent_prompt]
+              request_body_agent(inputs: options[:inputs])
+            else
+              request_body(prompt: prompt[:prompt], options: options)
             end
           end
 
@@ -107,6 +114,26 @@ module Gitlab
               }],
               stream: true
             }
+          end
+
+          def request_body_agent(inputs:)
+            params = {
+              stream: true,
+              inputs: inputs
+            }
+
+            if chat_feature_setting&.self_hosted?
+              self_hosted_model = chat_feature_setting.self_hosted_model
+
+              params[:model_metadata] = {
+                provider: self_hosted_model.provider,
+                name: self_hosted_model.model,
+                endpoint: self_hosted_model.endpoint,
+                api_key: self_hosted_model.api_token
+              }
+            end
+
+            params
           end
 
           def model_params(options)

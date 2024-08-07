@@ -25,5 +25,11 @@ RSpec.describe Ai::SelfHostedModel, feature_category: :custom_models do
         expect(self_hosted_model.reload.encrypted_api_token).not_to include(token)
       end
     end
+
+    describe '#provider' do
+      it 'returns openai symbol' do
+        expect(self_hosted_model.provider).to eq(:openai)
+      end
+    end
   end
 end

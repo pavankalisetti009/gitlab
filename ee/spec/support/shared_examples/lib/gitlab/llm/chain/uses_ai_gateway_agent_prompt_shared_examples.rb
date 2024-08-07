@@ -1,0 +1,46 @@
+# frozen_string_literal: true
+
+#
+# Shared examples for executors that use ai gateway agent prompts
+#
+# Expects:
+#
+# - tool
+# - ai_request_double
+# - prompt_class
+# - unit_primitive
+RSpec.shared_examples 'uses ai gateway agent prompt' do
+  let(:inputs) { tool.send(:prompt_options) }
+
+  before do
+    allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+  end
+
+  it 'executes a request with correct params' do
+    prompt = tool.prompt
+    prompt[:options] ||= {}
+    prompt[:options].merge!({
+      use_ai_gateway_agent_prompt: true,
+      inputs: inputs
+    })
+
+    expect(ai_request_double).to receive(:request).with(prompt, unit_primitive: unit_primitive)
+
+    tool.execute
+  end
+
+  context 'when the feature flag is disabled' do
+    before do
+      stub_feature_flags("prompt_migration_#{unit_primitive}": false)
+    end
+
+    it 'executes a request with correct params' do
+      expect(ai_request_double).to receive(:request).with(
+        tool.prompt,
+        unit_primitive: nil
+      )
+
+      tool.execute
+    end
+  end
+end

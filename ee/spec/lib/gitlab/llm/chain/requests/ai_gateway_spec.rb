@@ -232,6 +232,37 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
     end
 
+    context 'when request is sent to chat tools implemented via agents' do
+      let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
+      let(:model_metadata) do
+        { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
+      end
+
+      let(:options) do
+        {
+          use_ai_gateway_agent_prompt: true,
+          inputs: inputs
+        }
+      end
+
+      let(:body) do
+        {
+          stream: true,
+          inputs: inputs,
+          model_metadata: model_metadata
+        }
+      end
+
+      let(:unit_primitive) { :test }
+      let(:endpoint) { "#{described_class::BASE_AGENTS_CHAT_ENDPOINT}/#{unit_primitive}" }
+      let(:prompt) { { prompt: user_prompt, options: options } }
+      let(:inputs) { { field: :test_field } }
+
+      subject(:request) { instance.request(prompt, unit_primitive: :test) }
+
+      it_behaves_like 'performing request to the AI Gateway'
+    end
+
     context 'when request is sent for a new ReAct Duo Chat prompt without optional params' do
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
 

@@ -17,5 +17,11 @@ module Ai
       encode: true
 
     enum model: { mistral: 0, mixtral: 1, codegemma: 2, codestral: 3, codellama: 4, 'codellama:code': 5 }
+
+    # For now, only OpenAI API format is supported, this method will be potentially
+    # converted into a configurable database column
+    def provider
+      :openai
+    end
   end
 end

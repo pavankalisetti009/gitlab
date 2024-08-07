@@ -15,6 +15,14 @@ module Gitlab
 
             logger.info_or_debug(context.current_user, message: "Prompt", class: self.class.to_s, prompt: prompt_text)
 
+            if use_ai_gateway_agent_prompt?
+              prompt_str[:options] ||= {}
+              prompt_str[:options].merge!({
+                use_ai_gateway_agent_prompt: true,
+                inputs: prompt_options
+              })
+            end
+
             ai_request.request(prompt_str, unit_primitive: unit_primitive, &block)
           end
 
@@ -48,6 +56,10 @@ module Gitlab
 
           def unit_primitive
             nil
+          end
+
+          def use_ai_gateway_agent_prompt?
+            false
           end
 
           # This method is modified in SingleActionExecutor for Duo Chat

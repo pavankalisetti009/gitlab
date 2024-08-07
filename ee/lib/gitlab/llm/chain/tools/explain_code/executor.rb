@@ -7,6 +7,7 @@ module Gitlab
         module ExplainCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = 'ExplainCode'
             HUMAN_NAME = 'Explain Code'
