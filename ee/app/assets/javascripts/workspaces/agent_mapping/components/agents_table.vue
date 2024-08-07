@@ -1,7 +1,8 @@
 <script>
-import { GlSkeletonLoader, GlBadge, GlTable, GlCard } from '@gitlab/ui';
+import { GlLoadingIcon, GlBadge, GlTable } from '@gitlab/ui';
 import { __ } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { AGENT_MAPPING_STATUS_MAPPED, AGENT_MAPPING_STATUS_UNMAPPED } from '../constants';
 import AgentMappingStatusToggle from './agent_mapping_status_toggle.vue';
 import ToggleAgentMappingStatusMutation from './toggle_agent_mapping_status_mutation.vue';
@@ -41,9 +42,9 @@ const MAPPING_ACTIONS_FIELD = {
 export default {
   components: {
     GlBadge,
-    GlCard,
-    GlSkeletonLoader,
+    GlLoadingIcon,
     GlTable,
+    CrudComponent,
     AgentMappingStatusToggle,
     ToggleAgentMappingStatusMutation,
   },
@@ -105,10 +106,8 @@ export default {
 };
 </script>
 <template>
-  <gl-card body-class="gl-new-card-body">
-    <div v-if="isLoading" class="p-3 flex justify-start">
-      <gl-skeleton-loader :lines="4" :equal-width-lines="true" :width="600" />
-    </div>
+  <crud-component :title="s__('Workspaces|Agents')" icon="kubernetes" :count="agents.length">
+    <gl-loading-icon v-if="isLoading" size="md" />
     <gl-table v-else :fields="fields" :items="agentsWithStatusLabels" show-empty stacked="sm">
       <template #empty>
         <div v-safe-html="emptyStateMessage" class="text-center"></div>
@@ -129,5 +128,5 @@ export default {
         </toggle-agent-mapping-status-mutation>
       </template>
     </gl-table>
-  </gl-card>
+  </crud-component>
 </template>
