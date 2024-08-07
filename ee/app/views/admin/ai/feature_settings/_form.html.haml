@@ -11,7 +11,7 @@
   %fieldset.form-group.gl-form-group
     %legend.col-form-label
       = s_('AdminAiPoweredFeatures|Model provider')
-      .gl-font-normal.form-text.text-gl-muted
+      .label-description
         = s_("AdminAiPoweredFeatures|Choose the AI model to use with %{feature_name}.") % { feature_name: feature_name }
 
     = render Pajamas::RadioTagComponent.new(name: provider_field_name,
