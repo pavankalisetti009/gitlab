@@ -1,0 +1,110 @@
+# frozen_string_literal: true
+
+require 'spec_helper'
+
+RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, feature_category: :source_code_management do
+  include Spec::Support::Helpers::ModalHelpers
+  let_it_be(:user) { create(:user) }
+
+  let_it_be(:branch_rule) do
+    create(
+      :protected_branch,
+      code_owner_approval_required: true,
+      allow_force_push: false
+    )
+  end
+
+  let(:project) { branch_rule.project }
+
+  before do
+    project.add_maintainer(user)
+    sign_in(user)
+  end
+
+  context 'when not licensed' do
+    before do
+      stub_licensed_features(merge_request_approvers: false, external_status_checks: false,
+        multiple_approval_rules: false)
+    end
+
+    context 'with custom rule' do
+      before do
+        visit project_settings_repository_branch_rules_path(project, params: { branch: branch_rule.name })
+
+        wait_for_requests
+      end
+
+      it 'does not render licensed feature sections' do
+        expect(page).not_to have_css 'h2', text: 'Merge request approvals'
+        expect(page).not_to have_css 'h2', text: 'Status checks'
+      end
+    end
+  end
+
+  context 'when licensed' do
+    before do
+      stub_licensed_features(merge_request_approvers: true, external_status_checks: true, multiple_approval_rules: true)
+    end
+
+    context 'with custom rule' do
+      before do
+        visit project_settings_repository_branch_rules_path(project, params: { branch: branch_rule.name })
+
+        wait_for_requests
+      end
+
+      it 'renders rule details' do
+        expect(page).to have_css 'h1', text: 'Branch rule details'
+        expect(page).to have_css '[data-testid="branch"]', text: branch_rule.name
+        expect(page).to have_css 'h2', text: 'Protect branch'
+        expect(page).to have_text 'Allowed to push and merge'
+        expect(page).to have_text 'Allowed to merge'
+        expect(page).to have_css 'h2', text: 'Merge request approvals'
+        expect(page).to have_css 'h2', text: 'Status checks'
+      end
+
+      it do
+        page.within(find_by_testid('allowed-to-merge-content')) do
+          click_button 'Edit'
+        end
+
+        page.within('.gl-drawer') do
+          expect(page).to be_axe_clean.skipping :'link-in-text-block'
+        end
+      end
+    end
+
+    context 'with branch rule details for a predefined rule' do
+      before do
+        visit project_settings_repository_path(project)
+
+        wait_for_requests
+
+        click_button 'Add branch rule'
+        click_button 'All branches'
+
+        wait_for_requests
+      end
+
+      it 'creates a new rule' do
+        click_button 'Add approval rule'
+
+        fill_in 'rule-name-input', with: 'Test rule'
+
+        page.within(find_by_testid('users-selector')) do
+          find('.form-control').click
+          first('.gl-new-dropdown-item').click
+        end
+
+        click_button 'Save changes'
+
+        visit project_settings_repository_path(project)
+
+        page.within(find_by_testid('branch-rules-content')) do
+          expect(page).to have_content('All branches')
+          expect(page).to have_content('1 approval rule')
+        end
+      end
+    end
+  end
+end
