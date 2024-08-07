@@ -39,6 +39,10 @@ module Search
           else
             repo.indexed_at = Time.current
             repo.state = :ready if repo.pending? || repo.initializing?
+            size_bytes = params.dig(:additional_payload, :repo_stats, :size_in_bytes)
+            index_file_count = params.dig(:additional_payload, :repo_stats, :index_file_count)
+            repo.size_bytes = size_bytes if size_bytes
+            repo.index_file_count = index_file_count if index_file_count
             repo.save!
           end
 

@@ -60,11 +60,13 @@ RSpec.describe Search::Zoekt::CallbackService, feature_category: :global_search 
         let(:task_type) { 'index' }
         let(:task_id) { index_zoekt_task.id }
 
-        it 'updates the task state, zoekt_repository state and indexed_at' do
+        it 'updates the task state, zoekt_repository data' do
           freeze_time do
             expect { execute }.to change { index_zoekt_task.reload.state }.to('done')
               .and change { index_zoekt_task.zoekt_repository.indexed_at }.to(Time.current)
                 .and change { index_zoekt_task.zoekt_repository.state }.to('ready')
+                  .and change { index_zoekt_task.zoekt_repository.index_file_count }.to(1)
+                    .and change { index_zoekt_task.zoekt_repository.size_bytes }.to(582790)
           end
         end
       end
