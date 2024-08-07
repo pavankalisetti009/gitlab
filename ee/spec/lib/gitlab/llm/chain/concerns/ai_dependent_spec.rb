@@ -80,9 +80,27 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
         def unit_primitive
           :test
         end
+
+        def use_ai_gateway_agent_prompt?
+          true
+        end
+
+        def prompt_options
+          { field: :test_field }
+        end
       end.new(context: context, options: {})
 
-      expect(ai_request).to receive(:request).with(tool.prompt, unit_primitive: :test)
+      expect(ai_request).to receive(:request).with(
+        tool.prompt.merge(
+          options: {
+            inputs: {
+              field: :test_field
+            },
+            use_ai_gateway_agent_prompt: true
+          }
+        ),
+        unit_primitive: :test
+      )
 
       tool.request
     end
