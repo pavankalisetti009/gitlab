@@ -117,7 +117,7 @@ export default {
         return this.isOpen ? 'epic' : 'epic-closed';
       }
       if (this.isBlocked && this.isOpen) {
-        return 'issue-block';
+        return 'entity-blocked';
       }
       return this.isOpen ? 'issues' : 'issue-closed';
     },

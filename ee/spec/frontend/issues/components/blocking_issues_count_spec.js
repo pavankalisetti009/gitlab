@@ -3,7 +3,7 @@ import { shallowMount } from '@vue/test-utils';
 import BlockingIssuesCount from 'ee/issues/components/blocking_issues_count.vue';
 
 describe('BlockingIssuesCount component', () => {
-  const iconName = 'issue-block';
+  const iconName = 'entity-blocking';
   const tooltipText = 'Blocking issues';
   let wrapper;
 
