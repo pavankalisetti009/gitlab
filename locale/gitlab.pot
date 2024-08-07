@@ -60901,9 +60901,6 @@ msgstr ""
 msgid "WorkItem|This work item is not available. It either doesn't exist or you don't have permission to view it."
 msgstr ""
 
-msgid "WorkItem|Title cannot have more than %{WORK_ITEM_TITLE_MAX_LENGTH} characters."
-msgstr ""
-
 msgid "WorkItem|Turn off confidentiality"
 msgstr ""
 
