@@ -13567,6 +13567,12 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Associated Projects"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Compliance framework ID"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Copy ID"
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Default"
 msgstr ""
 
@@ -13574,6 +13580,9 @@ msgid "ComplianceFrameworksReport|Description"
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Edit framework"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Framework ID copied to clipboard."
 msgstr ""
 
 msgid "ComplianceFrameworksReport|Policies"
