@@ -4,6 +4,7 @@ module EE
   module Issues
     module BuildService
       extend ::Gitlab::Utils::Override
+      include ::Observability::MetricsIssuesHelper
 
       def issue_params_from_template
         return {} unless container.feature_available?(:issuable_default_templates)
@@ -22,7 +23,10 @@ module EE
       # The template params are filled in here, and might be overwritten by super
       override :build_issue_params
       def build_issue_params
-        issue_params_from_template.merge(super).with_indifferent_access
+        issue_params_from_template
+          .merge(super)
+          .merge(observability_issue_params)
+          .with_indifferent_access
       end
     end
   end
