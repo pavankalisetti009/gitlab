@@ -170,8 +170,10 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
             :work_items_dates_source,
             :fixed,
             work_item: work_item,
+            start_date_fixed: expected_start_date,
             start_date: expected_start_date,
             due_date: expected_due_date,
+            due_date_fixed: expected_due_date,
             start_date_sourcing_milestone_id: milestone.id,
             due_date_sourcing_milestone_id: milestone.id,
             start_date_sourcing_work_item_id: start_date_sourcing_epic.issue_id,
@@ -187,7 +189,7 @@ RSpec.describe Gitlab::EpicWorkItemSync::Diff, feature_category: :team_planning 
           is_expected.to include(
             "start_date_fixed", "due_date_fixed", "start_date_is_fixed", "due_date_is_fixed",
             "start_date_sourcing_milestone", "due_date_sourcing_milestone",
-            "start_date_sourcing_epic", "due_date_sourcing_epic"
+            "start_date_sourcing_epic", "due_date_sourcing_epic", "start_date", "due_date"
           )
         end
       end

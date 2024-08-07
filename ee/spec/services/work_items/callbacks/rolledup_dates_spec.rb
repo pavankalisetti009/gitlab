@@ -18,8 +18,10 @@ RSpec.describe WorkItems::Callbacks::RolledupDates, feature_category: :portfolio
       .to receive(:build)
       .and_return(
         start_date: start_date,
+        start_date_fixed: start_date,
         start_date_is_fixed: true,
         due_date: due_date,
+        due_date_fixed: due_date,
         due_date_is_fixed: true)
   end
 
@@ -38,12 +40,17 @@ RSpec.describe WorkItems::Callbacks::RolledupDates, feature_category: :portfolio
     end
 
     context "when dates source already exists" do
+      let(:existing_start_date) { 2.days.ago.to_date }
+      let(:existing_due_date) { 2.days.from_now.to_date }
+
       before do
         create(
           :work_items_dates_source,
           work_item: work_item,
-          start_date: 2.days.ago,
-          due_date: 2.days.from_now)
+          start_date: existing_start_date,
+          start_date_fixed: existing_start_date,
+          due_date: existing_due_date,
+          due_date_fixed: existing_due_date)
       end
 
       it "updates the work_item dates_souce and populates it" do
