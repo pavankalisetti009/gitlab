@@ -122,10 +122,21 @@ describeSkipVue3(skipReason, () => {
   beforeEach(() => {
     uuidv4.mockImplementation(() => '123');
     getMarkdown.mockImplementation(({ text }) => Promise.resolve({ data: { html: text } }));
+
+    performance.mark = jest.fn();
+    performance.measure = jest.fn();
+    performance.getEntriesByName = jest.fn(() => [{ duration: 123 }]);
+    performance.clearMarks = jest.fn();
+    performance.clearMeasures = jest.fn();
   });
 
   afterEach(() => {
+    jest.clearAllMocks();
     duoChatGlobalState.commands = [];
+    duoChatGlobalState.isShown = false;
+    if (wrapper) {
+      wrapper.destroy();
+    }
   });
 
   it('generates unique `clientSubscriptionId` using v4', () => {
@@ -385,14 +396,11 @@ describeSkipVue3(skipReason, () => {
   describe('Error conditions', () => {
     const errorText = 'Fancy foo';
 
-    beforeEach(async () => {
-      queryHandlerMock.mockRejectedValue(new Error(errorText));
+    it('does call addDuoChatMessage', async () => {
+      queryHandlerMock.mockImplementationOnce(() => Promise.reject(new Error(errorText)));
       duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
-    });
-
-    it('does not call addDuoChatMessage', () => {
       expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
         expect.anything(),
         expect.objectContaining({
@@ -402,16 +410,14 @@ describeSkipVue3(skipReason, () => {
     });
 
     describe('when mutation fails', () => {
-      beforeEach(async () => {
+      it('throws an error, but still calls addDuoChatMessage', async () => {
         chatMutationHandlerMock.mockRejectedValue(new Error(errorText));
         duoChatGlobalState.isShown = true;
         createComponent();
         await waitForPromises();
         findGlDuoChat().vm.$emit('send-chat-prompt', MOCK_USER_MESSAGE.content);
         await waitForPromises();
-      });
 
-      it('throws an error, but still calls addDuoChatMessage', () => {
         expect(actionSpies.addDuoChatMessage).toHaveBeenCalledWith(
           expect.anything(),
           expect.objectContaining({
@@ -433,13 +439,6 @@ describeSkipVue3(skipReason, () => {
     let mockSubscriptionStream;
 
     beforeEach(() => {
-      performance.mark = jest.fn();
-      performance.measure = jest.fn();
-      performance.getEntriesByName = jest.fn(() => [{ duration: 123 }]);
-      performance.clearMarks = jest.fn();
-      performance.clearMeasures = jest.fn();
-      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-
       mockSubscriptionComplete = createMockSubscription();
       mockSubscriptionStream = createMockSubscription();
       aiResponseSubscriptionHandler = () => mockSubscriptionComplete;
@@ -482,7 +481,6 @@ describeSkipVue3(skipReason, () => {
 
       createComponent();
       await waitForPromises();
-      actionSpies.addDuoChatMessage.mockClear();
 
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
@@ -545,7 +543,6 @@ describeSkipVue3(skipReason, () => {
       duoChatGlobalState.isShown = true;
       createComponent();
       await waitForPromises();
-      actionSpies.addDuoChatMessage.mockClear();
 
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
@@ -587,7 +584,6 @@ describeSkipVue3(skipReason, () => {
       });
       await waitForPromises();
       perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
-      actionSpies.addDuoChatMessage.mockClear();
       // message chunk streaming in
       mockSubscriptionStream.next(firstChunk);
       await waitForPromises();
@@ -620,7 +616,6 @@ describeSkipVue3(skipReason, () => {
         },
       });
       await waitForPromises();
-      actionSpies.addDuoChatMessage.mockClear();
 
       findGlDuoChat().vm.$emit('chat-cancel');
 
@@ -636,6 +631,7 @@ describeSkipVue3(skipReason, () => {
 
       duoChatGlobalState.isShown = true;
       createComponent();
+      perfTrackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
 
       await waitForPromises();
 
