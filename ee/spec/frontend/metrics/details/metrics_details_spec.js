@@ -90,17 +90,7 @@ describe('MetricsDetails', () => {
     expect(trackEventSpy).toHaveBeenCalledWith('view_metrics_details_page', {}, undefined);
   });
 
-  it('renders the loading indicator while checking if observability is enabled', () => {
-    mountComponent();
-
-    expect(findLoadingIcon().exists()).toBe(true);
-    expect(findMetricDetails().exists()).toBe(false);
-    expect(observabilityClientMock.isObservabilityEnabled).toHaveBeenCalled();
-    expect(observabilityClientMock.fetchMetric).not.toHaveBeenCalled();
-    expect(observabilityClientMock.fetchMetricSearchMetadata).not.toHaveBeenCalled();
-  });
-
-  describe('when observability is enabled', () => {
+  {
     const mockMetricData = [
       {
         name: 'container_cpu_usage_seconds_total',
@@ -133,7 +123,6 @@ describe('MetricsDetails', () => {
     };
 
     beforeEach(async () => {
-      observabilityClientMock.isObservabilityEnabled.mockResolvedValue(true);
       observabilityClientMock.fetchMetric.mockResolvedValue(mockMetricData);
       observabilityClientMock.fetchMetricSearchMetadata.mockResolvedValue(mockSearchMetadata);
 
@@ -148,7 +137,6 @@ describe('MetricsDetails', () => {
     });
 
     it('fetches data', () => {
-      expect(observabilityClientMock.isObservabilityEnabled).toHaveBeenCalled();
       expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(
         METRIC_ID,
         METRIC_TYPE,
@@ -544,35 +532,15 @@ describe('MetricsDetails', () => {
         );
       });
     });
-  });
-
-  describe('when observability is not enabled', () => {
-    beforeEach(async () => {
-      observabilityClientMock.isObservabilityEnabled.mockResolvedValue(false);
-      jest.spyOn(urlUtility, 'visitUrl').mockReturnValue({});
-      await mountComponent();
-    });
-
-    it('redirects to metricsIndexUrl', () => {
-      expect(urlUtility.visitUrl).toHaveBeenCalledWith(defaultProps.metricsIndexUrl);
-    });
-
-    it('does not fetch data', () => {
-      expect(observabilityClientMock.isObservabilityEnabled).toHaveBeenCalled();
-      expect(observabilityClientMock.fetchMetric).not.toHaveBeenCalled();
-      expect(observabilityClientMock.fetchMetricSearchMetadata).not.toHaveBeenCalled();
-    });
-  });
+  }
 
   describe('error handling', () => {
     beforeEach(() => {
-      observabilityClientMock.isObservabilityEnabled.mockResolvedValue(true);
       observabilityClientMock.fetchMetric.mockResolvedValue([]);
       observabilityClientMock.fetchMetricSearchMetadata.mockResolvedValue({});
     });
 
     describe.each([
-      ['isObservabilityEnabled', () => observabilityClientMock.isObservabilityEnabled],
       ['fetchMetricSearchMetadata', () => observabilityClientMock.fetchMetricSearchMetadata],
       ['fetchMetric', () => observabilityClientMock.fetchMetric],
     ])('when %s fails', (_, mockFn) => {
