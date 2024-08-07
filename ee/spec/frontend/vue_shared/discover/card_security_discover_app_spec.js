@@ -39,7 +39,7 @@ describe('Card security discover app', () => {
     });
   };
 
-  describe('Project discover carousel', () => {
+  describe('Project discovery', () => {
     beforeEach(() => {
       createComponent();
     });
@@ -50,12 +50,6 @@ describe('Card security discover app', () => {
 
     it('does not render the MovePersonalProjectToGroupModal', () => {
       expect(wrapper.findComponent(MovePersonalProjectToGroupModal).exists()).toBe(false);
-    });
-
-    it('renders discover title properly', () => {
-      expect(wrapper.find('.discover-title').html()).toContain(
-        'Security capabilities, integrated into your development lifecycle',
-      );
     });
 
     it('renders discover upgrade links properly', () => {
@@ -94,18 +88,6 @@ describe('Card security discover app', () => {
         expect(spy).toHaveBeenCalledWith('_category_', 'click_button', {
           label: 'security-discover-trial-cta',
           property: '0',
-        });
-      });
-
-      it('tracks an event when clicked on a slider', () => {
-        const expectedCategory = undefined;
-
-        document.body.dataset.page = '_category_';
-        wrapper.vm.onSlideStart(1);
-
-        expect(spy).toHaveBeenCalledWith(expectedCategory, 'click_button', {
-          label: 'security-discover-carousel',
-          property: 'sliding0-1',
         });
       });
     });

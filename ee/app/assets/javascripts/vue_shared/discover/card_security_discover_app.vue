@@ -1,19 +1,9 @@
 <script>
-import {
-  GlButton,
-  GlTooltipDirective,
-  GlCarousel,
-  GlCarouselSlide,
-  GlSprintf,
-  GlLink,
-  GlModalDirective,
-} from '@gitlab/ui';
+import { GlButton, GlTooltipDirective, GlSprintf, GlLink, GlModalDirective } from '@gitlab/ui';
 import { DISCOVER_PLANS_MORE_INFO_LINK } from 'jh_else_ee/vue_shared/discover/constants';
-import securityDashboardImageUrl from 'ee_images/promotions/security-dashboard.png';
-import securityDependencyImageUrl from 'ee_images/promotions/security-dependencies.png';
-import securityScanningImageUrl from 'ee_images/promotions/security-scanning.png';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
+import securityDependencyImageUrl from 'ee_images/promotions/security-dependencies.png';
 import MovePersonalProjectToGroupModal from 'ee/projects/components/move_personal_project_to_group_modal.vue';
 import { MOVE_PERSONAL_PROJECT_TO_GROUP_MODAL } from 'ee/projects/constants';
 
@@ -25,8 +15,6 @@ export default {
   },
   components: {
     GlButton,
-    GlCarousel,
-    GlCarouselSlide,
     GlSprintf,
     GlLink,
     MovePersonalProjectToGroupModal,
@@ -54,16 +42,6 @@ export default {
       default: '',
     },
   },
-  data() {
-    return {
-      slide: 0,
-      carouselImages: [
-        securityDependencyImageUrl,
-        securityScanningImageUrl,
-        securityDashboardImageUrl,
-      ],
-    };
-  },
   computed: {
     discoverButtonProps() {
       return {
@@ -73,7 +51,7 @@ export default {
         // eslint-disable-next-line @gitlab/require-i18n-strings
         rel: 'noopener noreferrer',
         'data-track-action': 'click_button',
-        'data-track-property': this.slide,
+        'data-track-property': 0,
       };
     },
     upgradeButtonProps() {
@@ -97,21 +75,14 @@ export default {
       return this.project.isPersonal;
     },
   },
-  methods: {
-    onSlideStart(slide) {
-      this.track('click_button', {
-        label: 'security-discover-carousel',
-        property: `sliding${this.slide}-${slide}`,
-      });
-    },
-  },
   i18n: {
     discoverTitle: s__(
       'Discover|Security capabilities, integrated into your development lifecycle',
     ),
+    discoverImageAltText: s__("Discover|An example of GitLab's Dependency list feature"),
     discoverUpgradeLabel: s__('Discover|Upgrade now'),
     discoverTrialLabel: s__('Discover|Start a free trial'),
-    carouselCaptions: [
+    captions: [
       s__(
         'Discover|Check your application for security vulnerabilities that may lead to unauthorized access, data leaks, and denial of services.',
       ),
@@ -127,50 +98,31 @@ export default {
     ),
   },
   modalId: MOVE_PERSONAL_PROJECT_TO_GROUP_MODAL,
+  securityDependencyImageUrl,
 };
 </script>
 
 <template>
   <div class="discover-box">
-    <h2 class="discover-title gl-text-center gl-text-gray-900 gl-mx-auto">
+    <h2 class="gl-my-8 gl-text-center gl-text-gray-900 gl-mx-auto">
       {{ $options.i18n.discoverTitle }}
     </h2>
-    <div class="discover-carousels">
-      <gl-carousel
-        v-model="slide"
-        class="discover-carousel discover-image-carousel gl-mx-auto gl-text-center gl-border-solid gl-border-1 gl-bg-gray-10 gl-border-gray-50"
-        no-wrap
-        controls
-        :interval="0"
-        indicators
-        @sliding-start="onSlideStart"
-      >
-        <gl-carousel-slide
-          v-for="(imageUrl, index) in carouselImages"
-          :key="index"
-          :img-src="imageUrl"
-        />
-      </gl-carousel>
-      <gl-carousel
-        ref="textCarousel"
-        v-model="slide"
-        class="discover-carousel discover-text-carousel gl-mx-auto gl-text-center"
-        no-wrap
-        :interval="0"
-      >
-        <gl-carousel-slide v-for="caption in $options.i18n.carouselCaptions" :key="caption">
-          <template #img>
-            {{ caption }}
-          </template>
-        </gl-carousel-slide>
-      </gl-carousel>
-      <div class="discover-footer gl-mx-auto gl-my-0">
+    <div class="gl-text-center">
+      <img
+        :src="$options.securityDependencyImageUrl"
+        class="gl-mb-8 gl-max-w-full"
+        :alt="$options.i18n.discoverImageAltText"
+      />
+      <p v-for="caption in $options.i18n.captions" :key="caption">
+        {{ caption }}
+      </p>
+      <div class="gl-mx-auto gl-my-0">
         <p class="gl-text-gray-900 gl-text-center mb-7">
           <gl-sprintf :message="$options.i18n.discoverPlanCaption">
             <template #link="{ content }">
-              <gl-link :href="$options.DISCOVER_PLANS_MORE_INFO_LINK" target="_blank">
-                {{ content }}
-              </gl-link>
+              <gl-link :href="$options.DISCOVER_PLANS_MORE_INFO_LINK" target="_blank">{{
+                content
+              }}</gl-link>
             </template>
           </gl-sprintf>
         </p>
