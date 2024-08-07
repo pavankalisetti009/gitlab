@@ -23,6 +23,8 @@ module GitlabSubscriptions
 
     def by_add_on(items)
       case add_on
+      when :duo
+        items.for_duo_pro_or_duo_enterprise
       when :duo_pro
         items.for_gitlab_duo_pro
       when :duo_enterprise
