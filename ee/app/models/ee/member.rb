@@ -74,6 +74,27 @@ module EE
       end
     end
 
+    class_methods do
+      extend ::Gitlab::Utils::Override
+
+      override :member_role_id
+      def member_role_id(group_group_link_table, group_member_table)
+        access_level = group_member_table[:access_level]
+        group_access = group_group_link_table[:group_access]
+
+        group_link_member_role = group_group_link_table[:member_role_id]
+        group_member_role = group_member_table[:member_role_id]
+
+        return group_member_role unless ::Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
+
+        Arel::Nodes::Case.new
+          .when(access_level.gt(group_access)).then(group_link_member_role)
+          .when(access_level.lt(group_access)).then(group_member_role)
+          .when(group_member_role.not_eq(nil)).then(group_link_member_role)
+          .else(group_member_role)
+      end
+    end
+
     override :notification_service
     def notification_service
       if ldap

@@ -28,8 +28,8 @@ RSpec.describe GroupMembersFinder, feature_category: :groups_and_projects do
       let_it_be(:user5_2fa)            { create(:user, :two_factor_via_otp) }
 
       let_it_be(:link) do
-        create(:group_group_link, shared_group: group,     shared_with_group: public_shared_group)
-        create(:group_group_link, shared_group: sub_group, shared_with_group: private_shared_group)
+        create(:group_group_link, group_access: ::Gitlab::Access::OWNER, shared_group: group,     shared_with_group: public_shared_group)
+        create(:group_group_link, group_access: ::Gitlab::Access::OWNER, shared_group: sub_group, shared_with_group: private_shared_group)
       end
 
       let(:groups) do
