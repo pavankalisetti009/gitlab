@@ -2,15 +2,24 @@
 
 require 'spec_helper'
 
+# rubocop:disable RSpec/MultipleMemoizedHelpers -- Can we have less?
 RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :remote_development do
   include ResultMatchers
 
   let(:enabled) { true }
   let(:dns_zone) { 'my-awesome-domain.me' }
+  let(:termination_limits_sets) { false }
+  let(:default_unlimited_quota) { -1 }
   let(:saved_quota) { 5 }
   let(:quota) { 5 }
   let(:network_policy_present) { false }
-  let(:default_network_policy_egress) { RemoteDevelopment::AgentConfig::Updater::NETWORK_POLICY_EGRESS_DEFAULT }
+  let(:default_network_policy_egress) do
+    [{
+      allow: "0.0.0.0/0",
+      except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
+    }]
+  end
+
   let(:network_policy_egress) { default_network_policy_egress }
   let(:network_policy_enabled) { true }
   let(:network_policy_without_egress) do
@@ -31,24 +40,16 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
     { namespace: gitlab_workspaces_proxy_namespace }
   end
 
-  let(:default_default_resources_per_workspace_container) do
-    RemoteDevelopment::AgentConfig::Updater::DEFAULT_RESOURCES_PER_WORKSPACE_CONTAINER_DEFAULT
-  end
+  let(:default_default_resources_per_workspace_container) { {} }
 
   let(:default_resources_per_workspace_container) { default_default_resources_per_workspace_container }
-  let(:default_max_resources_per_workspace) do
-    RemoteDevelopment::AgentConfig::Updater::MAX_RESOURCES_PER_WORKSPACE_DEFAULT
-  end
+  let(:default_max_resources_per_workspace) { {} }
 
   let(:max_resources_per_workspace) { default_max_resources_per_workspace }
 
-  let(:default_max_hours_before_termination) do
-    RemoteDevelopment::AgentConfig::Updater::DEFAULT_MAX_HOURS_BEFORE_TERMINATION_DEFAULT_VALUE
-  end
+  let(:default_max_hours_before_termination) { 24 }
 
-  let(:max_hours_before_termination_limit) do
-    RemoteDevelopment::AgentConfig::Updater::MAX_HOURS_BEFORE_TERMINATION_LIMIT_DEFAULT_VALUE
-  end
+  let(:max_hours_before_termination_limit) { 120 }
 
   let_it_be(:agent) { create(:cluster_agent) }
   let_it_be(:workspace1) { create(:workspace, force_include_all_resources: false) }
@@ -56,24 +57,61 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
 
   let(:config) do
     remote_development_config = {
-      enabled: enabled,
-      dns_zone: dns_zone
+      'enabled' => enabled,
+      'dns_zone' => dns_zone
     }
-    remote_development_config[:network_policy] = network_policy if network_policy_present
-    remote_development_config[:gitlab_workspaces_proxy] = gitlab_workspaces_proxy if gitlab_workspaces_proxy_present
-    remote_development_config[:default_resources_per_workspace_container] = default_resources_per_workspace_container
-    remote_development_config[:max_resources_per_workspace] = max_resources_per_workspace
-    remote_development_config[:default_max_hours_before_termination] = default_max_hours_before_termination
-    remote_development_config[:max_hours_before_termination_limit] = max_hours_before_termination_limit
+    remote_development_config['network_policy'] = network_policy if network_policy_present
+    remote_development_config['gitlab_workspaces_proxy'] = gitlab_workspaces_proxy if gitlab_workspaces_proxy_present
+    remote_development_config['default_resources_per_workspace_container'] = default_resources_per_workspace_container
+    remote_development_config['max_resources_per_workspace'] = max_resources_per_workspace
+
+    if termination_limits_sets
+      remote_development_config['default_max_hours_before_termination'] = default_max_hours_before_termination
+      remote_development_config['max_hours_before_termination_limit'] = max_hours_before_termination_limit
+    end
 
     if quota
-      remote_development_config[:workspaces_quota] = quota
-      remote_development_config[:workspaces_per_user_quota] = quota
+      remote_development_config['workspaces_quota'] = quota
+      remote_development_config['workspaces_per_user_quota'] = quota
     end
 
     {
-      remote_development: remote_development_config
+      remote_development: HashWithIndifferentAccess.new(remote_development_config)
     }
+  end
+
+  let(:agent_config_setting_names) do
+    [
+      :default_max_hours_before_termination,
+      :default_resources_per_workspace_container,
+      :gitlab_workspaces_proxy_namespace,
+      :max_hours_before_termination_limit,
+      :max_resources_per_workspace,
+      :network_policy_egress,
+      :network_policy_enabled,
+      :workspaces_per_user_quota,
+      :workspaces_quota
+    ]
+  end
+
+  let(:agent_config_setting_values) do
+    {
+      default_max_hours_before_termination: default_max_hours_before_termination,
+      default_resources_per_workspace_container: default_default_resources_per_workspace_container,
+      gitlab_workspaces_proxy_namespace: "gitlab-workspaces",
+      max_hours_before_termination_limit: max_hours_before_termination_limit,
+      max_resources_per_workspace: default_max_resources_per_workspace,
+      network_policy_egress: default_network_policy_egress,
+      network_policy_enabled: network_policy_enabled,
+      workspaces_per_user_quota: default_unlimited_quota,
+      workspaces_quota: default_unlimited_quota
+
+    }
+  end
+
+  before do
+    allow(RemoteDevelopment::Settings)
+      .to receive(:get).with(agent_config_setting_names).and_return(agent_config_setting_values)
   end
 
   subject(:result) do
@@ -166,13 +204,9 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
           it_behaves_like 'successful update'
         end
 
-        context 'when default_max_hours_before_termination is explicitly specified in the config passed' do
+        context 'when default and max_hours_before_termination are explicitly specified in the config passed' do
+          let(:termination_limits_sets) { true }
           let(:default_max_hours_before_termination) { 20 }
-
-          it_behaves_like 'successful update'
-        end
-
-        context 'when max_hours_before_termination_limit is explicitly specified in the config passed' do
           let(:max_hours_before_termination_limit) { 220 }
 
           it_behaves_like 'successful update'
@@ -360,3 +394,4 @@ RSpec.describe ::RemoteDevelopment::AgentConfig::Updater, feature_category: :rem
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
