@@ -12,7 +12,7 @@ import CustomStageEventField from 'ee/analytics/cycle_analytics/components/creat
 import DefaultStageFields from 'ee/analytics/cycle_analytics/components/create_value_stream_form/default_stage_fields.vue';
 import ValueStreamFormContent from 'ee/analytics/cycle_analytics/vsa_settings/components/value_stream_form_content.vue';
 import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
-import { visitUrl } from '~/lib/utils/url_utility';
+import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import {
   convertObjectPropsToCamelCase,
   convertObjectPropsToSnakeCase,
@@ -28,7 +28,7 @@ import {
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn(),
+  visitUrlWithAlerts: jest.fn(),
 }));
 
 const scrollIntoViewMock = jest.fn();
@@ -365,8 +365,8 @@ describe('ValueStreamFormContent', () => {
           });
         });
 
-        it('displays a toast message', () => {
-          expect(mockToastShow).toHaveBeenCalledWith(`'${streamName}' Value Stream created`);
+        it('does not display a toast message', () => {
+          expect(mockToastShow).not.toHaveBeenCalled();
         });
 
         it('sends tracking information', () => {
@@ -380,7 +380,13 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('redirects to the new value stream page', () => {
-          expect(visitUrl).toHaveBeenCalledWith(valueStreamPath);
+          expect(visitUrlWithAlerts).toHaveBeenCalledWith(valueStreamPath, [
+            {
+              id: 'value-stream-created-success',
+              message: `'${streamName}' Value Stream has been successfully created.`,
+              variant: 'success',
+            },
+          ]);
         });
       });
 
@@ -412,7 +418,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('does not redirect to the new value stream page', () => {
-          expect(visitUrl).not.toHaveBeenCalled();
+          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
         });
 
         it('form header should not be in loading state', () => {
@@ -626,7 +632,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('does not redirect to the value stream page', () => {
-          expect(visitUrl).not.toHaveBeenCalled();
+          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
         });
 
         it('form header should not be in loading state', () => {
@@ -666,7 +672,7 @@ describe('ValueStreamFormContent', () => {
         });
 
         it('does not redirect to the value stream page', () => {
-          expect(visitUrl).not.toHaveBeenCalled();
+          expect(visitUrlWithAlerts).not.toHaveBeenCalled();
         });
 
         it('form header should not be in loading state', () => {
