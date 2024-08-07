@@ -19,7 +19,7 @@ module Sbom
     def cvs_feature_enabled?(pipeline_id)
       project_id = Ci::Pipeline.find_by_id(pipeline_id)&.project_id
 
-      Feature.enabled?(:dependency_scanning_using_sbom_reports, project_id)
+      Feature.enabled?(:dependency_scanning_using_sbom_reports, Project.actor_from_id(project_id))
     end
   end
 end
