@@ -75,7 +75,7 @@ module EE
         next false unless glab_ask_git_command_data.free_access?
 
         if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-          user.any_group_with_ai_available?
+          @user.any_group_with_ga_ai_available?(:glab_ask_git_command)
         else
           ::License.feature_available?(:glab_ask_git_command)
         end

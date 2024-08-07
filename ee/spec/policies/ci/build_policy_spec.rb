@@ -126,7 +126,7 @@ RSpec.describe Ci::BuildPolicy, feature_category: :continuous_integration do
 
       with_them do
         before do
-          allow(user).to receive(:any_group_with_ai_available?).and_return(group_with_ai_membership)
+          allow(user).to receive(:any_group_with_ga_ai_available?).and_return(group_with_ai_membership)
           allow(project).to receive(:licensed_feature_available?).with(:troubleshoot_job).and_return(licensed)
         end
 
