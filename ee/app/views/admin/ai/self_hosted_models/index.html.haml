@@ -7,7 +7,7 @@
   - if @self_hosted_models.present?
     = render Pajamas::CardComponent.new(card_options: { class: 'gl-new-card labels other-labels js-toggle-container js-admin-labels-container' }, header_options: { class: 'gl-new-card-header' }, body_options: { class: 'gl-new-card-body gl-px-0' }) do |c|
       - c.with_header do
-        .gl-new-card-title-wrapper.gl-flex-direction-column
+        .gl-new-card-title-wrapper.gl-flex-col
           %h2.h5.gl-new-card-title
             = s_('AdminSelfHostedModels|Self-hosted models')
             .gl-new-card-count

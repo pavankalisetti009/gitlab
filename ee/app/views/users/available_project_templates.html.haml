@@ -2,7 +2,7 @@
   - if @custom_project_templates.present?
     - @custom_project_templates.each do |template|
       .template-option.gl-items-center{ class: '!gl-flex', data: { testid: 'template-option-container' } }
-        = render Pajamas::AvatarComponent.new(template, alt: template.name, class: 'btn-template-icon gl-flex-shrink-0 gl-mr-5', size: 48, avatar_options: { lazy: false })
+        = render Pajamas::AvatarComponent.new(template, alt: template.name, class: 'btn-template-icon gl-shrink-0 gl-mr-5', size: 48, avatar_options: { lazy: false })
         .description
           %strong
             = template.title

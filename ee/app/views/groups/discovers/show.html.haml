@@ -8,13 +8,13 @@
 
 %h4.gl-mt-8= s_('TrialDiscoverPage|Access advanced features')
 
-.gl-display-flex.gl-flex-wrap
+.gl-flex.gl-flex-wrap
   = render partial: 'discover_feature', collection: trial_discover_page_features, as: :item, locals: { group: @group }
 
 %h4.gl-mt-8
   = s_('TrialDiscoverPage|Speed. Efficiency. Trust.')
 
-.gl-display-flex.gl-flex-wrap
+.gl-flex.gl-flex-wrap
   = render partial: 'discover_detail', collection: trial_discover_page_details, as: :item
 
 .gl-mt-5

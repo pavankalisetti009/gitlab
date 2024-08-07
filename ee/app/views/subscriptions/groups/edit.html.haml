@@ -1,9 +1,9 @@
 - page_title _('Your GitLab group')
 
-.row.gl-flex-grow-1
-  .gl-display-flex.gl-flex-direction-column.gl-align-items-center.gl-w-full.gl-p-5
+.row.gl-grow
+  .gl-flex.gl-flex-col.gl-items-center.gl-w-full.gl-p-5
     = render 'shared/thanks_for_purchase_alert', plan_title: plan_title, quantity: params[:quantity].to_i
-    .edit-group.gl-display-flex.gl-flex-direction-column.gl-align-items-center.gl-pt-7
+    .edit-group.gl-flex.gl-flex-col.gl-items-center.gl-pt-7
       %h2.center= _('Create your group')
       %p
         %div= _('A group represents your organization in GitLab. Groups allow you to manage users and collaborate across multiple projects.')

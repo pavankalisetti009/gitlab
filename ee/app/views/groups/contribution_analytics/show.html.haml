@@ -5,8 +5,8 @@
   - clickhouse_popover_content = safe_format(s_('ContributionAnalytics|This page sources data from the %{link_start}analytical database ClickHouse%{link_end}, with a few minutes of delay.'), tag_pair(clickhouse_popover_docs_link, :link_start, :link_end))
   - clickhouse_popover_data = { container: 'body', toggle: 'popover', html: 'true', triggers: 'hover focus', content: clickhouse_popover_content }
 
-%div{ class: 'page-title gl-display-flex gl-flex-wrap gl-align-items-center gl-gap-4', data: { testid: 'contribution-analytics-header' } }
-  %h1.gl-font-size-h-display.gl-my-0= _('Contribution Analytics')
+%div{ class: 'page-title gl-flex gl-flex-wrap gl-items-center gl-gap-4', data: { testid: 'contribution-analytics-header' } }
+  %h1.gl-text-size-h-display.gl-my-0= _('Contribution Analytics')
   - if @data_source_clickhouse
     = gl_badge_tag(s_('ContributionAnalytics|Using ClickHouse'), { variant: :info, icon: "information-o" }, { data: { testid: 'using-clickhouse-badge', **clickhouse_popover_data } }, tabindex: '0')
 

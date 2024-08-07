@@ -26,7 +26,7 @@
           = f.label :data, _('License key'), class: 'gl-sr-only'
           = f.text_area :data, class: "form-control license-key-field", data: { testid: 'license-key-field' }, rows: 20
 
-      %h4.gl-font-base= _("Terms of service")
+      %h4.gl-text-base= _("Terms of service")
 
       .form-group
         = render Pajamas::CheckboxTagComponent.new(name: :accept_eula,

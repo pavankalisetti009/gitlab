@@ -14,6 +14,6 @@
   - badge_variant = approved ? :success : :muted
   - badge_label = approved ? _("Approved") : _("%{approvals_given} of %{required} Approvals") % { approvals_given: total_given, required: required }
 
-  %li.gl-display-flex{ class: 'gl-mr-0!' }= render Pajamas::BadgeComponent.new(badge_label, variant: badge_variant, icon: approval_icon, title: approval_tooltip, class: 'has-tooltip', data: { 'testid': 'mr-appovals' })
+  %li.gl-flex{ class: '!gl-mr-0' }= render Pajamas::BadgeComponent.new(badge_label, variant: badge_variant, icon: approval_icon, title: approval_tooltip, class: 'has-tooltip', data: { 'testid': 'mr-appovals' })
 - else
   = render_ce "projects/merge_requests/approvals_count", merge_request: merge_request

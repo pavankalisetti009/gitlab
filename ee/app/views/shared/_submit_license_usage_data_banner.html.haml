@@ -2,7 +2,7 @@
 - return unless payload&.display?
 
 = content_for :page_level_alert do
-  %div{ class: [container_class, @content_class, 'gl-pt-5!'] }
+  %div{ class: [container_class, @content_class, '!gl-pt-5'] }
     = render Pajamas::AlertComponent.new(title: payload.title,
       variant: :warning,
       alert_options: { class: 'js-submit-license-usage-data-banner gl-my-5',

@@ -4,7 +4,7 @@
   - c.with_header do
     = _('Credit card:')
     - if local_assigns[:link_to_match_page] && credit_card_validation&.holder_name_hash
-      .gl-float-right.gl-font-sm
+      .gl-float-right.gl-text-sm
         = link_to card_match_admin_user_path(user) do
           = _('View card matches')
   - c.with_body do
