@@ -19,6 +19,10 @@ export default {
       required: true,
       type: String,
     },
+    createIssueUrl: {
+      required: true,
+      type: String,
+    },
     apiConfig: {
       type: Object,
       required: true,
@@ -38,5 +42,6 @@ export default {
     :metric-type="metricType"
     :metrics-index-url="metricsIndexUrl"
     :observability-client="observabilityClient"
+    :create-issue-url="createIssueUrl"
   />
 </template>

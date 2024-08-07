@@ -65,7 +65,8 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
         apiConfig: expected_api_config,
         metricId: "test.metric",
         metricType: "metric_type",
-        metricsIndexUrl: namespace_project_metrics_path(project.group, project)
+        metricsIndexUrl: namespace_project_metrics_path(project.group, project),
+        createIssueUrl: new_namespace_project_issue_path(project.group, project)
       }.to_json
 
       expect(helper.observability_metrics_details_view_model(project, "test.metric", "metric_type"))
