@@ -6,14 +6,14 @@ RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
   feature_category: :dynamic_application_security_testing do
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user) }
-  let_it_be(:old_tags) { [ActsAsTaggableOn::Tag.create!(name: 'ruby'), ActsAsTaggableOn::Tag.create!(name: 'postgres')] }
+  let_it_be(:old_tags) { [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')] }
   let_it_be(:dast_profile, reload: true) { create(:dast_profile, project: project, branch_name: 'orphaned-branch', tags: old_tags) }
   let_it_be(:dast_site_profile) { create(:dast_site_profile, project: project) }
   let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project) }
   let_it_be(:plan_limits) { create(:plan_limits, :default_plan) }
   let_it_be(:scheduler_owner) { create(:user, name: 'Scheduler Owner') }
 
-  let_it_be(:new_tags) { [ActsAsTaggableOn::Tag.create!(name: 'rails'), ActsAsTaggableOn::Tag.create!(name: 'docker')] }
+  let_it_be(:new_tags) { [create(:ci_tag, name: 'rails'), create(:ci_tag, name: 'docker')] }
   let_it_be(:new_tag_list) { new_tags.map(&:name) }
 
   let(:default_params) do

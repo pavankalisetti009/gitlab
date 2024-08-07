@@ -164,7 +164,7 @@ RSpec.describe AppSec::Dast::Profiles::CreateService, :dynamic_analysis,
 
       context 'when param tag_list is present' do
         let_it_be(:tags) do
-          [ActsAsTaggableOn::Tag.create!(name: 'ruby'), ActsAsTaggableOn::Tag.create!(name: 'postgres')]
+          [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')]
         end
 
         let(:tag_list) { tags.map(&:name) }

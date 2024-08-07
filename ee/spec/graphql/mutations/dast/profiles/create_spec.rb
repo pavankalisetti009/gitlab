@@ -20,8 +20,8 @@ RSpec.describe Mutations::Dast::Profiles::Create, :dynamic_analysis,
   subject(:mutation) { described_class.new(object: nil, context: { current_user: developer }, field: nil) }
 
   before do
-    ActsAsTaggableOn::Tag.create!(name: 'ruby')
-    ActsAsTaggableOn::Tag.create!(name: 'postgres')
+    create(:ci_tag, name: 'ruby')
+    create(:ci_tag, name: 'postgres')
     stub_licensed_features(security_on_demand_scans: true)
   end
 

@@ -101,7 +101,7 @@ RSpec.describe Projects::OnDemandScansController,
   end
 
   describe 'GET #edit' do
-    let_it_be(:tags) { [ActsAsTaggableOn::Tag.create!(name: 'ruby'), ActsAsTaggableOn::Tag.create!(name: 'postgres')] }
+    let_it_be(:tags) { [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')] }
     let_it_be(:dast_profile) do
       create(:dast_profile, project: project, branch_name: project.default_branch_or_main, tags: tags)
     end

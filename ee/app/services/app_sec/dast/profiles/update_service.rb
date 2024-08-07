@@ -17,6 +17,11 @@ module AppSec
           ApplicationRecord.transaction do
             dast_profile.update!(update_params)
 
+            if tag_list?
+              dast_profile.profile_runner_tags.delete_all(:delete_all)
+              tags.each { |tag| dast_profile.profile_runner_tags.create!(tag: tag) }
+            end
+
             update_or_create_schedule! if schedule_input_params
           end
 
@@ -46,9 +51,7 @@ module AppSec
         private
 
         def update_params
-          update_params = dast_profile_params
-          update_params[:tags] = tags if tag_list?
-          update_params
+          dast_profile_params
         end
 
         attr_reader :auditors, :create_schedule_audit
