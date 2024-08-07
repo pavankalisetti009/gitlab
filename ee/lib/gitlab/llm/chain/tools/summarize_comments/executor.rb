@@ -6,7 +6,6 @@ module Gitlab
       module Tools
         module SummarizeComments
           class Executor < SlashCommandTool
-            include Concerns::AiDependent
             include Gitlab::Utils::StrongMemoize
 
             NAME = "SummarizeComments"
