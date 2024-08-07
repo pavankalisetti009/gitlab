@@ -215,3 +215,29 @@ export const mockAiMetricsResponseData = {
   },
   __typename: 'Group',
 };
+
+export const mockAiMetricsZeroResponseData = {
+  aiMetrics: {
+    codeContributorsCount: 0,
+    codeSuggestionsContributorsCount: 0,
+    codeSuggestionsAcceptedCount: 0,
+    codeSuggestionsShownCount: 0,
+    duoChatContributorsCount: 0,
+    duoProAssignedUsersCount: 0,
+    __typename: 'AiMetrics',
+  },
+  __typename: 'Group',
+};
+
+export const mockAiMetricsNullResponseData = {
+  aiMetrics: {
+    codeContributorsCount: null,
+    codeSuggestionsContributorsCount: null,
+    codeSuggestionsAcceptedCount: null,
+    codeSuggestionsShownCount: null,
+    duoChatContributorsCount: null,
+    duoProAssignedUsersCount: null,
+    __typename: 'AiMetrics',
+  },
+  __typename: 'Group',
+};

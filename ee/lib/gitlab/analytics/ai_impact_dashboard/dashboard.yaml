@@ -8,23 +8,23 @@ panels:
     gridAttributes:
       yPos: 0
       xPos: 0
-      width: 3
+      width: 4
       height: 1
     options: {}
   - title: "Code Suggestions: Unique users"
     visualization: code_suggestions_usage_rate_over_time
     gridAttributes:
       yPos: 0
-      xPos: 3
-      width: 3
+      xPos: 4
+      width: 4
       height: 1
     options: {}
   - title: "Code Suggestions: Acceptance rate"
     visualization: code_suggestions_acceptance_rate_over_time
     gridAttributes:
       yPos: 0
-      xPos: 6
-      width: 3
+      xPos: 8
+      width: 4
       height: 1
     options: {}
   - title: 'Metric trends for %{namespaceType}: %{namespaceName}'
