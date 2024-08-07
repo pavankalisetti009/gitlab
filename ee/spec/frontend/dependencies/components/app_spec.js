@@ -5,8 +5,6 @@ import { nextTick } from 'vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import DependenciesApp from 'ee/dependencies/components/app.vue';
 import DependenciesActions from 'ee/dependencies/components/dependencies_actions.vue';
-import DependencyListIncompleteAlert from 'ee/dependencies/components/dependency_list_incomplete_alert.vue';
-import DependencyListJobFailedAlert from 'ee/dependencies/components/dependency_list_job_failed_alert.vue';
 import SbomReportsErrorsAlert from 'ee/dependencies/components/sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from 'ee/dependencies/components/paginated_dependencies_table.vue';
 import createStore from 'ee/dependencies/store';
@@ -16,7 +14,6 @@ import {
   NAMESPACE_ORGANIZATION,
   NAMESPACE_PROJECT,
 } from 'ee/dependencies/constants';
-import { REPORT_STATUS } from 'ee/dependencies/store/modules/list/constants';
 import { TEST_HOST } from 'helpers/test_constants';
 import { getDateInPast } from '~/lib/utils/datetime_utility';
 import axios from '~/lib/utils/axios_utils';
@@ -71,31 +68,8 @@ describe('DependenciesApp component', () => {
         .map((_, id) => ({ id })),
     });
     store.state[allNamespace].pageInfo.total = total;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.ok;
   };
 
-  const setStateJobFailed = () => {
-    Object.assign(store.state[allNamespace], {
-      initialized: true,
-      isLoading: false,
-      dependencies: [],
-    });
-    store.state[allNamespace].pageInfo.total = 0;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.jobFailed;
-  };
-
-  const setStateListIncomplete = () => {
-    Object.assign(store.state[allNamespace], {
-      initialized: true,
-      isLoading: false,
-      dependencies: [{ id: 0 }],
-    });
-    store.state[allNamespace].pageInfo.total = 1;
-    store.state[allNamespace].reportInfo.status = REPORT_STATUS.incomplete;
-  };
-
-  const findJobFailedAlert = () => wrapper.findComponent(DependencyListJobFailedAlert);
-  const findIncompleteListAlert = () => wrapper.findComponent(DependencyListIncompleteAlert);
   const findDependenciesTables = () => wrapper.findAllComponents(PaginatedDependenciesTable);
 
   const findHeader = () => wrapper.find('section > header');
@@ -333,60 +307,6 @@ describe('DependenciesApp component', () => {
 
         it('does not show a link to the latest scan', () => {
           expect(findHeaderScanLink().exists()).toBe(false);
-        });
-      });
-    });
-
-    describe('given the dependency list job failed', () => {
-      beforeEach(async () => {
-        setStateJobFailed();
-
-        await nextTick();
-      });
-
-      it('passes the correct props to the job failure alert', () => {
-        expectComponentWithProps(DependencyListJobFailedAlert, {
-          jobPath: '/group/project/-/pipelines/1',
-        });
-      });
-
-      it('shows the dependencies table with the correct props', expectDependenciesTable);
-
-      describe('when the job failure alert emits the dismiss event', () => {
-        beforeEach(async () => {
-          const alertWrapper = findJobFailedAlert();
-          alertWrapper.vm.$emit('dismiss');
-          await nextTick();
-        });
-
-        it('does not render the job failure alert', () => {
-          expect(findJobFailedAlert().exists()).toBe(false);
-        });
-      });
-    });
-
-    describe('given a dependency list which is known to be incomplete', () => {
-      beforeEach(async () => {
-        setStateListIncomplete();
-
-        await nextTick();
-      });
-
-      it('passes the correct props to the incomplete-list alert', () => {
-        expectComponentWithProps(DependencyListIncompleteAlert);
-      });
-
-      it('shows the dependencies table with the correct props', expectDependenciesTable);
-
-      describe('when the incomplete-list alert emits the dismiss event', () => {
-        beforeEach(async () => {
-          const alertWrapper = findIncompleteListAlert();
-          alertWrapper.vm.$emit('dismiss');
-          await nextTick();
-        });
-
-        it('does not render the incomplete-list alert', () => {
-          expect(findIncompleteListAlert().exists()).toBe(false);
         });
       });
     });
