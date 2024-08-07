@@ -35,11 +35,20 @@ module EE
       validate :user_cap_allowed, if: -> { enabling_user_cap? }
       validate :experiment_features_allowed
 
+      enum enterprise_users_extensions_marketplace_opt_in_status:
+        ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
+
       before_validation :set_seat_control
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? }
 
       delegate :root_ancestor, to: :namespace
+
+      def enterprise_users_extensions_marketplace_enabled=(value)
+        status = ActiveRecord::Type::Boolean.new.cast(value) ? 'enabled' : 'disabled'
+
+        self.enterprise_users_extensions_marketplace_opt_in_status = status
+      end
 
       def prevent_forking_outside_group?
         saml_setting = root_ancestor.saml_provider&.prohibited_outer_forks?
@@ -159,6 +168,7 @@ module EE
         service_access_tokens_expiration_enforced
         duo_features_enabled
         lock_duo_features_enabled
+        enterprise_users_extensions_marketplace_opt_in_status
       ].freeze
 
       override :allowed_namespace_settings_params

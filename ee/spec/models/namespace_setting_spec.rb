@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :model do
+  using RSpec::Parameterized::TableSyntax
+
   let(:group) { create(:group) }
   let(:setting) { group.namespace_settings }
 
@@ -283,8 +285,6 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
   end
 
   describe '#user_cap_enabled?', feature_category: :consumables_cost_management do
-    using RSpec::Parameterized::TableSyntax
-
     where(:seat_control, :new_user_signups_cap, :root_namespace, :expectation) do
       :off      | nil | false | false
       :off      | nil | true  | false
@@ -309,8 +309,6 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
   end
 
   context 'validating new_user_signup_cap' do
-    using RSpec::Parameterized::TableSyntax
-
     where(:feature_available, :old_value, :new_value, :expectation) do
       true  | nil | 10 | true
       true  | 0   | 10 | true
@@ -530,8 +528,6 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       let_it_be_with_reload(:subsubgroup) { create(:group, parent: subgroup) }
 
       shared_examples '[configuration](inherit_group_setting: bool) and [configuration]_locked?' do |attribute|
-        using RSpec::Parameterized::TableSyntax
-
         where(:group_attr, :subgroup_attr, :subsubgroup_attr, :group_with_inherit_attr?, :group_without_inherit_attr?, :group_locked?, :subgroup_with_inherit_attr?, :subgroup_without_inherit_attr?, :subgroup_locked?, :subsubgroup_with_inherit_attr?, :subsubgroup_without_inherit_attr?, :subsubgroup_locked?) do
           true  | true  | true      | true  | true  | false     | true  | true  | true      | true  | true  | true
           true  | true  | false     | true  | true  | false     | true  | true  | true      | true  | false | true
@@ -588,5 +584,25 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
   describe '#duo_features_enabled' do
     it_behaves_like 'a cascading namespace setting boolean attribute', settings_attribute_name: :duo_features_enabled
+  end
+
+  describe '#enterprise_users_extensions_marketplace_enabled=' do
+    subject { setting.enterprise_users_extensions_marketplace_opt_in_status }
+
+    where(:value, :expected_opt_in_status) do
+      true  | 'enabled'
+      false | 'disabled'
+      0     | 'disabled'
+      1     | 'enabled'
+    end
+
+    with_them do
+      before do
+        setting.update!(enterprise_users_extensions_marketplace_opt_in_status: 'unset')
+        setting.enterprise_users_extensions_marketplace_enabled = value
+      end
+
+      it { is_expected.to eq(expected_opt_in_status) }
+    end
   end
 end
