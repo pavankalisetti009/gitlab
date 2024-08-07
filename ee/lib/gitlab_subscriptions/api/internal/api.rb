@@ -19,6 +19,11 @@ module GitlabSubscriptions
         mount ::GitlabSubscriptions::API::Internal::Subscriptions
         mount ::GitlabSubscriptions::API::Internal::UpcomingReconciliations
         mount ::GitlabSubscriptions::API::Internal::Users
+
+        # these APIs are being migrated to follow the internal subscriptions path,
+        # 'internal/gitlab_subscriptions', in https://gitlab.com/gitlab-org/gitlab/-/issues/463741.
+        # They will then be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/473625.
+        mount ::API::GitlabSubscriptions::AddOnPurchases
       end
     end
   end

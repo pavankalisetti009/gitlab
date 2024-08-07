@@ -7,9 +7,10 @@ module API
       urgency :low
 
       before do
-        authenticated_as_admin!
+        @namespace = find_namespace(params[:id])
 
-        @namespace = find_namespace!(params[:id])
+        not_found!('Namespace') unless @namespace
+
         @add_on = find_or_create_subscription_add_on!(params[:add_on_name], @namespace)
       end
 
