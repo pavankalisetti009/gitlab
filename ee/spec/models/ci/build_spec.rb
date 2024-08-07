@@ -1088,54 +1088,8 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   end
 
   describe '#secrets_provider?' do
-    subject(:secrets_provider?) { job.secrets_provider? }
-
-    context 'when no secret CI variables are set' do
-      it { is_expected.to eq(false) }
-    end
-
-    context 'when the VAULT_SERVER_URL is set' do
-      before do
-        project.variables.create!(key: 'VAULT_SERVER_URL', value: 'server_url')
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when only one Azure key vault CI variable is set' do
-      before do
-        project.variables.create!(key: 'AZURE_KEY_VAULT_SERVER_URL', value: 'server_url')
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
-    context 'when all Azure key vault CI variables are set' do
-      before do
-        project.variables.create!(key: 'AZURE_KEY_VAULT_SERVER_URL', value: 'server_url')
-        project.variables.create!(key: 'AZURE_CLIENT_ID', value: 'client_ID')
-        project.variables.create!(key: 'AZURE_TENANT_ID', value: 'tenant_id')
-      end
-
-      it { is_expected.to eq(true) }
-    end
-
-    context 'when only one GCP Secrets Manager CI variable is set' do
-      before do
-        project.variables.create!(key: 'GCP_PROJECT_NUMBER', value: '1234')
-      end
-
-      it { is_expected.to eq(false) }
-    end
-
-    context 'when all GCP Secrets Manager CI variables are set' do
-      before do
-        project.variables.create!(key: 'GCP_PROJECT_NUMBER', value: '1234')
-        project.variables.create!(key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID', value: 'pool-id')
-        project.variables.create!(key: 'GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID', value: 'provider-id')
-      end
-
-      it { is_expected.to eq(true) }
+    it 'delegates to secrets_integration' do
+      expect(job).to delegate_method(:secrets_provider?).to(:secrets_integration)
     end
   end
 

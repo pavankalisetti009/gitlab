@@ -42,6 +42,8 @@ module EE
 
         after_commit :track_ci_secrets_management_usage, on: :create
         delegate :service_specification, to: :runner_session, allow_nil: true
+        delegate :secrets_provider?, to: :secrets_integration
+        delegate :variable_value, to: :secrets_integration
 
         scope :license_scan, -> { joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(:license_scanning)) }
         scope :sbom_generation, -> { joins(:job_artifacts).merge(::Ci::JobArtifact.of_report_type(:sbom)) }
@@ -195,12 +197,8 @@ module EE
         super + ee_runner_required_feature_names
       end
 
-      def secrets_provider?
-        hashicorp_vault_provider? || azure_key_vault_provider? || gcp_secret_manager_provider?
-      end
-
-      def variable_value(key, default = nil)
-        variables_hash.fetch(key, default)
+      def secrets_integration
+        ::Ci::Secrets::Integration.new(variables)
       end
 
       def playable?
@@ -299,22 +297,6 @@ module EE
             ).to_context]
           )
         end
-      end
-
-      def gcp_secret_manager_provider?
-        variable_value('GCP_PROJECT_NUMBER').present? &&
-          variable_value('GCP_WORKLOAD_IDENTITY_FEDERATION_POOL_ID').present? &&
-          variable_value('GCP_WORKLOAD_IDENTITY_FEDERATION_PROVIDER_ID').present?
-      end
-
-      def azure_key_vault_provider?
-        variable_value('AZURE_KEY_VAULT_SERVER_URL').present? &&
-          variable_value('AZURE_CLIENT_ID').present? &&
-          variable_value('AZURE_TENANT_ID').present?
-      end
-
-      def hashicorp_vault_provider?
-        variable_value('VAULT_SERVER_URL').present?
       end
 
       def identity_variables
