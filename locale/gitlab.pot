@@ -9484,9 +9484,6 @@ msgstr ""
 msgid "BranchRules|Status checks"
 msgstr ""
 
-msgid "BranchRules|Status checks (%{total})"
-msgstr ""
-
 msgid "BranchRules|Target branch"
 msgstr ""
 
