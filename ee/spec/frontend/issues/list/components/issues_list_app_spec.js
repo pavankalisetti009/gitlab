@@ -11,18 +11,7 @@ import { getIssuesCountsQueryResponse, getIssuesQueryResponse } from 'jest/issue
 import { TYPENAME_USER } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import IssuableList from '~/vue_shared/issuable/list/components/issuable_list_root.vue';
-import {
-  CREATED_DESC,
-  TYPE_TOKEN_OBJECTIVE_OPTION,
-  TYPE_TOKEN_KEY_RESULT_OPTION,
-  TYPE_TOKEN_EPIC_OPTION,
-} from '~/issues/list/constants';
-import CEIssuesListApp from '~/issues/list/components/issues_list_app.vue';
-import {
-  WORK_ITEM_TYPE_ENUM_OBJECTIVE,
-  WORK_ITEM_TYPE_ENUM_KEY_RESULT,
-  WORK_ITEM_TYPE_ENUM_EPIC,
-} from '~/work_items/constants';
+import { CREATED_DESC } from '~/issues/list/constants';
 import {
   TOKEN_TYPE_ASSIGNEE,
   TOKEN_TYPE_AUTHOR,
@@ -73,8 +62,9 @@ describe('EE IssuesListApp component', () => {
     hasIssuableHealthStatusFeature: true,
     hasIssueWeightsFeature: true,
     hasIterationsFeature: true,
-    hasScopedLabelsFeature: true,
     hasOkrsFeature: true,
+    hasQualityManagementFeature: true,
+    hasScopedLabelsFeature: true,
     initialEmail: 'email@example.com',
     initialSort: CREATED_DESC,
     isIssueRepositioningDisabled: false,
@@ -100,14 +90,12 @@ describe('EE IssuesListApp component', () => {
   };
 
   const findIssuableList = () => wrapper.findComponent(IssuableList);
-  const findIssueListApp = () => wrapper.findComponent(CEIssuesListApp);
   const findNewIssueDropdown = () => wrapper.findComponent(NewIssueDropdown);
   const findChildEpicIssueIndicator = () => wrapper.findComponent(ChildEpicIssueIndicator);
 
   const mountComponent = ({
     provide = {},
     okrsMvc = false,
-    workItemsAlpha = false,
     issuesQueryResponse = jest.fn().mockResolvedValue(defaultQueryResponse),
     issuesCountsQueryResponse = jest.fn().mockResolvedValue(getIssuesCountsQueryResponse),
   } = {}) => {
@@ -120,7 +108,6 @@ describe('EE IssuesListApp component', () => {
       provide: {
         glFeatures: {
           okrsMvc,
-          workItemsAlpha,
         },
         ...defaultProvide,
         ...provide,
@@ -143,97 +130,6 @@ describe('EE IssuesListApp component', () => {
         defaultQueryResponse.data.project.issues.nodes[0].blockingCount,
       );
     });
-  });
-
-  describe('workItemTypes', () => {
-    describe.each`
-      hasEpicsFeature | isProject | eeWorkItemTypes               | message
-      ${false}        | ${true}   | ${[]}                         | ${'NOT include'}
-      ${true}         | ${true}   | ${[]}                         | ${'NOT include'}
-      ${true}         | ${false}  | ${[WORK_ITEM_TYPE_ENUM_EPIC]} | ${'include'}
-    `(
-      'when hasEpicsFeature is "$hasEpicsFeature" and isProject is "$isProject"',
-      ({ hasEpicsFeature, isProject, eeWorkItemTypes, message }) => {
-        beforeEach(() => {
-          wrapper = mountComponent({ provide: { hasEpicsFeature, isProject } });
-        });
-
-        it(`should ${message} epic in work item types`, () => {
-          expect(findIssueListApp().props('eeWorkItemTypes')).toMatchObject(eeWorkItemTypes);
-        });
-      },
-    );
-
-    describe.each`
-      hasOkrsFeature | okrsMvc  | eeWorkItemTypes                                                    | message
-      ${false}       | ${true}  | ${[]}                                                              | ${'NOT include'}
-      ${true}        | ${false} | ${[]}                                                              | ${'NOT include'}
-      ${true}        | ${true}  | ${[WORK_ITEM_TYPE_ENUM_OBJECTIVE, WORK_ITEM_TYPE_ENUM_KEY_RESULT]} | ${'include'}
-    `(
-      'when hasOkrsFeature is "$hasOkrsFeature" and okrsMvc is "$okrsMvc"',
-      ({ hasOkrsFeature, okrsMvc, eeWorkItemTypes, message }) => {
-        beforeEach(() => {
-          wrapper = mountComponent({
-            provide: {
-              hasOkrsFeature,
-            },
-            okrsMvc,
-          });
-        });
-
-        it(`should ${message} objective and key result in work item types`, () => {
-          expect(findIssueListApp().props('eeWorkItemTypes')).toMatchObject(eeWorkItemTypes);
-        });
-      },
-    );
-  });
-
-  describe('typeTokenOptions', () => {
-    describe.each`
-      hasEpicsFeature | isProject | workItemsAlpha | eeWorkItemTypeTokens        | message
-      ${false}        | ${true}   | ${false}       | ${[]}                       | ${'NOT include'}
-      ${true}         | ${true}   | ${false}       | ${[]}                       | ${'NOT include'}
-      ${true}         | ${false}  | ${false}       | ${[]}                       | ${'NOT include'}
-      ${true}         | ${false}  | ${true}        | ${[TYPE_TOKEN_EPIC_OPTION]} | ${'include'}
-    `(
-      'when hasEpicsFeature is "$hasEpicsFeature" and isProject is "$isProject" and workItemsAlpha is "$workItemsAlpha"',
-      ({ hasEpicsFeature, isProject, workItemsAlpha, eeWorkItemTypeTokens, message }) => {
-        beforeEach(() => {
-          wrapper = mountComponent({ provide: { hasEpicsFeature, isProject }, workItemsAlpha });
-        });
-
-        it(`should ${message} epic in type tokens`, () => {
-          expect(findIssueListApp().props('eeTypeTokenOptions')).toMatchObject(
-            eeWorkItemTypeTokens,
-          );
-        });
-      },
-    );
-
-    describe.each`
-      hasOkrsFeature | okrsMvc  | eeWorkItemTypeTokens                                           | message
-      ${false}       | ${true}  | ${[]}                                                          | ${'NOT include'}
-      ${true}        | ${false} | ${[]}                                                          | ${'NOT include'}
-      ${true}        | ${true}  | ${[TYPE_TOKEN_OBJECTIVE_OPTION, TYPE_TOKEN_KEY_RESULT_OPTION]} | ${'include'}
-    `(
-      'when hasOkrsFeature is "$hasOkrsFeature" and okrsMvc is "$okrsMvc"',
-      ({ hasOkrsFeature, okrsMvc, eeWorkItemTypeTokens, message }) => {
-        beforeEach(() => {
-          wrapper = mountComponent({
-            provide: {
-              hasOkrsFeature,
-            },
-            okrsMvc,
-          });
-        });
-
-        it(`should ${message} objective and key result in type tokens`, () => {
-          expect(findIssueListApp().props('eeTypeTokenOptions')).toMatchObject(
-            eeWorkItemTypeTokens,
-          );
-        });
-      },
-    );
   });
 
   describe('tokens', () => {

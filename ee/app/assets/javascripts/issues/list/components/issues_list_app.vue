@@ -7,22 +7,12 @@ import {
 } from '~/vue_shared/components/filtered_search_bar/constants';
 import {
   TOKEN_TITLE_EPIC,
+  TOKEN_TITLE_HEALTH,
   TOKEN_TITLE_ITERATION,
   TOKEN_TITLE_WEIGHT,
-  TOKEN_TITLE_HEALTH,
   TOKEN_TYPE_HEALTH,
 } from 'ee/vue_shared/components/filtered_search_bar/constants';
 import { WORKSPACE_GROUP, WORKSPACE_PROJECT } from '~/issues/constants';
-import {
-  TYPE_TOKEN_EPIC_OPTION,
-  TYPE_TOKEN_OBJECTIVE_OPTION,
-  TYPE_TOKEN_KEY_RESULT_OPTION,
-} from '~/issues/list/constants';
-import {
-  WORK_ITEM_TYPE_ENUM_EPIC,
-  WORK_ITEM_TYPE_ENUM_OBJECTIVE,
-  WORK_ITEM_TYPE_ENUM_KEY_RESULT,
-} from '~/work_items/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_EPIC } from '~/graphql_shared/constants';
 import searchIterationsQuery from '../queries/search_iterations.query.graphql';
@@ -51,7 +41,6 @@ export default {
   inject: [
     'fullPath',
     'groupPath',
-    'hasEpicsFeature',
     'hasIssueWeightsFeature',
     'hasIterationsFeature',
     'hasIssuableHealthStatusFeature',
@@ -61,26 +50,6 @@ export default {
   computed: {
     namespace() {
       return this.isProject ? WORKSPACE_PROJECT : WORKSPACE_GROUP;
-    },
-    workItemTypes() {
-      const types = [];
-      if (this.hasEpicsFeature && !this.isProject) {
-        types.push(WORK_ITEM_TYPE_ENUM_EPIC);
-      }
-      if (this.isOkrsEnabled) {
-        types.push(WORK_ITEM_TYPE_ENUM_OBJECTIVE, WORK_ITEM_TYPE_ENUM_KEY_RESULT);
-      }
-      return types;
-    },
-    typeTokenOptions() {
-      const typeTokens = [];
-      if (this.hasEpicsFeature && !this.isProject && this.glFeatures.workItemsAlpha) {
-        typeTokens.push(TYPE_TOKEN_EPIC_OPTION);
-      }
-      if (this.isOkrsEnabled) {
-        typeTokens.push(TYPE_TOKEN_OBJECTIVE_OPTION, TYPE_TOKEN_KEY_RESULT_OPTION);
-      }
-      return typeTokens;
     },
     isOkrsEnabled() {
       return this.hasOkrsFeature && this.glFeatures.okrsMvc;
@@ -177,13 +146,7 @@ export default {
 </script>
 
 <template>
-  <issues-list-app
-    ref="issuesListApp"
-    class="js-issues-list-app"
-    :ee-work-item-types="workItemTypes"
-    :ee-type-token-options="typeTokenOptions"
-    :ee-search-tokens="searchTokens"
-  >
+  <issues-list-app ref="issuesListApp" class="js-issues-list-app" :ee-search-tokens="searchTokens">
     <template v-if="isOkrsEnabled" #new-issuable-button>
       <new-issue-dropdown @workItemCreated="refetchIssuables" />
     </template>
