@@ -8,7 +8,7 @@ exports[`StreamItem Group http StreamItem when an item has event filters renders
   Destination has filters applied.
   <a
     class="gl-link"
-    href="/help/administration/audit_event_streaming#event-type-filters"
+    href="/help/administration/audit_event_streaming#update-event-filters"
     rel="noopener"
     target="_blank"
   >
@@ -25,7 +25,7 @@ exports[`StreamItem Group http StreamItem when an item has namespace filters ren
   Destination has filters applied.
   <a
     class="gl-link"
-    href="/help/administration/audit_event_streaming#event-type-filters"
+    href="/help/administration/audit_event_streaming#update-event-filters"
     rel="noopener"
     target="_blank"
   >
