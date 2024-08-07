@@ -42,15 +42,17 @@ module EE
 
         return unless push_rule
 
-        if !push_rule.commit_message_allowed?(params[:commit_message])
+        commit_message = params[:commit_message] || merge_request.default_merge_commit_message
+
+        if !push_rule.commit_message_allowed?(commit_message)
           "Commit message does not follow the pattern '#{push_rule.commit_message_regex}'"
-        elsif push_rule.commit_message_blocked?(params[:commit_message])
+        elsif push_rule.commit_message_blocked?(commit_message)
           "Commit message contains the forbidden pattern '#{push_rule.commit_message_negative_regex}'"
         elsif !push_rule.author_email_allowed?(current_user.commit_email_or_default)
           "Author's commit email '#{current_user.commit_email_or_default}' does not follow the pattern '#{push_rule.author_email_regex}'"
         elsif validate_squash_message
           squash_message_validation_error
-        elsif !push_rule.non_dco_commit_allowed?(params[:commit_message])
+        elsif !push_rule.non_dco_commit_allowed?(commit_message)
           "Commit message must contain a DCO signoff"
         end
       end
@@ -66,9 +68,11 @@ module EE
       def squash_message_validation_error
         return unless push_rule
 
-        if !push_rule.commit_message_allowed?(params[:squash_commit_message])
+        squash_commit_message = params[:squash_commit_message] || merge_request.default_squash_commit_message
+
+        if !push_rule.commit_message_allowed?(squash_commit_message)
           "Squash commit message does not follow the pattern '#{push_rule.commit_message_regex}'"
-        elsif push_rule.commit_message_blocked?(params[:squash_commit_message])
+        elsif push_rule.commit_message_blocked?(squash_commit_message)
           "Squash commit message contains the forbidden pattern '#{push_rule.commit_message_negative_regex}'"
         end
       end
