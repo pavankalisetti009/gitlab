@@ -128,6 +128,14 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
             expect(assigns(:eligible_groups)).to eq []
           end
         end
+
+        context 'when URL has no plan_id param' do
+          before do
+            get :new
+          end
+
+          it { is_expected.to have_gitlab_http_status(:ok) }
+        end
       end
 
       context 'when the customers dot migration FFs are enabled' do
@@ -186,6 +194,14 @@ RSpec.describe SubscriptionsController, feature_category: :subscription_manageme
 
               expect(response).to redirect_to %r{/-/subscriptions/groups/new\?plan_id=premium-plan-id}
             end
+          end
+
+          context 'when URL has no plan_id param' do
+            before do
+              get :new
+            end
+
+            it { is_expected.to redirect_to "https://about.gitlab.com/pricing/" }
           end
         end
 
