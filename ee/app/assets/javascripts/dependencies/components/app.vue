@@ -16,8 +16,6 @@ import { DEPENDENCY_LIST_TYPES } from '../store/constants';
 import { NAMESPACE_ORGANIZATION, NAMESPACE_PROJECT } from '../constants';
 import { SORT_FIELD_SEVERITY } from '../store/modules/list/constants';
 import DependenciesActions from './dependencies_actions.vue';
-import DependencyListIncompleteAlert from './dependency_list_incomplete_alert.vue';
-import DependencyListJobFailedAlert from './dependency_list_job_failed_alert.vue';
 import SbomReportsErrorsAlert from './sbom_reports_errors_alert.vue';
 import PaginatedDependenciesTable from './paginated_dependencies_table.vue';
 
@@ -31,8 +29,6 @@ export default {
     GlLoadingIcon,
     GlSprintf,
     GlLink,
-    DependencyListIncompleteAlert,
-    DependencyListJobFailedAlert,
     PaginatedDependenciesTable,
     SbomReportsErrorsAlert,
   },
@@ -56,15 +52,9 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      isIncompleteAlertDismissed: false,
-      isJobFailedAlertDismissed: false,
-    };
-  },
   computed: {
     ...mapState(['currentList', 'listTypes']),
-    ...mapGetters(['isInitialized', 'isJobFailed', 'isIncomplete', 'reportInfo', 'totals']),
+    ...mapGetters(['isInitialized', 'totals']),
     ...mapState(DEPENDENCY_LIST_TYPES.all.namespace, ['pageInfo']),
     ...mapState({
       fetchingInProgress(state) {
@@ -131,12 +121,6 @@ export default {
         dispatch(`${this.currentList}/fetchExport`);
       },
     }),
-    dismissIncompleteListAlert() {
-      this.isIncompleteAlertDismissed = true;
-    },
-    dismissJobFailedAlert() {
-      this.isJobFailedAlertDismissed = true;
-    },
   },
   i18n: {
     emptyStateTitle: __('View dependency details for your project'),
@@ -167,17 +151,6 @@ export default {
   </gl-empty-state>
 
   <section v-else>
-    <dependency-list-incomplete-alert
-      v-if="isIncomplete && !isIncompleteAlertDismissed"
-      @dismiss="dismissIncompleteListAlert"
-    />
-
-    <dependency-list-job-failed-alert
-      v-if="isJobFailed && !isJobFailedAlertDismissed"
-      :job-path="latestSuccessfulScanPath"
-      @dismiss="dismissJobFailedAlert"
-    />
-
     <sbom-reports-errors-alert
       v-if="showSbomReportsErrors"
       :errors="sbomReportsErrors"

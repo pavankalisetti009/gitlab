@@ -8,43 +8,43 @@ module EE
 
       class_methods do
         def analytics_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/analytics/storage"
+          "/api/v4/projects/#{project.id}/observability/v1/analytics/storage"
         end
 
         def tracing_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/traces"
+          "/api/v4/projects/#{project.id}/observability/v1/traces"
         end
 
         def tracing_analytics_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/traces/analytics"
+          "/api/v4/projects/#{project.id}/observability/v1/traces/analytics"
         end
 
         def services_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/services"
+          "/api/v4/projects/#{project.id}/observability/v1/services"
         end
 
         def operations_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/services/$SERVICE_NAME$/operations"
+          "/api/v4/projects/#{project.id}/observability/v1/services/$SERVICE_NAME$/operations"
         end
 
         def metrics_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/metrics/autocomplete"
+          "/api/v4/projects/#{project.id}/observability/v1/metrics/autocomplete"
         end
 
         def metrics_search_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/metrics/search"
+          "/api/v4/projects/#{project.id}/observability/v1/metrics/search"
         end
 
         def metrics_search_metadata_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/metrics/searchmetadata"
+          "/api/v4/projects/#{project.id}/observability/v1/metrics/searchmetadata"
         end
 
         def logs_search_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/logs/search"
+          "/api/v4/projects/#{project.id}/observability/v1/logs/search"
         end
 
         def logs_search_metadata_url(project)
-          "#{::Gitlab::Observability.observability_url}/v3/query/#{project.id}/logs/searchmetadata"
+          "/api/v4/projects/#{project.id}/observability/v1/logs/searchmetadata"
         end
       end
     end

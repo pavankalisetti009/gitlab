@@ -7,7 +7,6 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingDetails from 'ee/tracing/details/tracing_details.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
-import { visitUrl } from '~/lib/utils/url_utility';
 import { mapTraceToSpanTrees } from 'ee/tracing/trace_utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 
@@ -56,8 +55,19 @@ describe('TracingDetails', () => {
 
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
-  beforeEach(() => {
+  const mockTrace = {
+    traceId: 'test-trace-id',
+    spans: [{ span_id: 'span-1' }, { span_id: 'span-2' }],
+  };
+  const mockTree = { roots: [{ span_id: 'span-1' }], incomplete: true, pruned: true };
+
+  beforeEach(async () => {
     observabilityClientMock = createMockClient();
+
+    observabilityClientMock.fetchTrace.mockResolvedValueOnce(mockTrace);
+    mapTraceToSpanTrees.mockReturnValue(mockTree);
+
+    await mountComponent();
   });
 
   it('tracks view_tracing_details_page', () => {
@@ -67,151 +77,102 @@ describe('TracingDetails', () => {
     expect(trackEventSpy).toHaveBeenCalledWith('view_tracing_details_page', {}, undefined);
   });
 
-  it('renders the loading indicator while checking if tracing is enabled', () => {
-    mountComponent();
-
-    expect(findLoadingIcon().exists()).toBe(true);
-    expect(observabilityClientMock.isObservabilityEnabled).toHaveBeenCalled();
+  it('fetches the trace and renders the trace details', () => {
+    expect(observabilityClientMock.fetchTrace).toHaveBeenCalled();
+    expect(findLoadingIcon().exists()).toBe(false);
+    expect(findTraceDetails().exists()).toBe(true);
   });
 
-  describe('when tracing is enabled', () => {
-    const mockTrace = {
-      traceId: 'test-trace-id',
-      spans: [{ span_id: 'span-1' }, { span_id: 'span-2' }],
-    };
-    const mockTree = { roots: [{ span_id: 'span-1' }], incomplete: true, pruned: true };
+  it('renders the chart component', () => {
+    const chart = findTraceChart();
+    expect(chart.exists()).toBe(true);
+    expect(chart.props('trace')).toEqual(mockTrace);
+    expect(chart.props('spanTrees')).toEqual(mockTree.roots);
+  });
 
-    beforeEach(async () => {
-      observabilityClientMock.isObservabilityEnabled.mockResolvedValueOnce(true);
-      observabilityClientMock.fetchTrace.mockResolvedValueOnce(mockTrace);
-      mapTraceToSpanTrees.mockReturnValue(mockTree);
+  it('renders the header', () => {
+    const header = findTraceDetails().findComponent(TracingHeader);
+    expect(header.exists()).toBe(true);
+    expect(header.props('incomplete')).toBe(mockTree.incomplete);
+    expect(header.props('trace')).toEqual(mockTrace);
+    expect(header.props('logsLink')).toBe(
+      `${LOGS_INDEX_URL}?traceId[]=test-trace-id&search=&date_range=30d`,
+    );
+  });
 
-      await mountComponent();
+  describe('details drawer', () => {
+    it('renders the details drawer initially closed', () => {
+      expect(findDrawer().exists()).toBe(true);
+      expect(isDrawerOpen()).toBe(false);
+      expect(getDrawerSpan()).toBe(null);
     });
 
-    it('fetches the trace and renders the trace details', () => {
-      expect(observabilityClientMock.isObservabilityEnabled).toHaveBeenCalled();
-      expect(observabilityClientMock.fetchTrace).toHaveBeenCalled();
-      expect(findLoadingIcon().exists()).toBe(false);
-      expect(findTraceDetails().exists()).toBe(true);
+    const selectSpan = (spanId = 'span-1') =>
+      findTraceChart().vm.$emit('span-selected', { spanId });
+
+    it('opens the drawer and set the selected span, upond selection', async () => {
+      await selectSpan();
+
+      expect(isDrawerOpen()).toBe(true);
+      expect(getDrawerSpan()).toEqual({ span_id: 'span-1' });
     });
 
-    it('renders the chart component', () => {
-      const chart = findTraceChart();
-      expect(chart.exists()).toBe(true);
-      expect(chart.props('trace')).toEqual(mockTrace);
-      expect(chart.props('spanTrees')).toEqual(mockTree.roots);
+    it('closes the drawer upon receiving the close event', async () => {
+      await selectSpan();
+
+      await findDrawer().vm.$emit('close');
+
+      expect(isDrawerOpen()).toBe(false);
+      expect(getDrawerSpan()).toBe(null);
     });
 
-    it('renders the header', () => {
-      const header = findTraceDetails().findComponent(TracingHeader);
-      expect(header.exists()).toBe(true);
-      expect(header.props('incomplete')).toBe(mockTree.incomplete);
-      expect(header.props('trace')).toEqual(mockTrace);
-      expect(header.props('logsLink')).toBe(
-        `${LOGS_INDEX_URL}?traceId[]=test-trace-id&search=&date_range=30d`,
+    it('closes the drawer if the same span is selected', async () => {
+      await selectSpan();
+
+      expect(isDrawerOpen()).toBe(true);
+
+      await selectSpan();
+
+      expect(isDrawerOpen()).toBe(false);
+    });
+
+    it('changes the selected span and keeps the drawer open, upon selecting a different span', async () => {
+      await selectSpan('span-1');
+
+      expect(isDrawerOpen()).toBe(true);
+
+      await selectSpan('span-2');
+
+      expect(isDrawerOpen()).toBe(true);
+      expect(getDrawerSpan()).toEqual({ span_id: 'span-2' });
+    });
+
+    it('set the selected-span-in on the chart component', async () => {
+      expect(findTraceChart().props('selectedSpanId')).toBeNull();
+      await selectSpan();
+      expect(findTraceChart().props('selectedSpanId')).toBe('span-1');
+    });
+  });
+
+  describe('pruning warning', () => {
+    const findAlert = () => wrapper.findComponent(GlAlert);
+    it('shows a warning if the trace is pruned', () => {
+      expect(findAlert().text()).toBe(
+        'This trace has 2 spans. For performance reasons, we only show the first 2000 spans.',
       );
     });
 
-    describe('details drawer', () => {
-      it('renders the details drawer initially closed', () => {
-        expect(findDrawer().exists()).toBe(true);
-        expect(isDrawerOpen()).toBe(false);
-        expect(getDrawerSpan()).toBe(null);
-      });
-
-      const selectSpan = (spanId = 'span-1') =>
-        findTraceChart().vm.$emit('span-selected', { spanId });
-
-      it('opens the drawer and set the selected span, upond selection', async () => {
-        await selectSpan();
-
-        expect(isDrawerOpen()).toBe(true);
-        expect(getDrawerSpan()).toEqual({ span_id: 'span-1' });
-      });
-
-      it('closes the drawer upon receiving the close event', async () => {
-        await selectSpan();
-
-        await findDrawer().vm.$emit('close');
-
-        expect(isDrawerOpen()).toBe(false);
-        expect(getDrawerSpan()).toBe(null);
-      });
-
-      it('closes the drawer if the same span is selected', async () => {
-        await selectSpan();
-
-        expect(isDrawerOpen()).toBe(true);
-
-        await selectSpan();
-
-        expect(isDrawerOpen()).toBe(false);
-      });
-
-      it('changes the selected span and keeps the drawer open, upon selecting a different span', async () => {
-        await selectSpan('span-1');
-
-        expect(isDrawerOpen()).toBe(true);
-
-        await selectSpan('span-2');
-
-        expect(isDrawerOpen()).toBe(true);
-        expect(getDrawerSpan()).toEqual({ span_id: 'span-2' });
-      });
-
-      it('set the selected-span-in on the chart component', async () => {
-        expect(findTraceChart().props('selectedSpanId')).toBeNull();
-        await selectSpan();
-        expect(findTraceChart().props('selectedSpanId')).toBe('span-1');
-      });
-    });
-
-    describe('pruning warning', () => {
-      const findAlert = () => wrapper.findComponent(GlAlert);
-      it('shows a warning if the trace is pruned', () => {
-        expect(findAlert().text()).toBe(
-          'This trace has 2 spans. For performance reasons, we only show the first 2000 spans.',
-        );
-      });
-
-      it('does not show a warning if the trace is not pruned', async () => {
-        mapTraceToSpanTrees.mockReturnValue({ ...mockTree, pruned: false });
-
-        await mountComponent();
-
-        expect(findAlert().exists()).toBe(false);
-      });
-    });
-  });
-
-  describe('when tracing is not enabled', () => {
-    beforeEach(async () => {
-      observabilityClientMock.isObservabilityEnabled.mockResolvedValueOnce(false);
+    it('does not show a warning if the trace is not pruned', async () => {
+      mapTraceToSpanTrees.mockReturnValue({ ...mockTree, pruned: false });
 
       await mountComponent();
-    });
 
-    it('redirects to tracingIndexUrl', () => {
-      expect(visitUrl).toHaveBeenCalledWith(props.tracingIndexUrl);
+      expect(findAlert().exists()).toBe(false);
     });
   });
 
   describe('error handling', () => {
-    it('if isObservabilityEnabled fails, it renders an alert and empty page', async () => {
-      observabilityClientMock.isObservabilityEnabled.mockRejectedValueOnce('error');
-
-      await mountComponent();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'Error: Failed to load trace details. Try reloading the page.',
-      });
-      expect(findLoadingIcon().exists()).toBe(false);
-      expect(findTraceDetails().exists()).toBe(false);
-    });
-
     it('if fetchTrace fails, it renders an alert and empty page', async () => {
-      observabilityClientMock.isObservabilityEnabled.mockReturnValueOnce(true);
       observabilityClientMock.fetchTrace.mockRejectedValueOnce('error');
 
       await mountComponent();

@@ -5,6 +5,7 @@ module Gitlab
     module Chain
       module Tools
         class SlashCommandTool < Tool
+          include Concerns::AiDependent
           extend ::Gitlab::Utils::Override
 
           def perform
@@ -31,6 +32,13 @@ module Gitlab
           override :prompt_options
           def prompt_options
             super.merge(command_options).merge(selected_text_options)
+          end
+
+          # this method is implemented here to force children of this class to re-implement explicitly, using correct
+          # service_name, which may be different for every tool
+          override :ai_request
+          def ai_request
+            raise NotImplementedError
           end
 
           def selected_text_options

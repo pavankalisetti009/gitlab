@@ -84,21 +84,7 @@ export default {
           message: this.$options.i18n.error,
         });
       }
-      this.loading = true;
-      try {
-        const enabled = await this.observabilityClient.isObservabilityEnabled();
-        if (enabled) {
-          await this.fetchTrace();
-        } else {
-          this.goToTracingIndex();
-        }
-      } catch (e) {
-        createAlert({
-          message: this.$options.i18n.error,
-        });
-      } finally {
-        this.loading = false;
-      }
+      await this.fetchTrace();
     },
     async fetchTrace() {
       this.loading = true;

@@ -64,7 +64,7 @@ const parsePagination = (headers) => {
 
 export const receiveDependenciesSuccess = ({ commit }, { headers, data }) => {
   const pageInfo = parsePagination(normalizeHeaders(headers));
-  const { dependencies, report: reportInfo } = data;
+  const { dependencies } = data;
   const convertedDependencies = dependencies.map((item) =>
     convertObjectPropsToCamelCase(item, {
       deep: true,
@@ -73,7 +73,6 @@ export const receiveDependenciesSuccess = ({ commit }, { headers, data }) => {
 
   commit(types.RECEIVE_DEPENDENCIES_SUCCESS, {
     dependencies: convertedDependencies,
-    reportInfo,
     pageInfo,
   });
 };

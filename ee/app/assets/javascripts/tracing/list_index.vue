@@ -1,10 +1,9 @@
 <script>
-import ProvisionedObservabilityContainer from '~/observability/components/provisioned_observability_container.vue';
+import { buildClient } from '~/observability/client';
 import TracingList from './list/tracing_list.vue';
 
 export default {
   components: {
-    ProvisionedObservabilityContainer,
     TracingList,
   },
   props: {
@@ -13,13 +12,14 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      observabilityClient: buildClient(this.apiConfig),
+    };
+  },
 };
 </script>
 
 <template>
-  <provisioned-observability-container :api-config="apiConfig">
-    <template #default="{ observabilityClient }">
-      <tracing-list :observability-client="observabilityClient" />
-    </template>
-  </provisioned-observability-container>
+  <tracing-list :observability-client="observabilityClient" />
 </template>

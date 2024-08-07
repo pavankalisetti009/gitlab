@@ -1,8 +1,4 @@
-import {
-  REPORT_STATUS,
-  SORT_ASCENDING,
-  SORT_DESCENDING,
-} from 'ee/dependencies/store/modules/list/constants';
+import { SORT_ASCENDING, SORT_DESCENDING } from 'ee/dependencies/store/modules/list/constants';
 import * as types from 'ee/dependencies/store/modules/list/mutation_types';
 import mutations from 'ee/dependencies/store/modules/list/mutations';
 import getInitialState from 'ee/dependencies/store/modules/list/state';
@@ -78,12 +74,9 @@ describe('Dependencies mutations', () => {
   describe(types.RECEIVE_DEPENDENCIES_SUCCESS, () => {
     const dependencies = [];
     const pageInfo = {};
-    const reportInfo = {
-      status: REPORT_STATUS.jobFailed,
-    };
 
     beforeEach(() => {
-      mutations[types.RECEIVE_DEPENDENCIES_SUCCESS](state, { dependencies, reportInfo, pageInfo });
+      mutations[types.RECEIVE_DEPENDENCIES_SUCCESS](state, { dependencies, pageInfo });
     });
 
     it('correctly mutates the state', () => {
@@ -92,25 +85,6 @@ describe('Dependencies mutations', () => {
       expect(state.dependencies).toBe(dependencies);
       expect(state.pageInfo).toBe(pageInfo);
       expect(state.initialized).toBe(true);
-      expect(state.reportInfo).toEqual({
-        status: REPORT_STATUS.jobFailed,
-      });
-    });
-
-    it('does not overwrite the report status if the state is already initialized', () => {
-      const initialReportStatus = state.reportInfo.status;
-      const newReportStatus = REPORT_STATUS.noDependencies;
-
-      mutations[types.RECEIVE_DEPENDENCIES_SUCCESS](state, {
-        dependencies,
-        reportInfo: {
-          ...reportInfo,
-          status: newReportStatus,
-        },
-        pageInfo,
-      });
-
-      expect(state.reportInfo.status).toBe(initialReportStatus);
     });
   });
 
@@ -125,9 +99,6 @@ describe('Dependencies mutations', () => {
       expect(state.dependencies).toEqual([]);
       expect(state.pageInfo).toEqual({});
       expect(state.initialized).toBe(true);
-      expect(state.reportInfo).toEqual({
-        status: REPORT_STATUS.ok,
-      });
     });
   });
 

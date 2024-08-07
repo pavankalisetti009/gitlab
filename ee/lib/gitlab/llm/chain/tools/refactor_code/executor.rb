@@ -7,7 +7,6 @@ module Gitlab
         module RefactorCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include Concerns::AiDependent
 
             NAME = 'RefactorCode'
             HUMAN_NAME = 'Refactor Code'
@@ -83,6 +82,10 @@ module Gitlab
 
             def authorize
               Utils::ChatAuthorizer.context(context: context).allowed?
+            end
+
+            def ai_request
+              context.ai_request
             end
           end
         end

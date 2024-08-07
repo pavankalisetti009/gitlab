@@ -1,10 +1,9 @@
 <script>
-import ProvisionedObservabilityContainer from '~/observability/components/provisioned_observability_container.vue';
+import { buildClient } from '~/observability/client';
 import LogsList from './list/logs_list.vue';
 
 export default {
   components: {
-    ProvisionedObservabilityContainer,
     LogsList,
   },
   props: {
@@ -17,13 +16,14 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      observabilityClient: buildClient(this.apiConfig),
+    };
+  },
 };
 </script>
 
 <template>
-  <provisioned-observability-container :api-config="apiConfig">
-    <template #default="{ observabilityClient }">
-      <logs-list :observability-client="observabilityClient" :tracing-index-url="tracingIndexUrl" />
-    </template>
-  </provisioned-observability-container>
+  <logs-list :observability-client="observabilityClient" :tracing-index-url="tracingIndexUrl" />
 </template>

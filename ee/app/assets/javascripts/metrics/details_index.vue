@@ -1,10 +1,9 @@
 <script>
-import ObservabilityContainer from '~/observability/components/observability_container.vue';
+import { buildClient } from '~/observability/client';
 import MetricsDetails from './details/metrics_details.vue';
 
 export default {
   components: {
-    ObservabilityContainer,
     MetricsDetails,
   },
   props: {
@@ -25,18 +24,19 @@ export default {
       required: true,
     },
   },
+  data() {
+    return {
+      observabilityClient: buildClient(this.apiConfig),
+    };
+  },
 };
 </script>
 
 <template>
-  <observability-container :api-config="apiConfig">
-    <template #default="{ observabilityClient }">
-      <metrics-details
-        :metric-id="metricId"
-        :metric-type="metricType"
-        :metrics-index-url="metricsIndexUrl"
-        :observability-client="observabilityClient"
-      />
-    </template>
-  </observability-container>
+  <metrics-details
+    :metric-id="metricId"
+    :metric-type="metricType"
+    :metrics-index-url="metricsIndexUrl"
+    :observability-client="observabilityClient"
+  />
 </template>

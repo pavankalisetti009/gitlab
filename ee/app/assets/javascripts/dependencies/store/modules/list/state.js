@@ -1,4 +1,4 @@
-import { FILTER, REPORT_STATUS } from './constants';
+import { FILTER } from './constants';
 
 export default () => ({
   endpoint: '',
@@ -13,9 +13,6 @@ export default () => ({
   namespaceType: '',
   pageInfo: {
     total: 0,
-  },
-  reportInfo: {
-    status: REPORT_STATUS.ok,
   },
   filter: FILTER.all,
   searchFilterParameters: {},

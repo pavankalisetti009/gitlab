@@ -1,25 +1,20 @@
 import MetricsDetails from 'ee/metrics/details/metrics_details.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DetailsIndex from 'ee/metrics/details_index.vue';
-import ObservabilityContainer from '~/observability/components/observability_container.vue';
+import * as observabilityClient from '~/observability/client';
+import { createMockClient, mockApiConfig } from 'helpers/mock_observability_client';
 
 describe('DetailsIndex', () => {
   const props = {
     metricId: 'test.metric',
     metricType: 'a-type',
     metricsIndexUrl: 'https://example.com/metrics/index',
-    apiConfig: {
-      oauthUrl: 'https://example.com/oauth',
-      tracingUrl: 'https://example.com/tracing',
-      provisioningUrl: 'https://example.com/provisioning',
-      servicesUrl: 'https://example.com/services',
-      operationsUrl: 'https://example.com/operations',
-      metricsUrl: 'https://example.com/metricsUrl',
-      metricsSearchUrl: 'https://example.com/metricsSearchUrl',
-    },
+    apiConfig: { ...mockApiConfig },
   };
 
   let wrapper;
+
+  const observabilityClientMock = createMockClient();
 
   const mountComponent = () => {
     wrapper = shallowMountExtended(DetailsIndex, {
@@ -27,22 +22,24 @@ describe('DetailsIndex', () => {
     });
   };
 
-  it('renders ObservabilityContainer component', () => {
-    mountComponent();
+  beforeEach(() => {
+    jest.spyOn(observabilityClient, 'buildClient').mockReturnValue(observabilityClientMock);
 
-    const observabilityContainer = wrapper.findComponent(ObservabilityContainer);
-    expect(observabilityContainer.exists()).toBe(true);
-    expect(observabilityContainer.props('apiConfig')).toStrictEqual(props.apiConfig);
+    mountComponent();
   });
 
-  it('renders MetricsDetails component inside ObservabilityContainer', () => {
-    mountComponent();
-
-    const observabilityContainer = wrapper.findComponent(ObservabilityContainer);
-    const detailsCmp = observabilityContainer.findComponent(MetricsDetails);
+  it('renders MetricsDetails component', () => {
+    const detailsCmp = wrapper.findComponent(MetricsDetails);
     expect(detailsCmp.exists()).toBe(true);
     expect(detailsCmp.props('metricId')).toBe(props.metricId);
     expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('metricType')).toBe(props.metricType);
+  });
+
+  it('builds the observability client', () => {
+    expect(observabilityClient.buildClient).toHaveBeenCalledWith(props.apiConfig);
+    expect(wrapper.findComponent(MetricsDetails).props('observabilityClient')).toBe(
+      observabilityClientMock,
+    );
   });
 });

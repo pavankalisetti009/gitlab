@@ -162,13 +162,6 @@ export default {
       <h4 class="gl-font-lg gl-mt-0">{{ s__('ProductAnalytics|For this option:') }}</h4>
       <ul class="gl-mb-6">
         <li>
-          {{
-            s__(
-              'ProductAnalytics|This feature is in Beta and requires purchasing a quota of events, which you receive on each billing period.',
-            )
-          }}
-        </li>
-        <li>
           <gl-sprintf
             :message="
               s__(

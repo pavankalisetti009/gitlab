@@ -7,7 +7,6 @@ module Gitlab
         module WriteTests
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include Concerns::AiDependent
 
             NAME = 'WriteTests'
             HUMAN_NAME = 'Write Tests'
@@ -70,6 +69,10 @@ module Gitlab
 
             def authorize
               Utils::ChatAuthorizer.context(context: context).allowed?
+            end
+
+            def ai_request
+              context.ai_request
             end
           end
         end

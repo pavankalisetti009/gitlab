@@ -7,7 +7,6 @@ module Gitlab
         module TroubleshootJob
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include Concerns::AiDependent
             include ::Gitlab::Utils::StrongMemoize
 
             # We use 1 Charater per 1 Token because we can't copy the tokenizer logic easily
