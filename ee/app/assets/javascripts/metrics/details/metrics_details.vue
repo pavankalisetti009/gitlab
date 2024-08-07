@@ -1,7 +1,7 @@
 <script>
-import { GlLoadingIcon, GlEmptyState, GlSprintf } from '@gitlab/ui';
+import { GlLoadingIcon, GlEmptyState, GlSprintf, GlButton } from '@gitlab/ui';
 import EMPTY_CHART_SVG from '@gitlab/svgs/dist/illustrations/chart-empty-state.svg?url';
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import { visitUrl } from '~/lib/utils/url_utility';
 import {
@@ -20,6 +20,7 @@ import MetricsLineChart from './metrics_line_chart.vue';
 import FilteredSearch from './filter_bar/metrics_filtered_search.vue';
 import { filterObjToQuery, queryToFilterObj } from './filters';
 import MetricsHeatMap from './metrics_heatmap.vue';
+import { createIssueUrlWithMetricDetails } from './utils';
 
 const VISUAL_HEATMAP = 'heatmap';
 
@@ -31,6 +32,7 @@ export default {
     metricType: s__('ObservabilityMetrics|Type'),
     lastIngested: s__('ObservabilityMetrics|Last ingested'),
     cancelledWarning: s__('ObservabilityMetrics|Metrics search has been cancelled.'),
+    createIssueTitle: __('Create issue'),
   },
   components: {
     GlSprintf,
@@ -41,6 +43,7 @@ export default {
     UrlSync,
     MetricsHeatMap,
     PageHeading,
+    GlButton,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -57,6 +60,10 @@ export default {
       type: String,
     },
     metricsIndexUrl: {
+      required: true,
+      type: String,
+    },
+    createIssueUrl: {
       required: true,
       type: String,
     },
@@ -109,6 +116,14 @@ export default {
     },
     noMetric() {
       return !this.metricData || !this.metricData.length;
+    },
+    createIssueUrlWithQuery() {
+      return createIssueUrlWithMetricDetails({
+        metricName: this.metricId,
+        metricType: this.metricType,
+        filters: this.filters,
+        createIssueUrl: this.createIssueUrl,
+      });
     },
   },
   created() {
@@ -220,6 +235,12 @@ export default {
 
     <header>
       <page-heading :heading="header.title">
+        <template #actions>
+          <gl-button category="secondary" :href="createIssueUrlWithQuery">
+            {{ $options.i18n.createIssueTitle }}
+          </gl-button>
+        </template>
+
         <template #description>
           <p class="gl-my-0 gl-text-primary">
             <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}

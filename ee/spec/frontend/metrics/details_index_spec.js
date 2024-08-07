@@ -9,6 +9,7 @@ describe('DetailsIndex', () => {
     metricId: 'test.metric',
     metricType: 'a-type',
     metricsIndexUrl: 'https://example.com/metrics/index',
+    createIssueUrl: 'https://example.com/new/issue',
     apiConfig: { ...mockApiConfig },
   };
 
@@ -34,6 +35,7 @@ describe('DetailsIndex', () => {
     expect(detailsCmp.props('metricId')).toBe(props.metricId);
     expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('metricType')).toBe(props.metricType);
+    expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
   });
 
   it('builds the observability client', () => {

@@ -1,4 +1,4 @@
-import { GlLoadingIcon, GlEmptyState, GlSprintf } from '@gitlab/ui';
+import { GlLoadingIcon, GlEmptyState, GlSprintf, GlButton } from '@gitlab/ui';
 import MetricsDetails from 'ee/metrics/details/metrics_details.vue';
 import { createMockClient } from 'helpers/mock_observability_client';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -27,6 +27,7 @@ describe('MetricsDetails', () => {
   const METRIC_ID = 'test.metric';
   const METRIC_TYPE = 'Sum';
   const METRICS_INDEX_URL = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
+  const CREATE_ISSUE_URL = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
@@ -50,6 +51,7 @@ describe('MetricsDetails', () => {
     metricId: METRIC_ID,
     metricType: METRIC_TYPE,
     metricsIndexUrl: METRICS_INDEX_URL,
+    createIssueUrl: CREATE_ISSUE_URL,
   };
 
   const showToast = jest.fn();
@@ -76,6 +78,8 @@ describe('MetricsDetails', () => {
   const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   beforeEach(() => {
+    setWindowLocation('?type=Sum');
+
     jest.spyOn(urlUtility, 'isValidURL').mockReturnValue(true);
 
     ingestedAtTimeAgo.mockReturnValue('3 days ago');
@@ -500,6 +504,23 @@ describe('MetricsDetails', () => {
       expect(findHeader().text()).toContain('System disk operations');
       expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
       expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
+    });
+
+    it('renders the create issue button', () => {
+      const button = findHeader().findComponent(GlButton);
+      expect(button.text()).toBe('Create issue');
+      const metricsDetails = {
+        fullUrl:
+          'http://test.host/?type=Sum&date_range=custom&date_start=2020-07-05T23%3A00%3A00.000Z&date_end=2020-07-06T00%3A00%3A00.000Z',
+        name: 'test.metric',
+        type: 'Sum',
+        timeframe: ['Sun, 05 Jul 2020 23:00:00 GMT', 'Mon, 06 Jul 2020 00:00:00 GMT'],
+      };
+      expect(button.attributes('href')).toBe(
+        `https://www.gitlab.com/flightjs/Flight/-/issues/new?observability_metric_details=${encodeURIComponent(
+          JSON.stringify(metricsDetails),
+        )}`,
+      );
     });
 
     describe('with no data', () => {

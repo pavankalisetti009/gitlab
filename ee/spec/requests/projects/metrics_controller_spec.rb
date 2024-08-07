@@ -112,7 +112,8 @@ RSpec.describe Projects::MetricsController, feature_category: :metrics do
           apiConfig: expected_api_config,
           metricId: "test.metric",
           metricType: "metric_type",
-          metricsIndexUrl: namespace_project_metrics_path(project.group, project)
+          metricsIndexUrl: namespace_project_metrics_path(project.group, project),
+          createIssueUrl: new_namespace_project_issue_path(project.group, project)
         }.to_json
         expect(element.attributes['data-view-model'].value).to eq(expected_view_model)
       end

@@ -11,6 +11,7 @@ module Projects
         model[:metricId] = metric_id
         model[:metricType] = metric_type
         model[:metricsIndexUrl] = namespace_project_metrics_path(project.group, project)
+        model[:createIssueUrl] = new_namespace_project_issue_path(project.group, project)
       end
     end
 
