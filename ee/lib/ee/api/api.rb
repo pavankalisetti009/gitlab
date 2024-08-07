@@ -73,6 +73,7 @@ module EE
         mount ::API::Ai::DuoWorkflows::Workflows
         mount ::API::CodeSuggestions
         mount ::API::Chat
+        mount ::API::DuoCodeReview
         mount ::API::GitlabSubscriptions::Subscriptions
 
         mount ::API::Internal::AppSec::Dast::SiteValidations
