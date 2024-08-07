@@ -1,5 +1,4 @@
 <script>
-import { GRANULARITIES } from '@cubejs-client/vue';
 import { GlFilteredSearch, GlFilteredSearchToken } from '@gitlab/ui';
 
 import { s__ } from '~/locale';
@@ -18,6 +17,7 @@ import {
   TIME_DIMENSION,
   CUSTOM_EVENT_NAME,
   CUSTOM_EVENT_FILTER_SUPPORTED_MEASURES,
+  GRANULARITIES,
 } from '../../../constants';
 
 export default {
@@ -75,7 +75,7 @@ export default {
         title: s__('ProductAnalytics|Group by'),
         type: TIME_DIMENSION,
         operators: OPERATORS_IS,
-        options: this.$options.GRANULARITIES.filter(({ title, name }) => title && name).map(
+        options: GRANULARITIES.filter(({ title, name }) => title && name).map(
           ({ title, name }) => ({
             title,
             value: mapTimeDimensionQueryToValue({
@@ -175,7 +175,6 @@ export default {
       });
     },
   },
-  GRANULARITIES,
 };
 </script>
 

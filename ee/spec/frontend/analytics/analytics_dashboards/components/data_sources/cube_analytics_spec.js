@@ -1,5 +1,7 @@
-import { CubeApi, HttpTransport, __setMockLoad } from '@cubejs-client/core';
-import fetch from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
+import { CubeApi, HttpTransport, __setMockLoad, __setMockMetadata } from '@cubejs-client/core';
+import fetch, {
+  fetchFilterOptions,
+} from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 import {
   TODAY,
   SEVEN_DAYS_AGO,
@@ -11,9 +13,12 @@ import {
   mockTableWithLinksResultSet,
   mockResultSetWithNullValues,
   mockContinueWaitProgressResult,
+  mockMetaData,
+  mockFilterOptions,
 } from '../../mock_data';
 
 const mockLoad = jest.fn().mockResolvedValue(mockResultSet);
+const mockMeta = jest.fn().mockResolvedValue(mockMetaData);
 
 jest.mock('~/lib/utils/csrf', () => ({
   headerKey: 'mock-csrf-header',
@@ -46,6 +51,7 @@ describe('Cube Analytics Data Source', () => {
 
   beforeEach(() => {
     __setMockLoad(mockLoad);
+    __setMockMetadata(mockMeta);
   });
 
   describe('fetch', () => {
@@ -320,6 +326,21 @@ describe('Cube Analytics Data Source', () => {
           );
         },
       );
+    });
+  });
+
+  describe('fetch filter options', () => {
+    let filterOptions = {};
+
+    beforeEach(async () => {
+      filterOptions = await fetchFilterOptions(projectId);
+    });
+
+    itSetsUpCube();
+
+    it('return formatted filter options', () => {
+      expect(mockMeta).toHaveBeenCalled();
+      expect(filterOptions).toStrictEqual(mockFilterOptions);
     });
   });
 });

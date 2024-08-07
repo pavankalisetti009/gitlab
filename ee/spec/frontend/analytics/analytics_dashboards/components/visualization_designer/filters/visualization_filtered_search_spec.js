@@ -4,7 +4,7 @@ import { GlFilteredSearch } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import VisualizationFilteredSearch from 'ee/analytics/analytics_dashboards/components/visualization_designer/filters/visualization_filtered_search.vue';
-import { mockQueryBuilderValues } from 'ee_jest/analytics/analytics_dashboards/mock_data';
+import { mockFilterOptions } from 'ee_jest/analytics/analytics_dashboards/mock_data';
 
 describe('ProductAnalyticsVisualizationFilteredSearch', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -16,9 +16,9 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
     wrapper = shallowMountExtended(VisualizationFilteredSearch, {
       propsData: {
         query: {},
-        availableMeasures: mockQueryBuilderValues.availableMeasures,
-        availableDimensions: mockQueryBuilderValues.availableDimensions,
-        availableTimeDimensions: mockQueryBuilderValues.availableTimeDimensions,
+        availableMeasures: mockFilterOptions.availableMeasures,
+        availableDimensions: mockFilterOptions.availableDimensions,
+        availableTimeDimensions: mockFilterOptions.availableTimeDimensions,
       },
     });
   };
@@ -31,8 +31,25 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
 
       expect(filteredSearch.props('availableTokens')).toStrictEqual([
         expect.objectContaining({
-          operators: expect.any(Array),
+          operators: [
+            {
+              description: 'is',
+              value: '=',
+            },
+          ],
           options: [
+            {
+              title: 'Sessions Count',
+              value: 'Sessions.count',
+            },
+            {
+              title: 'Sessions Average Per User',
+              value: 'Sessions.averagePerUser',
+            },
+            {
+              title: 'Tracked Events Page Views Count',
+              value: 'TrackedEvents.pageViewsCount',
+            },
             {
               title: 'Tracked Events Count',
               value: 'TrackedEvents.count',
@@ -69,8 +86,8 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
             operators: expect.any(Array),
             options: expect.arrayContaining([
               {
-                title: 'Tracked Events Page Urlhosts',
-                value: 'TrackedEvents.pageUrlhosts',
+                title: 'Tracked Events Page Url',
+                value: 'TrackedEvents.pageUrl',
               },
             ]),
             title: 'Dimension',
@@ -84,8 +101,8 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
             operators: expect.any(Array),
             options: expect.arrayContaining([
               {
-                title: 'Seconds',
-                value: '{"dimension":"TrackedEvents.derivedTstamp","granularity":"seconds"}',
+                title: 'Second',
+                value: '{"dimension":"TrackedEvents.derivedTstamp","granularity":"second"}',
               },
             ]),
             type: 'timeDimension',
@@ -159,8 +176,8 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
               operators: expect.any(Array),
               options: expect.arrayContaining([
                 {
-                  title: 'Seconds',
-                  value: '{"dimension":"Sessions.startAt","granularity":"seconds"}',
+                  title: 'Second',
+                  value: '{"dimension":"Sessions.startAt","granularity":"second"}',
                 },
               ]),
               type: 'timeDimension',
@@ -173,8 +190,8 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
               operators: expect.any(Array),
               options: expect.arrayContaining([
                 {
-                  title: 'Seconds',
-                  value: '{"dimension":"Sessions.endAt","granularity":"seconds"}',
+                  title: 'Second',
+                  value: '{"dimension":"Sessions.endAt","granularity":"second"}',
                 },
               ]),
               type: 'timeDimension',
@@ -189,9 +206,7 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
           wrapper.setProps({
             query: {
               measures: ['TrackedEvents.count'],
-              timeDimensions: [
-                { dimension: 'TrackedEvents.derivedTstamp', granularity: 'seconds' },
-              ],
+              timeDimensions: [{ dimension: 'TrackedEvents.derivedTstamp', granularity: 'second' }],
             },
           });
         });
@@ -200,7 +215,7 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
           expect(findFilteredSearch().props('value')).toContainEqual({
             type: 'timeDimension',
             value: {
-              data: '{"dimension":"TrackedEvents.derivedTstamp","granularity":"seconds"}',
+              data: '{"dimension":"TrackedEvents.derivedTstamp","granularity":"second"}',
               operator: '=',
             },
           });
@@ -211,7 +226,7 @@ describe('ProductAnalyticsVisualizationFilteredSearch', () => {
             wrapper.setProps({
               query: {
                 timeDimensions: [
-                  { dimension: 'TrackedEvents.derivedTstamp', granularity: 'seconds' },
+                  { dimension: 'TrackedEvents.derivedTstamp', granularity: 'second' },
                 ],
               },
             });
