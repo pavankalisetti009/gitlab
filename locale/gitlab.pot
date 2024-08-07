@@ -2228,9 +2228,6 @@ msgstr ""
 msgid "AI|Description is required"
 msgstr ""
 
-msgid "AI|Experiment"
-msgstr ""
-
 msgid "AI|Explain or Resolve with AI"
 msgstr ""
 
@@ -21843,30 +21840,6 @@ msgstr ""
 msgid "Experiment features' settings not allowed."
 msgstr ""
 
-msgid "ExperimentBadge|An experiment is not yet production-ready, but is released for initial testing and feedback during development."
-msgstr ""
-
-msgid "ExperimentBadge|Are not supported and might not be documented."
-msgstr ""
-
-msgid "ExperimentBadge|Are subject to the GitLab Testing Agreement."
-msgstr ""
-
-msgid "ExperimentBadge|Could be changed or removed at any time."
-msgstr ""
-
-msgid "ExperimentBadge|Experiment"
-msgstr ""
-
-msgid "ExperimentBadge|Experiments:"
-msgstr ""
-
-msgid "ExperimentBadge|Might be unstable or cause data loss."
-msgstr ""
-
-msgid "ExperimentBadge|What's an experiment?"
-msgstr ""
-
 msgid "Experiments"
 msgstr ""
 
@@ -30305,9 +30278,6 @@ msgstr ""
 msgid "Job|Failed"
 msgstr ""
 
-msgid "Job|Feedback issue"
-msgstr ""
-
 msgid "Job|Finished at"
 msgstr ""
 
@@ -30315,6 +30285,9 @@ msgid "Job|Full log viewer"
 msgstr ""
 
 msgid "Job|Full screen mode is not available"
+msgstr ""
+
+msgid "Job|Give feedback"
 msgstr ""
 
 msgid "Job|Job artifacts"
