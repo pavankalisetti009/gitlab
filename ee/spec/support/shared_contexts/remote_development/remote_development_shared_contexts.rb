@@ -325,7 +325,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
     include_network_policy: true,
     include_all_resources: false,
     dns_zone: 'workspaces.localdev.me',
-    egress_ip_rules: RemoteDevelopment::AgentConfig::Updater::NETWORK_POLICY_EGRESS_DEFAULT,
+    egress_ip_rules: [{
+      allow: "0.0.0.0/0",
+      except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
+    }],
     max_resources_per_workspace: {},
     default_resources_per_workspace_container: {},
     project_name: "test-project",
@@ -453,7 +456,10 @@ RSpec.shared_context 'with remote development shared fixtures' do
     include_network_policy: true,
     include_all_resources: false,
     dns_zone: 'workspaces.localdev.me',
-    egress_ip_rules: RemoteDevelopment::AgentConfig::Updater::NETWORK_POLICY_EGRESS_DEFAULT
+    egress_ip_rules: [{
+      allow: "0.0.0.0/0",
+      except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
+    }]
   )
     spec_replicas = started == true ? 1 : 0
     host_template_annotation = get_workspace_host_template_annotation(workspace.name, dns_zone)

@@ -29,7 +29,12 @@ RSpec.describe RemoteDevelopment::Workspaces::Reconcile::Output::DevfileParserV2
   let(:domain_template) { "{{.port}}-#{workspace.name}.#{workspace.dns_zone}" }
   let(:environment_secret_name) { "#{workspace.name}-env-var" }
   let(:file_secret_name) { "#{workspace.name}-file" }
-  let(:egress_ip_rules) { RemoteDevelopment::AgentConfig::Updater::NETWORK_POLICY_EGRESS_DEFAULT }
+  let(:egress_ip_rules) do
+    [{
+      allow: "0.0.0.0/0",
+      except: %w[10.0.0.0/8 172.16.0.0/12 192.168.0.0/16]
+    }]
+  end
 
   let(:expected_workspace_resources) do
     YAML.load_stream(
