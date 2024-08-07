@@ -163,12 +163,12 @@ describe('RelatedItemsTree', () => {
       });
 
       describe('isBlocked', () => {
-        it('correctly sets icon name attribute issue-block when `item.blocked` value is `true`', () => {
+        it('correctly sets icon name attribute entity-blocked when `item.blocked` value is `true`', () => {
           createComponent({
             item: { ...mockItem, blocked: true },
           });
 
-          expect(findIssueIcon().attributes('name')).toBe('issue-block');
+          expect(findIssueIcon().attributes('name')).toBe('entity-blocked');
         });
       });
 
