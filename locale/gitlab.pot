@@ -57938,6 +57938,9 @@ msgstr ""
 msgid "UserList|created %{timeago}"
 msgstr ""
 
+msgid "UserMapping|%{reassign_to_name} (%{reassign_to_username}) has declined your request to reassign contributions of %{source_name} (%{source_username}) on %{source_hostname} to them on %{destination_group}. To reassign these contributions to another user, visit the Members page of %{destination_group}."
+msgstr ""
+
 msgid "UserMapping|%{reassigned_by_name} (%{reassigned_by_username}) wants to reassign contributions made by %{source_name} (%{source_username}) on %{source_hostname} to you in %{destination_group}."
 msgstr ""
 
@@ -58058,7 +58061,10 @@ msgstr ""
 msgid "UserMapping|Reassignment was rejected by user."
 msgstr ""
 
-msgid "UserMapping|Reassignments on %{group} waiting for review."
+msgid "UserMapping|Reassignments on %{group} rejected"
+msgstr ""
+
+msgid "UserMapping|Reassignments on %{group} waiting for review"
 msgstr ""
 
 msgid "UserMapping|Reject"
