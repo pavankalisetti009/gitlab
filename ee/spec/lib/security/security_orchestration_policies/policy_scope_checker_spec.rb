@@ -50,6 +50,25 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PolicyScopeChecker, feat
 
           it { is_expected.to eq true }
 
+          context 'when project has multiple compliance frameworks set' do
+            let_it_be(:compliance_framework_2) { create(:compliance_framework, :sox, namespace: root_group) }
+            let_it_be(:compliance_framework_project_setting) do
+              create(:compliance_framework_project_setting,
+                project: project,
+                compliance_management_framework: compliance_framework_2)
+            end
+
+            let(:policy) do
+              {
+                policy_scope: {
+                  compliance_frameworks: [{ id: compliance_framework_2.id }]
+                }
+              }
+            end
+
+            it { is_expected.to eq true }
+          end
+
           context 'when policy additionally excludes the project from policy' do
             let(:policy) do
               {

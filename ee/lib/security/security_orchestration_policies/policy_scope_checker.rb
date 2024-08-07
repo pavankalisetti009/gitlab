@@ -21,10 +21,10 @@ module Security
         policy_scope_compliance_frameworks = policy.dig(:policy_scope, :compliance_frameworks).to_a
         return true if policy_scope_compliance_frameworks.blank?
 
-        compliance_framework_id = project.compliance_framework_settings.first&.framework_id
-        return false if compliance_framework_id.nil?
+        compliance_framework_ids = project.compliance_framework_ids
+        return false if compliance_framework_ids.blank?
 
-        policy_scope_compliance_frameworks.any? { |framework| framework[:id] == compliance_framework_id }
+        policy_scope_compliance_frameworks.any? { |framework| framework[:id].in?(compliance_framework_ids) }
       end
 
       def applicable_for_project?(policy)
