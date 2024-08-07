@@ -69,7 +69,7 @@ RSpec.describe AppSec::Dast::ScanConfigs::BuildService, :dynamic_analysis, featu
 
         context 'when the dast_profile has tag_list' do
           context 'when the dast_profile has tags' do
-            let_it_be(:tags) { [ActsAsTaggableOn::Tag.create!(name: 'ruby'), ActsAsTaggableOn::Tag.create!(name: 'postgres')] }
+            let_it_be(:tags) { [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')] }
             let_it_be(:dast_profile) do
               create(
                 :dast_profile,

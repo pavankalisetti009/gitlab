@@ -19,7 +19,7 @@ module AppSec
         def tag_list
           return [] if params[:tag_list].empty?
 
-          @tag_list ||= ActsAsTaggableOn::Tag.named_any(params[:tag_list])
+          @tag_list ||= ::Ci::Tag.named_any(params[:tag_list])
         end
 
         def tags

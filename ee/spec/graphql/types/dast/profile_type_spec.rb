@@ -18,8 +18,8 @@ RSpec.describe GitlabSchema.types['DastProfile'], :dynamic_analysis,
   end
 
   before do
-    ActsAsTaggableOn::Tag.create!(name: 'ruby')
-    ActsAsTaggableOn::Tag.create!(name: 'postgres')
+    create(:ci_tag, name: 'ruby')
+    create(:ci_tag, name: 'postgres')
     stub_licensed_features(security_on_demand_scans: true)
   end
 
