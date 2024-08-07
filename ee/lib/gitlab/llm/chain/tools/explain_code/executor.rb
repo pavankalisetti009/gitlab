@@ -7,7 +7,6 @@ module Gitlab
         module ExplainCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include Concerns::AiDependent
 
             NAME = 'ExplainCode'
             HUMAN_NAME = 'Explain Code'
@@ -68,6 +67,10 @@ module Gitlab
 
             def resource_name
               nil
+            end
+
+            def ai_request
+              context.ai_request
             end
           end
         end

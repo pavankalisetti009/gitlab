@@ -7,7 +7,6 @@ module Gitlab
         module FixCode
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
-            include Concerns::AiDependent
 
             NAME = 'FixCode'
             HUMAN_NAME = 'Fix Code'
@@ -85,6 +84,10 @@ module Gitlab
 
             def authorize
               Utils::ChatAuthorizer.context(context: context).allowed?
+            end
+
+            def ai_request
+              context.ai_request
             end
           end
         end
