@@ -4026,4 +4026,36 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_disallowed(:admin_licensed_seat) }
     end
   end
+
+  describe 'bulk_admin_epic' do
+    context 'when bulk_edit_feature_available is true' do
+      let(:current_user) { reporter }
+
+      before do
+        stub_licensed_features(epics: true, group_bulk_edit: true)
+      end
+
+      it { is_expected.to be_allowed(:bulk_admin_epic) }
+    end
+
+    context 'when bulk_edit_feature_available is false' do
+      let(:current_user) { reporter }
+
+      before do
+        stub_licensed_features(epics: true, group_bulk_edit: false)
+      end
+
+      it { is_expected.to be_disallowed(:bulk_admin_epic) }
+    end
+
+    context 'when user is not reporter or better' do
+      let(:current_user) { guest }
+
+      before do
+        stub_licensed_features(epics: true, group_bulk_edit: true)
+      end
+
+      it { is_expected.to be_disallowed(:bulk_admin_epic) }
+    end
+  end
 end

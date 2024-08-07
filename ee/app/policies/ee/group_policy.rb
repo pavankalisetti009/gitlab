@@ -804,6 +804,14 @@ module EE
         enable :read_web_hook
         enable :admin_web_hook
       end
+
+      condition(:bulk_edit_feature_available, scope: :subject) do
+        @subject.licensed_feature_available?(:group_bulk_edit)
+      end
+
+      rule { can?(:admin_epic) & bulk_edit_feature_available }.policy do
+        enable :bulk_admin_epic
+      end
     end
 
     override :lookup_access_level!

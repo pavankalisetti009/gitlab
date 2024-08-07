@@ -1,6 +1,6 @@
 import { GlEmptyState } from '@gitlab/ui';
-import { shallowMount } from '@vue/test-utils';
 import { nextTick } from 'vue';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemsListApp from '~/work_items/list/components/work_items_list_app.vue';
@@ -14,12 +14,20 @@ describe('WorkItemsListApp EE component', () => {
   const findListEmptyState = () => wrapper.findComponent(EmptyStateWithAnyIssues);
   const findPageEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findWorkItemsListApp = () => wrapper.findComponent(WorkItemsListApp);
+  const findBulkEditStartButton = () => wrapper.findByTestId('bulk-edit-start-button');
 
-  const mountComponent = ({ hasEpicsFeature = true, showNewIssueLink = true } = {}) => {
-    wrapper = shallowMount(EEWorkItemsListApp, {
+  const mountComponent = ({
+    hasEpicsFeature = true,
+    showNewIssueLink = true,
+    canBulkEditEpics = true,
+  } = {}) => {
+    wrapper = shallowMountExtended(EEWorkItemsListApp, {
       provide: {
         hasEpicsFeature,
         showNewIssueLink,
+        canBulkEditEpics,
+        groupIssuesPath: 'groups/gitlab-org/-/issues',
+        workItemType: 'EPIC',
       },
     });
   };
@@ -43,15 +51,15 @@ describe('WorkItemsListApp EE component', () => {
     );
 
     describe('when "workItemCreated" event is emitted', () => {
-      it('increments `eeCreatedWorkItemsCount` prop on WorkItemsListApp', async () => {
+      it('increments `eeWorkItemUpdateCount` prop on WorkItemsListApp', async () => {
         mountComponent();
 
-        expect(findWorkItemsListApp().props('eeCreatedWorkItemsCount')).toBe(0);
+        expect(findWorkItemsListApp().props('eeWorkItemUpdateCount')).toBe(0);
 
         findCreateWorkItemModal().vm.$emit('workItemCreated');
         await nextTick();
 
-        expect(findWorkItemsListApp().props('eeCreatedWorkItemsCount')).toBe(1);
+        expect(findWorkItemsListApp().props('eeWorkItemUpdateCount')).toBe(1);
       });
     });
   });
@@ -91,6 +99,29 @@ describe('WorkItemsListApp EE component', () => {
       it('does not render page empty state', () => {
         expect(findPageEmptyState().exists()).toBe(false);
       });
+    });
+  });
+
+  describe('when bulk editing', () => {
+    it('does not show bulk edit toggle by default', () => {
+      mountComponent({ hasEpicsFeature: false, canBulkEditEpics: false });
+
+      expect(findBulkEditStartButton().exists()).toBe(false);
+      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
+    });
+
+    it('shows the bulk edit toggle when the work item type is epic and the correct features are enabled', () => {
+      mountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
+
+      expect(findBulkEditStartButton().exists()).toBe(true);
+    });
+
+    it('opens the bulk update sidebar when the toggle is clicked', async () => {
+      mountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
+
+      await findBulkEditStartButton().vm.$emit('click');
+
+      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(true);
     });
   });
 });
