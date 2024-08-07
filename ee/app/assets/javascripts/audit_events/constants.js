@@ -84,9 +84,8 @@ export const STREAM_ITEMS_I18N = {
   FILTER_TOOLTIP_LABEL: s__(
     'AuditStreams|Destination has filters applied. %{linkStart}What are filters?%{linkEnd}',
   ),
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
   FILTER_TOOLTIP_LINK: helpPagePath('administration/audit_event_streaming', {
-    anchor: 'event-type-filters',
+    anchor: 'update-event-filters',
   }),
   FILTER_BADGE_LABEL: s__('AuditStreams|filtered'),
 };
