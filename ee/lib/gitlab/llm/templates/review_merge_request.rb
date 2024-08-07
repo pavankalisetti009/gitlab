@@ -6,8 +6,9 @@ module Gitlab
       class ReviewMergeRequest
         include Gitlab::Utils::StrongMemoize
 
-        def initialize(diff_file, hunk)
-          @diff_file = diff_file
+        def initialize(new_path, diff, hunk)
+          @new_path = new_path
+          @diff = diff
           @hunk = hunk
         end
 
@@ -15,29 +16,23 @@ module Gitlab
           return if truncated_raw_diff.blank?
 
           <<~PROMPT
-Git diff of `#{diff_file.new_path}`:
+Git diff of `#{new_path}`:
 ```
 #{truncated_raw_diff}
 ```
 
-New hunk of `#{diff_file.new_path}`:
+Diff hunk of `#{new_path}`:
 ```
-#{generate_hunk_lines(hunk[:added], :new_pos)}
-```
-
-Old hunk of `#{diff_file.new_path}`:
-```
-#{generate_hunk_lines(hunk[:removed], :old_pos)}
+#{hunk}
 ```
 
 Instructions:
-- Review new hunk and old hunk of `#{diff_file.new_path}` line by line. New and old hunks are annotated with line numbers. The new hunk will replace the old hunk.
-- Use git diff of `#{diff_file.new_path}` only for additional context.
-- Skip empty new Hunk and old Hunk during your review.
+- Review diff hunk of `#{new_path}` line by line.
+- Use git diff of `#{new_path}` only for additional context.
 - You must only make really helpful suggestions based on your review.
 - If needed, provide really helpful code suggestions using fenced code blocks and include in your suggestions.
 - Code suggestions must be complete and correctly formatted without line numbers.
-- Your response must only include your really helpful suggestions and must not include mentions of git diff, new hunk and old hunk.
+- Your response must only include your really helpful suggestions and must not include mentions of git diff and diff hunk.
 
 Response:
           PROMPT
@@ -45,21 +40,10 @@ Response:
 
         private
 
-        attr_reader :diff_file, :hunk
-
-        def generate_hunk_lines(lines, pos)
-          lines.map do |line|
-            line_number = pos == :new_pos ? line.new_pos : line.old_pos
-
-            # We remove the + and - sign from the diff line since it can confuse
-            # the LLM.
-            text = line.text[1..]
-            "#{line_number}: #{text}".chomp
-          end.join("\n")
-        end
+        attr_reader :new_path, :diff, :hunk
 
         def truncated_raw_diff
-          diff_file.raw_diff.sub(Gitlab::Regex.git_diff_prefix, "").truncate_words(750)
+          diff.sub(Gitlab::Regex.git_diff_prefix, "").truncate_words(750)
         end
         strong_memoize_attr :truncated_raw_diff
       end

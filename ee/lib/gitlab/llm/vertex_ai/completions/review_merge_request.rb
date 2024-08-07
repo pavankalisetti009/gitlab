@@ -17,7 +17,7 @@ module Gitlab
             merge_request.ai_reviewable_diff_files.each do |diff_file|
               break if draft_notes_limit_reached?
 
-              diff_file.diff_lines_by_hunk.each do |hunk|
+              diff_file.diff_hunks.each do |hunk|
                 break if draft_notes_limit_reached?
 
                 review_prompt = generate_review_prompt(diff_file, hunk)
@@ -44,7 +44,7 @@ module Gitlab
           end
 
           def generate_review_prompt(diff_file, hunk)
-            ai_prompt_class.new(diff_file, hunk).to_prompt
+            ai_prompt_class.new(diff_file.new_path, diff_file.raw_diff, hunk[:text]).to_prompt
           end
 
           def review_response_for(user, prompt)
@@ -77,7 +77,7 @@ module Gitlab
 
             # We only need `old_line` if the hunk is all removal as we need to
             # create the note on the old line.
-            old_line = hunk[:removed].last&.old_pos if hunk[:added].empty?
+            old_line = hunk[:last_removed_line_pos] unless hunk[:last_added_line_pos].present?
 
             position = {
               base_sha: diff_refs.base_sha,
@@ -87,7 +87,7 @@ module Gitlab
               new_path: diff_file.new_path,
               position_type: 'text',
               old_line: old_line,
-              new_line: hunk[:added].last&.new_pos,
+              new_line: hunk[:last_added_line_pos],
               ignore_whitespace_change: false
             }
 
