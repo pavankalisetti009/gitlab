@@ -278,34 +278,73 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
       end
 
       context 'for rolledup dates widget' do
-        let_it_be(:work_item, refind: true) { create(:work_item, :epic, namespace: group) }
+        let_it_be(:fixed_start) { 1.week.ago.to_date }
+        let_it_be(:fixed_finish) { 1.week.from_now.to_date }
+
+        let_it_be_with_refind(:work_item) do
+          create(:work_item, :epic_with_legacy_epic, namespace: group).tap do |wi|
+            wi.synced_epic.update!(start_date_fixed: fixed_start, due_date_fixed: fixed_finish)
+          end
+        end
+
+        let_it_be(:dates_source) do
+          create(
+            :work_items_dates_source,
+            work_item: work_item,
+            start_date_fixed: fixed_start,
+            due_date_fixed: fixed_finish
+          )
+        end
 
         context 'when widget params are present' do
-          let_it_be(:dates_source) do
-            create(
-              :work_items_dates_source,
-              work_item: work_item,
-              start_date: 1.day.ago,
-              due_date: 1.day.from_now,
-              due_date_is_fixed: true,
-              start_date_is_fixed: true)
+          shared_examples 'toggle dates' do |fixed:|
+            let_it_be(:from_condition) { !fixed }
+            let_it_be(:to_condition) { fixed }
+            let_it_be(:from_start_date) { fixed ? nil : fixed_start }
+            let_it_be(:to_start_date) { fixed ? fixed_start : nil  }
+            let_it_be(:from_end_date) { fixed ? nil : fixed_finish }
+            let_it_be(:to_end_date) { fixed ? fixed_finish : nil }
+
+            let(:widget_params) do
+              { rolledup_dates_widget: { start_date_is_fixed: to_condition, due_date_is_fixed: to_condition } }
+            end
+
+            before do
+              work_item.synced_epic.update!(
+                start_date: from_start_date,
+                end_date: from_end_date,
+                start_date_is_fixed: from_condition,
+                due_date_is_fixed: from_condition
+              )
+
+              dates_source.update!(
+                start_date: from_start_date,
+                due_date: from_end_date,
+                due_date_is_fixed: from_condition,
+                start_date_is_fixed: from_condition
+              )
+            end
+
+            it 'updates dates' do
+              expect(WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService)
+                .to receive(:new)
+                .with(work_item)
+                .and_call_original
+
+              expect { subject }
+                .to change { work_item.reload.dates_source.start_date }.from(from_start_date).to(to_start_date)
+                .and change { work_item.start_date }.from(from_start_date).to(to_start_date)
+                .and change { work_item.synced_epic.reload.start_date }.from(from_start_date).to(to_start_date)
+                .and change { work_item.dates_source.start_date_is_fixed }.from(from_condition).to(to_condition)
+                .and change { work_item.dates_source.due_date }.from(from_end_date).to(to_end_date)
+                .and change { work_item.due_date }.from(from_end_date).to(to_end_date)
+                .and change { work_item.synced_epic.end_date }.from(from_end_date).to(to_end_date)
+                .and change { work_item.dates_source.due_date_is_fixed }.from(from_condition).to(to_condition)
+            end
           end
 
-          let(:widget_params) do
-            { rolledup_dates_widget: { start_date_is_fixed: false, due_date_is_fixed: false } }
-          end
-
-          it 'updates rolledup dates' do
-            expect(WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService)
-              .to receive(:new)
-              .with(work_item)
-              .and_call_original
-
-            expect { subject }.not_to change { WorkItems::DatesSource.count }
-
-            expect(work_item.dates_source.due_date_is_fixed).to be_falsey
-            expect(work_item.dates_source.start_date_is_fixed).to be_falsey
-          end
+          it_behaves_like 'toggle dates', fixed: true
+          it_behaves_like 'toggle dates', fixed: false
         end
 
         context 'when widget params are not present' do

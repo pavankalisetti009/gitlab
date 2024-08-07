@@ -113,6 +113,8 @@ module Gitlab
         check_start_date_fixed(work_item_dates_source)
         check_due_date_is_fixed(work_item_dates_source)
         check_due_date_fixed(work_item_dates_source)
+        check_start_date(work_item_dates_source)
+        check_due_date(work_item_dates_source)
         check_source_milestone(work_item_dates_source)
         check_source_epic(work_item_dates_source)
       end
@@ -128,6 +130,20 @@ module Gitlab
         return if epic.start_date_fixed == dates_source&.start_date_fixed
 
         mismatched_attributes.push("start_date_fixed")
+      end
+
+      def check_start_date(dates_source)
+        return unless epic.start_date_is_fixed
+        return if (epic.start_date_fixed == epic.start_date) && (epic.start_date_fixed == dates_source&.start_date)
+
+        mismatched_attributes.push("start_date")
+      end
+
+      def check_due_date(dates_source)
+        return unless epic.due_date_is_fixed
+        return if (epic.due_date_fixed == epic.end_date) && (epic.due_date_fixed == dates_source&.due_date)
+
+        mismatched_attributes.push("due_date")
       end
 
       def check_due_date_is_fixed(dates_source)
