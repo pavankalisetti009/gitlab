@@ -203,18 +203,19 @@ describe('List component', () => {
         const icon = findPolicyStatusCells().at(0).find('svg');
 
         expect(icon.exists()).toBe(true);
+        expect(icon.classes()).toContain('gl-text-green-700');
         expect(icon.props()).toMatchObject({
           name: 'check-circle-filled',
-          ariaLabel: 'Enabled',
+          ariaLabel: 'The policy is enabled',
         });
       });
 
-      it('renders a "Disabled" label for screen readers for disabled policies', () => {
-        const span = findPolicyStatusCells().at(2).find('span');
+      it('renders a "Disabled" icon for screen readers for disabled policies', () => {
+        const icon = findPolicyStatusCells().at(2).find('svg');
 
-        expect(span.exists()).toBe(true);
-        expect(span.attributes('class')).toBe('gl-sr-only');
-        expect(span.text()).toBe('Disabled');
+        expect(icon.exists()).toBe(true);
+        expect(icon.attributes('class')).toContain('gl-text-gray-200');
+        expect(icon.props('ariaLabel')).toBe('The policy is disabled');
       });
 
       describe('breaking changes icon', () => {
@@ -243,8 +244,10 @@ describe('List component', () => {
               },
             },
           });
-          const icon = findPolicyStatusCells().at(0).find('svg');
-          expect(icon.props('name')).toBe('warning');
+          const icon = findPolicyStatusCells().at(0).findAll('svg');
+          expect(icon.at(0).props('name')).toBe('check-circle-filled');
+          expect(icon.at(0).classes()).toContain('gl-text-gray-200');
+          expect(icon.at(1).props('name')).toBe('warning');
         });
       });
     });

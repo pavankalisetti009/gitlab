@@ -53668,6 +53668,12 @@ msgstr ""
 msgid "The pipeline has been deleted"
 msgstr ""
 
+msgid "The policy is disabled"
+msgstr ""
+
+msgid "The policy is enabled"
+msgstr ""
+
 msgid "The project has already been added to your dashboard."
 msgstr ""
 
