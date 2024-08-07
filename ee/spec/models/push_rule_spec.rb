@@ -22,23 +22,15 @@ RSpec.describe PushRule, :saas, feature_category: :source_code_management do
   end
 
   describe "Validation" do
-    context 'when feature flag "add_validation_for_push_rules" is enabled' do
-      described_class::REGEX_COLUMNS.each do |column|
-        context "#{column}: length validation" do
-          it { is_expected.to validate_length_of(column).is_at_most(511) }
-        end
+    described_class::SHORT_REGEX_COLUMNS.each do |column|
+      context "#{column}: length validation" do
+        it { is_expected.to validate_length_of(column).is_at_most(511) }
       end
     end
 
-    context 'when feature flag "add_validation_for_push_rules" is disabled' do
-      before do
-        stub_feature_flags(add_validation_for_push_rules: false)
-      end
-
-      described_class::REGEX_COLUMNS.each do |column|
-        context "#{column}: length validation" do
-          it { is_expected.not_to validate_length_of(column).is_at_most(511) }
-        end
+    described_class::LONG_REGEX_COLUMNS.each do |column|
+      context "#{column}: length validation" do
+        it { is_expected.to validate_length_of(column).is_at_most(2047) }
       end
     end
 

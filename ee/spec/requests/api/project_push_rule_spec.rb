@@ -193,14 +193,8 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', api: true, feature_categ
       params.transform_keys(&:to_s)
     end
 
-    let(:add_validation_for_push_rules_ff) { true }
-
     context 'when the current user is a maintainer' do
       let(:user) { maintainer }
-
-      before do
-        stub_feature_flags(add_validation_for_push_rules: add_validation_for_push_rules_ff)
-      end
 
       it_behaves_like 'requires a license'
 
@@ -271,15 +265,16 @@ RSpec.describe API::ProjectPushRule, 'ProjectPushRule', api: true, feature_categ
           expect(response).to have_gitlab_http_status(:bad_request)
           expect(json_response['message']).to match('commit_message_regex' => ['is too long (maximum is 511 characters)'])
         end
+      end
 
-        context 'when feature flag `add_validation_for_push_rules` is disabled' do
-          let(:add_validation_for_push_rules_ff) { false }
+      context 'when commit_message_negative_regex is too long', :aggregate_failures do
+        let(:params) { { commit_message_negative_regex: 'a' * 2048 } }
 
-          it 'returns a server error' do
-            create_push_rule
+        it 'returns 400 error' do
+          create_push_rule
 
-            expect(response).to have_gitlab_http_status(:server_error)
-          end
+          expect(response).to have_gitlab_http_status(:bad_request)
+          expect(json_response['message']).to match('commit_message_negative_regex' => ['is too long (maximum is 2047 characters)'])
         end
       end
 

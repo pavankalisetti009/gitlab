@@ -32,7 +32,7 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
     units: UNITS.PERCENT,
   },
   [AI_METRICS.DUO_PRO_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo Pro seats: Assigned and used'),
+    label: s__('AiImpactAnalytics|Duo seats: Assigned and used'),
     units: UNITS.PERCENT,
   },
 };

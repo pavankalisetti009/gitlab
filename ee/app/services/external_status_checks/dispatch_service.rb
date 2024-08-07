@@ -26,6 +26,8 @@ module ExternalStatusChecks
       else
         ServiceResponse.error(message: 'Service responded with an error', http_status: response.code)
       end
+    rescue ::Gitlab::HTTP_V2::BlockedUrlError
+      ServiceResponse.error(message: 'Specified URL cannot be used.', http_status: :bad_request)
     end
   end
 end
