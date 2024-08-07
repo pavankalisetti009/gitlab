@@ -8,7 +8,10 @@ module GitlabSubscriptions
           private
 
           def seat_count_on_license
-            restrictions.deep_symbolize_keys.dig(:duo_enterprise, :quantity).to_i
+            duo_enterprise_add_ons = restrictions.deep_symbolize_keys.dig(:add_on_products, :duo_enterprise)
+            return 0 if duo_enterprise_add_ons.blank?
+
+            duo_enterprise_add_ons.sum { |info| info[:quantity].to_i }
           end
 
           def name

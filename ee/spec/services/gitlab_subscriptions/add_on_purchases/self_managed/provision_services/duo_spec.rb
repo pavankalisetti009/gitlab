@@ -21,8 +21,8 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         cloud_licensing_enabled: true,
         restrictions: {
           code_suggestions_seat_count: quantity_duo_pro,
-          duo_enterprise: {
-            quantity: quantity_duo_enterprise
+          add_on_products: {
+            duo_enterprise: [{ quantity: quantity_duo_enterprise }]
           },
           subscription_name: 'A-S00000001'
         }

@@ -8,20 +8,43 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     subject(:add_on_license) { described_class.new(restrictions) }
 
     let_it_be(:add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
-    let(:restrictions) { { duo_enterprise: { quantity: quantity } } }
-    let(:quantity) { 1 }
+    let(:restrictions) do
+      {
+        add_on_products: {
+          duo_enterprise: [{ quantity: 1 }, { quantity: 2 }]
+        }
+      }
+    end
 
     describe "#seat_count" do
-      it { expect(add_on_license.seat_count).to eq 1 }
+      it { expect(add_on_license.seat_count).to eq 3 }
 
       context "with non symbol key hash" do
-        let(:restrictions) { { duo_enterprise: { "quantity" => quantity } } }
+        let(:restrictions) do
+          {
+            add_on_products: {
+              "duo_enterprise" => [{ "quantity" => 1 }, { "quantity" => 2 }]
+            }
+          }
+        end
 
-        it { expect(add_on_license.seat_count).to eq 1 }
+        it { expect(add_on_license.seat_count).to eq 3 }
       end
 
       context "with empty restrictions hash" do
         let(:restrictions) { {} }
+
+        it { expect(add_on_license.seat_count).to eq 0 }
+      end
+
+      context "with empty duo enterprise info" do
+        let(:restrictions) { { add_on_products: { duo_pro: [{ quantity: 2 }] } } }
+
+        it { expect(add_on_license.seat_count).to eq 0 }
+      end
+
+      context "with an empty quantity key in the duo enterprise info" do
+        let(:restrictions) { { add_on_products: { duo_enterprise: [{ started_on: '2024-08-01' }] } } }
 
         it { expect(add_on_license.seat_count).to eq 0 }
       end
