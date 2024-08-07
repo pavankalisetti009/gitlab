@@ -4372,4 +4372,112 @@ RSpec.describe User, feature_category: :system_access do
       it { is_expected.to be_truthy }
     end
   end
+
+  describe '#ci_owned_runners' do
+    using RSpec::Parameterized::TableSyntax
+
+    subject(:runners) { user.ci_owned_runners }
+
+    let_it_be(:user, refind: true) { create(:user) }
+    let_it_be(:group_a) { create(:group, name: "group-a") }
+    let_it_be(:group_aa) { create(:group, parent: group_a, name: "group-aa") }
+    let_it_be(:group_aaa) { create(:group, parent: group_aa, name: "group-aaa") }
+    let_it_be(:group_ab) { create(:group, parent: group_a, name: "group-ab") }
+    let_it_be(:group_aba) { create(:group, parent: group_ab, name: "group-aba") }
+    let_it_be(:group_b) { create(:group, name: "group-b") }
+
+    let_it_be(:group_a_runner) { create(:ci_runner, :group, groups: [group_a], name: "a") }
+    let_it_be(:group_aa_runner) { create(:ci_runner, :group, groups: [group_aa], name: "aa") }
+    let_it_be(:group_aaa_runner) { create(:ci_runner, :group, groups: [group_aaa], name: "aaa") }
+    let_it_be(:group_ab_runner) { create(:ci_runner, :group, groups: [group_ab], name: "ab") }
+    let_it_be(:group_aba_runner) { create(:ci_runner, :group, groups: [group_aba], name: "aba") }
+    let_it_be(:group_b_runner) { create(:ci_runner, :group, groups: [group_b], name: "b") }
+
+    let_it_be(:admin_runners_a) { create(:member_role, :guest, :admin_runners, namespace: group_a) }
+    let_it_be(:admin_runners_b) { create(:member_role, :guest, :admin_runners, namespace: group_b) }
+
+    let_it_be(:project_a) { create(:project, group: group_a, name: "a") }
+    let_it_be(:project_aa) { create(:project, group: group_aa, name: "aa") }
+    let_it_be(:project_aaa) { create(:project, group: group_aaa, name: "aaa") }
+    let_it_be(:project_ab) { create(:project, group: group_ab, name: "ab") }
+    let_it_be(:project_aba) { create(:project, group: group_aba, name: "aba") }
+
+    let_it_be(:project_a_runner) { create(:ci_runner, :project, projects: [project_a], name: "a") }
+    let_it_be(:project_aa_runner) { create(:ci_runner, :project, projects: [project_aa], name: "aa") }
+    let_it_be(:project_aaa_runner) { create(:ci_runner, :project, projects: [project_aaa], name: "aaa") }
+    let_it_be(:project_ab_runner) { create(:ci_runner, :project, projects: [project_ab], name: "ab") }
+    let_it_be(:project_aba_runner) { create(:ci_runner, :project, projects: [project_aba], name: "aba") }
+
+    it { is_expected.to be_empty }
+
+    context 'with static roles' do
+      it { is_expected.to be_empty }
+
+      where(:source, :role, :expected_runners) do
+        ref(:group_a)   | :owner      | [ref(:group_a_runner), ref(:group_aa_runner), ref(:group_aaa_runner), ref(:group_ab_runner), ref(:group_aba_runner), ref(:project_a_runner), ref(:project_aa_runner), ref(:project_aaa_runner), ref(:project_ab_runner), ref(:project_aba_runner)]
+        ref(:group_aa)  | :owner      | [ref(:group_aa_runner), ref(:group_aaa_runner), ref(:project_aa_runner), ref(:project_aaa_runner)]
+        ref(:group_aaa) | :owner      | [ref(:group_aaa_runner), ref(:project_aaa_runner)]
+        ref(:project_a) | :developer  | []
+        ref(:project_a) | :guest      | []
+        ref(:project_a) | :maintainer | [ref(:project_a_runner)]
+        ref(:project_a) | :owner      | [ref(:project_a_runner)]
+        ref(:project_a) | :reporter   | []
+      end
+
+      with_them do
+        context "when the user is a #{params[:role]} of #{params[:source]}" do
+          before do
+            membership_type = source.is_a?(::Group) ? :group_member : :project_member
+            create(membership_type, role, source: source, user: user)
+          end
+
+          it { is_expected.to match_array(expected_runners) }
+        end
+      end
+    end
+
+    context 'with custom roles' do
+      before do
+        stub_licensed_features(custom_roles: true)
+      end
+
+      it { is_expected.to be_empty }
+
+      where(:source, :role, :expected_runners) do
+        ref(:group_a)   | ref(:admin_runners_a) | [ref(:group_a_runner), ref(:group_aa_runner), ref(:group_aaa_runner), ref(:group_ab_runner), ref(:group_aba_runner)]
+        ref(:group_aa)  | ref(:admin_runners_a) | [ref(:group_aa_runner), ref(:group_aaa_runner)]
+        ref(:group_aba) | ref(:admin_runners_a) | [ref(:group_aba_runner)]
+      end
+
+      with_them do
+        context "with `#{params[:role]}` on #{params[:source]}" do
+          before do
+            create(:group_member, :guest, member_role: role, source: source, user: user)
+          end
+
+          it { is_expected.to match_array(expected_runners) }
+
+          context 'with `custom_ability_admin_runners` disabled' do
+            before do
+              stub_feature_flags(custom_ability_admin_runners: false)
+            end
+
+            it { is_expected.to be_empty }
+          end
+        end
+      end
+
+      context "with another user a member of the `admin_runners` role in the same group hierarchy" do
+        before do
+          other_role = create(:member_role, :guest, :read_code, namespace: group_a)
+          create(:group_member, :guest, member_role: other_role, source: group_a, user: user)
+
+          other_user = create(:user)
+          create(:group_member, :guest, member_role: admin_runners_a, source: group_a, user: other_user)
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
+  end
 end

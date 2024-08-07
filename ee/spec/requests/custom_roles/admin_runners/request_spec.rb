@@ -174,14 +174,22 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
 
     let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: user, source: group) }
     let_it_be(:project_runner) { create(:ci_runner, :project, description: 'Project runner', projects: [project]) }
+    let_it_be(:group_runner) { create(:ci_runner, :group, description: 'Group runner', groups: [group]) }
 
-    pending "GET /runners" do
-      get api("/runners", user)
+    describe "GET /runners" do
+      it "returns eligible group runners" do
+        get api("/runners", user)
 
-      expect(response).to have_gitlab_http_status(:ok)
-      expect(json_response).to match_array([
-        a_hash_including('description' => 'Project runner')
-      ])
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to include(a_hash_including('description' => 'Group runner'))
+      end
+
+      pending "returns eligible project runners" do
+        get api("/runners", user)
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(json_response).to include(a_hash_including('description' => 'Project runner'))
+      end
     end
 
     it "GET /runners/:id" do

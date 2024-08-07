@@ -751,6 +751,24 @@ module EE
 
     protected
 
+    override :ci_owned_group_runners
+    def ci_owned_group_runners
+      return super unless ::MemberRole.permission_enabled?(:admin_runners, self)
+
+      cte_namespace_ids = ::Gitlab::SQL::CTE.new(
+        :cte_namespace_ids,
+        ::Ci::NamespaceMirror.from_union([
+          ci_namespace_mirrors_for_group_members(::Gitlab::Access::OWNER).select(:namespace_id),
+          ci_namespace_mirrors_permitted_to(:admin_runners).select(:namespace_id)
+        ])
+      )
+
+      ::Ci::Runner
+        .with(cte_namespace_ids.to_arel)
+        .joins(:runner_namespaces)
+        .where('ci_runner_namespaces.namespace_id IN (SELECT namespace_id FROM cte_namespace_ids)')
+    end
+
     override :password_required?
     def password_required?(*)
       return false if service_account? || group_managed_account?
@@ -777,6 +795,18 @@ module EE
     end
 
     private
+
+    def ci_namespace_mirrors_permitted_to(permission)
+      ::Ci::NamespaceMirror.contains_traversal_ids(
+        authorized_groups.where(
+          'traversal_ids[1] IN (?)',
+          group_members
+            .joins(:member_role)
+            .merge(::MemberRole.permissions_where(permission => true))
+            .select('member_roles.namespace_id')
+        ).shortest_traversal_ids_prefixes
+      )
+    end
 
     def enterprise_user_email_change
       return if user_detail.enterprise_group.owner_of_email?(email)
