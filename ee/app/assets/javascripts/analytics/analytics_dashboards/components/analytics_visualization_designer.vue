@@ -1,5 +1,4 @@
 <script>
-import { QueryBuilder } from '@cubejs-client/vue';
 import { GlButton, GlFormGroup, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
 import { isEqual } from 'lodash';
 
@@ -11,7 +10,7 @@ import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { InternalEvents } from '~/tracking';
 
-import { createCubeApi } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
+import { fetchFilterOptions } from 'ee/analytics/analytics_dashboards/data_sources/cube_analytics';
 import { getVisualizationOptions } from 'ee/analytics/analytics_dashboards/utils/visualization_designer_options';
 import { saveProductAnalyticsVisualization } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
 import { NEW_DASHBOARD_SLUG } from 'ee/vue_shared/components/customizable_dashboard/constants';
@@ -34,7 +33,6 @@ export default {
   name: 'AnalyticsVisualizationDesigner',
   components: {
     AiCubeQueryGenerator,
-    QueryBuilder,
     GlButton,
     GlFormInput,
     GlFormGroup,
@@ -62,27 +60,25 @@ export default {
   },
   data() {
     return {
-      cubeApi: createCubeApi(document.body.dataset.projectId),
       queryState: DEFAULT_VISUALIZATION_QUERY_STATE(),
       visualizationTitle: '',
       titleValidationError: null,
       selectedDisplayType: PANEL_DISPLAY_TYPES.VISUALIZATION,
       selectedVisualizationType: VISUALIZATION_TYPE_DATA_TABLE,
-      hasTimeDimension: false,
       isSaving: false,
       alert: null,
       aiPromptCorrelationId: null,
       aiPrompt: '',
+      filterOptions: {
+        availableMeasures: [],
+        availableDimensions: [],
+        availableTimeDimensions: [],
+      },
     };
   },
   computed: {
     resultVisualization() {
-      const newCubeQuery = this.$refs.builder.$children[0].resultSet.query();
-
-      // Weird behaviour as the API says its malformed if we send it again
-      delete newCubeQuery.order;
-      delete newCubeQuery.rowLimit;
-      delete newCubeQuery.queryType;
+      const newCubeQuery = this.queryState.query;
 
       return {
         version: 1,
@@ -97,7 +93,7 @@ export default {
     panelOptions() {
       return getVisualizationOptions(
         this.selectedVisualizationType,
-        this.hasTimeDimension,
+        this.queryState.timeDimensions?.length,
         this.queryState.measureSubType,
       );
     },
@@ -121,7 +117,7 @@ export default {
     this.alert?.dismiss();
     window.removeEventListener('beforeunload', this.onPageUnload);
   },
-  mounted() {
+  async mounted() {
     const wrappers = document.querySelectorAll('.container-fluid.container-limited');
 
     wrappers.forEach((el) => {
@@ -131,20 +127,15 @@ export default {
     this.trackEvent(EVENT_LABEL_USER_VIEWED_VISUALIZATION_DESIGNER);
 
     window.addEventListener('beforeunload', this.onPageUnload);
+
+    try {
+      // Fill the filter bar with possible filter options
+      this.filterOptions = await fetchFilterOptions(document.body.dataset.projectId);
+    } catch (error) {
+      this.showAlert(s__('Analytics|An error occurred while loading data'), error, true);
+    }
   },
   methods: {
-    onQueryStatusChange({ error }) {
-      if (!error) {
-        this.alert?.dismiss();
-        return;
-      }
-
-      this.showAlert(s__('Analytics|An error occurred while loading data'), error, true);
-    },
-    onVizStateChange(state) {
-      this.hasTimeDimension = Boolean(state.query.timeDimensions?.length);
-      this.queryState.query = state.query;
-    },
     onFilterChange(query) {
       this.queryState.query = { ...query };
     },
@@ -321,7 +312,7 @@ export default {
       </p>
     </header>
     <section class="gl-flex">
-      <div class="gl-display-flex flex-fill gl-flex-direction-column">
+      <div class="gl-flex flex-fill gl-flex-col">
         <gl-form-group
           :label="s__('Analytics|Visualization title')"
           label-for="title"
@@ -354,60 +345,47 @@ export default {
       class="gl-mb-4"
       @query-generated="onQueryGenerated"
     />
-    <section class="gl-border-t gl-border-b gl-mb-6">
-      <query-builder
-        ref="builder"
-        :cube-api="cubeApi"
-        :initial-viz-state="queryState"
-        :query="queryState.query"
-        :wrap-with-query-renderer="true"
-        :disable-heuristics="true"
-        data-testid="query-builder"
-        class="gl-display-flex gl-flex-wrap"
-        @queryStatus="onQueryStatusChange"
-        @vizStateChange="onVizStateChange"
-      >
-        <template #builder="{ availableMeasures, availableDimensions, availableTimeDimensions }">
-          <div class="gl-flex gl-w-full gl-gap-3 gl-py-4 gl-flex-col md:gl-flex-row gl-border-b">
-            <gl-form-group
-              class="gl-w-full md:gl-max-w-20 gl-m-0"
-              data-testid="visualization-type-form-group"
-            >
-              <visualization-type-selector
-                ref="typeSelector"
-                v-model="selectedVisualizationType"
-                data-testid="visualization-type-dropdown"
-                @input="onVisualizationTypeChange"
-              />
-            </gl-form-group>
-            <visualization-filtered-search
-              :query="queryState.query"
-              :available-measures="availableMeasures"
-              :available-dimensions="availableDimensions"
-              :available-time-dimensions="availableTimeDimensions"
-              data-testid="visualization-filtered-search"
-              class="gl-py-3 gl-w-full"
-              @input="onFilterChange"
-              @submit="onFilterChange"
-            />
-          </div>
-        </template>
+    <section
+      class="gl-border-t gl-border-b gl-mb-6 gl-flex gl-flex-wrap"
+      data-testid="query-builder"
+    >
+      <div class="gl-flex gl-w-full gl-gap-3 gl-py-4 gl-flex-col md:gl-flex-row gl-border-b">
+        <gl-form-group
+          class="gl-w-full md:gl-max-w-20 gl-m-0"
+          data-testid="visualization-type-form-group"
+        >
+          <visualization-type-selector
+            ref="typeSelector"
+            v-model="selectedVisualizationType"
+            data-testid="visualization-type-dropdown"
+            @input="onVisualizationTypeChange"
+          />
+        </gl-form-group>
+        <visualization-filtered-search
+          :query="queryState.query"
+          :available-measures="filterOptions.availableMeasures"
+          :available-dimensions="filterOptions.availableDimensions"
+          :available-time-dimensions="filterOptions.availableTimeDimensions"
+          data-testid="visualization-filtered-search"
+          class="gl-py-3 gl-w-full"
+          @input="onFilterChange"
+          @submit="onFilterChange"
+        />
+      </div>
 
-        <template #default="{ resultSet, isQueryPresent, loading }">
-          <div class="gl-flex-grow-1 gl-bg-gray-10 gl-overflow-auto">
-            <visualization-preview
-              :selected-visualization-type="selectedVisualizationType"
-              :display-type="selectedDisplayType"
-              :is-query-present="isQueryPresent ? isQueryPresent : false"
-              :loading="loading"
-              :result-visualization="resultSet && isQueryPresent ? resultVisualization : null"
-              :title="visualizationTitle"
-              :ai-prompt-correlation-id="aiPromptCorrelationId"
-              @selectedDisplayType="selectDisplayType"
-            />
-          </div>
-        </template>
-      </query-builder>
+      <div class="gl-grow gl-bg-gray-10 gl-overflow-auto">
+        <visualization-preview
+          data-testid="visualization-previewer"
+          :selected-visualization-type="selectedVisualizationType"
+          :display-type="selectedDisplayType"
+          :is-query-present="queryStateHasChanges"
+          :loading="false"
+          :result-visualization="queryStateHasChanges ? resultVisualization : null"
+          :title="visualizationTitle"
+          :ai-prompt-correlation-id="aiPromptCorrelationId"
+          @selectedDisplayType="selectDisplayType"
+        />
+      </div>
     </section>
     <section>
       <gl-button
@@ -416,8 +394,8 @@ export default {
         variant="confirm"
         data-testid="visualization-save-btn"
         @click="saveVisualization"
-        >{{ saveButtonText }}</gl-button
-      >
+        >{{ saveButtonText }}
+      </gl-button>
       <gl-button category="secondary" @click="routeToDashboardList">{{ __('Cancel') }}</gl-button>
     </section>
   </div>

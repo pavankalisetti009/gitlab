@@ -164,6 +164,28 @@ export const createCubeApi = (projectId) =>
     }),
   });
 
+export const fetchFilterOptions = async (projectId) => {
+  const cubeApi = createCubeApi(projectId);
+  const { cubes = [] } = await cubeApi.meta({});
+
+  let availableMeasures = [];
+  let availableDimensions = [];
+  let availableTimeDimensions = [];
+
+  // Find all the measures, dimensions, and time dimensions by looping through each of the cube schemas
+  // The difference between dimensions and time dimensions are whether they have the type of "time"
+  cubes.forEach(({ dimensions, measures }) => {
+    availableMeasures = [...availableMeasures, ...measures];
+    availableDimensions = [...availableDimensions, ...dimensions.filter((d) => d.type !== 'time')];
+    availableTimeDimensions = [
+      ...availableTimeDimensions,
+      ...dimensions.filter((d) => d.type === 'time'),
+    ];
+  });
+
+  return { availableMeasures, availableDimensions, availableTimeDimensions };
+};
+
 export default async function fetch({
   projectId,
   visualizationType,

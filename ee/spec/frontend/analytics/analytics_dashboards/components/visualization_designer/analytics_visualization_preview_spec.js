@@ -52,21 +52,11 @@ describe('AnalyticsVisualizationPreview', () => {
     });
 
     it('should render measurement headline', () => {
-      expect(wrapper.findByTestId('measurement-hl').text()).toBe('Start by choosing a metric');
+      expect(wrapper.findByTestId('measurement-hl').text()).toBe('Start by choosing a measure');
     });
 
     it('should not render the help icon', () => {
       expect(findHelpIcon().exists()).toBe(false);
-    });
-  });
-
-  describe('when loading', () => {
-    beforeEach(() => {
-      createWrapper({ isQueryPresent: true, loading: true });
-    });
-
-    it('should render loading icon', () => {
-      expect(wrapper.findByTestId('loading-icon').exists()).toBe(true);
     });
   });
 

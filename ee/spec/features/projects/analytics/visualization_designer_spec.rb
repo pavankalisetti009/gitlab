@@ -24,7 +24,7 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
     it 'renders the preview panels and the type selector' do
       visit_page
 
-      expect(page).to have_content('Start by choosing a metric')
+      expect(page).to have_content('Start by choosing a measure')
     end
 
     it 'renders the title input' do
@@ -86,7 +86,7 @@ RSpec.describe 'Analytics Visualization Designer', :js, feature_category: :produ
 
         context 'with the code tab selected' do
           before do
-            within_testid 'query-builder' do
+            within_testid 'visualization-previewer' do
               click_button 'Code'
             end
           end
