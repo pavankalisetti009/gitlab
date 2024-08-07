@@ -45,6 +45,7 @@ export default class MergeRequestStore extends CEMergeRequestStore {
 
     this.apiApprovalSettingsPath = data.api_approval_settings_path;
     this.mergeTrainsPath = data.merge_trains_path;
+    this.pipelineEtag = data.pipeline_etag;
   }
 
   setData(data, isRebased) {
