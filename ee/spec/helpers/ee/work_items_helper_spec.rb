@@ -74,7 +74,9 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
   describe '#work_items_list_data' do
     let_it_be(:group) { build(:group) }
 
-    let(:current_user) { double.as_null_object }
+    # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Needed for policy rule checks to work
+    let_it_be(:current_user) { create(:user, owner_of: group) }
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
 
     subject(:work_items_list_data) { helper.work_items_list_data(group, current_user) }
 
@@ -82,7 +84,9 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
       stub_licensed_features(
         epics: feature_available,
         issuable_health_status: feature_available,
-        issue_weights: feature_available
+        issue_weights: feature_available,
+        scoped_labels: feature_available,
+        group_bulk_edit: feature_available
       )
     end
 
@@ -94,7 +98,12 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
           {
             has_epics_feature: "true",
             has_issuable_health_status_feature: "true",
-            has_issue_weights_feature: "true"
+            has_issue_weights_feature: "true",
+            has_scoped_labels_feature: "true",
+            can_bulk_edit_epics: "true",
+            labels_fetch_path: group_labels_path(
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
+            group_issues_path: issues_group_path(group)
           }
         )
       end
@@ -108,7 +117,12 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
           {
             has_epics_feature: "false",
             has_issuable_health_status_feature: "false",
-            has_issue_weights_feature: "false"
+            has_issue_weights_feature: "false",
+            has_scoped_labels_feature: "false",
+            can_bulk_edit_epics: "false",
+            labels_fetch_path: group_labels_path(
+              group, format: :json, only_group_labels: true, include_ancestor_groups: true),
+            group_issues_path: issues_group_path(group)
           }
         )
       end
