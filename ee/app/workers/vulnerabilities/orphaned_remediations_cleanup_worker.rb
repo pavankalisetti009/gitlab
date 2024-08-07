@@ -17,7 +17,9 @@ module Vulnerabilities
 
     def perform(*_args)
       # rubocop:disable CodeReuse/ActiveRecord
-      Vulnerabilities::Remediation.where.missing(:findings).each_batch(of: BATCH_SIZE) { |batch| batch.delete_all }
+      Vulnerabilities::Remediation.where.missing(:finding_remediations).each_batch(of: BATCH_SIZE) do |batch|
+        batch.delete_all
+      end
       # rubocop:enable CodeReuse/ActiveRecord
     end
   end
