@@ -18,7 +18,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::EndToEndProbe, feature_cate
         result = probe.execute(user: user)
 
         expect(result.success).to be true
-        expect(result.message).to eq('Code completion test was successful')
+        expect(result.message).to match('Authentication with GitLab Cloud services succeeded')
       end
     end
 
@@ -35,7 +35,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::EndToEndProbe, feature_cate
         result = probe.execute(user: user)
 
         expect(result.success).to be false
-        expect(result.message).to eq("Code completion test failed: #{error_message}")
+        expect(result.message).to match("Authentication with GitLab Cloud services failed: #{error_message}")
       end
     end
   end

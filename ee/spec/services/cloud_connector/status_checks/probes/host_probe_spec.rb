@@ -17,7 +17,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be true
-        expect(result.message).to eq("#{host} reachable")
+        expect(result.message).to match("#{host} reachable")
       end
     end
 
@@ -31,7 +31,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to eq("#{host} unreachable")
+        expect(result.message).to match("#{host} could not be reached. If you use firewalls or proxy servers")
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to eq("#{host} unreachable")
+        expect(result.message).to match("#{host} could not be reached. If you use firewalls or proxy servers")
       end
     end
   end

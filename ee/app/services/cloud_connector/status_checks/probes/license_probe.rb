@@ -6,10 +6,22 @@ module CloudConnector
       class LicenseProbe < BaseProbe
         def execute(*)
           license = License.current
-          return failure('No license found') unless license
-          return failure('No Online Cloud License found') unless license.online_cloud_license?
+          return failure(missing_license_text) unless license
+          return failure(wrong_license_text) unless license.online_cloud_license?
 
-          success('Online Cloud License found')
+          success('Subscription can be synchronized.')
+        end
+
+        private
+
+        def missing_license_text
+          _("Subscription for this instance cannot be synchronized. " \
+            "Contact GitLab customer support to obtain a license.")
+        end
+
+        def wrong_license_text
+          _("Subscription for this instance cannot be synchronized. " \
+            "Contact GitLab customer support to upgrade your license.")
         end
       end
     end

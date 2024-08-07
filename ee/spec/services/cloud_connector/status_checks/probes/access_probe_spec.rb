@@ -12,11 +12,11 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AccessProbe, :freeze_time, 
 
     # nil trait means record is missing
     where(:access_trait, :token_trait, :success?, :message) do
-      :current | :active  | true  | 'Access data is valid'
-      nil      | :active  | false | 'Access data is missing'
-      :stale   | :active  | false | 'Access data is stale'
-      :current | nil      | false | 'Access token is missing'
-      :current | :expired | false | 'Access token has expired'
+      :current | :active  | true  | 'Subscription synchronized successfully'
+      nil      | :active  | false | 'Subscription has not yet been synchronized'
+      :stale   | :active  | false | 'Subscription has not been synchronized recently'
+      :current | nil      | false | 'Access credentials not found'
+      :current | :expired | false | 'Access credentials expired'
     end
 
     with_them do
@@ -28,7 +28,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::AccessProbe, :freeze_time, 
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be success?
-        expect(result.message).to eq(message)
+        expect(result.message).to match(message)
       end
     end
   end
