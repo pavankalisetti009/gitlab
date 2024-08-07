@@ -19,6 +19,42 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     let(:service) { described_class.new(user, params) }
   end
 
+  describe '#search_type' do
+    let(:search_service) { described_class.new(user, scope: scope) }
+
+    subject(:search_type) { search_service.search_type }
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
+      true   | true  | 'blobs'  | 'zoekt'
+      false  | true  | 'blobs'  | 'advanced'
+      false  | false | 'blobs'  | 'basic'
+      true   | true  | 'issues' | 'advanced'
+      true   | false | 'issues' | 'basic'
+    end
+
+    with_them do
+      before do
+        allow(search_service).to receive(:scope).and_return(scope)
+        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
+        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+      end
+
+      it { is_expected.to eq(expected_type) }
+
+      %w[basic advanced zoekt].each do |search_type|
+        context "with search_type param #{search_type}" do
+          let(:search_service) do
+            described_class.new(user, { scope: scope, search_type: search_type })
+          end
+
+          it { is_expected.to eq(search_type) }
+        end
+      end
+    end
+  end
+
   context 'has_parent usage', :elastic do
     shared_examples 'search does not use has_parent' do |scope|
       let(:results) { described_class.new(nil, search: '*').execute.objects(scope) }
