@@ -13,7 +13,7 @@ module EE
           next false unless troubleshoot_job_connection.free_access?
 
           if ::Gitlab::Saas.feature_available?(:duo_chat_on_saas) # check if we are on SaaS
-            user.any_group_with_ga_ai_available?(:troubleshoot_job)
+            user&.any_group_with_ga_ai_available?(:troubleshoot_job)
           else
             License.feature_available?(:ai_features)
           end
