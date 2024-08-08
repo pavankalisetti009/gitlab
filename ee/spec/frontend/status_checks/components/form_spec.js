@@ -1,6 +1,6 @@
 import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import Form from 'ee/status_checks/components/form.vue';
+import StatusCheckForm from 'ee/status_checks/components/status_check_form.vue';
 import { NAME_TAKEN_SERVER_ERROR, URL_TAKEN_SERVER_ERROR } from 'ee/status_checks/constants';
 import ProtectedBranchesSelector from 'ee/vue_shared/components/branches_selector/protected_branches_selector.vue';
 import { stubComponent } from 'helpers/stub_component';
@@ -20,7 +20,7 @@ describe('Status checks form', () => {
   let wrapper;
 
   const createWrapper = (props = {}) => {
-    wrapper = shallowMountExtended(Form, {
+    wrapper = shallowMountExtended(StatusCheckForm, {
       propsData: {
         projectId,
         ...props,

@@ -5,7 +5,7 @@ import { mapState } from 'vuex';
 import { __ } from '~/locale';
 import { ALL_BRANCHES } from 'ee/vue_shared/components/branches_selector/constants';
 import { modalPrimaryActionProps } from '../utils';
-import StatusCheckForm from './form.vue';
+import StatusCheckForm from './status_check_form.vue';
 
 const i18n = { cancelButton: __('Cancel') };
 

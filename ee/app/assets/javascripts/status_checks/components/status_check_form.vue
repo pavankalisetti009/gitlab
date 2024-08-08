@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <script>
 import { GlAlert, GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { isEqual, isNumber } from 'lodash';
