@@ -368,4 +368,6 @@ export const editRuleData = [
   { accessLevel: 30 },
 ];
 
-export const editRuleDataNoOne = [{ accessLevel: 0 }];
+export const editRuleDataNoAccessLevels = [{ userId: 'gid://gitlab/User/123' }];
+
+export const editRuleDataNoOne = [{ userId: 'gid://gitlab/User/123' }, { accessLevel: 0 }];

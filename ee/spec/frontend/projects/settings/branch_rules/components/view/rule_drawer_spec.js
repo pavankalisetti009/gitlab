@@ -3,12 +3,16 @@ import { GlFormCheckbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RuleDrawer from '~/projects/settings/branch_rules/components/view/rule_drawer.vue';
 import ItemsSelector from 'ee_component/projects/settings/branch_rules/components/view/items_selector.vue';
-import { allowedToMergeDrawerProps } from './mock_data';
+import { allowedToMergeDrawerProps } from 'ee_else_ce_jest/projects/settings/branch_rules/components/view/mock_data';
 
 describe('Edit Rule Drawer', () => {
   let wrapper;
 
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
+  const findAdministratorsCheckbox = () => findCheckboxes().at(0);
+  const findMaintainersCheckbox = () => findCheckboxes().at(1);
+  const findDevelopersAndMaintainersCheckbox = () => findCheckboxes().at(2);
+  const findNoOneCheckbox = () => findCheckboxes().at(3);
   const findUsersSelector = () => wrapper.findByTestId('users-selector');
   const findGroupsSelector = () => wrapper.findByTestId('groups-selector');
   const findSaveButton = () => wrapper.findByText('Save changes');
@@ -39,13 +43,14 @@ describe('Edit Rule Drawer', () => {
       wrapper.setProps({ isOpen: true }); // simulates the drawer being opened from the parent
       await nextTick();
 
-      findCheckboxes().wrappers.forEach((checkbox) =>
-        expect(checkbox.attributes('checked')).toBe('true'),
-      );
+      expect(findAdministratorsCheckbox().attributes('checked')).toBe('true');
+      expect(findMaintainersCheckbox().attributes('checked')).toBe('true');
+      expect(findDevelopersAndMaintainersCheckbox().attributes('checked')).toBe('true');
+      expect(findNoOneCheckbox().attributes('checked')).toBeUndefined();
     });
   });
 
-  it('Renders Item Selector with  users', () => {
+  it('Renders Item Selector with users', () => {
     expect(findUsersSelector().props('items')).toMatchObject([
       {
         __typename: 'UserCore',
