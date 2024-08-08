@@ -87,27 +87,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
         expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(result)
       end
     end
-
-    context 'when duo_chat_disabled_button flag disabled' do
-      where(:ai_features_enabled_for_user, :result) do
-        [
-          [true, true],
-          [false, false]
-        ]
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(duo_chat_disabled_button: false)
-          allow(described_class).to receive(:enabled_for?).with(user: user, container: nil)
-                                                          .and_return(ai_features_enabled_for_user)
-        end
-
-        it 'returns correct result' do
-          expect(described_class.show_breadcrumbs_entry_point?(user: user)).to be(result)
-        end
-      end
-    end
   end
 
   describe '.chat_disabled_reason' do
@@ -147,16 +126,6 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
 
       context 'without a container' do
         let(:container) { nil }
-
-        it 'returns nil' do
-          expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
-        end
-      end
-
-      context 'when duo_chat_disabled_button flag is disabled' do
-        before do
-          stub_feature_flags(duo_chat_disabled_button: false)
-        end
 
         it 'returns nil' do
           expect(described_class.chat_disabled_reason(user: user, container: container)).to be(nil)
