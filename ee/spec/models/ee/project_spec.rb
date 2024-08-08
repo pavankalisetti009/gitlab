@@ -4711,4 +4711,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       expect(project.compliance_management_frameworks_names).to contain_exactly('SOX', 'GDPR')
     end
   end
+
+  describe '#compliance_framework_ids' do
+    subject { project.compliance_framework_ids }
+
+    let_it_be(:project) { create(:project) }
+    let_it_be(:compliance_framework_1) { create(:compliance_framework_project_setting, project: project) }
+    let_it_be(:compliance_framework_2) { create(:compliance_framework_project_setting, :sox, project: project) }
+
+    it { is_expected.to contain_exactly(compliance_framework_1.framework_id, compliance_framework_2.framework_id) }
+  end
 end

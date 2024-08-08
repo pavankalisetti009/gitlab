@@ -1328,6 +1328,10 @@ module EE
       compliance_management_frameworks.pluck(:name)
     end
 
+    def compliance_framework_ids
+      compliance_framework_settings.pluck(:framework_id)
+    end
+
     private
 
     def path_locks_changed_epoch_cache_key
