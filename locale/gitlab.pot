@@ -5440,6 +5440,9 @@ msgstr ""
 msgid "All paths are relative to the GitLab URL. Do not include %{relative_url_link_start}relative URLs%{relative_url_link_end}."
 msgstr ""
 
+msgid "All paths must be unlocked"
+msgstr ""
+
 msgid "All project members"
 msgstr ""
 
