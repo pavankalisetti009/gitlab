@@ -24,6 +24,7 @@ module RemoteDevelopment
           settings => {
             project_cloner_image: String => image,
           }
+          project_cloning_successful_file = "#{volume_path}/.gl_project_cloning_successful"
 
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/408448
           #       replace the alpine/git docker image with one that is published by gitlab for security / reliability
@@ -31,17 +32,37 @@ module RemoteDevelopment
           clone_dir = "#{volume_path}/#{project.path}"
           project_url = project.http_url_to_repo
 
-          # The project is cloned only if one doesn't exist already.
-          # This done to avoid resetting user's modifications to the workspace.
-          # After cloning the project, set the user's git configuration - name and email.
-          # The name and email are read from environment variable because we do not want to
-          # store PII in the processed devfile in the database.
-          # The environment variables are injected into the gl-cloner-injector container component
-          # when the Kubernetes resources are generated.
+          # The project should be cloned only if one is not cloned successfully already.
+          # This is required to avoid resetting user's modifications to the files.
+          # This is achieved by checking for the existence of a file before cloning.
+          # If the file does not exist, clone the project.
+          # To accommodate for scenarios where the project cloning failed midway in the previous attempt,
+          # remove the directory before cloning.
+          # Once cloning is successful, create the file which is used in the check above.
+          # This will ensure the project is not cloned again on restarts.
           container_args = <<~SH.chomp
-            if [ ! -d '#{clone_dir}' ];
+            if [ -f "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}" ];
             then
-              git clone --branch #{Shellwords.shellescape(devfile_ref)} #{Shellwords.shellescape(project_url)} #{Shellwords.shellescape(clone_dir)};
+              echo "Project cloning was already successful";
+              exit 0;
+            fi
+            if [ -d "#{Shellwords.shellescape(clone_dir)}" ];
+            then
+              echo "Removing unsuccessfully cloned project directory";
+              rm -rf "#{Shellwords.shellescape(clone_dir)}";
+            fi
+            echo "Cloning project";
+            git clone --branch "#{Shellwords.shellescape(devfile_ref)}" "#{Shellwords.shellescape(project_url)}" "#{Shellwords.shellescape(clone_dir)}";
+            exit_code=$?
+            if [ "${exit_code}" -eq 0 ];
+            then
+              echo "Project cloning successful";
+              touch "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}";
+              echo "Updated file to indicate successful project cloning";
+              exit 0;
+            else
+              echo "Project cloning failed with exit code: ${exit_code}";
+              exit "${exit_code}";
             fi
           SH
 
@@ -56,6 +77,12 @@ module RemoteDevelopment
               # command has been overridden here as the default command in the alpine/git
               # container invokes git directly
               'command' => %w[/bin/sh -c],
+              'env' => [
+                {
+                  'name' => 'GL_PROJECT_CLONING_SUCCESSFUL_FILE',
+                  'value' => project_cloning_successful_file
+                }
+              ],
               'memoryLimit' => '512Mi',
               'memoryRequest' => '256Mi',
               'cpuLimit' => '500m',

@@ -747,14 +747,37 @@ RSpec.shared_context 'with remote development shared fixtures' do
               {
                 args: [
                   <<~ARGS.chomp
-                    if [ ! -d '/projects/test-project' ];
+                    if [ -f "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}" ];
                     then
-                      git clone --branch master #{root_url}test-group/test-project.git /projects/test-project;
+                      echo "Project cloning was already successful";
+                      exit 0;
+                    fi
+                    if [ -d "/projects/test-project" ];
+                    then
+                      echo "Removing unsuccessfully cloned project directory";
+                      rm -rf "/projects/test-project";
+                    fi
+                    echo "Cloning project";
+                    git clone --branch "master" "#{root_url}test-group/test-project.git" "/projects/test-project";
+                    exit_code=$?
+                    if [ "${exit_code}" -eq 0 ];
+                    then
+                      echo "Project cloning successful";
+                      touch "${GL_PROJECT_CLONING_SUCCESSFUL_FILE}";
+                      echo "Updated file to indicate successful project cloning";
+                      exit 0;
+                    else
+                      echo "Project cloning failed with exit code: ${exit_code}";
+                      exit "${exit_code}";
                     fi
                   ARGS
                 ],
                 command: %w[/bin/sh -c],
                 env: [
+                  {
+                    name: "GL_PROJECT_CLONING_SUCCESSFUL_FILE",
+                    value: "/projects/.gl_project_cloning_successful"
+                  },
                   {
                     name: "PROJECTS_ROOT",
                     value: "/projects"
