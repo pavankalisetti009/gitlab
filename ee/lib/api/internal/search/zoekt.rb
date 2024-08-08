@@ -29,6 +29,7 @@ module API
                   requires "disk.used", type: Integer, desc: 'Total disk space utilized'
                   requires "disk.free", type: Integer, desc: 'Total disk space available'
                   requires "node.name", type: String, desc: 'Name of indexer node'
+                  optional "disk.indexed", type: Integer, desc: 'Total indexed space'
                 end
                 get 'tasks' do
                   node = ::Search::Zoekt::Node.find_or_initialize_by_task_request(params)
