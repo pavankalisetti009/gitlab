@@ -34219,7 +34219,8 @@ Represents a weight widget.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="workitemwidgetweightrolledupweight"></a>`rolledUpWeight` | [`Int`](#int) | Rolled up weight of the work item. |
+| <a id="workitemwidgetweightrolledupcompletedweight"></a>`rolledUpCompletedWeight` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.3. **Status**: Experiment. Rolled up weight from closed descendant work items. |
+| <a id="workitemwidgetweightrolledupweight"></a>`rolledUpWeight` **{warning-solid}** | [`Int`](#int) | **Introduced** in GitLab 17.2. **Status**: Experiment. Rolled up weight from descendant work items. |
 | <a id="workitemwidgetweighttype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetweightweight"></a>`weight` | [`Int`](#int) | Weight of the work item. |
 | <a id="workitemwidgetweightwidgetdefinition"></a>`widgetDefinition` | [`WorkItemWidgetDefinitionWeight`](#workitemwidgetdefinitionweight) | Weight widget definition. |
