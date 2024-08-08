@@ -8,6 +8,16 @@ module QA
     describe 'Utilization' do
       include Runtime::Fixtures
 
+      let(:group_paths) do
+        %i[
+          quality-e2e-tests
+          quality-e2e-tests-2
+          quality-e2e-tests-3
+          quality-e2e-tests-4
+          quality-e2e-tests-5
+        ]
+      end
+
       let(:admin_api_client) { Runtime::API::Client.as_admin }
       let(:group) do
         Resource::Sandbox.init do |resource|
@@ -39,6 +49,8 @@ module QA
       let(:project_test_data) { ['DO NOT MODIFY - Large Project', 'Test Limit'] }
 
       before do
+        cleanup_group_data
+
         Flow::Login.sign_in
 
         Runtime::Feature.enable(:namespace_storage_limit, group: group)
@@ -105,16 +117,8 @@ module QA
       end
 
       # Guide on how to create a group for this test with the necessary test data can be found in this runbook:
-      # https://gitlab.com/gitlab-org/quality/runbooks/-/blob/main/storage-limit-test-data-setup/index.md
+      # https://gitlab.com/gitlab-org/quality/runbooks/-/blob/main/storage-limit-test-data/index.md
       def available_group_path
-        group_paths = %i[
-          quality-e2e-tests
-          quality-e2e-tests-2
-          quality-e2e-tests-3
-          quality-e2e-tests-4
-          quality-e2e-tests-5
-        ]
-
         group_paths.each do |group_path|
           current_group = Resource::Sandbox.init do |resource|
             resource.api_client = admin_api_client
@@ -127,6 +131,24 @@ module QA
         end
 
         raise "All groups are all either currently in use or has old data that needs to be cleared"
+      end
+
+      def cleanup_group_data
+        group_paths.each do |group_path|
+          current_group = Resource::Sandbox.init do |resource|
+            resource.api_client = admin_api_client
+            resource.path = group_path
+          end.reload!
+
+          current_group.projects.each do |project|
+            project.inspect # Forces project attributes to be loaded reliably
+            next if project_test_data.include?(project.name)
+
+            # Check if project's created_at timestamp was more than 10 minutes ago
+            time_difference = (Time.now.utc - Time.parse(project.created_at)).abs
+            project.remove_via_api! if time_difference > 600
+          end
+        end
       end
     end
   end
