@@ -32596,9 +32596,6 @@ msgstr ""
 msgid "MemberRole|Permission"
 msgstr ""
 
-msgid "MemberRole|Permissions"
-msgstr ""
-
 msgid "MemberRole|Reverted to LDAP group sync settings. The role will be updated after the next LDAP sync."
 msgstr ""
 

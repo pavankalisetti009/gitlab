@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 module MemberRolesHelper
+  include ::GitlabSubscriptions::SubscriptionHelper
+
   def member_roles_data(group = nil)
     {
       documentation_path: help_page_path('user/custom_roles'),
@@ -18,6 +20,14 @@ module MemberRolesHelper
       group_settings_roles_and_permissions_path(root_group)
     elsif current_user&.can_admin_all_resources?
       admin_application_settings_roles_and_permissions_path
+    end
+  end
+
+  def member_role_edit_path(role)
+    if gitlab_com_subscription?
+      Gitlab::Routing.url_helpers.edit_group_settings_roles_and_permission_path(role.namespace, role)
+    else
+      Gitlab::Routing.url_helpers.edit_admin_application_settings_roles_and_permission_path(role)
     end
   end
 

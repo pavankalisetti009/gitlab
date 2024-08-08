@@ -2,7 +2,7 @@ import { GlModal, GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
-import CustomRolesDeleteModal from 'ee/roles_and_permissions/components/custom_roles_delete_modal.vue';
+import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import deleteMemberRoleMutation from 'ee/roles_and_permissions/graphql/delete_member_role.mutation.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -16,14 +16,14 @@ const getDeleteMutationHandler = (error) =>
 
 const defaultDeleteMutationHandler = getDeleteMutationHandler();
 
-describe('Custom roles delete modal', () => {
+describe('Delete role modal', () => {
   let wrapper;
 
   const createComponent = ({
     role = defaultRole,
     deleteMutationHandler = defaultDeleteMutationHandler,
   } = {}) => {
-    wrapper = shallowMount(CustomRolesDeleteModal, {
+    wrapper = shallowMount(DeleteRoleModal, {
       propsData: { role },
       apolloProvider: createMockApollo([[deleteMemberRoleMutation, deleteMutationHandler]]),
     });

@@ -75,7 +75,7 @@ export default {
 
 <template>
   <gl-modal
-    modal-id="custom-roles-delete-modal"
+    modal-id="delete-role-modal"
     :visible="Boolean(role)"
     :title="s__('MemberRole|Delete custom role?')"
     :action-primary="primaryActionProps"
