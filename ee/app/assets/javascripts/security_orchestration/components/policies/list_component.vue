@@ -238,13 +238,16 @@ export default {
       });
       this.$emit('update-policy-source', source);
     },
+    tooltipContent(enabled) {
+      return enabled ? this.$options.i18n.statusEnabled : this.$options.i18n.statusDisabled;
+    },
   },
   dateTimeFormat: DATE_ONLY_FORMAT,
   i18n: {
     inheritedLabel: s__('SecurityOrchestration|Inherited from %{namespace}'),
     inheritedShortLabel: s__('SecurityOrchestration|Inherited'),
-    statusEnabled: __('Enabled'),
-    statusDisabled: __('Disabled'),
+    statusEnabled: __('The policy is enabled'),
+    statusDisabled: __('The policy is disabled'),
     groupTypeLabel: s__('SecurityOrchestration|This group'),
     projectTypeLabel: s__('SecurityOrchestration|This project'),
   },
@@ -291,13 +294,12 @@ export default {
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties } }">
         <div class="gl-display-flex gl-gap-4">
           <gl-icon
-            v-if="enabled"
-            v-gl-tooltip="$options.i18n.statusEnabled"
-            :aria-label="$options.i18n.statusEnabled"
+            v-gl-tooltip.left="tooltipContent(enabled)"
+            class="gl-text-gray-200"
+            :aria-label="tooltipContent(enabled)"
+            :class="{ 'gl-text-green-700': enabled }"
             name="check-circle-filled"
-            class="gl-text-green-700"
           />
-          <span v-else class="gl-sr-only">{{ $options.i18n.statusDisabled }}</span>
 
           <breaking-changes-icon
             v-if="showBreakingChangesIcon(deprecatedProperties)"
