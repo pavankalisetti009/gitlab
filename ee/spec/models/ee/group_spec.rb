@@ -3998,5 +3998,19 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       it { is_expected.to eq(false) }
     end
+
+    describe 'share_with_group_lock' do
+      context 'when the namespace settings seat_control is set to user_cap', :saas do
+        before do
+          root_group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 1)
+        end
+
+        it 'cannot be set to false' do
+          root_group.update!(share_with_group_lock: false)
+
+          expect(root_group.share_with_group_lock).to eq(true)
+        end
+      end
+    end
   end
 end

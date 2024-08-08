@@ -726,6 +726,26 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
     end
   end
 
+  describe 'prevent project sharing setting', :saas do
+    context 'when user cap is enabled' do
+      before do
+        group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
+      end
+
+      it 'forces the setting on' do
+        visit edit_group_path(group, anchor: 'js-permissions-settings')
+
+        uncheck 'group_share_with_group_lock'
+
+        page.within('#js-permissions-settings') do
+          click_button 'Save changes'
+        end
+
+        expect(page).to have_checked_field('group_share_with_group_lock')
+      end
+    end
+  end
+
   def save_permissions_group
     within_testid('permissions-settings') do
       click_button 'Save changes'
