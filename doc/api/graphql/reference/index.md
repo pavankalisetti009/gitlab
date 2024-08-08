@@ -34499,6 +34499,7 @@ LLMs supported by the self-hosted model features.
 | <a id="aiacceptedselfhostedmodelscodellama"></a>`CODELLAMA` | Codellama 13B. |
 | <a id="aiacceptedselfhostedmodelscodellamacode"></a>`CODELLAMACODE` | Codellama 13B-code. |
 | <a id="aiacceptedselfhostedmodelscodestral"></a>`CODESTRAL` | Codestral 22B. |
+| <a id="aiacceptedselfhostedmodelsdeepseekcoder"></a>`DEEPSEEKCODER` | Deepseek Coder 1.3b, 6.7b and 33b base or instruct. |
 | <a id="aiacceptedselfhostedmodelsmistral"></a>`MISTRAL` | Mistral7B model from Mistral AI. |
 | <a id="aiacceptedselfhostedmodelsmixtral"></a>`MIXTRAL` | Mixtral8x22B model from Mistral AI. |
 

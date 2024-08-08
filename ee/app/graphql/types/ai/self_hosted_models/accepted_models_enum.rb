@@ -13,6 +13,8 @@ module Types
         value 'CODESTRAL', description: 'Codestral 22B.', value: 'codestral'
         value 'CODELLAMA', description: 'Codellama 13B.', value: 'codellama'
         value 'CODELLAMACODE', description: 'Codellama 13B-code.', value: 'codellama:code'
+        value 'DEEPSEEKCODER', description: 'Deepseek Coder 1.3b, 6.7b and 33b base or instruct.',
+          value: 'deepseekcoder'
       end
     end
   end
