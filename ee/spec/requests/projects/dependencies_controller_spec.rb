@@ -11,7 +11,6 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
     let(:params) { {} }
 
     before do
-      stub_feature_flags(project_level_sbom_occurrences: false)
       project.add_developer(developer)
       project.add_guest(guest)
 
@@ -29,10 +28,140 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
           stub_licensed_features(dependency_scanning: true, license_scanning: true, security_dashboard: true)
         end
 
-        context 'with existing report' do
+        context 'when project has sbom_occurrences' do
+          let(:user) { developer }
+
+          let_it_be(:occurrences) { create_list(:sbom_occurrence, 3, project: project) }
+
+          before do
+            get project_dependencies_path(project, **params, format: :json)
+          end
+
+          it 'returns data based on sbom occurrences' do
+            expected = occurrences.map do |occurrence|
+              {
+                'occurrence_id' => occurrence.id,
+                'vulnerability_count' => occurrence.vulnerability_count,
+                'name' => occurrence.name,
+                'packager' => occurrence.packager,
+                'version' => occurrence.version,
+                'location' => occurrence.location,
+                'licenses' => [::Gitlab::LicenseScanning::PackageLicenses::UNKNOWN_LICENSE]
+              }.deep_stringify_keys
+            end
+
+            expect(json_response['dependencies']).to match_array(expected)
+          end
+
+          it 'avoids N+1 queries' do
+            control_count = ActiveRecord::QueryRecorder
+              .new { get project_dependencies_path(project, **params, format: :json) }.count
+            create_list(:sbom_occurrence, 2, project: project)
+
+            expect { get project_dependencies_path(project, **params, format: :json) }
+              .not_to exceed_query_limit(control_count)
+          end
+
+          context 'with source types filter' do
+            let_it_be(:os_occurrence) { create(:sbom_occurrence, :os_occurrence, project: project) }
+            let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }
+
+            context 'when source_types param is present' do
+              let(:params) { { source_types: [:container_scanning_for_registry] } }
+
+              it 'returns data based on filtered sbom occurrences' do
+                expect(json_response['dependencies']).to match_array(
+                  hash_including('occurrence_id' => registry_occurrence.id))
+              end
+            end
+
+            context 'when source_types param is empty' do
+              let(:params) { { source_types: [] } }
+
+              it 'returns data based on DEFAULT_SOURCES' do
+                expected = ([os_occurrence] + occurrences).map { |o| hash_including('occurrence_id' => o.id) }
+                expect(json_response['dependencies']).to match_array(expected)
+              end
+            end
+          end
+
+          context 'when sorted by packager' do
+            let_it_be(:occurrences) do
+              [
+                create(:sbom_occurrence, :bundler, project: project),
+                create(:sbom_occurrence, :npm, project: project),
+                create(:sbom_occurrence, :yarn, project: project)
+              ]
+            end
+
+            let(:params) do
+              {
+                sort_by: 'packager',
+                sort: verse,
+                page: 1
+              }
+            end
+
+            context 'in descending order' do
+              let(:verse) { 'desc' }
+
+              it 'returns sorted list' do
+                expect(json_response['dependencies']).to be_sorted(by: :packager, verse: :desc)
+              end
+            end
+
+            context 'in ascending order' do
+              let(:verse) { 'asc' }
+
+              it 'returns sorted list' do
+                expect(json_response['dependencies']).to be_sorted(by: :packager, verse: :asc)
+              end
+            end
+          end
+
+          context 'when sorted by severity' do
+            let_it_be(:critical) { create(:sbom_occurrence, highest_severity: :critical, project: project) }
+            let_it_be(:high) { create(:sbom_occurrence, highest_severity: :high, project: project) }
+            let_it_be(:low) { create(:sbom_occurrence, highest_severity: :low, project: project) }
+
+            let(:params) do
+              {
+                sort_by: 'severity',
+                sort: verse,
+                page: 1
+              }
+            end
+
+            context 'in ascending order' do
+              let(:verse) { 'asc' }
+
+              it 'returns sorted list' do
+                nulls = json_response['dependencies'].first(3)
+                sorted = json_response['dependencies'].last(3)
+                expect(sorted.pluck('occurrence_id')).to eq([low.id, high.id, critical.id])
+                expect(nulls.pluck('occurrence_id')).to match_array(occurrences.pluck(:id))
+              end
+            end
+
+            context 'in descending order' do
+              let(:verse) { 'desc' }
+
+              it 'returns sorted list' do
+                sorted = json_response['dependencies'].first(3)
+                nulls = json_response['dependencies'].last(3)
+                expect(sorted.pluck('occurrence_id')).to eq([critical.id, high.id, low.id])
+                expect(nulls.pluck('occurrence_id')).to match_array(occurrences.pluck(:id))
+              end
+            end
+          end
+        end
+
+        context 'when project_level_sbom_occurrences is off' do
           let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_dependency_list_report, project: project) }
 
           before do
+            stub_feature_flags(project_level_sbom_occurrences: false)
+            project.set_latest_ingested_sbom_pipeline_id(pipeline.id)
             get project_dependencies_path(project, **params, format: :json)
           end
 
@@ -47,16 +176,6 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
             let(:user) { developer }
 
             include_examples 'paginated list'
-
-            it 'returns status ok' do
-              expect(json_response['report']['status']).to eq('ok')
-            end
-
-            it 'returns job path' do
-              job_path = "/#{project.full_path}/builds/#{pipeline.builds.last.id}"
-
-              expect(json_response['report']['job_path']).to eq(job_path)
-            end
 
             it 'returns success code' do
               expect(response).to have_gitlab_http_status(:ok)
@@ -149,155 +268,35 @@ RSpec.describe Projects::DependenciesController, feature_category: :dependency_m
               include_examples 'paginated list'
             end
           end
-        end
 
-        context 'with found cyclonedx report' do
-          let(:user) { developer }
-          let(:pipeline) { create(:ee_ci_pipeline, report_type, project: project) }
-          let(:report_type) { :with_dependency_list_report }
-          let(:build) { create(:ee_ci_build, :success, :cyclonedx, pipeline: pipeline) }
+          context 'when report doesn\'t have dependency list field' do
+            let(:user) { developer }
+            let(:expected_vulnerability) do
+              {
+                "id" => finding.vulnerability_id,
+                "name" => "Vulnerabilities in libxml2",
+                "severity" => "high"
+              }
+            end
 
-          before do
-            create(:pm_package, name: "nokogiri", purl_type: "gem",
-              other_licenses: [{ license_names: ["BSD-4-Clause"], versions: ["1.8.0"] }])
+            let_it_be(:pipeline) do
+              create(:ee_ci_pipeline, :with_dependency_scanning_report, project: project)
+            end
 
-            pipeline.builds << build
-            get project_dependencies_path(project, format: :json)
-          end
-
-          it 'includes license information in response' do
-            nokogiri = json_response['dependencies'].find { |dep| dep['name'] == 'nokogiri' }
-            url = "https://spdx.org/licenses/BSD-4-Clause.html"
-
-            expect(nokogiri['licenses']).to include({ "name" => "BSD-4-Clause", "url" => url })
-          end
-
-          context 'with FF enabled' do
-            let_it_be(:occurrence) { create(:sbom_occurrence, project: project) }
+            let_it_be(:finding) do
+              create(:vulnerabilities_finding, :detected, :with_dependency_scanning_metadata, pipeline: pipeline)
+            end
 
             before do
-              stub_feature_flags(project_level_sbom_occurrences: true)
-              get project_dependencies_path(project, **params, format: :json)
+              get project_dependencies_path(project, format: :json)
             end
 
-            it 'returns data based on sbom occurrences' do
-              expect(json_response['dependencies']).to match_array(hash_including('occurrence_id' => occurrence.id))
+            it 'returns dependencies with vulnerabilities' do
+              expect(json_response['dependencies'].count).to eq(1)
+              nokogiri = json_response['dependencies'].first
+              expect(nokogiri).not_to be_nil
+              expect(nokogiri['vulnerabilities'].first).to include(expected_vulnerability)
             end
-
-            it 'avoids N+1 queries' do
-              control_count = ActiveRecord::QueryRecorder
-                .new { get project_dependencies_path(project, **params, format: :json) }.count
-              create_list(:sbom_occurrence, 2, project: project)
-
-              expect { get project_dependencies_path(project, **params, format: :json) }
-                .not_to exceed_query_limit(control_count)
-            end
-
-            context 'without cyclonedx artifacts' do
-              let(:build) { create(:ee_ci_build, :success, :dependency_scanning, pipeline: pipeline) }
-
-              it 'does not returns any data due to job not being present' do
-                expect(json_response).to eq({ "report" => { "status" => "job_not_set_up" }, "dependencies" => [] })
-              end
-            end
-
-            context 'with only cyclonedx artifacts' do
-              let(:report_type) { :with_cyclonedx_report }
-
-              it 'returns data based on sbom occurrences' do
-                expect(json_response['dependencies']).to match_array(hash_including('occurrence_id' => occurrence.id))
-              end
-            end
-
-            context 'with source types filter' do
-              let_it_be(:os_occurrence) { create(:sbom_occurrence, :os_occurrence, project: project) }
-              let_it_be(:registry_occurrence) { create(:sbom_occurrence, :registry_occurrence, project: project) }
-
-              context 'when source_types param is present' do
-                let(:params) { { source_types: [:container_scanning_for_registry] } }
-
-                it 'returns data based on filtered sbom occurrences' do
-                  expect(json_response['dependencies']).to match_array(
-                    hash_including('occurrence_id' => registry_occurrence.id))
-                end
-              end
-
-              context 'when source_types param is empty' do
-                let(:params) { { source_types: [] } }
-
-                it 'returns data based on DEFAULT_SOURCES' do
-                  expect(json_response['dependencies']).to match_array([
-                    hash_including('occurrence_id' => os_occurrence.id),
-                    hash_including('occurrence_id' => occurrence.id)
-                  ])
-                end
-              end
-            end
-          end
-        end
-
-        context 'with a report of the wrong type' do
-          let(:user) { developer }
-          let!(:pipeline) { create(:ee_ci_pipeline, :with_license_scanning_report, project: project) }
-
-          before do
-            get project_dependencies_path(project, format: :json)
-          end
-
-          it 'returns job_not_set_up status' do
-            expect(json_response['report']['status']).to eq('job_not_set_up')
-          end
-
-          it 'returns a nil job_path' do
-            expect(json_response['report']['job_path']).to be_nil
-          end
-        end
-
-        context 'when report doesn\'t have dependency list field' do
-          let(:user) { developer }
-          let(:expected_vulnerability) do
-            {
-              "id" => finding.vulnerability_id,
-              "name" => "Vulnerabilities in libxml2",
-              "severity" => "high"
-            }
-          end
-
-          let_it_be(:pipeline) do
-            create(:ee_ci_pipeline, :with_dependency_scanning_report, project: project)
-          end
-
-          let_it_be(:finding) do
-            create(:vulnerabilities_finding, :detected, :with_dependency_scanning_metadata, pipeline: pipeline)
-          end
-
-          before do
-            get project_dependencies_path(project, format: :json)
-          end
-
-          it 'returns dependencies with vulnerabilities' do
-            expect(json_response['dependencies'].count).to eq(1)
-            nokogiri = json_response['dependencies'].first
-            expect(nokogiri).not_to be_nil
-            expect(nokogiri['vulnerabilities'].first).to include(expected_vulnerability)
-
-            expect(json_response['report']['status']).to eq('ok')
-          end
-        end
-
-        context 'when job failed' do
-          let(:user) { developer }
-          let!(:pipeline) { create(:ee_ci_pipeline, :success, project: project) }
-          let!(:build) { create(:ee_ci_build, :dependency_list, :failed, :allowed_to_fail) }
-
-          before do
-            pipeline.builds << build
-
-            get project_dependencies_path(project, format: :json)
-          end
-
-          it 'returns job_failed status' do
-            expect(json_response['report']['status']).to eq('job_failed')
           end
         end
 

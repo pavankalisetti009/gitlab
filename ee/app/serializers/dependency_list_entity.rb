@@ -7,17 +7,18 @@ class DependencyListEntity < Grape::Entity
 
   expose :dependencies, using: DependencyEntity
 
-  expose :report do
-    expose :status do |list, options|
-      status(list[:dependencies], options[:build])
+  expose :report, if: ->(_, options) { options[:pipeline] && can_read_job_path? } do
+    # This data structure is kept only to avoid a breaking change to the dependency list export.
+    # `pipeline` is from `project.latest_ingested_sbom_pipeline` and as long as it exists we
+    # can assume that report ingestion was successful.
+    expose :status, proc: ->(_) { :ok }
+
+    expose :job_path do |_, options|
+      project_pipeline_path(project, options[:pipeline].id)
     end
 
-    expose :job_path, if: ->(_, options) { options[:build] && can_read_job_path? } do |_, options|
-      project_build_path(project, options[:build].id)
-    end
-
-    expose :generated_at, if: ->(_, options) { options[:build] && can_read_job_path? } do |_, options|
-      options[:build].finished_at
+    expose :generated_at do |_, options|
+      options[:pipeline].finished_at
     end
   end
 
@@ -29,19 +30,5 @@ class DependencyListEntity < Grape::Entity
 
   def project
     request.try(:project)
-  end
-
-  def status(dependencies, build)
-    if build&.success? || project.nil?
-      if dependencies.any?
-        :ok
-      else
-        :no_dependencies
-      end
-    elsif build&.failed?
-      :job_failed
-    else
-      :job_not_set_up
-    end
   end
 end
