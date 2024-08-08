@@ -22,6 +22,8 @@ module ComplianceManagement
       through: :compliance_framework_security_policies,
       source: :policy_configuration
 
+    has_many :compliance_requirements, class_name: 'ComplianceManagement::ComplianceFramework::ComplianceRequirement'
+
     validates :namespace, presence: true
     validates :name, presence: true, length: { maximum: 255 }
     validates :description, presence: true, length: { maximum: 255 }

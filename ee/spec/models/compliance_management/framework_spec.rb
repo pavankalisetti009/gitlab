@@ -21,6 +21,11 @@ RSpec.describe ComplianceManagement::Framework, models: true, feature_category: 
       is_expected.to have_many(:security_orchestration_policy_configurations)
         .class_name('Security::OrchestrationPolicyConfiguration').through(:compliance_framework_security_policies)
     }
+
+    it {
+      is_expected.to have_many(:compliance_requirements)
+        .class_name('ComplianceManagement::ComplianceFramework::ComplianceRequirement')
+    }
   end
 
   describe 'validations' do
