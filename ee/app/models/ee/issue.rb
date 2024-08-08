@@ -126,6 +126,7 @@ module EE
       has_many :resource_weight_events
 
       has_many :observability_metrics, class_name: 'Observability::MetricsIssuesConnection', inverse_of: :issue
+      has_many :observability_logs, class_name: 'Observability::LogsIssuesConnection', inverse_of: :issue
 
       has_one :synced_epic, class_name: 'Epic', foreign_key: 'issue_id', inverse_of: :work_item, dependent: :destroy
       alias_method :sync_object, :synced_epic
