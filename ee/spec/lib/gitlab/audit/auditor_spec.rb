@@ -81,48 +81,6 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
         end
       end
 
-      shared_examples 'when sync_audit_events_to_new_tables is disabled does not create audit event' do
-        before do
-          stub_feature_flags(sync_audit_events_to_new_tables: false)
-        end
-
-        context "when entity type is 'Project'" do
-          let(:scope) { build_stubbed(:project) }
-          let(:target) { scope }
-
-          it 'does not sync audit event into "AuditEvents::ProjectAuditEvent"' do
-            expect { audit! }.to change { AuditEvents::ProjectAuditEvent.count }.by(0)
-          end
-        end
-
-        context "when entity type is 'Group'" do
-          let(:scope) { build_stubbed(:group) }
-          let(:target) { scope }
-
-          it 'does not sync audit event into "AuditEvents::GroupAuditEvent"' do
-            expect { audit! }.to change { AuditEvents::GroupAuditEvent.count }.by(0)
-          end
-        end
-
-        context "when entity type is 'User'" do
-          let(:scope) { build_stubbed(:user) }
-          let(:target) { scope }
-
-          it 'does not sync audit event into "AuditEvents::UserAuditEvent"' do
-            expect { audit! }.to change { AuditEvents::UserAuditEvent.count }.by(0)
-          end
-        end
-
-        context "when entity type is 'Gitlab::Audit::InstanceScope'" do
-          let(:scope) { Gitlab::Audit::InstanceScope.new }
-          let(:target) { build_stubbed(:user) }
-
-          it 'syncs audit event into "AuditEvents::InstanceAuditEvent"' do
-            expect { audit! }.to change { ::AuditEvents::InstanceAuditEvent.count }.by(0)
-          end
-        end
-      end
-
       shared_examples 'when audit event is invalid' do
         let(:scope) { Gitlab::Audit::InstanceScope.new }
         let(:target) { build_stubbed(:user) }
@@ -391,63 +349,55 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
           it_behaves_like 'only streamed'
         end
 
-        it_behaves_like "when sync_audit_events_to_new_tables is disabled does not create audit event"
+        context "when entity type is 'Project'" do
+          let(:scope) { build_stubbed(:project) }
+          let(:target) { scope }
+          let(:expected_count) { 2 }
 
-        context 'when sync_audit_events_to_new_tables is enabled' do
-          before do
-            stub_feature_flags(sync_audit_events_to_new_tables: true)
-          end
+          it_behaves_like 'common audit event attributes', 'AuditEvents::ProjectAuditEvent', 'project'
+        end
 
-          context "when entity type is 'Project'" do
-            let(:scope) { build_stubbed(:project) }
-            let(:target) { scope }
-            let(:expected_count) { 2 }
+        context "when entity type is 'Group'" do
+          let(:scope) { build_stubbed(:group) }
+          let(:target) { scope }
+          let(:expected_count) { 2 }
 
-            it_behaves_like 'common audit event attributes', 'AuditEvents::ProjectAuditEvent', 'project'
-          end
+          it_behaves_like 'common audit event attributes', 'AuditEvents::GroupAuditEvent', 'group'
+        end
 
-          context "when entity type is 'Group'" do
-            let(:scope) { build_stubbed(:group) }
-            let(:target) { scope }
-            let(:expected_count) { 2 }
+        context "when entity type is 'User'" do
+          let(:scope) { build_stubbed(:user) }
+          let(:target) { scope }
+          let(:expected_count) { 2 }
 
-            it_behaves_like 'common audit event attributes', 'AuditEvents::GroupAuditEvent', 'group'
-          end
+          it_behaves_like 'common audit event attributes', 'AuditEvents::UserAuditEvent', 'user'
+        end
 
-          context "when entity type is 'User'" do
-            let(:scope) { build_stubbed(:user) }
-            let(:target) { scope }
-            let(:expected_count) { 2 }
+        context "when entity type is 'Gitlab::Audit::InstanceScope'" do
+          let(:scope) { Gitlab::Audit::InstanceScope.new }
+          let(:target) { build_stubbed(:user) }
 
-            it_behaves_like 'common audit event attributes', 'AuditEvents::UserAuditEvent', 'user'
-          end
+          it 'syncs audit event into "AuditEvents::InstanceAuditEvent"', :aggregate_failures do
+            expect { audit! }.to change { ::AuditEvents::InstanceAuditEvent.count }.by(2)
 
-          context "when entity type is 'Gitlab::Audit::InstanceScope'" do
-            let(:scope) { Gitlab::Audit::InstanceScope.new }
-            let(:target) { build_stubbed(:user) }
+            created_audit_events = ::AuditEvents::InstanceAuditEvent.order(:id).limit(2)
+            audit_events = AuditEvent.order(:id).limit(2)
 
-            it 'syncs audit event into "AuditEvents::InstanceAuditEvent"', :aggregate_failures do
-              expect { audit! }.to change { ::AuditEvents::InstanceAuditEvent.count }.by(2)
-
-              created_audit_events = ::AuditEvents::InstanceAuditEvent.order(:id).limit(2)
-              audit_events = AuditEvent.order(:id).limit(2)
-
-              created_audit_events.zip(audit_events).each do |created_event, audit_event|
-                expect(created_event).to have_attributes(
-                  id: audit_event.id,
-                  author_id: author.id,
-                  target_id: target.id,
-                  event_name: name,
-                  author_name: author.name,
-                  entity_path: "gitlab_instance",
-                  target_details: target.name,
-                  target_type: "User")
-              end
+            created_audit_events.zip(audit_events).each do |created_event, audit_event|
+              expect(created_event).to have_attributes(
+                id: audit_event.id,
+                author_id: author.id,
+                target_id: target.id,
+                event_name: name,
+                author_name: author.name,
+                entity_path: "gitlab_instance",
+                target_details: target.name,
+                target_type: "User")
             end
           end
-
-          it_behaves_like 'when audit event is invalid'
         end
+
+        it_behaves_like 'when audit event is invalid'
       end
 
       context 'when recording single event' do
@@ -476,59 +426,51 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
 
         it_behaves_like 'logs event to database'
 
-        it_behaves_like "when sync_audit_events_to_new_tables is disabled does not create audit event"
+        context "when entity type is 'Project'" do
+          let(:scope) { build_stubbed(:project) }
+          let(:target) { scope }
+          let(:expected_count) { 1 }
 
-        context 'when sync_audit_events_to_new_tables is enabled' do
-          before do
-            stub_feature_flags(sync_audit_events_to_new_tables: true)
-          end
-
-          context "when entity type is 'Project'" do
-            let(:scope) { build_stubbed(:project) }
-            let(:target) { scope }
-            let(:expected_count) { 1 }
-
-            it_behaves_like 'common audit event attributes', 'AuditEvents::ProjectAuditEvent', 'project'
-          end
-
-          context "when entity type is 'Group'" do
-            let(:scope) { build_stubbed(:group) }
-            let(:target) { scope }
-            let(:expected_count) { 1 }
-
-            it_behaves_like 'common audit event attributes', 'AuditEvents::GroupAuditEvent', 'group'
-          end
-
-          context "when entity type is 'User'" do
-            let(:scope) { build_stubbed(:user) }
-            let(:target) { scope }
-            let(:expected_count) { 1 }
-
-            it_behaves_like 'common audit event attributes', 'AuditEvents::UserAuditEvent', 'user'
-          end
-
-          context "when entity type is 'Gitlab::Audit::InstanceScope'" do
-            let(:scope) { Gitlab::Audit::InstanceScope.new }
-            let(:target) { build_stubbed(:user) }
-
-            it 'syncs audit event into "AuditEvents::InstanceAuditEvent"', :aggregate_failures do
-              expect { audit! }.to change { ::AuditEvents::InstanceAuditEvent.count }.by(1)
-
-              expect(::AuditEvents::InstanceAuditEvent.last).to have_attributes(
-                id: AuditEvent.last.id,
-                author_id: author.id,
-                target_id: target.id,
-                event_name: name,
-                author_name: author.name,
-                entity_path: "gitlab_instance",
-                target_details: target.name,
-                target_type: "User"
-              )
-            end
-          end
-
-          it_behaves_like 'when audit event is invalid'
+          it_behaves_like 'common audit event attributes', 'AuditEvents::ProjectAuditEvent', 'project'
         end
+
+        context "when entity type is 'Group'" do
+          let(:scope) { build_stubbed(:group) }
+          let(:target) { scope }
+          let(:expected_count) { 1 }
+
+          it_behaves_like 'common audit event attributes', 'AuditEvents::GroupAuditEvent', 'group'
+        end
+
+        context "when entity type is 'User'" do
+          let(:scope) { build_stubbed(:user) }
+          let(:target) { scope }
+          let(:expected_count) { 1 }
+
+          it_behaves_like 'common audit event attributes', 'AuditEvents::UserAuditEvent', 'user'
+        end
+
+        context "when entity type is 'Gitlab::Audit::InstanceScope'" do
+          let(:scope) { Gitlab::Audit::InstanceScope.new }
+          let(:target) { build_stubbed(:user) }
+
+          it 'syncs audit event into "AuditEvents::InstanceAuditEvent"', :aggregate_failures do
+            expect { audit! }.to change { ::AuditEvents::InstanceAuditEvent.count }.by(1)
+
+            expect(::AuditEvents::InstanceAuditEvent.last).to have_attributes(
+              id: AuditEvent.last.id,
+              author_id: author.id,
+              target_id: target.id,
+              event_name: name,
+              author_name: author.name,
+              entity_path: "gitlab_instance",
+              target_details: target.name,
+              target_type: "User"
+            )
+          end
+        end
+
+        it_behaves_like 'when audit event is invalid'
 
         it 'does not bulk insert and uses save to insert' do
           expect(AuditEvent).not_to receive(:bulk_insert!)
