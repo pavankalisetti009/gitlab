@@ -127,7 +127,7 @@ To resolve the vulnerability:
 A merge request containing the AI remediation suggestions is opened. Review the suggested changes,
 then process the merge request according to your standard workflow.
 
-## Availability
+### Availability
 
 Vulnerability Resolution is available for a subset of the SAST rules that we cover. We are continually testing and adding more rules to this feature.
 
@@ -179,6 +179,19 @@ Vulnerability Resolution is available for a subset of the SAST rules that we cov
   <li>CWE-1275: Sensitive Cookie with Improper SameSite Attribute</li>
 </ul>
 </details>
+
+### Troubleshooting
+
+Occasionally the Vulnerability Resolution may not work as expected. Please use the following
+resources to troubleshoot:
+
+- You may be presented with a message indicating that the AI model has determined that the
+  vulnerability is a false positive. Use this feature with caution and always verify the AI model's
+  response.
+- "Upstream" errors - this may indicate an issue with our third-party AI. Please try again, and
+  report to GitLab if the error continues.
+- General errors, such as "an unexpected error has occurred" - this may indicate an issue within
+  GitLab Duo. Please try again, and report to GitLab if the error continues.
 
 ### Data shared with third-party AI APIs for vulnerability resolution
 
