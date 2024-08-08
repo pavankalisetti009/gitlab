@@ -114,7 +114,7 @@ module Gitlab
             internal: true
           },
           review_merge_request: {
-            service_class: ::Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest,
+            service_class: ::Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest,
             prompt_class: ::Gitlab::Llm::Templates::ReviewMergeRequest,
             feature_category: :code_review_workflow,
             execute_method: ::Llm::ReviewMergeRequestService,

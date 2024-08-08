@@ -25,19 +25,39 @@ module Gitlab
         #
         INPUT_CONTENT_LIMIT = INPUT_TOKEN_LIMIT * 4
 
+        SYSTEM_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_system(
+          <<~PROMPT.chomp
+          You are acting as the reviewer for this merge request and MUST respond in first person as if you reviewed it and should always use 'I'. You are provided with the corresponding code comment. Use this information to create an overall summary which MUST mention the types of comments left, a comment can be either: question or recommendation. This summary MUST NOT be longer than 3 sentences. This summary MUST give an indication of the topics the review covered. The summary MUST be written in present simple tense and MUST be as concise as possible. The summary MUST also include an estimate of the overall work needed, using any of the following: "small amount of work, decent amount or significant work required" but the comment MUST make sure to note this is only an estimate, for example, "I estimate there is...".
+          PROMPT
+        )
+
+        USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
+          <<~PROMPT.chomp
+            Code review comments: %<draft_notes_content>s
+          PROMPT
+        )
+
         def initialize(draft_notes)
           @draft_notes = draft_notes
         end
 
         def to_prompt
-          <<~PROMPT
-          You are acting as the reviewer for this merge request and MUST respond in first person as if you reviewed it and should always use 'I'. You are provided with the corresponding code comment. Use this information to create an overall summary which MUST mention the types of comments left, a comment can be either: question or recommendation. This summary MUST NOT be longer than 3 sentences. This summary MUST give an indication of the topics the review covered. The summary MUST be written in present simple tense and MUST be as concise as possible. The summary MUST also include an estimate of the overall work needed, using any of the following: "small amount of work, decent amount or significant work required" but the comment MUST make sure to note this is only an estimate, for example, "I estimate there is...". Code review comments:
-
-          #{draft_notes_content}
-          PROMPT
+          {
+            messages: Gitlab::Llm::Chain::Utils::Prompt.role_conversation(
+              Gitlab::Llm::Chain::Utils::Prompt.format_conversation([USER_MESSAGE], variables)
+            ),
+            system: Gitlab::Llm::Chain::Utils::Prompt.no_role_text([SYSTEM_MESSAGE], {}),
+            model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET
+          }
         end
 
         private
+
+        def variables
+          {
+            draft_notes_content: draft_notes_content
+          }
+        end
 
         attr_reader :draft_notes
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_category: :code_review_workflow do
   let(:review_prompt_class) { Gitlab::Llm::Templates::ReviewMergeRequest }
   let(:summary_prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
   let(:tracking_context) { { action: :review_merge_request, request_id: 'uuid' } }
@@ -63,8 +63,8 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
   subject(:completion) { described_class.new(review_prompt_message, review_prompt_class, options) }
 
   describe '#execute' do
-    let(:review_prompt) { 'This is a review prompt' }
-    let(:summary_prompt) { 'This is a summary prompt' }
+    let(:review_prompt) { { messages: ['This is a review prompt'] } }
+    let(:summary_prompt) { { messages: ['This is a summary prompt'] } }
     let(:payload_parameters) do
       {
         temperature: 0,
@@ -83,28 +83,23 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
         allow(template).to receive(:to_prompt).and_return(summary_prompt)
       end
 
-      allow(::Gitlab::Llm::VertexAi::Configuration)
-        .to receive(:payload_parameters)
-        .with(temperature: 0)
-        .and_return(payload_parameters)
-
-      allow_next_instance_of(Gitlab::Llm::VertexAi::Client, user,
+      allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
         unit_primitive: 'review_merge_request',
         tracking_context: tracking_context
       ) do |client|
         allow(client)
-          .to receive(:chat)
-          .with(content: review_prompt, parameters: payload_parameters)
-          .and_return(review_response.to_json)
+          .to receive(:messages_complete)
+          .with(review_prompt)
+          .and_return(review_response)
       end
 
-      allow_next_instance_of(Gitlab::Llm::VertexAi::Client, user,
+      allow_next_instance_of(Gitlab::Llm::Anthropic::Client, user,
         unit_primitive: 'summarize_review',
         tracking_context: tracking_context
       ) do |client|
         allow(client)
-          .to receive(:text)
-          .with(content: summary_prompt)
+          .to receive(:messages_complete)
+          .with(summary_prompt)
           .and_return(summary_response.to_json)
       end
     end
@@ -113,7 +108,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
       let(:review_prompt) { nil }
 
       it 'does not make a request to AI provider' do
-        expect(Gitlab::Llm::VertexAi::Client).not_to receive(:new)
+        expect(Gitlab::Llm::Anthropic::Client).not_to receive(:new)
 
         completion.execute
       end
@@ -121,31 +116,10 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::ReviewMergeRequest, feature_c
 
     context 'when the chat client returns a successful response' do
       let(:review_answer) { 'Helpful review with suggestions' }
-      let(:review_response) do
-        {
-          "predictions" => [
-            {
-              "content" => review_answer,
-              "safetyAttributes" => {
-                "categories" => ["Violent"],
-                "scores" => [0.4000000059604645],
-                "blocked" => false
-              }
-            }
-          ]
-        }
-      end
+      let(:review_response) { { content: [{ text: review_answer }] } }
 
       let(:summary_answer) { 'Helpful review summary' }
-      let(:summary_response) do
-        {
-          "predictions" => [
-            {
-              "content" => summary_answer
-            }
-          ]
-        }
-      end
+      let(:summary_response) { { content: [{ text: summary_answer }] } }
 
       it 'creates diff notes on new and updated files' do
         completion.execute

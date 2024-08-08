@@ -2,10 +2,11 @@
 
 module Gitlab
   module Llm
-    module VertexAi
+    module Anthropic
       module Completions
         class ReviewMergeRequest < Gitlab::Llm::Completions::Base
           DRAFT_NOTES_COUNT_LIMIT = 50
+          OUTPUT_TOKEN_LIMIT = 8000
 
           def execute
             create_progress_note
@@ -35,6 +36,14 @@ module Gitlab
 
           private
 
+          def ai_client(user, unit_primitive)
+            ::Gitlab::Llm::Anthropic::Client.new(
+              user,
+              unit_primitive: unit_primitive,
+              tracking_context: tracking_context
+            )
+          end
+
           def review_bot
             Users::Internal.duo_code_review_bot
           end
@@ -48,24 +57,17 @@ module Gitlab
           end
 
           def review_response_for(user, prompt)
-            response = ::Gitlab::Llm::VertexAi::Client
-              .new(user, unit_primitive: 'review_merge_request', tracking_context: tracking_context)
-              .chat(
-                content: prompt,
-                parameters: ::Gitlab::Llm::VertexAi::Configuration.payload_parameters(temperature: 0)
-              )
+            response = ai_client(user, "review_merge_request").messages_complete(**prompt)
 
-            ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+            ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
 
           def summary_response_for(user, draft_notes)
             summary_prompt = Gitlab::Llm::Templates::SummarizeReview.new(draft_notes).to_prompt
 
-            response = ::Gitlab::Llm::VertexAi::Client
-              .new(user, unit_primitive: 'summarize_review', tracking_context: tracking_context)
-              .text(content: summary_prompt)
+            response = ai_client(user, "summarize_review").messages_complete(**summary_prompt)
 
-            ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+            ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
           end
 
           def draft_notes_limit_reached?

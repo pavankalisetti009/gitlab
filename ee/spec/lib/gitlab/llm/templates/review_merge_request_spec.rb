@@ -8,30 +8,40 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
     let(:new_path) { 'NEW.md' }
     let(:hunk) { '-Welcome\n-This is a new file+Welcome!\n+This is a new file.' }
 
-    subject(:prompt) { described_class.new(new_path, diff, hunk).to_prompt }
+    let(:prompt) { described_class.new(new_path, diff, hunk).to_prompt }
+
+    subject(:user_prompt) { prompt&.dig(:messages, 0, :content) }
 
     it 'includes new_path' do
-      expect(prompt).to include(new_path)
+      expect(user_prompt).to include(new_path)
     end
 
     it 'includes diff' do
-      expect(prompt).to include(" # NEW\n \n-Welcome\n-This is a new file\n+Welcome!\n+This is a new file.")
+      expect(user_prompt).to include(" # NEW\n \n-Welcome\n-This is a new file\n+Welcome!\n+This is a new file.")
     end
 
     it 'does not include git diff prefix' do
-      expect(prompt).not_to include('@@ -1,4 +1,4 @@')
+      expect(user_prompt).not_to include('@@ -1,4 +1,4 @@')
     end
 
     it 'includes hunk' do
-      expect(prompt).to include(hunk)
+      expect(user_prompt).to include(hunk)
     end
 
     context 'when diff is blank' do
       let(:diff) { '' }
 
       it 'returns nil' do
-        expect(prompt).to be_nil
+        expect(user_prompt).to be_nil
       end
+    end
+
+    it 'uses Claude 3.5 Sonnet' do
+      expect(prompt[:model]).to eq(::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET)
+    end
+
+    it 'specifies the system prompt' do
+      expect(prompt[:system]).to eq(described_class::SYSTEM_MESSAGE[1])
     end
   end
 end
