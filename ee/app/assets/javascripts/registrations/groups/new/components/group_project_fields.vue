@@ -259,7 +259,7 @@ export default {
       ><span data-testid="url-project-path">{{ projectPath }}</span>
     </p>
 
-    <p class="form-text text-muted gl-text-center gl-mb-5!">
+    <p class="form-text gl-text-subtle gl-text-center !gl-mb-5">
       {{ $options.i18n.urlFooter }}
     </p>
 

@@ -130,7 +130,7 @@ export default {
         label-for="sla-duration"
         :state="showValidFeedback"
       >
-        <div class="gl-display-flex gl-flex-direction-row">
+        <div class="gl-flex gl-flex-row">
           <gl-form-input
             id="sla-duration"
             v-model="duration"
