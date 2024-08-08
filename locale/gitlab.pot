@@ -25990,9 +25990,6 @@ msgstr ""
 msgid "Groups"
 msgstr ""
 
-msgid "Groups (%{count})"
-msgstr ""
-
 msgid "Groups API rate limits"
 msgstr ""
 
@@ -42487,9 +42484,6 @@ msgid "ProjectView|Wiki"
 msgstr ""
 
 msgid "Projects"
-msgstr ""
-
-msgid "Projects (%{count})"
 msgstr ""
 
 msgid "Projects API"
