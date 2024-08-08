@@ -47,4 +47,25 @@ RSpec.describe EE::MergeRequestAiEntity, feature_category: :ai_abstraction_layer
       expect(basic_entity[:diff]).to include("--- CHANGELOG")
     end
   end
+
+  context "with mr comments and diff on the entity" do
+    let!(:note) { create(:note_on_merge_request, noteable: merge_request, project: merge_request.project) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need create it
+
+    it "exposes the number of comments" do
+      expect(basic_entity[:mr_comments]).to match_array([note.note])
+    end
+
+    it "exposes the diff information" do
+      expect(basic_entity[:diff]).to include("--- CHANGELOG")
+    end
+
+    it "ensures diff comes before mr_comments if serialized" do
+      json = entity.as_json
+      keys = json.keys
+      mr_comments_index = keys.index(:mr_comments)
+      diff_index = keys.index(:diff)
+
+      expect(diff_index).to be < mr_comments_index
+    end
+  end
 end
