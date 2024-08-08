@@ -230,30 +230,6 @@ RSpec.describe Gitlab::Elastic::GroupSearchResults, :elastic, feature_category: 
         assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
       end
     end
-
-    context 'if the advanced_search_project_traversal_ids_query flag is disabled' do
-      before do
-        stub_feature_flags(advanced_search_project_traversal_ids_query: false)
-      end
-
-      context 'if the user is authorized to view the group' do
-        it 'has a project id inclusion filter' do
-          group.add_owner(user)
-
-          results.objects(scope)
-
-          assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
-        end
-      end
-
-      context 'if the user is not authorized to view the group' do
-        it 'has a project id inclusion filter' do
-          results.objects(scope)
-
-          assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
-        end
-      end
-    end
   end
 
   context 'epics search', :sidekiq_inline do

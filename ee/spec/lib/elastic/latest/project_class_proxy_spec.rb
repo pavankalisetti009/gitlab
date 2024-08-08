@@ -69,19 +69,6 @@ RSpec.describe Elastic::Latest::ProjectClassProxy, feature_category: :global_sea
               assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
             end
           end
-
-          context 'when the feature flag has not been enabled' do
-            before_all do
-              stub_feature_flags(advanced_search_project_traversal_ids_query: false)
-              group.add_developer(user)
-            end
-
-            it 'has the correct named queries' do
-              elastic_search.response
-
-              assert_named_queries('project:membership:id', without: ['project:ancestry_filter:descendants'])
-            end
-          end
         end
       end
 

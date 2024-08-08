@@ -67,16 +67,11 @@ module Elastic
 
       def namespace_for_traversal_ids_filter(options)
         return unless options[:group_id]
-        return unless traversal_ids_flag_enabled?(options)
+        return unless options[:current_user]
         return if should_use_project_ids_filter?(options)
 
         group = Group.find(options[:group_id])
         group if options[:current_user].authorized_groups.include?(group)
-      end
-
-      def traversal_ids_flag_enabled?(options)
-        options[:current_user] &&
-          Feature.enabled?(:advanced_search_project_traversal_ids_query, options[:current_user], type: :gitlab_com_derisk)
       end
 
       def prefix_traversal_id_query(namespace, options)
