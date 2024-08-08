@@ -14,18 +14,21 @@ module CloudConnector
         end
 
         def execute(*)
-          return success(host_reachable_text) if reachable?
+          succeeded, message = *connection_succeeded?
+          return failure(message) unless succeeded
 
-          failure(host_unreachable_text)
+          success(message)
         end
 
         private
 
-        def reachable?
+        def connection_succeeded?
           conn = TCPSocket.new(@host, @port, connect_timeout: 5)
-          true
+          [true, host_reachable_text]
         rescue Errno::ENETUNREACH, Errno::EHOSTUNREACH
-          false
+          [false, host_unreachable_text]
+        rescue StandardError => e
+          [false, connection_failed_text(e)]
         ensure
           conn&.close
         end
@@ -42,6 +45,10 @@ module CloudConnector
 
         def host_unreachable_text
           format(_('%{host} could not be reached. %{cta}'), host: @host, cta: networking_cta)
+        end
+
+        def connection_failed_text(error)
+          format(_('%{host} connection failed: %{error}.'), host: @host, error: error.message)
         end
       end
     end
