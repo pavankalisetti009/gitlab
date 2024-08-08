@@ -144,7 +144,13 @@ describe('ee merge request widget options', () => {
           },
         });
         await waitForPromises();
-        Vue.set(wrapper.vm.mr, 'state', 'nothingToMerge');
+
+        wrapper.vm.mr = {
+          ...wrapper.vm.mr,
+          setGraphqlData: jest.fn(),
+          state: 'nothingToMerge',
+        };
+
         await nextTick();
         expect(findLoadingComponent().exists()).toBe(false);
         expect(findApprovalsWidget().exists()).toBe(false);
@@ -157,7 +163,13 @@ describe('ee merge request widget options', () => {
           },
         });
         await waitForPromises();
-        Vue.set(wrapper.vm.mr, 'state', 'readyToMerge');
+
+        wrapper.vm.mr = {
+          ...wrapper.vm.mr,
+          setGraphqlData: jest.fn(),
+          state: 'readyToMerge',
+        };
+
         await nextTick();
         expect(findApprovalsWidget().exists()).toBe(true);
       });
