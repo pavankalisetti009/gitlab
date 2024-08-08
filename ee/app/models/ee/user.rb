@@ -290,6 +290,19 @@ module EE
       end
     end
 
+    def should_use_security_policy_bot_avatar?
+      security_policy_bot? && ::Feature.enabled?(:security_policy_bot_shared_avatar, projects.first)
+    end
+
+    def security_policy_bot_static_avatar_path(size = nil)
+      if Avatarable::USER_AVATAR_SIZES.include?(size)
+        avatar_image = ActionController::Base.helpers.image_path("bot_avatars/security-bot_#{size}.png")
+        return ::Gitlab::Utils.append_path(Settings.gitlab.base_url, avatar_image)
+      end
+
+      ::Gitlab::Utils.append_path(Settings.gitlab.base_url, ActionController::Base.helpers.image_path('bot_avatars/security-bot.png'))
+    end
+
     override :toggle_star
     def toggle_star(project)
       super
