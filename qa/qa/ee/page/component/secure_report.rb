@@ -39,8 +39,7 @@ module QA
             if has_element?("filtered-search-term", wait: 1)
               click_element('filtered-search-term')
               click_link('Tool')
-              selector = "tool-search-token-suggestion-#{report.upcase.sub(' ', '_')}"
-              click_element(selector)
+              click_link(report)
               click_element("search-button")
               click_element("search-button") # Click twice to make dropdown go away
             else

@@ -109,11 +109,7 @@ module QA
       end
 
       it 'displays security reports in the project security dashboard',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037',
-        quarantine: {
-          type: :stale,
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461959'
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037' do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
@@ -123,25 +119,25 @@ module QA
         EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_load)
 
         EE::Page::Project::Secure::Show.perform do |dashboard|
-          filter_report_and_perform(page: dashboard, filter_report: "Dependency Scanning") do
+          filter_report_and_perform(page: dashboard, filter_report: "gemnasium") do
             expect(dashboard).to have_vulnerability dependency_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Container Scanning") do
+          filter_report_and_perform(page: dashboard, filter_report: "Trivy") do
             expect(dashboard).to have_vulnerability container_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "SAST") do
+          filter_report_and_perform(page: dashboard, filter_report: "Brakeman") do
             expect(dashboard).to have_vulnerability sast_scan_example_vuln
             expect(dashboard).to have_vulnerability sast_scan_fp_example_vuln
             expect(dashboard).to have_false_positive_vulnerability
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "DAST") do
+          filter_report_and_perform(page: dashboard, filter_report: "GitLab API Security") do
             expect(dashboard).to have_vulnerability dast_scan_example_vuln
           end
 
-          filter_report_and_perform(page: dashboard, filter_report: "Secret Detection") do
+          filter_report_and_perform(page: dashboard, filter_report: "Gitleaks") do
             expect(dashboard).to have_vulnerability secret_detection_vuln
           end
         end
