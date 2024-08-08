@@ -99,9 +99,6 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
         context 'and user is allowed to access group level dependencies' do
           let(:expected_response) do
             {
-              'report' => {
-                'status' => 'no_dependencies'
-              },
               'dependencies' => []
             }
           end
@@ -141,9 +138,6 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
             let(:expected_response) do
               {
-                'report' => {
-                  'status' => 'ok'
-                },
                 'dependencies' => [
                   {
                     'name' => sbom_occurrence_npm.name,

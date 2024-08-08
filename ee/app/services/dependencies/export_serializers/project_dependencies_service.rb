@@ -36,8 +36,8 @@ module Dependencies
         ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
       end
 
-      def report_fetch_service
-        @report_fetch_service ||= ::Security::ReportFetchService.new(project, job_artifacts)
+      def pipeline
+        @pipeline ||= project.latest_ingested_sbom_pipeline
       end
 
       def job_artifacts
@@ -47,7 +47,7 @@ module Dependencies
       def serializer_parameters
         {
           request: EntityRequest.new({ project: project, user: author }),
-          build: report_fetch_service.build,
+          pipeline: pipeline,
           project: project,
           include_vulnerabilities: true
         }

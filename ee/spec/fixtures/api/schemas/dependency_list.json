@@ -1,8 +1,7 @@
 {
   "type": "object",
   "required": [
-    "dependencies",
-    "report"
+    "dependencies"
   ],
   "properties": {
     "dependencies": {

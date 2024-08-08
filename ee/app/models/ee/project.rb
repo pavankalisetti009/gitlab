@@ -618,10 +618,6 @@ module EE
                                   .then { |pipeline_id| ::Ci::Pipeline.find_by_id(pipeline_id) if pipeline_id }
     end
 
-    def latest_default_branch_pipeline_with_reports(reports)
-      latest_pipeline_with_reports_for_ref(default_branch, reports)
-    end
-
     def latest_pipeline_with_reports_for_ref(ref, reports)
       all_pipelines.success.newest_first(ref: ref).with_reports(reports).take
     end

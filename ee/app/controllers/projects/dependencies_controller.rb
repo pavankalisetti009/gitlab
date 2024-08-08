@@ -21,27 +21,25 @@ module Projects
           render status: :ok
         end
         format.json do
-          render json: serializer.represent(dependencies, build: report_service.build)
+          render json: serializer.represent(dependencies)
         end
       end
     end
 
     private
 
-    def not_able_to_collect_dependencies?
-      !report_service.able_to_fetch? || user_requested_filters_that_they_cannot_see?
-    end
-
     def user_requested_filters_that_they_cannot_see?
       params[:filter] == 'vulnerable' && !can?(current_user, :read_security_resource, project)
     end
 
     def collect_dependencies
-      return [] if not_able_to_collect_dependencies?
+      return [] if user_requested_filters_that_they_cannot_see?
 
       if project_level_sbom_occurrences_enabled?
         dependencies_finder.execute.with_component.with_version.with_source
       else
+        return [] if pipeline.blank?
+
         ::Security::DependencyListService.new(pipeline: pipeline, params: dependency_list_params).execute
       end
     end
@@ -55,7 +53,7 @@ module Projects
     end
 
     def pipeline
-      @pipeline ||= report_service.pipeline
+      @pipeline ||= project.latest_ingested_sbom_pipeline
     end
 
     def dependency_list_params
@@ -65,10 +63,6 @@ module Projects
 
     def default_source_type_filters
       ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
-    end
-
-    def report_service
-      @report_service ||= ::Security::ReportFetchService.new(project, job_artifacts)
     end
 
     def serializer
@@ -92,11 +86,6 @@ module Projects
 
     def project_level_sbom_occurrences_enabled?
       Feature.enabled?(:project_level_sbom_occurrences, project)
-    end
-
-    def job_artifacts
-      report_type = project_level_sbom_occurrences_enabled? ? :sbom : :dependency_list
-      ::Ci::JobArtifact.of_report_type(report_type)
     end
   end
 end
