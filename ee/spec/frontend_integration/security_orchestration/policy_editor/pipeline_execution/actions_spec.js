@@ -1,8 +1,8 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import * as urlUtils from '~/lib/utils/url_utility';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
-import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_file_path.vue';
-import { OVERRIDE } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
+import { OVERRIDE } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
 import { DEFAULT_ASSIGNED_POLICY_PROJECT } from 'ee/security_orchestration/constants';
 import { DEFAULT_PROVIDE } from '../mocks/mocks';

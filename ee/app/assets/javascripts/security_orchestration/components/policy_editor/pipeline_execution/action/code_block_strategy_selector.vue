@@ -4,8 +4,8 @@ import {
   CUSTOM_STRATEGY_OPTIONS,
   CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS,
   INJECT,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
-import { validateStrategyValues } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
+} from '../constants';
+import { validateStrategyValues } from './utils';
 
 export default {
   CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS,

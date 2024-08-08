@@ -16,17 +16,13 @@ import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
 import { isGroup } from 'ee/security_orchestration/components/utils';
-import { validateStrategyValues } from '../lib';
 import { INJECT, OVERRIDE } from '../constants';
-import CodeBlockSourceSelector from './code_block_source_selector.vue';
+import { validateStrategyValues } from './utils';
 import CodeBlockStrategySelector from './code_block_strategy_selector.vue';
 
 export default {
   i18n: {
     filePathInputCopy: s__('ScanExecutionPolicy|%{labelStart}File path:%{labelEnd} %{filePath}'),
-    filePathCopy: s__(
-      'ScanExecutionPolicy|%{boldStart}Run%{boldEnd} %{typeSelector} from the project %{projectSelector} with ref %{refSelector}',
-    ),
     pipelineFilePathCopy: {
       [INJECT]: s__(
         'ScanExecutionPolicy|%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
@@ -61,7 +57,6 @@ export default {
   name: 'CodeBlockFilePath',
   components: {
     CodeBlockStrategySelector,
-    CodeBlockSourceSelector,
     GlIcon,
     GlFormGroup,
     GlFormInputGroup,
@@ -76,21 +71,11 @@ export default {
   mixins: [glFeatureFlagMixin()],
   inject: ['namespacePath', 'rootNamespacePath', 'namespaceType'],
   props: {
-    isPipelineExecution: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
     strategy: {
       type: String,
       required: false,
       default: INJECT,
       validator: validateStrategyValues,
-    },
-    selectedType: {
-      type: String,
-      required: false,
-      default: '',
     },
     filePath: {
       type: String,
@@ -115,9 +100,7 @@ export default {
   },
   computed: {
     fileBlockMessage() {
-      return this.isPipelineExecution
-        ? this.$options.i18n.pipelineFilePathCopy[this.strategy]
-        : this.$options.i18n.filePathCopy;
+      return this.$options.i18n.pipelineFilePathCopy[this.strategy];
     },
     isValidFilePath() {
       if (this.filePath === null) {
@@ -174,9 +157,6 @@ export default {
     setSelectedProject(project) {
       this.$emit('select-project', project);
     },
-    setSelectedType(type) {
-      this.$emit('select-type', type);
-    },
     setSelectedRef(ref) {
       this.$emit('select-ref', ref);
     },
@@ -200,10 +180,6 @@ export default {
           <b>{{ content }}</b>
         </template>
 
-        <template #typeSelector>
-          <code-block-source-selector :selected-type="selectedType" @select="setSelectedType" />
-        </template>
-
         <template #projectSelector>
           <group-projects-dropdown
             class="gl-max-w-20"
@@ -213,12 +189,7 @@ export default {
             :state="projectAndRefState"
             @select="setSelectedProject"
           />
-          <gl-icon
-            v-if="isPipelineExecution"
-            v-gl-tooltip
-            name="information-o"
-            :title="selectedProjectInformationText"
-          />
+          <gl-icon v-gl-tooltip name="information-o" :title="selectedProjectInformationText" />
         </template>
 
         <template #refSelector>
@@ -288,7 +259,6 @@ export default {
     </div>
 
     <div
-      v-if="isPipelineExecution"
       data-testid="pipeline-execution-ref-selector"
       class="gl-flex gl-w-full gl-gap-3 gl-items-baseline gl-flex-nowrap"
     >

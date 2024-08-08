@@ -31648,9 +31648,6 @@ msgstr ""
 msgid "Load more users"
 msgstr ""
 
-msgid "Load new file"
-msgstr ""
-
 msgid "Loading"
 msgstr ""
 
@@ -46700,9 +46697,6 @@ msgstr ""
 msgid "Scan pushed document contents for policy breaks. %{docs_link}"
 msgstr ""
 
-msgid "ScanExecutionPolicy|%{boldStart}Run%{boldEnd} %{typeSelector} from the project %{projectSelector} with ref %{refSelector}"
-msgstr ""
-
 msgid "ScanExecutionPolicy|%{hostname}'s timezone"
 msgstr ""
 
@@ -46739,9 +46733,6 @@ msgstr ""
 msgid "ScanExecutionPolicy|Back to edit policy"
 msgstr ""
 
-msgid "ScanExecutionPolicy|Choose a method to execute code"
-msgstr ""
-
 msgid "ScanExecutionPolicy|Conditions"
 msgstr ""
 
@@ -46772,9 +46763,6 @@ msgstr ""
 msgid "ScanExecutionPolicy|Inject"
 msgstr ""
 
-msgid "ScanExecutionPolicy|Inserted CI code block"
-msgstr ""
-
 msgid "ScanExecutionPolicy|Key"
 msgstr ""
 
@@ -46782,9 +46770,6 @@ msgid "ScanExecutionPolicy|Kubernetes agent's timezone"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Link existing CI file"
-msgstr ""
-
-msgid "ScanExecutionPolicy|Linked existing CI file"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Maximum number of CI-criteria is one"
@@ -46802,13 +46787,7 @@ msgstr ""
 msgid "ScanExecutionPolicy|Run %{scan} with the following options:"
 msgstr ""
 
-msgid "ScanExecutionPolicy|Run CI/CD code"
-msgstr ""
-
 msgid "ScanExecutionPolicy|Run a %{scan} scan with the following options:"
-msgstr ""
-
-msgid "ScanExecutionPolicy|Run a scan"
 msgstr ""
 
 msgid "ScanExecutionPolicy|Runner tags:"
@@ -47895,12 +47874,6 @@ msgstr ""
 msgid "SecurityOrchestration|%{cadence} on %{branches}%{branchExceptionsString}"
 msgstr ""
 
-msgid "SecurityOrchestration|%{fileName} loaded succeeded."
-msgstr ""
-
-msgid "SecurityOrchestration|%{fileName} loading failed. Please try again."
-msgstr ""
-
 msgid "SecurityOrchestration|%{frameworkName} has %{projectLength} %{projects}"
 msgstr ""
 
@@ -48216,9 +48189,6 @@ msgstr ""
 msgid "SecurityOrchestration|List branches in the format %{boldStart}branch-name@group-name/project-name,%{boldEnd} separated by a comma (,)."
 msgstr ""
 
-msgid "SecurityOrchestration|Load CI/CD code from file"
-msgstr ""
-
 msgid "SecurityOrchestration|Logic error"
 msgstr ""
 
@@ -48288,9 +48258,6 @@ msgid "SecurityOrchestration|Only owners can update Security Policy Project"
 msgstr ""
 
 msgid "SecurityOrchestration|Override the following project settings"
-msgstr ""
-
-msgid "SecurityOrchestration|Overwrite the current CI/CD code with the new file's content?"
 msgstr ""
 
 msgid "SecurityOrchestration|Pipeline execution"

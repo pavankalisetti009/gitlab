@@ -1,8 +1,4 @@
-import { CUSTOM_STRATEGY_OPTIONS_KEYS } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
-import {
-  buildScannerAction,
-  validateStrategyValues,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/actions';
+import { buildScannerAction } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/actions';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
 
 const actionId = 'action_0';
@@ -42,16 +38,5 @@ describe('buildScannerAction', () => {
         id: actionId,
       });
     });
-  });
-});
-
-describe('validateStrategyValues', () => {
-  it.each`
-    input                              | expected
-    ${CUSTOM_STRATEGY_OPTIONS_KEYS[0]} | ${true}
-    ${CUSTOM_STRATEGY_OPTIONS_KEYS[1]} | ${true}
-    ${'other string'}                  | ${false}
-  `('validates correctly for $input', ({ input, expected }) => {
-    expect(validateStrategyValues(input)).toBe(expected);
   });
 });

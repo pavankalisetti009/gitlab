@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_strategy_selector.vue';
+import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_strategy_selector.vue';
 import {
   INJECT,
   OVERRIDE,
   CUSTOM_STRATEGY_OPTIONS,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 
 describe('CodeBlockStrategySelector', () => {
   let wrapper;
