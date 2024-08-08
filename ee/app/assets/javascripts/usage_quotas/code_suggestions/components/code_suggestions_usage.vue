@@ -53,7 +53,7 @@ export default {
       addOnPurchaseFetchError: undefined,
       deprecatedAddOnPurchaseData: undefined,
       useDeprecatedAddOnPurchaseQuery: false,
-      cloudConnectorStatus: null,
+      healthCheckRunning: false,
     };
   },
   computed: {
@@ -115,9 +115,6 @@ export default {
     statusCheckEnabled() {
       return this.glFeatures.cloudConnectorStatus;
     },
-    shouldShowHealthCheckStatus() {
-      return this.statusCheckEnabled && this.cloudConnectorStatus !== null;
-    },
   },
   apollo: {
     addOnPurchaseData: {
@@ -171,7 +168,8 @@ export default {
       });
     },
     runHealthCheck() {
-      this.cloudConnectorStatus = {};
+      this.healthCheckRunning = true;
+      this.$refs.healthCheckList.runHealthCheck();
     },
   },
 };
@@ -208,9 +206,13 @@ export default {
           </h1>
 
           <div v-if="statusCheckEnabled" class="gl-self-center">
-            <gl-button data-testid="health-check-button" @click="runHealthCheck">{{
-              $options.i18n.CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT
-            }}</gl-button>
+            <gl-button
+              data-testid="health-check-button"
+              :loading="healthCheckRunning"
+              :disabled="healthCheckRunning"
+              @click="runHealthCheck"
+              >{{ $options.i18n.CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT }}</gl-button
+            >
           </div>
         </header>
 
@@ -219,9 +221,10 @@ export default {
         </p>
       </section>
       <health-check-list
-        v-if="shouldShowHealthCheckStatus"
-        :cloud-connector-status="cloudConnectorStatus"
+        v-if="showTitleAndSubtitle && statusCheckEnabled"
+        ref="healthCheckList"
         data-testid="health-check-probes"
+        @health-check-completed="healthCheckRunning = false"
       />
       <section v-if="hasCodeSuggestions">
         <section
