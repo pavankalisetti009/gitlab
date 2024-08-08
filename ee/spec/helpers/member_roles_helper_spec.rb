@@ -148,4 +148,30 @@ RSpec.describe MemberRolesHelper, feature_category: :permissions do
       end
     end
   end
+
+  describe '#member_role_edit_path' do
+    context 'when on self-managed' do
+      subject(:data) { helper.member_role_edit_path(role) }
+
+      let_it_be(:role) { build_stubbed(:member_role, id: 5) }
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: false)
+      end
+
+      it { is_expected.to eq(edit_admin_application_settings_roles_and_permission_path(role)) }
+    end
+
+    context 'when on Saas' do
+      subject(:data) { helper.member_role_edit_path(role) }
+
+      let_it_be(:role) { build_stubbed(:member_role, id: 5, namespace: source) }
+
+      before do
+        stub_saas_features(gitlab_com_subscriptions: true)
+      end
+
+      it { is_expected.to eq(edit_group_settings_roles_and_permission_path(source, role)) }
+    end
+  end
 end

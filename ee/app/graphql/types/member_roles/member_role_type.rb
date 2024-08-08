@@ -10,6 +10,8 @@ module Types
       graphql_name 'MemberRole'
       description 'Represents a member role'
 
+      include MemberRolesHelper
+
       field :id,
         ::Types::GlobalIDType[::MemberRole],
         null: false,
@@ -49,6 +51,11 @@ module Types
         alpha: { milestone: '16.11' },
         description: 'Web UI path to edit the custom role.'
 
+      field :created_at,
+        Types::TimeType,
+        null: false,
+        description: 'Timestamp of when the member role was created.'
+
       def members_count
         return object.members_count if object.respond_to?(:members_count)
 
@@ -56,11 +63,7 @@ module Types
       end
 
       def edit_path
-        if object.namespace
-          ::Gitlab::Routing.url_helpers.edit_group_settings_roles_and_permission_path(object.namespace, object)
-        else
-          ::Gitlab::Routing.url_helpers.edit_admin_application_settings_roles_and_permission_path(object)
-        end
+        member_role_edit_path(object)
       end
     end
     # rubocop: enable Graphql/AuthorizeTypes

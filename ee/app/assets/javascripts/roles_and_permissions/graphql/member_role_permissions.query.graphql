@@ -1,7 +1,7 @@
-query memberRolePermissions {
+query memberRolePermissions($includeDescription: Boolean = true) {
   memberRolePermissions {
     nodes {
-      description
+      description @include(if: $includeDescription)
       name
       value
       requirements

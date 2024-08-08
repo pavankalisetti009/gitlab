@@ -42,7 +42,7 @@ export default {
     descriptionHelpText: s__(
       'MemberRole|Example: "Developer with admin and read access to vulnerability"',
     ),
-    permissionsLabel: s__('MemberRole|Permissions'),
+    permissionsLabel: __('Permissions'),
     invalidFeedback: __('This field is required.'),
     validationError: s__('MemberRole|You must fill out all required fields.'),
   },

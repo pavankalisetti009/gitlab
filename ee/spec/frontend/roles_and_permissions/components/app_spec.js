@@ -11,7 +11,7 @@ import instanceMemberRolesQuery from 'ee/roles_and_permissions/graphql/instance_
 import CustomRolesApp from 'ee/roles_and_permissions/components/app.vue';
 import CustomRolesEmptyState from 'ee/roles_and_permissions/components/custom_roles_empty_state.vue';
 import CustomRolesTable from 'ee/roles_and_permissions/components/custom_roles_table.vue';
-import CustomRolesDeleteModal from 'ee/roles_and_permissions/components/custom_roles_delete_modal.vue';
+import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 
 import { mockEmptyMemberRoles, mockMemberRoles, mockInstanceMemberRoles } from '../mock_data';
 
@@ -61,7 +61,7 @@ describe('Custom roles app', () => {
   const findHeader = () => wrapper.find('header');
   const findCount = () => wrapper.findByTestId('custom-roles-count');
   const findButton = () => wrapper.findComponent(GlButton);
-  const findDeleteModal = () => wrapper.findComponent(CustomRolesDeleteModal);
+  const findDeleteModal = () => wrapper.findComponent(DeleteRoleModal);
 
   describe('on creation', () => {
     beforeEach(() => {

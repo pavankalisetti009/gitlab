@@ -5,7 +5,7 @@ import groupMemberRolesQuery from 'ee/invite_members/graphql/queries/group_membe
 import instanceMemberRolesQuery from '../graphql/instance_member_roles.query.graphql';
 import CustomRolesEmptyState from './custom_roles_empty_state.vue';
 import CustomRolesTable from './custom_roles_table.vue';
-import CustomRolesDeleteModal from './custom_roles_delete_modal.vue';
+import DeleteRoleModal from './delete_role_modal.vue';
 
 export default {
   name: 'CustomRolesApp',
@@ -27,7 +27,7 @@ export default {
     GlAlert,
     CustomRolesEmptyState,
     CustomRolesTable,
-    CustomRolesDeleteModal,
+    DeleteRoleModal,
   },
   inject: ['documentationPath', 'groupFullPath', 'newRolePath'],
   data() {
@@ -123,7 +123,7 @@ export default {
       :busy="isLoading"
       @delete-role="roleToDelete = $event"
     />
-    <custom-roles-delete-modal
+    <delete-role-modal
       :role="roleToDelete"
       @deleted="processRoleDeletion"
       @close="roleToDelete = null"
