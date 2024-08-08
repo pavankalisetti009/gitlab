@@ -58,6 +58,12 @@ module EE
         ).left_outer_joins(:member_role)
       end
 
+      scope :count_by_role, -> do
+        select('access_level', 'COUNT(*) as members_count')
+          .where(member_role_id: nil)
+          .group(:access_level)
+      end
+
       before_create :set_membership_activation
 
       scope :with_csv_entity_associations, -> do

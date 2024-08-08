@@ -160,6 +160,10 @@ module EE
           null: true, description: 'Finds a single custom role.',
           resolver: ::Resolvers::MemberRoles::RolesResolver.single,
           alpha: { milestone: '16.6' }
+        field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
+          null: true, description: 'Standard roles available for the instance, available only for self-managed.',
+          resolver: ::Resolvers::Members::StandardRolesResolver,
+          alpha: { milestone: '17.3' }
         field :self_managed_add_on_eligible_users,
           ::Types::GitlabSubscriptions::AddOnUserType.connection_type,
           null: true,
