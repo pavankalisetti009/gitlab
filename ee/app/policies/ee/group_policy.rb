@@ -188,7 +188,7 @@ module EE
       end
 
       condition(:service_accounts_available, scope: :subject) do
-        @subject.feature_available?(:service_accounts)
+        @subject.feature_available_non_trial?(:service_accounts)
       end
 
       condition(:user_banned_from_namespace) do
