@@ -10,6 +10,7 @@ import CodeSuggestionsInfo from 'ee/usage_quotas/code_suggestions/components/cod
 import CodeSuggestionsStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
 import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/saas_add_on_eligible_user_list.vue';
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
+import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
@@ -38,6 +39,13 @@ import {
 Vue.use(VueApollo);
 
 jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('ee/usage_quotas/code_suggestions/components/health_check_list.vue', () => ({
+  name: 'HealthCheckList',
+  template: '<div></div>',
+  methods: {
+    runHealthCheck: jest.fn(),
+  },
+}));
 
 describe('GitLab Duo Usage', () => {
   let wrapper;
@@ -104,38 +112,33 @@ describe('GitLab Duo Usage', () => {
         ...provideProps,
       },
       apolloProvider: createMockApolloProvider({ addOnPurchaseHandler, addOnPurchasesHandler }),
+      stubs: {
+        HealthCheckList,
+      },
     });
 
     return waitForPromises();
   };
 
   describe('Cloud Connector health status check', () => {
-    it('does not render the health check button and probes if feature flag is disabled', async () => {
+    const buildComponent = async (flagState = true) => {
       createComponent({
         addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
         addOnPurchasesHandler: noAssignedAddonDataHandler,
         provideProps: {
+          isStandalonePage: true,
+          isSaaS: true,
           glFeatures: {
-            cloudConnectorStatus: false,
+            cloudConnectorStatus: flagState,
           },
         },
       });
       await waitForPromises();
-      expect(findHealthCheckButton().exists()).toBe(false);
-      expect(findHealthCheckProbes().exists()).toBe(false);
-    });
+    };
 
-    it('does not render the health check probes by default even if feature flag is enabled', async () => {
-      createComponent({
-        addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
-        addOnPurchasesHandler: noAssignedAddonDataHandler,
-        provideProps: {
-          glFeatures: {
-            cloudConnectorStatus: true,
-          },
-        },
-      });
-      await waitForPromises();
+    it('does not render the health check button and the probes if feature flag is disabled', async () => {
+      await buildComponent(false);
+      expect(findHealthCheckButton().exists()).toBe(false);
       expect(findHealthCheckProbes().exists()).toBe(false);
     });
 
@@ -146,7 +149,7 @@ describe('GitLab Duo Usage', () => {
       ${'does not'} | ${false} | ${true}          | ${true}
       ${'does not'} | ${false} | ${false}         | ${true}
     `(
-      '$description render the health check button with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
+      '$description render the health check button and the probes with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
       async ({ isSaaS, isStandalonePage, expected } = {}) => {
         createComponent({
           addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
@@ -161,25 +164,46 @@ describe('GitLab Duo Usage', () => {
         });
         await waitForPromises();
         expect(findHealthCheckButton().exists()).toBe(expected);
+        expect(findHealthCheckProbes().exists()).toBe(expected);
       },
     );
 
     it('renders the health check probes once the button is clicked', async () => {
-      createComponent({
-        addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
-        addOnPurchasesHandler: noAssignedAddonDataHandler,
-        provideProps: {
-          isStandalonePage: true,
-          isSaaS: true,
-          glFeatures: {
-            cloudConnectorStatus: true,
-          },
-        },
-      });
-      await waitForPromises();
+      await buildComponent();
       findHealthCheckButton().vm.$emit('click');
       await nextTick();
       expect(findHealthCheckProbes().exists()).toBe(true);
+    });
+
+    it('re-runs the health check on repetitive button clicks', async () => {
+      await buildComponent();
+
+      const runHealthCheckSpy = jest.spyOn(findHealthCheckProbes().vm, 'runHealthCheck');
+      findHealthCheckButton().vm.$emit('click');
+      await nextTick();
+      expect(runHealthCheckSpy).toHaveBeenCalledTimes(1);
+
+      findHealthCheckButton().vm.$emit('click');
+      await nextTick();
+      expect(runHealthCheckSpy).toHaveBeenCalledTimes(2);
+    });
+
+    it('disables the button and sets it into loading state once clicked', async () => {
+      await buildComponent();
+      findHealthCheckButton().vm.$emit('click');
+      await nextTick();
+      expect(findHealthCheckButton().props('loading')).toBe(true);
+      expect(findHealthCheckButton().props('disabled')).toBe(true);
+    });
+
+    it('listerns to and unblocks the button onthe health-check-completed event emitted by the HealthCheckList component', async () => {
+      await buildComponent();
+      findHealthCheckButton().vm.$emit('click');
+      await nextTick();
+      findHealthCheckProbes().vm.$emit('health-check-completed');
+      await nextTick();
+      expect(findHealthCheckButton().props('loading')).toBe(false);
+      expect(findHealthCheckButton().props('disabled')).toBe(false);
     });
   });
 
