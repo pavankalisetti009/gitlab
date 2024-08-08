@@ -766,7 +766,7 @@ module EE
 
     override :ci_owned_group_runners
     def ci_owned_group_runners
-      return super unless ::MemberRole.permission_enabled?(:admin_runners, self)
+      return super unless ::Feature.enabled?(:owned_runners_via_admin_runners, self)
 
       cte_namespace_ids = ::Gitlab::SQL::CTE.new(
         :cte_namespace_ids,

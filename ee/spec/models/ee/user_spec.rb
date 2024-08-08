@@ -4529,9 +4529,9 @@ RSpec.describe User, feature_category: :system_access do
 
           it { is_expected.to match_array(expected_runners) }
 
-          context 'with `custom_ability_admin_runners` disabled' do
+          context 'with `owned_runners_via_admin_runners` disabled' do
             before do
-              stub_feature_flags(custom_ability_admin_runners: false)
+              stub_feature_flags(owned_runners_via_admin_runners: false)
             end
 
             it { is_expected.to be_empty }
