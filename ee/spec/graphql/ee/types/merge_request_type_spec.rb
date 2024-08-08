@@ -110,8 +110,10 @@ RSpec.describe GitlabSchema.types['MergeRequest'], feature_category: :code_revie
       # Clear batch loader cache to ensure there's no N+1 if batch loading isn't cached.
       BatchLoader::Executor.clear_current
 
-      # +1 as we do an extra query for setting retreival
-      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(1)
+      # +2 as we do extra queries for:
+      # MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService
+      # MergeRequests::Mergeability::CheckPathLocksService
+      expect { GitlabSchema.execute(query, context: { current_user: user }) }.not_to exceed_query_limit(control).with_threshold(2)
     end
   end
 

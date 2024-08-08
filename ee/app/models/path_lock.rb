@@ -10,6 +10,7 @@ class PathLock < ApplicationRecord
   validate :path_unique_validation
 
   scope :for_paths, ->(paths) { where(path: paths) }
+  scope :not_for_users, ->(user_ids) { where.not(user_id: user_ids) }
 
   def downstream?(path)
     self.path.start_with?(path) && !exact?(path)

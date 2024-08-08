@@ -210,7 +210,8 @@ module EE
           ::MergeRequests::Mergeability::CheckBlockedByOtherMrsService,
           ::MergeRequests::Mergeability::CheckJiraStatusService,
           ::MergeRequests::Mergeability::CheckSecurityPolicyEvaluationService,
-          ::MergeRequests::Mergeability::CheckExternalStatusChecksPassedService
+          ::MergeRequests::Mergeability::CheckExternalStatusChecksPassedService,
+          ::MergeRequests::Mergeability::CheckPathLocksService
         ] + super
       end
     end
