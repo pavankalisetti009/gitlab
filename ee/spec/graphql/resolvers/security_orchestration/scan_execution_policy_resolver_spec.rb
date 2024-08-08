@@ -15,8 +15,9 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
   end
 
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:policy) { build(:scan_execution_policy, name: 'Run DAST in every pipeline') }
-  let_it_be(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy]) }
+  let(:policy) { build(:scan_execution_policy, name: 'Run DAST in every pipeline', actions: actions) }
+  let(:actions) { attributes_for(:scan_execution_policy)[:actions] }
+  let(:policy_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [policy]) }
 
   let!(:policy_management_project) do
     create(
@@ -29,6 +30,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
   let_it_be(:user) { create(:user) }
 
   let(:args) { {} }
+  let(:deprecated_properties) { [] }
   let(:expected_resolved) do
     [
       {
@@ -45,6 +47,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
         },
         yaml: YAML.dump(policy.deep_stringify_keys),
         updated_at: policy_configuration.policy_last_updated_at,
+        deprecated_properties: deprecated_properties,
         source: {
           project: project,
           namespace: nil,
@@ -144,6 +147,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                     excluding_groups: []
                   },
                   yaml: YAML.dump(policy.deep_stringify_keys),
+                  deprecated_properties: deprecated_properties,
                   updated_at: group_policy_configuration.policy_last_updated_at,
                   source: {
                     project: nil,
@@ -187,6 +191,15 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
           end
         end
 
+        context 'when the policy contains deprecated properties' do
+          let(:actions) { [{ scan: 'custom', ci_configuration: 'config' }] }
+          let(:deprecated_properties) { %w[custom_scan] }
+
+          it 'returns scan execution policies with deprecated_properties' do
+            expect(resolve_scan_policies).to eq(expected_resolved)
+          end
+        end
+
         context 'when relationship argument is provided as INHERITED' do
           let(:args) { { relationship: :inherited } }
 
@@ -207,6 +220,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                   },
                   yaml: YAML.dump(policy.deep_stringify_keys),
                   updated_at: policy_configuration.policy_last_updated_at,
+                  deprecated_properties: deprecated_properties,
                   source: {
                     project: project,
                     namespace: nil,
@@ -227,6 +241,7 @@ RSpec.describe Resolvers::SecurityOrchestration::ScanExecutionPolicyResolver, fe
                   },
                   yaml: YAML.dump(policy.deep_stringify_keys),
                   updated_at: group_policy_configuration.policy_last_updated_at,
+                  deprecated_properties: deprecated_properties,
                   source: {
                     project: nil,
                     namespace: group,

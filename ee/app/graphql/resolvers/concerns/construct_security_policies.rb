@@ -2,7 +2,7 @@
 
 module ConstructSecurityPolicies
   extend ActiveSupport::Concern
-  include Security::ScanResultPolicies::DeprecatedPropertiesChecker
+  include Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChecker
 
   POLICY_YAML_ATTRIBUTES = %i[name description enabled actions rules approval_settings policy_scope
     fallback_behavior].freeze
@@ -39,6 +39,7 @@ module ConstructSecurityPolicies
         policy_scope: policy_scope(policy[:policy_scope]),
         yaml: YAML.dump(policy.slice(*POLICY_YAML_ATTRIBUTES).deep_stringify_keys),
         updated_at: policy[:config].policy_last_updated_at,
+        deprecated_properties: deprecated_properties(policy),
         source: {
           project: policy[:project],
           namespace: policy[:namespace],

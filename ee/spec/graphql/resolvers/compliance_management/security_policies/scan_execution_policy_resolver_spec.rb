@@ -54,6 +54,7 @@ RSpec.describe Resolvers::ComplianceManagement::SecurityPolicies::ScanExecutionP
             },
             yaml: YAML.dump(policy.deep_stringify_keys),
             updated_at: policy_configuration.policy_last_updated_at,
+            deprecated_properties: [],
             source: {
               project: project,
               namespace: nil,

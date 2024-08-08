@@ -2,10 +2,10 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::ScanResultPolicies::DeprecatedPropertiesChecker, feature_category: :security_policy_management do
+RSpec.describe Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChecker, feature_category: :security_policy_management do
   let_it_be(:deprecated_properties_checker) do
     Class.new do
-      include Security::ScanResultPolicies::DeprecatedPropertiesChecker
+      include Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChecker
     end.new
   end
 
@@ -97,6 +97,21 @@ RSpec.describe Security::ScanResultPolicies::DeprecatedPropertiesChecker, featur
       let(:policy) { build(:approval_policy, rules: rules).merge({ type: 'approval_policy' }) }
 
       it_behaves_like 'approval policies'
+    end
+
+    context 'when the policy is a scan_execution_policy' do
+      let(:policy) { build(:scan_execution_policy) }
+
+      it { is_expected.to be_empty }
+
+      context 'when the policy contains custom scan action' do
+        let(:policy) { build(:scan_execution_policy, actions: actions) }
+        let(:actions) do
+          [{ scan: 'custom', ci_configuration: 'config' }]
+        end
+
+        it { is_expected.to contain_exactly('custom_scan') }
+      end
     end
   end
 end
