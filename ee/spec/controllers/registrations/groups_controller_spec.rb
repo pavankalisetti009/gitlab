@@ -134,7 +134,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
     end
   end
 
-  describe 'POST #create' do
+  describe 'POST #create', :with_current_organization do
     subject(:post_create) { post :create, params: params }
 
     let(:params) { { group: group_params, project: project_params }.merge(extra_params) }
@@ -165,6 +165,7 @@ RSpec.describe Registrations::GroupsController, feature_category: :onboarding do
     context 'with an authenticated user' do
       before do
         sign_in(user)
+        current_organization.users << user
       end
 
       it_behaves_like 'hides email confirmation warning'

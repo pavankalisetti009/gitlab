@@ -8,12 +8,14 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
   describe '#execute' do
     let_it_be(:user, reload: true) { create(:user) }
     let_it_be(:group) { create(:group) }
+    let_it_be(:organization) { create(:organization) }
     let(:extra_params) { {} }
     let(:group_params) do
       {
         name: 'Group name',
         path: 'group-path',
-        visibility_level: Gitlab::VisibilityLevel::PRIVATE.to_s
+        visibility_level: Gitlab::VisibilityLevel::PRIVATE.to_s,
+        organization_id: organization.id
       }
     end
 
@@ -23,6 +25,7 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
 
     before_all do
       group.add_owner(user)
+      organization.users << user
     end
 
     subject(:execute) { described_class.new(user, params).execute }
