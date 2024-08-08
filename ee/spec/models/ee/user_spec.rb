@@ -4149,6 +4149,78 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe 'should_use_security_policy_bot_avatar?' do
+    subject { user.should_use_security_policy_bot_avatar? }
+
+    context 'when user is not a security policy bot' do
+      it { is_expected.to eq(false) }
+    end
+
+    context 'when user is a security policy bot' do
+      let_it_be(:user) { create(:user, :security_policy_bot) }
+
+      let_it_be(:project) { create(:project) }
+
+      before do
+        project.add_guest(user)
+      end
+
+      context 'when feature flag `security_policy_bot_shared_avatar` is enabled' do
+        it { is_expected.to eq(true) }
+      end
+
+      context 'when feature flag `security_policy_bot_shared_avatar` is disabled' do
+        before do
+          stub_feature_flags(security_policy_bot_shared_avatar: false)
+        end
+
+        it { is_expected.to eq(false) }
+      end
+    end
+  end
+
+  describe 'security_policy_bot_static_avatar_path' do
+    let(:image_path) { ::Gitlab::Utils.append_path('http://localhost', avatar_file) }
+
+    subject { user.security_policy_bot_static_avatar_path }
+
+    shared_examples 'returns the default image' do
+      let(:avatar_file) { ActionController::Base.helpers.image_path('bot_avatars/security-bot.png') }
+
+      it 'returns the default image' do
+        expect(subject).to eq(image_path)
+      end
+    end
+
+    context 'when size parameter is provided' do
+      subject { user.security_policy_bot_static_avatar_path(size) }
+
+      context 'when the size is a valid avatar size' do
+        using RSpec::Parameterized::TableSyntax
+        where(:size) { Avatarable::USER_AVATAR_SIZES }
+
+        with_them do
+          let(:options) { { size: size } }
+          let(:avatar_file) { ActionController::Base.helpers.image_path("bot_avatars/security-bot_#{size}.png") }
+
+          it 'returns a image of the given size' do
+            expect(subject).to eq(image_path)
+          end
+        end
+      end
+
+      context 'when the size is not a valid avatar size' do
+        let(:size) { 1999 }
+
+        it_behaves_like 'returns the default image'
+      end
+    end
+
+    context 'when size parameter is not provided' do
+      it_behaves_like 'returns the default image'
+    end
+  end
+
   describe '#unlock_access!' do
     let_it_be_with_reload(:user) { create(:user) }
 
