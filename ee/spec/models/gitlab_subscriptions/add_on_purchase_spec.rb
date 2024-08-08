@@ -461,6 +461,26 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     it { is_expected.to match_array('code_suggestions') }
   end
 
+  describe '.uniq_namespace_ids' do
+    let(:namespace_1) { create(:group) }
+    let(:namespace_2) { create(:group) }
+
+    let(:add_on_1) { create(:gitlab_subscription_add_on, :code_suggestions) }
+    let(:add_on_2) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+    let!(:add_on_purchase_1) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_1) }
+    let!(:add_on_purchase_2) { create(:gitlab_subscription_add_on_purchase, namespace: namespace_1, add_on: add_on_1) }
+
+    let!(:add_on_purchase_3) { create(:gitlab_subscription_add_on_purchase, namespace: nil, add_on: add_on_2) }
+    let!(:add_on_purchase_4) { create(:gitlab_subscription_add_on_purchase, namespace: namespace_1, add_on: add_on_2) }
+
+    let!(:add_on_purchase_5) { create(:gitlab_subscription_add_on_purchase, namespace: namespace_2, add_on: add_on_2) }
+
+    subject(:namespace_ids) { described_class.uniq_namespace_ids }
+
+    it { is_expected.to match_array([namespace_1.id, namespace_2.id]) }
+  end
+
   describe '.next_candidate_requiring_assigned_users_refresh' do
     let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
     let_it_be(:add_on_purchase_fresh) do

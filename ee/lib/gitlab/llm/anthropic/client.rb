@@ -124,8 +124,16 @@ module Gitlab
           "#{Gitlab::AiGateway.url}/v1/proxy/anthropic"
         end
 
+        def service_name
+          :anthropic_proxy
+        end
+
+        def service
+          ::CloudConnector::AvailableServices.find_by_name(service_name)
+        end
+
         def api_key
-          ::CloudConnector::AvailableServices.find_by_name(:anthropic_proxy).access_token(user)
+          service.access_token(user)
         end
 
         # We specificy the `anthropic-version` header to receive the stream word by word instead of the accumulated
@@ -135,7 +143,7 @@ module Gitlab
             "Accept" => "application/json",
             'anthropic-version' => '2023-06-01',
             'X-Gitlab-Unit-Primitive' => unit_primitive
-          }.merge(Gitlab::AiGateway.headers(user: user, token: api_key))
+          }.merge(Gitlab::AiGateway.headers(user: user, service: service))
         end
 
         def request_body(prompt:, options: {})

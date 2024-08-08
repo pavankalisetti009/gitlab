@@ -32,11 +32,13 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     end
 
     let(:api_url) { "/internal/jobs/#{job.id}/x_ray/scan" }
+    let(:enabled_by_namespace_ids) { [] }
 
     let(:base_workhorse_headers) do
       {
         "X-Gitlab-Authentication-Type" => ["oidc"],
         "Authorization" => ["Bearer #{ai_gateway_token}"],
+        "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
         "Content-Type" => ["application/json"],
         "X-Gitlab-Host-Name" => [hostname],
         "X-Gitlab-Instance-Id" => [instance_uuid],
@@ -174,6 +176,7 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
 
     context 'when on Gitlab.com instance', :saas do
       let(:gitlab_realm) { "saas" }
+      let(:enabled_by_namespace_ids) { [namespace.id] }
       let(:namespace_workhorse_headers) do
         {
           "X-Gitlab-Saas-Namespace-Ids" => [namespace.id.to_s]
@@ -181,11 +184,16 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
       end
 
       before_all do
-        create(
+        add_on_purchase = create(
           :gitlab_subscription_add_on_purchase,
           :active,
           add_on: code_suggestion_add_on,
           namespace: namespace
+        )
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: user,
+          add_on_purchase: add_on_purchase
         )
       end
 

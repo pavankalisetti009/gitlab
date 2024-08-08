@@ -16,6 +16,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
     }
   end
 
+  let(:enabled_by_namespace_ids) { [1, 2] }
   let(:current_user) { nil }
   let(:headers) { {} }
   let(:access_code_suggestions) { true }
@@ -170,7 +171,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData')
       allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
-      allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: token })
+      allow(service).to receive_messages({ free_access?: false, allowed_for?: true, access_token: token,
+        enabled_by_namespace_ids: enabled_by_namespace_ids })
     end
 
     shared_examples 'code completions endpoint' do
@@ -218,6 +220,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
             'X-Gitlab-Realm' => [gitlab_realm],
             'Authorization' => ["Bearer #{token}"],
+            'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
             'Content-Type' => ['application/json'],
             'User-Agent' => ['Super Awesome Browser 43.144.12']
           )
@@ -267,6 +270,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(params['Header']).to include({
               'X-Gitlab-Authentication-Type' => ['oidc'],
               'Authorization' => ["Bearer #{token}"],
+              'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => [enabled_by_namespace_ids.join(',')],
               'Content-Type' => ['application/json'],
               'X-Gitlab-Instance-Id' => [global_instance_id],
               'X-Gitlab-Global-User-Id' => [global_user_id],

@@ -30,8 +30,12 @@ module Gitlab
           default_payload_parameters.merge(params)
         end
 
+        def service
+          ::CloudConnector::AvailableServices.find_by_name(:vertex_ai_proxy)
+        end
+
         def access_token
-          ::CloudConnector::AvailableServices.find_by_name(:vertex_ai_proxy).access_token(user)
+          service.access_token(user)
         end
 
         def headers
@@ -39,7 +43,7 @@ module Gitlab
             "Accept" => "application/json",
             "Host" => model_config.host,
             'X-Gitlab-Unit-Primitive' => unit_primitive
-          }.merge(Gitlab::AiGateway.headers(user: user, token: access_token))
+          }.merge(Gitlab::AiGateway.headers(user: user, service: service))
         end
 
         private

@@ -9,6 +9,8 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
   let(:url) { "https://#{host}/api" }
   let(:model_config) { instance_double('Gitlab::Llm::VertexAi::ModelConfigurations::CodeChat', host: host) }
   let(:unit_primitive) { 'explain_vulnerability' }
+  let(:current_token) { SecureRandom.uuid }
+  let(:enabled_by_namespace_ids) { [1, 2] }
 
   subject(:configuration) do
     described_class.new(model_config: model_config, user: user, unit_primitive: unit_primitive)
@@ -16,29 +18,24 @@ RSpec.describe Gitlab::Llm::VertexAi::Configuration, feature_category: :ai_abstr
 
   before do
     stub_ee_application_setting(vertex_ai_host: host)
+    available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: current_token,
+      enabled_by_namespace_ids: enabled_by_namespace_ids)
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
   end
 
   describe '#access_token' do
-    let(:current_token) { SecureRandom.uuid }
-
     it 'returns cloud connector access token' do
-      available_service_data = instance_double(CloudConnector::BaseAvailableServiceData, access_token: current_token)
-      allow(::CloudConnector::AvailableServices).to receive(:find_by_name).and_return(available_service_data)
-
       expect(configuration.access_token).to eq current_token
     end
   end
 
   describe '#headers' do
-    before do
-      allow(configuration).to receive(:access_token).and_return('123')
-    end
-
     it 'returns headers with text host header replacing host value' do
       expect(configuration.headers).to include(
         {
           'Accept' => 'application/json',
-          'Authorization' => 'Bearer 123',
+          'Authorization' => "Bearer #{current_token}",
+          "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => enabled_by_namespace_ids.join(','),
           'Host' => host,
           'Content-Type' => 'application/json',
           'X-Gitlab-Authentication-Type' => 'oidc',

@@ -6,12 +6,13 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   include StubRequests
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:token) { create(:service_access_token, :active) }
 
   let(:options) { {} }
   let(:expected_request_body) { default_body_params }
 
-  let(:expected_access_token) { token.token }
+  let(:enabled_by_namespace_ids) { [1, 2] }
+  let(:expected_feature_name) { :duo_chat }
+  let(:expected_access_token) { '123' }
   let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
   let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
   let(:expected_instance_id) { Gitlab::GlobalAnonymousId.instance_id }
@@ -24,6 +25,7 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       'X-Gitlab-Realm' => expected_gitlab_realm,
       'X-Gitlab-Authentication-Type' => 'oidc',
       'Authorization' => "Bearer #{expected_access_token}",
+      "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
       'Content-Type' => 'application/json',
       'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
     }
@@ -52,7 +54,12 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
   let(:http_status) { 200 }
   let(:response_headers) { { 'Content-Type' => 'application/json' } }
 
-  include StubRequests
+  before do
+    service = instance_double(CloudConnector::BaseAvailableServiceData)
+    allow(::CloudConnector::AvailableServices).to receive(:find_by_name).with(expected_feature_name).and_return(service)
+    allow(service).to receive(:access_token).and_return(expected_access_token)
+    allow(service).to receive(:enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
+  end
 
   describe '#search', :with_cloud_connector do
     before do
@@ -80,10 +87,8 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
       expect(result.parsed_response).to eq(expected_response)
     end
 
-    context 'when token is expired' do
-      before do
-        token.update!(expires_at: 1.day.ago)
-      end
+    context 'when token is not available' do
+      let(:expected_access_token) { nil }
 
       it 'returns empty hash' do
         expect(Gitlab::HTTP).not_to receive(:post)
@@ -93,13 +98,9 @@ RSpec.describe Gitlab::Llm::AiGateway::DocsClient, feature_category: :ai_abstrac
 
     context 'when duo chat model is self-hosted' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat) }
+      let(:expected_feature_name) { :self_hosted_models }
 
       it 'returns access token for self-hosted-models service' do
-        service = instance_double('::CloudConnector::SelfSigned::AvailableServiceData')
-        expect(::CloudConnector::AvailableServices).to receive(:find_by_name)
-          .with(:self_hosted_models).and_return(service)
-        allow(service).to receive(:access_token).and_return(expected_access_token)
-
         expect(Gitlab::HTTP).to receive(:post).with(
           anything,
           hash_including(timeout: described_class::DEFAULT_TIMEOUT)

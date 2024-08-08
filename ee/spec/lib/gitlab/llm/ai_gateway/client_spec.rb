@@ -10,6 +10,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
   let(:expected_body) { { prompt: 'anything' } }
   let(:timeout) { described_class::DEFAULT_TIMEOUT }
+  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
+  let(:enabled_by_namespace_ids) { [1, 2] }
   let(:expected_access_token) { active_token.token }
   let(:expected_gitlab_realm) { Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED }
   let(:expected_gitlab_host_name) { Gitlab.config.gitlab.host }
@@ -23,6 +25,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       'X-Gitlab-Realm' => expected_gitlab_realm,
       'X-Gitlab-Authentication-Type' => 'oidc',
       'Authorization' => "Bearer #{expected_access_token}",
+      "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
       'Content-Type' => 'application/json',
       'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
     }
@@ -53,8 +56,9 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         headers: response_headers
       )
 
-    allow(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-      :access_token).and_return(expected_access_token)
+    allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
+    allow(service).to receive(:access_token).and_return(expected_access_token)
+    allow(service).to receive(:enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
   end
 
   subject(:ai_client) { described_class.new(user, service_name: :test, tracking_context: tracking_context) }

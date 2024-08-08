@@ -5,6 +5,14 @@ require 'spec_helper'
 RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: :code_suggestions do
   let_it_be(:user) { create(:user) }
   let_it_be(:instance_token) { create(:service_access_token, :active) }
+  let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
+  let(:enabled_by_namespace_ids) { [1, 2] }
+
+  before do
+    allow(CloudConnector::AvailableServices).to receive(:find_by_name).and_return(service)
+    allow(service).to receive(:access_token).and_return(instance_token&.token)
+    allow(service).to receive(:enabled_by_namespace_ids).and_return(enabled_by_namespace_ids)
+  end
 
   describe "#test_completion" do
     let(:body) { { choices: [{ text: "puts \"Hello World!\"\nend", index: 0, finish_reason: "length" }] } }
@@ -21,8 +29,6 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
     before do
       stub_request(:post, /#{Gitlab::AiGateway.url}/)
         .to_return(status: code, body: body.to_json, headers: { "Content-Type" => "application/json" })
-      allow(CloudConnector::AvailableServices).to receive_message_chain(:find_by_name,
-        :access_token).and_return(instance_token)
     end
 
     it 'returns nil if there is no error' do
@@ -80,6 +86,7 @@ RSpec.describe Gitlab::Llm::AiGateway::CodeSuggestionsClient, feature_category: 
         'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{instance_token.token}",
+        "X-Gitlab-Feature-Enabled-By-Namespace-Ids" => [enabled_by_namespace_ids.join(',')],
         'Content-Type' => 'application/json',
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id
       }

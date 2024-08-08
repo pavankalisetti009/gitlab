@@ -14,10 +14,11 @@ module Gitlab
       "#{base_url}/v1/code/user_access_token"
     end
 
-    def self.headers(user:, token:, agent: nil)
+    def self.headers(user:, service:, agent: nil)
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
-        'Authorization' => "Bearer #{token}",
+        'Authorization' => "Bearer #{service.access_token(user)}",
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => service.enabled_by_namespace_ids(user).join(','),
         'Content-Type' => 'application/json',
         'X-Request-ID' => Labkit::Correlation::CorrelationId.current_or_new_id,
         # Forward the request time to the model gateway to calculate latency

@@ -36,8 +36,9 @@ module API
               CloudConnector::AvailableServices.find_by_name(:code_suggestions)
             end
 
-            def model_gateway_headers(headers, gateway_token)
-              Gitlab::AiGateway.headers(user: current_job.user, token: gateway_token, agent: headers["User-Agent"])
+            def model_gateway_headers(headers, code_suggestions_data)
+              Gitlab::AiGateway.headers(user: current_job.user, service: code_suggestions_data,
+                agent: headers["User-Agent"])
                 .merge(saas_headers)
                 .transform_values { |v| Array(v) }
             end
@@ -74,7 +75,7 @@ module API
                   Gitlab::Workhorse.send_url(
                     File.join(::CodeSuggestions::Tasks::Base.base_url, 'v1', 'x-ray', 'libraries'),
                     body: params.except(:token, :id).to_json,
-                    headers: model_gateway_headers(headers, ai_gateway_token),
+                    headers: model_gateway_headers(headers, code_suggestions_data),
                     method: "POST"
                   )
 

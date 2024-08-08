@@ -64,6 +64,10 @@ module GitlabSubscriptions
       joins(:add_on).pluck(:name).uniq
     end
 
+    def self.uniq_namespace_ids
+      pluck(:namespace_id).compact.uniq
+    end
+
     def self.maximum_duo_seat_count
       active.for_duo_pro_or_duo_enterprise.pluck(:quantity).max || 0
     end
