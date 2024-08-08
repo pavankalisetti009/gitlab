@@ -6,7 +6,6 @@ import {
   GlFormGroup,
   GlFormInput,
   GlFormSelect,
-  GlFormText,
   GlTab,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
@@ -45,7 +44,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormSelect,
-    GlFormText,
     GlTab,
   },
   inject: ['service', 'serviceLevelAgreementSettings'],
@@ -120,9 +118,9 @@ export default {
       </p>
       <gl-form-checkbox v-model="enabled" class="gl-my-4">
         <span>{{ s__('IncidentSettings|Activate "time to SLA" countdown timer') }}</span>
-        <gl-form-text class="gl-font-base gl-text-gray-400">
+        <template #help>
           {{ $options.i18n.checkboxDetail }}
-        </gl-form-text>
+        </template>
       </gl-form-checkbox>
       <gl-form-group
         :invalid-feedback="invalidFeedback"

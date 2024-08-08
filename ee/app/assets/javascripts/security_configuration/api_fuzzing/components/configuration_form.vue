@@ -5,7 +5,6 @@ import {
   GlAlert,
   GlButton,
   GlFormGroup,
-  GlFormText,
   GlFormCheckbox,
   GlLink,
   GlSprintf,
@@ -30,7 +29,6 @@ export default {
     GlAlert,
     GlButton,
     GlFormGroup,
-    GlFormText,
     GlFormCheckbox,
     GlLink,
     GlSprintf,
@@ -192,7 +190,7 @@ export default {
     <gl-form-group class="gl-my-7">
       <template #label>
         {{ __('Authentication') }}
-        <gl-form-text class="gl-mt-3">
+        <div class="label-description">
           <gl-sprintf
             :message="
               s__(
@@ -204,7 +202,7 @@ export default {
               <a :href="apiFuzzingAuthenticationDocumentationPath">{{ content }}</a>
             </template>
           </gl-sprintf>
-        </gl-form-text>
+        </div>
       </template>
       <gl-form-checkbox
         v-model="authenticationEnabled"

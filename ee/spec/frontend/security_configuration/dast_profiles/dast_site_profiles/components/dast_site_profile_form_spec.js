@@ -1,6 +1,6 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlForm } from '@gitlab/ui';
+import { GlForm, GlSprintf } from '@gitlab/ui';
 import { within } from '@testing-library/dom';
 import merge from 'lodash/merge';
 import siteProfileWithSecrets from 'test_fixtures/security_configuration/dast_profiles/dast_site_profile_with_secrets.json';
@@ -56,7 +56,8 @@ describe('DastSiteProfileForm', () => {
   const scanFilePathInput = () => wrapper.findByTestId('scan-file-path-input');
   const findAuthCheckbox = () => wrapper.findByTestId('auth-enable-checkbox');
   const findTargetTypeOption = () => wrapper.findByTestId('site-type-option');
-  const findGraphQlHelpText = () => wrapper.findByTestId('graphql-help-text');
+  const findGraphQlHelpText = () =>
+    wrapper.findComponentByTestId('scan-file-path').findComponent(GlSprintf);
   const findRequestHeadersTooltip = () => wrapper.findByTestId('request-headers-tooltip');
   const findRequestHeadersTooltipHref = () =>
     findRequestHeadersTooltip()

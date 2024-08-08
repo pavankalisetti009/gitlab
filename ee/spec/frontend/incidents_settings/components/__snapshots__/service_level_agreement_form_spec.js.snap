@@ -22,13 +22,6 @@ exports[`Alert integration settings form should match the default snapshot 1`] =
       <span>
         Activate "time to SLA" countdown timer
       </span>
-      <gl-form-text-stub
-        class="gl-font-base gl-text-gray-400"
-        tag="small"
-        textvariant="gl-muted"
-      >
-        When activated, this applies to all new incidents in the project.
-      </gl-form-text-stub>
     </gl-form-checkbox-stub>
     <gl-form-group-stub
       invalid-feedback=""

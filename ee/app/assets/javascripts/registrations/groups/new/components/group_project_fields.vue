@@ -1,11 +1,5 @@
 <script>
-import {
-  GlFormGroup,
-  GlFormInput,
-  GlTooltipDirective,
-  GlFormCheckbox,
-  GlFormText,
-} from '@gitlab/ui';
+import { GlFormGroup, GlFormInput, GlTooltipDirective, GlFormCheckbox } from '@gitlab/ui';
 
 import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
 import { debounce } from 'lodash';
@@ -27,7 +21,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormCheckbox,
-    GlFormText,
     GitlabExperiment,
     ProjectTemplateSelector,
   },
@@ -266,10 +259,9 @@ export default {
     <gl-form-group v-if="!importGroup && !selectedTemplateName">
       <gl-form-checkbox name="project[initialize_with_readme]" :checked="initializeWithReadme">
         {{ $options.i18n.readmeLabel }}
-
-        <gl-form-text>
+        <template #help>
           {{ $options.i18n.readmeDescription }}
-        </gl-form-text>
+        </template>
       </gl-form-checkbox>
     </gl-form-group>
   </div>

@@ -1,5 +1,5 @@
 <script>
-import { GlForm, GlButton, GlFormGroup, GlFormInput, GlFormSelect, GlFormText } from '@gitlab/ui';
+import { GlForm, GlButton, GlFormGroup, GlFormInput, GlFormSelect } from '@gitlab/ui';
 import {
   LEADS_COMPANY_NAME_LABEL,
   LEADS_COMPANY_SIZE_LABEL,
@@ -30,7 +30,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormSelect,
-    GlFormText,
     CountryOrRegionSelector,
   },
   inject: {
@@ -112,8 +111,8 @@ export default {
 <template>
   <gl-form :action="submitPath" method="post" @submit="trackCompanyForm">
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <gl-form-text class="gl-font-base gl-text-gray-400 gl-pb-3">{{ descriptionText }}</gl-form-text>
-    <div class="gl-flex gl-flex-col sm:gl-flex-row gl-mt-5">
+    <p data-testid="description" class="gl-mt-2">{{ descriptionText }}</p>
+    <div class="gl-flex gl-flex-col sm:gl-flex-row gl-mt-6">
       <gl-form-group
         :label="$options.i18n.firstNameLabel"
         label-size="sm"
@@ -199,8 +198,8 @@ export default {
     <gl-button type="submit" variant="confirm" class="gl-w-full">
       {{ submitButtonText }}
     </gl-button>
-    <gl-form-text data-testid="footer_description_text" class="gl-mt-3 gl-text-subtle">
+    <p data-testid="footer_description_text" class="gl-mt-3 gl-text-subtle gl-text-sm">
       {{ footerText }}
-    </gl-form-text>
+    </p>
   </gl-form>
 </template>

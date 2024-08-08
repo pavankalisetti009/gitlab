@@ -3,7 +3,6 @@ import {
   GlFormGroup,
   GlFormInput,
   GlFormRadioGroup,
-  GlFormText,
   GlFormTextarea,
   GlFormSelect,
   GlLink,
@@ -84,7 +83,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormRadioGroup,
-    GlFormText,
     GlFormTextarea,
     TooltipIcon,
     GlFormSelect,
@@ -296,8 +294,9 @@ export default {
       </gl-form-group>
 
       <gl-form-group
-        :invalid-feedback="form.fields.targetUrl.feedback"
         :label="i18n.targetUrl.label"
+        :invalid-feedback="form.fields.targetUrl.feedback"
+        :description="showWarningTextForTargetUrl ? $options.I18N_DAST_URL_CHANGE_WARNING : ''"
       >
         <gl-form-input
           v-model="form.fields.targetUrl.value"
@@ -309,14 +308,12 @@ export default {
           type="url"
           :state="form.fields.targetUrl.state"
         />
-        <gl-form-text v-if="showWarningTextForTargetUrl"
-          >{{ $options.I18N_DAST_URL_CHANGE_WARNING }}
-        </gl-form-text>
       </gl-form-group>
 
       <gl-form-group
         v-if="isTargetAPI"
         id="scan-method-popover-container"
+        class="gl-border bl-border-red"
         :label="$options.i18n.scanMethod.label"
       >
         <gl-form-select
@@ -334,16 +331,17 @@ export default {
           </template>
         </gl-form-select>
 
-        <gl-form-text>
+        <template #description>
           <gl-link :href="$options.DAST_API_DOC_PATH" target="_blank"
             >{{ $options.i18n.scanMethod.helpText }}
           </gl-link>
-        </gl-form-text>
+        </template>
 
         <gl-form-group
           v-if="selectedScanMethod"
           class="gl-mt-5"
           :label="selectedScanMethod.inputLabel"
+          data-testid="scan-file-path"
           :invalid-feedback="form.fields.scanFilePath.feedback"
         >
           <gl-form-input
@@ -358,30 +356,31 @@ export default {
             :state="form.fields.scanFilePath.state"
           />
 
-          <gl-form-text v-if="isGraphQlMethod" data-testid="graphql-help-text" class="gl-max-w-62">
-            <gl-sprintf :message="$options.i18n.dastApiDocsGraphQlHelpText">
+          <template #description>
+            <gl-sprintf
+              v-if="isGraphQlMethod"
+              :message="$options.i18n.dastApiDocsGraphQlHelpText"
+              class="gl-max-w-62"
+            >
               <template #link="{ content }">
                 <gl-link :href="$options.DAST_API_DOC_GRAPHQL_PATH" target="_blank"
                   >{{ content }}
                 </gl-link>
               </template>
             </gl-sprintf>
-          </gl-form-text>
+          </template>
         </gl-form-group>
       </gl-form-group>
 
       <div class="row">
         <gl-form-group
-          :label="i18n.excludedUrls.label"
           :invalid-feedback="form.fields.excludedUrls.feedback"
           :class="{ 'col-md-6': !stacked, 'col-md-12': stacked }"
         >
           <template #label>
             {{ i18n.excludedUrls.label }}
             <tooltip-icon :title="$options.i18n.excludedUrls.tooltip" />
-            <gl-form-text class="gl-mt-3"
-              >{{ $options.i18n.excludedUrls.description }}
-            </gl-form-text>
+            <div class="label-description">{{ $options.i18n.excludedUrls.description }}</div>
           </template>
           <gl-form-textarea
             v-model="form.fields.excludedUrls.value"
@@ -390,14 +389,14 @@ export default {
             :no-resize="false"
             data-testid="excluded-urls-input"
           />
-          <gl-form-text
-            >{{
+          <template #description>
+            {{
               getCharacterLimitText(
                 form.fields.excludedUrls.value,
                 $options.MAX_CHAR_LIMIT_EXCLUDED_URLS,
               )
             }}
-          </gl-form-text>
+          </template>
         </gl-form-group>
 
         <gl-form-group
@@ -425,9 +424,7 @@ export default {
                 </template>
               </gl-sprintf>
             </gl-popover>
-            <gl-form-text class="gl-mt-3"
-              >{{ $options.i18n.requestHeaders.description }}
-            </gl-form-text>
+            <div class="label-description">{{ $options.i18n.requestHeaders.description }}</div>
           </template>
           <gl-form-textarea
             v-model="form.fields.requestHeaders.value"
@@ -436,14 +433,14 @@ export default {
             :no-resize="false"
             data-testid="request-headers-input"
           />
-          <gl-form-text
-            >{{
+          <template #description>
+            {{
               getCharacterLimitText(
                 form.fields.requestHeaders.value,
                 $options.MAX_CHAR_LIMIT_REQUEST_HEADERS,
               )
             }}
-          </gl-form-text>
+          </template>
         </gl-form-group>
       </div>
     </gl-form-group>

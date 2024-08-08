@@ -1,12 +1,11 @@
 <script>
-import { GlFormGroup, GlFormInput, GlFormText, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlFormGroup, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
 import { CUSTOM_VALUE_MESSAGE, SCHEMA_TO_PROP_SIZE_MAP, LARGE } from '../constants';
 
 export default {
   components: {
     GlFormGroup,
     GlFormInput,
-    GlFormText,
     GlLink,
     GlSprintf,
   },
@@ -80,7 +79,7 @@ export default {
   <gl-form-group :label-for="field">
     <template #label>
       {{ label }}
-      <gl-form-text class="gl-mt-3">{{ description }}</gl-form-text>
+      <div class="label-description">{{ description }}</div>
     </template>
 
     <gl-form-input
