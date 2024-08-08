@@ -94,140 +94,83 @@ RSpec.describe AuditEventService, :request_store, feature_category: :audit_event
         expect { service.security_event }.to change(AuditEvent, :count).by(1)
       end
 
-      context 'when sync_audit_events_to_new_tables is disabled' do
-        before do
-          stub_feature_flags(sync_audit_events_to_new_tables: false)
-        end
+      context 'entity is a project' do
+        let(:service) { described_class.new(user, project, { action: :destroy }) }
 
-        context 'entity is a project' do
-          let(:service) { described_class.new(user, project, { action: :destroy }) }
+        it 'creates audit event in project audit events' do
+          expect do
+            service.security_event
+          end.to change(AuditEvents::ProjectAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
 
-          it 'does not create audit event in project audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::ProjectAuditEvent, :count).by(0).and change(AuditEvent, :count).by(1)
-          end
-        end
+          event = AuditEvents::ProjectAuditEvent.last
+          audit_event = AuditEvent.last
 
-        context 'entity is a group' do
-          let(:group) { create(:group) }
-          let(:service) { described_class.new(user, group, { action: :destroy }) }
-
-          it 'does not create audit event in group audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::GroupAuditEvent, :count).by(0).and change(AuditEvent, :count).by(1)
-          end
-        end
-
-        context 'entity is a user' do
-          before do
-            stub_licensed_features(extended_audit_events: true)
-          end
-
-          let(:service) { described_class.new(user, user, { action: :destroy }) }
-
-          it 'does not create audit event in user audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::UserAuditEvent, :count).by(0).and change(AuditEvent, :count).by(1)
-          end
-        end
-
-        context 'entity is instance scope' do
-          let(:service) { described_class.new(user, ::Gitlab::Audit::InstanceScope.new, { action: :destroy }) }
-
-          it 'does not create audit event in instance audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::InstanceAuditEvent, :count).by(0).and change(AuditEvent, :count).by(1)
-          end
+          expect(event).to have_attributes(
+            id: audit_event.id,
+            project_id: project.id,
+            author_id: user.id,
+            author_name: user.name)
         end
       end
 
-      context 'when sync_audit_events_to_new_tables is enabled' do
+      context 'entity is a group' do
+        let(:group) { create(:group) }
+        let(:service) { described_class.new(user, group, { action: :destroy }) }
+
+        it 'creates audit event in group audit events' do
+          expect do
+            service.security_event
+          end.to change(AuditEvents::GroupAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
+
+          event = AuditEvents::GroupAuditEvent.last
+          audit_event = AuditEvent.last
+
+          expect(event).to have_attributes(
+            id: audit_event.id,
+            group_id: group.id,
+            author_id: user.id,
+            author_name: user.name)
+        end
+      end
+
+      context 'entity is a user' do
         before do
-          stub_feature_flags(sync_audit_events_to_new_tables: true)
+          stub_licensed_features(extended_audit_events: true)
         end
 
-        context 'entity is a project' do
-          let(:service) { described_class.new(user, project, { action: :destroy }) }
+        let(:service) { described_class.new(user, user, { action: :destroy }) }
 
-          it 'creates audit event in project audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::ProjectAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
+        it 'creates audit event in user audit events' do
+          expect do
+            service.security_event
+          end.to change(AuditEvents::UserAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
 
-            event = AuditEvents::ProjectAuditEvent.last
-            audit_event = AuditEvent.last
+          event = AuditEvents::UserAuditEvent.last
+          audit_event = AuditEvent.last
 
-            expect(event).to have_attributes(
-              id: audit_event.id,
-              project_id: project.id,
-              author_id: user.id,
-              author_name: user.name)
-          end
+          expect(event).to have_attributes(
+            id: audit_event.id,
+            user_id: user.id,
+            author_id: user.id,
+            author_name: user.name)
         end
+      end
 
-        context 'entity is a group' do
-          let(:group) { create(:group) }
-          let(:service) { described_class.new(user, group, { action: :destroy }) }
+      context 'entity is instance scope' do
+        let(:service) { described_class.new(user, ::Gitlab::Audit::InstanceScope.new, { action: :destroy }) }
 
-          it 'creates audit event in group audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::GroupAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
+        it 'creates audit event in user audit events' do
+          expect do
+            service.security_event
+          end.to change(AuditEvents::InstanceAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
 
-            event = AuditEvents::GroupAuditEvent.last
-            audit_event = AuditEvent.last
+          event = AuditEvents::InstanceAuditEvent.last
+          audit_event = AuditEvent.last
 
-            expect(event).to have_attributes(
-              id: audit_event.id,
-              group_id: group.id,
-              author_id: user.id,
-              author_name: user.name)
-          end
-        end
-
-        context 'entity is a user' do
-          before do
-            stub_licensed_features(extended_audit_events: true)
-          end
-
-          let(:service) { described_class.new(user, user, { action: :destroy }) }
-
-          it 'creates audit event in user audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::UserAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
-
-            event = AuditEvents::UserAuditEvent.last
-            audit_event = AuditEvent.last
-
-            expect(event).to have_attributes(
-              id: audit_event.id,
-              user_id: user.id,
-              author_id: user.id,
-              author_name: user.name)
-          end
-        end
-
-        context 'entity is instance scope' do
-          let(:service) { described_class.new(user, ::Gitlab::Audit::InstanceScope.new, { action: :destroy }) }
-
-          it 'creates audit event in user audit events' do
-            expect do
-              service.security_event
-            end.to change(AuditEvents::InstanceAuditEvent, :count).by(1).and change(AuditEvent, :count).by(1)
-
-            event = AuditEvents::InstanceAuditEvent.last
-            audit_event = AuditEvent.last
-
-            expect(event).to have_attributes(
-              id: audit_event.id,
-              author_id: user.id,
-              author_name: user.name)
-          end
+          expect(event).to have_attributes(
+            id: audit_event.id,
+            author_id: user.id,
+            author_name: user.name)
         end
       end
 
