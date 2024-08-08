@@ -8,10 +8,28 @@ module EE
 
       override :update
       def update
-        if pull_mirror_change?
-          deprecated_pull_mirror_procedure
+        return super unless pull_mirror_change?
+
+        return deprecated_pull_mirror_procedure unless pull_mirror_create? && ::Feature.enabled?(
+          :use_pull_mirror_update_service, project)
+
+        result = ::Repositories::PullMirrors::UpdateService.new(project, current_user, safe_mirror_params).execute
+
+        if result.success?
+          flash[:notice] = notice_message
         else
-          super
+          flash[:alert] = alert_error(result.message)
+        end
+
+        respond_to do |format|
+          format.html { redirect_to_repository_settings(project, anchor: 'js-push-remote-settings') }
+          format.json do
+            if result.error?
+              render json: result.message, status: :unprocessable_entity
+            else
+              render json: ProjectMirrorSerializer.new.represent(project)
+            end
+          end
         end
       end
 
@@ -41,10 +59,10 @@ module EE
       private
 
       def pull_mirror_change?
-        pull_mirror_update? || pull_mirror_destroy?
+        pull_mirror_create? || pull_mirror_destroy?
       end
 
-      def pull_mirror_update?
+      def pull_mirror_create?
         ::Gitlab::Utils.to_boolean(safe_mirror_params['mirror'])
       end
 
