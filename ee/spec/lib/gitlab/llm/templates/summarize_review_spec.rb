@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Llm::Templates::SummarizeReview, feature_category: :code_
 
   describe '#to_prompt' do
     it 'includes lines per note' do
-      prompt = subject.to_prompt
+      prompt = subject.to_prompt&.dig(:messages, 0, :content)
 
       expect(prompt).to include("Comment: #{draft_note_1.note}")
       expect(prompt).to include("Comment: #{draft_note_2.note}")

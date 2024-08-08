@@ -29,6 +29,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           generate_issue_description
           summarize_issue_discussions
           generate_commit_message
+          review_merge_request
         ]
       }
     end
@@ -45,7 +46,6 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           generate_cube_query
           glab_ask_git_command
           resolve_vulnerability
-          review_merge_request
           semantic_search_issue
           summarize_issue_discussions
           summarize_merge_request
