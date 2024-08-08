@@ -1,4 +1,3 @@
-import { isNull } from 'lodash';
 import { __, sprintf } from '~/locale';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
 import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
@@ -65,13 +64,13 @@ const fetchAiImpactQuery = async ({ metric, namespace, startDate, endDate }) => 
   });
 
   const rate = extractMetricRateValue({ metric, rawQueryResult });
-  if (!isNull(rate)) {
-    const { units } = AI_IMPACT_OVER_TIME_METRICS[metric];
 
-    // scaledValueForDisplay expects a value between 0 -> 1
-    return scaledValueForDisplay(rate / 100, units);
-  }
-  return '-';
+  if (rate === null) return '-';
+
+  const { units } = AI_IMPACT_OVER_TIME_METRICS[metric];
+
+  // scaledValueForDisplay expects a value between 0 -> 1
+  return scaledValueForDisplay(rate / 100, units);
 };
 
 export default async function fetch({

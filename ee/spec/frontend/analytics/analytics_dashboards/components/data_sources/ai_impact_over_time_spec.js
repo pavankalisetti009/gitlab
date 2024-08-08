@@ -30,16 +30,10 @@ describe('AI Impact Over Time Data Source', () => {
 
   describe('fetch', () => {
     describe('default', () => {
-      beforeEach(async () => {
-        mockResolvedQuery();
+      it('correctly applies query parameters', async () => {
+        await mockResolvedQuery();
         res = await fetch({ namespace, query });
-      });
 
-      it('returns a single value', () => {
-        expect(res).toBe('62.5');
-      });
-
-      it('correctly applies query parameters', () => {
         expectQueryWithVariables({
           startDate: new Date('2020-06-07'),
           endDate: new Date('2020-07-07'),
@@ -49,6 +43,7 @@ describe('AI Impact Over Time Data Source', () => {
 
       describe.each`
         type             | response                         | result
+        ${'valid'}       | ${mockAiMetricsResponseData}     | ${'62.5'}
         ${'zero values'} | ${mockAiMetricsZeroResponseData} | ${'-'}
         ${'null values'} | ${mockAiMetricsNullResponseData} | ${'-'}
       `('with $type data', ({ response, result }) => {
@@ -57,7 +52,7 @@ describe('AI Impact Over Time Data Source', () => {
           res = await fetch({ namespace, query });
         });
 
-        it('correctly calculates the value', () => {
+        it(`returns ${result}`, () => {
           expect(res).toBe(result);
         });
       });
