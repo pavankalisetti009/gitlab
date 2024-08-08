@@ -401,7 +401,7 @@ module Search
 
       groups_with_wiki_repos.each_batch do |batch|
         group_ids = batch.pluck_primary_key
-        group_ids.each { |group_id| ::ElasticWikiIndexerWorker.perform_async(group_id, 'Group', force: true) }
+        group_ids.each { |group_id| ::ElasticWikiIndexerWorker.perform_async(group_id, 'Group', 'force' => true) }
       end
 
       logger.info("Indexing group wikis... #{Rainbow('done').green}")

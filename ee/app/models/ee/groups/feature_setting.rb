@@ -29,7 +29,7 @@ module EE
       def maintain_group_wiki_permissions_in_elastic
         return unless wiki_access_level_previously_changed?
 
-        ElasticWikiIndexerWorker.perform_async(group.id, group.class.name, force: true)
+        ElasticWikiIndexerWorker.perform_async(group.id, group.class.name, 'force' => true)
       end
     end
   end

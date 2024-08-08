@@ -1227,7 +1227,7 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
           wiki.create_page('index_page', 'term')
           wiki.index_wiki_blobs
         end
-        ElasticWikiIndexerWorker.new.perform(project_1.id, project_1.class.name, force: true)
+        ElasticWikiIndexerWorker.new.perform(project_1.id, project_1.class.name, 'force' => true)
         ensure_elasticsearch_index!
       end
 

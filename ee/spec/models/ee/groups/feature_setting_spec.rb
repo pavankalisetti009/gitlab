@@ -149,7 +149,7 @@ RSpec.describe Groups::FeatureSetting do
         end
 
         it 'calls ElasticWikiIndexerWorker' do
-          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group.id, group.class.name, force: true)
+          expect(ElasticWikiIndexerWorker).to receive(:perform_async).with(group.id, group.class.name, 'force' => true)
           new_level = Featurable::STRING_OPTIONS.except('public').values.excluding(group.visibility_level).last
           group.group_feature.update_attribute(:wiki_access_level, new_level)
         end
@@ -157,7 +157,8 @@ RSpec.describe Groups::FeatureSetting do
 
       context 'if elasticsearch is disabled for group' do
         it 'does not call ElasticWikiIndexerWorker' do
-          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async).with(group.id, group.class.name, force: true)
+          expect(ElasticWikiIndexerWorker).not_to receive(:perform_async)
+            .with(group.id, group.class.name, 'force' => true)
           new_level = Featurable::STRING_OPTIONS.except('public').values.excluding(group.visibility_level).last
           group.group_feature.update_attribute(:wiki_access_level, new_level)
         end

@@ -29,7 +29,7 @@ module Elastic
     end
 
     def sync_group_wiki_in_elastic
-      ElasticWikiIndexerWorker.perform_async(id, self.class.name, force: true)
+      ElasticWikiIndexerWorker.perform_async(id, self.class.name, 'force' => true)
     end
 
     def delete_group_wiki_in_elastic

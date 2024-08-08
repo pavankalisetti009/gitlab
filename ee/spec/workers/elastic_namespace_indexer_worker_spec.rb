@@ -70,7 +70,7 @@ RSpec.describe ElasticNamespaceIndexerWorker, feature_category: :global_search d
         it 'indexes all group wikis belonging to the namespace' do
           [group_namespace, sub_group].each do |group|
             expect(ElasticWikiIndexerWorker).to receive(:perform_in).with(
-              elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { force: true })
+              elastic_wiki_indexer_worker_random_delay_range, group.id, group.class.name, { 'force' => true })
           end
 
           worker.perform(group_namespace.id, :index)
