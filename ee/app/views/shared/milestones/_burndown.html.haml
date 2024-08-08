@@ -12,7 +12,7 @@
     - c.with_body do
       - if !has_dates
         - url = edit_milestone_path(milestone)
-        = safe_format(_('%{link_start}Add a start date and due date%{link_end} to view a burndown chart.'), tag_pair(link_to('', url), :link_start, :link_end))
+        = safe_format(_('Add a %{link_start}start date and due date%{link_end} to view a burndown chart.'), tag_pair(link_to('', url), :link_start, :link_end))
       - if has_no_issues
         = _('Assign some issues to this milestone.')
 
