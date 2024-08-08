@@ -14,7 +14,7 @@ module Gitlab
             ).execute
           end
 
-          def agent_name
+          def prompt_name
             raise NotImplementedError
           end
 
@@ -28,7 +28,7 @@ module Gitlab
             ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: prompt_message.ai_action.to_sym,
               tracking_context: tracking_context)
             ai_client.complete(
-              endpoint: "/v1/agents/#{prompt_message.ai_action}/#{agent_name}",
+              endpoint: "/v1/prompts/#{prompt_message.ai_action}/#{prompt_name}",
               body: inputs
             )
           end
