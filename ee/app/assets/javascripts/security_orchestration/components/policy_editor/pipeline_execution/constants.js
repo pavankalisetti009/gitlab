@@ -24,3 +24,16 @@ content:
 `;
 
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
+
+export const INJECT = 'inject_ci';
+export const OVERRIDE = 'override_project_ci';
+
+export const CUSTOM_STRATEGY_OPTIONS = {
+  [INJECT]: s__('ScanExecutionPolicy|Inject'),
+  [OVERRIDE]: s__('ScanExecutionPolicy|Override'),
+};
+
+export const CUSTOM_STRATEGY_OPTIONS_KEYS = Object.keys(CUSTOM_STRATEGY_OPTIONS);
+export const CUSTOM_STRATEGY_OPTIONS_LISTBOX_ITEMS = Object.entries(CUSTOM_STRATEGY_OPTIONS).map(
+  ([value, text]) => ({ value, text }),
+);

@@ -4,11 +4,11 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/action_section.vue';
-import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_file_path.vue';
+import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
 import {
   INJECT,
   OVERRIDE,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { mockWithoutRefPipelineExecutionObject } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
 

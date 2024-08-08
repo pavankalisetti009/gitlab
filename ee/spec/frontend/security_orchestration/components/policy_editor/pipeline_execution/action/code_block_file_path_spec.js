@@ -7,16 +7,14 @@ import {
   GlTruncate,
 } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_strategy_selector.vue';
-import CodeBlockSourceSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_source_selector.vue';
-import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/scan_execution/action/code_block_file_path.vue';
+import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_strategy_selector.vue';
+import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import {
-  INSERTED_CODE_BLOCK,
   INJECT,
   OVERRIDE,
-} from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+} from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
 describe('CodeBlockFilePath', () => {
@@ -27,7 +25,6 @@ describe('CodeBlockFilePath', () => {
   const createComponent = ({ propsData = {}, provide = {}, stubs = {} } = {}) => {
     wrapper = shallowMountExtended(CodeBlockFilePath, {
       propsData: {
-        selectedType: INSERTED_CODE_BLOCK,
         ...propsData,
       },
       stubs: {
@@ -43,7 +40,6 @@ describe('CodeBlockFilePath', () => {
     });
   };
 
-  const findCodeBlockSourceSelector = () => wrapper.findComponent(CodeBlockSourceSelector);
   const findFormInput = () => wrapper.findComponent(GlFormInput);
   const findFormInputGroup = () => wrapper.findComponent(GlFormInputGroup);
   const findFormGroup = () => wrapper.findComponent(GlFormGroup);
@@ -76,63 +72,56 @@ describe('CodeBlockFilePath', () => {
       expect(findGroupProjectsDropdown().exists()).toBe(true);
       expect(findGroupProjectsDropdown().props('multiple')).toBe(false);
     });
-
-    it('renders action type selector on scan execution policy editor', () => {
-      expect(findCodeBlockSourceSelector().exists()).toBe(true);
-      expect(findCodeBlockSourceSelector().props('selectedType')).toBe(INSERTED_CODE_BLOCK);
-    });
   });
 
-  describe('pipeline execution policy', () => {
-    it('renders message for "inject" pipeline execution policy', () => {
-      createComponent({
-        propsData: { isPipelineExecution: true },
-        stubs: { GlSprintf: false },
-      });
-      expect(findGlSprintf().attributes('message')).toBe(
-        '%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
-      );
+  it('renders message for "inject" pipeline execution policy', () => {
+    createComponent({
+      propsData: { isPipelineExecution: true },
+      stubs: { GlSprintf: false },
     });
+    expect(findGlSprintf().attributes('message')).toBe(
+      '%{strategySelector}into the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
+    );
+  });
 
-    it('renders message for "override" pipeline execution policy', () => {
-      createComponent({
-        propsData: { strategy: OVERRIDE, isPipelineExecution: true },
-        stubs: { GlSprintf: false },
-      });
-      expect(findGlSprintf().attributes('message')).toBe(
-        '%{strategySelector}the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
-      );
+  it('renders message for "override" pipeline execution policy', () => {
+    createComponent({
+      propsData: { strategy: OVERRIDE, isPipelineExecution: true },
+      stubs: { GlSprintf: false },
     });
+    expect(findGlSprintf().attributes('message')).toBe(
+      '%{strategySelector}the %{boldStart}.gitlab-ci.yml%{boldEnd} with the following %{boldStart}pipeline execution file%{boldEnd} from %{projectSelector}',
+    );
+  });
 
-    it('renders icon tooltip message for inject pipeline execution policy', () => {
-      createComponent({ propsData: { isPipelineExecution: true } });
-      expect(findIcon().attributes('title')).toBe(
-        'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
-      );
-    });
+  it('renders icon tooltip message for inject pipeline execution policy', () => {
+    createComponent({ propsData: { isPipelineExecution: true } });
+    expect(findIcon().attributes('title')).toBe(
+      'The content of this pipeline execution YAML file is injected into the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+    );
+  });
 
-    it('renders icon tooltip message for override pipeline execution policy', () => {
-      createComponent({
-        propsData: { strategy: OVERRIDE, isPipelineExecution: true },
-      });
-      expect(findIcon().attributes('title')).toBe(
-        'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
-      );
+  it('renders icon tooltip message for override pipeline execution policy', () => {
+    createComponent({
+      propsData: { strategy: OVERRIDE, isPipelineExecution: true },
     });
+    expect(findIcon().attributes('title')).toBe(
+      'The content of this pipeline execution YAML file overrides the .gitlab-ci.yml file of the target project. All GitLab CI/CD features are supported.',
+    );
+  });
 
-    it('renders the help icon', () => {
-      createComponent({ propsData: { isPipelineExecution: true } });
-      expect(findIcon().exists()).toBe(true);
-    });
+  it('renders the help icon', () => {
+    createComponent({ propsData: { isPipelineExecution: true } });
+    expect(findIcon().exists()).toBe(true);
+  });
 
-    it('renders pipeline execution ref selector', () => {
-      createComponent({
-        propsData: { isPipelineExecution: true },
-        stubs: { GlSprintf: false },
-      });
-      expect(findRefSelector().exists()).toBe(false);
-      expect(findPipelineExecutionRefSelector().exists()).toBe(true);
+  it('renders pipeline execution ref selector', () => {
+    createComponent({
+      propsData: { isPipelineExecution: true },
+      stubs: { GlSprintf: false },
     });
+    expect(findRefSelector().exists()).toBe(false);
+    expect(findPipelineExecutionRefSelector().exists()).toBe(true);
   });
 
   describe('selected state', () => {
@@ -146,37 +135,6 @@ describe('CodeBlockFilePath', () => {
       expect(findRefSelector().exists()).toBe(false);
       expect(findFormInput().exists()).toBe(true);
       expect(findFormInput().attributes('value')).toBe('ref');
-    });
-
-    it('renders selected project and ref selector on scan execution policy editor', () => {
-      const fullPath = 'path/to/project';
-
-      createComponent({
-        propsData: {
-          selectedProject: {
-            id: PROJECT_ID,
-            fullPath,
-          },
-          selectedRef: 'ref',
-        },
-      });
-
-      expect(findTruncate().props('text')).toBe(fullPath);
-      expect(findIcon().exists()).toBe(false);
-      expect(findRefSelector().exists()).toBe(true);
-      expect(findPipelineExecutionRefSelector().exists()).toBe(false);
-      expect(findFormInput().exists()).toBe(false);
-      expect(findRefSelector().props()).toEqual(
-        expect.objectContaining({
-          translations: {
-            noRefSelected: 'default branch',
-          },
-          value: 'ref',
-        }),
-      );
-      expect(findGroupProjectsDropdown().props('selected')).toBe(PROJECT_ID);
-      expect(findFormInputGroup().attributes().disabled).toBe(undefined);
-      expect(findTruncate().props('text')).toBe(fullPath);
     });
 
     it('renders selected file path', () => {

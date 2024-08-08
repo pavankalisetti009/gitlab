@@ -1,7 +1,7 @@
 <script>
 import { parseCustomFileConfiguration } from 'ee/security_orchestration/components/policy_editor/utils';
 import getProjectId from 'ee/security_orchestration/graphql/queries/get_project_id.query.graphql';
-import CodeBlockFilePath from '../../scan_execution/action/code_block_file_path.vue';
+import CodeBlockFilePath from './code_block_file_path.vue';
 
 export default {
   components: {
@@ -97,7 +97,6 @@ export default {
 
 <template>
   <code-block-file-path
-    is-pipeline-execution
     :file-path="filePath"
     :strategy="strategy"
     :selected-ref="selectedRef"
