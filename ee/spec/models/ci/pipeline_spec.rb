@@ -446,56 +446,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     end
   end
 
-  describe '#dependency_list_reports', feature_category: :dependency_management do
-    subject { pipeline.dependency_list_report }
-
-    before do
-      stub_licensed_features(dependency_scanning: true, license_scanning: true)
-    end
-
-    context 'when pipeline has a build with dependency list reports' do
-      let_it_be(:build) { create(:ee_ci_build, :success, :dependency_list, pipeline: pipeline, project: project) }
-      let_it_be(:build1) { create(:ee_ci_build, :success, :dependency_scanning, pipeline: pipeline, project: project) }
-      let_it_be(:build2) { create(:ee_ci_build, :success, :cyclonedx, pipeline: pipeline, project: project) }
-
-      it 'returns a dependency list report with collected data' do
-        mini_portile2 = subject.dependencies.find { |x| x[:name] == 'mini_portile2' }
-
-        expect(subject.dependencies.count).to eq(21)
-        expect(mini_portile2[:name]).not_to be_empty
-        expect(mini_portile2[:licenses]).to be_empty
-      end
-
-      context 'when builds are retried' do
-        before do
-          build.update!(retried: true)
-          build1.update!(retried: true)
-        end
-
-        it 'does not take retried builds into account' do
-          expect(subject.dependencies).to be_empty
-        end
-      end
-
-      context 'with failed builds' do
-        it 'does not runs queries on failed builds' do
-          control = ActiveRecord::QueryRecorder.new { subject }
-
-          create(:ee_ci_build, :failed, :dependency_scanning, pipeline: pipeline, project: project)
-          create(:ee_ci_build, :failed, :license_scanning, pipeline: pipeline, project: project)
-
-          expect { subject }.not_to exceed_query_limit(control)
-        end
-      end
-    end
-
-    context 'when pipeline does not have any builds with dependency_list reports' do
-      it 'returns an empty dependency_list report' do
-        expect(subject.dependencies).to be_empty
-      end
-    end
-  end
-
   describe '#metrics_report' do
     subject { pipeline.metrics_report }
 

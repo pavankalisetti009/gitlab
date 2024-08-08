@@ -144,18 +144,6 @@ module EE
         license_scanning_report
       end
 
-      def collect_dependency_list_reports!(dependency_list_report)
-        if project.feature_available?(:dependency_scanning)
-          dependency_list = ::Gitlab::Ci::Parsers::Security::DependencyList.new(project, sha, pipeline)
-
-          each_report(::Ci::JobArtifact.file_types_for_report(:dependency_list)) do |_, blob|
-            dependency_list.parse!(blob, dependency_list_report)
-          end
-        end
-
-        dependency_list_report
-      end
-
       def collect_metrics_reports!(metrics_report)
         each_report(::Ci::JobArtifact.file_types_for_report(:metrics)) do |file_type, blob|
           next unless project.feature_available?(:metrics_reports)

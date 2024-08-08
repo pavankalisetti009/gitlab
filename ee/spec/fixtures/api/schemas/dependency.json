@@ -1,29 +1,43 @@
 {
   "type": "object",
   "required": [
-    "name",
-    "packager",
-    "version",
-    "location",
-    "vulnerabilities",
-    "licenses"
+    "occurrence_id",
+    "name"
   ],
   "properties": {
+    "occurrence_id": {
+      "type": "integer"
+    },
     "name": {
       "type": "string"
     },
     "packager": {
-      "type": "string"
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "version": {
       "type": "string"
     },
     "location": {
       "blob_path": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
       },
       "path": {
-        "type": "string"
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "top_level": {
+        "type": "boolean"
+      },
+      "ancestors": {
+        "type": "array"
       }
     },
     "project": {
@@ -40,14 +54,13 @@
       }
     },
     "project_count": {
-      "type": [
-        "integer"
-      ]
+      "type": "integer"
     },
     "occurrence_count": {
-      "type": [
-        "integer"
-      ]
+      "type": "integer"
+    },
+    "vulnerability_count": {
+      "type": "integer"
     },
     "vulnerabilities": {
       "type": "array",
@@ -63,11 +76,17 @@
     "licenses": {
       "type": "array",
       "properties": {
+        "spdx_identifier": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         },
         "url": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }

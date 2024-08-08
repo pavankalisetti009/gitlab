@@ -5,6 +5,8 @@ module Sbom
     class Vulnerabilities
       include Gitlab::Utils::StrongMemoize
 
+      CONTAINER_IMAGE_PATH_PREFIX = 'container-image:'
+
       attr_reader :pipeline
 
       delegate :project, to: :pipeline
@@ -70,7 +72,7 @@ module Sbom
       def dependency_path(finding)
         return finding.file if finding.dependency_scanning?
 
-        "#{Gitlab::Ci::Parsers::Security::DependencyList::CONTAINER_IMAGE_PATH_PREFIX}#{finding.image}"
+        "#{CONTAINER_IMAGE_PATH_PREFIX}#{finding.image}"
       end
     end
   end

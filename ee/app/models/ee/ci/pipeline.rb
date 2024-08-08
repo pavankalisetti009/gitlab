@@ -148,14 +148,6 @@ module EE
         super(file_types_to_search)
       end
 
-      def dependency_list_report
-        ::Gitlab::Ci::Reports::DependencyList::Report.new.tap do |dependency_list_report|
-          latest_report_builds(::Ci::JobArtifact.of_report_type(:dependency_list)).success.each do |build|
-            build.collect_dependency_list_reports!(dependency_list_report)
-          end
-        end
-      end
-
       def metrics_report
         ::Gitlab::Ci::Reports::Metrics::Report.new.tap do |metrics_report|
           latest_report_builds(::Ci::JobArtifact.of_report_type(:metrics)).each do |build|

@@ -4,6 +4,25 @@ module Sbom
   class DependenciesFinder
     include Gitlab::Utils::StrongMemoize
 
+    FILTER_PACKAGE_MANAGERS_VALUES = %w[
+      bundler
+      yarn
+      npm
+      pnpm
+      maven
+      composer
+      pip
+      conan
+      go
+      nuget
+      sbt
+      gradle
+      pipenv
+      poetry
+      setuptools
+      apk
+    ].freeze
+
     # @param dependable [Organization, Group, Project] the container for detected SBoM occurrences
     def initialize(dependable, current_user: nil, params: {})
       @dependable = dependable

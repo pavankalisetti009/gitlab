@@ -11,10 +11,6 @@ module Projects
     urgency :low
     track_govern_activity 'dependencies', :index
 
-    before_action do
-      push_frontend_feature_flag(:project_level_sbom_occurrences, project)
-    end
-
     def index
       respond_to do |format|
         format.html do
@@ -28,20 +24,11 @@ module Projects
 
     private
 
-    def user_requested_filters_that_they_cannot_see?
-      params[:filter] == 'vulnerable' && !can?(current_user, :read_security_resource, project)
-    end
-
     def collect_dependencies
-      return [] if user_requested_filters_that_they_cannot_see?
-
-      if project_level_sbom_occurrences_enabled?
-        dependencies_finder.execute.with_component.with_version.with_source
-      else
-        return [] if pipeline.blank?
-
-        ::Security::DependencyListService.new(pipeline: pipeline, params: dependency_list_params).execute
-      end
+      dependencies_finder.execute
+        .with_component
+        .with_version
+        .with_source
     end
 
     def authorize_read_dependency_list!
@@ -50,10 +37,6 @@ module Projects
 
     def dependencies
       @dependencies ||= collect_dependencies
-    end
-
-    def pipeline
-      @pipeline ||= project.latest_ingested_sbom_pipeline
     end
 
     def dependency_list_params
@@ -82,10 +65,6 @@ module Projects
           render_403
         end
       end
-    end
-
-    def project_level_sbom_occurrences_enabled?
-      Feature.enabled?(:project_level_sbom_occurrences, project)
     end
   end
 end

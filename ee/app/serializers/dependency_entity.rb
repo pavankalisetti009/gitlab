@@ -79,15 +79,13 @@ class DependencyEntity < Grape::Entity
   end
   expose :component_version_id, as: :component_id, if: ->(_) { group? }
 
-  expose :id, as: :occurrence_id, if: ->(_) { group? || project_level_sbom_occurrences_enabled? }
-  expose :vulnerability_count, if: ->(_) { group? || project_level_sbom_occurrences_enabled? }
+  expose :id, as: :occurrence_id
+  expose :vulnerability_count
 
   private
 
   def render_vulnerabilities?
-    return false if should_not_render_vulnerabilities?
-
-    can_read_vulnerabilities?
+    options[:include_vulnerabilities] && can_read_vulnerabilities?
   end
 
   def can_read_vulnerabilities?
@@ -104,20 +102,5 @@ class DependencyEntity < Grape::Entity
 
   def subject
     request.try(:project) || request.try(:group) || request.try(:organization)
-  end
-
-  def should_not_render_vulnerabilities?
-    # When using `Sbom::Occurrence` records for the project level dependency list,
-    # we load vulnerabilities asychronously for performance. So, we don't want to render
-    # vulnerabilities in that case. For the dependency list export, we do want to render them
-    # so we bypass the feature flag check via the :include_vulnerabilities option.
-    return false if options[:include_vulnerabilities]
-
-    project_level_sbom_occurrences_enabled?
-  end
-
-  def project_level_sbom_occurrences_enabled?
-    project = request.try(:project)
-    project.present? && Feature.enabled?(:project_level_sbom_occurrences, project)
   end
 end

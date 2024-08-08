@@ -84,7 +84,7 @@ export default {
   },
   computed: {
     anyDependencyHasVulnerabilities() {
-      return this.localDependencies.some((dependency) => this.vulnerabilitiesCount(dependency));
+      return this.localDependencies.some((dependency) => dependency.vulnerabilityCount);
     },
     fields() {
       if (this.isOrganizationNamespace) {
@@ -101,9 +101,6 @@ export default {
     },
     localDependencies() {
       return this.transformDependenciesForUI(this.dependencies);
-    },
-    isGroupLevelOrWithSbomOccurrencesEnabled() {
-      return !this.isProjectNamespace || this.glFeatures.projectLevelSbomOccurrences;
     },
   },
   methods: {
@@ -122,23 +119,12 @@ export default {
     packager(dependency) {
       return dependency.packager || this.$options.i18n.unknown;
     },
-    vulnerabilitiesCount(item) {
-      if (this.isGroupLevelOrWithSbomOccurrencesEnabled) {
-        return item.vulnerabilityCount;
-      }
-      return item.vulnerabilities?.length;
-    },
     vulnerabilities(item) {
-      if (this.isGroupLevelOrWithSbomOccurrencesEnabled) {
-        return this.vulnerabilityInfo[item.occurrenceId];
-      }
-      return item.vulnerabilities;
+      return this.vulnerabilityInfo[item.occurrenceId];
     },
     rowExpanded(showDetails, item) {
       showDetails();
-      if (this.isGroupLevelOrWithSbomOccurrencesEnabled) {
-        this.$emit('row-click', item);
-      }
+      this.$emit('row-click', item);
     },
   },
   organizationFields: [...sharedFields],
@@ -191,7 +177,7 @@ export default {
       <gl-button
         v-if="anyDependencyHasVulnerabilities"
         class="gl-hidden md:gl-inline"
-        :class="{ invisible: !vulnerabilitiesCount(item) }"
+        :class="{ invisible: !item.vulnerabilityCount }"
         category="tertiary"
         size="small"
         :aria-label="$options.i18n.toggleVulnerabilityList"
@@ -228,7 +214,7 @@ export default {
 
     <template #cell(isVulnerable)="{ item, toggleDetails }">
       <gl-badge
-        v-if="vulnerabilitiesCount(item)"
+        v-if="item.vulnerabilityCount"
         variant="warning"
         href="#"
         @click.native="rowExpanded(toggleDetails, item)"
@@ -238,7 +224,7 @@ export default {
           n__(
             'Dependencies|%d vulnerability detected',
             'Dependencies|%d vulnerabilities detected',
-            vulnerabilitiesCount(item),
+            item.vulnerabilityCount,
           )
         }}
       </gl-badge>
