@@ -26414,6 +26414,12 @@ msgstr ""
 msgid "Heading 4"
 msgstr ""
 
+msgid "Heading 5"
+msgstr ""
+
+msgid "Heading 6"
+msgstr ""
+
 msgid "Health"
 msgstr ""
 
