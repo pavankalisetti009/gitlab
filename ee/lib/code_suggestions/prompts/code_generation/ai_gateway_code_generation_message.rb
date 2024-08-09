@@ -6,7 +6,7 @@ module CodeSuggestions
       class AiGatewayCodeGenerationMessage < CodeSuggestions::Prompts::Base
         GATEWAY_PROMPT_VERSION = 2
         MODEL_PROVIDER = 'litellm'
-        AGENT_ID = 'code_suggestions/generations'
+        PROMPT_ID = 'code_suggestions/generations'
 
         attr_reader :feature_setting
 
@@ -33,7 +33,7 @@ module CodeSuggestions
         def extra_params
           {
             prompt_version: self.class::GATEWAY_PROMPT_VERSION,
-            agent_id: AGENT_ID
+            prompt_id: PROMPT_ID
           }
         end
 

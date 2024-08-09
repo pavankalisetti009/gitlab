@@ -15,7 +15,7 @@ module Gitlab
 
           ENDPOINT = '/v1/chat/agent'
           BASE_ENDPOINT = '/v1/chat'
-          BASE_AGENTS_CHAT_ENDPOINT = '/v1/agents/chat'
+          BASE_PROMPTS_CHAT_ENDPOINT = '/v1/prompts/chat'
           CHAT_V2_ENDPOINT = '/v2/chat/agent'
           DEFAULT_TYPE = 'prompt'
           DEFAULT_SOURCE = 'GitLab EE'
@@ -80,7 +80,7 @@ module Gitlab
 
           def endpoint(unit_primitive, v2_chat_schema, use_ai_gateway_agent_prompt)
             if use_ai_gateway_agent_prompt
-              "#{BASE_AGENTS_CHAT_ENDPOINT}/#{unit_primitive}"
+              "#{BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
             elsif unit_primitive.present?
               "#{BASE_ENDPOINT}/#{unit_primitive}"
             elsif v2_chat_schema

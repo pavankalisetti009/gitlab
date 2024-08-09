@@ -254,7 +254,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
 
       let(:unit_primitive) { :test }
-      let(:endpoint) { "#{described_class::BASE_AGENTS_CHAT_ENDPOINT}/#{unit_primitive}" }
+      let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
       let(:prompt) { { prompt: user_prompt, options: options } }
       let(:inputs) { { field: :test_field } }
 

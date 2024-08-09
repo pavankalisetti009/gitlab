@@ -33,7 +33,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeGeneration::AiGatewayCodeGeneration
         prompt_version: prompt_version,
         model_endpoint: feature_setting.self_hosted_model.endpoint,
         model_api_key: feature_setting.self_hosted_model.api_token,
-        agent_id: described_class::AGENT_ID
+        prompt_id: described_class::PROMPT_ID
       }
     end
 
