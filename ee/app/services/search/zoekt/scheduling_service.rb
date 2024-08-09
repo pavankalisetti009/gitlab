@@ -45,15 +45,11 @@ module Search
 
       private
 
-      def logger
-        @logger ||= ::Search::Zoekt::Logger.build
-      end
-
-      def info(task, **payload)
-        logger.info(build_structured_payload(**payload.merge(task: task)))
-      end
-
       def execute_every(period, cache_key:)
+        # We don't want any delay interval in development environments,
+        # so lets disable the cache unless we are in production.
+        return yield if Rails.env.development?
+
         cache_key = [self.class.name.underscore, :execute_every, cache_key].flatten.join(':')
 
         Gitlab::Redis::SharedState.with do |redis|
@@ -62,6 +58,14 @@ module Search
 
           yield
         end
+      end
+
+      def logger
+        @logger ||= ::Search::Zoekt::Logger.build
+      end
+
+      def info(task, **payload)
+        logger.info(build_structured_payload(**payload.merge(task: task)))
       end
 
       # An initial implementation of reallocation logic. For now, it's a .com-only task
