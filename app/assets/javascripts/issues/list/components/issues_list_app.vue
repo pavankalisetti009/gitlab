@@ -378,7 +378,7 @@ export default {
           isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-issues-recent-tokens-author`,
           preloadedUsers,
-          multiSelect: this.glFeatures.groupMultiSelectTokens,
+          multiSelect: true,
         },
         {
           type: TOKEN_TYPE_ASSIGNEE,
@@ -391,7 +391,7 @@ export default {
           isProject: this.isProject,
           recentSuggestionsStorageKey: `${this.fullPath}-issues-recent-tokens-assignee`,
           preloadedUsers,
-          multiSelect: this.glFeatures.groupMultiSelectTokens,
+          multiSelect: true,
         },
         {
           type: TOKEN_TYPE_MILESTONE,
@@ -412,7 +412,7 @@ export default {
           fetchLabels: this.fetchLabels,
           fetchLatestLabels: this.glFeatures.frontendCaching ? this.fetchLatestLabels : null,
           recentSuggestionsStorageKey: `${this.fullPath}-issues-recent-tokens-label`,
-          multiSelect: this.glFeatures.groupMultiSelectTokens,
+          multiSelect: true,
         },
         {
           type: TOKEN_TYPE_TYPE,
@@ -794,11 +794,7 @@ export default {
       }
 
       const tokens = getFilterTokens(window.location.search);
-      if (this.glFeatures.groupMultiSelectTokens) {
-        this.filterTokens = groupMultiSelectFilterTokens(tokens, this.searchTokens);
-      } else {
-        this.filterTokens = tokens;
-      }
+      this.filterTokens = groupMultiSelectFilterTokens(tokens, this.searchTokens);
 
       this.exportCsvPathWithQuery = this.getExportCsvPathWithQuery();
       this.pageParams = getInitialPageParams(
