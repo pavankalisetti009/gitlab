@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # GitlabSubscriptions::SubscriptionHistory records the previous value before change.
-# `gitlab_subscription_created` is not used. Because there is no previous value before creation.
+# `gitlab_subscription_created` is not used because there is no previous value before creation.
 module GitlabSubscriptions
   class SubscriptionHistory < ApplicationRecord
     self.table_name = 'gitlab_subscription_histories'
@@ -57,6 +57,10 @@ module GitlabSubscriptions
       end
 
       SubscriptionHistory.create(create_attrs)
+    end
+
+    def declarative_policy_subject
+      namespace
     end
   end
 end

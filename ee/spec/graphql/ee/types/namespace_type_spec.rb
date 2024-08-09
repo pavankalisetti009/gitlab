@@ -21,6 +21,7 @@ RSpec.describe GitlabSchema.types['Namespace'], feature_category: :groups_and_pr
       approval_policies
       security_policy_project
       product_analytics_stored_events_limit
+      subscription_history
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
