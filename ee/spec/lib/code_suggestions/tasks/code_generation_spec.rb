@@ -104,7 +104,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeGeneration, feature_category: :code_s
       let(:expected_body) do
         {
           "telemetry" => [],
-          "agent_id" => "code_suggestions/generations",
+          "prompt_id" => "code_suggestions/generations",
           "current_file" => {
             "content_above_cursor" => "some prefix",
             "content_below_cursor" => "some suffix",
