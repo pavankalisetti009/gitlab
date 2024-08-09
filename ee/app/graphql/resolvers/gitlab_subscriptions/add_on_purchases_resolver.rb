@@ -3,6 +3,8 @@
 module Resolvers
   module GitlabSubscriptions
     class AddOnPurchasesResolver < BaseResolver
+      include LooksAhead
+
       type [Types::GitlabSubscriptions::AddOnPurchaseType], null: true
 
       argument :namespace_id,
@@ -10,8 +12,14 @@ module Resolvers
         required: false,
         description: 'ID of namespace that the add-ons were purchased for.'
 
-      def resolve(namespace_id: nil)
-        ::GitlabSubscriptions::AddOnPurchase.active.by_namespace(namespace_id&.model_id)
+      def resolve_with_lookahead(namespace_id: nil)
+        apply_lookahead(::GitlabSubscriptions::AddOnPurchase.active.by_namespace(namespace_id&.model_id))
+      end
+
+      private
+
+      def unconditional_includes
+        [:add_on, :assigned_users]
       end
     end
   end
