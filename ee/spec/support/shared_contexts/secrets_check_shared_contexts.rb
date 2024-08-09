@@ -6,7 +6,7 @@ RSpec.shared_context 'secrets check context' do
   let_it_be(:user) { create(:user) }
 
   # Project is created with an empty repository, so
-  # we create an initial commit to have a blob committed.
+  # we create an initial commit to have a commit with some diffs.
   let_it_be(:project) { create(:project, :empty_repo) }
   let_it_be(:repository) { project.repository }
   let_it_be(:initial_commit) do
@@ -21,12 +21,12 @@ RSpec.shared_context 'secrets check context' do
     )
   end
 
-  # Create a default `new_commit` for use cases in which we don't care much about blobs.
+  # Create a default `new_commit` for use cases in which we don't care much about diffs.
   let_it_be(:new_commit) { create_commit('.env' => 'BASE_URL=https://foo.bar') }
 
   # Define blob references as follows:
-  #   1. old reference is used as the blob id for the initial commit.
-  #   2. new reference is used as the blob id for commits created in before_all statements elsewhere.
+  #   1. old reference is used as the left blob id in diff_blob objects.
+  #   2. new reference is used as the right blob id in diff_blob objects.
   let(:old_blob_reference) { 'f3ac5ae18d057a11d856951f27b9b5b8043cf1ec' }
   let(:new_blob_reference) { 'fe29d93da4843da433e62711ace82db601eb4f8f' }
   let(:changes) do
@@ -37,6 +37,19 @@ RSpec.shared_context 'secrets check context' do
         ref: 'refs/heads/master'
       }
     ]
+  end
+
+  let_it_be(:commits) do
+    [
+      Gitlab::Git::Commit.find(repository, new_commit)
+    ]
+  end
+
+  let(:expected_tree_args) do
+    {
+      repository: repository, sha: new_commit,
+      recursive: true, rescue_not_found: false
+    }
   end
 
   # repository.blank_ref is used to denote a delete commit
@@ -78,12 +91,6 @@ RSpec.shared_context 'secrets check context' do
       push_options: push_options
     )
   end
-
-  # We cannot really get the same Gitlab::Git::Blob objects even if we call `list_all_blobs` or `list_blobs`
-  # directly in any of the specs (which is also not a very good idea) as the object ids will always
-  # be different, so we expect the attributes of the returned object to match.
-  let(:old_blob) { have_attributes(class: Gitlab::Git::Blob, id: old_blob_reference, size: 23) }
-  let(:new_blob) { have_attributes(class: Gitlab::Git::Blob, id: new_blob_reference, size: 33) }
 
   # Used for mocking calls to `tree_entries` methods.
   let(:gitaly_pagination_cursor) { Gitaly::PaginationCursor.new(next_cursor: "") }
@@ -142,12 +149,19 @@ RSpec.shared_context 'secret detection error and log messages context' do
   let(:finding_path) { '.env' }
   let(:finding_line_number) { 1 }
   let(:finding_description) { 'GitLab Personal Access Token' }
-  let(:finding_path2) { 'test.txt' }
-  let(:finding_line_number2) { 2 }
-  let(:finding_description2) { 'GitLab Runner Authentication Token' }
+  let(:another_finding_path) { 'test.txt' }
+  let(:another_finding_line_number) { 2 }
+  let(:another_finding_description) { 'GitLab Runner Authentication Token' }
   let(:finding_message_header) { format(log_messages[:finding_message_occurrence_header], { sha: new_commit }) }
+  let(:another_finding_message_header) do
+    format(log_messages[:finding_message_occurrence_header], { sha: another_new_commit })
+  end
+
   let(:finding_message_path) { format(log_messages[:finding_message_occurrence_path], { path: finding_path }) }
-  let(:finding_message_path2) { format(log_messages[:finding_message_occurrence_path], { path: finding_path2 }) }
+  let(:another_finding_message_path) do
+    format(log_messages[:finding_message_occurrence_path], { path: another_finding_path })
+  end
+
   let(:finding_message_occurrence_line) do
     format(
       log_messages[:finding_message_occurrence_line],
@@ -158,12 +172,12 @@ RSpec.shared_context 'secret detection error and log messages context' do
     )
   end
 
-  let(:finding_message_occurrence_line2) do
+  let(:another_finding_message_occurrence_line) do
     format(
       log_messages[:finding_message_occurrence_line],
       {
         line_number: finding_line_number,
-        description: finding_description2
+        description: another_finding_description
       }
     )
   end
@@ -183,7 +197,11 @@ RSpec.shared_context 'secret detection error and log messages context' do
     message = finding_message_header
     message += finding_message_path
     message += finding_message_occurrence_line
-    message += format(log_messages[:finding_message_occurrence_header], { sha: commit_with_same_blob })
+    message += finding_message_path
+    message += finding_message_occurrence_line
+    message += another_finding_message_header
+    message += finding_message_path
+    message += finding_message_occurrence_line
     message += finding_message_path
     message += finding_message_occurrence_line
     message
@@ -193,8 +211,18 @@ RSpec.shared_context 'secret detection error and log messages context' do
     message = finding_message_header
     message += finding_message_path
     message += finding_message_occurrence_line
-    message += finding_message_path2
-    message += finding_message_occurrence_line2
+    message += another_finding_message_path
+    message += another_finding_message_occurrence_line
+    message
+  end
+
+  let(:finding_message_multiple_findings_multiple_commits_occurrence_lines) do
+    message = finding_message_header
+    message += finding_message_path
+    message += finding_message_occurrence_line
+    message += another_finding_message_header
+    message += another_finding_message_path
+    message += another_finding_message_occurrence_line
     message
   end
 
@@ -233,26 +261,12 @@ RSpec.shared_context 'secret detection error and log messages context' do
   end
 end
 
-RSpec.shared_context 'quarantine directory exists' do
-  let(:git_env) { { 'GIT_OBJECT_DIRECTORY_RELATIVE' => 'objects' } }
+RSpec.shared_context 'with gitaly commit client' do
   let(:gitaly_commit_client) { instance_double(Gitlab::GitalyClient::CommitService) }
 
-  let(:object_existence_map) do
-    {
-      old_blob_reference.to_s => true,
-      new_blob_reference.to_s => false
-    }
-  end
-
   before do
-    allow(Gitlab::Git::HookEnv).to receive(:all).with(repository.gl_repository).and_return(git_env)
-
-    # Since all blobs are committed to the repository, we mock the gitaly commit
-    # client and `object_existence_map` in such way only some of them are considered new.
+    # We mock the gitaly commit client to have it return tree entries.
     allow(repository).to receive(:gitaly_commit_client).and_return(gitaly_commit_client)
-    allow(gitaly_commit_client).to receive(:object_existence_map).and_return(object_existence_map)
-
-    # We also want to have the client return the tree entries.
     allow(gitaly_commit_client).to receive(:tree_entries).and_return([tree_entries, gitaly_pagination_cursor])
   end
 end
