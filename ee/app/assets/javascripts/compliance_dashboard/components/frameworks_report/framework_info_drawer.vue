@@ -1,11 +1,21 @@
 <script>
-import { GlDrawer, GlBadge, GlButton, GlLabel, GlLink, GlSprintf, GlPopover } from '@gitlab/ui';
+import {
+  GlDrawer,
+  GlBadge,
+  GlButton,
+  GlLabel,
+  GlLink,
+  GlSprintf,
+  GlPopover,
+  GlIcon,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from 'ee/security_orchestration/components/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { isTopLevelGroup } from '../../utils';
+import { POLICY_SCOPES_DOCS_URL } from '../../constants';
 
 export default {
   name: 'FrameworkInfoDrawer',
@@ -17,6 +27,7 @@ export default {
     GlLink,
     GlSprintf,
     GlPopover,
+    GlIcon,
   },
   inject: ['groupSecurityPoliciesPath'],
   props: {
@@ -82,6 +93,7 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
+  POLICY_SCOPES_DOCS_URL,
   i18n: {
     defaultFramework: s__('ComplianceFrameworksReport|Default'),
     editFramework: s__('ComplianceFrameworksReport|Edit framework'),
@@ -89,6 +101,10 @@ export default {
       'ComplianceFrameworks|The compliance framework must be edited in top-level group %{linkStart}namespace%{linkEnd}',
     ),
     frameworkIdTitle: s__('ComplianceFrameworksReport|Compliance framework ID'),
+    frameworkIdPopoverTitle: s__('ComplianceFrameworksReport|Using the ID'),
+    frameworkIdPopoverText: s__(
+      'ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests. %{linkStart}Learn more.%{linkEnd}',
+    ),
     frameworkIdButtonText: s__('ComplianceFrameworksReport|Copy ID'),
     copyIdToastText: s__('ComplianceFrameworksReport|Framework ID copied to clipboard.'),
     frameworkDescription: s__('ComplianceFrameworksReport|Description'),
@@ -106,12 +122,13 @@ export default {
     @close="$emit('close')"
   >
     <template v-if="framework" #title>
-      <div class="gl-display-flex gl-flex-wrap gl-align-items-center gl-gap-4">
-        <h2 class="gl-my-0" data-testid="framework-name">
+      <div class="gl-display-flex gl-flex-wrap gl-items-center gl-gap-4">
+        <h2 class="gl-heading-2" data-testid="framework-name">
           {{ framework.name }}
         </h2>
         <gl-label
           v-if="defaultFramework"
+          class="gl-mb-5"
           :background-color="framework.color"
           :title="$options.i18n.defaultFramework"
         />
@@ -124,6 +141,7 @@ export default {
         target="framework-info-drawer-edit-button"
         placement="left"
         boundary="viewport"
+        data-testid="edit-framework-popover"
       >
         <gl-sprintf :message="$options.i18n.editFrameworkButtonMessage">
           <template #link>
@@ -136,7 +154,6 @@ export default {
       <span id="framework-info-drawer-edit-button">
         <gl-button
           :disabled="editDisabled"
-          class="gl-mt-5"
           category="primary"
           variant="confirm"
           @click="$emit('edit', framework)"
@@ -149,10 +166,33 @@ export default {
     <template v-if="framework" #default>
       <div>
         <div class="gl-mb-5" data-testid="sidebar-id">
-          <div class="gl-flex gl-align-items-center">
-            <h3 class="gl-mt-0" data-testid="sidebar-id-title">
+          <div class="gl-flex gl-items-baseline">
+            <h3 class="gl-heading-3" data-testid="sidebar-id-title">
               {{ $options.i18n.frameworkIdTitle }}
             </h3>
+            <gl-icon
+              id="framework-id-info"
+              name="question-o"
+              class="gl-text-blue-500 gl-mb-5 gl-ml-3"
+            />
+            <gl-popover
+              target="framework-id-info"
+              placement="top"
+              boundary="viewport"
+              :title="$options.i18n.frameworkIdPopoverTitle"
+            >
+              <gl-sprintf :message="$options.i18n.frameworkIdPopoverText">
+                <template #link="{ content }">
+                  <gl-link
+                    :href="$options.POLICY_SCOPES_DOCS_URL"
+                    target="blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    {{ content }}
+                  </gl-link>
+                </template>
+              </gl-sprintf>
+            </gl-popover>
           </div>
           <div class="gl-flex">
             <span data-testid="framework-id">{{ normalisedFrameworkId }}</span>
@@ -166,7 +206,7 @@ export default {
           </div>
         </div>
         <div class="gl-border-t">
-          <h3 data-testid="sidebar-description-title" class="gl-mt-5">
+          <h3 class="gl-heading-3 gl-mt-5" data-testid="sidebar-description-title">
             {{ $options.i18n.frameworkDescription }}
           </h3>
           <span data-testid="sidebar-description">
@@ -174,7 +214,7 @@ export default {
           </span>
         </div>
         <div class="gl-my-5 gl-border-t" data-testid="sidebar-projects">
-          <h3 data-testid="sidebar-projects-title" class="gl-mt-5">
+          <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
             {{ associatedProjectsTitle }}
           </h3>
           <ul class="gl-pl-6">
@@ -188,14 +228,14 @@ export default {
           </ul>
         </div>
         <div class="gl-mb-5 gl-border-t" data-testid="sidebar-policies">
-          <h3 data-testid="sidebar-policies-title" class="gl-mt-5">
+          <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
             {{ policiesTitle }}
           </h3>
           <div v-if="policies.length">
             <div
               v-for="(policy, idx) in policies"
               :key="idx"
-              class="gl-m-4 gl-display-flex gl-flex-direction-column gl-align-items-flex-start"
+              class="gl-m-4 gl-flex gl-flex-col gl-items-start"
             >
               <gl-link :href="getPolicyEditUrl(policy)">{{ policy.name }}</gl-link>
               <gl-badge v-if="policy.source.namespace.fullPath !== groupPath" variant="muted">

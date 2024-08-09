@@ -2,6 +2,7 @@ import { GlLabel, GlButton, GlLink, GlPopover, GlSprintf } from '@gitlab/ui';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { createFramework } from 'ee_jest/compliance_dashboard/mock_data';
+import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 describe('FrameworkInfoDrawer component', () => {
   let wrapper;
@@ -27,6 +28,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findIdSectionTitle = () => wrapper.findByTestId('sidebar-id-title');
   const findFrameworkId = () => wrapper.findByTestId('framework-id');
   const findCopyIdButton = () => findIdSection().findComponent(GlButton);
+  const findIdPopover = () => findIdSection().findComponent(GlPopover);
 
   const findDescriptionTitle = () => wrapper.findByTestId('sidebar-description-title');
   const findDescription = () => wrapper.findByTestId('sidebar-description');
@@ -36,7 +38,7 @@ describe('FrameworkInfoDrawer component', () => {
   const findPoliciesTitle = () => wrapper.findByTestId('sidebar-policies-title');
   const findPoliciesLinks = () =>
     wrapper.findByTestId('sidebar-policies').findAllComponents(GlLink);
-  const findPopover = () => wrapper.findComponent(GlPopover);
+  const findPopover = () => wrapper.findByTestId('edit-framework-popover');
 
   const createComponent = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(FrameworkInfoDrawer, {
@@ -88,6 +90,16 @@ describe('FrameworkInfoDrawer component', () => {
 
       it('renders the ID accordion', () => {
         expect(findIdSectionTitle().text()).toBe('Compliance framework ID');
+      });
+
+      it('renders popover with a help link', () => {
+        expect(findIdPopover().props('title')).toBe('Using the ID');
+        expect(findIdPopover().text()).toMatchInterpolatedText(
+          'Use the compliance framework ID in configuration or API requests. Learn more.',
+        );
+        expect(findIdPopover().findComponent(GlLink).attributes('href')).toBe(
+          `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies-to-projects`,
+        );
       });
 
       it('renders the ID of the framework', () => {
