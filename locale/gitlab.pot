@@ -61087,13 +61087,13 @@ msgstr ""
 msgid "Workspaces|New workspace"
 msgstr ""
 
-msgid "Workspaces|No active workspaces. Create a workspace to get started."
+msgid "Workspaces|No active workspaces"
 msgstr ""
 
 msgid "Workspaces|No agents available to create workspaces. Please consult %{linkStart}Workspaces documentation%{linkEnd} for troubleshooting."
 msgstr ""
 
-msgid "Workspaces|No terminated workspaces to show."
+msgid "Workspaces|No terminated workspaces"
 msgstr ""
 
 msgid "Workspaces|Path to devfile"

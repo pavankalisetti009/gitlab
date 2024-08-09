@@ -5,6 +5,7 @@ import { GlSkeletonLoader, GlTab } from '@gitlab/ui';
 
 import WorkspaceTab from 'ee/workspaces/common/components/workspace_tab.vue';
 import WorkspaceTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
+import WorkspaceEmptyState from 'ee/workspaces/common/components/workspaces_list/empty_state.vue';
 import WorkspacesListPagination from 'ee/workspaces/common/components/workspaces_list/workspaces_list_pagination.vue';
 import { populateWorkspacesWithProjectDetails } from 'ee/workspaces/common/services/utils';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
@@ -25,10 +26,14 @@ const MOCK_WORKSPACES = populateWorkspacesWithProjectDetails(
 
 describe('workspaces/common/components/workspace_tab.vue', () => {
   let wrapper;
+  const emptyStateSvgPath = '/placeholder.svg';
 
   const createWrapper = (props) => {
     wrapper = extendedWrapper(
       mount(WorkspaceTab, {
+        provide: {
+          emptyStateSvgPath,
+        },
         propsData: {
           tabName: 'terminated',
           workspaces: MOCK_WORKSPACES,
@@ -46,6 +51,7 @@ describe('workspaces/common/components/workspace_tab.vue', () => {
   const findTable = () => wrapper.findComponent(WorkspaceTable);
   const findPagination = () => wrapper.findComponent(WorkspacesListPagination);
   const findLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findEmptyState = () => wrapper.findComponent(WorkspaceEmptyState);
 
   it('shows loading state when workspaces are being fetched', () => {
     createWrapper({ loading: true });
@@ -62,9 +68,13 @@ describe('workspaces/common/components/workspace_tab.vue', () => {
     });
 
     it('renders empty state when no workspaces are available', () => {
-      const emptyState = wrapper.findByTestId('empty-state');
+      const emptyState = findEmptyState();
 
-      expect(emptyState.exists()).toBe(true);
+      expect(emptyState.props()).toEqual({
+        description: '',
+        newWorkspacePath: '',
+        title: 'No terminated workspaces',
+      });
     });
 
     it('does not render table and pagination', () => {

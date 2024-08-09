@@ -9,15 +9,13 @@ describe('workspaces/common/components/workspaces_list/empty_state.vue', () => {
 
   const findEmptyState = () => wrapper.findComponent(GlEmptyState);
 
-  const createComponent = ({ propsData: { newWorkspacePath } }) => {
+  const createComponent = ({ propsData = {} }) => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = shallowMount(EmptyState, {
       provide: {
         emptyStateSvgPath: SVG_PATH,
       },
-      propsData: {
-        newWorkspacePath,
-      },
+      propsData,
       stubs: {
         GlEmptyState,
       },
@@ -56,6 +54,19 @@ describe('workspaces/common/components/workspaces_list/empty_state.vue', () => {
       it('does not display a button', () => {
         createComponent({ propsData: { newWorkspacePath: '' } });
         expect(findEmptyState().findComponent(GlButton).exists()).toBe(false);
+      });
+    });
+
+    describe('when title and description are provided', () => {
+      it('should pass title and description to empty state', () => {
+        createComponent({
+          propsData: { title: 'Inferno', description: 'In the midway of this our mortal life' },
+        });
+
+        expect(findEmptyState().props()).toMatchObject({
+          title: 'Inferno',
+          description: 'In the midway of this our mortal life',
+        });
       });
     });
   });

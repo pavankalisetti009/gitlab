@@ -18,6 +18,16 @@ export default {
   },
   inject: ['emptyStateSvgPath'],
   props: {
+    title: {
+      type: String,
+      required: false,
+      default: i18n.title,
+    },
+    description: {
+      type: String,
+      required: false,
+      default: i18n.description,
+    },
     newWorkspacePath: {
       type: String,
       required: false,
@@ -31,8 +41,8 @@ export default {
 <template>
   <div>
     <gl-empty-state
-      :title="$options.i18n.title"
-      :description="$options.i18n.description"
+      :title="title"
+      :description="description"
       :svg-path="emptyStateSvgPath"
       :svg-height="150"
     >
