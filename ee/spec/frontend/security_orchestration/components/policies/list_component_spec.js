@@ -1,6 +1,5 @@
-import { GlTable, GlDrawer } from '@gitlab/ui';
-import Vue, { nextTick } from 'vue';
-import VueApollo from 'vue-apollo';
+import { GlDisclosureDropdown, GlDrawer, GlTable, GlTooltip } from '@gitlab/ui';
+import { nextTick } from 'vue';
 import * as urlUtils from '~/lib/utils/url_utility';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
@@ -17,8 +16,6 @@ import { trimText } from 'helpers/text_helper';
 import { mockPipelineExecutionPoliciesResponse } from '../../mocks/mock_pipeline_execution_policy_data';
 import { mockScanExecutionPoliciesResponse } from '../../mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from '../../mocks/mock_scan_result_policy_data';
-
-Vue.use(VueApollo);
 
 const namespacePath = 'path/to/project/or/group';
 
@@ -59,6 +56,8 @@ describe('List component', () => {
   const mountShallowWrapper = factory(shallowMountExtended);
   const mountWrapper = factory();
 
+  const findActionCells = () => wrapper.findAllByTestId('policy-action-cell');
+  const findDisclosureDropdown = (root) => root.findComponent(GlDisclosureDropdown);
   const findPolicySourceFilter = () => wrapper.findByTestId('policy-source-filter');
   const findPolicyTypeFilter = () => wrapper.findByTestId('policy-type-filter');
   const findPoliciesTable = () => wrapper.findComponent(GlTable);
@@ -68,6 +67,9 @@ describe('List component', () => {
   const findPolicyTypeCells = () => wrapper.findAllByTestId('policy-type-cell');
   const findPolicyDrawer = () => wrapper.findByTestId('policyDrawer');
   const findPolicyScopeCells = () => wrapper.findAllByTestId('policy-scope-cell');
+  const findTooltip = (root) => root.findComponent(GlTooltip);
+  const findInheritedPolicyCell = (findMethod) => findMethod().at(1);
+  const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
 
   describe('initial state while loading', () => {
     it('renders closed editor drawer', () => {
@@ -255,19 +257,19 @@ describe('List component', () => {
     describe('source', () => {
       it('renders when the policy is not inherited', () => {
         mountWrapper();
-        expect(findPolicySourceCells().at(0).text()).toBe('This project');
+        expect(findNonInheritedPolicyCell(findPolicySourceCells).text()).toBe('This project');
       });
 
       it('renders when the policy is inherited', () => {
         mountWrapper();
-        expect(trimText(findPolicySourceCells().at(1).text())).toBe(
+        expect(trimText(findInheritedPolicyCell(findPolicySourceCells).text())).toBe(
           'Inherited from parent-group-name',
         );
       });
 
       it('renders inherited policy without namespace', () => {
         mountWrapper({ provide: { namespaceType: NAMESPACE_TYPES.PROJECT } });
-        expect(trimText(findPolicySourceCells().at(1).text())).toBe(
+        expect(trimText(findInheritedPolicyCell(findPolicySourceCells).text())).toBe(
           'Inherited from parent-group-name',
         );
       });
@@ -282,6 +284,40 @@ describe('List component', () => {
           expect(findListComponentScope().exists()).toBe(true);
         },
       );
+    });
+
+    describe('actions', () => {
+      beforeEach(() => {
+        mountWrapper();
+      });
+
+      it('renders actions column', () => {
+        expect(findActionCells()).toHaveLength(4);
+      });
+
+      it('renders non-inherited policy actions', () => {
+        const policyCell = findNonInheritedPolicyCell(findActionCells);
+        expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
+        expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(false);
+        expect(findTooltip(policyCell).exists()).toBe(false);
+      });
+
+      it('renders inherited policy actions', () => {
+        const policyCell = findInheritedPolicyCell(findActionCells);
+        expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
+        expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(true);
+        expect(findTooltip(policyCell).exists()).toBe(true);
+      });
+
+      it('renders items', () => {
+        const policyCell = findNonInheritedPolicyCell(findActionCells);
+        expect(findDisclosureDropdown(policyCell).props('items')).toEqual([
+          {
+            href: '/policies/policy-name/edit?type="scan_execution_policy"',
+            text: 'Edit',
+          },
+        ]);
+      });
     });
   });
 

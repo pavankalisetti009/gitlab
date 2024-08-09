@@ -1,6 +1,16 @@
 <script>
 import { intersection } from 'lodash';
-import { GlIcon, GlLink, GlLoadingIcon, GlSprintf, GlTable, GlTooltipDirective } from '@gitlab/ui';
+import {
+  GlButtonGroup,
+  GlDisclosureDropdown,
+  GlIcon,
+  GlLink,
+  GlLoadingIcon,
+  GlSprintf,
+  GlTable,
+  GlTooltip,
+  GlTooltipDirective,
+} from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -13,6 +23,7 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
   POLICY_TYPES_WITH_INHERITANCE,
+  getPolicyActionOptions,
 } from './constants';
 import BreakingChangesIcon from './breaking_changes_icon.vue';
 import SourceFilter from './filters/source_filter.vue';
@@ -29,11 +40,14 @@ const getPoliciesWithType = (policies, policyType) =>
 export default {
   components: {
     BreakingChangesIcon,
+    GlButtonGroup,
+    GlDisclosureDropdown,
     GlIcon,
     GlLink,
     GlLoadingIcon,
     GlSprintf,
     GlTable,
+    GlTooltip,
     EmptyState,
     ListComponentScope,
     SourceFilter,
@@ -42,7 +56,7 @@ export default {
     TimeAgoTooltip,
   },
   directives: {
-    GlTooltip: GlTooltipDirective,
+    GlTooltipDirective,
   },
   inject: ['namespacePath', 'namespaceType', 'disableScanPolicyUpdate'],
   props: {
@@ -163,6 +177,11 @@ export default {
           label: __('Last modified'),
           sortable: true,
         },
+        {
+          key: 'actions',
+          label: '',
+          tdAttr: { 'data-testid': 'policy-action-cell' },
+        },
       ];
     },
   },
@@ -174,6 +193,9 @@ export default {
     },
   },
   methods: {
+    getPolicyActionOptions(policy) {
+      return getPolicyActionOptions(policy);
+    },
     showBreakingChangesIcon(deprecatedProperties) {
       return deprecatedProperties?.length > 0;
     },
@@ -244,6 +266,9 @@ export default {
   },
   dateTimeFormat: DATE_ONLY_FORMAT,
   i18n: {
+    actionsDisabled: s__(
+      'SecurityOrchestration|This policy is inherited from %{linkStart}namespace%{linkEnd} and must be edited there',
+    ),
     inheritedLabel: s__('SecurityOrchestration|Inherited from %{namespace}'),
     inheritedShortLabel: s__('SecurityOrchestration|Inherited'),
     statusEnabled: __('The policy is enabled'),
@@ -294,7 +319,7 @@ export default {
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties } }">
         <div class="gl-display-flex gl-gap-4">
           <gl-icon
-            v-gl-tooltip.left="tooltipContent(enabled)"
+            v-gl-tooltip-directive.left="tooltipContent(enabled)"
             class="gl-text-gray-200"
             :aria-label="tooltipContent(enabled)"
             :class="{ 'gl-text-green-700': enabled }"
@@ -338,6 +363,36 @@ export default {
           :time="updatedAt"
           :date-time-format="$options.dateTimeFormat"
         />
+      </template>
+
+      <template #cell(actions)="{ item }">
+        <gl-button-group>
+          <span :ref="item.editPath">
+            <gl-disclosure-dropdown
+              :items="getPolicyActionOptions(item)"
+              no-caret
+              category="tertiary"
+              icon="ellipsis_v"
+              placement="bottom-end"
+              :disabled="isPolicyInherited(item.source)"
+            />
+          </span>
+        </gl-button-group>
+        <gl-tooltip
+          v-if="isPolicyInherited(item.source) && policyHasNamespace(item.source)"
+          :target="() => $refs[item.editPath]"
+        >
+          <gl-sprintf :message="$options.i18n.actionsDisabled">
+            <template #link>
+              <gl-link
+                :href="getSecurityPolicyListUrl(policyListUrlArgs(item.source))"
+                target="_blank"
+              >
+                {{ getPolicyText(item.source) }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </gl-tooltip>
       </template>
 
       <template #table-busy>

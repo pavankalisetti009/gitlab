@@ -88,7 +88,7 @@ export default {
   DRAWER_Z_INDEX,
   i18n: {
     editButtonTooltipMessage: s__(
-      'SecurityOrchestration|This policy is inherited from the %{linkStart}namespace%{linkEnd} and must be edited there',
+      'SecurityOrchestration|This policy is inherited from %{linkStart}namespace%{linkEnd} and must be edited there',
     ),
     tabDetails: s__('SecurityOrchestration|Details'),
     tabYaml: s__('SecurityOrchestration|YAML'),
