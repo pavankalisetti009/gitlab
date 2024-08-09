@@ -1,4 +1,5 @@
 import { __, s__ } from '~/locale';
+import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 export const INPUT_DEBOUNCE = 500;
 
@@ -65,3 +66,5 @@ export const i18n = {
   ),
   violationsTab: s__('Compliance Center|Violations'),
 };
+
+export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies-to-projects`;

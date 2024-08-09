@@ -13600,6 +13600,12 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Policies"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests. %{linkStart}Learn more.%{linkEnd}"
+msgstr ""
+
+msgid "ComplianceFrameworksReport|Using the ID"
+msgstr ""
+
 msgid "ComplianceFrameworks| Frameworks export"
 msgstr ""
 
