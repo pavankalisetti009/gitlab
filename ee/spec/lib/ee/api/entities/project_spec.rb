@@ -7,6 +7,7 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
 
   let(:options) { {} }
   let(:developer) { create(:user, developer_of: project) }
+  let(:guest) { create(:user, guest_of: project) }
 
   let(:entity) do
     ::API::Entities::Project.new(project, options)
@@ -78,6 +79,27 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     def mock_available
       allow_next_instance_of(Ci::ProjectCancellationRestriction) do |cr|
         allow(cr).to receive(:feature_available?).and_return(true)
+      end
+    end
+  end
+
+  describe 'secret push protection' do
+    let_it_be(:project) { create(:project) }
+    let(:options) { { current_user: current_user } }
+
+    context 'when user is guest' do
+      let(:current_user) { guest }
+
+      it 'does not return secret push protection' do
+        expect(subject[:pre_receive_secret_detection_enabled]).to be(nil)
+      end
+    end
+
+    context 'when user is developer' do
+      let(:current_user) { developer }
+
+      it 'returns a boolean' do
+        expect(subject[:pre_receive_secret_detection_enabled]).to be_in([true, false])
       end
     end
   end

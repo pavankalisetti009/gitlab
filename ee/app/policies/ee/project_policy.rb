@@ -890,6 +890,10 @@ module EE
         enable :enable_container_scanning_for_registry
       end
 
+      rule { pre_receive_secret_detection_available & can?(:developer_access) }.policy do
+        enable :read_pre_receive_secret_detection_info
+      end
+
       condition(:duo_workflow_available) do
         ::Feature.enabled?(:duo_workflow, @user)
       end

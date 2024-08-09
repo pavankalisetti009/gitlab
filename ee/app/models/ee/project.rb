@@ -280,6 +280,8 @@ module EE
       scope :with_group_saml_provider, -> { preload(group: :saml_provider) }
       scope :with_invited_groups, -> { preload(:invited_groups) }
 
+      scope :with_security_setting, -> { preload(:security_setting) }
+
       scope :by_marked_for_deletion_on, ->(marked_for_deletion_on) do
         where(marked_for_deletion_at: marked_for_deletion_on)
       end
