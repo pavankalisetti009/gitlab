@@ -22,7 +22,7 @@ module WorkItems
 
         def execute
           return if work_item.blank?
-          return unless ::Feature.enabled?(:work_items_rolledup_dates, work_item.resource_parent)
+          return unless work_item.resource_parent.work_items_rolledup_dates_feature_flag_enabled?
 
           work_item.build_dates_source if work_item.dates_source.blank?
 

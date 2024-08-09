@@ -10,10 +10,29 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
   let_it_be(:issue) { create(:issue, project: project) }
   let(:work_item) { epic.work_item }
 
+  before do
+    stub_feature_flags(work_items_rolledup_dates: false)
+  end
+
+  shared_examples 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled' do
+    before do
+      stub_feature_flags(work_items_rolledup_dates: true)
+    end
+
+    specify do
+      expect_next_instance_of(::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+        match_array(WorkItem.id_in(epic.issue_id))) do |service|
+        expect(service).to receive(:execute).and_call_original
+      end
+
+      described_class.new([epic]).execute
+    end
+  end
+
   describe '#execute' do
     subject(:execute) { described_class.new([epic]).execute }
 
-    context 'fixed date is set' do
+    context 'when fixed date is set' do
       let_it_be(:epic) { create(:epic, :use_fixed_dates, start_date: nil, end_date: nil, group: group) }
 
       it 'updates to fixed date' do
@@ -25,10 +44,10 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
       end
     end
 
-    context 'fixed date is not set' do
+    context 'when fixed date is not set' do
       let_it_be(:epic) { create(:epic, start_date: nil, end_date: nil, group: group) }
 
-      context 'multiple milestones' do
+      context 'and multiple milestones' do
         let_it_be(:issue1) { create(:issue, project: project) }
         let_it_be(:issue2) { create(:issue, project: project) }
         let_it_be(:epic_issue1) { create(:epic_issue, epic: epic, issue: issue1) }
@@ -39,7 +58,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           issue2.update!(milestone: milestone2)
         end
 
-        context 'complete start and due dates' do
+        context 'and complete start and due dates' do
           let_it_be(:milestone1) do
             create(:milestone, start_date: Date.new(2000, 1, 1), due_date: Date.new(2000, 1, 10), group: group)
           end
@@ -58,6 +77,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
         end
 
         context 'without due date' do
@@ -74,6 +94,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
         end
 
         context 'without any dates' do
@@ -108,16 +129,17 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
       end
 
-      context 'single milestone' do
+      context 'and single milestone' do
         let_it_be(:epic_issue) { create(:epic_issue, epic: epic, issue: issue) }
 
         before do
           issue.update!(milestone: milestone1, project: project)
         end
 
-        context 'complete start and due dates' do
+        context 'and complete start and due dates' do
           let_it_be(:milestone1) do
             create(:milestone, start_date: Date.new(2000, 1, 1), due_date: Date.new(2000, 1, 10), group: group)
           end
@@ -132,6 +154,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
         end
 
         context 'without due date' do
@@ -147,6 +170,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
         end
 
         context 'without any dates' do
@@ -162,11 +186,12 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
         end
       end
     end
 
-    describe '#when updating multiple epics' do
+    context 'when updating multiple epics' do
       let_it_be(:milestone) do
         create(:milestone, start_date: Date.new(2000, 1, 1), due_date: Date.new(2000, 1, 10), group: group)
       end
@@ -216,7 +241,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         expect(epics[2].due_date_sourcing_milestone).to eq(nil)
       end
 
-      context 'query count check' do
+      context 'and query count check' do
         let_it_be(:epics) { create_list(:epic, 2, group: group) }
         let_it_be(:extra_epics) { create_list(:epic, 2, group: group) }
 
@@ -266,7 +291,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
       end
 
-      context 'when epic has issues assigned to milestones' do
+      context 'and epic has issues assigned to milestones' do
         let_it_be(:milestone1) do
           create(:milestone, group: group, start_date: Date.new(2000, 1, 1), due_date: Date.new(2001, 1, 10))
         end
@@ -292,8 +317,9 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
         end
 
         it_behaves_like 'syncs all data from an epic to a work item'
+        it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
 
-        context "when epic has child epics" do
+        context "and epic has child epics" do
           let_it_be(:child_epic) do
             create(:epic, group: group, parent: epic, start_date: Date.new(1998, 1, 1), end_date: Date.new(1999, 1, 1))
           end
@@ -313,6 +339,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
           end
 
           it_behaves_like 'syncs all data from an epic to a work item'
+          it_behaves_like 'uses WorkItems::HiearchiesUpdateService when work_items_rolledup_dates is enabled'
 
           context "when epic dates are propagated upwards", :sidekiq_inline do
             let_it_be(:top_level_parent_epic) { create(:epic, group: group) }
@@ -322,7 +349,7 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
               create(:work_items_dates_source, work_item: top_level_parent_epic.work_item)
               create(:work_items_dates_source, work_item: parent_epic.work_item)
 
-              epic.update!(parent: parent_epic)
+              epic.update_columns(parent_id: parent_epic.id)
 
               create(:parent_link, work_item_parent: top_level_parent_epic.work_item, work_item: parent_epic.work_item)
               create(:parent_link, work_item_parent: parent_epic.work_item, work_item: epic.work_item)
@@ -361,6 +388,31 @@ RSpec.describe Epics::UpdateDatesService, feature_category: :portfolio_managemen
             end
 
             it_behaves_like 'syncs all data from an epic to a work item'
+
+            context 'when work_items_rolledup_dates is enabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: true)
+              end
+
+              it 'calls the HierarchiesUpdateService for the work items' do
+                expect_next_instance_of(::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+                  match_array(WorkItem.id_in(epic.issue_id))) do |service|
+                  expect(service).to receive(:execute).and_call_original
+                end
+
+                expect_next_instance_of(::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+                  match_array(WorkItem.id_in(epic.parent.issue_id))) do |service|
+                  expect(service).to receive(:execute).and_call_original
+                end
+
+                expect_next_instance_of(::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+                  match_array(WorkItem.id_in(parent_epic.parent.issue_id))) do |service|
+                  expect(service).to receive(:execute).and_call_original
+                end
+
+                described_class.new([epic]).execute
+              end
+            end
           end
         end
       end

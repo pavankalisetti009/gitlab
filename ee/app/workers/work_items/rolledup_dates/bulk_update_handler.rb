@@ -17,7 +17,8 @@ module WorkItems
         namespace = Namespace.find(event.data[:root_namespace_id])
 
         return false if namespace.blank?
-        return false unless ::Feature.enabled?(:work_items_rolledup_dates, namespace)
+        return false if namespace.root_ancestor.user_namespace?
+        return false unless namespace.work_items_rolledup_dates_feature_flag_enabled?
 
         UPDATE_TRIGGER_ATTRIBUTES.any? do |attribute|
           event.data.fetch(:updated_attributes, []).include?(attribute)

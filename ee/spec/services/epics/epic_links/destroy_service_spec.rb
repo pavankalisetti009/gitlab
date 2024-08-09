@@ -110,6 +110,8 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
           include_examples 'system notes created'
 
           context 'when parent dates are inherited' do
+            let(:parent_dates_source) { parent_epic.work_item.dates_source }
+
             let_it_be(:other_child) do
               create(
                 :epic, group: parent_epic_group, parent: parent_epic,
@@ -117,9 +119,25 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
               )
             end
 
+            let_it_be(:other_child_parent_link) do
+              create(:parent_link, work_item_parent: parent_epic.work_item, work_item: other_child.work_item)
+            end
+
+            let_it_be(:other_child_dates_source) do
+              create(
+                :work_items_dates_source, work_item: other_child.work_item,
+                start_date: other_child.start_date, due_date: other_child.due_date
+              )
+            end
+
             before do
               allow(::Epics::UpdateDatesService).to receive(:new).and_call_original
-              child_epic.update!(start_date: 5.days.ago, due_date: 5.days.from_now)
+              start_date = 5.days.ago
+              due_date = 5.days.from_now
+
+              child_epic.update!(start_date: start_date, due_date: due_date)
+              child_epic.work_item.create_dates_source.update!(start_date: start_date, due_date: due_date)
+
               parent_epic.update!(
                 start_date_is_fixed: false,
                 due_date_is_fixed: false,
@@ -128,17 +146,59 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
                 start_date_sourcing_epic_id: child_epic.id,
                 due_date_sourcing_epic_id: child_epic.id
               )
+              parent_epic.work_item.create_dates_source.update!(
+                start_date_is_fixed: false,
+                due_date_is_fixed: false,
+                start_date: child_epic.start_date,
+                due_date: child_epic.due_date,
+                start_date_sourcing_work_item_id: child_epic.issue_id,
+                due_date_sourcing_work_item_id: child_epic.issue_id
+              )
+              create(:parent_link, work_item_parent: parent_epic.work_item, work_item: child_epic.work_item)
             end
 
-            it 'updates parent dates to match existing children' do
-              expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
+            context 'when work_items_rolledup_dates is disabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: false)
+              end
 
-              expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
+              it 'updates parent dates to match existing children' do
+                expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
 
-              expect(parent_epic.start_date).to eq(other_child.start_date)
-              expect(parent_epic.due_date).to eq(other_child.due_date)
-              expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
-              expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
+                expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
+
+                expect(parent_epic.start_date).to eq(other_child.start_date)
+                expect(parent_epic.due_date).to eq(other_child.due_date)
+                expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
+                expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
+
+                expect(parent_dates_source.start_date).to eq(other_child.start_date)
+                expect(parent_dates_source.due_date).to eq(other_child.due_date)
+                expect(parent_dates_source.start_date_sourcing_work_item_id).to eq(other_child.issue_id)
+                expect(parent_dates_source.due_date_sourcing_work_item_id).to eq(other_child.issue_id)
+              end
+            end
+
+            context 'when work_items_rolledup_dates is enabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: true)
+              end
+
+              it 'updates parent dates to match existing children' do
+                expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
+
+                expect { destroy_link }.to change { parent_epic.reload.children.count }.by(-1)
+
+                expect(parent_epic.start_date).to eq(other_child.start_date)
+                expect(parent_epic.due_date).to eq(other_child.due_date)
+                expect(parent_epic.start_date_sourcing_epic_id).to eq(other_child.id)
+                expect(parent_epic.due_date_sourcing_epic_id).to eq(other_child.id)
+
+                expect(parent_dates_source.start_date).to eq(other_child.start_date)
+                expect(parent_dates_source.due_date).to eq(other_child.due_date)
+                expect(parent_dates_source.start_date_sourcing_work_item_id).to eq(other_child.issue_id)
+                expect(parent_dates_source.due_date_sourcing_work_item_id).to eq(other_child.issue_id)
+              end
             end
           end
         end
@@ -243,19 +303,6 @@ RSpec.describe Epics::EpicLinks::DestroyService, feature_category: :portfolio_ma
               expect(::Epics::UpdateDatesService).not_to receive(:new)
 
               destroy_link
-            end
-
-            context 'when work_items_rolledup_dates feature flag is disabled' do
-              before do
-                allow(::Epics::UpdateDatesService).to receive(:new).and_call_original
-                stub_feature_flags(work_items_rolledup_dates: false)
-              end
-
-              it 'calls Epics::UpdateDatesService' do
-                expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
-
-                destroy_link
-              end
             end
           end
         end

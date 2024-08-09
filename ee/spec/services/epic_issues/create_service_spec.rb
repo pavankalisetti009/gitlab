@@ -337,19 +337,6 @@ RSpec.describe EpicIssues::CreateService, feature_category: :portfolio_managemen
 
                   create_link
                 end
-
-                context 'when work_items_rolledup_dates feature flag is disabled' do
-                  before do
-                    allow(::Epics::UpdateDatesService).to receive(:new).and_call_original
-                    stub_feature_flags(work_items_rolledup_dates: false)
-                  end
-
-                  it 'calls Epics::UpdateDatesService' do
-                    expect(::Epics::UpdateDatesService).to receive(:new).with([epic])
-
-                    create_link
-                  end
-                end
               end
             end
           end

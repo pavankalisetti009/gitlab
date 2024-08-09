@@ -686,6 +686,10 @@ module EE
       shared_runners_enabled? && shared_runners_limit_namespace.shared_runners_minutes_limit_enabled?
     end
 
+    def work_items_rolledup_dates_feature_flag_enabled?
+      group&.work_items_rolledup_dates_feature_flag_enabled?
+    end
+
     override :feature_available?
     def feature_available?(feature, user = nil)
       if ::ProjectFeature::FEATURES.include?(feature)

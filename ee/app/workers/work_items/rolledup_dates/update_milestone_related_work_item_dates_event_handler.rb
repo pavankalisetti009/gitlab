@@ -16,8 +16,8 @@ module WorkItems
 
       def self.can_handle?(event)
         milestone = ::Milestone.find_by_id(event.data[:id])
-        root_ancestor = milestone.project&.root_ancestor || milestone.group&.root_ancestor
-        return false unless ::Feature.enabled?(:work_items_rolledup_dates, root_ancestor)
+        return false unless milestone
+        return false unless milestone.resource_parent.work_items_rolledup_dates_feature_flag_enabled?
 
         UPDATE_TRIGGER_ATTRIBUTES.any? { |attribute| event.data.fetch(:updated_attributes, []).include?(attribute) }
       end

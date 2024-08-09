@@ -847,109 +847,127 @@ RSpec.describe Epics::UpdateService, feature_category: :portfolio_management do
             context 'when updating rolledup dates' do
               let(:opts) { { start_date_is_fixed: false, due_date_is_fixed: false } }
 
-              context 'with issue milestone date roll up' do
-                let_it_be(:milestone) do
-                  create(:milestone, group: group, start_date: Date.new(2024, 2, 1), due_date: Date.new(2024, 2, 29))
-                end
-
-                before do
-                  child_issue = create(:issue, milestone: milestone, project: create(:project, group: group))
-                  create(:epic_issue, epic: epic, issue: child_issue)
-                  create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(child_issue.id))
-                end
-
-                context 'when updating only due date' do
-                  let(:opts) { { due_date: 2.days.from_now.to_date } }
-
-                  it 'syncs due date' do
-                    subject
-
-                    expect(work_item.dates_source.due_date).to eq(epic.end_date)
-                    expect(work_item.dates_source.due_date).to eq(opts[:due_date].to_date)
+              shared_examples 'rolls up dates correctly' do
+                context 'with issue milestone date roll up' do
+                  let_it_be(:milestone) do
+                    create(:milestone, group: group, start_date: Date.new(2024, 2, 1), due_date: Date.new(2024, 2, 29))
                   end
-                end
-
-                context 'when date sourcing epic is changed' do
-                  let_it_be(:child_epic) { create(:epic, group: group, parent: epic) }
-
-                  let(:opts) { { due_date: 2.days.from_now.to_date } }
 
                   before do
-                    epic.update!(due_date_sourcing_epic_id: child_epic.id, start_date_sourcing_epic_id: child_epic.id)
-
-                    allow(epic).to receive(:previous_changes).and_return({
-                      due_date_sourcing_epic_id: child_epic.id, start_date_sourcing_epic_id: child_epic.id
-                    })
+                    child_issue = create(:issue, milestone: milestone, project: create(:project, group: group))
+                    create(:epic_issue, epic: epic, issue: child_issue)
+                    create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(child_issue.id))
                   end
 
-                  it 'sets date sourcing epic to the work item', :aggregate_failures do
+                  context 'when updating only due date' do
+                    let(:opts) { { due_date: 2.days.from_now.to_date } }
+
+                    it 'syncs due date' do
+                      subject
+
+                      expect(work_item.dates_source.due_date).to eq(epic.end_date)
+                      expect(work_item.dates_source.due_date).to eq(opts[:due_date].to_date)
+                    end
+                  end
+
+                  context 'when date sourcing epic is changed' do
+                    let_it_be(:child_epic) { create(:epic, group: group, parent: epic) }
+
+                    let(:opts) { { due_date: 2.days.from_now.to_date } }
+
+                    before do
+                      epic.update!(due_date_sourcing_epic_id: child_epic.id, start_date_sourcing_epic_id: child_epic.id)
+
+                      allow(epic).to receive(:previous_changes).and_return({
+                        due_date_sourcing_epic_id: child_epic.id, start_date_sourcing_epic_id: child_epic.id
+                      })
+                    end
+
+                    it 'sets date sourcing epic to the work item', :aggregate_failures do
+                      subject
+
+                      expect(work_item.dates_source.due_date_sourcing_work_item_id).to eq(child_epic.work_item.id)
+                      expect(work_item.dates_source.start_date_sourcing_work_item_id).to eq(child_epic.work_item.id)
+                    end
+                  end
+
+                  it 'sets rolledup dated for the work item', :aggregate_failures do
                     subject
 
-                    expect(work_item.dates_source.due_date_sourcing_work_item_id).to eq(child_epic.work_item.id)
-                    expect(work_item.dates_source.start_date_sourcing_work_item_id).to eq(child_epic.work_item.id)
+                    epic.reload
+                    work_item = epic.work_item
+
+                    expect(epic.start_date_sourcing_milestone_id).to eq(milestone.id)
+                    expect(epic.due_date_sourcing_milestone_id).to eq(milestone.id)
+                    expect(epic.start_date).to eq(milestone.start_date)
+                    expect(epic.start_date_is_fixed).to eq(false)
+                    expect(epic.due_date).to eq(milestone.due_date)
+                    expect(epic.due_date_is_fixed).to eq(false)
+
+                    expect(work_item.dates_source.start_date_is_fixed).to eq(epic.start_date_is_fixed)
+                    expect(work_item.dates_source.start_date_fixed).to eq(epic.start_date_fixed)
+                    expect(work_item.dates_source.start_date).to eq(epic.start_date)
+                    expect(work_item.dates_source.due_date).to eq(epic.due_date)
+                    expect(work_item.dates_source.start_date_sourcing_milestone_id)
+                      .to eq(epic.start_date_sourcing_milestone_id)
+                    expect(work_item.dates_source.due_date_sourcing_milestone_id)
+                      .to eq(epic.due_date_sourcing_milestone_id)
                   end
                 end
 
-                it 'sets rolledup dated for the work item', :aggregate_failures do
-                  subject
+                context 'with child epic date roll up' do
+                  let_it_be(:child_epic) do
+                    create(
+                      :epic, :with_synced_work_item,
+                      group: group,
+                      parent: epic,
+                      start_date: Date.new(2024, 3, 1),
+                      end_date: Date.new(2024, 3, 31)
+                    )
+                  end
 
-                  epic.reload
-                  work_item = epic.work_item
+                  before do
+                    child_epic.work_item.update!(start_date: child_epic.start_date, due_date: child_epic.end_date)
+                    create(:parent_link, work_item_parent: epic.work_item, work_item: child_epic.work_item)
+                  end
 
-                  expect(epic.start_date_sourcing_milestone_id).to eq(milestone.id)
-                  expect(epic.due_date_sourcing_milestone_id).to eq(milestone.id)
-                  expect(epic.start_date).to eq(milestone.start_date)
-                  expect(epic.start_date_is_fixed).to eq(false)
-                  expect(epic.due_date).to eq(milestone.due_date)
-                  expect(epic.due_date_is_fixed).to eq(false)
+                  it 'sets rolledup dated for the work item', :aggregate_failures do
+                    subject
 
-                  expect(work_item.dates_source.start_date_is_fixed).to eq(epic.start_date_is_fixed)
-                  expect(work_item.dates_source.start_date_fixed).to eq(epic.start_date_fixed)
-                  expect(work_item.dates_source.start_date).to eq(epic.start_date)
-                  expect(work_item.dates_source.due_date).to eq(epic.due_date)
-                  expect(work_item.dates_source.start_date_sourcing_milestone_id)
-                    .to eq(epic.start_date_sourcing_milestone_id)
-                  expect(work_item.dates_source.due_date_sourcing_milestone_id)
-                    .to eq(epic.due_date_sourcing_milestone_id)
+                    epic.reload
+                    work_item = epic.work_item
+
+                    expect(epic.start_date_sourcing_epic_id).to eq(child_epic.id)
+                    expect(epic.due_date_sourcing_epic_id).to eq(child_epic.id)
+                    expect(epic.start_date).to eq(child_epic.start_date)
+                    expect(epic.start_date_is_fixed).to eq(false)
+                    expect(epic.due_date).to eq(child_epic.end_date)
+                    expect(epic.due_date_is_fixed).to eq(false)
+
+                    expect(work_item.dates_source.start_date_is_fixed).to eq(epic.start_date_is_fixed)
+                    expect(work_item.dates_source.start_date_fixed).to eq(epic.start_date_fixed)
+                    expect(work_item.dates_source.start_date).to eq(epic.start_date)
+                    expect(work_item.dates_source.due_date).to eq(epic.due_date)
+                    expect(work_item.dates_source.start_date_sourcing_work_item_id).to eq(child_epic.issue_id)
+                    expect(work_item.dates_source.due_date_sourcing_work_item_id).to eq(child_epic.issue_id)
+                  end
                 end
               end
 
-              context 'with child epic date roll up' do
-                let_it_be(:child_epic) do
-                  create(
-                    :epic, :with_synced_work_item,
-                    group: group,
-                    parent: epic,
-                    start_date: Date.new(2024, 3, 1),
-                    end_date: Date.new(2024, 3, 31)
-                  )
-                end
-
+              context 'when work_items_rolledup_dates is disabled' do
                 before do
-                  child_epic.work_item.update!(start_date: child_epic.start_date, due_date: child_epic.end_date)
-                  create(:parent_link, work_item_parent: epic.work_item, work_item: child_epic.work_item)
+                  stub_feature_flags(work_items_rolledup_dates: false)
                 end
 
-                it 'sets rolledup dated for the work item', :aggregate_failures do
-                  subject
+                it_behaves_like 'rolls up dates correctly'
+              end
 
-                  epic.reload
-                  work_item = epic.work_item
-
-                  expect(epic.start_date_sourcing_epic_id).to eq(child_epic.id)
-                  expect(epic.due_date_sourcing_epic_id).to eq(child_epic.id)
-                  expect(epic.start_date).to eq(child_epic.start_date)
-                  expect(epic.start_date_is_fixed).to eq(false)
-                  expect(epic.due_date).to eq(child_epic.end_date)
-                  expect(epic.due_date_is_fixed).to eq(false)
-
-                  expect(work_item.dates_source.start_date_is_fixed).to eq(epic.start_date_is_fixed)
-                  expect(work_item.dates_source.start_date_fixed).to eq(epic.start_date_fixed)
-                  expect(work_item.dates_source.start_date).to eq(epic.start_date)
-                  expect(work_item.dates_source.due_date).to eq(epic.due_date)
-                  expect(work_item.dates_source.start_date_sourcing_work_item_id).to eq(child_epic.issue_id)
-                  expect(work_item.dates_source.due_date_sourcing_work_item_id).to eq(child_epic.issue_id)
+              context 'when work_items_rolledup_dates is enabled' do
+                before do
+                  stub_feature_flags(work_items_rolledup_dates: true)
                 end
+
+                it_behaves_like 'rolls up dates correctly'
               end
             end
 

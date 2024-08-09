@@ -161,7 +161,7 @@ module Epics
       end
 
       def skip_epic_dates_syncing?
-        params[:synced_epic] && Feature.enabled?(:work_items_rolledup_dates, issuable.group)
+        params[:synced_epic]
       end
 
       def update_inherited_dates(child_epic, epics)

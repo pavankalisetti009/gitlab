@@ -37,7 +37,7 @@ module EpicIssues
     def after_destroy
       super
 
-      Epics::UpdateDatesService.new([link.epic]).execute unless skip_update_sates_service?
+      Epics::UpdateDatesService.new([link.epic]).execute unless skip_update_dates_service?
 
       ::GraphqlTriggers.issuable_epic_updated(@target)
     end
@@ -87,8 +87,8 @@ module EpicIssues
       raise Epics::SyncAsWorkItem::SyncAsWorkItemError, error_msg
     end
 
-    def skip_update_sates_service?
-      synced_epic && source.work_item.present? && Feature.enabled?(:work_items_rolledup_dates, source.group)
+    def skip_update_dates_service?
+      synced_epic && source.work_item.present?
     end
   end
 end

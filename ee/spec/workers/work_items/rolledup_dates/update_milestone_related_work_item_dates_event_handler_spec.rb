@@ -6,7 +6,8 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
   subject(:handler) { described_class.new }
 
   let_it_be(:service_class) { ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService }
-  let_it_be(:project) { create(:project) }
+  let_it_be(:group) { create(:group) }
+  let_it_be(:project) { create(:project, group: group) }
   let_it_be(:milestone) { create(:milestone, project: project) }
   let_it_be(:milestone_work_items) { create_list(:work_item, 2, project: project, milestone: milestone) }
   # Just to ensure that work_items not associated with the given milestone are used
@@ -15,7 +16,7 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
   let(:event) { instance_double(Milestones::MilestoneUpdatedEvent, data: { id: milestone.id }) }
 
   describe ".can_handle?" do
-    let(:milestone) { create(:milestone, :on_project) }
+    let(:milestone) { create(:milestone, :on_project, project: project) }
 
     context "and the feature flag is disabled" do
       before do
@@ -51,7 +52,7 @@ RSpec.describe WorkItems::RolledupDates::UpdateMilestoneRelatedWorkItemDatesEven
     end
 
     context "when group milestone" do
-      let(:milestone) { create(:milestone, :on_group) }
+      let(:milestone) { create(:milestone, :on_group, group: group) }
 
       context "and the feature flag is enabled" do
         before do

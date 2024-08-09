@@ -141,7 +141,7 @@ module EpicIssues
 
     override :update_epic_dates?
     def update_epic_dates?(_affected_epics)
-      return false if synced_epic && Feature.enabled?(:work_items_rolledup_dates, issuable.group)
+      return false if synced_epic
 
       super
     end
