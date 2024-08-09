@@ -66,11 +66,4 @@ RSpec.describe Security::Training, feature_category: :vulnerability_management d
       end
     end
   end
-
-  context 'with loose foreign key on security_trainings.project_id' do
-    it_behaves_like 'cleanup by a loose foreign key' do
-      let_it_be(:parent) { create(:project) }
-      let_it_be(:model) { create(:security_training, project: parent) }
-    end
-  end
 end
