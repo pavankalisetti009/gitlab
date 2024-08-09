@@ -14,7 +14,14 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
   end
 
   let(:shared_secret) { 'shared secret' }
-  let(:params) { { check_id: external_status_check.id, name: 'Updated name', external_url: 'https://external_url_updated.com', shared_secret: shared_secret } }
+  let(:params) do
+    {
+      check_id: external_status_check.id,
+      name: 'Updated name',
+      external_url: 'https://external_url_updated.com',
+      shared_secret: shared_secret
+    }
+  end
 
   subject(:execute) { described_class.new(branch_rule, user, params).execute }
 
@@ -24,6 +31,21 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
                         .and_return(action_allowed)
 
     stub_licensed_features(audit_events: true)
+  end
+
+  describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
+    before do
+      allow_next_instance_of(described_class) do |instance|
+        allow(instance).to receive(:authorized?).and_return(false)
+      end
+    end
+
+    it 'returns the corresponding error response' do
+      result = execute
+      expect(result.message).to eq('Failed to update external status check')
+      expect(result.payload[:errors]).to contain_exactly('Not allowed')
+      expect(result.reason).to eq(:access_denied)
+    end
   end
 
   context 'when the service execution succeeds', :request_store do
@@ -52,23 +74,17 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
     end
   end
 
-  shared_examples 'with invalid branch rules' do |message|
-    it 'responds with the expected errors' do
-      expect(execute.error?).to be true
-      expect { execute }.not_to change { external_status_check }
-      expect(execute.message).to eq(message)
-    end
-  end
-
   context 'when the service execution fails' do
     context 'when check_id parameter is missing' do
       let(:params) { { name: 'Updated name', external_url: 'https://external_url_updated.com' } }
 
       it 'returns a service error response' do
-        expect(execute.success?).to be(false)
-        expect(execute.message).to eq("Couldn't find MergeRequests::ExternalStatusCheck without an ID")
-        expect(execute.payload[:errors]).to contain_exactly('Not found')
-        expect(execute.reason).to eq(:not_found)
+        result = execute
+
+        expect(result.success?).to be(false)
+        expect(result.message).to eq("Couldn't find MergeRequests::ExternalStatusCheck without an ID")
+        expect(result.payload[:errors]).to contain_exactly('Not found')
+        expect(result.reason).to eq(:not_found)
       end
     end
 
@@ -106,13 +122,23 @@ RSpec.describe BranchRules::ExternalStatusChecks::UpdateService, feature_categor
     context 'with ::Projects::AllBranchesRule' do
       let(:branch_rule) { ::Projects::AllBranchesRule.new(project) }
 
-      it_behaves_like 'with invalid branch rules', 'All branch rules cannot configure external status checks'
+      it 'responds with the expected errors' do
+        expect(execute.error?).to be true
+        expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
+        expect(execute.message).to eq('All branch rules cannot configure external status checks')
+        expect(execute.payload[:errors]).to contain_exactly('All branch rules not allowed')
+      end
     end
 
     context 'with ::Projects::AllProtectedBranchesRule' do
       let(:branch_rule) { ::Projects::AllProtectedBranchesRule.new(project) }
 
-      it_behaves_like 'with invalid branch rules', 'All protected branch rules cannot configure external status checks'
+      it 'responds with the expected errors' do
+        expect(execute.error?).to be true
+        expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
+        expect(execute.message).to eq('All protected branch rules cannot configure external status checks')
+        expect(execute.payload[:errors]).to contain_exactly('All protected branches not allowed')
+      end
     end
   end
 end

@@ -12,19 +12,39 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
   let(:create_service) { ExternalStatusChecks::CreateService }
   let(:create_service_instance) { instance_double(update_service) }
   let(:status_check_name) { 'Test' }
-  let(:params) { { name: status_check_name, external_url: 'https://external_url.text/hello.json', shared_secret: 'shared_secret' } }
+  let(:params) do
+    {
+      name: status_check_name,
+      external_url: 'https://external_url.text/hello.json',
+      shared_secret: 'shared_secret'
+    }
+  end
 
   subject(:execute) { described_class.new(branch_rule, user, params).execute }
 
   before do
-    allow(Ability)
-      .to receive(:allowed?).with(user, :update_branch_rule, branch_rule)
-                            .and_return(action_allowed)
+    allow(Ability).to receive(:allowed?)
+                        .with(user, :update_branch_rule, branch_rule)
+                        .and_return(action_allowed)
 
     stub_licensed_features(audit_events: true)
   end
 
   it_behaves_like 'create external status services'
+
+  describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
+    before do
+      allow_next_instance_of(described_class) do |instance|
+        allow(instance).to receive(:authorized?).and_return(false)
+      end
+    end
+
+    it 'returns the corresponding error response' do
+      expect(execute.message).to eq('Failed to create external status check')
+      expect(execute.payload[:errors]).to contain_exactly('Not allowed')
+      expect(execute.reason).to eq(:access_denied)
+    end
+  end
 
   context 'when the given branch rule is not and instance of Projects::BranchRule' do
     let(:branch_rule) { create(:protected_branch) }
@@ -49,6 +69,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
       expect(execute.error?).to be true
       expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
       expect(execute.message).to eq('All branch rules cannot configure external status checks')
+      expect(execute.payload[:errors]).to contain_exactly('All branch rules not allowed')
     end
   end
 
@@ -59,6 +80,7 @@ RSpec.describe BranchRules::ExternalStatusChecks::CreateService, feature_categor
       expect(execute.error?).to be true
       expect { execute }.not_to change { MergeRequests::ExternalStatusCheck.count }
       expect(execute.message).to eq('All protected branch rules cannot configure external status checks')
+      expect(execute.payload[:errors]).to contain_exactly('All protected branches not allowed')
     end
   end
 end
