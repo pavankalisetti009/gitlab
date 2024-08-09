@@ -105,8 +105,6 @@ RSpec.describe API::Internal::Observability, :cloud_licenses, feature_category: 
           allow_next_instance_of(::Gitlab::CloudConnector::SelfIssuedToken) do |token|
             allow(token).to receive(:encoded).and_return(gob_token)
           end
-          ::CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
-          ::CloudConnector::AvailableServices.clear_memoization(:available_services)
         end
 
         it_behaves_like 'success'

@@ -2,8 +2,6 @@
 
 module CloudConnector
   class BaseAvailableServiceData
-    include Gitlab::Utils::StrongMemoize
-
     attr_accessor :name, :cut_off_date
 
     def initialize(name, cut_off_date, add_on_names)
@@ -62,14 +60,12 @@ module CloudConnector
     end
 
     def add_on_purchases(namespace = nil)
-      strong_memoize_with(:add_on_purchases, namespace) do
-        results = GitlabSubscriptions::AddOnPurchase
-          .by_add_on_name(@add_on_names)
-          .active
-        results = results.by_namespace(namespace.self_and_ancestor_ids) if namespace
+      results = GitlabSubscriptions::AddOnPurchase
+        .by_add_on_name(@add_on_names)
+        .active
+      results = results.by_namespace(namespace.self_and_ancestor_ids) if namespace
 
-        results
-      end
+      results
     end
   end
 end
