@@ -50,6 +50,62 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
         expect(method_invocations).to be_empty
       end
     end
+
+    context 'adjourned deletion' do
+      subject(:get_show) { get :show, params: { id: subgroup.to_param } }
+
+      before do
+        stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
+      end
+
+      let(:ancestor_notice_regex) do
+        /The parent group of this group is pending deletion, so this group will also be deleted on .*./
+      end
+
+      context 'when the parent group has not been scheduled for deletion' do
+        it 'does not show the notice' do
+          subject
+
+          expect(response.body).not_to match(ancestor_notice_regex)
+        end
+      end
+
+      context 'when the parent group has been scheduled for deletion' do
+        before do
+          create(:group_deletion_schedule,
+            group: subgroup.parent,
+            marked_for_deletion_on: Date.current,
+            deleting_user: user
+          )
+        end
+
+        it 'shows the notice that the parent group has been scheduled for deletion' do
+          subject
+
+          expect(response.body).to match(ancestor_notice_regex)
+        end
+
+        context 'when the group itself has also been scheduled for deletion' do
+          before do
+            create(:group_deletion_schedule,
+              group: subgroup,
+              marked_for_deletion_on: Date.current,
+              deleting_user: user
+            )
+          end
+
+          it 'does not show the notice that the parent group has been scheduled for deletion' do
+            subject
+
+            expect(response.body).not_to match(ancestor_notice_regex)
+            # However, shows the notice that the project has been marked for deletion.
+            expect(response.body).to match(
+              /This group and its subgroups and projects are pending deletion, and will be deleted on .*./
+            )
+          end
+        end
+      end
+    end
   end
 
   describe 'GET #activity' do

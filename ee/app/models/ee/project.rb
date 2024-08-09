@@ -424,6 +424,10 @@ module EE
 
       alias_attribute :fallback_approvals_required, :approvals_before_merge
 
+      ## marked_for_deletion_at is deprecated in our v5 REST API in favor of marked_for_deletion_on
+      ## https://docs.gitlab.com/ee/api/projects.html#removals-in-api-v5
+      alias_attribute :marked_for_deletion_on, :marked_for_deletion_at
+
       with_replicator Geo::ProjectRepositoryReplicator
 
       def pipeline_configuration_full_path
@@ -1038,8 +1042,9 @@ module EE
         License.feature_available?(:adjourned_deletion_for_projects_and_groups)
     end
 
-    def ancestor_marked_for_deletion
+    def self_or_ancestor_marked_for_deletion
       return unless feature_available?(:adjourned_deletion_for_projects_and_groups)
+      return self if marked_for_deletion?
 
       ancestors(hierarchy_order: :asc)
         .joins(:deletion_schedule).first

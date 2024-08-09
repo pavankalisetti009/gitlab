@@ -3364,21 +3364,29 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       .and_return(host: host)
   end
 
-  describe '#ancestor_marked_for_deletion' do
+  describe '#self_or_ancestor_marked_for_deletion' do
     context 'delayed deletion feature is not available' do
       before do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: false)
       end
 
       context 'the parent namespace has been marked for deletion' do
-        let(:parent_group) do
+        let_it_be(:parent_group) do
           create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago)
         end
 
-        let(:project) { create(:project, namespace: parent_group) }
+        let_it_be(:project) { create(:project, namespace: parent_group) }
 
         it 'returns nil' do
-          expect(project.ancestor_marked_for_deletion).to be_nil
+          expect(project.self_or_ancestor_marked_for_deletion).to be_nil
+        end
+      end
+
+      context 'the project has been marked for deletion' do
+        let_it_be(:project) { create(:project, marked_for_deletion_at: Date.parse('2024-01-01')) }
+
+        it 'returns nil' do
+          expect(project.self_or_ancestor_marked_for_deletion).to be_nil
         end
       end
     end
@@ -3389,33 +3397,51 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       end
 
       context 'the parent namespace has been marked for deletion' do
-        let(:parent_group) do
+        let_it_be(:parent_group) do
           create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago)
         end
 
-        let(:project) { create(:project, namespace: parent_group) }
+        let_it_be(:project) { create(:project, namespace: parent_group) }
 
         it 'returns the parent namespace' do
-          expect(project.ancestor_marked_for_deletion).to eq(parent_group)
+          expect(project.self_or_ancestor_marked_for_deletion).to eq(parent_group)
         end
       end
 
       context "project or its parent group has not been marked for deletion" do
-        let(:parent_group) { create(:group) }
-        let(:project) { create(:project, namespace: parent_group) }
+        let_it_be(:parent_group) { create(:group) }
+        let_it_be(:project) { create(:project, namespace: parent_group) }
 
         it 'returns nil' do
-          expect(project.ancestor_marked_for_deletion).to be_nil
+          expect(project.self_or_ancestor_marked_for_deletion).to be_nil
         end
       end
 
-      context 'ordering' do
-        let(:group_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago) }
-        let(:subgroup_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago, parent: group_a) }
-        let(:project) { create(:project, namespace: subgroup_a) }
+      context 'the project has been marked for deletion' do
+        let_it_be(:project) { create(:project, marked_for_deletion_at: Date.parse('2024-01-01')) }
+
+        it 'returns the project' do
+          expect(project.self_or_ancestor_marked_for_deletion).to eq(project)
+        end
+      end
+
+      context 'ordering when project is not marked for deletion' do
+        let_it_be(:group_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago) }
+        let_it_be(:subgroup_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago, parent: group_a) }
+        let_it_be(:project) { create(:project, namespace: subgroup_a) }
 
         it 'returns the first group that is marked for deletion, up its ancestry chain' do
-          expect(project.ancestor_marked_for_deletion).to eq(subgroup_a)
+          expect(project.self_or_ancestor_marked_for_deletion).to eq(subgroup_a)
+        end
+      end
+
+      context 'ordering when project is marked for deletion' do
+        let_it_be(:group_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago) }
+        let_it_be(:subgroup_a) { create(:group_with_deletion_schedule, marked_for_deletion_on: 1.day.ago, parent: group_a) }
+        let_it_be(:project) { create(:project, namespace: subgroup_a, marked_for_deletion_at: Date.parse('2024-01-01')) }
+
+        it 'returns the project itself rather than the ancestory chain' do
+          expect(project.self_or_ancestor_marked_for_deletion).to eq(project)
         end
       end
     end
