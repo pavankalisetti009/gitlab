@@ -2771,9 +2771,6 @@ msgstr ""
 msgid "Access granted"
 msgstr ""
 
-msgid "Access permission"
-msgstr ""
-
 msgid "Access requests"
 msgstr ""
 
@@ -20501,6 +20498,9 @@ msgstr ""
 msgid "Enter a URL for your custom emoji"
 msgstr ""
 
+msgid "Enter a name"
+msgstr ""
+
 msgid "Enter a name for your comment template"
 msgstr ""
 
@@ -24732,9 +24732,6 @@ msgid "Go back (while searching for files)"
 msgstr ""
 
 msgid "Go back to configuration"
-msgstr ""
-
-msgid "Go back to edit"
 msgstr ""
 
 msgid "Go full screen"
@@ -47530,13 +47527,19 @@ msgstr ""
 msgid "Secrets|Delete"
 msgstr ""
 
+msgid "Secrets|Description must be 200 characters or less."
+msgstr ""
+
 msgid "Secrets|Edit %{id}"
 msgstr ""
 
 msgid "Secrets|Edit secret"
 msgstr ""
 
-msgid "Secrets|Enter a key name"
+msgid "Secrets|Enter a value for the secret"
+msgstr ""
+
+msgid "Secrets|Environments"
 msgstr ""
 
 msgid "Secrets|Expires"
@@ -47551,13 +47554,13 @@ msgstr ""
 msgid "Secrets|Last used"
 msgstr ""
 
+msgid "Secrets|Maximum 200 characters."
+msgstr ""
+
 msgid "Secrets|Name"
 msgstr ""
 
 msgid "Secrets|New secret"
-msgstr ""
-
-msgid "Secrets|Preview for %{secretKey}"
 msgstr ""
 
 msgid "Secrets|Revoke"
@@ -47566,7 +47569,7 @@ msgstr ""
 msgid "Secrets|Rotation period"
 msgstr ""
 
-msgid "Secrets|Secret key"
+msgid "Secrets|Rotation reminder"
 msgstr ""
 
 msgid "Secrets|Secrets"
@@ -47575,13 +47578,7 @@ msgstr ""
 msgid "Secrets|Secrets represent sensitive information your CI job needs to complete work. This sensitive information can be items like API tokens, database credentials, or private keys. Unlike CI/CD variables, which are always presented to a job, secrets must be explicitly required by a job."
 msgstr ""
 
-msgid "Secrets|Select a rotation interval"
-msgstr ""
-
-msgid "Secrets|Select environment"
-msgstr ""
-
-msgid "Secrets|Set expiration"
+msgid "Secrets|Select a reminder interval"
 msgstr ""
 
 msgid "Secrets|Status"
@@ -47590,10 +47587,7 @@ msgstr ""
 msgid "Secrets|Stored secrets"
 msgstr ""
 
-msgid "Secrets|Value"
-msgstr ""
-
-msgid "Secrets|Value for the key"
+msgid "Secrets|The name should be unique within this project."
 msgstr ""
 
 msgid "Secure Code Warrior"
@@ -49333,6 +49327,9 @@ msgstr ""
 msgid "Select due date"
 msgstr ""
 
+msgid "Select environment or create wildcard"
+msgstr ""
+
 msgid "Select epic"
 msgstr ""
 
@@ -49366,9 +49363,6 @@ msgstr ""
 msgid "Select milestone"
 msgstr ""
 
-msgid "Select permission"
-msgstr ""
-
 msgid "Select private project"
 msgstr ""
 
@@ -49394,9 +49388,6 @@ msgid "Select reviewer"
 msgstr ""
 
 msgid "Select reviewers"
-msgstr ""
-
-msgid "Select roles or users"
 msgstr ""
 
 msgid "Select severity (optional)"

@@ -16,10 +16,14 @@ import { createAlert } from '~/alert';
 import { __, s__ } from '~/locale';
 import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
-import { INDEX_ROUTE_NAME, DETAILS_ROUTE_NAME, ROTATION_PERIOD_OPTIONS } from '../../constants';
+import {
+  INDEX_ROUTE_NAME,
+  DETAILS_ROUTE_NAME,
+  ROTATION_PERIOD_OPTIONS,
+  SECRET_DESCRIPTION_MAX_LENGTH,
+} from '../../constants';
 import { convertRotationPeriod } from '../../utils';
 import CreateSecretMutation from '../../graphql/mutations/client/create_secret.mutation.graphql';
-import SecretPreviewModal from './secret_preview_modal.vue';
 
 export default {
   name: 'SecretForm',
@@ -35,7 +39,6 @@ export default {
     GlFormTextarea,
     GlLink,
     GlSprintf,
-    SecretPreviewModal,
   },
   props: {
     areEnvironmentsLoading: {
@@ -59,11 +62,10 @@ export default {
   data() {
     return {
       customRotationPeriod: '',
-      isPreviewing: false,
       isSubmitting: false,
       secret: {
         createdAt: undefined,
-        environment: '*',
+        environment: '',
         expiration: undefined,
         description: '',
         key: undefined,
@@ -74,14 +76,22 @@ export default {
   },
   computed: {
     canSubmit() {
-      if (this.isExpirationValid && this.isKeyValid && this.isValueValid) {
-        return true;
-      }
-
-      return false;
+      return (
+        this.isExpirationValid &&
+        this.isKeyValid &&
+        this.isValueValid &&
+        this.isDescriptionValid &&
+        this.isEnvironmentScopeValid
+      );
     },
     createdAt() {
       return this.secret.createdAt || Date.now();
+    },
+    isDescriptionValid() {
+      return this.secret.description.length <= SECRET_DESCRIPTION_MAX_LENGTH;
+    },
+    isEnvironmentScopeValid() {
+      return this.secret.environment.length > 0;
     },
     isExpirationValid() {
       return isDate(this.secret.expiration);
@@ -105,7 +115,7 @@ export default {
         return this.rotationPeriodText;
       }
 
-      return s__('Secrets|Select a rotation interval');
+      return s__('Secrets|Select a reminder interval');
     },
   },
   methods: {
@@ -117,7 +127,10 @@ export default {
           mutation: CreateSecretMutation,
           variables: {
             fullPath: this.fullPath,
-            secret: this.secret,
+            secret: {
+              ...this.secret,
+              description: this.secret.description,
+            },
           },
         });
 
@@ -138,19 +151,11 @@ export default {
     editSecret() {
       // TODO
     },
-    hidePreviewModal() {
-      this.isPreviewing = false;
-    },
     setCustomRotationPeriod() {
-      this.secret.rotationPeriod = this.customRotationPeriod.trim();
+      this.secret.rotationPeriod = this.customRotationPeriod;
     },
     setEnvironment(environment) {
       this.secret = { ...this.secret, environment };
-    },
-    showPreviewModal() {
-      if (this.canSubmit) {
-        this.isPreviewing = true;
-      }
     },
     async submitSecret() {
       if (this.isEditing) {
@@ -171,25 +176,26 @@ export default {
 </script>
 <template>
   <div>
-    <gl-form @submit.prevent="showPreviewModal">
+    <gl-form @submit.prevent="submitSecret">
       <gl-form-group
         data-testid="secret-key-field-group"
         label-for="secret-key"
-        :label="s__('Secrets|Secret key')"
+        :label="__('Name')"
+        :description="s__('Secrets|The name should be unique within this project.')"
         :invalid-feedback="$options.i18n.fieldRequired"
         :state="secret.key === undefined || isKeyValid"
       >
         <gl-form-input
           id="secret-key"
           v-model="secret.key"
-          :placeholder="s__('Secrets|Enter a key name')"
+          :placeholder="__('Enter a name')"
           :state="secret.key === undefined || isKeyValid"
         />
       </gl-form-group>
       <gl-form-group
         data-testid="secret-value-field-group"
         label-for="secret-value"
-        :label="s__('Secrets|Value')"
+        :label="__('Value')"
         :invalid-feedback="$options.i18n.fieldRequired"
       >
         <gl-form-textarea
@@ -198,21 +204,29 @@ export default {
           rows="5"
           max-rows="15"
           no-resize
-          :placeholder="s__('Secrets|Value for the key')"
+          :placeholder="s__('Secrets|Enter a value for the secret')"
           :spellcheck="false"
           :state="secret.value === undefined || isValueValid"
         />
       </gl-form-group>
-      <gl-form-group :label="__('Description')" label-for="secret-description" optional>
+      <gl-form-group
+        :label="__('Description')"
+        data-testid="secret-description-field-group"
+        label-for="secret-description"
+        :description="s__('Secrets|Maximum 200 characters.')"
+        :invalid-feedback="s__('Secrets|Description must be 200 characters or less.')"
+        optional
+      >
         <gl-form-input
           id="secret-description"
-          v-model="secret.description"
+          v-model.trim="secret.description"
           data-testid="secret-description"
           :placeholder="s__('Secrets|Add a description for the secret')"
+          :state="isDescriptionValid"
         />
       </gl-form-group>
       <gl-form-group
-        :label="s__('Secrets|Select environment')"
+        :label="s__('Secrets|Environments')"
         label-for="secret-environment"
         class="gl-w-1/2 gl-pr-2"
       >
@@ -229,7 +243,7 @@ export default {
         <gl-form-group
           class="gl-w-full"
           label-for="secret-expiration"
-          :label="s__('Secrets|Set expiration')"
+          :label="__('Expiration date')"
         >
           <gl-datepicker
             id="secret-expiration"
@@ -247,12 +261,13 @@ export default {
         >
           <gl-collapsible-listbox
             id="secret-rotation-period"
-            v-model="secret.rotationPeriod"
+            v-model.trim="secret.rotationPeriod"
             block
-            :label-text="s__('Secrets|Rotation period')"
+            :label-text="s__('Secrets|Rotation reminder')"
             :header-text="s__('Secrets|Intervals')"
             :toggle-text="rotationPeriodToggleText"
             :items="$options.rotationPeriodOptions"
+            optional
           >
             <template #footer>
               <gl-dropdown-divider />
@@ -286,24 +301,16 @@ export default {
           </gl-collapsible-listbox>
         </gl-form-group>
       </div>
-      <!-- TODO: Access permission fields will be added in a future iteration -->
-      <!-- See: https://gitlab.com/gitlab-org/gitlab/-/issues/457380 -->
-      <gl-form-group label-for="secret-roles-and-users" :label="__('Access permission')">
-        <div class="gl-display-flex gl-gap-4">
-          <gl-form-input :placeholder="__('Select roles or users')" disabled />
-          <gl-form-input :placeholder="__('Select permission')" disabled />
-        </div>
-      </gl-form-group>
       <div class="gl-my-3">
         <gl-button
           variant="confirm"
           data-testid="submit-form-button"
-          :aria-label="__('Continue')"
+          :aria-label="s__('Secrets|Add secret')"
           :disabled="!canSubmit || isSubmitting"
           :loading="isSubmitting"
-          @click="showPreviewModal"
+          @click="submitSecret"
         >
-          {{ __('Continue') }}
+          {{ s__('Secrets|Add secret') }}
         </gl-button>
         <gl-button
           :to="{ name: $options.secretsIndexRoute }"
@@ -316,18 +323,5 @@ export default {
         </gl-button>
       </div>
     </gl-form>
-    <secret-preview-modal
-      :created-at="createdAt"
-      :description="secret.description"
-      :environment="secret.environment"
-      :expiration="secret.expiration"
-      :is-editing="isEditing"
-      :is-visible="isPreviewing"
-      :secret-key="secret.key"
-      :rotation-period="rotationPeriodText"
-      @hide-preview-modal="hidePreviewModal"
-      @submit-secret="submitSecret"
-      v-on="$listeners"
-    />
   </div>
 </template>
