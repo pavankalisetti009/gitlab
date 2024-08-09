@@ -718,7 +718,7 @@ via an ENV var, add a new entry in `lib/your_domain/settings/default_settings.rb
 
 To add support for overriding a setting via some means, you can modify or add steps to the
 Railway Oriented Programming chain as defined in the `Main` class of the settings module,
-located at `lib/your_domain/settings/main.rb`.
+located at `ee/lib/your_domain/settings/main.rb`.
 
 ### Reading settings
 
@@ -728,7 +728,7 @@ which returns the setting value.
 To read multiple settings, use `RemoteDevelopment::Settings.get([:setting_1, :setting_2])`,
 which returns a Hash of settings, e.g.: `{ setting_1: "one", setting_2: 2 }`.
 
-NOTE: A setting _MUST_ have an entry defined in `lib/remote_development/settings/default_settings.rb`
+NOTE: A setting _MUST_ have an entry defined in `ee/lib/remote_development/settings/default_settings.rb`
 to be read, but the default value can be `nil`. This will likely be the case when you want to use
 a setting from `Gitlab::CurrentSettings`.
 
@@ -737,7 +737,7 @@ a setting from `Gitlab::CurrentSettings`.
 If a setting can be defined via multiple means (e.g. via an `ENV` var the `Settings` model),
 there is a clear and simple set of precedence rules for which one "wins". These follow the
 order of the steps in the
-[RoP `Main` class of the Remote Development Settings module](../../../lib/remote_development/settings/main.rb):
+[RoP `Main` class of the Remote Development Settings module](settings/main.rb):
 
 1. First, the default value is used, via the first `SettingsInitializer` step in the ROP chain.
 1. Next, the default values may be overridden by any of the next steps in the ROP chain. For example: 
