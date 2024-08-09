@@ -71,7 +71,8 @@ module Gitlab
           import_type: import_type,
           source_hostname: source_hostname,
           source_name: source_name,
-          source_username: source_username
+          source_username: source_username,
+          organization: namespace.organization
         ).execute
       end
 
