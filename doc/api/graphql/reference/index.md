@@ -33954,6 +33954,17 @@ Represents total number of work items for the represented states.
 | <a id="workitemtypename"></a>`name` | [`String!`](#string) | Name of the work item type. |
 | <a id="workitemtypewidgetdefinitions"></a>`widgetDefinitions` **{warning-solid}** | [`[WorkItemWidgetDefinition!]`](#workitemwidgetdefinition) | **Introduced** in GitLab 16.7. **Status**: Experiment. Available widgets for the work item type. |
 
+### `WorkItemTypeCountsByState`
+
+Represents work item counts for the work item type.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemtypecountsbystatecountsbystate"></a>`countsByState` | [`WorkItemStateCountsType!`](#workitemstatecountstype) | Total number of work items for the represented states. |
+| <a id="workitemtypecountsbystateworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Work item type. |
+
 ### `WorkItemWidgetAssignees`
 
 Represents an assignees widget.
@@ -34177,6 +34188,7 @@ Represents a hierarchy widget.
 | <a id="workitemwidgethierarchyhaschildren"></a>`hasChildren` | [`Boolean!`](#boolean) | Indicates if the work item has children. |
 | <a id="workitemwidgethierarchyhasparent"></a>`hasParent` | [`Boolean!`](#boolean) | Indicates if the work item has a parent. |
 | <a id="workitemwidgethierarchyparent"></a>`parent` | [`WorkItem`](#workitem) | Parent work item. |
+| <a id="workitemwidgethierarchyrolledupcountsbytype"></a>`rolledUpCountsByType` **{warning-solid}** | [`[WorkItemTypeCountsByState!]!`](#workitemtypecountsbystate) | **Introduced** in GitLab 17.3. **Status**: Experiment. Counts of descendant work items by work item type and state. |
 | <a id="workitemwidgethierarchytype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 
 ### `WorkItemWidgetIteration`
