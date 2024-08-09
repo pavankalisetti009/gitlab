@@ -35,11 +35,12 @@ module WorkItems
 
       def build_query_for(field)
         WorkItems::DatesSource
-          .with(issues_cte.to_arel)
+          .with(children_work_items.to_arel)
           .from_union(
             query_milestones(field),
             query_dates_sources(field),
             query_work_items(field),
+            remove_order: false,
             alias_as: UNION_TABLE_ALIAS
           )
           .select(
@@ -53,43 +54,52 @@ module WorkItems
       end
 
       def query_milestones(field)
-        WorkItem
-          .joins(:milestone)
-          .select(
-            WorkItem.arel_table["parent_id"],
-            ::Milestone.arel_table[field].as(field.to_s),
-            ::Milestone.arel_table[:id].as("#{field}_sourcing_milestone_id"),
-            "NULL AS #{field}_sourcing_work_item_id")
+        milestone_table = ::Milestone.arel_table
+
+        children_work_items.table.project(
+          children_work_items.table[:parent_id].as("parent_id"),
+          milestone_table[field].as(field.to_s),
+          milestone_table[:id].as("#{field}_sourcing_milestone_id"),
+          "NULL AS #{field}_sourcing_work_item_id"
+        )
+          .from(children_work_items.table)
+          .join(milestone_table)
+          .on(milestone_table[:id].eq(children_work_items.table[:milestone_id]))
+          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:issue)))
       end
 
       def query_dates_sources(field)
         dates_source = WorkItems::DatesSource.arel_table.alias(:dates_source)
 
-        WorkItem
-          .joins(:dates_source)
-          .where(dates_source: { "#{field}_is_fixed": true })
-          .select(
-            WorkItem.arel_table["parent_id"],
-            dates_source[field].as(field.to_s),
-            "NULL AS #{field}_sourcing_milestone_id",
-            dates_source[:issue_id].as("#{field}_sourcing_work_item_id"))
+        children_work_items.table.project(
+          children_work_items.table[:parent_id].as("parent_id"),
+          dates_source[field].as(field.to_s),
+          "NULL AS #{field}_sourcing_milestone_id",
+          dates_source[:issue_id].as("#{field}_sourcing_work_item_id")
+        )
+          .from(children_work_items.table)
+          .join(dates_source)
+          .on(dates_source[:issue_id].eq(children_work_items.table[:id]))
+          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:epic)))
       end
 
       # Once we migrate all the issues.start/due dates to work_item_dates_source
       # we won't need this anymore.
       def query_work_items(field)
-        WorkItem
-          .select(
-            WorkItem.arel_table["parent_id"],
-            WorkItem.arel_table[field].as(field.to_s),
-            "NULL AS #{field}_sourcing_milestone_id",
-            WorkItem.arel_table[:id].as("#{field}_sourcing_work_item_id"))
+        children_work_items.table.project(
+          children_work_items.table[:parent_id].as("parent_id"),
+          children_work_items.table[field].as(field.to_s),
+          "NULL AS #{field}_sourcing_milestone_id",
+          children_work_items.table[:id].as("#{field}_sourcing_work_item_id")
+        )
+          .where(children_work_items.table[:work_item_type_name].in(Type::TYPE_NAMES.values_at(:epic)))
       end
 
-      def issues_cte
-        @issues_cte ||= Gitlab::SQL::CTE.new(
-          :issues,
+      def children_work_items
+        @children_work_items ||= Gitlab::SQL::CTE.new(
+          :children_work_items,
           WorkItem
+            .with_issue_type(%w[issue epic])
             .joins(:parent_link)
             .where(WorkItems::ParentLink.arel_table[:work_item_parent_id].in(@work_items_ids))
             .select(
@@ -97,7 +107,9 @@ module WorkItems
               WorkItems::ParentLink.arel_table[:work_item_parent_id].as("parent_id"),
               WorkItem.arel_table[:milestone_id].as("milestone_id"),
               WorkItem.arel_table[:start_date].as("start_date"),
-              WorkItem.arel_table[:due_date].as("due_date")))
+              WorkItem.arel_table[:due_date].as("due_date"),
+              WorkItems::Type.arel_table[:name].as("work_item_type_name"))
+        )
       end
     end
     # rubocop: enable CodeReuse/ActiveRecord

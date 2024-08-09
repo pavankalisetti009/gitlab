@@ -272,6 +272,10 @@ module EE
       end
     end
 
+    def work_items_rolledup_dates_feature_flag_enabled?
+      feature_flag_enabled_for_self_or_ancestor?(:work_items_rolledup_dates)
+    end
+
     override :supports_saved_replies?
     def supports_saved_replies?
       ::Feature.enabled?(:group_saved_replies_flag, self, type: :beta) && licensed_feature_available?(:group_saved_replies)

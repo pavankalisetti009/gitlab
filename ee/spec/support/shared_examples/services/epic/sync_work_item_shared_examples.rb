@@ -10,27 +10,26 @@ RSpec.shared_examples 'basic epic and work item attributes in sync' do
     expect(epic).to be_persisted
     expect(work_item).to be_valid
 
-    expect(work_item.work_item_type.name).to eq('Epic')
-    expect(work_item.namespace).to eq(epic.group)
-    expect(work_item.title).to eq epic.title
-    expect(work_item.title_html).to eq epic.title_html
-    expect(work_item.description).to eq epic.description
-    expect(work_item.description_html).to eq epic.description_html
-    expect(work_item.updated_by).to eq epic.updated_by
-    expect(work_item.last_edited_by).to eq epic.last_edited_by
-    expect(work_item.last_edited_at).to eq epic.last_edited_at
-    expect(work_item.closed_by).to eq epic.closed_by
-    expect(work_item.closed_at).to eq epic.closed_at
-    expect(work_item.confidential).to eq epic.confidential
-    expect(work_item.iid).to eq(epic.iid)
-    expect(work_item.state).to eq(epic.state)
-    expect(work_item.author).to eq(epic.author)
-    expect(work_item.created_at).to eq(epic.created_at)
-    expect(work_item.updated_at).to eq(epic.updated_at)
-    expect(work_item.state).to eq(epic.state)
-    expect(work_item.external_key).to eq(epic.external_key)
-    expect(work_item.lock_version).to eq(epic.lock_version)
-    expect(work_item.relative_position).to eq(epic.id)
+    expect(work_item.work_item_type.name).to eq('Epic'), "work_item_type mismatched"
+    expect(work_item.namespace).to eq(epic.group), "work_item namespace mismatched"
+    expect(work_item.title).to eq(epic.title), "work_item title mismatched"
+    expect(work_item.title_html).to eq(epic.title_html), "work_item title_html mismatched"
+    expect(work_item.description).to eq(epic.description), "work_item description mismatched"
+    expect(work_item.description_html).to eq(epic.description_html), "work_item description_html mismatched"
+    expect(work_item.updated_by).to eq(epic.updated_by), "work_item updated_by mismatched"
+    expect(work_item.last_edited_by).to eq(epic.last_edited_by), "work_item last_edited_by mismatched"
+    expect(work_item.last_edited_at).to eq(epic.last_edited_at), "work_item last_edited_at mismatched"
+    expect(work_item.closed_by).to eq(epic.closed_by), "work_item closed_by mismatched"
+    expect(work_item.closed_at).to eq(epic.closed_at), "work_item closed_at mismatched"
+    expect(work_item.confidential).to eq(epic.confidential), "work_item confidential mismatched"
+    expect(work_item.iid).to eq(epic.iid), "work_item iid mismatched"
+    expect(work_item.state).to eq(epic.state), "work_item state mismatched"
+    expect(work_item.author).to eq(epic.author), "work_item author mismatched"
+    expect(work_item.created_at).to eq(epic.created_at), "work_item created_at mismatched"
+    expect(work_item.updated_at).to eq(epic.updated_at), "work_item updated_at mismatched"
+    expect(work_item.external_key).to eq(epic.external_key), "work_item external_key mismatched"
+    expect(work_item.lock_version).to eq(epic.lock_version), "work_item lock_version mismatched"
+    expect(work_item.relative_position).to eq(epic.id), "work_item relative_position mismatched with epic.id"
   end
 end
 

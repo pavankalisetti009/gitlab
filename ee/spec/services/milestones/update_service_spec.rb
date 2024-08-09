@@ -4,23 +4,93 @@ require 'spec_helper'
 RSpec.describe Milestones::UpdateService, feature_category: :team_planning do
   describe '#execute' do
     context 'refresh related epic dates' do
-      it 'updates milestone sourced dates' do
-        group = create(:group)
-        project = create(:project, group: group)
-        user = build(:user)
-        milestone = create(:milestone, project: project)
-        epic = create(:epic, group: group)
-        create(:issue, milestone: milestone, epic: epic, project: project)
-        due_date = 3.days.from_now.to_date
+      let(:start_date) { 1.day.from_now.to_date }
+      let(:due_date) { 3.days.from_now.to_date }
+      let_it_be(:group) { create(:group) }
+      let_it_be(:project) { create(:project, group: group) }
+      let_it_be(:user) { build(:user) }
+      let_it_be_with_reload(:milestone) { create(:milestone, project: project) }
+      let_it_be_with_reload(:epic) { create(:epic, group: group) }
+      let_it_be(:issue) { create(:issue, milestone: milestone, epic: epic, project: project) }
+      let_it_be(:parent_link) do
+        create(:parent_link, work_item_parent: epic.work_item, work_item: WorkItem.find(issue.id))
+      end
 
-        described_class.new(project, user, { due_date: due_date }).execute(milestone)
+      shared_examples 'updates milestone sourced dates' do
+        subject(:update_milestone) { described_class.new(project, user, params).execute(milestone) }
 
-        expect(epic.reload).to have_attributes(
-          start_date: nil,
-          start_date_sourcing_milestone: nil,
-          due_date: due_date,
-          due_date_sourcing_milestone: milestone
-        )
+        context 'when due date changes' do
+          let(:params) { { due_date: due_date } }
+          let(:expected_attributes) do
+            {
+              start_date: nil,
+              start_date_sourcing_milestone: nil,
+              due_date: due_date,
+              due_date_sourcing_milestone: milestone
+            }
+          end
+
+          it 'updates milestone sourced dates when due date changes' do
+            update_milestone
+
+            expect(epic.reload).to have_attributes(expected_attributes)
+            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
+          end
+        end
+
+        context 'when start date changes' do
+          let(:params) { { start_date: start_date } }
+          let(:expected_attributes) do
+            {
+              start_date: start_date,
+              start_date_sourcing_milestone: milestone,
+              due_date: nil,
+              due_date_sourcing_milestone: nil
+            }
+          end
+
+          it 'updates milestone sourced dates when start date changes' do
+            update_milestone
+
+            expect(epic.reload).to have_attributes(expected_attributes)
+            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
+          end
+        end
+
+        context 'when both start and due date changes' do
+          let(:params) { { start_date: start_date, due_date: due_date } }
+          let(:expected_attributes) do
+            {
+              start_date: start_date,
+              start_date_sourcing_milestone: milestone,
+              due_date: due_date,
+              due_date_sourcing_milestone: milestone
+            }
+          end
+
+          it 'updates milestone sourced dates when start date changes' do
+            update_milestone
+
+            expect(epic.reload).to have_attributes(expected_attributes)
+            expect(epic.work_item.dates_source).to have_attributes(expected_attributes)
+          end
+        end
+      end
+
+      context 'when work_items_rolledup_dates is enabled', :sidekiq_inline do
+        before do
+          stub_feature_flags(work_items_rolledup_dates: true)
+        end
+
+        it_behaves_like 'updates milestone sourced dates'
+      end
+
+      context 'when work_items_rolledup_dates is disabled' do
+        before do
+          stub_feature_flags(work_items_rolledup_dates: false)
+        end
+
+        it_behaves_like 'updates milestone sourced dates'
       end
     end
   end

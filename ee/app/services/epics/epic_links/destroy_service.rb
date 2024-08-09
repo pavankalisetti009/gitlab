@@ -55,7 +55,7 @@ module Epics
       def after_destroy
         super
 
-        return if synced_epic && Feature.enabled?(:work_items_rolledup_dates, parent_epic.group)
+        return if synced_epic
 
         ::Epics::UpdateDatesService.new([parent_epic, child_epic]).execute
       end

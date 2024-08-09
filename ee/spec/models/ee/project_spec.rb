@@ -4722,4 +4722,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to contain_exactly(compliance_framework_1.framework_id, compliance_framework_2.framework_id) }
   end
+
+  describe '#work_items_rolledup_dates_feature_flag_enabled?' do
+    let_it_be(:group_project) { create(:project, :in_subgroup) }
+
+    it_behaves_like 'checks parent group feature flag' do
+      let(:feature_flag_method) { :work_items_rolledup_dates_feature_flag_enabled? }
+      let(:feature_flag) { :work_items_rolledup_dates }
+      let(:subject_project) { group_project }
+    end
+  end
 end

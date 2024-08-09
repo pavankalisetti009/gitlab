@@ -405,6 +405,9 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     context 'when epic indexing is enabled' do
       before do
         stub_ee_application_setting(elasticsearch_indexing: true)
+        # The feature flag needs to be disable.
+        # When the feature flag is enabled the dates are updated using the WorkItems services
+        stub_feature_flags(work_items_rolledup_dates: false)
         Epics::UpdateDatesService.new([epic, another_epic]).execute
         epic.reload
         another_epic.reload
@@ -1593,7 +1596,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
     end
 
     context 'when adding existing subepic' do
-      let_it_be_with_reload(:subepic) { create(:epic, group: group) }
+      let_it_be_with_refind(:subepic) { create(:epic, group: group) }
 
       it 'schedules cache update for parent epic' do
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([parent_epic.id]).once
@@ -1604,7 +1607,7 @@ RSpec.describe Epic, feature_category: :portfolio_management do
 
     context 'when epic is already assigned to other epic' do
       let_it_be(:old_parent) { create(:epic, group: group) }
-      let_it_be_with_reload(:subepic) { create(:epic, group: group, parent: old_parent) }
+      let_it_be_with_refind(:subepic) { create(:epic, group: group, parent: old_parent) }
 
       it 'schedules cache update for old parent and new parent epics' do
         expect(::Epics::UpdateCachedMetadataWorker).to receive(:perform_async).with([parent_epic.id]).once

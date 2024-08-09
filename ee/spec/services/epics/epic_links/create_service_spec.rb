@@ -367,30 +367,67 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
           include_examples 'system notes created'
 
           context 'when parent has inherited dates' do
-            let_it_be(:other_parent) do
+            let_it_be_with_reload(:other_parent) do
               create(
                 :epic, group: group, start_date: 1.day.ago, due_date: 1.day.from_now,
                 start_date_is_fixed: false, due_date_is_fixed: false
               )
             end
 
-            let_it_be(:epic_to_add) do
+            let_it_be_with_reload(:epic_to_add) do
               create(:epic, group: group, start_date: 1.day.ago, due_date: 1.day.from_now, parent: other_parent)
             end
 
             before do
               epic.update!(start_date: nil, due_date: nil, start_date_is_fixed: false, due_date_is_fixed: false)
+              epic.work_item.create_dates_source(start_date: nil, due_date: nil, start_date_is_fixed: false,
+                due_date_is_fixed: false)
+
+              other_parent.work_item.create_dates_source(start_date: other_parent.start_date,
+                due_date: other_parent.due_date)
+
+              epic_to_add.work_item.create_dates_source(start_date: epic_to_add.start_date,
+                due_date: epic_to_add.due_date)
+              create(:parent_link, work_item_parent: other_parent.work_item, work_item: epic_to_add.work_item)
             end
 
-            it 'updates the parent dates' do
-              expect { subject }.to change { epic.reload.children.count }.by(1)
-                                .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
-                                .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
-                                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                .and change { other_parent.reload.children.count }.by(-1)
-                                .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
-                                .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
+            shared_examples 'rolled up dates' do
+              it 'corectly updates the parent dates' do
+                expect { subject }.to change { epic.reload.children.count }.by(1)
+                                  .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
+                                  .and change { epic.due_date }.from(nil).to(epic_to_add.due_date)
+                                  .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                                  .and change { epic.due_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                                  .and change { other_parent.reload.children.count }.by(-1)
+                                  .and change { other_parent.start_date }.from(epic_to_add.start_date).to(nil)
+                                  .and change { other_parent.due_date }.from(epic_to_add.due_date).to(nil)
+
+                epic_dates_source = epic.work_item.dates_source
+                other_parent_dates_source = other_parent.work_item.dates_source
+
+                expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
+                expect(epic_dates_source.due_date).to eq(epic_to_add.due_date)
+                expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+                expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+                expect(other_parent_dates_source.start_date).to eq(nil)
+                expect(other_parent_dates_source.due_date).to eq(nil)
+              end
+            end
+
+            context 'when work_items_rolledup_dates is disabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: false)
+              end
+
+              it_behaves_like 'rolled up dates'
+            end
+
+            context 'when work_items_rolledup_dates is enabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: true)
+              end
+
+              it_behaves_like 'rolled up dates'
             end
           end
         end
@@ -472,24 +509,57 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
           end
 
           context 'when parent has inherited dates' do
-            let_it_be(:epic_to_add) do
+            let_it_be_with_reload(:epic_to_add) do
               create(:epic, group: group, start_date: 5.days.ago, due_date: 3.days.from_now)
             end
 
-            let_it_be(:another_epic) do
+            let_it_be_with_reload(:another_epic) do
               create(:epic, group: group, start_date: 3.days.ago, due_date: 5.days.from_now)
             end
 
             before do
               epic.update!(start_date: nil, due_date: nil, start_date_is_fixed: false, due_date_is_fixed: false)
+              epic.work_item.create_dates_source(start_date: nil, due_date: nil, start_date_is_fixed: false,
+                due_date_is_fixed: false)
+
+              epic_to_add.work_item.create_dates_source(start_date: epic_to_add.start_date,
+                due_date: epic_to_add.due_date)
+
+              another_epic.work_item.create_dates_source(start_date: another_epic.start_date,
+                due_date: another_epic.due_date)
             end
 
-            it 'updates the parent dates' do
-              expect { subject }.to change { epic.reload.children.count }.by(2)
-                                .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
-                                .and change { epic.due_date }.from(nil).to(another_epic.due_date)
-                                .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
-                                .and change { epic.due_date_sourcing_epic_id }.from(nil).to(another_epic.id)
+            shared_examples 'rolled up dates' do
+              it 'corectly updates the parent dates' do
+                expect { subject }.to change { epic.reload.children.count }.by(2)
+                                  .and change { epic.start_date }.from(nil).to(epic_to_add.start_date)
+                                  .and change { epic.due_date }.from(nil).to(another_epic.due_date)
+                                  .and change { epic.start_date_sourcing_epic_id }.from(nil).to(epic_to_add.id)
+                                  .and change { epic.due_date_sourcing_epic_id }.from(nil).to(another_epic.id)
+
+                epic_dates_source = epic.work_item.dates_source
+
+                expect(epic_dates_source.start_date).to eq(epic_to_add.start_date)
+                expect(epic_dates_source.due_date).to eq(another_epic.due_date)
+                expect(epic_dates_source.start_date_sourcing_work_item_id).to eq(epic_to_add.work_item.id)
+                expect(epic_dates_source.due_date_sourcing_work_item_id).to eq(another_epic.work_item.id)
+              end
+            end
+
+            context 'when work_items_rolledup_dates is disabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: false)
+              end
+
+              it_behaves_like 'rolled up dates'
+            end
+
+            context 'when work_items_rolledup_dates is enabled' do
+              before do
+                stub_feature_flags(work_items_rolledup_dates: true)
+              end
+
+              it_behaves_like 'rolled up dates'
             end
           end
         end
@@ -707,19 +777,6 @@ RSpec.describe Epics::EpicLinks::CreateService, feature_category: :portfolio_man
             expect(Epics::UpdateDatesService).not_to receive(:new)
 
             create_link
-          end
-
-          context 'when work_items_rolledup_dates feature flag is disabled' do
-            before do
-              allow(::Epics::UpdateDatesService).to receive(:new).and_call_original
-              stub_feature_flags(work_items_rolledup_dates: false)
-            end
-
-            it 'calls Epics::UpdateDatesService' do
-              expect(::Epics::UpdateDatesService).to receive(:new).with([parent_epic, child_epic])
-
-              create_link
-            end
           end
         end
       end

@@ -31,7 +31,7 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
     end
 
     context 'for epic work items' do
-      let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+      let_it_be_with_reload(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
 
       context 'on the work item route' do
         before do
