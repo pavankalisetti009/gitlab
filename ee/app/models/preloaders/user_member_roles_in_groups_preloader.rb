@@ -78,7 +78,7 @@ module Preloaders
         .where("members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(namespace_ids) as ids)")
         .to_sql
 
-      if Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
+      if custom_role_for_group_link_enabled?
         group_link_member = member
           .joins('LEFT OUTER JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
           .joins('LEFT OUTER JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
@@ -107,6 +107,14 @@ module Preloaders
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
     strong_memoize_attr :permissions
+
+    def custom_role_for_group_link_enabled?
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        groups.any? { |group| ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, group.root_ancestor) }
+      else
+        ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
+      end
+    end
 
     attr_reader :groups, :user
   end

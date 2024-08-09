@@ -30,7 +30,6 @@ module EE
           push_licensed_feature(:unique_project_download_limit, @group)
           push_frontend_feature_flag(:member_promotion_management)
           push_frontend_feature_flag(:show_role_details_in_drawer, @group)
-          push_frontend_feature_flag(:assign_custom_roles_to_group_links, :instance)
         end
       end
 

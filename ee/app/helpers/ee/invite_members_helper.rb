@@ -3,6 +3,7 @@
 module EE
   module InviteMembersHelper
     include GitlabSubscriptions::SubscriptionHelper
+    include GroupLinksHelper
     extend ::Gitlab::Utils::Override
 
     override :common_invite_group_modal_data
@@ -80,6 +81,13 @@ module EE
 
     def overage_members_modal_available
       ::Gitlab::Saas.feature_available?(:overage_members_modal)
+    end
+
+    override :invite_group_dataset
+    def invite_group_dataset(source)
+      super.merge(
+        custom_role_for_group_link_enabled: custom_role_for_group_link_enabled?(source).to_s
+      )
     end
   end
 end

@@ -1948,15 +1948,21 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
 
       let(:params) { { group_id: invited_group.id, group_access: Gitlab::Access::DEVELOPER, member_role_id: member_role.id } }
 
+      before do
+        allow_next_instance_of(::Groups::GroupLinks::CreateService) do |service|
+          allow(service).to receive(:custom_role_for_group_link_enabled?)
+            .with(group)
+            .and_return(custom_role_for_group_link_enabled)
+        end
+      end
+
       context 'when custom_roles feature is enabled' do
         before do
           stub_licensed_features(custom_roles: true)
         end
 
-        context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
-          before do
-            stub_feature_flags(assign_custom_roles_to_group_links: true)
-          end
+        context 'when `custom_role_for_group_link_enabled` is true' do
+          let(:custom_role_for_group_link_enabled) { true }
 
           it 'assigns member role to group link' do
             share
@@ -1966,10 +1972,8 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
           end
         end
 
-        context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-          before do
-            stub_feature_flags(assign_custom_roles_to_group_links: false)
-          end
+        context 'when `custom_role_for_group_link_enabled` is false' do
+          let(:custom_role_for_group_link_enabled) { false }
 
           it 'does not assign member role to group link' do
             share
@@ -1981,6 +1985,8 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       end
 
       context 'when custom_roles feature is disabled' do
+        let(:custom_role_for_group_link_enabled) { false }
+
         before do
           stub_licensed_features(custom_roles: false)
         end
