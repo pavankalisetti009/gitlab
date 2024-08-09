@@ -2,6 +2,7 @@ package redis
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync/atomic"
 	"testing"
@@ -48,7 +49,11 @@ func TestConfigureConfigWithoutRedis(t *testing.T) {
 
 func TestConfigureValidConfigX(t *testing.T) {
 	testCases := []struct {
-		scheme string
+		scheme           string
+		username         string
+		urlPassword      string
+		redisPassword    string
+		expectedPassword string
 	}{
 		{
 			scheme: "redis",
@@ -59,6 +64,24 @@ func TestConfigureValidConfigX(t *testing.T) {
 		{
 			scheme: "tcp",
 		},
+		{
+			scheme:           "redis",
+			username:         "redis-user",
+			urlPassword:      "redis-password",
+			expectedPassword: "redis-password",
+		},
+		{
+			scheme:           "redis",
+			redisPassword:    "override-password",
+			expectedPassword: "override-password",
+		},
+		{
+			scheme:           "redis",
+			username:         "redis-user",
+			urlPassword:      "redis-password",
+			redisPassword:    "override-password",
+			expectedPassword: "override-password",
+		},
 	}
 
 	for _, tc := range testCases {
@@ -66,8 +89,18 @@ func TestConfigureValidConfigX(t *testing.T) {
 			connectReceived := atomic.Value{}
 			a := mockRedisServer(t, &connectReceived)
 
-			parsedURL := helper.URLMustParse(tc.scheme + "://" + a)
-			redisCfg := &config.RedisConfig{URL: config.TomlURL{URL: *parsedURL}}
+			var u string
+			if tc.username != "" || tc.urlPassword != "" {
+				u = fmt.Sprintf("%s://%s:%s@%s", tc.scheme, tc.username, tc.urlPassword, a)
+			} else {
+				u = fmt.Sprintf("%s://%s", tc.scheme, a)
+			}
+
+			parsedURL := helper.URLMustParse(u)
+			redisCfg := &config.RedisConfig{
+				URL:      config.TomlURL{URL: *parsedURL},
+				Password: tc.redisPassword,
+			}
 			cfg := &config.Config{Redis: redisCfg}
 
 			rdb, err := Configure(cfg)
@@ -75,6 +108,9 @@ func TestConfigureValidConfigX(t *testing.T) {
 			defer rdb.Close()
 
 			require.NotNil(t, rdb.Conn(), "Pool should not be nil")
+			opt := rdb.Options()
+			require.Equal(t, tc.username, opt.Username)
+			require.Equal(t, tc.expectedPassword, opt.Password)
 
 			// goredis initialise connections lazily
 			rdb.Ping(context.Background())
