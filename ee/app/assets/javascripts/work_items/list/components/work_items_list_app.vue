@@ -1,15 +1,18 @@
 <script>
 import emptyStateSvg from '@gitlab/svgs/dist/illustrations/empty-state/empty-epic-md.svg';
 import { GlEmptyState, GlButton } from '@gitlab/ui';
-import axios from '~/lib/utils/axios_utils';
 import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
 import WorkItemsListApp from '~/work_items/list/components/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
 import { isLabelsWidget } from '~/work_items/utils';
+import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
+import workItemParent from '../queries/work_item_parent.query.graphql';
 
 export default {
   emptyStateSvg,
@@ -28,6 +31,7 @@ export default {
     'canBulkEditEpics',
     'groupIssuesPath',
     'workItemType',
+    'fullPath',
   ],
   data() {
     return {
@@ -35,6 +39,19 @@ export default {
       bulkEditInProgress: false,
       showBulkEditSidebar: false,
     };
+  },
+  apollo: {
+    parentId: {
+      query: workItemParent,
+      variables() {
+        return {
+          fullPath: this.fullPath,
+        };
+      },
+      update(data) {
+        return data.namespace.id;
+      },
+    },
   },
   computed: {
     allowEpicBulkEditing() {
@@ -55,17 +72,32 @@ export default {
         ...workItem,
       }));
     },
-    /**
-     * Bulk editing Issuables (or Epics in this case) is not supported
-     * via GraphQL mutations, so we're using legacy API to do it,
-     * hence we're making a POST call within the component.
-     */
-    async handleEpicsBulkUpdate(update) {
+    buildInputFromBulkUpdateEvent(updateEvent) {
+      return {
+        parentId: this.parentId,
+        ids: updateEvent.issuable_gids,
+        labelsWidget: {
+          addLabelIds: updateEvent.add_label_ids.map((id) =>
+            convertToGraphQLId(TYPENAME_LABEL, id),
+          ),
+          removeLabelIds: updateEvent.remove_label_ids.map((id) =>
+            convertToGraphQLId(TYPENAME_LABEL, id),
+          ),
+        },
+      };
+    },
+    async handleWorkItemBulkEdit(updateEvent) {
       this.bulkEditInProgress = true;
+
       try {
-        await axios.post(`${this.groupIssuesPath}/bulk_update`, {
-          update,
+        const input = this.buildInputFromBulkUpdateEvent(updateEvent);
+        await this.$apollo.mutate({
+          mutation: workItemBulkUpdateMutation,
+          variables: {
+            input,
+          },
         });
+
         this.incrementUpdateCount();
       } catch (error) {
         createAlert({
@@ -152,7 +184,7 @@ export default {
     <template v-if="allowEpicBulkEditing" #sidebar-items="{ checkedIssuables }">
       <epics-list-bulk-edit-sidebar
         :checked-epics="convertWorkItemsToIssuables(checkedIssuables)"
-        @bulk-update="handleEpicsBulkUpdate"
+        @bulk-update="handleWorkItemBulkEdit"
       />
     </template>
   </work-items-list-app>

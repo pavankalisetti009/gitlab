@@ -136,3 +136,11 @@ export const workItemColorWidget = {
   ],
   __typename: 'WorkItem',
 };
+
+export const workItemParent = {
+  data: {
+    namespace: {
+      id: 'gid://gitlab/Group/1',
+    },
+  },
+};

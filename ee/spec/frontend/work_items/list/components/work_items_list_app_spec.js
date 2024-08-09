@@ -1,20 +1,49 @@
 import { GlEmptyState } from '@gitlab/ui';
-import { nextTick } from 'vue';
-import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import Vue, { nextTick } from 'vue';
+import VueApollo from 'vue-apollo';
+import createMockApollo from 'helpers/mock_apollo_helper';
+import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import WorkItemsListApp from '~/work_items/list/components/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/list/components/work_items_list_app.vue';
+import { CREATED_DESC } from '~/issues/list/constants';
+import getWorkItemsQuery from '~/work_items/list/queries/get_work_items.query.graphql';
+import workItemParent from 'ee/work_items/list/queries/work_item_parent.query.graphql';
+import { groupWorkItemsQueryResponse } from 'jest/work_items/mock_data';
+import waitForPromises from 'helpers/wait_for_promises';
+import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
+import { workItemParent as workItemParentResponse } from '../../mock_data';
 
 describe('WorkItemsListApp EE component', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
+
+  Vue.use(VueApollo);
 
   const findCreateWorkItemModal = () => wrapper.findComponent(CreateWorkItemModal);
   const findListEmptyState = () => wrapper.findComponent(EmptyStateWithAnyIssues);
   const findPageEmptyState = () => wrapper.findComponent(GlEmptyState);
   const findWorkItemsListApp = () => wrapper.findComponent(WorkItemsListApp);
   const findBulkEditStartButton = () => wrapper.findByTestId('bulk-edit-start-button');
+  const findBulkEditSidebar = () => wrapper.findComponent(EpicsListBulkEditSidebar);
+
+  const baseProvide = {
+    groupIssuesPath: 'groups/gitlab-org/-/issues',
+    workItemType: 'EPIC',
+    fullPath: 'gitlab-org',
+  };
+
+  const extendedProvide = {
+    autocompleteAwardEmojisPath: '/emojis/please',
+    labelsManagePath: '/labels/please',
+    labelsFetchPath: '/labels/please',
+    initialSort: CREATED_DESC,
+    isGroup: true,
+    isSignedIn: true,
+    hasOkrsFeature: true,
+    hasQualityManagementFeature: true,
+  };
 
   const mountComponent = ({
     hasEpicsFeature = true,
@@ -26,10 +55,50 @@ describe('WorkItemsListApp EE component', () => {
         hasEpicsFeature,
         showNewIssueLink,
         canBulkEditEpics,
-        groupIssuesPath: 'groups/gitlab-org/-/issues',
-        workItemType: 'EPIC',
+        ...baseProvide,
       },
     });
+  };
+
+  const getWorkitemsQueryHandler = jest.fn().mockResolvedValue(groupWorkItemsQueryResponse);
+  const workItemParentQueryHandler = jest.fn().mockResolvedValue(workItemParentResponse);
+
+  const workItemBulkUpdateHandler = jest.fn();
+  const resolvers = {
+    Mutation: {
+      workItemBulkUpdate(_, { input }) {
+        workItemBulkUpdateHandler(input);
+      },
+    },
+  };
+
+  const deepMountComponent = async ({
+    hasEpicsFeature = true,
+    showNewIssueLink = true,
+    canBulkEditEpics = true,
+  } = {}) => {
+    wrapper = mountExtended(EEWorkItemsListApp, {
+      apolloProvider: createMockApollo(
+        [
+          [getWorkItemsQuery, getWorkitemsQueryHandler],
+          [workItemParent, workItemParentQueryHandler],
+        ],
+        resolvers,
+      ),
+      provide: {
+        hasEpicsFeature,
+        showNewIssueLink,
+        canBulkEditEpics,
+        ...baseProvide,
+        ...extendedProvide,
+      },
+      stubs: {
+        IssuableItem: true,
+        IssueCardTimeInfo: true,
+      },
+    });
+
+    await waitForPromises();
   };
 
   describe('create-work-item modal', () => {
@@ -122,6 +191,29 @@ describe('WorkItemsListApp EE component', () => {
       await findBulkEditStartButton().vm.$emit('click');
 
       expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(true);
+    });
+
+    it('triggers the bulk edit mutation when bulk edit is submitted', async () => {
+      await deepMountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
+
+      const issuableGids = ['gid://gitlab/WorkItem/1', 'gid://gitlab/WorkItem/2'];
+
+      findBulkEditSidebar().vm.$emit('bulk-update', {
+        issuable_gids: issuableGids,
+        add_label_ids: [1, 2, 3],
+        remove_label_ids: [4, 5, 6],
+      });
+
+      await waitForPromises();
+
+      expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
+        parentId: workItemParentResponse.data.namespace.id,
+        ids: issuableGids,
+        labelsWidget: {
+          addLabelIds: ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'],
+          removeLabelIds: ['gid://gitlab/Label/4', 'gid://gitlab/Label/5', 'gid://gitlab/Label/6'],
+        },
+      });
     });
   });
 });

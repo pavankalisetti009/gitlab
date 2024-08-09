@@ -46,6 +46,7 @@ describe('EpicsListBulkEditSidebar', () => {
   const findLabelsSelect = () => wrapper.findComponent(LabelsSelectWidget);
   const checkedLabels = mockLabels.slice(0, 2).map((label) => ({ ...label, set: true }));
   const removedLabels = mockLabels.slice(2).map((label) => ({ ...label, set: false }));
+  const issuableGids = [mockEpic1.id, mockEpic2.id];
 
   beforeEach(() => {
     wrapper = createComponent();
@@ -89,6 +90,7 @@ describe('EpicsListBulkEditSidebar', () => {
       expect(wrapper.emitted('bulk-update')[0]).toEqual([
         {
           issuable_ids: '1,2',
+          issuable_gids: issuableGids,
           add_label_ids: addLabelIds,
           remove_label_ids: removeLabelIds,
         },
