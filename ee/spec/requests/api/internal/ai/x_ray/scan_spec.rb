@@ -93,11 +93,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     context 'when on self-managed', :with_cloud_connector do
       let(:gitlab_realm) { "self-managed" }
 
-      before do
-        ::CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
-        ::CloudConnector::AvailableServices.clear_memoization(:available_services)
-      end
-
       context 'without code suggestion license feature' do
         before do
           stub_licensed_features(code_suggestions: false)
@@ -193,8 +188,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         allow_next_instance_of(::Gitlab::CloudConnector::SelfIssuedToken) do |token|
           allow(token).to receive(:encoded).and_return(ai_gateway_token)
         end
-        ::CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
-        ::CloudConnector::AvailableServices.clear_memoization(:available_services)
       end
 
       it_behaves_like 'successful send request via workhorse'
@@ -344,10 +337,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
     context 'when on self-managed', :with_cloud_connector do
       let(:gitlab_realm) { 'self-managed' }
 
-      before do
-        ::CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
-      end
-
       context 'without code suggestion license feature' do
         before do
           stub_licensed_features(code_suggestions: false)
@@ -428,8 +417,6 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         allow_next_instance_of(::Gitlab::CloudConnector::SelfIssuedToken) do |token|
           allow(token).to receive(:encoded).and_return(ai_gateway_token)
         end
-        ::CloudConnector::AvailableServices.clear_memoization(:access_data_reader)
-        ::CloudConnector::AvailableServices.clear_memoization(:available_services)
       end
 
       it_behaves_like 'successful request'

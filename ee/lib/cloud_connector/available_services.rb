@@ -2,8 +2,6 @@
 
 module CloudConnector
   class AvailableServices
-    extend Gitlab::Utils::StrongMemoize
-
     class << self
       def find_by_name(name)
         service_data_map = available_services
@@ -13,18 +11,14 @@ module CloudConnector
       end
 
       def available_services
-        strong_memoize(:available_services) do # rubocop:disable Gitlab/StrongMemoizeAttr -- class method
-          access_data_reader.read_available_services
-        end
+        access_data_reader.read_available_services
       end
 
       def access_data_reader
-        strong_memoize(:access_data_reader) do # rubocop:disable Gitlab/StrongMemoizeAttr -- class method
-          if use_self_signed_token?
-            SelfSigned::AccessDataReader.new
-          else
-            SelfManaged::AccessDataReader.new
-          end
+        if use_self_signed_token?
+          SelfSigned::AccessDataReader.new
+        else
+          SelfManaged::AccessDataReader.new
         end
       end
 

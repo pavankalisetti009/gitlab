@@ -3,11 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_connector do
-  before do
-    described_class.clear_memoization(:access_data_reader)
-    described_class.clear_memoization(:available_services)
-  end
-
   context 'when .com', :saas do
     it 'returns SelfSigned::AccessDataReader' do
       expect(described_class.access_data_reader)
@@ -73,6 +68,11 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
   end
 
   describe '.find_by_name' do
+    before do
+      allow(described_class).to receive(:access_data_reader)
+        .and_return(::CloudConnector::SelfManaged::AccessDataReader.new)
+    end
+
     it 'reads available service' do
       available_services = { duo_chat: CloudConnector::BaseAvailableServiceData.new(:duo_chat, nil, nil) }
       expect(described_class.access_data_reader).to receive(:read_available_services).and_return(available_services)
@@ -102,18 +102,6 @@ RSpec.describe CloudConnector::AvailableServices, feature_category: :cloud_conne
 
         expect(service.name).to eq(:missing_service)
         expect(service).to be_instance_of(CloudConnector::MissingServiceData)
-      end
-    end
-  end
-
-  describe '#available_services' do
-    subject(:available_services) { described_class.available_services }
-
-    it 'caches the available services' do
-      expect(described_class.access_data_reader).to receive(:read_available_services).and_call_original.once
-
-      2.times do
-        available_services
       end
     end
   end
