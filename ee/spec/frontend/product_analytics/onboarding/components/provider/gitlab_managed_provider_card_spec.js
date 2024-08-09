@@ -95,7 +95,7 @@ describe('GitlabManagedProviderCard', () => {
           const modal = findClearSettingsModal();
           expect(modal.props('visible')).toBe(true);
           expect(modal.text()).toContain(
-            'This project has analytics provider settings configured. If you continue, these project-level settings will be reset so that GitLab-managed provider settings can be used.',
+            'This project has analytics provider settings configured. If you continue, the settings for projects will be reset so that GitLab-managed provider settings can be used.',
           );
         });
 
@@ -159,8 +159,7 @@ describe('GitlabManagedProviderCard', () => {
           });
 
           it('should emit "confirm" event', () => {
-            expect(wrapper.emitted('confirm')).toHaveLength(1);
-            expect(wrapper.emitted('confirm').at(0)).toStrictEqual(['file-mock']);
+            expect(wrapper.emitted('confirm')).toEqual([['file-mock']]);
           });
         });
       });

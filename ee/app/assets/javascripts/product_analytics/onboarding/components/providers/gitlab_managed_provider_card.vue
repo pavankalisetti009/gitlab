@@ -134,7 +134,7 @@ export default {
     >
       {{
         s__(
-          `ProductAnalytics|This project has analytics provider settings configured. If you continue, these project-level settings will be reset so that GitLab-managed provider settings can be used.`,
+          `ProductAnalytics|This project has analytics provider settings configured. If you continue, the settings for projects will be reset so that GitLab-managed provider settings can be used.`,
         )
       }}
     </clear-project-settings-modal>
