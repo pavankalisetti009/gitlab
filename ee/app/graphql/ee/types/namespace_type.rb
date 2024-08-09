@@ -132,6 +132,12 @@ module EE
           description: 'Cluster agents in the namespace with remote development capabilities',
           resolver: ::Resolvers::RemoteDevelopment::AgentsForNamespaceResolver
 
+        field :subscription_history,
+          ::Types::GitlabSubscriptions::SubscriptionHistoryType.connection_type,
+          null: true,
+          description: 'Find subscription history records.',
+          alpha: { milestone: '17.3' },
+          method: :gitlab_subscription_histories
         def product_analytics_stored_events_limit
           object.root_ancestor.product_analytics_stored_events_limit
         end
