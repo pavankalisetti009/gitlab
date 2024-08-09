@@ -4032,4 +4032,18 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       end
     end
   end
+
+  describe 'read_pre_receive_secret_detection_info' do
+    where(:current_user, :match_expected_result) do
+      ref(:owner)      | be_allowed(:read_pre_receive_secret_detection_info)
+      ref(:maintainer) | be_allowed(:read_pre_receive_secret_detection_info)
+      ref(:developer)  | be_allowed(:read_pre_receive_secret_detection_info)
+      ref(:guest)      | be_disallowed(:read_pre_receive_secret_detection_info)
+      ref(:non_member) | be_disallowed(:read_pre_receive_secret_detection_info)
+    end
+
+    with_them do
+      it { is_expected.to match_expected_result }
+    end
+  end
 end
