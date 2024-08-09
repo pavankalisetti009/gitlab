@@ -13,6 +13,23 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     allow(described_class).to receive(:logger).and_return(logger)
   end
 
+  shared_examples 'a execute_every task' do
+    it 'uses cache', :clean_gitlab_redis_shared_state do
+      expect(Gitlab::Redis::SharedState).to receive(:with)
+      service.execute
+    end
+
+    context 'when on development environment', :clean_gitlab_redis_shared_state do
+      before do
+        allow(Rails.env).to receive(:development?).and_return(true)
+      end
+
+      it 'does not use cache' do
+        expect(Gitlab::Redis::SharedState).not_to receive(:with)
+      end
+    end
+  end
+
   describe '.execute' do
     let(:task) { :foo }
 
@@ -94,6 +111,8 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           expect(zoekt_index2.zoekt_enabled_namespace.reload.search).to eq(false)
         end
       end
+
+      it_behaves_like 'a execute_every task'
     end
   end
 
@@ -108,6 +127,8 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
       let_it_be(:group) { create(:group) }
       let_it_be(:subscription) { create(:gitlab_subscription, namespace: group) }
       let_it_be(:root_storage_statistics) { create(:namespace_root_storage_statistics, namespace: group) }
+
+      it_behaves_like 'a execute_every task'
 
       it 'returns false if there are unassigned namespaces' do
         create(:zoekt_enabled_namespace)
