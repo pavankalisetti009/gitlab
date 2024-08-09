@@ -3,6 +3,10 @@
 require 'spec_helper'
 
 RSpec.shared_examples 'password complexity validations' do
+  let(:basic_rules) { [] }
+  let(:complexity_rules) { [] }
+  let(:all_rules) { basic_rules + complexity_rules }
+
   context 'when password complexity feature is not available' do
     before do
       stub_licensed_features(password_complexity: false)
@@ -25,17 +29,27 @@ RSpec.shared_examples 'password complexity validations' do
       stub_licensed_features(password_complexity: true)
     end
 
-    context 'when no rule is required' do
+    context 'when no complexity rule is required' do
       before do
         visit path_to_visit
       end
 
-      it 'does not render any rule' do
-        expect(page).not_to have_selector('[data-testid="password-rule-text"]')
+      it 'renders only basic rules' do
+        basic_rules.each do |rule|
+          expect(page).to have_selector(
+            "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
+            visible: false,
+            count: 1
+          )
+        end
+
+        expect(page).to have_selector('[data-testid="password-rule-text"]', count: basic_rules.size)
       end
     end
 
-    context 'when two rules are required ' do
+    context 'when two complexity rules are required ' do
+      let(:complexity_rules) { [:number, :lowercase] }
+
       before do
         stub_application_setting(password_number_required: true)
         stub_application_setting(password_lowercase_required: true)
@@ -43,16 +57,16 @@ RSpec.shared_examples 'password complexity validations' do
         visit path_to_visit
       end
 
-      it 'shows two rules' do
-        expect(page).to have_selector(
-          '[data-testid="password-number-status-icon"].gl-invisible',
-          visible: false, count: 1
-        )
-        expect(page).to have_selector(
-          '[data-testid="password-lowercase-status-icon"].gl-invisible',
-          visible: false, count: 1
-        )
-        expect(page).to have_selector('[data-testid="password-rule-text"]', count: 2)
+      it 'shows basic rules and two complexity rules' do
+        all_rules.each do |rule|
+          expect(page).to have_selector(
+            "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
+            visible: false,
+            count: 1
+          )
+        end
+
+        expect(page).to have_selector('[data-testid="password-rule-text"]', count: all_rules.size)
       end
     end
 
@@ -65,12 +79,16 @@ RSpec.shared_examples 'password complexity validations' do
       end
 
       context 'password does not meet all rules' do
-        context 'when password does not have a number' do
-          let(:password) { 'aA!' }
+        let(:password) { 'aA!' }
+        let(:complexity_rules) { [:number] }
 
-          it 'does not show check circle' do
-            expect(page).to have_selector('[data-testid="password-number-status-icon"].gl-invisible',
-              visible: false, count: 1)
+        it 'does not show check circle' do
+          all_rules.each do |rule|
+            expect(page).to have_selector(
+              "[data-testid=\"password-#{rule}-status-icon\"].gl-invisible",
+              visible: false,
+              count: 1
+            )
           end
         end
       end
@@ -78,13 +96,17 @@ RSpec.shared_examples 'password complexity validations' do
       context 'when clicking on submit button' do
         context 'when password rules are not fully matched' do
           let(:password) { 'aA' }
+          let(:complexity_rules) { [:number, :symbol] }
 
           it 'highlights not matched rules' do
             expect(page).to have_selector('[data-testid="password-rule-text"].gl-text-red-500', count: 0)
 
             click_button submit_button_selector
 
-            expect(page).to have_selector('[data-testid="password-rule-text"].gl-text-red-500', count: 2)
+            expect(page).to have_selector(
+              '[data-testid="password-rule-text"].gl-text-red-500',
+              count: all_rules.size
+            )
           end
         end
       end

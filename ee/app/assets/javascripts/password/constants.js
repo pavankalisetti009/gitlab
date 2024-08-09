@@ -1,5 +1,6 @@
 import { s__ } from '~/locale';
 
+export const COMMON = 'common';
 export const NUMBER = 'number';
 export const UPPERCASE = 'uppercase';
 export const LOWERCASE = 'lowercase';
@@ -17,16 +18,17 @@ export const I18N = {
   PASSWORD_TO_BE_SATISFIED: s__('Password|To be satisfied'),
 };
 export const PASSWORD_RULE_MAP = {
+  [COMMON]: {
+    text: s__('Password|cannot use common phrases (e.g. "password")'),
+  },
   [NUMBER]: {
     reg: /\p{N}/u,
     text: s__('Password|requires at least one number'),
   },
-
   [LOWERCASE]: {
     reg: /\p{Lower}/u,
     text: s__('Password|requires at least one lowercase letter'),
   },
-
   [UPPERCASE]: {
     reg: /\p{Upper}/u,
     text: s__('Password|requires at least one uppercase letter'),

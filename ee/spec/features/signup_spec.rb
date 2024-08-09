@@ -38,7 +38,9 @@ RSpec.describe 'Signup on EE', :js, feature_category: :user_profile do
     let(:password_input_selector) { :new_user_password }
     let(:submit_button_selector) { _('Register') }
 
-    it_behaves_like 'password complexity validations'
+    it_behaves_like 'password complexity validations' do
+      let(:basic_rules) { [:common] }
+    end
 
     context 'when all password complexity rules are enabled' do
       include_context 'with all password complexity rules enabled'
@@ -50,7 +52,11 @@ RSpec.describe 'Signup on EE', :js, feature_category: :user_profile do
           visit path_to_visit
 
           expect do
-            fill_in_sign_up_form(new_user, submit_button_selector) { fill_in password_input_selector, with: password }
+            fill_in_sign_up_form(new_user, submit_button_selector) do
+              fill_in password_input_selector, with: password
+
+              expect_password_to_be_validated
+            end
           end.to change { User.count }.by(1)
         end
       end

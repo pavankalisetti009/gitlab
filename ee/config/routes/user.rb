@@ -2,6 +2,7 @@
 
 devise_scope :user do
   get '/users/auth/kerberos/negotiate' => 'omniauth_kerberos#negotiate'
+  post '/users/password/complexity' => 'passwords#complexity'
 end
 
 scope(constraints: { username: Gitlab::PathRegex.root_namespace_route_regex }) do

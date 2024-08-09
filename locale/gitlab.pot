@@ -6022,6 +6022,9 @@ msgstr ""
 msgid "An error occurred while validating group path"
 msgstr ""
 
+msgid "An error occurred while validating password"
+msgstr ""
+
 msgid "An error occurred while validating username"
 msgstr ""
 
@@ -38389,6 +38392,9 @@ msgid "Password|Satisfied"
 msgstr ""
 
 msgid "Password|To be satisfied"
+msgstr ""
+
+msgid "Password|cannot use common phrases (e.g. \"password\")"
 msgstr ""
 
 msgid "Password|requires at least one lowercase letter"

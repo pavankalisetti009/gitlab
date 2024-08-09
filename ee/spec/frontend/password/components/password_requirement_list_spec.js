@@ -1,5 +1,9 @@
 import { nextTick } from 'vue';
 import { shallowMount } from '@vue/test-utils';
+import MockAdapter from 'axios-mock-adapter';
+import axios from '~/lib/utils/axios_utils';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { THOUSAND } from '~/lib/utils/constants';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import {
   RED_TEXT_CLASS,
@@ -8,12 +12,24 @@ import {
   INVALID_INPUT_CLASS,
   INVALID_FORM_CLASS,
   I18N,
+  COMMON,
 } from 'ee/password/constants';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import waitForPromises from 'helpers/wait_for_promises';
+import { PASSWORD_COMPLEXITY_PATH } from 'ee/api/users_api';
 import PasswordRequirementList from 'ee/password/components/password_requirement_list.vue';
 
 describe('Password requirement list component', () => {
   let wrapper;
+  let mockAxios;
+
+  beforeEach(() => {
+    mockAxios = new MockAdapter(axios);
+  });
+
+  afterEach(() => {
+    mockAxios.restore();
+  });
 
   const PASSWORD_INPUT_CLASS = 'js-password-complexity-validation';
   const findStatusIcon = (ruleType) => wrapper.findByTestId(`password-${ruleType}-status-icon`);
@@ -160,4 +176,73 @@ describe('Password requirement list component', () => {
       });
     },
   );
+
+  describe('common rule type', () => {
+    const password = '11111111';
+
+    beforeEach(() => {
+      createComponent({ props: { allowNoPassword: false, ruleTypes: [COMMON] } });
+    });
+
+    it('shows the list as secondary text', () => {
+      expect(
+        wrapper.findByTestId('password-requirement-list').classes().includes('gl-text-secondary'),
+      ).toBe(true);
+    });
+
+    describe('when there is common phrases error', () => {
+      beforeEach(() => {
+        mockAxios
+          .onPost(PASSWORD_COMPLEXITY_PATH, { password })
+          .reply(HTTP_STATUS_OK, { [COMMON]: true });
+      });
+
+      it('shows red text on rule and red border on input after submit', async () => {
+        const passwordInputElement = findPasswordInputElement();
+
+        passwordInputElement.value = password;
+        passwordInputElement.dispatchEvent(new Event('input'));
+
+        jest.advanceTimersByTime(THOUSAND);
+        await waitForPromises();
+
+        findSubmitButton().dispatchEvent(new Event('click'));
+
+        await nextTick();
+
+        const errorRules = findRuleTextsByClass(RED_TEXT_CLASS);
+
+        expect(errorRules.length).toBe(1);
+        expect(errorRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
+        expect(findRuleTextsByClass(GREEN_TEXT_CLASS).length).toBe(0);
+        expect(findForm().classList.contains(INVALID_FORM_CLASS)).toBe(true);
+        expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(true);
+      });
+    });
+
+    describe('when there is no common phrases error', () => {
+      beforeEach(() => {
+        mockAxios
+          .onPost(PASSWORD_COMPLEXITY_PATH, { password })
+          .reply(HTTP_STATUS_OK, { [COMMON]: false });
+      });
+
+      it('shows green text on rule', async () => {
+        const passwordInputElement = findPasswordInputElement();
+
+        passwordInputElement.value = password;
+        passwordInputElement.dispatchEvent(new Event('input'));
+
+        jest.advanceTimersByTime(THOUSAND);
+        await waitForPromises();
+
+        const validRules = findRuleTextsByClass(GREEN_TEXT_CLASS);
+
+        expect(validRules.length).toBe(1);
+        expect(validRules.at(0).text()).toBe('cannot use common phrases (e.g. "password")');
+        expect(findRuleTextsByClass(RED_TEXT_CLASS).length).toBe(0);
+        expect(passwordInputElement.classList.contains(INVALID_INPUT_CLASS)).toBe(false);
+      });
+    });
+  });
 });
