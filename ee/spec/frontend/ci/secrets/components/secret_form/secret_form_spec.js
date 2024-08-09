@@ -9,7 +9,6 @@ import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
-import SecretPreviewModal from 'ee/ci/secrets/components/secret_form/secret_preview_modal.vue';
 import { mockProjectSecret, mockSecretId } from '../../mock_data';
 
 jest.mock('~/alert');
@@ -35,11 +34,11 @@ describe('SecretForm component', () => {
   const findAddCronButton = () => wrapper.findByTestId('add-custom-rotation-button');
   const findCronField = () => wrapper.findByTestId('secret-cron');
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
+  const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
   const findExpirationField = () => wrapper.findComponent(GlDatepicker);
   const findEnvironmentsDropdown = () => wrapper.findComponent(CiEnvironmentsDropdown);
   const findKeyFieldGroup = () => wrapper.findByTestId('secret-key-field-group');
   const findKeyField = () => findKeyFieldGroup().findComponent(GlFormInput);
-  const findPreviewModal = () => wrapper.findComponent(SecretPreviewModal);
   const findRotationPeriodField = () => wrapper.findComponent(GlCollapsibleListbox);
   const findValueFieldGroup = () => wrapper.findByTestId('secret-value-field-group');
   const findValueField = () => findValueFieldGroup().findComponent(GlFormTextarea);
@@ -75,22 +74,18 @@ describe('SecretForm component', () => {
     findExpirationField().vm.$emit('input', expirationDate);
   };
 
-  const inputCron = () => {
-    findRotationPeriodField().vm.$emit('click');
-    findCronField().vm.$emit('input', '0 6 * * *');
-    findAddCronButton().vm.$emit('click');
-  };
-
-  const inputRequiredFields = () => {
+  const inputRequiredFields = async () => {
     findKeyField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
+    await findEnvironmentsDropdown().vm.$emit('select-environment', '*');
+
     inputExpiration();
   };
 
-  const submitSecret = () => {
-    inputRequiredFields();
+  const submitSecret = async () => {
+    await inputRequiredFields();
+
     findSubmitButton().vm.$emit('click');
-    findPreviewModal().vm.$emit('submit-secret');
   };
 
   beforeEach(() => {
@@ -115,10 +110,6 @@ describe('SecretForm component', () => {
       expect(findValueField().exists()).toBe(true);
     });
 
-    it('does not show preview modal by default', () => {
-      expect(findPreviewModal().props('isVisible')).toBe(false);
-    });
-
     it('sets expiration date in the future', () => {
       const expirationMinDate = findExpirationField().props('minDate').getTime();
       expect(expirationMinDate).toBeGreaterThan(today.getTime());
@@ -131,7 +122,7 @@ describe('SecretForm component', () => {
     });
 
     it('sets the environment', async () => {
-      expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('*');
+      expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('');
 
       await findEnvironmentsDropdown().vm.$emit('select-environment', 'staging');
 
@@ -155,7 +146,7 @@ describe('SecretForm component', () => {
     });
 
     it('shows default toggle text', () => {
-      expect(findRotationPeriodField().props('toggleText')).toBe('Select a rotation interval');
+      expect(findRotationPeriodField().props('toggleText')).toBe('Select a reminder interval');
     });
 
     it('can select predefined rotation periods and renders the correct toggle text', async () => {
@@ -213,57 +204,40 @@ describe('SecretForm component', () => {
       expect(findValueField().attributes('state')).toBe('true');
     });
 
+    it('validates description field', async () => {
+      expect(findDescriptionField().attributes('state')).toBe('true');
+
+      // string must be <= SECRET_DESCRIPTION_MAX_LENGTH (200) characters
+      findDescriptionField().vm.$emit(
+        'input',
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
+      );
+      await nextTick();
+
+      expect(findDescriptionField().attributes('state')).toBeUndefined();
+      expect(findDescriptionFieldGroup().attributes('invalid-feedback')).toBe(
+        'Description must be 200 characters or less.',
+      );
+
+      findDescriptionField().vm.$emit('input', 'This is a short description of the secret.');
+      await nextTick();
+
+      expect(findDescriptionField().attributes('state')).toBe('true');
+
+      // description can be empty
+      findDescriptionField().vm.$emit('input', '');
+      await nextTick();
+
+      expect(findDescriptionField().attributes('state')).toBe('true');
+    });
+
     it('submit button is enabled when required fields have input', async () => {
       expect(findSubmitButton().props('disabled')).toBe(true);
 
-      inputRequiredFields();
+      await inputRequiredFields();
       await nextTick();
 
       expect(findSubmitButton().props('disabled')).toBe(false);
-    });
-  });
-
-  describe('preview modal', () => {
-    beforeEach(() => {
-      createComponent({ mountFn: mountExtended });
-      inputRequiredFields();
-    });
-
-    it('submit button opens preview modal', async () => {
-      expect(findPreviewModal().props('isVisible')).toBe(false);
-
-      findSubmitButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findPreviewModal().props('isVisible')).toBe(true);
-    });
-
-    it('passes the correct props', async () => {
-      findDescriptionField().vm.$emit('input', 'This is a secret.');
-      inputCron();
-
-      findSubmitButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findPreviewModal().props()).toMatchObject({
-        description: 'This is a secret.',
-        environment: '*',
-        expiration: expirationDate,
-        isEditing: defaultProps.isEditing,
-        rotationPeriod: '0 6 * * *',
-        secretKey: 'SECRET_KEY',
-      });
-    });
-
-    it('hides modal when hide-preview-modal event is emitted', async () => {
-      findSubmitButton().vm.$emit('click');
-      await nextTick();
-
-      expect(findPreviewModal().props('isVisible')).toBe(true);
-
-      await findPreviewModal().vm.$emit('hide-preview-modal');
-
-      expect(findPreviewModal().props('isVisible')).toBe(false);
     });
   });
 
@@ -275,7 +249,7 @@ describe('SecretForm component', () => {
     it('while submitting', async () => {
       expect(findSubmitButton().props('loading')).toBe(false);
 
-      submitSecret();
+      await submitSecret();
       await nextTick();
 
       expect(findSubmitButton().props('loading')).toBe(true);
@@ -288,7 +262,7 @@ describe('SecretForm component', () => {
       });
 
       it('redirects to the secret details page', async () => {
-        submitSecret();
+        await submitSecret();
         await waitForPromises();
 
         expect(mockRouter.push).toHaveBeenCalledWith({
@@ -307,7 +281,7 @@ describe('SecretForm component', () => {
       });
 
       it('renders error message from API', async () => {
-        submitSecret();
+        await submitSecret();
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
@@ -322,7 +296,7 @@ describe('SecretForm component', () => {
       });
 
       it('renders error message from API', async () => {
-        submitSecret();
+        await submitSecret();
         await waitForPromises();
 
         expect(findSubmitButton().props('loading')).toBe(false);
