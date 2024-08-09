@@ -8,6 +8,7 @@ import RuleView from 'ee/projects/settings/branch_rules/components/view/index.vu
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
 import ProjectRules from 'ee/approvals/project_settings/project_rules.vue';
 import branchRulesQuery from 'ee/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createStoreOptions } from 'ee/approvals/stores';
 import projectSettingsModule from 'ee/approvals/stores/modules/project_settings';
 import deleteBranchRuleMutation from '~/projects/settings/branch_rules/mutations/branch_rule_delete.mutation.graphql';
@@ -74,6 +75,9 @@ describe('View branch rules in enterprise edition', () => {
         showCodeOwners,
         glFeatures,
       },
+      stubs: {
+        CrudComponent,
+      },
     });
 
     await waitForPromises();
@@ -88,7 +92,8 @@ describe('View branch rules in enterprise edition', () => {
   const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
   const findApprovalsApp = () => wrapper.findComponent(ApprovalRulesApp);
   const findProjectRules = () => wrapper.findComponent(ProjectRules);
-  const findStatusChecksTitle = () => wrapper.findByText('Status checks');
+  const findStatusChecksCrud = () => wrapper.findByTestId('status-checks');
+  const findStatusChecksTitle = () => wrapper.findByTestId('crud-title');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
 
   it('renders a branch protection component for push rules', () => {
@@ -130,7 +135,7 @@ describe('View branch rules in enterprise edition', () => {
 
   it('does not render approvals and status checks sections by default', () => {
     expect(findApprovalsApp().exists()).toBe(false);
-    expect(findStatusChecksTitle().exists()).toBe(false);
+    expect(findStatusChecksCrud().exists()).toBe(false);
   });
 
   describe('if "showApprovers" is true', () => {
@@ -185,7 +190,8 @@ describe('View branch rules in enterprise edition', () => {
       await createComponent({ editBranchRules: false }, { showStatusChecks: true });
       expect(findStatusChecksTitle().exists()).toBe(true);
       expect(findStatusChecks().props()).toMatchObject({
-        header: 'Status checks (2)',
+        header: 'Status checks',
+        count: 2,
         headerLinkHref: statusChecksPath,
         headerLinkTitle: 'Manage in status checks',
         statusChecks: statusChecksRulesMock,

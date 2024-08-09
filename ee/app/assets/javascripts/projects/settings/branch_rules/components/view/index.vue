@@ -1,5 +1,4 @@
 <script>
-import { sprintf } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import RuleViewFoss from '~/projects/settings/branch_rules/components/view/index.vue';
 import ApprovalRulesApp from 'ee/approvals/components/approval_rules_app.vue';
@@ -30,9 +29,10 @@ export default {
   },
   computed: {
     statusChecksHeader() {
-      return sprintf(this.$options.i18n.statusChecksHeader, {
-        total: this.statusChecks.length,
-      });
+      return this.$options.i18n.statusChecksHeader;
+    },
+    statusChecksCount() {
+      return this.statusChecks.length;
     },
   },
 };
