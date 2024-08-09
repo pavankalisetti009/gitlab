@@ -20,120 +20,68 @@ RSpec.describe Gitlab::Llm::Completions::GenerateCommitMessage, feature_category
   subject(:generate) { described_class.new(prompt_message, prompt_class, options) }
 
   describe '#execute' do
-    context 'when using vertex AI' do
+    context 'when the text model returns an unsuccessful response' do
       before do
-        stub_feature_flags(generate_commit_message_anthropic: false)
-      end
-
-      context 'when the text model returns an unsuccessful response' do
-        before do
-          allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-            allow(client).to receive(:text).and_return(
-              { error: 'Error' }.to_json
-            )
-          end
-        end
-
-        it 'publishes the error to the graphql subscription' do
-          errors = { error: 'Error' }
-          expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions).to receive(:new).with(errors.to_json)
-            .and_return(response_modifier)
-          expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
-            response_service
+        allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+          allow(client).to receive(:messages_complete).and_return(
+            { error: 'Error' }.to_json
           )
-          expect(response_service).to receive(:execute)
-
-          generate.execute
         end
       end
 
-      context 'when the text model returns a successful response' do
-        let(:example_answer) { "AI generated commit message" }
+      it 'publishes the error to the graphql subscription' do
+        errors = { error: 'Error' }
+        expect(::Gitlab::Llm::Anthropic::ResponseModifiers::GenerateCommitMessage).to receive(:new)
+          .with(errors.to_json)
+          .and_return(response_modifier)
+        expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
+          response_service
+        )
+        expect(response_service).to receive(:execute)
 
-        let(:example_response) do
-          {
-            "predictions" => [
-              {
-                "candidates" => [
-                  {
-                    "author" => "",
-                    "content" => example_answer
-                  }
-                ],
-                "safetyAttributes" => {
-                  "categories" => ["Violent"],
-                  "scores" => [0.4000000059604645],
-                  "blocked" => false
-                }
-              }
-            ],
-            "deployedModelId" => "1",
-            "model" => "projects/1/locations/us-central1/models/text-bison",
-            "modelDisplayName" => "text-bison",
-            "modelVersionId" => "1"
-          }
-        end
-
-        before do
-          allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-            allow(client).to receive(:text).and_return(example_response.to_json)
-          end
-        end
-
-        it 'publishes the content from the AI response' do
-          expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions).to receive(:new)
-            .with(example_response.to_json)
-            .and_return(response_modifier)
-          expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
-            response_service
-          )
-          expect(response_service).to receive(:execute)
-
-          generate.execute
-        end
-
-        context 'when an unexpected error is raised' do
-          let(:error) { StandardError.new("Error") }
-
-          before do
-            allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-              allow(client).to receive(:text).and_raise(error)
-            end
-            allow(Gitlab::ErrorTracking).to receive(:track_exception)
-          end
-
-          it 'records the error' do
-            generate.execute
-            expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
-          end
-
-          it 'publishes a generic error to the graphql subscription' do
-            errors = { error: { message: 'An unexpected error has occurred.' } }
-            expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions).to receive(:new).with(errors.to_json)
-              .and_return(response_modifier)
-            expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
-              response_service
-            )
-            expect(response_service).to receive(:execute)
-
-            generate.execute
-          end
-        end
+        generate.execute
       end
     end
 
-    context 'when using anthropic AI' do
-      context 'when the text model returns an unsuccessful response' do
+    context 'when the text model returns a successful response' do
+      let(:example_answer) { "AI generated commit message" }
+      let(:example_response) { { content: [{ text: example_answer }] } }
+
+      before do
+        allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+          allow(client).to receive(:messages_complete).and_return(example_response.to_json)
+        end
+      end
+
+      it 'publishes the content from the AI response' do
+        expect(::Gitlab::Llm::Anthropic::ResponseModifiers::GenerateCommitMessage).to receive(:new)
+          .with(example_response.to_json)
+          .and_return(response_modifier)
+        expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
+          response_service
+        )
+        expect(response_service).to receive(:execute)
+
+        generate.execute
+      end
+
+      context 'when an unexpected error is raised' do
+        let(:error) { StandardError.new("Error") }
+
         before do
           allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
-            allow(client).to receive(:messages_complete).and_return(
-              { error: 'Error' }.to_json
-            )
+            allow(client).to receive(:messages_complete).and_raise(error)
           end
+          allow(Gitlab::ErrorTracking).to receive(:track_exception)
         end
 
-        it 'publishes the error to the graphql subscription' do
-          errors = { error: 'Error' }
+        it 'records the error' do
+          generate.execute
+          expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
+        end
+
+        it 'publishes a generic error to the graphql subscription' do
+          errors = { error: { message: 'An unexpected error has occurred.' } }
           expect(::Gitlab::Llm::Anthropic::ResponseModifiers::GenerateCommitMessage).to receive(:new)
             .with(errors.to_json)
             .and_return(response_modifier)
@@ -143,58 +91,6 @@ RSpec.describe Gitlab::Llm::Completions::GenerateCommitMessage, feature_category
           expect(response_service).to receive(:execute)
 
           generate.execute
-        end
-      end
-
-      context 'when the text model returns a successful response' do
-        let(:example_answer) { "AI generated commit message" }
-        let(:example_response) { { content: [{ text: example_answer }] } }
-
-        before do
-          allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
-            allow(client).to receive(:messages_complete).and_return(example_response.to_json)
-          end
-        end
-
-        it 'publishes the content from the AI response' do
-          expect(::Gitlab::Llm::Anthropic::ResponseModifiers::GenerateCommitMessage).to receive(:new)
-            .with(example_response.to_json)
-            .and_return(response_modifier)
-          expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
-            response_service
-          )
-          expect(response_service).to receive(:execute)
-
-          generate.execute
-        end
-
-        context 'when an unexpected error is raised' do
-          let(:error) { StandardError.new("Error") }
-
-          before do
-            allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
-              allow(client).to receive(:messages_complete).and_raise(error)
-            end
-            allow(Gitlab::ErrorTracking).to receive(:track_exception)
-          end
-
-          it 'records the error' do
-            generate.execute
-            expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
-          end
-
-          it 'publishes a generic error to the graphql subscription' do
-            errors = { error: { message: 'An unexpected error has occurred.' } }
-            expect(::Gitlab::Llm::Anthropic::ResponseModifiers::GenerateCommitMessage).to receive(:new)
-              .with(errors.to_json)
-              .and_return(response_modifier)
-            expect(::Gitlab::Llm::GraphqlSubscriptionResponseService).to receive(:new).with(*params).and_return(
-              response_service
-            )
-            expect(response_service).to receive(:execute)
-
-            generate.execute
-          end
         end
       end
     end
