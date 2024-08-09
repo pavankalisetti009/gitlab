@@ -42,7 +42,6 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
 
         before do
           stub_const("#{described_class.name}::BATCH_LIMIT", 1)
-          allow(runtime_limiter).to receive(:over_time?).and_return(false, true)
         end
 
         it 'stops early, returns a cursor, and restarts next run from the given cursor' do
@@ -56,7 +55,7 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
             "#{model_name}_cursor": {}
           }
 
-          4.times do |i|
+          3.times do |i|
             allow(runtime_limiter).to receive(:over_time?).and_return(false, true)
             response = service.execute(runtime_limiter: runtime_limiter, cursor_data: cursor_data)
 
@@ -72,6 +71,11 @@ RSpec.describe Analytics::CycleAnalytics::ConsistencyCheckService, :aggregate_fa
               "#{model_name}_cursor": response.payload[:cursor]
             }
           end
+
+          allow(runtime_limiter).to receive(:over_time?).and_return(false)
+          response = service.execute(runtime_limiter: runtime_limiter, cursor_data: cursor_data)
+
+          expect(response.payload).to eq({ reason: :group_processed })
 
           # stage events where the end criteria are not met are excluded.
           # See https://gitlab.com/gitlab-org/gitlab/-/issues/408320
