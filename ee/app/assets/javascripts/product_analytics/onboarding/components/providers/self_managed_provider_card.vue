@@ -5,12 +5,20 @@ import CloudUserIllustrationPath from '@gitlab/svgs/dist/illustrations/cloud-use
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import { s__ } from '~/locale';
 
+import ClearProjectSettingsModal from './clear_project_settings_modal.vue';
 import ProviderSettingsPreview from './provider_settings_preview.vue';
 import { getRedirectConfirmationMessage, projectSettingsValidator } from './utils';
 
 export default {
   name: 'SelfManagedProviderCard',
-  components: { GlButton, GlFormCheckbox, GlLink, GlSprintf, ProviderSettingsPreview },
+  components: {
+    ClearProjectSettingsModal,
+    GlButton,
+    GlFormCheckbox,
+    GlLink,
+    GlSprintf,
+    ProviderSettingsPreview,
+  },
   inject: {
     isInstanceConfiguredWithSelfManagedAnalyticsProvider: {
       default: false,
@@ -33,6 +41,7 @@ export default {
   data() {
     return {
       useInstanceConfiguration: this.defaultUseInstanceConfiguration,
+      clearSettingsModalIsVisible: false,
     };
   },
   computed: {
@@ -42,20 +51,21 @@ export default {
     hasEmptyProjectLevelSettings() {
       return !Object.values(this.projectSettings).some(Boolean);
     },
-    hasValidProviderConfig() {
-      if (this.useInstanceConfiguration) {
-        return (
-          this.hasEmptyProjectLevelSettings &&
-          this.isInstanceConfiguredWithSelfManagedAnalyticsProvider
-        );
-      }
-
-      return this.hasAllProjectLevelSettings;
+    requiresProjectSettingsClearing() {
+      return this.useInstanceConfiguration && !this.hasEmptyProjectLevelSettings;
+    },
+    requiresProjectSettingsEditing() {
+      return !this.useInstanceConfiguration && !this.hasAllProjectLevelSettings;
     },
   },
   methods: {
     async onSelected() {
-      if (!this.hasValidProviderConfig) {
+      if (this.requiresProjectSettingsClearing) {
+        this.clearSettingsModalIsVisible = true;
+        return;
+      }
+
+      if (this.requiresProjectSettingsEditing) {
         await this.promptToSetSettings();
         return;
       }
@@ -111,7 +121,7 @@ export default {
         v-model="useInstanceConfiguration"
         class="gl-mb-6"
         data-testid="use-instance-configuration-checkbox"
-        >{{ s__('ProductAnalytics|Use instance-level settings') }}
+        >{{ s__('ProductAnalytics|Use instance provider settings') }}
         <template #help>{{
           s__(
             'ProductAnalytics|Uncheck if you would like to configure a different provider for this project.',
@@ -125,7 +135,7 @@ export default {
           )
         }}
       </p>
-      <template v-else-if="hasValidProviderConfig">
+      <template v-else-if="hasAllProjectLevelSettings">
         <p>{{ s__('ProductAnalytics|Your instance will be created on this provider:') }}</p>
         <provider-settings-preview
           :configurator-connection-string="
@@ -169,5 +179,16 @@ export default {
         >{{ s__('ProductAnalytics|Connect your own provider') }}</gl-button
       >
     </div>
+    <clear-project-settings-modal
+      :visible="clearSettingsModalIsVisible"
+      @hide="clearSettingsModalIsVisible = false"
+      @cleared="onSelected"
+    >
+      {{
+        s__(
+          `ProductAnalytics|This project has analytics provider settings configured. If you continue, the settings for projects will be reset so that provider settings for the instance can be used.`,
+        )
+      }}
+    </clear-project-settings-modal>
   </div>
 </template>

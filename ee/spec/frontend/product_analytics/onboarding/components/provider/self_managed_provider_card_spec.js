@@ -1,3 +1,4 @@
+import { nextTick } from 'vue';
 import { GlSprintf, GlLink } from '@gitlab/ui';
 
 import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
@@ -6,6 +7,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import SelfManagedProviderCard from 'ee/product_analytics/onboarding/components/providers/self_managed_provider_card.vue';
 import ProviderSettingsPreview from 'ee/product_analytics/onboarding/components/providers/provider_settings_preview.vue';
+import ClearProjectSettingsModal from 'ee/product_analytics/onboarding/components/providers/clear_project_settings_modal.vue';
 import {
   getEmptyProjectLevelAnalyticsProviderSettings,
   getPartialProjectLevelAnalyticsProviderSettings,
@@ -24,6 +26,7 @@ describe('SelfManagedProviderCard', () => {
   const findUseInstanceConfigurationCheckbox = () =>
     wrapper.findByTestId('use-instance-configuration-checkbox');
   const findLink = () => wrapper.findComponent(GlLink);
+  const findClearSettingsModal = () => wrapper.findComponent(ClearProjectSettingsModal);
 
   const mockConfirmAction = (confirmed) => confirmAction.mockResolvedValueOnce(confirmed);
 
@@ -53,7 +56,7 @@ describe('SelfManagedProviderCard', () => {
     findUseInstanceConfigurationCheckbox().vm.$emit('input', checked);
   };
 
-  const itShouldRedirectToSettings = (expectedConfirmationMessage) => {
+  const itShouldRedirectToSettings = () => {
     describe('when clicking setup', () => {
       it('should confirm with user that redirect to settings is required', async () => {
         mockConfirmAction(false);
@@ -64,7 +67,9 @@ describe('SelfManagedProviderCard', () => {
           expect.objectContaining({
             primaryBtnText: 'Go to analytics settings',
             title: 'Connect your own provider',
-            modalHtmlMessage: expect.stringContaining(expectedConfirmationMessage),
+            modalHtmlMessage: expect.stringContaining(
+              `To connect your own provider, you'll be redirected`,
+            ),
           }),
         );
       });
@@ -85,6 +90,39 @@ describe('SelfManagedProviderCard', () => {
     });
   };
 
+  const itShouldUseClearSettingsModal = () => {
+    it('should show the clear settings modal', async () => {
+      await initProvider();
+
+      const modal = findClearSettingsModal();
+      expect(modal.props('visible')).toBe(true);
+      expect(modal.text()).toContain(
+        'This project has analytics provider settings configured. If you continue, the settings for projects will be reset so that provider settings for the instance can be used.',
+      );
+    });
+
+    it('should hide the modal when it emits "hide"', async () => {
+      await initProvider();
+
+      findClearSettingsModal().vm.$emit('hide');
+      await nextTick();
+
+      expect(findClearSettingsModal().props('visible')).toBe(false);
+    });
+
+    it('should select the provider when the modal emits "cleared"', async () => {
+      await initProvider();
+
+      await wrapper.setProps({
+        projectSettings: getEmptyProjectLevelAnalyticsProviderSettings(),
+      });
+      findClearSettingsModal().vm.$emit('cleared');
+      await nextTick();
+
+      expect(wrapper.emitted('confirm')).toEqual([['file-mock']]);
+    });
+  };
+
   describe('default behaviour', () => {
     beforeEach(() => createWrapper());
 
@@ -95,13 +133,13 @@ describe('SelfManagedProviderCard', () => {
       );
     });
 
-    it('should show "Use instance-level settings" checkbox', () => {
+    it('should show "Use instance provider settings" checkbox', () => {
       expect(findUseInstanceConfigurationCheckbox().exists()).toBe(true);
     });
   });
 
   describe('when instance config is a GitLab-managed provider', () => {
-    it('should not show "Use instance-level settings" checkbox', () => {
+    it('should not show "Use instance provider settings" checkbox', () => {
       createWrapper(
         {},
         {
@@ -113,7 +151,7 @@ describe('SelfManagedProviderCard', () => {
     });
   });
 
-  describe('"Use instance-level settings" checkbox default state', () => {
+  describe('"Use instance provider settings" checkbox default state', () => {
     it.each`
       defaultUseInstanceConfiguration | expectedCheckedState
       ${true}                         | ${'true'}
@@ -142,7 +180,7 @@ describe('SelfManagedProviderCard', () => {
       });
     });
 
-    describe('when "Use instance-level settings" is checked', () => {
+    describe('when "Use instance provider settings" is checked', () => {
       beforeEach(() => checkUseInstanceConfiguration(true));
 
       it('should inform user instance-settings will be used', () => {
@@ -164,7 +202,7 @@ describe('SelfManagedProviderCard', () => {
       });
     });
 
-    describe('when "Use instance-level settings" is unchecked', () => {
+    describe('when "Use instance provider settings" is unchecked', () => {
       beforeEach(() => checkUseInstanceConfiguration(false));
 
       it('renders the link to the public helm-charts project', () => {
@@ -173,7 +211,7 @@ describe('SelfManagedProviderCard', () => {
         );
       });
 
-      itShouldRedirectToSettings(`To connect your own provider, you'll be redirected`);
+      itShouldRedirectToSettings();
     });
   });
 
@@ -184,18 +222,24 @@ describe('SelfManagedProviderCard', () => {
       });
     });
 
-    describe.each`
-      scenario                                            | checked  | confirmMessage
-      ${'when "Use instance-level settings" is checked'}  | ${true}  | ${'To connect to your instance-level provider, you must first remove project-level provider configuration'}
-      ${'hen "Use instance-level settings" is unchecked'} | ${false} | ${"To connect your own provider, you'll be redirected"}
-    `('$scenario', ({ checked, confirmMessage }) => {
-      beforeEach(() => checkUseInstanceConfiguration(checked));
+    describe('when "Use instance provider settings" is checked', () => {
+      beforeEach(() => checkUseInstanceConfiguration(true));
 
       it('should not show summary of existing project-level settings', () => {
         expect(findProviderSettingsPreview().exists()).toBe(false);
       });
 
-      itShouldRedirectToSettings(confirmMessage);
+      itShouldUseClearSettingsModal();
+    });
+
+    describe('when "Use instance provider settings" is unchecked', () => {
+      beforeEach(() => checkUseInstanceConfiguration(false));
+
+      it('should not show summary of existing project-level settings', () => {
+        expect(findProviderSettingsPreview().exists()).toBe(false);
+      });
+
+      itShouldRedirectToSettings();
     });
   });
 
@@ -206,19 +250,17 @@ describe('SelfManagedProviderCard', () => {
       });
     });
 
-    describe('when "Use instance-level settings" is checked', () => {
+    describe('when "Use instance provider settings" is checked', () => {
       beforeEach(() => checkUseInstanceConfiguration(true));
 
       it('should not show summary of existing project-level settings', () => {
         expect(findProviderSettingsPreview().exists()).toBe(false);
       });
 
-      itShouldRedirectToSettings(
-        `To connect to your instance-level provider, you must first remove project-level provider configuration.`,
-      );
+      itShouldUseClearSettingsModal();
     });
 
-    describe('when "Use instance-level settings" is unchecked', () => {
+    describe('when "Use instance provider settings" is unchecked', () => {
       beforeEach(() => checkUseInstanceConfiguration(false));
 
       it('should show summary of existing project-level settings', () => {
@@ -234,8 +276,7 @@ describe('SelfManagedProviderCard', () => {
         beforeEach(() => initProvider());
 
         it('should emit "confirm" event', () => {
-          expect(wrapper.emitted('confirm')).toHaveLength(1);
-          expect(wrapper.emitted('confirm').at(0)).toStrictEqual(['file-mock']);
+          expect(wrapper.emitted('confirm')).toEqual([['file-mock']]);
         });
       });
     });
