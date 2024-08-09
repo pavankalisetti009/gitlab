@@ -98,5 +98,10 @@ RSpec.describe MergeRequests::MergeStrategies::FromTrainRef, feature_category: :
       merge_request.update!(merge_params: { 'train_ref' => train_ref_merge_params.merge('some_key' => 'some value') })
       expect(result).to eq train_ref_merge_params.symbolize_keys.merge(some_key: 'some value')
     end
+
+    it 'returns an empty hash if #ff_merge does not return a sha' do
+      expect(merge_request.target_project.repository).to receive(:ff_merge).and_return nil
+      expect(result).to eq({})
+    end
   end
 end

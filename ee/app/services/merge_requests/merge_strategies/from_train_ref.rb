@@ -38,12 +38,16 @@ module MergeRequests
       end
 
       def execute_git_merge!
-        repository.ff_merge(
+        commit_sha = repository.ff_merge(
           current_user,
           source_sha,
           merge_request.target_branch,
           merge_request: merge_request
         )
+
+        # When repository.ff_merge fails to update the ref, it may return an
+        # blank result instead of raising an error.
+        return {} if commit_sha.blank?
 
         # Since this is a fast-forward merge, the commit SHAs are exactly what
         # is in train_ref_merge_params
