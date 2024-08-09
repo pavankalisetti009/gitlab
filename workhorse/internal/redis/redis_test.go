@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"gitlab.com/gitlab-org/gitlab/workhorse/internal/config"
@@ -22,12 +23,12 @@ const (
 func mockRedisServer(t *testing.T, connectReceived *atomic.Value) string {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	go func() {
 		defer ln.Close()
 		conn, err := ln.Accept()
-		require.Nil(t, err)
+		assert.NoError(t, err)
 		connectReceived.Store(true)
 		conn.Write([]byte("OK\n"))
 	}()
@@ -112,7 +113,7 @@ func TestConfigureValidConfigX(t *testing.T) {
 			require.Equal(t, tc.username, opt.Username)
 			require.Equal(t, tc.expectedPassword, opt.Password)
 
-			// goredis initialise connections lazily
+			// goredis initialize connections lazily
 			rdb.Ping(context.Background())
 			require.True(t, connectReceived.Load().(bool))
 		})
@@ -152,7 +153,7 @@ func TestConnectToSentinel(t *testing.T) {
 
 			require.NotNil(t, rdb.Conn(), "Pool should not be nil")
 
-			// goredis initialise connections lazily
+			// goredis initialize connections lazily
 			rdb.Ping(context.Background())
 			require.True(t, connectReceived.Load().(bool))
 		})
