@@ -117,7 +117,7 @@ export default {
         <span>{{ $options.i18n.loadingTests }}</span>
       </div>
       <div v-else-if="healthStatus" class="gl-flex gl-items-center gl-gap-3">
-        <gl-badge variant="success">{{ $options.i18n.healthDown }}</gl-badge>
+        <gl-badge variant="success">{{ $options.i18n.healthUp }}</gl-badge>
         <span>{{ $options.i18n.healthCheckSucceeded }}</span>
       </div>
       <div v-else class="gl-flex gl-items-center gl-gap-3">
