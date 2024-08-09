@@ -30,7 +30,9 @@ export default {
     version: __('Your GitLab version'),
     whatsnew: __("What's new"),
     terms: __('Terms and privacy'),
+    privacy: __('Privacy statement'),
   },
+  inject: ['isSaas'],
   props: {
     sidebarData: {
       type: Object,
@@ -109,6 +111,13 @@ export default {
               href: `${PROMO_URL}/submit-feedback`,
               extraAttrs: {
                 ...this.trackingAttrs('submit_feedback'),
+              },
+            },
+            this.isSaas && {
+              text: this.$options.i18n.privacy,
+              href: `${PROMO_URL}/privacy`,
+              extraAttrs: {
+                ...this.trackingAttrs('privacy'),
               },
             },
             this.sidebarData.terms && {
