@@ -14,6 +14,10 @@ module EE
       ::Audit::UserPasswordResetAuditor.new(user, user, request.remote_ip).audit_reset_failure
     end
 
+    def complexity
+      render json: { common: Security::WeakPasswords.common_phrases_in_password?(complexity_password) }
+    end
+
     private
 
     def log_audit_event
@@ -29,6 +33,10 @@ module EE
         message: "Ask for password reset",
         ip_address: request.remote_ip
       })
+    end
+
+    def complexity_password
+      params.require(:password)
     end
   end
 end
