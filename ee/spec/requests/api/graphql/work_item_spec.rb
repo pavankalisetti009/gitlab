@@ -282,6 +282,57 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
         end
       end
 
+      describe 'health status widget' do
+        before do
+          stub_licensed_features(issuable_health_status: true)
+
+          work_item.update_attribute(:health_status, :at_risk)
+
+          post_graphql(query, current_user: current_user)
+        end
+
+        let(:work_item_fields) do
+          <<~GRAPHQL
+            id
+            widgets {
+              type
+              ... on WorkItemWidgetHealthStatus {
+                widgetDefinition {
+                  editable
+                  rollUp
+                }
+                healthStatus
+                rolledUpHealthStatus {
+                  healthStatus
+                  count
+                }
+              }
+            }
+          GRAPHQL
+        end
+
+        it 'returns health status widget information' do
+          expect(work_item_data).to include(
+            'id' => work_item.to_gid.to_s,
+            'widgets' => include(
+              hash_including(
+                'type' => 'HEALTH_STATUS',
+                'widgetDefinition' => {
+                  'editable' => true,
+                  'rollUp' => false
+                },
+                'healthStatus' => 'atRisk',
+                'rolledUpHealthStatus' => match_array([
+                  { 'healthStatus' => 'onTrack', 'count' => 0 },
+                  { 'healthStatus' => 'needsAttention', 'count' => 0 },
+                  { 'healthStatus' => 'atRisk', 'count' => 0 }
+                ])
+              )
+            )
+          )
+        end
+      end
+
       describe 'test reports widget' do
         let_it_be(:work_item) { create(:work_item, :requirement, project: project) }
 

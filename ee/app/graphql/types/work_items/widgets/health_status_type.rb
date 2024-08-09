@@ -10,10 +10,19 @@ module Types
 
         implements Types::WorkItems::WidgetInterface
 
+        field :widget_definition, ::Types::WorkItems::WidgetDefinitions::HealthStatusType,
+          null: true,
+          description: 'Health status widget definition.'
+
         field :health_status,
           ::Types::HealthStatusEnum,
           null: true,
           description: 'Health status of the work item.'
+
+        field :rolled_up_health_status, [::Types::WorkItems::Widgets::HealthStatusCountType],
+          null: true,
+          description: 'Rolled up health status of the work item.',
+          alpha: { milestone: '17.3' }
       end
       # rubocop:enable Graphql/AuthorizeTypes
     end
