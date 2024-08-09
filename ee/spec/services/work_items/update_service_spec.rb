@@ -35,8 +35,8 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
       let(:supported_widgets) do
         [
           {
-            klass: WorkItems::Widgets::WeightService::UpdateService,
-            callback: :before_update_callback, params: { weight: 1 }
+            klass: WorkItems::Callbacks::Weight,
+            callback: :before_update
           }
         ]
       end

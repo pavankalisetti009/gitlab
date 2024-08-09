@@ -2,21 +2,19 @@
 
 require 'spec_helper'
 
-RSpec.describe WorkItems::Widgets::WeightService::UpdateService, feature_category: :team_planning do
+RSpec.describe WorkItems::Callbacks::Weight, feature_category: :team_planning do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be_with_reload(:work_item) { create(:work_item, project: project, author: user, weight: 1) }
 
-  let(:widget) { work_item.widgets.find { |widget| widget.is_a?(WorkItems::Widgets::Weight) } }
+  let(:callback) { described_class.new(issuable: work_item, current_user: user, params: params) }
 
-  describe '#update' do
-    let(:service) { described_class.new(widget: widget, current_user: user) }
-
-    subject { service.before_update_callback(params: params) }
+  describe '#before_update' do
+    subject(:before_update_callback) { callback.before_update }
 
     shared_examples 'weight is unchanged' do
       it 'does not change work item weight value' do
-        expect { subject }
+        expect { before_update_callback }
           .to not_change { work_item.weight }
       end
     end
@@ -29,7 +27,7 @@ RSpec.describe WorkItems::Widgets::WeightService::UpdateService, feature_categor
       context 'when user can only update work item' do
         let(:params) { { weight: 2 } }
 
-        before do
+        before_all do
           project.add_guest(user)
         end
 
@@ -37,7 +35,7 @@ RSpec.describe WorkItems::Widgets::WeightService::UpdateService, feature_categor
       end
 
       context 'when user can admin work item' do
-        before do
+        before_all do
           project.add_reporter(user)
         end
 
@@ -50,7 +48,7 @@ RSpec.describe WorkItems::Widgets::WeightService::UpdateService, feature_categor
             let(:params) { { weight: new_weight } }
 
             it 'correctly sets work item weight value' do
-              subject
+              before_update_callback
 
               expect(work_item.weight).to eq(new_weight)
             end
@@ -67,11 +65,11 @@ RSpec.describe WorkItems::Widgets::WeightService::UpdateService, feature_categor
           let(:params) { {} }
 
           before do
-            allow(service).to receive(:new_type_excludes_widget?).and_return(true)
+            allow(callback).to receive(:excluded_in_new_type?).and_return(true)
           end
 
           it "removes the work item's weight" do
-            subject
+            before_update_callback
 
             expect(work_item.weight).to eq(nil)
           end
