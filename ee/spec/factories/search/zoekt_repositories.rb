@@ -5,5 +5,7 @@ FactoryBot.define do
     project { association(:project) }
     zoekt_index { association(:zoekt_index) }
     project_identifier { project.id }
+    state { Search::Zoekt::Repository.states.fetch(:pending) }
+    size_bytes { 10.megabytes }
   end
 end

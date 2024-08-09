@@ -7,13 +7,6 @@ module Search
     class << self
       include Gitlab::Utils::StrongMemoize
 
-      def fetch_node_id(container)
-        root_namespace_id = fetch_root_namespace_id(container)
-        return unless root_namespace_id
-
-        Index.for_root_namespace_id(root_namespace_id).first&.zoekt_node_id
-      end
-
       def search?(container)
         root_namespace_id = fetch_root_namespace_id(container)
         return false unless root_namespace_id
@@ -56,8 +49,11 @@ module Search
 
       def delete_async(project_id, root_namespace_id:, node_id: nil)
         if create_indexing_tasks_enabled?(project_id)
-          options = { root_namespace_id: root_namespace_id, node_id: node_id || fetch_node_id(root_namespace_id) }
-          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
+            node_ids: [node_id]).map do |node|
+            options = { root_namespace_id: root_namespace_id, node_id: node.id }
+            IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          end
         end
 
         return unless Feature.enabled?(:zoekt_legacy_indexer_worker)
@@ -67,10 +63,13 @@ module Search
 
       def delete_in(delay, project_id, root_namespace_id:, node_id: nil)
         if create_indexing_tasks_enabled?(project_id)
-          options = {
-            root_namespace_id: root_namespace_id, node_id: node_id || fetch_node_id(root_namespace_id), delay: delay
-          }
-          IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id,
+            node_ids: [node_id]).map do |node|
+            options = {
+              root_namespace_id: root_namespace_id, node_id: node.id, delay: delay
+            }
+            IndexingTaskWorker.perform_async(project_id, :delete_repo, options)
+          end
         end
 
         return unless Feature.enabled?(:zoekt_legacy_indexer_worker)
