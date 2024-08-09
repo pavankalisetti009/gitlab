@@ -174,4 +174,30 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
       end
     end
   end
+
+  describe '#fetch_repositories_with_project_identifier' do
+    let_it_be(:project) { create(:project) }
+
+    let_it_be_with_reload(:replica_1_idx_1) do
+      create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_replica.zoekt_enabled_namespace,
+        state: :ready)
+    end
+
+    let_it_be_with_reload(:replica_1_idx_2) do
+      create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_replica.zoekt_enabled_namespace,
+        state: :reallocating)
+    end
+
+    let_it_be_with_reload(:repo_1_ready) do
+      create(:zoekt_repository, project: project, zoekt_index: replica_1_idx_1, state: :ready)
+    end
+
+    let_it_be_with_reload(:repo_2_pending) do
+      create(:zoekt_repository, project: project, zoekt_index: replica_1_idx_2, state: :pending)
+    end
+
+    it 'returns the ready repositories for that replica and project id' do
+      expect(zoekt_replica.fetch_repositories_with_project_identifier(project.id)).to match_array([repo_1_ready])
+    end
+  end
 end

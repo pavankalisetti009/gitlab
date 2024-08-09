@@ -41,6 +41,10 @@ module Search
         retry if invalid.record&.errors&.of_kind?(:namespace_id, :taken)
       end
 
+      def fetch_repositories_with_project_identifier(project_id)
+        Repository.ready.for_replica_id(id).for_project_id(project_id)
+      end
+
       private
 
       def project_can_not_assigned_to_same_replica_unless_index_is_reallocating

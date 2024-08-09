@@ -14,7 +14,7 @@ module Search
         @project = Project.find_by_id(project_id)
         @task_type = task_type.to_sym
         @node_id = node_id
-        @root_namespace_id = root_namespace_id
+        @root_namespace_id = root_namespace_id || @project&.root_ancestor&.id
         @force = force
         @delay = delay
       end
@@ -23,12 +23,12 @@ module Search
         return false unless preflight_check?
 
         current_task_type = random_force_reindexing? ? :force_index_repo : task_type
-        fetch_indices.find_each do |index|
+        Router.fetch_indices_for_indexing(project_id, root_namespace_id: root_namespace_id).find_each do |idx|
           perform_at = Time.current
           perform_at += delay if delay
           ApplicationRecord.transaction do
             Repository.create_tasks(
-              project_id: project_id, zoekt_index: index, task_type: current_task_type, perform_at: perform_at
+              project_id: project_id, zoekt_index: idx, task_type: current_task_type, perform_at: perform_at
             )
           end
         end
@@ -43,14 +43,6 @@ module Search
         return false unless project && Feature.enabled?(:zoekt_create_indexing_tasks, project)
 
         true
-      end
-
-      def fetch_indices
-        scope = Search::Zoekt::Index.for_root_namespace_id(root_namespace_id || project.root_ancestor.id)
-
-        scope = scope.for_node(node_id) if node_id
-
-        scope
       end
 
       def random_force_reindexing?

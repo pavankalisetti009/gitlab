@@ -57,6 +57,14 @@ module Search
       scope :preload_zoekt_enabled_namespace_and_namespace, -> { includes(zoekt_enabled_namespace: :namespace) }
       scope :preload_node, -> { includes(:node) }
 
+      def used_storage_bytes
+        zoekt_repositories.sum(:size_bytes)
+      end
+
+      def free_storage_bytes
+        reserved_storage_bytes.to_i - used_storage_bytes
+      end
+
       private
 
       def index
