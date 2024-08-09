@@ -105,6 +105,7 @@ export default {
     handleFormSubmitted() {
       const bulkUpdateData = {
         issuable_ids: this.checkedEpics.map((epic) => getIdFromGraphQLId(epic.id)).join(','),
+        issuable_gids: this.checkedEpics.map((epic) => epic.id),
         add_label_ids: this.selectedLabelIds,
         remove_label_ids: this.removedLabelIds,
       };
