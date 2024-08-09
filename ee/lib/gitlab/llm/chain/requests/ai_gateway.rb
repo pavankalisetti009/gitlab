@@ -44,6 +44,9 @@ module Gitlab
               yield data if block_given?
             end
 
+            logger.info_or_debug(user, message: "Made request to AI Client",
+              class: self.class.to_s, prompt: prompt[:prompt], response: response)
+
             track_prompt_size(token_size(prompt[:prompt]), provider(options))
             track_response_size(token_size(response), provider(options))
 

@@ -87,6 +87,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     before do
       allow(Gitlab::Llm::Logger).to receive(:build).and_return(logger)
+      allow(logger).to receive(:info_or_debug)
       allow(instance).to receive(:ai_client).and_return(ai_client)
     end
 
@@ -96,6 +97,19 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
         expect(request).to eq(response)
       end
+    end
+
+    it 'logs the request and response' do
+      expect(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_return(response)
+      expect(logger).to receive(:info_or_debug).with(
+        user,
+        message: "Made request to AI Client",
+        class: described_class.to_s,
+        prompt: user_prompt,
+        response: response
+      )
+
+      request
     end
 
     it 'calls the AI Gateway streaming endpoint and yields response without stripping it' do
