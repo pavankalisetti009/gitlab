@@ -175,15 +175,15 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         stub_licensed_features(adjourned_deletion_for_projects_and_groups: true)
       end
 
-      let(:notice_regex) do
-        /This project will be deleted on .* since its parent group .* has been scheduled for deletion/
+      let(:ancestor_notice_regex) do
+        /The parent group of this project is pending deletion, so this project will also be deleted on .*./
       end
 
       context 'when the parent group has not been scheduled for deletion' do
         it 'does not show the notice' do
           subject
 
-          expect(response.body).not_to match(notice_regex)
+          expect(response.body).not_to match(ancestor_notice_regex)
         end
       end
 
@@ -199,7 +199,7 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
         it 'shows the notice that the parent group has been scheduled for deletion' do
           subject
 
-          expect(response.body).to match(notice_regex)
+          expect(response.body).to match(ancestor_notice_regex)
         end
 
         context 'when the project itself has also been scheduled for deletion' do
@@ -208,10 +208,10 @@ RSpec.describe ProjectsController, feature_category: :groups_and_projects do
 
             subject
 
-            expect(response.body).not_to match(notice_regex)
+            expect(response.body).not_to match(ancestor_notice_regex)
             # However, shows the notice that the project has been marked for deletion.
             expect(response.body).to match(
-              /Deletion pending. This project will be deleted on .*. Repository and other project resources are read-only./
+              /This project is pending deletion, and will be deleted on .*. Repository and other project resources are read-only./
             )
           end
         end

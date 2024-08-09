@@ -1,6 +1,0 @@
-- if show_pending_deletion_project_banner?(@project)
-  - deletion_date = permanent_deletion_date_formatted(@project, @project.marked_for_deletion_at)
-  = render Pajamas::AlertComponent.new(variant: :warning,
-    dismissible: false) do |c|
-    = c.with_body do
-      = _("Deletion pending. This project will be deleted on %{date}. Repository and other project resources are read-only.") % { date: deletion_date }

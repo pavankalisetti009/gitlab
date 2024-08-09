@@ -17788,9 +17788,6 @@ msgstr ""
 msgid "Deleting this group also deletes all child projects, including archived projects, and their resources."
 msgstr ""
 
-msgid "Deletion pending. This project will be deleted on %{date}. Repository and other project resources are read-only."
-msgstr ""
-
 msgid "DeletionSettings|Deletion protection"
 msgstr ""
 
@@ -53656,6 +53653,9 @@ msgstr ""
 msgid "The parent epic is confidential and can only contain confidential epics and issues"
 msgstr ""
 
+msgid "The parent group of this %{context} is pending deletion, so this %{context} will also be deleted on %{date}."
+msgstr ""
+
 msgid "The password for the Jenkins server."
 msgstr ""
 
@@ -54487,6 +54487,9 @@ msgstr ""
 msgid "This group"
 msgstr ""
 
+msgid "This group and its subgroups and projects are pending deletion, and will be deleted on %{date}."
+msgstr ""
+
 msgid "This group and its subgroups and projects will be placed in a 'pending deletion' state for %{deletion_delayed_period} days, then permanently deleted on %{date}. The group can be fully restored before that date."
 msgstr ""
 
@@ -54527,12 +54530,6 @@ msgid "This group is not permitted to create compliance violations"
 msgstr ""
 
 msgid "This group is scheduled to be deleted on %{date}. You are about to delete this group, including its subgroups and projects, immediately. This action cannot be undone."
-msgstr ""
-
-msgid "This group, its subgroups and projects has been scheduled for removal on %{date}."
-msgstr ""
-
-msgid "This group, its subgroups and projects will be removed on %{date} since its parent group '%{parent_group_name}' has been scheduled for removal."
 msgstr ""
 
 msgid "This incident is already escalated with '%{escalation_policy_name}'."
@@ -54840,6 +54837,9 @@ msgstr ""
 msgid "This project is not subscribed to any project pipelines."
 msgstr ""
 
+msgid "This project is pending deletion, and will be deleted on %{date}. Repository and other project resources are read-only."
+msgstr ""
+
 msgid "This project is public. Non-members can guess the Service Desk email address, because it contains the group and project name. %{linkStart}How do I create a custom email address?%{linkEnd}"
 msgstr ""
 
@@ -54856,9 +54856,6 @@ msgid "This project was scheduled for deletion, but failed with the following me
 msgstr ""
 
 msgid "This project will be deleted on %{date}"
-msgstr ""
-
-msgid "This project will be deleted on %{date} since its parent group '%{parent_group_name}' has been scheduled for deletion."
 msgstr ""
 
 msgid "This project's pipeline configuration is located outside this repository"
