@@ -28215,6 +28215,8 @@ CREATE UNIQUE INDEX index_member_roles_on_namespace_id_name_unique ON member_rol
 
 CREATE INDEX index_member_roles_on_occupies_seat ON member_roles USING btree (occupies_seat);
 
+CREATE INDEX index_member_roles_on_permissions ON member_roles USING gin (permissions);
+
 CREATE INDEX index_members_on_access_level ON members USING btree (access_level);
 
 CREATE INDEX index_members_on_expires_at ON members USING btree (expires_at);
