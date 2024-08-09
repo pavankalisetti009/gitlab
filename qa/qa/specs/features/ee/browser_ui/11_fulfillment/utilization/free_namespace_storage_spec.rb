@@ -4,23 +4,17 @@ module QA
   RSpec.describe 'Fulfillment', :runner, :requires_admin,
     only: { subdomain: :staging },
     feature_flag: { name: 'namespace_storage_limit', scope: :group },
-    product_group: :utilization,
-    quarantine: {
-      type: :stale,
-      issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/474501"
-    } do
+    product_group: :utilization do
     describe 'Utilization' do
       include Runtime::Fixtures
 
       let(:admin_api_client) { Runtime::API::Client.as_admin }
-      let(:owner_api_client) { Runtime::API::Client.new(:gitlab, user: owner_user) }
       let(:hash) { SecureRandom.hex(8) }
       let(:content) { Faker::Lorem.paragraph(sentence_count: 1000) }
-      let(:owner_user) { create(:user, :hard_delete, api_client: admin_api_client) }
       let(:free_plan_group) do
         Resource::Sandbox.fabricate! do |sandbox|
           sandbox.path = "fulfillment-free-plan-group-#{hash}"
-          sandbox.api_client = owner_api_client
+          sandbox.api_client = admin_api_client
         end
       end
 
@@ -29,22 +23,22 @@ module QA
           name: "free-project-#{hash}",
           template_name: 'express',
           group: free_plan_group,
-          api_client: owner_api_client)
+          api_client: admin_api_client)
       end
 
       before do
-        Flow::Login.sign_in(as: owner_user)
+        Flow::Login.sign_in
 
         Runtime::Feature.enable(:reduce_aggregation_schedule_lease, group: free_plan_group)
 
         endpoint = QA::Runtime::API::Request.new(admin_api_client, '/application/settings').url
         put endpoint, { namespace_aggregation_schedule_lease_duration_in_seconds: 120 }
 
-        create(:commit, api_client: owner_api_client, project: project, commit_message: 'Add large file', actions: [
+        create(:commit, api_client: admin_api_client, project: project, commit_message: 'Add large file', actions: [
           { action: 'create', file_path: 'test.rb', content: SecureRandom.hex(10000) } # 10.2 KiB
         ])
 
-        create(:commit, api_client: owner_api_client, project: project, commit_message: 'Add CI file', actions: [
+        create(:commit, api_client: admin_api_client, project: project, commit_message: 'Add CI file', actions: [
           {
             action: 'create',
             file_path: '.gitlab-ci.yml',
@@ -75,7 +69,7 @@ module QA
         ])
 
         create(:project_wiki_page,
-          api_client: owner_api_client,
+          api_client: admin_api_client,
           project: project,
           title: 'Wiki',
           content: content) # 10.2 KiB
@@ -89,8 +83,6 @@ module QA
       end
 
       after do
-        owner_user.remove_via_api!
-
         endpoint = QA::Runtime::API::Request.new(admin_api_client, '/application/settings').url
 
         put endpoint, { namespace_aggregation_schedule_lease_duration_in_seconds: 300 }
