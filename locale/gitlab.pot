@@ -48488,10 +48488,10 @@ msgstr ""
 msgid "SecurityOrchestration|This policy is inherited"
 msgstr ""
 
-msgid "SecurityOrchestration|This policy is inherited from %{namespace}"
+msgid "SecurityOrchestration|This policy is inherited from %{linkStart}namespace%{linkEnd} and must be edited there"
 msgstr ""
 
-msgid "SecurityOrchestration|This policy is inherited from the %{linkStart}namespace%{linkEnd} and must be edited there"
+msgid "SecurityOrchestration|This policy is inherited from %{namespace}"
 msgstr ""
 
 msgid "SecurityOrchestration|This project"

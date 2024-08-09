@@ -1,4 +1,4 @@
-import { s__ } from '~/locale';
+import { __, s__ } from '~/locale';
 import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
 
 export const POLICY_SOURCE_OPTIONS = {
@@ -47,3 +47,5 @@ export const EMPTY_LIST_DESCRIPTION = s__(
 export const EMPTY_POLICY_PROJECT_DESCRIPTION = s__(
   'SecurityOrchestration|This %{namespaceType} is not linked to a security policy project',
 );
+
+export const getPolicyActionOptions = (policy) => [{ text: __('Edit'), href: policy.editPath }];
