@@ -3,6 +3,7 @@ import { GlTab, GlSkeletonLoader } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { WORKSPACES_LIST_PAGE_SIZE, I18N_LOADING_WORKSPACES_FAILED } from '../constants';
 import WorkspacesTable from './workspaces_list/workspaces_table.vue';
+import WorkspaceEmptyState from './workspaces_list/empty_state.vue';
 import WorkspacesListPagination from './workspaces_list/workspaces_list_pagination.vue';
 
 export const i18n = {
@@ -23,9 +24,9 @@ function getTabTitle(tabName) {
 function getEmptyStateText(tabName) {
   switch (tabName) {
     case 'active':
-      return s__('Workspaces|No active workspaces. Create a workspace to get started.');
+      return s__('Workspaces|No active workspaces');
     case 'terminated':
-      return s__('Workspaces|No terminated workspaces to show.');
+      return s__('Workspaces|No terminated workspaces');
     default:
       throw Error(__('Status not supported'));
   }
@@ -36,6 +37,7 @@ export default {
     GlTab,
     GlSkeletonLoader,
     WorkspacesTable,
+    WorkspaceEmptyState,
     WorkspacesListPagination,
   },
   props: {
@@ -100,14 +102,11 @@ export default {
       <gl-skeleton-loader :lines="4" :equal-width-lines="true" :width="600" />
     </div>
     <template v-else>
-      <p
+      <workspace-empty-state
         v-if="isEmpty"
-        class="gl-display-flex gl-flex-direction-column gl-align-items-center gl-py-6"
-        data-testid="empty-state"
-      >
-        {{ $options.getEmptyStateText(tabName) }}
-      </p>
-
+        :title="$options.getEmptyStateText(tabName)"
+        description=""
+      />
       <div v-else>
         <workspaces-table
           tabs-mode
