@@ -344,7 +344,7 @@ export default {
       }
 
       this.markdownPreviewLoading = false;
-      this.markdownPreview = data.body || __('Nothing to preview.');
+      this.markdownPreview = data.body || data.html || __('Nothing to preview.');
 
       this.$nextTick()
         .then(() => {
