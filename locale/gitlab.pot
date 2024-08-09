@@ -9265,6 +9265,9 @@ msgstr ""
 msgid "BranchRules|Add branch rule"
 msgstr ""
 
+msgid "BranchRules|Add status check"
+msgstr ""
+
 msgid "BranchRules|Administrators"
 msgstr ""
 
@@ -51624,6 +51627,18 @@ msgid "Status: %{status}"
 msgstr ""
 
 msgid "Status: %{title}"
+msgstr ""
+
+msgid "StatusChecks|API to check"
+msgstr ""
+
+msgid "StatusChecks|Examples: QA, Security, Performance."
+msgstr ""
+
+msgid "StatusChecks|Invoke an external API as part of the pipeline process."
+msgstr ""
+
+msgid "StatusChecks|Service name"
 msgstr ""
 
 msgid "StatusCheck|%{failed} failed"

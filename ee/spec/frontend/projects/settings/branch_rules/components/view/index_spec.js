@@ -14,8 +14,6 @@ import deleteBranchRuleMutation from '~/projects/settings/branch_rules/mutations
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { I18N } from '~/projects/settings/branch_rules/components/view/constants';
-import { sprintf } from '~/locale';
 import {
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
@@ -90,19 +88,19 @@ describe('View branch rules in enterprise edition', () => {
   const findStatusChecks = () => wrapper.findByTestId('status-checks-content');
   const findApprovalsApp = () => wrapper.findComponent(ApprovalRulesApp);
   const findProjectRules = () => wrapper.findComponent(ProjectRules);
-  const findStatusChecksTitle = () => wrapper.findByText(I18N.statusChecksTitle);
+  const findStatusChecksTitle = () => wrapper.findByText('Status checks');
   const findCodeOwnersToggle = () => wrapper.findByTestId('code-owners-content');
 
   it('renders a branch protection component for push rules', () => {
     expect(findAllowedToPush().props()).toMatchObject({
-      header: sprintf(I18N.allowedToPushHeader, { total: 2 }),
+      header: 'Allowed to push and merge (2)',
       ...protectionMockProps,
     });
   });
 
   it('renders a branch protection component for merge rules', () => {
     expect(findAllowedToMerge().props()).toMatchObject({
-      header: sprintf(I18N.allowedToMergeHeader, { total: 2 }),
+      header: 'Allowed to merge (2)',
       ...protectionMockProps,
     });
   });
@@ -113,9 +111,9 @@ describe('View branch rules in enterprise edition', () => {
     });
 
     it.each`
-      codeOwnerApprovalRequired | iconTitle                                    | description
-      ${true}                   | ${I18N.requiresCodeOwnerApprovalTitle}       | ${I18N.codeOwnerApprovalDescription}
-      ${false}                  | ${I18N.doesNotRequireCodeOwnerApprovalTitle} | ${I18N.codeOwnerApprovalDescription}
+      codeOwnerApprovalRequired | iconTitle                                       | description
+      ${true}                   | ${'Requires code owner approval'}               | ${'Changed files listed in %{linkStart}CODEOWNERS%{linkEnd} require an approval for merge requests and will be rejected for code pushes.'}
+      ${false}                  | ${'Does not require approval from code owners'} | ${'Changed files listed in %{linkStart}CODEOWNERS%{linkEnd} require an approval for merge requests and will be rejected for code pushes.'}
     `(
       'renders code owners approval section with the correct iconTitle and description',
       async ({ codeOwnerApprovalRequired, iconTitle, description }) => {
@@ -166,24 +164,11 @@ describe('View branch rules in enterprise edition', () => {
     });
   });
 
-  it('renders a branch protection component for status checks  if "showStatusChecks" is true', async () => {
-    await createComponent({}, { showStatusChecks: true });
-
-    expect(findStatusChecksTitle().exists()).toBe(true);
-
-    expect(findStatusChecks().props()).toMatchObject({
-      header: sprintf(I18N.statusChecksHeader, { total: statusChecksRulesMock.length }),
-      headerLinkHref: statusChecksPath,
-      headerLinkTitle: I18N.statusChecksLinkTitle,
-      statusChecks: statusChecksRulesMock,
-    });
-  });
-
   describe('When edit_branch_rules feature flag is disabled', () => {
     it.each`
-      codeOwnerApprovalRequired | title                                        | description
-      ${true}                   | ${I18N.requiresCodeOwnerApprovalTitle}       | ${I18N.requiresCodeOwnerApprovalDescription}
-      ${false}                  | ${I18N.doesNotRequireCodeOwnerApprovalTitle} | ${I18N.doesNotRequireCodeOwnerApprovalDescription}
+      codeOwnerApprovalRequired | title                                           | description
+      ${true}                   | ${'Requires code owner approval'}               | ${'Also rejects code pushes that change files listed in CODEOWNERS file.'}
+      ${false}                  | ${'Does not require approval from code owners'} | ${'Also accepts code pushes that change files listed in CODEOWNERS file.'}
     `(
       'renders code owners approval section with the correct title and description',
       async ({ codeOwnerApprovalRequired, title, description }) => {
@@ -191,10 +176,20 @@ describe('View branch rules in enterprise edition', () => {
         mockResponse.data.project.branchRules.nodes[0].branchProtection.codeOwnerApprovalRequired =
           codeOwnerApprovalRequired;
         await createComponent({ editBranchRules: false }, { showCodeOwners: true }, mockResponse);
-
         expect(findCodeOwnersToggle().props('iconTitle')).toEqual(title);
         expect(findCodeOwnersToggle().props('description')).toEqual(description);
       },
     );
+
+    it('renders a branch protection component for status checks if "showStatusChecks" is true', async () => {
+      await createComponent({ editBranchRules: false }, { showStatusChecks: true });
+      expect(findStatusChecksTitle().exists()).toBe(true);
+      expect(findStatusChecks().props()).toMatchObject({
+        header: 'Status checks (2)',
+        headerLinkHref: statusChecksPath,
+        headerLinkTitle: 'Manage in status checks',
+        statusChecks: statusChecksRulesMock,
+      });
+    });
   });
 });
