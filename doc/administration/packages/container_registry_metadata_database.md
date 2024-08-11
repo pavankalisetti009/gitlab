@@ -11,6 +11,7 @@ DETAILS:
 **Offering:** Self-managed
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/423459) in GitLab 16.4 as a [beta feature](../../policy/experiment-beta-support.md) for self-managed GitLab instances.
+> - [Generally available](https://gitlab.com/gitlab-org/gitlab/-/issues/423459) in GitLab 17.3.
 
 The metadata database enables many new registry features, including
 online garbage collection, and increases the efficiency of many registry operations.
