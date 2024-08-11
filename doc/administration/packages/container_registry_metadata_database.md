@@ -123,6 +123,14 @@ A few factors affect the duration of the migration:
 - The number of registry instances running.
 - Network latency between the registry, PostgresSQL and your configured Object Storage.
 
+NOTE:
+The migration only targets tagged images. Untagged and unreferenced manifests, and the layers
+exclusively referenced by them, are left behind and become inaccessible. Untagged images
+were never visible through the GitLab UI or API, but they can become "dangling" and
+left behind in the backend. After migration to the new registry, all images are subject
+to continuous online garbage collection, by default deleting any untagged and unreferenced manifests
+and layers that remain for longer than 24 hours.
+
 Choose the one or three step method according to your registry installation.
 
 #### One-step migration
