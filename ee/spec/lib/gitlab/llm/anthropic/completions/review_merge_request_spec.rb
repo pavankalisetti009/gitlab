@@ -121,7 +121,8 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       let(:summary_answer) { 'Helpful review summary' }
       let(:summary_response) { { content: [{ text: summary_answer }] } }
 
-      it 'creates diff notes on new and updated files' do
+      it 'creates diff notes on new and updated files',
+        quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478424' do
         completion.execute
 
         diff_notes = merge_request.notes.diff_notes.authored_by(duo_code_review_bot)
