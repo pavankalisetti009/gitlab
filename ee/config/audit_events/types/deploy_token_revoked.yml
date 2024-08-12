@@ -1,6 +1,6 @@
 ---
 name: deploy_token_revoked
-description: Triggered when project deploy token is revoked
+description: Triggered when a project deploy token is revoked
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/363087
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/89391
 milestone: '15.1'

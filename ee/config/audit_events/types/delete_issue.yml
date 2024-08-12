@@ -1,5 +1,6 @@
+---
 name: delete_issue
-description: Event triggered on successful issue deletion
+description: Triggered when an issue is sucessfully deleted
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/370487
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/96773
 feature_category: "team_planning"

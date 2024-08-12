@@ -7,4 +7,4 @@ milestone: '14.3'
 feature_category: dynamic_application_security_testing
 saved_to_database: true
 streamed: true
-scope: ["Project"]
+scope: [Project]

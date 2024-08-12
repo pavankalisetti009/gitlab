@@ -1,6 +1,6 @@
 ---
 name: deploy_key_added
-description: Triggered when deploy key is added
+description: Triggered when a deploy key is added
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/363087
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/commit/08586a616909c7f9efe2210c2b74fd3422d4eb62
 milestone: '15.3'

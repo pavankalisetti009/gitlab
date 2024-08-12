@@ -1,5 +1,6 @@
+---
 name: delete_http_namespace_filter
-description: Event triggered when a namespace filter for an external audit event destination for a top-level group is deleted.
+description: Triggered when a namespace filter for an external audit event destination for a top-level group is deleted
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/424177
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/136302
 feature_category: audit_events
