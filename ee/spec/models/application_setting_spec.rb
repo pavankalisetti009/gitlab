@@ -165,6 +165,48 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.to allow_value("http://test.com").for(:secret_detection_revocation_token_types_url) }
     end
 
+    describe '#duo_availability' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:duo_features_enabled, :lock_duo_features_enabled, :expectation) do
+        true  | false | :default_on
+        false | false | :default_off
+        false | true | :never_on
+      end
+
+      with_them do
+        before do
+          setting.duo_features_enabled = duo_features_enabled
+          setting.lock_duo_features_enabled = lock_duo_features_enabled
+        end
+
+        it 'returns the expected response' do
+          expect(setting.duo_availability).to eq(expectation)
+        end
+      end
+    end
+
+    describe '#duo_availability=' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:duo_availability, :duo_features_enabled_expectation, :lock_duo_features_enabled_expectation) do
+        "default_on"  | true  | false
+        "default_off" | false | false
+        "never_on"    | false | true
+      end
+
+      with_them do
+        before do
+          setting.duo_availability = duo_availability
+        end
+
+        it 'returns the expected response' do
+          expect(setting.duo_features_enabled).to be duo_features_enabled_expectation
+          expect(setting.lock_duo_features_enabled).to be lock_duo_features_enabled_expectation
+        end
+      end
+    end
+
     context 'when validating geo_node_allowed_ips', feature_category: :geo_replication do
       where(:allowed_ips, :is_valid) do
         "192.1.1.1"                   | true

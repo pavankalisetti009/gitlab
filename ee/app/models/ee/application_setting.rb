@@ -506,6 +506,29 @@ module EE
       false
     end
 
+    def duo_availability
+      if duo_features_enabled && !lock_duo_features_enabled
+        :default_on
+      elsif !duo_features_enabled && !lock_duo_features_enabled
+        :default_off
+      else
+        :never_on
+      end
+    end
+
+    def duo_availability=(value)
+      if value == "default_on"
+        self.duo_features_enabled = true
+        self.lock_duo_features_enabled = false
+      elsif value == "default_off"
+        self.duo_features_enabled = false
+        self.lock_duo_features_enabled = false
+      else
+        self.duo_features_enabled = false
+        self.lock_duo_features_enabled = true
+      end
+    end
+
     private
 
     def elasticsearch_limited_project_exists?(project)
