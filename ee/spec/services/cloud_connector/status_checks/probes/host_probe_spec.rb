@@ -48,5 +48,19 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
         expect(result.message).to match("#{host} could not be reached. If you use firewalls or proxy servers")
       end
     end
+
+    context 'when connection cannot be established for other reasons' do
+      before do
+        allow(TCPSocket).to receive(:new).and_raise(StandardError.new('the cause'))
+      end
+
+      it 'returns a failure result' do
+        result = probe.execute
+
+        expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
+        expect(result.success?).to be false
+        expect(result.message).to match("#{host} connection failed: the cause")
+      end
+    end
   end
 end
