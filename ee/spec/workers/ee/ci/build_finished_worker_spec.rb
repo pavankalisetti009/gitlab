@@ -110,11 +110,10 @@ RSpec.describe Ci::BuildFinishedWorker, feature_category: :continuous_integratio
 
     context 'with requirements' do
       let_it_be(:requirement) { create(:work_item, :requirement, project: project) }
-      let_it_be(:user) { create(:user) }
+      let_it_be(:user) { create(:user, reporter_of: project) }
 
       before do
         build.update!(user: user)
-        project.add_reporter(user)
       end
 
       shared_examples 'does not schedule processing of requirement reports' do
