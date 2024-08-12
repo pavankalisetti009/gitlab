@@ -122,11 +122,7 @@ describe('ComplianceFrameworks', () => {
       });
 
       it('renders project scope message for a non-SPP', async () => {
-        createWrapper({
-          glFeatures: {
-            securityPoliciesPolicyScopeProject: true,
-          },
-        });
+        createWrapper();
         await waitForPromises();
 
         expect(findProjectText().exists()).toBe(true);
@@ -134,9 +130,6 @@ describe('ComplianceFrameworks', () => {
 
       it('selects compliance frameworks for a SPP', async () => {
         createWrapper({
-          glFeatures: {
-            securityPoliciesPolicyScopeProject: true,
-          },
           handlers: {
             ...defaultHandlers,
             sppLinkedItemsHandler: createSppLinkedItemsHandler({
