@@ -11,11 +11,19 @@ module Gitlab
       class << self
         private
 
-        def json_headers
+        def default_headers
           {
-            'Accept' => 'application/json',
-            'Content-Type' => 'application/json'
+            "User-Agent" => Gitlab::Qa.user_agent.presence || "GitLab/#{Gitlab::VERSION}"
           }
+        end
+
+        def json_headers
+          default_headers.merge(
+            {
+              'Accept' => 'application/json',
+              'Content-Type' => 'application/json'
+            }
+          )
         end
 
         def admin_headers

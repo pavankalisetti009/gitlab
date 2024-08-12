@@ -6,6 +6,10 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
   let(:client) { Gitlab::SubscriptionPortal::Client }
   let(:graphql_url) { ::Gitlab::Routing.url_helpers.subscription_portal_graphql_url }
 
+  before do
+    stub_env('GITLAB_QA_USER_AGENT', nil)
+  end
+
   shared_examples 'connectivity problems calling the endpoint' do
     let_it_be(:connectivity_error) { "HTTP status code: 403" }
 
@@ -313,7 +317,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
         "Accept" => "application/json",
         "Content-Type" => "application/json",
         "X-Admin-Email" => "gl_com_api@gitlab.com",
-        "X-Admin-Token" => "customer_admin_token"
+        "X-Admin-Token" => "customer_admin_token",
+        "User-Agent" => "GitLab/#{Gitlab::VERSION}"
       }
     end
 
@@ -400,7 +405,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
         "Accept" => "application/json",
         "Content-Type" => "application/json",
         "X-Admin-Email" => "gl_com_api@gitlab.com",
-        "X-Admin-Token" => "customer_admin_token"
+        "X-Admin-Token" => "customer_admin_token",
+        "User-Agent" => "GitLab/#{Gitlab::VERSION}"
       }
     end
 
@@ -795,7 +801,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
     let(:headers) do
       {
         "Accept" => "application/json",
-        "Content-Type" => "application/json"
+        "Content-Type" => "application/json",
+        "User-Agent" => "GitLab/#{Gitlab::VERSION}"
       }
     end
 
@@ -915,7 +922,8 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Graphql, feature_category: :
       {
         "Accept" => "application/json",
         "Content-Type" => "application/json",
-        'Authorization' => "Bearer #{jwt}"
+        "Authorization" => "Bearer #{jwt}",
+        "User-Agent" => "GitLab/#{Gitlab::VERSION}"
       }
     end
 
