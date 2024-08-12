@@ -75,6 +75,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
   it { is_expected.to be_disallowed(:read_all_geo) }
   it { is_expected.to be_disallowed(:read_all_workspaces) }
   it { is_expected.to be_disallowed(:manage_subscription) }
+  it { is_expected.to be_disallowed(:read_cloud_connector_status) }
 
   context 'when admin mode enabled', :enable_admin_mode do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_licenses) }
@@ -82,6 +83,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_all_geo) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_allowed(:manage_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_allowed(:read_cloud_connector_status) }
   end
 
   context 'when admin mode disabled' do
@@ -90,6 +92,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_all_geo) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:read_all_workspaces) }
     it { expect(described_class.new(admin, [user])).to be_disallowed(:manage_subscription) }
+    it { expect(described_class.new(admin, [user])).to be_disallowed(:read_cloud_connector_status) }
   end
 
   shared_examples 'analytics policy' do |action|
