@@ -59,8 +59,6 @@ class SoftwareLicensePolicy < ApplicationRecord
     with_license.where(software_licenses: { spdx_identifier: spdx_identifier })
   end
 
-  delegate :spdx_identifier, to: :software_license
-
   def self.approval_status_values
     %w[allowed denied]
   end
@@ -75,5 +73,9 @@ class SoftwareLicensePolicy < ApplicationRecord
     else
       software_license&.name
     end
+  end
+
+  def spdx_identifier
+    software_license&.spdx_identifier
   end
 end

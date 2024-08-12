@@ -27,4 +27,15 @@ RSpec.describe Security::CustomSoftwareLicense, feature_category: :security_poli
       it { expect(described_class.by_project(custom_license.project)).to contain_exactly(custom_license) }
     end
   end
+
+  describe '#canonical_id' do
+    let_it_be(:name) { 'CustomLicense' }
+    let_it_be(:custom_license) { create(:custom_software_license, name: name) }
+
+    subject { custom_license.canonical_id }
+
+    it 'returns the name in a downcased string' do
+      is_expected.to eq(name.downcase)
+    end
+  end
 end

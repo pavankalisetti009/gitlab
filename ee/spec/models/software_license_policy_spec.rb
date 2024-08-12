@@ -139,4 +139,31 @@ RSpec.describe SoftwareLicensePolicy, feature_category: :software_composition_an
       it { expect(subject.approval_status).to eql(approval_status) }
     end
   end
+
+  describe "#spdx_identifier" do
+    subject { software_license_policy.spdx_identifier }
+
+    context 'when associated with a custom_software_license' do
+      let_it_be(:custom_software_license) { create(:custom_software_license) }
+      let(:software_license_policy) { build(:software_license_policy, software_license: nil, custom_software_license: custom_software_license) }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when associated with a software_license' do
+      let(:software_license_policy) { build(:software_license_policy, software_license: software_license, custom_software_license: nil) }
+
+      context 'when software_license does not have an spdx_identifier' do
+        let(:software_license) { create(:software_license, spdx_identifier: nil) }
+
+        it { is_expected.to be_nil }
+      end
+
+      context 'when software_license has an spdx_identifier' do
+        let(:software_license) { create(:software_license, :mit) }
+
+        it { is_expected.to eq(software_license.spdx_identifier) }
+      end
+    end
+  end
 end
