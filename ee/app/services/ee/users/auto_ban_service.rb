@@ -22,7 +22,7 @@ module EE
       private
 
       def send_truth_data
-        return unless ::Feature.enabled?(:arkose_truth_data_auto_ban, user, type: :gitlab_com_derisk)
+        return unless ::Gitlab::Saas.feature_available?(:identity_verification)
 
         Arkose::TruthDataService.new(user: user, is_legit: false).execute
       end
