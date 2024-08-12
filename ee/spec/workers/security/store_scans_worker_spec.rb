@@ -25,8 +25,6 @@ RSpec.describe Security::StoreScansWorker, feature_category: :vulnerability_mana
 
         expect(Security::StoreScansService).not_to have_received(:execute)
       end
-
-      it_behaves_like 'does not record an onboarding progress action'
     end
 
     context 'when security reports can be stored for the pipeline' do
@@ -36,28 +34,6 @@ RSpec.describe Security::StoreScansWorker, feature_category: :vulnerability_mana
         run_worker
 
         expect(Security::StoreScansService).to have_received(:execute)
-      end
-
-      scan_types_actions = {
-        "sast" => :security_scan_enabled,
-        "dependency_scanning" => :secure_dependency_scanning_run,
-        "container_scanning" => :secure_container_scanning_run,
-        "dast" => :secure_dast_run,
-        "secret_detection" => :secure_secret_detection_run,
-        "coverage_fuzzing" => :secure_coverage_fuzzing_run,
-        "api_fuzzing" => :secure_api_fuzzing_run,
-        "cluster_image_scanning" => :secure_cluster_image_scanning_run
-      }.freeze
-
-      scan_types_actions.each do |scan_type, action|
-        context "security #{scan_type}" do
-          let_it_be(:scan) { create(:security_scan, scan_type: scan_type) }
-          let_it_be(:pipeline) { scan.pipeline }
-
-          it_behaves_like 'records an onboarding progress action', [action] do
-            let(:namespace) { pipeline.project.namespace }
-          end
-        end
       end
     end
   end
