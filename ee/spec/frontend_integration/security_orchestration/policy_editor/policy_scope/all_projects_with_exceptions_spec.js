@@ -105,11 +105,7 @@ describe('Policy Scope With Exceptions', () => {
       });
 
       it('renders project scope message', async () => {
-        createWrapper({
-          glFeatures: {
-            securityPoliciesPolicyScopeProject: true,
-          },
-        });
+        createWrapper();
         await waitForPromises();
 
         expect(findProjectText().exists()).toBe(true);
@@ -117,9 +113,6 @@ describe('Policy Scope With Exceptions', () => {
 
       it('selects project exceptions on project level for SPP', async () => {
         createWrapper({
-          glFeatures: {
-            securityPoliciesPolicyScopeProject: true,
-          },
           handlers: {
             ...defaultHandlers,
             sppLinkedItemsHandler: createSppLinkedItemsHandler({
