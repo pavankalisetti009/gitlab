@@ -102,6 +102,8 @@ release-environments-qa:
   before_script:
     - !reference [.qa-base, before_script]
     - echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" -u "$CI_REGISTRY_USER" --password-stdin
+  retry:
+    max: 2
 
 release-environments-notification-failure:
   stage: finish
