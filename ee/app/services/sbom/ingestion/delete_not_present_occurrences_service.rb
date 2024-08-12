@@ -17,7 +17,10 @@ module Sbom
       def execute
         return if has_failed_sbom_jobs?
 
-        not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) { |occurrences, _| occurrences.delete_all }
+        ::Gitlab::Database.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins') do
+          not_present_occurrences.each_batch(of: DELETE_BATCH_SIZE) { |occurrences, _| occurrences.delete_all }
+        end
       end
 
       private
@@ -36,8 +39,14 @@ module Sbom
         build.metadata.config_options.dig(:artifacts, :reports, :cyclonedx).present?
       end
 
+      # Prevent deletion of occurrences with source type :container_scanning_for_registry.
+      # This is a temprory quick fix for https://gitlab.com/gitlab-org/gitlab/-/issues/478376.
       def not_present_occurrences
-        project.sbom_occurrences.id_not_in(ingested_occurrence_ids)
+        project.sbom_occurrences.filter_by_source_types(default_source_type_filters).id_not_in(ingested_occurrence_ids)
+      end
+
+      def default_source_type_filters
+        ::Sbom::Source::DEFAULT_SOURCES.keys + [nil]
       end
     end
   end
