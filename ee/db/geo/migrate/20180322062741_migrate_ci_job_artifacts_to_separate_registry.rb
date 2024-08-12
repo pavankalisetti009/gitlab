@@ -6,7 +6,7 @@ class MigrateCiJobArtifactsToSeparateRegistry < ActiveRecord::Migration[4.2]
       t.datetime_with_timezone "created_at"
       t.datetime_with_timezone "retry_at"
       t.integer "bytes", limit: 8
-      t.integer "artifact_id", unique: true
+      t.integer "artifact_id", index: { unique: true }
       t.integer "retry_count"
       t.boolean "success"
       t.string "sha256" # rubocop:disable Migration/PreventStrings

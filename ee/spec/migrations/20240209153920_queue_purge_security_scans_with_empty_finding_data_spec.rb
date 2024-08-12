@@ -12,10 +12,10 @@ RSpec.describe QueuePurgeSecurityScansWithEmptyFindingData, feature_category: :v
   let(:security_findings) { table(:security_findings) }
   let(:security_scans) { table(:security_scans) }
   let(:vulnerability_scanners) { table(:vulnerability_scanners) }
-  let(:ci_builds) { table(:p_ci_builds, database: :ci) }
   let(:ci_pipelines) { table(:ci_pipelines, database: :ci) }
   let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
+  let(:ci_builds) { partitioned_table(:p_ci_builds, database: :ci) }
 
   let(:scanner) { vulnerability_scanners.create!(project_id: project.id, name: 'Foo', external_id: 'foo') }
   let(:namespace) { namespaces.create!(name: 'test', path: 'test', type: 'Group') }

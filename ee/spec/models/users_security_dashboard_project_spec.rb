@@ -46,7 +46,12 @@ RSpec.describe UsersSecurityDashboardProject do
       result = described_class.delete_by_project_id(project.id)
 
       expect(result).to be(1)
-      expect { dashboard_project.reload }.to raise_exception(ActiveRecord::UnknownPrimaryKey)
+
+      if ::Gitlab.next_rails?
+        expect { dashboard_project.reload }.to raise_exception(ActiveRecord::RecordNotFound)
+      else
+        expect { dashboard_project.reload }.to raise_exception(ActiveRecord::UnknownPrimaryKey)
+      end
     end
 
     context 'when there is no record with the given project ID' do

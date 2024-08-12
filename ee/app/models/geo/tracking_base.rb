@@ -13,6 +13,12 @@ module Geo
       connects_to database: { writing: :geo, reading: :geo }
     end
 
+    def self.get_primary_key(*)
+      return 'id' unless ::Gitlab::Geo.geo_database_configured?
+
+      super
+    end
+
     def self.connected?
       return false unless ::Gitlab::Geo.geo_database_configured?
 
