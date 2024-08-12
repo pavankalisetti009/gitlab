@@ -165,6 +165,7 @@ export const getScatterPlotData = (data, startDate, endDate) => {
  * @param {Number} daysOffset The number of days that to look up data in the past (e.g. 30 days in the past for 30 day rolling median)
  * @returns {Array} An array with each item being another arry of two items (date, computed median)
  */
+// eslint-disable-next-line max-params
 export const getMedianLineData = (data, startDate, endDate, daysOffset) => {
   const result = [];
   const dayDiff = getDayDifference(startDate, endDate);

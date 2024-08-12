@@ -25,6 +25,7 @@ import { buildForecast } from '../graphql/api';
  * @param {*} emptyValue The value to substitute if the API data doesn't
  * include data for a particular date
  */
+// eslint-disable-next-line max-params
 export const apiDataToChartSeries = (apiData, startDate, endDate, seriesName, emptyValue = 0) => {
   // Get a list of dates, one date per day in the graph's date range
   const beginningOfStartDate = getStartOfDay(startDate, { utc: true });

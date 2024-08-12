@@ -5,6 +5,7 @@ import stepListQuery from 'ee/vue_shared/purchase_flow/graphql/queries/step_list
 import resolvers from 'ee/vue_shared/purchase_flow/graphql/resolvers';
 import createMockApollo from 'helpers/mock_apollo_helper';
 
+// eslint-disable-next-line max-params
 export function createMockApolloProvider(
   stepList,
   initialStepIndex = 0,

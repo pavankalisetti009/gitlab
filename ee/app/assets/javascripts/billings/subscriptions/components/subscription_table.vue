@@ -14,6 +14,7 @@ import Tracking from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import SubscriptionTableRow from './subscription_table_row.vue';
 
+// eslint-disable-next-line max-params
 const createButtonProps = (text, href, testId, clickHandler = () => {}) => {
   return {
     text,

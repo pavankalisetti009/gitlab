@@ -15,6 +15,7 @@ export const ALL_METRIC_TYPES = Object.freeze([
 export const PROJECTS_DORA_METRICS_PATH = '/api/:version/projects/:id/dora/metrics';
 export const GROUPS_DORA_METRICS_PATH = '/api/:version/groups/:id/dora/metrics';
 
+// eslint-disable-next-line max-params
 function getDoraMetrics(apiUrl, projectOrGroupId, metric, params) {
   if (!ALL_METRIC_TYPES.includes(metric)) {
     throw new Error(`Unsupported metric type: "${metric}"`);

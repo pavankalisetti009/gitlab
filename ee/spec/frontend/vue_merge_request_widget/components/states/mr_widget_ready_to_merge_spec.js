@@ -63,6 +63,7 @@ describe('ReadyToMerge', () => {
     mountFn = shallowMountExtended,
     data = {},
     mergeTrainsSkipTrainFF = false,
+    // eslint-disable-next-line max-params
   ) => {
     wrapper = mountFn(ReadyToMerge, {
       propsData: {

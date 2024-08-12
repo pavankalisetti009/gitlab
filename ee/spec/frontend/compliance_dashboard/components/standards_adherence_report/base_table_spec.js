@@ -48,6 +48,7 @@ describe('AdherencesBaseTable component', () => {
   const findPagination = () => wrapper.findComponent(Pagination);
   const findFrameworksInfoComponents = () => wrapper.findAllComponents(FrameworksInfo);
 
+  // eslint-disable-next-line max-params
   function createComponent(
     mountFn = shallowMount,
     props = {},

@@ -245,6 +245,7 @@ describe('Zuora', () => {
         beforeEach(() => {
           window.Z = {
             runAfterRender: (fn) => fn(),
+            // eslint-disable-next-line max-params
             renderWithErrorHandler: (params, _, paymentFormSubmitted, handleError) =>
               Promise.resolve().then(() => handleError('error', null, iFrameErrorMessage)),
           };
@@ -368,6 +369,7 @@ describe('Zuora', () => {
           window.Z = {
             runAfterRender: (fn) => fn(),
             sendErrorMessageToHpm: jest.fn(),
+            // eslint-disable-next-line max-params
             renderWithErrorHandler: (params, _, paymentFormSubmitted, handleErrorMessage) =>
               Promise.resolve().then(() =>
                 handleErrorMessage(errorDetails.key, errorDetails.code, errorDetails.message),
@@ -409,6 +411,7 @@ describe('Zuora', () => {
           window.Z = {
             runAfterRender: (fn) => fn(),
             sendErrorMessageToHpm: jest.fn(),
+            // eslint-disable-next-line max-params
             renderWithErrorHandler: (params, _, paymentFormSubmitted, handleErrorMessage) =>
               Promise.resolve().then(() =>
                 handleErrorMessage(errorDetails.key, errorDetails.code, errorDetails.message),

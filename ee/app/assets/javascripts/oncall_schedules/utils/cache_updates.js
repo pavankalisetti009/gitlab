@@ -10,6 +10,7 @@ import {
 
 const ROTATION_CONNECTION_TYPE = 'IncidentManagementOncallRotationConnection';
 
+// eslint-disable-next-line max-params
 const addScheduleToStore = (store, query, { oncallScheduleCreate }, variables) => {
   const schedule = oncallScheduleCreate?.oncallSchedule;
   if (!schedule) {
@@ -38,6 +39,7 @@ const addScheduleToStore = (store, query, { oncallScheduleCreate }, variables) =
   });
 };
 
+// eslint-disable-next-line max-params
 const deleteScheduleFromStore = (store, query, { oncallScheduleDestroy }, variables) => {
   const schedule = oncallScheduleDestroy?.oncallSchedule;
   if (!schedule) {
@@ -63,6 +65,7 @@ const deleteScheduleFromStore = (store, query, { oncallScheduleDestroy }, variab
   });
 };
 
+// eslint-disable-next-line max-params
 const updateScheduleFromStore = (store, query, { oncallScheduleUpdate }, variables) => {
   const schedule = oncallScheduleUpdate?.oncallSchedule;
   if (!schedule) {
@@ -93,6 +96,7 @@ const updateRotationFromStore = (
   query,
   { oncallRotationUpdate, scheduleIid },
   variables,
+  // eslint-disable-next-line max-params
 ) => {
   const rotation = oncallRotationUpdate?.oncallRotation;
   if (!rotation) {
@@ -128,6 +132,7 @@ const deleteRotationFromStore = (
   query,
   { oncallRotationDestroy, scheduleIid },
   variables,
+  // eslint-disable-next-line max-params
 ) => {
   const rotation = oncallRotationDestroy?.oncallRotation;
   if (!rotation) {
@@ -165,12 +170,14 @@ const onError = (data, message) => {
 
 export const hasErrors = ({ errors = [] }) => errors?.length;
 
+// eslint-disable-next-line max-params
 export const updateStoreOnScheduleCreate = (store, query, data, variables) => {
   if (!hasErrors(data)) {
     addScheduleToStore(store, query, data, variables);
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreAfterScheduleDelete = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, DELETE_SCHEDULE_ERROR);
@@ -179,6 +186,7 @@ export const updateStoreAfterScheduleDelete = (store, query, data, variables) =>
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreAfterScheduleEdit = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, UPDATE_SCHEDULE_ERROR);
@@ -187,6 +195,7 @@ export const updateStoreAfterScheduleEdit = (store, query, data, variables) => {
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreAfterRotationEdit = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, UPDATE_ROTATION_ERROR);
@@ -195,6 +204,7 @@ export const updateStoreAfterRotationEdit = (store, query, data, variables) => {
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreAfterRotationDelete = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, DELETE_ROTATION_ERROR);

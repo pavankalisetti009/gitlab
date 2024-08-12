@@ -20,6 +20,7 @@ const apolloProvider = new VueApollo({
   defaultClient: createDefaultClient(resolvers, { cacheConfig }),
 });
 
+// eslint-disable-next-line max-params
 const initSecretsApp = (el, app, props, basePath) => {
   const router = createRouter(basePath, props);
 
