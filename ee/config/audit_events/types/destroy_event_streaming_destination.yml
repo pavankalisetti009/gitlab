@@ -1,3 +1,4 @@
+---
 name: destroy_event_streaming_destination
 description: Event triggered when an external audit event destination is deleted
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/344664
