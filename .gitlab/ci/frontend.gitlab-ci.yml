@@ -277,7 +277,7 @@ jest-build-cache:
 jest-build-cache-vue3:
   extends:
     - jest-build-cache
-    - .frontend:rules:jest-vue3
+    - .frontend:rules:jest-vue3-nightly
     - .vue3
 
 jest:
@@ -318,7 +318,7 @@ jest-with-fixtures:
 jest vue3:
   extends:
     - jest
-    - .frontend:rules:jest-vue3
+    - .frontend:rules:jest-vue3-nightly
     - .vue3
   needs:
     - !reference [.with-jest-build-cache-vue3-needs, needs]
@@ -326,7 +326,7 @@ jest vue3:
 jest-with-fixtures vue3:
   extends:
     - jest-with-fixtures
-    - .frontend:rules:jest-vue3
+    - .frontend:rules:jest-vue3-nightly
     - .vue3
   needs:
     - !reference ["jest vue3", needs]
