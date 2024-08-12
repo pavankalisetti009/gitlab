@@ -8,7 +8,8 @@ module Vulnerabilities
 
     deduplicate :until_executing, including_scheduled: true
     idempotent!
-    data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency
+    data_consistency :sticky
+    urgency :low
 
     feature_category :vulnerability_management
 
@@ -16,9 +17,14 @@ module Vulnerabilities
     BATCH_SIZE = 1000
 
     def perform(*_args)
+      stats = { batches: 0, rows_deleted: 0 }
+      log_extra_metadata_on_done(:stats, stats)
+
       # rubocop:disable CodeReuse/ActiveRecord
       Vulnerabilities::Remediation.where.missing(:finding_remediations).each_batch(of: BATCH_SIZE) do |batch|
-        batch.delete_all
+        deleted_count = batch.delete_all
+        stats[:rows_deleted] += deleted_count
+        stats[:batches] += 1
       end
       # rubocop:enable CodeReuse/ActiveRecord
     end
