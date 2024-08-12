@@ -1,6 +1,7 @@
 import { __, s__ } from '~/locale';
 
 export const AUTO_REDIRECT_TO_PROVIDER_BUTTON_SELECTOR = '#js-auto-redirect-to-provider';
+export const INTERVAL_SAML_MODAL = 10 * 1000;
 export const REMEMBER_ME_PARAM = 'remember_me';
 export const SAML_AUTHORIZE_SELECTOR = 'js-saml-authorize';
 export const I18N = {
