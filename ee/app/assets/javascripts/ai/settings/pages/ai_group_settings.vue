@@ -6,8 +6,13 @@ export default {
   components: {
     AiCommonSettings,
   },
+  duoAvailability: '',
+  duoFeaturesEnabledLocked: false,
 };
 </script>
 <template>
-  <ai-common-settings />
+  <ai-common-settings
+    :duo-availability="$options.duoAvailability"
+    :duo-features-enabled-locked="$options.duoFeaturesEnabledLocked"
+  />
 </template>

@@ -5,6 +5,12 @@ require "spec_helper"
 RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggestions do
   using RSpec::Parameterized::TableSyntax
 
+  let(:duo_availability) { :default_off }
+
+  before do
+    stub_ee_application_setting(duo_availability: duo_availability)
+  end
+
   describe 'AI-Powered features settings for Self-Managed instances' do
     describe '#ai_powered_description' do
       subject { helper.ai_powered_description }
@@ -21,7 +27,11 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
     describe '#ai_settings_helper_data' do
       subject { helper.ai_settings_helper_data }
 
-      it { is_expected.to eq(data: {}) }
+      it 'returns the expected data' do
+        is_expected.to eq(
+          { duo_availability: duo_availability.to_s,
+            redirect_path: general_admin_application_settings_path })
+      end
     end
   end
 

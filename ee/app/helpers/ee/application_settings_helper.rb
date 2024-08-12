@@ -74,6 +74,7 @@ module EE
         :use_clickhouse_for_analytics,
         :duo_features_enabled,
         :lock_duo_features_enabled,
+        :duo_availability,
         :zoekt_auto_index_root_namespace,
         :zoekt_indexing_enabled,
         :zoekt_indexing_paused,
