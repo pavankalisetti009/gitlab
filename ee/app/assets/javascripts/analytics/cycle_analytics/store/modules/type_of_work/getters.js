@@ -8,6 +8,7 @@ export const selectedLabelIds = ({ selectedLabels = [] }) => {
   return selectedLabels.map(({ id }) => id);
 };
 
+// eslint-disable-next-line max-params
 export const selectedTasksByTypeFilters = (state = {}, _, rootState = {}, rootGetters = {}) => {
   const { subject } = state;
   const { namespace, createdAfter = null, createdBefore = null } = rootState;

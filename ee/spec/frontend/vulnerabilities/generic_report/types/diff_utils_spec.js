@@ -23,6 +23,7 @@ function checkLineActions(line, actionSpecs) {
   expect(line.actions).toHaveLength(actionSpecs.length);
 }
 
+// eslint-disable-next-line max-params
 function checkLine(line, oldLine, newLine, lineType, actionSpecs) {
   expect(line.type).toEqual(lineType);
   expect(line.oldLine).toEqual(oldLine);

@@ -50,6 +50,7 @@ describe('ComplianceFrameworksReport component', () => {
     return createMockApollo([[complianceFrameworks, complianceFrameworksResolverMock]]);
   }
 
+  // eslint-disable-next-line max-params
   function createComponent(
     mountFn = shallowMount,
     props = {},

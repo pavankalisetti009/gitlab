@@ -63,6 +63,7 @@ describe('CustomizableDashboard', () => {
     loadedDashboard = dashboard,
     provide = {},
     routeParams = {},
+    // eslint-disable-next-line max-params
   ) => {
     const loadDashboard = { ...loadedDashboard };
 

@@ -43,6 +43,7 @@ describe('ComplianceReportsApp component', () => {
     mocks = {},
     provide = {},
     props = {},
+    // eslint-disable-next-line max-params
   ) => {
     return extendedWrapper(
       mountFn(MainLayout, {

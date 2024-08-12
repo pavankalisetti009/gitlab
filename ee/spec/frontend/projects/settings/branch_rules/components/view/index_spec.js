@@ -50,6 +50,7 @@ describe('View branch rules in enterprise edition', () => {
     { showApprovers, showStatusChecks, showCodeOwners } = {},
     mockResponse,
     mutationMockResponse,
+    // eslint-disable-next-line max-params
   ) => {
     axiosMock = new MockAdapter(axios);
     store = createStoreOptions({ approvals: projectSettingsModule() });

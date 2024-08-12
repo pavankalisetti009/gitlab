@@ -26,6 +26,7 @@ describe('Zuora', () => {
   const fakePaymentMethodId = '000000000';
   const fakeRefId = '1234';
 
+  // eslint-disable-next-line max-params
   const createComponent = (props = {}, data = {}, apolloLocalState = {}, resolvers = {}) => {
     const apolloProvider = createMockApolloProvider(STEPS, 1, resolvers);
     apolloProvider.clients.defaultClient.cache.writeQuery({
@@ -174,6 +175,7 @@ describe('Zuora', () => {
           runAfterRender(fn) {
             Promise.resolve().then(fn).catch(fn);
           },
+          // eslint-disable-next-line max-params
           renderWithErrorHandler(_params, _object, callback, handleErrorMessage) {
             Promise.resolve({ success: 'true', refId: fakeRefId })
               .then(callback)
@@ -214,6 +216,7 @@ describe('Zuora', () => {
           runAfterRender(fn) {
             Promise.resolve().then(fn).catch(fn);
           },
+          // eslint-disable-next-line max-params
           renderWithErrorHandler(_params, _object, callback, handleErrorMessage) {
             Promise.resolve({ success: 'true', refId: fakeRefId })
               .then(callback)

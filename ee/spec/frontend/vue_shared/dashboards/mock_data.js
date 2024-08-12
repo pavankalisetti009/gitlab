@@ -19,6 +19,7 @@ export const mockHeaders = {
   },
 };
 
+// eslint-disable-next-line max-params
 export function mockPipelineData(
   status = 'success',
   id = 1,
@@ -84,6 +85,7 @@ export function mockPipelineData(
   };
 }
 
+// eslint-disable-next-line max-params
 export function mockProjectData(
   projectCount = 1,
   currentPipelineStatus = 'success',

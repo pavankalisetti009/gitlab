@@ -115,6 +115,7 @@ describe('Iterations report', () => {
       [WORKSPACE_PROJECT, 'group-name/project-name', mockIterationNode, mockProjectIterations],
     ])(
       'when viewing an iteration in a %s',
+      // eslint-disable-next-line max-params
       (namespaceType, fullPath, mockIteration, mockIterations) => {
         let iterationQueryHandler;
 

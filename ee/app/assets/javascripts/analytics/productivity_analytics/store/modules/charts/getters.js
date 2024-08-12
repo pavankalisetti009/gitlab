@@ -77,6 +77,7 @@ export const getScatterPlotMedianData = (state, getters, rootState) =>
 export const getMetricLabel = (state) => (chartKey) =>
   metricTypes.find((m) => m.key === state.charts[chartKey].params.metricType).label;
 
+// eslint-disable-next-line max-params
 export const getFilterParams = (state, getters, rootState, rootGetters) => (chartKey) => {
   const { params: chartParams = {} } = state.charts[chartKey];
 

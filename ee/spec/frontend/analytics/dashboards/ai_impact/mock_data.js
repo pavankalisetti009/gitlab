@@ -155,6 +155,7 @@ const mockTableRow = (
   leadTime,
   criticalVulnerabilities,
   [codeSuggestionsContributorsCount, codeContributorsCount],
+  // eslint-disable-next-line max-params
 ) => ({
   deploymentFrequency,
   changeFailureRate,

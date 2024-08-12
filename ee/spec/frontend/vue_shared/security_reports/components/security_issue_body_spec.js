@@ -35,6 +35,7 @@ describe('Security Issue Body', () => {
     ['Container Scanning', dockerReportParsed.vulnerabilities[0], false, MEDIUM],
     ['Dependency Scanning', dependencyScanningIssues[0], true],
     ['Secret Detection', secretDetectionParsedIssues[0], false, CRITICAL],
+    // eslint-disable-next-line max-params
   ])('for a %s vulnerability', (name, vuln, hasReportLink, severity) => {
     beforeEach(() => {
       createComponent(vuln);

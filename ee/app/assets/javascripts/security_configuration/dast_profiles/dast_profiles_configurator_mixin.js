@@ -18,6 +18,7 @@ import {
 } from 'ee/on_demand_scans_form/settings';
 import { SCANNER_TYPE, DRAWER_VIEW_MODE } from 'ee/on_demand_scans/constants';
 
+// eslint-disable-next-line max-params
 const createProfilesApolloOptions = (name, field, savedField, { fetchQuery, fetchError }) => ({
   query: fetchQuery,
   variables() {

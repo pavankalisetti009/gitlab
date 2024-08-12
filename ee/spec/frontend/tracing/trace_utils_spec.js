@@ -91,6 +91,7 @@ describe('trace_utils', () => {
     const secsToNano = (secs) => secs * 1e9;
     const secsToMs = (secs) => secs * 1e3;
 
+    // eslint-disable-next-line max-params
     const createMockSpan = (spanId, parentId, durationNano, timestamp, hasError = false) => ({
       timestamp,
       span_id: spanId,

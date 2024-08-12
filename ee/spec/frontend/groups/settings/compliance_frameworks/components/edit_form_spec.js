@@ -65,6 +65,7 @@ describe('EditForm', () => {
     });
   }
 
+  // eslint-disable-next-line max-params
   async function submitForm(name, description, pipelineConfiguration, color) {
     await waitForPromises();
 

@@ -77,6 +77,7 @@ describe('CustomStageFields', () => {
     ['Name', findNameField, undefined, 'value', undefined],
     ['Start event', findStartEventField, undefined, 'defaultdropdowntext', 'Select start event'],
     ['End event', findEndEventField, 'true', 'defaultdropdowntext', 'Select end event'],
+    // eslint-disable-next-line max-params
   ])('Default state', (field, finder, fieldDisabledValue, valueAttribute, value) => {
     it(`field '${field}' is disabled ${fieldDisabledValue ? 'true' : 'false'}`, () => {
       const $el = finder();
@@ -235,6 +236,7 @@ describe('CustomStageFields', () => {
       ['Name', findNameField, 'value', 'lol'],
       ['Start event', findStartEventField, 'initialvalue', 'issue_label_added'],
       ['End event', findEndEventField, 'initialvalue', 'issue_label_added'],
+      // eslint-disable-next-line max-params
     ])('will initialize the field', (field, finder, valueAttribute, value) => {
       it(`'${field}' to value '${value}'`, () => {
         const $el = finder();

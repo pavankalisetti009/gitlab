@@ -84,6 +84,7 @@ export const emptyBuildRule = () => ({
  * @param {Boolean} areDuplicatesAllowed - check for duplicates in array
  * @returns
  */
+// eslint-disable-next-line max-params
 const invalidRuleValues = (rules, key, allowedValues, areDuplicatesAllowed = false) => {
   if (!rules) {
     return false;

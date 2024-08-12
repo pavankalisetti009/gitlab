@@ -10,6 +10,8 @@ const DELETE_ESCALATION_POLICY_ERROR = s__(
 const UPDATE_ESCALATION_POLICY_ERROR = s__(
   'EscalationPolicies|The escalation policy could not be updated. Please try again',
 );
+
+// eslint-disable-next-line max-params
 const addEscalationPolicyToStore = (store, query, { escalationPolicyCreate }, variables) => {
   const policy = escalationPolicyCreate?.escalationPolicy;
   if (!policy) {
@@ -35,6 +37,7 @@ const addEscalationPolicyToStore = (store, query, { escalationPolicyCreate }, va
   });
 };
 
+// eslint-disable-next-line max-params
 const updateEscalationPolicyInStore = (store, query, { escalationPolicyUpdate }, variables) => {
   const policy = escalationPolicyUpdate?.escalationPolicy;
   if (!policy) {
@@ -60,6 +63,7 @@ const updateEscalationPolicyInStore = (store, query, { escalationPolicyUpdate },
   });
 };
 
+// eslint-disable-next-line max-params
 const deleteEscalationPolicFromStore = (store, query, { escalationPolicyDestroy }, variables) => {
   const escalationPolicy = escalationPolicyDestroy?.escalationPolicy;
 
@@ -93,12 +97,14 @@ const onError = (data, message) => {
   throw new Error(data.errors);
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreOnEscalationPolicyCreate = (store, query, data, variables) => {
   if (!hasErrors(data)) {
     addEscalationPolicyToStore(store, query, data, variables);
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreOnEscalationPolicyUpdate = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, UPDATE_ESCALATION_POLICY_ERROR);
@@ -107,6 +113,7 @@ export const updateStoreOnEscalationPolicyUpdate = (store, query, data, variable
   }
 };
 
+// eslint-disable-next-line max-params
 export const updateStoreAfterEscalationPolicyDelete = (store, query, data, variables) => {
   if (hasErrors(data)) {
     onError(data, DELETE_ESCALATION_POLICY_ERROR);

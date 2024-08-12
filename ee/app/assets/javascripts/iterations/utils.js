@@ -4,6 +4,7 @@ const PERIOD_DATE_FORMAT_WITH_YEAR = 'mmm d, yyyy';
 
 const PERIOD_DATE_FORMAT_SHORT = 'mmm d';
 
+// eslint-disable-next-line max-params
 const getStartAndDueDateFormats = (startDate, dueDate, usedInIssue, full) => {
   const currentYear = new Date(Date.now()).getFullYear();
   const startDateYear = new Date(startDate).getFullYear();
