@@ -7,7 +7,7 @@ module Ci
     include IgnorableColumns
 
     PARTITION_DURATION = 1.day
-    PARTITION_CLEANUP_THRESHOLD = 1.year
+    PARTITION_CLEANUP_THRESHOLD = 30.days
 
     self.table_name = :p_ci_finished_build_ch_sync_events
     self.primary_key = :build_id
