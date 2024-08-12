@@ -2,6 +2,8 @@
 
 module Autocomplete
   class ProjectInvitedGroupsFinder
+    include ::Namespaces::GroupsFilter
+
     attr_reader :current_user, :params
 
     # current_user - The User object of the user that wants to view the list of
@@ -22,7 +24,8 @@ module Autocomplete
 
       return Group.none unless project
 
-      invited_groups(project)
+      groups = invited_groups(project)
+      by_search(groups)
     end
     # rubocop: enable CodeReuse/Finder
 
