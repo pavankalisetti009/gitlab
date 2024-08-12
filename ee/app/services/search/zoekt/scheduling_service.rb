@@ -103,11 +103,10 @@ module Search
             node_original_used_bytes = node.used_bytes
             sorted.each do |namespace_id, repository_size|
               node.used_bytes -= repository_size
-
-              break if (node.used_bytes / node.total_bytes.to_f) < WATERMARK_LIMIT_LOW
-
               namespaces_to_move << namespace_id
               total_repository_size += repository_size
+
+              break if (node.used_bytes / node.total_bytes.to_f) < WATERMARK_LIMIT_LOW
             end
 
             unassign_namespaces_from_node(node, namespaces_to_move, node_original_used_bytes, total_repository_size)
