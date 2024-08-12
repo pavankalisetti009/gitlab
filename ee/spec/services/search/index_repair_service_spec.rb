@@ -41,7 +41,7 @@ RSpec.describe ::Search::IndexRepairService, feature_category: :global_search do
         within(described_class::DELAY_INTERVAL).of(described_class::DELAY_INTERVAL),
         project.id,
         false,
-        { force: true }
+        { 'force' => true }
       )
 
       service.execute

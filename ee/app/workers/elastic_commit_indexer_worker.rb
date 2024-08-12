@@ -23,7 +23,7 @@ class ElasticCommitIndexerWorker
   #
   # project_id - The ID of the project to index
   # wiki - Treat this project as a Wiki
-  # options - Options hash { force: bool } forces to reindex the repository
+  # options - Options hash { 'force' => bool } forces to reindex the repository
   #
   # The indexation will cover all commits within INDEXED_SHA..HEAD
   def perform(project_id, wiki = false, options = {})
