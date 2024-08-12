@@ -18,8 +18,8 @@ module Search
       ].freeze
 
       BUFFER_FACTOR = 3
-      WATERMARK_LIMIT_LOW = 0.7
-      WATERMARK_LIMIT_HIGH = 0.8
+      WATERMARK_LIMIT_LOW = 0.6
+      WATERMARK_LIMIT_HIGH = 0.7
 
       DOT_COM_ROLLOUT_TARGET_BYTES = 300.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
@@ -73,7 +73,7 @@ module Search
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_reallocation_task)
 
-        execute_every 10.minutes, cache_key: :reallocation do
+        execute_every 5.minutes, cache_key: :reallocation do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
           over_watermark_nodes = nodes.select { |n| (n.used_bytes / n.total_bytes.to_f) >= WATERMARK_LIMIT_HIGH }
 
