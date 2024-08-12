@@ -2,8 +2,8 @@
 - billable_users_link = link_to('', help_page_path('subscriptions/self_managed/index', anchor: 'billable-users'), target: '_blank', rel: 'noopener noreferrer nofollow')
 - billable_users_updated_string = s_("AdminArea|Updated %{last_update_time}") % { last_update_time: @license.daily_billable_users_updated_time }
 
-.gl-display-grid.gl-sm-grid-template-columns-2.gl-gap-5.gl-mb-6
-  = render Pajamas::CardComponent.new(body_options: { class: 'gl-flex-grow-1' }) do |c|
+.gl-grid.sm:gl-grid-cols-2.gl-gap-5.gl-mb-6
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }) do |c|
     - c.with_body do
       = render Pajamas::SingleStatComponent.new(title: _('Users in License'), stat_value: licensed_users(@license), stat_value_testid: 'users-in-license-content')
       - if @license.will_expire?
@@ -15,29 +15,29 @@
         = safe_format(_('The %{trueUpLinkStart}true-up model%{trueUpLinkEnd} allows having more users, and additional users will incur a retroactive charge on renewal.'), tag_pair(true_up_link, :trueUpLinkStart, :trueUpLinkEnd))
         = seats_calculation_message(@license)
     - c.with_footer do
-      .gl-font-sm.gl-text-secondary
+      .gl-text-sm.gl-text-secondary
         = s_("AdminArea|Updated %{last_update_time}") % { last_update_time: @license.updated_at.to_s }
 
-  = render Pajamas::CardComponent.new(body_options: { class: 'gl-flex-grow-1' }) do |c|
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }) do |c|
     - c.with_body do
       - billable_users_count = number_with_delimiter @license.daily_billable_users_count
       = render Pajamas::SingleStatComponent.new(title: _('Billable Users'), stat_value: billable_users_count, stat_value_testid: 'billable-users-content')
       %p
         = safe_format(_('This is the number of %{billable_users_link_start}billable users%{billable_users_link_end} on your installation, and this is the minimum number you need to purchase when you renew your license.'), tag_pair(billable_users_link, :billable_users_link_start, :billable_users_link_end))
     - c.with_footer do
-      .gl-font-sm.gl-text-secondary
+      .gl-text-sm.gl-text-secondary
         = billable_users_updated_string
 
-  = render Pajamas::CardComponent.new(card_options: { class: 'flex-fill' }, body_options: { class: 'gl-flex-grow-1' }) do |c|
+  = render Pajamas::CardComponent.new(card_options: { class: 'flex-fill' }, body_options: { class: 'gl-grow' }) do |c|
     - c.with_body do
       - maximum_user_count = number_with_delimiter @license.maximum_user_count
       = render Pajamas::SingleStatComponent.new(title: _('Maximum Users'), stat_value: maximum_user_count)
       %p= _('This is the highest peak of users on your installation since the license started.')
     - c.with_footer do
-      .gl-font-sm.gl-text-secondary
+      .gl-text-sm.gl-text-secondary
         = billable_users_updated_string
 
-  = render Pajamas::CardComponent.new(body_options: { class: 'gl-flex-grow-1' }) do |c|
+  = render Pajamas::CardComponent.new(body_options: { class: 'gl-grow' }) do |c|
     - c.with_body do
       - users_over_licence_count = number_with_delimiter users_over_license
       = render Pajamas::SingleStatComponent.new(title: _('Users over License'), stat_value: users_over_licence_count)
@@ -52,5 +52,5 @@
         %p= safe_format(_('You\'ll be charged for %{trueUpLinkStart}users over license%{trueUpLinkEnd} on a quarterly or annual basis, depending on the terms of your agreement.'),
           tag_pair(true_up_link, :trueUpLinkStart, :trueUpLinkEnd))
     - c.with_footer do
-      .gl-font-sm.gl-text-secondary
+      .gl-text-sm.gl-text-secondary
         = billable_users_updated_string

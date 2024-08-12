@@ -4,7 +4,7 @@
   - c.with_header do
     = _('Phone:')
     - if local_assigns[:link_to_match_page] && phone_number_validation&.phone_number
-      .gl-float-right.gl-font-sm
+      .gl-float-right.gl-text-sm
         = link_to phone_match_admin_user_path(user) do
           = _('View phone number matches')
   - c.with_body do

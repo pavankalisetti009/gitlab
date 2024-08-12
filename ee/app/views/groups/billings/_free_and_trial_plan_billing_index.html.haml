@@ -11,15 +11,15 @@
 
     = html_escape(s_("BillingPlans|Not the group you're looking for? %{all_groups_link}")) % { all_groups_link: all_groups_link.html_safe }
 
-  .gl-flex-direction-row.gl-display-flex.gl-flex-wrap.gl-justify-content-center.gl-mb-7.gl-ml-7{ data: { track_action: 'render', testid: 'billing-plans' } }
+  .gl-flex-row.gl-flex.gl-flex-wrap.gl-justify-center.gl-mb-7.gl-ml-7{ data: { track_action: 'render', testid: 'billing-plans' } }
     = render Billing::PlanComponent.with_collection(plans_data, namespace: namespace, current_plan: current_plan)
   - if namespace.never_had_trial?
     .gl-text-left.gl-my-9.gl-mx-auto.gl-p-6.gl-bg-gray-10.gl-rounded-base.gl-border.billing-plan-divider
-      .gl-mb-2.gl-font-lg.gl-font-bold
+      .gl-mb-2.gl-text-lg.gl-font-bold
         = s_("BillingPlans|Ready to explore the value of paid features today?")
       .gl-mb-5
         = s_("BillingPlans|Start a free Ultimate trial. No credit card required.")
-      .gl-display-flex.gl-flex-wrap.gl-gap-3
+      .gl-flex.gl-flex-wrap.gl-gap-3
         = render Pajamas::ButtonComponent.new(href: new_trial_path(namespace_id: namespace.id), category: 'primary', variant: 'confirm', button_options: { data: start_free_trial_data }) do
           = s_("BillingPlans|Start a free Ultimate trial")
 
@@ -29,7 +29,7 @@
 
       #js-billing-plans{ data: subscription_plan_data_attributes(namespace, current_plan, read_only: read_only) }
 
-  .gl-font-lg.gl-mb-5
+  .gl-text-lg.gl-mb-5
     = s_("BillingPlans|Trusted by")
   .gl-mb-5
     - logo_classes = 'gl-mr-5 gl-mb-5'
@@ -42,6 +42,6 @@
     = image_tag("marketing/ubs.svg", alt: 'Ubs', title: 'Ubs', class: logo_classes)
   - image_alt = s_('InProductMarketing|Team members collaborating')
   = image_tag 'marketing/free-trial-team-members.png', alt: image_alt, title: image_alt, width: 210, height: 90, class: 'gl-mb-3'
-  .gl-font-size-h1.gl-font-bold.gl-leading-24.gl-mb-5
+  .gl-text-size-h1.gl-font-bold.gl-leading-24.gl-mb-5
     = s_("BillingPlans|Have a question? We're here to help.")
   .js-hand-raise-lead-trigger{ data: free_plan_billing_hand_raise_lead_data }

@@ -1,6 +1,6 @@
 - page_title _('Domain Verification')
 
-%h1.page-title.gl-font-size-h-display
+%h1.page-title.gl-text-size-h-display
   = _('Domain Verification')
 
 %p.gl-text-secondary
@@ -29,7 +29,7 @@
             %th.gl-text-right= _('Actions')
         %tbody
           %tr.js-domain-empty-state{ class: @domains.empty? ? '' : '!gl-hidden' }
-            %td{ colspan: 4, class: 'gl-py-6! text-center' }
+            %td{ colspan: 4, class: '!gl-py-6 text-center' }
               = s_("DomainVerification|No domains configured. Create a domain in a project in this group hierarchy.")
           - @domains.each do |domain|
             %tr.js-domain-row{ id: "domain#{domain.id}" }
@@ -41,7 +41,7 @@
               %td{ class: '!gl-align-middle', data: { label: _('Verifications status') } }
                 = domain.verified? ? _('Verified') : _('Unverified')
               %td{ data: { label: _('Actions') } }
-                .btn-group.gl-float-right.-gl-mt-2.-gl-mb-2{ class: 'gl-text-left! gl-pl-0!' }
+                .btn-group.gl-float-right.-gl-mt-2.-gl-mb-2{ class: '!gl-text-left !gl-pl-0' }
                   - if can_verify_group_domain?(domain)
                     = render Pajamas::ButtonComponent.new(icon: "redo", href: verify_group_settings_domain_verification_path(@group, domain), button_options: { data: { method: :post } })
                   = render Pajamas::ButtonComponent.new(icon: "pencil", href: group_settings_domain_verification_path(@group, domain))

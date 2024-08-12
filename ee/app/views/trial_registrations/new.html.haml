@@ -15,7 +15,7 @@
   .gl-pt-5.gl-max-w-75
     %label.gl-font-normal
       = _('Sign up for your free trial with:')
-    .gl-display-flex.gl-gap-3
+    .gl-flex.gl-gap-3
       - popular_enabled_button_based_providers.each do |provider|
         = render 'devise/shared/signup_omniauth_provider_button',
           href: omniauth_authorize_path(:user, provider, register_omniauth_params(trial: true)),
@@ -26,9 +26,9 @@
     = _('Or create your own GitLab account')
 
 .row.marketing-styling
-  .col-md-8.gl-display-flex.gl-flex-direction-column.gl-pl-120
+  .col-md-8.gl-flex.gl-flex-col.gl-pl-120
     %h1.gl-mt-0
-      - upper_tag = tag.span(class: 'gl-font-size-h2-xl')
+      - upper_tag = tag.span(class: 'gl-text-size-h2-xl')
       - lower_tag = tag.span(class: 'gl-block')
       = safe_format(s_('InProductMarketing|%{upper_start}Free 30-day trial%{upper_end} %{lower_start}GitLab Ultimate%{lower_end}'),
         tag_pair(upper_tag, :upper_start, :upper_end),
@@ -49,7 +49,7 @@
             'https://about.gitlab.com/free-trial/#selfmanaged/',
             data: { track_action: 'click_link', track_label: 'start_self-managed_trial' }
 
-  .col-md-4.lg:gl-flex.gl-flex-direction-column.gl-mb-6.gl-align-items-center.gl-pr-8
+  .col-md-4.lg:gl-flex.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8
     %div
       - ultimate_trial_value_props = [s_('InProductMarketing|Accelerate your digital transformation'),
       s_('InProductMarketing|Deliver software faster'),
@@ -61,15 +61,15 @@
 
       %ul.gl-pl-0.gl-mb-7.gl-pl-0.gl-text-gray-800.check-mark-text
         - ultimate_trial_value_props.each do |value_prop|
-          %li.gl-display-flex.gl-mb-3
+          %li.gl-flex.gl-mb-3
             %span.gl-mr-3.text-brand-purple-02= sprite_icon 'check', css_class: 'gl-icon check-marks'
             = value_prop
 
-      .gl-text-gray-800.gl-font-sm
+      .gl-text-gray-800.gl-text-sm
         = s_('InProductMarketing|Trusted by')
 
-      .gl-mt-5.gl-display-flex.gl-gap-6.gl-flex-wrap
+      .gl-mt-5.gl-flex.gl-gap-6.gl-flex-wrap
         - TrialRegistrationsHelper::TRUSTED_BY_LOGOS.each do |logo|
-          .gl-display-flex.gl-align-items-center
+          .gl-flex.gl-items-center
             = image_tag(logo[:path], alt: logo[:alt], title: logo[:title], width: 100)
 

@@ -1,4 +1,4 @@
-.gl-display-flex
+.gl-flex
   = render Pajamas::ButtonComponent.new(href: group_billings_path(group), variant: :confirm,
     button_options: { class: 'gl-mr-3', data: { track_action: "click_compare_plans", track_label: group_trial_status(group) } }) do
     = s_('TrialDiscoverPage|Compare all plans')

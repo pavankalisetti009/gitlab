@@ -7,9 +7,9 @@
   = render "layouts/bizible"
 = render "layouts/google_tag_manager_body"
 
-.row.gl-flex-grow-1
-  .gl-flex.gl-flex-direction-column.gl-align-items-center.gl-w-full.gl-px-5.gl-pb-5
-    .edit-profile.gl-flex.flex-column.gl-align-items-center
+.row.gl-grow
+  .gl-flex.gl-flex-col.gl-items-center.gl-w-full.gl-px-5.gl-pb-5
+    .edit-profile.gl-flex.flex-column.gl-items-center
       %h2.gl-text-center= html_escape(_('Welcome to GitLab,%{br_tag}%{name}!')) % { name: html_escape(current_user.first_name), br_tag: '<br/>'.html_safe }
       %p.gl-text-center
         = _('To personalize your GitLab experience, we\'d like to know a bit more about you. We won\'t share this information with anyone.')

@@ -14,7 +14,7 @@
 
 - if @search_error_if_version_incompatible
   - content_for :page_level_alert do
-    %div{ class: [container_class, @content_class, 'gl-pt-5!'] }
+    %div{ class: [container_class, @content_class, '!gl-pt-5'] }
       = render Pajamas::AlertComponent.new(title: s_('AdvancedSearch|Elasticsearch version not compatible'),
         dismissible: false,
         variant: :danger) do |c|
@@ -24,7 +24,7 @@
 
 - if @search_outdated_code_analyzer_detected
   - content_for :page_level_alert do
-    %div{ class: [container_class, @content_class, 'gl-pt-5!'] }
+    %div{ class: [container_class, @content_class, '!gl-pt-5'] }
       = render Pajamas::AlertComponent.new(title: s_('AdvancedSearch|Reindex recommended'),
         dismissible: false,
         variant: :warning) do |c|
@@ -33,7 +33,7 @@
 
 - if @elasticsearch_warn_if_not_using_aliases
   - content_for :page_level_alert do
-    %div{ class: [container_class, @content_class, 'gl-pt-5!'] }
+    %div{ class: [container_class, @content_class, '!gl-pt-5'] }
       = render Pajamas::AlertComponent.new(title: s_('AdvancedSearch|Reindex required'),
         dismissible: false,
         variant: :warning) do |c|
@@ -42,7 +42,7 @@
 
 - if @elasticsearch_warn_if_obsolete_migrations
   - content_for :page_level_alert do
-    %div{ class: [container_class, @content_class, 'gl-pt-5!'] }
+    %div{ class: [container_class, @content_class, '!gl-pt-5'] }
       = render Pajamas::AlertComponent.new(title: s_('AdvancedSearch|You have pending obsolete migrations'),
         dismissible: false,
         variant: :danger) do |c|

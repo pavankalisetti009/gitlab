@@ -1,14 +1,14 @@
-.trial-discover-page-card.gl-flex-grow-1.gl-pr-6.gl-py-4.gl-basis-full{ class: item[:container_class] }
+.trial-discover-page-card.gl-grow.gl-pr-6.gl-py-4.gl-basis-full{ class: item[:container_class] }
   = render Pajamas::CardComponent.new(card_options: { class: 'gl-rounded-lg' }) do |c|
     - c.with_body do
-      .gl-display-flex.gl-justify-content-space-between
+      .gl-flex.gl-justify-between
         = sprite_icon(item[:icon], css_class: "gl-text-blue-400")
         = gl_badge_tag(item[:plan], variant: :tier)
       %h5.gl-mt-1
         = item[:title]
       .description-text{ class: item[:description_class] }
         = item[:description]
-      .gl-display-flex
+      .gl-flex
         - if item[:video_url].present?
           = render Pajamas::ButtonComponent.new(icon: "live-preview", href: item[:video_url], variant: :link, target: "_blank",
             button_options: { data: { track_action: "click_video_link_#{group_trial_status(group)}", track_label: item[:tracking_label]} })
