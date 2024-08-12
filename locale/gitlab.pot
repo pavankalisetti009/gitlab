@@ -56800,9 +56800,6 @@ msgstr ""
 msgid "Unauthorized to update the environment"
 msgstr ""
 
-msgid "Unavailable"
-msgstr ""
-
 msgid "Unban"
 msgstr ""
 
