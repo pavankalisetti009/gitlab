@@ -168,6 +168,15 @@ export default {
   <div class="environments-dashboard">
     <template v-if="showDashboard">
       <page-heading :heading="$options.dashboardHeader">
+        <template #description>
+          <gl-sprintf :message="$options.informationText">
+            <template #link="{ content }">
+              <gl-link :href="environmentsDashboardHelpPath" target="_blank">
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </template>
         <template #actions>
           <gl-button
             v-gl-modal="$options.modalId"
@@ -178,24 +187,15 @@ export default {
           </gl-button>
         </template>
       </page-heading>
-      <p class="gl-mt-3 gl-mb-6" data-testid="page-limits-message">
-        <gl-sprintf :message="$options.informationText">
-          <template #link="{ content }">
-            <gl-link :href="environmentsDashboardHelpPath" target="_blank">
-              {{ content }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </p>
+
       <div v-if="projects.length">
         <div v-for="project in projects" :key="project.id">
           <project-header :project="project" @remove="removeProject" />
-          <div class="row gl-mt-3 no-gutters mx-n2">
+          <div class="gl-grid md:gl-grid-cols-3 gl-gap-5 gl-items-start">
             <environment
               v-for="environment in project.environments"
               :key="environment.id"
               :environment="environment"
-              class="col-12 col-md-6 col-xl-4 px-2"
             />
           </div>
         </div>

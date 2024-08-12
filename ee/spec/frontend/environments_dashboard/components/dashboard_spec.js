@@ -67,7 +67,7 @@ describe('dashboard', () => {
 
   const findPagination = () => wrapper.findComponent(GlPagination);
   const findDashboardTitle = () => wrapper.findByTestId('page-heading');
-  const findPageLimitsMessage = () => wrapper.findByTestId('page-limits-message');
+  const findPageLimitsMessage = () => wrapper.findByTestId('page-heading-description');
 
   describe('empty state', () => {
     it('should render the empty state component', () => {

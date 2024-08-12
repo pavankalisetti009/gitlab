@@ -153,6 +153,15 @@ export default {
   <div class="operations-dashboard">
     <template v-if="showDashboard">
       <page-heading :heading="$options.title">
+        <template #description>
+          <gl-sprintf :message="$options.informationText">
+            <template #link="{ content }">
+              <gl-link :href="operationsDashboardHelpPath" target="_blank">
+                {{ content }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </template>
         <template #actions>
           <gl-button
             v-if="projects.length"
@@ -165,24 +174,14 @@ export default {
           </gl-button>
         </template>
       </page-heading>
-      <p class="gl-mt-2 gl-mb-6">
-        <gl-sprintf :message="$options.informationText">
-          <template #link="{ content }">
-            <gl-link :href="operationsDashboardHelpPath" target="_blank">
-              {{ content }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </p>
+
       <vue-draggable
         v-if="projects.length"
         v-model="projects"
         group="dashboard-projects"
-        class="row dashboard-cards"
+        class="gl-grid md:gl-grid-cols-3 gl-gap-5 gl-items-start"
       >
-        <div v-for="project in projects" :key="project.id" class="col-12 col-md-6 col-xl-4 px-2">
-          <dashboard-project :project="project" />
-        </div>
+        <dashboard-project v-for="project in projects" :key="project.id" :project="project" />
       </vue-draggable>
 
       <gl-dashboard-skeleton v-else-if="isLoadingProjects" />
