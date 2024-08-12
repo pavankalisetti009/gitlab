@@ -19,11 +19,13 @@ import { isPolicyInherited, policyHasNamespace } from '../utils';
 import PipelineExecutionDrawer from './pipeline_execution/details_drawer.vue';
 import ScanExecutionDrawer from './scan_execution/details_drawer.vue';
 import ScanResultDrawer from './scan_result/details_drawer.vue';
+import VulnerabilityManagementDrawer from './vulnerability_management/details_drawer.vue';
 
 const policyComponent = {
   [POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value]: ScanExecutionDrawer,
   [POLICY_TYPE_COMPONENT_OPTIONS.approval.value]: ScanResultDrawer,
   [POLICY_TYPE_COMPONENT_OPTIONS.pipelineExecution.value]: PipelineExecutionDrawer,
+  [POLICY_TYPE_COMPONENT_OPTIONS.vulnerabilityManagement.value]: VulnerabilityManagementDrawer,
 };
 
 export default {
