@@ -24,7 +24,7 @@ RSpec.describe GroupWikiRepository, :geo do
   describe 'Geo Replication' do
     include EE::GeoHelpers
 
-    let(:node) { create(:geo_node) }
+    let(:node) { create(:geo_node, :secondary) }
 
     before do
       stub_current_geo_node(node)
@@ -38,11 +38,11 @@ RSpec.describe GroupWikiRepository, :geo do
     end
 
     context 'with root group and subgroup wikis' do
-      let_it_be(:root_group) { create(:group) }
-      let_it_be(:subgroup) { create(:group, parent: root_group) }
-      let_it_be(:root_group_wiki_repository) { create(:group_wiki_repository, group: root_group) }
-      let_it_be(:subgroup_wiki_repository) { create(:group_wiki_repository, group: subgroup) }
-      let_it_be(:broken_wiki_repository) { create(:group_wiki_repository, shard_name: 'broken') }
+      let_it_be_with_refind(:root_group) { create(:group) }
+      let_it_be_with_refind(:subgroup) { create(:group, parent: root_group) }
+      let_it_be_with_refind(:root_group_wiki_repository) { create(:group_wiki_repository, group: root_group) }
+      let_it_be_with_refind(:subgroup_wiki_repository) { create(:group_wiki_repository, group: subgroup) }
+      let_it_be_with_refind(:broken_wiki_repository) { create(:group_wiki_repository, shard_name: 'broken') }
 
       describe '#in_replicables_for_current_secondary?' do
         it 'all returns true if all are replicated' do
@@ -77,10 +77,6 @@ RSpec.describe GroupWikiRepository, :geo do
           it 'returns true for groups in the shard' do
             expect(root_group_wiki_repository.in_replicables_for_current_secondary?).to be true
             expect(subgroup_wiki_repository.in_replicables_for_current_secondary?).to be true
-          end
-
-          it 'returns false for group wiki repositories not in an included shard',
-            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/471635' do
             expect(broken_wiki_repository.in_replicables_for_current_secondary?).to be false
           end
         end
