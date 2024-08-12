@@ -18,7 +18,7 @@ module Gitlab
       LOG_MESSAGES = {
         secrets_check: 'Detecting secrets...',
         secrets_not_found: 'Secret detection scan completed with no findings.',
-        skip_secret_detection: "\n\nTo skip secret push protection, add the following Git push option " \
+        skip_secret_detection: "\n\nTo skip secret push protection, add the following Git push option" \
                                "to your push command: `-o secret_push_protection.skip_all`",
         found_secrets: "\nPUSH BLOCKED: Secrets detected in code changes",
         found_secrets_post_message: "\n\nTo push your changes you must remove the identified secrets.",
@@ -34,7 +34,7 @@ module Gitlab
         found_secrets_footer: "\n--------------------------------------------------\n\n"
       }.freeze
 
-      DIFF_PATCH_BYTES_LIMIT = 1.megabyte # https://handbook.gitlab.com/handbook/engineering/architecture/design-documents/secret_detection/#target-types
+      BLOB_BYTES_LIMIT = 1.megabyte # Limit is 1MiB to start with.
       SPECIAL_COMMIT_FLAG = /\[skip secret push protection\]/i
       DOCUMENTATION_PATH = 'user/application_security/secret_detection/secret_push_protection/index.html'
       DOCUMENTATION_PATH_ANCHOR = 'resolve-a-blocked-push'
@@ -68,12 +68,17 @@ module Gitlab
         end
 
         logger.log_timed(LOG_MESSAGES[:secrets_check]) do
-          diffs = get_diffs
+          blobs = ::Gitlab::Checks::ChangedBlobs.new(
+            project, revisions, bytes_limit: BLOB_BYTES_LIMIT + 1
+          ).execute(timeout: logger.time_left)
 
-          # Pass diffs to gem for scanning.
+          # Filter out larger than BLOB_BYTES_LIMIT blobs and binary blobs.
+          blobs.reject! { |blob| blob.size > BLOB_BYTES_LIMIT || blob.binary }
+
+          # Pass blobs to gem for scanning.
           response = ::Gitlab::SecretDetection::Scan
             .new(logger: secret_detection_logger)
-            .secrets_scan(diffs, timeout: logger.time_left)
+            .secrets_scan(blobs, timeout: logger.time_left)
 
           # Handle the response depending on the status returned.
           format_response(response)
@@ -144,36 +149,13 @@ module Gitlab
         )
       end
 
-      def get_diffs
-        # Get new commits
-        commits = project.repository.new_commits(revisions)
-
-        # Get changed paths
-        paths = project.repository.find_changed_paths(commits, merge_commit_diff_mode: :all_parents)
-        pairs = paths.map { |p| { new_blob_id: p.new_blob_id, old_blob_id: p.old_blob_id } }
-
-        # Get blob pairs
-        blob_pairs = pairs.map do |pair|
-          Gitaly::DiffBlobsRequest::BlobPair.new(left_blob: pair[:old_blob_id], right_blob: pair[:new_blob_id])
-        end
-
-        diffs = project.repository.diff_blobs(
-          blob_pairs,
-          diff_mode: Gitlab::GitalyClient::DiffService::DIFF_MODES[:unspecified],
-          whitespace_changes: Gitlab::GitalyClient::DiffService::WHITESPACE_CHANGES[:unspecified],
-          patch_bytes_limit: DIFF_PATCH_BYTES_LIMIT + 1
-        ).to_a.flatten
-
-        # Filter out diffs above 1.Megabyte and binary diffs.
-        diffs.reject { |diff| diff.over_patch_bytes_limit || diff.binary }
-      end
-
       def format_response(response)
-        # Try to retrieve file path and commit sha for the diffs found.
+        # Try to retrieve file path and commit sha for the blobs found.
         if [
           ::Gitlab::SecretDetection::Status::FOUND,
           ::Gitlab::SecretDetection::Status::FOUND_WITH_ERRORS
         ].include?(response.status)
+          # TODO: filter out revisions not related to found secrets
           results = transform_findings(response)
         end
 
@@ -200,8 +182,8 @@ module Gitlab
           # Entire scan timed out, we log and skip the check for now.
           secret_detection_logger.error(message: ERROR_MESSAGES[:scan_timeout_error])
         when ::Gitlab::SecretDetection::Status::INPUT_ERROR
-          # Scan failed due to invalid input. We skip the check because an input error
-          # could be due to not having `diffs` being empty (i.e. no new diffs to scan).
+          # Scan failed to invalid input. We skip the check because an input error
+          # could be due to not having `blobs` being empty (i.e. no new blobs to scan).
           secret_detection_logger.error(message: ERROR_MESSAGES[:invalid_input_error])
         else
           # Invalid status returned by the scanning service/gem, we don't
@@ -249,8 +231,10 @@ module Gitlab
           }
         )
 
-        message += LOG_MESSAGES[:skip_secret_detection]
-        message += LOG_MESSAGES[:found_secrets_footer]
+        # Commenting these out as the WebIDE is failing on displaying this message due to length.
+        # message += LOG_MESSAGES[:skip_secret_detection]
+        # message += LOG_MESSAGES[:found_secrets_footer]
+        # Also shortened up the found_secrets: message
 
         message
       end
@@ -268,7 +252,7 @@ module Gitlab
           end
         when ::Gitlab::SecretDetection::Status::SCAN_ERROR
           format(ERROR_MESSAGES[:failed_to_scan_regex_error], finding.to_h)
-        when ::Gitlab::SecretDetection::Status::DIFF_TIMEOUT
+        when ::Gitlab::SecretDetection::Status::BLOB_TIMEOUT
           format(ERROR_MESSAGES[:blob_timed_out_error], finding.to_h)
         end
       end
