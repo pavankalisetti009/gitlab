@@ -20,7 +20,6 @@ RSpec.describe GitlabSchema.types['Query'], feature_category: :shared do
       :duo_workflow_events,
       :duo_workflow_workflows,
       :epic_board_list,
-      :explain_vulnerability_prompt,
       :geo_node,
       :instance_security_dashboard,
       :iteration,
