@@ -7,7 +7,7 @@ class Groups::EpicBoardsController < Groups::ApplicationController
   extend ::Gitlab::Utils::Override
 
   before_action do
-    push_frontend_feature_flag(:work_item_epics, group)
+    push_force_frontend_feature_flag(:work_item_epics, group.work_item_epics_enabled?(current_user))
   end
 
   track_event :index, :show, name: 'g_project_management_users_viewing_epic_boards'
