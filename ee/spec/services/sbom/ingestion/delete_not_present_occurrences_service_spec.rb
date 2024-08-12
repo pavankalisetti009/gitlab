@@ -52,5 +52,20 @@ RSpec.describe Sbom::Ingestion::DeleteNotPresentOccurrencesService, feature_cate
         it_behaves_like 'it no-ops with failed sbom jobs'
       end
     end
+
+    context 'when project has filtered out occurrence' do
+      let_it_be_with_reload(:occurrences) do
+        create_list(:sbom_occurrence, 4, :registry_occurrence, pipeline: pipeline)
+      end
+
+      let(:ingested_occurrences) { occurrences.sample(2) }
+      let(:ingested_ids) { ingested_occurrences.map(&:id) }
+
+      it 'does not delete filtered out occurence' do
+        expect { execute }.not_to change { project.sbom_occurrences.reload.count }
+      end
+
+      it_behaves_like 'it no-ops with failed sbom jobs'
+    end
   end
 end

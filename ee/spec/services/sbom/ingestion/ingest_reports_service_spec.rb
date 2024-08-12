@@ -134,6 +134,23 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
       end
     end
 
+    context 'when a report source is container_scanning_for_registry' do
+      let_it_be(:sbom_ingestion_error) { 'Unsupported CycloneDX version' }
+      let_it_be(:registry_sources) { create(:ci_reports_sbom_source, :container_scanning_for_registry) }
+      let_it_be(:reports) { [create(:ci_reports_sbom_report, source: registry_sources)] }
+
+      it 'ingest the report but does not delete the existing occurrences' do
+        expect(::Sbom::Ingestion::IngestReportService).to receive(:execute).with(pipeline,
+          reports.first,
+          vulnerability_info)
+
+        execute
+
+        expect(::Sbom::Ingestion::DeleteNotPresentOccurrencesService).not_to have_received(:execute)
+          .with(pipeline, sequencer.range)
+      end
+    end
+
     describe 'setting the latest ingested SBOM pipeline ID' do
       let(:project) { pipeline.project }
 

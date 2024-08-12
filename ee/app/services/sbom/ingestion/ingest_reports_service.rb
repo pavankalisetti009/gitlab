@@ -26,7 +26,7 @@ module Sbom
       def execute
         in_lock(lease_key, ttl: LEASE_TTL, sleep_sec: LEASE_TRY_AFTER) do
           ingest_reports.then do |ingested_ids|
-            delete_not_present_occurrences(ingested_ids)
+            delete_not_present_occurrences(ingested_ids) unless container_scanning_for_registry_pipeline?
 
             if ingested_ids.present? && Feature.enabled?(:dependency_scanning_using_sbom_reports, project)
               publish_ingested_sbom_event
@@ -46,6 +46,13 @@ module Sbom
       attr_reader :pipeline
 
       delegate :project, to: :pipeline, private: true
+
+      # We only ingest one sbom report in container_scanning_for_registry jobs.
+      # This is a temprory quick fix for https://gitlab.com/gitlab-org/gitlab/-/issues/478376.
+      def container_scanning_for_registry_pipeline?
+        valid_sbom_reports&.first&.source&.source_type == :container_scanning_for_registry
+      end
+      strong_memoize_attr :container_scanning_for_registry_pipeline?
 
       def ingest_reports
         valid_sbom_reports.flat_map { |report| ingest_report(report) }
