@@ -83,7 +83,10 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       context 'when nodes are over the watermark high limit' do
         let_it_be(:node_out_of_storage) { create(:zoekt_node, :not_enough_free_space) }
-        let_it_be(:namespace_statistics) { create(:namespace_root_storage_statistics, repository_size: 1000) }
+        let_it_be(:namespace_statistics) do
+          create(:namespace_root_storage_statistics, repository_size: node_out_of_storage.used_bytes * 0.7)
+        end
+
         let_it_be(:ns) { create(:group, root_storage_statistics: namespace_statistics) }
         let_it_be(:enabled_ns) { create(:zoekt_enabled_namespace, namespace: ns) }
         let_it_be(:zoekt_index2) do
@@ -102,9 +105,9 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
             'watermark_limit_high' => described_class::WATERMARK_LIMIT_HIGH,
             'count' => 1,
             'node_used_bytes' => 90000000,
-            'node_expected_used_bytes' => 89999000,
-            'total_repository_size' => 1000,
-            'meta' => node_out_of_storage.metadata_json.merge('zoekt.used_bytes' => 89999000) }
+            'node_expected_used_bytes' => 27000001,
+            'total_repository_size' => namespace_statistics.repository_size,
+            'meta' => node_out_of_storage.metadata_json.merge('zoekt.used_bytes' => 27000001) }
           )
 
           expect { execute_task }.to change { Search::Zoekt::Index.count }.from(2).to(1)
