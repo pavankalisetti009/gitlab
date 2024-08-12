@@ -6,7 +6,6 @@ FactoryBot.define do
     node { association(:zoekt_node) }
     replica { association(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
     namespace_id { zoekt_enabled_namespace.root_namespace_id }
-    reserved_storage_bytes { 0 }
   end
 
   trait :ready do

@@ -6,9 +6,8 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
   let_it_be(:namespace) { create(:group) }
   let_it_be_with_reload(:zoekt_enabled_namespace) { create(:zoekt_enabled_namespace, namespace: namespace) }
   let_it_be(:zoekt_node) { create(:zoekt_node) }
-  let_it_be(:zoekt_replica) { create(:zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace) }
   let_it_be(:zoekt_index) do
-    create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: zoekt_node, replica: zoekt_replica)
+    create(:zoekt_index, zoekt_enabled_namespace: zoekt_enabled_namespace, node: zoekt_node)
   end
 
   subject { zoekt_index }
@@ -158,23 +157,6 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
         recorder = ActiveRecord::QueryRecorder.new { index.node }
         expect(recorder.count).to be_zero
       end
-    end
-  end
-
-  describe '#used_storage_bytes' do
-    let_it_be(:size_bytes) { 100.megabytes }
-    let_it_be(:repos) { create_list(:zoekt_repository, 5, zoekt_index: zoekt_index, size_bytes: size_bytes) }
-
-    it 'returns the sum of size_bytes for all repository associated with this index' do
-      expect(zoekt_index.used_storage_bytes).to eq(repos.length * size_bytes)
-    end
-  end
-
-  describe '#free_storage_bytes' do
-    it 'is difference between reserved bytes and used bytes' do
-      allow(zoekt_index).to receive(:reserved_storage_bytes).and_return(100)
-      allow(zoekt_index).to receive(:used_storage_bytes).and_return(1)
-      expect(zoekt_index.free_storage_bytes).to eq(99)
     end
   end
 end

@@ -11,9 +11,8 @@ module Search
         end
 
         def update_zoekt_index!(force: false)
-          Router.fetch_nodes_for_indexing(project.id, root_namespace_id: project.root_ancestor.id).map do |node|
-            ::Gitlab::Search::Zoekt::Client.index(project, node.id, force: force)
-          end
+          node_id = ::Search::Zoekt.fetch_node_id(project.root_ancestor)
+          ::Gitlab::Search::Zoekt::Client.index(project, node_id, force: force)
         end
 
         def async_update_zoekt_index

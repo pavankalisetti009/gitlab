@@ -22,14 +22,11 @@ module Search
         return unless ::Gitlab::CurrentSettings.zoekt_indexing_enabled?
         return unless ::License.feature_available?(:zoekt_code_search)
 
-        nodes = Router.fetch_nodes_for_indexing(project_id, root_namespace_id: root_namespace_id, node_ids: [node_id])
+        node_id ||= ::Search::Zoekt.fetch_node_id(root_namespace_id)
+        return false unless node_id
 
-        return false if nodes.empty?
-
-        nodes.each do |n|
-          in_lock("#{self.class.name}/#{project_id}/node-#{n.id}", ttl: TIMEOUT, retries: 0) do
-            ::Gitlab::Search::Zoekt::Client.delete(node_id: n.id, project_id: project_id)
-          end
+        in_lock("#{self.class.name}/#{project_id}", ttl: TIMEOUT, retries: 0) do
+          ::Gitlab::Search::Zoekt::Client.delete(node_id: node_id, project_id: project_id)
         end
       end
     end
