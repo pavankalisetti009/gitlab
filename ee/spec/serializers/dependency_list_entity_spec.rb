@@ -9,7 +9,7 @@ RSpec.describe DependencyListEntity do
     end
 
     let(:request) { EntityRequest.new(project: project, user: user) }
-    let(:collection) { [build(:dependency)] }
+    let(:collection) { [build_stubbed(:sbom_occurrence)] }
     let(:no_items_status) { :no_dependencies }
 
     # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Need persisted records

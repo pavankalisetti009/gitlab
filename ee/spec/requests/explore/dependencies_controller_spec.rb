@@ -142,12 +142,14 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
               expect(response.headers['X-Page-Type']).to eql('cursor')
               expect(response.headers['X-Per-Page']).to eql(per_page)
 
-              expected_occurrences = occurrences[per_page...(per_page + per_page)].map do |occurrences|
+              expected_occurrences = occurrences[per_page...(per_page + per_page)].map do |occurrence|
                 {
-                  'name' => occurrences.name,
-                  'packager' => occurrences.packager,
-                  'version' => occurrences.version,
-                  'location' => occurrences.location.as_json
+                  'name' => occurrence.name,
+                  'packager' => occurrence.packager,
+                  'version' => occurrence.version,
+                  'location' => occurrence.location.as_json,
+                  'occurrence_id' => occurrence.id,
+                  'vulnerability_count' => occurrence.vulnerability_count
                 }
               end
               expect(json_response["dependencies"]).to match_array(expected_occurrences)
@@ -202,7 +204,9 @@ RSpec.describe Explore::DependenciesController, feature_category: :dependency_ma
                 'name' => occurrence_a.name,
                 'packager' => occurrence_a.packager,
                 'version' => occurrence_a.version,
-                'location' => occurrence_a.location.as_json
+                'location' => occurrence_a.location.as_json,
+                'occurrence_id' => occurrence_a.id,
+                'vulnerability_count' => occurrence_a.vulnerability_count
               }
             ])
           end

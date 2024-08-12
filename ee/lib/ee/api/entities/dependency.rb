@@ -5,13 +5,7 @@ module EE
     module Entities
       class Dependency < Grape::Entity
         expose :name, :version, :package_manager
-        expose :dependency_file_path do |dependency|
-          if dependency.is_a?(::Sbom::Occurrence)
-            dependency.input_file_path
-          else
-            dependency[:location][:path]
-          end
-        end
+        expose :dependency_file_path, proc: ->(occurrence) { occurrence.input_file_path }
         expose :vulnerabilities, using: DependencyEntity::VulnerabilityEntity, if: ->(_, opts) { can_read_vulnerabilities?(opts[:user], opts[:project]) }
         expose :licenses, using: DependencyEntity::LicenseEntity, if: ->(_, opts) { can_read_licenses?(opts[:user], opts[:project]) }
 

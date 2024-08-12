@@ -23,22 +23,12 @@ class DependencyEntity < Grape::Entity
   class VulnerabilityEntity < Grape::Entity
     expose :severity, :id
 
-    expose :name do |vulnerability|
-      if vulnerability.is_a?(::Vulnerability)
-        vulnerability.title
-      else
-        vulnerability[:name]
-      end
-    end
+    expose :name, proc: ->(vulnerability) { vulnerability.title }
 
     expose :url do |vulnerability, options|
-      if vulnerability.is_a?(::Vulnerability)
-        # Use options[:project] instead of vulnerability.project to avoid N+1 queries.
-        # If options[:project] is nil, an error will be raised.
-        ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(options[:project], vulnerability)
-      else
-        vulnerability[:url]
-      end
+      # Use options[:project] instead of vulnerability.project to avoid N+1 queries.
+      # If options[:project] is nil, an error will be raised.
+      ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(options[:project], vulnerability)
     end
   end
 
