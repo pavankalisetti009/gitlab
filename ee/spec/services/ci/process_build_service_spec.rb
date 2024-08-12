@@ -2,14 +2,16 @@
 require 'spec_helper'
 
 RSpec.describe Ci::ProcessBuildService, '#execute', feature_category: :continuous_integration do
-  let(:user) { create(:user) }
-  let(:project) { create(:project, :repository) }
-  let(:environment) { create(:environment, project: project, name: 'production') }
-  let(:protected_environment) { create(:protected_environment, name: environment.name, project: project) }
-  let(:ci_build) { create(:ci_build, :created, environment: environment.name, user: user, project: project, when: :on_success) }
-  let(:current_status) { 'success' }
+  let_it_be(:user) { create(:user) }
+  let_it_be_with_refind(:project) { create(:project, :repository) }
+  let_it_be(:environment) { create(:environment, project: project, name: 'production') }
+  let_it_be(:protected_environment) { create(:protected_environment, name: environment.name, project: project) }
 
-  subject { described_class.new(project, user).execute(ci_build, current_status) }
+  let(:build_traits) { %i[created prepare_staging] }
+  let(:build_when) { :on_success }
+  let(:ci_build) { create(:ci_build, *build_traits, environment: environment.name, user: user, project: project, when: build_when) }
+
+  subject { described_class.new(project, user).execute(ci_build, 'success') }
 
   before do
     stub_licensed_features(protected_environments: feature_available)
@@ -42,7 +44,8 @@ RSpec.describe Ci::ProcessBuildService, '#execute', feature_category: :continuou
         end
 
         context 'and the build is manual' do
-          let(:ci_build) { create(:ci_build, :created, :actionable, environment: environment.name, user: user, project: project) }
+          let(:build_traits) { %i[created actionable] }
+          let(:build_when) { :manual }
 
           it 'actionizes the build' do
             expect { subject }.to change { ci_build.status }.from('created').to('manual')
@@ -62,8 +65,18 @@ RSpec.describe Ci::ProcessBuildService, '#execute', feature_category: :continuou
         end
 
         shared_examples_for 'blocking deployment job' do
-          it 'makes the build a manual action' do
-            expect { subject }.to change { ci_build.status }.from('created').to('manual')
+          it 'does not block the job by default' do
+            expect { subject }.to change { ci_build.status }.from('created').to('pending')
+          end
+
+          context 'when the prevent_blocking_non_deployment_jobs feature flag is disabled' do
+            before do
+              stub_feature_flags(prevent_blocking_non_deployment_jobs: false)
+            end
+
+            it 'makes the build a manual action' do
+              expect { subject }.to change { ci_build.status }.from('created').to('manual')
+            end
           end
 
           context 'and the build has a deployment' do
@@ -77,6 +90,7 @@ RSpec.describe Ci::ProcessBuildService, '#execute', feature_category: :continuou
               end
             end
 
+            let(:build_traits) { %i[created deploy_to_production] }
             let!(:deployment) { create(:deployment, deployable: ci_build, environment: environment, user: user, project: project) }
 
             include_examples 'blocked deployment'
@@ -86,13 +100,13 @@ RSpec.describe Ci::ProcessBuildService, '#execute', feature_category: :continuou
             end
 
             context 'and the build is schedulable' do
-              let(:ci_build) { create(:ci_build, :created, :schedulable, environment: environment.name, user: user, project: project) }
+              let(:build_traits) { %i[created schedulable deploy_to_production] }
 
               include_examples 'blocked deployment'
             end
 
             context 'and the build is actionable' do
-              let(:ci_build) { create(:ci_build, :created, :actionable, environment: environment.name, user: user, project: project) }
+              let(:build_traits) { %i[created actionable deploy_to_production] }
 
               include_examples 'blocked deployment'
             end

@@ -4732,4 +4732,20 @@ RSpec.describe Project, feature_category: :groups_and_projects do
       let(:subject_project) { group_project }
     end
   end
+
+  describe '#prevent_blocking_non_deployment_jobs?' do
+    let_it_be_with_refind(:project) { create(:project, :stubbed_repository) }
+
+    subject { project.prevent_blocking_non_deployment_jobs? }
+
+    it { is_expected.to eq(true) }
+
+    context 'when the prevent_blocking_non_deployment_jobs feature flag is disabled' do
+      before do
+        stub_feature_flags(prevent_blocking_non_deployment_jobs: false)
+      end
+
+      it { is_expected.to eq(false) }
+    end
+  end
 end

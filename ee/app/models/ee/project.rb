@@ -1339,6 +1339,11 @@ module EE
       compliance_framework_settings.pluck(:framework_id)
     end
 
+    def prevent_blocking_non_deployment_jobs?
+      ::Feature.enabled?(:prevent_blocking_non_deployment_jobs, self)
+    end
+    strong_memoize_attr :prevent_blocking_non_deployment_jobs?
+
     private
 
     def path_locks_changed_epoch_cache_key
