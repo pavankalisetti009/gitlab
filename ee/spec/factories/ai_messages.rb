@@ -69,10 +69,6 @@ FactoryBot.define do
       ai_action { :summarize_review }
     end
 
-    trait :analyze_ci_job_failure do
-      ai_action { :analyze_ci_job_failure }
-    end
-
     trait :generate_description do
       ai_action { :generate_description }
     end

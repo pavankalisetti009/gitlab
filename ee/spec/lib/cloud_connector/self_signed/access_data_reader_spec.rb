@@ -37,7 +37,6 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
     let_it_be(:vertex_ai_proxy_bundled_with) do
       {
         "duo_enterprise" => %i[
-          analyze_ci_job_failure
           documentation_search
           duo_chat
           explain_code

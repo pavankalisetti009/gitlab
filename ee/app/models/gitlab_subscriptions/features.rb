@@ -180,7 +180,6 @@ module GitlabSubscriptions
       ai_config_chat
       ai_features
       glab_ask_git_command
-      ai_analyze_ci_job_failure
       ai_agents
       ai_review_mr
       api_discovery

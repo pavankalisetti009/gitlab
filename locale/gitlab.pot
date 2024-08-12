@@ -23287,9 +23287,6 @@ msgstr ""
 msgid "Generate project access tokens scoped to this project for your applications that need access to the GitLab API."
 msgstr ""
 
-msgid "Generate root cause analysis"
-msgstr ""
-
 msgid "Generate site and private keys at"
 msgstr ""
 
@@ -45350,12 +45347,6 @@ msgstr ""
 msgid "Rollback"
 msgstr ""
 
-msgid "Root cause analysis"
-msgstr ""
-
-msgid "Root cause analysis is a feature that analyzes your logs to determine why a job may have failed and the potential ways to fix it. To generate this analysis, we may share information in your job logs with %{linkStart}Third-Party AI providers%{linkEnd}. Before initiating this analysis, please do not include in your logs any information that could impact the security or privacy of your account."
-msgstr ""
-
 msgid "Rotation schedule"
 msgstr ""
 
@@ -60059,9 +60050,6 @@ msgid "What is listed here?"
 msgstr ""
 
 msgid "What is repository mirroring?"
-msgstr ""
-
-msgid "What is root cause analysis?"
 msgstr ""
 
 msgid "What is squashing?"

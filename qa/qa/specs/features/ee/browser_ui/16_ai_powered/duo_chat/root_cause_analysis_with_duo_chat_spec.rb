@@ -2,8 +2,7 @@
 
 module QA
   RSpec.describe 'Ai-powered', :runner, :requires_admin, :external_ai_provider, product_group: :pipeline_execution,
-    only: { pipeline: %i[staging staging-canary] },
-    feature_flag: { name: 'ai_build_failure_cause', scope: :project } do
+    only: { pipeline: %i[staging staging-canary] } do
     describe 'Troubleshooting failed CI job' do
       let(:executor) { "qa-runner-#{SecureRandom.hex(4)}" }
       let(:pipeline_job_name) { 'test-root-cause-analysis' }
@@ -34,8 +33,6 @@ module QA
       end
 
       before do
-        Runtime::Feature.enable(:ai_build_failure_cause, project: project)
-
         Flow::Login.sign_in
         clear_chat
 

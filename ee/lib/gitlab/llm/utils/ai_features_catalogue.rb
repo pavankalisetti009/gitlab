@@ -68,15 +68,6 @@ module Gitlab
             self_managed: true,
             internal: false
           },
-          analyze_ci_job_failure: {
-            service_class: Gitlab::Llm::VertexAi::Completions::AnalyzeCiJobFailure,
-            prompt_class: nil,
-            feature_category: :continuous_integration,
-            execute_method: ::Llm::AnalyzeCiJobFailureService,
-            maturity: :experimental,
-            self_managed: false,
-            internal: false
-          },
           chat: {
             service_class: ::Gitlab::Llm::Completions::Chat,
             prompt_class: nil,
