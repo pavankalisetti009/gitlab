@@ -8,6 +8,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
+  let(:workflow_service_url) { 'https://duo-workflow-service.example.com' }
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
@@ -110,6 +111,84 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
       expect(json_response.pluck('parent_ts')).to eq([checkpoint2.parent_ts, checkpoint1.parent_ts])
       expect(json_response[0]).to have_key('checkpoint')
       expect(json_response[0]).to have_key('metadata')
+    end
+  end
+
+  describe 'POST /ai/duo_workflows/direct_access' do
+    let(:path) { '/ai/duo_workflows/direct_access' }
+
+    before do
+      stub_env('DUO_WORKFLOW_SERVICE_URL', workflow_service_url)
+    end
+
+    context 'when the duo_workflows feature flag is disabled for the user' do
+      before do
+        stub_feature_flags(duo_workflow: false)
+      end
+
+      it 'returns not found' do
+        post api(path, user)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
+    context 'when rate limited' do
+      it 'returns api error' do
+        allow(Gitlab::ApplicationRateLimiter).to receive(:throttled_request?).and_return(true)
+
+        post api(path, user)
+
+        expect(response).to have_gitlab_http_status(:too_many_requests)
+      end
+    end
+
+    context 'when CreateOauthAccessTokenService returns error' do
+      it 'returns api error' do
+        expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          expect(service).to receive(:execute).and_return({ status: :error, http_status: :forbidden,
+message: 'Duo workflow is not enabled for user' })
+        end
+
+        post api(path, user)
+
+        expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when DuoWorkflowService returns error' do
+      it 'returns api error' do
+        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          expect(client).to receive(:generate_token).and_return({ status: :error,
+message: "could not generate token" })
+        end
+
+        post api(path, user)
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+      end
+    end
+
+    context 'when success' do
+      it 'returns access payload' do
+        expect(Gitlab::CloudConnector).to receive(:headers).with(user).and_return({ header_key: 'header_value' })
+        expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
+          expect(service).to receive(:execute).and_return({ status: :success,
+oauth_access_token: { token: 'oauth_token' } })
+        end
+        expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          expect(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
+        end
+
+        post api(path, user)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(json_response['gitlab_rails']['base_url']).to eq(Gitlab.config.gitlab.url)
+        expect(json_response['gitlab_rails']['token']).to eq('oauth_token')
+        expect(json_response['duo_workflow_service']['base_url']).to eq(workflow_service_url)
+        expect(json_response['duo_workflow_service']['token']).to eq('duo_workflow_token')
+        expect(json_response['duo_workflow_service']['headers']['header_key']).to eq("header_value")
+      end
     end
   end
 end

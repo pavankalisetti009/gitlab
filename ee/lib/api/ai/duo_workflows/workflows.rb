@@ -24,6 +24,51 @@ module API
 
         namespace :ai do
           namespace :duo_workflows do
+            resources :direct_access do
+              desc 'Connection details for accessing Duo Workflow Service directly' do
+                success code: 201
+                failure [
+                  { code: 401, message: 'Unauthorized' },
+                  { code: 404, message: 'Not found' },
+                  { code: 429, message: 'Too many requests' }
+                ]
+              end
+
+              post do
+                not_found! unless Feature.enabled?('duo_workflow', current_user)
+
+                check_rate_limit!(:duo_workflow_direct_access, scope: current_user) do
+                  render_api_error!(_('This endpoint has been requested too many times. Try again later.'), 429)
+                end
+
+                gitlab_oauth_token_result = ::Ai::DuoWorkflows::CreateOauthAccessTokenService.new(
+                  current_user: current_user).execute
+
+                if gitlab_oauth_token_result[:status] == :error
+                  render_api_error!(gitlab_oauth_token_result[:message], gitlab_oauth_token_result[:http_status])
+                end
+
+                duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
+                  duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url, current_user: current_user).generate_token
+
+                bad_request!(duo_workflow_token_result[:message]) if duo_workflow_token_result[:status] == :error
+
+                access = {
+                  gitlab_rails: {
+                    base_url: Gitlab.config.gitlab.url,
+                    token: gitlab_oauth_token_result[:oauth_access_token][:token]
+                  },
+                  duo_workflow_service: {
+                    base_url: Gitlab::DuoWorkflow::Client.url,
+                    token: duo_workflow_token_result[:token],
+                    headers: Gitlab::DuoWorkflow::Client.headers(user: current_user)
+                  }
+                }
+
+                present access, with: Grape::Presenters::Presenter
+              end
+            end
+
             namespace :workflows do
               post do
                 project = find_project!(params[:project_id])
