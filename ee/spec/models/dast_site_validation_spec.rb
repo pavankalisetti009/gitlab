@@ -206,4 +206,11 @@ RSpec.describe DastSiteValidation, type: :model do
       end
     end
   end
+
+  context 'with loose foreign key on dast_site_validations.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dast_site_validation, project_id: parent.id) }
+    end
+  end
 end

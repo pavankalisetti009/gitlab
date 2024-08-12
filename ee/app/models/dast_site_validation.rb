@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class DastSiteValidation < ApplicationRecord
+class DastSiteValidation < Gitlab::Database::SecApplicationRecord
   HEADER = 'Gitlab-On-Demand-DAST'
 
   belongs_to :dast_site_token
