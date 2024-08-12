@@ -47,7 +47,7 @@ export const protectionMockProps = {
 
 const approvalsRequired = 3;
 
-const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
+export const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
 
 export const approvalRulesMock = [
   {

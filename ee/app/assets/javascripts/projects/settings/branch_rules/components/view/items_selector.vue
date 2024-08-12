@@ -1,13 +1,18 @@
 <script>
 import ListSelector from '~/vue_shared/components/list_selector/index.vue';
+import { GROUPS_TYPE } from '~/vue_shared/components/list_selector/constants';
 
 export default {
+  GROUPS_TYPE,
   components: {
     ListSelector,
   },
   inject: {
     projectPath: {
       default: '',
+    },
+    projectId: {
+      default: null,
     },
   },
   props: {
@@ -24,21 +29,16 @@ export default {
       required: false,
       default: () => ({}),
     },
-    disableNamespaceDropdown: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    isProjectScoped: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
   },
   data() {
     return {
       selectedItems: [],
     };
+  },
+  computed: {
+    isGroupType() {
+      return this.type === GROUPS_TYPE;
+    },
   },
   beforeMount() {
     this.selectedItems = [...this.items];
@@ -62,11 +62,12 @@ export default {
     <list-selector
       :type="type"
       class="gl-mt-5 !gl-p-0"
+      :disable-namespace-dropdown="isGroupType"
+      :is-groups-with-project-access="isGroupType"
       :project-path="projectPath"
+      :project-id="projectId"
       :selected-items="selectedItems"
       :users-query-options="usersOptions"
-      :disable-namespace-dropdown="disableNamespaceDropdown"
-      :is-project-scoped="isProjectScoped"
       @select="handleSelect"
       @delete="handleDelete"
     />

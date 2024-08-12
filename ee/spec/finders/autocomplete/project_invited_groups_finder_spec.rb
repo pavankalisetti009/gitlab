@@ -75,6 +75,14 @@ RSpec.describe Autocomplete::ProjectInvitedGroupsFinder, feature_category: :grou
         expect(finder.execute).to contain_exactly(public_group, private_group_with_membership)
       end
 
+      context 'when search param is provided' do
+        let(:params) { super().merge(search: private_group_with_membership.name) }
+
+        it 'returns only matching groups' do
+          expect(finder.execute).to contain_exactly(private_group_with_membership)
+        end
+      end
+
       context 'and the with_project_access param is present' do
         subject(:finder) { described_class.new(current_user, params.merge(with_project_access: true)) }
 
