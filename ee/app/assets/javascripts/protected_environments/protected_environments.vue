@@ -210,8 +210,8 @@ export default {
           </div>
         </div>
       </template>
-      <template #pagination>
-        <pagination v-if="showPagination" :change="setPage" :page-info="pageInfo" align="center" />
+      <template v-if="showPagination" #pagination>
+        <pagination :change="setPage" :page-info="pageInfo" align="center" />
       </template>
     </crud-component>
   </div>
