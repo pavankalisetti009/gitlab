@@ -3,9 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_category: :global_search do
+  include RenderedHtml
+
   let_it_be(:admin) { create(:admin) }
 
-  let(:page) { Capybara::Node::Simple.new(rendered) }
+  let(:page) { rendered_html }
   let(:pause_indexing) { false }
   let(:pending_migrations) { false }
   let(:elastic_reindexing_task) { build(:elastic_reindexing_task) }
