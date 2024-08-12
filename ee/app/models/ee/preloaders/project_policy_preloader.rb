@@ -7,7 +7,7 @@ module EE
 
       override :execute
       def execute
-        return if projects.is_a?(ActiveRecord::NullRelation)
+        return if projects.is_a?(ActiveRecord::Relation) && projects.null_relation?
 
         super
 

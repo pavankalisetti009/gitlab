@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_category: :subscription_management do
+  include RenderedHtml
   include SubscriptionPortalHelpers
 
   let_it_be(:user) { create(:user) }
@@ -44,7 +45,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         expect(rendered).to have_text('Not the group')
         expect(rendered).to have_link('Switch to a different group', href: dashboard_groups_path)
 
-        page = Capybara.string(rendered)
+        page = rendered_html
 
         # free
         scoped_node = page.find("[data-testid='plan-card-free']")

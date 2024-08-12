@@ -127,7 +127,7 @@ module Vulnerabilities
 
     def self.capped_count_by_severity
       # Return early when called by `Vulnerabilities::Read.none`.
-      return {} if current_scope.is_a?(ActiveRecord::NullRelation)
+      return {} if current_scope&.null_relation?
 
       # Handles case when called directly `Vulnerabilities::Read.capped_count_by_severity`.
       if current_scope.nil?

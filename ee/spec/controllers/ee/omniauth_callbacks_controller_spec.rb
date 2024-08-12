@@ -16,7 +16,7 @@ RSpec.describe OmniauthCallbacksController, type: :controller, feature_category:
 
   context 'when sign in fails' do
     before do
-      subject.response = ActionDispatch::Response.new
+      subject.set_response!(ActionDispatch::Response.new)
 
       allow(subject).to receive(:params)
         .and_return(ActionController::Parameters.new(username: user.username))
