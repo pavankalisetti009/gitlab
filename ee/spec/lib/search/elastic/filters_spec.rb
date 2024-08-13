@@ -613,9 +613,9 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 {
                   bool: {
                     should: [
-                      { term: { author_id: { _name: 'filters:as_author', value: user.id } } },
-                      { term: { assignee_id: { _name: 'filters:as_assignee', value: user.id } } },
-                      { terms: { _name: 'filters:project:membership:id',
+                      { term: { author_id: { _name: 'filters:confidential:as_author', value: user.id } } },
+                      { term: { assignee_id: { _name: 'filters:confidential:as_assignee', value: user.id } } },
+                      { terms: { _name: 'filters:confidential:project:membership:id',
                                  project_id: [authorized_project.id] } }
                     ]
                   }
@@ -690,9 +690,9 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                 {
                   bool: {
                     should: [
-                      { term: { author_id: { _name: 'filters:as_author', value: user.id } } },
-                      { term: { assignee_id: { _name: 'filters:as_assignee', value: user.id } } },
-                      { terms: { _name: 'filters:project:membership:id',
+                      { term: { author_id: { _name: 'filters:confidential:as_author', value: user.id } } },
+                      { term: { assignee_id: { _name: 'filters:confidential:as_assignee', value: user.id } } },
+                      { terms: { _name: 'filters:confidential:project:membership:id',
                                  project_id: [authorized_project.id] } }
                     ]
                   }
@@ -761,7 +761,21 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         let(:public_and_internal_projects) { false }
 
         it 'returns the expected query' do
-          expected_filter = [{ terms: { _name: 'filters:project', project_id: [] } }]
+          expected_filter = [
+            { has_parent: { _name: 'filters:project:parent', parent_type: 'project',
+                            query: {
+                              bool: {
+                                should: [
+                                  bool: { filter: [
+                                    { terms: { _name: 'filters:project:membership:id', id: [] } },
+                                    { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                               'issues_access_level' => [::ProjectFeature::ENABLED,
+                                                 ::ProjectFeature::PRIVATE] } }
+                                  ] }
+                                ]
+                              }
+                            } } }
+          ]
 
           expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
           expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
@@ -773,7 +787,21 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           let(:no_join_project) { true }
 
           it 'returns the expected query' do
-            expected_filter = [{ terms: { _name: 'filters:project', project_id: [] } }]
+            expected_filter = [
+              bool: {
+                _name: 'filters:project',
+                should: [
+                  { bool:
+                    {
+                      filter: [
+                        { terms: { _name: 'filters:project:membership:id', project_id: [] } },
+                        { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                      ]
+                    } }
+                ]
+              }
+            ]
 
             expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
             expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
@@ -796,15 +824,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                     { terms: { _name: 'filters:project:membership:id', id: [] } },
                     { terms: {
                       _name: 'filters:project:issues:enabled_or_private',
-                      'issues_access_level' => [20, 10]
+                      'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                     } }
                   ] } },
                   { bool:
                     { _name: 'filters:project:visibility:20:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                         { term: { 'issues_access_level' =>
-                          { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 } } }
+                          { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                            value: ::ProjectFeature::ENABLED } } }
                       ] } }
                 ] } } } }
           ]
@@ -827,16 +857,20 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                     { filter: [
                       { terms: { _name: 'filters:project:membership:id', project_id: [] } },
                       { terms: {
-                        _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [20, 10]
+                        _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [
+                          ::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE
+                        ]
                       } }
                     ] } },
                   { bool:
                     { _name: 'filters:project:visibility:20:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                         { term: {
                           'issues_access_level' =>
-                            { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                            { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
                         } }
                       ] } }
                 ]
@@ -861,16 +895,20 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       { filter: [
                         { terms: { _name: 'filters:project:membership:id', foo: [] } },
                         { terms: {
-                          _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [20, 10]
+                          _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [
+                            ::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE
+                          ]
                         } }
                       ] } },
                     { bool:
                       { _name: 'filters:project:visibility:20:issues:access_level',
                         filter: [
-                          { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                          { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                        value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                           { term: {
                             'issues_access_level' =>
-                              { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                              { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
                           } }
                         ] } }
                   ]
@@ -902,8 +940,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             { has_parent:
               { _name: 'filters:project:parent', parent_type: 'project',
                 query: { bool: { should: [{ bool: { filter: [
-                  { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
-                  { terms: { _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [20, 10] } }
+                  { term: { visibility_level: { _name: 'filters:project:any',
+                                                value: ::Gitlab::VisibilityLevel::PRIVATE } } },
+                  { terms: { _name: 'filters:project:issues:enabled_or_private',
+                             'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
                 ] } }] } } } }
           ]
 
@@ -920,10 +960,11 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             expected_filter = [
               { bool: { _name: 'filters:project',
                         should: [{ bool: { filter: [
-                          { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
+                          { term: { visibility_level: { _name: 'filters:project:any',
+                                                        value: ::Gitlab::VisibilityLevel::PRIVATE } } },
                           { terms: {
                             _name: 'filters:project:issues:enabled_or_private',
-                            'issues_access_level' => [20, 10]
+                            'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                           } }
                         ] } }] } }
             ]
@@ -941,10 +982,11 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               expected_filter = [
                 { bool: { _name: 'filters:project',
                           should: [{ bool: { filter: [
-                            { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
+                            { term: { visibility_level: { _name: 'filters:project:any',
+                                                          value: ::Gitlab::VisibilityLevel::PRIVATE } } },
                             { terms: {
                               _name: 'filters:project:issues:enabled_or_private',
-                              'issues_access_level' => [20, 10]
+                              'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                             } }
                           ] } }] } }
               ]
@@ -967,28 +1009,31 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               { _name: 'filters:project:parent', parent_type: 'project',
                 query: { bool: { should: [
                   { bool: { filter: [
-                    { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
+                    { term: { visibility_level: { _name: 'filters:project:any',
+                                                  value: ::Gitlab::VisibilityLevel::PRIVATE } } },
                     { terms: {
                       _name: 'filters:project:issues:enabled_or_private',
-                      'issues_access_level' => [20, 10]
+                      'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                     } }
                   ] } },
                   { bool:
                     { _name: 'filters:project:visibility:10:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                      value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                         { terms: {
                           _name: 'filters:project:visibility:10:issues:access_level:enabled_or_private',
-                          'issues_access_level' => [20, 10]
+                          'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                         } }
                       ] } },
                   { bool:
                     { _name: 'filters:project:visibility:20:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                         { terms: {
                           _name: 'filters:project:visibility:20:issues:access_level:enabled_or_private',
-                          'issues_access_level' => [20, 10]
+                          'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                         } }
                       ] } }
                 ] } } } }
@@ -1009,26 +1054,30 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                         should: [
                           { bool:
                             { filter: [
-                              { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
+                              { term: { visibility_level: { _name: 'filters:project:any',
+                                                            value: ::Gitlab::VisibilityLevel::PRIVATE } } },
                               { terms: { _name: 'filters:project:issues:enabled_or_private',
-                                         'issues_access_level' => [20, 10] } }
+                                         'issues_access_level' => [::ProjectFeature::ENABLED,
+                                           ::ProjectFeature::PRIVATE] } }
                             ] } },
                           { bool:
                             { _name: 'filters:project:visibility:10:issues:access_level',
                               filter: [
-                                { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                                { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                              value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                                 { terms: {
                                   _name: 'filters:project:visibility:10:issues:access_level:enabled_or_private',
-                                  'issues_access_level' => [20, 10]
+                                  'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                                 } }
                               ] } },
                           { bool:
                             { _name: 'filters:project:visibility:20:issues:access_level',
                               filter: [
-                                { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                                { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                              value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                                 { terms: {
                                   _name: 'filters:project:visibility:20:issues:access_level:enabled_or_private',
-                                  'issues_access_level' => [20, 10]
+                                  'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                                 } }
                               ] } }
                         ] } }
@@ -1049,26 +1098,30 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                           should: [
                             { bool:
                               { filter: [
-                                { term: { visibility_level: { _name: 'filters:project:any', value: 0 } } },
+                                { term: { visibility_level: { _name: 'filters:project:any',
+                                                              value: ::Gitlab::VisibilityLevel::PRIVATE } } },
                                 { terms: { _name: 'filters:project:issues:enabled_or_private',
-                                           'issues_access_level' => [20, 10] } }
+                                           'issues_access_level' => [::ProjectFeature::ENABLED,
+                                             ::ProjectFeature::PRIVATE] } }
                               ] } },
                             { bool:
                               { _name: 'filters:project:visibility:10:issues:access_level',
                                 filter: [
-                                  { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                                  { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                                value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                                   { terms: {
                                     _name: 'filters:project:visibility:10:issues:access_level:enabled_or_private',
-                                    'issues_access_level' => [20, 10]
+                                    'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                                   } }
                                 ] } },
                             { bool:
                               { _name: 'filters:project:visibility:20:issues:access_level',
                                 filter: [
-                                  { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                                  { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                                value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                                   { terms: {
                                     _name: 'filters:project:visibility:20:issues:access_level:enabled_or_private',
-                                    'issues_access_level' => [20, 10]
+                                    'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                                   } }
                                 ] } }
                           ] } }
@@ -1092,10 +1145,24 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
         it 'returns the expected query' do
           expected_filter = [
-            { terms: {
-              _name: 'filters:project',
-              project_id: contain_exactly(authorized_project.id, public_project.id)
-            } }
+            has_parent: {
+              _name: 'filters:project:parent',
+              parent_type: 'project',
+              query: {
+                bool: {
+                  should: [
+                    { bool: {
+                      filter: [
+                        { terms: { _name: 'filters:project:membership:id',
+                                   id: contain_exactly(authorized_project.id, public_project.id) } },
+                        { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                      ]
+                    } }
+                  ]
+                }
+              }
+            }
           ]
 
           expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
@@ -1109,10 +1176,21 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           it 'returns the expected query' do
             expected_filter = [
-              { terms: {
+
+              bool: {
                 _name: 'filters:project',
-                project_id: contain_exactly(authorized_project.id, public_project.id)
-              } }
+                should: [
+                  { bool:
+                    {
+                      filter: [
+                        { terms: { _name: 'filters:project:membership:id',
+                                   project_id: contain_exactly(authorized_project.id, public_project.id) } },
+                        { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                      ]
+                    } }
+                ]
+              }
             ]
 
             expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
@@ -1122,13 +1200,25 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           end
 
           context 'when project_id_field is set in options' do
-            let(:options) { base_options.merge(project_id_field: :foo) }
+            let(:custom_field) { :foo }
+            let(:options) { base_options.merge(project_id_field: custom_field) }
 
             it 'returns the expected query' do
               expected_filter = [
-                { terms: { _name: 'filters:project', foo: contain_exactly(authorized_project.id, public_project.id) } }
+                { bool: {
+                  _name: 'filters:project',
+                  should: [
+                    { bool: {
+                      filter: [
+                        { terms: { _name: 'filters:project:membership:id',
+                                   "#{custom_field}": contain_exactly(authorized_project.id, public_project.id) } },
+                        { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                      ]
+                    } }
+                  ]
+                } }
               ]
-
               expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
               expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
               expect(by_authorization.dig(:query, :bool, :must)).to be_empty
@@ -1154,25 +1244,29 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       } },
                       { terms: {
                         _name: 'filters:project:issues:enabled_or_private',
-                        'issues_access_level' => [20, 10]
+                        'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                       } }
                     ] } },
                   { bool:
                     { _name: 'filters:project:visibility:10:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                      value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                         { term: {
                           'issues_access_level' =>
-                            { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                            { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
                         } }
                       ] } },
                   { bool:
                     { _name: 'filters:project:visibility:20:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                         { term: {
                           'issues_access_level' =>
-                            { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                            { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
                         } }
                       ] } }
                 ] } } } }
@@ -1199,25 +1293,29 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                     } },
                     { terms: {
                       _name: 'filters:project:issues:enabled_or_private',
-                      'issues_access_level' => [20, 10]
+                      'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                     } }
                   ] } },
                 { bool:
                   { _name: 'filters:project:visibility:10:issues:access_level',
                     filter: [
-                      { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                      { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                    value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                       { term: {
                         'issues_access_level' =>
-                          { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                          { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                            value: ::ProjectFeature::ENABLED }
                       } }
                     ] } },
                 { bool:
                   { _name: 'filters:project:visibility:20:issues:access_level',
                     filter: [
-                      { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                      { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                    value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                       { term: {
                         'issues_access_level' =>
-                          { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                          { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                            value: ::ProjectFeature::ENABLED }
                       } }
                     ] } }
               ]
@@ -1244,25 +1342,29 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       } },
                       { terms: {
                         _name: 'filters:project:issues:enabled_or_private',
-                        'issues_access_level' => [20, 10]
+                        'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                       } }
                     ] } },
                   { bool:
                     { _name: 'filters:project:visibility:10:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                      value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                         { term: {
                           'issues_access_level' =>
-                            { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                            { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
                         } }
                       ] } },
                   { bool:
                     { _name: 'filters:project:visibility:20:issues:access_level',
                       filter: [
-                        { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                         { term: {
                           'issues_access_level' =>
-                            { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                            { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
                         } }
                       ] } }
                 ]
@@ -1328,8 +1430,24 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           it 'returns the expected query' do
             expected_filter = [
-              { terms: { _name: 'filters:project',
-                         project_id: contain_exactly(authorized_project.id, public_project.id) } }
+              has_parent: {
+                _name: 'filters:project:parent',
+                parent_type: 'project',
+                query: {
+                  bool: {
+                    should: [
+                      { bool: {
+                        filter: [
+                          { terms: { _name: 'filters:project:membership:id',
+                                     id: contain_exactly(authorized_project.id, public_project.id) } },
+                          { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                     'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                        ]
+                      } }
+                    ]
+                  }
+                }
+              }
             ]
 
             expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
@@ -1367,8 +1485,19 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
             it 'returns the expected query' do
               expected_filter = [
-                { terms: { _name: 'filters:project',
-                           project_id: contain_exactly(authorized_project.id, public_project.id) } }
+                { bool: {
+                  _name: 'filters:project',
+                  should: [
+                    { bool: { filter: [
+                      { terms:
+                        { _name: 'filters:project:membership:id',
+                          project_id: contain_exactly(authorized_project.id, public_project.id) } },
+                      { terms:
+                        { _name: 'filters:project:issues:enabled_or_private',
+                          'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                    ] } }
+                  ]
+                } }
               ]
 
               expect(by_authorization.dig(:query, :bool, :filter)).to match(expected_filter)
@@ -1511,7 +1640,24 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
           it 'returns the expected query' do
             expected_filter = [
-              { terms: { _name: 'filters:project', project_id: [internal_project.id] } }
+              has_parent: {
+                _name: 'filters:project:parent',
+                parent_type: 'project',
+                query: {
+                  bool: {
+                    should: [
+                      { bool: {
+                        filter: [
+                          { terms: { _name: 'filters:project:membership:id',
+                                     id: [internal_project.id] } },
+                          { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                     'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                        ]
+                      } }
+                    ]
+                  }
+                }
+              }
             ]
 
             expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
@@ -1525,7 +1671,17 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
             it 'returns the expected query' do
               expected_filter = [
-                { terms: { _name: 'filters:project', project_id: [internal_project.id] } }
+                { bool:
+                  { _name: 'filters:project',
+                    should: [
+                      bool: {
+                        filter: [
+                          { terms: { _name: 'filters:project:membership:id', project_id: [internal_project.id] } },
+                          { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                     'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                        ]
+                      }
+                    ] } }
               ]
 
               expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
@@ -1535,11 +1691,24 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
 
             context 'when project_id_field is set in options' do
-              let(:options) { base_options.merge(project_id_field: :foo) }
+              let(:custom_field) { :foo }
+              let(:options) { base_options.merge(project_id_field: custom_field) }
 
               it 'returns the expected query' do
                 expected_filter = [
-                  { terms: { _name: 'filters:project', foo: [internal_project.id] } }
+                  { bool:
+                    { _name: 'filters:project',
+                      should: [
+                        bool: {
+                          filter: [
+                            { terms: { _name: 'filters:project:membership:id',
+                                       "#{custom_field}": [internal_project.id] } },
+                            { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                       'issues_access_level' => [::ProjectFeature::ENABLED,
+                                         ::ProjectFeature::PRIVATE] } }
+                          ]
+                        }
+                      ] } }
                 ]
 
                 expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
@@ -1567,25 +1736,29 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                         } },
                         { terms: {
                           _name: 'filters:project:issues:enabled_or_private',
-                          'issues_access_level' => [20, 10]
+                          'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
                         } }
                       ] } },
                     { bool:
                       { _name: 'filters:project:visibility:10:issues:access_level',
                         filter: [
-                          { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                          { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                        value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                           { term: {
                             'issues_access_level' =>
-                              { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                              { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
                           } }
                         ] } },
                     { bool:
                       { _name: 'filters:project:visibility:20:issues:access_level',
                         filter: [
-                          { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                          { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                        value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                           { term: {
                             'issues_access_level' =>
-                              { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                              { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
                           } }
                         ] } }
                   ] } } } }
@@ -1608,24 +1781,28 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                       { bool: { filter: [
                         { terms: { _name: 'filters:project:membership:id', project_id: [internal_project.id] } },
                         { terms: { _name: 'filters:project:issues:enabled_or_private',
-                                   'issues_access_level' => [20, 10] } }
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
                       ] } },
                       { bool:
                         { _name: 'filters:project:visibility:10:issues:access_level',
                           filter: [
-                            { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                            { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                          value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                             { term: {
                               'issues_access_level' =>
-                                { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                                { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                                  value: ::ProjectFeature::ENABLED }
                             } }
                           ] } },
                       { bool:
                         { _name: 'filters:project:visibility:20:issues:access_level',
                           filter: [
-                            { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                            { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                          value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                             { term: {
                               'issues_access_level' =>
-                                { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                                { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                  value: ::ProjectFeature::ENABLED }
                             } }
                           ] } }
                     ] } }
@@ -1648,24 +1825,28 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                         { bool: { filter: [
                           { terms: { _name: 'filters:project:membership:id', foo: [internal_project.id] } },
                           { terms: { _name: 'filters:project:issues:enabled_or_private',
-                                     'issues_access_level' => [20, 10] } }
+                                     'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
                         ] } },
                         { bool:
                           { _name: 'filters:project:visibility:10:issues:access_level',
                             filter: [
-                              { term: { visibility_level: { _name: 'filters:project:visibility:10', value: 10 } } },
+                              { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                            value: ::Gitlab::VisibilityLevel::INTERNAL } } },
                               { term: {
                                 'issues_access_level' =>
-                                  { _name: 'filters:project:visibility:10:issues:access_level:enabled', value: 20 }
+                                  { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                                    value: ::ProjectFeature::ENABLED }
                               } }
                             ] } },
                         { bool:
                           { _name: 'filters:project:visibility:20:issues:access_level',
                             filter: [
-                              { term: { visibility_level: { _name: 'filters:project:visibility:20', value: 20 } } },
+                              { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                            value: ::Gitlab::VisibilityLevel::PUBLIC } } },
                               { term: {
                                 'issues_access_level' =>
-                                  { _name: 'filters:project:visibility:20:issues:access_level:enabled', value: 20 }
+                                  { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                    value: ::ProjectFeature::ENABLED }
                               } }
                             ] } }
                       ] } }

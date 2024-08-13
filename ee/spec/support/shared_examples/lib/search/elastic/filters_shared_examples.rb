@@ -58,9 +58,8 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
         with: %w[
           filters:non_confidential
           filters:confidential
-          filters:as_author
-          filters:as_assignee
-          filters:project:membership:id
+          filters:confidential:as_author
+          filters:confidential:as_assignee
         ])
     end
 
@@ -71,9 +70,9 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
         assert_names_in_query(subject, without: %w[
           filters:confidential
           filters:non_confidential
-          filters:as_author
-          filters:as_assignee
-          filters:project:membership:id
+          filters:confidential:as_author
+          filters:confidential:as_assignee
+          filters:confidential:project:membership:id
         ])
       end
     end
@@ -86,9 +85,9 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
       assert_names_in_query(subject, with: %w[
         filters:non_confidential
         filters:confidential
-        filters:as_author
-        filters:as_assignee
-        filters:project:membership:id
+        filters:confidential:as_author
+        filters:confidential:as_assignee
+        filters:confidential:project:membership:id
       ])
     end
   end
@@ -101,9 +100,9 @@ RSpec.shared_examples 'a query filtered by confidentiality' do
       assert_names_in_query(subject, with: %w[filters:non_confidential],
         without: %w[
           filters:confidential
-          filters:as_author
-          filters:as_assignee
-          filters:project:membership:id
+          filters:confidential:as_author
+          filters:confidential:as_assignee
+          filters:confidential:project:membership:id
         ])
     end
   end
