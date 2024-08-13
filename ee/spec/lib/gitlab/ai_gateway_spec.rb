@@ -55,5 +55,20 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
 
       it { is_expected.to match(expected_headers.merge('User-Agent' => agent)) }
     end
+
+    context 'when Langsmith is enabled' do
+      before do
+        allow(Langsmith::RunHelpers).to receive(:enabled?).and_return(true)
+        allow(Langsmith::RunHelpers).to receive(:to_headers).and_return({
+          "langsmith-trace" => '20240808T090953171943Z18dfa1db-1dfc-4a48-aaf8-a139960955ce'
+        })
+      end
+
+      it 'includes langsmith header' do
+        expect(headers).to include(
+          'langsmith-trace' => '20240808T090953171943Z18dfa1db-1dfc-4a48-aaf8-a139960955ce'
+        )
+      end
+    end
   end
 end

@@ -23,7 +23,7 @@ module Langsmith
 
       with_retry do
         Gitlab::HTTP.post(
-          "https://#{endpoint}/runs",
+          "#{endpoint}/runs",
           headers: headers,
           body: data.to_json
         )
@@ -41,7 +41,7 @@ module Langsmith
 
       with_retry do
         Gitlab::HTTP.patch(
-          "https://#{endpoint}/runs/#{run_id}",
+          "#{endpoint}/runs/#{run_id}",
           headers: headers,
           body: data.to_json
         )
@@ -76,11 +76,11 @@ module Langsmith
     end
 
     def endpoint
-      ENV['LANGCHAIN_ENDPOINT']
+      ENV['LANGCHAIN_ENDPOINT'] || 'https://api.smith.langchain.com'
     end
 
     def project_name
-      ENV['LANGCHAIN_PROJECT']
+      ENV['LANGCHAIN_PROJECT'] || 'default'
     end
 
     def current_time

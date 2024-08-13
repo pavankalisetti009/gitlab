@@ -27,7 +27,7 @@ module Langsmith
         tags: %i[duo_chat],
         class_method: false
       )
-        return unless Gitlab.dev_or_test_env? && Langsmith::Client.enabled?
+        return unless RunHelpers.enabled?
 
         RunHelpers.send(:do_trace, self, method_name, name, run_type, tags, class_method) # rubocop:disable GitlabSecurity/PublicSend -- This is safe.
       end
@@ -69,6 +69,27 @@ module Langsmith
         outputs: run_outputs(result),
         error: error_message
       )
+    end
+
+    def self.enabled?
+      Gitlab.dev_or_test_env? && Langsmith::Client.enabled?
+    end
+
+    # Generate the distrubted tracing LangSmith header.
+    # See https://docs.gitlab.com/ee/development/ai_features/duo_chat.html#tracing-with-langsmith
+    # and https://docs.smith.langchain.com/how_to_guides/tracing/distributed_tracing
+    def self.to_headers
+      return {} unless Langsmith::RunHelpers.run_tree
+
+      correlation_id = Labkit::Correlation::CorrelationId.current_or_new_id
+      current_run_tree = Langsmith::RunHelpers.run_tree[correlation_id]
+
+      return {} unless current_run_tree
+
+      current_time = Time.current.strftime('%Y%m%dT%H%M%SZ')
+      {
+        'langsmith-trace' => "#{current_time}#{current_run_tree[-1]}"
+      }
     end
 
     def self.included(base)
