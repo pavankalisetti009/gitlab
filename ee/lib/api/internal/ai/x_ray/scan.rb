@@ -64,8 +64,8 @@ module API
           namespace 'internal' do
             resource :jobs do
               params do
-                requires :id, type: Integer, desc: %q(Job's ID)
-                requires :token, type: String, desc: %q(Job's authentication token)
+                requires :id, type: Integer, desc: "Job's ID"
+                requires :token, type: String, desc: "Job's authentication token"
               end
               post ':id/x_ray/scan' do
                 check_rate_limit!(:code_suggestions_x_ray_scan, scope: current_job.project)
@@ -84,12 +84,12 @@ module API
 
               desc 'Updates list of dependencies for a programming language'
               params do
-                requires :id, type: Integer, desc: %q(Job's ID)
-                requires :token, type: String, desc: %q(Job's authentication token)
-                requires :scanner_version, type: String, desc: %(The version of X-Ray scanner)
+                requires :id, type: Integer, desc: "Job's ID"
+                requires :token, type: String, desc: "Job's authentication token"
+                requires :scanner_version, type: String, desc: 'The version of X-Ray scanner'
                 requires :language, type: String,
                   values: ::CodeSuggestions::ProgrammingLanguage::SUPPORTED_LANGUAGES.keys,
-                  desc: %q(The programming language of dependencies)
+                  desc: 'The programming language of dependencies'
                 requires :dependencies, type: Array[String],
                   coerce_with: ::API::Validations::Types::CommaSeparatedToArray.coerce,
                   desc: 'The list of dependencies'
