@@ -227,9 +227,7 @@ export default {
         @health-check-completed="healthCheckRunning = false"
       />
       <section v-if="hasCodeSuggestions">
-        <section
-          class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5 gl-bg-gray-10 gl-p-5"
-        >
+        <section class="gl-grid md:gl-grid-cols-2 gl-gap-5">
           <code-suggestions-statistics-card
             :total-value="totalValue"
             :usage-value="usageValue"
