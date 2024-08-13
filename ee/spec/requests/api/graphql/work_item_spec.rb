@@ -319,13 +319,10 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
       end
 
       describe 'health status widget' do
-        before do
-          stub_licensed_features(issuable_health_status: true)
-
-          work_item.update_attribute(:health_status, :at_risk)
-
-          post_graphql(query, current_user: current_user)
-        end
+        let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
+        let_it_be(:sub_issue) { create(:work_item, :issue, :closed, project: project, health_status: :on_track) }
+        let_it_be(:sub_issue_2) { create(:work_item, :issue, project: project, health_status: :at_risk) }
+        let_it_be(:sub_task) { create(:work_item, :task, project: project, health_status: :needs_attention) }
 
         let(:work_item_fields) do
           <<~GRAPHQL
@@ -347,6 +344,19 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           GRAPHQL
         end
 
+        before do
+          stub_feature_flags(enforce_check_group_level_work_items_license: true)
+          stub_licensed_features(epics: true, issuable_health_status: true)
+
+          work_item.update_attribute(:health_status, :at_risk)
+
+          create(:parent_link, work_item_parent: work_item, work_item: sub_issue)
+          create(:parent_link, work_item_parent: work_item, work_item: sub_issue_2)
+          create(:parent_link, work_item_parent: sub_issue, work_item: sub_task)
+
+          post_graphql(query, current_user: current_user)
+        end
+
         it 'returns health status widget information' do
           expect(work_item_data).to include(
             'id' => work_item.to_gid.to_s,
@@ -360,8 +370,8 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
                 'healthStatus' => 'atRisk',
                 'rolledUpHealthStatus' => match_array([
                   { 'healthStatus' => 'onTrack', 'count' => 0 },
-                  { 'healthStatus' => 'needsAttention', 'count' => 0 },
-                  { 'healthStatus' => 'atRisk', 'count' => 0 }
+                  { 'healthStatus' => 'needsAttention', 'count' => 1 },
+                  { 'healthStatus' => 'atRisk', 'count' => 1 }
                 ])
               )
             )
