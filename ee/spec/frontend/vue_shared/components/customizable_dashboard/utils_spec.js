@@ -192,7 +192,7 @@ describe('getDashboardConfig', () => {
             height: 3,
             width: 3,
           },
-          queryOverrides: null,
+          queryOverrides: {},
           title: 'Test A',
           visualization: 'cube_line_chart',
         },

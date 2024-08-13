@@ -11,8 +11,15 @@ import { helpPagePath } from '~/helpers/help_page_helper';
 import { createAlert } from '~/alert';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import getAllCustomizableDashboardsQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_all_customizable_dashboards.query.graphql';
+import getCustomizableDashboardQuery from 'ee/analytics/analytics_dashboards/graphql/queries/get_customizable_dashboard.query.graphql';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { saveCustomDashboard } from 'ee/analytics/analytics_dashboards/api/dashboards_api';
+import { HTTP_STATUS_CREATED } from '~/lib/utils/http_status';
+import {
+  getDashboardConfig,
+  updateApolloCache,
+} from 'ee/vue_shared/components/customizable_dashboard/utils';
 import {
   TEST_COLLECTOR_HOST,
   TEST_TRACKING_KEY,
@@ -20,6 +27,7 @@ import {
   TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE,
   TEST_DASHBOARD_GRAPHQL_EMPTY_SUCCESS_RESPONSE,
   TEST_CUSTOM_GROUP_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
+  TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE,
 } from '../mock_data';
 
 const mockAlertDismiss = jest.fn();
@@ -27,6 +35,15 @@ jest.mock('~/alert', () => ({
   createAlert: jest.fn().mockImplementation(() => ({
     dismiss: mockAlertDismiss,
   })),
+}));
+
+jest.mock('ee/analytics/analytics_dashboards/api/dashboards_api', () => ({
+  saveCustomDashboard: jest.fn(),
+}));
+
+jest.mock('ee/vue_shared/components/customizable_dashboard/utils', () => ({
+  ...jest.requireActual('ee/vue_shared/components/customizable_dashboard/utils'),
+  updateApolloCache: jest.fn(),
 }));
 
 Vue.use(VueApollo);
@@ -50,14 +67,20 @@ describe('DashboardsList', () => {
   const $router = {
     push: jest.fn(),
   };
+  const showToastMock = jest.fn();
+  const $toast = {
+    show: showToastMock,
+  };
 
   let mockAnalyticsDashboardsHandler = jest.fn();
+  let mockAnalyticsDashboardDetailsHandler = jest.fn();
 
   const createWrapper = (provided = {}) => {
     trackingSpy = mockTracking(undefined, window.document, jest.spyOn);
 
     const mockApollo = createMockApollo([
       [getAllCustomizableDashboardsQuery, mockAnalyticsDashboardsHandler],
+      [getCustomizableDashboardQuery, mockAnalyticsDashboardDetailsHandler],
     ]);
 
     wrapper = shallowMountExtended(DashboardsList, {
@@ -68,6 +91,7 @@ describe('DashboardsList', () => {
       },
       mocks: {
         $router,
+        $toast,
       },
       provide: {
         isProject: true,
@@ -84,6 +108,7 @@ describe('DashboardsList', () => {
 
   afterEach(() => {
     mockAnalyticsDashboardsHandler.mockReset();
+    mockAnalyticsDashboardDetailsHandler.mockReset();
   });
 
   describe('by default', () => {
@@ -206,10 +231,11 @@ describe('DashboardsList', () => {
           .mockResolvedValue(TEST_CUSTOM_GROUP_VSD_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
 
         createWrapper({ isProject: false, isGroup: true });
+
+        return waitForPromises();
       });
 
-      it('should render the Value streams dashboards link', async () => {
-        await waitForPromises();
+      it('should render the Value streams dashboards link', () => {
         expect(findListItems()).toHaveLength(1);
 
         const dashboardAttributes = findListItems().at(0).props('dashboard');
@@ -218,6 +244,10 @@ describe('DashboardsList', () => {
           slug: 'value_streams_dashboard',
           title: 'Value Streams Dashboard',
         });
+      });
+
+      it('does not render the dashboard actions dropdown', () => {
+        expect(findListItems().at(0).props('showUserActions')).toBe(false);
       });
     });
 
@@ -392,6 +422,142 @@ describe('DashboardsList', () => {
         captureError: true,
         message,
         error,
+      });
+    });
+  });
+
+  describe('dashboard cloning', () => {
+    const [dashboard, dashboard2] =
+      TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE.data.project.customizableDashboards.nodes;
+    const [referenceConfig] =
+      TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE.data.project.customizableDashboards.nodes;
+
+    const setupCloningWithSaveStatus = async (status) => {
+      mockAnalyticsDashboardsHandler = jest
+        .fn()
+        .mockResolvedValue(TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE);
+      mockAnalyticsDashboardDetailsHandler = jest
+        .fn()
+        .mockResolvedValue(TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE);
+      saveCustomDashboard.mockResolvedValue({ status });
+
+      createWrapper({
+        customDashboardsProject: TEST_CUSTOM_DASHBOARDS_PROJECT,
+      });
+
+      await waitForPromises();
+
+      findListItems().at(0).vm.$emit('clone', dashboard.slug);
+    };
+
+    describe('when busy cloning', () => {
+      beforeEach(() => {
+        return setupCloningWithSaveStatus(HTTP_STATUS_CREATED);
+      });
+
+      it('shows the skeleton loader', () => {
+        expect(findListLoadingSkeletons()).toHaveLength(1);
+      });
+    });
+
+    describe('when cloning two dashboards at the same time', () => {
+      beforeEach(async () => {
+        await setupCloningWithSaveStatus(HTTP_STATUS_CREATED);
+
+        findListItems().at(0).vm.$emit('clone', dashboard2.slug);
+      });
+
+      it('enqueues cloning of dashboards', async () => {
+        expect(mockAnalyticsDashboardDetailsHandler).toHaveBeenCalledTimes(1);
+
+        await waitForPromises();
+
+        expect(mockAnalyticsDashboardDetailsHandler).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('and the new dashboard is succesfully created', () => {
+      beforeEach(async () => {
+        await setupCloningWithSaveStatus(HTTP_STATUS_CREATED);
+        return waitForPromises();
+      });
+
+      it('fetches the full config of the reference dashboard', () => {
+        expect(mockAnalyticsDashboardDetailsHandler).toHaveBeenCalledWith({
+          fullPath: TEST_CUSTOM_DASHBOARDS_PROJECT.fullPath,
+          isGroup: false,
+          isProject: true,
+          slug: dashboard.slug,
+        });
+      });
+
+      it('saves a copy of the reference dashboard', () => {
+        expect(saveCustomDashboard).toHaveBeenCalledWith({
+          dashboardConfig: getDashboardConfig({
+            ...referenceConfig,
+            slug: 'audience_copy_copy',
+            title: 'Audience (Copy) (Copy)',
+            panels: referenceConfig.panels.nodes,
+            userDefined: true,
+          }),
+          dashboardSlug: 'audience_copy_copy',
+          isNewFile: true,
+          projectInfo: TEST_CUSTOM_DASHBOARDS_PROJECT,
+        });
+      });
+
+      it('creates a toast message', () => {
+        expect(showToastMock).toHaveBeenCalledWith('Dashboard was cloned successfully');
+      });
+
+      it('updates the client apollo cache', () => {
+        expect(updateApolloCache).toHaveBeenCalledWith({
+          apolloClient: expect.any(Object),
+          slug: 'audience_copy_copy',
+          dashboard: expect.objectContaining({
+            slug: 'audience_copy_copy',
+            title: 'Audience (Copy) (Copy)',
+            userDefined: true,
+          }),
+          fullPath: TEST_CUSTOM_DASHBOARDS_PROJECT.fullPath,
+          isProject: true,
+          isGroup: false,
+        });
+      });
+
+      it('does not show the skeleton loader', () => {
+        expect(findListLoadingSkeletons()).toHaveLength(0);
+      });
+    });
+
+    describe('and an error occurs while cloning', () => {
+      beforeEach(async () => {
+        await setupCloningWithSaveStatus(null);
+        return waitForPromises();
+      });
+
+      it('creates an alert for the error', () => {
+        expect(createAlert).toHaveBeenCalledWith({
+          captureError: true,
+          message: 'Could not clone the dashboard. Refresh the page to try again.',
+          error: expect.any(Error),
+        });
+      });
+
+      it('does not show the skeleton loader', () => {
+        expect(findListLoadingSkeletons()).toHaveLength(0);
+      });
+
+      describe('and a second attempt to clone the dashboard is succesful', () => {
+        beforeEach(() => {
+          saveCustomDashboard.mockResolvedValue({ status: HTTP_STATUS_CREATED });
+          findListItems().at(0).vm.$emit('clone', dashboard.slug);
+          return waitForPromises();
+        });
+
+        it('clears the alert', () => {
+          expect(mockAlertDismiss).toHaveBeenCalled();
+        });
       });
     });
   });
