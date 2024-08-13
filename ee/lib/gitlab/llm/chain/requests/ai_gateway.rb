@@ -165,7 +165,8 @@ module Gitlab
                 steps: options[:agent_scratchpad]
               },
               context: options[:current_resource_params],
-              current_file: options[:current_file_params]
+              current_file: options[:current_file_params],
+              additional_context: options[:additional_context]
             }.compact
 
             {

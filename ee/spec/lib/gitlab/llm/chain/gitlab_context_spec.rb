@@ -8,10 +8,15 @@ RSpec.describe Gitlab::Llm::Chain::GitlabContext, :saas, feature_category: :duo_
   let_it_be(:project) { create(:project, group: group) }
   let(:resource) { nil }
   let(:ai_request) { instance_double(Gitlab::Llm::Chain::Requests::Anthropic) }
+  let(:additional_context) do
+    [
+      { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+    ]
+  end
 
   subject(:context) do
     described_class.new(current_user: user, container: nil, resource: resource, ai_request: ai_request,
-      agent_version: instance_double(Ai::AgentVersion))
+      agent_version: instance_double(Ai::AgentVersion), additional_context: additional_context)
   end
 
   before_all do

@@ -102,6 +102,8 @@ module Mutations
         method = methods.each_key.first
         method_arguments = options.merge(methods[method])
 
+        method_arguments.delete(:additional_context) if Feature.disabled?(:duo_additional_context, current_user)
+
         [method_arguments.delete(:resource_id), method, method_arguments]
       end
     end
