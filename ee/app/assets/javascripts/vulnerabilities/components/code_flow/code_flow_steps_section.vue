@@ -112,7 +112,11 @@ export default {
       elements.forEach((el) => {
         el.classList.remove('selected-inline-section-marker');
       });
-      const element = document.querySelectorAll(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+
+      // Examples of ID: 'TEXT-MARKER1,2-L8', 'TEXT-MARKER3-L7'
+      const element = document.querySelectorAll(
+        `[id^="TEXT-MARKER"][id*="${this.selectedStepNumber}-L"], [id^="TEXT-MARKER"][id*=",${this.selectedStepNumber}-L"], [id^="TEXT-MARKER"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+      );
       if (element) {
         element.forEach((el) => el.classList.add('selected-inline-section-marker'));
       }
@@ -121,12 +125,14 @@ export default {
       // Highlights the step number in the markdown
       const elements = document.querySelectorAll('[id^="TEXT-MARKER"]');
       elements.forEach((el) => {
-        const firstSpan = el.querySelector('span.inline-item-mark');
-        firstSpan?.classList.remove('selected-inline-item-mark');
+        const spans = el.querySelectorAll('span.inline-item-mark');
+        spans.forEach((span) => {
+          span.classList.remove('selected-inline-item-mark');
+        });
       });
-      const element = document.querySelector(`[id^=TEXT-MARKER${this.selectedStepNumber}]`);
+      const element = document.querySelector(`[id^="TEXT-SPAN-MARKER${this.selectedStepNumber}"]`);
       if (element) {
-        element.querySelector('span.inline-item-mark').classList.add('selected-inline-item-mark');
+        element.classList.add('selected-inline-item-mark');
       }
     },
     markdownRowNumber() {
@@ -137,7 +143,10 @@ export default {
         el.classList.add('unselected-inline-number-mark');
       });
 
-      const element = document.querySelector(`[id^=NUM-MARKER${this.selectedStepNumber}]`);
+      // Examples of ID: 'NUM-MARKER1,2-L8', 'NUM-MARKER3-L7'
+      const element = document.querySelector(
+        `[id^="NUM-MARKER"][id*="${this.selectedStepNumber}-L"], [id^="NUM-MARKER"][id*=",${this.selectedStepNumber}-L"], [id^="NUM-MARKER"][id*="${this.selectedStepNumber},"][id*="-L"]`,
+      );
       if (element) {
         element.classList.add('selected-inline-number-mark');
         element.classList.remove('unselected-inline-number-mark');

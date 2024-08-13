@@ -125,8 +125,8 @@ describe('updateLinesToMarker', () => {
     ];
     const result = updateLinesToMarker(input);
     expect(result).toEqual({
-      1: { startLine: 1, info: 'Line 1' },
-      3: { startLine: 3, info: 'Line 3' },
+      1: [{ startLine: 1, info: 'Line 1' }],
+      3: [{ startLine: 3, info: 'Line 3' }],
     });
   });
 
@@ -138,9 +138,9 @@ describe('updateLinesToMarker', () => {
     ];
     const result = updateLinesToMarker(input);
     expect(result).toEqual({
-      1: { startLine: 1, endLine: 3, info: 'Lines 1-3' },
-      2: { startLine: 1, endLine: 3, info: 'Lines 1-3' },
-      3: { startLine: 1, endLine: 3, info: 'Lines 1-3' },
+      1: [{ startLine: 1, endLine: 3, info: 'Lines 1-3' }],
+      2: [{ startLine: 1, endLine: 3, info: 'Lines 1-3' }],
+      3: [{ startLine: 1, endLine: 3, info: 'Lines 1-3' }],
     });
   });
 
@@ -155,9 +155,33 @@ describe('updateLinesToMarker', () => {
     ];
     const result = updateLinesToMarker(input);
     expect(result).toEqual({
-      1: { startLine: 1, endLine: 2, info: 'Block 1' },
-      2: { startLine: 1, endLine: 2, info: 'Block 1' },
-      4: { startLine: 4, info: 'Block 2' },
+      1: [{ startLine: 1, endLine: 2, info: 'Block 1' }],
+      2: [{ startLine: 1, endLine: 2, info: 'Block 1' }],
+      4: [{ startLine: 4, info: 'Block 2' }],
+    });
+  });
+
+  it('should handle overlapping highlights', () => {
+    const input = [
+      {
+        highlightInfo: [
+          { startLine: 1, endLine: 3, info: 'Block 1' },
+          { startLine: 2, endLine: 4, info: 'Block 2' },
+        ],
+      },
+    ];
+    const result = updateLinesToMarker(input);
+    expect(result).toEqual({
+      1: [{ startLine: 1, endLine: 3, info: 'Block 1' }],
+      2: [
+        { startLine: 1, endLine: 3, info: 'Block 1' },
+        { startLine: 2, endLine: 4, info: 'Block 2' },
+      ],
+      3: [
+        { startLine: 1, endLine: 3, info: 'Block 1' },
+        { startLine: 2, endLine: 4, info: 'Block 2' },
+      ],
+      4: [{ startLine: 2, endLine: 4, info: 'Block 2' }],
     });
   });
 
