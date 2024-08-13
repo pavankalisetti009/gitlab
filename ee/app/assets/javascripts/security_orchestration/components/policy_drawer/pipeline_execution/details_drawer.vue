@@ -1,6 +1,6 @@
 <script>
 import { s__ } from '~/locale';
-import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import { humanizeActions } from 'ee/security_orchestration/components/policy_drawer/pipeline_execution/utils';
 import { SUMMARY_TITLE } from 'ee/security_orchestration/components/policy_drawer/constants';
 import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
@@ -35,11 +35,7 @@ export default {
       return this.policy?.policyScope;
     },
     parsedYaml() {
-      try {
-        return fromYaml({ manifest: this.policy.yaml });
-      } catch (e) {
-        return null;
-      }
+      return fromYaml({ manifest: this.policy.yaml });
     },
   },
 };
