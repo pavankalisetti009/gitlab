@@ -22,23 +22,11 @@ class DependencyEntity < Grape::Entity
 
   class VulnerabilityEntity < Grape::Entity
     expose :severity, :id
-
-    expose :name do |vulnerability|
-      if vulnerability.is_a?(::Vulnerability)
-        vulnerability.title
-      else
-        vulnerability[:name]
-      end
-    end
-
+    expose :title, as: :name
     expose :url do |vulnerability, options|
-      if vulnerability.is_a?(::Vulnerability)
-        # Use options[:project] instead of vulnerability.project to avoid N+1 queries.
-        # If options[:project] is nil, an error will be raised.
-        ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(options[:project], vulnerability)
-      else
-        vulnerability[:url]
-      end
+      # Use options[:project] instead of vulnerability.project to avoid N+1 queries.
+      # If options[:project] is nil, an error will be raised.
+      ::Gitlab::Routing.url_helpers.project_security_vulnerability_url(options[:project], vulnerability)
     end
   end
 
@@ -79,15 +67,13 @@ class DependencyEntity < Grape::Entity
   end
   expose :component_version_id, as: :component_id, if: ->(_) { group? }
 
-  expose :id, as: :occurrence_id, if: ->(_) { group? || project_level_sbom_occurrences_enabled? }
-  expose :vulnerability_count, if: ->(_) { group? || project_level_sbom_occurrences_enabled? }
+  expose :id, as: :occurrence_id
+  expose :vulnerability_count
 
   private
 
   def render_vulnerabilities?
-    return false if should_not_render_vulnerabilities?
-
-    can_read_vulnerabilities?
+    options[:include_vulnerabilities] && can_read_vulnerabilities?
   end
 
   def can_read_vulnerabilities?
@@ -104,20 +90,5 @@ class DependencyEntity < Grape::Entity
 
   def subject
     request.try(:project) || request.try(:group) || request.try(:organization)
-  end
-
-  def should_not_render_vulnerabilities?
-    # When using `Sbom::Occurrence` records for the project level dependency list,
-    # we load vulnerabilities asychronously for performance. So, we don't want to render
-    # vulnerabilities in that case. For the dependency list export, we do want to render them
-    # so we bypass the feature flag check via the :include_vulnerabilities option.
-    return false if options[:include_vulnerabilities]
-
-    project_level_sbom_occurrences_enabled?
-  end
-
-  def project_level_sbom_occurrences_enabled?
-    project = request.try(:project)
-    project.present? && Feature.enabled?(:project_level_sbom_occurrences, project)
   end
 end

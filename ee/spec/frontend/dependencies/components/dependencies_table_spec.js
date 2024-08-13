@@ -224,134 +224,111 @@ describe('DependenciesTable component', () => {
     });
   });
 
-  describe.each`
-    projectLevelSbomOccurrences | expectedFcn
-    ${false}                    | ${expectDependencyRow}
-    ${true}                     | ${expectDependencyRowWithSbom}
-  `(
-    `given some dependencies with vulnerabilities`,
-    ({ projectLevelSbomOccurrences, expectedFcn }) => {
-      let dependencies;
+  describe('given some dependencies with vulnerabilities', () => {
+    let dependencies;
+
+    beforeEach(() => {
+      dependencies = [
+        makeDependency({
+          name: 'qux',
+          vulnerabilities: ['bar', 'baz'],
+          vulnerabilityCount: 2,
+          occurrenceId: 1,
+        }),
+        makeDependency({ vulnerabilities: [], vulnerabilityCount: 0, occurrenceId: 2 }),
+        // Guarantee that the component doesn't mutate these, but still
+        // maintains its row-toggling behaviour (i.e., via _showDetails)
+      ].map(Object.freeze);
+
+      createComponent({
+        propsData: {
+          dependencies,
+          isLoading: false,
+          vulnerabilityInfo,
+        },
+      });
+    });
+
+    it('renders a row for each dependency', () => {
+      const rows = findTableRows();
+
+      dependencies.forEach((dependency, i) => {
+        expectDependencyRowWithSbom(rows.at(i), dependency);
+      });
+    });
+
+    it('render the toggle button for each row', () => {
+      const toggleButtons = findRowToggleButtons();
+
+      dependencies.forEach((dependency, i) => {
+        const button = toggleButtons.at(i);
+
+        expect(button.exists()).toBe(true);
+        expect(button.classes('invisible')).toBe(dependency.vulnerabilityCount === 0);
+      });
+    });
+
+    it('does not render vulnerability details', () => {
+      expect(findDependencyVulnerabilities().exists()).toBe(false);
+    });
+
+    describe('the dependency vulnerabilities', () => {
+      let rowIndexWithVulnerabilities;
 
       beforeEach(() => {
-        dependencies = [
-          makeDependency({
-            name: 'qux',
-            vulnerabilities: ['bar', 'baz'],
-            vulnerabilityCount: 2,
-            occurrenceId: 1,
-          }),
-          makeDependency({ vulnerabilities: [], vulnerabilityCount: 0, occurrenceId: 2 }),
-          // Guarantee that the component doesn't mutate these, but still
-          // maintains its row-toggling behaviour (i.e., via _showDetails)
-        ].map(Object.freeze);
-
-        createComponent({
-          propsData: {
-            dependencies,
-            isLoading: false,
-            vulnerabilityInfo,
-          },
-          provide: { glFeatures: { projectLevelSbomOccurrences } },
-        });
+        rowIndexWithVulnerabilities = dependencies.findIndex(
+          (dep) => dep.vulnerabilities.length > 0,
+        );
       });
 
-      it('renders a row for each dependency', () => {
-        const rows = findTableRows();
+      it('can be displayed by clicking on the toggle button', () => {
+        const dependency = dependencies[rowIndexWithVulnerabilities];
+        const vulnerabilities = vulnerabilityInfo[dependency.occurrenceId];
+        const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
+        toggleButton.vm.$emit('click');
 
-        dependencies.forEach((dependency, i) => {
-          expectedFcn(rows.at(i), dependency);
-        });
-      });
-
-      it('render the toggle button for each row', () => {
-        const toggleButtons = findRowToggleButtons();
-
-        dependencies.forEach((dependency, i) => {
-          const vulnerabilityCount = projectLevelSbomOccurrences
-            ? dependency.vulnerabilityCount
-            : dependency.vulnerabilities.length;
-          const button = toggleButtons.at(i);
-
-          expect(button.exists()).toBe(true);
-          expect(button.classes('invisible')).toBe(vulnerabilityCount === 0);
-        });
-      });
-
-      it('does not render vulnerability details', () => {
-        expect(findDependencyVulnerabilities().exists()).toBe(false);
-      });
-
-      describe('the dependency vulnerabilities', () => {
-        let rowIndexWithVulnerabilities;
-
-        beforeEach(() => {
-          rowIndexWithVulnerabilities = dependencies.findIndex(
-            (dep) => dep.vulnerabilities.length > 0,
-          );
-        });
-
-        it('can be displayed by clicking on the toggle button', () => {
-          const dependency = dependencies[rowIndexWithVulnerabilities];
-          const vulnerabilities = projectLevelSbomOccurrences
-            ? vulnerabilityInfo[dependency.occurrenceId]
-            : dependency.vulnerabilities;
-          const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
-          toggleButton.vm.$emit('click');
-
-          return nextTick().then(() => {
-            expect(findDependencyVulnerabilities().props()).toEqual({
-              vulnerabilities,
-            });
+        return nextTick().then(() => {
+          expect(findDependencyVulnerabilities().props()).toEqual({
+            vulnerabilities,
           });
         });
+      });
 
-        it('can be displayed by clicking on the vulnerabilities badge', () => {
-          const dependency = dependencies[rowIndexWithVulnerabilities];
-          const vulnerabilities = projectLevelSbomOccurrences
-            ? vulnerabilityInfo[dependency.occurrenceId]
-            : dependency.vulnerabilities;
-          const badge = findTableRows().at(rowIndexWithVulnerabilities).findComponent(GlBadge);
-          badge.trigger('click');
+      it('can be displayed by clicking on the vulnerabilities badge', () => {
+        const dependency = dependencies[rowIndexWithVulnerabilities];
+        const vulnerabilities = vulnerabilityInfo[dependency.occurrenceId];
+        const badge = findTableRows().at(rowIndexWithVulnerabilities).findComponent(GlBadge);
+        badge.trigger('click');
 
-          return nextTick().then(() => {
-            expect(findDependencyVulnerabilities().props()).toEqual({
-              vulnerabilities,
-            });
+        return nextTick().then(() => {
+          expect(findDependencyVulnerabilities().props()).toEqual({
+            vulnerabilities,
           });
-        });
-
-        it('handles row-click event', () => {
-          const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
-          toggleButton.vm.$emit('click');
-
-          return nextTick().then(() => {
-            if (projectLevelSbomOccurrences) {
-              expect(wrapper.emitted('row-click')).toHaveLength(1);
-            } else {
-              expect(wrapper.emitted('row-click')).toBeUndefined();
-            }
-          });
-        });
-
-        it('can display loading icon', async () => {
-          const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
-          toggleButton.vm.$emit('click');
-
-          await waitForPromises();
-          const events = wrapper.emitted('row-click');
-
-          if (projectLevelSbomOccurrences) {
-            wrapper.setProps({ vulnerabilityItemsLoading: events[0] });
-            await waitForPromises();
-            expect(loadingIcon().exists()).toBe(true);
-          } else {
-            expect(events).toBeUndefined();
-          }
         });
       });
-    },
-  );
+
+      it('handles row-click event', () => {
+        const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
+        toggleButton.vm.$emit('click');
+
+        return nextTick().then(() => {
+          expect(wrapper.emitted('row-click')).toHaveLength(1);
+        });
+      });
+
+      it('can display loading icon', async () => {
+        const toggleButton = findRowToggleButtons().at(rowIndexWithVulnerabilities);
+        toggleButton.vm.$emit('click');
+
+        await waitForPromises();
+        const events = wrapper.emitted('row-click');
+
+        wrapper.setProps({ vulnerabilityItemsLoading: events[0] });
+        await waitForPromises();
+        expect(loadingIcon().exists()).toBe(true);
+      });
+    });
+  });
 
   describe('with dependencies that do not have an occurrence count', () => {
     let dependencies;

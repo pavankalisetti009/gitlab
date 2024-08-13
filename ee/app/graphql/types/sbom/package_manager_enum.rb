@@ -6,7 +6,7 @@ module Types
       graphql_name 'PackageManager'
       description 'Values for package manager'
 
-      PACKAGE_MANAGERS = ::Security::DependencyListService::FILTER_PACKAGE_MANAGERS_VALUES
+      PACKAGE_MANAGERS = ::Sbom::DependenciesFinder::FILTER_PACKAGE_MANAGERS_VALUES
 
       PACKAGE_MANAGERS.each do |package_manager|
         value package_manager.upcase,
