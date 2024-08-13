@@ -86,7 +86,8 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
   end
 
   describe '.allowed_group_level_types' do
-    let_it_be(:group) { create(:group) }
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:group) { create(:group, parent: root_group) }
 
     subject { described_class.allowed_group_level_types(group) }
 
@@ -101,7 +102,7 @@ RSpec.describe WorkItems::Type, feature_category: :team_planning do
 
       context 'when create_group_level_work_items is disabled and work_item_epics is enabled' do
         before do
-          stub_feature_flags(create_group_level_work_items: false, work_item_epics: true)
+          stub_feature_flags(create_group_level_work_items: false, work_item_epics: root_group)
         end
 
         it { is_expected.to contain_exactly('epic') }

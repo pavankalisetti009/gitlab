@@ -27,7 +27,7 @@ module EE
         def allowed_group_level_types(resource_parent)
           allowed_types = super
 
-          if ::Feature.enabled?(:work_item_epics, resource_parent, type: :beta) &&
+          if ::Feature.enabled?(:work_item_epics, resource_parent.root_ancestor, type: :beta) &&
               resource_parent.licensed_feature_available?(:epics)
             allowed_types << 'epic'
           end

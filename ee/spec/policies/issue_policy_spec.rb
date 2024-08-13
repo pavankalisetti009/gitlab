@@ -10,8 +10,16 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
   let_it_be(:support_bot) { Users::Internal.support_bot }
   let_it_be_with_refind(:project) { create(:project, :private) }
   let_it_be_with_refind(:issue) { create(:issue, project: project) }
-  let_it_be(:group) do
+
+  let_it_be(:root_group) do
     create(:group, :public).tap do |g|
+      g.add_reporter(reporter)
+      g.add_owner(owner)
+    end
+  end
+
+  let_it_be(:group) do
+    create(:group, :public, parent: root_group).tap do |g|
       g.add_reporter(reporter)
       g.add_owner(owner)
     end
@@ -262,7 +270,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
 
       context 'when editing epic work item is enabled' do
         before do
-          stub_feature_flags(work_item_epics: true)
+          stub_feature_flags(work_item_epics: root_group)
         end
 
         it 'does allow' do

@@ -4020,4 +4020,53 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
   end
+
+  describe '#work_item_epics_enabled?' do
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:group) { create(:group, parent: root_group) }
+    let_it_be(:user) { create(:user) }
+
+    subject { group.work_item_epics_enabled?(user) }
+
+    before do
+      stub_feature_flags(work_item_epics: root_group, work_item_epics_rollout: user)
+      stub_licensed_features(epics: true)
+    end
+
+    context 'when all conditions are met' do
+      it { is_expected.to be true }
+    end
+
+    context 'when work_item_epics feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_epics: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when work_item_epics enabled for the sub group' do
+      before do
+        stub_feature_flags(work_item_epics: group)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when work_item_epics_rollout feature flag is disabled' do
+      before do
+        stub_feature_flags(work_item_epics_rollout: false)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when epics is not a licensed feature' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it { is_expected.to be false }
+    end
+  end
 end

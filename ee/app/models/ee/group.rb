@@ -287,11 +287,13 @@ module EE
 
     override :namespace_work_items_enabled?
     def namespace_work_items_enabled?(user = nil)
-      super || (
-          feature_flag_enabled_for_self_or_ancestor?(:work_item_epics, type: :beta) &&
-          ::Feature.enabled?(:work_item_epics_rollout, user) &&
-          licensed_feature_available?(:epics)
-        )
+      super || work_item_epics_enabled?(user)
+    end
+
+    def work_item_epics_enabled?(user)
+      ::Feature.enabled?(:work_item_epics, root_ancestor) &&
+        ::Feature.enabled?(:work_item_epics_rollout, user) &&
+        licensed_feature_available?(:epics)
     end
 
     class_methods do
