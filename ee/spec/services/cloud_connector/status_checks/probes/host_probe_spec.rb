@@ -2,10 +2,9 @@
 
 RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category: :cloud_connector do
   describe '#execute' do
-    subject(:probe) { described_class.new(host, port) }
+    subject(:probe) { described_class.new(uri) }
 
-    let(:host) { 'example.com' }
-    let(:port) { 443 }
+    let(:uri) { 'https://example.com' }
 
     context 'when the host is reachable' do
       before do
@@ -17,7 +16,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be true
-        expect(result.message).to match("#{host} reachable")
+        expect(result.message).to match("example.com reachable")
       end
     end
 
@@ -31,7 +30,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to match("#{host} could not be reached. If you use firewalls or proxy servers")
+        expect(result.message).to match("example.com could not be reached. If you use firewalls or proxy servers")
       end
     end
 
@@ -45,7 +44,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to match("#{host} could not be reached. If you use firewalls or proxy servers")
+        expect(result.message).to match("example.com could not be reached. If you use firewalls or proxy servers")
       end
     end
 
@@ -59,7 +58,7 @@ RSpec.describe CloudConnector::StatusChecks::Probes::HostProbe, feature_category
 
         expect(result).to be_a(CloudConnector::StatusChecks::Probes::ProbeResult)
         expect(result.success?).to be false
-        expect(result.message).to match("#{host} connection failed: the cause")
+        expect(result.message).to match("example.com connection failed: the cause")
       end
     end
   end
