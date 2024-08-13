@@ -18,6 +18,13 @@ module EE
             null: true,
             resolver: ::Resolvers::RemoteDevelopment::WorkspacesForAgentResolver,
             description: 'Workspaces associated with the agent.'
+
+          field :remote_development_agent_config,
+            ::Types::RemoteDevelopment::RemoteDevelopmentAgentConfigType,
+            extras: [:lookahead],
+            null: true,
+            description: 'Remote development agent config for the cluster agent.',
+            resolver: ::Resolvers::RemoteDevelopment::AgentConfigForAgentResolver
         end
       end
     end

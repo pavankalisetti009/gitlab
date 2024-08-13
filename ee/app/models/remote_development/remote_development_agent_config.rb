@@ -5,6 +5,7 @@ module RemoteDevelopment
     # NOTE: See the following comment for the reasoning behind the `RemoteDevelopment` prefix of this table/model:
     #       https://gitlab.com/gitlab-org/gitlab/-/issues/410045#note_1385602915
     include IgnorableColumns
+    include Sortable
 
     UNLIMITED_QUOTA = -1
     MINIMUM_HOURS_BEFORE_TERMINATION = 1
@@ -40,5 +41,7 @@ module RemoteDevelopment
     validates :default_max_hours_before_termination,
       numericality: { only_integer: true, greater_than_or_equal_to: MINIMUM_HOURS_BEFORE_TERMINATION,
                       less_than_or_equal_to: :max_hours_before_termination_limit }
+
+    scope :by_cluster_agent_ids, ->(ids) { where(cluster_agent_id: ids) }
   end
 end

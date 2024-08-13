@@ -6,5 +6,6 @@ FactoryBot.define do
     user factory: [:user]
     agent factory: [:cluster_agent, :in_group]
     namespace { agent.project.namespace }
+    # after(:create, &:reload)
   end
 end

@@ -20,8 +20,16 @@ module RemoteDevelopment
         actual_states: actual_states
       }
 
-      validate_filter_argument_types!(**filter_arguments)
-      validate_at_least_one_filter_argument_provided!(**filter_arguments)
+      filter_argument_types = {
+        ids: Integer,
+        user_ids: Integer,
+        project_ids: Integer,
+        agent_ids: Integer,
+        actual_states: String
+      }.freeze
+
+      FilterArgumentValidator.validate_filter_argument_types!(filter_argument_types, filter_arguments)
+      FilterArgumentValidator.validate_at_least_one_filter_argument_provided!(**filter_arguments)
       validate_actual_state_values!(actual_states)
 
       collection_proxy = Workspace.all
@@ -32,30 +40,6 @@ module RemoteDevelopment
       collection_proxy = collection_proxy.by_actual_states(actual_states) if actual_states.present?
 
       collection_proxy.order_id_desc
-    end
-
-    def self.validate_filter_argument_types!(**filter_arguments)
-      types = {
-        ids: Integer,
-        user_ids: Integer,
-        project_ids: Integer,
-        agent_ids: Integer,
-        actual_states: String
-      }
-
-      errors = []
-
-      filter_arguments.each do |argument_name, argument|
-        type = types[argument_name.to_sym]
-        errors << "'#{argument_name}' must be an Array of '#{type}'" unless argument.is_a?(Array) && argument.all?(type)
-      end
-
-      raise errors.join(", ") if errors.present?
-    end
-
-    def self.validate_at_least_one_filter_argument_provided!(**filter_arguments)
-      no_filter_arguments_provided = filter_arguments.values.flatten.empty?
-      raise ArgumentError, "At least one filter argument must be provided" if no_filter_arguments_provided
     end
 
     def self.validate_actual_state_values!(actual_states)

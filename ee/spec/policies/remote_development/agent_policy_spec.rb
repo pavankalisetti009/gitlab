@@ -30,7 +30,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :remote_develop
     end
 
     with_them do
-      subject(:policy) { Clusters::AgentPolicy.new(user, agent) }
+      subject(:policy_instance) { Clusters::AgentPolicy.new(user, agent) }
 
       before do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
@@ -39,7 +39,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :remote_develop
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
-      it { expect(policy.allowed?(ability)).to eq(result) }
+      it { expect(policy_instance.allowed?(ability)).to eq(result) }
     end
   end
 
@@ -57,7 +57,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :remote_develop
     end
 
     with_them do
-      subject(:policy) { Clusters::AgentPolicy.new(user, agent) }
+      subject(:policy_instance) { Clusters::AgentPolicy.new(user, agent) }
 
       before do
         enable_admin_mode!(admin_in_admin_mode) if user == admin_in_admin_mode
@@ -66,7 +66,7 @@ RSpec.describe RemoteDevelopment::AgentPolicy, feature_category: :remote_develop
         debug_policies(user, agent, Clusters::AgentPolicy, ability) if debug
       end
 
-      it { expect(policy.allowed?(ability)).to eq(result) }
+      it { expect(policy_instance.allowed?(ability)).to eq(result) }
     end
   end
 

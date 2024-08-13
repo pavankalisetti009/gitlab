@@ -2,10 +2,23 @@
 
 module RemoteDevelopment
   module IntegrationSpecHelpers
+    def build_additional_args_for_expected_config_to_apply(
+      network_policy_enabled:,
+      dns_zone:,
+      namespace_path: workspace_project_namespace.full_path,
+      project_name: workspace_project_name
+    )
+      {
+        dns_zone: dns_zone,
+        namespace_path: namespace_path,
+        project_name: project_name,
+        include_network_policy: network_policy_enabled
+      }
+    end
+
     def simulate_first_poll(
       workspace:,
-      namespace_path: 'test-group',
-      project_name: 'test-project',
+      **additional_args_for_create_config_to_apply,
       &simulate_agentk_reconcile_post_block
     )
       # SIMULATE FIRST POLL REQUEST FROM AGENTK TO GET NEW WORKSPACE
@@ -32,8 +45,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: true,
         include_all_resources: true,
-        namespace_path: namespace_path,
-        project_name: project_name
+        **additional_args_for_create_config_to_apply
       )
 
       config_to_apply = info.fetch(:config_to_apply)
@@ -77,8 +89,7 @@ module RemoteDevelopment
 
     def simulate_third_poll(
       workspace:,
-      namespace_path: 'test-group',
-      project_name: 'test-project',
+      **additional_args_for_create_config_to_apply,
       &simulate_agentk_reconcile_post_block
     )
       # SIMULATE THIRD POLL REQUEST FROM AGENTK TO UPDATE WORKSPACE TO STOPPING STATE
@@ -113,8 +124,7 @@ module RemoteDevelopment
       expected_config_to_apply = create_config_to_apply(
         workspace: workspace,
         started: false,
-        namespace_path: namespace_path,
-        project_name: project_name
+        **additional_args_for_create_config_to_apply
       )
 
       config_to_apply = info.fetch(:config_to_apply)
@@ -173,8 +183,7 @@ module RemoteDevelopment
 
     def simulate_sixth_poll(
       workspace:,
-      namespace_path: 'test-group',
-      project_name: 'test-project',
+      **additional_args_for_create_config_to_apply,
       &simulate_agentk_reconcile_post_block
     )
       # SIMULATE FIFTH POLL FROM AGENTK FOR FULL RECONCILE TO SHOW ALL WORKSPACES ARE SENT IN RAILS_INFOS
@@ -207,8 +216,7 @@ module RemoteDevelopment
         workspace: workspace,
         started: false,
         include_all_resources: true,
-        namespace_path: namespace_path,
-        project_name: project_name
+        **additional_args_for_create_config_to_apply
       )
 
       config_to_apply = info.fetch(:config_to_apply)
