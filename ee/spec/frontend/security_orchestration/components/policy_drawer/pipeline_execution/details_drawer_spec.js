@@ -34,6 +34,13 @@ describe('PipelineExecutionDrawer', () => {
         'This policy enforces pipeline execution with configuration from external file',
       );
     });
+
+    it('renders layout if yam is invalid', () => {
+      createComponent({ propsData: { policy: {} } });
+
+      expect(findPolicyDrawerLayout().exists()).toBe(true);
+      expect(findPolicyDrawerLayout().props('description')).toBe('');
+    });
   });
 
   describe('summary', () => {

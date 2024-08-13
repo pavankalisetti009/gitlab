@@ -47,11 +47,7 @@ export default {
       return humanizeRules(this.parsedYaml.rules);
     },
     parsedYaml() {
-      try {
-        return fromYaml({ manifest: this.policy.yaml });
-      } catch (e) {
-        return null;
-      }
+      return fromYaml({ manifest: this.policy.yaml });
     },
   },
   methods: {

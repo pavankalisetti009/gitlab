@@ -54,11 +54,7 @@ export default {
       return humanizeRules(this.parsedYaml?.rules);
     },
     parsedYaml() {
-      try {
-        return fromYaml({ manifest: this.policy.yaml });
-      } catch (e) {
-        return null;
-      }
+      return fromYaml({ manifest: this.policy.yaml });
     },
     requireApproval() {
       return this.actions?.find((action) => action.type === 'require_approval');
