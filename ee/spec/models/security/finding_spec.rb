@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   let_it_be(:scan_1) { create(:security_scan, :latest_successful, scan_type: :sast) }
   let_it_be(:scan_2) { create(:security_scan, :latest_successful, scan_type: :dast) }
-  let_it_be(:finding_1, refind: true) { create(:security_finding, scan: scan_1) }
-  let_it_be(:finding_2, refind: true) { create(:security_finding, scan: scan_2) }
+  let_it_be(:finding_1, refind: true) { create(:security_finding, :with_finding_data, scan: scan_1) }
+  let_it_be(:finding_2, refind: true) { create(:security_finding, :with_finding_data, scan: scan_2) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:scan).required }
@@ -31,7 +31,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     it { is_expected.to validate_presence_of(:uuid) }
 
     describe 'finding_data attribute' do
-      let(:finding) { build(:security_finding, finding_data: finding_data) }
+      let(:finding) { build(:security_finding, :with_finding_data, finding_data: finding_data) }
 
       before do
         finding.validate
@@ -150,18 +150,21 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
     let_it_be(:finding_1) do
       create(:security_finding,
+        :with_finding_data,
         scan: create(:security_scan, project: project, pipeline: pipeline_1, status: :succeeded)
       )
     end
 
     let_it_be(:finding_2) do
       create(:security_finding,
+        :with_finding_data,
         scan: create(:security_scan, project: project, pipeline: pipeline_2, status: :succeeded)
       )
     end
 
     let_it_be(:finding_3) do
       create(:security_finding,
+        :with_finding_data,
         scan: create(:security_scan, project: project, pipeline: pipeline_3, status: :succeeded)
       )
     end
@@ -190,8 +193,8 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   end
 
   describe '.ordered' do
-    let_it_be(:finding_3) { create(:security_finding, severity: :critical) }
-    let_it_be(:finding_4) { create(:security_finding, severity: :critical) }
+    let_it_be(:finding_3) { create(:security_finding, :with_finding_data, severity: :critical) }
+    let_it_be(:finding_4) { create(:security_finding, :with_finding_data, severity: :critical) }
 
     let(:expected_findings) { [finding_3, finding_4, finding_1, finding_2] }
 
@@ -234,8 +237,8 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
   describe '.false_positives' do
     let_it_be(:finding_without_data) { create(:security_finding) }
-    let_it_be(:finding_1) { create(:security_finding, false_positive: true) }
-    let_it_be(:finding_2) { create(:security_finding, false_positive: false) }
+    let_it_be(:finding_1) { create(:security_finding, :with_finding_data, false_positive: true) }
+    let_it_be(:finding_2) { create(:security_finding, :with_finding_data, false_positive: false) }
 
     subject { described_class.false_positives }
 
@@ -243,8 +246,8 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   end
 
   describe '.non_false_positives' do
-    let_it_be(:finding_1) { create(:security_finding, false_positive: true) }
-    let_it_be(:finding_2) { create(:security_finding, false_positive: false) }
+    let_it_be(:finding_1) { create(:security_finding, :with_finding_data, false_positive: true) }
+    let_it_be(:finding_2) { create(:security_finding, :with_finding_data, false_positive: false) }
 
     subject { described_class.non_false_positives }
 
@@ -255,15 +258,16 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
   describe '.fix_available' do
     let_it_be(:finding_with_remediation_without_solution) do
-      create(:security_finding, solution: '', remediation_byte_offsets: [{ "end_byte" => 2, "start_byte" => 1 }])
+      create(:security_finding, :with_finding_data, solution: '',
+        remediation_byte_offsets: [{ "end_byte" => 2, "start_byte" => 1 }])
     end
 
     let_it_be(:finding_without_remediation_with_solution) do
-      create(:security_finding, remediation_byte_offsets: [])
+      create(:security_finding, :with_finding_data, remediation_byte_offsets: [])
     end
 
     let_it_be(:finding_without_remediation_without_solution) do
-      create(:security_finding, remediation_byte_offsets: [], solution: '')
+      create(:security_finding, :with_finding_data, remediation_byte_offsets: [], solution: '')
     end
 
     subject { described_class.fix_available }
@@ -279,15 +283,19 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   end
 
   describe '.no_fix_available' do
-    let_it_be(:finding_with_solution_without_remediation) { create(:security_finding, remediation_byte_offsets: []) }
+    let_it_be(:finding_with_solution_without_remediation) {
+      create(:security_finding, :with_finding_data, remediation_byte_offsets: [])
+    }
+
     let_it_be(:finding_with_remediation_without_solution) do
       create(:security_finding,
+        :with_finding_data,
         solution: '', remediation_byte_offsets: [{ "end_byte" => 1, "start_byte" => 2 }]
       )
     end
 
     let_it_be(:finding_without_remediation_without_solution) do
-      create(:security_finding, solution: '', remediation_byte_offsets: [])
+      create(:security_finding, :with_finding_data, solution: '', remediation_byte_offsets: [])
     end
 
     subject { described_class.no_fix_available }
@@ -298,7 +306,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   describe '.count_by_scan_type' do
     subject { described_class.count_by_scan_type }
 
-    let_it_be(:finding_3) { create(:security_finding, scan: scan_1) }
+    let_it_be(:finding_3) { create(:security_finding, :with_finding_data, scan: scan_1) }
 
     it {
       is_expected.to eq({
@@ -312,7 +320,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     subject { described_class.latest_by_uuid(finding_1.uuid) }
 
     let_it_be(:newer_scan) { create(:security_scan, :latest_successful, scan_type: :sast) }
-    let_it_be(:newer_finding) { create(:security_finding, uuid: finding_1.uuid, scan: newer_scan) }
+    let_it_be(:newer_finding) { create(:security_finding, :with_finding_data, uuid: finding_1.uuid, scan: newer_scan) }
 
     it { is_expected.to eq(newer_finding) }
   end
@@ -397,7 +405,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
   describe '.distinct_uuids' do
     it 'returns distinct uuids of findings' do
-      create(:security_finding, uuid: finding_1.uuid)
+      create(:security_finding, :with_finding_data, uuid: finding_1.uuid)
 
       expect(described_class.distinct_uuids).to contain_exactly(finding_1.uuid, finding_2.uuid)
     end
@@ -484,7 +492,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
 
     with_them do
-      let(:finding) { build(:security_finding) }
+      let(:finding) { build(:security_finding, :with_finding_data) }
 
       subject { finding.send(attribute) }
 
@@ -497,7 +505,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   end
 
   describe 'finding_details delegated to `finding_data` details' do
-    let(:finding) { build(:security_finding) }
+    let(:finding) { build(:security_finding, :with_finding_data) }
 
     subject { finding.finding_details }
 

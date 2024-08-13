@@ -64,6 +64,7 @@ FactoryBot.define do
     transient do
       pipeline { nil }
       vulnerability_project { vulnerability&.project || pipeline&.project || project }
+      false_positive { false }
     end
 
     name { 'Cipher with no integrity' }

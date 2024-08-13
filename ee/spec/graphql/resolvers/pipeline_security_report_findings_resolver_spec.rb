@@ -11,96 +11,58 @@ RSpec.describe Resolvers::PipelineSecurityReportFindingsResolver, feature_catego
   describe '#resolve' do
     subject(:resolve_query) { resolve(described_class, obj: pipeline, args: params) }
 
-    let_it_be(:low_vulnerability_finding) { build(:vulnerabilities_finding, severity: :low, report_type: :dast, project: project) }
-    let_it_be(:critical_vulnerability_finding) { build(:vulnerabilities_finding, severity: :critical, report_type: :sast, project: project) }
-    let_it_be(:high_vulnerability_finding) { build(:vulnerabilities_finding, severity: :high, report_type: :container_scanning, project: project) }
+    let_it_be(:low_security_finding) { build(:security_finding, :with_finding_data, severity: :low) }
+    let_it_be(:critical_security_finding) { build(:security_finding, :with_finding_data, severity: :critical) }
+    let_it_be(:high_security_finding) { build(:security_finding, :with_finding_data, severity: :high) }
 
     let(:params) { {} }
 
+    let(:mock_pure_finder) { instance_double(Security::PureFindingsFinder, execute: returned_findings) }
+
     before do
-      allow_next_instance_of(Security::PipelineVulnerabilitiesFinder) do |instance|
-        allow(instance).to receive_message_chain(:execute, :findings).and_return(returned_findings)
-      end
-    end
-
-    describe 'utilized finder class' do
-      let(:mock_report) { instance_double(Gitlab::Ci::Reports::Security::AggregatedReport, findings: []) }
-      let(:mock_pure_finder) { instance_double(Security::PureFindingsFinder, execute: [], available?: pure_finder_available?) }
-      let(:mock_deprecated_finder) { instance_double(Security::PipelineVulnerabilitiesFinder, execute: mock_report) }
-
-      before do
-        allow(Security::PureFindingsFinder).to receive(:new).and_return(mock_pure_finder)
-        allow(Security::PipelineVulnerabilitiesFinder).to receive(:new).and_return(mock_deprecated_finder)
-      end
-
-      context 'when the pure findings finder is available' do
-        let(:pure_finder_available?) { true }
-
-        it 'uses the pure findings finder' do
-          resolve_query
-
-          expect(mock_pure_finder).to have_received(:execute)
-          expect(mock_deprecated_finder).not_to have_received(:execute)
-        end
-      end
-
-      context 'when the pure findings finder is not available' do
-        let(:pure_finder_available?) { false }
-
-        it 'uses the deprecated findings finder' do
-          resolve_query
-
-          expect(mock_pure_finder).not_to have_received(:execute)
-          expect(mock_deprecated_finder).to have_received(:execute)
-        end
-      end
+      allow(Security::PureFindingsFinder).to receive(:new).and_return(mock_pure_finder)
     end
 
     context 'when given severities' do
       let(:params) { { severity: ['low'] } }
-      let(:returned_findings) { [low_vulnerability_finding] }
+      let(:returned_findings) { [low_security_finding] }
 
-      it 'returns vulnerability findings of the given severities' do
-        is_expected.to contain_exactly(low_vulnerability_finding)
+      it 'returns security findings of the given severities' do
+        is_expected.to contain_exactly(low_security_finding)
       end
     end
 
     context 'when given scanner' do
-      let(:params) { { scanner: [high_vulnerability_finding.scanner.external_id] } }
-      let(:returned_findings) { [high_vulnerability_finding] }
+      let(:params) { { scanner: [high_security_finding.scanner.external_id] } }
+      let(:returned_findings) { [high_security_finding] }
 
-      it 'returns vulnerability findings of the given scanner' do
-        is_expected.to contain_exactly(high_vulnerability_finding)
+      it 'returns security findings of the given scanner' do
+        is_expected.to contain_exactly(high_security_finding)
       end
     end
 
     context 'when given report types' do
       let(:params) { { report_type: %i[dast sast] } }
-      let(:returned_findings) { [critical_vulnerability_finding, low_vulnerability_finding] }
+      let(:returned_findings) { [critical_security_finding, low_security_finding] }
 
       it 'returns vulnerabilities of the given report types' do
-        is_expected.to contain_exactly(critical_vulnerability_finding, low_vulnerability_finding)
+        is_expected.to contain_exactly(critical_security_finding, low_security_finding)
       end
     end
 
     context 'when given states' do
       let(:params) { { sort: 'severity_desc', state: %w[detected confirmed] } }
+      let(:returned_findings) { [critical_security_finding, high_security_finding, low_security_finding] }
 
-      before do
-        allow(Security::PipelineVulnerabilitiesFinder).to receive(:new).and_call_original
-      end
-
-      it 'calls the finder class with given parameters' do
-        resolve_query
-
-        expect(Security::PipelineVulnerabilitiesFinder).to have_received(:new).with(pipeline: pipeline, params: params)
+      it 'returns findings with descending severity' do
+        is_expected.to eq(returned_findings)
       end
     end
 
     context 'when given sorting order' do
       context 'when direction is descending' do
         let(:params) { { sort: 'severity_desc' } }
-        let(:returned_findings) { [critical_vulnerability_finding, high_vulnerability_finding, low_vulnerability_finding] }
+        let(:returned_findings) { [critical_security_finding, high_security_finding, low_security_finding] }
 
         it 'returns findings with descending severity' do
           is_expected.to eq(returned_findings)
@@ -109,23 +71,11 @@ RSpec.describe Resolvers::PipelineSecurityReportFindingsResolver, feature_catego
 
       context 'when direction is ascending' do
         let(:params) { { sort: 'severity_asc' } }
-        let(:returned_findings) { [low_vulnerability_finding, high_vulnerability_finding, critical_vulnerability_finding] }
+        let(:returned_findings) { [low_security_finding, high_security_finding, critical_security_finding] }
 
         it 'returns findings with descending severity' do
           is_expected.to eq(returned_findings)
         end
-      end
-    end
-
-    context 'when the finder class raises parsing error' do
-      before do
-        allow_next_instance_of(Security::PipelineVulnerabilitiesFinder) do |finder|
-          allow(finder).to receive(:execute).and_raise(Security::PipelineVulnerabilitiesFinder::ParseError)
-        end
-      end
-
-      it 'does not propagate the error to the client' do
-        expect { resolve_query }.not_to raise_error
       end
     end
   end

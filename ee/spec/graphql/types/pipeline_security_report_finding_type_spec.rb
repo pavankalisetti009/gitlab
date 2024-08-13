@@ -584,7 +584,8 @@ RSpec.describe GitlabSchema.types['PipelineSecurityReportFinding'], feature_cate
     ::Gitlab::Ci::Parsers.parsers[report.type].parse!(content, report)
     report.merge!(report)
     report.findings.map do |finding|
-      create(:security_finding, uuid: finding.uuid, scan: scan, deduplicated: true, location: finding.location_data)
+      create(:security_finding, :with_finding_data, uuid: finding.uuid, scan: scan, deduplicated: true,
+        location: finding.location_data)
     end
   end
 
