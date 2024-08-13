@@ -158,6 +158,7 @@ module EE
         enable :manage_subscription
         enable :read_jobs_statistics
         enable :read_runner_usage
+        enable :read_cloud_connector_status
       end
 
       rule { admin & user_allowed_to_manage_ai_settings }.policy do

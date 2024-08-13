@@ -23,10 +23,10 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
   end
 
   context 'when the user is not authenticated' do
-    it 'returns null' do
+    it 'returns an error' do
       post_graphql(query, current_user: nil)
 
-      expect(graphql_data['cloudConnectorStatus']).to be_nil
+      expect_graphql_errors_to_include("The resource that you are attempting to access does not exist")
     end
   end
 
@@ -36,65 +36,92 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
     let(:probe_results) { [CloudConnector::StatusChecks::Probes::ProbeResult.new('test_probe', true, 'probed')] }
     let(:service) { instance_double(CloudConnector::StatusChecks::StatusService, execute: service_response) }
 
-    context 'when response is success' do
+    before do
+      # Allow any other calls for permission checks.
+      allow(::Ability).to receive(:allowed?).and_call_original
+      # Only stub the one we're interested in explicitly.
+      allow(::Ability).to receive(:allowed?)
+        .with(current_user, :read_cloud_connector_status)
+        .and_return(has_permission)
+
+      # Stub all service calls since they may be performing network I/O.
+      allow(CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(service)
+    end
+
+    context 'when the user does not have the right permissions' do
+      let(:has_permission) { false }
       let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
 
-      before do
-        allow(CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(service)
-      end
-
-      it 'returns successful status response' do
+      it 'returns an error' do
         post_graphql(query, current_user: current_user)
 
-        expect(graphql_data['cloudConnectorStatus']).to include(
-          'success' => true,
-          'probeResults' => match_array([{
-            'name' => 'test_probe', 'success' => true, 'message' => 'probed'
-          }])
-        )
+        expect_graphql_errors_to_include("The resource that you are attempting to access does not exist")
       end
     end
 
-    context 'when response is error' do
-      let(:service_response) { ServiceResponse.error(message: 'NOK', payload: { probe_results: probe_results }) }
+    context 'when the user has the right permissions' do
+      let(:has_permission) { true }
 
-      before do
-        allow(CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(service)
+      context 'when response is success' do
+        let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
+
+        it 'returns successful status response' do
+          post_graphql(query, current_user: current_user)
+
+          expect(graphql_data['cloudConnectorStatus']).to include(
+            'success' => true,
+            'probeResults' => match_array([{
+              'name' => 'test_probe', 'success' => true, 'message' => 'probed'
+            }])
+          )
+        end
       end
 
-      it 'returns unsuccessful status response' do
-        post_graphql(query, current_user: current_user)
+      context 'when response is error' do
+        let(:service_response) { ServiceResponse.error(message: 'NOK', payload: { probe_results: probe_results }) }
 
-        expect(graphql_data['cloudConnectorStatus']).to include(
-          'success' => false,
-          'probeResults' => match_array([{
-            'name' => 'test_probe', 'success' => true, 'message' => 'probed'
-          }])
-        )
-      end
-    end
+        before do
+          allow(CloudConnector::StatusChecks::StatusService).to receive(:new).and_return(service)
+        end
 
-    context 'when cloud_connector_status feature flag is disabled' do
-      before do
-        stub_feature_flags(cloud_connector_status: false)
-      end
+        it 'returns unsuccessful status response' do
+          post_graphql(query, current_user: current_user)
 
-      it 'returns null' do
-        post_graphql(query, current_user: current_user)
-
-        expect(graphql_data['cloudConnectorStatus']).to be_nil
-      end
-    end
-
-    context 'when on gitlab.com' do
-      before do
-        allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
+          expect(graphql_data['cloudConnectorStatus']).to include(
+            'success' => false,
+            'probeResults' => match_array([{
+              'name' => 'test_probe', 'success' => true, 'message' => 'probed'
+            }])
+          )
+        end
       end
 
-      it 'returns null' do
-        post_graphql(query, current_user: current_user)
+      context 'when cloud_connector_status feature flag is disabled' do
+        let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
 
-        expect(graphql_data['cloudConnectorStatus']).to be_nil
+        before do
+          stub_feature_flags(cloud_connector_status: false)
+        end
+
+        it 'returns an error' do
+          post_graphql(query, current_user: current_user)
+
+          expect_graphql_errors_to_include("The resource that you are attempting to access does not exist")
+        end
+      end
+
+      context 'when on gitlab.com' do
+        let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
+
+        before do
+          allow(::Gitlab::Saas).to receive(:feature_available?).with(:gitlab_com_subscriptions).and_return(true)
+        end
+
+        it 'returns an error' do
+          post_graphql(query, current_user: current_user)
+
+          expect_graphql_errors_to_include("The resource that you are attempting to access does not exist")
+        end
       end
     end
   end
