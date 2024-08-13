@@ -3,9 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe EnvironmentEntity, feature_category: :environment_management do
-  let(:user) { create(:user) }
-  let(:environment) { create(:environment, project: project) }
-  let(:project) { create(:project) }
+  let_it_be_with_reload(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
+  let_it_be(:environment) { create(:environment, project: project) }
 
   let(:entity) do
     described_class.new(environment, request: double(current_user: user, project: project))
@@ -15,9 +15,7 @@ RSpec.describe EnvironmentEntity, feature_category: :environment_management do
     subject { entity.as_json }
 
     context 'with alert' do
-      let!(:environment) { create(:environment, project: project) }
-      let!(:prometheus_alert) { create(:prometheus_alert, project: project, environment: environment) }
-      let!(:alert) { create(:alert_management_alert, :triggered, :prometheus, project: project, environment: environment, prometheus_alert: prometheus_alert) }
+      let_it_be(:alert) { create(:alert_management_alert, :triggered, :prometheus, project: project, environment: environment) }
 
       before do
         stub_licensed_features(environment_alerts: true)

@@ -50,7 +50,6 @@ describe('Environment Alert', () => {
                 id: '4',
                 severity: 'CRITICAL',
                 title: 'alert title',
-                prometheusAlert: { id: '3', humanizedText: '>0.1% jest' },
                 detailsUrl: '/alert/details',
                 startedAt: new Date(),
               },
@@ -65,7 +64,7 @@ describe('Environment Alert', () => {
     it('displays the alert details', () => {
       const text = wrapper.text();
       expect(text).toContain('Critical');
-      expect(text).toContain('alert title >0.1% jest.');
+      expect(text).toContain('alert title.');
       expect(text).toContain('View Details');
       expect(text).toContain('just now');
     });
