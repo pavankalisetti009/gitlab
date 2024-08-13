@@ -530,7 +530,8 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       end
 
       it 'is not visible' do
-        expect(page).not_to have_content('User cap')
+        expect(page).not_to have_content('Seat controls')
+        expect(page).not_to have_content('Set user cap')
       end
     end
 
@@ -555,7 +556,8 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'is visible' do
-          expect(page).to have_content('User cap')
+          expect(page).to have_content('Seat controls')
+          expect(page).to have_content('Set user cap')
         end
 
         it 'will save positive numbers' do
@@ -586,7 +588,10 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           end
 
           it 'will be a disabled input' do
+            expect(find('#group_seat_control_user_cap')).to be_disabled
             expect(find(user_caps_selector)).to be_disabled
+            expect(page).to have_content 'User cap cannot be enabled. ' \
+              'The group or one of its subgroups or projects is shared externally.'
           end
         end
       end
@@ -608,26 +613,33 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
       end
 
-      shared_examples 'confirmation modal before submit' do
-        it 'shows #confirm-general-permissions-changes modal' do
-          fill_in_new_user_signups_cap(new_user_signups_cap_value)
+      before do
+        group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: group.group_members.count)
+      end
+
+      context 'when changing seat control setting from user cap to off' do
+        before do
+          group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 5)
+          visit edit_group_path(group, anchor: 'js-permissions-settings')
+        end
+
+        it 'shows a confirmation modal' do
+          find_by_testid("seat-control-off-radio").click
+
+          save_permissions_group
 
           expect(page).to have_selector('#confirm-general-permissions-changes')
           expect(page).to have_css('#confirm-general-permissions-changes .modal-body', text: 'By making this change, you will automatically approve all users who are pending approval.')
         end
-      end
 
-      before do
-        group.namespace_settings.update!(new_user_signups_cap: group.group_members.count)
-      end
+        it 'saves the new setting' do
+          find_by_testid("seat-control-off-radio").click
 
-      context 'if user cap changes from limited to unlimited' do
-        before do
-          visit edit_group_path(group, anchor: 'js-permissions-settings')
-        end
+          save_permissions_group
 
-        it_behaves_like 'confirmation modal before submit' do
-          let(:new_user_signups_cap_value) { nil }
+          click_button 'Approve users'
+
+          expect(page).to have_checked_field("group_seat_control_off")
         end
       end
 
@@ -637,15 +649,15 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           visit edit_group_path(group, anchor: 'js-permissions-settings')
         end
 
-        it 'shows correct helper text' do
-          expect(page).to have_content 'After the instance reaches the user cap, any user who is added or requests access must be approved by an administrator'
-          expect(page).not_to have_content 'Increasing the user cap does not automatically approve pending users'
-        end
-
         context 'should show confirmation modal' do
           context 'if user cap increases' do
-            it_behaves_like 'confirmation modal before submit' do
-              let(:new_user_signups_cap_value) { group.namespace_settings.new_user_signups_cap + 1 }
+            let(:new_user_signups_cap_value) { group.namespace_settings.new_user_signups_cap + 1 }
+
+            it 'shows #confirm-general-permissions-changes modal' do
+              fill_in_new_user_signups_cap(new_user_signups_cap_value)
+
+              expect(page).to have_selector('#confirm-general-permissions-changes')
+              expect(page).to have_css('#confirm-general-permissions-changes .modal-body', text: 'By making this change, you will automatically approve all users who are pending approval.')
             end
           end
         end
@@ -659,12 +671,16 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
           context 'if user cap changes from unlimited to limited' do
             before do
-              group.namespace_settings.update!(new_user_signups_cap: nil)
+              group.namespace_settings.update!(seat_control: :off, new_user_signups_cap: nil)
               visit edit_group_path(group, anchor: 'js-permissions-settings')
             end
 
-            it_behaves_like 'successful form submit' do
-              let(:new_user_signups_cap_value) { 1 }
+            it 'shows form submit successful message' do
+              find_by_testid("seat-control-user-cap-radio").click
+
+              fill_in_new_user_signups_cap(1)
+
+              expect(page).to have_content("Group 'Foo bar' was successfully updated.")
             end
           end
         end
@@ -676,10 +692,6 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           visit edit_group_path(group, anchor: 'js-permissions-settings')
         end
 
-        it 'shows correct helper text' do
-          expect(page).to have_content 'Increasing the user cap does not automatically approve pending users'
-        end
-
         context 'should not show confirmation modal' do
           context 'if user cap increases' do
             it_behaves_like 'successful form submit' do
@@ -695,12 +707,16 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
           context 'if user cap changes from unlimited to limited' do
             before do
-              group.namespace_settings.update!(new_user_signups_cap: nil)
+              group.namespace_settings.update!(seat_control: :off, new_user_signups_cap: nil)
               visit edit_group_path(group, anchor: 'js-permissions-settings')
             end
 
-            it_behaves_like 'successful form submit' do
-              let(:new_user_signups_cap_value) { 1 }
+            it 'shows form submit successful message' do
+              find_by_testid("seat-control-user-cap-radio").click
+
+              fill_in_new_user_signups_cap(1)
+
+              expect(page).to have_content("Group 'Foo bar' was successfully updated.")
             end
           end
         end

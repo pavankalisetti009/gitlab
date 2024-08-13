@@ -16,7 +16,8 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
 
     context 'with a persisted namespace' do
       let_it_be(:group, refind: true) do
-        create(:group, :public, namespace_settings: create(:namespace_settings, new_user_signups_cap: 1))
+        create(:group, :public,
+          namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
       end
 
       let_it_be(:subgroup) { create(:group, parent: group) }
@@ -49,7 +50,7 @@ RSpec.describe EE::NamespaceUserCapReachedAlertHelper, :use_clean_rails_memory_s
       end
 
       it 'does not trigger reactive caching if there is no user cap set' do
-        group.namespace_settings.update!(new_user_signups_cap: nil)
+        group.namespace_settings.update!(seat_control: :off)
 
         sign_in(owner)
 

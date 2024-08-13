@@ -417,7 +417,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
       create(
         :group_with_plan,
         plan: :ultimate_plan,
-        namespace_settings: create(:namespace_settings, new_user_signups_cap: 1)
+        namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1)
       )
     end
 

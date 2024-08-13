@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import { isEqual } from 'lodash';
 import { __, s__ } from '~/locale';
 import ConfirmModal from 'ee/groups/settings/permissions/components/confirm_modal.vue';
 
@@ -33,30 +34,43 @@ const showConfirmModal = () => {
   }).$mount(confirmModalElement);
 };
 
-const shouldShowConfirmModal = (
+const shouldShowConfirmModal = ({
+  seatControlTransition,
   newUserSignupsCapOriginalValue,
   newUserSignupsCapNewValue,
   groupPermissionsForm,
-) => {
-  const isOldUserCapUnlimited = newUserSignupsCapOriginalValue === '';
-  const isNewUserCapUnlimited = newUserSignupsCapNewValue === '';
-  const hasUserCapChangedFromUnlimitedToLimited = isOldUserCapUnlimited && !isNewUserCapUnlimited;
-  const hasUserCapChangedFromLimitedToUnlimited = !isOldUserCapUnlimited && isNewUserCapUnlimited;
+}) => {
   const hasModalBeenConfirmed = groupPermissionsForm.dataset.modalConfirmed === 'true';
-  const shouldProceedWithSubmit = hasUserCapChangedFromUnlimitedToLimited || hasModalBeenConfirmed;
+  const hasUserCapChangedToOff = isEqual(seatControlTransition, ['user_cap', 'off']);
 
-  if (shouldProceedWithSubmit) {
+  if (hasModalBeenConfirmed) {
     return false;
   }
 
-  if (hasUserCapChangedFromLimitedToUnlimited) {
+  if (hasUserCapChangedToOff) {
     return true;
   }
 
+  const isUserCapSelected = isEqual(seatControlTransition, ['user_cap', 'user_cap']);
+
   return (
+    isUserCapSelected &&
     gon.features.saasUserCapsAutoApprovePendingUsersOnCapIncrease &&
     parseInt(newUserSignupsCapNewValue, 10) > parseInt(newUserSignupsCapOriginalValue, 10)
   );
+};
+
+const seatControlTransition = () => {
+  const inputs = Array.from(document.querySelectorAll('#js-seat-control input[type=radio]'));
+
+  if (inputs.length === 0) {
+    return [];
+  }
+
+  const originalInput = inputs.find((input) => input.defaultChecked);
+  const currentInput = inputs.find((input) => input.checked);
+
+  return [originalInput.value, currentInput.value];
 };
 
 const onGroupPermissionsFormSubmit = (event) => {
@@ -68,11 +82,12 @@ const onGroupPermissionsFormSubmit = (event) => {
     newUserSignupsCapInput.dataset;
 
   if (
-    shouldShowConfirmModal(
+    shouldShowConfirmModal({
+      seatControlTransition: seatControlTransition(),
       newUserSignupsCapOriginalValue,
-      newUserSignupsCapInput.value,
-      event.target,
-    )
+      newUserSignupsCapNewValue: newUserSignupsCapInput.value,
+      groupPermissionsForm: event.target,
+    })
   ) {
     event.preventDefault();
     event.stopImmediatePropagation();

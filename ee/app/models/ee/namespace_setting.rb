@@ -38,7 +38,6 @@ module EE
       enum enterprise_users_extensions_marketplace_opt_in_status:
         ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
 
-      before_validation :set_seat_control
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? }
 
@@ -118,14 +117,6 @@ module EE
         if user_cap_enabled? || (namespace.block_seat_overages? && prevent_sharing_groups_outside_hierarchy_changed?)
           self.prevent_sharing_groups_outside_hierarchy = true
         end
-      end
-
-      def set_seat_control
-        self.seat_control = if new_user_signups_cap.present?
-                              :user_cap
-                            else
-                              :off
-                            end
       end
 
       def disable_project_sharing!

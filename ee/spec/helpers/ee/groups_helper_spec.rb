@@ -323,7 +323,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
 
       describe 'when user cap value is set' do
         before do
-          group.namespace_settings.update!(new_user_signups_cap: 10)
+          group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
         end
 
         describe 'when user is an owner of the root namespace' do
@@ -337,9 +337,9 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         end
       end
 
-      describe 'when user cap value is not set' do
+      describe 'when user cap is off' do
         before do
-          group.namespace_settings.update!(new_user_signups_cap: nil)
+          group.namespace_settings.update!(seat_control: :off)
         end
 
         describe 'when user is an owner of the root namespace' do
