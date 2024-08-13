@@ -229,48 +229,6 @@ RSpec.describe Groups::OmniauthCallbacksController, :aggregate_failures, feature
       end
     end
 
-    context 'when user used to be a member of a group' do
-      before do
-        user.provisioned_by_group = group
-        user.save!
-      end
-
-      it "displays a flash message verifying group sign in" do
-        post provider, params: { group_id: group }
-
-        expect(flash[:notice]).to match(/Signed in with SAML/i)
-      end
-
-      it 'adds linked identity' do
-        expect { post provider, params: { group_id: group } }.to change { linked_accounts.count }
-      end
-
-      it 'adds group membership' do
-        expect { post provider, params: { group_id: group } }.to change { group.members.count }
-      end
-    end
-
-    context 'when user was provisioned by other group' do
-      before do
-        user.provisioned_by_group = create(:group)
-        user.save!
-      end
-
-      it "displays a flash message verifying group sign in" do
-        post provider, params: { group_id: group }
-
-        expect(flash[:notice]).to eq(s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account"))
-      end
-
-      it 'does not add linked identity' do
-        expect { post provider, params: { group_id: group } }.not_to change { linked_accounts.count }
-      end
-
-      it 'does not add group membership' do
-        expect { post provider, params: { group_id: group } }.not_to change { group.members.count }
-      end
-    end
-
     context "when signed in" do
       before do
         sign_in(user)
@@ -432,9 +390,91 @@ RSpec.describe Groups::OmniauthCallbacksController, :aggregate_failures, feature
           expect(response).to redirect_to(new_user_session_path)
           expect(flash[:notice]).to eq(s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account"))
         end
+
+        context 'when user is an enterprise user of the group' do
+          let(:user) { create(:enterprise_user, enterprise_group: group) }
+
+          it_behaves_like 'SAML session initiated'
+
+          it 'find the user by email and authenticates' do
+            post provider, params: { group_id: group }
+
+            expect(request.env['warden']).to be_authenticated
+            expect(controller.current_user).to eq user
+            expect(flash[:notice]).to match(/Signed in with SAML/i)
+          end
+
+          it 'links identity' do
+            expect { post provider, params: { group_id: group } }
+              .to change { Identity.exists?(user: user, extern_uid: uid, provider: provider, saml_provider_id: group.saml_provider.id) }
+              .from(false).to(true)
+          end
+        end
+
+        context 'when user is an enterprise user of another group' do
+          let(:user) { create(:enterprise_user) }
+
+          it "redirects to sign in page with flash notice" do
+            post provider, params: { group_id: group }
+
+            expect(response).to redirect_to(new_user_session_path)
+            expect(flash[:notice]).to eq(s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account"))
+          end
+
+          it 'does not link identity' do
+            expect { post provider, params: { group_id: group } }
+              .not_to change { Identity.count }
+          end
+        end
       end
 
       it_behaves_like "and identity already linked"
+
+      context 'oauth linked with different NameID' do
+        let(:linked_identity) { create(:identity, user: user, extern_uid: 'some-other-name-id', provider: provider, saml_provider: saml_provider) }
+
+        it "redirects to sign in page with flash notice" do
+          post provider, params: { group_id: group }
+
+          expect(response).to redirect_to(new_user_session_path)
+          expect(flash[:notice]).to eq(s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account"))
+        end
+
+        context 'when user is an enterprise user of the group' do
+          let(:user) { create(:user, enterprise_group: group) }
+
+          it_behaves_like 'SAML session initiated'
+
+          it 'find the user by email and authenticates' do
+            post provider, params: { group_id: group }
+
+            expect(request.env['warden']).to be_authenticated
+            expect(controller.current_user).to eq user
+            expect(flash[:notice]).to match(/Signed in with SAML/i)
+          end
+
+          it 'updates linked identity' do
+            expect { post provider, params: { group_id: group } }
+              .to change { linked_identity.reload.extern_uid }
+              .from('some-other-name-id').to(uid)
+          end
+        end
+
+        context 'when user is an enterprise user of another group' do
+          let(:user) { create(:enterprise_user) }
+
+          it "redirects to sign in page with flash notice" do
+            post provider, params: { group_id: group }
+
+            expect(response).to redirect_to(new_user_session_path)
+            expect(flash[:notice]).to eq(s_("SAML|There is already a GitLab account associated with this email address. Sign in with your existing credentials to connect your organization's account"))
+          end
+
+          it 'does not update linked identity' do
+            expect { post provider, params: { group_id: group } }.not_to change { linked_identity.reload.extern_uid }
+          end
+        end
+      end
 
       context 'for sign up', :aggregate_failures do
         let(:user) { build_stubbed(:user) }

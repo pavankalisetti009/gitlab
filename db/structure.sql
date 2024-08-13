@@ -17263,7 +17263,8 @@ CREATE TABLE saml_providers (
     prohibited_outer_forks boolean DEFAULT true NOT NULL,
     default_membership_role smallint DEFAULT 10 NOT NULL,
     git_check_enforced boolean DEFAULT false NOT NULL,
-    member_role_id bigint
+    member_role_id bigint,
+    disable_password_authentication_for_enterprise_users boolean DEFAULT false
 );
 
 CREATE SEQUENCE saml_providers_id_seq

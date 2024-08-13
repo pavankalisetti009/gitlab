@@ -17,7 +17,8 @@ module Gitlab
 
         override :find_and_update!
         def find_and_update!
-          add_or_update_user_identities
+          add_or_update_identity_for_enterprise_user!
+
           set_attributes_for_enterprise_user!(gl_user)
 
           save("GroupSaml Provider ##{@saml_provider.id}")
@@ -42,7 +43,7 @@ module Gitlab
         override :gl_user
         def gl_user
           strong_memoize(:gl_user) do
-            identity&.user || find_by_email || build_new_user
+            identity&.user || find_enterprise_user_by_email || build_new_user
           end
         end
 
@@ -52,10 +53,10 @@ module Gitlab
           end
         end
 
-        override :find_by_email
-        def find_by_email
-          user = super
-          return unless user&.authorized_by_provisioning_group?(saml_provider.group)
+        def find_enterprise_user_by_email
+          user = find_by_email
+
+          return unless user&.enterprise_user_of_group?(saml_provider.group)
 
           user
         end
@@ -77,9 +78,8 @@ module Gitlab
           end
         end
 
-        override :add_or_update_user_identities
-        def add_or_update_user_identities
-          return unless gl_user
+        def add_or_update_identity_for_enterprise_user!
+          return unless gl_user.enterprise_user_of_group?(saml_provider.group)
           return if self.identity # extern_uid hasn't changed
 
           # find_or_initialize_by doesn't update `gl_user.identities`, and isn't autosaved.

@@ -121,6 +121,7 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
           {
             group_id: group,
             saml_provider: {
+              disable_password_authentication_for_enterprise_users: 'true',
               enforced_sso: 'true',
               default_membership_role: Gitlab::Access::MAINTAINER
             }
@@ -136,6 +137,7 @@ RSpec.describe Groups::SamlProvidersController, feature_category: :system_access
           subject
           saml_provider.reload
         end.to change { saml_provider.enforced_sso? }.to(true)
+        .and change { saml_provider.disable_password_authentication_for_enterprise_users }.to(true)
         .and change { saml_provider.default_membership_role }.to(Gitlab::Access::MAINTAINER)
       end
 
