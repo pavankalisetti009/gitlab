@@ -9,6 +9,7 @@ describe('BreakingChangesIcon', () => {
     wrapper = shallowMountExtended(BreakingChangesIcon, {
       propsData: {
         id: '1',
+        content: 'content',
         ...propsData,
       },
       stubs: {
@@ -28,23 +29,15 @@ describe('BreakingChangesIcon', () => {
     expect(findIcon().props('name')).toBe('warning');
     expect(findIcon().classes()).toEqual(['gl-text-orange-600']);
 
-    expect(findLink().attributes('href')).toBe(
-      '/help/user/application_security/policies/scan-result-policies#merge-request-approval-policy-schema',
-    );
-    expect(findPopover().text()).toBe(
-      'You must edit the policy and replace the deprecated syntax. For details on its replacement, see the policy documentation.',
-    );
+    expect(findPopover().text()).toBe('content');
   });
 
-  it('renders deprecated properties in popover text', () => {
+  it('renders warning icon and popover with link', () => {
     createComponent({
-      propsData: {
-        deprecatedProperties: ['test', 'test1'],
-      },
+      propsData: { content: 'content with %{linkStart}link%{linkEnd}', link: 'link' },
     });
 
-    expect(findPopover().text()).toBe(
-      'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
-    );
+    expect(findPopover().text()).toBe('content with link');
+    expect(findLink().attributes('href')).toBe('link');
   });
 });

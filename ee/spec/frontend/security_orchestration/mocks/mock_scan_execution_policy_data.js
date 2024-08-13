@@ -90,6 +90,7 @@ export const mockProjectScanExecutionPolicy = {
   editPath: '/policies/policy-name/edit?type="scan_execution_policy"',
   enabled: true,
   ...POLICY_SCOPE_MOCK,
+  deprecatedProperties: [],
   source: {
     __typename: 'ProjectSecurityPolicySource',
     project: {
@@ -106,6 +107,7 @@ export const mockGroupScanExecutionPolicy = {
   editPath: '/policies/policy-name/edit?type="scan_execution_policy"',
   enabled: false,
   ...POLICY_SCOPE_MOCK,
+  deprecatedProperties: [],
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,

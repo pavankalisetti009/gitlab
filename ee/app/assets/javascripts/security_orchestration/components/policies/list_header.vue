@@ -5,11 +5,13 @@ import { s__ } from '~/locale';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import { NEW_POLICY_BUTTON_TEXT } from '../constants';
 import InvalidPoliciesBanner from './banners/invalid_policies_banner.vue';
+import DeprecatedCustomScanBanner from './banners/deprecated_custom_scan_banner.vue';
 import ProjectModal from './project_modal.vue';
 
 export default {
   BANNER_STORAGE_KEY: 'security_policies_scan_result_name_change',
   components: {
+    DeprecatedCustomScanBanner,
     GlAlert,
     GlButton,
     GlIcon,
@@ -27,6 +29,10 @@ export default {
   ],
   props: {
     hasInvalidPolicies: {
+      type: Boolean,
+      required: true,
+    },
+    hasDeprecatedCustomScanPolicies: {
       type: Boolean,
       required: true,
     },
@@ -159,6 +165,7 @@ export default {
     </header>
 
     <!-- <breaking-changes-banner class="gl-mt-3 gl-mb-6" /> -->
+    <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mt-3 gl-mb-6" />
 
     <invalid-policies-banner v-if="hasInvalidPolicies" />
   </div>

@@ -11,7 +11,7 @@ import {
   GlTooltip,
   GlTooltipDirective,
 } from '@gitlab/ui';
-import { __, s__ } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
@@ -23,6 +23,7 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
   POLICY_TYPES_WITH_INHERITANCE,
+  BREAKING_CHANGES_POPOVER_CONTENTS,
   getPolicyActionOptions,
 } from './constants';
 import BreakingChangesIcon from './breaking_changes_icon.vue';
@@ -129,7 +130,7 @@ export default {
       }
       return this.$options.i18n.projectTypeLabel;
     },
-    policyType() {
+    policyTypeFromSelectedPolicy() {
       // eslint-disable-next-line no-underscore-dangle
       return this.selectedPolicy ? getPolicyType(this.selectedPolicy.__typename) : '';
     },
@@ -196,8 +197,15 @@ export default {
     getPolicyActionOptions(policy) {
       return getPolicyActionOptions(policy);
     },
-    showBreakingChangesIcon(deprecatedProperties) {
-      return deprecatedProperties?.length > 0;
+    showBreakingChangesIcon(policyType, deprecatedProperties) {
+      return (
+        Boolean(BREAKING_CHANGES_POPOVER_CONTENTS[policyType]) && deprecatedProperties?.length > 0
+      );
+    },
+    breakingChangesIconContent(policyType, deprecatedProperties) {
+      return sprintf(BREAKING_CHANGES_POPOVER_CONTENTS[policyType].content, {
+        deprecatedProperties: deprecatedProperties.join(', '),
+      });
     },
     policyListUrlArgs(source) {
       return { namespacePath: source?.namespace?.fullPath || '' };
@@ -276,6 +284,7 @@ export default {
     groupTypeLabel: s__('SecurityOrchestration|This group'),
     projectTypeLabel: s__('SecurityOrchestration|This project'),
   },
+  BREAKING_CHANGES_POPOVER_CONTENTS,
 };
 </script>
 
@@ -316,7 +325,7 @@ export default {
       selected-variant="primary"
       @row-selected="presentPolicyDrawer"
     >
-      <template #cell(status)="{ item: { enabled, name, deprecatedProperties } }">
+      <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType } }">
         <div class="gl-display-flex gl-gap-4">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
@@ -327,9 +336,10 @@ export default {
           />
 
           <breaking-changes-icon
-            v-if="showBreakingChangesIcon(deprecatedProperties)"
+            v-if="showBreakingChangesIcon(policyType, deprecatedProperties)"
             :id="name"
-            :deprecated-properties="deprecatedProperties"
+            :content="breakingChangesIconContent(policyType, deprecatedProperties)"
+            :link="$options.BREAKING_CHANGES_POPOVER_CONTENTS[policyType].link"
           />
         </div>
       </template>
@@ -410,7 +420,7 @@ export default {
     <drawer-wrapper
       :open="hasSelectedPolicy"
       :policy="selectedPolicy"
-      :policy-type="policyType"
+      :policy-type="policyTypeFromSelectedPolicy"
       :disable-scan-policy-update="disableScanPolicyUpdate"
       data-testid="policyDrawer"
       @close="deselectPolicy"

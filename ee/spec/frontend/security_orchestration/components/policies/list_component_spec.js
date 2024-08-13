@@ -1,4 +1,4 @@
-import { GlDisclosureDropdown, GlDrawer, GlTable, GlTooltip } from '@gitlab/ui';
+import { GlDisclosureDropdown, GlDrawer, GlLink, GlPopover, GlTable, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import * as urlUtils from '~/lib/utils/url_utility';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
@@ -221,35 +221,77 @@ describe('List component', () => {
       });
 
       describe('breaking changes icon', () => {
-        it('does not render breaking changes icon when flag is disabled', () => {
-          mountWrapper();
+        const expectNoBreakingChangesIcon = () => {
           const icons = findStatusCells().at(0).findAll('svg');
           expect(icons.length).toBe(1);
           expect(icons.at(0).props('name')).toBe('check-circle-filled');
-        });
+        };
+
+        const expectRenderedBreakingChangesIcon = (expectedContent, expectedLink) => {
+          const firstCell = findStatusCells().at(0);
+          const icon = firstCell.findAll('svg');
+          expect(icon.at(0).props('name')).toBe('check-circle-filled');
+          expect(icon.at(0).classes()).toContain('gl-text-gray-200');
+          expect(icon.at(1).props('name')).toBe('warning');
+
+          expect(firstCell.findComponent(GlLink).attributes('href')).toBe(expectedLink);
+          expect(firstCell.findComponent(GlPopover).text()).toBe(expectedContent);
+        };
 
         it('does not render breaking changes icon when there are no deprecated properties', () => {
           mountWrapper();
-          const icons = findStatusCells().at(0).findAll('svg');
-          expect(icons.length).toBe(1);
-          expect(icons.at(0).props('name')).toBe('check-circle-filled');
+          expectNoBreakingChangesIcon();
         });
 
-        it('renders breaking changes icon when there are deprecated properties', () => {
+        it('does not render breaking changes icon when policy type deprecated properties are not supported', () => {
           mountWrapper({
             props: {
               policiesByType: {
-                [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: [],
+                [POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value]: [
+                  {
+                    ...mockPipelineExecutionPoliciesResponse[0],
+                    deprecatedProperties: ['test', 'test1'],
+                  },
+                ],
+              },
+            },
+          });
+          expectNoBreakingChangesIcon();
+        });
+
+        it('renders breaking changes icon when there are deprecated approval policy properties', () => {
+          mountWrapper({
+            props: {
+              policiesByType: {
                 [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value]: [
                   { ...mockScanResultPoliciesResponse[0], deprecatedProperties: ['test', 'test1'] },
                 ],
               },
             },
           });
-          const icon = findStatusCells().at(0).findAll('svg');
-          expect(icon.at(0).props('name')).toBe('check-circle-filled');
-          expect(icon.at(0).classes()).toContain('gl-text-gray-200');
-          expect(icon.at(1).props('name')).toBe('warning');
+          expectRenderedBreakingChangesIcon(
+            'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
+            '/help/user/application_security/policies/scan-result-policies#merge-request-approval-policy-schema',
+          );
+        });
+
+        it('renders breaking changes icon when there are deprecated scan execution properties', () => {
+          mountWrapper({
+            props: {
+              policiesByType: {
+                [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]: [
+                  {
+                    ...mockScanExecutionPoliciesResponse[0],
+                    deprecatedProperties: ['test'],
+                  },
+                ],
+              },
+            },
+          });
+          expectRenderedBreakingChangesIcon(
+            'You must edit the policy and replace the deprecated syntax (test). For details on its replacement, see the policy documentation.',
+            '/help/user/application_security/policies/scan_execution_policies#scan-execution-policies-schema',
+          );
         });
       });
     });

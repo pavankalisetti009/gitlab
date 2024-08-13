@@ -13,6 +13,7 @@ query groupScanExecutionPolicies(
         yaml
         editPath
         enabled
+        deprecatedProperties
         policyScope {
           ...PolicyScope
         }

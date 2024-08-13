@@ -17,7 +17,7 @@ import projectPipelineExecutionPoliciesQuery from '../../graphql/queries/project
 import groupPipelineExecutionPoliciesQuery from '../../graphql/queries/group_pipeline_execution_policies.query.graphql';
 import ListHeader from './list_header.vue';
 import ListComponent from './list_component.vue';
-import { POLICY_TYPE_FILTER_OPTIONS } from './constants';
+import { DEPRECATED_CUSTOM_SCAN_PROPERTY, POLICY_TYPE_FILTER_OPTIONS } from './constants';
 
 const NAMESPACE_QUERY_DICT = {
   scanExecution: {
@@ -83,6 +83,12 @@ export default {
       update(data) {
         return data?.namespace?.scanExecutionPolicies?.nodes ?? [];
       },
+      result({ data }) {
+        const policies = data?.namespace?.scanExecutionPolicies?.nodes ?? [];
+        this.hasDeprecatedCustomScanPolicies = policies.some((policy) =>
+          policy.deprecatedProperties.includes(DEPRECATED_CUSTOM_SCAN_PROPERTY),
+        );
+      },
       error: createPolicyFetchError,
     },
     scanResultPolicies: {
@@ -128,6 +134,7 @@ export default {
 
     return {
       hasInvalidPolicies: false,
+      hasDeprecatedCustomScanPolicies: false,
       hasPolicyProject: Boolean(this.assignedPolicyProject?.id),
       selectedPolicySource,
       selectedPolicyType,
@@ -181,6 +188,7 @@ export default {
   <div>
     <list-header
       :has-invalid-policies="hasInvalidPolicies"
+      :has-deprecated-custom-scan-policies="hasDeprecatedCustomScanPolicies"
       @update-policy-list="handleUpdatePolicyList"
     />
     <list-component
