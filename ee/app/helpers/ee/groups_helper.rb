@@ -152,6 +152,8 @@ module EE
           License.feature_available?(:transfer_usage_quotas)
       when :product_analytics
         License.feature_available?(:product_analytics_usage_quotas)
+      when :pages
+        License.feature_available?(:pages_multiple_versions)
       else
         false
       end
@@ -164,6 +166,16 @@ module EE
     def group_transfer_app_data(group)
       {
         full_path: group.full_path
+      }
+    end
+
+    def pages_deployments_app_data(group)
+      limit = group.actual_limits.active_versioned_pages_deployments_limit_by_namespace
+
+      {
+        full_path: group.full_path,
+        deployments_count: ::PagesDeployment.count_versioned_deployments_for(group, limit),
+        deployments_limit: limit
       }
     end
 
