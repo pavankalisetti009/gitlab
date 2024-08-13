@@ -8,6 +8,7 @@ module GitlabSubscriptions
       include RegistrationsTracking
       include ::Gitlab::Utils::StrongMemoize
       include SafeFormatHelper
+      include ProductAnalyticsTracking
 
       layout 'minimal'
 
@@ -18,6 +19,8 @@ module GitlabSubscriptions
 
       feature_category :subscription_management
       urgency :low
+
+      track_internal_event :new, name: 'render_duo_enterprise_lead_page'
 
       def new
         set_group_name
@@ -32,6 +35,7 @@ module GitlabSubscriptions
 
         if @result.success?
           # lead and trial created
+          flash[:success] = success_flash_message
 
           redirect_to group_settings_gitlab_duo_usage_index_path(@result.payload[:namespace])
         elsif @result.reason == GitlabSubscriptions::Trials::CreateDuoEnterpriseService::NOT_FOUND
@@ -51,6 +55,14 @@ module GitlabSubscriptions
       end
 
       private
+
+      def tracking_namespace_source
+        namespace || eligible_namespaces.first
+      end
+
+      def tracking_project_source
+        nil
+      end
 
       def set_group_name
         @group_name = (namespace || eligible_namespaces.first).name
@@ -99,6 +111,24 @@ module GitlabSubscriptions
 
       def trial_params
         params.permit(:namespace_id, :trial_entity, :glm_source, :glm_content).to_h
+      end
+
+      def success_flash_message
+        assign_doc_url = helpers.help_page_path(
+          'subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-pro-seats'
+        )
+        assign_link = helpers.link_to('', assign_doc_url, target: '_blank', rel: 'noopener noreferrer')
+        assign_link_pair = tag_pair(assign_link, :assign_link_start, :assign_link_end)
+        safe_format(
+          s_(
+            'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \
+              'expire on %{exp_date}. The new license might take a minute to show on the page. ' \
+              'To give members access to new GitLab Duo Enterprise features, ' \
+              '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats.'
+          ),
+          assign_link_pair,
+          exp_date: GitlabSubscriptions::Trials::AddOns::DURATION.from_now.strftime('%Y-%m-%d')
+        )
       end
     end
   end

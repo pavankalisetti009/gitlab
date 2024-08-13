@@ -84,6 +84,17 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         it { is_expected.to have_gitlab_http_status(:not_found) }
       end
 
+      context 'with tracking page render' do
+        it_behaves_like 'internal event tracking' do
+          let(:event) { 'render_duo_enterprise_lead_page' }
+          let(:namespace) { group }
+
+          subject(:track_event) do
+            get new_trials_duo_enterprise_path, params: { namespace_id: group.id }
+          end
+        end
+      end
+
       context 'when subscriptions_trials saas feature is not available' do
         let(:subscriptions_trials_saas_feature) { false }
 
@@ -143,6 +154,24 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         end
 
         it { is_expected.to redirect_to(group_settings_gitlab_duo_usage_index_path(group_for_trial)) }
+
+        it 'shows valid flash message', :freeze_time do
+          post_create
+
+          expires_on = GitlabSubscriptions::Trials::AddOns::DURATION.from_now.strftime('%Y-%m-%d')
+          message = format(
+            s_(
+              'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \
+                'expire on %{exp_date}. The new license might take a minute to show on the page. To give members ' \
+                'access to new GitLab Duo Enterprise features, <a target="_blank" rel="noopener noreferrer" ' \
+                'href="/help/subscriptions/subscription-add-ons#assign-gitlab-duo-pro-seats">assign them</a> ' \
+                'to GitLab Duo Enterprise seats.'
+            ),
+            exp_date: expires_on
+          )
+
+          expect(flash[:success]).to eq(message)
+        end
       end
 
       context 'when feature flag duo_enterprise_trials is disabled' do
