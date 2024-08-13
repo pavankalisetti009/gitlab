@@ -26,10 +26,13 @@ module QA
 
         epic.reload!
 
-        expect(epic.start_date_from_milestones).to eq(new_milestone_start_date)
-        expect(epic.due_date_from_milestones).to eq(new_milestone_due_date)
-        expect(epic.start_date).to eq(new_milestone_start_date)
-        expect(epic.due_date).to eq(new_milestone_due_date)
+        # reload! and eventually are used to wait for the epic dates to update since a sidekiq job needs to run
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(new_milestone_start_date)
+          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(new_milestone_due_date)
+          expect { epic.reload!.start_date }.to eventually_eq(new_milestone_start_date)
+          expect { epic.reload!.due_date }.to eventually_eq(new_milestone_due_date)
+        end
       end
 
       it 'updates epic dates when adding another issue', :smoke, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347955' do
@@ -44,10 +47,12 @@ module QA
 
         epic.reload!
 
-        expect(epic.start_date_from_milestones).to eq(new_milestone_start_date)
-        expect(epic.due_date_from_milestones).to eq(new_milestone_due_date)
-        expect(epic.start_date).to eq(new_milestone_start_date)
-        expect(epic.due_date).to eq(new_milestone_due_date)
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(new_milestone_start_date)
+          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(new_milestone_due_date)
+          expect { epic.reload!.start_date }.to eventually_eq(new_milestone_start_date)
+          expect { epic.reload!.due_date }.to eventually_eq(new_milestone_due_date)
+        end
       end
 
       it 'updates epic dates when removing issue', :smoke, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347957' do
@@ -66,10 +71,12 @@ module QA
 
         epic.reload!
 
-        expect(epic.start_date_from_milestones).to be_nil
-        expect(epic.due_date_from_milestones).to be_nil
-        expect(epic.start_date).to be_nil
-        expect(epic.due_date).to be_nil
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }.to eventually_be_falsey
+          expect { epic.reload!.due_date_from_milestones }.to eventually_be_falsey
+          expect { epic.reload!.start_date }.to eventually_be_falsey
+          expect { epic.reload!.due_date }.to eventually_be_falsey
+        end
       end
 
       it 'updates epic dates when deleting milestones', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347956' do
@@ -78,10 +85,12 @@ module QA
         milestone.remove_via_api!
         epic.reload!
 
-        expect(epic.start_date_from_milestones).to be_nil
-        expect(epic.due_date_from_milestones).to be_nil
-        expect(epic.start_date).to be_nil
-        expect(epic.due_date).to be_nil
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }.to eventually_be_falsey
+          expect { epic.reload!.due_date_from_milestones }.to eventually_be_falsey
+          expect { epic.reload!.start_date }.to eventually_be_falsey
+          expect { epic.reload!.due_date }.to eventually_be_falsey
+        end
       end
 
       private
@@ -135,12 +144,14 @@ module QA
 
         epic.reload!
 
-        expect(epic.start_date_from_milestones).to eq(milestone_start_date)
-        expect(epic.due_date_from_milestones).to eq(milestone_due_date)
-        expect(epic.start_date_fixed).to eq(fixed_start_date)
-        expect(epic.due_date_fixed).to eq(fixed_due_date)
-        expect(epic.start_date).to eq(milestone_start_date)
-        expect(epic.due_date).to eq(milestone_due_date)
+        aggregate_failures do
+          expect { epic.reload!.start_date_from_milestones }.to eventually_eq(milestone_start_date)
+          expect { epic.reload!.due_date_from_milestones }.to eventually_eq(milestone_due_date)
+          expect { epic.reload!.start_date_fixed }.to eventually_eq(fixed_start_date)
+          expect { epic.reload!.due_date_fixed }.to eventually_eq(fixed_due_date)
+          expect { epic.reload!.start_date }.to eventually_eq(milestone_start_date)
+          expect { epic.reload!.due_date }.to eventually_eq(milestone_due_date)
+        end
       end
     end
   end
