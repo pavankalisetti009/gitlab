@@ -56,7 +56,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-bg-gray-10 gl-p-5 gl-pt-0 gl-gap-3">
+  <div class="gl-flex gl-my-5 gl-gap-3">
     <filtered-search-bar
       class="gl-flex-grow-1"
       :namespace="fullPath"
