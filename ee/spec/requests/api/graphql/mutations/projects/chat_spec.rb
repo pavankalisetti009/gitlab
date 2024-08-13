@@ -105,4 +105,37 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
       expect(graphql_mutation_response(:ai_action)['errors']).to eq([])
     end
   end
+
+  context 'when additional_context is present' do
+    let(:additional_context) do
+      [
+        { type: 'SNIPPET', name: 'hello world', content: 'puts "Hello, world"' }
+      ]
+    end
+
+    let(:expected_additional_context) do
+      [
+        { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+      ]
+    end
+
+    let(:params) do
+      { chat: { resource_id: resource&.to_gid, content: "summarize", additional_context: additional_context } }
+    end
+
+    it 'successfully performs a chat request' do
+      expect(Llm::CompletionWorker).to receive(:perform_for).with(
+        an_object_having_attributes(
+          user: current_user,
+          resource: resource,
+          ai_action: :chat,
+          content: "summarize"),
+        hash_including(additional_context: expected_additional_context)
+      )
+
+      post_graphql_mutation(mutation, current_user: current_user)
+
+      expect(graphql_mutation_response(:ai_action)['errors']).to eq([])
+    end
+  end
 end

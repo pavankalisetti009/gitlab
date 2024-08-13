@@ -26,8 +26,20 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
     }
   end
 
+  let(:additional_context) do
+    [
+      { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+    ]
+  end
+
   let(:options) do
-    { content: content, extra_resource: extra_resource, current_file: current_file, agent_version_id: agent_version.id }
+    {
+      content: content,
+      extra_resource: extra_resource,
+      current_file: current_file,
+      agent_version_id: agent_version.id,
+      additional_context: additional_context
+    }
   end
 
   let(:container) { group }
@@ -39,7 +51,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
       request_id: 'uuid',
       ai_request: ai_request,
       current_file: current_file,
-      agent_version: agent_version
+      agent_version: agent_version,
+      additional_context: additional_context
     )
   end
 
@@ -89,7 +102,8 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
         .and_return(response_handler)
       expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
         .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
-          extra_resource: extra_resource, request_id: 'uuid', current_file: current_file, agent_version: agent_version)
+          extra_resource: extra_resource, request_id: 'uuid', current_file: current_file, agent_version: agent_version,
+          additional_context: additional_context)
         .and_return(context)
       expect(categorize_service).to receive(:execute)
       expect(::Llm::ExecuteMethodService).to receive(:new)
@@ -182,6 +196,16 @@ client_subscription_id: 'someid' }
     end
   end
 
+  describe '.initialize' do
+    subject { described_class.new(prompt_message, nil, **options) }
+
+    it 'trims additional context' do
+      expect(::CodeSuggestions::Context).to receive(:new).with(additional_context).and_call_original
+
+      subject
+    end
+  end
+
   describe '#execute' do
     before do
       allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).and_return(ai_request)
@@ -228,7 +252,7 @@ client_subscription_id: 'someid' }
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource,
             ai_request: ai_request, extra_resource: extra_resource, request_id: 'uuid',
-            current_file: current_file, agent_version: agent_version)
+            current_file: current_file, agent_version: agent_version, additional_context: additional_context)
           .and_return(context)
         # This is temporarily commented out due to the following production issue:
         # https://gitlab.com/gitlab-com/gl-infra/production/-/issues/18191
@@ -380,7 +404,7 @@ client_subscription_id: 'someid' }
         allow(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
             extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
-            agent_version: agent_version)
+            agent_version: agent_version, additional_context: additional_context)
           .and_return(context)
 
         expect(categorize_service).not_to receive(:execute)
@@ -413,7 +437,7 @@ client_subscription_id: 'someid' }
         expect(::Gitlab::Llm::Chain::GitlabContext).to receive(:new)
           .with(current_user: user, container: expected_container, resource: resource, ai_request: ai_request,
             extra_resource: extra_resource, request_id: 'uuid', current_file: current_file,
-            agent_version: agent_version)
+            agent_version: agent_version, additional_context: additional_context)
           .and_return(context)
         expect(categorize_service).to receive(:execute)
         expect(::Llm::ExecuteMethodService).to receive(:new)

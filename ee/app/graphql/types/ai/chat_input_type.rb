@@ -28,6 +28,10 @@ module Types
       argument :current_file, ::Types::Ai::CurrentFileInputType,
         required: false,
         description: 'Information about currently selected text which can be passed for additional context.'
+
+      argument :additional_context, [::Types::Ai::AdditionalContextInputType],
+        required: false,
+        description: 'Additional context to be passed for the chat.'
     end
   end
 end

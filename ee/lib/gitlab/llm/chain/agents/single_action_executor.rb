@@ -124,7 +124,8 @@ module Gitlab
               current_resource_params: current_resource_params,
               current_file_params: current_file_params,
               model_metadata: model_metadata_params,
-              single_action_agent: true
+              single_action_agent: true,
+              additional_context: context.additional_context
             }
           end
 

@@ -43,7 +43,8 @@ module Gitlab
             extra_resource: options.delete(:extra_resource) || {},
             request_id: prompt_message.request_id,
             current_file: options.delete(:current_file),
-            agent_version: options[:agent_version_id] && ::Ai::AgentVersion.find_by_id(options[:agent_version_id])
+            agent_version: options[:agent_version_id] && ::Ai::AgentVersion.find_by_id(options[:agent_version_id]),
+            additional_context: ::CodeSuggestions::Context.new(Array.wrap(options.delete(:additional_context))).trimmed
           )
         end
 

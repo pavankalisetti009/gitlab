@@ -83,6 +83,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
           {
             prompt: user_input,
             options: {
+              additional_context: [],
               agent_scratchpad: [],
               conversation: "",
               single_action_agent: true,
@@ -217,6 +218,7 @@ RSpec.describe Gitlab::Llm::Chain::Agents::SingleActionExecutor, feature_categor
           {
             prompt: user_input,
             options: {
+              additional_context: [],
               agent_scratchpad: [],
               conversation: "",
               single_action_agent: true,

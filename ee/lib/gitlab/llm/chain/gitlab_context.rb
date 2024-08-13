@@ -5,14 +5,15 @@ module Gitlab
     module Chain
       class GitlabContext
         attr_accessor :current_user, :container, :resource, :ai_request, :tools_used, :extra_resource, :request_id,
-          :current_file, :agent_version
+          :current_file, :agent_version, :additional_context
 
         delegate :current_page_type, :current_page_sentence, :current_page_short_description,
           to: :authorized_resource, allow_nil: true
 
+        # rubocop:disable Metrics/ParameterLists -- we probably need to rethink this initializer
         def initialize(
           current_user:, container:, resource:, ai_request:, extra_resource: {}, request_id: nil,
-          current_file: {}, agent_version: nil
+          current_file: {}, agent_version: nil, additional_context: []
         )
           @current_user = current_user
           @container = container
@@ -23,7 +24,9 @@ module Gitlab
           @request_id = request_id
           @current_file = (current_file || {}).with_indifferent_access
           @agent_version = agent_version
+          @additional_context = additional_context
         end
+        # rubocop:enable Metrics/ParameterLists
 
         def resource_serialized(content_limit:)
           return '' unless authorized_resource
