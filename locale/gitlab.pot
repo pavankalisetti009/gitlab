@@ -33114,6 +33114,9 @@ msgstr ""
 msgid "MergeChecks|This setting is configured in group %{groupName} and can only be changed in the group settings by an administrator or group owner."
 msgstr ""
 
+msgid "MergeChecks|View locked files"
+msgstr ""
+
 msgid "MergeConflict|Commit to source branch"
 msgstr ""
 
