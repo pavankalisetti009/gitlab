@@ -14,19 +14,22 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
     create(:security_scan, project: project, pipeline: pipeline, scan_type: 'container_scanning')
   end
 
-  let_it_be(:high_severity_finding) { create(:security_finding, scan: dependency_scan, severity: 'high') }
-  let_it_be(:container_scanning_finding) { create(:security_finding, scan: container_scan) }
-  let_it_be(:dismissed_finding) { create(:security_finding, scan: dependency_scan) }
+  let_it_be(:high_severity_finding) do
+    create(:security_finding, :with_finding_data, scan: dependency_scan, severity: 'high')
+  end
+
+  let_it_be(:container_scanning_finding) { create(:security_finding, :with_finding_data, scan: container_scan) }
+  let_it_be(:dismissed_finding) { create(:security_finding, :with_finding_data, scan: dependency_scan) }
   let_it_be(:false_positive_finding) do
-    create(:security_finding, false_positive: true, scan: dependency_scan)
+    create(:security_finding, :with_finding_data, false_positive: true, scan: dependency_scan)
   end
 
   let_it_be(:non_false_positive_finding) do
-    create(:security_finding, false_positive: false, scan: dependency_scan)
+    create(:security_finding, :with_finding_data, false_positive: false, scan: dependency_scan)
   end
 
   let_it_be(:no_fix_available_finding) do
-    create(:security_finding, solution: '', remediation_byte_offsets: [], scan: dependency_scan)
+    create(:security_finding, :with_finding_data, solution: '', remediation_byte_offsets: [], scan: dependency_scan)
   end
 
   before do
@@ -135,6 +138,7 @@ RSpec.describe Security::ScanResultPolicies::FindingsFinder, feature_category: :
 
       let_it_be(:findings) do
         create_list(:security_finding, 5,
+          :with_finding_data,
           scan: create(:security_scan, project: project, pipeline: pipeline_with_scans, status: :succeeded)
         )
       end

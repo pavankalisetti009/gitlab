@@ -36,6 +36,7 @@ FactoryBot.define do
         report.findings.each do |finding|
           create(
             :security_finding,
+            :with_finding_data,
             severity: finding.severity,
             uuid: finding.uuid,
             deduplicated: true,

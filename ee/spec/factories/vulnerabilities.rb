@@ -126,6 +126,7 @@ FactoryBot.define do
         finding = build(
           :vulnerabilities_finding,
           :identifier,
+          description: vulnerability.description,
           vulnerability: vulnerability,
           report_type: vulnerability.report_type,
           project: vulnerability.project
