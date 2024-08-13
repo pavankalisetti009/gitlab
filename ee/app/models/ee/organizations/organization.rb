@@ -10,7 +10,9 @@ module EE
           -> { non_archived },
           class_name: 'Project',
           inverse_of: :organization
-        has_many :sbom_occurrences, through: :active_projects, class_name: 'Sbom::Occurrence'
+        has_many :sbom_occurrences, -> {
+          allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477829')
+        }, through: :active_projects, class_name: 'Sbom::Occurrence'
         has_many :vulnerability_exports, class_name: 'Vulnerabilities::Export'
         has_many :sbom_sources, class_name: 'Sbom::Source'
         has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
