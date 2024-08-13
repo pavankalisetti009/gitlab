@@ -15,7 +15,7 @@
     = _('Total issue weight')
   .value.hide-collapsed{ data: { testid: 'total-issue-weight-value' } }
     - unless total_weight == 0
-      %strong.bold= total_weight
+      %strong.gl-font-bold= total_weight
     - else
       .no-value
         = _('None')
