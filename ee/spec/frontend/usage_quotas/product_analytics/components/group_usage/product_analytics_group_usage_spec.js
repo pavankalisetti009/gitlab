@@ -78,7 +78,7 @@ describe('ProductAnalyticsGroupUsage', () => {
       'If GitLab manages your cluster, then GitLab retains your analytics data for 1 year.',
     );
     expect(findDataRetentionLearnMoreLink().attributes('href')).toBe(
-      '/help/user/product_analytics/index#data-retention',
+      '/help/user/product_analytics/index#product-analytics-provider',
     );
   });
 

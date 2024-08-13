@@ -94,9 +94,8 @@ export default {
   USAGE_QUOTA_LEARN_MORE_URL: helpPagePath('/user/product_analytics/index', {
     anchor: 'view-product-analytics-usage-quota',
   }),
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
   DATA_RETENTION_LEARN_MORE_URL: helpPagePath('/user/product_analytics/index', {
-    anchor: 'data-retention',
+    anchor: 'product-analytics-provider',
   }),
 };
 </script>
