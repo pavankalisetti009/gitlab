@@ -48099,6 +48099,9 @@ msgstr ""
 msgid "SecurityOrchestration|Create security policy"
 msgstr ""
 
+msgid "SecurityOrchestration|Custom scan experiment has ended in 17.3"
+msgstr ""
+
 msgid "SecurityOrchestration|Default mode"
 msgstr ""
 
@@ -48413,6 +48416,9 @@ msgstr ""
 msgid "SecurityOrchestration|Scan execution policies can only be created by project owners."
 msgstr ""
 
+msgid "SecurityOrchestration|Scan execution policies using `custom` scan action have been detected. Policies using this action will not work after GitLab 18.0 (May 10, 2025). You must edit these policies to remove the deprecated action. Learn more about the %{linkStart}pipeline execution policy%{linkEnd}."
+msgstr ""
+
 msgid "SecurityOrchestration|Scan execution policy"
 msgstr ""
 
@@ -48653,7 +48659,7 @@ msgstr ""
 msgid "SecurityOrchestration|You don't have any security policies yet"
 msgstr ""
 
-msgid "SecurityOrchestration|You must edit the policy and replace the deprecated syntax%{deprecatedProperties}. For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}."
+msgid "SecurityOrchestration|You must edit the policy and replace the deprecated syntax (%{deprecatedProperties}). For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}."
 msgstr ""
 
 msgid "SecurityOrchestration|You must select one or more compliance frameworks to which this policy should apply."

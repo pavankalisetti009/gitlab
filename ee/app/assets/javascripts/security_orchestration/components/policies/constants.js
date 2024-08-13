@@ -1,5 +1,6 @@
 import { __, s__ } from '~/locale';
 import { PIPELINE_EXECUTION_POLICY_TYPE_HEADER } from 'ee/security_orchestration/components/constants';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 export const POLICY_SOURCE_OPTIONS = {
   ALL: {
@@ -50,3 +51,24 @@ export const EMPTY_POLICY_PROJECT_DESCRIPTION = s__(
 );
 
 export const getPolicyActionOptions = (policy) => [{ text: __('Edit'), href: policy.editPath }];
+
+export const DEPRECATED_CUSTOM_SCAN_PROPERTY = 'custom_scan';
+
+export const BREAKING_CHANGES_POPOVER_CONTENTS = {
+  [POLICY_TYPE_FILTER_OPTIONS.APPROVAL.text]: {
+    content: s__(
+      'SecurityOrchestration|You must edit the policy and replace the deprecated syntax (%{deprecatedProperties}). For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}.',
+    ),
+    link: helpPagePath('user/application_security/policies/scan-result-policies', {
+      anchor: 'merge-request-approval-policy-schema',
+    }),
+  },
+  [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text]: {
+    content: s__(
+      'SecurityOrchestration|You must edit the policy and replace the deprecated syntax (%{deprecatedProperties}). For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}.',
+    ),
+    link: helpPagePath('user/application_security/policies/scan_execution_policies', {
+      anchor: 'scan-execution-policies-schema',
+    }),
+  },
+};

@@ -1,15 +1,15 @@
 import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
+import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 
-const HELP_PATH = '/help/user/application_security/policies/scan-result-policies#';
+const HELP_PATH = '/help/user/application_security/policies/pipeline_execution_policies';
 
-describe('BreakingChangesBanner', () => {
+describe('DeprecatedCustomScanBanner', () => {
   let wrapper;
 
   const createComponent = () => {
-    wrapper = shallowMountExtended(BreakingChangesBanner, {
+    wrapper = shallowMountExtended(DeprecatedCustomScanBanner, {
       stubs: {
         GlAlert,
         GlSprintf,
@@ -28,11 +28,9 @@ describe('BreakingChangesBanner', () => {
   it('renders alert info with message', () => {
     expect(findLocalStorageSync().exists()).toBe(true);
     expect(findAlert().exists()).toBe(true);
-    expect(findAlert().props('title')).toContain('Merge request approval policy syntax changes');
+    expect(findAlert().props('title')).toContain('Custom scan experiment has ended in 17.3');
 
-    expect(findAllLinks().at(0).attributes('href')).toBe(
-      `${HELP_PATH}merge-request-approval-policies-schema`,
-    );
+    expect(findAllLinks().at(0).attributes('href')).toBe(HELP_PATH);
 
     expect(wrapper.emitted('dismiss')).toEqual([[false]]);
   });

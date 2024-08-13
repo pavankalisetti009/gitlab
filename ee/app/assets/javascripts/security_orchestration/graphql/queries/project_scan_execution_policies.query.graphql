@@ -13,6 +13,7 @@ query projectScanExecutionPolicies(
         yaml
         editPath
         enabled
+        deprecatedProperties
         policyScope {
           ...PolicyScope
         }

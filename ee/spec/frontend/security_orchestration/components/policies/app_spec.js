@@ -7,6 +7,7 @@ import ListComponent from 'ee/security_orchestration/components/policies/list_co
 import App from 'ee/security_orchestration/components/policies/app.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
+  DEPRECATED_CUSTOM_SCAN_PROPERTY,
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
@@ -27,7 +28,10 @@ import {
   projectPipelineResultPolicies,
   mockLinkedSppItemsResponse,
 } from '../../mocks/mock_apollo';
-import { mockScanExecutionPoliciesResponse } from '../../mocks/mock_scan_execution_policy_data';
+import {
+  mockProjectScanExecutionPolicy,
+  mockScanExecutionPoliciesResponse,
+} from '../../mocks/mock_scan_execution_policy_data';
 import {
   mockScanResultPoliciesResponse,
   mockProjectScanResultPolicy,
@@ -233,6 +237,36 @@ describe('App', () => {
       });
       await waitForPromises();
       expect(findPoliciesHeader().props('hasInvalidPolicies')).toEqual(false);
+    });
+  });
+
+  describe('deprecated custom scan action policies', () => {
+    it('updates "hasDeprecatedCustomScanPolicies" when there are deprecated properties in scan execution policies', async () => {
+      createWrapper({
+        handlers: {
+          projectScanExecutionPolicies: projectScanExecutionPolicies([
+            {
+              ...mockProjectScanExecutionPolicy,
+              deprecatedProperties: [DEPRECATED_CUSTOM_SCAN_PROPERTY],
+            },
+          ]),
+        },
+      });
+      expect(findPoliciesHeader().props('hasDeprecatedCustomScanPolicies')).toEqual(false);
+      await waitForPromises();
+      expect(findPoliciesHeader().props('hasDeprecatedCustomScanPolicies')).toEqual(true);
+    });
+
+    it('does not emit that a policy is invalid when there are no deprecated properties', async () => {
+      createWrapper({
+        handlers: {
+          projectScanExecutionPolicies: projectScanExecutionPolicies([
+            { ...mockProjectScanExecutionPolicy, deprecatedProperties: [] },
+          ]),
+        },
+      });
+      await waitForPromises();
+      expect(findPoliciesHeader().props('hasDeprecatedCustomScanPolicies')).toEqual(false);
     });
   });
 });
