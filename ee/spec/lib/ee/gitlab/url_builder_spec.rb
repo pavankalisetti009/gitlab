@@ -20,6 +20,8 @@ RSpec.describe Gitlab::UrlBuilder do
 
       [:issue, :objective]   | ->(issue)         { "/#{issue.project.full_path}/-/work_items/#{issue.iid}" }
       [:issue, :key_result]  | ->(issue)         { "/#{issue.project.full_path}/-/work_items/#{issue.iid}" }
+      [:work_item, :epic, :group_level] | ->(epic_work_item) { "/groups/#{epic_work_item.namespace.full_path}/-/epics/#{epic_work_item.iid}" }
+      [:work_item, :epic] | ->(epic_work_item) { "/#{epic_work_item.project.full_path}/-/work_items/#{epic_work_item.iid}" }
 
       [:issue, :key_result, :group_level] | ->(issue) { "/groups/#{issue.namespace.full_path}/-/work_items/#{issue.iid}" }
     end
