@@ -74,29 +74,16 @@ RSpec.describe OperationsController, feature_category: :release_orchestration do
       end
 
       context 'with added projects' do
-        let(:alert1) { create(:prometheus_alert, project: project, environment: environment) }
-        let(:alert2) { create(:prometheus_alert, project: project, environment: environment) }
-
         let!(:alert_events) do
           [
-            create(:alert_management_alert, prometheus_alert: alert1, project: project, environment: environment),
-            create(:alert_management_alert, prometheus_alert: alert2, project: project, environment: environment),
-            create(:alert_management_alert, prometheus_alert: alert1, project: project, environment: environment),
-            create(:alert_management_alert, :resolved, prometheus_alert: alert2, project: project, environment: environment)
+            create(:alert_management_alert, project: project, environment: environment),
+            create(:alert_management_alert, project: project, environment: environment),
+            create(:alert_management_alert, project: project, environment: environment),
+            create(:alert_management_alert, :resolved, project: project, environment: environment)
           ]
         end
 
         let(:open_alerts) { alert_events.select(&:triggered?) + alert_events.select(&:acknowledged?) }
-        let(:last_firing_alert) { open_alerts.last.prometheus_alert }
-
-        let(:alert_json_path) do
-          project_prometheus_alert_path(
-            project,
-            last_firing_alert.prometheus_metric_id,
-            environment_id: environment,
-            format: :json
-          )
-        end
 
         let(:expected_project) { json_response['projects'].first }
 
