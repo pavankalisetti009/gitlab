@@ -1025,9 +1025,6 @@ msgstr ""
 msgid "%{linkStart}Advanced search%{linkEnd} is enabled."
 msgstr ""
 
-msgid "%{link_start}Add a start date and due date%{link_end} to view a burndown chart."
-msgstr ""
-
 msgid "%{listToShow}, and %{awardsListLength} more"
 msgstr ""
 
@@ -3117,6 +3114,9 @@ msgid "Add Wiki"
 msgstr ""
 
 msgid "Add Zoom meeting"
+msgstr ""
+
+msgid "Add a %{link_start}start date and due date%{link_end} to view a burndown chart."
 msgstr ""
 
 msgid "Add a GCP region"
