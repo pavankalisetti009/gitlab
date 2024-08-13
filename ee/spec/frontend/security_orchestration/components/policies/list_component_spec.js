@@ -273,6 +273,29 @@ describe('List component', () => {
           'Inherited from parent-group-name',
         );
       });
+
+      it.each`
+        policyType                                             | response
+        ${POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value}     | ${mockScanExecutionPoliciesResponse}
+        ${POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value}           | ${mockScanResultPoliciesResponse}
+        ${POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value} | ${mockPipelineExecutionPoliciesResponse}
+      `(
+        'renders $policyType policies when filtered by INHERITED source',
+        ({ policyType, response }) => {
+          mountWrapper({
+            props: {
+              selectedPolicySource: POLICY_SOURCE_OPTIONS.INHERITED.value,
+              policiesByType: {
+                [policyType]: response,
+              },
+            },
+          });
+
+          expect(trimText(findInheritedPolicyCell(findSourceCells).text())).toBe(
+            'Inherited from parent-group-name',
+          );
+        },
+      );
     });
 
     describe('scope', () => {
