@@ -56,7 +56,7 @@ module API
                 access = {
                   gitlab_rails: {
                     base_url: Gitlab.config.gitlab.url,
-                    token: gitlab_oauth_token_result[:oauth_access_token][:token]
+                    token: gitlab_oauth_token_result[:oauth_access_token].plaintext_token
                   },
                   duo_workflow_service: {
                     base_url: Gitlab::DuoWorkflow::Client.url,

@@ -14,7 +14,7 @@ module Ai
           current_user)
 
         ensure_oauth_application!
-        token = find_or_create_oauth_access_token
+        token = create_oauth_access_token
         success(oauth_access_token: token)
       end
 
@@ -22,16 +22,10 @@ module Ai
 
       attr_reader :current_user
 
-      def find_or_create_oauth_access_token
-        existing_token = Doorkeeper::AccessToken.matching_token_for(
-          oauth_application,
-          current_user.id,
-          oauth_application.scopes,
-          include_expired: false
-        )
-
-        return existing_token if existing_token
-
+      def create_oauth_access_token
+        # OAuth tokens are hashed before being saved in the database, so we must
+        # re-create them each time to retrieve the plaintext value
+        # see https://gitlab.com/gitlab-org/gitlab/-/merge_requests/91501
         Doorkeeper::AccessToken.create!(
           application_id: oauth_application.id,
           expires_in: 2.hours,
