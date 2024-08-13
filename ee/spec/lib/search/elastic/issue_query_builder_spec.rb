@@ -28,9 +28,9 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
       filters:non_archived
       filters:non_confidential
       filters:confidential
-      filters:as_author
-      filters:as_assignee
-      filters:project:membership:id
+      filters:confidential:as_author
+      filters:confidential:as_assignee
+      filters:confidential:project:membership:id
     ])
   end
 
@@ -115,9 +115,9 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
           filters:project
           filters:non_confidential
           filters:confidential
-          filters:as_author
-          filters:as_assignee
-          filters:project:membership:id
+          filters:confidential:as_author
+          filters:confidential:as_assignee
+          filters:confidential:project:membership:id
         ]
 
         knn_filter = query[:knn][:filter]

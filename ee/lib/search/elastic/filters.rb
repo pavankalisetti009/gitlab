@@ -216,9 +216,17 @@ module Search
                              {
                                bool: {
                                  should: [
-                                   { term: { author_id: { _name: context.name(:as_author), value: user.id } } },
-                                   { term: { assignee_id: { _name: context.name(:as_assignee), value: user.id } } },
-                                   { terms: { _name: context.name(:project, :membership, :id),
+                                   { term:
+                                    { author_id: {
+                                      _name: context.name(:confidential, :as_author),
+                                      value: user.id
+                                    } } },
+                                   { term:
+                                    { assignee_id: {
+                                      _name: context.name(:confidential, :as_assignee),
+                                      value: user.id
+                                    } } },
+                                   { terms: { _name: context.name(:confidential, :project, :membership, :id),
                                               project_id: authorized_project_ids } }
                                  ]
                                }
@@ -309,32 +317,9 @@ module Search
           authorized_ids.intersection(group_ids.to_set).to_a
         end
 
-        # Builds an elasticsearch query that will select documents from a
-        # set of projects for Group and Project searches, taking user access
-        # rules for issues into account. Relies upon super for Global searches
-        def project_ids_filter(query_hash, options)
-          return global_project_ids_filter(query_hash, options) if options[:public_and_internal_projects]
-
-          current_user = options[:current_user]
-          scoped_project_ids = scoped_project_ids(current_user, options[:project_ids])
-          return global_project_ids_filter(query_hash, options) if scoped_project_ids == :any
-
-          context.name(:project) do
-            add_filter(query_hash, :query, :bool, :filter) do
-              {
-                terms: {
-                  _name: context.name,
-                  "#{options[:project_id_field]}":
-                    filter_ids_by_feature(scoped_project_ids, current_user, options[:features])
-                }
-              }
-            end
-          end
-        end
-
         # Builds an elasticsearch query that will select child documents from a
         # set of projects, taking user access rules into account.
-        def global_project_ids_filter(query_hash, options)
+        def project_ids_filter(query_hash, options)
           context.name(:project) do
             project_query = project_ids_query(
               options[:current_user],
