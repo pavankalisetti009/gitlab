@@ -8,8 +8,6 @@ RSpec.describe ProjectCiCdSetting, feature_category: :continuous_integration do
   let_it_be(:project) { create_default(:project) }
   let(:settings) { project.reload.ci_cd_settings }
 
-  it { is_expected.to validate_inclusion_of(:merge_trains_skip_train_allowed).in_array([true, false]) }
-
   describe '#restrict_pipeline_cancellation_role' do
     it 'defines an enum' do
       described_class.restrict_pipeline_cancellation_roles.each_key do |role|

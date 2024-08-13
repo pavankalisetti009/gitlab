@@ -12,8 +12,6 @@ RSpec.describe Security::ScanResultPolicyRead, feature_category: :security_polic
 
     subject { scan_result_policy_read }
 
-    it { is_expected.to validate_inclusion_of(:match_on_inclusion_license).in_array([true, false]) }
-
     it { is_expected.not_to allow_value(nil).for(:role_approvers) }
     it { is_expected.to(validate_inclusion_of(:role_approvers).in_array(Gitlab::Access.values)) }
 

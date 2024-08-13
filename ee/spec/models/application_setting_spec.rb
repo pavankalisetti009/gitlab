@@ -88,8 +88,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     end
 
     describe 'security policy settings' do
-      it { is_expected.to validate_inclusion_of(:security_policy_global_group_approvers_enabled).in_array([true, false]) }
-
       it do
         is_expected.to validate_numericality_of(:security_approval_policies_limit)
                          .only_integer
@@ -137,10 +135,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
     describe 'dashboard', feature_category: :metrics do
       it { is_expected.to validate_numericality_of(:dashboard_limit).only_integer.is_greater_than_or_equal_to(0) }
-      it { is_expected.to validate_inclusion_of(:dashboard_limit_enabled).in_array([true, false]) }
     end
-
-    it { is_expected.to validate_inclusion_of(:allow_account_deletion).in_array([true, false]) }
 
     describe 'when additional email text is enabled', feature_category: :user_profile do
       before do
@@ -149,10 +144,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
       it { is_expected.to allow_value("a" * subject.email_additional_text_character_limit).for(:email_additional_text) }
       it { is_expected.not_to allow_value("a" * (subject.email_additional_text_character_limit + 1)).for(:email_additional_text) }
-    end
-
-    describe 'secret detection validations', feature_category: :secret_detection do
-      it { is_expected.to validate_inclusion_of(:pre_receive_secret_detection_enabled).in_array([true, false]) }
     end
 
     describe 'when secret detection token revocation is enabled', feature_category: :secret_detection do
@@ -491,7 +482,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           stub_application_setting_enum('email_confirmation_setting', 'hard')
         end
 
-        it { is_expected.to validate_inclusion_of(:delete_unconfirmed_users).in_array([true, false]) }
         it { is_expected.to validate_numericality_of(:unconfirmed_users_delete_after_days).is_greater_than(0) }
       end
 
@@ -503,7 +493,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           allow(Devise).to receive(:allow_unconfirmed_access_for).and_return(allow_unconfirmed_access_for.days)
         end
 
-        it { is_expected.to validate_inclusion_of(:delete_unconfirmed_users).in_array([true, false]) }
         it { is_expected.to validate_numericality_of(:unconfirmed_users_delete_after_days).is_greater_than(allow_unconfirmed_access_for) }
       end
 

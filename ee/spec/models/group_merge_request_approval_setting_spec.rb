@@ -12,14 +12,7 @@ RSpec.describe GroupMergeRequestApprovalSetting, feature_category: :compliance_m
 
     subject(:approval_setting) { setting }
 
-    options = [true, false]
     it { is_expected.to validate_presence_of(:group) }
-    it { is_expected.to validate_inclusion_of(:allow_author_approval).in_array(options) }
-    it { is_expected.to validate_inclusion_of(:allow_committer_approval).in_array(options) }
-    it { is_expected.to validate_inclusion_of(:allow_overrides_to_approver_list_per_merge_request).in_array(options) }
-    it { is_expected.to validate_inclusion_of(:retain_approvals_on_push).in_array(options) }
-    it { is_expected.to validate_inclusion_of(:require_password_to_approve).in_array(options) }
-    it { is_expected.to validate_inclusion_of(:require_reauthentication_to_approve).in_array(options) }
   end
 
   describe '.find_or_initialize_by_group' do

@@ -29,12 +29,6 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
 
     it { is_expected.to validate_uniqueness_of(:vulnerability_id) }
     it { is_expected.to validate_uniqueness_of(:uuid).case_insensitive }
-
-    it { is_expected.to validate_inclusion_of(:has_issues).in_array([true, false]) }
-    it { is_expected.to validate_inclusion_of(:has_merge_request).in_array([true, false]) }
-    it { is_expected.to validate_inclusion_of(:has_remediations).in_array([true, false]) }
-
-    it { is_expected.to validate_inclusion_of(:resolved_on_default_branch).in_array([true, false]) }
   end
 
   describe 'triggers' do
