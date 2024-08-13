@@ -3,7 +3,7 @@
 module Groups
   module AddOns
     module DiscoverDuoProHelper
-      def duo_pro_trial_status_track_action(namespace)
+      def duo_pro_documentation_link_track_action(namespace)
         if GitlabSubscriptions::DuoPro.active_trial_add_on_purchase_for_namespace?(namespace)
           'click_documentation_link_duo_pro_trial_active'
         else
@@ -48,7 +48,7 @@ module Groups
               tag_pair(
                 link_to('', 'https://about.gitlab.com/ai-transparency-center/',
                   data: {
-                    track_action: duo_pro_trial_status_track_action(namespace),
+                    track_action: duo_pro_documentation_link_track_action(namespace),
                     track_label: 'ai_transparency_center_feature'
                   },
                   class: 'gl-contents',
@@ -58,6 +58,44 @@ module Groups
                 :link_end
               )
             )
+          }
+        ]
+      end
+
+      def duo_pro_whats_new_card_collection(namespace)
+        [
+          {
+            header: s_("DuoProDiscover|Test generation"),
+            body: s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."),
+            link_text: s_("DuoProDiscover|Read documentation"),
+            link_path: help_page_path("user/gitlab_duo_chat", anchor: "write-tests-in-the-ide"),
+            track_label: 'test_generation_feature',
+            track_action: duo_pro_documentation_link_track_action(namespace)
+          },
+          {
+            header: s_("DuoProDiscover|Code explanation"),
+            body: s_("DuoProDiscover|Helps you understand code by explaining it in natural language."),
+            link_text: s_("DuoProDiscover|Read documentation"),
+            link_path: help_page_path("user/ai_experiments",
+              anchor: "explain-code-in-the-web-ui-with-code-explanation"),
+            track_label: 'code_explanation_feature',
+            track_action: duo_pro_documentation_link_track_action(namespace)
+          },
+          {
+            header: s_("DuoProDiscover|Code refactoring"),
+            body: s_("DuoProDiscover|Work to improve existing code quality."),
+            link_text: s_("DuoProDiscover|Read documentation"),
+            link_path: help_page_path("user/gitlab_duo_chat", anchor: "refactor-code-in-the-ide"),
+            track_label: 'code_refactoring_feature',
+            track_action: duo_pro_documentation_link_track_action(namespace)
+          },
+          {
+            header: s_("DuoProDiscover|Chat from any location"),
+            body: s_("DuoProDiscover|Access Chat from the GitLab UI or your preferred IDE."),
+            link_text: s_("DuoProDiscover|Read documentation"),
+            link_path: help_page_url("user/gitlab_duo_chat", anchor: "use-gitlab-duo-chat-in-the-web-ide"),
+            track_label: 'chat_feature',
+            track_action: duo_pro_documentation_link_track_action(namespace)
           }
         ]
       end

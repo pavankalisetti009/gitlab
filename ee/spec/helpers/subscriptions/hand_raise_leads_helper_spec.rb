@@ -94,21 +94,53 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
   describe 'discover_duo_pro_hand_raise_lead_data' do
     let_it_be(:namespace) { build_stubbed(:group) }
 
-    it 'provides the expected dataset' do
-      result = {
-        namespace_id: namespace.id,
-        glm_content: 'discover-duo-pro',
-        cta_tracking: {
-          action: 'click_contact_sales',
-          label: 'duo_pro_active_trial'
-        }.to_json,
-        button_attributes: {
-          category: 'secondary',
-          variant: 'confirm'
-        }.to_json
-      }
+    describe 'discover_duo_pro_hand_raise_lead_data' do
+      let(:namespace) { build_stubbed(:group) }
 
-      expect(helper.discover_duo_pro_hand_raise_lead_data(namespace)).to eq(result)
+      it 'provides the expected dataset' do
+        expected_label = helper.duo_pro_trial_status_cta_label(namespace)
+
+        result = {
+          namespace_id: namespace.id,
+          glm_content: 'discover-duo-pro',
+          cta_tracking: {
+            action: 'click_contact_sales',
+            label: expected_label
+          }.to_json,
+          button_attributes: {
+            category: 'secondary',
+            variant: 'confirm'
+          }.to_json
+        }
+
+        expect(helper.discover_duo_pro_hand_raise_lead_data(namespace)).to eq(result)
+      end
+    end
+
+    describe '#duo_pro_trial_status_cta_label' do
+      let(:namespace) { build_stubbed(:namespace) }
+
+      context 'when an active trial DuoPro add-on purchase exists' do
+        before do
+          allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+            .with(namespace).and_return(true)
+        end
+
+        it 'returns the active trial label' do
+          expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_active_trial')
+        end
+      end
+
+      context 'when an expired trial DuoPro add-on purchase exists' do
+        before do
+          allow(GitlabSubscriptions::DuoPro).to receive(:active_trial_add_on_purchase_for_namespace?)
+            .with(namespace).and_return(false)
+        end
+
+        it 'returns the expired trial label' do
+          expect(helper.duo_pro_trial_status_cta_label(namespace)).to eq('duo_pro_expired_trial')
+        end
+      end
     end
   end
 end
