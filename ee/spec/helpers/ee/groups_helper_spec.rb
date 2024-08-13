@@ -751,4 +751,24 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       end
     end
   end
+
+  describe '#pages_deployments_app_data' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+
+    before_all do
+      project.actual_limits.update!(active_versioned_pages_deployments_limit_by_namespace: 100)
+      create(:pages_deployment, project: project, path_prefix: '/foo')
+    end
+
+    it 'returns expected hash' do
+      expect(helper.pages_deployments_app_data(group)).to match(
+        {
+          full_path: group.full_path,
+          deployments_count: 1,
+          deployments_limit: 100
+        }
+      )
+    end
+  end
 end

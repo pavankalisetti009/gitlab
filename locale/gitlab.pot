@@ -38271,6 +38271,12 @@ msgstr ""
 msgid "PagesDomain|Certificate Key is too long. (Max %d bytes)"
 msgstr ""
 
+msgid "PagesUsageQuota|Active extra deployments"
+msgstr ""
+
+msgid "PagesUsageQuota|Learn about Pages deployments limits"
+msgstr ""
+
 msgid "Pages|Active"
 msgstr ""
 
@@ -38302,6 +38308,9 @@ msgid "Pages|Last updated"
 msgstr ""
 
 msgid "Pages|No deployments yet"
+msgstr ""
+
+msgid "Pages|Pages deployments"
 msgstr ""
 
 msgid "Pages|Path prefix"
