@@ -154,8 +154,8 @@ module RemoteDevelopment
                     'value' => tools_dir
                   }
                 ],
-                'memoryLimit' => '256Mi',
-                'memoryRequest' => '128Mi',
+                'memoryLimit' => '512Mi',
+                'memoryRequest' => '256Mi',
                 'cpuLimit' => '500m',
                 'cpuRequest' => '100m'
               }

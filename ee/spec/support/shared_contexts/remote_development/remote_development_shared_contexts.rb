@@ -768,11 +768,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 resources: {
                   limits: {
                     cpu: "500m",
-                    memory: "256Mi"
+                    memory: "512Mi"
                   },
                   requests: {
                     cpu: "100m",
-                    memory: "128Mi"
+                    memory: "256Mi"
                   }
                 },
                 volumeMounts: [
@@ -820,11 +820,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
                 resources: {
                   limits: {
                     cpu: "500m",
-                    memory: "256Mi"
+                    memory: "512Mi"
                   },
                   requests: {
                     cpu: "100m",
-                    memory: "128Mi"
+                    memory: "256Mi"
                   }
                 },
                 volumeMounts: [
@@ -945,7 +945,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         ],
         resources: {
           requests: {
-            storage: "15Gi"
+            storage: "50Gi"
           }
         }
       },

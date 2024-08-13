@@ -19,7 +19,7 @@ module RemoteDevelopment
           volume_component = {
             'name' => volume_name,
             'volume' => {
-              'size' => '15Gi'
+              'size' => '50Gi'
             }
           }
 

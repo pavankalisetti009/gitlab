@@ -18,7 +18,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::Main, :freeze_time, feat
   let(:devfile_path) { '.devfile.yaml' }
   let(:devfile_fixture_name) { 'example.devfile.yaml' }
   let(:devfile_yaml) { read_devfile(devfile_fixture_name) }
-  let(:processed_devfile) { YAML.safe_load(example_processed_devfile).to_h }
+  let(:expected_processed_devfile) { YAML.safe_load(example_processed_devfile).to_h }
   let(:editor) { 'webide' }
   let(:workspace_root) { '/projects' }
   let(:variables) do
@@ -122,7 +122,7 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::Main, :freeze_time, feat
         expect(workspace.devfile).to eq(devfile_yaml)
 
         actual_processed_devfile = YAML.safe_load(workspace.processed_devfile).to_h
-        expect(actual_processed_devfile).to eq(processed_devfile)
+        expect(actual_processed_devfile).to eq(expected_processed_devfile)
 
         variables.each do |variable|
           expect(

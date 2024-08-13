@@ -48,7 +48,7 @@ components:
       mountSources: true
   - name: gl-workspace-data
     volume:
-      size: 15Gi
+      size: 50Gi
   - name: gl-tools-injector
     container:
       image: registry.gitlab.com/gitlab-org/remote-development/gitlab-workspaces-tools:2.0.0
@@ -58,8 +58,8 @@ components:
       env:
         - name: GL_TOOLS_DIR
           value: "/projects/.gl-tools"
-      memoryLimit: 256Mi
-      memoryRequest: 128Mi
+      memoryLimit: 512Mi
+      memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
   - name: gl-cloner-injector
@@ -77,8 +77,8 @@ components:
       command:
         - "/bin/sh"
         - "-c"
-      memoryLimit: 256Mi
-      memoryRequest: 128Mi
+      memoryLimit: 512Mi
+      memoryRequest: 256Mi
       cpuLimit: 500m
       cpuRequest: 100m
 events:
