@@ -6,20 +6,42 @@
     %h2.gl-text-size-h1.gl-mb-5{ class: 'gl-w-3/4' }
       = s_('DuoProDiscover|Ship software faster and more securely with AI integrated into your entire DevSecOps lifecycle.')
     .gl-flex
-      = render Pajamas::ButtonComponent.new(href: group_settings_gitlab_duo_usage_index_path(@group),
-        category: :primary, variant: :confirm,
-        button_options: { class: 'gl-mr-3', data: { track_action: 'click_buy_now', track_label: 'duo_pro_active_trial' } }) do
+      = render Pajamas::ButtonComponent.new(href: group_settings_gitlab_duo_usage_index_path(@group), category: :primary, variant: :confirm, button_options: { class: 'gl-mr-3', data: { track_action: 'click_buy_now', track_label: duo_pro_trial_status_cta_label(@group) } }) do |c|
         = _('Buy now')
       .js-hand-raise-lead-trigger{ data: discover_duo_pro_hand_raise_lead_data(@group) }
   .container.gl-p-0.ml-6
     %a{ href: "https://player.vimeo.com/video/855805049?title=0&byline=0&portrait=0&badge=0&autopause=0&player_id=0&app_id=58479", target: '_blank' }
       = image_tag("duo_pro/video-thumbnail.png", width: 500, style: 'border-radius:4px;')
 
-.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20' }
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20', "data-testid": 'why-gitlab-duo-section' }
   .container.gl-mt-5
     %h3.gl-text-lg.gl-mb-6
       = s_("DuoProDiscover|Why GitLab Duo?")
     .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-2
-      = render Pajamas::CardComponent.with_collection(duo_pro_discover_card_collection(@group), card_options: { class: 'gl-rounded-lg gl-p-2' },
-        body_options: { class: 'gl-pt-0' },
-        header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' })
+      - duo_pro_discover_card_collection(@group).each do |attributes|
+        = render Pajamas::CardComponent.new(card_options: { class: 'gl-rounded-lg gl-p-2' }, body_options: { class: 'gl-pt-0' }, header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' }) do |c|
+          - c.with_header do
+            = attributes[:header]
+          - c.with_body do
+            = attributes[:body]
+
+.gl-flex.gl-mx-auto{ class: 'gl-w-full md:gl-w-17/20', 'data-testid': 'whats-new-section' }
+  .container.gl-mt-5
+    %h3.gl-text-lg.gl-mb-6
+      = s_("DuoProDiscover|What's new in GitLab Duo Chat")
+    .gl-grid.gl-gap-6.gl-grid-cols-1.md:gl-grid-cols-4
+      - duo_pro_whats_new_card_collection(@group).each do |card|
+        = render Pajamas::CardComponent.new(card_options: { class: 'gl-h-full gl-flex gl-flex-col' }, header_options: { class: 'gl-new-card-header gl-font-bold gl-border-b-0' }, body_options: { class: 'gl-p-4 gl-pt-0 gl-grow' }, footer_options: { class: 'gl-new-card-footer gl-border-0 gl-p-4 gl-mt-auto' }) do |c|
+          - c.with_header do
+            = card[:header]
+          - c.with_body do
+            = card[:body]
+          - c.with_footer do
+            = link_to card[:link_path],
+                      data: { track_action: card[:track_action],
+                              track_label: card[:track_label] },
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      class: "gl-flex gl-items-center gl-gap-2" do
+              = card[:link_text]
+              = sprite_icon("external-link")

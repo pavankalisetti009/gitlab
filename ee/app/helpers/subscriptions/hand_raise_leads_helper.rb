@@ -58,7 +58,7 @@ module Subscriptions
         glm_content: 'discover-duo-pro',
         cta_tracking: {
           action: 'click_contact_sales',
-          label: 'duo_pro_active_trial' # label needs to be dynamic for upcoming expired widget navigation
+          label: duo_pro_trial_status_cta_label(namespace)
         }.to_json,
         button_attributes: {
           category: 'secondary',
@@ -82,6 +82,14 @@ module Subscriptions
           label: 'code_suggestions_hand_raise_lead_form'
         }.to_json
       }
+    end
+
+    def duo_pro_trial_status_cta_label(namespace)
+      if GitlabSubscriptions::DuoPro.active_trial_add_on_purchase_for_namespace?(namespace)
+        'duo_pro_active_trial'
+      else
+        'duo_pro_expired_trial'
+      end
     end
   end
 end
