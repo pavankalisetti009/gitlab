@@ -164,10 +164,6 @@ RSpec.describe Gitlab::Geo::GeoTasks, feature_category: :geo_replication do
       expect(queue2).not_to receive(:size)
       expect(described_class).to receive(:sleep).with(1).twice
 
-      described_class.drain_non_geo_queues
-    end
-
-    it 'outputs what it is doing', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/463718' do
       expected_output = <<~MSG
         Sidekiq Queues: Disabling all non-Geo queues
         Sidekiq Queues: Waiting for all non-Geo queues to be empty
