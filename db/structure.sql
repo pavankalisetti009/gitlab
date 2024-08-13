@@ -13351,8 +13351,11 @@ CREATE TABLE ml_model_versions (
     semver_minor integer,
     semver_patch integer,
     semver_prerelease text,
+    cached_markdown_version integer,
+    description_html text,
     CONSTRAINT check_246f5048b5 CHECK ((char_length(semver_prerelease) <= 255)),
     CONSTRAINT check_28b2d892c8 CHECK ((char_length(version) <= 255)),
+    CONSTRAINT check_4d50116294 CHECK ((char_length(description_html) <= 50000)),
     CONSTRAINT check_caff7d000b CHECK ((char_length(description) <= 500))
 );
 
