@@ -81,7 +81,7 @@ export const updateLinesToMarker = (codeBlocks) => {
     highlightInfo.forEach((item) => {
       const endLine = item.endLine || item.startLine;
       for (let k = item.startLine; k <= endLine; k += 1) {
-        acc[k] = item;
+        (acc[k] || (acc[k] = [])).push(item);
       }
     });
     return acc;
