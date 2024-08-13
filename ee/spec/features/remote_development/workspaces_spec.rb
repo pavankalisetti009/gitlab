@@ -85,8 +85,19 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       # ASSERT TERMINATE BUTTON IS AVAILABLE
       expect(page).to have_button('Terminate')
 
+      additional_args_for_expected_config_to_apply =
+        build_additional_args_for_expected_config_to_apply(
+          network_policy_enabled: true,
+          dns_zone: agent.remote_development_agent_config.dns_zone,
+          namespace_path: group.path,
+          project_name: project.path
+        )
+
       # SIMULATE FIRST POLL FROM AGENTK TO PICK UP NEW WORKSPACE
-      simulate_first_poll(workspace: workspace.reload) do |workspace_agent_infos:, update_type:|
+      simulate_first_poll(
+        workspace: workspace.reload,
+        **additional_args_for_expected_config_to_apply
+      ) do |workspace_agent_infos:, update_type:|
         simulate_agentk_reconcile_post(
           agent_token: agent_token,
           workspace_agent_infos: workspace_agent_infos,
@@ -115,7 +126,10 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       click_button 'Stop'
 
       # SIMULATE THIRD POLL FROM AGENTK TO UPDATE WORKSPACE TO STOPPING STATE
-      simulate_third_poll(workspace: workspace.reload) do |workspace_agent_infos:, update_type:|
+      simulate_third_poll(
+        workspace: workspace.reload,
+        **additional_args_for_expected_config_to_apply
+      ) do |workspace_agent_infos:, update_type:|
         simulate_agentk_reconcile_post(
           agent_token: agent_token,
           workspace_agent_infos: workspace_agent_infos,
@@ -156,7 +170,10 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       end
 
       # SIMULATE SIXTH POLL FROM AGENTK FOR FULL RECONCILE TO SHOW ALL WORKSPACES ARE SENT IN RAILS_INFOS
-      simulate_sixth_poll(workspace: workspace.reload) do |workspace_agent_infos:, update_type:|
+      simulate_sixth_poll(
+        workspace: workspace.reload,
+        **additional_args_for_expected_config_to_apply
+      ) do |workspace_agent_infos:, update_type:|
         simulate_agentk_reconcile_post(
           agent_token: agent_token,
           workspace_agent_infos: workspace_agent_infos,

@@ -5,7 +5,9 @@ require 'spec_helper'
 RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environment_management do
   it 'includes the ee specific fields' do
     expect(described_class).to have_graphql_fields(
-      :vulnerability_images
+      :vulnerability_images,
+      :workspaces,
+      :remote_development_agent_config
     ).at_least
   end
 
@@ -58,6 +60,62 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environmen
 
       it 'returns a list of container images reported for vulnerabilities' do
         expect(vulnerability_images).to eq('name' => 'alpine:3.7')
+      end
+    end
+  end
+
+  describe 'remote_development_agent_config' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, group: group) }
+    let_it_be(:user) { create(:user) }
+    let_it_be(:cluster_agent) { create(:cluster_agent, project: project) }
+    let_it_be(:remote_development_agent_config) do
+      create(:remote_development_agent_config, cluster_agent_id: cluster_agent.id, project_id: project.id)
+    end
+
+    let_it_be(:remote_development_namespace_cluster_agent_mapping) do
+      create(:remote_development_namespace_cluster_agent_mapping, agent: cluster_agent, namespace: group)
+    end
+
+    let_it_be(:query) do
+      %(
+        query {
+          namespace(fullPath: "#{group.full_path}") {
+            remoteDevelopmentClusterAgents(filter: AVAILABLE) {
+              nodes {
+                remoteDevelopmentAgentConfig {
+                  defaultMaxHoursBeforeTermination
+                }
+              }
+            }
+          }
+        }
+      )
+    end
+
+    before_all do
+      project.add_owner(user)
+    end
+
+    before do
+      stub_licensed_features(remote_development: true)
+    end
+
+    subject(:remote_development_agent_config_result) do
+      result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
+      result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'remoteDevelopmentAgentConfig')
+    end
+
+    context 'when user is logged in' do
+      let(:current_user) { user }
+      let(:expected_default_max_hours_before_termination) do
+        remote_development_agent_config.default_max_hours_before_termination
+      end
+
+      it 'returns associated remote development agent config' do
+        expect(remote_development_agent_config_result).to eq(
+          'defaultMaxHoursBeforeTermination' => expected_default_max_hours_before_termination
+        )
       end
     end
   end

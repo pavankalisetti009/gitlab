@@ -45,6 +45,10 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
 
   before do
     stub_licensed_features(remote_development: true)
+    allow(::RemoteDevelopment::FilterArgumentValidator).to receive(:validate_filter_argument_types!).and_return(true)
+    allow(::RemoteDevelopment::FilterArgumentValidator).to receive(
+      :validate_at_least_one_filter_argument_provided!
+    ).and_return(true)
   end
 
   context "with ids argument" do
@@ -148,6 +152,12 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
     context "when no filter arguments are provided" do
       let(:filter_arguments) { {} }
 
+      before do
+        allow(::RemoteDevelopment::FilterArgumentValidator).to receive(
+          :validate_at_least_one_filter_argument_provided!
+        ).and_raise(ArgumentError.new("At least one filter argument must be provided"))
+      end
+
       it "raises an ArgumentError" do
         expect { collection_proxy }.to raise_error(ArgumentError, "At least one filter argument must be provided")
       end
@@ -160,6 +170,12 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
           "'project_ids' must be an Array of 'Integer', " \
           "'agent_ids' must be an Array of 'Integer', " \
           "'actual_states' must be an Array of 'String'"
+      end
+
+      before do
+        allow(::RemoteDevelopment::FilterArgumentValidator).to receive(
+          :validate_filter_argument_types!
+        ).and_raise(RuntimeError.new(expected_exception_message))
       end
 
       context "when argument is not an array" do
