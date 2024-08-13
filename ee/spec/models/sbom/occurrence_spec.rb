@@ -421,7 +421,7 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
         it 'returns records filtered by search' do
           result = described_class.filter_by_search_with_component_and_group(keyword, component_version.id, group)
 
-          expect(result).to eq(occurrences)
+          expect(result).to match_array(occurrences)
         end
       end
     end
@@ -773,6 +773,13 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
       it 'does not return unrelated occurrences' do
         expect(described_class.by_pipeline_ids(pipeline.id)).not_to include(unrelated_occurrence)
       end
+    end
+  end
+
+  context 'with loose foreign key on sbom_occurrences.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:sbom_occurrence, project: parent) }
     end
   end
 end

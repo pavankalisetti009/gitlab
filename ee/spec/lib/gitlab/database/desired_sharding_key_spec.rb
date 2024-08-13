@@ -61,7 +61,10 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         'vulnerability_flags' => {
           'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
-        'dast_site_validations' => { 'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985' }
+        'dast_site_validations' => { 'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985' },
+        'sbom_occurrences_vulnerabilities' => {
+          'sbom_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+        }
       }
     end
 

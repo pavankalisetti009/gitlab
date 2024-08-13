@@ -1,37 +1,22 @@
 # frozen_string_literal: true
 
 module Sbom
-  class Occurrence < ApplicationRecord
+  class Occurrence < Gitlab::Database::SecApplicationRecord
     LICENSE_COLUMNS = [:spdx_identifier, :name, :url].freeze
     include EachBatch
     include IgnorableColumns
 
-    belongs_to :component,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
-      },
-      optional: false,
-      inverse_of: :occurrences
-    belongs_to :component_version,
+    belongs_to :component, optional: false, inverse_of: :occurrences
+    belongs_to :component_version, inverse_of: :occurrences
+    belongs_to :project, optional: false
+    belongs_to :pipeline, class_name: 'Ci::Pipeline'
+    belongs_to :source, inverse_of: :occurrences
+    belongs_to :source_package, optional: true, inverse_of: :occurrences
+
+    has_many :occurrences_vulnerabilities,
       -> {
         allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
       },
-      inverse_of: :occurrences
-    belongs_to :project, optional: false
-    belongs_to :pipeline, class_name: 'Ci::Pipeline'
-    belongs_to :source,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
-      },
-      inverse_of: :occurrences
-    belongs_to :source_package,
-      -> {
-        allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
-      },
-      optional: true,
-      inverse_of: :occurrences
-
-    has_many :occurrences_vulnerabilities,
       class_name: 'Sbom::OccurrencesVulnerability',
       foreign_key: :sbom_occurrence_id,
       inverse_of: :occurrence
@@ -108,7 +93,10 @@ module Sbom
 
     scope :unarchived, -> { where(archived: false) }
     scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
-    scope :by_project_ids, ->(project_ids) { where(project_id: project_ids) }
+    scope :by_project_ids, ->(project_ids) do
+      where(project_id: project_ids)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
+    end
     scope :by_uuids, ->(uuids) { where(uuid: uuids) }
     scope :for_namespace_and_descendants, ->(namespace) do
       where("traversal_ids >= ('{?}')", namespace.traversal_ids)
@@ -119,29 +107,20 @@ module Sbom
       where(package_manager: package_managers)
     end
 
-    scope :filter_by_components, ->(components) do
-      where(component: components)
-      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
-    end
-
-    scope :filter_by_source_packages, ->(source_packages) do
-      where(source_package: source_packages)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
-    end
-
+    scope :filter_by_components, ->(components) { where(component: components) }
+    scope :filter_by_source_packages, ->(source_packages) { where(source_package: source_packages) }
     scope :filter_by_component_names, ->(component_names) do
       where(component_name: component_names)
     end
 
     scope :filter_by_source_types, ->(source_types) do
       left_outer_joins(:source).where(sbom_sources: { source_type: source_types })
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins')
     end
 
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do
       relation = includes(project: :namespace)
-         .where(component_version_id: component_id, project: group.all_projects)
-         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
+        .where(component_version_id: component_id, project: group.all_projects)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
 
       if search.present?
         relation.where('input_file_path ILIKE ?', "%#{sanitize_sql_like(search.to_s)}%") # rubocop:disable GitlabSecurity/SqlInjection -- This cop is a false positive as we are using parameterization via ?
@@ -150,10 +129,7 @@ module Sbom
       end
     end
 
-    scope :with_component, -> {
-      includes(:component)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
-    }
+    scope :with_component, -> { includes(:component) }
     scope :with_licenses, -> do
       columns = LICENSE_COLUMNS.map { |column| "#{column} TEXT" }.join(", ")
       sbom_licenses = Arel.sql(<<~SQL.squish)
@@ -163,24 +139,17 @@ module Sbom
         .where("licenses != '[]'")
         .where.not(sbom_licenses: { spdx_identifier: nil })
     end
-    scope :with_project_route, -> { includes(project: :route).allow_cross_joins_across_databases(url: "https://gitlab.com/gitlab-org/gitlab/-/issues/420046") }
+    scope :with_project_route, -> { preload(project: :route) }
     scope :with_project_namespace, -> { includes(project: [namespace: :route]) }
-    scope :with_source, -> { includes(:source).allow_cross_joins_across_databases(url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins') }
-    scope :with_version, -> do
-      includes(:component_version)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
-    end
+    scope :with_source, -> { includes(:source) }
+    scope :with_version, -> { includes(:component_version) }
     scope :with_pipeline_project_and_namespace, -> { preload(pipeline: { project: :namespace }) }
     scope :with_vulnerabilities, -> { preload(:vulnerabilities) }
     scope :with_component_source_version_and_project, -> do
-      includes(:component, :source, :component_version, :project)
-      .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/473758')
+      preload(:project).includes(:component, :source, :component_version)
     end
     scope :with_project_setting, -> { preload(project: :project_setting) }
-    scope :filter_by_non_nil_component_version, -> do
-      where.not(component_version: nil)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474928')
-    end
+    scope :filter_by_non_nil_component_version, -> { where.not(component_version: nil) }
 
     scope :order_by_severity, ->(direction) do
       order(highest_severity_arel_nodes(direction))
@@ -191,6 +160,7 @@ module Sbom
 
       joins(project: [:project_authorizations])
         .where(project_authorizations: { user_id: user.id })
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
     end
 
     scope :in_parent_group_after_and_including, ->(sbom_occurrence) do

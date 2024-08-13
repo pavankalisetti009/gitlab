@@ -41,6 +41,7 @@ module Sbom
         group
           .all_project_ids
           .where_exists(exists_subquery)
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
           .pluck_primary_key
       end
     end

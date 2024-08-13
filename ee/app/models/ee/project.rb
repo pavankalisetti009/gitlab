@@ -174,7 +174,11 @@ module EE
 
       has_many :vulnerability_hooks_integrations, -> { vulnerability_hooks }, class_name: 'Integration'
 
-      has_many :sbom_occurrences, inverse_of: :project, class_name: 'Sbom::Occurrence'
+      has_many :sbom_occurrences,
+        -> {
+          allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
+        },
+        inverse_of: :project, class_name: 'Sbom::Occurrence'
 
       has_one :analytics_dashboards_pointer, class_name: 'Analytics::DashboardsPointer', foreign_key: :project_id
       accepts_nested_attributes_for :analytics_dashboards_pointer, allow_destroy: true
@@ -356,6 +360,7 @@ module EE
 
       scope :with_sbom_component_version, ->(id) do
         where(id: Sbom::Occurrence.select(:project_id).where(component_version_id: id))
+          .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
       end
 
       scope :not_indexed_in_elasticsearch, -> {

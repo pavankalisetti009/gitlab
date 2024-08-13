@@ -985,7 +985,12 @@ module EE
 
     def sbom_occurrences(with_totals: true, use_traversal_ids: false)
       return Sbom::Occurrence.for_namespace_and_descendants(self) if use_traversal_ids
-      return Sbom::Occurrence.where(project_id: all_projects_except_soft_deleted.select(:id)) unless with_totals
+
+      unless with_totals
+        return Sbom::Occurrence.where(
+          project_id: all_projects_except_soft_deleted.select(:id)
+        ).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477827')
+      end
 
       sql = <<-SQL
       DISTINCT ON (sbom_occurrences.component_version_id) sbom_occurrences.*,
@@ -995,6 +1000,7 @@ module EE
       our_occurrences = ::Gitlab::SQL::CTE.new(:our_occurrences, Sbom::Occurrence
         .where(project_id: all_projects_except_soft_deleted.select(:id))
         .where.not(component_version_id: nil)
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477827')
         .select(sql)
         .order(component_version_id: :desc, project_count: :desc, id: :desc)
       )
