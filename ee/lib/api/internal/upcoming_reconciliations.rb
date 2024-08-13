@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# This API is deprecated, it will be removed in https://gitlab.com/gitlab-org/gitlab/-/issues/473625.
+# Please use GitlabSubscriptions::API::Internal::UpcomingReconciliations instead.
 module API
   module Internal
     class UpcomingReconciliations < ::API::Base
