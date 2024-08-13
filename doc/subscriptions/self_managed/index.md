@@ -61,7 +61,7 @@ A user is not counted as a billable user if:
     - [Support Bot](../../user/project/service_desk/configure.md#support-bot-user).
     - [Bot users for projects](../../user/project/settings/project_access_tokens.md#bot-users-for-projects).
     - [Bot users for groups](../../user/group/settings/group_access_tokens.md#bot-users-for-groups).
-    - Other [internal users](../../development/internal_users.md#internal-users).
+    - Other [internal users](../../administration/internal_users.md#internal-users).
 
 The amount of **Billable users** is reported once a day in the **Admin** area.
 
