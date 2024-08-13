@@ -3080,12 +3080,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         allow(group).to receive(:user_cap_available?).and_return(true)
       end
 
+      let(:seat_control) { :off }
       let(:new_user_signups_cap) { nil }
 
       shared_examples 'returning the right value for user_cap_reached?' do
         before do
           allow(root_group).to receive(:user_cap_available?).and_return(true)
-          root_group.namespace_settings.update!(new_user_signups_cap: new_user_signups_cap)
+          root_group.namespace_settings.update!(seat_control: seat_control, new_user_signups_cap: new_user_signups_cap)
         end
 
         context 'when no user cap has been set to that root ancestor' do
@@ -3093,6 +3094,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         end
 
         context 'when a user cap has been set to that root ancestor' do
+          let(:seat_control) { :user_cap }
           let(:new_user_signups_cap) { 100 }
 
           before do

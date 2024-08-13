@@ -499,10 +499,11 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     end
   end
 
-  context 'updating `new_user_signups_cap` param' do
+  context 'updating user cap params' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) do
-      create(:group, :public, namespace_settings: create(:namespace_settings, new_user_signups_cap: 1))
+      create(:group, :public,
+        namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
     end
 
     let_it_be(:member) { create(:group_member, :awaiting, :maintainer, source: group) }
@@ -514,7 +515,17 @@ RSpec.describe Groups::UpdateService, '#execute', feature_category: :groups_and_
     subject(:update_cap) { update_group(group, user, attrs) }
 
     context 'when disabling the setting' do
-      let(:attrs) { { new_user_signups_cap: nil } }
+      let(:attrs) { { seat_control: :off, new_user_signups_cap: nil } }
+
+      it 'auto approves pending members' do
+        update_cap
+
+        expect(member.reload).to be_active
+      end
+    end
+
+    context 'when disabling the setting and leaving the new_user_signups_cap value' do
+      let(:attrs) { { seat_control: :off } }
 
       it 'auto approves pending members' do
         update_cap

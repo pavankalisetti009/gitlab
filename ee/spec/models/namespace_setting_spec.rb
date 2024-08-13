@@ -133,52 +133,44 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
     describe 'new_user_signups_cap', :saas do
       # rubocop:disable Rails/SaveBang -- Testing validations
-      it 'is valid when new_user_signups_cap is set to nil' do
-        settings.update!(seat_control: :user_cap, new_user_signups_cap: 20)
+      context 'when seat_control is user_cap' do
+        it 'is invalid when set to nil' do
+          settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
 
-        settings.update(new_user_signups_cap: nil)
+          expect(settings.errors.messages[:new_user_signups_cap]).to contain_exactly("is not a number", "can't be blank")
+        end
 
-        expect(settings).to be_valid
-        expect(settings.seat_control).to eq('off')
-        expect(settings.new_user_signups_cap).to be_nil
+        it 'must be a positive number' do
+          settings.update(seat_control: :user_cap, new_user_signups_cap: -1)
+
+          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be greater than or equal to 0"])
+        end
+
+        it 'must be an integer' do
+          settings.update(seat_control: :user_cap, new_user_signups_cap: 2.5)
+
+          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be an integer"])
+        end
+
+        it 'is valid when it is a positive integer' do
+          settings.update(seat_control: :user_cap, new_user_signups_cap: 1)
+
+          expect(settings).to be_valid
+        end
       end
 
-      it 'is valid when seat_control is set to user_cap and new_user_signups_cap is set to nil' do
-        settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
+      context 'when seat_control is off' do
+        it 'can be nil' do
+          settings.update(seat_control: :off, new_user_signups_cap: nil)
 
-        expect(settings).to be_valid
-        expect(settings.seat_control).to eq('off')
-        expect(settings.new_user_signups_cap).to be_nil
-      end
+          expect(settings).to be_valid
+        end
 
-      it 'must be a positive number when seat_control is user cap' do
-        settings.update(seat_control: :user_cap, new_user_signups_cap: -1)
+        it 'can be set' do
+          settings.update(seat_control: :off, new_user_signups_cap: 4)
 
-        expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be greater than or equal to 0"])
-      end
-
-      it 'must be an integer' do
-        settings.update(seat_control: :user_cap, new_user_signups_cap: 2.5)
-
-        expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be an integer"])
-      end
-
-      it 'is valid when it is a positive integer' do
-        settings.update(seat_control: :user_cap, new_user_signups_cap: 1)
-
-        expect(settings).to be_valid
-      end
-
-      it 'can be nil when seat_control is off' do
-        settings.update(seat_control: :off, new_user_signups_cap: nil)
-
-        expect(settings).to be_valid
-      end
-
-      it 'can be set when seat_control is off' do
-        settings.update(seat_control: :off, new_user_signups_cap: 4)
-
-        expect(settings).to be_valid
+          expect(settings).to be_valid
+        end
       end
       # rubocop:enable Rails/SaveBang
     end
@@ -309,21 +301,24 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
   end
 
   context 'validating new_user_signup_cap' do
-    where(:feature_available, :old_value, :new_value, :expectation) do
-      true  | nil | 10 | true
-      true  | 0   | 10 | true
-      true  | 0   | 0  | true
-      false | nil | 10 | false
-      false | 10  | 10 | true
+    using RSpec::Parameterized::TableSyntax
+
+    where(:feature_available, :seat_control_old, :old_value, :seat_control_new, :new_value, :expectation) do
+      true  | :off      | nil | :user_cap | 10 | true
+      true  | :user_cap | 0   | :user_cap | 10 | true
+      true  | :user_cap | 0   | :user_cap | 0  | true
+      false | :off      | nil | :user_cap | 10 | false
+      false | :user_cap | 10  | :user_cap | 10 | true
     end
 
     with_them do
-      let(:setting) { build(:namespace_settings, new_user_signups_cap: old_value) }
+      let(:setting) { build(:namespace_settings, seat_control: seat_control_old, new_user_signups_cap: old_value) }
       let(:group) { create(:group, namespace_settings: setting) }
 
       before do
         allow(group).to receive(:user_cap_available?).and_return feature_available
 
+        setting.seat_control = seat_control_new
         setting.new_user_signups_cap = new_value
       end
 
@@ -339,6 +334,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       before do
         allow(group).to receive(:user_cap_available?).and_return feature_available
 
+        setting.seat_control = :user_cap
         setting.new_user_signups_cap = 10
       end
 
@@ -382,10 +378,11 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
       allow(group).to receive(:root?).and_return(true)
       allow(group).to receive(:user_cap_available?).and_return(true)
 
-      group.namespace_settings.update!(new_user_signups_cap: user_cap)
+      group.namespace_settings.update!(seat_control: seat_control, new_user_signups_cap: user_cap)
     end
 
     context 'when setting a user cap' do
+      let(:seat_control) { :off }
       let(:user_cap) { nil }
 
       it 'also sets share_with_group_lock and prevent_sharing_groups_outside_hierarchy to true' do
@@ -393,7 +390,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(group.share_with_group_lock).to be_falsey
         expect(settings.prevent_sharing_groups_outside_hierarchy).to be_falsey
 
-        settings.update!(new_user_signups_cap: 10)
+        settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
         group.reload
 
         expect(group.new_user_signups_cap).to eq(10)
@@ -408,60 +405,25 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(descendent.share_with_group_lock).to be_falsey
         expect(desc_settings.prevent_sharing_groups_outside_hierarchy).to be_falsey
 
-        settings.update!(new_user_signups_cap: 10)
+        settings.update!(seat_control: :user_cap, new_user_signups_cap: 10)
 
         expect(descendent.reload.share_with_group_lock).to be_truthy
         expect(desc_settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
       end
-
-      it 'sets seat control to user cap' do
-        expect(settings.seat_control).to eq('off')
-
-        settings.update!(new_user_signups_cap: 10)
-        group.reload
-
-        expect(settings.seat_control).to eq('user_cap')
-      end
     end
 
     context 'when removing a user cap from namespace settings' do
+      let(:seat_control) { :user_cap }
       let(:user_cap) { 10 }
 
       it 'leaves share_with_group_lock and prevent_sharing_groups_outside_hierarchy set to true to the related group' do
         expect(group.share_with_group_lock).to be_truthy
         expect(settings.prevent_sharing_groups_outside_hierarchy).to be_truthy
 
-        settings.update!(new_user_signups_cap: nil)
+        settings.update!(seat_control: :off, new_user_signups_cap: nil)
 
         expect(group.reload.share_with_group_lock).to be_truthy
         expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to be_truthy
-      end
-
-      it 'sets seat control to off' do
-        expect(settings.seat_control).to eq('user_cap')
-
-        settings.update!(new_user_signups_cap: nil)
-        group.reload
-
-        expect(settings.seat_control).to eq('off')
-      end
-    end
-
-    context 'when the user cap is set and seat control is set to off' do
-      let(:user_cap) { 10 }
-
-      before do
-        settings.update_columns(seat_control: 'off')
-      end
-
-      it 'updates the seat control to user cap when another setting is changed' do
-        expect(settings.new_user_signups_cap).to eq(user_cap)
-        expect(settings.seat_control).to eq('off')
-
-        settings.update!(only_allow_merge_if_pipeline_succeeds: true)
-        group.reload
-
-        expect(settings.seat_control).to eq('user_cap')
       end
     end
   end

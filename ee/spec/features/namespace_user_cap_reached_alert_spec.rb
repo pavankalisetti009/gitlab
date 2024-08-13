@@ -7,7 +7,8 @@ RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rai
   include BillableMembersHelpers
 
   let_it_be(:group, refind: true) do
-    create(:group, :public, namespace_settings: create(:namespace_settings, new_user_signups_cap: 2))
+    create(:group, :public,
+      namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 2))
   end
 
   let_it_be(:subgroup, refind: true) { create(:group, parent: group) }
@@ -98,7 +99,8 @@ RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rai
     end
 
     it 'is dismissed independently for each root group' do
-      other_group = create(:group, :public, namespace_settings: create(:namespace_settings, new_user_signups_cap: 1))
+      other_group = create(:group, :public,
+        namespace_settings: create(:namespace_settings, seat_control: :user_cap, new_user_signups_cap: 1))
       other_group.add_owner(owner)
       stub_billable_members_reactive_cache(other_group)
       sign_in(owner)
@@ -134,7 +136,7 @@ RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rai
 
   context 'with a user cap that has not been exceeded' do
     before do
-      group.namespace_settings.update!(new_user_signups_cap: 4)
+      group.namespace_settings.update!(seat_control: :user_cap, new_user_signups_cap: 4)
       stub_billable_members_reactive_cache(group)
     end
 
@@ -149,7 +151,7 @@ RSpec.describe 'Namespace user cap reached alert', :feature, :js, :use_clean_rai
 
   context 'without a user cap set' do
     before do
-      group.namespace_settings.update!(new_user_signups_cap: nil)
+      group.namespace_settings.update!(seat_control: :off)
       stub_billable_members_reactive_cache(group)
     end
 

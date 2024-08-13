@@ -41,7 +41,8 @@ module QA
                   element 'save-changes-button'
                 end
 
-                view 'ee/app/views/groups/_user_caps_setting.html.haml' do
+                view 'ee/app/views/groups/_seat_controls_setting.html.haml' do
+                  element 'seat-control-user-cap-radio'
                   element 'user-cap-limit-field'
                 end
 
@@ -134,6 +135,11 @@ module QA
                 max_attempts: 10, retry_on_exception: true, reload_page: page, sleep_interval: 2
               ) do
                 expand_content('permissions-settings')
+
+                if has_element?('seat-control-user-cap-radio', wait: 1)
+                  choose_element('seat-control-user-cap-radio', true)
+                end
+
                 find_element('user-cap-limit-field', wait: 1).set limit
                 click_element('save-permissions-changes-button')
                 wait_for_requests

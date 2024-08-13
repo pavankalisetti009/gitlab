@@ -6477,6 +6477,9 @@ msgstr ""
 msgid "Any milestone"
 msgstr ""
 
+msgid "Any user who is added or requests access in excess of the user cap must be approved by an administrator"
+msgstr ""
+
 msgid "App ID"
 msgstr ""
 
@@ -28807,6 +28810,9 @@ msgstr ""
 msgid "Invitation declined"
 msgstr ""
 
+msgid "Invitations do not require administrator approval"
+msgstr ""
+
 msgid "Invite \"%{email}\" by email"
 msgstr ""
 
@@ -36284,6 +36290,9 @@ msgid "Number of shards"
 msgstr ""
 
 msgid "Number of shards for non-code indexing"
+msgstr ""
+
+msgid "Number of users for user cap"
 msgstr ""
 
 msgid "OK"
@@ -47505,6 +47514,9 @@ msgstr ""
 msgid "Searching by both author and message is currently not supported."
 msgstr ""
 
+msgid "Seat controls"
+msgstr ""
+
 msgid "Seats"
 msgstr ""
 
@@ -50096,6 +50108,9 @@ msgid "Set up root account"
 msgstr ""
 
 msgid "Set up your project to automatically push and/or pull changes to/from another repository. Branches, tags, and commits will be synced automatically."
+msgstr ""
+
+msgid "Set user cap"
 msgstr ""
 
 msgid "Set variables on protected branches and tags only."
@@ -57805,9 +57820,6 @@ msgid "User Settings"
 msgstr ""
 
 msgid "User and IP rate limits"
-msgstr ""
-
-msgid "User cap"
 msgstr ""
 
 msgid "User cap cannot be enabled. The group or one of its subgroups or projects is shared externally."
