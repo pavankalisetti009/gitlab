@@ -137,7 +137,7 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         it 'is invalid when set to nil' do
           settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
 
-          expect(settings.errors.messages[:new_user_signups_cap]).to contain_exactly("is not a number", "can't be blank")
+          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["is not a number"])
         end
 
         it 'must be a positive number' do
