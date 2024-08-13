@@ -9,10 +9,16 @@ import WorkItemColor from 'ee/work_items/components/work_item_color.vue';
 import WorkItemRolledupDates from 'ee/work_items/components/work_item_rolledup_dates.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
-import { workItemResponseFactory, epicType, issueType } from 'jest/work_items/mock_data';
+import {
+  workItemResponseFactory,
+  epicType,
+  issueType,
+  mockParticipantWidget,
+} from 'jest/work_items/mock_data';
 import WorkItemParent from '~/work_items/components/work_item_parent.vue';
 import WorkItemAttributesWrapper from '~/work_items/components/work_item_attributes_wrapper.vue';
 import workItemByIidQuery from '~/work_items/graphql/work_item_by_iid.query.graphql';
+import workItemParticipantsQuery from '~/work_items/graphql/work_item_participants.query.graphql';
 import updateWorkItemMutation from '~/work_items/graphql/update_work_item.mutation.graphql';
 import workItemUpdatedSubscription from '~/work_items/graphql/work_item_updated.subscription.graphql';
 
@@ -21,7 +27,26 @@ describe('EE WorkItemAttributesWrapper component', () => {
 
   Vue.use(VueApollo);
 
-  const workItemQueryResponse = workItemResponseFactory({ canUpdate: true, canDelete: true });
+  const workItemQueryResponse = workItemResponseFactory({
+    canUpdate: true,
+    canDelete: true,
+    participantsWidgetPresent: false,
+  });
+  const workItemParticipantsQueryResponse = {
+    data: {
+      workspace: {
+        __typename: 'Namespace',
+        id: workItemQueryResponse.data.workItem.namespace.id,
+        workItem: {
+          id: workItemQueryResponse.data.workItem.id,
+          widgets: [...workItemQueryResponse.data.workItem.widgets, mockParticipantWidget],
+        },
+      },
+    },
+  };
+  const workItemParticipantsQuerySuccessHandler = jest
+    .fn()
+    .mockResolvedValue(workItemParticipantsQueryResponse);
 
   const successHandler = jest.fn().mockResolvedValue(workItemQueryResponse);
   const workItemUpdatedSubscriptionHandler = jest
@@ -41,11 +66,13 @@ describe('EE WorkItemAttributesWrapper component', () => {
     confidentialityMock = [updateWorkItemMutation, jest.fn()],
     featureFlags = { workItemsBeta: true, workItemsRolledupDates: true },
     hasSubepicsFeature = true,
+    workItemParticipantsQueryHandler = workItemParticipantsQuerySuccessHandler,
   } = {}) => {
     wrapper = shallowMount(WorkItemAttributesWrapper, {
       apolloProvider: createMockApollo([
         [workItemByIidQuery, handler],
         [workItemUpdatedSubscription, workItemUpdatedSubscriptionHandler],
+        [workItemParticipantsQuery, workItemParticipantsQueryHandler],
         confidentialityMock,
       ]),
       propsData: {
