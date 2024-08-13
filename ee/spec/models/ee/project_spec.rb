@@ -1529,7 +1529,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
             expect(fake_wh_service).to receive(:async_execute).once
 
             expect(WebHookService)
-              .to receive(:new).with(group_hook, { some: 'info' }, 'push_hooks') { fake_wh_service }
+              .to receive(:new)
+              .with(
+                group_hook,
+                { some: 'info' },
+                'push_hooks',
+                idempotency_key: anything
+              ) { fake_wh_service }
 
             project.execute_hooks(some: 'info')
           end
@@ -1541,10 +1547,24 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
           it 'respects the branch filter' do
             expect(WebHookService)
-              .to receive(:new).twice.with(group_hook, Hash, 'push_hooks').and_return(wh_service)
+              .to receive(:new)
+              .twice
+              .with(
+                group_hook,
+                Hash,
+                'push_hooks',
+                idempotency_key: anything
+              ).and_return(wh_service)
 
             expect(WebHookService)
-              .to receive(:new).once.with(selective_hook, a_hash_including(note: 'matches-filter'), 'push_hooks').and_return(wh_service)
+              .to receive(:new)
+              .once
+              .with(
+                selective_hook,
+                a_hash_including(note: 'matches-filter'),
+                'push_hooks',
+                idempotency_key: anything
+              ).and_return(wh_service)
 
             project.execute_hooks({ note: 'matches-filter', ref: 'refs/heads/on-this-branch-only' }, :push_hooks)
             project.execute_hooks({ note: 'default-branch', ref: 'refs/heads/master' }, :push_hooks)

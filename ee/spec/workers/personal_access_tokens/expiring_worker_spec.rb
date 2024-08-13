@@ -24,7 +24,13 @@ RSpec.describe PersonalAccessTokens::ExpiringWorker, type: :worker, feature_cate
         expect(fake_wh_service).to receive(:async_execute).once
 
         expect(WebHookService)
-              .to receive(:new).with(group_hook, hook_data, 'resource_access_token_hooks') { fake_wh_service }
+          .to receive(:new)
+          .with(
+            group_hook,
+            hook_data,
+            'resource_access_token_hooks',
+            idempotency_key: anything
+          ) { fake_wh_service }
 
         worker.perform
       end
