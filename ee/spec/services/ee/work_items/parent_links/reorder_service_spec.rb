@@ -119,13 +119,13 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
         new_parent.synced_epic.update!(parent: parent.synced_epic, relative_position: 50)
         new_sibling1.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 10)
         new_sibling2.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 20)
+        stub_licensed_features(subepics: true)
       end
 
       subject(:move_child) { described_class.new(new_parent, user, params).execute }
     end
 
     before do
-      stub_licensed_features(subepics: true)
       stub_feature_flags(work_item_epics: true)
     end
 
@@ -133,6 +133,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       let(:synced_moving_object) { nil }
 
       before do
+        stub_licensed_features(subepics: true)
         create(:parent_link, work_item: work_item, work_item_parent: parent)
       end
 
@@ -168,53 +169,72 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
         create(:parent_link, work_item: work_item, work_item_parent: parent, relative_position: 40)
       end
 
-      context 'when synced epics for the work items exist' do
+      context 'when subepics feature is not available' do
         before do
-          top_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 20)
-          last_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 30)
-          work_item.synced_epic.update!(parent: parent.synced_epic, relative_position: 40)
+          stub_licensed_features(subepics: false)
         end
 
-        it_behaves_like 'reorders the hierarchy'
+        it 'returns an error' do
+          service_response = execute
+          expect { service_response }.not_to change { ::WorkItems::ParentLink.count }
+          expect(service_response[:message])
+            .to eq('No matching work item found. Make sure that you are adding a valid work item ID.')
+        end
+      end
 
-        context 'when changing parent and reordering' do
-          include_context 'with new parent that has children'
+      context 'when subepics feature is available' do
+        before do
+          stub_licensed_features(subepics: true)
+        end
 
-          it 'updates work item parent and legacy epic parent' do
-            expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
-                                 .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
-                                                                                    .to(new_parent.synced_epic)
-
-            expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+        context 'when synced epics for the work items exist' do
+          before do
+            top_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 20)
+            last_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 30)
+            work_item.synced_epic.update!(parent: parent.synced_epic, relative_position: 40)
           end
-        end
-
-        context 'when synced_work_item param is set' do
-          let(:synced_moving_object) { nil }
-          let(:params) { base_params.merge(adjacent_work_item: adjacent_work_item, synced_work_item: true) }
 
           it_behaves_like 'reorders the hierarchy'
-          it_behaves_like 'only changes work item' do
-            let(:synced_moving_object) { work_item.synced_epic.reload }
+
+          context 'when changing parent and reordering' do
+            include_context 'with new parent that has children'
+
+            it 'updates work item parent and legacy epic parent' do
+              expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
+                                   .and change { work_item.synced_epic.reload.parent }.from(parent.synced_epic)
+                                                                                      .to(new_parent.synced_epic)
+
+              expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+            end
+          end
+
+          context 'when synced_work_item param is set' do
+            let(:synced_moving_object) { nil }
+            let(:params) { base_params.merge(adjacent_work_item: adjacent_work_item, synced_work_item: true) }
+
+            it_behaves_like 'reorders the hierarchy'
+            it_behaves_like 'only changes work item' do
+              let(:synced_moving_object) { work_item.synced_epic.reload }
+            end
           end
         end
+
+        context 'when synced epic for the moving work item do not exist' do
+          let(:synced_moving_object) { nil }
+          let_it_be_with_reload(:work_item) { create(:work_item, :epic, namespace: group) }
+
+          it_behaves_like 'reorders the hierarchy'
+        end
+
+        context 'when synced epics for the parent epic do not exist' do
+          let_it_be_with_reload(:parent) { create(:work_item, :epic, namespace: group) }
+
+          it_behaves_like 'only changes work item'
+        end
+
+        it_behaves_like 'when saving fails', Epic, expect_error_log: true, expect_error_message: true
+        it_behaves_like 'when saving fails', WorkItems::ParentLink
       end
-
-      context 'when synced epic for the moving work item do not exist' do
-        let(:synced_moving_object) { nil }
-        let_it_be_with_reload(:work_item) { create(:work_item, :epic, namespace: group) }
-
-        it_behaves_like 'reorders the hierarchy'
-      end
-
-      context 'when synced epics for the parent epic do not exist' do
-        let_it_be_with_reload(:parent) { create(:work_item, :epic, namespace: group) }
-
-        it_behaves_like 'only changes work item'
-      end
-
-      it_behaves_like 'when saving fails', Epic, expect_error_log: true, expect_error_message: true
-      it_behaves_like 'when saving fails', WorkItems::ParentLink
     end
 
     context 'when moving an issue work item' do
