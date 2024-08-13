@@ -1,5 +1,5 @@
 <script>
-import { GlFormGroup, GlFormInput, GlFormText } from '@gitlab/ui';
+import { GlFormGroup, GlFormInput } from '@gitlab/ui';
 import { i18n, ADDITIONAL_DEFAULT_STAGE_EVENTS } from './constants';
 import StageFieldActions from './stage_field_actions.vue';
 
@@ -19,7 +19,6 @@ export default {
     StageFieldActions,
     GlFormGroup,
     GlFormInput,
-    GlFormText,
   },
   props: {
     index: {
@@ -64,8 +63,8 @@ export default {
 </script>
 <template>
   <div class="gl-mb-4" data-testid="value-stream-stage-fields">
-    <div class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row">
-      <div class="gl-flex-grow-1 gl-mr-2">
+    <div class="gl-flex gl-flex-col sm:gl-flex-row">
+      <div class="gl-grow gl-mr-2">
         <gl-form-group
           :label="stageLabel"
           :state="isValid('name')"
@@ -83,31 +82,21 @@ export default {
           />
           <!-- eslint-enable vue/no-mutating-props -->
         </gl-form-group>
-        <div
-          class="gl-display-flex gl-align-items-center"
-          :data-testid="`stage-start-event-${index}`"
-        >
-          <span class="gl-m-0 gl-align-middle gl-mr-2 gl-font-bold">{{
+        <div class="gl-flex gl-items-center" :data-testid="`stage-start-event-${index}`">
+          <span class="gl-mr-2 gl-font-bold">{{
             $options.i18n.DEFAULT_FIELD_START_EVENT_LABEL
           }}</span>
-          <gl-form-text class="gl-m-0" tag="span">{{
-            eventName(stage.startEventIdentifier)
-          }}</gl-form-text>
+          <span>{{ eventName(stage.startEventIdentifier) }}</span>
         </div>
-        <div
-          class="gl-display-flex gl-align-items-center"
-          :data-testid="`stage-end-event-${index}`"
-        >
-          <span class="gl-m-0 gl-align-middle gl-mr-2 gl-font-bold">{{
+        <div class="gl-flex gl-items-center" :data-testid="`stage-end-event-${index}`">
+          <span class="gl-mr-2 gl-font-bold">{{
             $options.i18n.DEFAULT_FIELD_END_EVENT_LABEL
           }}</span>
-          <gl-form-text class="gl-m-0" tag="span">{{
-            eventName(stage.endEventIdentifier)
-          }}</gl-form-text>
+          <span>{{ eventName(stage.endEventIdentifier) }}</span>
         </div>
       </div>
       <stage-field-actions
-        class="gl-mt-3 gl-sm-mt-6!"
+        class="gl-mt-3 sm:!gl-mt-6"
         :index="index"
         :stage-count="totalStages"
         @move="$emit('move', $event)"
