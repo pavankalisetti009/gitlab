@@ -5,7 +5,15 @@ class RemoveIndexVulnerabilitiesOnProjectIdAndStateAndSeverity < Gitlab::Databas
 
   disable_ddl_transaction!
 
-  def change
-    remove_concurrent_index_by_name :vulnerabilities, 'index_vulnerabilities_on_project_id_and_state_and_severity'
+  TABLE_NAME = :vulnerabilities
+  INDEX_NAME = 'index_vulnerabilities_on_project_id_and_state_and_severity'
+  COLUMNS = %i[project_id state severity]
+
+  def up
+    remove_concurrent_index_by_name TABLE_NAME, INDEX_NAME
+  end
+
+  def down
+    add_concurrent_index TABLE_NAME, COLUMNS, name: INDEX_NAME
   end
 end
