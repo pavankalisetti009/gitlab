@@ -2,8 +2,6 @@
 
 module Projects
   class TracingController < Projects::ApplicationController
-    include ::Observability::ContentSecurityPolicy
-
     feature_category :tracing
 
     before_action :authorize_read_observability!

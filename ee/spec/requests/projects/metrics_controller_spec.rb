@@ -10,9 +10,7 @@ RSpec.describe Projects::MetricsController, feature_category: :metrics do
   let(:observability_ff) { true }
   let(:expected_api_config) do
     {
-      oauthUrl: Gitlab::Observability.oauth_url,
       analyticsUrl: ::Gitlab::Observability.analytics_url(project),
-      provisioningUrl: Gitlab::Observability.provisioning_url(project),
       tracingUrl: Gitlab::Observability.tracing_url(project),
       tracingAnalyticsUrl: Gitlab::Observability.tracing_analytics_url(project),
       servicesUrl: Gitlab::Observability.services_url(project),
@@ -37,14 +35,6 @@ RSpec.describe Projects::MetricsController, feature_category: :metrics do
   end
 
   shared_examples 'metrics route request' do
-    it_behaves_like 'observability csp policy' do
-      before_all do
-        project.add_reporter(user)
-      end
-
-      let(:tested_path) { path }
-    end
-
     context 'when user does not have permissions' do
       before_all do
         project.add_guest(user)
