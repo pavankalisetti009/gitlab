@@ -11,11 +11,18 @@ import { CREATED_DESC } from '~/issues/list/constants';
 import getWorkItemsQuery from '~/work_items/list/queries/get_work_items.query.graphql';
 import workItemParent from 'ee/work_items/list/queries/work_item_parent.query.graphql';
 import { groupWorkItemsQueryResponse } from 'jest/work_items/mock_data';
+import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import waitForPromises from 'helpers/wait_for_promises';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
 import { workItemParent as workItemParentResponse } from '../../mock_data';
 
-describe('WorkItemsListApp EE component', () => {
+const skipReason = new SkipReason({
+  name: 'WorkItemsListApp EE component',
+  reason: 'Caught error after test environment was torn down',
+  issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478775',
+});
+
+describeSkipVue3(skipReason, () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
 
