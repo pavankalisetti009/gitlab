@@ -45,13 +45,10 @@ export default {
   },
   translations: {
     alertText: s__(
-      'EnvironmentsAlert|%{severity} • %{title} %{text}. %{linkStart}View Details%{linkEnd} · %{startedAt} ',
+      'EnvironmentsAlert|%{severity} • %{title}. %{linkStart}View Details%{linkEnd} · %{startedAt} ',
     ),
   },
   computed: {
-    humanizedText() {
-      return this.alert?.prometheusAlert?.humanizedText;
-    },
     severity() {
       return this.alert?.severity;
     },
@@ -80,9 +77,6 @@ export default {
       </template>
       <template #title>
         <span>{{ alert.title }}</span>
-      </template>
-      <template #text>
-        <span>{{ humanizedText }}</span>
       </template>
       <template #link="{ content }">
         <gl-link :href="alert.detailsUrl" data-testid="alert-link">{{ content }}</gl-link>

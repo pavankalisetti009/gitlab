@@ -222,20 +222,7 @@ RSpec.describe 'Environments page', :js, feature_category: :environment_manageme
     let!(:alert) do
       create(:alert_management_alert, :triggered, :prometheus,
         title: 'HTTP Error Rate', project: project,
-        environment: environment, prometheus_alert: prometheus_alert)
-    end
-
-    let!(:prometheus_alert) do
-      create(
-        :prometheus_alert,
-        project: project,
-        environment: environment,
-        prometheus_metric: prometheus_metric
-      )
-    end
-
-    let!(:prometheus_metric) do
-      create(:prometheus_metric, project: project, unit: '%')
+        environment: environment)
     end
 
     before do
@@ -249,7 +236,7 @@ RSpec.describe 'Environments page', :js, feature_category: :environment_manageme
 
       within(find('div[data-testid="alert"]')) do
         expect(page).to have_content('Critical')
-        expect(page).to have_content("#{alert.title} .")
+        expect(page).to have_content(alert.title)
         expect(page).to have_link('View Details', href: alert.present.details_url)
       end
 

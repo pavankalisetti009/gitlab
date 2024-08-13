@@ -19,8 +19,7 @@ RSpec.describe EE::EnvironmentSerializer do
         create(:deployment_approval, deployment: deployment)
       end
       create(:protected_environment, :maintainers_can_deploy, name: environment.name, project: project, required_approval_count: 2)
-      prometheus_alert = create(:prometheus_alert, project: project, environment: environment)
-      create(:alert_management_alert, :triggered, :prometheus, project: project, environment: environment, prometheus_alert: prometheus_alert)
+      create(:alert_management_alert, :triggered, :prometheus, project: project, environment: environment)
     end
   end
 end
