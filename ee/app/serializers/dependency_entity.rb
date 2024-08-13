@@ -22,9 +22,7 @@ class DependencyEntity < Grape::Entity
 
   class VulnerabilityEntity < Grape::Entity
     expose :severity, :id
-
-    expose :name, proc: ->(vulnerability) { vulnerability.title }
-
+    expose :title, as: :name
     expose :url do |vulnerability, options|
       # Use options[:project] instead of vulnerability.project to avoid N+1 queries.
       # If options[:project] is nil, an error will be raised.
