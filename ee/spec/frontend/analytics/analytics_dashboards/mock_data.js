@@ -163,6 +163,27 @@ export const TEST_VISUALIZATIONS_GRAPHQL_SUCCESS_RESPONSE = {
   },
 };
 
+export const TEST_AUDIENCE_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      customizableDashboards: {
+        nodes: [
+          getGraphQLDashboard(
+            {
+              slug: 'audience',
+              title: 'Audience',
+            },
+            true,
+          ),
+        ],
+        __typename: 'CustomizableDashboardConnection',
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
 export const TEST_CUSTOM_DASHBOARD_GRAPHQL_SUCCESS_RESPONSE = {
   data: {
     project: {
@@ -279,6 +300,10 @@ export const TEST_ALL_DASHBOARDS_GRAPHQL_SUCCESS_RESPONSE = {
           getGraphQLDashboard({ slug: 'behavior', title: 'Behavior' }, false),
           getGraphQLDashboard(
             { slug: 'new_dashboard', title: 'new_dashboard', userDefined: true },
+            false,
+          ),
+          getGraphQLDashboard(
+            { slug: 'audience_copy', title: 'Audience (Copy)', userDefined: true },
             false,
           ),
         ],

@@ -116,6 +116,7 @@ export const getDashboardConfig = (hydratedDashboard) => {
       const { __typename: panelTypename, id, ...panelRest } = panel;
       return {
         ...panelRest,
+        queryOverrides: panel.queryOverrides ?? {},
         visualization: panel.visualization.slug,
       };
     }),

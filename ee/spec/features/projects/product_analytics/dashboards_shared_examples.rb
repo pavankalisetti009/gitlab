@@ -288,6 +288,21 @@ RSpec.shared_examples 'product analytics dashboards' do
 
             context 'and the default custom dashboard location is used' do
               it_behaves_like 'renders the new dashboard button'
+
+              it 'user can clone existing dashboard' do
+                visit_page
+
+                within first("[data-testid='dashboard-actions-dropdown']") do
+                  click_button
+                  within_testid('base-dropdown-menu') do
+                    click_button 'Clone'
+                  end
+                end
+
+                wait_for_requests
+
+                expect(page).to have_content('Audience (Copy)')
+              end
             end
           end
         end

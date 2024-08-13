@@ -1,8 +1,9 @@
 <script>
 import { v4 as uuidv4 } from 'uuid';
 
-import { GlIcon, GlBadge, GlLink, GlTruncateText } from '@gitlab/ui';
+import { GlIcon, GlBadge, GlLink, GlTruncateText, GlDisclosureDropdown } from '@gitlab/ui';
 import { visitUrl, joinPaths } from '~/lib/utils/url_utility';
+import { __ } from '~/locale';
 import { DASHBOARD_STATUS_BETA } from '../../constants';
 
 const TRUNCATE_BUTTON_ID = `desc-truncate-btn-${uuidv4()}`;
@@ -14,12 +15,33 @@ export default {
     GlBadge,
     GlLink,
     GlTruncateText,
+    GlDisclosureDropdown,
   },
   props: {
     dashboard: {
       type: Object,
       required: true,
     },
+    showUserActions: {
+      type: Boolean,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      dropdownItems: [
+        {
+          name: __('More actions'),
+          items: [
+            {
+              text: __('Clone'),
+              icon: 'duplicate',
+              action: () => this.$emit('clone', this.dashboard.slug),
+            },
+          ],
+        },
+      ],
+    };
   },
   computed: {
     isBuiltInDashboard() {
@@ -36,11 +58,14 @@ export default {
     },
   },
   methods: {
+    elementsTargeted(target, ...elements) {
+      return elements.some((element) => element === target || element?.contains(target));
+    },
     routeToDashboard(e) {
+      const dropdownBtn = this.$refs.dropdown.$el;
       const truncateToggleBtn = document.getElementById(TRUNCATE_BUTTON_ID);
-      if (e.target === truncateToggleBtn || truncateToggleBtn?.contains(e.target)) {
-        return;
-      }
+
+      if (this.elementsTargeted(e.target, dropdownBtn, truncateToggleBtn)) return;
 
       if (this.dashboard.redirect) {
         visitUrl(this.redirectHref);
@@ -102,10 +127,34 @@ export default {
           {{ dashboard.description }}
         </gl-truncate-text>
       </div>
-      <div v-if="isBuiltInDashboard" class="gl-float-right" data-testid="dashboard-by-gitlab">
-        <gl-badge variant="muted" icon="tanuki-verified">{{
-          s__('Analytics|Created by GitLab')
-        }}</gl-badge>
+      <div class="gl-float-right gl-flex gl-gap-3 gl-items-baseline">
+        <div>
+          <gl-badge
+            v-if="isBuiltInDashboard"
+            variant="muted"
+            icon="tanuki-verified"
+            data-testid="dashboard-by-gitlab"
+            >{{ s__('Analytics|Created by GitLab') }}</gl-badge
+          >
+        </div>
+        <gl-disclosure-dropdown
+          v-if="showUserActions"
+          ref="dropdown"
+          data-testid="dashboard-actions-dropdown"
+          icon="ellipsis_v"
+          :toggle-text="__('More actions')"
+          text-sr-only
+          :items="dropdownItems"
+          category="tertiary"
+          no-caret
+        >
+          <template #list-item="{ item }">
+            <span class="gl-flex gl-items-center gl-gap-3">
+              <gl-icon class="gl-text-secondary" :name="item.icon" />
+              {{ item.text }}
+            </span>
+          </template>
+        </gl-disclosure-dropdown>
       </div>
     </div>
   </li>
