@@ -113,12 +113,12 @@ export default {
   <gl-form :action="submitPath" method="post" @submit="trackCompanyForm">
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
     <gl-form-text class="gl-font-base gl-text-gray-400 gl-pb-3">{{ descriptionText }}</gl-form-text>
-    <div class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row gl-mt-5">
+    <div class="gl-flex gl-flex-col sm:gl-flex-row gl-mt-5">
       <gl-form-group
         :label="$options.i18n.firstNameLabel"
         label-size="sm"
         label-for="first_name"
-        class="gl-mr-5 gl-w-full gl-sm-w-half"
+        class="gl-mr-5 gl-w-full sm:gl-w-1/2"
       >
         <gl-form-input
           id="first_name"
@@ -132,7 +132,7 @@ export default {
         :label="$options.i18n.lastNameLabel"
         label-size="sm"
         label-for="last_name"
-        class="gl-w-full gl-sm-w-half"
+        class="gl-w-full sm:gl-w-1/2"
       >
         <gl-form-input
           id="last_name"
@@ -199,7 +199,7 @@ export default {
     <gl-button type="submit" variant="confirm" class="gl-w-full">
       {{ submitButtonText }}
     </gl-button>
-    <gl-form-text data-testid="footer_description_text" class="gl-mt-3 gl-text-gray-500">
+    <gl-form-text data-testid="footer_description_text" class="gl-mt-3 gl-text-subtle">
       {{ footerText }}
     </gl-form-text>
   </gl-form>

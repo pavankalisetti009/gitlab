@@ -39,7 +39,7 @@ exports[`Alert integration settings form should match the default snapshot 1`] =
       state="true"
     >
       <div
-        class="gl-display-flex gl-flex-direction-row"
+        class="gl-flex gl-flex-row"
       >
         <gl-form-input-stub
           id="reference-1"
