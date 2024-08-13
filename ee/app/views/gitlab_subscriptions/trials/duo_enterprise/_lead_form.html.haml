@@ -1,4 +1,4 @@
-- @body_class = 'duo-trials gl-bg-brand-charcoal'
+- @body_class = 'duo-enterprise-trials gl-bg-brand-charcoal'
 - page_title s_('DuoEnterpriseTrial|Start your free Duo Enterprise trial')
 - content_for :page_specific_javascripts do
   = render 'layouts/google_tag_manager_head'
@@ -22,3 +22,5 @@
       = yield :before_form
 
       #js-trial-create-lead-form{ data: create_duo_enterprise_lead_form_data }
+
+  = render 'advantages_list'

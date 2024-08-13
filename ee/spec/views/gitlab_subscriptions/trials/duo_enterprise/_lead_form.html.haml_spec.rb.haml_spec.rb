@@ -14,6 +14,7 @@ RSpec.describe 'gitlab_subscriptions/trials/duo_enterprise/_lead_form.html.haml'
 
     expect(rendered)
       .to have_content(s_('DuoEnterpriseTrial|We just need some additional information to activate your trial.'))
+    expect(rendered).to render_template('gitlab_subscriptions/trials/duo_enterprise/_advantages_list')
   end
 
   context 'when group_name is  defined' do
