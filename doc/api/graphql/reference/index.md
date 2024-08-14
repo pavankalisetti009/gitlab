@@ -17882,7 +17882,7 @@ An emoji awarded by a user.
 | <a id="blobmode"></a>`mode` | [`String`](#string) | Blob mode in numeric format. |
 | <a id="blobname"></a>`name` | [`String!`](#string) | Name of the entry. |
 | <a id="blobpath"></a>`path` | [`String!`](#string) | Path of the entry. |
-| <a id="blobsha"></a>`sha` | [`String!`](#string) | Last commit SHA for the entry. |
+| <a id="blobsha"></a>`sha` | [`String!`](#string) | SHA of the entry. |
 | <a id="blobtype"></a>`type` | [`EntryType!`](#entrytype) | Type of tree entry. |
 | <a id="blobwebpath"></a>`webPath` | [`String`](#string) | Web path of the blob. |
 | <a id="blobweburl"></a>`webUrl` | [`String`](#string) | Web URL of the blob. |
@@ -32097,7 +32097,7 @@ Progress of standards adherence checks.
 | <a id="submoduleid"></a>`id` | [`ID!`](#id) | ID of the entry. |
 | <a id="submodulename"></a>`name` | [`String!`](#string) | Name of the entry. |
 | <a id="submodulepath"></a>`path` | [`String!`](#string) | Path of the entry. |
-| <a id="submodulesha"></a>`sha` | [`String!`](#string) | Last commit SHA for the entry. |
+| <a id="submodulesha"></a>`sha` | [`String!`](#string) | SHA of the entry. |
 | <a id="submoduletreeurl"></a>`treeUrl` | [`String`](#string) | Tree URL for the sub-module. |
 | <a id="submoduletype"></a>`type` | [`EntryType!`](#entrytype) | Type of tree entry. |
 | <a id="submoduleweburl"></a>`webUrl` | [`String`](#string) | Web URL for the sub-module. |
@@ -32593,7 +32593,7 @@ Represents a directory.
 | <a id="treeentryid"></a>`id` | [`ID!`](#id) | ID of the entry. |
 | <a id="treeentryname"></a>`name` | [`String!`](#string) | Name of the entry. |
 | <a id="treeentrypath"></a>`path` | [`String!`](#string) | Path of the entry. |
-| <a id="treeentrysha"></a>`sha` | [`String!`](#string) | Last commit SHA for the entry. |
+| <a id="treeentrysha"></a>`sha` | [`String!`](#string) | SHA of the entry. |
 | <a id="treeentrytype"></a>`type` | [`EntryType!`](#entrytype) | Type of tree entry. |
 | <a id="treeentrywebpath"></a>`webPath` | [`String`](#string) | Web path for the tree entry (directory). |
 | <a id="treeentryweburl"></a>`webUrl` | [`String`](#string) | Web URL for the tree entry (directory). |
@@ -39174,7 +39174,7 @@ Implementations:
 | <a id="entryid"></a>`id` | [`ID!`](#id) | ID of the entry. |
 | <a id="entryname"></a>`name` | [`String!`](#string) | Name of the entry. |
 | <a id="entrypath"></a>`path` | [`String!`](#string) | Path of the entry. |
-| <a id="entrysha"></a>`sha` | [`String!`](#string) | Last commit SHA for the entry. |
+| <a id="entrysha"></a>`sha` | [`String!`](#string) | SHA of the entry. |
 | <a id="entrytype"></a>`type` | [`EntryType!`](#entrytype) | Type of tree entry. |
 
 #### `Eventable`
