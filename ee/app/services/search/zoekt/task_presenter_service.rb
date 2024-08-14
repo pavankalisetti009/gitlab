@@ -31,7 +31,8 @@ module Search
 
       def get_concurrency_limit(node:)
         task_count = node.metadata['task_count']
-        concurrency = node.metadata['concurrency']
+        # concurrency override is going to become a setting https://gitlab.com/gitlab-org/gitlab/-/issues/478595
+        concurrency = node.metadata['concurrency_override'] || node.metadata['concurrency']
 
         return DEFAULT_LIMIT if task_count.nil? || concurrency.nil? || concurrency == 0
 
