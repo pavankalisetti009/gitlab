@@ -7,9 +7,9 @@ module API
       urgency :low
 
       before do
-        authenticated_as_admin!
+        @namespace = find_namespace(params[:id])
 
-        @namespace = find_namespace!(params[:id])
+        not_found!('Namespace') unless @namespace
       end
 
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
