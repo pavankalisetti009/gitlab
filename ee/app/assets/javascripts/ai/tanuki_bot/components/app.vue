@@ -96,7 +96,6 @@ export default {
         variables() {
           return {
             userId: this.userId,
-            resourceId: this.computedResourceId,
             clientSubscriptionId: this.clientSubscriptionId,
           };
         },

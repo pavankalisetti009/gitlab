@@ -286,19 +286,6 @@ describeSkipVue3(skipReason, () => {
             clientSubscriptionId: '123',
           });
         });
-
-        it('passes correct resourceId or uses userId as a fallback', () => {
-          createComponent({
-            initialState: { loading: true },
-            propsData: { userId: MOCK_USER_ID, resourceId },
-          });
-
-          expect(aiResponseStreamSubscriptionHandler).toHaveBeenNthCalledWith(2, {
-            userId: MOCK_USER_ID,
-            resourceId: expectedResourceId,
-            clientSubscriptionId: '123',
-          });
-        });
       });
 
       it.each([GENIE_CHAT_CLEAN_MESSAGE, GENIE_CHAT_CLEAR_MESSAGE])(

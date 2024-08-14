@@ -1,15 +1,7 @@
-subscription aiCompletionResponseStream(
-  $userId: UserID
-  $resourceId: AiModelID
-  $agentVersionId: AiAgentVersionID
-  $clientSubscriptionId: String
-  $aiAction: AiAction
-) {
+subscription aiCompletionResponseStream($userId: UserID, $clientSubscriptionId: String) {
   aiCompletionResponse(
     userId: $userId
-    resourceId: $resourceId
-    agentVersionId: $agentVersionId
-    aiAction: $aiAction
+    aiAction: CHAT
     clientSubscriptionId: $clientSubscriptionId
   ) {
     id
