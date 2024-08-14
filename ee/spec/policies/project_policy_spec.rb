@@ -4046,4 +4046,17 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to match_expected_result }
     end
   end
+
+  describe 'admin_project_secrets_manager' do
+    where(:current_user, :match_expected_result) do
+      ref(:owner)      | be_allowed(:admin_project_secrets_manager)
+      ref(:maintainer) | be_disallowed(:admin_project_secrets_manager)
+      ref(:developer)  | be_disallowed(:admin_project_secrets_manager)
+      ref(:non_member) | be_disallowed(:admin_project_secrets_manager)
+    end
+
+    with_them do
+      it { is_expected.to match_expected_result }
+    end
+  end
 end

@@ -916,6 +916,10 @@ module EE
       condition(:clickhouse_main_database_available) do
         ::Gitlab::ClickHouse.configured?
       end
+
+      rule { can?(:owner_access) }.policy do
+        enable :admin_project_secrets_manager
+      end
     end
 
     override :lookup_access_level!

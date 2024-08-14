@@ -80,6 +80,7 @@ module EE
 
       has_one :dependency_proxy_packages_setting, class_name: '::DependencyProxy::Packages::Setting', inverse_of: :project
       has_one :zoekt_repository, class_name: '::Search::Zoekt::Repository', inverse_of: :project
+      has_one :secrets_manager, class_name: '::SecretsManagement::ProjectSecretsManager'
 
       has_many :approvers, as: :target, dependent: :destroy # rubocop:disable Cop/ActiveRecordDependent
       has_many :approver_users, through: :approvers, source: :user
