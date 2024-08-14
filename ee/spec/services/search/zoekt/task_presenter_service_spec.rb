@@ -69,15 +69,21 @@ RSpec.describe ::Search::Zoekt::TaskPresenterService, feature_category: :global_
     context 'when node has task_count/concurrency set' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:task_count, :concurrency, :result) do
-        1         | 1   | 0
-        1         | 10  | 9
-        5         | 10  | 5
-        1         | 200 | described_class::MAX_LIMIT
+      where(:task_count, :concurrency, :concurrency_override, :result) do
+        1         | 1   | nil | 0
+        1         | 10  | nil | 9
+        5         | 10  | nil | 5
+        0         | 10  | 20  | 20
+        5         | 10  | 20  | 15
+        1         | 200 | nil | described_class::MAX_LIMIT
       end
 
       with_them do
-        let(:node) { build(:zoekt_node, metadata: { 'task_count' => task_count, 'concurrency' => concurrency }) }
+        let(:node) do
+          build(:zoekt_node,
+            metadata: { 'task_count' => task_count, 'concurrency' => concurrency,
+                        'concurrency_override' => concurrency_override })
+        end
 
         it 'returns correct value' do
           expect(concurrency_limit).to eq(result)
