@@ -8,9 +8,10 @@ module CloudConnector
       class HostProbe < BaseProbe
         attr_reader :host, :port
 
-        def initialize(host, port)
-          @host = host
-          @port = port
+        def initialize(service_url)
+          uri = URI.parse(service_url)
+          @host = uri.host
+          @port = uri.port
         end
 
         def execute(*)

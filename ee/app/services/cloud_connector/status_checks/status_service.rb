@@ -6,12 +6,12 @@ module CloudConnector
     # are generally working. This includes checking for availability of certain network
     # endpoints, but also which license is used etc.
     class StatusService
-      CUSTOMERS_DOT_HOST = URI.parse(::Gitlab::Routing.url_helpers.subscription_portal_url).host.freeze
-      CLOUD_CONNECTOR_HOST = URI.parse(::CloudConnector::Config.base_url).host.freeze
+      CUSTOMERS_DOT_URL = ::Gitlab::Routing.url_helpers.subscription_portal_url.freeze
+      CLOUD_CONNECTOR_URL = ::CloudConnector::Config.base_url.freeze
       DEFAULT_PROBES = [
         CloudConnector::StatusChecks::Probes::LicenseProbe.new,
-        CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_HOST, 443),
-        CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_HOST, 443),
+        CloudConnector::StatusChecks::Probes::HostProbe.new(CUSTOMERS_DOT_URL),
+        CloudConnector::StatusChecks::Probes::HostProbe.new(CLOUD_CONNECTOR_URL),
         CloudConnector::StatusChecks::Probes::AccessProbe.new,
         CloudConnector::StatusChecks::Probes::EndToEndProbe.new
       ].freeze
