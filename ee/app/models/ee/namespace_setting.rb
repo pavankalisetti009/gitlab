@@ -29,7 +29,6 @@ module EE
       validates :experiment_features_enabled, inclusion: { in: [true, false] }
       validates :new_user_signups_cap,
         numericality: { only_integer: true, greater_than_or_equal_to: 0 },
-        presence: true,
         if: -> { seat_control_user_cap? }
 
       validate :user_cap_allowed, if: -> { enabling_user_cap? }
