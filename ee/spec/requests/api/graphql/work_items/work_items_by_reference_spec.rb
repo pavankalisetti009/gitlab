@@ -11,7 +11,8 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
   let_it_be(:public_project) { create(:project, :repository, :public, group: public_group) }
   let_it_be(:task) { create(:work_item, :task, project: public_project) }
   let_it_be(:work_item_epic1) { create(:work_item, :epic, namespace: public_group) }
-  let_it_be(:work_item_epic2) { create(:work_item, :epic, namespace: public_group) }
+  let_it_be(:work_item_epic2) { create(:work_item, :epic_with_legacy_epic, namespace: public_group) }
+  let_it_be(:work_item_epic3) { create(:work_item, :epic, namespace: public_group) }
   let_it_be(:private_work_item_epic) { create(:work_item, :epic, namespace: private_group) }
   let_it_be(:legacy_epic1) { create(:epic, group: public_group) }
   let_it_be(:legacy_epic2) { create(:epic, group: public_group) }
@@ -23,6 +24,7 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
       task.to_reference(full: true),
       work_item_epic1.to_reference(full: true),
       Gitlab::UrlBuilder.build(work_item_epic2),
+      work_item_url(work_item_epic3), # UrlBuilder creates an /epics/ URL while we also want to test /work_items/ URLs
       private_work_item_epic.to_reference(full: true),
       Gitlab::UrlBuilder.build(legacy_epic1),
       legacy_epic2.to_reference(full: true),
@@ -42,7 +44,7 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
     let(:items) do
       [
         issue_work_item2, issue_work_item1, legacy_epic2.work_item, legacy_epic1.work_item,
-        work_item_epic2, work_item_epic1, task
+        work_item_epic3, work_item_epic2, work_item_epic1, task
       ]
     end
 
@@ -83,7 +85,7 @@ RSpec.describe 'Query.workItemsByReference (EE)', feature_category: :portfolio_m
       let(:items) do
         [
           issue_work_item2, issue_work_item1, legacy_epic2.work_item, legacy_epic1.work_item,
-          private_work_item_epic, work_item_epic2, work_item_epic1, task
+          private_work_item_epic, work_item_epic3, work_item_epic2, work_item_epic1, task
         ]
       end
 
