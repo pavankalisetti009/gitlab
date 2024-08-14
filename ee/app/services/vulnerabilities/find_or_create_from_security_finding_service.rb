@@ -3,14 +3,17 @@
 module Vulnerabilities
   class FindOrCreateFromSecurityFindingService < ::BaseProjectService
     def initialize(
-      project:, current_user:, params:, state:, present_on_default_branch:)
+      project:, current_user:, params:, state:, present_on_default_branch:, skip_permission_check: false)
       super(project: project, current_user: current_user, params: params)
       @state = state
       @present_on_default_branch = present_on_default_branch
+      @skip_permission_check = skip_permission_check
     end
 
     def execute
-      raise Gitlab::Access::AccessDeniedError unless can?(@current_user, :read_security_resource, @project)
+      if !@skip_permission_check && !can?(@current_user, :read_security_resource, @project)
+        raise Gitlab::Access::AccessDeniedError
+      end
 
       with_vulnerability_finding do |vulnerability_finding|
         ::Gitlab::Database.allow_cross_joins_across_databases(
@@ -44,7 +47,8 @@ module Vulnerabilities
           state: @state,
           present_on_default_branch: @present_on_default_branch,
           comment: params[:comment],
-          dismissal_reason: params[:dismissal_reason]
+          dismissal_reason: params[:dismissal_reason],
+          skip_permission_check: @skip_permission_check
         ).execute
       else
         vulnerability = Vulnerability.find(vulnerability_finding.vulnerability_id)
