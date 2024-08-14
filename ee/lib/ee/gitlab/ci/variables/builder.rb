@@ -15,12 +15,25 @@ module EE
               ::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies.new(pipeline)
           end
 
-          override :scoped_variables
-          def scoped_variables(job, environment:, dependencies:, job_attributes: {})
+          override :scoped_variables_for_pipeline_seed
+          def scoped_variables_for_pipeline_seed(job_attr, environment:, kubernetes_namespace:)
             super.tap do |variables|
-              variables.concat(scan_execution_policies_variables_builder.variables(job))
+              variables.concat(
+                scan_execution_policies_variables_builder.variables(job_attr[:name], job_attr[:user])
+              )
+              # pipeline_execution_policy_variables: No need to add because it is used after the Seed step.
+            end
+          end
+
+          # When adding new variables, consider either adding or commenting out them in the following methods:
+          # - unprotected_scoped_variables
+          # - scoped_variables_for_pipeline_seed
+          override :scoped_variables
+          def scoped_variables(job, environment:, dependencies:)
+            super.tap do |variables|
+              variables.concat(scan_execution_policies_variables_builder.variables(job.name, job.user))
               # Reapply the PEP job YAML variables at the end to enforce the highest precedence
-              variables.concat(pipeline_execution_policy_variables(job, job_attributes))
+              variables.concat(pipeline_execution_policy_variables(job))
             end
           end
 
@@ -28,10 +41,10 @@ module EE
 
           attr_reader :scan_execution_policies_variables_builder
 
-          def pipeline_execution_policy_variables(job, job_attributes)
+          def pipeline_execution_policy_variables(job)
             return [] unless job.execution_policy_job?
 
-            job_attributes[:yaml_variables] || job.yaml_variables
+            job.yaml_variables
           end
         end
       end

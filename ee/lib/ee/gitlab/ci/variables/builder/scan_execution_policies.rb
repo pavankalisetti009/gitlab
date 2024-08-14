@@ -15,11 +15,11 @@ module EE
               @project = pipeline.project
             end
 
-            def variables(job)
+            def variables(job_name, job_user)
               ::Gitlab::Ci::Variables::Collection.new.tap do |variables|
-                next variables unless enforce_scan_execution_policies_variables?(job)
+                next variables unless enforce_scan_execution_policies_variables?(job_name)
 
-                variables_for_job(job).each do |key, value|
+                variables_for_job(job_name, job_user).each do |key, value|
                   variables.append(key: key, value: value.to_s)
                 end
               end
@@ -27,19 +27,19 @@ module EE
 
             private
 
-            def enforce_scan_execution_policies_variables?(job)
-              return false if job.name.blank?
+            def enforce_scan_execution_policies_variables?(job_name)
+              return false if job_name.blank?
 
               project.licensed_feature_available?(:security_orchestration_policies)
             end
 
-            def variables_for_job(job)
-              active_scan_variables(job)[job.name.to_sym] || []
+            def variables_for_job(job_name, job_user)
+              active_scan_variables(job_user)[job_name.to_sym] || []
             end
 
-            def active_scan_variables(job)
+            def active_scan_variables(job_user)
               strong_memoize_with(:active_scan_variables, project) do
-                ci_configs = ::Security::SecurityOrchestrationPolicies::ScanPipelineService.new(ci_context(job))
+                ci_configs = ::Security::SecurityOrchestrationPolicies::ScanPipelineService.new(ci_context(job_user))
                                                                                            .execute(active_scan_actions)
                 ci_configs[:variables]
               end
@@ -59,8 +59,8 @@ module EE
             end
             strong_memoize_attr :security_orchestration_policy_configurations
 
-            def ci_context(job)
-              ::Gitlab::Ci::Config::External::Context.new(project: project, user: job.user)
+            def ci_context(job_user)
+              ::Gitlab::Ci::Config::External::Context.new(project: project, user: job_user)
             end
           end
         end
