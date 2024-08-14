@@ -4,6 +4,7 @@ import { uniqueId } from 'lodash';
 import { refreshCurrentPage } from '~/lib/utils/url_utility';
 import { __ } from '~/locale';
 import { getExpiringSamlSession } from '../saml_sessions';
+import { INTERVAL_SAML_MODAL } from '../constants';
 
 export default {
   components: {
@@ -21,6 +22,7 @@ export default {
   },
   data() {
     return {
+      expirationTimestamp: null,
       modalId: uniqueId('reload-saml-modal-'),
       showModal: false,
     };
@@ -32,12 +34,33 @@ export default {
     });
 
     if (session) {
-      setTimeout(() => {
-        this.showModal = true;
-      }, session.timeRemainingMs);
+      this.expirationTimestamp = Date.now() + session.timeRemainingMs;
+      this.intervalId = setInterval(this.checkStatus, INTERVAL_SAML_MODAL);
+      document.addEventListener('visibilitychange', this.onDocumentVisible);
     }
   },
+  beforeDestroy() {
+    this.clearEvents();
+  },
   methods: {
+    clearEvents() {
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        document.removeEventListener('visibilitychange', this.onDocumentVisible);
+        this.intervalId = null;
+      }
+    },
+    checkStatus() {
+      if (Date.now() >= this.expirationTimestamp) {
+        this.showModal = true;
+        this.clearEvents();
+      }
+    },
+    onDocumentVisible() {
+      if (document.visibilityState === 'visible') {
+        this.checkStatus();
+      }
+    },
     reload() {
       refreshCurrentPage();
     },
