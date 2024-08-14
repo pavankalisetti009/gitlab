@@ -3,7 +3,7 @@ import { GlButton, GlLabel, GlPopover } from '@gitlab/ui';
 import { s__ } from '~/locale';
 
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
-import { ROUTE_EDIT_FRAMEWORK } from '../../constants';
+import { ROUTE_EDIT_FRAMEWORK, ROUTE_FRAMEWORKS } from '../../constants';
 
 export default {
   name: 'ComplianceFrameworkBadge',
@@ -63,10 +63,17 @@ export default {
         params: { id: getIdFromGraphQLId(this.framework.id) },
       });
     },
+    viewFrameworkDetails() {
+      this.$router.push({
+        name: ROUTE_FRAMEWORKS,
+        query: { id: getIdFromGraphQLId(this.framework.id) },
+      });
+    },
   },
   i18n: {
     default: s__('ComplianceFrameworks|default'),
     edit: s__('ComplianceReport|Edit the framework'),
+    viewDetails: s__('ComplianceReport|View the framework details'),
   },
 };
 </script>
@@ -81,8 +88,9 @@ export default {
       <div v-if="framework.description" class="gl-text-left gl-mb-3">
         {{ framework.description }}
       </div>
-      <div v-if="showEdit" class="gl-text-left">
+      <div class="gl-text-left">
         <gl-button
+          v-if="showEdit"
           category="secondary"
           size="small"
           variant="confirm"
@@ -90,6 +98,16 @@ export default {
           @click="editFromPopover"
         >
           {{ $options.i18n.edit }}
+        </gl-button>
+        <gl-button
+          v-else
+          category="secondary"
+          size="small"
+          variant="confirm"
+          class="gl-font-sm"
+          @click="viewFrameworkDetails"
+        >
+          {{ $options.i18n.viewDetails }}
         </gl-button>
       </div>
     </gl-popover>

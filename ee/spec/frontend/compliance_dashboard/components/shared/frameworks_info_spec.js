@@ -1,6 +1,8 @@
 import { GlLabel, GlPopover } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import FrameworksInfo from 'ee/compliance_dashboard/components/shared/frameworks_info.vue';
+import { ROUTE_FRAMEWORKS } from 'ee/compliance_dashboard/constants';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 jest.mock('~/lib/utils/url_utility', () => ({
   ...jest.requireActual('~/lib/utils/url_utility'),
@@ -9,6 +11,7 @@ jest.mock('~/lib/utils/url_utility', () => ({
 
 describe('ComplianceFrameworksInfo', () => {
   let wrapper;
+  const routerPushMock = jest.fn();
 
   const frameworks = [
     { id: 1, name: 'Framework 1', color: '#FF0000' },
@@ -24,6 +27,9 @@ describe('ComplianceFrameworksInfo', () => {
         projectName,
         complianceCenterPath,
         ...props,
+      },
+      mocks: {
+        $router: { push: routerPushMock },
       },
       stubs: {
         GlLabel,
@@ -83,6 +89,16 @@ describe('ComplianceFrameworksInfo', () => {
 
       it('renders the correct number of framework labels', () => {
         expect(frameworksLabels()).toHaveLength(frameworks.length);
+      });
+
+      it('calls router push even when one of the badges is clicked', () => {
+        frameworksLabels().at(0).trigger('click');
+        expect(routerPushMock).toHaveBeenCalledWith({
+          name: ROUTE_FRAMEWORKS,
+          query: {
+            id: getIdFromGraphQLId(frameworks[0].id),
+          },
+        });
       });
 
       it('renders the correct popover title', () => {
