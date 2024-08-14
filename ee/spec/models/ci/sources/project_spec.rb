@@ -28,11 +28,11 @@ RSpec.describe Ci::Sources::Project, feature_category: :continuous_integration d
     let(:project_source) { create(:ci_sources_project, pipeline: pipeline) }
 
     before do
-      stub_current_partition_id
+      stub_current_partition_id(ci_testing_partition_id_for_check_constraints)
     end
 
     it 'assigns the same partition id as the one that pipeline has' do
-      expect(project_source.partition_id).to eq(ci_testing_partition_id)
+      expect(project_source.partition_id).to eq(ci_testing_partition_id_for_check_constraints)
     end
   end
 end
