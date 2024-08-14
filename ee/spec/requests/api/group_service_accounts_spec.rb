@@ -512,7 +512,7 @@ RSpec.describe API::GroupServiceAccounts, :aggregate_failures, feature_category:
     end
   end
 
-  describe "POST /groups/:id/service_accounts/:user_id/personal_access_tokens" do
+  describe "POST /groups/:id/service_accounts/:user_id/personal_access_tokens", :with_default_organization do
     let(:name) { 'new pat' }
     let(:expires_at) { 3.days.from_now.to_date.to_s }
     let(:scopes) { %w[api read_user] }

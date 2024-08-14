@@ -16,6 +16,7 @@ module RemoteDevelopment
           }
           params => {
             max_hours_before_termination: Integer => max_hours_before_termination,
+            project: Project => project
           }
 
           # TODO: Use PAT service injection - https://gitlab.com/gitlab-org/gitlab/-/issues/423415
@@ -23,6 +24,7 @@ module RemoteDevelopment
             name: workspace_name,
             impersonation: false,
             scopes: [:write_repository, :api],
+            organization: project.organization,
             # Since expires_at is a date, we need to set it to the round it off to the next day.
             # e.g. If the max_hours_before_termination of the workspace is 1 hour
             # and the workspace is created at 2023-08-20 05:30:00,

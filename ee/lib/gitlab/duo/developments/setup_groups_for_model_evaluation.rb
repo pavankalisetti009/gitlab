@@ -50,7 +50,7 @@ module Gitlab
 
         def set_token!
           @token = current_user.personal_access_tokens.create(scopes: ['api'], name: 'Automation token',
-            expires_at: 1.day.from_now)
+            expires_at: 1.day.from_now, organization: main_group.organization)
           @token_value = "token-string-#{SecureRandom.hex(10)}"
           @token.set_token(token_value)
           @token.save!

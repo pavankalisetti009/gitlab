@@ -33,7 +33,8 @@ module EE
                   impersonation: false,
                   scopes: [:write_repository],
                   expires_at: expires_at,
-                  revoked: revoked
+                  revoked: revoked,
+                  organization: workspace.project.organization
                 )
 
                 workspace.update! personal_access_token_id: pat.id

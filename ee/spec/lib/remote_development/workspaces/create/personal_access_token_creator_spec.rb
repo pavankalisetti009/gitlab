@@ -8,11 +8,13 @@ RSpec.describe ::RemoteDevelopment::Workspaces::Create::PersonalAccessTokenCreat
   include_context 'with remote development shared fixtures'
 
   let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project, :in_group, :repository) }
   let(:workspace_name) { "workspace-example_agent_id-example_user_id-example_random_string" }
   let(:max_hours_before_termination) { 24 }
   let(:params) do
     {
-      max_hours_before_termination: max_hours_before_termination
+      max_hours_before_termination: max_hours_before_termination,
+      project: project
     }
   end
 

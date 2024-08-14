@@ -15,8 +15,10 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
     subject(:create_token) { service.execute }
 
     let(:target_user) { create(:user) }
+    let(:organization) { create(:organization) }
     let(:service) do
       described_class.new(current_user: current_user, target_user: target_user,
+        organization_id: organization.id,
         params: params, concatenate_errors: false)
     end
 
