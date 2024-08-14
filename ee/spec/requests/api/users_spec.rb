@@ -432,7 +432,7 @@ RSpec.describe API::Users, :aggregate_failures, feature_category: :user_profile 
     end
   end
 
-  describe 'POST /users/:user_id/personal_access_tokens' do
+  describe 'POST /users/:user_id/personal_access_tokens', :with_current_organization do
     context 'when the user is a service account' do
       let(:service_account) { create(:user, :service_account) }
       let(:path) { "/users/#{service_account.id}/personal_access_tokens" }
@@ -505,7 +505,7 @@ RSpec.describe API::Users, :aggregate_failures, feature_category: :user_profile 
     end
   end
 
-  describe 'POST /user/personal_access_tokens' do
+  describe 'POST /user/personal_access_tokens', :with_current_organization do
     let(:name) { 'new pat' }
     let(:scopes) { %w[k8s_proxy] }
     let(:path) { "/user/personal_access_tokens" }

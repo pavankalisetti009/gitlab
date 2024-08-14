@@ -69,6 +69,7 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
 
   describe 'loading issue links in batch' do
     before do
+      create(:organization)
       create(:vulnerability, :with_finding, project: project)
     end
 
@@ -105,7 +106,8 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
       # 28) Loading the namespace
       # 29) Loading the user
       # 30) Loading the organization
-      expect { query_issue_links }.not_to exceed_query_limit(30)
+      # 31) Loading the organization for access token (only inside specs)
+      expect { query_issue_links }.not_to exceed_query_limit(31)
     end
   end
 

@@ -5,6 +5,7 @@ require 'spec_helper'
 RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_access do
   describe '#execute' do
     let_it_be(:user) { create(:user) }
+    let_it_be(:organization) { create(:organization) }
 
     let(:params) { { name: 'admin-token', impersonation: true, scopes: [:api], expires_at: Date.today + 1.month } }
 
@@ -13,7 +14,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         it 'creates AuditEvent with success message' do
           expect_to_audit(user, user, /Created personal access token with id \d+/)
 
-          described_class.new(current_user: user, target_user: user, params: params).execute
+          described_class.new(current_user: user, target_user: user, organization_id: organization.id, params: params).execute
         end
       end
 
@@ -23,7 +24,7 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
         it 'creates AuditEvent with failure message' do
           expect_to_audit(user, other_user, 'Attempted to create personal access token but failed with message: Not permitted to create')
 
-          described_class.new(current_user: user, target_user: other_user, params: params).execute
+          described_class.new(current_user: user, target_user: other_user, organization_id: organization.id, params: params).execute
         end
       end
     end
@@ -34,14 +35,14 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
       it 'with admin mode enabled', :enable_admin_mode do
         expect_to_audit(admin, user, /Created personal access token with id \d+/)
 
-        described_class.new(current_user: admin, target_user: user, params: params).execute
+        described_class.new(current_user: admin, target_user: user, organization_id: organization.id, params: params).execute
       end
 
       context 'with admin mode disabled' do
         it 'creates audit logs with failure message' do
           expect_to_audit(admin, user, 'Attempted to create personal access token but failed with message: Not permitted to create')
 
-          described_class.new(current_user: admin, target_user: user, params: params).execute
+          described_class.new(current_user: admin, target_user: user, organization_id: organization.id, params: params).execute
         end
       end
     end

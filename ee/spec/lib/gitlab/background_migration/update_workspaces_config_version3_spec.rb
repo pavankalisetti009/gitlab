@@ -7,9 +7,10 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion3, feat
     let(:v2) { 2 }
     let(:v3) { 3 }
     let(:personal_access_tokens_table) { table(:personal_access_tokens) }
+    let(:organization) { create(:organization) }
     let(:pat) do
       personal_access_tokens_table.create!(name: 'workspace1', user_id: user.id, scopes: "---\n- api\n",
-        expires_at: 4.days.from_now)
+        expires_at: 4.days.from_now, organization_id: organization.id)
     end
 
     let(:workspace_attrs) do

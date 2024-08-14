@@ -146,10 +146,12 @@ RSpec.describe 'Admin::AuditLogs', :js, feature_category: :audit_events do
       end
 
       context 'create personal access token' do
+        let(:organization) { create(:organization) }
         let(:personal_access_token_params) { { name: 'Test token', impersonation: false, scopes: [:api], expires_at: Date.today + 1.month } }
         let(:personal_access_token) do
           PersonalAccessTokens::CreateService.new(
-            current_user: admin, target_user: user, params: personal_access_token_params
+            current_user: admin, target_user: user, organization_id: organization.id,
+            params: personal_access_token_params
           ).execute.payload[:personal_access_token]
         end
 
