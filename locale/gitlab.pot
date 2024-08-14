@@ -58450,6 +58450,9 @@ msgstr ""
 msgid "UserMapping|Approve reassignment"
 msgstr ""
 
+msgid "UserMapping|As part of the import, placeholder users were created on %{group_names} and these users were assigned group membership and contributions from %{source_hostname}. To reassign contributions from placeholder users to GitLab users, visit the Members page of %{group_links}."
+msgstr ""
+
 msgid "UserMapping|Awaiting reassignment"
 msgstr ""
 
@@ -58499,6 +58502,9 @@ msgid "UserMapping|Placeholder user"
 msgstr ""
 
 msgid "UserMapping|Placeholder user was made permanent."
+msgstr ""
+
+msgid "UserMapping|Placeholder users awaiting reassignment"
 msgstr ""
 
 msgid "UserMapping|Placeholders"
