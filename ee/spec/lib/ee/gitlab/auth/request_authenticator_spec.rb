@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe EE::Gitlab::Auth::RequestAuthenticator do
+RSpec.describe EE::Gitlab::Auth::RequestAuthenticator, feature_category: :system_access do
   let(:env) do
     {
       'rack.input' => ''
@@ -23,11 +23,11 @@ RSpec.describe EE::Gitlab::Auth::RequestAuthenticator do
         allow(instance).to receive(:find_user_from_dependency_proxy_token).and_return(dependency_proxy_user)
       end
 
-      expect(subject.find_sessionless_user(:api)).to eq geo_token_user
+      expect(subject.find_sessionless_user(:graphql_api)).to eq geo_token_user
     end
 
     it 'returns nil if no user found' do
-      expect(subject.find_sessionless_user(:api)).to be_nil
+      expect(subject.find_sessionless_user(:graphql_api)).to be_nil
     end
 
     it 'rescue Gitlab::Auth::AuthenticationError exceptions' do
@@ -35,7 +35,7 @@ RSpec.describe EE::Gitlab::Auth::RequestAuthenticator do
         allow(instance).to receive(:find_user_from_geo_token).and_raise(Gitlab::Auth::UnauthorizedError)
       end
 
-      expect(subject.find_sessionless_user(:api)).to be_nil
+      expect(subject.find_sessionless_user(:graphql_api)).to be_nil
     end
   end
 end
