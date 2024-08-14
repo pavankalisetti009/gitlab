@@ -174,7 +174,7 @@ message: "could not generate token" })
         expect(Gitlab::CloudConnector).to receive(:headers).with(user).and_return({ header_key: 'header_value' })
         expect_next_instance_of(::Ai::DuoWorkflows::CreateOauthAccessTokenService) do |service|
           expect(service).to receive(:execute).and_return({ status: :success,
-oauth_access_token: { token: 'oauth_token' } })
+oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 'oauth_token') })
         end
         expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
           expect(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })

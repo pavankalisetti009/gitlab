@@ -52,10 +52,10 @@ RSpec.describe ::Ai::DuoWorkflows::CreateOauthAccessTokenService, feature_catego
       end
 
       context 'when the user already has an oauth access token' do
-        it 'returns the existing oauth access token' do
+        it 'creates a new oauth access token' do
           described_class.new(current_user: user).execute
 
-          expect { execute }.to change { OauthAccessToken.count }.by(0)
+          expect { execute }.to change { OauthAccessToken.count }.by(1)
         end
       end
 
