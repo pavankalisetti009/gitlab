@@ -2,6 +2,7 @@ import { merge, pickBy, isUndefined } from 'lodash';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import { GlLoadingIcon, GlModal } from '@gitlab/ui';
 
+import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 
@@ -13,7 +14,13 @@ import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_t
 
 jest.mock('~/alert');
 
-describe('ScimToken', () => {
+const skipReason = new SkipReason({
+  name: 'ScimToken',
+  reason: 'Caught error after test environment was torn down',
+  issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478768',
+});
+
+describeSkipVue3(skipReason, () => {
   let wrapper;
   let axiosMock;
 
