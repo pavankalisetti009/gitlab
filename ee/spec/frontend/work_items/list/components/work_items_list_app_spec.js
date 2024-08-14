@@ -66,7 +66,7 @@ describe('WorkItemsListApp EE component', () => {
   const workItemBulkUpdateHandler = jest.fn();
   const resolvers = {
     Mutation: {
-      workItemBulkUpdate(_, { input }) {
+      localWorkItemBulkUpdate(_, { input }) {
         workItemBulkUpdateHandler(input);
       },
     },
