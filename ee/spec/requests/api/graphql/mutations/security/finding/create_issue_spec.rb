@@ -14,7 +14,7 @@ RSpec.describe 'Creating an Issue from a Security::Finding', feature_category: :
 
   let_it_be(:build_sast) { create(:ci_build, :success, name: 'sast', pipeline: pipeline) }
   let_it_be(:artifact_sast) do
-    create(:ee_ci_job_artifact, :sast_with_signatures_and_vulnerability_flags, job: build_sast)
+    create(:ee_ci_job_artifact, :sast, job: build_sast)
   end
 
   let_it_be(:report) { create(:ci_reports_security_report, pipeline: pipeline, type: :sast) }

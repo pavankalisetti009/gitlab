@@ -16,6 +16,8 @@ module Vulnerabilities
       end
 
       with_vulnerability_finding do |vulnerability_finding|
+        # This cross db access is due to the creation of 4 records:
+        #  vuln identifiers, occurrences, occurrence identifers and finding signatures
         ::Gitlab::Database.allow_cross_joins_across_databases(
           url: 'https://gitlab.com/groups/gitlab-org/-/epics/14197#cross-db-issues-to-be-resolved'
         ) do

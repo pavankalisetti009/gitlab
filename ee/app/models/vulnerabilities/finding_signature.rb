@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingSignature < ApplicationRecord
+  class FindingSignature < Gitlab::Database::SecApplicationRecord
     include BulkInsertSafe
     include VulnerabilityFindingSignatureHelpers
 
@@ -11,7 +11,12 @@ module Vulnerabilities
     enum algorithm_type: VulnerabilityFindingSignatureHelpers::ALGORITHM_TYPES, _prefix: :algorithm
     validates :finding, presence: true
 
-    scope :by_project, ->(project) { joins(:finding).where(vulnerability_occurrences: { project_id: project.id }) }
+    scope :by_project, ->(project) do
+      joins(:finding).allow_cross_joins_across_databases(
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747'
+      ).where(vulnerability_occurrences: { project_id: project.id })
+    end
+
     scope :by_signature_sha, ->(shas) { where(signature_sha: shas) }
     scope :eager_load_comparison_entities, -> { includes(finding: [:scanner, :primary_identifier]) }
 
