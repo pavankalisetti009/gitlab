@@ -39,13 +39,17 @@ module Sbom
     private
 
     def affected_occurrences?(occurrence, affected_package)
+      advisory = affected_package.advisory
+
       occurrence_is_affected?(
+        xid: advisory.advisory_xid,
         purl_type: affected_package.purl_type,
         range: affected_package.affected_range,
         version: occurrence.version,
         distro: affected_package.distro_version,
         source: occurrence.source,
-        project_id: occurrence.project_id
+        project_id: occurrence.project_id,
+        source_xid: advisory.source_xid
       )
     end
 
