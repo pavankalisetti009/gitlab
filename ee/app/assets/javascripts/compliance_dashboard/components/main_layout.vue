@@ -1,14 +1,24 @@
 <script>
-import { GlTab, GlTabs, GlTooltipDirective } from '@gitlab/ui';
+import {
+  GlTab,
+  GlTabs,
+  GlTooltipDirective,
+  GlButton,
+  GlTooltip,
+  GlSprintf,
+  GlLink,
+} from '@gitlab/ui';
 
 import { helpPagePath } from '~/helpers/help_page_helper';
-
 import Tracking from '~/tracking';
+import { isTopLevelGroup } from '../utils';
+
 import {
   ROUTE_STANDARDS_ADHERENCE,
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   ROUTE_VIOLATIONS,
+  ROUTE_NEW_FRAMEWORK,
   i18n,
 } from '../constants';
 
@@ -39,6 +49,10 @@ export default {
   components: {
     GlTabs,
     GlTab,
+    GlButton,
+    GlTooltip,
+    GlSprintf,
+    GlLink,
     ReportHeader,
     ReportsExport,
   },
@@ -58,8 +72,19 @@ export default {
       type: Array,
       required: true,
     },
+    groupPath: {
+      type: String,
+      required: true,
+    },
+    rootAncestor: {
+      type: Object,
+      required: true,
+    },
   },
   computed: {
+    isTopLevelGroup() {
+      return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
+    },
     tabs() {
       return this.availableTabs.map((tabName) => {
         const tabConfig = tabConfigs[tabName];
@@ -83,6 +108,9 @@ export default {
         this.track('click_report_tab', { label: name });
       }
     },
+    newFramework() {
+      this.$router.push({ name: ROUTE_NEW_FRAMEWORK });
+    },
   },
   ROUTE_STANDARDS: ROUTE_STANDARDS_ADHERENCE,
   ROUTE_VIOLATIONS,
@@ -101,13 +129,31 @@ export default {
     >
       <template #actions>
         <reports-export
-          class="gl-float-right"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
           :violations-csv-export-path="violationsCsvExportPath"
           :adherences-csv-export-path="adherencesCsvExportPath"
           :frameworks-csv-export-path="frameworksCsvExportPath"
         />
+        <gl-tooltip v-if="!isTopLevelGroup" :target="() => $refs.newFrameworkButton">
+          <gl-sprintf :message="$options.i18n.newFrameworkButtonMessage">
+            <template #link>
+              <gl-link :href="rootAncestor.complianceCenterPath">
+                {{ rootAncestor.name }}
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </gl-tooltip>
+        <span ref="newFrameworkButton">
+          <gl-button
+            class="gl-ml-2"
+            variant="confirm"
+            category="secondary"
+            :disabled="!isTopLevelGroup"
+            @click="newFramework"
+            >{{ $options.i18n.newFramework }}</gl-button
+          >
+        </span>
       </template>
     </report-header>
 

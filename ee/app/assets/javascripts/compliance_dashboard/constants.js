@@ -57,6 +57,10 @@ export const FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK = {
 };
 
 export const i18n = {
+  newFramework: s__('ComplianceFrameworks|New framework'),
+  newFrameworkButtonMessage: s__(
+    'ComplianceFrameworks|You can only create the compliance framework in top-level group %{linkStart}namespace%{linkEnd}',
+  ),
   frameworksTab: s__('Compliance Center|Frameworks'),
   projectsTab: __('Projects'),
   heading: __('Compliance center'),

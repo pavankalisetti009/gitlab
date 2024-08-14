@@ -28,9 +28,7 @@ export default {
 };
 </script>
 <template>
-  <header
-    class="gl-mt-5 gl-mb-6 gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row gl-justify-content-space-between"
-  >
+  <header class="gl-my-6 gl-flex gl-flex-col lg:gl-flex-row gl-justify-between">
     <div>
       <h2 class="gl-flex-grow-1 gl-my-0" data-testid="heading">{{ heading }}</h2>
       <p class="gl-mt-5" data-testid="subheading">
