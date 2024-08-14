@@ -4,15 +4,15 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
   let(:user) { create(:user) }
-  let(:workflow_service_url) { 'https://duo-workflow-service.example.com' }
+  let(:cloud_connector_url) { 'https://duo-workflow-service.example.com' }
 
   before do
-    stub_env('DUO_WORKFLOW_SERVICE_URL', workflow_service_url)
+    allow(Gitlab.config.cloud_connector).to receive(:base_url).and_return cloud_connector_url
   end
 
   describe '.url' do
     it 'returns correct url' do
-      expect(described_class.url).to eq(workflow_service_url)
+      expect(described_class.url).to eq("duo-workflow-service.example.com:443")
     end
   end
 
@@ -21,6 +21,24 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       expect(Gitlab::CloudConnector).to receive(:headers).with(user).and_return({ header_key: 'header_value' })
 
       expect(described_class.headers(user: user)).to eq({ header_key: 'header_value' })
+    end
+  end
+
+  describe '.cloud_connector_url' do
+    context 'when cloud_connector is configured' do
+      it 'returns cloud connector base url' do
+        expect(described_class.cloud_connector_url).to eq(cloud_connector_url)
+      end
+    end
+
+    context 'when cloud_connector is not configured' do
+      before do
+        allow(Gitlab.config).to receive(:cloud_connector).and_raise(GitlabSettings::MissingSetting)
+      end
+
+      it 'returns nil' do
+        expect(described_class.cloud_connector_url).to be_nil
+      end
     end
   end
 end

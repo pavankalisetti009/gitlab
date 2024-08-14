@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Ai::DuoWorkflow::DuoWorkflowService::Client, feature_category: :duo_workflow do
   let_it_be(:current_user) { create(:user) }
-  let(:duo_workflow_service_url) { 'http://example.com' }
+  let(:duo_workflow_service_url) { 'example.com:443' }
   let(:stub) { instance_double('DuoWorkflowService::DuoWorkflow::Stub') }
   let(:request) { instance_double('DuoWorkflowService::GenerateTokenRequest') }
   let(:response) { double(token: 'a user jwt', expiresAt: 'a timestamp') } # rubocop:disable RSpec/VerifiedDoubles -- instance_double keeps raising error  the DuoWorkflowService::GenerateTokenResponse class does not implement the class method: token
