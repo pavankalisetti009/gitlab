@@ -31,11 +31,10 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
   describe '#scoped_variables' do
     let(:environment_name) { job.expanded_environment_name }
     let(:dependencies) { true }
-    let(:job_attributes) { {} }
 
     subject(:scoped_variables) do
       builder.scoped_variables(job,
-        environment: environment_name, dependencies: dependencies, job_attributes: job_attributes
+        environment: environment_name, dependencies: dependencies
       )
     end
 
@@ -148,40 +147,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
             'O' => '14', 'P' => '15',
             'Q' => '16', 'R' => '16')
         end
-
-        # When removing ci_variables_optimization_for_yaml_and_node;
-        # - this test should be removed
-        # - `allow(job).to receive(:yaml_variables)` should be removed
-        context 'when job_attributes are provided' do
-          let(:job_attributes) do
-            { yaml_variables: [var('G', 7), var('H', 7)] }
-          end
-
-          it 'does not call yaml_variables on the job' do
-            expect(job).not_to receive(:yaml_variables)
-            scoped_variables
-          end
-
-          it 're-applies yaml_variables with the highest precedence' do
-            expect(scoped_variables.to_runner_variables).to eq(
-              [var('A', 1), var('B', 1),
-                var('B', 2), var('C', 2),
-                var('C', 3), var('D', 3),
-                var('D', 4), var('E', 4),
-                var('E', 5), var('F', 5),
-                var('G', 7), var('H', 7),
-                var('H', 8), var('I', 8),
-                var('I', 9), var('J', 9),
-                var('J', 10), var('K', 10),
-                var('K', 11), var('L', 11),
-                var('L', 12), var('M', 12),
-                var('M', 13), var('N', 13),
-                var('N', 14), var('O', 14),
-                var('P', 15), var('Q', 15),
-                var('Q', 16), var('R', 16),
-                var('G', 7), var('H', 7)])
-          end
-        end
       end
     end
 
@@ -196,10 +161,123 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       it 'calls policies builder' do
         expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
           expect(policies_builder).to receive(:variables)
-                                        .with(job)
+                                        .with(job.name, job.user)
                                         .and_return(policies_variables)
         end
         expect(scoped_variables.to_hash).to include('SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'OTHER' => 'some value')
+      end
+    end
+  end
+
+  describe '#scoped_variables_for_pipeline_seed' do
+    let(:environment_name) { job.expanded_environment_name }
+    let(:kubernetes_namespace) { job.expanded_kubernetes_namespace }
+    let(:dependencies) { true }
+    let(:extra_attributes) { {} }
+
+    let(:job_attr) do
+      {
+        name: job.name,
+        user: job.user,
+        stage: job.stage_name,
+        yaml_variables: job.yaml_variables,
+        options: job.options,
+        **extra_attributes
+      }
+    end
+
+    subject(:scoped_variables_for_pipeline_seed) do
+      builder.scoped_variables_for_pipeline_seed(
+        job_attr,
+        environment: environment_name,
+        kubernetes_namespace: kubernetes_namespace
+      )
+    end
+
+    it { is_expected.to be_instance_of(Gitlab::Ci::Variables::Collection) }
+
+    describe 'variables ordering' do
+      def var(name, value)
+        { key: name, value: value.to_s, public: true, masked: false }
+      end
+
+      before do
+        pipeline_variables_builder = instance_double(
+          ::Gitlab::Ci::Variables::Builder::Pipeline,
+          predefined_variables: [var('C', 3), var('D', 3)]
+        )
+        scan_execution_policies_variables_builder = instance_double(
+          ::EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, variables: [var('Q', 16), var('R', 16)]
+        )
+
+        allow(builder).to receive(:predefined_variables_from_job_attr) { [var('A', 1), var('B', 1)] }
+        allow(pipeline.project).to receive(:predefined_variables) { [var('B', 2), var('C', 2)] }
+        allow(builder).to receive(:pipeline_variables_builder) { pipeline_variables_builder }
+        allow(pipeline).to receive(:predefined_variables) { [var('C', 3), var('D', 3)] }
+        allow(builder).to receive(:kubernetes_variables) { [var('E', 5), var('F', 5)] }
+        allow(job).to receive(:yaml_variables) { [var('G', 7), var('H', 7)] }
+        allow(builder).to receive(:user_variables) { [var('H', 8), var('I', 8)] }
+        allow(builder).to receive(:secret_instance_variables) { [var('J', 10), var('K', 10)] }
+        allow(builder).to receive(:secret_group_variables) { [var('K', 11), var('L', 11)] }
+        allow(builder).to receive(:secret_project_variables) { [var('L', 12), var('M', 12)] }
+        allow(pipeline).to receive(:variables) { [var('M', 13), var('N', 13)] }
+        allow(pipeline).to receive(:pipeline_schedule) do
+          instance_double(::Ci::PipelineSchedule, job_variables: [var('N', 14), var('O', 14)])
+        end
+        allow(builder).to receive(:release_variables) { [var('P', 15), var('Q', 15)] }
+        allow(builder).to receive(:scan_execution_policies_variables_builder) do
+          scan_execution_policies_variables_builder
+        end
+      end
+
+      it 'returns variables in order depending on resource hierarchy' do
+        expect(scoped_variables_for_pipeline_seed.to_runner_variables).to eq(
+          [var('A', 1), var('B', 1),
+            var('B', 2), var('C', 2),
+            var('C', 3), var('D', 3),
+            var('E', 5), var('F', 5),
+            var('G', 7), var('H', 7),
+            var('H', 8), var('I', 8),
+            var('J', 10), var('K', 10),
+            var('K', 11), var('L', 11),
+            var('L', 12), var('M', 12),
+            var('M', 13), var('N', 13),
+            var('N', 14), var('O', 14),
+            var('P', 15), var('Q', 15),
+            var('Q', 16), var('R', 16)])
+      end
+
+      it 'overrides duplicate keys depending on resource hierarchy' do
+        expect(scoped_variables_for_pipeline_seed.to_hash).to match(
+          'A' => '1', 'B' => '2',
+          'C' => '3', 'D' => '3',
+          'E' => '5', 'F' => '5',
+          'G' => '7', 'H' => '8',
+          'I' => '8', 'J' => '10',
+          'K' => '11', 'L' => '12',
+          'M' => '13', 'N' => '14',
+          'O' => '14', 'P' => '15',
+          'Q' => '16', 'R' => '16')
+      end
+    end
+
+    context 'with policies_variables' do
+      let(:policies_variables) do
+        [
+          { key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true' },
+          { key: 'OTHER', value: 'some value' }
+        ]
+      end
+
+      it 'calls policies builder' do
+        expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
+          expect(policies_builder).to receive(:variables)
+                                        .with(job.name, job.user)
+                                        .and_return(policies_variables)
+        end
+        expect(scoped_variables_for_pipeline_seed.to_hash).to include(
+          'SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'OTHER' => 'some value'
+        )
       end
     end
   end
