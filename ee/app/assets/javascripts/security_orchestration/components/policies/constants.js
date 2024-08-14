@@ -36,12 +36,6 @@ export const POLICY_TYPE_FILTER_OPTIONS = {
   },
 };
 
-export const POLICY_TYPES_WITH_INHERITANCE = [
-  POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value,
-  POLICY_TYPE_FILTER_OPTIONS.APPROVAL.value,
-  POLICY_TYPE_FILTER_OPTIONS.PIPELINE_EXECUTION.value,
-];
-
 export const EMPTY_LIST_DESCRIPTION = s__(
   'SecurityOrchestration|This %{namespaceType} does not contain any security policies.',
 );
