@@ -569,6 +569,24 @@ RSpec.describe Gitlab::Audit::Auditor, feature_category: :audit_events do
 
         audit!
       end
+
+      context 'with operation' do
+        let(:operation) do
+          proc do
+            'expected result'
+          end
+        end
+
+        it 'returns operation result' do
+          expect(audit!).to eq('expected result')
+        end
+      end
+
+      context 'without an operation' do
+        it 'returns nil' do
+          expect(auditor.audit(context)).to be_nil
+        end
+      end
     end
   end
 

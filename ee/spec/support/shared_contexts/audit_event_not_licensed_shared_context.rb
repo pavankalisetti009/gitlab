@@ -12,4 +12,8 @@ RSpec.shared_context 'does not create audit event when not licensed' do
   it 'does not log any audit event' do
     expect { subject }.not_to change { AuditEvent.count }
   end
+
+  it 'successful' do
+    expect(execute.success?).to be true
+  end
 end

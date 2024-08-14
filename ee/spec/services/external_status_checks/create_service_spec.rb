@@ -22,8 +22,6 @@ RSpec.describe ExternalStatusChecks::CreateService do
     allow(Ability)
       .to receive(:allowed?).with(user, :manage_merge_request_settings, project)
                             .and_return(action_allowed)
-
-    stub_licensed_features(audit_events: true)
   end
 
   subject(:execute) { described_class.new(container: project, current_user: user, params: params).execute }
