@@ -1,19 +1,10 @@
 <script>
 import Vue from 'vue';
-import {
-  GlButton,
-  GlLoadingIcon,
-  GlSearchBoxByClick,
-  GlSprintf,
-  GlTable,
-  GlToast,
-  GlTooltip,
-  GlLink,
-} from '@gitlab/ui';
+import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlToast, GlLink } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import FrameworkBadge from '../shared/framework_badge.vue';
-import { ROUTE_EDIT_FRAMEWORK, ROUTE_NEW_FRAMEWORK } from '../../constants';
+import { ROUTE_EDIT_FRAMEWORK } from '../../constants';
 import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
 import FrameworkInfoDrawer from './framework_info_drawer.vue';
 
@@ -22,12 +13,9 @@ Vue.use(GlToast);
 export default {
   name: 'FrameworksTable',
   components: {
-    GlButton,
     GlLoadingIcon,
     GlSearchBoxByClick,
-    GlSprintf,
     GlTable,
-    GlTooltip,
     GlLink,
     FrameworkInfoDrawer,
     FrameworkBadge,
@@ -83,9 +71,6 @@ export default {
     isLastItem(index, arr) {
       return index >= arr.length - 1;
     },
-    newFramework() {
-      this.$router.push({ name: ROUTE_NEW_FRAMEWORK });
-    },
     editFramework({ id }) {
       this.$router.push({ name: ROUTE_EDIT_FRAMEWORK, params: { id: getIdFromGraphQLId(id) } });
     },
@@ -123,12 +108,8 @@ export default {
     },
   ],
   i18n: {
-    newFramework: s__('ComplianceFrameworks|New framework'),
     noFrameworksFound: s__('ComplianceReport|No frameworks found'),
     editTitle: s__('ComplianceFrameworks|Edit compliance framework'),
-    newFrameworkButtonMessage: s__(
-      'ComplianceFrameworks|You can only create the compliance framework in top-level group %{linkStart}namespace%{linkEnd}',
-    ),
   },
 };
 </script>
@@ -140,25 +121,6 @@ export default {
         @submit="$emit('search', $event)"
         @clear="$emit('search', '')"
       />
-      <gl-tooltip v-if="!isTopLevelGroup" :target="() => $refs.newFrameworkButton">
-        <gl-sprintf :message="$options.i18n.newFrameworkButtonMessage">
-          <template #link>
-            <gl-link :href="rootAncestor.complianceCenterPath">
-              {{ rootAncestor.name }}
-            </gl-link>
-          </template>
-        </gl-sprintf>
-      </gl-tooltip>
-      <span ref="newFrameworkButton">
-        <gl-button
-          class="gl-ml-auto"
-          variant="confirm"
-          category="secondary"
-          :disabled="!isTopLevelGroup"
-          @click="newFramework"
-          >{{ $options.i18n.newFramework }}</gl-button
-        >
-      </span>
     </div>
     <gl-table
       :fields="$options.fields"

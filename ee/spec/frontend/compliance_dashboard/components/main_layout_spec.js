@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils';
-import { GlTabs } from '@gitlab/ui';
+import { GlTabs, GlTooltip } from '@gitlab/ui';
 import { extendedWrapper, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import MainLayout from 'ee/compliance_dashboard/components/main_layout.vue';
@@ -11,18 +11,26 @@ import {
   ROUTE_FRAMEWORKS,
   ROUTE_PROJECTS,
   ROUTE_VIOLATIONS,
+  ROUTE_NEW_FRAMEWORK,
 } from 'ee/compliance_dashboard/constants';
 
 describe('ComplianceReportsApp component', () => {
   let wrapper;
   let trackingSpy;
+  const $router = { push: jest.fn() };
   const defaultInjects = {
-    groupPath: 'group-path',
     mergeCommitsCsvExportPath: '/csv',
     projectFrameworksCsvExportPath: '/project_frameworks_report.csv',
     violationsCsvExportPath: '/compliance_violation_reports.csv',
     adherencesCsvExportPath: '/compliance_standards_adherences.csv',
     frameworksCsvExportPath: '/compliance_frameworks_report.csv',
+  };
+
+  const groupPath = 'top-level-group-path';
+  const rootAncestor = {
+    path: 'top-level-group-path',
+    name: 'Top Level Group',
+    complianceCenterPath: 'top-level-group-path/compliance-center-path',
   };
 
   const findHeader = () => wrapper.findComponent(ReportHeader);
@@ -37,6 +45,8 @@ describe('ComplianceReportsApp component', () => {
   const findProjectFrameworksTab = () => wrapper.findByTestId('frameworks-tab-content');
   const findViolationsTab = () => wrapper.findByTestId('violations-tab-content');
   const findStandardsAdherenceTab = () => wrapper.findByTestId('standards-adherence-tab-content');
+  const findNewFrameworkButton = () => wrapper.findByRole('button', { name: 'New framework' });
+  const findNewFrameworkTooltip = () => wrapper.findComponent(GlTooltip);
 
   const createComponent = (
     mountFn = shallowMountExtended,
@@ -48,7 +58,7 @@ describe('ComplianceReportsApp component', () => {
     return extendedWrapper(
       mountFn(MainLayout, {
         mocks: {
-          $router: { push: jest.fn() },
+          $router,
           $route: {
             name: ROUTE_VIOLATIONS,
           },
@@ -61,6 +71,8 @@ describe('ComplianceReportsApp component', () => {
             ROUTE_PROJECTS,
             ROUTE_FRAMEWORKS,
           ],
+          groupPath,
+          rootAncestor,
           ...props,
         },
         stubs: {
@@ -90,6 +102,24 @@ describe('ComplianceReportsApp component', () => {
     it('does not render the adherences export button when there is no CSV path', () => {
       wrapper = createComponent(mount, {}, { adherencesCsvExportPath: null });
       expect(findAdherencesExportButton().exists()).toBe(false);
+    });
+  });
+
+  describe('New framework button', () => {
+    it('navigates to add framework page when in top level group', () => {
+      wrapper = createComponent(mount);
+
+      findNewFrameworkButton().trigger('click');
+      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
+    });
+
+    it('is disabled and shows info tooltip otherwise', () => {
+      wrapper = createComponent(mount, {}, {}, { groupPath: 'sub-group-path' });
+
+      expect(findNewFrameworkButton().attributes('disabled')).toBeDefined();
+      expect(findNewFrameworkTooltip().text()).toMatchInterpolatedText(
+        'You can only create the compliance framework in top-level group Top Level Group',
+      );
     });
   });
 

@@ -93,6 +93,12 @@ export function createRouter(basePath, props) {
       component: MainLayout,
       props: {
         availableTabs: availableRoutes,
+        groupPath,
+        rootAncestor: {
+          path: rootAncestorPath,
+          name: rootAncestorName,
+          complianceCenterPath: rootAncestorComplianceCenterPath,
+        },
       },
       children: [...availableTabRoutes, { path: '*', redirect: { name: defaultRoute } }],
     },

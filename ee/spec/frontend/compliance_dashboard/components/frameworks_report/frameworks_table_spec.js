@@ -8,7 +8,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
-import { ROUTE_EDIT_FRAMEWORK, ROUTE_NEW_FRAMEWORK } from 'ee/compliance_dashboard/constants';
+import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
 
 Vue.use(VueApollo);
 
@@ -35,7 +35,6 @@ describe('FrameworksTable component', () => {
   const findEmptyState = () => wrapper.findByText('No frameworks found');
   const findTableLinks = (idx) => findTableRow(idx).findAllComponents(GlLink);
   const findFrameworkInfoSidebar = () => wrapper.findComponent(FrameworkInfoDrawer);
-  const findNewFrameworkButton = () => wrapper.findByRole('button', { name: 'New framework' });
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByClick);
 
   const toggleSidebar = async () => {
@@ -98,14 +97,6 @@ describe('FrameworksTable component', () => {
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
       expect(headerTexts).toStrictEqual(['Frameworks', 'Associated projects', 'Policies']);
-    });
-
-    it('navigates to add framework page when requested', () => {
-      wrapper = createComponent({ isLoading: false });
-      const newFrameworkButton = findNewFrameworkButton();
-
-      newFrameworkButton.trigger('click');
-      expect($router.push).toHaveBeenCalledWith({ name: ROUTE_NEW_FRAMEWORK });
     });
 
     it('emits search event when underlying search box is submitted', () => {
@@ -265,10 +256,6 @@ describe('FrameworksTable component', () => {
       const [, associatedProjects] = findTableRowData(0).wrappers.map((d) => d.text());
 
       expect(associatedProjects).toContain(projects[1].name);
-    });
-
-    it('disables new framework button', () => {
-      expect(findNewFrameworkButton().props('disabled')).toBe(true);
     });
   });
 });
