@@ -1,7 +1,8 @@
 <script>
 import { GlLabel, GlPopover } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
-import { FRAMEWORKS_LABEL_BACKGROUND } from '../../constants';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { FRAMEWORKS_LABEL_BACKGROUND, ROUTE_FRAMEWORKS } from '../../constants';
 import FrameworkBadge from './framework_badge.vue';
 
 export default {
@@ -40,6 +41,14 @@ export default {
       return this.frameworks.length === 1;
     },
   },
+  methods: {
+    showFrameworkDetails(id) {
+      this.$router.push({
+        name: ROUTE_FRAMEWORKS,
+        query: { id: getIdFromGraphQLId(id) },
+      });
+    },
+  },
   i18n: {
     multipleFrameworks: s__('ComplianceFrameworks|Multiple frameworks'),
     title: s__('ComplianceFrameworks|Compliance frameworks applied to %{projectName}'),
@@ -56,14 +65,18 @@ export default {
         triggers="hover focus"
         placement="right"
       >
-        <framework-badge
+        <div
           v-for="framework in frameworks"
           :key="framework.id"
-          :framework="framework"
           data-testid="framework-label"
-          class="gl-mb-3 gl-mr-2 gl-display-inline-block"
-          :show-popover="false"
-        />
+          @click="showFrameworkDetails(framework.id)"
+        >
+          <framework-badge
+            :framework="framework"
+            class="gl-mb-3 gl-mr-2 gl-display-inline-block"
+            :show-popover="false"
+          />
+        </div>
       </gl-popover>
       <span ref="label">
         <gl-label

@@ -4,7 +4,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
 
-import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
+import { ROUTE_EDIT_FRAMEWORK, ROUTE_FRAMEWORKS } from 'ee/compliance_dashboard/constants';
 import { complianceFramework } from '../../mock_data';
 
 describe('FrameworkBadge component', () => {
@@ -13,7 +13,7 @@ describe('FrameworkBadge component', () => {
 
   const findLabel = () => wrapper.findComponent(GlLabel);
   const findTooltip = () => wrapper.findComponent(GlPopover);
-  const findEditButton = () => wrapper.findComponent(GlPopover).findComponent(GlButton);
+  const findCtaButton = () => wrapper.findComponent(GlPopover).findComponent(GlButton);
 
   const createComponent = (props = {}) => {
     routerPushMock = jest.fn();
@@ -28,19 +28,37 @@ describe('FrameworkBadge component', () => {
   };
 
   describe('default behavior', () => {
-    it('renders edit link', () => {
+    it('renders edit link by default', () => {
       wrapper = createComponent({ framework: complianceFramework });
 
-      expect(findEditButton().exists()).toBe(true);
+      expect(findCtaButton().text()).toBe('Edit the framework');
     });
 
     it('emits edit event when edit link is clicked', async () => {
       wrapper = createComponent({ framework: complianceFramework });
 
-      await findEditButton().vm.$emit('click', new MouseEvent('click'));
+      await findCtaButton().vm.$emit('click', new MouseEvent('click'));
       expect(routerPushMock).toHaveBeenCalledWith({
         name: ROUTE_EDIT_FRAMEWORK,
         params: {
+          id: getIdFromGraphQLId(complianceFramework.id),
+        },
+      });
+    });
+
+    it('renders view details link when showEdit prop set to false', () => {
+      wrapper = createComponent({ framework: complianceFramework, showEdit: false });
+
+      expect(findCtaButton().text()).toBe('View the framework details');
+    });
+
+    it('emits view details event when view details is clicked', async () => {
+      wrapper = createComponent({ framework: complianceFramework, showEdit: false });
+
+      await findCtaButton().vm.$emit('click', new MouseEvent('click'));
+      expect(routerPushMock).toHaveBeenCalledWith({
+        name: ROUTE_FRAMEWORKS,
+        query: {
           id: getIdFromGraphQLId(complianceFramework.id),
         },
       });
