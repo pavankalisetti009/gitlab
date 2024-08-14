@@ -1,5 +1,5 @@
 <script>
-import { GlFormGroup, GlFormInput, GlFormCheckbox, GlFormText } from '@gitlab/ui';
+import { GlFormGroup, GlFormInput, GlFormCheckbox } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { initFormField } from 'ee/security_configuration/utils';
 import { serializeFormObject } from '~/lib/utils/forms';
@@ -11,7 +11,6 @@ export default {
     GlFormGroup,
     GlFormInput,
     GlFormCheckbox,
-    GlFormText,
   },
   directives: {
     validation: validation(),
@@ -143,6 +142,11 @@ export default {
             <gl-form-group
               v-if="!option.showBasicAuthOption"
               :label="option.label"
+              :description="
+                showWarningTextForTargetUrl(option.fieldName)
+                  ? $options.I18N_DAST_URL_CHANGE_WARNING
+                  : ''
+              "
               :invalid-feedback="form.fields[option.fieldName].feedback"
             >
               <gl-form-input
@@ -154,9 +158,6 @@ export default {
                 :required="option.isRequired"
                 :state="form.fields[option.fieldName].state"
               />
-              <gl-form-text v-if="showWarningTextForTargetUrl(option.fieldName)">{{
-                $options.I18N_DAST_URL_CHANGE_WARNING
-              }}</gl-form-text>
             </gl-form-group>
           </div>
         </div>

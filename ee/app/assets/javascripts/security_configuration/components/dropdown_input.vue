@@ -1,12 +1,11 @@
 <script>
-import { GlFormGroup, GlCollapsibleListbox, GlFormText, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlFormGroup, GlCollapsibleListbox, GlLink, GlSprintf } from '@gitlab/ui';
 import { CUSTOM_VALUE_MESSAGE } from '../constants';
 
 export default {
   components: {
     GlFormGroup,
     GlCollapsibleListbox,
-    GlFormText,
     GlLink,
     GlSprintf,
   },
@@ -93,9 +92,9 @@ export default {
   <gl-form-group :label-for="field">
     <template #label>
       {{ label }}
-      <gl-form-text v-if="description" class="gl-mt-3" data-testid="dropdown-input-description">{{
-        description
-      }}</gl-form-text>
+      <div v-if="description" class="label-description" data-testid="dropdown-input-description">
+        {{ description }}
+      </div>
     </template>
 
     <gl-collapsible-listbox

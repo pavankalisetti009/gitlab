@@ -1,4 +1,4 @@
-import { GlButton, GlForm, GlFormText } from '@gitlab/ui';
+import { GlButton, GlForm } from '@gitlab/ui';
 import CompanyForm from 'ee/registrations/components/company_form.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trackCompanyForm } from 'ee/google_tag_manager';
@@ -23,7 +23,7 @@ describe('CompanyForm', () => {
     });
   };
 
-  const findDescription = () => wrapper.findComponent(GlFormText);
+  const findDescription = () => wrapper.findByTestId('description');
   const findSubmitButton = () => wrapper.findComponent(GlButton);
   const findForm = () => wrapper.findComponent(GlForm);
   const findFormInput = (testId) => wrapper.findByTestId(testId);
