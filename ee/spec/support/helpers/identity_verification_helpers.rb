@@ -9,18 +9,22 @@ module IdentityVerificationHelpers
     risk: :low, token_verification_response: :success, challenge_shown: false, service_down: false
   )
 
-    success_response = {
-      session_risk: { risk_band: risk.capitalize },
-      session_details: { suppressed: !challenge_shown }
-    }
-
-    error_response = { error: "DENIED ACCESS" }
-    return_error = token_verification_response == :failed
+    response_body = case token_verification_response
+                    when :error
+                      nil
+                    when :failed
+                      { error: "DENIED ACCESS" }
+                    when :success
+                      {
+                        session_risk: { risk_band: risk.capitalize },
+                        session_details: { suppressed: !challenge_shown }
+                      }
+                    end
 
     stub_request(:post, 'https://verify-api.arkoselabs.com/api/v4/verify/')
     .to_return(
-      status: 200,
-      body: return_error ? error_response.to_json : success_response.to_json,
+      status: token_verification_response == :success ? 200 : 400,
+      body: response_body&.to_json,
       headers: { content_type: 'application/json' }
     )
 

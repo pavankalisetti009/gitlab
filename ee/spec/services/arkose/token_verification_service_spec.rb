@@ -11,6 +11,18 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
   subject { service.execute }
 
+  def verify_request_body
+    # Match a request only when all expected values in the payload have the correct types
+    body = {
+      private_key: an_instance_of(String),
+      session_token: an_instance_of(String)
+    }
+
+    body[:log_data] = an_instance_of(String) if user
+
+    body
+  end
+
   before do
     allow_next_instance_of(Arkose::RecordUserDataService) do |service|
       allow(service).to receive(:execute)
@@ -18,12 +30,7 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
     stub_request(:post, verify_api_url)
       .with(
-        body: {
-          # Match a request only when all expected values in the payload have the correct types
-          private_key: an_instance_of(String),
-          session_token: an_instance_of(String),
-          log_data: an_instance_of(String)
-        },
+        body: verify_request_body,
         headers: {
           'Accept' => '*/*'
         }
@@ -52,27 +59,19 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
         end
       end
 
-      context 'when arkose is enabled' do
-        shared_examples 'returns success response with the correct payload' do
-          let(:mock_response) { Arkose::VerifyResponse.new(arkose_ec_response) }
+      shared_examples 'returns success response with the correct payload' do
+        let(:expected_response_json) { arkose_ec_response }
 
-          before do
-            allow(Arkose::VerifyResponse).to receive(:new).with(arkose_ec_response).and_return(mock_response)
-          end
-
-          it 'returns a success response' do
-            expect(subject).to be_success
-          end
-
-          it "returns payload with correct :low_risk value" do
-            expect(subject.payload[:low_risk]).to eq is_low_risk
-          end
-
-          it 'includes the json response in the payload' do
-            expect(subject.payload[:response]).to eq mock_response
-          end
+        it 'returns a success response' do
+          expect(subject).to be_success
         end
 
+        it 'includes the json response in the payload' do
+          expect(subject.payload[:response].response).to eq expected_response_json
+        end
+      end
+
+      context 'when arkose is enabled' do
         context 'when the user solved the challenge' do
           context 'when the risk score is low' do
             let(:is_low_risk) { true }
@@ -113,6 +112,16 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
               end
 
               subject
+            end
+
+            context "when the user is nil" do
+              let(:user) { nil }
+
+              it "does not record Arkose data" do
+                expect(Arkose::RecordUserDataService).not_to receive(:new)
+
+                subject
+              end
             end
 
             context 'when the session is allowlisted' do
@@ -191,26 +200,26 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
         end
       end
 
-      shared_examples 'returns success response with correct payload and logs the error' do
-        it 'returns a success response' do
-          expect(subject).to be_success
-        end
-
-        it 'returns { low_risk: true } payload' do
-          expect(subject.payload[:low_risk]).to eq true
-        end
-
-        it 'does not include the json response in the payload' do
-          expect(subject.payload[:response]).to be_nil
-        end
-
-        it 'logs the error' do
+      shared_examples 'an unexpected token verification failure' do
+        it 'logs the event' do
           init_args = { session_token: session_token, user: user, verify_response: nil }
           expect_next_instance_of(::Arkose::Logger, init_args) do |logger|
             expect(logger).to receive(:log_failed_token_verification)
           end
 
           subject
+        end
+
+        it "does not record Arkose data" do
+          expect(Arkose::RecordUserDataService).not_to receive(:new)
+
+          subject
+        end
+
+        it "assumes low risk for the user" do
+          expect { subject }.to change {
+            user.custom_attributes.by_key(IdentityVerification::UserRiskProfile::ASSUMED_LOW_RISK_ATTR_KEY).count
+          }.from(0).to(1)
         end
       end
 
@@ -219,7 +228,11 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
         let(:arkose_ec_response) { 'unexpected_from_arkose' }
 
-        it_behaves_like 'returns success response with correct payload and logs the error'
+        it_behaves_like 'returns success response with the correct payload' do
+          let(:expected_response_json) { {} }
+        end
+
+        it_behaves_like 'an unexpected token verification failure'
       end
 
       context 'when an error occurs during the Arkose request' do
@@ -229,7 +242,8 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
           allow(Gitlab::HTTP).to receive(:perform_request).and_raise(Errno::ECONNREFUSED.new('bad connection'))
         end
 
-        it_behaves_like 'returns success response with correct payload and logs the error'
+        it_behaves_like 'returns success response with the correct payload'
+        it_behaves_like 'an unexpected token verification failure'
       end
     end
 

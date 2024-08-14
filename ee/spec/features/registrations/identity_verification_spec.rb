@@ -269,36 +269,60 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
   end
 
-  shared_examples 'allows the user to complete registration when Arkose is down' do |flow: :standard|
-    before do
-      sign_up(flow: flow, arkose: { token_verification_response: :failed, service_down: true })
-    end
+  shared_examples 'allows the user to complete registration' do |flow:|
+    if flow == :invite
+      specify do
+        expect(page).to have_current_path(group_path(invitation.group))
+        expect(page).to have_content(
+          "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
+        )
+      end
+    else
+      specify do
+        expect_to_see_identity_verification_page
 
-    it 'allows the user to complete the registration' do
-      expect_to_see_identity_verification_page
+        verify_email
 
-      verify_email
+        expect_verification_completed
 
-      expect_verification_completed
-
-      expect_to_see_dashboard_page
+        expect_to_see_dashboard_page
+      end
     end
   end
 
-  shared_examples 'allows the user to complete registration when Arkose is disabled' do |flow: :standard|
-    before do
-      stub_feature_flags(arkose_labs: false)
-      sign_up(flow: flow, arkose: { disable: true })
+  shared_examples 'allows the user to complete registration when Arkose is unavailable' do |flow: :standard|
+    context 'when Arkose is disabled via feature flag' do
+      before do
+        stub_feature_flags(arkose_labs: false)
+        sign_up(flow: flow, arkose: { disable: true })
+      end
+
+      it_behaves_like 'allows the user to complete registration', flow: flow
     end
 
-    it 'allows the user to complete the registration without solving an Arkose challenge' do
-      expect_to_see_identity_verification_page
+    context 'when Arkose is down' do
+      before do
+        sign_up(flow: flow, arkose: { token_verification_response: :failed, service_down: true })
+      end
 
-      verify_email
+      it_behaves_like 'allows the user to complete registration', flow: flow
+    end
 
-      expect_verification_completed
+    context 'when unable to connect to Arkose' do
+      before do
+        allow(Gitlab::HTTP).to receive(:perform_request).and_raise(Errno::ECONNREFUSED.new('bad connection'))
+        sign_up(flow: flow, arkose: {})
+      end
 
-      expect_to_see_dashboard_page
+      it_behaves_like 'allows the user to complete registration', flow: flow
+    end
+
+    context 'when Arkose returns an unknown client error' do
+      before do
+        sign_up(flow: flow, arkose: { token_verification_response: :error })
+      end
+
+      it_behaves_like 'allows the user to complete registration', flow: flow
     end
   end
 
@@ -313,8 +337,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification'
     end
 
-    it_behaves_like 'allows the user to complete registration when Arkose is disabled'
-    it_behaves_like 'allows the user to complete registration when Arkose is down'
+    it_behaves_like 'allows the user to complete registration when Arkose is unavailable'
   end
 
   describe 'Invite flow' do
@@ -363,32 +386,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       end
     end
 
-    context 'when Arkose is disabled' do
-      before do
-        stub_feature_flags(arkose_labs: false)
-        sign_up(flow: :invite, arkose: { disable: true })
-      end
-
-      it 'allows the user to complete registration' do
-        expect(page).to have_current_path(group_path(invitation.group))
-        expect(page).to have_content(
-          "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
-        )
-      end
-    end
-
-    context 'when Arkose is down' do
-      before do
-        sign_up(flow: :invite, arkose: { token_verification_response: :failed, service_down: true })
-      end
-
-      it 'allows the user to complete registration' do
-        expect(page).to have_current_path(group_path(invitation.group))
-        expect(page).to have_content(
-          "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
-        )
-      end
-    end
+    it_behaves_like 'allows the user to complete registration when Arkose is unavailable', flow: :invite
   end
 
   describe 'Trial flow', :saas do
@@ -402,8 +400,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification', flow: :trial
     end
 
-    it_behaves_like 'allows the user to complete registration when Arkose is disabled', flow: :trial
-    it_behaves_like 'allows the user to complete registration when Arkose is down', flow: :trial
+    it_behaves_like 'allows the user to complete registration when Arkose is unavailable', flow: :trial
   end
 
   describe 'SAML flow' do
@@ -419,8 +416,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification', flow: :saml
     end
 
-    it_behaves_like 'allows the user to complete registration when Arkose is disabled', flow: :saml
-    it_behaves_like 'allows the user to complete registration when Arkose is down', flow: :saml
+    it_behaves_like 'allows the user to complete registration when Arkose is unavailable', flow: :saml
   end
 
   describe 'Subscription flow', :saas do
@@ -436,8 +432,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
       it_behaves_like 'registering a high risk user with identity verification'
     end
 
-    it_behaves_like 'allows the user to complete registration when Arkose is disabled'
-    it_behaves_like 'allows the user to complete registration when Arkose is down'
+    it_behaves_like 'allows the user to complete registration when Arkose is unavailable'
   end
 
   describe 'user that already went through identity verification' do
