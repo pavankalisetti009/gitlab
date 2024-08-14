@@ -2,13 +2,14 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::SecurityPolicy::CommitScanExecutionPolicy do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
-    let_it_be(:user) { create(:user) }
-    let_it_be(:project) { create(:project, :repository, namespace: user.namespace) }
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:project) { create(:project, :repository, namespace: current_user.namespace) }
     let_it_be(:namespace) { create(:group) }
-    let_it_be(:project_policy_management_project) { create(:project, :repository, namespace: user.namespace) }
+    let_it_be(:project_policy_management_project) { create(:project, :repository, namespace: current_user.namespace) }
     let_it_be(:namespace_policy_management_project) { create(:project, :repository, namespace: namespace) }
     let_it_be(:operation_mode) { Types::MutationOperationModeEnum.enum[:append] }
     let_it_be(:policy_name) { 'Test Policy' }
@@ -19,7 +20,7 @@ RSpec.describe Mutations::SecurityPolicy::CommitScanExecutionPolicy do
     shared_context 'commits scan execution policies' do
       context 'when permission is set for user' do
         before do
-          container.add_maintainer(user)
+          container.add_maintainer(current_user)
 
           stub_licensed_features(security_orchestration_policies: true)
         end

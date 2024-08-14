@@ -10,7 +10,7 @@ RSpec.describe ::Mutations::Boards::EpicBoards::Destroy do
   let_it_be_with_reload(:board) { create(:epic_board, group: group) }
   let_it_be(:another_board) { create(:epic_board, group: group) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(id: board.to_global_id) }
 

@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Update do
+  include GraphqlHelpers
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:reporter) { create(:user) }
   let_it_be(:project) { create(:project) }
@@ -35,7 +36,7 @@ RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Update do
   describe '#resolve' do
     let(:current_user) { maintainer }
 
-    subject(:resolve) { mutation_for(current_user).resolve(**args) }
+    subject(:resolve) { described_class.new(object: nil, context: query_context, field: nil).resolve(**args) }
 
     # Requires `expected_rules` to be defined
     shared_examples 'successful update with no errors' do
@@ -161,11 +162,5 @@ RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Update do
         it_behaves_like 'failed update with a top-level access error'
       end
     end
-  end
-
-  private
-
-  def mutation_for(user)
-    described_class.new(object: nil, context: { current_user: user }, field: nil)
   end
 end

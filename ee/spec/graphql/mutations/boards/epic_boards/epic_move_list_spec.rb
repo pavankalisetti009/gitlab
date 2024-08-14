@@ -14,7 +14,6 @@ RSpec.describe ::Mutations::Boards::EpicBoards::EpicMoveList do
   let_it_be(:backlog) { create(:epic_list, epic_board: board, list_type: :backlog) }
   let_it_be(:labeled_list) { create(:epic_list, epic_board: board, label: development) }
 
-  let(:current_ctx) { { current_user: current_user } }
   let(:params) do
     {
       board_id: board.to_global_id,
@@ -30,7 +29,7 @@ RSpec.describe ::Mutations::Boards::EpicBoards::EpicMoveList do
   end
 
   subject do
-    sync(resolve(described_class, args: params.merge(move_params), ctx: current_ctx))
+    sync(resolve(described_class, args: params.merge(move_params), ctx: query_context))
   end
 
   context 'arguments' do

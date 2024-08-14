@@ -3,15 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastSiteValidations::Create do
+  include GraphqlHelpers
+
   let(:project) { create(:project, :repository) }
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
   let(:full_path) { project.full_path }
   let(:dast_site) { create(:dast_site, project: project) }
   let(:dast_site_token) { create(:dast_site_token, project: dast_site.project, url: dast_site.url) }
   let(:dast_site_validation) { DastSiteValidation.find_by!(url_path: validation_path) }
   let(:validation_path) { SecureRandom.hex }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -40,7 +42,7 @@ RSpec.describe Mutations::DastSiteValidations::Create do
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'returns the dast_site_validation id' do

@@ -3,14 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Epics::AddIssue, feature_category: :portfolio_management do
+  include GraphqlHelpers
+
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:epic) { create(:epic, group: group) }
 
-  let(:user) { issue.author }
+  let(:current_user) { issue.author }
   let(:issue) { create(:issue, project: project) }
 
-  subject(:mutation) { described_class.new(object: group, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: group, context: query_context, field: nil) }
 
   describe '#resolve' do
     subject do
@@ -27,7 +29,7 @@ RSpec.describe Mutations::Epics::AddIssue, feature_category: :portfolio_manageme
     context 'when the user have admin_epic_relation permissions for the epic' do
       before do
         stub_licensed_features(epics: true)
-        group.add_guest(user)
+        group.add_guest(current_user)
       end
 
       context 'when the epic has reached max child limit' do

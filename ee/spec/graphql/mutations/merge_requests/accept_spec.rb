@@ -5,17 +5,10 @@ require 'spec_helper'
 RSpec.describe Mutations::MergeRequests::Accept do
   include GraphqlHelpers
 
-  let_it_be(:user) { create(:user) }
-  let(:context) do
-    GraphQL::Query::Context.new(
-      query: query_double(schema: GitlabSchema),
-      values: { current_user: user }
-    )
-  end
-
+  let_it_be(:current_user) { create(:user) }
   let(:project) { create(:project, :public, :repository) }
 
-  subject(:mutation) { described_class.new(context: context, object: nil, field: nil) }
+  subject(:mutation) { described_class.new(context: query_context, object: nil, field: nil) }
 
   def mutation_arguments(merge_request)
     {
@@ -28,7 +21,7 @@ RSpec.describe Mutations::MergeRequests::Accept do
 
   describe '#resolve' do
     before do
-      project.add_maintainer(user)
+      project.add_maintainer(current_user)
       stub_licensed_features(merge_pipelines: true, merge_trains: true)
       project.update!(merge_pipelines_enabled: true, merge_trains_enabled: true)
     end

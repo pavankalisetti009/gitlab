@@ -9,7 +9,7 @@ RSpec.describe ::Mutations::Boards::EpicBoards::Update do
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:board) { create(:epic_board, group: group) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(id: board.to_global_id) }
 

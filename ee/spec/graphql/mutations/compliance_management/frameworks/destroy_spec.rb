@@ -8,13 +8,13 @@ RSpec.describe Mutations::ComplianceManagement::Frameworks::Destroy do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
 
-  let(:user) { create(:user) }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:current_user) { create(:user) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(id: global_id_of(framework)) }
 
   before do
-    namespace.add_owner(user)
+    namespace.add_owner(current_user)
   end
 
   shared_examples 'a compliance framework that cannot be found' do
@@ -52,11 +52,11 @@ RSpec.describe Mutations::ComplianceManagement::Frameworks::Destroy do
 
     context 'current_user is group owner' do
       let_it_be(:group) { create(:group) }
-      let_it_be(:user) { create(:user) }
+      let_it_be(:current_user) { create(:user) }
       let_it_be(:framework) { create(:compliance_framework, namespace: group) }
 
       before do
-        group.add_owner(user)
+        group.add_owner(current_user)
       end
 
       it_behaves_like 'one compliance framework was destroyed'

@@ -12,7 +12,7 @@ RSpec.describe Mutations::Boards::Lists::Create do
   let_it_be(:guest)     { create(:user, guest_of: group) }
 
   let(:current_user) { user }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:list_create_params) { {} }
 
   before do

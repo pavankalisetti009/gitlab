@@ -4,14 +4,15 @@ require 'spec_helper'
 
 RSpec.describe Mutations::DastScannerProfiles::Create, :dynamic_analysis,
   feature_category: :dynamic_application_security_testing do
+  include GraphqlHelpers
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
   let(:full_path) { project.full_path }
   let(:profile_name) { SecureRandom.hex }
   let(:dast_scanner_profile) { DastScannerProfile.find_by(project: project, name: profile_name) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -40,7 +41,7 @@ RSpec.describe Mutations::DastScannerProfiles::Create, :dynamic_analysis,
 
     context 'when the user can run a dast scan' do
       before do
-        group.add_owner(user)
+        group.add_owner(current_user)
       end
 
       it 'returns the dast_scanner_profile id' do
@@ -57,7 +58,7 @@ RSpec.describe Mutations::DastScannerProfiles::Create, :dynamic_analysis,
 
         expected_args = {
           project: project,
-          current_user: user,
+          current_user: current_user,
           params: {
             name: profile_name,
             scan_type: DastScannerProfile.scan_types[:passive],

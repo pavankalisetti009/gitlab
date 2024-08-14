@@ -3,13 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::AppSec::Fuzzing::Coverage::Corpus::Create do
+  include GraphqlHelpers
+
   let_it_be(:project) { create(:project) }
-  let_it_be(:developer) { create(:user, developer_of: project) }
-  let_it_be(:package) { create(:package, project: project, creator: developer) }
+  let_it_be(:current_user) { create(:user, developer_of: project) }
+  let_it_be(:package) { create(:package, project: project, creator: current_user) }
 
-  let(:corpus) { AppSec::Fuzzing::Coverage::Corpus.find_by(user: developer, project: project) }
+  let(:corpus) { AppSec::Fuzzing::Coverage::Corpus.find_by(user: current_user, project: project) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: developer }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(coverage_fuzzing: true)

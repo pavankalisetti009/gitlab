@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Create do
+  include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be(:oncall_schedule) { create(:incident_management_oncall_schedule, project: project) }
@@ -28,7 +29,7 @@ RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Create do
   end
 
   describe '#resolve' do
-    subject(:resolve) { mutation_for(project, current_user).resolve(project_path: project.full_path, **args) }
+    subject(:resolve) { described_class.new(object: project, context: query_context, field: nil).resolve(project_path: project.full_path, **args) }
 
     shared_examples 'returns a GraphQL error' do |error|
       it { is_expected.to match(escalation_policy: nil, errors: [error]) }
@@ -128,11 +129,5 @@ RSpec.describe Mutations::IncidentManagement::EscalationPolicy::Create do
 
       it_behaves_like 'raises a resource not available error'
     end
-  end
-
-  private
-
-  def mutation_for(project, user)
-    described_class.new(object: project, context: { current_user: user }, field: nil)
   end
 end

@@ -3,16 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Boards::Issues::IssueMoveList do
+  include GraphqlHelpers
+
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:board) { create(:board, group: group) }
   let_it_be(:epic) { create(:epic, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:issue1) { create(:labeled_issue, project: project, relative_position: 3) }
   let_it_be(:existing_issue1) { create(:labeled_issue, project: project, relative_position: 10) }
   let_it_be(:existing_issue2) { create(:labeled_issue, project: project, relative_position: 50) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:params) { { board: board, project_path: project.full_path, iid: issue1.iid } }
   let(:move_params) do
     {
@@ -24,7 +26,7 @@ RSpec.describe Mutations::Boards::Issues::IssueMoveList do
 
   before do
     stub_licensed_features(epics: true)
-    project.add_reporter(user)
+    project.add_reporter(current_user)
   end
 
   subject do
@@ -34,7 +36,7 @@ RSpec.describe Mutations::Boards::Issues::IssueMoveList do
   describe '#resolve' do
     context 'when user has access to the epic' do
       before do
-        group.add_guest(user)
+        group.add_guest(current_user)
       end
 
       it 'moves and repositions issue' do

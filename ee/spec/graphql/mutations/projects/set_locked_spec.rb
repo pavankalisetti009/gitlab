@@ -3,9 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Projects::SetLocked do
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
 
   describe '#resolve' do
@@ -23,7 +24,7 @@ RSpec.describe Mutations::Projects::SetLocked do
       let(:lock) { true }
 
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when file_locks feature is not available' do
@@ -39,7 +40,7 @@ RSpec.describe Mutations::Projects::SetLocked do
       context 'when file is not locked' do
         it 'sets path locks for the project' do
           expect { subject }.to change { project.path_locks.count }.by(1)
-          expect(mutated_path_locks.first).to have_attributes(path: file_path, user: user)
+          expect(mutated_path_locks.first).to have_attributes(path: file_path, user: current_user)
         end
       end
 
@@ -92,12 +93,12 @@ RSpec.describe Mutations::Projects::SetLocked do
       let(:lock) { false }
 
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when file is already locked by the same user' do
         before do
-          create(:path_lock, project: project, path: file_path, user: user)
+          create(:path_lock, project: project, path: file_path, user: current_user)
         end
 
         it 'unlocks the file' do
@@ -134,8 +135,8 @@ RSpec.describe Mutations::Projects::SetLocked do
 
         context 'when file is locked' do
           before do
-            create(:lfs_file_lock, project: project, path: file_path, user: user)
-            create(:path_lock, project: project, path: file_path, user: user)
+            create(:lfs_file_lock, project: project, path: file_path, user: current_user)
+            create(:path_lock, project: project, path: file_path, user: current_user)
           end
 
           it 'unlocks the file' do

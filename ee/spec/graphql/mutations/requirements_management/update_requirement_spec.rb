@@ -3,8 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::RequirementsManagement::UpdateRequirement do
+  include GraphqlHelpers
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:requirement) { create(:work_item, :requirement, title: 'old title', project: project).requirement }
 
   let(:mutation_params) do
@@ -18,7 +19,7 @@ RSpec.describe Mutations::RequirementsManagement::UpdateRequirement do
     }
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     shared_examples 'requirements not available' do
@@ -36,7 +37,7 @@ RSpec.describe Mutations::RequirementsManagement::UpdateRequirement do
     context 'when user cannot update requirements' do
       before do
         stub_licensed_features(requirements: true)
-        project.add_guest(user)
+        project.add_guest(current_user)
       end
 
       it_behaves_like 'requirements not available'
@@ -44,7 +45,7 @@ RSpec.describe Mutations::RequirementsManagement::UpdateRequirement do
 
     context 'when the user can update the requirement' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when requirements feature is available' do

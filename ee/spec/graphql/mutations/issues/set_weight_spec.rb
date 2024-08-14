@@ -2,10 +2,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Issues::SetWeight do
+  include GraphqlHelpers
   let(:issue) { create(:issue, weight: 1) }
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let(:weight) { 2 }
@@ -17,7 +18,7 @@ RSpec.describe Mutations::Issues::SetWeight do
 
     context 'when the user can update the issue' do
       before do
-        issue.project.add_developer(user)
+        issue.project.add_developer(current_user)
       end
 
       it 'returns the issue with correct weight', :aggregate_failures do

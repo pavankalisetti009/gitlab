@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Deployments::DeploymentApprove, feature_category: :environment_management do
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:non_member) { create(:user) }
@@ -25,7 +26,7 @@ RSpec.describe Mutations::Deployments::DeploymentApprove, feature_category: :env
     subject { mutation.resolve(id: deployment.to_global_id, status: ::Deployments::Approval.statuses.keys[0]) }
 
     context 'when deployment is not accessible to the user' do
-      let(:user) { non_member }
+      let(:current_user) { non_member }
 
       it 'raises an error' do
         expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
@@ -33,7 +34,7 @@ RSpec.describe Mutations::Deployments::DeploymentApprove, feature_category: :env
     end
 
     context 'when deployment is accessible to the user' do
-      let(:user) { developer }
+      let(:current_user) { developer }
 
       context 'when the user cannot approve or reject the deployment' do
         it 'returns a nil deployment approval and errors array' do
@@ -46,7 +47,7 @@ RSpec.describe Mutations::Deployments::DeploymentApprove, feature_category: :env
       end
 
       context 'when the user can approve or reject the deployment' do
-        let(:user) { maintainer }
+        let(:current_user) { maintainer }
 
         it 'returns the deployment approval and an empty errors array' do
           expect(subject[:deployment_approval]).to eq(deployment.approvals.last)

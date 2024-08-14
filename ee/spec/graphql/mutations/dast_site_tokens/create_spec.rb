@@ -3,15 +3,17 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastSiteTokens::Create do
+  include GraphqlHelpers
+
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
   let(:full_path) { project.full_path }
   let(:target_url) { generate(:url) }
   let(:dast_site_token) { DastSiteToken.find_by!(project: project, token: uuid) }
   let(:uuid) { '0000-0000-0000-0000' }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -39,7 +41,7 @@ RSpec.describe Mutations::DastSiteTokens::Create do
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'returns the dast_site_token id' do

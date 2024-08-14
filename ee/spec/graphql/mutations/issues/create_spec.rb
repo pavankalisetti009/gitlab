@@ -9,7 +9,7 @@ RSpec.describe Mutations::Issues::Create do
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:cadence1) { create(:iterations_cadence, group: group) }
   let_it_be(:current_iteration) { create(:iteration, iterations_cadence: cadence1, start_date: 2.days.ago, due_date: 5.days.from_now) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:assignee1) { create(:user, guest_of: project) }
   let_it_be(:assignee2) { create(:user, guest_of: project) }
 
@@ -37,7 +37,7 @@ RSpec.describe Mutations::Issues::Create do
   end
 
   let(:additional_attributes) { {} }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:mutated_issue) { resolved_mutation[:issue] }
 
   specify { expect(described_class).to require_graphql_authorizations(:create_issue) }
@@ -51,7 +51,7 @@ RSpec.describe Mutations::Issues::Create do
 
     context 'when user can create issues' do
       before_all do
-        group.add_developer(user)
+        group.add_developer(current_user)
       end
 
       context 'when iterations are available' do
@@ -156,7 +156,7 @@ RSpec.describe Mutations::Issues::Create do
             let(:project) { create(:project) }
 
             it 'is successful, but it does not add the epic' do
-              project.add_developer(user)
+              project.add_developer(current_user)
 
               expect(resolved_mutation[:errors]).to be_empty
               expect(mutated_issue).not_to have_attributes(epic: epic)

@@ -3,9 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :code_suggestions do
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
   let_it_be(:add_on) { create(:gitlab_subscription_add_on, :gitlab_duo_pro) }
   let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace, add_on: add_on) }
@@ -28,7 +29,7 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
 
     context 'when the user can update duo features enabled' do
       before_all do
-        project.add_owner(user)
+        project.add_owner(current_user)
       end
 
       context 'when duo features are not available' do
@@ -85,7 +86,7 @@ RSpec.describe Mutations::Projects::ProjectSettingsUpdate, feature_category: :co
 
     context 'when user cannot update duo features enabled' do
       before_all do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       it 'will raise an error' do

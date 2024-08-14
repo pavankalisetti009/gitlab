@@ -7,7 +7,7 @@ RSpec.describe Mutations::Dast::Profiles::Update, :dynamic_analysis,
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:old_tags) do
     [create(:ci_tag, name: 'ruby'), create(:ci_tag, name: 'postgres')]
   end
@@ -38,7 +38,7 @@ RSpec.describe Mutations::Dast::Profiles::Update, :dynamic_analysis,
     }
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -72,7 +72,7 @@ RSpec.describe Mutations::Dast::Profiles::Update, :dynamic_analysis,
 
       context 'when the user can update a DAST profile' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'returns the profile' do

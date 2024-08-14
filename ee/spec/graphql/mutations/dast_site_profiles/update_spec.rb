@@ -3,9 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastSiteProfiles::Update do
+  include GraphqlHelpers
+
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_site_profile) { create(:dast_site_profile, project: project) }
 
   let(:new_profile_name) { SecureRandom.hex }
@@ -28,7 +30,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
     }
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -54,7 +56,7 @@ RSpec.describe Mutations::DastSiteProfiles::Update do
     context 'when on demand scan feature is enabled' do
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'calls the dast_site_profile update service' do

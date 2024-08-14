@@ -3,9 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, feature_category: :product_analytics_data_management do
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
+  # let_it_be(:current_user) { user }
   let_it_be(:project) { create(:project) }
 
   describe '#resolve' do
@@ -25,11 +27,11 @@ RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, featu
 
     context 'when the user can update product analytics settings' do
       before_all do
-        project.add_owner(user)
+        project.add_owner(current_user)
       end
 
       context 'when project is a personal project' do
-        let_it_be(:namespace) { create(:namespace, owner: user) }
+        let_it_be(:namespace) { create(:namespace, owner: current_user) }
         let_it_be(:project) { create(:project, namespace: namespace) }
 
         it 'raises an error' do
@@ -43,13 +45,13 @@ RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, featu
 
         before do
           allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :admin_project, project).and_return(true)
+          allow(Ability).to receive(:allowed?).with(current_user, :admin_project, project).and_return(true)
         end
 
         it 'updates the settings' do
           expect(::Projects::UpdateService).to receive(:new).with(
             project,
-            user,
+            current_user,
             {
               project_setting_attributes: {
                 product_analytics_configurator_connection_string: 'https://test:test@configurator.example.com',
@@ -82,7 +84,7 @@ RSpec.describe Mutations::Projects::ProductAnalyticsProjectSettingsUpdate, featu
 
     context 'when user cannot update product analytics settings' do
       before_all do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       it 'will raise an error' do

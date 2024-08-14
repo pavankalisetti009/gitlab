@@ -4,11 +4,11 @@ require 'spec_helper'
 RSpec.describe Mutations::Security::Finding::Dismiss, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:security_finding) { create(:security_finding) }
-    let_it_be(:user) { create(:user) }
+    let_it_be(:current_user) { create(:user) }
     let_it_be(:finding_uuid) { security_finding.uuid }
 
     let(:comment) { 'Dismissal Feedback' }
@@ -38,7 +38,7 @@ RSpec.describe Mutations::Security::Finding::Dismiss, feature_category: :vulnera
 
       context 'when the user has access to the project' do
         before do
-          security_finding.project.add_maintainer(user)
+          security_finding.project.add_maintainer(current_user)
         end
 
         context 'when the dismissal is successful' do

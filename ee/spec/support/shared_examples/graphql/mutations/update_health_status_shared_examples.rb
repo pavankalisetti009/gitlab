@@ -1,9 +1,10 @@
 # frozen_string_literal: true
 
 RSpec.shared_examples 'updating health status' do
+  include GraphqlHelpers
   let(:resource_klass) { resource.class }
   let(:mutated_resource) { subject[resource_klass.underscore.to_sym] }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:params) do
     { iid: resource.iid, health_status: resource_klass.health_statuses[:at_risk] }.tap do |args|
       if resource.is_a?(Epic)
@@ -18,7 +19,7 @@ RSpec.shared_examples 'updating health status' do
 
   context 'when the user has permission' do
     before do
-      resource.resource_parent.add_developer(user)
+      resource.resource_parent.add_developer(current_user)
     end
 
     context 'and issuable_heath_status feature is disabled' do

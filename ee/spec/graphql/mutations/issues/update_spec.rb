@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Issues::Update do
-  let(:user) { create(:user) }
+  include GraphqlHelpers
+  let(:current_user) { create(:user) }
 
   it_behaves_like 'updating health status' do
     let(:resource) { create(:issue) }
@@ -28,14 +29,13 @@ RSpec.describe Mutations::Issues::Update do
     end
 
     let(:mutated_issue) { subject[:issue] }
-    let(:current_user) { user }
-    let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+    let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
     subject { mutation.resolve(**params) }
 
     before do
-      project.add_reporter(user)
-      group.add_guest(user)
+      project.add_reporter(current_user)
+      group.add_guest(current_user)
     end
 
     context 'when epics feature is disabled' do

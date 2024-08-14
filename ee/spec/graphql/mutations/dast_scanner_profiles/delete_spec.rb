@@ -6,12 +6,12 @@ RSpec.describe Mutations::DastScannerProfiles::Delete do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project) }
 
   let(:dast_scanner_profile_id) { dast_scanner_profile.to_global_id }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -32,7 +32,7 @@ RSpec.describe Mutations::DastScannerProfiles::Delete do
 
     context 'when the user can run a DAST scan' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       it 'deletes the DAST scanner profile' do

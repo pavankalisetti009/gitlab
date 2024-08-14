@@ -8,7 +8,7 @@ RSpec.describe ::Mutations::Boards::EpicBoards::Create do
   let_it_be(:current_user) { create(:user) }
   let_it_be(:group) { create(:group, :private) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:name) { 'A glorious epic board' }
 
   subject { mutation.resolve(group_path: group.full_path, name: name) }

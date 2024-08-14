@@ -3,12 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Issues::SetEpic do
+  include GraphqlHelpers
   let_it_be(:group) { create(:group, :public) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be_with_reload(:issue) { create(:issue, project: project) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be_with_reload(:epic) { create(:epic, group: group) }
@@ -23,8 +24,8 @@ RSpec.describe Mutations::Issues::SetEpic do
     context 'when the user can update the issue' do
       before do
         stub_licensed_features(epics: true)
-        project.add_reporter(user)
-        group.add_guest(user)
+        project.add_reporter(current_user)
+        group.add_guest(current_user)
       end
 
       context 'when user can read epic' do
@@ -58,7 +59,7 @@ RSpec.describe Mutations::Issues::SetEpic do
           let(:epic) { confidential_epic }
 
           it 'returns an error with appropriate message' do
-            group.add_reporter(user)
+            group.add_reporter(current_user)
 
             expect(subject[:errors].first).to include("Cannot assign a confidential epic to a non-confidential issue. Make the issue confidential and try again")
           end

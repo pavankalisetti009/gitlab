@@ -8,7 +8,7 @@ RSpec.describe Mutations::DastScannerProfiles::Update, :dynamic_analysis,
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project, target_timeout: 200, spider_timeout: 5000) }
 
   let_it_be(:new_profile_name) { SecureRandom.hex }
@@ -18,7 +18,7 @@ RSpec.describe Mutations::DastScannerProfiles::Update, :dynamic_analysis,
   let_it_be(:new_use_ajax_spider) { !dast_scanner_profile.use_ajax_spider }
   let_it_be(:new_show_debug_messages) { !dast_scanner_profile.show_debug_messages }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -44,7 +44,7 @@ RSpec.describe Mutations::DastScannerProfiles::Update, :dynamic_analysis,
     context 'when on demand scan feature is enabled' do
       context 'when the user can run a DAST scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         context 'when the user omits unrequired elements' do

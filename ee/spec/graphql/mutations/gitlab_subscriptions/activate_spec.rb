@@ -4,10 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Mutations::GitlabSubscriptions::Activate do
   include AdminModeHelper
+  include GraphqlHelpers
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
-  let_it_be(:user) { create(:admin) }
+  let_it_be(:current_user) { create(:admin) }
   let_it_be(:created_license) { License.last }
 
   let(:activation_code) { 'activation_code' }
@@ -16,7 +17,7 @@ RSpec.describe Mutations::GitlabSubscriptions::Activate do
 
   describe '#resolve' do
     before do
-      enable_admin_mode!(user)
+      enable_admin_mode!(current_user)
 
       allow_next_instance_of(::GitlabSubscriptions::ActivateService) do |service|
         expect(service).to receive(:execute).with(activation_code).and_return(result)
@@ -68,7 +69,7 @@ RSpec.describe Mutations::GitlabSubscriptions::Activate do
     end
 
     context 'when non-admin' do
-      let_it_be(:user) { create(:user) }
+      let_it_be(:current_user) { create(:user) }
 
       it 'raises errors' do
         expect do

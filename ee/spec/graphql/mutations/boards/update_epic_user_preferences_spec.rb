@@ -3,15 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Boards::UpdateEpicUserPreferences do
+  include GraphqlHelpers
+
   let_it_be(:group) { create(:group, :private) }
   let_it_be(:project) { create(:project, :private) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:board) { create(:board, project: project) }
   let_it_be(:epic) { create(:epic, group: group) }
 
-  let(:context) { { current_user: user } }
-
-  subject(:mutation) { described_class.new(object: nil, context: context, field: nil).resolve(**mutation_params) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil).resolve(**mutation_params) }
 
   describe '#resolve' do
     before do
@@ -32,7 +32,7 @@ RSpec.describe Mutations::Boards::UpdateEpicUserPreferences do
 
     context 'when user can access the board' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       it 'returns an error if the epic is not accessible by the user' do
@@ -41,7 +41,7 @@ RSpec.describe Mutations::Boards::UpdateEpicUserPreferences do
 
       context 'when user can access the epic' do
         before do
-          group.add_developer(user)
+          group.add_developer(current_user)
         end
 
         it 'returns updated preferences' do

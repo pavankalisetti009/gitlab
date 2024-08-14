@@ -3,18 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::InstanceSecurityDashboard::RemoveProject do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:project) { create(:project) }
     let_it_be(:already_added_project) { create(:project) }
 
-    let_it_be(:user) { create(:user, security_dashboard_projects: [already_added_project]) }
+    let_it_be(:current_user) { create(:user, security_dashboard_projects: [already_added_project]) }
 
     let(:project_id) { GitlabSchema.id_from_object(project) }
 
     before_all do
-      already_added_project.add_developer(user)
+      already_added_project.add_developer(current_user)
     end
 
     subject { mutation.resolve(id: project_id) }
@@ -28,8 +29,6 @@ RSpec.describe Mutations::InstanceSecurityDashboard::RemoveProject do
     end
 
     context 'when user is logged_in' do
-      let(:current_user) { user }
-
       context 'when security_dashboard is not enabled' do
         it 'raises Gitlab::Graphql::Errors::ResourceNotAvailable error' do
           expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)

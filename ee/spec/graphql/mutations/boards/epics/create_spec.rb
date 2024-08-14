@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe Mutations::Boards::Epics::Create do
   include GraphqlHelpers
 
-  let_it_be(:user) { create(:user) }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let_it_be(:current_user) { create(:user) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:default_params) { { group_path: group.path, board_id: global_id_of(board), list_id: global_id_of(list), title: title } }
   let(:epic_create_params) { default_params }
   let_it_be(:group) { create(:group, :private) }
@@ -42,7 +42,7 @@ RSpec.describe Mutations::Boards::Epics::Create do
   describe '#resolve' do
     context 'with proper permissions' do
       before_all do
-        group.add_maintainer(user)
+        group.add_maintainer(current_user)
       end
 
       describe 'create epic via label list' do
@@ -117,7 +117,7 @@ RSpec.describe Mutations::Boards::Epics::Create do
 
     context 'without proper permissions' do
       before_all do
-        group.add_guest(user)
+        group.add_guest(current_user)
       end
 
       it_behaves_like 'epic creation error'
