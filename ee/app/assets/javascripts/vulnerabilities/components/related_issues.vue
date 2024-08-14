@@ -240,7 +240,7 @@ export default {
       @pendingIssuableRemoveRequest="removePendingReference"
       @relatedIssueRemoveRequest="removeRelatedIssue"
     >
-      <template #headerText>
+      <template #header-text>
         {{ $options.i18n.relatedIssues }}
       </template>
       <template #add-button-text>{{ $options.i18n.addExistingIssue }}</template>
