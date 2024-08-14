@@ -1,5 +1,4 @@
 <script>
-import { intersection } from 'lodash';
 import {
   GlButtonGroup,
   GlDisclosureDropdown,
@@ -22,7 +21,6 @@ import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
-  POLICY_TYPES_WITH_INHERITANCE,
   BREAKING_CHANGES_POPOVER_CONTENTS,
   getPolicyActionOptions,
 } from './constants';
@@ -106,14 +104,10 @@ export default {
       return isGroup(this.namespaceType);
     },
     policies() {
-      let policyTypes =
+      const policyTypes =
         this.selectedPolicyType === POLICY_TYPE_FILTER_OPTIONS.ALL.value
           ? Object.keys(this.policiesByType)
           : [this.selectedPolicyType];
-
-      if (this.selectedPolicySource === POLICY_SOURCE_OPTIONS.INHERITED.value) {
-        policyTypes = intersection(policyTypes, POLICY_TYPES_WITH_INHERITANCE);
-      }
 
       const policies = policyTypes.map((type) =>
         getPoliciesWithType(this.policiesByType[type], POLICY_TYPE_FILTER_OPTIONS[type].text),
