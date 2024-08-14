@@ -43,6 +43,7 @@ describe('The Pipeline Tabs', () => {
     pipelineIid: '100',
     totalJobCount: 10,
     testsCount: 123,
+    manualVariablesCount: 0,
   };
 
   const $router = {

@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Projects::PipelineHelper, feature_category: :pipeline_composition do
   include Ci::BuildsHelper
+  include Devise::Test::ControllerHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :repository) }
