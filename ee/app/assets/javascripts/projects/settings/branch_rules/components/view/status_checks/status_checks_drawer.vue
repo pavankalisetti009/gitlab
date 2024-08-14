@@ -48,7 +48,7 @@ export default {
     @close="$emit('close')"
   >
     <template #title>
-      <h2 class="gl-mt-0 gl-text-size-h2">{{ $options.i18n.addStatusCheck }}</h2>
+      <h2 class="gl-my-0 gl-text-size-h2">{{ $options.i18n.addStatusCheck }}</h2>
     </template>
 
     <template #default>

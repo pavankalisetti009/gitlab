@@ -99,14 +99,16 @@ describe('View branch rules in enterprise edition', () => {
 
   it('renders a branch protection component for push rules', () => {
     expect(findAllowedToPush().props()).toMatchObject({
-      header: 'Allowed to push and merge (2)',
+      header: 'Allowed to push and merge',
+      count: 2,
       ...protectionMockProps,
     });
   });
 
   it('renders a branch protection component for merge rules', () => {
     expect(findAllowedToMerge().props()).toMatchObject({
-      header: 'Allowed to merge (2)',
+      header: 'Allowed to merge',
+      count: 2,
       ...protectionMockProps,
     });
   });

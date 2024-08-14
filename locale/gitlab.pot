@@ -9328,16 +9328,10 @@ msgstr ""
 msgid "BranchRules|Allowed to merge"
 msgstr ""
 
-msgid "BranchRules|Allowed to merge (%{total})"
-msgstr ""
-
 msgid "BranchRules|Allowed to merge updated"
 msgstr ""
 
 msgid "BranchRules|Allowed to push and merge"
-msgstr ""
-
-msgid "BranchRules|Allowed to push and merge (%{total})"
 msgstr ""
 
 msgid "BranchRules|Allowed to push and merge updated"
