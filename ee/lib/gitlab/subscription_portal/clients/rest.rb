@@ -70,11 +70,9 @@ module Gitlab
           end
 
           def http_post(path, headers, params = {})
-            process_http_call { Gitlab::HTTP.post("#{base_url}/#{path}", body: params.to_json, headers: headers) }
-          end
-
-          def http_put(path, headers, params = {})
-            process_http_call { Gitlab::HTTP.put("#{base_url}/#{path}", body: params.to_json, headers: headers) }
+            process_http_call do
+              Gitlab::HTTP.post("#{base_url}/#{path}", body: params.to_json, headers: headers)
+            end
           end
 
           def process_http_call
