@@ -366,9 +366,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     context 'when there are projects not indexed' do
       context 'when there is 20 projects not indexed' do
         let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
-        let_it_be(:projects_not_indexed) { create_list(:project, 20, :repository) }
+        let(:projects_not_indexed) { build_stubbed_list(:project, 20, :repository) }
         let(:projects_not_indexed_count) { 20 }
-
         let(:initial_queue_size) { 10 }
         let(:incremental_queue_size) { 10 }
 
@@ -406,9 +405,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
       context 'when there is 100 projects not indexed' do
         let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
-        let_it_be(:projects_not_indexed) { create_list(:project, 100, :repository) }
+        let(:projects_not_indexed) { build_stubbed_list(:project, 100, :repository) }
         let(:projects_not_indexed_count) { 100 }
-
         let(:initial_queue_size) { 10 }
         let(:incremental_queue_size) { 10 }
 
