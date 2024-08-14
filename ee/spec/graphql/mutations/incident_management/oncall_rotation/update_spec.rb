@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::IncidentManagement::OncallRotation::Update do
+  include GraphqlHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be(:schedule) { create(:incident_management_oncall_schedule, project: project) }
@@ -27,7 +29,11 @@ RSpec.describe Mutations::IncidentManagement::OncallRotation::Update do
   end
 
   describe '#resolve' do
-    subject(:resolve) { mutation_for(current_user).resolve(id: rotation.to_global_id, participants: args[:participants], **args) }
+    subject(:resolve) do
+      described_class
+        .new(object: nil, context: query_context, field: nil)
+        .resolve(id: rotation.to_global_id, participants: args[:participants], **args)
+    end
 
     context 'user has access to project' do
       before do
@@ -225,11 +231,5 @@ RSpec.describe Mutations::IncidentManagement::OncallRotation::Update do
         expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable, Gitlab::Graphql::Authorize::AuthorizeResource::RESOURCE_ACCESS_ERROR)
       end
     end
-  end
-
-  private
-
-  def mutation_for(user)
-    described_class.new(object: nil, context: { current_user: user }, field: nil)
   end
 end

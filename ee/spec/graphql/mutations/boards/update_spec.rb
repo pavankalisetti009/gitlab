@@ -3,9 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Boards::Update do
+  include GraphqlHelpers
+
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:board) { create(:board, project: project) }
   let_it_be(:milestone) { create(:milestone, project: project) }
   let_it_be(:iteration) { create(:iteration, group: group) }
@@ -14,7 +16,7 @@ RSpec.describe Mutations::Boards::Update do
   let_it_be(:label2) { create(:label, project: project) }
 
   let(:new_labels) { %w[new_label1 new_label2] }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:mutated_board) { subject[:board] }
 
   let(:mutation_params) do
@@ -24,7 +26,7 @@ RSpec.describe Mutations::Boards::Update do
       hide_backlog_list: true,
       hide_closed_list: true,
       weight: 3,
-      assignee_id: user.to_global_id,
+      assignee_id: current_user.to_global_id,
       milestone_id: milestone.to_global_id,
       iteration_id: iteration.to_global_id,
       label_ids: [label1.to_global_id, label2.to_global_id]
@@ -44,7 +46,7 @@ RSpec.describe Mutations::Boards::Update do
 
     context 'when user can update board' do
       before do
-        board.resource_parent.add_reporter(user)
+        board.resource_parent.add_reporter(current_user)
       end
 
       it 'updates board with correct values' do
@@ -53,7 +55,7 @@ RSpec.describe Mutations::Boards::Update do
           hide_backlog_list: true,
           hide_closed_list: true,
           weight: 3,
-          assignee: user,
+          assignee: current_user,
           milestone: milestone,
           iteration: iteration,
           labels: contain_exactly(label1, label2)

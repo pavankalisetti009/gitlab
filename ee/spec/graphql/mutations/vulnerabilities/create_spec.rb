@@ -14,7 +14,9 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
   end
 
   describe '#resolve' do
-    subject { resolve(described_class, args: attributes, ctx: { current_user: user }) }
+    subject { resolve(described_class, args: attributes, ctx: query_context) }
+
+    let(:current_user) { user }
 
     let(:identifier_attributes) do
       {
@@ -65,7 +67,7 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
 
     context 'when a vulnerability with the same identifier already exists' do
       before do
-        resolve(described_class, args: attributes, ctx: { current_user: user })
+        resolve(described_class, args: attributes, ctx: query_context)
       end
 
       it_behaves_like 'successfully created vulnerability'
@@ -78,13 +80,13 @@ RSpec.describe Mutations::Vulnerabilities::Create, feature_category: :vulnerabil
 
       it 'raises validation error' do
         expect_graphql_error_to_be_created(GraphQL::Schema::Validator::ValidationFailedError) do
-          resolve(described_class, args: attributes, ctx: { current_user: user })
+          resolve(described_class, args: attributes, ctx: query_context)
         end
       end
     end
 
     context 'with valid parameters' do
-      subject { resolve(described_class, args: attributes, ctx: { current_user: user }) }
+      subject { resolve(described_class, args: attributes, ctx: query_context) }
 
       let(:project_gid) { GitlabSchema.id_from_object(project) }
 

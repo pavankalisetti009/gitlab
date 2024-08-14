@@ -3,11 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::ComplianceManagement::Frameworks::Create do
+  include GraphqlHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:namespace) { create(:group) }
 
   let(:params) { valid_params }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(**params) }
 

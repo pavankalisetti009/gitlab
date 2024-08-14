@@ -2,11 +2,12 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Vulnerabilities::DestroyExternalIssueLink, feature_category: :vulnerability_management do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:vulnerability_external_issue_link) { create(:vulnerabilities_external_issue_link) }
-    let_it_be(:user) { create(:user) }
+    let_it_be(:current_user) { create(:user) }
 
     subject { mutation.resolve(id: GitlabSchema.id_from_object(vulnerability_external_issue_link)) }
 
@@ -20,7 +21,7 @@ RSpec.describe Mutations::Vulnerabilities::DestroyExternalIssueLink, feature_cat
 
     context 'when user has permission to destroy external issue link' do
       before do
-        vulnerability_external_issue_link.vulnerability.project.add_developer(user)
+        vulnerability_external_issue_link.vulnerability.project.add_developer(current_user)
       end
 
       context 'when destroy succeeds' do

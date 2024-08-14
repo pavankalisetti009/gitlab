@@ -3,13 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::MergeRequests::UpdateApprovalRule, feature_category: :source_code_management do
-  let_it_be(:user) { create(:user) }
+  include GraphqlHelpers
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:merge_request, reload: true) { create(:merge_request) }
   let_it_be(:rule) do
     create(:approval_merge_request_rule, name: "test-rule", merge_request: merge_request, approvals_required: 1)
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let(:approvals_required) { 1 }
@@ -32,7 +33,7 @@ RSpec.describe Mutations::MergeRequests::UpdateApprovalRule, feature_category: :
     end
 
     before do
-      merge_request.project.add_owner(user)
+      merge_request.project.add_owner(current_user)
     end
 
     context 'when the user can update the approval_rules' do
@@ -89,7 +90,7 @@ RSpec.describe Mutations::MergeRequests::UpdateApprovalRule, feature_category: :
 
         before do
           rule.groups = [private_accessible_group, private_inaccessible_group]
-          private_accessible_group.add_guest user
+          private_accessible_group.add_guest current_user
         end
 
         context 'when is not specified' do
@@ -110,7 +111,7 @@ RSpec.describe Mutations::MergeRequests::UpdateApprovalRule, feature_category: :
 
     context 'when the user cannot update the approval_rules' do
       before do
-        merge_request.project.add_guest(user)
+        merge_request.project.add_guest(current_user)
       end
 
       it 'receives unauthorized status' do

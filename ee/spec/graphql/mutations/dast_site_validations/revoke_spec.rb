@@ -3,14 +3,15 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastSiteValidations::Revoke do
+  include GraphqlHelpers
   let_it_be(:dast_site_validation1) { create(:dast_site_validation, state: :passed) }
   let_it_be(:dast_site_validation2) { create(:dast_site_validation) }
   let_it_be(:project) { dast_site_validation1.project }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:full_path) { project.full_path }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -37,7 +38,7 @@ RSpec.describe Mutations::DastSiteValidations::Revoke do
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'deletes dast_site_validations where state=passed' do

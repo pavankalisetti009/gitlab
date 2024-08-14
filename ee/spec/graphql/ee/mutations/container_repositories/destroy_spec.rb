@@ -3,19 +3,20 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::ContainerRepositories::Destroy, feature_category: :container_registry do
+  include GraphqlHelpers
   using RSpec::Parameterized::TableSyntax
 
   let_it_be_with_reload(:container_repository) { create(:container_repository) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   describe '#resolve' do
     subject do
-      described_class.new(object: nil, context: { current_user: user }, field: nil)
+      described_class.new(object: nil, context: query_context, field: nil)
                      .resolve(id: container_repository.to_global_id)
     end
 
     before do
-      container_repository.project.send(:add_maintainer, user)
+      container_repository.project.send(:add_maintainer, current_user)
     end
 
     include_examples 'audit event logging' do
@@ -27,7 +28,7 @@ RSpec.describe Mutations::ContainerRepositories::Destroy, feature_category: :con
         # rubocop:enable RSpec/AnyInstanceOf
       end
 
-      let(:author) { user }
+      let(:author) { current_user }
 
       let(:attributes) do
         {

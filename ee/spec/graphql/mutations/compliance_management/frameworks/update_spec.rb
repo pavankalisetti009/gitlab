@@ -8,8 +8,8 @@ RSpec.describe Mutations::ComplianceManagement::Frameworks::Update do
   let_it_be(:namespace) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: namespace) }
 
-  let(:user) { create(:user) }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:current_user) { create(:user) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:params) do
     {
       name: 'New Name',
@@ -19,7 +19,7 @@ RSpec.describe Mutations::ComplianceManagement::Frameworks::Update do
   end
 
   before do
-    namespace.add_owner(user)
+    namespace.add_owner(current_user)
   end
 
   subject { mutation.resolve(id: global_id_of(framework), params: params) }

@@ -15,7 +15,7 @@ RSpec.shared_examples 'epic mutation for user without access' do
 
     context 'even if author of the epic' do
       before do
-        epic.update!(author: user)
+        epic.update!(author: current_user)
       end
 
       it 'raises an error' do
@@ -25,7 +25,7 @@ RSpec.shared_examples 'epic mutation for user without access' do
 
     context 'even if assigned to the epic' do
       before do
-        epic.assignees.push(user)
+        epic.assignees.push(current_user)
       end
 
       it 'raises an error' do
@@ -35,7 +35,7 @@ RSpec.shared_examples 'epic mutation for user without access' do
 
     context 'even if maintainer of the project' do
       before do
-        project.add_maintainer(user)
+        project.add_maintainer(current_user)
       end
 
       it 'raises an error' do

@@ -2,10 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::Dast::Profiles::Create, :dynamic_analysis,
-  feature_category: :dynamic_application_security_testing do
+RSpec.describe Mutations::Dast::Profiles::Create, :dynamic_analysis, feature_category: :dynamic_application_security_testing do
+  include GraphqlHelpers
+
   let_it_be(:project) { create(:project, :repository) }
-  let_it_be(:developer) { create(:user, developer_of: project) }
+  let_it_be(:current_user) { create(:user, developer_of: project) }
   let_it_be(:dast_site_profile) { create(:dast_site_profile, project: project) }
   let_it_be(:dast_scanner_profile) { create(:dast_scanner_profile, project: project) }
 
@@ -17,7 +18,7 @@ RSpec.describe Mutations::Dast::Profiles::Create, :dynamic_analysis,
   let(:dast_profile_schedule) { nil }
   let(:tag_list) { %w[ruby postgres] }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: developer }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     create(:ci_tag, name: 'ruby')

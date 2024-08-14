@@ -6,10 +6,10 @@ RSpec.describe Mutations::Vulnerabilities::BulkDismiss, feature_category: :vulne
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user, maintainer_of: project) }
+  let_it_be(:current_user) { create(:user, maintainer_of: project) }
   let_it_be(:vulnerabilities) { create_list(:vulnerability, 2, :with_findings, project: project) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:vulnerability_ids) { vulnerabilities.map(&:to_global_id) }
   let(:comment) { 'Dismissal Feedback' }
   let(:dismissal_reason) { 'used_in_tests' }

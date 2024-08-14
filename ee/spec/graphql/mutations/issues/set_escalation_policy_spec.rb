@@ -3,13 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Issues::SetEscalationPolicy do
-  let_it_be(:user) { create(:user) }
+  include GraphqlHelpers
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be(:escalation_policy) { create(:incident_management_escalation_policy, project: project) }
   let_it_be(:issue, reload: true) { create(:incident, project: project) }
   let_it_be(:escalation_status, reload: true) { create(:incident_management_issuable_escalation_status, issue: issue) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let(:args) { { escalation_policy: escalation_policy } }
@@ -25,14 +26,14 @@ RSpec.describe Mutations::Issues::SetEscalationPolicy do
 
     context 'when the user can update the issue' do
       before_all do
-        project.add_reporter(user)
+        project.add_reporter(current_user)
       end
 
       it_behaves_like 'permission level for issue mutation is correctly verified', true
 
       context 'when the user can update the escalation status' do
         before_all do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'returns the issue with the escalation policy' do

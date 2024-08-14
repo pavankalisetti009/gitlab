@@ -8,13 +8,13 @@ RSpec.describe Mutations::Dast::Profiles::Run, :dynamic_analysis,
 
   let_it_be_with_refind(:project) { create(:project, :repository) }
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:branch_name) { project.default_branch }
   let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: branch_name) }
 
   let(:dast_profile_id) { dast_profile.to_global_id }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   specify { expect(described_class).to require_graphql_authorizations(:create_on_demand_dast_scan) }
 
@@ -37,7 +37,7 @@ RSpec.describe Mutations::Dast::Profiles::Run, :dynamic_analysis,
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it_behaves_like 'it creates a DAST on-demand scan pipeline' do

@@ -3,14 +3,16 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastOnDemandScans::Create do
+  include GraphqlHelpers
+
   let(:group) { create(:group) }
-  let(:user) { create(:user) }
+  let(:current_user) { create(:user) }
   let(:project) { create(:project, :repository, group: group) }
   let(:full_path) { project.full_path }
   let(:dast_site_profile) { create(:dast_site_profile, project: project) }
   let(:dast_site_profile_id) { dast_site_profile.to_global_id }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -37,7 +39,7 @@ RSpec.describe Mutations::DastOnDemandScans::Create do
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'returns a pipeline_url containing the correct path' do
@@ -71,7 +73,7 @@ RSpec.describe Mutations::DastOnDemandScans::Create do
           end
 
           it 'has no errors' do
-            group.add_owner(user)
+            group.add_owner(current_user)
 
             expect(subject[:errors]).to be_empty
           end

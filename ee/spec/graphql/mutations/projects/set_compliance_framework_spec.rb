@@ -3,12 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Projects::SetComplianceFramework do
+  include GraphqlHelpers
   let_it_be(:group) { create(:group) }
   let_it_be(:framework) { create(:compliance_framework, namespace: group) }
   let_it_be(:project) { create(:project, :repository, group: group) }
   let_it_be(:current_user) { create(:user) }
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(project_id: GitlabSchema.id_from_object(project), compliance_framework_id: GitlabSchema.id_from_object(framework)) }
 

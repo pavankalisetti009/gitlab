@@ -2,7 +2,8 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::SecurityPolicy::CreateSecurityPolicyProject, feature_category: :security_policy_management do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:owner) { create(:user) }

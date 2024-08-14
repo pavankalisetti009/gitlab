@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe Mutations::Security::Finding::CreateMergeRequest, feature_category: :vulnerability_management do
   include GraphqlHelpers
 
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     include_context 'with dependency scanning security report findings'

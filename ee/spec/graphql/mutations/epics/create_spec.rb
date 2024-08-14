@@ -3,11 +3,12 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Epics::Create do
+  include GraphqlHelpers
   let_it_be(:group) { create(:group) }
   let_it_be(:epic) { create(:epic, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
-  subject(:mutation) { described_class.new(object: group, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: group, context: query_context, field: nil) }
 
   describe '#resolve' do
     before do
@@ -22,7 +23,7 @@ RSpec.describe Mutations::Epics::Create do
 
     context 'when the user can create epics' do
       before do
-        group.add_developer(user)
+        group.add_developer(current_user)
       end
 
       it 'creates a new epic' do

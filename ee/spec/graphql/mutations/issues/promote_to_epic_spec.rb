@@ -2,18 +2,19 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Issues::PromoteToEpic do
+  include GraphqlHelpers
   let(:new_epic_group) { nil }
 
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   before do
     stub_licensed_features(epics: true)
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   RSpec.shared_examples 'successfully promotes issue to epic' do
     it 'returns the issue and the epic', :aggregate_failures do
@@ -39,7 +40,7 @@ RSpec.describe Mutations::Issues::PromoteToEpic do
 
     context 'when issue is accessible to the user' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when the user cannot promote the issue' do
@@ -52,7 +53,7 @@ RSpec.describe Mutations::Issues::PromoteToEpic do
 
       context 'when the user can promote the issue' do
         before do
-          group.add_reporter(user)
+          group.add_reporter(current_user)
         end
 
         it_behaves_like 'successfully promotes issue to epic' do

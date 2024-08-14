@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::IncidentManagement::OncallSchedule::Destroy do
+  include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
 
@@ -16,7 +17,11 @@ RSpec.describe Mutations::IncidentManagement::OncallSchedule::Destroy do
   specify { expect(described_class).to require_graphql_authorizations(:admin_incident_management_oncall_schedule) }
 
   describe '#resolve' do
-    subject(:resolve) { mutation_for(project, current_user).resolve(**args) }
+    subject(:resolve) do
+      described_class
+        .new(object: project, context: query_context, field: nil)
+        .resolve(**args)
+    end
 
     context 'user has access to project' do
       before do
@@ -53,11 +58,5 @@ RSpec.describe Mutations::IncidentManagement::OncallSchedule::Destroy do
         expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)
       end
     end
-  end
-
-  private
-
-  def mutation_for(project, user)
-    described_class.new(object: project, context: { current_user: user }, field: nil)
   end
 end

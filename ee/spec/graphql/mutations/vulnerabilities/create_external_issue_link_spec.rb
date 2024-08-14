@@ -2,11 +2,12 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Vulnerabilities::CreateExternalIssueLink, feature_category: :vulnerability_management do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:vulnerability) { create(:vulnerability, :with_findings) }
-    let_it_be(:user) { create(:user) }
+    let_it_be(:current_user) { create(:user) }
 
     context 'for JIRA external tracker and CREATED issue link' do
       subject { mutation.resolve(id: GitlabSchema.id_from_object(vulnerability), link_type: 'created', external_tracker: 'jira') }
@@ -24,7 +25,7 @@ RSpec.describe Mutations::Vulnerabilities::CreateExternalIssueLink, feature_cate
 
         context 'when user has access to the project' do
           before do
-            vulnerability.project.add_developer(user)
+            vulnerability.project.add_developer(current_user)
             allow_next_instance_of(::VulnerabilityExternalIssueLinks::CreateService) do |create_service|
               allow(create_service).to receive(:execute).and_return(result)
             end

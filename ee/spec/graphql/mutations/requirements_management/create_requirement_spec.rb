@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::RequirementsManagement::CreateRequirement do
+  include GraphqlHelpers
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     shared_examples 'requirements not available' do
@@ -27,7 +28,7 @@ RSpec.describe Mutations::RequirementsManagement::CreateRequirement do
 
     context 'when the user can create requirements' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when requirements feature is available' do

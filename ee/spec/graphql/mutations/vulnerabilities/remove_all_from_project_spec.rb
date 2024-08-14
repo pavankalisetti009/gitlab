@@ -8,9 +8,9 @@ RSpec.describe Mutations::Vulnerabilities::RemoveAllFromProject, feature_categor
   let_it_be(:project1) { create(:project) }
   let_it_be(:project2) { create(:project) }
   let_it_be(:project3) { create(:project) }
-  let_it_be(:user) { create(:user, owner_of: [project1, project2]) }
+  let_it_be(:current_user) { create(:user, owner_of: [project1, project2]) }
 
-  let(:klass) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:klass) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:project_ids) { [project1, project2].map(&:to_global_id) }
 
   before do

@@ -3,9 +3,10 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::DastSiteProfiles::Create do
+  include GraphqlHelpers
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:full_path) { project.full_path }
   let(:profile_name) { SecureRandom.hex }
@@ -31,7 +32,7 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
 
   let(:dast_site_profile) { DastSiteProfile.find_by(project: project, name: profile_name) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -65,7 +66,7 @@ RSpec.describe Mutations::DastSiteProfiles::Create do
 
       context 'when the user can run a dast scan' do
         before do
-          project.add_developer(user)
+          project.add_developer(current_user)
         end
 
         it 'creates a dast_site_profile and dast_site_profile_secret_variables', :aggregate_failures do

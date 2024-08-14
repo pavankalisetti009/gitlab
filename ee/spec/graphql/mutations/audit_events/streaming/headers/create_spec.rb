@@ -3,11 +3,13 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::AuditEvents::Streaming::Headers::Create, feature_category: :audit_events do
+  include GraphqlHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:destination) { create(:external_audit_event_destination) }
 
   let(:group) { destination.group }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
   let(:params) do
     {
       destination_id: destination.to_gid,

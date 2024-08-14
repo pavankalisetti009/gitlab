@@ -3,12 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::AuditEvents::Streaming::Headers::Destroy do
+  include GraphqlHelpers
+
   let_it_be(:current_user) { create(:user) }
   let_it_be(:header) { create(:audit_events_streaming_header) }
 
   let(:destination) { header.external_audit_event_destination }
   let(:group) { destination.group }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: current_user }, field: nil) }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(**{ header_id: header.to_gid }) }
 

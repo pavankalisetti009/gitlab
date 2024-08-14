@@ -2,11 +2,12 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Vulnerabilities::Confirm, feature_category: :vulnerability_management do
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  include GraphqlHelpers
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:vulnerability) { create(:vulnerability, :with_findings) }
-    let_it_be(:user) { create(:user) }
+    let_it_be(:current_user) { create(:user) }
     let_it_be(:comment) { "It's really there, I swear." }
 
     let(:mutated_vulnerability) { subject[:vulnerability] }
@@ -34,7 +35,7 @@ RSpec.describe Mutations::Vulnerabilities::Confirm, feature_category: :vulnerabi
 
       context 'when user has access to the project', :aggregate_failures do
         before do
-          vulnerability.project.add_maintainer(user)
+          vulnerability.project.add_maintainer(current_user)
         end
 
         context 'when comment is not provided' do

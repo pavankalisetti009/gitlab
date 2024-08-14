@@ -12,7 +12,7 @@ RSpec.describe Mutations::Ci::Runner::Update, feature_category: :runner do
         public_projects_minutes_cost_factor: 0.0, private_projects_minutes_cost_factor: 0.0)
     end
 
-    let(:mutation) { described_class.new(object: nil, context: current_ctx, field: nil) }
+    let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
     subject(:mutation_result) { mutation.resolve(id: runner.to_global_id, **mutation_params) }
 
@@ -22,8 +22,7 @@ RSpec.describe Mutations::Ci::Runner::Update, feature_category: :runner do
     end
 
     context 'when user can update runner', :enable_admin_mode do
-      let(:admin_user) { create(:user, :admin) }
-      let(:current_ctx) { { current_user: admin_user } }
+      let(:current_user) { create(:user, :admin) }
 
       context 'when mutation includes cost factor arguments' do
         let(:mutation_params) do

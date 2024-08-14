@@ -3,10 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::MergeRequests::SetReviewers do
-  let_it_be(:user) { create(:user) }
+  include GraphqlHelpers
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:merge_request, reload: true) { create(:merge_request) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:reviewers) { create_list(:user, 3) }
@@ -32,7 +33,7 @@ RSpec.describe Mutations::MergeRequests::SetReviewers do
 
     context 'when the user can update the merge_request' do
       before do
-        merge_request.project.add_developer(user)
+        merge_request.project.add_developer(current_user)
       end
 
       it 'sets the reviewers' do

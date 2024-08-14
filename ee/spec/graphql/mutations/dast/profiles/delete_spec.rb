@@ -6,12 +6,12 @@ RSpec.describe Mutations::Dast::Profiles::Delete do
   include GraphqlHelpers
 
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:dast_profile) { create(:dast_profile, project: project) }
 
   let(:dast_profile_gid) { dast_profile.to_global_id }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   before do
     stub_licensed_features(security_on_demand_scans: true)
@@ -30,7 +30,7 @@ RSpec.describe Mutations::Dast::Profiles::Delete do
 
     context 'when the user can destroy a DAST profile' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       it 'deletes the profile' do

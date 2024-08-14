@@ -3,9 +3,10 @@
 require 'spec_helper'
 
 RSpec.shared_examples 'a multi-assignable resource' do
-  let_it_be(:user) { create(:user) }
+  include GraphqlHelpers
+  let_it_be(:current_user) { create(:user) }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#resolve' do
     let_it_be(:assignees) { create_list(:user, 3) }
@@ -31,7 +32,7 @@ RSpec.shared_examples 'a multi-assignable resource' do
 
     context 'when the user can update the resource' do
       before do
-        resource.project.add_developer(user)
+        resource.project.add_developer(current_user)
       end
 
       it 'sets the assignees' do

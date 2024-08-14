@@ -5,11 +5,11 @@ require 'spec_helper'
 RSpec.describe Mutations::Forecasting::BuildForecast, feature_category: :devops_reports do
   include GraphqlHelpers
 
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
   let_it_be(:project) { create(:project) }
   let_it_be(:production) { create :environment, :production, project: project }
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#ready?' do
     let(:context) { project }
@@ -31,7 +31,7 @@ RSpec.describe Mutations::Forecasting::BuildForecast, feature_category: :devops_
     end
 
     context 'when context_id argument is invalid' do
-      let(:context) { user }
+      let(:context) { current_user }
 
       it_behaves_like 'raises argument error', 'Invalid context type. Project is expected.'
     end
@@ -61,7 +61,7 @@ RSpec.describe Mutations::Forecasting::BuildForecast, feature_category: :devops_
       allow(Analytics::Forecasting::HoltWintersOptimizer).to receive(:model_for).and_return(model_mock)
       allow(model_mock).to receive(:predict).with(horizon).and_return(model_forecast)
 
-      project.add_member(user, user_role)
+      project.add_member(current_user, user_role)
       stub_licensed_features(dora4_analytics: license_available)
     end
 

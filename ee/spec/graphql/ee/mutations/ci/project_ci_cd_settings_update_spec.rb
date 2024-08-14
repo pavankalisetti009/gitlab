@@ -7,8 +7,8 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
 
   let_it_be(:project) { create(:project) }
 
-  let(:user) { project.first_owner }
-  let(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  let(:current_user) { project.first_owner }
+  let(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   subject { mutation.resolve(full_path: project.full_path, **mutation_params) }
 
@@ -111,7 +111,7 @@ RSpec.describe Mutations::Ci::ProjectCiCdSettingsUpdate, feature_category: :cont
     let(:expected_audit_context) do
       {
         name: event_name,
-        author: user,
+        author: current_user,
         scope: project,
         target: expected_target,
         message: expected_audit_message

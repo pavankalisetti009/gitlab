@@ -3,21 +3,22 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::RequirementsManagement::ExportRequirements do
+  include GraphqlHelpers
   let_it_be(:project) { create(:project) }
-  let_it_be(:user) { create(:user) }
+  let_it_be(:current_user) { create(:user) }
 
   let(:fields) { [] }
   let(:args) do
     {
       project_path: project.full_path,
-      author_username: user.username,
+      author_username: current_user.username,
       state: 'OPENED',
       search: 'foo',
       selected_fields: fields
     }
   end
 
-  subject(:mutation) { described_class.new(object: nil, context: { current_user: user }, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   describe '#ready' do
     context 'with selected fields argument' do
@@ -46,7 +47,7 @@ RSpec.describe Mutations::RequirementsManagement::ExportRequirements do
 
     context 'when the user can export requirements' do
       before do
-        project.add_developer(user)
+        project.add_developer(current_user)
       end
 
       context 'when requirements feature is available' do
@@ -56,7 +57,7 @@ RSpec.describe Mutations::RequirementsManagement::ExportRequirements do
 
         it 'exports requirements' do
           expect(IssuableExportCsvWorker).to receive(:perform_async)
-            .with(:requirement, user.id, project.id, args.except(:project_path))
+            .with(:requirement, current_user.id, project.id, args.except(:project_path))
 
           subject
         end
