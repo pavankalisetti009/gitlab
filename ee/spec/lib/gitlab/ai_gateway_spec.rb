@@ -29,11 +29,14 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
   describe '.headers' do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
+    let(:enabled_by_namespace_ids) { [1, 2] }
+    let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
     let(:agent) { nil }
     let(:expected_headers) do
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{token}",
+        'X-Gitlab-Feature-Enabled-By-Namespace-Ids' => '1,2',
         'Content-Type' => 'application/json',
         'X-Request-ID' => an_instance_of(String),
         'X-Gitlab-Rails-Send-Start' => an_instance_of(String),
@@ -46,7 +49,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       }
     end
 
-    subject(:headers) { described_class.headers(user: user, token: token, agent: agent) }
+    subject(:headers) { described_class.headers(user: user, service: service, agent: agent) }
+
+    before do
+      allow(service).to receive(:access_token).with(user).and_return(token)
+      allow(service).to receive(:enabled_by_namespace_ids).with(user).and_return(enabled_by_namespace_ids)
+    end
 
     it { is_expected.to match(expected_headers) }
 

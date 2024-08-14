@@ -22,8 +22,8 @@ module API
     end
 
     helpers do
-      def model_gateway_headers(headers, gateway_token)
-        Gitlab::AiGateway.headers(user: current_user, token: gateway_token, agent: headers["User-Agent"])
+      def model_gateway_headers(headers, service)
+        Gitlab::AiGateway.headers(user: current_user, service: service, agent: headers["User-Agent"])
           .merge(saas_headers)
           .transform_values { |v| Array(v) }
       end
@@ -108,7 +108,7 @@ module API
             Gitlab::Workhorse.send_url(
               task.endpoint,
               body: body,
-              headers: model_gateway_headers(headers, token),
+              headers: model_gateway_headers(headers, service),
               method: "POST",
               timeouts: { read: 55 }
             )

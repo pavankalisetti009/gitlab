@@ -27,6 +27,7 @@ RSpec.describe Gitlab::Metrics::Llm, feature_category: :ai_abstraction_layer do
       expect(described_class.client_label(Gitlab::Llm::AiGateway::Client)).to eq(:ai_gateway)
       expect(described_class.client_label(Gitlab::Llm::VertexAi::Client)).to eq(:vertex_ai)
       expect(described_class.client_label(Gitlab::Llm::Anthropic::Client)).to eq(:anthropic)
+      expect(described_class.client_label(Gitlab::Llm::ResolveVulnerability::Client)).to eq(:anthropic)
     end
 
     it 'returns :unknwon for other classes' do

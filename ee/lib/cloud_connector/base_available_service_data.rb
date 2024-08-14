@@ -23,6 +23,13 @@ module CloudConnector
       add_on_purchases_assigned_to(user).any?
     end
 
+    # Returns the list of namespaces that allow the user access to the service, if any
+    #
+    # user - User
+    def enabled_by_namespace_ids(user)
+      add_on_purchases_assigned_to(user).uniq_namespace_ids
+    end
+
     # Returns true if service is purchased.
     # For provided namespace, it will check if add-on is purchased for the provided group/project or its ancestors.
     #

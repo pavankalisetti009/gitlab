@@ -5,6 +5,7 @@ module Gitlab
     module AiGateway
       class Client
         include ::Gitlab::Llm::Concerns::ExponentialBackoff
+        include Gitlab::Utils::StrongMemoize
         include Langsmith::RunHelpers
 
         DEFAULT_TIMEOUT = 30.seconds
@@ -13,7 +14,8 @@ module Gitlab
 
         def initialize(user, service_name:, tracking_context: {})
           @user = user
-          @access_token = ::CloudConnector::AvailableServices.find_by_name(service_name).access_token(user)
+          @service = ::CloudConnector::AvailableServices.find_by_name(service_name)
+          @access_token = @service.access_token(user)
           @tracking_context = tracking_context
           @logger = Gitlab::Llm::Logger.build
         end
@@ -59,7 +61,7 @@ module Gitlab
 
         private
 
-        attr_reader :user, :access_token, :logger, :tracking_context
+        attr_reader :user, :service, :access_token, :logger, :tracking_context
 
         def perform_completion_request(endpoint:, body:, timeout:, stream:)
           logger.info_or_debug(user, message: "Performing request to AI Gateway", body: body, timeout: timeout,
@@ -67,7 +69,7 @@ module Gitlab
 
           Gitlab::HTTP.post(
             "#{Gitlab::AiGateway.url}#{endpoint}",
-            headers: Gitlab::AiGateway.headers(user: user, token: access_token),
+            headers: Gitlab::AiGateway.headers(user: user, service: service),
             body: body.to_json,
             timeout: timeout,
             allow_local_requests: true,
