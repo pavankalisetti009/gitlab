@@ -11302,7 +11302,7 @@ msgstr ""
 msgid "CiCatalogComponent|Component details not available"
 msgstr ""
 
-msgid "CiCatalogComponent|Default value"
+msgid "CiCatalogComponent|Default"
 msgstr ""
 
 msgid "CiCatalogComponent|Description"
@@ -11314,7 +11314,7 @@ msgstr ""
 msgid "CiCatalogComponent|Mandatory"
 msgstr ""
 
-msgid "CiCatalogComponent|Parameters"
+msgid "CiCatalogComponent|Name"
 msgstr ""
 
 msgid "CiCatalogComponent|There was an error fetching this resource's components"
