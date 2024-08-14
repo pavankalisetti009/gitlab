@@ -4457,6 +4457,7 @@ export const groupWorkItemsQueryResponse = {
   data: {
     group: {
       id: 'gid://gitlab/Group/3',
+      name: 'Test',
       workItemStateCounts: {
         all: 3,
         closed: 1,

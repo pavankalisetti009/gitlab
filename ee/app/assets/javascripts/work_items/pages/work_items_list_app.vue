@@ -7,12 +7,12 @@ import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_LABEL } from '~/graphql_shared/constants';
 import EmptyStateWithAnyIssues from '~/issues/list/components/empty_state_with_any_issues.vue';
 import { WORK_ITEM_TYPE_ENUM_EPIC } from '~/work_items/constants';
-import WorkItemsListApp from '~/work_items/list/components/work_items_list_app.vue';
+import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
 import { isLabelsWidget } from '~/work_items/utils';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
-import workItemParent from '../queries/work_item_parent.query.graphql';
+import workItemParent from '../graphql/list/work_item_parent.query.graphql';
 
 export default {
   emptyStateSvg,

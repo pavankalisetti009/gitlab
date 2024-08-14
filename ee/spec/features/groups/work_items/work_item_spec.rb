@@ -43,8 +43,8 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
         it 'shows the correct breadcrumbs' do
           within_testid('breadcrumb-links') do
             expect(page).to have_link(group.name, href: group_path(group))
-            expect(page).to have_link('Epics', href: group_epics_path(group))
-            expect(find('li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
+            expect(page).to have_link('Work items', href: "#{group_work_items_path(group)}/")
+            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
           end
         end
       end
@@ -62,8 +62,8 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
         it 'shows the correct breadcrumbs' do
           within_testid('breadcrumb-links') do
             expect(page).to have_link(group.name, href: group_path(group))
-            expect(page).to have_link('Epics', href: group_epics_path(group))
-            expect(find('li:last-of-type')).to have_link(work_item.to_reference,
+            expect(page).to have_link('Epics', href: "#{group_epics_path(group)}/")
+            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference,
               href: group_epic_path(group, work_item.iid))
           end
         end
@@ -83,8 +83,8 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
       it 'shows the correct breadcrumbs' do
         within_testid('breadcrumb-links') do
           expect(page).to have_link(group.name, href: group_path(group))
-          expect(page).to have_link('Issues', href: issues_group_path(group))
-          expect(find('li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
+          expect(page).to have_link('Work items', href: "#{group_work_items_path(group)}/")
+          expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
         end
       end
     end

@@ -52,6 +52,8 @@ RSpec.describe BoardsHelper do
         allow(helper).to receive(:can?).with(user, :admin_issue_board, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :admin_label, project).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_saved_replies, project).and_return(false)
+        allow(helper).to receive(:can?).with(user, :create_work_item, project.group).and_return(false)
+        allow(helper).to receive(:can?).with(user, :bulk_admin_epic, project).and_return(false)
       end
 
       shared_examples 'serializes the availability of a licensed feature' do |feature_name, feature_key|
@@ -137,6 +139,8 @@ RSpec.describe BoardsHelper do
         allow(helper).to receive(:can?).with(user, :admin_issue_board, group).and_return(false)
         allow(helper).to receive(:can?).with(user, :admin_label, group).and_return(false)
         allow(helper).to receive(:can?).with(user, :create_saved_replies, group).and_return(false)
+        allow(helper).to receive(:can?).with(user, :create_work_item, group).and_return(false)
+        allow(helper).to receive(:can?).with(user, :bulk_admin_epic, group).and_return(false)
       end
 
       it 'returns the correct permission for creating an epic from board' do
