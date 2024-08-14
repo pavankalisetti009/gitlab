@@ -60820,6 +60820,9 @@ msgstr ""
 msgid "WorkItem|Must be a valid hex code"
 msgstr ""
 
+msgid "WorkItem|New"
+msgstr ""
+
 msgid "WorkItem|New %{workItemName}"
 msgstr ""
 

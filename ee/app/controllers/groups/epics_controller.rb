@@ -97,7 +97,11 @@ class Groups::EpicsController < Groups::ApplicationController
 
     push_force_frontend_feature_flag(:work_items_rolledup_dates, group&.work_items_rolledup_dates_feature_flag_enabled?)
 
-    render 'groups/work_items/show'
+    if Feature.enabled?(:work_item_epics_list, @group) && epic_work_items_enabled?
+      render 'work_items_index'
+    else
+      render 'groups/work_items/show'
+    end
   end
 
   def epic_params

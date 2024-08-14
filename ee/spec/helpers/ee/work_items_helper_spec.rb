@@ -6,7 +6,7 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
   include Devise::Test::ControllerHelpers
 
   describe '#work_items_show_data' do
-    subject(:work_items_show_data) { helper.work_items_show_data(project) }
+    subject(:work_items_show_data) { helper.work_items_show_data(project, current_user) }
 
     before do
       stub_licensed_features(
@@ -14,11 +14,19 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         iterations: feature_available,
         issue_weights: feature_available,
         okrs: feature_available,
-        subepics: feature_available
+        subepics: feature_available,
+        epics: feature_available,
+        group_bulk_edit: feature_available,
+        quality_management: feature_available,
+        scoped_labels: feature_available
       )
+      allow(helper).to receive(:can?).and_call_original
+      allow(helper).to receive(:can?).with(current_user, :bulk_admin_epic, project).and_return(feature_available)
     end
 
-    let_it_be(:project) { build(:project) }
+    let_it_be(:group) { build(:group) }
+    let_it_be(:project) { build(:project, group: group) }
+    let_it_be(:current_user) { build(:user, owner_of: project) }
 
     context 'when features are available' do
       let(:feature_available) { true }
@@ -30,9 +38,16 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_issue_weights_feature: "true",
             has_iterations_feature: "true",
             has_okrs_feature: "true",
-            has_subepics_feature: "true"
-          }
-        )
+            has_subepics_feature: "true",
+            has_epics_feature: "true",
+            has_scoped_labels_feature: "true",
+            has_quality_management_feature: "true",
+            can_bulk_edit_epics: "true",
+            group_issues_path: issues_group_path(project),
+            labels_fetch_path: group_labels_path(
+              project, format: :json, only_group_labels: true, include_ancestor_groups: true
+            )
+          })
       end
     end
 
@@ -46,7 +61,11 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_issue_weights_feature: "false",
             has_iterations_feature: "false",
             has_okrs_feature: "false",
-            has_subepics_feature: "false"
+            has_subepics_feature: "false",
+            has_epics_feature: "false",
+            has_scoped_labels_feature: "false",
+            has_quality_management_feature: "false",
+            can_bulk_edit_epics: "false"
           }
         )
       end

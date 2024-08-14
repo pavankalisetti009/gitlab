@@ -5,13 +5,20 @@ module EE
     extend ::Gitlab::Utils::Override
 
     override :work_items_show_data
-    def work_items_show_data(resource_parent)
+    def work_items_show_data(resource_parent, current_user)
       super.merge(
         has_issue_weights_feature: resource_parent.licensed_feature_available?(:issue_weights).to_s,
         has_okrs_feature: resource_parent.licensed_feature_available?(:okrs).to_s,
+        has_epics_feature: resource_parent.licensed_feature_available?(:epics).to_s,
         has_iterations_feature: resource_parent.licensed_feature_available?(:iterations).to_s,
         has_issuable_health_status_feature: resource_parent.licensed_feature_available?(:issuable_health_status).to_s,
-        has_subepics_feature: resource_parent.licensed_feature_available?(:subepics).to_s
+        has_subepics_feature: resource_parent.licensed_feature_available?(:subepics).to_s,
+        has_scoped_labels_feature: resource_parent.licensed_feature_available?(:scoped_labels).to_s,
+        has_quality_management_feature: resource_parent.licensed_feature_available?(:quality_management).to_s,
+        can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,
+        group_issues_path: issues_group_path(resource_parent),
+        labels_fetch_path: group_labels_path(
+          resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true)
       )
     end
 

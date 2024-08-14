@@ -20,6 +20,10 @@ RSpec.describe 'Work items list filters', :js, feature_category: :team_planning 
       stub_licensed_features(quality_management: true)
       sign_in(user)
       visit group_work_items_path(group)
+
+      within_testid('work-item-feedback-popover') do
+        find_by_testid('close-button').click
+      end
     end
 
     describe 'type' do

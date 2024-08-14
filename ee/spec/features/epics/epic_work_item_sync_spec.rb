@@ -169,6 +169,7 @@ RSpec.describe 'Epic Work Item sync', :js, feature_category: :portfolio_manageme
     describe 'from work item to epic' do
       before do
         stub_feature_flags(work_item_epics_rollout: true)
+        stub_feature_flags(work_item_epics_list: false)
       end
 
       subject(:create_epic_work_item) do

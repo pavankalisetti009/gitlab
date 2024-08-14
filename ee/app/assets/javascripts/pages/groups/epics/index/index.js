@@ -1,7 +1,9 @@
+import { WORKSPACE_GROUP } from '~/issues/constants';
+
 if (gon.features.workItemEpicsList && gon.features.namespaceLevelWorkItems) {
-  import(/* webpackChunkName: 'workItemsList' */ '~/work_items/list')
-    .then(({ mountWorkItemsListApp }) => {
-      mountWorkItemsListApp();
+  import(/* webpackChunkName: 'workItemsApp' */ '~/work_items/index')
+    .then(({ initWorkItemsRoot }) => {
+      initWorkItemsRoot({ workItemType: 'epics', workspaceType: WORKSPACE_GROUP });
     })
     .catch(() => {});
 } else {

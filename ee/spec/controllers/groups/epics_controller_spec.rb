@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Groups::EpicsController, feature_category: :portfolio_management do
+  using RSpec::Parameterized::TableSyntax
+
   let(:group) { create(:group, :private) }
   let(:epic) { create(:epic, group: group) }
   let(:user)  { create(:user) }
@@ -157,21 +159,32 @@ RSpec.describe Groups::EpicsController, feature_category: :portfolio_management 
           end
 
           context 'when work_item_epics_rollout is true' do
-            before do
-              stub_feature_flags(work_item_epics_rollout: user, namespace_level_work_items: false)
+            where(:work_item_epics_list_ff, :expected_template) do
+              false | 'groups/work_items/show'
+              true  | 'groups/epics/work_items_index'
             end
 
-            it 'renders work item template' do
-              show_epic
+            with_them do
+              before do
+                stub_feature_flags(
+                  work_item_epics_list: work_item_epics_list_ff,
+                  work_item_epics_rollout: user,
+                  namespace_level_work_items: false
+                )
+              end
 
-              expect(response.media_type).to eq 'text/html'
-              expect(response).to render_template 'groups/work_items/show'
-            end
+              it 'renders work item template' do
+                show_epic
 
-            it 'renders legacy template when forcing it' do
-              get :show, params: { group_id: group, id: epic.to_param, force_legacy_view: true }
+                expect(response.media_type).to eq 'text/html'
+                expect(response).to render_template expected_template
+              end
 
-              expect(response).to render_template 'groups/epics/show'
+              it 'renders legacy template when forcing it' do
+                get :show, params: { group_id: group, id: epic.to_param, force_legacy_view: true }
+
+                expect(response).to render_template 'groups/epics/show'
+              end
             end
           end
 
