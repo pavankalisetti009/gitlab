@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Vulnerabilities::FindingSignature, feature_category: :vulnerability_management do
-  let_it_be(:signature) { create(:vulnerabilities_finding_signature) }
+  let_it_be(:default_finding) { create(:vulnerabilities_finding) }
+  let_it_be(:signature) { create(:vulnerabilities_finding_signature, finding: default_finding) }
 
   describe 'associations' do
     it { is_expected.to belong_to(:finding).class_name('Vulnerabilities::Finding').with_foreign_key('finding_id') }
@@ -72,6 +73,13 @@ RSpec.describe Vulnerabilities::FindingSignature, feature_category: :vulnerabili
       it 'returns false' do
         expect(signature.eql?('something else')).to eq(false)
       end
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_finding_signatures.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_finding_signature, project_id: parent.id) }
     end
   end
 end
