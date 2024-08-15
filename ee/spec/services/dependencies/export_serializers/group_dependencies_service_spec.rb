@@ -35,6 +35,8 @@ RSpec.describe Dependencies::ExportSerializers::GroupDependenciesService, featur
 
     context 'when the group has dependencies' do
       let_it_be(:project) { create(:project, :public, group: group) }
+      let_it_be(:archived_project) { create(:project, :archived, group: group) }
+      let_it_be(:archived_occurrence) { create(:sbom_occurrence, project: archived_project) }
 
       let_it_be(:bundler) { create(:sbom_component, :bundler) }
       let_it_be(:bundler_v1) { create(:sbom_component_version, component: bundler, version: "1.0.0") }
@@ -51,7 +53,7 @@ RSpec.describe Dependencies::ExportSerializers::GroupDependenciesService, featur
         create(:sbom_occurrence, :mit, project: project, component: bundler, component_version: bundler_v1)
       end
 
-      it 'includes each occurrence' do
+      it 'includes each occurrence excluding archived projects' do
         expect(dependencies).to eq([
           {
             "name" => occurrence_1.component_name,
