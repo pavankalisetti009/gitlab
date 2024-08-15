@@ -23,9 +23,12 @@ module API
 
     helpers do
       def model_gateway_headers(headers, service)
-        Gitlab::AiGateway.headers(user: current_user, service: service, agent: headers["User-Agent"])
-          .merge(saas_headers)
-          .transform_values { |v| Array(v) }
+        Gitlab::AiGateway.headers(
+          user: current_user,
+          service: service,
+          agent: headers["User-Agent"],
+          lsp_version: headers["X-Gitlab-Language-Server-Version"]
+        ).merge(saas_headers).transform_values { |v| Array(v) }
       end
 
       def connector_public_headers

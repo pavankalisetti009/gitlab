@@ -259,6 +259,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'X-Gitlab-Oidc-Token' => token,
               'Content-Type' => 'application/json',
               'X-GitLab-NO-Ignore' => 'ignoreme',
+              'X-Gitlab-Language-Server-Version' => '4.21.0',
               'User-Agent' => 'Super Cool Browser 14.5.2'
             }
           end
@@ -276,6 +277,7 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
               'X-Gitlab-Global-User-Id' => [global_user_id],
               'X-Gitlab-Host-Name' => [Gitlab.config.gitlab.host],
               'X-Gitlab-Realm' => [gitlab_realm],
+              'X-Gitlab-Language-Server-Version' => ['4.21.0'],
               'User-Agent' => ['Super Cool Browser 14.5.2']
             })
           end

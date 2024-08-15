@@ -14,7 +14,7 @@ module Gitlab
       "#{base_url}/v1/code/user_access_token"
     end
 
-    def self.headers(user:, service:, agent: nil)
+    def self.headers(user:, service:, agent: nil, lsp_version: nil)
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
         'Authorization' => "Bearer #{service.access_token(user)}",
@@ -26,6 +26,11 @@ module Gitlab
       }.merge(Gitlab::CloudConnector.headers(user))
         .tap do |result|
           result['User-Agent'] = agent if agent # Forward the User-Agent on to the model gateway
+
+          if lsp_version
+            # Forward the X-Gitlab-Language-Server-Version on to the model gateway
+            result['X-Gitlab-Language-Server-Version'] = lsp_version
+          end
 
           # Pass the distrubted tracing LangSmith header to AI Gateway.
           result.merge!(Langsmith::RunHelpers.to_headers) if Langsmith::RunHelpers.enabled?

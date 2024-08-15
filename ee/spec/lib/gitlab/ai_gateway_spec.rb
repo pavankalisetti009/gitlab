@@ -32,6 +32,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     let(:enabled_by_namespace_ids) { [1, 2] }
     let(:service) { instance_double(CloudConnector::BaseAvailableServiceData) }
     let(:agent) { nil }
+    let(:lsp_version) { nil }
     let(:expected_headers) do
       {
         'X-Gitlab-Authentication-Type' => 'oidc',
@@ -49,7 +50,7 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       }
     end
 
-    subject(:headers) { described_class.headers(user: user, service: service, agent: agent) }
+    subject(:headers) { described_class.headers(user: user, service: service, agent: agent, lsp_version: lsp_version) }
 
     before do
       allow(service).to receive(:access_token).with(user).and_return(token)
@@ -62,6 +63,12 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       let(:agent) { 'user agent' }
 
       it { is_expected.to match(expected_headers.merge('User-Agent' => agent)) }
+    end
+
+    context 'when lsp_version is set' do
+      let(:lsp_version) { '4.21.0' }
+
+      it { is_expected.to match(expected_headers.merge('X-Gitlab-Language-Server-Version' => lsp_version)) }
     end
 
     context 'when Langsmith is enabled' do
