@@ -30,14 +30,12 @@ module API
             .new(declared_params[:new_path], declared_params[:diff], declared_params[:hunk])
             .to_prompt
 
-          response = ::Gitlab::Llm::VertexAi::Client
-            .new(current_user, unit_primitive: 'review_merge_request')
-            .chat(
-              content: prompt,
-              parameters: ::Gitlab::Llm::VertexAi::Configuration.payload_parameters(temperature: 0)
-            )
+          response = ::Gitlab::Llm::Anthropic::Client.new(
+            current_user,
+            unit_primitive: 'review_merge_request'
+          ).messages_complete(**prompt)
 
-          response_modifier = ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+          response_modifier = ::Gitlab::Llm::Anthropic::ResponseModifiers::ReviewMergeRequest.new(response)
 
           review_response = { review: response_modifier.response_body }
 

@@ -32,20 +32,8 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
       }
     end
 
-    let(:review_response) do
-      {
-        "predictions" => [
-          {
-            "content" => 'Review response',
-            "safetyAttributes" => {
-              "categories" => ["Violent"],
-              "scores" => [0.4000000059604645],
-              "blocked" => false
-            }
-          }
-        ]
-      }
-    end
+    let(:review_prompt) { { messages: ['prompt'] } }
+    let(:review_response) { { content: [{ text: 'Review response' }] } }
 
     subject(:post_api) do
       post api('/duo_code_review/evaluations', current_user), headers: headers, params: body
@@ -62,21 +50,18 @@ RSpec.describe API::DuoCodeReview, feature_category: :code_review_workflow do
         diff,
         hunk
       ) do |prompt|
-        allow(prompt).to receive(:to_prompt).and_return('prompt')
+        allow(prompt).to receive(:to_prompt).and_return(review_prompt)
       end
 
       allow_next_instance_of(
-        ::Gitlab::Llm::VertexAi::Client,
+        ::Gitlab::Llm::Anthropic::Client,
         authorized_user,
         unit_primitive: 'review_merge_request'
       ) do |client|
         allow(client)
-          .to receive(:chat)
-          .with(
-            content: 'prompt',
-            parameters: ::Gitlab::Llm::VertexAi::Configuration.payload_parameters(temperature: 0)
-          )
-          .and_return(review_response.to_json)
+          .to receive(:messages_complete)
+          .with(review_prompt)
+          .and_return(review_response)
       end
 
       post_api
