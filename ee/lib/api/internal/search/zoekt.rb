@@ -8,7 +8,7 @@ module API
         before { authenticate_by_gitlab_shell_token! }
 
         feature_category :global_search
-        urgency :medium
+        urgency :low
 
         namespace 'internal' do
           namespace 'search' do
