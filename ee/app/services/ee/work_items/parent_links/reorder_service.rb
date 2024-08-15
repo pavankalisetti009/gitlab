@@ -108,6 +108,13 @@ module EE
           synced_moving_object.save!
         end
 
+        override :can_admin_link?
+        def can_admin_link?(work_item)
+          return true if synced_work_item
+
+          super
+        end
+
         override :linkable?
         def linkable?(work_item)
           return true if synced_work_item
