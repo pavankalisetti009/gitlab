@@ -11,24 +11,39 @@ RSpec.describe Milestone, :elastic, feature_category: :global_search do
     let_it_be(:object) { create :milestone, project: project }
   end
 
-  it "searches milestones", :sidekiq_might_not_need_inline do
-    project = create :project
+  describe 'searching', :sidekiq_inline do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, developers: user) }
+    let_it_be(:milestone_1) { create(:milestone, title: 'bla-bla term1', project: project) }
+    let_it_be(:milestone_2) { create(:milestone, title: 'bla-bla term2', project: project) }
+    let_it_be(:milestone_3) { create(:milestone, project: project) }
+    # The milestone you have no access to except as an administrator
+    let_it_be(:milestone_4) { create(:milestone, title: 'bla-bla term3') }
 
-    Sidekiq::Testing.inline! do
-      create :milestone, title: 'bla-bla term1', project: project
-      create :milestone, description: 'bla-bla term2', project: project
-      create :milestone, project: project
-
-      # The milestone you have no access to except as an administrator
-      create :milestone, title: 'bla-bla term3'
-
+    before do
+      Elastic::ProcessInitialBookkeepingService.track!(milestone_1, milestone_2, milestone_3, milestone_4)
       ensure_elasticsearch_index!
     end
 
-    options = { project_ids: [project.id] }
+    shared_examples 'a milestone search' do
+      it 'searches milestones', :sidekiq_inline do
+        options = { project_ids: [project.id], current_user: user }
 
-    expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count).to eq(2)
-    expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).total_count).to eq(3)
+        expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count)
+          .to eq(2)
+        expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).total_count).to eq(3)
+      end
+    end
+
+    it_behaves_like 'a milestone search'
+
+    context 'when search_milestone_query_builder is false' do
+      before do
+        stub_feature_flags(search_milestone_query_builder: false)
+      end
+
+      it_behaves_like 'a milestone search'
+    end
   end
 
   describe 'json' do

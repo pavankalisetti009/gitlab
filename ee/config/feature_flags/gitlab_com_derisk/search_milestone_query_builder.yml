@@ -1,0 +1,9 @@
+---
+name: search_milestone_query_builder
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/462684
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159955
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/473270
+milestone: '17.4'
+group: group::global search
+type: gitlab_com_derisk
+default_enabled: false

@@ -272,6 +272,24 @@ module Search
           end
         end
 
+        def by_type(query_hash:, options:)
+          raise ArgumentError, 'by_type filter requires doc_type option' unless options.key?(:doc_type)
+
+          doc_type = options[:doc_type]
+          context.name(:filters) do
+            add_filter(query_hash, :query, :bool, :filter) do
+              {
+                term: {
+                  type: {
+                    _name: context.name(:doc, :is_a, doc_type),
+                    value: doc_type
+                  }
+                }
+              }
+            end
+          end
+        end
+
         private
 
         # This is a helper method that we are using to add filter conditions
@@ -473,7 +491,6 @@ module Search
           return [condition] unless features
 
           features = Array(features)
-
           features.map do |feature|
             context.name(feature, :access_level) do
               limit =
@@ -525,7 +542,11 @@ module Search
           scoped_project_ids = scoped_project_ids(current_user, options[:project_ids])
           return {} if scoped_project_ids == :any
 
-          project_ids = filter_ids_by_feature(scoped_project_ids, current_user, options[:features])
+          project_ids = []
+          Array.wrap(options[:features]).each do |feature|
+            project_ids.concat(filter_ids_by_feature(scoped_project_ids, current_user, feature))
+          end
+
           rejected_ids = namespaces.flat_map do |namespace|
             namespace.all_project_ids_except(project_ids).pluck_primary_key
           end
