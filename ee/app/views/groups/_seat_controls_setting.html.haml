@@ -6,8 +6,7 @@
   %div
     = f.gitlab_ui_radio_component :seat_control, :user_cap, _("Set user cap"),
       help_text: _("Any user who is added or requests access in excess of the user cap must be approved by an administrator"),
-      radio_options: { disabled: group.shared_externally? },
-      label_options: { data: { testid: 'seat-control-user-cap-radio' } }
+      radio_options: { disabled: group.shared_externally?, data: { testid: 'seat-control-user-cap-radio' } }
     = f.label :new_user_signups_cap, _('Number of users for user cap'), class: 'gl-sr-only'
     = f.number_field :new_user_signups_cap, min: 1,
       class: 'form-control form-control-sm gl-form-input gl-w-auto gl-mt-3 gl-ml-6',
