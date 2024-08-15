@@ -980,7 +980,7 @@ module EE
     end
 
     def has_dependencies?
-      Sbom::Occurrence.for_namespace_and_descendants(self).exists?
+      Sbom::Occurrence.for_namespace_and_descendants(self).unarchived.exists?
     end
 
     def sbom_occurrences(with_totals: true, use_traversal_ids: false)

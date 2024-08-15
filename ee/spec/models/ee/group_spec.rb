@@ -3289,6 +3289,13 @@ RSpec.describe Group, feature_category: :groups_and_projects do
 
       is_expected.to eq(true)
     end
+
+    it 'returns false if dependencies only exist on archived projects' do
+      project = create(:project, :archived, group: group)
+      create(:sbom_occurrence, project: project)
+
+      is_expected.to eq(false)
+    end
   end
 
   describe '#sbom_occurrences' do
