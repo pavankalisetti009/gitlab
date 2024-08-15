@@ -724,10 +724,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
   end
 
   describe '.by_authorization' do
-    let_it_be(:public_group) { create(:group, :public) }
-    let_it_be(:authorized_project) { create(:project, group: public_group, developers: [user]) }
-    let_it_be(:private_project) { create(:project, :private, group: public_group) }
-    let_it_be(:public_project) { create(:project, :public, group: public_group) }
+    let_it_be_with_reload(:public_group) { create(:group, :public) }
+    let_it_be_with_reload(:authorized_project) { create(:project, group: public_group, developers: [user]) }
+    let_it_be_with_reload(:private_project) { create(:project, :private, group: public_group) }
+    let_it_be_with_reload(:public_project) { create(:project, :public, group: public_group) }
     let(:options) { base_options }
     let(:public_and_internal_projects) { false }
     let(:project_ids) { [] }
@@ -900,6 +900,209 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
                           ]
                         } }
                       ] } },
+                    { bool:
+                      { _name: 'filters:project:visibility:20:issues:access_level',
+                        filter: [
+                          { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                        value: ::Gitlab::VisibilityLevel::PUBLIC } } },
+                          { term: {
+                            'issues_access_level' =>
+                              { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
+                          } }
+                        ] } }
+                  ]
+                } }
+              ]
+
+              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            end
+          end
+        end
+      end
+    end
+
+    context 'when feature access level is set to disabled for the project_ids is passed in array' do
+      let(:project_ids) { [public_project.id] }
+
+      before do
+        public_project.project_feature.update!(issues_access_level: ::ProjectFeature::DISABLED)
+      end
+
+      context 'when public_and_internal_projects is false' do
+        let(:public_and_internal_projects) { false }
+
+        it 'returns the expected query' do
+          expected_filter = [
+            { has_parent:
+              { _name: 'filters:project:parent', parent_type: 'project',
+                query: { bool: { should: [
+                  { bool: { filter: [
+                    { terms: { _name: 'filters:project:membership:id', id: [] } },
+                    { terms: {
+                      _name: 'filters:project:issues:enabled_or_private',
+                      'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                    } }
+                  ] } }
+                ] } } } }
+          ]
+
+          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+        end
+
+        context 'when no_join_project is true' do
+          let(:no_join_project) { true }
+
+          it 'returns the expected query' do
+            expected_filter = [
+              bool: {
+                _name: 'filters:project',
+                should: [
+                  { bool:
+                    {
+                      filter: [
+                        { terms: { _name: 'filters:project:membership:id', project_id: [] } },
+                        { terms: { _name: 'filters:project:issues:enabled_or_private',
+                                   'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE] } }
+                      ]
+                    } }
+                ]
+              }
+            ]
+
+            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+      end
+
+      context 'when public_and_internal_projects is true' do
+        let(:public_and_internal_projects) { true }
+
+        it 'returns the expected query' do
+          expected_filter = [
+            { has_parent:
+              { _name: 'filters:project:parent', parent_type: 'project',
+                query: { bool: { should: [
+                  { bool: { filter: [
+                    { terms: { _name: 'filters:project:membership:id', id: [] } },
+                    { terms: {
+                      _name: 'filters:project:issues:enabled_or_private',
+                      'issues_access_level' => [::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE]
+                    } }
+                  ] } },
+                  { bool:
+                    { _name: 'filters:project:visibility:10:issues:access_level',
+                      filter: [
+                        { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                      value: ::Gitlab::VisibilityLevel::INTERNAL } } },
+                        { term: { 'issues_access_level' =>
+                          { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                            value: ::ProjectFeature::ENABLED } } }
+                      ] } },
+                  { bool:
+                    { _name: 'filters:project:visibility:20:issues:access_level',
+                      filter: [
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
+                        { term: { 'issues_access_level' =>
+                          { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                            value: ::ProjectFeature::ENABLED } } }
+                      ] } }
+                ] } } } }
+          ]
+
+          expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+          expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+          expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+        end
+
+        context 'when no_join_project is true' do
+          let(:no_join_project) { true }
+
+          it 'returns the expected query' do
+            expected_filter = [
+              { bool: {
+                _name: 'filters:project',
+                should: [
+                  { bool:
+                    { filter: [
+                      { terms: { _name: 'filters:project:membership:id', project_id: [] } },
+                      { terms: {
+                        _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [
+                          ::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE
+                        ]
+                      } }
+                    ] } },
+                  { bool:
+                    { _name: 'filters:project:visibility:10:issues:access_level',
+                      filter: [
+                        { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                      value: ::Gitlab::VisibilityLevel::INTERNAL } } },
+                        { term: {
+                          'issues_access_level' =>
+                            { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
+                        } }
+                      ] } },
+                  { bool:
+                    { _name: 'filters:project:visibility:20:issues:access_level',
+                      filter: [
+                        { term: { visibility_level: { _name: 'filters:project:visibility:20',
+                                                      value: ::Gitlab::VisibilityLevel::PUBLIC } } },
+                        { term: {
+                          'issues_access_level' =>
+                            { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                              value: ::ProjectFeature::ENABLED }
+                        } }
+                      ] } }
+                ]
+              } }
+            ]
+
+            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          end
+
+          context 'when project_id_field is set in options' do
+            let(:options) { base_options.merge(project_id_field: :foo) }
+
+            it 'returns the expected query' do
+              expected_filter = [
+                { bool: {
+                  _name: 'filters:project',
+                  should: [
+                    { bool:
+                      { filter: [
+                        { terms: { _name: 'filters:project:membership:id', foo: [] } },
+                        { terms: {
+                          _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [
+                            ::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE
+                          ]
+                        } }
+                      ] } },
+                    { bool:
+                      { _name: 'filters:project:visibility:10:issues:access_level',
+                        filter: [
+                          { term: { visibility_level: { _name: 'filters:project:visibility:10',
+                                                        value: ::Gitlab::VisibilityLevel::INTERNAL } } },
+                          { term: {
+                            'issues_access_level' =>
+                              { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
+                          } }
+                        ] } },
                     { bool:
                       { _name: 'filters:project:visibility:20:issues:access_level',
                         filter: [
@@ -1860,6 +2063,29 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
           end
         end
+      end
+    end
+  end
+
+  describe '#by_type' do
+    let(:options) { { doc_type: 'my_type' } }
+
+    subject(:by_type) { described_class.by_type(query_hash: query_hash, options: options) }
+
+    it 'adds the doc type filter to the query_hash' do
+      expected_filter = [{ term: { type: { _name: 'filters:doc:is_a:my_type', value: 'my_type' } } }]
+
+      expect(by_type.dig(:query, :bool, :filter)).to eq(expected_filter)
+      expect(by_type.dig(:query, :bool, :must)).to be_empty
+      expect(by_type.dig(:query, :bool, :must_not)).to be_empty
+      expect(by_type.dig(:query, :bool, :should)).to be_empty
+    end
+
+    context 'when doc_type not provided in options' do
+      let(:options) { {} }
+
+      it 'raises an exception' do
+        expect { by_type }.to raise_exception(ArgumentError)
       end
     end
   end

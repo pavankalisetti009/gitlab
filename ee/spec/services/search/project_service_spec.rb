@@ -410,14 +410,15 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     end
 
     context 'milestone' do
-      let!(:milestone) { create :milestone, project: project }
+      let_it_be_with_reload(:milestone) { create :milestone, project: project }
 
-      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_milestone_access
+      before do
+        Elastic::ProcessInitialBookkeepingService.track!(milestone)
+        ensure_elasticsearch_index!
       end
 
-      with_them do
-        it "respects visibility" do
+      shared_examples 'a milestone search that respects visibility' do
+        it 'respects visibility' do
           enable_admin_mode!(user) if admin_mode
           project.update!(
             visibility_level: Gitlab::VisibilityLevel.level_value(project_level.to_s),
@@ -430,6 +431,22 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
           expect_search_results(user, 'milestones', expected_count: expected_count) do |user|
             described_class.new(user, project, search: milestone.title).execute
           end
+        end
+      end
+
+      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_milestone_access
+      end
+
+      with_them do
+        it_behaves_like 'a milestone search that respects visibility'
+
+        context 'when search_milestone_query_builder is false' do
+          before do
+            stub_feature_flags(search_milestone_query_builder: false)
+          end
+
+          it_behaves_like 'a milestone search that respects visibility'
         end
       end
     end

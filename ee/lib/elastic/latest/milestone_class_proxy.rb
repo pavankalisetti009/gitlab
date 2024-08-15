@@ -4,16 +4,26 @@ module Elastic
   module Latest
     class MilestoneClassProxy < ApplicationClassProxy
       def elastic_search(query, options: {})
-        options[:in] = %w[title^2 description]
-        options[:no_join_project] = true
-        query_hash = basic_query_hash(options[:in], query, options)
-        type_filter = [{ terms: { _name: context.name(:doc, :is_a, es_type), type: [es_type] } }]
-        context.name(:milestone) do
-          query_hash = context.name(:related) { project_ids_filter(query_hash, options) }
-          query_hash = context.name(:archived) { archived_filter(query_hash) } if archived_filter_applicable?(options)
-        end
-        query_hash[:query][:bool][:filter] ||= []
-        query_hash[:query][:bool][:filter] += type_filter
+        query_hash = if ::Feature.enabled?(:search_milestone_query_builder, options[:current_user])
+                       ::Search::Elastic::MilestoneQueryBuilder.build(query: query, options: options)
+                     else
+                       options[:in] = %w[title^2 description]
+                       options[:no_join_project] = true
+                       basic_query_hash(options[:in], query, options).tap do |temp_query_hash|
+                         type_filter = [{ terms: { _name: context.name(:doc, :is_a, es_type), type: [es_type] } }]
+                         context.name(:milestone) do
+                           temp_query_hash = context.name(:related) { project_ids_filter(temp_query_hash, options) }
+
+                           if archived_filter_applicable?(options)
+                             temp_query_hash = context.name(:archived) { archived_filter(temp_query_hash) }
+                           end
+                         end
+
+                         temp_query_hash[:query][:bool][:filter] ||= []
+                         temp_query_hash[:query][:bool][:filter] += type_filter
+                       end
+                     end
+
         search(query_hash, options)
       end
 
