@@ -25420,6 +25420,12 @@ msgstr ""
 msgid "Group name (your organization)"
 msgstr ""
 
+msgid "Group name can contain only letters, digits, dashes, spaces, dots, underscores, parenthesis, and emojis."
+msgstr ""
+
+msgid "Group name must start with a letter, digit, emoji, or underscore."
+msgstr ""
+
 msgid "Group navigation"
 msgstr ""
 

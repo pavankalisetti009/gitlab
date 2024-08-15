@@ -18,6 +18,7 @@ import { slugify } from '~/lib/utils/text_utility';
 import { getGroupPathAvailability } from '~/rest_api';
 import { subscriptionsCreateGroup } from 'ee_else_ce/rest_api';
 import SafeHtml from '~/vue_shared/directives/safe_html';
+import { START_RULE, CONTAINS_RULE } from '~/groups/group_name_rules';
 
 const DEBOUNCE_TIMEOUT_DURATION = 1000;
 const DEFAULT_GROUP_PATH = '{group}';
@@ -93,10 +94,21 @@ export default {
         fields[FORM_FIELD_GROUP_NAME] = {
           label: this.$options.i18n.groupName.label,
           inputAttrs: {
-            'data-testid': 'subscription-group-name',
+            'data-testid': 'subscription-group-name-input',
             placeholder: this.$options.i18n.groupName.placeholder,
           },
-          validators: [formValidators.required(this.$options.i18n.groupName.validationMessage)],
+          groupAttrs: {
+            'data-testid': 'subscription-group-name-group',
+          },
+          validators: [
+            formValidators.required(this.$options.i18n.groupName.validationMessage),
+            formValidators.factory(START_RULE.message, (val) => {
+              return new RegExp(START_RULE.regex).test(val);
+            }),
+            formValidators.factory(CONTAINS_RULE.message, (val) => {
+              return new RegExp(CONTAINS_RULE.regex).test(val);
+            }),
+          ],
         };
       }
 
