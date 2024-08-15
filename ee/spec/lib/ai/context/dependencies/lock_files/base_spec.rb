@@ -35,7 +35,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
     expect(lock_file_class.lang).to eq('go')
   end
 
-  it_behaves_like 'parsing a lock file' do
+  it_behaves_like 'parsing a valid lock file' do
     let(:lock_file_content) do
       Gitlab::Json.dump({
         'test_libs' => [
@@ -46,7 +46,17 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
     end
 
     let(:expected_formatted_lib_names) { ['lib1', 'lib2 (2.1.0)'] }
+  end
+
+  it_behaves_like 'parsing an invalid lock file' do
     let(:expected_parsing_error_message) { 'content is not a valid JSON' }
+  end
+
+  context 'when the lock file content is empty' do
+    it_behaves_like 'parsing an invalid lock file' do
+      let(:invalid_lock_file_content) { '' }
+      let(:expected_parsing_error_message) { 'file empty' }
+    end
   end
 
   describe '.matches?' do
