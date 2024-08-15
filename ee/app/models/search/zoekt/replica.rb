@@ -28,8 +28,6 @@ module Search
         where(id: Search::Zoekt::Index.select(:zoekt_replica_id).where(state: non_ready_index_states).distinct)
       end
 
-      scope :for_namespace, ->(id) { where(namespace_id: id) }
-
       def self.for_enabled_namespace!(zoekt_enabled_namespace)
         params = {
           namespace_id: zoekt_enabled_namespace.root_namespace_id,
@@ -39,6 +37,11 @@ module Search
         where(namespace_id: params[:namespace_id]).first || create!(params)
       rescue ActiveRecord::RecordInvalid => invalid
         retry if invalid.record&.errors&.of_kind?(:namespace_id, :taken)
+      end
+
+      def self.search_enabled?(namespace_id)
+        joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { search: true })
+          .where(namespace_id: namespace_id).ready.exists?
       end
 
       private

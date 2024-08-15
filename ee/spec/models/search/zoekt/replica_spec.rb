@@ -127,6 +127,52 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
     end
   end
 
+  describe '.search_enabled?' do
+    context 'when replica does not exists for the passed namespace_id' do
+      let_it_be(:namespace_without_replica) { create(:group) }
+
+      before do
+        create(:zoekt_enabled_namespace, namespace: namespace_without_replica)
+      end
+
+      it 'returns false' do
+        expect(described_class.search_enabled?(namespace_without_replica.id)).to be false
+      end
+    end
+
+    context 'when replica exists for the passed namespace_id' do
+      context 'and is not ready' do
+        before do
+          zoekt_replica.pending!
+        end
+
+        it 'returns false' do
+          expect(described_class.search_enabled?(namespace.id)).to be false
+        end
+      end
+
+      context 'and is ready' do
+        before do
+          zoekt_replica.ready!
+        end
+
+        context 'when search is set to false for zoekt_enabled_namespace' do
+          before do
+            zoekt_enabled_namespace.update! search: false
+          end
+
+          it 'returns false' do
+            expect(described_class.search_enabled?(namespace.id)).to be false
+          end
+        end
+
+        it 'returns true' do
+          expect(described_class.search_enabled?(namespace.id)).to be true
+        end
+      end
+    end
+  end
+
   describe 'scopes' do
     let_it_be_with_reload(:replica_1_idx_1) do
       create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_replica.zoekt_enabled_namespace)
@@ -161,16 +207,6 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
 
         replica_1_idx_2.pending!
         expect(scope).to match_array(zoekt_replica)
-      end
-    end
-
-    describe '.for_namespace' do
-      before do
-        create(:zoekt_replica)
-      end
-
-      it 'returns replicas for the given namespace' do
-        expect(described_class.for_namespace(namespace.id).pluck(:namespace_id).uniq).to contain_exactly(namespace.id)
       end
     end
   end
