@@ -41,7 +41,7 @@
                   = _('Index the instance')
 
             .form-group
-              - first_pending_migration = Elastic::DataMigrationService.pending_migrations.first if elasticsearch_available
+              - first_pending_migration = Elastic::DataMigrationService.pending_migrations.first if elasticsearch_available && Elastic::DataMigrationService.pending_migrations?
               - pending_migration_running_and_pauses_indexing = first_pending_migration&.running? && first_pending_migration&.pause_indexing?
               - disable_checkbox = !Gitlab::CurrentSettings.elasticsearch_indexing? || pending_migration_running_and_pauses_indexing || @last_elasticsearch_reindexing_task&.in_progress?
               = f.gitlab_ui_checkbox_component :elasticsearch_pause_indexing, s_('AdminSettings|Pause Elasticsearch indexing'), checkbox_options: { disabled: disable_checkbox }, help_text: pending_migration_running_and_pauses_indexing ? s_('AdminSettings|There are Advanced Search migrations pending that require indexing to pause. Indexing must remain paused until GitLab completes the migrations.') : s_('AdminSettings|Use for cluster and index migrations. When indexing is paused, GitLab still tracks changes.')
