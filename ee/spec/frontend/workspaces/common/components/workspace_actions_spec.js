@@ -68,9 +68,8 @@ describe('ee/workspaces/components/common/workspace_actions', () => {
     ${ACTUAL.stopping}          | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
     ${ACTUAL.stopping}          | ${DESIRED.restartRequested} | ${[TERMINATE_BUTTON]}
     ${ACTUAL.stopped}           | ${DESIRED.running}          | ${[STARTING_BUTTON, TERMINATE_BUTTON]}
-    ${ACTUAL.stopped}           | ${DESIRED.stopped}          | ${[RESTART_BUTTON, START_BUTTON, TERMINATE_BUTTON]}
+    ${ACTUAL.stopped}           | ${DESIRED.stopped}          | ${[START_BUTTON, TERMINATE_BUTTON]}
     ${ACTUAL.stopped}           | ${DESIRED.terminated}       | ${[TERMINATING_BUTTON]}
-    ${ACTUAL.stopped}           | ${DESIRED.restartRequested} | ${[RESTARTING_BUTTON, TERMINATE_BUTTON]}
     ${ACTUAL.terminated}        | ${DESIRED.running}          | ${[]}
     ${ACTUAL.terminated}        | ${DESIRED.stopped}          | ${[]}
     ${ACTUAL.terminated}        | ${DESIRED.terminated}       | ${[]}
@@ -110,7 +109,6 @@ describe('ee/workspaces/components/common/workspace_actions', () => {
     actualState                 | desiredState       | buttonLabel    | actionDesiredState
     ${ACTUAL.creationRequested} | ${DESIRED.running} | ${'Terminate'} | ${'Terminated'}
     ${ACTUAL.stopped}           | ${DESIRED.stopped} | ${'Start'}     | ${'Running'}
-    ${ACTUAL.stopped}           | ${DESIRED.stopped} | ${'Restart'}   | ${'RestartRequested'}
     ${ACTUAL.running}           | ${DESIRED.running} | ${'Stop'}      | ${'Stopped'}
   `(
     'when clicking "$buttonLabel", emits "click" with "$actionDesiredState"',
