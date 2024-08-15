@@ -53,15 +53,12 @@ export default {
 
 <template>
   <gl-card data-testid="storage-detail-card">
-    <div
-      class="gl-display-flex gl-justify-content-space-between gl-gap-5"
-      data-testid="storage-included-in-plan"
-    >
+    <div class="gl-flex gl-justify-between gl-gap-5" data-testid="storage-included-in-plan">
       <div class="gl-w-80p">{{ planStorageDescription }}</div>
       <div v-if="loading" class="gl-animate-skeleton-loader gl-w-8 gl-h-5 gl-rounded-base"></div>
       <number-to-human-size v-else class="gl-whitespace-nowrap" :value="namespaceStorageLimit" />
     </div>
-    <div class="gl-display-flex gl-justify-content-space-between">
+    <div class="gl-flex gl-justify-between">
       <div class="gl-w-80p">
         {{ $options.i18n.STORAGE_STATISTICS_PURCHASED_STORAGE }}
         <gl-link
@@ -82,7 +79,7 @@ export default {
       />
     </div>
     <hr />
-    <div class="gl-display-flex gl-justify-content-space-between">
+    <div class="gl-flex gl-justify-between">
       <div class="gl-w-80p">{{ $options.i18n.STORAGE_STATISTICS_TOTAL_STORAGE }}</div>
       <div v-if="loading" class="gl-animate-skeleton-loader gl-w-8 gl-h-5 gl-rounded-base"></div>
       <number-to-human-size

@@ -134,7 +134,7 @@ export default {
 <template>
   <div class="gl-mt-5">
     <template v-if="loading">
-      <div class="gl-lg-w-half">
+      <div class="lg:gl-w-1/2">
         <gl-skeleton-loader :height="50">
           <rect width="140" height="30" x="0" y="0" rx="4" />
           <rect width="240" height="10" x="0" y="40" rx="4" />
@@ -147,13 +147,13 @@ export default {
       </div>
     </template>
     <template v-else>
-      <div class="gl-display-flex gl-justify-content-space-between">
+      <div class="gl-flex gl-justify-between">
         <div>
-          <h4 class="gl-font-lg gl-mb-3 gl-mt-0">{{ $options.i18n.title }}</h4>
+          <h4 class="gl-text-lg gl-mb-3 gl-mt-0">{{ $options.i18n.title }}</h4>
           <p>{{ $options.i18n.description }}</p>
         </div>
         <p
-          class="gl-m-0 gl-font-size-h-display gl-font-bold gl-whitespace-nowrap"
+          class="gl-m-0 gl-text-size-h-display gl-font-bold gl-whitespace-nowrap"
           data-testid="total-egress"
         >
           {{ totalEgressCombinedHumanSize }}
@@ -172,12 +172,8 @@ export default {
             <rect x="0" y="0" rx="2" ry="2" width="120" height="16" />
           </gl-skeleton-loader>
         </div>
-        <div
-          v-else
-          class="gl-display-flex gl-flex-direction-row"
-          data-testid="transfer-type-column"
-        >
-          <gl-icon :name="icon" class="gl-mr-4 gl-flex-shrink-0" />
+        <div v-else class="gl-flex gl-flex-row" data-testid="transfer-type-column">
+          <gl-icon :name="icon" class="gl-mr-4 gl-shrink-0" />
           <div>
             <p class="gl-font-bold gl-mb-0">
               {{ label }}

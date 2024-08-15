@@ -296,10 +296,7 @@ export default {
     </gl-alert>
 
     <section v-else>
-      <div
-        v-if="shouldShowBuyAdditionalMinutes"
-        class="gl-display-flex gl-justify-content-end gl-py-3"
-      >
+      <div v-if="shouldShowBuyAdditionalMinutes" class="gl-flex gl-justify-end gl-py-3">
         <gl-button
           v-if="!shouldShowLimitedAccessModal"
           :href="buyAdditionalMinutesPath"
@@ -356,7 +353,7 @@ export default {
       />
     </section>
 
-    <div class="gl-display-flex gl-my-5">
+    <div class="gl-flex gl-my-5">
       <gl-form-group :label="s__('UsageQuota|Filter charts by year')">
         <gl-collapsible-listbox
           v-model="selectedYear"
@@ -368,7 +365,7 @@ export default {
     </div>
 
     <section class="gl-my-5">
-      <h2 class="gl-font-lg">{{ $options.USAGE_BY_MONTH_HEADER }}</h2>
+      <h2 class="gl-text-lg">{{ $options.USAGE_BY_MONTH_HEADER }}</h2>
 
       <gl-loading-icon
         v-if="isLoadingYearUsageData"
@@ -385,9 +382,9 @@ export default {
     </section>
 
     <section class="gl-my-5">
-      <h2 class="gl-font-lg">{{ $options.USAGE_BY_PROJECT_HEADER }}</h2>
+      <h2 class="gl-text-lg">{{ $options.USAGE_BY_PROJECT_HEADER }}</h2>
 
-      <div class="gl-display-flex gl-my-3">
+      <div class="gl-flex gl-my-3">
         <gl-form-group :label="s__('UsageQuota|Filter projects data by month')">
           <gl-collapsible-listbox
             v-model="selectedMonth"

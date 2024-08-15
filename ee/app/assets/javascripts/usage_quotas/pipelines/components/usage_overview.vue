@@ -40,9 +40,7 @@ export default {
 </script>
 
 <template>
-  <section
-    class="gl-display-flex gl-justify-content-space-between gl-flex-wrap gl-border-b-gray-100"
-  >
+  <section class="gl-flex gl-justify-between gl-flex-wrap gl-border-b-gray-100">
     <section>
       <h5 class="gl-m-0" data-testid="minutes-title">
         {{ minutesTitle }}
@@ -54,7 +52,7 @@ export default {
         </gl-link>
       </div>
     </section>
-    <section class="gl-text-right gl-w-full gl-md-w-50p">
+    <section class="gl-text-right gl-w-full md:gl-w-1/2">
       <div data-testid="minutes-used-percentage">{{ minutesUsedPercentage }}</div>
       <gl-progress-bar :value="minutesUsedPercentage" />
     </section>

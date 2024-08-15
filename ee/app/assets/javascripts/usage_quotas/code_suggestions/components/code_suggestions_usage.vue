@@ -177,10 +177,7 @@ export default {
 
 <template>
   <section>
-    <section
-      v-if="isLoading"
-      class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5 gl-mt-5"
-    >
+    <section v-if="isLoading" class="gl-grid md:gl-grid-cols-2 gl-gap-5 gl-mt-5">
       <div class="gl-bg-white gl-border gl-p-5 gl-rounded-base">
         <gl-skeleton-loader :height="64">
           <rect width="140" height="30" x="5" y="0" rx="4" />

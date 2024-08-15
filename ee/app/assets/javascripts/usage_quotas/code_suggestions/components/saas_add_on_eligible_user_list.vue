@@ -229,7 +229,7 @@ export default {
       />
     </template>
     <template #user-cell="{ item }">
-      <div class="gl-display-flex">
+      <div class="gl-flex">
         <gl-avatar-link target="_blank" :href="item.webUrl" :alt="item.name">
           <gl-avatar-labeled
             :src="item.avatarUrl"

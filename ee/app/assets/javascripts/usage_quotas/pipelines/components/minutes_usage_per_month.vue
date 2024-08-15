@@ -62,7 +62,7 @@ export default {
     </gl-tab>
     <gl-tab>
       <template #title>
-        <div id="shared-runner-message-popover-container" class="gl-display-flex">
+        <div id="shared-runner-message-popover-container" class="gl-flex">
           <span class="gl-mr-2">{{ $options.SHARED_RUNNER_USAGE }}</span>
           <help-popover :options="$options.SHARED_RUNNER_POPOVER_OPTIONS" />
         </div>

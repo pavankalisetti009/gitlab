@@ -57,17 +57,16 @@ export const addOnEligibleUserListTableFields = {
   user: {
     key: 'user',
     label: __('User'),
-    thClass: `gl-pl-2! gl-w-5/20`,
     // eslint-disable-next-line @gitlab/require-i18n-strings
-    tdClass: '!gl-align-middle gl-pl-2!',
+    thClass: '!gl-pl-2 gl-w-5/20',
+    tdClass: '!gl-align-middle !gl-pl-2',
   },
   checkbox: {
     key: 'checkbox',
     label: '',
     headerTitle: __('Checkbox'),
-    thClass: 'gl-w-1/20 gl-pl-2!',
-    // eslint-disable-next-line @gitlab/require-i18n-strings
-    tdClass: '!gl-align-middle gl-pl-2!',
+    thClass: 'gl-w-1/20 !gl-pl-2',
+    tdClass: '!gl-align-middle !gl-pl-2',
   },
 };
 

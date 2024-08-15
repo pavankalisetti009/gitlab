@@ -177,23 +177,23 @@ export default {
 
 <template>
   <div
-    class="gl-bg-white gl-border-1 gl-border-gray-100 gl-border-solid gl-p-5 gl-rounded-base gl-display-flex"
+    class="gl-bg-white gl-border-1 gl-border-gray-100 gl-border-solid gl-p-5 gl-rounded-base gl-flex"
   >
     <gl-skeleton-loader v-if="isLoading" :height="64">
       <rect width="140" height="30" x="5" y="0" rx="4" />
       <rect width="240" height="10" x="5" y="40" rx="4" />
       <rect width="340" height="10" x="5" y="54" rx="4" />
     </gl-skeleton-loader>
-    <div v-else class="gl-flex-grow-1">
+    <div v-else class="gl-grow">
       <p
         v-if="shouldRenderSeatsUsedBlock"
-        class="gl-font-size-h-display gl-font-bold gl-mb-3"
+        class="gl-text-size-h-display gl-font-bold gl-mb-3"
         data-testid="seats-used"
       >
         <span class="gl-relative gl-top-1">
           {{ seatsUsed }}
         </span>
-        <span class="gl-font-lg">
+        <span class="gl-text-lg">
           {{ $options.i18n.seatsUsedText }}
         </span>
         <gl-link
@@ -206,13 +206,13 @@ export default {
       </p>
       <p
         v-if="shouldRenderSeatsOwedBlock"
-        class="gl-font-size-h-display gl-font-bold gl-mb-0"
+        class="gl-text-size-h-display gl-font-bold gl-mb-0"
         data-testid="seats-owed"
       >
         <span class="gl-relative gl-top-1">
           {{ seatsOwed }}
         </span>
-        <span class="gl-font-lg">
+        <span class="gl-text-lg">
           {{ $options.i18n.seatsOwedText }}
         </span>
         <gl-link
@@ -230,7 +230,7 @@ export default {
       category="primary"
       target="_blank"
       variant="confirm"
-      class="gl-ml-3 gl-align-self-start"
+      class="gl-ml-3 gl-self-start"
       data-testid="purchase-button"
       @click="handleAddSeats"
     >
@@ -242,7 +242,7 @@ export default {
       category="primary"
       target="_blank"
       variant="confirm"
-      class="gl-ml-3 gl-align-self-start"
+      class="gl-ml-3 gl-self-start"
       data-testid="explore-paid-plans"
       @click="trackExplorePlans"
     >

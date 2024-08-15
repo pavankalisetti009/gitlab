@@ -150,7 +150,7 @@ export default {
       :value="isAssigned"
       :label="toggleLabel"
       :is-loading="isLoading"
-      class="gl-display-inline-block gl-align-middle"
+      class="gl-inline-block gl-align-middle"
       label-position="hidden"
       @change="onToggle"
     />

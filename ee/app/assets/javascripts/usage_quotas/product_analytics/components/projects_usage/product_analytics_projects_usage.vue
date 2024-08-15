@@ -63,7 +63,7 @@ export default {
 </script>
 <template>
   <section>
-    <h2 class="gl-font-lg">{{ s__('ProductAnalytics|Usage by project') }}</h2>
+    <h2 class="gl-text-lg">{{ s__('ProductAnalytics|Usage by project') }}</h2>
     <gl-alert v-if="error" variant="danger" :dismissible="false">
       {{
         s__(
