@@ -79,7 +79,7 @@ flowchart TB
             subgraph apilayer[Remote Development / GitLab Agent For Kubernetes: Grape/GraphQL API layer]
                 direction TB
                 apis[Grape APIs & GraphQL Resolvers/Mutations]
-                subgraph service[Remote Development: Service layer]
+                subgraph servicelayer[Remote Development: Service layer]
                     direction TB
                     service[Service]
                     subgraph domainlogiclayer[Remote Development: Domain Logic layer]
@@ -264,11 +264,17 @@ The custom classes are a form of the ["Value Object](https://thoughtbot.com/blog
 
 For these custom value object classes, the `#==` method should be implemented.
 
-### Mixins/Inheritance
+### Code sharing patterns and DRYness
 
-Mixins (implemented as modules in standard Ruby or "concerns" in Rails) are a common pattern for sharing logic in Ruby and Rails.
+Mixins (implemented as modules in standard Ruby or "concerns" in Rails) are a common pattern for sharing logic in Ruby and Rails, and keeping code [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)
 
 We prefer mixins/modules instead of superclasses/inheritance for sharing code. This is because modules (which are actually a form of [multiple inheritance](https://en.wikipedia.org/wiki/Multiple_inheritance)) provide more flexibility than single inheritance.
+
+In other cases, we do not use a mixin/module, but instead directly call a class/singleton method via `ClassName.method`. This has some benefits:
+
+- Helps IDEs out with figuring out exactly what method is being called
+- Make it simpler to reason about for people new to Ruby (don't have to understand the nuances of class vs. instance methods, and when to use `extend` vs. `include`)
+- Encourages direct and dedicated unit testing of the class/singleton method, rather than relying on indirect testing via a class using a mixin/module.
 
 However, we do use inheritance in the higher layers of the architecture where this is necessary confirm with existing patterns, e.g. in controllers or API classes.
 
@@ -494,7 +500,20 @@ In some cases, we do also enforce these patterns via specs. The `spec/support/ma
 
 In the future, we may also add linter or static analysis enforcement (e.g. `rubocop` rules) for these patterns.
 
-This multi
+## Testing levels for the Workspaces feature
+
+In general, we follow the [standard GitLab testing pyramid and testing levels](https://docs.gitlab.com/ee/development/testing_guide/testing_levels.html) (see also [this good article on the Testing Pyramid](https://martinfowler.com/articles/practical-test-pyramid.html)).
+
+For frontend testing, we follow the GitLab standards closely for all testing levels.
+
+However, when exercising the backend/fullstack code where the business logic lives, we have some additional patterns and guideline for the Workspaces feature, especially around integration testing. Here's a summary of the main testing levels we rely on:
+
+- Unit Tests: This lowest level of testing, and only responsible for testing the logic directly contained in the class under test.
+- not-quite-unit tests - e.g. GraphQL tests: Sometimes we test groups of collaborating classes, and do not have direct unit tests. For example, GraphQL mutations and resolvers are tested at the `spec/requests` level, and exercise not just the resolver, but also the relevant finder and authorization policy code. This follows the [standard GitLab recommendations for testing resolvers](https://docs.gitlab.com/ee/development/api_graphql_styleguide.html#testing)
+- Request Integration Test. This spec is [at `ee/spec/requests/remote_development/integration_spec.rb`](../../spec/requests/remote_development/integration_spec.rb). It serves to fully exercise all of the Rails stack logic, as a near-the-top-of-the-testing-pyramid, happy-path scenario testing of the full lifecycle of creating a workspace. It uses the same use-case and scenario as the Feature Testing specs, except that it does not exercise the Web UI. It mocks out the agent reconciliation requests. This means that it is a "sweet spot" for integration testing because it is comprehensive, while still remaining both fast and reliable (compared to other integration-level specs which involve the web UI). Thus, we should prefer this spec to add the majority of our happy-path integration testing coverage.
+- Feature Integration Tests: These specs are under [`ee/spec/features/remote_development`](../../spec/features/remote_development). They exercise the features via the web UI, but still mock out the agent reconciliation requests.
+- End-to-End (E2E) Tests: There are two versions of these tests, one which creates all prerequisites ([`qa/qa/specs/features/ee/browser_ui/3_create/remote_development/workspace_actions_spec.rb`](../../../qa/qa/specs/features/ee/browser_ui/3_create/remote_development/workspace_actions_spec.rb)), and one which assumes prerequisites already exist ([`qa/qa/specs/features/ee/browser_ui/3_create/remote_development/with_prerequisite_done/workspace_actions_with_prerequisite_done_spec.rb`](../../../qa/qa/specs/features/ee/browser_ui/3_create/remote_development/with_prerequisite_done/workspace_actions_with_prerequisite_done_spec.rb). These involve testing a whole end-to-end scenario of the workspace feature, including interaction with the actual agent. The `workspace_actions_with_prerequisite_done_spec.rb` can be more easily run in local development via `scripts/remote_development/run-e2e-tests.sh`. However, these tests can be very slow and flaky, and require that all the workspaces and agent infrastructure be set up properly in order to pass. See [the GitLab testing guide for end-to-end testing](https://docs.gitlab.com/ee/development/testing_guide/end_to_end/) for more context.
+
 
 ## Testing ROP main classes
 
