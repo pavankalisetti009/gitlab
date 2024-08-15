@@ -2,8 +2,6 @@
 import { GlProgressBar, GlButton } from '@gitlab/ui';
 import GITLAB_LOGO_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg';
 import { sprintf } from '~/locale';
-import Tracking from '~/tracking';
-
 import {
   DISMISS,
   DUO_PRO_TRIAL_WIDGET_TITLE,
@@ -14,19 +12,15 @@ import {
   WIDGET_CONTAINER_ID,
 } from './constants';
 
-const trackingMixin = Tracking.mixin();
-
 export default {
   components: {
     GlProgressBar,
     GlButton,
   },
-  mixins: [trackingMixin],
   inject: {
     trialDaysUsed: {},
     trialDuration: {},
     percentageComplete: {},
-    widgetUrl: {},
     groupId: {},
     featureId: {},
     dismissEndpoint: {},
@@ -63,13 +57,6 @@ export default {
       });
     },
   },
-  methods: {
-    onWidgetClick() {
-      const category = this.isTrialActive ? 'trial_status_widget' : 'trial_ended_widget';
-
-      this.track('click_link', { category, label: 'duo_pro_trial' });
-    },
-  },
 };
 </script>
 
@@ -85,7 +72,6 @@ export default {
     <div
       data-testid="duo-pro-trial-widget-menu"
       class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
-      @click="onWidgetClick"
     >
       <div v-if="isTrialActive">
         <div class="gl-flex gl-w-full">
