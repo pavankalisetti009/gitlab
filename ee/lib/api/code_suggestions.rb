@@ -142,20 +142,27 @@ module API
             render_api_error!({ error: _('This endpoint has been requested too many times. Try again later.') }, 429)
           end
 
-          result = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
-          service_unavailable!(result[:message]) if result[:status] == :error
+          token = Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).direct_access_token
+          service_unavailable!(token[:message]) if token[:status] == :error
 
           Gitlab::Tracking::AiTracking.track_event('code_suggestion_direct_access_token_refresh', user: current_user)
+
+          model_details = ::CodeSuggestions::CompletionsModelDetails.new(
+            current_user: current_user
+          ).current_model
 
           access = {
             base_url: ::Gitlab::AiGateway.url,
             # for development purposes we just return instance JWT, this should not be used in production
             # until we generate a short-term token for user
             # https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist/-/issues/429
-            token: result[:token],
-            expires_at: result[:expires_at],
+            token: token[:token],
+            expires_at: token[:expires_at],
             headers: connector_public_headers
-          }
+          }.tap do |a|
+            a[:model_details] = model_details unless model_details.blank?
+          end
+
           present access, with: Grape::Presenters::Presenter
         end
       end
