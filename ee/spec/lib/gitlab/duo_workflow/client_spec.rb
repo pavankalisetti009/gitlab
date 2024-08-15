@@ -41,4 +41,32 @@ RSpec.describe Gitlab::DuoWorkflow::Client, feature_category: :duo_workflow do
       end
     end
   end
+
+  describe '.secure?' do
+    context 'when cloud_connector is configured to https' do
+      it 'returns true' do
+        expect(described_class.secure?).to eq(true)
+      end
+    end
+
+    context 'when cloud_connector is configured to http' do
+      before do
+        allow(Gitlab.config.cloud_connector).to receive(:base_url).and_return 'http://duo-workflow-service.example.com'
+      end
+
+      it 'returns false' do
+        expect(described_class.secure?).to eq(false)
+      end
+    end
+
+    context 'when cloud_connector is not configured' do
+      before do
+        allow(Gitlab.config).to receive(:cloud_connector).and_raise(GitlabSettings::MissingSetting)
+      end
+
+      it 'returns nil' do
+        expect(described_class.secure?).to eq(false)
+      end
+    end
+  end
 end

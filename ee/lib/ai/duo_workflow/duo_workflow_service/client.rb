@@ -7,17 +7,16 @@ module Ai
   module DuoWorkflow
     module DuoWorkflowService
       class Client
-        def initialize(duo_workflow_service_url:, current_user:)
+        def initialize(duo_workflow_service_url:, current_user:, secure:)
           @duo_workflow_service_url = duo_workflow_service_url
           @current_user = current_user
+          @secure = secure
         end
 
         def generate_token
-          # TODO: use secure channel for non-localhost URLs
-
           stub = ::DuoWorkflowService::DuoWorkflow::Stub.new(
             duo_workflow_service_url,
-            :this_channel_is_insecure
+            channel_credentials
           )
 
           request = ::DuoWorkflowService::GenerateTokenRequest.new
@@ -54,6 +53,14 @@ module Ai
             subject: ::Gitlab::CurrentSettings.uuid,
             scopes: ["duo_workflow_generate_token"]
           ).encoded
+        end
+
+        def channel_credentials
+          if @secure
+            GRPC::Core::ChannelCredentials.new(::Gitlab::X509::Certificate.ca_certs_bundle)
+          else
+            :this_channel_is_insecure
+          end
         end
       end
     end

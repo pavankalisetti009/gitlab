@@ -22,6 +22,14 @@ module Gitlab
 
         nil
       end
+
+      def self.secure?
+        return false unless cloud_connector_url
+
+        # Since Duo Workflow Service grpc url is inferred from Cloud Connector
+        # it won't have grpcs or tls scheme, instead it may have https scheme
+        URI.parse(cloud_connector_url).scheme == 'https'
+      end
     end
   end
 end
