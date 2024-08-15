@@ -42,7 +42,7 @@ module EE
           unlicensed_classes = unlicensed_widget_classes(resource_parent)
 
           unlicensed_classes << ::WorkItems::Widgets::Assignees if epic? && ::Feature.disabled?(
-            :work_items_epics_show_assignees, resource_parent)
+            :work_items_beta, resource_parent)
 
           super.reject { |widget_def| unlicensed_classes.include?(widget_def.widget_class) }
         end
