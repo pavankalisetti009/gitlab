@@ -3,8 +3,8 @@ import { GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 
 import { __ } from '~/locale';
 
-import getProductAnalyticsProjectSettings from '../../../graphql/queries/get_product_analytics_project_settings.query.graphql';
 import productAnalyticsProjectSettingsUpdate from '../../../graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
+import { updateProjectSettingsApolloCache } from './utils';
 
 const NULL_PROJECT_SETTINGS = {
   productAnalyticsConfiguratorConnectionString: null,
@@ -63,25 +63,7 @@ export default {
           ...NULL_PROJECT_SETTINGS,
         },
         update: (store) => {
-          const cacheData = store.readQuery({
-            query: getProductAnalyticsProjectSettings,
-            variables: { projectPath: this.namespaceFullPath },
-          });
-
-          store.writeQuery({
-            query: getProductAnalyticsProjectSettings,
-            variables: { projectPath: this.namespaceFullPath },
-            data: {
-              ...cacheData,
-              project: {
-                ...cacheData.project,
-                productAnalyticsSettings: {
-                  ...cacheData.project.productAnalyticsSettings,
-                  ...NULL_PROJECT_SETTINGS,
-                },
-              },
-            },
-          });
+          updateProjectSettingsApolloCache(store, this.namespaceFullPath, NULL_PROJECT_SETTINGS);
         },
       });
 

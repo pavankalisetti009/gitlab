@@ -1,13 +1,11 @@
 <script>
-import { GlButton, GlFormCheckbox, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlButton, GlFormCheckbox, GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 import CloudUserIllustrationPath from '@gitlab/svgs/dist/illustrations/cloud-user-sm.svg';
-
-import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
-import { s__ } from '~/locale';
 
 import ClearProjectSettingsModal from './clear_project_settings_modal.vue';
 import ProviderSettingsPreview from './provider_settings_preview.vue';
-import { getRedirectConfirmationMessage, projectSettingsValidator } from './utils';
+import ProviderSettingsForm from './provider_settings_form.vue';
+import { projectSettingsValidator } from './utils';
 
 export default {
   name: 'SelfManagedProviderCard',
@@ -16,7 +14,9 @@ export default {
     GlButton,
     GlFormCheckbox,
     GlLink,
+    GlModal,
     GlSprintf,
+    ProviderSettingsForm,
     ProviderSettingsPreview,
   },
   inject: {
@@ -42,6 +42,7 @@ export default {
     return {
       useInstanceConfiguration: this.defaultUseInstanceConfiguration,
       clearSettingsModalIsVisible: false,
+      editSettingsModalIsVisible: false,
     };
   },
   computed: {
@@ -66,33 +67,15 @@ export default {
       }
 
       if (this.requiresProjectSettingsEditing) {
-        await this.promptToSetSettings();
+        this.editSettingsModalIsVisible = true;
         return;
       }
 
       this.$emit('confirm', CloudUserIllustrationPath);
     },
-    async promptToSetSettings() {
-      const redirectMessage = this.useInstanceConfiguration
-        ? s__(
-            `ProductAnalytics|To connect to your instance-level provider, you must first remove project-level provider configuration. You'll be redirected to the %{analyticsSettingsLink} page, which shows your provider's configuration settings and setup instructions.`,
-          )
-        : s__(
-            `ProductAnalytics|To connect your own provider, you'll be redirected to the %{analyticsSettingsLink} page, which shows your provider's configuration settings and setup instructions.`,
-          );
-
-      const confirmed = await confirmAction('', {
-        title: s__('ProductAnalytics|Connect your own provider'),
-        primaryBtnText: s__('ProductAnalytics|Go to analytics settings'),
-        modalHtmlMessage: getRedirectConfirmationMessage(
-          redirectMessage,
-          this.projectAnalyticsSettingsPath,
-        ),
-      });
-
-      if (confirmed) {
-        this.$emit('open-settings');
-      }
+    onSettingsSaved() {
+      this.editSettingsModalIsVisible = false;
+      this.onSelected();
     },
   },
   CloudUserIllustrationPath,
@@ -190,5 +173,19 @@ export default {
         )
       }}
     </clear-project-settings-modal>
+    <gl-modal
+      :visible="editSettingsModalIsVisible"
+      data-testid="edit-project-level-settings-modal"
+      modal-id="edit-project-level-settings-modal"
+      :title="s__('ProductAnalytics|Edit project provider settings')"
+      hide-footer
+      @change="(visible) => (editSettingsModalIsVisible = visible)"
+    >
+      <provider-settings-form
+        :project-settings="projectSettings"
+        @canceled="editSettingsModalIsVisible = false"
+        @saved="onSettingsSaved"
+      />
+    </gl-modal>
   </div>
 </template>
