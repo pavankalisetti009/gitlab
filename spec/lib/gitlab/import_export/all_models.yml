@@ -820,7 +820,6 @@ project:
 - jira_imports
 - compliance_framework_settings
 - compliance_management_frameworks
-- metrics_users_starred_dashboards
 - alert_management_alerts
 - repository_storage_moves
 - freeze_periods
