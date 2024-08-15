@@ -138,7 +138,6 @@ describe('Vulnerability Header', () => {
         dismissalDescriptions,
         glFeatures: {
           explainVulnerabilityTool: true,
-          resolveVulnerabilityAiGateway: true,
           vulnerabilityResolutionGa: true,
           ...glFeatures,
         },
@@ -379,7 +378,6 @@ describe('Vulnerability Header', () => {
           canDownloadPatch: true,
         }),
         glFeatures: {
-          resolveVulnerabilityAiGateway: false,
           resolveVulnerability: false,
           vulnerabilityResolutionGa: false,
         },
@@ -403,7 +401,6 @@ describe('Vulnerability Header', () => {
       createWrapper({
         glFeatures: {
           explainVulnerabilityTool: false,
-          resolveVulnerabilityAiGateway: false,
           resolveVulnerability: true,
           vulnerabilityResolutionGa: false,
         },
