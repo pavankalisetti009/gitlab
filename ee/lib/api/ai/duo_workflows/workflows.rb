@@ -49,7 +49,10 @@ module API
                 end
 
                 duo_workflow_token_result = ::Ai::DuoWorkflow::DuoWorkflowService::Client.new(
-                  duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url, current_user: current_user).generate_token
+                  duo_workflow_service_url: Gitlab::DuoWorkflow::Client.url,
+                  current_user: current_user,
+                  secure: Gitlab::DuoWorkflow::Client.secure?
+                ).generate_token
 
                 bad_request!(duo_workflow_token_result[:message]) if duo_workflow_token_result[:status] == :error
 
