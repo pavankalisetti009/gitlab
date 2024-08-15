@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createDefaultClient from '~/lib/graphql';
-import { parseBoolean } from '~/lib/utils/common_utils';
+import { convertObjectPropsToCamelCase, parseBoolean } from '~/lib/utils/common_utils';
 import SecurityPoliciesListApp from './components/policies/app.vue';
+import { DEFAULT_ASSIGNED_POLICY_PROJECT } from './constants';
 
 Vue.use(VueApollo);
 
@@ -25,12 +26,20 @@ export default (el, namespaceType) => {
     rootNamespacePath,
   } = el.dataset;
 
+  let parsedAssignedPolicyProject;
+
+  try {
+    parsedAssignedPolicyProject = convertObjectPropsToCamelCase(JSON.parse(assignedPolicyProject));
+  } catch {
+    parsedAssignedPolicyProject = DEFAULT_ASSIGNED_POLICY_PROJECT;
+  }
+
   return new Vue({
     apolloProvider,
     el,
     name: 'PoliciesAppRoot',
     provide: {
-      assignedPolicyProject: JSON.parse(assignedPolicyProject),
+      assignedPolicyProject: parsedAssignedPolicyProject,
       disableSecurityPolicyProject: parseBoolean(disableSecurityPolicyProject),
       disableScanPolicyUpdate: parseBoolean(disableScanPolicyUpdate),
       documentationPath,

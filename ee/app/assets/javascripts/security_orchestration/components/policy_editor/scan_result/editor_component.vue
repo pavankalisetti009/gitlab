@@ -2,7 +2,7 @@
 import { isEmpty, uniqBy } from 'lodash';
 import { GlAlert, GlEmptyState, GlButton } from '@gitlab/ui';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { joinPaths, visitUrl, setUrlFragment } from '~/lib/utils/url_utility';
+import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
 
@@ -20,7 +20,12 @@ import {
   MAX_ALLOWED_RULES_LENGTH,
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
-import { assignSecurityPolicyProject, modifyPolicy, parseError } from '../utils';
+import {
+  assignSecurityPolicyProject,
+  modifyPolicy,
+  parseError,
+  redirectToMergeRequest,
+} from '../utils';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ScanFilterSelector from '../scan_filter_selector.vue';
 import SettingsSection from './settings/settings_section.vue';
@@ -369,7 +374,10 @@ export default {
           yamlEditorValue: this.yamlEditorValue,
         });
 
-        this.redirectToMergeRequest({ mergeRequest, assignedPolicyProject });
+        redirectToMergeRequest({
+          mergeRequestId: mergeRequest.id,
+          assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
+        });
       } catch (e) {
         this.handleError(e);
         this.setLoadingFlag(action, false);
@@ -390,16 +398,6 @@ export default {
     handleUpdateProperty(property, value) {
       this.policy[property] = value;
       this.updateYamlEditorValue(this.policy);
-    },
-    redirectToMergeRequest({ mergeRequest, assignedPolicyProject }) {
-      visitUrl(
-        joinPaths(
-          gon.relative_url_root || '/',
-          assignedPolicyProject.fullPath,
-          '/-/merge_requests',
-          mergeRequest.id,
-        ),
-      );
     },
     updateYaml(manifest) {
       const { policy, hasParsingError } = createPolicyObject(manifest);

@@ -1,7 +1,7 @@
 <script>
 import { GlEmptyState } from '@gitlab/ui';
 import { debounce } from 'lodash';
-import { joinPaths, setUrlFragment, visitUrl } from '~/lib/utils/url_utility';
+import { setUrlFragment } from '~/lib/utils/url_utility';
 import { s__, __ } from '~/locale';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import {
@@ -12,7 +12,12 @@ import {
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
 } from '../constants';
-import { assignSecurityPolicyProject, doesFileExist, modifyPolicy } from '../utils';
+import {
+  assignSecurityPolicyProject,
+  doesFileExist,
+  modifyPolicy,
+  redirectToMergeRequest,
+} from '../utils';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ActionSection from './action/action_section.vue';
@@ -153,7 +158,10 @@ export default {
           yamlEditorValue: this.yamlEditorValue,
         });
 
-        this.redirectToMergeRequest({ mergeRequest, assignedPolicyProject });
+        redirectToMergeRequest({
+          mergeRequestId: mergeRequest.id,
+          assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
+        });
       } catch (e) {
         this.handleError(e);
         this.setLoadingFlag(action, false);
@@ -185,16 +193,6 @@ export default {
       this.hasParsingError = hasParsingError;
       this.parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
       this.policy = policy;
-    },
-    redirectToMergeRequest({ mergeRequest, assignedPolicyProject }) {
-      visitUrl(
-        joinPaths(
-          gon.relative_url_root || '/',
-          assignedPolicyProject.fullPath,
-          '/-/merge_requests',
-          mergeRequest.id,
-        ),
-      );
     },
     setLoadingFlag(action, val) {
       if (action === SECURITY_POLICY_ACTIONS.REMOVE) {

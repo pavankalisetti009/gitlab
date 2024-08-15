@@ -5,14 +5,14 @@ import { POLICY_TYPE_COMPONENT_OPTIONS } from './components/constants';
 import { GROUP_TYPE, ROLE_TYPE, USER_TYPE } from './constants';
 
 /**
- * Get a policy's type
- * @param {String} typeName policy's YAML manifest
- * @returns {String|null} policy type if available
+ * Get a property from a policy's typename
+ * @param {String} typeName policy's typename from GraphQL
+ * @returns {String|null} policy property if available
  */
-export const getPolicyType = (typeName = '') => {
+export const getPolicyType = (typeName = '', field = 'value') => {
   return Object.values(POLICY_TYPE_COMPONENT_OPTIONS).find(
     (component) => component.typeName === typeName,
-  )?.value;
+  )?.[field];
 };
 
 /**

@@ -11,18 +11,20 @@ import {
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { __, s__, sprintf } from '~/locale';
+import { createAlert } from '~/alert';
 import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
 import { getPolicyType } from '../../utils';
-import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
 import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
+import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
+import { SECURITY_POLICY_ACTIONS } from '../policy_editor/constants';
+import { modifyPolicy, redirectToMergeRequest } from '../policy_editor/utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
   BREAKING_CHANGES_POPOVER_CONTENTS,
-  getPolicyActionOptions,
 } from './constants';
 import BreakingChangesIcon from './breaking_changes_icon.vue';
 import SourceFilter from './filters/source_filter.vue';
@@ -57,7 +59,7 @@ export default {
   directives: {
     GlTooltipDirective,
   },
-  inject: ['namespacePath', 'namespaceType', 'disableScanPolicyUpdate'],
+  inject: ['assignedPolicyProject', 'namespacePath', 'namespaceType', 'disableScanPolicyUpdate'],
   props: {
     hasPolicyProject: {
       type: Boolean,
@@ -96,10 +98,15 @@ export default {
   },
   data() {
     return {
+      alert: null,
+      isProcessingAction: false,
       selectedPolicy: null,
     };
   },
   computed: {
+    isBusy() {
+      return this.isLoadingPolicies || this.isProcessingAction;
+    },
     isGroup() {
       return isGroup(this.namespaceType);
     },
@@ -189,7 +196,43 @@ export default {
   },
   methods: {
     getPolicyActionOptions(policy) {
-      return getPolicyActionOptions(policy);
+      return [
+        { text: __('Edit'), href: policy.editPath },
+        ...(this.isGroup
+          ? []
+          : [
+              {
+                text: __('Delete'),
+                action: () => this.handleDelete(policy),
+              },
+            ]),
+      ];
+    },
+    async handleDelete(policy) {
+      const action = SECURITY_POLICY_ACTIONS.REMOVE;
+      if (this.alert) this.alert.dismiss();
+      this.isProcessingAction = true;
+
+      try {
+        const mergeRequest = await modifyPolicy({
+          action,
+          assignedPolicyProject: this.assignedPolicyProject,
+          name: policy.name,
+          namespacePath: this.namespacePath,
+          yamlEditorValue: policy.yaml.concat(
+            // eslint-disable-next-line no-underscore-dangle
+            `type: ${getPolicyType(policy.__typename, 'urlParameter')}`,
+          ),
+        });
+
+        redirectToMergeRequest({
+          mergeRequestId: mergeRequest.id,
+          assignedPolicyProjectFullPath: this.assignedPolicyProject.fullPath,
+        });
+      } catch (e) {
+        this.alert = createAlert({ message: e.message });
+        this.isProcessingAction = false;
+      }
     },
     showBreakingChangesIcon(policyType, deprecatedProperties) {
       return (
@@ -306,7 +349,7 @@ export default {
     <gl-table
       ref="policiesTable"
       data-testid="policies-list"
-      :busy="isLoadingPolicies"
+      :busy="isBusy"
       :items="policies"
       :fields="fields"
       sort-by="updatedAt"

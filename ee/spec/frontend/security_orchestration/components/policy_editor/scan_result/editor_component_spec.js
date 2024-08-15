@@ -42,7 +42,6 @@ import {
   ASSIGNED_POLICY_PROJECT,
   NEW_POLICY_PROJECT,
 } from 'ee_jest/security_orchestration/mocks/mock_data';
-import { visitUrl } from '~/lib/utils/url_utility';
 import {
   buildSettingsList,
   PERMITTED_INVALID_SETTINGS,
@@ -56,6 +55,7 @@ import {
 
 import {
   modifyPolicy,
+  redirectToMergeRequest,
   removeIdsFromPolicy,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
@@ -75,11 +75,6 @@ jest.mock('ee/security_orchestration/components/policy_editor/scan_result/lib', 
   getInvalidBranches: jest.fn().mockResolvedValue([]),
 }));
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn().mockName('visitUrlMock'),
-}));
-
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
   assignSecurityPolicyProject: jest.fn().mockResolvedValue({
@@ -87,6 +82,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
     fullPath: 'path/to/new-project',
   }),
   modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
+  redirectToMergeRequest: jest.fn(),
 }));
 
 describe('EditorComponent', () => {
@@ -512,9 +508,10 @@ describe('EditorComponent', () => {
           namespacePath: defaultProjectPath,
           yamlEditorValue,
         });
-        expect(visitUrl).toHaveBeenCalledWith(
-          `/${currentlyAssignedPolicyProject.fullPath}/-/merge_requests/2`,
-        );
+        expect(redirectToMergeRequest).toHaveBeenCalledWith({
+          mergeRequestId: '2',
+          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
+        });
       },
     );
 

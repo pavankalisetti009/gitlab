@@ -1,6 +1,8 @@
 import { GlDisclosureDropdown, GlDrawer, GlLink, GlPopover, GlTable, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
+import waitForPromises from 'helpers/wait_for_promises';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
@@ -10,6 +12,10 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
+import {
+  modifyPolicy,
+  redirectToMergeRequest,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trimText } from 'helpers/text_helper';
@@ -17,7 +23,16 @@ import { mockPipelineExecutionPoliciesResponse } from '../../mocks/mock_pipeline
 import { mockScanExecutionPoliciesResponse } from '../../mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from '../../mocks/mock_scan_result_policy_data';
 
+jest.mock('~/alert');
+
+jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
+  ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
+  modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
+  redirectToMergeRequest: jest.fn(),
+}));
+
 const namespacePath = 'path/to/project/or/group';
+const defaultAssignedPolicyProject = { fullPath: 'path/to/policy-project', branch: 'main' };
 
 describe('List component', () => {
   let wrapper;
@@ -37,6 +52,7 @@ describe('List component', () => {
           disableScanPolicyUpdate: false,
           namespacePath,
           namespaceType: NAMESPACE_TYPES.PROJECT,
+          assignedPolicyProject: defaultAssignedPolicyProject,
           ...provide,
         },
         stubs: {
@@ -70,6 +86,7 @@ describe('List component', () => {
   const findTooltip = (root) => root.findComponent(GlTooltip);
   const findInheritedPolicyCell = (findMethod) => findMethod().at(1);
   const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
+  const findDeleteAction = (root) => root.findAll('button').at(1);
 
   describe('initial state while loading', () => {
     it('renders closed editor drawer', () => {
@@ -310,7 +327,7 @@ describe('List component', () => {
       });
 
       it('renders inherited policy without namespace', () => {
-        mountWrapper({ provide: { namespaceType: NAMESPACE_TYPES.PROJECT } });
+        mountWrapper();
         expect(trimText(findInheritedPolicyCell(findSourceCells).text())).toBe(
           'Inherited from parent-group-name',
         );
@@ -329,36 +346,120 @@ describe('List component', () => {
     });
 
     describe('actions', () => {
-      beforeEach(() => {
-        mountWrapper();
+      const EDIT_ACTION = {
+        href: '/policies/policy-name/edit?type="scan_execution_policy"',
+        text: 'Edit',
+      };
+
+      const DELETE_ACTION = {
+        action: expect.anything(),
+        text: 'Delete',
+      };
+
+      describe('rendering', () => {
+        beforeEach(() => {
+          mountWrapper();
+        });
+
+        it('renders actions column', () => {
+          expect(findActionCells()).toHaveLength(4);
+        });
+
+        it('renders non-inherited policy actions', () => {
+          const policyCell = findNonInheritedPolicyCell(findActionCells);
+          expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
+          expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(false);
+          expect(findTooltip(policyCell).exists()).toBe(false);
+        });
+
+        it('renders inherited policy actions', () => {
+          const policyCell = findInheritedPolicyCell(findActionCells);
+          expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
+          expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(true);
+          expect(findTooltip(policyCell).exists()).toBe(true);
+        });
+
+        it('renders items', () => {
+          const policyCell = findNonInheritedPolicyCell(findActionCells);
+          expect(findDisclosureDropdown(policyCell).props('items')).toEqual([
+            EDIT_ACTION,
+            DELETE_ACTION,
+          ]);
+        });
       });
 
-      it('renders actions column', () => {
-        expect(findActionCells()).toHaveLength(4);
+      describe('group-level rendering', () => {
+        beforeEach(() => {
+          mountWrapper({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
+        });
+
+        it('renders items for a group', () => {
+          const policyCell = findNonInheritedPolicyCell(findActionCells);
+          expect(findDisclosureDropdown(policyCell).props('items')).toEqual([EDIT_ACTION]);
+        });
       });
 
-      it('renders non-inherited policy actions', () => {
-        const policyCell = findNonInheritedPolicyCell(findActionCells);
-        expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
-        expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(false);
-        expect(findTooltip(policyCell).exists()).toBe(false);
-      });
+      describe('delete action', () => {
+        describe('success', () => {
+          beforeEach(async () => {
+            mountWrapper();
+            const policyCell = findNonInheritedPolicyCell(findActionCells);
+            const deleteAction = findDeleteAction(policyCell);
+            await deleteAction.trigger('click');
+            await waitForPromises();
+          });
 
-      it('renders inherited policy actions', () => {
-        const policyCell = findInheritedPolicyCell(findActionCells);
-        expect(findDisclosureDropdown(policyCell).exists()).toBe(true);
-        expect(findDisclosureDropdown(policyCell).props('disabled')).toBe(true);
-        expect(findTooltip(policyCell).exists()).toBe(true);
-      });
+          it('creates the merge request', () => {
+            expect(modifyPolicy).toHaveBeenCalledWith(
+              expect.objectContaining({
+                action: 'REMOVE',
+                assignedPolicyProject: {
+                  branch: 'main',
+                  fullPath: 'path/to/policy-project',
+                },
+                name: 'Scheduled Dast/SAST scan-project',
+                namespacePath: 'path/to/project/or/group',
+              }),
+            );
+          });
 
-      it('renders items', () => {
-        const policyCell = findNonInheritedPolicyCell(findActionCells);
-        expect(findDisclosureDropdown(policyCell).props('items')).toEqual([
-          {
-            href: '/policies/policy-name/edit?type="scan_execution_policy"',
-            text: 'Edit',
-          },
-        ]);
+          it('redirects to the merge request', () => {
+            expect(redirectToMergeRequest).toHaveBeenCalledWith({
+              mergeRequestId: '2',
+              assignedPolicyProjectFullPath: 'path/to/policy-project',
+            });
+          });
+
+          it('sets the table to busy', () => {
+            expect(findTable().attributes('aria-busy')).toBe('true');
+          });
+
+          it('does not call an alert', () => {
+            expect(createAlert).not.toHaveBeenCalled();
+          });
+        });
+
+        describe('failure', () => {
+          const error = { message: 'oops' };
+
+          beforeEach(async () => {
+            createAlert.mockClear();
+            modifyPolicy.mockRejectedValue(error);
+            mountWrapper();
+            const policyCell = findNonInheritedPolicyCell(findActionCells);
+            const deleteAction = findDeleteAction(policyCell);
+            await deleteAction.trigger('click');
+            await waitForPromises();
+          });
+
+          it('creates an error', () => {
+            expect(createAlert).toHaveBeenCalledWith(error);
+          });
+
+          it('sets table to not busy', () => {
+            expect(findTable().attributes('aria-busy')).toBe('false');
+          });
+        });
       });
     });
   });
