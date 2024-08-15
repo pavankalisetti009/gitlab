@@ -124,7 +124,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
       { key: "GL_WORKSPACE_DOMAIN_TEMPLATE", type: :environment, value: "${PORT}-workspace-#{agent.id}-#{user.id}-#{random_string}.#{dns_zone}" },
       { key: "GITLAB_WORKFLOW_INSTANCE_URL", type: :environment, value: Gitlab::Routing.url_helpers.root_url },
       { key: "GITLAB_WORKFLOW_TOKEN_FILE", type: :environment, value: "/.workspace-data/variables/file/gl_token" },
-      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::Workspaces::Create::WorkspaceVariables::GIT_CREDENTIAL_STORE_SCRIPT },
+      { key: "gl_git_credential_store.sh", type: :file, value: RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables::GIT_CREDENTIAL_STORE_SCRIPT },
       { key: "gl_token", type: :file, value: /glpat-.+/ }
     ]
     # rubocop:enable Layout/LineLength
@@ -259,7 +259,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   def workspace_create_mutation_args(cluster_agent_id)
     {
-      desired_state: RemoteDevelopment::Workspaces::States::RUNNING,
+      desired_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
       editor: "webide",
       max_hours_before_termination: 24,
       cluster_agent_id: cluster_agent_id,
@@ -275,7 +275,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
   def do_stop_workspace(workspace)
     workspace_update_mutation_args = {
       id: global_id_of(workspace),
-      desired_state: RemoteDevelopment::Workspaces::States::STOPPED
+      desired_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED
     }
 
     do_graphql_mutation_post(

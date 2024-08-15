@@ -72,7 +72,7 @@ RSpec.shared_context 'with agent_ids argument' do
 end
 
 RSpec.shared_context 'with actual_states argument' do
-  let_it_be(:matching_actual_state) { ::RemoteDevelopment::Workspaces::States::CREATION_REQUESTED }
+  let_it_be(:matching_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED }
 
   include_context 'with unauthorized workspace created'
 
@@ -81,7 +81,7 @@ RSpec.shared_context 'with actual_states argument' do
   end
 
   # create workspace with non-matching actual state, to ensure it is not returned by the query
-  let_it_be(:non_matching_actual_state) { ::RemoteDevelopment::Workspaces::States::RUNNING }
+  let_it_be(:non_matching_actual_state) { ::RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let_it_be(:non_matching_workspace, reload: true) do
     create(:workspace, actual_state: non_matching_actual_state, user: workspace.user, name: 'non-matching-workspace')
   end

@@ -42,7 +42,7 @@ module EE
                 }
 
                 ::RemoteDevelopment::CommonService.execute(
-                  domain_main_class: ::RemoteDevelopment::AgentConfig::Main,
+                  domain_main_class: ::RemoteDevelopment::AgentConfigOperations::Main,
                   domain_main_class_args: domain_main_class_args
                 )
               end
@@ -73,7 +73,7 @@ module EE
                   }
 
                   response = ::RemoteDevelopment::CommonService.execute(
-                    domain_main_class: ::RemoteDevelopment::Workspaces::Reconcile::Main,
+                    domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Reconcile::Main,
                     domain_main_class_args: domain_main_class_args
                   )
 

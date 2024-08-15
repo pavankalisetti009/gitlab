@@ -8,7 +8,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
 
-  let(:desired_state) { ::RemoteDevelopment::Workspaces::States::STOPPED }
+  let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::STOPPED }
 
   subject(:workspace) do
     create(:workspace,
@@ -87,7 +87,9 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
     describe 'when updating desired_state' do
       it 'sets desired_state_updated_at' do
-        expect { workspace.update!(desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING) }.to change {
+        # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
+        expect { workspace.update!(desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.to change {
+          # rubocop:enable Layout/LineLength
           workspace.desired_state_updated_at
         }
       end
@@ -95,7 +97,9 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
     describe 'when updating a field other than desired_state' do
       it 'does not set desired_state_updated_at' do
-        expect { workspace.update!(actual_state: ::RemoteDevelopment::Workspaces::States::RUNNING) }.not_to change {
+        # rubocop:todo Layout/LineLength -- this line will not be too long once we rename RemoteDevelopment namespace to Workspaces
+        expect { workspace.update!(actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING) }.not_to change {
+          # rubocop:enable Layout/LineLength
           workspace.desired_state_updated_at
         }
       end
@@ -214,7 +218,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspace is in desired_state Terminated" do
           before do
-            workspace.desired_state = ::RemoteDevelopment::Workspaces::States::TERMINATED
+            workspace.desired_state = ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED
           end
 
           it 'does not validate dns_zone matches agent.remote_development_agent_config.dns_zone' do
@@ -224,7 +228,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspace is not in desired_state terminated" do
           before do
-            workspace.desired_state = ::RemoteDevelopment::Workspaces::States::RUNNING
+            workspace.desired_state = ::RemoteDevelopment::WorkspaceOperations::States::RUNNING
           end
 
           it 'validates dns_zone matches agent.remote_development_agent_config.dns_zone' do
@@ -237,10 +241,10 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
     end
 
     context 'when desired_state is Terminated' do
-      let(:desired_state) { ::RemoteDevelopment::Workspaces::States::TERMINATED }
+      let(:desired_state) { ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED }
 
       before do
-        workspace.desired_state = ::RemoteDevelopment::Workspaces::States::STOPPED
+        workspace.desired_state = ::RemoteDevelopment::WorkspaceOperations::States::STOPPED
       end
 
       it 'prevents changes to desired_state' do
@@ -257,25 +261,28 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
       let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
       let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
       let_it_be(:workspace1) do
-        create(:workspace, user: user1, agent: agent1, desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING)
+        create(:workspace, user: user1, agent: agent1,
+          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       end
 
       let_it_be(:workspace2) do
         create(:workspace, user: user2, agent: agent1,
-          desired_state: ::RemoteDevelopment::Workspaces::States::TERMINATED)
+          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
       end
 
       let_it_be(:workspace3) do
-        create(:workspace, user: user1, agent: agent1, desired_state: ::RemoteDevelopment::Workspaces::States::STOPPED)
+        create(:workspace, user: user1, agent: agent1,
+          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
       end
 
       let_it_be(:workspace4) do
         create(:workspace, user: user2, agent: agent2,
-          desired_state: ::RemoteDevelopment::Workspaces::States::TERMINATED)
+          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
       end
 
       let_it_be(:workspace5) do
-        create(:workspace, user: user3, agent: agent2, desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING)
+        create(:workspace, user: user3, agent: agent2,
+          desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       end
 
       it "returns the correct count for the current user and agent" do
@@ -290,23 +297,23 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
       let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
       let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
       let_it_be(:workspace1) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING)
+        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       end
 
       let_it_be(:workspace2) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::Workspaces::States::TERMINATED)
+        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
       end
 
       let_it_be(:workspace3) do
-        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::Workspaces::States::STOPPED)
+        create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::STOPPED)
       end
 
       let_it_be(:workspace4) do
-        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::Workspaces::States::TERMINATED)
+        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED)
       end
 
       let_it_be(:workspace5) do
-        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING)
+        create(:workspace, agent: agent2, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       end
 
       it "returns the correct count for the current agent" do

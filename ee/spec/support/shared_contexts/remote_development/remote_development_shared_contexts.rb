@@ -21,26 +21,27 @@ RSpec.shared_context 'with remote development shared fixtures' do
       namespace: workspace.namespace
     }
 
-    if current_actual_state == RemoteDevelopment::Workspaces::States::TERMINATED
+    if current_actual_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATED
       info[:termination_progress] =
-        RemoteDevelopment::Workspaces::States::TERMINATED
+        RemoteDevelopment::WorkspaceOperations::States::TERMINATED
     end
 
-    if current_actual_state == RemoteDevelopment::Workspaces::States::TERMINATING
+    if current_actual_state == RemoteDevelopment::WorkspaceOperations::States::TERMINATING
       info[:termination_progress] =
-        RemoteDevelopment::Workspaces::States::TERMINATING
+        RemoteDevelopment::WorkspaceOperations::States::TERMINATING
     end
 
     if [
-      RemoteDevelopment::Workspaces::States::TERMINATING,
-      RemoteDevelopment::Workspaces::States::TERMINATED,
-      RemoteDevelopment::Workspaces::States::UNKNOWN
+      RemoteDevelopment::WorkspaceOperations::States::TERMINATING,
+      RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
+      RemoteDevelopment::WorkspaceOperations::States::UNKNOWN
     ].include?(current_actual_state)
       return info
     end
 
+    # rubocop:disable Layout/LineLength -- Keep the individual 'in' cases on single lines for readability
     spec_replicas =
-      if [RemoteDevelopment::Workspaces::States::STOPPED, RemoteDevelopment::Workspaces::States::STOPPING]
+      if [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STOPPING]
            .include?(current_actual_state)
         0
       else
@@ -52,7 +53,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     # rubocop:todo Lint/DuplicateBranch -- Make this cop recognize that different arrays with different entries are not duplicates
     status =
       case [previous_actual_state, current_actual_state, workspace_exists]
-      in [RemoteDevelopment::Workspaces::States::CREATION_REQUESTED, RemoteDevelopment::Workspaces::States::STARTING, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED, RemoteDevelopment::WorkspaceOperations::States::STARTING, _]
         <<~STATUS_YAML
           conditions:
           - lastTransitionTime: "2023-04-10T10:14:14Z"
@@ -62,7 +63,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             status: "True"
             type: Progressing
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::STARTING, false]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, false]
         <<~STATUS_YAML
           conditions:
           - lastTransitionTime: "2023-04-10T10:14:14Z"
@@ -82,7 +83,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           unavailableReplicas: 1
           updatedReplicas: 1
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::RUNNING, false]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, false]
         <<~STATUS_YAML
           availableReplicas: 1
           conditions:
@@ -102,13 +103,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
           replicas: 1
           updatedReplicas: 1
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::FAILED, false]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, false]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::FAILED, RemoteDevelopment::Workspaces::States::STARTING, false]
+      in [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, false]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::RUNNING, RemoteDevelopment::Workspaces::States::FAILED, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::RUNNING, RemoteDevelopment::Workspaces::States::STOPPING, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::RUNNING, RemoteDevelopment::WorkspaceOperations::States::STOPPING, _]
         <<~STATUS_YAML
           availableReplicas: 1
           conditions:
@@ -129,7 +130,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           replicas: 1
           updatedReplicas: 1
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STOPPING, RemoteDevelopment::Workspaces::States::STOPPED, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::STOPPED, _]
         <<~STATUS_YAML
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:35Z"
@@ -146,7 +147,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
             type: Progressing
           observedGeneration: 2
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STOPPED, RemoteDevelopment::Workspaces::States::STOPPED, true]
+      in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STOPPED, true]
         <<~STATUS_YAML
           conditions:
           - lastTransitionTime: "2023-04-10T10:40:24Z"
@@ -163,9 +164,9 @@ RSpec.shared_context 'with remote development shared fixtures' do
             type: Progressing
           observedGeneration: 2
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STOPPING, RemoteDevelopment::Workspaces::States::FAILED, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::STOPPING, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::STOPPED, RemoteDevelopment::Workspaces::States::STARTING, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::STARTING, _]
         # There are multiple state transitions inside kubernetes
         # Fields like `replicas`, `unavailableReplicas` and `updatedReplicas` eventually become present
         <<~STATUS_YAML
@@ -184,11 +185,11 @@ RSpec.shared_context 'with remote development shared fixtures' do
             type: Available
           observedGeneration: 3
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STOPPED, RemoteDevelopment::Workspaces::States::FAILED, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::STOPPED, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         # Stopped workspace is terminated by the user which results in a Failed actual state.
         # e.g. could not unmount volume and terminate the workspace
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::STARTING, true]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::STARTING, true]
         # There are multiple state transitions inside kubernetes
         # Fields like `replicas`, `unavailableReplicas` and `updatedReplicas` eventually become present
         <<~STATUS_YAML
@@ -210,7 +211,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
           unavailableReplicas: 1
           updatedReplicas: 1
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::RUNNING, true]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::RUNNING, true]
         <<~STATUS_YAML
           availableReplicas: 1
           conditions:
@@ -231,13 +232,13 @@ RSpec.shared_context 'with remote development shared fixtures' do
           replicas: 1
           updatedReplicas: 1
         STATUS_YAML
-      in [RemoteDevelopment::Workspaces::States::STARTING, RemoteDevelopment::Workspaces::States::FAILED, true]
+      in [RemoteDevelopment::WorkspaceOperations::States::STARTING, RemoteDevelopment::WorkspaceOperations::States::FAILED, true]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::FAILED, RemoteDevelopment::Workspaces::States::STARTING, true]
+      in [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STARTING, true]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [RemoteDevelopment::Workspaces::States::FAILED, RemoteDevelopment::Workspaces::States::STOPPING, _]
+      in [RemoteDevelopment::WorkspaceOperations::States::FAILED, RemoteDevelopment::WorkspaceOperations::States::STOPPING, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
-      in [_, RemoteDevelopment::Workspaces::States::FAILED, _]
+      in [_, RemoteDevelopment::WorkspaceOperations::States::FAILED, _]
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError
         # <<~STATUS_YAML
         #   conditions:
@@ -265,6 +266,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
         raise RemoteDevelopment::AgentInfoStatusFixtureNotImplementedError, msg
       end
     # rubocop:enable Lint/DuplicateBranch
+    # rubocop:enable Layout/LineLength
 
     config_to_apply_yaml = create_config_to_apply(
       workspace: workspace,
@@ -308,7 +310,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
   end
 
   def create_config_to_apply(workspace:, **args)
-    latest_config_version = ::RemoteDevelopment::Workspaces::ConfigVersion::LATEST_VERSION
+    latest_config_version = ::RemoteDevelopment::WorkspaceOperations::ConfigVersion::LATEST_VERSION
     config_version =
       workspace.respond_to?(:config_version) ? workspace.config_version : latest_config_version
     method_name = "create_config_to_apply_v#{config_version}"
@@ -584,7 +586,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
     spec_replicas:,
     default_resources_per_workspace_container:
   )
-    variables_file_mount_path = RemoteDevelopment::Workspaces::FileMounts::VARIABLES_FILE_DIR
+    variables_file_mount_path = RemoteDevelopment::WorkspaceOperations::FileMounts::VARIABLES_FILE_DIR
     {
       apiVersion: "apps/v1",
       kind: "Deployment",

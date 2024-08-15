@@ -37,8 +37,8 @@ module RemoteDevelopment
 
       expect(info.fetch(:name)).to eq(workspace.name)
       expect(info.fetch(:namespace)).to eq(workspace.namespace)
-      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::Workspaces::States::RUNNING)
-      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::Workspaces::States::CREATION_REQUESTED)
+      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED)
       expect(info.fetch(:deployment_resource_version)).to be_nil
 
       expected_config_to_apply = create_config_to_apply(
@@ -61,8 +61,8 @@ module RemoteDevelopment
       resource_version = '1'
       workspace_agent_info = create_workspace_agent_info_hash(
         workspace: workspace,
-        previous_actual_state: RemoteDevelopment::Workspaces::States::STARTING,
-        current_actual_state: RemoteDevelopment::Workspaces::States::RUNNING,
+        previous_actual_state: RemoteDevelopment::WorkspaceOperations::States::STARTING,
+        current_actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
         workspace_exists: false,
         resource_version: resource_version
       )
@@ -81,8 +81,8 @@ module RemoteDevelopment
 
       expect(info.fetch(:name)).to eq(workspace.name)
       expect(info.fetch(:namespace)).to eq(workspace.namespace)
-      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::Workspaces::States::RUNNING)
-      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::Workspaces::States::RUNNING)
+      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
+      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       expect(info.fetch(:deployment_resource_version)).to eq(resource_version)
       expect(info.fetch(:config_to_apply)).to be_nil
     end
@@ -97,8 +97,8 @@ module RemoteDevelopment
       resource_version = '1'
       workspace_agent_info = create_workspace_agent_info_hash(
         workspace: workspace,
-        previous_actual_state: RemoteDevelopment::Workspaces::States::RUNNING,
-        current_actual_state: RemoteDevelopment::Workspaces::States::STOPPING,
+        previous_actual_state: RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+        current_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPING,
         workspace_exists: true,
         resource_version: resource_version
       )
@@ -117,8 +117,8 @@ module RemoteDevelopment
 
       expect(info.fetch(:name)).to eq(workspace.name)
       expect(info.fetch(:namespace)).to eq(workspace.namespace)
-      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::Workspaces::States::STOPPED)
-      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::Workspaces::States::STOPPING)
+      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::STOPPED)
+      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::STOPPING)
       expect(info.fetch(:deployment_resource_version)).to eq(resource_version)
 
       expected_config_to_apply = create_config_to_apply(
@@ -140,8 +140,8 @@ module RemoteDevelopment
       resource_version = '2'
       workspace_agent_info = create_workspace_agent_info_hash(
         workspace: workspace,
-        previous_actual_state: RemoteDevelopment::Workspaces::States::STOPPING,
-        current_actual_state: RemoteDevelopment::Workspaces::States::STOPPED,
+        previous_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPING,
+        current_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
         workspace_exists: true,
         resource_version: resource_version
       )
@@ -160,8 +160,8 @@ module RemoteDevelopment
 
       expect(info.fetch(:name)).to eq(workspace.name)
       expect(info.fetch(:namespace)).to eq(workspace.namespace)
-      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::Workspaces::States::STOPPED)
-      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::Workspaces::States::STOPPED)
+      expect(info.fetch(:desired_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::STOPPED)
+      expect(info.fetch(:actual_state)).to eq(RemoteDevelopment::WorkspaceOperations::States::STOPPED)
       expect(info.fetch(:deployment_resource_version)).to eq(resource_version)
       expect(info.fetch(:config_to_apply)).to be_nil
     end
@@ -191,8 +191,8 @@ module RemoteDevelopment
       resource_version = '2'
       workspace_agent_info = create_workspace_agent_info_hash(
         workspace: workspace,
-        previous_actual_state: RemoteDevelopment::Workspaces::States::STOPPED,
-        current_actual_state: RemoteDevelopment::Workspaces::States::STOPPED,
+        previous_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
+        current_actual_state: RemoteDevelopment::WorkspaceOperations::States::STOPPED,
         workspace_exists: true,
         resource_version: resource_version
       )

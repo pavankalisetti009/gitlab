@@ -15,7 +15,7 @@ module RemoteDevelopment
     # Auth errors
     Unauthorized = Class.new(Gitlab::Fp::Message)
 
-    # AgentConfig errors
+    # AgentConfigOperations errors
     AgentConfigUpdateFailed = Class.new(Gitlab::Fp::Message)
 
     # Workspace create errors
@@ -48,7 +48,7 @@ module RemoteDevelopment
     # Domain Events - message name should describe the outcome
     #---------------------------------------------------------
 
-    # AgentConfig domain events
+    # AgentConfigOperations domain events
     AgentConfigUpdateSkippedBecauseNoConfigFileEntryFound = Class.new(Gitlab::Fp::Message)
     AgentConfigUpdateSuccessful = Class.new(Gitlab::Fp::Message)
 

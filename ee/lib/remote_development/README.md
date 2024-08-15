@@ -365,7 +365,7 @@ class Update < BaseMutation
     }
   
     response = ::RemoteDevelopment::CommonService.execute(
-      domain_main_class: ::RemoteDevelopment::Workspaces::Update::Main,
+      domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Update::Main,
       domain_main_class_args: domain_main_class_args
     )
   
@@ -419,7 +419,7 @@ end
 
 #### Domain layer code examples
 
-Next, you see the `ee/lib/remote_development/workspaces/update/main.rb` class, which implements an ROP chain with two steps, `authorize` and `update`.
+Next, you see the `ee/lib/remote_development/workspace_operations/update/main.rb` class, which implements an ROP chain with two steps, `authorize` and `update`.
 
 Note that the `Main` class also has no domain logic in it itself other than invoking the steps and matching the the domain messages and transforming them into a response hash. We want to avoid that coupling, because all domain logic should live in the cohesive classes that are called by `Main` via the ROP pattern:
 
@@ -447,7 +447,7 @@ class Main
 end
 ```
 
-...and here is an example of the `ee/lib/remote_development/workspaces/update/updater.rb` class implementing the business logic in the "chain".
+...and here is an example of the `ee/lib/remote_development/workspace_operations/update/updater.rb` class implementing the business logic in the "chain".
 In this case, it contains the cohesive logic to update a workspace, and no other
 unrelated domain logic:
 
@@ -549,15 +549,15 @@ The matcher [`invoke_rop_steps`](https://gitlab.com/gitlab-org/gitlab/-/blob/mas
 
 #### Matcher entry
 
-The block provided to the `expect` clause when called, should trigger an ROP main class method e.g: `RemoteDevelopment::Workspaces::Create::Main.main`.
+The block provided to the `expect` clause when called, should trigger an ROP main class method e.g: `RemoteDevelopment::WorkspaceOperations::Create::Main.main`.
 
 The `invoke_rop_steps` method is the entry into the matcher. It accepts as a parameter, a list of the ROP step classes and their `Result` passing method (a `map` or `and_then`). e.g:
 
 ```ruby
       let(:rop_steps) do
             [
-                [RemoteDevelopment::Workspaces::Create::VolumeComponentInjector, :map],
-                [RemoteDevelopment::Workspaces::Create::Creator, :and_then]
+                [RemoteDevelopment::WorkspaceOperations::Create::VolumeComponentInjector, :map],
+                [RemoteDevelopment::WorkspaceOperations::Create::Creator, :and_then]
             ]
       end
 ```
@@ -574,7 +574,7 @@ It expects the array to specify step classes in the same order as the chain of t
           ...
           with_ok_result_for_step(
                     {
-                      step_class: RemoteDevelopment::Workspaces::Create::Creator,
+                      step_class: RemoteDevelopment::WorkspaceOperations::Create::Creator,
                       returned_message: RemoteDevelopment::Messages::WorkspaceCreateSuccessful.new(ok_message_content)
                     }
                   )
@@ -589,7 +589,7 @@ It expects the array to specify step classes in the same order as the chain of t
          ...
          with_err_result_for_step(
                     {
-                      step_class: RemoteDevelopment::Workspaces::Create::Authorizer,
+                      step_class: RemoteDevelopment::WorkspaceOperations::Create::Authorizer,
                       returned_message: RemoteDevelopment::Messages::Unauthorized.new(err_message_content)
                     }
                   )
@@ -600,7 +600,7 @@ It expects the array to specify step classes in the same order as the chain of t
 
 - `and_return_expected_value` sets up an expectation to match the output of calling the ROP main class method in the block provided. It validates the expected return value is either a `Hash`, `Result` or a subclass of `RuntimeError`.
 
-For a comprehensive view of how the matcher is used in a test suite, see [RemoteDevelopment::Workspaces::Create::Main](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/workspaces/create/main.rb) and its associated spec file [main_spec.rb](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/spec/lib/remote_development/workspaces/create/main_spec.rb).
+For a comprehensive view of how the matcher is used in a test suite, see [RemoteDevelopment::WorkspaceOperations::Create::Main](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/lib/remote_development/workspace_operations/create/main.rb) and its associated spec file [main_spec.rb](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/spec/lib/remote_development/workspace_operations/create/main_spec.rb).
 
 ### Matcher internals
 

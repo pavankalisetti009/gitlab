@@ -4,7 +4,7 @@ module RemoteDevelopment
   class Workspace < ApplicationRecord
     include IgnorableColumns
     include Sortable
-    include RemoteDevelopment::Workspaces::States
+    include RemoteDevelopment::WorkspaceOperations::States
     include ::Gitlab::Utils::StrongMemoize
 
     ignore_column :url_domain, remove_with: '16.9', remove_after: '2019-01-19'
@@ -52,12 +52,12 @@ module RemoteDevelopment
     scope :by_actual_states, ->(actual_states) { where(actual_state: actual_states) }
     scope :desired_state_not_terminated, -> do
       where.not(
-        desired_state: RemoteDevelopment::Workspaces::States::TERMINATED
+        desired_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED
       )
     end
     scope :actual_state_not_terminated, -> do
       where.not(
-        actual_state: RemoteDevelopment::Workspaces::States::TERMINATED
+        actual_state: RemoteDevelopment::WorkspaceOperations::States::TERMINATED
       )
     end
 
@@ -153,7 +153,7 @@ module RemoteDevelopment
     end
 
     def enforce_permanent_termination
-      return unless persisted? && desired_state_changed? && desired_state_was == Workspaces::States::TERMINATED
+      return unless persisted? && desired_state_changed? && desired_state_was == WorkspaceOperations::States::TERMINATED
 
       errors.add(:desired_state, "is 'Terminated', and cannot be updated. Create a new workspace instead.")
     end

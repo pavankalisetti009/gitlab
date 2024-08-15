@@ -24,8 +24,8 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
 
   let_it_be(:workspace) do
     create(:workspace, user: user, updated_at: 2.days.ago, project_id: project.id,
-      actual_state: ::RemoteDevelopment::Workspaces::States::RUNNING,
-      desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING
+      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+      desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING
     )
   end
 

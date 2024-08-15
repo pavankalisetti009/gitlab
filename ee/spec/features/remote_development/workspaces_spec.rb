@@ -115,7 +115,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       end
 
       # ASSERT WORKSPACE SHOWS RUNNING STATE IN UI AND UPDATES URL
-      expect_workspace_state_indicator(RemoteDevelopment::Workspaces::States::RUNNING)
+      expect_workspace_state_indicator(RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       expect(page).to have_selector('a', text: workspace.url)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR RUNNING STATE
@@ -138,7 +138,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       end
 
       # ASSERT WORKSPACE SHOWS STOPPING STATE IN UI
-      expect_workspace_state_indicator(RemoteDevelopment::Workspaces::States::STOPPING)
+      expect_workspace_state_indicator(RemoteDevelopment::WorkspaceOperations::States::STOPPING)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR STOPPING STATE
       # TODO: What other buttons are there?
@@ -154,7 +154,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       end
 
       # ASSERT WORKSPACE SHOWS STOPPED STATE IN UI
-      expect_workspace_state_indicator(RemoteDevelopment::Workspaces::States::STOPPED)
+      expect_workspace_state_indicator(RemoteDevelopment::WorkspaceOperations::States::STOPPED)
 
       # ASSERT ACTION BUTTONS ARE CORRECT FOR STOPPED STATE
       expect(page).to have_button('Start')
