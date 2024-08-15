@@ -65,7 +65,7 @@ export default {
       return Boolean(this.assignedPolicyProject?.id);
     },
     securityPolicyProjectPath() {
-      return joinPaths('/', this.assignedPolicyProject?.full_path);
+      return joinPaths('/', this.assignedPolicyProject?.fullPath);
     },
   },
   methods: {

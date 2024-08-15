@@ -33,7 +33,13 @@ export default (el, namespaceType) => {
     timezones,
   } = el.dataset;
 
-  const policyProject = JSON.parse(assignedPolicyProject);
+  let parsedAssignedPolicyProject;
+
+  try {
+    parsedAssignedPolicyProject = convertObjectPropsToCamelCase(JSON.parse(assignedPolicyProject));
+  } catch {
+    parsedAssignedPolicyProject = DEFAULT_ASSIGNED_POLICY_PROJECT;
+  }
 
   let parsedSoftwareLicenses;
   let parsedTimezones;
@@ -92,9 +98,7 @@ export default (el, namespaceType) => {
       parsedSoftwareLicenses,
       timezones: parsedTimezones,
       existingPolicy: policy ? { type: policyType, ...JSON.parse(policy) } : undefined,
-      assignedPolicyProject: policyProject
-        ? convertObjectPropsToCamelCase(policyProject)
-        : DEFAULT_ASSIGNED_POLICY_PROJECT,
+      assignedPolicyProject: parsedAssignedPolicyProject,
     },
     render(createElement) {
       return createElement(App);

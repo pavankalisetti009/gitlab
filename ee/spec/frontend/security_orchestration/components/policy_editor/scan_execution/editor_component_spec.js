@@ -31,9 +31,11 @@ import {
   mockDastScanExecutionManifest,
   mockDastScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
-import { visitUrl } from '~/lib/utils/url_utility';
 
-import { modifyPolicy } from 'ee/security_orchestration/components/policy_editor/utils';
+import {
+  modifyPolicy,
+  redirectToMergeRequest,
+} from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   EDITOR_MODE_YAML,
   SECURITY_POLICY_ACTIONS,
@@ -50,11 +52,6 @@ import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor
 
 jest.mock('lodash/uniqueId');
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn().mockName('visitUrlMock'),
-}));
-
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
   assignSecurityPolicyProject: jest.fn().mockResolvedValue({
@@ -62,6 +59,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
     fullPath: 'path/to/new-project',
   }),
   modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
+  redirectToMergeRequest: jest.fn(),
 }));
 
 describe('EditorComponent', () => {
@@ -187,9 +185,10 @@ describe('EditorComponent', () => {
           namespacePath: defaultProjectPath,
           yamlEditorValue,
         });
-        expect(visitUrl).toHaveBeenCalledWith(
-          `/${currentlyAssignedPolicyProject.fullPath}/-/merge_requests/2`,
-        );
+        expect(redirectToMergeRequest).toHaveBeenCalledWith({
+          mergeRequestId: '2',
+          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
+        });
       },
     );
   });

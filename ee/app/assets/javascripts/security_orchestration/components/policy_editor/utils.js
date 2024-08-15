@@ -1,6 +1,7 @@
 import { intersection, uniqBy, uniqueId } from 'lodash';
 import { isValidCron } from 'cron-validator';
 import { sprintf, s__ } from '~/locale';
+import { joinPaths, visitUrl } from '~/lib/utils/url_utility';
 import createPolicyProject from 'ee/security_orchestration/graphql/mutations/create_policy_project.mutation.graphql';
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import getFile from 'ee/security_orchestration/graphql/queries/get_file.query.graphql';
@@ -117,6 +118,17 @@ export const modifyPolicy = async ({
   checkForErrors(mergeRequest);
 
   return mergeRequest;
+};
+
+export const redirectToMergeRequest = ({ mergeRequestId, assignedPolicyProjectFullPath }) => {
+  visitUrl(
+    joinPaths(
+      gon.relative_url_root || '/',
+      assignedPolicyProjectFullPath,
+      '/-/merge_requests',
+      mergeRequestId,
+    ),
+  );
 };
 
 /**

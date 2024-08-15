@@ -1,6 +1,6 @@
 <script>
 import { GlEmptyState, GlButton } from '@gitlab/ui';
-import { joinPaths, visitUrl, setUrlFragment } from '~/lib/utils/url_utility';
+import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import { isGroup } from 'ee/security_orchestration/components/utils';
@@ -15,7 +15,12 @@ import {
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
-import { assignSecurityPolicyProject, modifyPolicy, parseError } from '../utils';
+import {
+  assignSecurityPolicyProject,
+  modifyPolicy,
+  parseError,
+  redirectToMergeRequest,
+} from '../utils';
 import RuleSection from './rule/rule_section.vue';
 import ScanAction from './action/scan_action.vue';
 import OverloadWarningModal from './overload_warning_modal.vue';
@@ -236,7 +241,10 @@ export default {
           yamlEditorValue: this.yamlEditorValue,
         });
 
-        this.redirectToMergeRequest({ mergeRequest, assignedPolicyProject });
+        redirectToMergeRequest({
+          mergeRequestId: mergeRequest.id,
+          assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
+        });
       } catch (e) {
         this.handleError(e);
         this.setLoadingFlag(action, false);
@@ -248,16 +256,6 @@ export default {
       } else {
         this.isCreatingMR = val;
       }
-    },
-    redirectToMergeRequest({ mergeRequest, assignedPolicyProject }) {
-      visitUrl(
-        joinPaths(
-          gon.relative_url_root || '/',
-          assignedPolicyProject.fullPath,
-          '/-/merge_requests',
-          mergeRequest.id,
-        ),
-      );
     },
     updateYaml(manifest) {
       const { policy, hasParsingError } = createPolicyObject(manifest);

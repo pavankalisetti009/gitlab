@@ -8,10 +8,10 @@ import RuleSection from 'ee/security_orchestration/components/policy_editor/pipe
 import EditorLayout from 'ee/security_orchestration/components/policy_editor/editor_layout.vue';
 import { DEFAULT_PIPELINE_EXECUTION_POLICY } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
-import { visitUrl } from '~/lib/utils/url_utility';
 import {
   modifyPolicy,
   doesFileExist,
+  redirectToMergeRequest,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   EDITOR_MODE_YAML,
@@ -27,11 +27,6 @@ import {
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
-
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn().mockName('visitUrlMock'),
-}));
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
@@ -51,6 +46,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
       },
     },
   }),
+  redirectToMergeRequest: jest.fn(),
 }));
 
 describe('EditorComponent', () => {
@@ -179,9 +175,10 @@ describe('EditorComponent', () => {
           namespacePath: defaultProjectPath,
           yamlEditorValue,
         });
-        expect(visitUrl).toHaveBeenCalledWith(
-          `/${currentlyAssignedPolicyProject.fullPath}/-/merge_requests/2`,
-        );
+        expect(redirectToMergeRequest).toHaveBeenCalledWith({
+          mergeRequestId: '2',
+          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
+        });
       },
     );
 

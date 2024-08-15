@@ -4,6 +4,7 @@ import {
   doesFileExist,
   getPolicyLimitDetails,
   modifyPolicy,
+  redirectToMergeRequest,
   createHumanizedScanners,
   findBranchesWithErrors,
   isCauseOfError,
@@ -28,9 +29,14 @@ import createPolicyProject from 'ee/security_orchestration/graphql/mutations/cre
 import createPolicy from 'ee/security_orchestration/graphql/mutations/create_policy.mutation.graphql';
 import { gqClient } from 'ee/security_orchestration/utils';
 import createMergeRequestMutation from '~/graphql_shared/mutations/create_merge_request.mutation.graphql';
+import { visitUrl } from '~/lib/utils/url_utility';
 
 jest.mock('lodash/uniqueId', () => jest.fn((prefix) => `${prefix}0`));
 jest.mock('ee/security_orchestration/utils');
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn().mockName('visitUrlMock'),
+}));
 
 const defaultAssignedPolicyProject = { fullPath: 'path/to/policy-project', branch: 'main' };
 const newAssignedPolicyProject = {
@@ -175,6 +181,16 @@ describe('modifyPolicy', () => {
     await expect(async () => {
       await modifyPolicy(createSavePolicyInput());
     }).rejects.toThrow(error);
+  });
+});
+
+describe('redirectToMergeRequest', () => {
+  it('redirects to the merge request', () => {
+    redirectToMergeRequest({
+      mergeRequestId: '01',
+      assignedPolicyProjectFullPath: 'path/to/project',
+    });
+    expect(visitUrl).toHaveBeenCalledWith('/path/to/project/-/merge_requests/01');
   });
 });
 

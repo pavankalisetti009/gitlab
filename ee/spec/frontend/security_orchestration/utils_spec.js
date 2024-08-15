@@ -32,13 +32,17 @@ const allApprovers = [userApprover, groupApprover];
 
 describe('getPolicyType', () => {
   it.each`
-    input                                        | output
-    ${''}                                        | ${undefined}
-    ${'UnknownPolicyType'}                       | ${undefined}
-    ${mockProjectScanExecutionPolicy.__typename} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
-  `('returns $output when used on $input', ({ input, output }) => {
-    expect(getPolicyType(input)).toBe(output);
-  });
+    typeName                                     | field             | output
+    ${''}                                        | ${undefined}      | ${undefined}
+    ${'UnknownPolicyType'}                       | ${undefined}      | ${undefined}
+    ${mockProjectScanExecutionPolicy.__typename} | ${undefined}      | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.value}
+    ${mockProjectScanExecutionPolicy.__typename} | ${'urlParameter'} | ${POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.urlParameter}
+  `(
+    'returns $output when used on typeName: $typeName and field: $field',
+    ({ typeName, field, output }) => {
+      expect(getPolicyType(typeName, field)).toBe(output);
+    },
+  );
 });
 
 describe('decomposeApprovers', () => {
