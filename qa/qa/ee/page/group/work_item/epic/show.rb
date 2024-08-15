@@ -39,8 +39,12 @@ module QA
                   wait_for_requests
                   # Capybara code is used below due to the dropdown being defined in the @gitlab/ui project
                   find('.gl-dropdown-item', text: issue.title).click
-                  # Clicking the label blurs the input
-                  click_element('toggle-label')
+                end
+
+                # Clicking the title blurs the input
+                click_element('work-item-title')
+
+                within_element('work-item-tree') do
                   click_element('add-child-button')
                 end
               end
