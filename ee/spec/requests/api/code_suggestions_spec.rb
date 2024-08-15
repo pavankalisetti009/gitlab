@@ -741,6 +741,19 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             end
           end
 
+          let(:expected_response) do
+            {
+              'base_url' => ::Gitlab::AiGateway.url,
+              'expires_at' => expected_expiration,
+              'token' => token,
+              'headers' => expected_headers,
+              'model_details' => {
+                'model_provider' => 'vertex-ai',
+                'model_name' => 'codestral@2405'
+              }
+            }
+          end
+
           it 'returns direct access details', :freeze_time do
             post_api
 
@@ -754,6 +767,32 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
             expect(Gitlab::Tracking::AiTracking)
               .to have_received(:track_event)
                     .with('code_suggestion_direct_access_token_refresh', user: current_user)
+          end
+
+          context 'when use_codestral_for_code_completions FF is disabled' do
+            before do
+              stub_feature_flags(use_codestral_for_code_completions: false)
+            end
+
+            it 'does not include the model metadata in the direct access details' do
+              post_api
+
+              expect(json_response['model_details']).to be_nil
+            end
+          end
+
+          context 'when code completions is self-hosted' do
+            before do
+              feature_setting_double = instance_double(::Ai::FeatureSetting, self_hosted?: true)
+              allow(::Ai::FeatureSetting).to receive(:find_by_feature).with('code_completions')
+                .and_return(feature_setting_double)
+            end
+
+            it 'does not include the model metadata in the direct access details' do
+              post_api
+
+              expect(json_response['model_details']).to be_nil
+            end
           end
         end
 
@@ -774,8 +813,8 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
 
       let(:current_user) { authorized_user }
       let(:expected_expiration) { Time.now.to_i + 3600 }
-      let(:headers) { {} }
       let(:duo_seat_count) { '0' }
+
       let(:base_headers) do
         {
           'X-Gitlab-Global-User-Id' => global_user_id,
@@ -788,15 +827,10 @@ RSpec.describe API::CodeSuggestions, feature_category: :code_suggestions do
         }
       end
 
+      let(:headers) { {} }
+      let(:expected_headers) { base_headers.merge(headers) }
+
       let(:token) { 'user token' }
-      let(:expected_response) do
-        {
-          'base_url' => ::Gitlab::AiGateway.url,
-          'expires_at' => expected_expiration,
-          'token' => token,
-          'headers' => base_headers.merge(headers)
-        }
-      end
 
       it_behaves_like 'rate limited and tracked endpoint',
         { rate_limit_key: :code_suggestions_direct_access,
