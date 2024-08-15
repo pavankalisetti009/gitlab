@@ -27,8 +27,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
         add_on_purchase.expires_on = 60.days.from_now
 
         duo_pro_trial_status_widget_data_attrs = {
-          widget_url:
-            ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group),
           trial_days_used: 1,
           trial_duration: 60,
           percentage_complete: 1.67,
@@ -40,7 +38,9 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
           days_remaining: 60,
           trial_end_date: 60.days.from_now.to_date,
           purchase_now_url:
-            ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_usage_index_path(group)
+            ::Gitlab::Routing.url_helpers.group_settings_gitlab_duo_usage_index_path(group),
+          learn_about_button_url:
+            ::Gitlab::Routing.url_helpers.group_add_ons_discover_duo_pro_path(group)
         }
         result = {
           duo_pro_trial_status_widget_data_attrs: duo_pro_trial_status_widget_data_attrs,

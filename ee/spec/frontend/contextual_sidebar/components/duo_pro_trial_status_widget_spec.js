@@ -1,12 +1,10 @@
 import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DuoProTrialStatusWidget from 'ee/contextual_sidebar/components/duo_pro_trial_status_widget.vue';
-import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 import { WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/constants';
 
 describe('DuoProTrialStatusWidget component', () => {
   let wrapper;
-  let trackingSpy;
 
   const trialDaysUsed = 10;
   const trialDuration = 60;
@@ -20,7 +18,6 @@ describe('DuoProTrialStatusWidget component', () => {
         trialDaysUsed,
         trialDuration,
         percentageComplete: 10,
-        widgetUrl: 'some/widget/path',
         groupId: 1,
         featureId: 'expired_duo_pro_trial_widget',
         dismissEndpoint: 'some/dismiss/endpoint',
@@ -28,14 +25,6 @@ describe('DuoProTrialStatusWidget component', () => {
       },
     });
   };
-
-  beforeEach(() => {
-    trackingSpy = mockTracking(undefined, undefined, jest.spyOn);
-  });
-
-  afterEach(() => {
-    unmockTracking();
-  });
 
   describe('interpolated strings', () => {
     it('correctly interpolates them all', () => {
@@ -56,28 +45,6 @@ describe('DuoProTrialStatusWidget component', () => {
 
     it('renders with an id', () => {
       expect(findRootElement().attributes('id')).toBe(WIDGET_CONTAINER_ID);
-    });
-
-    describe('tracks when the widget menu is clicked', () => {
-      it('tracks with correct information when namespace is in an active trial', async () => {
-        await wrapper.findByTestId('duo-pro-trial-widget-menu').trigger('click');
-
-        expect(trackingSpy).toHaveBeenCalledWith('trial_status_widget', 'click_link', {
-          category: 'trial_status_widget',
-          label: 'duo_pro_trial',
-        });
-      });
-
-      it('tracks with correct information when namespace is with an expired trial', async () => {
-        wrapper = createComponent({ percentageComplete: 110 });
-
-        await wrapper.findByTestId('duo-pro-trial-widget-menu').trigger('click');
-
-        expect(trackingSpy).toHaveBeenCalledWith('trial_ended_widget', 'click_link', {
-          category: 'trial_ended_widget',
-          label: 'duo_pro_trial',
-        });
-      });
     });
 
     it('shows the expected day 1 text', () => {

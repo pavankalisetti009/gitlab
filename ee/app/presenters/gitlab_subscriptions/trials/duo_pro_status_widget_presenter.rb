@@ -26,7 +26,6 @@ module GitlabSubscriptions
 
       def widget_data_attributes
         {
-          widget_url: group_add_ons_discover_duo_pro_path(namespace),
           trial_days_used: trial_status.days_used,
           trial_duration: trial_status.duration,
           percentage_complete: trial_status.percentage_complete,
@@ -38,6 +37,7 @@ module GitlabSubscriptions
 
       def popover_data_attributes
         {
+          learn_about_button_url: group_add_ons_discover_duo_pro_path(namespace),
           days_remaining: trial_status.days_remaining,
           trial_end_date: trial_status.ends_on,
           purchase_now_url: group_settings_gitlab_duo_usage_index_path(namespace)
