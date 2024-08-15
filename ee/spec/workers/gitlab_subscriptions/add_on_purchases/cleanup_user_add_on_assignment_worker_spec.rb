@@ -5,8 +5,11 @@ require 'spec_helper'
 RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWorker, feature_category: :seat_cost_management do
   describe '#perform' do
     let_it_be(:namespace) { create(:group) }
-    let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, namespace: namespace) }
     let_it_be(:remove_user) { create(:user) }
+
+    let_it_be(:add_on_purchase) do
+      create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, namespace: namespace)
+    end
 
     let(:root_namespace_id) { namespace.id }
     let(:user_id) { remove_user.id }
@@ -16,7 +19,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
     end
 
     shared_examples 'returns early' do
-      it 'doest not remove seat assignment' do
+      it 'does not remove seat assignment' do
         expect(Gitlab::AppLogger).not_to receive(:info)
         expect do
           expect(subject.perform(root_namespace_id, user_id)).to be_nil
@@ -24,19 +27,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
       end
     end
 
-    context 'when root_namespace_id does not exists' do
+    context 'when root_namespace_id does not exist' do
       let(:root_namespace_id) { nil }
 
       it_behaves_like 'returns early'
     end
 
-    context 'when user_id does not exists' do
+    context 'when user_id does not exist' do
       let(:user_id) { nil }
 
       it_behaves_like 'returns early'
     end
 
-    context 'when add_on_purchase does not exists' do
+    context 'when no add on purchases exist' do
       before do
         add_on_purchase.destroy!
       end
@@ -60,6 +63,18 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::CleanupUserAddOnAssignmentWo
           expect do
             subject
           end.to change { GitlabSubscriptions::UserAddOnAssignment.where(user_id: user_id).count }.by(-1)
+        end
+
+        describe 'when add-on is Duo Enterprise' do
+          let_it_be(:add_on_purchase) do
+            create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
+          end
+
+          it 'removes the user addon assignment' do
+            expect do
+              subject
+            end.to change { GitlabSubscriptions::UserAddOnAssignment.where(user_id: user_id).count }.by(-1)
+          end
         end
 
         it 'expires the cache key for the user', :use_clean_rails_redis_caching do
