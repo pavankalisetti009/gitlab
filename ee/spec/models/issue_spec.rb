@@ -23,6 +23,7 @@ RSpec.describe Issue, feature_category: :team_planning do
     it { is_expected.to have_many(:issuable_resource_links) }
     it { is_expected.to have_many(:observability_metrics).class_name('Observability::MetricsIssuesConnection') }
     it { is_expected.to have_many(:observability_logs).class_name('Observability::LogsIssuesConnection') }
+    it { is_expected.to have_many(:observability_traces).class_name('Observability::TracesIssuesConnection') }
 
     it 'has one `synced_epic`' do
       is_expected.to have_one(:synced_epic).class_name('Epic').with_foreign_key('issue_id').inverse_of(:work_item)
