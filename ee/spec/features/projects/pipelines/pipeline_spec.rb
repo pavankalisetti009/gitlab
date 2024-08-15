@@ -90,43 +90,6 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
       end
     end
 
-    context 'when :ci_require_credit_card_on_free_plan flag is on' do
-      before do
-        allow(::Gitlab).to receive(:com?).and_return(true)
-        create(:gitlab_subscription, namespace: namespace, hosted_plan: create(:free_plan))
-
-        stub_feature_flags(ci_require_credit_card_on_free_plan: true)
-      end
-
-      context 'on free plan' do
-        it 'does not show an alert to verify an account with a credit card' do
-          subject
-
-          expect(page).not_to have_selector('[data-testid="creditCardValidationRequiredAlert"]')
-        end
-
-        context 'when failed' do
-          let!(:pipeline) do
-            create(
-              :ci_empty_pipeline,
-              project: project,
-              ref: 'master',
-              status: 'failed',
-              failure_reason: 'user_not_verified',
-              sha: project.commit.id,
-              user: user
-            )
-          end
-
-          it 'shows an alert to verify an account with a credit card' do
-            subject
-
-            expect(page).to have_selector('[data-testid="creditCardValidationRequiredAlert"]')
-          end
-        end
-      end
-    end
-
     describe 'identity verification requirement', :saas do
       include IdentityVerificationHelpers
 
@@ -135,10 +98,7 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
       before do
         stub_saas_features(identity_verification: true)
 
-        stub_feature_flags(
-          ci_require_credit_card_on_free_plan: false,
-          ci_require_credit_card_on_trial_plan: false
-        )
+        stub_feature_flags(ci_require_credit_card_on_trial_plan: false)
       end
 
       shared_examples 'does not show an alert prompting the user to verify their account' do

@@ -878,9 +878,7 @@ module EE
 
       return false if ci_usage.quota_enabled? && ci_usage.quota.any_purchased?
 
-      if root_namespace.free_plan?
-        ::Feature.enabled?(:ci_require_credit_card_on_free_plan, project)
-      elsif root_namespace.trial?
+      if root_namespace.trial?
         ::Feature.enabled?(:ci_require_credit_card_on_trial_plan, project)
       else
         false

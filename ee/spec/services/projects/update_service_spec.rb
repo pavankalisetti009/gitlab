@@ -10,12 +10,14 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
   let(:project) { create(:project, :repository, creator: user, namespace: user.namespace) }
 
   context 'shared runners', :saas do
-    let(:user) { create(:user, :with_sign_ins) }
     let(:opts) { { shared_runners_enabled: enabled } }
     let(:enabled) { true }
 
+    let_it_be_with_reload(:user) { create(:user, :with_sign_ins) }
+    let_it_be(:group) { create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.today + 1.day) }
+    let_it_be_with_reload(:project) { create(:project, :repository, creator: user, group: group) }
+
     before do
-      create(:gitlab_subscription, namespace: user.namespace, hosted_plan: create(:free_plan))
       allow(::Gitlab).to receive(:com?).and_return(true)
     end
 

@@ -202,12 +202,9 @@ RSpec.describe EE::Users::CalloutsHelper do
       end
     end
 
-    context 'when both ci_require_credit_card_on_free_plan and ci_require_credit_card_on_trial_plan are disabled' do
+    context 'when ci_require_credit_card_on_trial_plan is disabled' do
       before do
-        stub_feature_flags(
-          ci_require_credit_card_on_free_plan: false,
-          ci_require_credit_card_on_trial_plan: false
-        )
+        stub_feature_flags(ci_require_credit_card_on_trial_plan: false)
 
         allow(Gitlab).to receive(:com?).and_return(true)
         allow(helper).to receive(:current_user).and_return(user)
