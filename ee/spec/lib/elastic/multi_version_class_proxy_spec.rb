@@ -7,22 +7,22 @@ RSpec.describe Elastic::MultiVersionClassProxy, feature_category: :global_search
 
   describe '#version' do
     it 'returns class proxy in specified version' do
-      result = subject.version('V12p1')
+      result = subject.version('Latest')
 
-      expect(result).to be_a(Elastic::V12p1::SnippetClassProxy)
+      expect(result).to be_a(Elastic::Latest::SnippetClassProxy)
       expect(result.target).to eq(ProjectSnippet)
     end
 
     context 'repository' do
       it 'returns class proxy in specified version' do
         repository_proxy = described_class.new(Repository)
-        repository_result = repository_proxy.version('V12p1')
+        repository_result = repository_proxy.version('Latest')
         wiki_proxy = described_class.new(ProjectWiki)
-        wiki_result = wiki_proxy.version('V12p1')
+        wiki_result = wiki_proxy.version('Latest')
 
-        expect(repository_result).to be_a(Elastic::V12p1::RepositoryClassProxy)
+        expect(repository_result).to be_a(Elastic::Latest::RepositoryClassProxy)
         expect(repository_result.target).to eq(Repository)
-        expect(wiki_result).to be_a(Elastic::V12p1::WikiClassProxy)
+        expect(wiki_result).to be_a(Elastic::Latest::WikiClassProxy)
         expect(wiki_result.target).to eq(ProjectWiki)
       end
     end
@@ -41,7 +41,7 @@ RSpec.describe Elastic::MultiVersionClassProxy, feature_category: :global_search
     end
 
     it 'forwards methods which should touch all write targets' do
-      Elastic::V12p1::SnippetClassProxy.methods_for_all_write_targets.each do |method|
+      Elastic::Latest::SnippetClassProxy.methods_for_all_write_targets.each do |method|
         expect(new_target).to receive(method).and_return(response)
         expect(old_target).to receive(method).and_return(response)
 
@@ -59,7 +59,7 @@ RSpec.describe Elastic::MultiVersionClassProxy, feature_category: :global_search
     end
 
     it 'does not forward write methods which should touch specific version' do
-      Elastic::V12p1::SnippetClassProxy.methods_for_one_write_target.each do |method|
+      Elastic::Latest::SnippetClassProxy.methods_for_one_write_target.each do |method|
         expect(subject).not_to respond_to(method)
       end
     end

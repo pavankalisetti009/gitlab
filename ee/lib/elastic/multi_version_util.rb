@@ -8,7 +8,7 @@ module Elastic
     attr_reader :data_class, :data_target, :use_separate_indices
 
     # TODO: remove once multi-version is functional https://gitlab.com/gitlab-org/gitlab/issues/10156
-    TARGET_VERSION = 'V12p1'
+    TARGET_VERSION = 'Latest'
 
     # @params version [String, Module] can be a string "V12p1" or module (Elastic::V12p1)
     def version(version)
