@@ -41,15 +41,6 @@
   white-space: nowrap;
 }
 
-.boards-selector-wrapper > .show.dropdown .dropdown-menu {
-  // see https://gitlab.com/gitlab-org/gitlab-ui/issues/38
-  display: flex;
-
-  &.dropdown-extended-height {
-    max-height: $dropdown-max-height-lg;
-  }
-}
-
 .board-config-modal .modal-dialog {
   width: 440px;
 
