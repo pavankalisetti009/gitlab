@@ -1,20 +1,18 @@
 import { nextTick } from 'vue';
 import { GlSprintf, GlLink } from '@gitlab/ui';
 
-import { confirmAction } from '~/lib/utils/confirm_via_gl_modal/confirm_action';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 
 import SelfManagedProviderCard from 'ee/product_analytics/onboarding/components/providers/self_managed_provider_card.vue';
 import ProviderSettingsPreview from 'ee/product_analytics/onboarding/components/providers/provider_settings_preview.vue';
 import ClearProjectSettingsModal from 'ee/product_analytics/onboarding/components/providers/clear_project_settings_modal.vue';
+import ProviderSettingsForm from 'ee/product_analytics/onboarding/components/providers/provider_settings_form.vue';
 import {
   getEmptyProjectLevelAnalyticsProviderSettings,
   getPartialProjectLevelAnalyticsProviderSettings,
   getProjectLevelAnalyticsProviderSettings,
 } from '../../../mock_data';
-
-jest.mock('~/lib/utils/confirm_via_gl_modal/confirm_action');
 
 describe('SelfManagedProviderCard', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -27,8 +25,8 @@ describe('SelfManagedProviderCard', () => {
     wrapper.findByTestId('use-instance-configuration-checkbox');
   const findLink = () => wrapper.findComponent(GlLink);
   const findClearSettingsModal = () => wrapper.findComponent(ClearProjectSettingsModal);
-
-  const mockConfirmAction = (confirmed) => confirmAction.mockResolvedValueOnce(confirmed);
+  const findEditSettingsModal = () => wrapper.findByTestId('edit-project-level-settings-modal');
+  const findProviderSettingsForm = () => wrapper.findComponent(ProviderSettingsForm);
 
   const createWrapper = (props = {}, provide = {}) => {
     wrapper = shallowMountExtended(SelfManagedProviderCard, {
@@ -56,36 +54,39 @@ describe('SelfManagedProviderCard', () => {
     findUseInstanceConfigurationCheckbox().vm.$emit('input', checked);
   };
 
-  const itShouldRedirectToSettings = () => {
+  const itShouldUseEditSettingsModal = () => {
     describe('when clicking setup', () => {
-      it('should confirm with user that redirect to settings is required', async () => {
-        mockConfirmAction(false);
-        await initProvider();
+      beforeEach(() => initProvider());
 
-        expect(confirmAction).toHaveBeenCalledWith(
-          '',
-          expect.objectContaining({
-            primaryBtnText: 'Go to analytics settings',
-            title: 'Connect your own provider',
-            modalHtmlMessage: expect.stringContaining(
-              `To connect your own provider, you'll be redirected`,
-            ),
-          }),
-        );
+      it('should show the settings modal', () => {
+        expect(findEditSettingsModal().props('visible')).toBe(true);
+        expect(findEditSettingsModal().props('title')).toBe('Edit project provider settings');
       });
 
-      it('should not emit "open-settings" event when user cancels', async () => {
-        mockConfirmAction(false);
-        await initProvider();
+      it('should hide the modal when it is closed externally', async () => {
+        findEditSettingsModal().vm.$emit('change', false);
+        await nextTick();
 
-        expect(wrapper.emitted('open-settings')).toBeUndefined();
+        expect(findEditSettingsModal().props('visible')).toBe(false);
       });
 
-      it('should emit "open-settings" event when confirmed', async () => {
-        mockConfirmAction(true);
-        await initProvider();
+      it('should hide the modal when settings form emits "canceled"', async () => {
+        findProviderSettingsForm().vm.$emit('canceled');
+        await nextTick();
 
-        expect(wrapper.emitted('open-settings')).toHaveLength(1);
+        expect(findEditSettingsModal().props('visible')).toBe(false);
+      });
+
+      it('should select the provider when the settings form emits "saved"', async () => {
+        await wrapper.setProps({
+          projectSettings: getProjectLevelAnalyticsProviderSettings(),
+        });
+        findProviderSettingsForm().vm.$emit('saved');
+        await nextTick();
+
+        expect(findEditSettingsModal().props('visible')).toBe(false);
+        expect(wrapper.emitted('confirm')).toHaveLength(1);
+        expect(wrapper.emitted('confirm').at(0)).toStrictEqual(['file-mock']);
       });
     });
   };
@@ -211,7 +212,7 @@ describe('SelfManagedProviderCard', () => {
         );
       });
 
-      itShouldRedirectToSettings();
+      itShouldUseEditSettingsModal();
     });
   });
 
@@ -239,7 +240,7 @@ describe('SelfManagedProviderCard', () => {
         expect(findProviderSettingsPreview().exists()).toBe(false);
       });
 
-      itShouldRedirectToSettings();
+      itShouldUseEditSettingsModal();
     });
   });
 
