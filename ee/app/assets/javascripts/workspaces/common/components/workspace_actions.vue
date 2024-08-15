@@ -9,10 +9,6 @@ const RESTART_ACTION_VISIBLE_STATES = {
     WORKSPACE_DESIRED_STATES.restartRequested,
     WORKSPACE_DESIRED_STATES.running,
   ],
-  [WORKSPACE_STATES.stopped]: [
-    WORKSPACE_DESIRED_STATES.restartRequested,
-    WORKSPACE_DESIRED_STATES.stopped,
-  ],
   [WORKSPACE_STATES.failed]: [
     WORKSPACE_DESIRED_STATES.restartRequested,
     WORKSPACE_DESIRED_STATES.running,
