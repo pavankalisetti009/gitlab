@@ -326,21 +326,19 @@ module Search
       end
 
       def report_metrics
-        execute_every 5.minutes, cache_key: :report_metrics do
-          ::Search::Zoekt::Node.online.find_each do |node|
-            log_data = build_structured_payload(
-              meta: node.metadata_json,
-              indices_count: node.indices.count,
-              task_count_pending: node.tasks.pending.count,
-              task_count_failed: node.tasks.failed.count,
-              task_count_orphaned: node.tasks.orphaned.count,
-              task_count_done: node.tasks.done.count,
-              message: 'Reporting metrics',
-              task: :report_metrics
-            )
+        ::Search::Zoekt::Node.online.find_each do |node|
+          log_data = build_structured_payload(
+            meta: node.metadata_json,
+            indices_count: node.indices.count,
+            task_count_pending: node.tasks.pending.count,
+            task_count_failed: node.tasks.failed.count,
+            task_count_orphaned: node.tasks.orphaned.count,
+            task_count_done: node.tasks.done.count,
+            message: 'Reporting metrics',
+            task: :report_metrics
+          )
 
-            logger.info(log_data)
-          end
+          logger.info(log_data)
         end
       end
     end
