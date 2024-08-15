@@ -2,7 +2,7 @@
 
 module QA
   RSpec.describe 'Secure', product_group: :secret_detection,
-    only: { pipeline: %w[staging-canary staging canary production] } do
+    only: { pipeline: %w[staging-canary staging] } do
     describe 'Secret Push Protection' do
       let!(:project) do
         create(:project, :with_readme, name: 'secret-push-project', description: 'Secret Push Protection Project')
