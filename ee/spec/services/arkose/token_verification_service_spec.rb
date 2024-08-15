@@ -74,8 +74,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
       context 'when arkose is enabled' do
         context 'when the user solved the challenge' do
           context 'when the risk score is low' do
-            let(:is_low_risk) { true }
-
             let(:arkose_ec_response) do
               Gitlab::Json.parse(
                 File.read(Rails.root.join('ee/spec/fixtures/arkose/successfully_solved_ec_response.json'))
@@ -125,8 +123,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
             end
 
             context 'when the session is allowlisted' do
-              let(:is_low_risk) { true }
-
               let(:arkose_ec_response) do
                 json = Gitlab::Json.parse(
                   File.read(Rails.root.join('ee/spec/fixtures/arkose/successfully_solved_ec_response_high_risk.json'))
@@ -139,8 +135,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
             end
 
             context 'when the risk score is high' do
-              let(:is_low_risk) { false }
-
               let(:arkose_ec_response) do
                 Gitlab::Json.parse(
                   File.read(Rails.root.join('ee/spec/fixtures/arkose/successfully_solved_ec_response_high_risk.json'))
@@ -154,8 +148,6 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
 
         context 'when the response does not include the risk session' do
           context 'when the user solved the challenge' do
-            let(:is_low_risk) { true }
-
             let(:arkose_ec_response) do
               Gitlab::Json.parse(
                 File.read(
