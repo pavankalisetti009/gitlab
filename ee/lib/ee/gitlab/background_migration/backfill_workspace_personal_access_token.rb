@@ -47,7 +47,7 @@ module EE
         end
 
         def calculate_revoked(expires_at, desired_state)
-          expires_at <= Date.today || desired_state == ::RemoteDevelopment::Workspaces::States::TERMINATED
+          expires_at <= Date.today || desired_state == ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED
         end
       end
     end

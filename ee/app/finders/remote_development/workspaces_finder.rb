@@ -44,7 +44,7 @@ module RemoteDevelopment
 
     def self.validate_actual_state_values!(actual_states)
       invalid_actual_state = actual_states.find do |actual_state|
-        Workspaces::States::VALID_ACTUAL_STATES.exclude?(actual_state)
+        WorkspaceOperations::States::VALID_ACTUAL_STATES.exclude?(actual_state)
       end
 
       raise ArgumentError, "Invalid actual state value provided: '#{invalid_actual_state}'" if invalid_actual_state

@@ -4,8 +4,8 @@ require 'spec_helper'
 
 RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, feature_category: :remote_development do
   describe "#perform" do
-    let(:v1) { RemoteDevelopment::Workspaces::ConfigVersion::VERSION_1 }
-    let(:v2) { RemoteDevelopment::Workspaces::ConfigVersion::VERSION_2 }
+    let(:v1) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_1 }
+    let(:v2) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2 }
     let(:personal_access_tokens_table) { table(:personal_access_tokens) }
     let(:pat) do
       personal_access_tokens_table.create!(name: 'workspace1', user_id: user.id, scopes: "---\n- api\n",
@@ -21,7 +21,7 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, featu
         desired_state_updated_at: 2.seconds.ago,
         max_hours_before_termination: 19,
         namespace: 'ns',
-        desired_state: ::RemoteDevelopment::Workspaces::States::RUNNING,
+        desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
         editor: 'e',
         devfile_ref: 'dfr',
         devfile_path: 'dev/path',
@@ -42,7 +42,7 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, featu
       workspaces_table.create!({
         name: 'workspace1',
         config_version: v1,
-        actual_state: ::RemoteDevelopment::Workspaces::States::TERMINATED,
+        actual_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED,
         force_include_all_resources: false
       }.merge!(workspace_attrs))
     end
@@ -51,7 +51,7 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, featu
       workspaces_table.create!({
         name: 'workspace2',
         config_version: v1,
-        actual_state: ::RemoteDevelopment::Workspaces::States::RUNNING
+        actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING
       }.merge!(workspace_attrs))
     end
 
@@ -59,7 +59,7 @@ RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, featu
       workspaces_table.create!({
         name: 'workspace3',
         config_version: v2,
-        actual_state: ::RemoteDevelopment::Workspaces::States::RUNNING,
+        actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
         force_include_all_resources: false
       }.merge!(workspace_attrs))
     end

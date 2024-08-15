@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_development do
-  include ::RemoteDevelopment::Workspaces::States
+  include ::RemoteDevelopment::WorkspaceOperations::States
 
   let_it_be(:current_user) { create(:user) }
 
@@ -22,20 +22,20 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
   let_it_be(:project_c) { create(:project, :public) }
   let_it_be(:workspace_a) do
     create(:workspace, user: workspace_owner_user, updated_at: 2.days.ago, project: project_a,
-      actual_state: ::RemoteDevelopment::Workspaces::States::RUNNING, agent: agent_a
+      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING, agent: agent_a
     )
   end
 
   let_it_be(:workspace_b) do
     create(:workspace, user: workspace_owner_user, updated_at: 1.day.ago, project: project_b,
-      actual_state: ::RemoteDevelopment::Workspaces::States::TERMINATED, agent: agent_b
+      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED, agent: agent_b
     )
   end
 
   let_it_be(:other_user) { create(:user) }
   let_it_be(:other_users_workspace) do
     create(:workspace, user: other_user, project_id: project_c.id,
-      actual_state: ::RemoteDevelopment::Workspaces::States::TERMINATED, agent: agent_b
+      actual_state: ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED, agent: agent_b
     )
   end
 
@@ -85,7 +85,7 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
   end
 
   context "with actual_states argument" do
-    let(:filter_arguments) { { actual_states: [::RemoteDevelopment::Workspaces::States::RUNNING] } }
+    let(:filter_arguments) { { actual_states: [::RemoteDevelopment::WorkspaceOperations::States::RUNNING] } }
 
     it "returns only workspaces matching the specified actual_states" do
       expect(collection_proxy).to contain_exactly(workspace_a)
@@ -100,8 +100,8 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
         project_ids: [project_a.id, project_b.id, project_c.id],
         agent_ids: [agent_a.id, agent_b.id],
         actual_states: [
-          ::RemoteDevelopment::Workspaces::States::RUNNING,
-          ::RemoteDevelopment::Workspaces::States::TERMINATED
+          ::RemoteDevelopment::WorkspaceOperations::States::RUNNING,
+          ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED
         ]
       }
     end

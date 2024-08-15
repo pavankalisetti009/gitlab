@@ -9,13 +9,13 @@ FactoryBot.define do
     personal_access_token
 
     name { "workspace-#{agent.id}-#{user.id}-#{random_string}" }
-    config_version { RemoteDevelopment::Workspaces::ConfigVersion::LATEST_VERSION }
+    config_version { RemoteDevelopment::WorkspaceOperations::ConfigVersion::LATEST_VERSION }
     force_include_all_resources { true }
 
     add_attribute(:namespace) { "gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}" }
 
-    desired_state { RemoteDevelopment::Workspaces::States::STOPPED }
-    actual_state { RemoteDevelopment::Workspaces::States::STOPPED }
+    desired_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
+    actual_state { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     deployment_resource_version { 2 }
     editor { 'webide' }
     max_hours_before_termination { 24 }
@@ -76,7 +76,7 @@ FactoryBot.define do
         )
       else
         unless evaluator.without_workspace_variables
-          workspace_variables = RemoteDevelopment::Workspaces::Create::WorkspaceVariables.variables(
+          workspace_variables = RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables.variables(
             name: workspace.name,
             dns_zone: workspace.dns_zone,
             personal_access_token_value: workspace.personal_access_token.token,
@@ -118,8 +118,8 @@ FactoryBot.define do
     end
 
     trait :unprovisioned do
-      desired_state { RemoteDevelopment::Workspaces::States::RUNNING }
-      actual_state { RemoteDevelopment::Workspaces::States::CREATION_REQUESTED }
+      desired_state { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
+      actual_state { RemoteDevelopment::WorkspaceOperations::States::CREATION_REQUESTED }
       responded_to_agent_at { nil }
       deployment_resource_version { nil }
     end

@@ -125,10 +125,10 @@ module EE
         mount_mutation ::Mutations::AuditEvents::ExternalAuditEventDestinations::Update
         mount_mutation ::Mutations::Ci::NamespaceCiCdSettingsUpdate
         mount_mutation ::Mutations::Ci::Runners::ExportUsage
-        mount_mutation ::Mutations::RemoteDevelopment::Workspaces::Create
-        mount_mutation ::Mutations::RemoteDevelopment::Workspaces::Update
-        mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappings::Create
-        mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappings::Delete
+        mount_mutation ::Mutations::RemoteDevelopment::WorkspaceOperations::Create
+        mount_mutation ::Mutations::RemoteDevelopment::WorkspaceOperations::Update
+        mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create
+        mount_mutation ::Mutations::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Destroy
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Create
         mount_mutation ::Mutations::AuditEvents::Streaming::Headers::Update

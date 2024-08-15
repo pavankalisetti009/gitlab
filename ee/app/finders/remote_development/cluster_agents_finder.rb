@@ -29,16 +29,18 @@ module RemoteDevelopment
         validate_user_can_read_namespace_agent_mappings!(user: user, namespace: namespace)
 
         relevant_mappings = RemoteDevelopmentNamespaceClusterAgentMapping.for_namespaces([namespace.id])
-        relevant_mappings = NamespaceClusterAgentMappings::Validations.filter_valid_namespace_cluster_agent_mappings(
-          namespace_cluster_agent_mappings: relevant_mappings.to_a
-        )
+        relevant_mappings =
+          NamespaceClusterAgentMappingOperations::Validations.filter_valid_namespace_cluster_agent_mappings(
+            namespace_cluster_agent_mappings: relevant_mappings.to_a
+          )
 
         Clusters::Agent.id_in(relevant_mappings.map(&:cluster_agent_id))
       when :available
         relevant_mappings = RemoteDevelopmentNamespaceClusterAgentMapping.for_namespaces(namespace.traversal_ids)
-        relevant_mappings = NamespaceClusterAgentMappings::Validations.filter_valid_namespace_cluster_agent_mappings(
-          namespace_cluster_agent_mappings: relevant_mappings.to_a
-        )
+        relevant_mappings =
+          NamespaceClusterAgentMappingOperations::Validations.filter_valid_namespace_cluster_agent_mappings(
+            namespace_cluster_agent_mappings: relevant_mappings.to_a
+          )
 
         Clusters::Agent.id_in(relevant_mappings.map(&:cluster_agent_id)).with_remote_development_enabled
       else

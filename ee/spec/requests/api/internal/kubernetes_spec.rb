@@ -62,7 +62,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
     let(:params) { { some_param: "1" } }
     let(:expected_service_args) do
       {
-        domain_main_class: ::RemoteDevelopment::Workspaces::Reconcile::Main,
+        domain_main_class: ::RemoteDevelopment::WorkspaceOperations::Reconcile::Main,
         domain_main_class_args: {
           original_params: params,
           agent: agent
