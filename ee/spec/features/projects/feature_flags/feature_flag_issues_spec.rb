@@ -30,7 +30,7 @@ RSpec.describe 'Feature flag issue links', :js, feature_category: :feature_flags
         visit(edit_project_feature_flag_path(project, feature_flag))
         add_linked_issue_button.click
         fill_in 'add-related-issues-form-input', with: "#{issue.to_reference(project)} "
-        page.within('.linked-issues-card-body') do
+        within_testid('crud-form') do
           click_button 'Add'
         end
 
@@ -41,7 +41,7 @@ RSpec.describe 'Feature flag issue links', :js, feature_category: :feature_flags
         visit(edit_project_feature_flag_path(project, feature_flag))
         add_linked_issue_button.click
 
-        within '.js-add-related-issues-form-area' do
+        within_testid('crud-form') do
           expect(page).to have_selector "#add-related-issues-form-input"
           expect(page).not_to have_selector "#linked-issue-type-radio"
         end

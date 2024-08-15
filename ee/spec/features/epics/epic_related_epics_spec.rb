@@ -22,13 +22,13 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
   end
 
   def open_add_epic_form
-    page.within('.related-issues-block') do
+    within_testid('related-issues-block') do
       click_button 'Add a related epic'
     end
   end
 
   def add_epic(epic, relationship)
-    page.within('.js-add-related-issues-form-area') do
+    within_testid('crud-form') do
       page.find('#add-related-issues-form-input').native.send_keys("&#{epic.iid} ")
 
       page.find("input[value='#{relationship}']").click
@@ -45,13 +45,13 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
 
   describe 'epic body section' do
     it 'user can view related epics section under epic description', :aggregate_failures do
-      page.within('#related-issues') do
-        card_title = page.find('.gl-new-card-title')
-        card_body = find_by_testid('related-issues-body')
-        expect(card_title).to have_content('Linked epics')
-        expect(card_body).to have_link('', href: '/help/user/group/epics/linked_epics')
-        card = page.find('.gl-card')
-        expect(card).to have_selector('button', text: 'Add')
+      within_testid('related-issues-block') do
+        title = find_by_testid('crud-title')
+        empty_message = find_by_testid('crud-empty')
+        expect(title).to have_content('Linked epics')
+        expect(empty_message).to have_link('', href: '/help/user/group/epics/linked_epics')
+        actions = find_by_testid('crud-actions')
+        expect(actions).to have_selector('button', text: 'Add')
       end
     end
   end
@@ -62,7 +62,7 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
     end
 
     it 'user can view category selection radio inputs', :aggregate_failures do
-      page.within('.js-add-related-issues-form-area') do
+      within_testid('crud-form') do
         expect(page.find('label[for="linked-issue-type-radio"]')).to have_content('The current epic')
 
         page.within('#linked-issue-type-radio') do
@@ -78,14 +78,14 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
     end
 
     it 'user can view epic input field', :aggregate_failures do
-      page.within('.js-add-related-issues-form-area') do
+      within_testid('crud-form') do
         expect(page.find('p')).to have_content('the following epics')
         expect(page).to have_selector('.add-issuable-form-input-wrapper')
       end
     end
 
     it 'epic input field can autocomplete epics when `&` is input', :aggregate_failures do
-      page.within('.js-add-related-issues-form-area') do
+      within_testid('crud-form') do
         page.find('#add-related-issues-form-input').native.send_keys('&')
       end
 
@@ -98,7 +98,7 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
     end
 
     it 'epic input field does not autocomplete issues when `#` is input', :aggregate_failures do
-      page.within('.js-add-related-issues-form-area') do
+      within_testid('crud-form') do
         page.find('#add-related-issues-form-input').native.send_keys('#')
       end
 
@@ -108,7 +108,7 @@ RSpec.describe 'Related Epics', :js, feature_category: :portfolio_management do
     end
 
     it 'user can view list of added epics as tokens within input field', :aggregate_failures do
-      page.within('.js-add-related-issues-form-area .add-issuable-form-input-wrapper') do
+      within_testid('crud-form') do
         page.find('#add-related-issues-form-input').native.send_keys("&#{epic1.iid} ")
 
         expect(page.find('.issue-token')).to have_content("&#{epic1.iid}")

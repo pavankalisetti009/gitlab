@@ -26,7 +26,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         click_button 'Add a related issue'
         fill_in 'Enter issue URL', with: "#{issue.to_reference(project)} "
         find("input[name=\"linked-issue-type-radio\"][value=\"#{radio_input_value}\"]").click
-        page.within('.linked-issues-card-body') do
+        within_testid('crud-form') do
           click_button 'Add'
         end
 
@@ -44,7 +44,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         end
 
         it 'shows "Relates to" heading' do
-          headings = all('.linked-issues-card-body h4')
+          headings = all('[data-testid="crud-body"] h4')
 
           expect(headings.count).to eq(1)
           expect(headings[0].text).to eq("Relates to")
@@ -54,7 +54,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find('.js-related-issues-header-issue-count')).to have_content('1')
+          expect(find_by_testid('crud-count')).to have_content('1')
         end
       end
 
@@ -64,7 +64,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         end
 
         it 'shows "Blocks" heading' do
-          headings = all('.linked-issues-card-body h4')
+          headings = all('[data-testid="crud-body"] h4')
 
           expect(headings.count).to eq(1)
           expect(headings[0].text).to eq("Blocks")
@@ -74,7 +74,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find('.js-related-issues-header-issue-count')).to have_content('1')
+          expect(find_by_testid('crud-count')).to have_content('1')
         end
       end
 
@@ -84,7 +84,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         end
 
         it 'shows "Is blocked by" heading' do
-          headings = all('.linked-issues-card-body h4')
+          headings = all('[data-testid="crud-body"] h4')
 
           expect(headings.count).to eq(1)
           expect(headings[0].text).to eq("Is blocked by")
@@ -94,7 +94,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find('.js-related-issues-header-issue-count')).to have_content('1')
+          expect(find_by_testid('crud-count')).to have_content('1')
         end
 
         context 'when clicking the top `Close issue` button in the issue header', :aggregate_failures do
@@ -157,7 +157,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
         end
 
         it 'shows "Blocks", "Is blocked by", and "Relates to" headings' do
-          headings = all('.linked-issues-card-body h4')
+          headings = all('[data-testid="crud-body"] h4')
 
           expect(headings.count).to eq(3)
           expect(headings[0].text).to eq("Blocks")
@@ -169,7 +169,7 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items.count).to eq(3)
-          expect(find('.js-related-issues-header-issue-count')).to have_content('3')
+          expect(find_by_testid('crud-count')).to have_content('3')
         end
       end
     end
