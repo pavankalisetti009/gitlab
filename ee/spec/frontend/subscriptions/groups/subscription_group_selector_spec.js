@@ -47,7 +47,7 @@ describe('SubscriptionGroupSelector component', () => {
   const findAccordion = () => wrapper.findComponent(GlAccordion);
   const findAccordionItem = () => wrapper.findComponent(GlAccordionItem);
   const findCollapsibleListbox = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findGroupNameInput = () => wrapper.findByTestId('subscription-group-name');
+  const findGroupNameInput = () => wrapper.findByTestId('subscription-group-name-input');
   const findCreateNewGroupButton = () => wrapper.findByTestId('show-new-group-form-button');
   const findGroupUrl = () => wrapper.findByTestId('group-url');
   const findErrorAlert = () => wrapper.findComponent(GlAlert);
@@ -56,7 +56,12 @@ describe('SubscriptionGroupSelector component', () => {
   const findGroupIdValidationMessage = () =>
     wrapper.findByText('Select a group for your subscription.');
   const findGroupNameValidationMessage = () =>
-    wrapper.findByText('Enter a descriptive name for your group.');
+    wrapper.findByTestId('subscription-group-name-group').find('.invalid-feedback');
+  const noGroupNameErrorMessage = 'Enter a descriptive name for your group.';
+  const groupNameStartsWithInvalidCharactersErrorMessage =
+    'Group name must start with a letter, digit, emoji, or underscore.';
+  const groupNameContainsInvalidCharactersErrorMessage =
+    'Group name can contain only letters, digits, dashes, spaces, dots, underscores, parenthesis, and emojis.';
 
   const showNewGroupForm = async () => {
     findCreateNewGroupButton().vm.$emit('click');
@@ -273,7 +278,7 @@ describe('SubscriptionGroupSelector component', () => {
       });
 
       it('shows validation message', () => {
-        expect(findGroupNameValidationMessage().exists()).toBe(true);
+        expect(findGroupNameValidationMessage().text()).toBe(noGroupNameErrorMessage);
       });
 
       it('does not redirect', () => {
@@ -283,6 +288,58 @@ describe('SubscriptionGroupSelector component', () => {
       it('does not show validation message for group selection', () => {
         expect(findGroupIdValidationMessage().exists()).toBe(false);
       });
+    });
+
+    describe('group name validation', () => {
+      beforeEach(async () => {
+        createComponent();
+        await showNewGroupForm();
+      });
+
+      it.each(['#test', '&test', '%test', '@test', '.test'])(
+        'shows validation message when group name starts with an invalid character',
+        async (groupName) => {
+          await changeGroupName(groupName);
+
+          await submitForm();
+
+          expect(findGroupNameValidationMessage().text()).toBe(
+            groupNameStartsWithInvalidCharactersErrorMessage,
+          );
+        },
+      );
+
+      it('shows validation message when group name contains an invalid character', async () => {
+        await changeGroupName('test#!@$%^&*=+|[]{};"?,<>');
+
+        await submitForm();
+
+        expect(findGroupNameValidationMessage().text()).toBe(
+          groupNameContainsInvalidCharactersErrorMessage,
+        );
+      });
+
+      it.each(['test', '0test', '_test', '🤖test'])(
+        'does not show a validation message when group name starts with a valid character',
+        async (groupName) => {
+          await changeGroupName(groupName);
+
+          await submitForm();
+
+          expect(findGroupNameValidationMessage().exists()).toBe(false);
+        },
+      );
+
+      it.each(['test0-_. ()🤖test'])(
+        'does not show a validation message when group name does not contain an invalid character',
+        async (groupName) => {
+          await changeGroupName(groupName);
+
+          await submitForm();
+
+          expect(findGroupNameValidationMessage().exists()).toBe(false);
+        },
+      );
     });
 
     describe('on group name input', () => {
