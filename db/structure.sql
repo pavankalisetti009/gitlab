@@ -19278,7 +19278,7 @@ ALTER SEQUENCE value_stream_dashboard_counts_id_seq OWNED BY value_stream_dashbo
 CREATE TABLE virtual_registries_packages_maven_cached_responses (
     id bigint NOT NULL,
     group_id bigint NOT NULL,
-    upstream_id bigint NOT NULL,
+    upstream_id bigint,
     upstream_checked_at timestamp with time zone DEFAULT now() NOT NULL,
     downloaded_at timestamp with time zone DEFAULT now() NOT NULL,
     created_at timestamp with time zone NOT NULL,
