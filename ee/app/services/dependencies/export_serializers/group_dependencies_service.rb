@@ -38,7 +38,7 @@ module Dependencies
       end
 
       def group_dependencies
-        group.sbom_occurrences(with_totals: false).order_by_id
+        group.sbom_occurrences.order_by_id
       end
     end
   end

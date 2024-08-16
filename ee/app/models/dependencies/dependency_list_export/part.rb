@@ -23,10 +23,9 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
       end
 
       def sbom_occurrences
-        exportable.sbom_occurrences(use_traversal_ids: true)
+        exportable.sbom_occurrences
                   .in_parent_group_after_and_including(first_record)
                   .in_parent_group_before_and_including(last_record)
-                  .unarchived
       end
 
       delegate :exportable, to: :dependency_list_export, private: true

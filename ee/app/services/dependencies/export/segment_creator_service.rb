@@ -64,7 +64,7 @@ module Dependencies # rubocop:disable Gitlab/BoundedContexts -- This is an exist
       end
 
       def sbom_occurrences
-        exportable.sbom_occurrences(use_traversal_ids: true).unarchived.order_traversal_ids_asc
+        exportable.sbom_occurrences.order_traversal_ids_asc
       end
 
       # Segments are array of export part IDs.

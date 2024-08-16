@@ -981,37 +981,11 @@ module EE
     end
 
     def has_dependencies?
-      Sbom::Occurrence.for_namespace_and_descendants(self).unarchived.exists?
+      sbom_occurrences.exists?
     end
 
-    def sbom_occurrences(with_totals: true, use_traversal_ids: false)
-      return Sbom::Occurrence.for_namespace_and_descendants(self) if use_traversal_ids
-
-      unless with_totals
-        return Sbom::Occurrence.where(
-          project_id: all_projects_except_soft_deleted.select(:id)
-        ).allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477827')
-      end
-
-      sql = <<-SQL
-      DISTINCT ON (sbom_occurrences.component_version_id) sbom_occurrences.*,
-      COUNT(sbom_occurrences.id) OVER (PARTITION BY sbom_occurrences.component_version_id) AS occurrence_count,
-      DENSE_RANK() OVER (PARTITION BY sbom_occurrences.component_version_id ORDER BY project_id) AS project_count
-      SQL
-      our_occurrences = ::Gitlab::SQL::CTE.new(:our_occurrences, Sbom::Occurrence
-        .where(project_id: all_projects_except_soft_deleted.select(:id))
-        .where.not(component_version_id: nil)
-        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/477827')
-        .select(sql)
-        .order(component_version_id: :desc, project_count: :desc, id: :desc)
-      )
-
-      select_values = Sbom::Occurrence.column_names + %w[occurrence_count project_count]
-
-      Sbom::Occurrence
-        .with(our_occurrences.to_arel)
-        .from(our_occurrences.alias_to(Sbom::Occurrence.arel_table))
-        .select(*select_values)
+    def sbom_occurrences
+      Sbom::Occurrence.for_namespace_and_descendants(self).unarchived
     end
 
     override :reached_project_access_token_limit?
