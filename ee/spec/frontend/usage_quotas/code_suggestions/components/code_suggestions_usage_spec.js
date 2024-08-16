@@ -121,26 +121,17 @@ describe('GitLab Duo Usage', () => {
   };
 
   describe('Cloud Connector health status check', () => {
-    const buildComponent = async (flagState = true) => {
+    const buildComponent = async () => {
       createComponent({
         addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
         addOnPurchasesHandler: noAssignedAddonDataHandler,
         provideProps: {
           isStandalonePage: true,
           isSaaS: true,
-          glFeatures: {
-            cloudConnectorStatus: flagState,
-          },
         },
       });
       await waitForPromises();
     };
-
-    it('does not render the health check button and the probes if feature flag is disabled', async () => {
-      await buildComponent(false);
-      expect(findHealthCheckButton().exists()).toBe(false);
-      expect(findHealthCheckProbes().exists()).toBe(false);
-    });
 
     it.each`
       description   | isSaaS   | isStandalonePage | expected
@@ -157,9 +148,6 @@ describe('GitLab Duo Usage', () => {
           provideProps: {
             isStandalonePage,
             isSaaS,
-            glFeatures: {
-              cloudConnectorStatus: true,
-            },
           },
         });
         await waitForPromises();

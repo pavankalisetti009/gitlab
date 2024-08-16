@@ -1,6 +1,5 @@
 <script>
 import { GlSkeletonLoader, GlButton } from '@gitlab/ui';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { s__, sprintf } from '~/locale';
 import getAddOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
@@ -41,7 +40,6 @@ export default {
     HealthCheckList,
     GlButton,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
@@ -111,9 +109,6 @@ export default {
     },
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
-    },
-    statusCheckEnabled() {
-      return this.glFeatures.cloudConnectorStatus;
     },
   },
   apollo: {
@@ -205,7 +200,7 @@ export default {
             {{ codeSuggestionsTitle }}
           </h1>
 
-          <div v-if="statusCheckEnabled" class="gl-self-center">
+          <div class="gl-self-center">
             <gl-button
               data-testid="health-check-button"
               :loading="healthCheckRunning"
@@ -221,7 +216,7 @@ export default {
         </p>
       </section>
       <health-check-list
-        v-if="showTitleAndSubtitle && statusCheckEnabled"
+        v-if="showTitleAndSubtitle"
         ref="healthCheckList"
         data-testid="health-check-probes"
         @health-check-completed="healthCheckRunning = false"
