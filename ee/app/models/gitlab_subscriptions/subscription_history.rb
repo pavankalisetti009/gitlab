@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
 # GitlabSubscriptions::SubscriptionHistory records the previous value before change.
-# `gitlab_subscription_created` is not used because there is no previous value before creation.
 module GitlabSubscriptions
   class SubscriptionHistory < ApplicationRecord
     self.table_name = 'gitlab_subscription_histories'
 
-    enum change_type: [
-      :gitlab_subscription_created,
-      :gitlab_subscription_updated,
-      :gitlab_subscription_destroyed
-    ]
+    # `gitlab_subscription_created` change_type (id: 0) doesn't exist because there's no previous value before creation
+    enum change_type: {
+      gitlab_subscription_updated: 1,
+      gitlab_subscription_destroyed: 2
+    }
 
     belongs_to :namespace, optional: false
 
