@@ -6,9 +6,6 @@ module Types
       graphql_name 'SubscriptionHistoryChangeType'
       description 'Types of change for a subscription history record'
 
-      # GitlabSubscriptions::SubscriptionHistory records the previous value before change.
-      # `gitlab_subscription_created` is not used because there is no previous value before creation.
-
       value 'GITLAB_SUBSCRIPTION_UPDATED',
         value: 'gitlab_subscription_updated',
         description: 'This was the previous state before the subscription was updated.'
