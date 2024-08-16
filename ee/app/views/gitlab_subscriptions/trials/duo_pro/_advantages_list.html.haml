@@ -1,20 +1,13 @@
-- items = []
-- items << s_('DuoProTrial|Code completion and code generation with Code Suggestions')
-- items << s_('DuoProTrial|Organizational controls')
-- items << s_('DuoProTrial|Chat')
-- items << s_('DuoProTrial|Code explanation')
-- items << s_('DuoProTrial|Code refactorization')
-- items << s_('DuoProTrial|Test generation')
+- advantages = [s_('DuoProTrial|Code completion and code generation with Code Suggestions')]
+- advantages << s_('DuoProTrial|Organizational controls')
+- advantages << s_('DuoProTrial|Chat')
+- advantages << s_('DuoProTrial|Code explanation')
+- advantages << s_('DuoProTrial|Code refactorization')
+- advantages << s_('DuoProTrial|Test generation')
 
-
-.gl-m-7.gl-max-w-48.gl-text-secondary
-  = s_('DuoProTrial|GitLab Duo Pro is designed to make teams more efficient throughout the software development lifecycle with:')
-
-  - items.each do |item|
-    .gl-flex.gl-align-items-start.gl-gap-3.gl-pt-6
-      .gl-shrink-0
-        = sprite_icon('check-circle', css_class: 'gl-text-green-500')
-      = item
-
-  .gl-pt-6
-    = s_('DuoProTrial|GitLab Duo Pro is only available for purchase for Premium and Ultimate users.')
+= render GitlabSubscriptions::TrialAdvantagesComponent.new do |c|
+  - c.with_header do
+    = s_('DuoProTrial|GitLab Duo Pro is designed to make teams more efficient throughout the software development lifecycle with:')
+  - c.with_advantages(advantages)
+  - c.with_footer do
+    = (s_('DuoProTrial|GitLab Duo Pro is only available for purchase for Premium and Ultimate users.'))
