@@ -81,9 +81,13 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
   end
 
-  shared_examples 'registering a low risk user with identity verification' do |flow: :standard|
+  shared_examples 'registering a user with identity verification when risk is unavailable' do |flow: :standard|
+    include_examples 'registering a low risk user with identity verification', flow: flow, risk: :unavailable
+  end
+
+  shared_examples 'registering a low risk user with identity verification' do |flow: :standard, risk: :low|
     before do
-      sign_up(flow: flow, arkose: { risk: :low })
+      sign_up(flow: flow, arkose: { risk: risk })
     end
 
     it 'verifies the user' do
@@ -332,6 +336,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
 
     context 'when Arkose is up' do
+      it_behaves_like 'registering a user with identity verification when risk is unavailable'
       it_behaves_like 'registering a low risk user with identity verification'
       it_behaves_like 'registering a medium risk user with identity verification'
       it_behaves_like 'registering a high risk user with identity verification'
@@ -348,16 +353,18 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
 
     context 'when Arkose is up' do
-      context 'when the user is low risk' do
-        before do
-          sign_up(flow: :invite, arkose: { risk: :low })
-        end
+      %i[unavailable low].each do |risk|
+        context "when the user is risk is #{risk}" do
+          before do
+            sign_up(flow: :invite, arkose: { risk: risk })
+          end
 
-        it 'does not verify the user and lands on group page' do
-          expect(page).to have_current_path(group_path(invitation.group))
-          expect(page).to have_content(
-            "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
-          )
+          it 'does not verify the user and lands on group page' do
+            expect(page).to have_current_path(group_path(invitation.group))
+            expect(page).to have_content(
+              "You have been granted access to the #{invitation.group.name} group with the following role: Developer."
+            )
+          end
         end
       end
 
@@ -395,6 +402,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
 
     context 'when Arkose is up' do
+      it_behaves_like 'registering a user with identity verification when risk is unavailable', flow: :trial
       it_behaves_like 'registering a low risk user with identity verification', flow: :trial
       it_behaves_like 'registering a medium risk user with identity verification', flow: :trial
       it_behaves_like 'registering a high risk user with identity verification', flow: :trial
@@ -411,6 +419,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     context 'when Arkose is up' do
       let(:arkose_token_verification_response) { { session_risk: { risk_band: risk.capitalize } } }
 
+      it_behaves_like 'registering a user with identity verification when risk is unavailable', flow: :saml
       it_behaves_like 'registering a low risk user with identity verification', flow: :saml
       it_behaves_like 'registering a medium risk user with identity verification', flow: :saml
       it_behaves_like 'registering a high risk user with identity verification', flow: :saml
@@ -427,6 +436,7 @@ RSpec.describe 'Identity Verification', :js, feature_category: :instance_resilie
     end
 
     context 'when Arkose is up' do
+      it_behaves_like 'registering a user with identity verification when risk is unavailable'
       it_behaves_like 'registering a low risk user with identity verification'
       it_behaves_like 'registering a medium risk user with identity verification'
       it_behaves_like 'registering a high risk user with identity verification'

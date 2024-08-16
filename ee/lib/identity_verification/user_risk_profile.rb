@@ -16,9 +16,7 @@ module IdentityVerification
     end
 
     def arkose_verified?
-      return true if assumed_low_risk?
-
-      arkose_risk_band.in?(::Arkose::VerifyResponse::ARKOSE_RISK_BANDS.map(&:downcase))
+      arkose_risk_band.present? || assumed_low_risk?
     end
 
     def assume_low_risk!(reason:)
@@ -33,10 +31,6 @@ module IdentityVerification
 
     def assumed_high_risk?
       user.custom_attributes.by_key(ASSUMED_HIGH_RISK_ATTR_KEY).exists?
-    end
-
-    def low_risk?
-      arkose_risk_band == ::Arkose::VerifyResponse::RISK_BAND_LOW.downcase
     end
 
     def medium_risk?

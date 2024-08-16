@@ -64,33 +64,15 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
     create(:user_custom_attribute, key: UserCustomAttribute::ARKOSE_RISK_BAND, value: value, user_id: user.id)
   end
 
-  describe('#low_risk?') do
-    subject { risk_profile.low_risk? }
-
-    where(:arkose_risk_band, :result) do
-      nil      | false
-      'High'   | false
-      'Medium' | false
-      'Low'    | true
-    end
-
-    with_them do
-      before do
-        add_user_risk_band(arkose_risk_band) if arkose_risk_band.present?
-      end
-
-      it { is_expected.to eq result }
-    end
-  end
-
   describe('#medium_risk?') do
     subject { risk_profile.medium_risk? }
 
     where(:arkose_risk_band, :result) do
-      nil      | false
-      'High'   | false
-      'Medium' | true
-      'Low'    | false
+      nil           | false
+      'High'        | false
+      'Medium'      | true
+      'Low'         | false
+      'Unavailable' | false
     end
 
     with_them do
@@ -106,10 +88,11 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
     subject { risk_profile.high_risk? }
 
     where(:arkose_risk_band, :result) do
-      nil      | false
-      'High'   | true
-      'Medium' | false
-      'Low'    | false
+      nil           | false
+      'High'        | true
+      'Medium'      | false
+      'Low'         | false
+      'Unavailable' | false
     end
 
     with_them do
@@ -125,11 +108,12 @@ RSpec.describe IdentityVerification::UserRiskProfile, feature_category: :instanc
     subject { risk_profile.arkose_verified? }
 
     where(:arkose_risk_band, :assumed_low_risk, :result) do
-      nil      | false | false
-      nil      | true  | true
-      'High'   | false | true
-      'Medium' | false | true
-      'Low'    | false | true
+      nil           | false | false
+      nil           | true  | true
+      'High'        | false | true
+      'Medium'      | false | true
+      'Low'         | false | true
+      'Unavailable' | false | true
     end
 
     with_them do
