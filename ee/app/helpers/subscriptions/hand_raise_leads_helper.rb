@@ -34,7 +34,7 @@ module Subscriptions
       {
         glm_content: 'billing-group',
         button_text: s_("BillingPlans|Talk to an expert"),
-        button_attributes: { category: 'secondary', class: 'gl-vertical-align-text-bottom' }.to_json,
+        button_attributes: { category: 'secondary', class: 'gl-align-text-bottom' }.to_json,
         cta_tracking: {
           action: 'click_button'
         }.to_json

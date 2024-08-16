@@ -50,7 +50,7 @@ RSpec.describe Subscriptions::HandRaiseLeadsHelper, feature_category: :acquisiti
         cta_tracking: { action: 'click_button' }.to_json,
         button_attributes: {
           category: 'secondary',
-          class: 'gl-vertical-align-text-bottom'
+          class: 'gl-align-text-bottom'
         }.to_json
       }
 
