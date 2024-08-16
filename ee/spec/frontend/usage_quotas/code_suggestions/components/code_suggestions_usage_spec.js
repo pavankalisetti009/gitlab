@@ -311,7 +311,7 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf('Manage seat assignments for %{addOnName} across your instance.', {
+            sprintf('Manage seat assignments for %{addOnName}.', {
               addOnName: CODE_SUGGESTIONS_TITLE,
             }),
           );
@@ -441,9 +441,12 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf('Manage seat assignments for %{addOnName} across your instance.', {
-            addOnName: CODE_SUGGESTIONS_TITLE,
-          }),
+          sprintf(
+            'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
+            {
+              addOnName: CODE_SUGGESTIONS_TITLE,
+            },
+          ),
         );
       });
 
@@ -462,9 +465,12 @@ describe('GitLab Duo Usage', () => {
 
         it('renders code suggestions subtitle', () => {
           expect(findCodeSuggestionsSubtitle().text()).toBe(
-            sprintf('Manage seat assignments for %{addOnName} across your instance.', {
-              addOnName: DUO_ENTERPRISE_TITLE,
-            }),
+            sprintf(
+              'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
+              {
+                addOnName: DUO_ENTERPRISE_TITLE,
+              },
+            ),
           );
         });
       });
@@ -580,9 +586,12 @@ describe('GitLab Duo Usage', () => {
 
       it('renders code suggestions subtitle', () => {
         expect(findCodeSuggestionsSubtitle().text()).toBe(
-          sprintf('Manage seat assignments for %{addOnName} across your instance.', {
-            addOnName: CODE_SUGGESTIONS_TITLE,
-          }),
+          sprintf(
+            'Manage seat assignments for %{addOnName} or run a health check to identify problems.',
+            {
+              addOnName: CODE_SUGGESTIONS_TITLE,
+            },
+          ),
         );
       });
 
