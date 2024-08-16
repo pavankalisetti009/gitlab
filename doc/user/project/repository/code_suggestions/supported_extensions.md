@@ -118,7 +118,9 @@ To do this:
    1. Select **Extension Settings**.
    1. In your **User** settings, find
       **GitLab › Ai Assisted Code Suggestions: Additional Languages** and select **Add Item**.
-1. In **Item**, add the language identifier, and select **OK**.
+1. In **Item**, add the identifier for each language you want to support. Identifiers should be
+   lowercase, like `html` or `powershell`. Don't add leading periods from file suffixes to each identifier.
+1. Select **OK**.
 
 :::TabTitle JetBrains IDEs
 
@@ -136,7 +138,9 @@ To do this:
    You need the **Identifier** for your languages in a later step.
 1. In your IDE, on the top bar, select your IDE name, then select **Settings**.
 1. On the left sidebar, select **Tools > GitLab Duo**.
-1. Under **Code Suggestions Enabled Languages > Additional languages** add the language identifiers, separated by comma (`,`).
+1. Under **Code Suggestions Enabled Languages > Additional languages**, add the identifier for each language
+   you want to support. Identifiers should be in lower case, like `html`. Separate multiple identifiers with commas,
+   like `html,powershell,latex`, and don't add leading periods to each identifier.
 1. Select **OK**.
 
 ::EndTabs
