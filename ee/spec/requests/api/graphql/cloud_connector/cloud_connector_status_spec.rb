@@ -96,20 +96,6 @@ RSpec.describe 'Querying for Cloud Connector status', feature_category: :cloud_c
         end
       end
 
-      context 'when cloud_connector_status feature flag is disabled' do
-        let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
-
-        before do
-          stub_feature_flags(cloud_connector_status: false)
-        end
-
-        it 'returns an error' do
-          post_graphql(query, current_user: current_user)
-
-          expect_graphql_errors_to_include("The resource that you are attempting to access does not exist")
-        end
-      end
-
       context 'when on gitlab.com' do
         let(:service_response) { ServiceResponse.success(message: 'OK', payload: { probe_results: probe_results }) }
 

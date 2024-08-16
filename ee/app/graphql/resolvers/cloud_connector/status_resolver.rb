@@ -19,7 +19,6 @@ module Resolvers
 
       def can_read_cloud_connector_status?
         return false if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
-        return false if Feature.disabled?(:cloud_connector_status, current_user)
 
         Ability.allowed?(current_user, :read_cloud_connector_status)
       end
