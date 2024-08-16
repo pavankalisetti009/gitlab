@@ -30,7 +30,7 @@ export default {
 
 <template>
   <div
-    class="mr-widget-extension gl-rounded-bottom-left-base gl-rounded-bottom-right-base gl-border-t-0"
+    class="mr-widget-extension gl-rounded-bl-base gl-rounded-br-base gl-border-t-0"
     data-testid="approvals-footer"
   >
     <approvals-list
