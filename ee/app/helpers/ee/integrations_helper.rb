@@ -103,7 +103,7 @@ module EE
           strip_tags(href),
           options.merge(
             rel: 'noopener noreferrer',
-            class: 'gl-display-flex gl-align-items-center gl-whitespace-nowrap'
+            class: 'gl-flex gl-items-center gl-whitespace-nowrap'
           )
         ),
         tags: %w[a img],
