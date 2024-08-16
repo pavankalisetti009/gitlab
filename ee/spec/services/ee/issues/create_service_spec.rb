@@ -313,40 +313,6 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       end
     end
 
-    context 'when handling linked observability metrics' do
-      before do
-        project.add_developer(user)
-      end
-
-      let(:additional_params) do
-        { observability_links: { metric_details_name: "test name", metric_details_type: "sum_type" } }
-      end
-
-      let(:execute) { service.execute }
-      let(:returned_issue) { execute[:issue] }
-
-      context 'when observability is enabled and licensed' do
-        before do
-          stub_licensed_features(observability: true)
-        end
-
-        it "creates a linked metric" do
-          expect { execute }.to change { ::Observability::MetricsIssuesConnection.count }.by(1)
-        end
-      end
-
-      context 'when observability is not enabled and licensed' do
-        before do
-          stub_feature_flags(observability_features: false)
-          stub_licensed_features(observability: false)
-        end
-
-        it "creates a linked metric" do
-          expect { execute }.not_to change { ::Observability::MetricsIssuesConnection.count }
-        end
-      end
-    end
-
     it_behaves_like 'new issuable with scoped labels' do
       let(:parent) { project }
       let(:service_result) { described_class.new(**args).execute }
