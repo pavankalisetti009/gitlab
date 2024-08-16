@@ -160,19 +160,19 @@ export default {
 <template>
   <table class="table m-0 gl-border-t">
     <thead class="thead-white text-nowrap">
-      <tr class="gl-hidden md:gl-table-row gl-font-sm">
-        <th class="gl-bg-white!"></th>
-        <th class="gl-bg-white! gl-pl-0! gl-w-full">{{ s__('MRApprovals|Approvers') }}</th>
-        <th class="gl-bg-white! gl-w-full"></th>
-        <th class="gl-bg-white! gl-w-full">{{ s__('MRApprovals|Approvals') }}</th>
-        <th class="gl-bg-white! gl-w-full">{{ s__('MRApprovals|Commented by') }}</th>
-        <th class="gl-bg-white! gl-w-full">{{ s__('MRApprovals|Approved by') }}</th>
+      <tr class="gl-hidden gl-text-sm md:gl-table-row">
+        <th class="!gl-bg-white"></th>
+        <th class="gl-w-full !gl-bg-white !gl-pl-0">{{ s__('MRApprovals|Approvers') }}</th>
+        <th class="gl-w-full !gl-bg-white"></th>
+        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Approvals') }}</th>
+        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Commented by') }}</th>
+        <th class="gl-w-full !gl-bg-white">{{ s__('MRApprovals|Approved by') }}</th>
       </tr>
     </thead>
     <tbody v-if="$apollo.queries.mergeRequest.loading || !mergeRequest" class="border-top-0">
       <tr>
         <td></td>
-        <td class="gl-pl-0!">
+        <td class="!gl-pl-0">
           <div class="gl-flex" style="width: 100px; height: 20px">
             <gl-skeleton-loader :width="100" :height="20">
               <rect width="100" height="20" x="0" y="0" rx="4" />
@@ -207,16 +207,16 @@ export default {
       <tbody v-for="{ id, title, rules } in sections" :key="id" class="border-top-0">
         <tr v-if="title" class="js-section-title gl-bg-white">
           <td class="w-0"></td>
-          <td colspan="99" class="gl-font-sm gl-text-gray-500 gl-pl-0!">
+          <td colspan="99" class="!gl-pl-0 gl-text-sm gl-text-gray-500">
             <strong>{{ title }}</strong>
           </td>
         </tr>
         <tr v-for="rule in rules" :key="rule.id" data-testid="approval-rules-row">
-          <td class="gl-min-w-9 gl-pr-4!">
+          <td class="gl-min-w-9 !gl-pr-4">
             <approved-icon class="gl-pl-2" :is-approved="rule.approved" />
           </td>
-          <td :colspan="numberOfColumns(rule)" class="gl-pl-0!">
-            <div class="gl-hidden md:gl-flex js-name gl-align-items-center">
+          <td :colspan="numberOfColumns(rule)" class="!gl-pl-0">
+            <div class="js-name gl-hidden gl-items-center md:gl-flex">
               <empty-rule-name
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
@@ -244,7 +244,7 @@ export default {
                 :code-coverage-check-help-page-path="codeCoverageCheckHelpPagePath"
               />
             </div>
-            <div class="gl-flex md:gl-hidden flex-column js-summary">
+            <div class="flex-column js-summary gl-flex md:gl-hidden">
               <empty-rule-name
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
@@ -273,7 +273,7 @@ export default {
           </td>
           <td
             v-if="rule.type.toLowerCase() !== $options.ruleTypeAnyApprover"
-            class="gl-hidden md:gl-table-cell gl-min-w-20 js-approvers"
+            class="js-approvers gl-hidden gl-min-w-20 md:gl-table-cell"
           >
             <user-avatar-list
               :items="rule.eligibleApprovers"
@@ -282,10 +282,10 @@ export default {
               class="gl-flex gl-flex-wrap gl-gap-y-2"
             />
           </td>
-          <td class="w-0 gl-hidden md:gl-table-cell gl-whitespace-nowrap js-pending">
+          <td class="w-0 js-pending gl-hidden gl-whitespace-nowrap md:gl-table-cell">
             <number-of-approvals :rule="rule" />
           </td>
-          <td class="gl-hidden md:gl-table-cell js-commented-by">
+          <td class="js-commented-by gl-hidden md:gl-table-cell">
             <user-avatar-list
               :items="rule.commentedBy.nodes"
               :img-size="24"
@@ -293,7 +293,7 @@ export default {
               class="gl-flex gl-flex-wrap gl-gap-y-2"
             />
           </td>
-          <td class="gl-hidden md:gl-table-cell js-approved-by">
+          <td class="js-approved-by gl-hidden md:gl-table-cell">
             <user-avatar-list
               :items="rule.approvedBy.nodes"
               :img-size="24"

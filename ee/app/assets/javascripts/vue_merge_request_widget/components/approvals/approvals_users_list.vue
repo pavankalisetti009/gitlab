@@ -20,7 +20,7 @@ export default {
 
 <template>
   <div>
-    <span class="gl-font-sm gl-text-gray-500">{{ label }}</span>
+    <span class="gl-text-sm gl-text-gray-500">{{ label }}</span>
     <user-avatar-list class="gl-ml-2" :items="users" :img-size="16" />
   </div>
 </template>

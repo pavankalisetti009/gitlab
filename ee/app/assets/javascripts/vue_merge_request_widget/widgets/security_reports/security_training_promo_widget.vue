@@ -37,18 +37,18 @@ export default {
     :project-full-path="projectFullPath"
   >
     <template #default="{ buttonLink, buttonText, dismiss, trackCTAClick }">
-      <div class="gl-p-5 gl-bg-gray-50 gl-border-gray-100 gl-border-t -gl-mx-5 gl-display-flex">
+      <div class="gl-border-t -gl-mx-5 gl-flex gl-border-gray-100 gl-bg-gray-50 gl-p-5">
         <gl-icon
           :size="16"
           name="bulb"
-          class="gl-ml-2 gl-mr-4 gl-mt-1 gl-text-gray-600 gl-flex-shrink-0"
+          class="gl-ml-2 gl-mr-4 gl-mt-1 gl-shrink-0 gl-text-gray-600"
         />
         <div>
           <div class="gl-font-bold">{{ $options.i18n.title }}</div>
           <p class="gl-mb-3">{{ $options.i18n.content }}</p>
           <div class="gl-inline-flex gl-flex-wrap gl-gap-3">
             <gl-button
-              class="gl-flex-grow-1"
+              class="gl-grow"
               variant="confirm"
               :href="buttonLink"
               data-testid="enableButton"
@@ -58,7 +58,7 @@ export default {
             </gl-button>
             <gl-button
               category="secondary"
-              class="gl-flex-grow-1"
+              class="gl-grow"
               data-testid="cancelButton"
               @click="dismiss"
             >

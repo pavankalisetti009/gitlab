@@ -110,12 +110,12 @@ export default {
           <li>
             <gl-sprintf :message="$options.i18n.popover.autoApproved.suggestion1">
               <template #eligibleApproverLink="{ content }">
-                <gl-link :href="$options.rulesDocsPath" class="gl-font-sm" target="_blank">
+                <gl-link :href="$options.rulesDocsPath" class="gl-text-sm" target="_blank">
                   {{ content }}
                 </gl-link>
               </template>
               <template #approvalSettingsLink="{ content }">
-                <gl-link :href="$options.settingsDocsPath" class="gl-font-sm" target="_blank">
+                <gl-link :href="$options.settingsDocsPath" class="gl-text-sm" target="_blank">
                   {{ content }}
                 </gl-link>
               </template>
@@ -137,7 +137,7 @@ export default {
           <li>
             <gl-sprintf :message="$options.i18n.popover.actionRequired.suggestion1">
               <template #link="{ content }">
-                <gl-link :href="$options.rulesDocsPath" class="gl-font-sm" target="_blank">
+                <gl-link :href="$options.rulesDocsPath" class="gl-text-sm" target="_blank">
                   {{ content }}
                 </gl-link>
               </template>
@@ -146,7 +146,7 @@ export default {
           <li>
             <gl-sprintf :message="$options.i18n.popover.actionRequired.suggestion2">
               <template #link="{ content }">
-                <gl-link :href="$options.settingsDocsPath" class="gl-font-sm" target="_blank">
+                <gl-link :href="$options.settingsDocsPath" class="gl-text-sm" target="_blank">
                   {{ content }}
                 </gl-link>
               </template>

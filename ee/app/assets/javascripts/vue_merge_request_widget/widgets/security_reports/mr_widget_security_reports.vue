@@ -422,13 +422,13 @@ export default {
                   <strong
                     v-if="report.numberOfNewFindings > 0 && index === 0"
                     data-testid="new-findings-title"
-                    class="gl-block gl-mt-2"
+                    class="gl-mt-2 gl-block"
                     >{{ $options.i18n.new }}</strong
                   >
                   <strong
                     v-if="report.numberOfFixedFindings > 0 && report.numberOfNewFindings === index"
                     data-testid="fixed-findings-title"
-                    class="gl-block gl-mt-2"
+                    class="gl-mt-2 gl-block"
                     >{{ $options.i18n.fixed }}</strong
                   >
                   <mr-widget-row
@@ -442,7 +442,7 @@ export default {
                       {{ $options.SEVERITY_LEVELS[vuln.severity] }}
                       <gl-button
                         variant="link"
-                        class="gl-ml-2 gl-overflow-hidden gl-whitespace-nowrap gl-text-overflow-ellipsis"
+                        class="gl-ml-2 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
                         @click="setModalData(vuln)"
                         >{{ vuln.name }}</gl-button
                       >

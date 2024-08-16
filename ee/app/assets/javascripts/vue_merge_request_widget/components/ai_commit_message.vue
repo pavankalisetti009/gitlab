@@ -138,7 +138,7 @@ export default {
       </template>
       <gl-skeleton-loader v-if="loadingCommitMessage" :width="250" :lines="4" />
       <template v-else>
-        <pre class="commit-row-description gl-mb-3 gl-whitespace-pre-wrap js-toggle-content">{{
+        <pre class="commit-row-description js-toggle-content gl-mb-3 gl-whitespace-pre-wrap">{{
           commitMessage
         }}</pre>
         <user-feedback :event-name="$options.feedback.eventName" />
