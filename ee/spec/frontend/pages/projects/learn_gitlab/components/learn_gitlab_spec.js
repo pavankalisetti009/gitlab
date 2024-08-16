@@ -1,20 +1,29 @@
 import { GlAlert } from '@gitlab/ui';
 import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
 import { mount } from '@vue/test-utils';
+import { nextTick } from 'vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import Cookies from '~/lib/utils/cookies';
+import { visitUrl } from '~/lib/utils/url_utility';
 import CircularProgressBar from 'ee/vue_shared/components/circular_progress_bar/circular_progress_bar.vue';
 import LearnGitlab from 'ee/pages/projects/learn_gitlab/components/learn_gitlab.vue';
 import eventHub from '~/invite_members/event_hub';
 import { INVITE_MODAL_OPEN_COOKIE } from 'ee/pages/projects/learn_gitlab/constants';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
 import eventHubNav from '~/super_sidebar/event_hub';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { testActions, testSections, testProject } from './mock_data';
+
+jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
+  visitUrl: jest.fn().mockName('visitUrlMock'),
+}));
 
 describe('Learn GitLab', () => {
   let wrapper;
 
   const findProgressBarBlock = () => wrapper.findByTestId('progress-bar-block');
+  const findEndTutorialButton = () => wrapper.findByTestId('end-tutorial-button');
 
   const createWrapper = () => {
     wrapper = extendedWrapper(
@@ -23,6 +32,7 @@ describe('Learn GitLab', () => {
           actions: testActions,
           sections: testSections,
           project: testProject,
+          learnGitlabEndPath: '/group/project/-/learn-gitlab/end',
         },
       }),
     );
@@ -38,7 +48,11 @@ describe('Learn GitLab', () => {
     });
 
     it('renders the progress bar label', () => {
-      expect(findProgressBarBlock().text()).toBe('9 tasks to go');
+      expect(findProgressBarBlock().text()).toContain('9 tasks to go');
+    });
+
+    it('renders the end tutorial button', () => {
+      expect(findProgressBarBlock().text()).toContain('End tutorial');
     });
 
     it('renders the progress bar with correct percentage', () => {
@@ -64,6 +78,43 @@ describe('Learn GitLab', () => {
         expect(findProgressBarBlock().attributes('class')).toContain(classes);
       },
     );
+  });
+
+  describe('End tutorial button', () => {
+    beforeEach(() => {
+      createWrapper();
+    });
+
+    it('should disable the button when clicked', async () => {
+      findEndTutorialButton().vm.$emit('click');
+
+      await nextTick();
+
+      expect(findEndTutorialButton().attributes('disabled')).toBeDefined();
+    });
+
+    it('should call visitUrl with the correct link when clicked', () => {
+      findEndTutorialButton().vm.$emit('click');
+
+      expect(visitUrl).toHaveBeenCalledWith('/group/project/-/learn-gitlab/end');
+    });
+
+    const { bindInternalEventDocument } = useMockInternalEventsTracking();
+    it('should call trackEvent when clicked', () => {
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      findEndTutorialButton().vm.$emit('click');
+
+      expect(trackEventSpy).toHaveBeenCalledWith(
+        'click_end_tutorial_button',
+        {
+          label: 'learn_gitlab',
+          property: 'progress_percentage_on_end',
+          value: 25,
+        },
+        undefined,
+      );
+    });
   });
 
   describe('Invite Members Modal', () => {

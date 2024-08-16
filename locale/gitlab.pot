@@ -31406,7 +31406,16 @@ msgstr ""
 msgid "LearnGitlab|Contact your administrator to start a free Ultimate trial."
 msgstr ""
 
+msgid "LearnGitlab|End tutorial"
+msgstr ""
+
+msgid "LearnGitlab|There was a problem trying to end the Learn GitLab tutorial. Please try again."
+msgstr ""
+
 msgid "LearnGitlab|View administrator list"
+msgstr ""
+
+msgid "LearnGitlab|You've ended the Learn GitLab tutorial."
 msgstr ""
 
 msgid "Leave"

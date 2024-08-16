@@ -16,7 +16,8 @@ module Projects
       {
         actions: onboarding_actions_data(project).to_json,
         sections: onboarding_sections_data.to_json,
-        project: onboarding_project_data(project).to_json
+        project: onboarding_project_data(project).to_json,
+        learn_gitlab_end_path: end_tutorial_project_learn_gitlab_path(project)
       }
     end
 

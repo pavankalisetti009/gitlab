@@ -13,12 +13,13 @@ function initLearnGitlab() {
   const actions = convertObjectPropsToCamelCase(JSON.parse(el.dataset.actions));
   const sections = convertObjectPropsToCamelCase(JSON.parse(el.dataset.sections));
   const project = convertObjectPropsToCamelCase(JSON.parse(el.dataset.project));
+  const { learnGitlabEndPath } = el.dataset;
 
   return new Vue({
     el,
     render(createElement) {
       return createElement(LearnGitlab, {
-        props: { actions, sections, project },
+        props: { actions, sections, project, learnGitlabEndPath },
       });
     },
   });
