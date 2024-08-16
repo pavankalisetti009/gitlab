@@ -27,6 +27,10 @@ export default {
       type: Object,
       required: true,
     },
+    projectFullPath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -43,5 +47,6 @@ export default {
     :metrics-index-url="metricsIndexUrl"
     :observability-client="observabilityClient"
     :create-issue-url="createIssueUrl"
+    :project-full-path="projectFullPath"
   />
 </template>

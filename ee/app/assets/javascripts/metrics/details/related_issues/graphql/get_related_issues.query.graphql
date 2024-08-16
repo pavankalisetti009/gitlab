@@ -1,0 +1,13 @@
+# TODO Update to correct query when API is available (https://gitlab.com/gitlab-org/opstrace/opstrace/-/issues/2903)
+query getRelatedIssues($projectFullPath: ID!) {
+  project(fullPath: $projectFullPath) {
+    id
+    issues {
+      nodes {
+        id
+        title
+        webPath
+      }
+    }
+  }
+}

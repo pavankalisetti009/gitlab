@@ -8,6 +8,7 @@ import * as urlUtility from '~/lib/utils/url_utility';
 import MetricsLineChart from 'ee/metrics/details/metrics_line_chart.vue';
 import MetricsHeatmap from 'ee/metrics/details/metrics_heatmap.vue';
 import FilteredSearch from 'ee/metrics/details/filter_bar/metrics_filtered_search.vue';
+import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
 import { ingestedAtTimeAgo } from 'ee/metrics/utils';
 import { prepareTokens } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import axios from '~/lib/utils/axios_utils';
@@ -28,6 +29,7 @@ describe('MetricsDetails', () => {
   const METRIC_TYPE = 'Sum';
   const METRICS_INDEX_URL = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
   const CREATE_ISSUE_URL = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
+  const PROJECT_PATH = 'test/project';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
@@ -52,6 +54,7 @@ describe('MetricsDetails', () => {
     metricType: METRIC_TYPE,
     metricsIndexUrl: METRICS_INDEX_URL,
     createIssueUrl: CREATE_ISSUE_URL,
+    projectFullPath: PROJECT_PATH,
   };
 
   const showToast = jest.fn();
@@ -131,6 +134,16 @@ describe('MetricsDetails', () => {
       observabilityClientMock.fetchMetricSearchMetadata.mockResolvedValue(mockSearchMetadata);
 
       await mountComponent();
+    });
+
+    it('renders the related-issue-provider', () => {
+      const relatedIssues = wrapper.findComponent(RelatedIssuesProvider);
+      expect(relatedIssues.exists()).toBe(true);
+      expect(relatedIssues.props()).toEqual({
+        metricName: defaultProps.metricId,
+        metricType: defaultProps.metricType,
+        projectFullPath: defaultProps.projectFullPath,
+      });
     });
 
     it('renders the loading indicator while fetching data', () => {
