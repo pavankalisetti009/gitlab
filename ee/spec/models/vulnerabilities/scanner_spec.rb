@@ -82,4 +82,11 @@ RSpec.describe Vulnerabilities::Scanner, feature_category: :vulnerability_manage
       it { is_expected.to be true }
     end
   end
+
+  context 'with loose foreign key on vulnerability_scanners.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_scanner, project: parent) }
+    end
+  end
 end

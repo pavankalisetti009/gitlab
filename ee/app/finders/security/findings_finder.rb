@@ -137,6 +137,7 @@ module Security
         .with_issue_links
         .with_external_issue_links
         .with_merge_request_links
+        .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472344')
         .merge(::Security::Scan.by_pipeline_ids(pipeline.id))
         .merge(::Security::Scan.latest_successful)
         .ordered(params[:sort])
