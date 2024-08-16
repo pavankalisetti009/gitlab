@@ -16,6 +16,81 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
 
     let(:result) { subject.as_indexed_json.with_indifferent_access }
 
+    context 'when add_issues_access_level_in_work_item_index migration is not complete' do
+      before do
+        set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: false
+      end
+
+      it 'serializes the project_namespace work_item as a hash' do
+        result = described_class.new(project_work_item.id,
+          project_work_item.es_parent).as_indexed_json.with_indifferent_access
+        expect(result).to match(
+          project_id: project_work_item.reload.project_id,
+          id: project_work_item.id,
+          iid: project_work_item.iid,
+          created_at: project_work_item.created_at,
+          updated_at: project_work_item.updated_at,
+          title: project_work_item.title,
+          description: project_work_item.description,
+          state: project_work_item.state,
+          upvotes: project_work_item.upvotes_count,
+          hidden: project_work_item.hidden?,
+          work_item_type_id: project_work_item.work_item_type_id,
+          confidential: project_work_item.confidential,
+          author_id: project_work_item.author_id,
+          label_ids: [label.id.to_s],
+          assignee_id: project_work_item.issue_assignee_user_ids,
+          due_date: project_work_item.due_date,
+          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
+          hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
+          namespace_visibility_level: project_work_item.namespace.visibility_level,
+          schema_version: described_class::SCHEMA_VERSION,
+          archived: project.archived?,
+          project_visibility_level: project.visibility_level,
+          root_namespace_id: project_work_item.namespace.root_ancestor.id,
+          type: 'work_item'
+        )
+      end
+    end
+
+    context 'when add_issues_access_level_in_work_item_index migration is complete' do
+      before do
+        set_elasticsearch_migration_to :add_issues_access_level_in_work_item_index, including: true
+      end
+
+      it 'serializes the project_namespace work_item as a hash' do
+        result = described_class.new(project_work_item.id,
+          project_work_item.es_parent).as_indexed_json.with_indifferent_access
+        expect(result).to match(
+          project_id: project_work_item.reload.project_id,
+          id: project_work_item.id,
+          iid: project_work_item.iid,
+          created_at: project_work_item.created_at,
+          updated_at: project_work_item.updated_at,
+          title: project_work_item.title,
+          description: project_work_item.description,
+          state: project_work_item.state,
+          upvotes: project_work_item.upvotes_count,
+          hidden: project_work_item.hidden?,
+          work_item_type_id: project_work_item.work_item_type_id,
+          confidential: project_work_item.confidential,
+          author_id: project_work_item.author_id,
+          label_ids: [label.id.to_s],
+          assignee_id: project_work_item.issue_assignee_user_ids,
+          due_date: project_work_item.due_date,
+          traversal_ids: project_work_item.namespace.elastic_namespace_ancestry,
+          hashed_root_namespace_id: project_work_item.namespace.hashed_root_namespace_id,
+          namespace_visibility_level: project_work_item.namespace.visibility_level,
+          schema_version: described_class::SCHEMA_VERSION,
+          archived: project.archived?,
+          project_visibility_level: project.visibility_level,
+          root_namespace_id: project_work_item.namespace.root_ancestor.id,
+          issues_access_level: project.issues_access_level,
+          type: 'work_item'
+        )
+      end
+    end
+
     context 'when add_root_namespace_id_to_work_item migration is not complete' do
       before do
         set_elasticsearch_migration_to :add_root_namespace_id_to_work_item, including: false
@@ -47,7 +122,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
-          work_item_access_level: project.issues_access_level,
           type: 'work_item'
         )
       end
@@ -140,7 +214,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
           schema_version: described_class::SCHEMA_VERSION,
           archived: project.archived?,
           project_visibility_level: project.visibility_level,
-          work_item_access_level: project.issues_access_level,
           type: 'work_item'
         )
       end

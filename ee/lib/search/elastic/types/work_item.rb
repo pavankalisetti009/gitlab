@@ -35,7 +35,7 @@ module Search
               assignee_id: { type: 'integer' },
               project_visibility_level: { type: 'short' },
               namespace_visibility_level: { type: 'short' },
-              work_item_access_level: { type: 'short' },
+              issues_access_level: { type: 'short' },
               upvotes: { type: 'integer' },
               traversal_ids: { type: 'keyword' },
               label_ids: { type: 'keyword' },
