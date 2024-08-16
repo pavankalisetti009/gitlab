@@ -28,6 +28,8 @@ module Search
         where(id: Search::Zoekt::Index.select(:zoekt_replica_id).where(state: non_ready_index_states).distinct)
       end
 
+      scope :for_namespace, ->(id) { where(namespace_id: id) }
+
       def self.for_enabled_namespace!(zoekt_enabled_namespace)
         params = {
           namespace_id: zoekt_enabled_namespace.root_namespace_id,
@@ -41,7 +43,11 @@ module Search
 
       def self.search_enabled?(namespace_id)
         joins(:zoekt_enabled_namespace).where(zoekt_enabled_namespace: { search: true })
-          .where(namespace_id: namespace_id).ready.exists?
+          .for_namespace(namespace_id).ready.exists?
+      end
+
+      def fetch_repositories_with_project_identifier(project_id)
+        Repository.for_replica_id(id).for_project_id(project_id)
       end
 
       private

@@ -17,46 +17,6 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
     create(:zoekt_enabled_namespace, namespace: unassigned_group)
   end
 
-  describe '#fetch_node_id' do
-    subject(:fetch_node_id) { described_class.fetch_node_id(container) }
-
-    context 'when passed a project' do
-      let(:container) { project }
-
-      it { is_expected.to eq(node.id) }
-    end
-
-    context 'when passed a namespace' do
-      let(:container) { group }
-
-      it { is_expected.to eq(node.id) }
-    end
-
-    context 'when passed a subgroup' do
-      let(:container) { subgroup }
-
-      it { is_expected.to eq(node.id) }
-    end
-
-    context 'when passed a root namespace id' do
-      let(:container) { group.id }
-
-      it { is_expected.to eq(node.id) }
-    end
-
-    context 'when Zoekt::IndexedNamespace not found' do
-      let(:container) { non_existing_record_id }
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'when passed an unsupported class' do
-      let(:container) { instance_double(Issue) }
-
-      it { expect { fetch_node_id }.to raise_error(ArgumentError) }
-    end
-  end
-
   describe '#search?' do
     subject(:search) { described_class.search?(container) }
 

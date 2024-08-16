@@ -38,7 +38,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
 
   describe 'scope' do
     describe '.non_ready' do
-      let_it_be(:zoekt_repository) { create(:zoekt_repository) }
+      let_it_be(:zoekt_repository) { create(:zoekt_repository, state: :pending) }
 
       it 'returns non ready records' do
         create(:zoekt_repository, state: :ready)
