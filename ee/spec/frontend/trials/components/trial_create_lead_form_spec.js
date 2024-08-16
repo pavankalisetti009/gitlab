@@ -6,11 +6,11 @@ import { stubComponent } from 'helpers/stub_component';
 import TrialCreateLeadForm from 'ee/trials/components/trial_create_lead_form.vue';
 import CountryOrRegionSelector from 'jh_else_ee/trials/components/country_or_region_selector.vue';
 import { TRIAL_TERMS_TEXT } from 'ee/trials/constants';
-import { trackSaasTrialSubmit } from 'ee/google_tag_manager';
+import { trackSaasTrialLeadSubmit } from 'ee/google_tag_manager';
 import { FORM_DATA, SUBMIT_PATH, GTM_SUBMIT_EVENT_LABEL } from './mock_data';
 
 jest.mock('ee/google_tag_manager', () => ({
-  trackSaasTrialSubmit: jest.fn(),
+  trackSaasTrialLeadSubmit: jest.fn(),
 }));
 
 Vue.use(VueApollo);
@@ -89,7 +89,7 @@ describe('TrialCreateLeadForm', () => {
     it('tracks the saas Trial submitting', () => {
       findForm().trigger('submit');
 
-      expect(trackSaasTrialSubmit).toHaveBeenCalledWith(GTM_SUBMIT_EVENT_LABEL);
+      expect(trackSaasTrialLeadSubmit).toHaveBeenCalledWith(GTM_SUBMIT_EVENT_LABEL);
     });
 
     it.each`

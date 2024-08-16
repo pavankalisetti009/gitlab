@@ -120,27 +120,17 @@ export const trackNewRegistrations = () => {
   trackOmniAuthSubmission('standardSignUp');
 };
 
-export const trackSaasTrialSubmit = callIfSupported((eventLabel) => {
+export const trackSaasTrialLeadSubmit = callIfSupported((eventLabel) => {
   pushEvent(eventLabel);
 });
 
-export const trackSaasTrialGroup = callIfSupported(() => {
-  const form = document.querySelector('.js-saas-trial-group');
+export const trackSaasTrialSubmit = callIfSupported((selector, eventName) => {
+  const form = document.querySelector(selector);
 
   if (!form) return;
 
   form.addEventListener('submit', () => {
-    pushEvent('saasTrialGroup');
-  });
-});
-
-export const trackSaasDuoProTrialGroup = callIfSupported(() => {
-  const form = document.querySelector('.js-saas-duo-pro-trial-group');
-
-  if (!form) return;
-
-  form.addEventListener('submit', () => {
-    pushEvent('saasDuoProTrialGroup');
+    pushEvent(eventName);
   });
 });
 

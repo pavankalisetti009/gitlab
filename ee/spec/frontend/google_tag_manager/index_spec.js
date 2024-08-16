@@ -5,9 +5,8 @@ import {
   trackFreeTrialAccountSubmissions,
   trackProjectImport,
   trackNewRegistrations,
+  trackSaasTrialLeadSubmit,
   trackSaasTrialSubmit,
-  trackSaasTrialGroup,
-  trackSaasDuoProTrialGroup,
   trackTrialAcceptTerms,
   trackCheckout,
   trackTransaction,
@@ -138,14 +137,6 @@ describe('ee/google_tag_manager/index', () => {
   describe.each([
     createOmniAuthTestCase(trackFreeTrialAccountSubmissions, 'freeThirtyDayTrial'),
     createOmniAuthTestCase(trackNewRegistrations, 'standardSignUp'),
-    createTestCase(trackSaasTrialGroup, {
-      forms: [{ cls: 'js-saas-trial-group', expectation: { event: 'saasTrialGroup' } }],
-    }),
-    createTestCase(trackSaasDuoProTrialGroup, {
-      forms: [
-        { cls: 'js-saas-duo-pro-trial-group', expectation: { event: 'saasDuoProTrialGroup' } },
-      ],
-    }),
     createTestCase(trackProjectImport, {
       links: [
         {
@@ -155,7 +146,7 @@ describe('ee/google_tag_manager/index', () => {
           expectation: { event: 'projectImport', platform: 'bitbucket' },
         },
         {
-          // id is neeeded so we trigger the right element in the test
+          // id is needed so we trigger the right element in the test
           id: 'js-test-btn-1',
           cls: 'js-import-project-btn',
           attributes: { 'data-platform': 'github' },
@@ -206,11 +197,48 @@ describe('ee/google_tag_manager/index', () => {
     });
   });
 
-  describe('No listener events', () => {
-    it('when trackSaasTrialSubmit is invoked', () => {
+  describe('with trackSaasTrialSubmit', () => {
+    const cls = 'some-selector';
+    const event = 'some-event';
+
+    beforeEach(() => {
+      setHTMLFixture(createHTML({ forms: [{ cls }] }));
+
+      trackSaasTrialSubmit(`.${cls}`, event);
+    });
+
+    afterEach(() => {
+      resetHTMLFixture();
+    });
+
+    it('triggers the event and submits successfully', () => {
       expect(spy).not.toHaveBeenCalled();
 
-      trackSaasTrialSubmit('_eventLabel_');
+      triggerEvent(`.${cls}`, 'submit');
+
+      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledWith({ event });
+      expect(logError).not.toHaveBeenCalled();
+    });
+
+    it('when random link is clicked, does nothing', () => {
+      triggerEvent('a.foo', 'click');
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    it('when random form is submitted, does nothing', () => {
+      triggerEvent('form.foo', 'submit');
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('No listener events', () => {
+    it('when trackSaasTrialLeadSubmit is invoked', () => {
+      expect(spy).not.toHaveBeenCalled();
+
+      trackSaasTrialLeadSubmit('_eventLabel_');
 
       expect(spy).toHaveBeenCalledTimes(1);
       expect(spy).toHaveBeenCalledWith({ event: '_eventLabel_' });
@@ -431,28 +459,23 @@ describe('ee/google_tag_manager/index', () => {
     });
   });
 
-  describe('when window has no dataLayer', () => {
+  describe('when window has no dataLayer for trackSaasTrialSubmit', () => {
     beforeEach(() => {
       merge(window, { dataLayer: null });
     });
 
-    describe.each`
-      fn                           | cls
-      ${trackSaasTrialGroup}       | ${'js-saas-trial-group'}
-      ${trackSaasDuoProTrialGroup} | ${'js-saas-duo-pro-trial-group'}
-    `('$fn', ({ fn, cls }) => {
-      it('no ops', () => {
-        setHTMLFixture(createHTML({ forms: [{ cls }] }));
+    it('no ops', () => {
+      const cls = 'some-selector';
+      setHTMLFixture(createHTML({ forms: [{ cls }] }));
 
-        fn();
+      trackSaasTrialSubmit(`.${cls}`, 'some-event');
 
-        triggerEvent(`.${cls}`, 'submit');
+      triggerEvent(`.${cls}`, 'submit');
 
-        expect(spy).not.toHaveBeenCalled();
-        expect(logError).not.toHaveBeenCalled();
+      expect(spy).not.toHaveBeenCalled();
+      expect(logError).not.toHaveBeenCalled();
 
-        resetHTMLFixture();
-      });
+      resetHTMLFixture();
     });
   });
 
@@ -467,25 +490,20 @@ describe('ee/google_tag_manager/index', () => {
       };
     });
 
-    describe.each`
-      fn                           | cls
-      ${trackSaasTrialGroup}       | ${'js-saas-trial-group'}
-      ${trackSaasDuoProTrialGroup} | ${'js-saas-duo-pro-trial-group'}
-    `('$fn', ({ fn, cls }) => {
-      it('logs error', () => {
-        setHTMLFixture(createHTML({ forms: [{ cls }] }));
+    it('logs error', () => {
+      const cls = 'some-selector';
+      setHTMLFixture(createHTML({ forms: [{ cls }] }));
 
-        fn();
+      trackSaasTrialSubmit(`.${cls}`, 'some-event');
 
-        triggerEvent(`.${cls}`, 'submit');
+      triggerEvent(`.${cls}`, 'submit');
 
-        expect(logError).toHaveBeenCalledWith(
-          'Unexpected error while pushing to dataLayer',
-          pushError,
-        );
+      expect(logError).toHaveBeenCalledWith(
+        'Unexpected error while pushing to dataLayer',
+        pushError,
+      );
 
-        resetHTMLFixture();
-      });
+      resetHTMLFixture();
     });
   });
 
