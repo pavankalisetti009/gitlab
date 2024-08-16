@@ -17,7 +17,7 @@ module Search
         [].tap do |payload|
           break [] if ::Gitlab::CurrentSettings.zoekt_indexing_paused?
 
-          node.tasks.each_task(limit: concurrency_limit) do |task|
+          node.tasks.each_task_for_processing(limit: concurrency_limit) do |task|
             payload << TaskSerializerService.execute(task)
           end
         end

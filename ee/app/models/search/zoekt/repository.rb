@@ -34,6 +34,8 @@ module Search
         project = Project.find_by_id(project_id)
         find_or_initialize_by(project_identifier: project_id, project: project, zoekt_index: zoekt_index).tap do |item|
           item.save! if item.new_record?
+          break if item.tasks.pending.exists?(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type)
+
           item.tasks.create!(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type, perform_at: perform_at)
         end
       end

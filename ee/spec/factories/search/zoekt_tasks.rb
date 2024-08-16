@@ -19,6 +19,10 @@ FactoryBot.define do
       state { :pending }
     end
 
+    trait :processing do
+      state { :processing }
+    end
+
     trait :orphaned do
       state { :orphaned }
     end
