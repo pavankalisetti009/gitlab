@@ -387,7 +387,11 @@ Users over subscription = 13 - 10 (Maximum users - users in license)
 
 ### Add seats to a subscription
 
-The users in license count can be increased by adding seats to a subscription any time during the subscription period. The cost of seats added during the subscription period is prorated from the date of purchase through the end of the subscription period. Even if you reach the number of users in license count, you can continue to add users. GitLab [bills you for the overage](../quarterly_reconciliation.md).
+To increase the number of users covered by your license, add seats to your subscription
+during the subscription period. The cost of seats added during the subscription
+period is prorated from the date of purchase through to the end of the subscription
+period. You can continue to add users even if you reach the number of users in license count. GitLab
+[bills you for the overage](../quarterly_reconciliation.md)
 
 To add seats to a subscription:
 
@@ -395,7 +399,9 @@ To add seats to a subscription:
 1. Go to the **Subscriptions & purchases** page.
 1. Select **Add seats** on the relevant subscription card.
 1. Enter the number of additional users.
-1. Review the **Purchase summary** section. The system lists the total price for all users on the system and a credit for what you've already paid. You are only charged for the net change.
+1. Review the **Purchase summary** section, which lists the total price for
+   all users on the system and a credit for what you've already paid. You are only
+   charged for the net change.
 1. Enter your payment information.
 1. Select **Purchase seats**.
 
