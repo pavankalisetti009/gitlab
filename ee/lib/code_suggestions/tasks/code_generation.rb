@@ -31,7 +31,7 @@ module CodeSuggestions
           when :codellama
             CodeSuggestions::Prompts::CodeGeneration::CodellamaMessages.new(
               feature_setting: feature_setting, params: params)
-          when :mistral, :mixtral, :codegemma, :codestral
+          when :mistral, :mixtral, :mixtral_8x22b, :codestral, :codegemma
             CodeSuggestions::Prompts::CodeGeneration::MistralMessages.new(
               feature_setting: feature_setting, params: params)
           else

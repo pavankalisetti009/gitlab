@@ -73,11 +73,16 @@ describe('SelfHostedModelForm', () => {
 
       const modelOptions = modelDropdownSelector.props('items');
       expect(modelOptions.map((model) => model.text)).toEqual([
-        'Mixtral',
-        'Mistral',
-        'Codegemma',
-        'Codestral',
-        'Codellama',
+        'CodeGemma 2b',
+        'CodeGemma 7b-it',
+        'CodeGemma 7b',
+        'Code-Llama 13b-code',
+        'Code-Llama 13b',
+        'Codestral 22B',
+        'Mistral 7B',
+        'Mixtral 8x22B',
+        'Mixtral 8x7B',
+        'DEEPSEEKCODER',
       ]);
     });
 

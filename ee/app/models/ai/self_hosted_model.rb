@@ -16,8 +16,18 @@ module Ai
       algorithm: 'aes-256-gcm',
       encode: true
 
-    enum model: { mistral: 0, mixtral: 1, codegemma: 2, codestral: 3, codellama: 4, 'codellama:code': 5,
-                  deepseekcoder: 6 }
+    enum model: {
+      mistral: 0,
+      mixtral: 1,
+      codegemma: 2,
+      codestral: 3,
+      codellama: 4,
+      codellama_13b_code: 5,
+      deepseekcoder: 6,
+      mixtral_8x22b: 7,
+      codegemma_2b: 8,
+      codegemma_7b: 9
+    }
 
     # For now, only OpenAI API format is supported, this method will be potentially
     # converted into a configurable database column

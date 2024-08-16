@@ -7,12 +7,16 @@ module Types
         graphql_name 'AiAcceptedSelfHostedModels'
         description 'LLMs supported by the self-hosted model features.'
 
-        value 'MISTRAL', description: 'Mistral7B model from Mistral AI.', value: 'mistral'
-        value 'MIXTRAL', description: 'Mixtral8x22B model from Mistral AI.', value: 'mixtral'
-        value 'CODEGEMMA', description: 'CodeGemma 2b or 7b model.', value: 'codegemma'
-        value 'CODESTRAL', description: 'Codestral 22B.', value: 'codestral'
-        value 'CODELLAMA', description: 'Codellama 13B.', value: 'codellama'
-        value 'CODELLAMACODE', description: 'Codellama 13B-code.', value: 'codellama:code'
+        value 'CODEGEMMA_2B', 'CodeGemma 2b: Suitable for code completion.', value: 'codegemma_2b'
+        value 'CODEGEMMA', 'CodeGemma 7b-it: Suitable for code generation.', value: 'codegemma'
+        value 'CODEGEMMA_7B', 'CodeGemma 7b: Suitable for code completion.', value: 'codegemma_7b'
+        value 'CODELLAMA_13B_CODE', 'Code-Llama 13b-code: Suitable for code completion.', value: 'codellama_13b_code'
+        value 'CODELLAMA', 'Code-Llama 13b: Suitable for code generation.', value: 'codellama'
+        value 'CODESTRAL', 'Codestral 22B: Suitable for code completion and code generation.',
+          value: 'codestral'
+        value 'MISTRAL', 'Mistral 7B: Suitable for code generation and duo chat.', value: 'mistral'
+        value 'MIXTRAL_8X22B', 'Mixtral 8x22B: Suitable for code generation and duo chat.', value: 'mixtral_8x22b'
+        value 'MIXTRAL', 'Mixtral 8x7B: Suitable for code generation and duo chat.', value: 'mixtral'
         value 'DEEPSEEKCODER', description: 'Deepseek Coder 1.3b, 6.7b and 33b base or instruct.',
           value: 'deepseekcoder'
       end

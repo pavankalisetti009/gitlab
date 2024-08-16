@@ -1,7 +1,6 @@
 - page_title s_('AdminSelfHostedModels|Add self-hosted models')
 - if Feature.enabled?(:custom_models_vue_app, current_user)
-  -# strip colon as this causes issues with Graphql downstream
-  - model_options = Ai::SelfHostedModel.models.map { |name, _| { modelValue: name.delete(':').upcase, modelName: name.capitalize } }
+  - model_options = Ai::SelfHostedModel.models.map { |name, _| { modelValue: name.upcase, modelName: name.capitalize } }
 
   #js-new-self-hosted-model{ data: { view_model: { basePath: admin_ai_self_hosted_models_path, modelOptions: model_options }.to_json } }
 - else

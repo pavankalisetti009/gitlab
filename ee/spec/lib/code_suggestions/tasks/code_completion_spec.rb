@@ -61,7 +61,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
   end
 
-  context 'when using self-hosted model codegemma' do
+  context 'when using self-hosted model codegemma_7b' do
     before do
       stub_feature_flags(ai_custom_models_prompts_migration: false)
     end
@@ -88,7 +88,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
 
     it_behaves_like 'code suggestion task' do
-      let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :codegemma, name: 'whatever') }
+      let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :codegemma_7b, name: 'whatever') }
       let_it_be(:ai_feature_setting) do
         create(
           :ai_feature_setting,
@@ -110,7 +110,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => "<|fim_prefix|>some prefix<|fim_suffix|>some suffix<|fim_middle|>",
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codegemma",
+          "model_name" => "codegemma_7b",
           "model_api_key" => "token"
         }
       end
@@ -204,7 +204,10 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
 
     it_behaves_like 'code suggestion task' do
-      let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :'codellama:code', name: 'whatever') }
+      let_it_be(:ai_self_hosted_model) do
+        create(:ai_self_hosted_model, model: :codellama_13b_code, name: 'whatever')
+      end
+
       let_it_be(:ai_feature_setting) do
         create(
           :ai_feature_setting,
@@ -226,7 +229,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => "<PRE> some prefix <SUF>some suffix <MID>",
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codellama:code",
+          "model_name" => "codellama_13b_code",
           "model_api_key" => "token"
         }
       end
@@ -299,7 +302,10 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
     end
 
     it_behaves_like 'code suggestion task' do
-      let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :'codellama:code', name: 'whatever') }
+      let_it_be(:ai_self_hosted_model) do
+        create(:ai_self_hosted_model, model: :codellama_13b_code, name: 'whatever')
+      end
+
       let_it_be(:ai_feature_setting) do
         create(
           :ai_feature_setting,
@@ -321,7 +327,7 @@ RSpec.describe CodeSuggestions::Tasks::CodeCompletion, feature_category: :code_s
           "prompt_version" => 2,
           "prompt" => nil,
           "model_endpoint" => "http://localhost:11434/v1",
-          "model_name" => "codellama:code",
+          "model_name" => "codellama_13b_code",
           "model_api_key" => "token"
         }
       end
