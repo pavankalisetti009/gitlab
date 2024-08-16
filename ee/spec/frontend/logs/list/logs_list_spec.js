@@ -50,13 +50,15 @@ describe('LogsList', () => {
     await waitForPromises();
   };
 
-  const testTracingIndexUrl = 'https://tracing-index-url.com';
+  const testTracingIndexUrl = 'https://test.gdk/tracing';
+  const testCreateIssueUrl = 'https://test.gdk/issues/new';
 
   const mountComponent = async () => {
     wrapper = shallowMountExtended(LogsList, {
       propsData: {
         observabilityClient: observabilityClientMock,
         tracingIndexUrl: testTracingIndexUrl,
+        createIssueUrl: testCreateIssueUrl,
       },
       stubs: {
         GlSprintf,
@@ -147,6 +149,7 @@ describe('LogsList', () => {
     it('renders the details drawer initially closed', () => {
       expect(findDrawer().exists()).toBe(true);
       expect(findDrawer().props('tracingIndexUrl')).toBe(testTracingIndexUrl);
+      expect(findDrawer().props('createIssueUrl')).toBe(testCreateIssueUrl);
       expect(isDrawerOpen()).toBe(false);
       expect(getDrawerSelectedLog()).toBe(null);
     });

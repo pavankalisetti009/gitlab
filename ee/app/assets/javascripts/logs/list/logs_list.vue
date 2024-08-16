@@ -55,6 +55,10 @@ export default {
       type: String,
       required: true,
     },
+    createIssueUrl: {
+      required: true,
+      type: String,
+    },
   },
   data() {
     const { [OPEN_DRAWER_QUERY_PARAM]: shouldOpenDrawer } = queryToObject(window.location.search);
@@ -271,6 +275,7 @@ export default {
       :log="selectedLog"
       :open="Boolean(selectedLog)"
       :tracing-index-url="tracingIndexUrl"
+      :create-issue-url="createIssueUrl"
       @close="closeDrawer"
     />
   </div>

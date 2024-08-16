@@ -1,8 +1,9 @@
-import { GlDrawer, GlLink } from '@gitlab/ui';
+import { GlDrawer, GlLink, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LogsDrawer from 'ee/logs/list/logs_drawer.vue';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import setWindowLocation from 'helpers/set_window_location_helper';
 
 jest.mock('~/lib/utils/dom_utils');
 
@@ -31,6 +32,7 @@ describe('LogsDrawer', () => {
   };
 
   const testTracingIndexUrl = 'https://tracing-index-url.com';
+  const testCreateIssueUrl = 'https://create-issue-url.com';
 
   const mountComponent = ({ open = true, log = mockLog } = {}) => {
     wrapper = shallowMountExtended(LogsDrawer, {
@@ -38,6 +40,7 @@ describe('LogsDrawer', () => {
         log,
         open,
         tracingIndexUrl: testTracingIndexUrl,
+        createIssueUrl: testCreateIssueUrl,
       },
     });
   };
@@ -62,6 +65,7 @@ describe('LogsDrawer', () => {
       .wrappers.find((w) => w.find('[data-testid="section-line-name"]').text() === name);
 
   beforeEach(() => {
+    setWindowLocation('http://test.gdk/logs?fingerprint=1234');
     mountComponent();
   });
 
@@ -77,7 +81,7 @@ describe('LogsDrawer', () => {
   });
 
   it('displays the correct title', () => {
-    expect(wrapper.findByTestId('drawer-title').text()).toBe('Jan 28 2024 10:36:08.296 UTC');
+    expect(wrapper.findByTestId('drawer-title').text()).toContain('Jan 28 2024 10:36:08.296 UTC');
   });
 
   it.each([
@@ -144,10 +148,6 @@ describe('LogsDrawer', () => {
       mountComponent({ log: null });
     });
 
-    it('displays an empty title', () => {
-      expect(wrapper.findByTestId('drawer-title').text()).toBe('');
-    });
-
     it('does not render any section', () => {
       expect(wrapper.findByTestId('section-log-details').exists()).toBe(false);
       expect(wrapper.findByTestId('section-log-attributes').exists()).toBe(false);
@@ -175,5 +175,24 @@ describe('LogsDrawer', () => {
       expect(findDrawer().props('headerHeight')).toBe('1234px');
       expect(getContentWrapperHeight).toHaveBeenCalled();
     });
+  });
+
+  it('renders the create issue button', () => {
+    const button = wrapper.findComponent(GlButton);
+    expect(button.text()).toBe('Create issue');
+    const logsDetails = {
+      body: mockLog.body,
+      fingerprint: mockLog.fingerprint,
+      fullUrl: 'http://test.gdk/logs?fingerprint=1234',
+      service: mockLog.service_name,
+      severityNumber: mockLog.severity_number,
+      timestamp: mockLog.timestamp,
+      traceId: mockLog.trace_id,
+    };
+    expect(button.attributes('href')).toBe(
+      `${testCreateIssueUrl}?observability_log_details=${encodeURIComponent(
+        JSON.stringify(logsDetails),
+      )}`,
+    );
   });
 });

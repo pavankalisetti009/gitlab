@@ -30,6 +30,7 @@ module Projects
     def observability_logs_view_model(project)
       generate_model(project) do |model|
         model[:tracingIndexUrl] = namespace_project_tracing_index_path(project.group, project)
+        model[:createIssueUrl] = new_namespace_project_issue_path(project.group, project)
       end
     end
 
