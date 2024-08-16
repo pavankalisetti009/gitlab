@@ -22,10 +22,13 @@ module Search
 
       scope :for_partition, ->(partition) { where(partition_id: partition) }
       scope :with_project, -> { includes(zoekt_repository: :project) }
-      scope :for_processing, -> { where(perform_at: (..Time.zone.now)) }
+      scope :perform_now, -> { where(perform_at: (..Time.zone.now)) }
+      scope :pending_or_processing, -> { where(state: %i[pending processing]) }
+      scope :perform_now_to_process, -> { perform_now.pending_or_processing }
 
       enum state: {
         pending: 0,
+        processing: 1,
         done: 10,
         failed: 255,
         orphaned: 256
@@ -52,16 +55,16 @@ module Search
         detach_partition_if: ->(partition) do
           !Task
             .for_partition(partition.value)
-            .where(state: :pending)
+            .pending_or_processing
             .exists?
         end
 
-      def self.each_task(limit:)
+      def self.each_task_for_processing(limit:)
         return unless block_given?
 
         count = 0
 
-        scope = for_processing.pending.with_project.order(:perform_at, :id)
+        scope = perform_now_to_process.with_project.order(:perform_at, :id)
         iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
         processed_project_identifiers = Set.new
         iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
@@ -81,6 +84,10 @@ module Search
           end
 
           tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
+
+          if Feature.enabled?(:zoekt_tasks_processing_state, Feature.current_request)
+            tasks.where.not(state: :orphaned).update_all(state: :processing)
+          end
 
           break if count >= limit
         end

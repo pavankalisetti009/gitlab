@@ -21,14 +21,41 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
     end
 
-    describe '.for_processing' do
+    describe '.perform_now' do
       let_it_be(:task) { create(:zoekt_task, perform_at: 1.day.ago) }
       let_it_be(:task2) { create(:zoekt_task, perform_at: 1.day.from_now) }
 
-      it 'returns tasks where perform_at is older than current time' do
-        results = described_class.for_processing
+      it 'returns only tasks whose perform_at is older than the current time' do
+        results = described_class.perform_now
         expect(results).to include task
         expect(results).not_to include task2
+      end
+    end
+
+    describe '.pending_or_processing' do
+      let_it_be(:task) { create(:zoekt_task, :done) }
+      let_it_be(:task2) { create(:zoekt_task, :pending) }
+      let_it_be(:task3) { create(:zoekt_task, :processing) }
+      let_it_be(:task4) { create(:zoekt_task, :orphaned) }
+      let_it_be(:task5) { create(:zoekt_task, :failed) }
+
+      it 'returns only tasks whose perform_at is older than the current time' do
+        results = described_class.pending_or_processing
+        expect(results).to include task2, task3
+        expect(results).not_to include task, task4, task5
+      end
+    end
+
+    describe '.perform_now_to_process' do
+      let_it_be(:task) { create(:zoekt_task, perform_at: 1.day.ago) }
+      let_it_be(:task2) { create(:zoekt_task, perform_at: 1.day.from_now) }
+      let_it_be(:task3) { create(:zoekt_task, :done, perform_at: 1.day.ago) }
+      let_it_be(:task4) { create(:zoekt_task, :processing, perform_at: 1.day.ago) }
+
+      it 'returns only pending or processing tasks where perform_at is older than current time' do
+        results = described_class.perform_now_to_process
+        expect(results).to include task, task4
+        expect(results).not_to include task2, task3
       end
     end
   end
@@ -59,8 +86,8 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
     end
   end
 
-  describe '.each_task' do
-    it 'returns tasks sorted by performed_at and unique by project' do
+  describe '.each_task_for_processing' do
+    it 'returns tasks sorted by performed_at and unique by project and moves the task to processing' do
       task_1 = create(:zoekt_task, perform_at: 1.minute.ago)
       task_2 = create(:zoekt_task, perform_at: 3.minutes.ago)
       task_3 = create(:zoekt_task, perform_at: 2.minutes.ago)
@@ -69,10 +96,9 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       task_in_future = create(:zoekt_task, perform_at: 3.minutes.from_now)
 
       tasks = []
-      described_class.each_task(limit: 10) do |task|
-        tasks << task
-      end
+      described_class.each_task_for_processing(limit: 10) { |task| tasks << task }
 
+      expect(tasks.all? { |task| task.reload.processing? }).to be true
       expect(tasks).not_to include(task_2, task_in_future)
       expect(tasks).to eq([task_with_same_project, task_3, task_1])
     end
@@ -88,9 +114,9 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
 
       it 'marks indexing tasks as orphaned' do
         expect do
-          described_class.each_task(limit: 10) { |t| t }
+          described_class.each_task_for_processing(limit: 10) { |t| t }
         end.to change { orphaned_indexing_task.reload.state }.from('pending').to('orphaned')
-        expect(orphaned_delete_task.reload.state).to eq('pending')
+        expect(orphaned_delete_task.reload.state).to eq('processing')
       end
     end
   end
@@ -136,13 +162,22 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
         create(:zoekt_task, state: :done)
       end
 
-      context 'when the partition contains unprocessed records' do
+      context 'when the partition contains pending records' do
         it { is_expected.to eq(false) }
       end
 
-      context 'when the partition contains only processed records' do
+      context 'when the partition contains processing records' do
         before do
-          described_class.update_all(state: :done)
+          described_class.first.processing!
+        end
+
+        it { is_expected.to eq(false) }
+      end
+
+      context 'when the partition does not contain pending or processing records' do
+        before do
+          described_class.update_all(state: :failed)
+          described_class.last.done!
         end
 
         it { is_expected.to eq(true) }

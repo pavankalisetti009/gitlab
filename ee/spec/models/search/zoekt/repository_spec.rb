@@ -118,6 +118,20 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
           end
         end
       end
+
+      context 'when there is already a pending task with the provided zoekt_node_id and task_type' do
+        before do
+          create(:zoekt_task, :pending, zoekt_repository: repo, task_type: task_type, node: zoekt_index.node)
+        end
+
+        it 'does not create the new task' do
+          expect do
+            described_class.create_tasks(project_id: repo.project_identifier, zoekt_index: zoekt_index,
+              task_type: task_type, perform_at: Time.zone.now
+            )
+          end.not_to change { Search::Zoekt::Task.count }
+        end
+      end
     end
   end
 end
