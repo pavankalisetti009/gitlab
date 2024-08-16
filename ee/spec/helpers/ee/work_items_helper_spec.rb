@@ -107,7 +107,9 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
         issue_weights: feature_available,
         okrs: feature_available,
         quality_management: feature_available,
-        scoped_labels: feature_available
+        scoped_labels: feature_available,
+        subepics: feature_available,
+        iterations: feature_available
       )
     end
 
@@ -125,6 +127,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_okrs_feature: "true",
             has_quality_management_feature: "true",
             has_scoped_labels_feature: "true",
+            has_subepics_feature: "true",
+            has_iterations_feature: "true",
             labels_fetch_path: group_labels_path(
               group, format: :json, only_group_labels: true, include_ancestor_groups: true)
           }
@@ -146,6 +150,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             has_okrs_feature: "false",
             has_quality_management_feature: "false",
             has_scoped_labels_feature: "false",
+            has_subepics_feature: "false",
+            has_iterations_feature: "false",
             labels_fetch_path: group_labels_path(
               group, format: :json, only_group_labels: true, include_ancestor_groups: true)
           }

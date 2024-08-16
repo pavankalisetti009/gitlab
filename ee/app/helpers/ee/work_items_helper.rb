@@ -42,6 +42,8 @@ module EE
         has_okrs_feature: group.licensed_feature_available?(:okrs).to_s,
         has_quality_management_feature: group.licensed_feature_available?(:quality_management).to_s,
         has_scoped_labels_feature: group.licensed_feature_available?(:scoped_labels).to_s,
+        has_subepics_feature: group.licensed_feature_available?(:subepics).to_s,
+        has_iterations_feature: group.licensed_feature_available?(:iterations).to_s,
         labels_fetch_path: group_labels_path(
           group, format: :json, only_group_labels: true, include_ancestor_groups: true)
       )
