@@ -47,7 +47,9 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
 
       expect(search_for('somenewsearchablefile.txt', node_id)).to be_empty
 
-      response = repository.update_zoekt_index!
+      responses = repository.update_zoekt_index!
+      response = responses.first
+
       expect(response['Success']).to be_truthy
 
       expect(search_for('somenewsearchablefile.txt', node_id)).to match_array(['somenewsearchablefile.txt'])
@@ -63,7 +65,9 @@ RSpec.describe ::Search::Zoekt::SearchableRepository, :zoekt, feature_category: 
 
       expect(search_for('file_with_force.txt', node_id)).to be_empty
 
-      response = repository.update_zoekt_index!(force: true)
+      responses = repository.update_zoekt_index!(force: true)
+      response = responses.first
+
       expect(response['Success']).to be_truthy
 
       expect(search_for('file_with_force.txt', node_id)).to match_array(['file_with_force.txt'])
