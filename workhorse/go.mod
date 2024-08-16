@@ -29,7 +29,7 @@ require (
 	gitlab.com/gitlab-org/labkit v1.21.0
 	go.uber.org/goleak v1.3.0
 	gocloud.dev v0.38.0
-	golang.org/x/image v0.18.0
+	golang.org/x/image v0.19.0
 	golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
 	golang.org/x/net v0.28.0
 	golang.org/x/oauth2 v0.21.0
