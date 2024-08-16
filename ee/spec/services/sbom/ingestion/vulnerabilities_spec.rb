@@ -49,7 +49,7 @@ RSpec.describe Sbom::Ingestion::Vulnerabilities, feature_category: :dependency_m
 
         context 'without dependency attribute' do
           before do
-            finding.update!(raw_metadata: {}.to_json)
+            finding.update!(raw_metadata: {}.to_json, location: nil)
           end
 
           it { is_expected.to eq({ vulnerability_ids: [], highest_severity: nil }) }

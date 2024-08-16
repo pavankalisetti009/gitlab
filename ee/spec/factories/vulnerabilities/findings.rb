@@ -526,6 +526,15 @@ FactoryBot.define do
         finding.report_type = "dependency_scanning"
         finding.name = "Vulnerabilities in libxml2"
         finding.metadata_version = "2.1"
+        finding.location = {
+          file: evaluator.file,
+          dependency: {
+            package: {
+              name: evaluator.package
+            },
+            version: evaluator.version
+          }
+        }
         finding.raw_metadata = {
           category: "dependency_scanning",
           name: "Vulnerabilities in libxml2",
@@ -576,6 +585,7 @@ FactoryBot.define do
         image { "package-registry/package:tag" }
         package { "org.apache.logging.log4j:log4j-api" }
         version { "2.14.1" }
+        operating_system { 'Unknown' }
       end
 
       after(:build) do |finding, evaluator|
@@ -588,7 +598,7 @@ FactoryBot.define do
             package: {
               name: evaluator.package
             },
-            operating_system: "Unknown",
+            operating_system: evaluator.operating_system,
             version: evaluator.version
           }
         }
