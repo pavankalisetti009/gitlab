@@ -446,11 +446,23 @@ You can view and download your renewal invoice on the Customers Portal [Invoices
 
 #### Enable or disable automatic subscription renewal
 
-To view or change automatic subscription renewal (at the same tier as the
-previous period), sign in to the [Customers Portal](https://customers.gitlab.com/customers/sign_in), and:
+Use the Customers Portal to enable or disable automatic subscription renewal.
+The subscription is renewed at the same tier as the previous period.
 
-- If the subscription card displays `Expires on DATE`, your subscription is not set to automatically renew. To enable automatic renewal, in **Subscription actions** (**{ellipsis_v}**), select **Turn on auto-renew**.
-- If the subscription card displays `Autorenews on DATE`, your subscription is set to automatically renew at the end of the subscription period. To cancel automatic renewal, in **Subscription actions** (**{ellipsis_v}**), select **Cancel subscription**.
+To enable or disable automatic subscription renewal:
+
+1. Sign in to the [Customers Portal](https://customers.gitlab.com/customers/sign_in).
+   You are taken to the **Subscriptions & purchases** page.
+1. Check the subscription card:
+   - If the card displays **Expires on <date>**, your subscription is not
+     set to automatically renew. To enable automatic renewal, in
+     **Subscription actions** (**{ellipsis_v}**), select **Turn on auto-renew**.
+   - If the card displays **Auto-renews on <date>**, your subscription is set to
+     automatically renew. To disable automatic renewal:
+     1. In **Subscription actions** (**{ellipsis_v}**), select **Cancel subscription**.
+     1. Select a reason for cancelling.
+     1. Optional: In **Would you like to add anything?**, enter any relevant information.
+     1. Select **Cancel subscription**.
 
 If you have difficulty during the renewal process, contact the
 [Support team](https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=360000071293) for assistance.
