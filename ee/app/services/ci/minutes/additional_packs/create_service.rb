@@ -3,16 +3,15 @@
 module Ci
   module Minutes
     module AdditionalPacks
-      class CreateService < ::Ci::Minutes::AdditionalPacks::BaseService
-        def initialize(current_user, namespace, packs = [])
-          @current_user = current_user
+      class CreateService
+        include BaseServiceUtility
+
+        def initialize(namespace, packs = [])
           @namespace = namespace
           @packs = packs
         end
 
         def execute
-          authorize_current_user!
-
           Ci::Minutes::AdditionalPack.transaction do
             @additional_packs = packs.collect { |pack| find_or_create_pack!(pack) }
 
@@ -25,7 +24,7 @@ module Ci
 
         private
 
-        attr_reader :current_user, :namespace, :packs, :additional_packs
+        attr_reader :namespace, :packs, :additional_packs
 
         # rubocop: disable CodeReuse/ActiveRecord
         def find_or_create_pack!(pack)

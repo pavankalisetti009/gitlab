@@ -8,8 +8,6 @@ module API
 
       CI_MINUTES_TAGS = %w[ci_minutes].freeze
 
-      before { authenticated_as_admin! }
-
       resource :namespaces, requirements: ::API::API::NAMESPACE_OR_PROJECT_REQUIREMENTS do
         desc 'Create a compute minutes purchase record for the namespace' do
           detail 'Creates an additional pack'
@@ -34,7 +32,7 @@ module API
           namespace = find_namespace(params[:id])
           not_found!('Namespace') unless namespace
 
-          result = ::Ci::Minutes::AdditionalPacks::CreateService.new(current_user, namespace, params[:packs]).execute
+          result = ::Ci::Minutes::AdditionalPacks::CreateService.new(namespace, params[:packs]).execute
 
           if result[:status] == :success
             present result[:additional_packs], with: ::EE::API::Entities::Ci::Minutes::AdditionalPack
@@ -64,7 +62,7 @@ module API
           not_found!('Namespace') unless namespace
           not_found!('Target namespace') unless target_namespace
 
-          result = ::Ci::Minutes::AdditionalPacks::ChangeNamespaceService.new(current_user, namespace, target_namespace).execute
+          result = ::Ci::Minutes::AdditionalPacks::ChangeNamespaceService.new(namespace, target_namespace).execute
 
           if result[:status] == :success
             accepted!
