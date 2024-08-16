@@ -33,7 +33,7 @@ module Gitlab
             internal: false
           },
           summarize_review: {
-            service_class: ::Gitlab::Llm::VertexAi::Completions::SummarizeReview,
+            service_class: ::Gitlab::Llm::Anthropic::Completions::SummarizeReview,
             prompt_class: ::Gitlab::Llm::Templates::SummarizeReview,
             feature_category: :ai_abstraction_layer,
             execute_method: ::Llm::MergeRequests::SummarizeReviewService,
