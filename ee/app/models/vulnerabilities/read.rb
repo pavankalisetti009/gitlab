@@ -7,6 +7,7 @@ module Vulnerabilities
     include UnnestedInFilters::Dsl
     include FromUnion
     include SafelyChangeColumnDefault
+    include IgnorableColumns
 
     declarative_enum DismissalReasonEnum
 
@@ -16,6 +17,7 @@ module Vulnerabilities
     self.primary_key = :vulnerability_id
 
     columns_changing_default :owasp_top_10
+    ignore_column :identifier_external_ids, remove_with: '17.6', remove_after: '2024-10-14'
 
     belongs_to :vulnerability, inverse_of: :vulnerability_read
     belongs_to :project
