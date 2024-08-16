@@ -62,10 +62,10 @@ module QA
             members.click_pending_members
           end
 
-          Gitlab::Page::Group::Settings::UsageQuotas.perform do |usage_quota|
+          EE::Page::Group::Settings::UsageQuotas.perform do |usage_quota|
             expect(usage_quota.pending_members).to match(/#{user_3.name}/)
 
-            usage_quota.approve_member
+            usage_quota.click_approve_member_button
             usage_quota.confirm_member_approval
 
             expect { membership_state_count(group, 'active') }

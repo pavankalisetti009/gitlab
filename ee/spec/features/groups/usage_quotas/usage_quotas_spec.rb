@@ -56,7 +56,7 @@ RSpec.describe 'Groups > Usage Quotas', :js, :saas, feature_category: :consumabl
     it 'lists awaiting members and approves them' do
       visit pending_members_group_usage_quotas_path(group)
 
-      expect(find_by_testid('pending-members')).to have_text(awaiting_member.user.name)
+      expect(find_by_testid('pending-members-content')).to have_text(awaiting_member.user.name)
 
       click_button 'Approve'
       click_button 'OK'
