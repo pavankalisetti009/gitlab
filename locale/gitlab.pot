@@ -10108,6 +10108,9 @@ msgstr ""
 msgid "Buy now"
 msgstr ""
 
+msgid "Buy subscription"
+msgstr ""
+
 msgid "By default, all projects and groups use the global notifications setting."
 msgstr ""
 
@@ -13035,6 +13038,9 @@ msgstr ""
 msgid "CodeSuggestions|A user can be assigned a %{title} seat only once each billable month."
 msgstr ""
 
+msgid "CodeSuggestions|Before you can buy GitLab Duo seats, you'll need a Premium or Ultimate subscription."
+msgstr ""
+
 msgid "CodeSuggestions|Boost productivity across the software development life cycle by using Code Suggestions and GitLab Duo Chat as part of the %{duoLinkStart}GitLab Duo Pro%{duoLinkEnd} add-on. You can now try GitLab Duo Pro for free for %{days} days, no credit card required."
 msgstr ""
 
@@ -13063,6 +13069,12 @@ msgid "CodeSuggestions|Manage seat assignments for %{addOnName}."
 msgstr ""
 
 msgid "CodeSuggestions|Run health check"
+msgstr ""
+
+msgid "CodeSuggestions|To buy GitLab Duo seats and regain access, you'll need a Premium or Ultimate subscription."
+msgstr ""
+
+msgid "CodeSuggestions|Your GitLab Duo Pro trial has expired"
 msgstr ""
 
 msgid "CodeSuggestions|trial"

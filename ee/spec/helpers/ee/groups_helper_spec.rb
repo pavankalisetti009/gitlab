@@ -461,7 +461,9 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
         full_path: group.full_path,
         group_id: group.id,
         add_duo_pro_href: ::Gitlab::Routing.url_helpers.subscription_portal_add_saas_duo_pro_seats_url(group.id),
-        hand_raise_lead: helper.code_suggestions_usage_app_hand_raise_lead_data
+        hand_raise_lead: helper.code_suggestions_usage_app_hand_raise_lead_data,
+        is_free_namespace: group.has_free_or_no_subscription?.to_s,
+        buy_subscription_path: group_billings_path(group)
       }.merge(trial_link)
     end
 
