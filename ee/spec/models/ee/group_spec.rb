@@ -714,21 +714,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let_it_be(:subgroup_vulnerability_read) { create(:vulnerability_read, project: subgroup_project) }
     let_it_be(:archived_vulnerability_read) { create(:vulnerability_read, project: archived_project) }
 
-    let(:use_traversal_ids) { false }
     let(:expected_vulnerability_reads) do
       [group_vulnerability_read, subgroup_vulnerability_read, archived_vulnerability_read]
     end
 
-    subject { root_group.vulnerability_reads(use_traversal_ids: use_traversal_ids) }
+    subject { root_group.vulnerability_reads }
 
     it 'returns vulnerabilities for projects in the group and its subgroups' do
       is_expected.to match_array(expected_vulnerability_reads)
-    end
-
-    context 'when `use_traversal_ids` kwarg is true' do
-      let(:use_traversal_ids) { true }
-
-      it { is_expected.to match_array(expected_vulnerability_reads) }
     end
   end
 
