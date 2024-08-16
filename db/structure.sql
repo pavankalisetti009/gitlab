@@ -18893,7 +18893,6 @@ CREATE TABLE user_preferences (
     keyboard_shortcuts_enabled boolean DEFAULT true NOT NULL,
     time_display_format smallint DEFAULT 0 NOT NULL,
     home_organization_id bigint,
-    use_web_ide_extension_marketplace boolean DEFAULT false NOT NULL,
     early_access_program_participant boolean DEFAULT false NOT NULL,
     early_access_program_tracking boolean DEFAULT false NOT NULL,
     extensions_marketplace_opt_in_status smallint DEFAULT 0 NOT NULL,
