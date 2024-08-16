@@ -62,6 +62,46 @@ RSpec.describe "groups/add_ons/discover_duo_pro/show", :aggregate_failures, feat
         expect(rendered).to have_content(s_("DuoProDiscover|Access Chat from the GitLab UI or your preferred IDE."))
       end
     end
+
+    context 'when rendering the Code Suggestions section' do
+      it 'displays the section title' do
+        expect(rendered).to have_selector('h3', text: s_("DuoProDiscover|Code Suggestions"))
+      end
+
+      it 'renders three card components' do
+        expect(rendered).to have_selector('[data-testid="code-suggestions-section"] .gl-card', count: 3)
+      end
+
+      it 'displays the correct card titles and content' do
+        expect(rendered).to have_content(s_("DuoProDiscover|Code generation"))
+        expect(rendered).to have_content(
+          s_(<<~CONTENT).squish
+            DuoProDiscover|Automatically generate lines of code, including full functions,
+            from single and multi-line comments as well as comment blocks.
+          CONTENT
+        )
+        expect(rendered).to have_content(s_("DuoProDiscover|Code completion"))
+        expect(rendered).to have_content(
+          s_("DuoProDiscover|Automatically generate new lines of code from a few typed characters.")
+        )
+        expect(rendered).to have_content(s_("DuoProDiscover|Language and IDE support"))
+        expect(rendered).to have_content(s_(<<~CONTENT).squish)
+          DuoProDiscover|Available in 15 languages, including C++, C#, Go, Java, JavaScript, Python,
+          PHP, Ruby, Rust, Scala, Kotlin, and TypeScript. And you can use your favorite IDE —
+          VS Code, Visual Studio, JetBrains' suite of IDEs, and Neovim are all supported.
+        CONTENT
+      end
+
+      it 'includes correct links with tracking' do
+        expect(rendered).to have_link(s_("DuoProDiscover|Read documentation"),
+          href: help_page_path("user/project/repository/code_suggestions", anchor: "use-code-suggestions"))
+        expect(rendered).to have_link(s_("DuoProDiscover|Launch Demo"), href: "https://gitlab.navattic.com/code-suggestions")
+      end
+    end
+
+    it 'renders the bottom Buy now button' do
+      expect(rendered).to have_link(_('Buy now'), href: group_settings_gitlab_duo_usage_index_path(group))
+    end
   end
 
   shared_examples 'tracking expectations' do |trial_status_text|

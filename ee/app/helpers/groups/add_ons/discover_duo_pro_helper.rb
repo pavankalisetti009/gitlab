@@ -67,37 +67,95 @@ module Groups
           {
             header: s_("DuoProDiscover|Test generation"),
             body: s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."),
-            link_text: s_("DuoProDiscover|Read documentation"),
-            link_path: help_page_path("user/gitlab_duo_chat", anchor: "write-tests-in-the-ide"),
-            track_label: 'test_generation_feature',
-            track_action: duo_pro_documentation_link_track_action(namespace)
+            footer: render_footer_link(
+              link_text: s_("DuoProDiscover|Read documentation"),
+              link_path: help_page_path("user/gitlab_duo_chat", anchor: "write-tests-in-the-ide"),
+              track_label: 'test_generation_feature',
+              track_action: duo_pro_documentation_link_track_action(namespace)
+            )
           },
           {
             header: s_("DuoProDiscover|Code explanation"),
             body: s_("DuoProDiscover|Helps you understand code by explaining it in natural language."),
-            link_text: s_("DuoProDiscover|Read documentation"),
-            link_path: help_page_path("user/ai_experiments",
-              anchor: "explain-code-in-the-web-ui-with-code-explanation"),
-            track_label: 'code_explanation_feature',
-            track_action: duo_pro_documentation_link_track_action(namespace)
+            footer: render_footer_link(
+              link_text: s_("DuoProDiscover|Read documentation"),
+              link_path: help_page_path("user/ai_experiments",
+                anchor: "explain-code-in-the-web-ui-with-code-explanation"),
+              track_label: 'code_explanation_feature',
+              track_action: duo_pro_documentation_link_track_action(namespace)
+            )
           },
           {
             header: s_("DuoProDiscover|Code refactoring"),
             body: s_("DuoProDiscover|Work to improve existing code quality."),
-            link_text: s_("DuoProDiscover|Read documentation"),
-            link_path: help_page_path("user/gitlab_duo_chat", anchor: "refactor-code-in-the-ide"),
-            track_label: 'code_refactoring_feature',
-            track_action: duo_pro_documentation_link_track_action(namespace)
+            footer: render_footer_link(
+              link_text: s_("DuoProDiscover|Read documentation"),
+              link_path: help_page_path("user/gitlab_duo_chat", anchor: "refactor-code-in-the-ide"),
+              track_label: 'code_refactoring_feature',
+              track_action: duo_pro_documentation_link_track_action(namespace)
+            )
           },
           {
             header: s_("DuoProDiscover|Chat from any location"),
             body: s_("DuoProDiscover|Access Chat from the GitLab UI or your preferred IDE."),
-            link_text: s_("DuoProDiscover|Read documentation"),
-            link_path: help_page_url("user/gitlab_duo_chat", anchor: "use-gitlab-duo-chat-in-the-web-ide"),
-            track_label: 'chat_feature',
-            track_action: duo_pro_documentation_link_track_action(namespace)
+            footer: render_footer_link(
+              link_text: s_("DuoProDiscover|Read documentation"),
+              link_path: help_page_url("user/gitlab_duo_chat", anchor: "use-gitlab-duo-chat-in-the-web-ide"),
+              track_label: 'chat_feature',
+              track_action: duo_pro_documentation_link_track_action(namespace)
+            )
           }
         ]
+      end
+
+      def duo_pro_code_suggestions_card_collection(namespace)
+        [
+          {
+            header: s_("DuoProDiscover|Code generation"),
+            body: s_("DuoProDiscover|Automatically generate lines of code, " \
+              "including full functions, from single and multi-line comments " \
+              "as well as comment blocks."),
+            footer: render_footer_link(
+              link_path: help_page_path("user/project/repository/code_suggestions", anchor: "use-code-suggestions"),
+              link_text: s_("DuoProDiscover|Read documentation"),
+              track_action: duo_pro_documentation_link_track_action(namespace),
+              track_label: 'code_generation_feature',
+              icon: "external-link"
+            )
+          },
+          {
+            header: s_("DuoProDiscover|Code completion"),
+            body: s_("DuoProDiscover|Automatically generate new lines of code from a few typed characters."),
+            footer: render_footer_link(
+              link_path: "https://gitlab.navattic.com/code-suggestions",
+              link_text: s_("DuoProDiscover|Launch Demo"),
+              track_action: duo_pro_documentation_link_track_action(namespace),
+              track_label: 'code_completion_feature',
+              icon: "live-preview"
+            )
+          },
+          {
+            header: s_("DuoProDiscover|Language and IDE support"),
+            body: s_("DuoProDiscover|Available in 15 languages, including C++, " \
+              "C#, Go, Java, JavaScript, Python, PHP, Ruby, Rust, Scala, Kotlin, " \
+              "and TypeScript. And you can use your favorite IDE — VS Code, Visual Studio, " \
+              "JetBrains' suite of IDEs, and Neovim are all supported.")
+          }
+        ]
+      end
+
+      def render_footer_link(link_path:, link_text:, track_action:, track_label:, icon: nil)
+        link_to(link_path,
+          class: 'gl-link',
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          data: {
+            track_label: track_label,
+            track_action: track_action
+          }) do
+          concat(link_text)
+          concat(sprite_icon(icon, css_class: 'gl-icon gl-ml-2')) if icon.present?
+        end
       end
     end
   end
