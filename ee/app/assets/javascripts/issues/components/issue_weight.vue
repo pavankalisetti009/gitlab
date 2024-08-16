@@ -19,7 +19,7 @@ export default {
 <template>
   <div
     ref="itemWeight"
-    class="board-card-info board-card-weight gl-mr-3 gl-text-gray-500 gl-text-sm gl-cursor-help gl-inline-flex gl-items-center gl-align-bottom"
+    class="board-card-info board-card-weight gl-mr-3 gl-inline-flex gl-cursor-help gl-items-center gl-align-bottom gl-text-sm gl-text-gray-500"
     v-on="$listeners"
   >
     <gl-icon name="weight" class="board-card-info-icon gl-mr-2" />
