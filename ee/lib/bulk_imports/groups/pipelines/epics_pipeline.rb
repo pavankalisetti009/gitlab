@@ -11,7 +11,9 @@ module BulkImports
 
         extractor ::BulkImports::Common::Extractors::NdjsonExtractor, relation: relation
 
-        def load(_context, epic)
+        def load(_context, data)
+          epic, _original_users_map = data
+
           return unless epic
           return if epic.persisted?
 
