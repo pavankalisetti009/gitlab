@@ -352,7 +352,7 @@ DETAILS:
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/432235) in GitLab 16.7.
 
-The `repository_xray` report collects information about your repository for use by AI in code suggestions.
+The `repository_xray` report collects information about your repository for use by GitLab Duo Code Suggestions.
 
 ## `artifacts:reports:sast`
 
