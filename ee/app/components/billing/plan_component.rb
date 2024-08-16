@@ -61,7 +61,7 @@ module Billing
 
       return "#{base} gl-rounded-base" if trial?
 
-      "#{base} gl-rounded-bottom-right-base gl-rounded-bottom-left-base " \
+      "#{base} gl-rounded-br-base gl-rounded-bl-base " \
         "#{plan.card_body_border_classes}"
     end
 
@@ -182,7 +182,7 @@ module Billing
         },
         'ultimate' => {
           header_classes: "gl-bg-transparent",
-          card_body_border_classes: "gl-rounded-top-right-base gl-rounded-top-left-base",
+          card_body_border_classes: "gl-rounded-tr-base gl-rounded-tl-base",
           elevator_pitch: s_("BillingPlans|For enterprises looking to deliver software faster"),
           features_elevator_pitch: s_("BillingPlans|Everything from Premium, plus:"),
           features: [
