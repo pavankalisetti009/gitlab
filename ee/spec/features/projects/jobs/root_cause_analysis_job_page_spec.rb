@@ -2,17 +2,15 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Root cause analysis job page', :js, feature_category: :continuous_integration do
-  let(:project) { create(:project, :repository) }
+RSpec.describe 'Root cause analysis job page', :saas, :js, feature_category: :continuous_integration do
   let(:user) { create(:user) }
-  let(:pipeline) { create(:ci_pipeline, project: project) }
+  let(:namespace) { create(:group_with_plan, plan: :ultimate_plan, owners: user) }
+  let(:project) { create(:project, :repository, namespace: namespace) }
   let(:passed_job) { create(:ci_build, :success, :trace_live, project: project) }
   let(:failed_job) { create(:ci_build, :failed, :trace_live, project: project) }
 
   before do
-    stub_licensed_features(ai_analyze_ci_job_failure: true)
-
-    allow(Gitlab::Llm::StageCheck).to receive(:available?).and_return(true)
+    stub_licensed_features(troubleshoot_job: true)
 
     project.add_developer(user)
     sign_in(user)
@@ -20,14 +18,11 @@ RSpec.describe 'Root cause analysis job page', :js, feature_category: :continuou
 
   context 'with duo enterprise license' do
     before do
-      allow(Ability).to receive(:allowed?).and_call_original
-      allow(Ability).to receive(:allowed?).with(user, :troubleshoot_job_with_ai, failed_job).and_return(true)
+      create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
     end
 
     context 'with failed jobs' do
       before do
-        allow(failed_job).to receive(:debug_mode?).and_return(false)
-
         visit(project_job_path(project, failed_job))
 
         wait_for_requests

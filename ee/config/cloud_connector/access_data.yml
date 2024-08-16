@@ -54,7 +54,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
     bundled_with:
       duo_enterprise:
         unit_primitives:
-          - analyze_ci_job_failure
           - documentation_search
           - duo_chat
           - explain_code

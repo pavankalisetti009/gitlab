@@ -28,9 +28,9 @@ module EE
       }.freeze
 
       prepended do
-        include ::Ai::Model
         include UsageStatistics
         include FromUnion
+        include ::Ai::Model
 
         has_many :security_scans, class_name: 'Security::Scan', foreign_key: :build_id
 
@@ -191,24 +191,6 @@ module EE
 
       def playable?
         super && !waiting_for_deployment_approval?
-      end
-
-      # For AiAction
-      def send_to_ai?
-        return false if debug_mode?
-        return false unless trace.exist?
-
-        true
-      end
-
-      # For AiAction
-      def to_ability_name
-        'build'
-      end
-
-      # For AiAction
-      def resource_parent
-        project
       end
 
       def pages

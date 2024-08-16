@@ -1,18 +1,12 @@
 <script>
-import { GlButton } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_CI_BUILD } from '~/graphql_shared/constants';
 import CeJobLogTopBar from '~/ci/job_details/components/job_log_top_bar.vue';
-import RootCauseAnalysis from './sidebar/root_cause_analysis/root_cause_analysis_app.vue';
 
 export default {
   components: {
     CeJobLogTopBar,
-    GlButton,
-    RootCauseAnalysis,
   },
   mixins: [glFeatureFlagMixin()],
   inject: ['jobGid'],
@@ -61,32 +55,10 @@ export default {
       default: false,
     },
   },
-  data() {
-    return {
-      isRootCauseDrawerShown: false,
-    };
-  },
   computed: {
-    // This is the beta version of the feature that is being removed
-    rootCauseAnalysisIsAvailable() {
-      return false;
-    },
-    jobFailed() {
-      const { status } = this.job;
-
-      const failedGroups = ['failed', 'failed-with-warnings'];
-
-      return failedGroups.includes(status.group);
-    },
-    jobId() {
-      return convertToGraphQLId(TYPENAME_CI_BUILD, this.job.id);
-    },
-    ...mapState(['job', 'isLoading']),
+    ...mapState(['job']),
   },
   methods: {
-    toggleDrawer() {
-      this.isRootCauseDrawerShown = !this.isRootCauseDrawerShown;
-    },
     handleScrollTop() {
       this.$emit('scrollJobLogTop');
     },
@@ -107,13 +79,6 @@ export default {
 </script>
 <template>
   <div class="gl-display-contents">
-    <root-cause-analysis
-      v-if="rootCauseAnalysisIsAvailable"
-      :is-shown="isRootCauseDrawerShown"
-      :job-id="jobId || ''"
-      :is-job-loading="isLoading"
-      @close="toggleDrawer"
-    />
     <ce-job-log-top-bar
       :size="size"
       :raw-path="rawPath"
@@ -131,19 +96,6 @@ export default {
       @searchResults="handleSearchResults"
       @enterFullscreen="handleFullscreen"
       @exitFullscreen="handleExitFullscreen"
-    >
-      <template #controllers>
-        <!-- TODO: Remove the previous implementation of the RCA drawer https://gitlab.com/gitlab-org/gitlab/-/issues/473797 -->
-        <gl-button
-          v-if="rootCauseAnalysisIsAvailable && jobFailed"
-          icon="tanuki-ai"
-          class="gl-mr-3"
-          data-testid="rca-button"
-          @click="toggleDrawer"
-        >
-          {{ s__('Jobs|Troubleshoot') }}
-        </gl-button>
-      </template>
-    </ce-job-log-top-bar>
+    />
   </div>
 </template>
