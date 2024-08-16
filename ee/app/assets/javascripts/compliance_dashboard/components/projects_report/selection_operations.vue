@@ -159,8 +159,10 @@ export default {
 </script>
 
 <template>
-  <section class="gl-border-gray-100 gl-border-t gl-p-5 gl-display-flex gl-align-items-center">
-    <span class="gl-border-0 gl-border-r-1 gl-border-gray-100 gl-border-solid gl-pr-5">
+  <section class="gl-border-gray-100 gl-border-t md:gl-px-5 gl-py-5 md:gl-flex gl-items-center">
+    <span
+      class="gl-inline-block gl-border-0 md:gl-border-r-1 gl-border-gray-100 gl-border-solid gl-pr-5 gl-mb-3 md:gl-mb-0"
+    >
       <gl-sprintf :message="__('%{count} selected')">
         <template #count>
           <span class="gl-font-bold"> {{ selection.length }}</span>
@@ -170,10 +172,10 @@ export default {
     <gl-tooltip :target="() => $refs.operations" :disabled="hasSelection">
       {{ $options.i18n.operationSelectionTooltip }}
     </gl-tooltip>
-    <div ref="operations" class="gl-pl-5">
+    <div ref="operations" class="md:gl-pl-5 gl-pl-0 gl-mb-4 md:gl-mb-0">
       <gl-collapsible-listbox
         v-model="selectedOperation"
-        class="gl-mr-2"
+        class="gl-block md:gl-inline gl-mb-2 md:gl-mb-0"
         data-testid="choose-bulk-action"
         :disabled="!hasSelection"
         :toggle-text="
@@ -199,7 +201,7 @@ export default {
       {{ __('Cancel') }}
     </gl-button>
     <gl-button
-      class="gl-ml-3"
+      class="gl-ml-2"
       data-testid="apply-bulk-operation-button"
       :variant="actionButtonVariant"
       :disabled="isSubmitButtonDisabled"
