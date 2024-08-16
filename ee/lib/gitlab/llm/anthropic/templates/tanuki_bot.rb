@@ -11,7 +11,50 @@ module Gitlab
           CONTENT_ID_FIELD = 'ATTRS'
 
           MAIN_PROMPT = <<~PROMPT
-            Given the following extracted parts of technical documentation enclosed in <quote></quote> XML tags and a question, create a final answer.
+            The following are provided:
+
+            * <question>: question
+            * <doc>: GitLab documentation, and a %<content_id>s which will later be converted to URL
+            * <example>: example responses
+
+            Given the above:
+
+            If you know the answer, create a final answer.
+              * Then return relevant "%<content_id>s" part for references, under the "%<content_id>s:" heading.
+            If you don't know the answer: start the response with "Unfortunately, I could not find any documentation", and don't try to make up an answer.
+
+            ---
+
+            Question:
+            <question>%<question>s</question>
+
+            Documentation:
+            %<content>s
+
+            Example responses:
+            <example>
+              The documentation for configuring AIUL is present. The relevant sections provide step-by-step instructions on how to configure it in GitLab, including the necessary settings and fields. The documentation covers different installation methods, such as A, B and C.
+
+              %<content_id>s:
+              CNT-IDX-a52b551c78c6cc11a603e231b4e789b2
+              CNT-IDX-27d7595271143710461371bcef69ed1e
+            </example>
+            <example>
+              Unfortunately, I could not find any documentation related to this question.
+
+              %<content_id>s:
+            </example>
+            <example>
+              Unfortunately, I could not find any documentation about the REFS configuration.
+              One documentation mentions that the restriction can be changed by an owner, but it does not specify how to do it.
+
+              %<content_id>s:
+              CNT-IDX-a52b551c78c6cc11a603e231b4e789b2
+            </example>
+          PROMPT
+
+          OLD_MAIN_PROMPT = <<~PROMPT
+            Given the following extracted parts of technical documentation enclosed in <doc></doc> XML tags and a question, create a final answer.
 
             If you know the answer:
               1. answer it
@@ -20,17 +63,6 @@ module Gitlab
             If you don't know the answer:
               1. just say "I don't know based on the documentation", and don't try to make up an answer
               2. Do not add %<content_id>s part.
-
-            QUESTION: %<question>s
-
-            %<content>s
-          PROMPT
-
-          OLD_MAIN_PROMPT = <<~PROMPT
-            Given the following extracted parts of technical documentation enclosed in <quote></quote> XML tags and a question, create a final answer.
-            If you don't know the answer, just say that you don't know. Don't try to make up an answer.
-            At the end of your answer ALWAYS return a "%<content_id>s" part for references and
-            ALWAYS name it %<content_id>s.
 
             QUESTION: %<question>s
 
@@ -64,10 +96,10 @@ module Gitlab
           def self.documents_prompt(documents)
             documents.map do |document|
               <<~PROMPT.strip
-                <quote>
+                <doc>
                 CONTENT: #{document[:content]}
                 #{CONTENT_ID_FIELD}: CNT-IDX-#{document[:id]}
-                </quote>
+                </doc>
               PROMPT
             end.join("\n\n")
           end
