@@ -22,6 +22,14 @@ module EE
           populate_vulnerability_id
         end
 
+        before_action only: :new do
+          if can?(current_user, :read_observability, project) && params[:observability_metric_details]
+            parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_metric_details]))
+
+            @observability_values = { metric: { name: parsed['name'], type: "#{parsed['type'].downcase}_type" } }
+          end
+        end
+
         before_action only: :show do
           push_licensed_feature(:escalation_policies, project)
 

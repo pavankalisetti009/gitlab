@@ -312,6 +312,80 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
     end
   end
 
+  describe 'GET #new' do
+    before do
+      project.add_developer(user)
+      sign_in(user)
+    end
+
+    context 'when passing observability metrics' do
+      subject do
+        get :new, params: {
+          namespace_id: project.namespace,
+          project_id: project,
+          observability_metric_details: metric_params
+        }
+      end
+
+      context 'when read_observability is prevented' do
+        before do
+          stub_feature_flags(observability_features: false)
+          stub_licensed_features(observability: false)
+        end
+
+        context 'when observability_metric_details parameters exist' do
+          let(:metric_params) do
+            { observability_links: CGI.escape(
+              %({"fullUrl":"http://gdk.test:3000/gitlab-org/gitlab-test/-/metrics/app.ads.ad_requests?type=Sum&date_range=1h&group_by_fn=sum&group_by_attrs[]=app.ads.ad_request_type&group_by_attrs[]=app.ads.ad_response_type", "name": "app.ads.ad_requests", "type": "Sum", "timeframe":["2024-07-2504:47:00UTC","2024-07-2505:47:00UTC"]})
+            ) }
+          end
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+        end
+
+        context 'when observability_metric_details parameters do not exist' do
+          let(:metric_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+        end
+      end
+
+      context 'when read_observability is allowed' do
+        before do
+          stub_licensed_features(observability: true)
+        end
+
+        context 'when observability_metric_details parameters exist' do
+          let(:metric_params) { '{"fullUrl"%3A"http%3A%2F%2Fgdk.test%3A3000%2Fgitlab-org%2Fgitlab-test%2F-%2Fmetrics%2Fapp.ads.ad_requests%3Ftype%3DSum%26date_range%3D1h%26group_by_fn%3Dsum%26group_by_attrs[]%3Dapp.ads.ad_request_type%26group_by_attrs[]%3Dapp.ads.ad_response_type"%2C"name"%3A"app.ads.ad_requests"%2C"type"%3A"Sum"%2C"dimensions"%3A["app.ads.ad_request_type"%2C"app.ads.ad_response_type"]%2C"timeframe"%3A["2024-07-2504%3A47%3A00UTC"%2C"2024-07-2505%3A47%3A00UTC"]%2C"latestValues"%3A["app.ads.ad_request_type%3ANOT_TARGETED%2Capp.ads.ad_response_type%3ARANDOM%3A281.000"%2C"app.ads.ad_request_type%3ATARGETED%2Capp.ads.ad_response_type%3ATARGETED%3A1387.000"%2C"app.ads.ad_request_type%3ATARGETED%2Capp.ads.ad_response_type%3ARANDOM%3A287.000"]}' }
+
+          it 'populates observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to eq({ metric: { name: "app.ads.ad_requests", type: "sum_type" } })
+          end
+        end
+
+        context 'when observability_metric_details parameters do not exist' do
+          let(:metric_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+        end
+      end
+    end
+  end
+
   describe 'GET #discussions' do
     let(:issue) { create(:issue, project: project) }
     let!(:discussion) { create(:discussion_note_on_issue, noteable: issue, project: issue.project) }
