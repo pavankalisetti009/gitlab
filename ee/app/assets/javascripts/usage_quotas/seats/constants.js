@@ -11,15 +11,14 @@ export const FIELDS = [
   {
     key: 'disclosure',
     label: '',
-    thClass: 'gl-p-0!',
-    tdClass: 'gl-p-0! !gl-align-middle',
+    thClass: '!gl-p-0',
+    tdClass: '!gl-p-0 !gl-align-middle',
   },
   {
     key: 'user',
     label: __('User'),
-    thClass: `gl-w-6/20 gl-pl-2!`,
-    // eslint-disable-next-line @gitlab/require-i18n-strings
-    tdClass: '!gl-align-middle gl-pl-2!',
+    thClass: `gl-w-6/20 !gl-pl-2`,
+    tdClass: '!gl-align-middle !gl-pl-2',
   },
   {
     key: 'email',
@@ -58,8 +57,8 @@ export const membershipDetailsFields = (indirect) => {
     { key: 'role', label: __('Role') },
   ].map((field) => ({
     ...field,
-    thClass: 'gl-border-0!',
-    tdClass: 'gl-border-0!',
+    thClass: '!gl-border-0',
+    tdClass: '!gl-border-0',
   }));
 };
 

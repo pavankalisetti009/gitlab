@@ -119,7 +119,7 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+    <div class="gl-flex gl-justify-between gl-items-center">
       <h3 data-testid="overview-subtitle">{{ s__('UsageQuota|Namespace overview') }}</h3>
       <template v-if="isPurchaseButtonShown">
         <gl-button
@@ -170,7 +170,7 @@ export default {
         }}</gl-link>
       </template>
     </p>
-    <div class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5 gl-py-4">
+    <div class="gl-grid md:gl-grid-cols-2 gl-gap-5 gl-py-4">
       <namespace-limits-storage-usage-overview-card
         v-if="isUsingNamespaceEnforcement"
         :used-storage="usedStorage"

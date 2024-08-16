@@ -47,7 +47,7 @@ export default {
 </script>
 <template>
   <section>
-    <h2 class="gl-font-lg">{{ s__('ProductAnalytics|Usage by month') }}</h2>
+    <h2 class="gl-text-lg">{{ s__('ProductAnalytics|Usage by month') }}</h2>
 
     <gl-skeleton-loader v-if="isLoading" :lines="3" />
     <template v-else>

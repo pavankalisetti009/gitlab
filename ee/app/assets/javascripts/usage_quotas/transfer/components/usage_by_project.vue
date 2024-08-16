@@ -75,7 +75,7 @@ export default {
 
 <template>
   <div class="gl-mt-5">
-    <h4 class="gl-font-lg gl-mb-5">{{ $options.i18n.USAGE_BY_PROJECT_HEADER }}</h4>
+    <h4 class="gl-text-lg gl-mb-5">{{ $options.i18n.USAGE_BY_PROJECT_HEADER }}</h4>
     <gl-table :fields="$options.fields" :items="items">
       <template #cell(project)="{ item: { id, avatarUrl, webUrl, name, nameWithNamespace } }">
         <div v-if="loading" class="gl-w-20">

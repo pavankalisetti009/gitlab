@@ -122,7 +122,7 @@ export default {
 
 <template>
   <section>
-    <div class="gl-bg-gray-10 gl-p-5 gl-display-flex">
+    <div class="gl-bg-gray-10 gl-p-5 gl-flex">
       <search-and-sort-bar
         :namespace="namespaceId"
         :search-input-placeholder="$options.i18n.filterUsersPlaceholder"
@@ -166,7 +166,7 @@ export default {
       </template>
 
       <template #cell(user)="{ item }">
-        <div class="gl-display-flex">
+        <div class="gl-flex">
           <gl-avatar-link target="blank" :href="item.user.web_url" :alt="item.user.name">
             <gl-avatar-labeled
               :src="item.user.avatar_url"

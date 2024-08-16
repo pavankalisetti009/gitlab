@@ -58,7 +58,7 @@ export default {
 <template>
   <div class="gl-flex gl-my-5 gl-gap-3">
     <filtered-search-bar
-      class="gl-flex-grow-1"
+      class="gl-grow"
       :namespace="fullPath"
       :tokens="tokens"
       :search-input-placeholder="__('Filter users')"

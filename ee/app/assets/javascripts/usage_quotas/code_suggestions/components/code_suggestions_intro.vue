@@ -73,7 +73,7 @@ export default {
   <gl-intersection-observer @appear="trackPageView">
     <gl-empty-state :svg-path="$options.emptyStateSvgUrl">
       <template #title>
-        <h1 v-safe-html="$options.i18n.title" class="gl-font-size-h-display gl-leading-36 h4"></h1>
+        <h1 class="gl-text-size-h-display gl-leading-36 h4">{{ $options.i18n.title }}</h1>
       </template>
       <template #description>
         <gl-sprintf :message="$options.i18n.description">
@@ -81,7 +81,7 @@ export default {
             <gl-link
               :href="$options.helpLinks.codeSuggestionsLearnMoreLink"
               target="_blank"
-              class="gl-text-decoration-underline"
+              class="gl-underline"
               data-testid="duo-pro-learn-more-link"
               @click="trackLearnMoreClick"
             >
@@ -96,7 +96,7 @@ export default {
           :href="duoProTrialHref"
           variant="confirm"
           category="primary"
-          class="gl-sm-w-auto gl-w-full"
+          class="sm:gl-w-auto gl-w-full"
           data-testid="duo-pro-start-trial-btn"
           @click="trackTrialClick"
         >

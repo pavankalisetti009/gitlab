@@ -145,7 +145,7 @@ export default {
     <div class="gl-bg-gray-10 gl-p-5">
       <div
         v-if="isLoaderShown"
-        class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5"
+        class="gl-grid md:gl-grid-cols-2 gl-gap-5"
         data-testid="skeleton-loader-cards"
       >
         <div class="gl-bg-white gl-border gl-p-5 gl-rounded-base">
@@ -164,7 +164,7 @@ export default {
           </gl-skeleton-loader>
         </div>
       </div>
-      <div v-else class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-5">
+      <div v-else class="gl-grid md:gl-grid-cols-2 gl-gap-5">
         <statistics-card
           :help-link="$options.helpLinks.seatsInUseLink"
           :help-tooltip="seatsInUseTooltipText"

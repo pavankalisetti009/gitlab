@@ -57,7 +57,7 @@ export default {
   <section class="pipelines-project-list" data-testid="pipelines-quota-tab-project-table">
     <gl-table-lite :items="projects" :fields="$options.PROJECTS_TABLE_FIELDS">
       <template #cell(project)="{ item: { project } }">
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <project-avatar
             :project-id="project.id"
             :project-name="project.nameWithNamespace"
@@ -101,7 +101,7 @@ export default {
         {{ $options.PROJECTS_TABLE_OMITS_MESSAGE }}
       </p>
     </div>
-    <div class="gl-display-flex gl-justify-content-center gl-mt-5">
+    <div class="gl-flex gl-justify-center gl-mt-5">
       <gl-keyset-pagination v-if="showPagination" v-bind="pageInfo" @prev="onPrev" @next="onNext" />
     </div>
   </section>

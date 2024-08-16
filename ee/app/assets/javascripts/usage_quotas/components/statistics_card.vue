@@ -90,27 +90,27 @@ export default {
     data-testid="container"
     :class="cssClass"
   >
-    <div v-if="loading" class="gl-lg-w-half">
+    <div v-if="loading" class="lg:gl-w-1/2">
       <gl-skeleton-loader :height="50">
         <rect width="140" height="30" x="5" y="0" rx="4" />
         <rect width="240" height="10" x="5" y="40" rx="4" />
       </gl-skeleton-loader>
     </div>
     <template v-else>
-      <div class="gl-display-flex gl-justify-content-space-between">
+      <div class="gl-flex gl-justify-between">
         <p
           v-if="usageValue"
-          class="gl-font-size-h-display gl-font-bold gl-mb-3"
+          class="gl-text-size-h-display gl-font-bold gl-mb-3"
           data-testid="denominator"
         >
           {{ usageValue }}
-          <span v-if="usageUnit" data-testid="denominator-usage-unit" class="gl-font-lg">{{
+          <span v-if="usageUnit" data-testid="denominator-usage-unit" class="gl-text-lg">{{
             usageUnit
           }}</span>
           <span v-if="totalValue" data-testid="denominator-total">
             /
             {{ totalValue }}
-            <span v-if="totalUnit" class="gl-font-lg" data-testid="denominator-total-unit">{{
+            <span v-if="totalUnit" class="gl-text-lg" data-testid="denominator-total-unit">{{
               totalUnit
             }}</span>
           </span>

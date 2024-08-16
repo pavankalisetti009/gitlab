@@ -437,10 +437,10 @@ export default {
     </gl-alert>
     <div
       v-if="isAnyUserSelected"
-      class="gl-display-flex gl-mt-5 gl-bg-gray-10 gl-p-5 gl-align-items-center gl-justify-content-space-between"
+      class="gl-flex gl-mt-5 gl-bg-gray-10 gl-p-5 gl-items-center gl-justify-between"
     >
       <span v-safe-html="pluralisedSelectedUsers" data-testid="selected-users-summary"></span>
-      <div class="gl-display-flex gl-gap-3">
+      <div class="gl-flex gl-gap-3">
         <gl-button
           data-testid="unassign-seats-button"
           variant="danger"
@@ -496,7 +496,7 @@ export default {
       </template>
       <template #cell(user)="{ item }">
         <slot name="user-cell" :item="item">
-          <div class="gl-display-flex">
+          <div class="gl-flex">
             <gl-avatar-link target="_blank" :href="item.webUrl" :alt="item.name">
               <gl-avatar-labeled
                 :src="item.avatarUrl"
@@ -540,7 +540,7 @@ export default {
         </span>
       </template>
     </gl-table>
-    <div v-if="showPagination" class="gl-display-flex gl-justify-content-center gl-mt-5">
+    <div v-if="showPagination" class="gl-flex gl-justify-center gl-mt-5">
       <gl-keyset-pagination v-bind="pageInfo" @prev="prevPage" @next="nextPage" />
     </div>
 
