@@ -19,7 +19,7 @@ module Search
         return false unless root_namespace_id
 
         if search_with_replica?(container, root_namespace_id)
-          Replica.ready.for_namespace(root_namespace_id).exists?
+          Replica.search_enabled?(root_namespace_id)
         else
           Index.for_root_namespace_id_with_search_enabled(root_namespace_id).ready.exists?
         end

@@ -125,6 +125,14 @@ RSpec.describe Search::Zoekt, feature_category: :global_search do
         end
 
         it { is_expected.to eq(true) }
+
+        context 'when zoekt_enabled_namespace search is false' do
+          before do
+            enabled_namespace.update!(search: false)
+          end
+
+          it { is_expected.to eq(false) }
+        end
       end
     end
 
