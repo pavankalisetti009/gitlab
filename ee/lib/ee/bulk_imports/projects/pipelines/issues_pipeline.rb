@@ -7,7 +7,9 @@ module EE
         module IssuesPipeline
           include ::BulkImports::EpicObjectCreator
 
-          def load(context, issue)
+          def load(context, data)
+            issue, _original_users_map = data
+
             return unless issue
 
             super

@@ -122,7 +122,7 @@ RSpec.describe BulkImports::Groups::Pipelines::EpicsPipeline, feature_category: 
 
         expect(epic).to receive(:save).and_call_original
 
-        subject.load(context, epic)
+        subject.load(context, [epic])
       end
     end
 
