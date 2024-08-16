@@ -1,3 +1,5 @@
+import { mergeUrlParams } from '~/lib/utils/url_utility';
+
 const COLORS_MAP = {
   trace: '#a4a3a8',
   debug: '#a4a3a8',
@@ -40,4 +42,43 @@ export const DEFAULT_SEVERITY_LEVELS = severityConfig.filter(Boolean).map(({ nam
 
 export function severityNumberToConfig(severityNumber) {
   return severityConfig[severityNumber] || severityConfig[5]; // default to Debug;
+}
+
+export function createIssueUrlWithLogDetails({ log, createIssueUrl }) {
+  const {
+    trace_id: traceId,
+    fingerprint,
+    severity_number: severityNumber,
+    service_name: service,
+    timestamp,
+    body: fullBody,
+  } = log;
+
+  // To reduce the chances of going over browser's URL max-length, we limit the log body
+  const LOG_BODY_LIMIT = 1000;
+
+  const truncatedSuffix = `[...]`;
+
+  const body =
+    fullBody.length > LOG_BODY_LIMIT
+      ? `${fullBody.slice(0, LOG_BODY_LIMIT - truncatedSuffix.length)}${truncatedSuffix}`
+      : fullBody;
+
+  const logDetails = {
+    body,
+    fingerprint,
+    fullUrl: window.location.href,
+    service,
+    severityNumber,
+    timestamp,
+    traceId,
+  };
+
+  const query = {
+    observability_log_details: JSON.stringify(logDetails),
+  };
+
+  return mergeUrlParams(query, createIssueUrl, {
+    spreadArrays: true,
+  });
 }

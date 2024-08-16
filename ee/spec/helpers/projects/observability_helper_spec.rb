@@ -76,7 +76,8 @@ RSpec.describe Projects::ObservabilityHelper, type: :helper, feature_category: :
     it 'generates the correct JSON' do
       expected_json = {
         apiConfig: expected_api_config,
-        tracingIndexUrl: namespace_project_tracing_index_path(project.group, project)
+        tracingIndexUrl: namespace_project_tracing_index_path(project.group, project),
+        createIssueUrl: new_namespace_project_issue_path(project.group, project)
       }.to_json
 
       expect(helper.observability_logs_view_model(project)).to eq(expected_json)

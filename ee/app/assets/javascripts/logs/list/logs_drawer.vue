@@ -1,10 +1,11 @@
 <script>
-import { GlDrawer, GlLink } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { GlDrawer, GlLink, GlButton } from '@gitlab/ui';
+import { s__, __ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
+import { createIssueUrlWithLogDetails } from '../utils';
 
 const createSectionContent = (obj) =>
   Object.entries(obj)
@@ -16,11 +17,13 @@ export default {
   components: {
     GlDrawer,
     GlLink,
+    GlButton,
   },
   i18n: {
     logDetailsTitle: s__('ObservabilityLogs|Metadata'),
     logAttributesTitle: s__('ObservabilityLogs|Attributes'),
     resourceAttributesTitle: s__('ObservabilityLogs|Resource attributes'),
+    createIssueTitle: __('Create issue'),
   },
   props: {
     log: {
@@ -35,6 +38,10 @@ export default {
     tracingIndexUrl: {
       type: String,
       required: true,
+    },
+    createIssueUrl: {
+      required: true,
+      type: String,
     },
   },
   computed: {
@@ -81,6 +88,9 @@ export default {
       if (!this.open) return '0';
       return getContentWrapperHeight();
     },
+    createIssueUrlWithQuery() {
+      return createIssueUrlWithLogDetails({ log: this.log, createIssueUrl: this.createIssueUrl });
+    },
   },
   methods: {
     isTraceId(key) {
@@ -104,7 +114,10 @@ export default {
   >
     <template #title>
       <div data-testid="drawer-title">
-        <h2 class="gl-font-size-h2 gl-my-0">{{ title }}</h2>
+        <h2 class="gl-text-size-h2 gl-mt-0">{{ title }}</h2>
+        <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
+          {{ $options.i18n.createIssueTitle }}
+        </gl-button>
       </div>
     </template>
 
@@ -115,7 +128,7 @@ export default {
         :data-testid="`section-${section.key}`"
         class="gl-border-none"
       >
-        <h2 v-if="section.title" data-testid="section-title" class="gl-font-size-h2 gl-my-0">
+        <h2 v-if="section.title" data-testid="section-title" class="gl-text-size-h2 gl-my-0">
           {{ section.title }}
         </h2>
         <div

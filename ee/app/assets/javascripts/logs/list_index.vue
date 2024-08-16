@@ -15,6 +15,10 @@ export default {
       type: String,
       required: true,
     },
+    createIssueUrl: {
+      required: true,
+      type: String,
+    },
   },
   data() {
     return {
@@ -25,5 +29,9 @@ export default {
 </script>
 
 <template>
-  <logs-list :observability-client="observabilityClient" :tracing-index-url="tracingIndexUrl" />
+  <logs-list
+    :observability-client="observabilityClient"
+    :tracing-index-url="tracingIndexUrl"
+    :create-issue-url="createIssueUrl"
+  />
 </template>
