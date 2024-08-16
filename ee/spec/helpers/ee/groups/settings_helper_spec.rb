@@ -33,7 +33,14 @@ RSpec.describe EE::Groups::SettingsHelper do
   describe 'group_ai_settings_helper_data' do
     subject { helper.group_ai_settings_helper_data }
 
-    it { is_expected.to eq({ data: {} }) }
+    it 'returns the expected data' do
+      is_expected.to eq(
+        { cascading_settings_data: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
+          duo_availability: group.namespace_settings.duo_availability.to_s,
+          are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
+          redirect_path: edit_group_path(group),
+          update_id: group.id })
+    end
   end
 
   describe 'show_group_ai_settings?' do

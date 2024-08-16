@@ -14,6 +14,7 @@ module EE
             optional :shared_runners_minutes_limit, type: Integer, desc: '(admin-only) compute minutes quota for this group'
             optional :extra_shared_runners_minutes_limit, type: Integer, desc: '(admin-only) Extra compute minutes quota for this group'
             optional :wiki_access_level, type: String, values: %w[disabled private enabled], desc: 'Wiki access level. One of `disabled`, `private` or `enabled`'
+            optional :duo_availability, type: String, values: %w[default_on default_off never_on], desc: 'Duo availability. One of `default_on`, `default_off` or `never_on`'
             all_or_none_of :ldap_cn, :ldap_access
           end
 

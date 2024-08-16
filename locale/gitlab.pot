@@ -5029,9 +5029,6 @@ msgstr ""
 msgid "AiPowered|Features are not available. However, any group, subgroup, or project can turn them on."
 msgstr ""
 
-msgid "AiPowered|GitLab Duo features"
-msgstr ""
-
 msgid "AiPowered|Never on"
 msgstr ""
 
@@ -24086,6 +24083,9 @@ msgstr ""
 msgid "GitLab Duo didn't find any reviewable files. Code Review request skipped."
 msgstr ""
 
+msgid "GitLab Duo features"
+msgstr ""
+
 msgid "GitLab Enterprise Edition"
 msgstr ""
 
@@ -25961,9 +25961,6 @@ msgid "GroupSettings|Git abuse rate limit"
 msgstr ""
 
 msgid "GroupSettings|GitLab Duo experiment and beta features"
-msgstr ""
-
-msgid "GroupSettings|GitLab Duo features"
 msgstr ""
 
 msgid "GroupSettings|Group CI/CD settings were successfully updated."

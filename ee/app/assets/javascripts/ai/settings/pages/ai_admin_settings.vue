@@ -3,7 +3,6 @@ import { updateApplicationSettings } from '~/rest_api';
 import { visitUrlWithAlerts } from '~/lib/utils/url_utility';
 import { createAlert, VARIANT_INFO } from '~/alert';
 import { __ } from '~/locale';
-import { ERROR_MESSAGE } from '../constants';
 import AiCommonSettings from '../components/ai_common_settings.vue';
 
 export default {
@@ -13,7 +12,9 @@ export default {
   },
   i18n: {
     successMessage: __('Application settings saved successfully.'),
-    errorMessage: ERROR_MESSAGE,
+    errorMessage: __(
+      'An error occurred while retrieving your settings. Reload the page to try again.',
+    ),
   },
   props: {
     duoAvailability: {

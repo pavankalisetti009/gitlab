@@ -25,6 +25,10 @@ export default {
     neverOnWarning: s__(
       'AiPowered|When you save, GitLab Duo will be turned for all groups, subgroups, and projects.',
     ),
+    settingsBlockTitle: __('GitLab Duo features'),
+    settingsBlockDescription: s__(
+      'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
+    ),
   },
   props: {
     duoAvailability: {
@@ -84,15 +88,9 @@ export default {
 };
 </script>
 <template>
-  <settings-block :title="s__('AiPowered|GitLab Duo features')">
+  <settings-block :title="$options.i18n.settingsBlockTitle">
     <template #description>
-      <gl-sprintf
-        :message="
-          s__(
-            'AiPowered|Configure AI-powered GitLab Duo features. %{linkStart}Which features?%{linkEnd}',
-          )
-        "
-      >
+      <gl-sprintf :message="$options.i18n.settingsBlockDescription">
         <template #link="{ content }">
           <gl-link :href="$options.aiFeaturesHelpPath">{{ content }} </gl-link>
         </template>

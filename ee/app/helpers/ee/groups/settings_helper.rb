@@ -38,7 +38,14 @@ module EE
       end
 
       def group_ai_settings_helper_data
-        { data: {} }
+        cascading_settings_data = cascading_namespace_settings_tooltip_data(:duo_features_enabled, @group, method(:edit_group_path))[:tooltip_data]
+        {
+          cascading_settings_data: cascading_settings_data,
+          duo_availability: @group.namespace_settings.duo_availability.to_s,
+          are_duo_settings_locked: @group.namespace_settings.duo_features_enabled_locked?.to_s,
+          redirect_path: edit_group_path(@group),
+          update_id: @group.id
+        }
       end
 
       private

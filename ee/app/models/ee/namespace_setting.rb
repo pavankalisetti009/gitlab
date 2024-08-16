@@ -99,6 +99,29 @@ module EE
         seat_control_user_cap? && namespace.root?
       end
 
+      def duo_availability
+        if duo_features_enabled && !duo_features_enabled_locked?(include_self: true)
+          :default_on
+        elsif !duo_features_enabled && !duo_features_enabled_locked?(include_self: true)
+          :default_off
+        else
+          :never_on
+        end
+      end
+
+      def duo_availability=(value)
+        if value == "default_on"
+          self.duo_features_enabled = true
+          self.lock_duo_features_enabled = false
+        elsif value == "default_off"
+          self.duo_features_enabled = false
+          self.lock_duo_features_enabled = false
+        else
+          self.duo_features_enabled = false
+          self.lock_duo_features_enabled = true
+        end
+      end
+
       private
 
       def enabling_user_cap?

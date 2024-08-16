@@ -162,7 +162,7 @@ module EE
         :additional_purchased_storage_ends_on, :additional_purchased_storage_ends_on=,
         to: :namespace_limit, allow_nil: true
       delegate :enforce_ssh_certificates=, to: :namespace_settings
-      delegate :duo_features_enabled, :lock_duo_features_enabled, to: :namespace_settings, allow_nil: true
+      delegate :duo_features_enabled, :lock_duo_features_enabled, :duo_availability, to: :namespace_settings, allow_nil: true
 
       # `eligible_additional_purchased_storage_size` uses a FF to start checking `additional_purchased_storage_ends_on`
       # if the FF is enabled before returning `additional_purchased_storage_size`

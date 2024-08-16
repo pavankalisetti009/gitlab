@@ -66,7 +66,11 @@ module EE
             params_ee.push(:experiment_features_enabled, :early_access_program_participant)
           end
 
-          params_ee.push(%i[duo_features_enabled lock_duo_features_enabled]) if licensed_ai_features_available?
+          if licensed_ai_features_available?
+            params_ee.push(%i[duo_features_enabled lock_duo_features_enabled
+              duo_availability])
+          end
+
           params_ee << :disable_personal_access_tokens
           params_ee << :enable_auto_assign_gitlab_duo_pro_seats if allow_update_enable_auto_assign_gitlab_duo_pro_seats?
         end
