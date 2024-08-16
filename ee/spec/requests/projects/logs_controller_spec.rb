@@ -79,6 +79,7 @@ RSpec.describe Projects::LogsController, feature_category: :metrics do
 
         expected_view_model = {
           apiConfig: expected_api_config,
+          projectFullPath: project.full_path,
           tracingIndexUrl: namespace_project_tracing_index_path(project.group, project),
           createIssueUrl: new_namespace_project_issue_path(project.group, project)
         }.to_json

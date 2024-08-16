@@ -11,6 +11,7 @@ describe('DetailsIndex', () => {
     metricsIndexUrl: 'https://example.com/metrics/index',
     createIssueUrl: 'https://example.com/new/issue',
     apiConfig: { ...mockApiConfig },
+    projectFullPath: 'foo/bar',
   };
 
   let wrapper;
@@ -36,6 +37,7 @@ describe('DetailsIndex', () => {
     expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('metricType')).toBe(props.metricType);
     expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
+    expect(detailsCmp.props('projectFullPath')).toBe(props.projectFullPath);
   });
 
   it('builds the observability client', () => {

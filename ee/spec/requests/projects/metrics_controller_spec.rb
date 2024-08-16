@@ -78,7 +78,8 @@ RSpec.describe Projects::MetricsController, feature_category: :metrics do
         element = Nokogiri::HTML.parse(html_response.body).at_css('#js-observability-metrics')
 
         expected_view_model = {
-          apiConfig: expected_api_config
+          apiConfig: expected_api_config,
+          projectFullPath: project.full_path
         }.to_json
         expect(element.attributes['data-view-model'].value).to eq(expected_view_model)
       end
@@ -100,6 +101,7 @@ RSpec.describe Projects::MetricsController, feature_category: :metrics do
 
         expected_view_model = {
           apiConfig: expected_api_config,
+          projectFullPath: project.full_path,
           metricId: "test.metric",
           metricType: "metric_type",
           metricsIndexUrl: namespace_project_metrics_path(project.group, project),

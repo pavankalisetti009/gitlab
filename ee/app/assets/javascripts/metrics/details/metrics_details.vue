@@ -21,6 +21,7 @@ import FilteredSearch from './filter_bar/metrics_filtered_search.vue';
 import { filterObjToQuery, queryToFilterObj } from './filters';
 import MetricsHeatMap from './metrics_heatmap.vue';
 import { createIssueUrlWithMetricDetails } from './utils';
+import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 
 const VISUAL_HEATMAP = 'heatmap';
 
@@ -44,6 +45,7 @@ export default {
     MetricsHeatMap,
     PageHeading,
     GlButton,
+    RelatedIssuesProvider,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -64,6 +66,10 @@ export default {
       type: String,
     },
     createIssueUrl: {
+      required: true,
+      type: String,
+    },
+    projectFullPath: {
       required: true,
       type: String,
     },
@@ -226,74 +232,84 @@ export default {
 </script>
 
 <template>
-  <div v-if="shouldShowLoadingIcon" class="gl-py-5">
-    <gl-loading-icon size="lg" />
-  </div>
+  <related-issues-provider
+    :project-full-path="projectFullPath"
+    :metric-type="metricType"
+    :metric-name="metricId"
+  >
+    <template #default>
+      <div v-if="shouldShowLoadingIcon" class="gl-py-5">
+        <gl-loading-icon size="lg" />
+      </div>
 
-  <div v-else data-testid="metric-details" class="gl-mx-6">
-    <url-sync :query="query" />
+      <div v-else data-testid="metric-details" class="gl-mx-6">
+        <url-sync :query="query" />
 
-    <header>
-      <page-heading :heading="header.title">
-        <template #actions>
-          <gl-button category="secondary" :href="createIssueUrlWithQuery">
-            {{ $options.i18n.createIssueTitle }}
-          </gl-button>
-        </template>
+        <header>
+          <page-heading :heading="header.title">
+            <template #actions>
+              <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
+                {{ $options.i18n.createIssueTitle }}
+              </gl-button>
+            </template>
 
-        <template #description>
-          <p class="gl-my-0 gl-text-primary">
-            <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}
-          </p>
-          <p class="gl-my-0 gl-text-primary">
-            <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
-          </p>
-          <p class="gl-my-0 gl-text-primary">
-            {{ header.description }}
-          </p>
-        </template>
-      </page-heading>
-    </header>
+            <template #description>
+              <p class="gl-my-0 gl-text-primary">
+                <strong>{{ $options.i18n.metricType }}:&nbsp;</strong>{{ header.type }}
+              </p>
+              <p class="gl-my-0 gl-text-primary">
+                <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
+              </p>
+              <p class="gl-my-0 gl-text-primary">
+                {{ header.description }}
+              </p>
+            </template>
+          </page-heading>
+        </header>
 
-    <div class="gl-my-6">
-      <filtered-search
-        v-if="searchMetadata"
-        :loading="loading"
-        :search-metadata="searchMetadata"
-        :attribute-filters="attributeFiltersValue"
-        :date-range-filter="filters.dateRange"
-        :group-by-filter="filters.groupBy"
-        @submit="onSubmit"
-        @cancel="onCancel"
-      />
+        <div class="gl-my-6">
+          <filtered-search
+            v-if="searchMetadata"
+            :loading="loading"
+            :search-metadata="searchMetadata"
+            :attribute-filters="attributeFiltersValue"
+            :date-range-filter="filters.dateRange"
+            :group-by-filter="filters.groupBy"
+            @submit="onSubmit"
+            @cancel="onCancel"
+          />
 
-      <component
-        :is="getChartComponent()"
-        v-if="metricData && metricData.length"
-        :metric-data="metricData"
-        :loading="loading"
-        :cancelled="queryCancelled"
-        data-testid="metric-chart"
-      />
-      <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
-        <template #title>
-          <p class="gl-font-lg gl-my-0">
-            <gl-sprintf
-              :message="
-                s__('ObservabilityMetrics|No data found for the selected time range %{time}')
-              "
-            >
-              <template #time>
-                {{ noDataTimeText }}
-              </template>
-            </gl-sprintf>
-          </p>
+          <component
+            :is="getChartComponent()"
+            v-if="metricData && metricData.length"
+            :metric-data="metricData"
+            :loading="loading"
+            :cancelled="queryCancelled"
+            data-testid="metric-chart"
+          />
+          <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
+            <template #title>
+              <p class="gl-font-lg gl-my-0">
+                <gl-sprintf
+                  :message="
+                    s__('ObservabilityMetrics|No data found for the selected time range %{time}')
+                  "
+                >
+                  <template #time>
+                    {{ noDataTimeText }}
+                  </template>
+                </gl-sprintf>
+              </p>
 
-          <p class="gl-font-md gl-my-1">
-            <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
-          </p>
-        </template>
-      </gl-empty-state>
-    </div>
-  </div>
+              <p class="gl-font-md gl-my-1">
+                <strong>{{ $options.i18n.lastIngested }}:&nbsp;</strong>{{ header.lastIngested }}
+              </p>
+            </template>
+          </gl-empty-state>
+
+          <!-- TODO add related issues widget https://gitlab.com/gitlab-org/opstrace/opstrace/-/issues/2901 -->
+        </div>
+      </div>
+    </template>
+  </related-issues-provider>
 </template>
