@@ -1,22 +1,28 @@
 <script>
-import { GlSprintf, GlAlert } from '@gitlab/ui';
+import { GlSprintf, GlAlert, GlButton } from '@gitlab/ui';
 import { GlBreakpointInstance as bp } from '@gitlab/ui/dist/utils';
 import eventHub from '~/invite_members/event_hub';
 import { s__, n__ } from '~/locale';
 import { getCookie, removeCookie, parseBoolean } from '~/lib/utils/common_utils';
+import { visitUrl } from '~/lib/utils/url_utility';
 import { ON_CELEBRATION_TRACK_LABEL } from '~/invite_members/constants';
 import eventHubNav from '~/super_sidebar/event_hub';
+import { InternalEvents } from '~/tracking';
 import CircularProgressBar from 'ee/vue_shared/components/circular_progress_bar/circular_progress_bar.vue';
 import { ACTION_LABELS, INVITE_MODAL_OPEN_COOKIE } from '../constants';
 import LearnGitlabSectionCard from './learn_gitlab_section_card.vue';
+
+const trackingMixin = InternalEvents.mixin();
 
 export default {
   components: {
     GlSprintf,
     GlAlert,
+    GlButton,
     CircularProgressBar,
     LearnGitlabSectionCard,
   },
+  mixins: [trackingMixin],
   i18n: {
     title: s__('LearnGitLab|Learn GitLab'),
     description: s__('LearnGitLab|Follow these steps to get familiar with the GitLab workflow.'),
@@ -26,6 +32,7 @@ export default {
     ),
     addCodeBlockTitle: s__('LearnGitLab|Get started'),
     buildBlockTitle: s__('LearnGitLab|Next steps'),
+    endTutorialButtonLabel: s__('LearnGitlab|End tutorial'),
   },
   props: {
     actions: {
@@ -40,10 +47,15 @@ export default {
       required: true,
       type: Object,
     },
+    learnGitlabEndPath: {
+      required: true,
+      type: String,
+    },
   },
   data() {
     return {
       showSuccessfulInvitationsAlert: false,
+      disableEndTutorialButton: false,
       actionsData: this.actions,
       isDesktop: bp.isDesktop(),
     };
@@ -131,6 +143,17 @@ export default {
         itemId: 'learn_gitlab',
       });
     },
+    handleEndTutorialClick() {
+      this.disableEndTutorialButton = true;
+
+      this.trackEvent('click_end_tutorial_button', {
+        label: 'learn_gitlab',
+        property: 'progress_percentage_on_end',
+        value: this.progressPercentage,
+      });
+
+      visitUrl(this.learnGitlabEndPath);
+    },
   },
 };
 </script>
@@ -155,10 +178,21 @@ export default {
       </div>
 
       <div :class="progressBarBlockClasses" data-testid="progress-bar-block">
-        <circular-progress-bar class="gl-mx-auto" :percentage="progressPercentage" />
+        <circular-progress-bar :percentage="progressPercentage" />
 
         <div class="gl-mt-5 gl-text-center gl-font-lg gl-font-bold">
           {{ progressBarLabel }}
+        </div>
+
+        <div class="gl-flex gl-justify-center gl-mt-3">
+          <gl-button
+            :disabled="disableEndTutorialButton"
+            category="tertiary"
+            data-testid="end-tutorial-button"
+            @click="handleEndTutorialClick"
+          >
+            {{ $options.i18n.endTutorialButtonLabel }}
+          </gl-button>
         </div>
       </div>
     </div>

@@ -57,6 +57,11 @@ RSpec.describe Projects::LearnGitlabHelper, feature_category: :onboarding do
 
         expect(onboarding_project_data.values).to match_array([project.name])
       end
+
+      it 'has the learn gitlab end path' do
+        expect(learn_gitlab_data[:learn_gitlab_end_path])
+          .to eq(end_tutorial_project_learn_gitlab_path(project))
+      end
     end
 
     it_behaves_like 'has all data'
