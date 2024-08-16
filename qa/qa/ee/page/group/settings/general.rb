@@ -136,7 +136,7 @@ module QA
               ) do
                 expand_content('permissions-settings')
 
-                if has_element?('seat-control-user-cap-radio', wait: 1)
+                if has_element?('seat-control-user-cap-radio', visible: false, wait: 1)
                   choose_element('seat-control-user-cap-radio', true)
                 end
 
