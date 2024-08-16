@@ -367,6 +367,22 @@ module EE
         joins(:dora_performance_scores).where(dora_performance_scores: { date: date })
       end
 
+      scope :with_compliance_frameworks, ->(frameworks) do
+        condition = ComplianceManagement::ComplianceFramework::ProjectSettings
+                      .where(framework_id: frameworks)
+                      .where(Arel.sql("project_id = projects.id"))
+
+        where(condition.arel.exists)
+      end
+
+      scope :not_with_compliance_frameworks, ->(frameworks) do
+        condition = ComplianceManagement::ComplianceFramework::ProjectSettings
+                      .where(framework_id: frameworks)
+                      .where(Arel.sql("project_id = projects.id"))
+
+        where(condition.arel.exists.not)
+      end
+
       delegate :shared_runners_seconds, to: :statistics, allow_nil: true
 
       delegate :ci_minutes_usage, to: :shared_runners_limit_namespace
