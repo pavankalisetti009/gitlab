@@ -3,18 +3,17 @@
 module Ci
   module Minutes
     module AdditionalPacks
-      class ChangeNamespaceService < ::Ci::Minutes::AdditionalPacks::BaseService
+      class ChangeNamespaceService
+        include BaseServiceUtility
+
         ChangeNamespaceError = Class.new(StandardError)
 
-        def initialize(current_user, namespace, target)
-          @current_user = current_user
+        def initialize(namespace, target)
           @namespace = namespace
           @target = target
         end
 
         def execute
-          authorize_current_user!
-
           validate_namespaces!
 
           Ci::Minutes::AdditionalPack.transaction do
@@ -29,7 +28,7 @@ module Ci
 
         private
 
-        attr_reader :current_user, :namespace, :target
+        attr_reader :namespace, :target
 
         def additional_packs
           @additional_packs ||= namespace.ci_minutes_additional_packs

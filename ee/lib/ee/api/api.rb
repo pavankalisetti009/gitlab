@@ -66,7 +66,6 @@ module EE
         mount ::API::Iterations
         mount ::API::GroupRepositoryStorageMoves
         mount ::API::GroupProtectedBranches
-        mount ::API::Ci::Minutes
         mount ::API::DependencyListExports
         mount ::API::GroupServiceAccounts
         mount ::API::Ai::Llm::GitCommand
