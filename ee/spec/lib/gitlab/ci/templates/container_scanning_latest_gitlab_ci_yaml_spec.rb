@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Container-Scanning.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+  include Ci::PipelineMessageHelpers
+
   subject(:template) do
     <<~YAML
       include:
@@ -80,7 +82,7 @@ RSpec.describe 'Container-Scanning.latest.gitlab-ci.yml', feature_category: :con
 
         it 'includes no jobs' do
           expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
         end
       end
 
@@ -91,7 +93,7 @@ RSpec.describe 'Container-Scanning.latest.gitlab-ci.yml', feature_category: :con
 
         it 'includes no jobs' do
           expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
         end
       end
 

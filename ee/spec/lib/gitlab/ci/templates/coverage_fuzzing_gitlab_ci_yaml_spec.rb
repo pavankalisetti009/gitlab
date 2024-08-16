@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Coverage-Fuzzing.gitlab-ci.yml', feature_category: :continuous_integration do
+  include Ci::PipelineMessageHelpers
+
   subject(:template) do
     <<~YAML
       stages:
@@ -47,7 +49,7 @@ RSpec.describe 'Coverage-Fuzzing.gitlab-ci.yml', feature_category: :continuous_i
 
         it 'includes no job' do
           expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
         end
       end
 
@@ -60,7 +62,7 @@ RSpec.describe 'Coverage-Fuzzing.gitlab-ci.yml', feature_category: :continuous_i
 
         it 'includes no jobs' do
           expect(build_names).to be_empty
-          expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+          expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
         end
       end
     end
