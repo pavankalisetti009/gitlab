@@ -691,6 +691,18 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         it { is_expected.to match_array([project_with_framework_1, project_with_framework_2]) }
       end
+
+      describe '.with_compliance_frameworks' do
+        subject { described_class.all.with_compliance_frameworks([framework_1, framework_2]) }
+
+        it { is_expected.to match_array([project_with_framework_1, project_with_framework_2]) }
+      end
+
+      describe '.not_with_compliance_frameworks' do
+        subject { described_class.all.not_with_compliance_frameworks([framework_1]) }
+
+        it { is_expected.to match_array([project_with_framework_2, project_without_framework]) }
+      end
     end
 
     describe '.with_sbom_component_version' do

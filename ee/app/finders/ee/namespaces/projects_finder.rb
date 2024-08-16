@@ -36,7 +36,11 @@ module EE
 
         return collection if filter_ids.blank?
 
-        collection.compliance_framework_id_in(filter_ids)
+        filter_ids.each do |framework_id|
+          collection = collection.with_compliance_frameworks(framework_id)
+        end
+
+        collection
       end
 
       def by_negated_compliance_framework_filters(collection)
@@ -47,7 +51,7 @@ module EE
 
         return collection if filter_ids.blank?
 
-        collection.compliance_framework_id_not_in(filter_ids)
+        collection.not_with_compliance_frameworks(filter_ids)
       end
 
       def by_compliance_framework_presence(collection)
