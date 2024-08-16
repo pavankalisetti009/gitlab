@@ -37,6 +37,7 @@ module EE
       enum enterprise_users_extensions_marketplace_opt_in_status:
         ::Enums::WebIde::ExtensionsMarketplaceOptInStatus.statuses, _prefix: :enterprise_users_extensions_marketplace
 
+      before_save :clear_new_user_signups_cap, unless: -> { seat_control_user_cap? }
       before_save :set_prevent_sharing_groups_outside_hierarchy
       after_save :disable_project_sharing!, if: -> { user_cap_enabled? }
 
@@ -110,6 +111,10 @@ module EE
         return if namespace.user_cap_available? && namespace.root? && !namespace.shared_externally?
 
         errors.add(:new_user_signups_cap, _("cannot be enabled"))
+      end
+
+      def clear_new_user_signups_cap
+        self.new_user_signups_cap = nil
       end
 
       def set_prevent_sharing_groups_outside_hierarchy

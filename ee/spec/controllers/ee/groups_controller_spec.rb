@@ -692,39 +692,29 @@ RSpec.describe GroupsController, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when `new_user_signups_cap` is specified' do
-      subject { put :update, params: params }
-
-      shared_examples_for 'updates the attribute' do
-        it 'updates the attribute' do
-          subject
-
-          expect(response).to have_gitlab_http_status(status)
-          expect(group.reload.new_user_signups_cap).to eq(result)
-        end
-      end
-
+    context 'when seat controls are specified', :saas do
       context 'authenticated as group owner' do
         before do
-          allow_next_found_instance_of(Group) do |group|
-            allow(group).to receive(:user_cap_available?).and_return(true)
-          end
-
           group.add_owner(user)
+
           sign_in(user)
         end
 
-        where(:new_user_signups_cap, :result, :status) do
-          nil | nil   | :found
-          10  | 10    | :found
+        where(:seat_control, :new_user_signups_cap) do
+          :off      | nil
+          :user_cap | 10
         end
 
         with_them do
-          let(:params) do
-            { id: group.to_param, group: { new_user_signups_cap: new_user_signups_cap } }
-          end
+          it 'updates the attributes' do
+            params = { id: group.to_param, group: { seat_control: seat_control, new_user_signups_cap: new_user_signups_cap } }
 
-          it_behaves_like 'updates the attribute'
+            put :update, params: params
+
+            expect(response).to have_gitlab_http_status(:found)
+            expect(group.reload.seat_control).to eq(seat_control.to_s)
+            expect(group.reload.new_user_signups_cap).to eq(new_user_signups_cap)
+          end
         end
       end
     end

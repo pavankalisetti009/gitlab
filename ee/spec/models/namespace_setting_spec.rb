@@ -133,46 +133,60 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
     describe 'new_user_signups_cap', :saas do
       # rubocop:disable Rails/SaveBang -- Testing validations
-      context 'when seat_control is user_cap' do
-        it 'is invalid when set to nil' do
-          settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
+      describe 'validations' do
+        context 'when seat_control is user_cap' do
+          it 'is invalid when set to nil' do
+            settings.update(seat_control: :user_cap, new_user_signups_cap: nil)
 
-          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["is not a number"])
+            expect(settings.errors.messages[:new_user_signups_cap]).to eq(["is not a number"])
+          end
+
+          it 'must be a positive number' do
+            settings.update(seat_control: :user_cap, new_user_signups_cap: -1)
+
+            expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be greater than or equal to 0"])
+          end
+
+          it 'must be an integer' do
+            settings.update(seat_control: :user_cap, new_user_signups_cap: 2.5)
+
+            expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be an integer"])
+          end
+
+          it 'is valid when it is a positive integer' do
+            settings.update(seat_control: :user_cap, new_user_signups_cap: 1)
+
+            expect(settings).to be_valid
+          end
         end
 
-        it 'must be a positive number' do
-          settings.update(seat_control: :user_cap, new_user_signups_cap: -1)
+        context 'when seat_control is off' do
+          it 'can be nil' do
+            settings.update(seat_control: :off, new_user_signups_cap: nil)
 
-          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be greater than or equal to 0"])
-        end
+            expect(settings).to be_valid
+          end
 
-        it 'must be an integer' do
-          settings.update(seat_control: :user_cap, new_user_signups_cap: 2.5)
+          it 'can be set' do
+            settings.update(seat_control: :off, new_user_signups_cap: 4)
 
-          expect(settings.errors.messages[:new_user_signups_cap]).to eq(["must be an integer"])
-        end
-
-        it 'is valid when it is a positive integer' do
-          settings.update(seat_control: :user_cap, new_user_signups_cap: 1)
-
-          expect(settings).to be_valid
-        end
-      end
-
-      context 'when seat_control is off' do
-        it 'can be nil' do
-          settings.update(seat_control: :off, new_user_signups_cap: nil)
-
-          expect(settings).to be_valid
-        end
-
-        it 'can be set' do
-          settings.update(seat_control: :off, new_user_signups_cap: 4)
-
-          expect(settings).to be_valid
+            expect(settings).to be_valid
+          end
         end
       end
       # rubocop:enable Rails/SaveBang
+
+      it 'will be set to nil when seat_control is off' do
+        settings.update!(seat_control: :off, new_user_signups_cap: 5)
+
+        expect(settings.new_user_signups_cap).to be_nil
+      end
+
+      it 'is unchanged when seat_control is user_cap' do
+        settings.update!(seat_control: :user_cap, new_user_signups_cap: 5)
+
+        expect(settings.new_user_signups_cap).to eq(5)
+      end
     end
   end
 
