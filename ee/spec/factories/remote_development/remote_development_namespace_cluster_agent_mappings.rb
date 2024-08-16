@@ -3,7 +3,7 @@
 FactoryBot.define do
   factory :remote_development_namespace_cluster_agent_mapping,
     class: 'RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping' do
-    user factory: [:user]
+    user
     agent factory: [:cluster_agent, :in_group]
     namespace { agent.project.namespace }
     # after(:create, &:reload)
