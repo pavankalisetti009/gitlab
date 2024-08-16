@@ -85,7 +85,7 @@ export default {
         <h3 class="gl-new-card-title">
           <gl-link
             id="user-content-related-feature-flags"
-            class="anchor gl-text-decoration-none gl-absolute gl-mr-2"
+            class="anchor gl-absolute gl-mr-2 gl-no-underline"
             href="#related-feature-flags"
             aria-hidden="true"
           />
@@ -102,7 +102,7 @@ export default {
       <li
         v-for="flag in featureFlags"
         :key="flag.id"
-        class="gl-display-flex"
+        class="gl-flex"
         data-testid="feature-flag-details"
       >
         <gl-icon
@@ -118,7 +118,7 @@ export default {
         <span
           v-gl-tooltip
           :title="flag.reference"
-          class="text-secondary gl-mt-3 gl-lg-mt-0 gl-lg-ml-3 gl-whitespace-nowrap"
+          class="text-secondary gl-mt-3 gl-whitespace-nowrap lg:gl-ml-3 lg:gl-mt-0"
           data-testid="feature-flag-details-reference"
         >
           <gl-truncate :text="flag.reference" />
