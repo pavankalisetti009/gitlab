@@ -133,10 +133,15 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
       it_behaves_like 'a execute_every task'
 
-      it 'returns false if there are unassigned namespaces' do
-        create(:zoekt_enabled_namespace)
+      it 'runs and only updates search for namespaces with assigned indices' do
+        rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
+        ns_1 = create(:zoekt_enabled_namespace, namespace: group, search: false,
+          created_at: rollout_cutoff, updated_at: rollout_cutoff)
+        create(:zoekt_index, :ready, zoekt_enabled_namespace: ns_1)
+        ns_2 = create(:zoekt_enabled_namespace, search: false)
 
-        expect(execute_task).to eq(false)
+        expect { execute_task }.to change { ns_1.reload.search }.from(false).to(true)
+        expect { execute_task }.not_to change { ns_2.reload.search }.from(false)
       end
 
       context 'when feature flag is disabled' do

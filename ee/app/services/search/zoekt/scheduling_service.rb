@@ -24,7 +24,7 @@ module Search
       DOT_COM_ROLLOUT_TARGET_BYTES = 300.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
       DOT_COM_ROLLOUT_SEARCH_LIMIT = 100
-      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 72.hours
+      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 24.hours
 
       attr_reader :task
 
@@ -141,12 +141,12 @@ module Search
       def dot_com_rollout
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_dot_com_rollout)
-        return false if EnabledNamespace.with_missing_indices.exists?
 
         execute_every 2.hours, cache_key: :dot_com_rollout do
           Search::Zoekt::EnabledNamespace
-            .where(search: false)
-            .where('created_at < ?', DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
+            .joins(:indices)
+            .where(search: false, created_at: ..DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago)
+            .where(zoekt_indices: { state: :ready })
             .order(:id)
             .limit(DOT_COM_ROLLOUT_SEARCH_LIMIT)
             .update_all(search: true, updated_at: Time.zone.now)
