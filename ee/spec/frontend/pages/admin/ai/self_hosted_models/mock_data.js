@@ -32,9 +32,14 @@ export const mockAiSelfHostedModelsQueryResponse = {
 };
 
 export const SELF_HOSTED_MODEL_OPTIONS = [
-  { modelValue: 'MIXTRAL', modelName: 'Mixtral' },
-  { modelValue: 'MISTRAL', modelName: 'Mistral' },
-  { modelValue: 'CODEGEMMA', modelName: 'Codegemma' },
-  { modelValue: 'CODESTRAL', modelName: 'Codestral' },
-  { modelValue: 'CODELLAMA', modelName: 'Codellama' },
+  { modelValue: 'CODEGEMMA_2B', modelName: 'CodeGemma 2b' },
+  { modelValue: 'CODEGEMMA', modelName: 'CodeGemma 7b-it' },
+  { modelValue: 'CODEGEMMA_7B', modelName: 'CodeGemma 7b' },
+  { modelValue: 'CODELLAMA_13B_CODE', modelName: 'Code-Llama 13b-code' },
+  { modelValue: 'CODELLAMA', modelName: 'Code-Llama 13b' },
+  { modelValue: 'CODESTRAL', modelName: 'Codestral 22B' },
+  { modelValue: 'MISTRAL', modelName: 'Mistral 7B' },
+  { modelValue: 'MIXTRAL_8X22B', modelName: 'Mixtral 8x22B' },
+  { modelValue: 'MIXTRAL', modelName: 'Mixtral 8x7B' },
+  { modelValue: 'DEEPSEEKCODER', modelName: 'DEEPSEEKCODER' },
 ];

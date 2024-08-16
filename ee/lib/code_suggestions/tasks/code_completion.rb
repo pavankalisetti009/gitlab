@@ -28,13 +28,13 @@ module CodeSuggestions
 
           model_name = feature_setting&.self_hosted_model&.model&.to_sym
           case model_name
-          when :codegemma
+          when :codegemma_2b, :codegemma_7b
             CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages.new(
               feature_setting: feature_setting, params: params)
           when :codestral
             CodeSuggestions::Prompts::CodeCompletion::CodestralMessages.new(
               feature_setting: feature_setting, params: params)
-          when :'codellama:code'
+          when :codellama_13b_code
             CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages.new(
               feature_setting: feature_setting, params: params)
           else

@@ -6,7 +6,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages, feat
   let_it_be(:ai_self_hosted_model) do
     create(
       :ai_self_hosted_model,
-      model: :'codellama:code',
+      model: :codellama_13b_code,
       name: 'whatever',
       endpoint: 'http://localhost:11434'
     )
@@ -33,7 +33,7 @@ RSpec.describe CodeSuggestions::Prompts::CodeCompletion::CodellamaMessages, feat
   let(:suffix) { 'return' }
 
   let(:file_name) { 'hello.py' }
-  let(:model_name) { 'codellama:code' }
+  let(:model_name) { 'codellama_13b_code' }
 
   let(:unsafe_params) do
     {
