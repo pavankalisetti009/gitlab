@@ -70,7 +70,7 @@ FactoryBot.define do
     name { 'Cipher with no integrity' }
     project
     project_fingerprint { generate(:project_fingerprint) }
-    primary_identifier factory: :vulnerabilities_identifier
+    primary_identifier { association(:vulnerabilities_identifier, project: project) }
     location_fingerprint { SecureRandom.hex(20) }
     report_type { :sast }
     uuid do
@@ -84,7 +84,7 @@ FactoryBot.define do
     severity { :high }
     confidence { :medium }
     detection_method { :gitlab_security_report }
-    scanner factory: :vulnerabilities_scanner
+    scanner { association(:vulnerabilities_scanner, project: project) }
     metadata_version { 'sast:1.0' }
 
     details do

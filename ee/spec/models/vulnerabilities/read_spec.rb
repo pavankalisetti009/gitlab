@@ -16,7 +16,7 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe 'validations' do
-    let!(:vulnerability_read) { create(:vulnerability_read) }
+    let!(:vulnerability_read) { create(:vulnerability_read, project: project) }
 
     it { is_expected.to validate_presence_of(:vulnerability_id) }
     it { is_expected.to validate_presence_of(:project_id) }
@@ -32,9 +32,7 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe 'triggers' do
-    let(:namespace) { create(:namespace) }
-    let(:user) { create(:user) }
-    let(:project) { create(:project, namespace: namespace) }
+    let_it_be(:user) { create(:user) }
     let(:issue) { create(:issue, project: project) }
     let(:scanner) { create(:vulnerabilities_scanner, project: project) }
     let(:identifier) { create(:vulnerabilities_identifier, project: project) }
@@ -284,8 +282,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
 
   describe '.by_scanner_ids' do
     it 'returns matching vulnerabilities' do
-      vulnerability1 = create(:vulnerability, :with_finding)
-      create(:vulnerability, :with_finding)
+      vulnerability1 = create(:vulnerability, :with_finding, project: project)
+      create(:vulnerability, :with_finding, project: project)
 
       result = described_class.by_scanner_ids(vulnerability1.finding_scanner_id)
 
@@ -294,9 +292,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_report_types' do
-    let!(:dast_vulnerability) { create(:vulnerability, :with_finding, :dast) }
-    let!(:dependency_scanning_vulnerability) { create(:vulnerability, :with_finding, :dependency_scanning) }
-    let(:sast_vulnerability) { create(:vulnerability, :with_finding, :sast) }
+    let!(:dast_vulnerability) { create(:vulnerability, :with_finding, :dast, project: project) }
+    let!(:dependency_scanning_vulnerability) { create(:vulnerability, :with_finding, :dependency_scanning, project: project) }
+    let(:sast_vulnerability) { create(:vulnerability, :with_finding, :sast, project: project) }
     let(:report_types) { %w[sast dast] }
 
     subject { described_class.with_report_types(report_types) }
@@ -307,9 +305,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_severities' do
-    let!(:high_vulnerability) { create(:vulnerability, :with_finding, :high) }
-    let!(:medium_vulnerability) { create(:vulnerability, :with_finding, :medium) }
-    let(:low_vulnerability) { create(:vulnerability, :with_finding, :low) }
+    let!(:high_vulnerability) { create(:vulnerability, :with_finding, :high, project: project) }
+    let!(:medium_vulnerability) { create(:vulnerability, :with_finding, :medium, project: project) }
+    let(:low_vulnerability) { create(:vulnerability, :with_finding, :low, project: project) }
     let(:severities) { %w[medium low] }
 
     subject { described_class.with_severities(severities) }
@@ -320,9 +318,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_states' do
-    let!(:detected_vulnerability) { create(:vulnerability, :with_finding, :detected) }
-    let!(:dismissed_vulnerability) { create(:vulnerability, :with_finding, :dismissed) }
-    let(:confirmed_vulnerability) { create(:vulnerability, :with_finding, :confirmed) }
+    let!(:detected_vulnerability) { create(:vulnerability, :with_finding, :detected, project: project) }
+    let!(:dismissed_vulnerability) { create(:vulnerability, :with_finding, :dismissed, project: project) }
+    let(:confirmed_vulnerability) { create(:vulnerability, :with_finding, :confirmed, project: project) }
     let(:states) { %w[detected confirmed] }
 
     subject { described_class.with_states(states) }
@@ -338,29 +336,29 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     subject(:with_owasp_top_10) { described_class.with_owasp_top_10(owasp_top_10_value) }
 
     context 'when owasp_top_10 record exists' do
-      let_it_be(:vuln_read_with_owasp_top_10) { create(:vulnerability_read, owasp_top_10: owasp_top_10_value) }
+      let_it_be(:vuln_read_with_owasp_top_10) { create(:vulnerability_read, owasp_top_10: owasp_top_10_value, project: project) }
 
       it { expect(with_owasp_top_10).to contain_exactly(vuln_read_with_owasp_top_10) }
     end
 
     context 'when owasp_top_10 is nil' do
-      let_it_be(:vuln_read_with_nil_owasp_top_10) { create(:vulnerability_read, owasp_top_10: nil) }
+      let_it_be(:vuln_read_with_nil_owasp_top_10) { create(:vulnerability_read, owasp_top_10: nil, project: project) }
       let_it_be(:owasp_top_10_value) { nil }
 
       it { expect(with_owasp_top_10).to contain_exactly(vuln_read_with_nil_owasp_top_10) }
     end
 
     context 'without owasp_top_10' do
-      let_it_be(:vuln_read_without_owasp_top_10) { create(:vulnerability_read) }
+      let_it_be(:vuln_read_without_owasp_top_10) { create(:vulnerability_read, project: project) }
 
       it { expect(with_owasp_top_10).to be_empty }
     end
   end
 
   describe '.with_scanner_external_ids' do
-    let!(:vulnerability_1) { create(:vulnerability, :with_finding) }
-    let!(:vulnerability_2) { create(:vulnerability, :with_finding) }
-    let(:vulnerability_3) { create(:vulnerability, :with_finding) }
+    let!(:vulnerability_1) { create(:vulnerability, :with_finding, project: project) }
+    let!(:vulnerability_2) { create(:vulnerability, :with_finding, project: project) }
+    let(:vulnerability_3) { create(:vulnerability, :with_finding, project: project) }
     let(:scanner_external_ids) { [vulnerability_1.finding_scanner_external_id, vulnerability_3.finding_scanner_external_id] }
 
     subject { described_class.with_scanner_external_ids(scanner_external_ids) }
@@ -409,8 +407,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_resolution' do
-    let_it_be(:vulnerability_with_resolution) { create(:vulnerability, :with_finding, resolved_on_default_branch: true) }
-    let_it_be(:vulnerability_without_resolution) { create(:vulnerability, :with_finding, resolved_on_default_branch: false) }
+    let_it_be(:vulnerability_with_resolution) { create(:vulnerability, :with_finding, resolved_on_default_branch: true, project: project) }
+    let_it_be(:vulnerability_without_resolution) { create(:vulnerability, :with_finding, resolved_on_default_branch: false, project: project) }
 
     subject { described_class.with_resolution(with_resolution) }
 
@@ -436,8 +434,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_issues' do
-    let_it_be(:vulnerability_with_issues) { create(:vulnerability, :with_finding, :with_issue_links) }
-    let_it_be(:vulnerability_without_issues) { create(:vulnerability, :with_finding) }
+    let_it_be(:vulnerability_with_issues) { create(:vulnerability, :with_finding, :with_issue_links, project: project) }
+    let_it_be(:vulnerability_without_issues) { create(:vulnerability, :with_finding, project: project) }
 
     subject { described_class.with_issues(with_issues) }
 
@@ -463,8 +461,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_merge_request' do
-    let_it_be(:vulnerability_with_merge_request) { create(:vulnerability, :with_finding, :with_merge_request_links) }
-    let_it_be(:vulnerability_without_merge_request) { create(:vulnerability, :with_finding) }
+    let_it_be(:vulnerability_with_merge_request) { create(:vulnerability, :with_finding, :with_merge_request_links, project: project) }
+    let_it_be(:vulnerability_without_merge_request) { create(:vulnerability, :with_finding, project: project) }
 
     subject { described_class.with_merge_request(with_merge_request) }
 
@@ -490,9 +488,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.as_vulnerabilities' do
-    let!(:vulnerability_1) { create(:vulnerability, :with_finding) }
-    let!(:vulnerability_2) { create(:vulnerability, :with_finding) }
-    let!(:vulnerability_3) { create(:vulnerability, :with_finding) }
+    let!(:vulnerability_1) { create(:vulnerability, :with_finding, project: project) }
+    let!(:vulnerability_2) { create(:vulnerability, :with_finding, project: project) }
+    let!(:vulnerability_3) { create(:vulnerability, :with_finding, project: project) }
 
     subject { described_class.as_vulnerabilities }
 
@@ -502,8 +500,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.count_by_severity' do
-    let!(:high_severity_vulns) { create_list(:vulnerability, 2, :with_read, :high) }
-    let!(:low_severity_vulns) { create_list(:vulnerability, 3, :with_read, :low) }
+    let!(:high_severity_vulns) { create_list(:vulnerability, 2, :with_read, :high, project: project) }
+    let!(:low_severity_vulns) { create_list(:vulnerability, 3, :with_read, :low, project: project) }
 
     subject { described_class.count_by_severity }
 
@@ -519,8 +517,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
     subject(:count) { vulnerabilities.capped_count_by_severity }
 
     before_all do
-      create_list(:vulnerability, 3, :with_read, :high, :confirmed)
-      create_list(:vulnerability, 1, :with_read, :low, :detected)
+      create_list(:vulnerability, 3, :with_read, :high, :confirmed, project: project)
+      create_list(:vulnerability, 1, :with_read, :low, :detected, project: project)
     end
 
     before do
@@ -549,9 +547,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.order_by' do
-    let_it_be(:vulnerability_1) { create(:vulnerability, :with_finding, :low) }
-    let_it_be(:vulnerability_2) { create(:vulnerability, :with_finding, :critical) }
-    let_it_be(:vulnerability_3) { create(:vulnerability, :with_finding, :medium) }
+    let_it_be(:vulnerability_1) { create(:vulnerability, :with_finding, :low, project: project) }
+    let_it_be(:vulnerability_2) { create(:vulnerability, :with_finding, :critical, project: project) }
+    let_it_be(:vulnerability_3) { create(:vulnerability, :with_finding, :medium, project: project) }
 
     subject { described_class.order_by(method) }
 
@@ -625,9 +623,9 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.order_severity_' do
-    let_it_be(:low_vulnerability) { create(:vulnerability, :with_finding, :low) }
-    let_it_be(:critical_vulnerability) { create(:vulnerability, :with_finding, :critical) }
-    let_it_be(:medium_vulnerability) { create(:vulnerability, :with_finding, :medium) }
+    let_it_be(:low_vulnerability) { create(:vulnerability, :with_finding, :low, project: project) }
+    let_it_be(:critical_vulnerability) { create(:vulnerability, :with_finding, :critical, project: project) }
+    let_it_be(:medium_vulnerability) { create(:vulnerability, :with_finding, :medium, project: project) }
 
     describe 'ascending' do
       subject { described_class.order_severity_asc }
@@ -643,8 +641,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.order_detected_at_' do
-    let_it_be(:old_vulnerability) { create(:vulnerability, :with_finding) }
-    let_it_be(:new_vulnerability) { create(:vulnerability, :with_finding) }
+    let_it_be(:old_vulnerability) { create(:vulnerability, :with_finding, project: project) }
+    let_it_be(:new_vulnerability) { create(:vulnerability, :with_finding, project: project) }
 
     describe 'ascending' do
       subject { described_class.order_detected_at_asc }
@@ -696,8 +694,8 @@ RSpec.describe Vulnerabilities::Read, type: :model, feature_category: :vulnerabi
   end
 
   describe '.with_remediations' do
-    let_it_be(:vulnerability_read_with_remediations) { create(:vulnerability_read, :with_remediations) }
-    let_it_be(:vulnerability_read_without_remediations) { create(:vulnerability_read) }
+    let_it_be(:vulnerability_read_with_remediations) { create(:vulnerability_read, :with_remediations, project: project) }
+    let_it_be(:vulnerability_read_without_remediations) { create(:vulnerability_read, project: project) }
 
     subject { described_class.with_remediations(has_remediations) }
 
