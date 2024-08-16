@@ -7,18 +7,18 @@
   - c.with_body do
     .gl-text-size-h1-xl.gl-font-bold.gl-leading-36.gl-mb-3
       = name
-    .gl-font-size-h2.gl-font-bold.gl-leading-24.gl-mb-3
+    .gl-text-size-h2.gl-font-bold.gl-leading-24.gl-mb-3
       = elevator_pitch
-    .gl-display-flex
-      .gl-font-bold.gl-font-size-h1.gl-pt-2.gl-pr-2
+    .gl-flex
+      .gl-font-bold.gl-text-size-h1.gl-pt-2.gl-pr-2
         = currency_symbol
-      .gl-display-flex.gl-align-items-center
+      .gl-flex.gl-items-center
         .gl-font-bold.gl-mb-4.billing-plan-card-price
           = price_per_month
         .gl-min-h-8.gl-mb-4
           .gl-mx-4
             = s_("BillingPlans|Per user/month")
-          .gl-font-sm.gl-mt-0.gl-mx-4
+          .gl-text-sm.gl-mt-0.gl-mx-4
             - if free?
               = s_("BillingPlans|No credit card required")
             - else
@@ -27,7 +27,7 @@
       = render Pajamas::ButtonComponent.new(href: cta_url, variant: :confirm, category: cta_category, button_options: { data: cta_data }) do
         = cta_text
   - c.with_footer do
-    .gl-font-bold.gl-font-lg.gl-mb-4
+    .gl-font-bold.gl-text-lg.gl-mb-4
       = features_elevator_pitch
     %ul.gl-px-0.gl-list-none
       - features.each do |feature|
