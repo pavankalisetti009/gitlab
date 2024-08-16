@@ -54,11 +54,22 @@ module Vulnerabilities
           vulnerability_ids = batch.pluck(:id) # rubocop:disable CodeReuse/ActiveRecord -- there's no simple way to create a scope to use with EachBatch
           finding_ids = Vulnerabilities::Finding.ids_by_vulnerability(vulnerability_ids)
 
-          Vulnerability.transaction do
-            drop_by_finding_id(finding_ids)
-            drop_by_project_id(project_id)
-            drop_by_vulnerability_id(vulnerability_ids)
-            batch.delete_all
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+            %w[
+              vulnerabilities
+              vulnerability_historical_statistics
+              vulnerability_identifiers
+              vulnerability_occurrences
+              vulnerability_reads
+              vulnerability_scanners
+            ], url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins'
+          ) do
+            Vulnerability.transaction do
+              drop_by_finding_id(finding_ids)
+              drop_by_project_id(project_id)
+              drop_by_vulnerability_id(vulnerability_ids)
+              batch.delete_all
+            end
           end
         end
       end

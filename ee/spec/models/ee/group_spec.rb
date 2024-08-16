@@ -757,7 +757,11 @@ RSpec.describe Group, feature_category: :groups_and_projects do
   end
 
   describe '#vulnerability_historical_statistics' do
-    subject { group.vulnerability_historical_statistics }
+    subject do
+      ::Gitlab::Database::QueryAnalyzers::GitlabSchemasValidateConnection.with_suppressed do
+        group.vulnerability_historical_statistics
+      end
+    end
 
     let(:subgroup) { create(:group, parent: group) }
     let(:group_project) { create(:project, namespace: group) }
@@ -769,7 +773,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     let!(:archived_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: archived_project) }
     let!(:deleted_vulnerability_historical_statistic) { create(:vulnerability_historical_statistic, project: deleted_project) }
 
-    it 'returns vulnerability scanners for all non-archived, non-deleted projects in the group and its subgroups' do
+    it 'returns vulnerability historical statistics for all non-archived, non-deleted projects in the group and its subgroups' do
       is_expected.to contain_exactly(group_vulnerability_historical_statistic, subgroup_vulnerability_historical_statistic)
     end
   end

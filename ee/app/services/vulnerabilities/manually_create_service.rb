@@ -27,18 +27,29 @@ module Vulnerabilities
         solution: @params[:vulnerability][:solution]
       )
 
-      response = Vulnerability.transaction do
-        finding.save!
-        vulnerability.vulnerability_finding = finding
-        vulnerability.save!
-        finding.update!(vulnerability_id: vulnerability.id)
+      response = nil
+      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+        %w[
+          vulnerabilities
+          vulnerability_historical_statistics
+          vulnerability_occurrences
+          vulnerability_reads
+          vulnerability_scanners
+        ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/476175'
+      ) do
+        response = Vulnerability.transaction do
+          finding.save!
+          vulnerability.vulnerability_finding = finding
+          vulnerability.save!
+          finding.update!(vulnerability_id: vulnerability.id)
 
-        vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
-        project.mark_as_vulnerable!
+          vulnerability.vulnerability_read.update!(traversal_ids: project.namespace.traversal_ids)
+          project.mark_as_vulnerable!
 
-        Statistics::UpdateService.update_for(vulnerability)
+          Statistics::UpdateService.update_for(vulnerability)
 
-        ServiceResponse.success(payload: { vulnerability: vulnerability })
+          ServiceResponse.success(payload: { vulnerability: vulnerability })
+        end
       end
 
       process_archival_and_traversal_ids_changes if response.success?
