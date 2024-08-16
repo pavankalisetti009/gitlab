@@ -13044,7 +13044,10 @@ msgstr ""
 msgid "CodeSuggestions|Introducing the GitLab Duo Pro add-on"
 msgstr ""
 
-msgid "CodeSuggestions|Manage seat assignments for %{addOnName} across your instance."
+msgid "CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems."
+msgstr ""
+
+msgid "CodeSuggestions|Manage seat assignments for %{addOnName}."
 msgstr ""
 
 msgid "CodeSuggestions|Run health check"

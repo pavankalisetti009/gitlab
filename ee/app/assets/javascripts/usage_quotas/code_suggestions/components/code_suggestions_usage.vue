@@ -96,9 +96,16 @@ export default {
       }
       return !this.isLoading && (this.hasCodeSuggestions || this.addOnPurchaseFetchError);
     },
-    codeSuggestionsSubtitle() {
+    saasSubtitle() {
+      return sprintf(s__('CodeSuggestions|Manage seat assignments for %{addOnName}.'), {
+        addOnName: this.codeSuggestionsFriendlyName,
+      });
+    },
+    selfManagedSubtitle() {
       return sprintf(
-        s__('CodeSuggestions|Manage seat assignments for %{addOnName} across your instance.'),
+        s__(
+          'CodeSuggestions|Manage seat assignments for %{addOnName} or run a health check to identify problems.',
+        ),
         {
           addOnName: this.codeSuggestionsFriendlyName,
         },
@@ -208,8 +215,11 @@ export default {
           </div>
         </header>
 
-        <p data-testid="code-suggestions-subtitle">
-          {{ codeSuggestionsSubtitle }}
+        <p v-if="isSaaS" data-testid="code-suggestions-subtitle">
+          {{ saasSubtitle }}
+        </p>
+        <p v-else data-testid="code-suggestions-subtitle">
+          {{ selfManagedSubtitle }}
         </p>
       </section>
       <health-check-list
