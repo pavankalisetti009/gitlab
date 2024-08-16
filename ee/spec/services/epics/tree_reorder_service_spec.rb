@@ -32,16 +32,16 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
       }
     end
 
-    subject { described_class.new(user, moving_object_id, params).execute }
+    subject(:reorder) { described_class.new(user, moving_object_id, params).execute }
 
     shared_examples 'error for the tree update' do |expected_error|
       it 'does not change anything', :aggregate_failures do
-        expect { subject }.not_to change { tree_object_1.reload.relative_position }
-        expect { subject }.not_to change { tree_object_2.reload.relative_position }
-        expect { subject }.not_to change { tree_object_2.reload.parent }
+        expect { reorder }.not_to change { tree_object_1.reload.relative_position }
+        expect { reorder }.not_to change { tree_object_2.reload.relative_position }
+        expect { reorder }.not_to change { tree_object_2.reload.parent }
 
-        expect(subject[:status]).to eq(:error)
-        expect(subject[:message]).to eq(expected_error)
+        expect(reorder[:status]).to eq(:error)
+        expect(reorder[:message]).to eq(expected_error)
       end
     end
 
@@ -79,7 +79,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             let(:adjacent_reference_id) { GitlabSchema.id_from_object(epic2) }
 
             it 'reorders the objects' do
-              subject
+              reorder
 
               expect(epic2.reload.relative_position).to be > tree_object_2.reload.relative_position
             end
@@ -94,11 +94,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             end
 
             it 'updates the parent' do
-              expect { subject }.to change { tree_object_2.reload.epic }.from(epic1).to(epic)
+              expect { reorder }.to change { tree_object_2.reload.epic }.from(epic1).to(epic)
             end
 
             it 'creates system notes', :sidekiq_inline do
-              expect { subject }.to change { Note.system.count }.by(3)
+              expect { reorder }.to change { Note.system.count }.by(3)
             end
           end
 
@@ -123,10 +123,22 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             context 'when the new_parent_id matches the parent id of the relative positioning object' do
               let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
-              it 'reorders the objects' do
-                subject
+              shared_examples 'reorder objects and returns success status' do
+                it 'reorders the objects' do
+                  expect(reorder[:status]).to eq(:success)
+                  expect(reorder[:message]).to be_nil
+                  expect(epic2.reload.relative_position).to be > tree_object_2.reload.relative_position
+                end
+              end
 
-                expect(epic2.reload.relative_position).to be > tree_object_2.reload.relative_position
+              it_behaves_like 'reorder objects and returns success status'
+
+              context 'when work_item_epics feature is disabled' do
+                before do
+                  stub_feature_flags(work_item_epics: false)
+                end
+
+                it_behaves_like 'reorder objects and returns success status'
               end
             end
           end
@@ -195,7 +207,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
           context 'when moving is successful' do
             it 'updates the links relative positions' do
-              subject
+              reorder
 
               expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
             end
@@ -208,17 +220,17 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
               end
 
               it 'updates the parent' do
-                expect { subject }.to change { tree_object_2.reload.epic }.from(epic1).to(epic)
+                expect { reorder }.to change { tree_object_2.reload.epic }.from(epic1).to(epic)
               end
 
               it 'updates the links relative positions' do
-                subject
+                reorder
 
                 expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
               end
 
               it 'creates system notes', :sidekiq_inline do
-                expect { subject }.to change { Note.system.count }.by(3)
+                expect { reorder }.to change { Note.system.count }.by(3)
               end
             end
 
@@ -260,18 +272,18 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   end
 
                   it 'sets a new work item parent' do
-                    expect { subject }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
+                    expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
                     .and change {
                            moving_parent_link.reload.work_item_parent
                          }.from(old_parent.work_item).to(new_parent.work_item)
 
                     expect(moving_epic_issue.relative_position).to eq(moving_parent_link.relative_position)
 
-                    expect(subject[:status]).to eq(:success)
+                    expect(reorder[:status]).to eq(:success)
                   end
 
                   it 'keeps epics timestamps in sync' do
-                    expect(subject[:status]).to eq(:success)
+                    expect(reorder[:status]).to eq(:success)
 
                     expect(old_parent.updated_at).to eq(old_parent.work_item.updated_at)
                     expect(new_parent.updated_at).to eq(new_parent.work_item.updated_at)
@@ -281,9 +293,9 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     let_it_be_with_reload(:new_parent) { create(:epic, group: group) }
 
                     it 'only sets the new parent for the epic_issue' do
-                      expect { subject }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
-                      expect { subject }.to not_change { moving_parent_link.reload.work_item_parent }
-                      expect(subject[:status]).to eq(:success)
+                      expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
+                      expect { reorder }.to not_change { moving_parent_link.reload.work_item_parent }
+                      expect(reorder[:status]).to eq(:success)
                     end
                   end
 
@@ -295,9 +307,9 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     end
 
                     it 'does not set new work item parent' do
-                      expect { subject }.not_to change { moving_epic_issue.reload.epic }
-                      expect { subject }.not_to change { moving_parent_link.reload.work_item_parent }
-                      expect(subject[:status]).to eq(:error)
+                      expect { reorder }.not_to change { moving_epic_issue.reload.epic }
+                      expect { reorder }.not_to change { moving_parent_link.reload.work_item_parent }
+                      expect(reorder[:status]).to eq(:error)
                     end
                   end
                 end
@@ -319,14 +331,14 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
                         work_item: work_item_2)
 
-                      expect { subject }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
+                      expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
                         .and change { work_item_2.reload.work_item_parent }
                         .from(old_parent.work_item).to(new_parent.work_item)
 
                       expect(epic_issue2.reload.relative_position).to be > epic_issue1.reload.relative_position
                       expect(parent_link2.reload.relative_position).to be > parent_link1.reload.relative_position
                       expect(parent_link2.relative_position).to eq(epic_issue2.reload.relative_position)
-                      expect(subject[:status]).to eq(:success)
+                      expect(reorder[:status]).to eq(:success)
                     end
                   end
 
@@ -339,13 +351,13 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
                         work_item: work_item_2)
 
-                      expect { subject }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
+                      expect { reorder }.to change { moving_epic_issue.reload.epic }.from(old_parent).to(new_parent)
                         .and change { work_item_2.reload.work_item_parent }
                           .from(old_parent.work_item).to(new_parent.work_item)
 
                       expect(parent_link2.reload.relative_position).to be < parent_link1.reload.relative_position
                       expect(parent_link2.relative_position).to eq(epic_issue2.reload.relative_position)
-                      expect(subject[:status]).to eq(:success)
+                      expect(reorder[:status]).to eq(:success)
                     end
                   end
 
@@ -368,11 +380,11 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       parent_link2 = create(:parent_link, work_item_parent: old_parent.work_item,
                         work_item: work_item_2)
 
-                      expect { subject }.not_to change { parent_link1.reload.relative_position }
-                      expect { subject }.not_to change { work_item_1.reload.work_item_parent }
-                      expect { subject }.not_to change { parent_link2.reload.relative_position }
-                      expect { subject }.not_to change { work_item_2.reload.work_item_parent }
-                      expect(subject).to eq(
+                      expect { reorder }.not_to change { parent_link1.reload.relative_position }
+                      expect { reorder }.not_to change { work_item_1.reload.work_item_parent }
+                      expect { reorder }.not_to change { parent_link2.reload.relative_position }
+                      expect { reorder }.not_to change { work_item_2.reload.work_item_parent }
+                      expect(reorder).to eq(
                         status: :error, message: "Couldn't perform re-order due to an internal error.", http_status: 422
                       )
                     end
@@ -414,7 +426,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   let(:relative_position) { 'after' }
 
                   it 'updates the relative positions', :aggregate_failures do
-                    subject
+                    reorder
 
                     expect(epic_issue1.reload.relative_position).to be > epic_issue2.reload.relative_position
                     expect(parent_link1.reload.relative_position).to be > parent_link2.reload.relative_position
@@ -426,7 +438,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                   let(:relative_position) { 'before' }
 
                   it 'updates the relative positions', :aggregate_failures do
-                    subject
+                    reorder
 
                     expect(epic_issue1.reload.relative_position).to be < epic_issue2.reload.relative_position
                     expect(parent_link1.reload.relative_position).to be < parent_link2.reload.relative_position
@@ -487,8 +499,8 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
             context 'when there is some other error with the new parent' do
               shared_examples 'new parent not in an ancestor group' do
                 it 'returns success status without errors', :aggregate_failures do
-                  expect(subject[:status]).to eq(:success)
-                  expect(subject[:message]).to be_nil
+                  expect(reorder[:status]).to eq(:success)
+                  expect(reorder[:message]).to be_nil
                 end
               end
 
@@ -504,6 +516,14 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 end
 
                 it_behaves_like 'new parent not in an ancestor group'
+
+                context 'when work_item_epics flag is disabled' do
+                  before do
+                    stub_feature_flags(work_item_epics: false)
+                  end
+
+                  it_behaves_like 'new parent not in an ancestor group'
+                end
               end
 
               context 'when the new parent is in a descendant group' do
@@ -542,7 +562,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
             context 'when moving is successful' do
               it 'updates the links relative positions' do
-                subject
+                reorder
 
                 expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
               end
@@ -551,13 +571,13 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 let(:new_parent_id) { GitlabSchema.id_from_object(epic) }
 
                 it 'updates the relative positions' do
-                  subject
+                  reorder
 
                   expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
                 end
 
                 it 'does not update the parent_id' do
-                  expect { subject }.not_to change { tree_object_2.reload.parent }
+                  expect { reorder }.not_to change { tree_object_2.reload.parent }
                 end
               end
 
@@ -568,17 +588,17 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                 let(:tree_object_2) { epic3 }
 
                 it 'updates the relative positions' do
-                  subject
+                  reorder
 
                   expect(tree_object_1.reload.relative_position).to be > tree_object_2.reload.relative_position
                 end
 
                 it 'updates the parent' do
-                  expect { subject }.to change { tree_object_2.reload.parent }.from(other_epic).to(epic)
+                  expect { reorder }.to change { tree_object_2.reload.parent }.from(other_epic).to(epic)
                 end
 
                 it 'creates system notes' do
-                  expect { subject }.to change { Note.system.count }.by(3)
+                  expect { reorder }.to change { Note.system.count }.by(3)
                 end
               end
 
@@ -610,7 +630,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
                   shared_examples 'moves to a parent without children' do
                     it 'sets a new work item parent' do
-                      expect { subject }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent).and(
+                      expect { reorder }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent).and(
                         change { moving_epic.work_item.reload.work_item_parent }
                           .from(moving_object_parent_link&.work_item_parent).to(new_parent.work_item)
                       )
@@ -618,7 +638,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       expect(moving_epic.relative_position).to eq(
                         moving_epic.work_item.reload.parent_link.relative_position
                       )
-                      expect(subject[:status]).to eq(:success)
+                      expect(reorder[:status]).to eq(:success)
                     end
 
                     context 'when syncing to the work item fails' do
@@ -629,9 +649,9 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       end
 
                       it 'does not set new epic or work item parent' do
-                        expect { subject }.to not_change { moving_epic.reload.parent }
+                        expect { reorder }.to not_change { moving_epic.reload.parent }
                           .and not_change { moving_epic.work_item.reload.work_item_parent }
-                        expect(subject[:status]).to eq(:error)
+                        expect(reorder[:status]).to eq(:error)
                       end
                     end
                   end
@@ -670,7 +690,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                         let(:relative_position) { 'before' }
 
                         it 'updates the work item parent and sets it after the adjacent item', :aggregate_failures do
-                          expect { subject }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent)
+                          expect { reorder }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent)
                             .and change { moving_epic.work_item.reload.work_item_parent }
                             .from(old_parent.work_item).to(new_parent.work_item)
 
@@ -681,7 +701,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                           expect(moving_object_parent_link.reload.relative_position)
                             .to eq(moving_epic.reload.relative_position)
 
-                          expect(subject[:status]).to eq(:success)
+                          expect(reorder[:status]).to eq(:success)
                         end
                       end
 
@@ -689,7 +709,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                         let(:relative_position) { 'after' }
 
                         it 'updates the work item parent and sets it before the adjacent item', :aggregate_failures do
-                          expect { subject }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent)
+                          expect { reorder }.to change { moving_epic.reload.parent }.from(old_parent).to(new_parent)
                             .and change { moving_epic.work_item.reload.work_item_parent }
                             .from(old_parent.work_item).to(new_parent.work_item)
 
@@ -700,7 +720,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                           expect(moving_object_parent_link.reload.relative_position)
                             .to eq(moving_epic.reload.relative_position)
 
-                          expect(subject[:status]).to eq(:success)
+                          expect(reorder[:status]).to eq(:success)
                         end
                       end
                     end
@@ -760,7 +780,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     let(:relative_position) { 'after' }
 
                     it 'updates the relative positions', :aggregate_failures do
-                      subject
+                      reorder
 
                       expect(adjacent_epic.reload.relative_position).to be > moving_epic.reload.relative_position
                       expect(adjacent_parent_link.reload.relative_position)
@@ -769,7 +789,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       expect(moving_object_parent_link.reload.relative_position)
                         .to eq(moving_epic.reload.relative_position)
 
-                      expect(subject[:status]).to eq(:success)
+                      expect(reorder[:status]).to eq(:success)
                     end
                   end
 
@@ -777,7 +797,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                     let(:relative_position) { 'before' }
 
                     it 'updates the relative positions', :aggregate_failures do
-                      subject
+                      reorder
 
                       expect(adjacent_epic.reload.relative_position).to be < moving_epic.reload.relative_position
                       expect(adjacent_parent_link.reload.relative_position)
@@ -786,7 +806,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                       expect(moving_object_parent_link.reload.relative_position)
                         .to eq(moving_epic.reload.relative_position)
 
-                      expect(subject[:status]).to eq(:success)
+                      expect(reorder[:status]).to eq(:success)
                     end
                   end
 
@@ -799,7 +819,7 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
 
                     it 'successfully changes the position of the epic' do
                       expect(WorkItems::ParentLinks::ReorderService).not_to receive(:new)
-                      expect { subject }.to change { moving_epic.reload.relative_position }
+                      expect { reorder }.to change { moving_epic.reload.relative_position }
                     end
                   end
 
@@ -817,12 +837,12 @@ RSpec.describe Epics::TreeReorderService, feature_category: :portfolio_managemen
                           moving_object_class: 'Epic' }
                       )
 
-                      expect { subject }.to not_change { moving_object_parent_link.reload.relative_position }
+                      expect { reorder }.to not_change { moving_object_parent_link.reload.relative_position }
                         .and not_change { moving_epic.reload.relative_position }
                         .and not_change { adjacent_epic.reload.relative_position }
                         .and not_change { adjacent_parent_link.reload.relative_position }
 
-                      expect(subject).to eq(
+                      expect(reorder).to eq(
                         status: :error, message: "Couldn't perform re-order due to an internal error.", http_status: 422
                       )
                     end
