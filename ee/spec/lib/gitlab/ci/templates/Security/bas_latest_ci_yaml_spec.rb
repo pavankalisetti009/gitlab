@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Security/BAS.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+  include Ci::PipelineMessageHelpers
+
   describe 'the created pipeline' do
     let(:build_names) { pipeline.builds.pluck(:name) }
     let(:template) do
@@ -56,7 +58,7 @@ RSpec.describe 'Security/BAS.latest.gitlab-ci.yml', feature_category: :continuou
 
       it 'skips branch pipelines when an open MR exists' do
         expect(build_names).to be_empty
-        expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+        expect(pipeline.errors.full_messages).to match_array([sanitize_message(Ci::Pipeline.rules_failure_message)])
       end
     end
   end

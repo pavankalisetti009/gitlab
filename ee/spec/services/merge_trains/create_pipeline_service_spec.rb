@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe MergeTrains::CreatePipelineService, feature_category: :continuous_integration do
+  include Ci::PipelineMessageHelpers
+
   shared_examples_for 'MergeTrains::CreatePipelineService' do
     let_it_be(:project) { create(:project, :repository, :auto_devops, merge_pipelines_enabled: true, merge_trains_enabled: true) }
     let_it_be(:maintainer) { create(:user) }
@@ -146,7 +148,7 @@ RSpec.describe MergeTrains::CreatePipelineService, feature_category: :continuous
 
         context 'when .gitlab-ci.yml does not have only: [merge_requests] specification' do
           it_behaves_like 'returns an error' do
-            let(:expected_reason) { ::Ci::Pipeline.rules_failure_message }
+            let(:expected_reason) { sanitize_message(::Ci::Pipeline.rules_failure_message) }
           end
         end
       end

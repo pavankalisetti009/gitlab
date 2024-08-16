@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'API-Security.latest.gitlab-ci.yml', feature_category: :continuous_integration do
+  include Ci::PipelineMessageHelpers
+
   subject(:template) { Gitlab::Template::GitlabCiYmlTemplate.find('API-Security.latest') }
 
   specify { expect(template).not_to be_nil }
@@ -98,7 +100,8 @@ RSpec.describe 'API-Security.latest.gitlab-ci.yml', feature_category: :continuou
 
             it 'includes no jobs' do
               expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+              expect(pipeline.errors.full_messages).to match_array(
+                [sanitize_message(Ci::Pipeline.rules_failure_message)])
             end
           end
 
@@ -109,7 +112,8 @@ RSpec.describe 'API-Security.latest.gitlab-ci.yml', feature_category: :continuou
 
             it 'includes no jobs' do
               expect(build_names).to be_empty
-              expect(pipeline.errors.full_messages).to match_array([Ci::Pipeline.rules_failure_message])
+              expect(pipeline.errors.full_messages).to match_array(
+                [sanitize_message(Ci::Pipeline.rules_failure_message)])
             end
           end
 
