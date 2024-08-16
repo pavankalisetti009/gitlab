@@ -5,33 +5,37 @@ require 'spec_helper'
 RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_category: :global_search do
   include RenderedHtml
 
-  let_it_be(:admin) { create(:admin) }
+  let(:admin) { build_stubbed(:admin) }
 
-  let(:page) { rendered_html }
-  let(:pause_indexing) { false }
-  let(:pending_migrations) { false }
-  let(:elastic_reindexing_task) { build(:elastic_reindexing_task) }
-  let(:projects_not_indexed) { [] }
+  let(:elastic_reindexing_task)    { build(:elastic_reindexing_task) }
+  let(:elasticsearch_available)    { false }
+  let(:es_indexing)                { false }
+  let(:halted_migrations)          { false }
+  let(:page)                       { rendered_html }
+  let(:pause_indexing)             { false }
+  let(:pending_migrations)         { false }
   let(:projects_not_indexed_count) { 0 }
+  let(:projects_not_indexed)       { [] }
 
   before do
     assign(:application_setting, application_setting)
     assign(:elasticsearch_reindexing_task, elastic_reindexing_task)
+    assign(:projects_not_indexed_count, projects_not_indexed_count)
+    assign(:projects_not_indexed, projects_not_indexed)
+
+    allow(Elastic::DataMigrationService).to receive(:halted_migrations?).and_return(halted_migrations)
+    allow(Elastic::DataMigrationService).to receive(:pending_migrations?).and_return(pending_migrations)
+    allow(Elastic::IndexSetting).to receive(:every_alias).and_return([])
+    allow(Gitlab::Elastic::Helper).to receive_message_chain(:default, :ping?).and_return(elasticsearch_available)
+    allow(Gitlab::CurrentSettings).to receive(:elasticsearch_indexing?).and_return(es_indexing)
+    allow(Gitlab::CurrentSettings).to receive(:elasticsearch_pause_indexing?).and_return(pause_indexing)
     allow(view).to receive(:current_user) { admin }
     allow(view).to receive(:expanded) { true }
-    assign(:projects_not_indexed, projects_not_indexed)
-    assign(:projects_not_indexed_count, projects_not_indexed_count)
   end
 
   context 'es indexing' do
     let(:application_setting) { build(:application_setting) }
     let(:button_text) { 'Index the instance' }
-
-    before do
-      allow(Gitlab::CurrentSettings).to(receive(:elasticsearch_indexing?)).and_return(es_indexing)
-      allow(Gitlab::CurrentSettings).to(receive(:elasticsearch_pause_indexing?)).and_return(pause_indexing)
-      allow(Elastic::DataMigrationService).to(receive(:pending_migrations?)).and_return(pending_migrations)
-    end
 
     context 'indexing is enabled' do
       let(:es_indexing) { true }
@@ -52,6 +56,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       context 'pending migrations' do
         using RSpec::Parameterized::TableSyntax
 
+        let(:elasticsearch_available) { true }
         let(:pending_migrations) { true }
         let(:migration) { Elastic::DataMigrationService.migrations.first }
 
@@ -131,9 +136,12 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
   context 'zero-downtime elasticsearch reindexing' do
     let(:application_setting) { build(:application_setting) }
+    let(:task)                { build_stubbed(:elastic_reindexing_task) }
+    let(:subtask)             { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task) }
 
     before do
       assign(:last_elasticsearch_reindexing_task, task)
+      allow(task).to receive_message_chain(:subtasks, :order_by_alias_name_asc).and_return([subtask])
     end
 
     context 'when task is in progress' do
@@ -167,8 +175,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
 
     context 'with extended details' do
-      let!(:task) { create(:elastic_reindexing_task, state: :reindexing, error_message: 'error-message') }
-      let!(:subtask) { create(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 5, documents_count: 10) }
+      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing, error_message: 'error-message') }
+      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 5, documents_count: 10) }
 
       it 'renders the task information' do
         render
@@ -181,8 +189,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
 
     context 'with extended details, but without documents_count_target' do
-      let!(:task) { create(:elastic_reindexing_task, state: :reindexing) }
-      let!(:subtask) { create(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count: 10) }
+      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing) }
+      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count: 10) }
 
       it 'renders the task information' do
         render
@@ -195,8 +203,8 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
 
     context 'when there are 0 documents expected' do
-      let_it_be(:task) { create(:elastic_reindexing_task, state: :reindexing) }
-      let_it_be(:subtask) { create(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 0, documents_count: 0) }
+      let(:task)    { build_stubbed(:elastic_reindexing_task, state: :reindexing) }
+      let(:subtask) { build_stubbed(:elastic_reindexing_subtask, elastic_reindexing_task: task, documents_count_target: 0, documents_count: 0) }
 
       it 'renders 100% completed progress' do
         render
@@ -210,12 +218,6 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
   context 'when there are elasticsearch indexed namespaces' do
     let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
 
-    before do
-      create(:elasticsearch_indexed_namespace)
-      create(:elasticsearch_indexed_namespace)
-      create(:elasticsearch_indexed_namespace)
-    end
-
     it 'shows the input' do
       render
       expect(rendered).to have_selector('.js-namespaces-indexing-restrictions')
@@ -223,7 +225,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
     context 'when there are too many elasticsearch indexed namespaces' do
       before do
-        create_list :elasticsearch_indexed_namespace, 60
+        allow(view).to receive(:elasticsearch_too_many_namespaces?) { true }
       end
 
       it 'hides the input' do
@@ -237,9 +239,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     let(:application_setting) { build(:application_setting, elasticsearch_limit_indexing: true) }
 
     before do
-      create(:elasticsearch_indexed_project)
-      create(:elasticsearch_indexed_project)
-      create(:elasticsearch_indexed_project)
+      allow(view).to receive(:elasticsearch_too_many_projects?) { false }
     end
 
     it 'shows the input' do
@@ -249,7 +249,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
 
     context 'when there are too many elasticsearch indexed projects' do
       before do
-        create_list :elasticsearch_indexed_project, 60
+        allow(view).to receive(:elasticsearch_too_many_projects?) { true }
       end
 
       it 'hides the input' do
@@ -270,10 +270,11 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
 
     context 'when Elasticsearch migration halted' do
+      let(:elasticsearch_available) { true }
+      let(:halted_migrations) { true }
       let(:migration) { Elastic::DataMigrationService.migrations.last }
 
       before do
-        allow(Elastic::DataMigrationService).to receive(:halted_migrations?).and_return(true)
         allow(Elastic::DataMigrationService).to receive(:halted_migration).and_return(migration)
       end
 
@@ -302,9 +303,7 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
     end
 
     context 'when elasticsearch is unreachable' do
-      before do
-        allow(Gitlab::Elastic::Helper.default).to receive(:ping?).and_return(false)
-      end
+      let(:elasticsearch_available) { false }
 
       it 'does not show the retry migration card' do
         render
@@ -447,12 +446,11 @@ RSpec.describe 'admin/application_settings/_elasticsearch_form', feature_categor
       end
 
       context 'when there is 0 projects not indexed' do
-        let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
-        let_it_be(:projects_not_indexed) { [] }
-        let(:projects_not_indexed_count) { 0 }
-
-        let(:initial_queue_size) { 10 }
         let(:incremental_queue_size) { 10 }
+        let(:initial_queue_size) { 10 }
+        let(:namespace) { instance_double("Namespace", human_name: "Namespace 1") }
+        let(:projects_not_indexed_count) { 0 }
+        let(:projects_not_indexed) { [] }
 
         before do
           assign(:projects_not_indexed, projects_not_indexed)
