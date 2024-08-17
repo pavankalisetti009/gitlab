@@ -2,7 +2,7 @@
 
 module Vulnerabilities
   class Finding
-    class Evidence < ApplicationRecord
+    class Evidence < Gitlab::Database::SecApplicationRecord
       self.table_name = 'vulnerability_finding_evidences'
 
       belongs_to :finding,
