@@ -70,7 +70,6 @@ FactoryBot.define do
           report_type: vulnerability.report_type,
           severity: vulnerability.severity,
           state: vulnerability.state,
-          namespace_id: vulnerability.project&.namespace_id,
           traversal_ids: vulnerability.project&.namespace&.traversal_ids
         )
       end
