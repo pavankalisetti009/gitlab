@@ -52,7 +52,8 @@ export default {
           : data?.workspace?.users?.nodes;
 
         const users = (nodes || []).map(({ user }) => createUserObject(user));
-        return uniqBy(users, 'id');
+        const accumulatedUsers = [...this.users, ...users];
+        return uniqBy(accumulatedUsers, 'id');
       },
       debounce: DEFAULT_DEBOUNCE_AND_THROTTLE_MS,
     },
@@ -65,6 +66,13 @@ export default {
     };
   },
   computed: {
+    listBoxItems() {
+      const containsValue = (value) => value.toLowerCase().includes(this.search.toLowerCase());
+
+      return this.users.filter(
+        ({ text, username }) => containsValue(text) || containsValue(username),
+      );
+    },
     selectedUsersValues() {
       return this.selectedUsers.map((u) => u.value);
     },
@@ -109,13 +117,16 @@ export default {
 
       return updatedSelectedUsers;
     },
+    setSearch(value) {
+      this.search = value?.trim();
+    },
   },
 };
 </script>
 
 <template>
   <gl-collapsible-listbox
-    :items="users"
+    :items="listBoxItems"
     block
     searchable
     is-check-centered
@@ -124,7 +135,7 @@ export default {
     :searching="$apollo.loading"
     :selected="selectedUsersValues"
     :toggle-text="toggleText"
-    @search="search = $event"
+    @search="setSearch"
     @select="handleSelectedUser"
   >
     <template #list-item="{ item }">

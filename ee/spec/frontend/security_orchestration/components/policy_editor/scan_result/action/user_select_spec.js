@@ -1,7 +1,7 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { mount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import searchProjectMembers from '~/graphql_shared/queries/project_user_members_search.query.graphql';
 import searchGroupMembers from '~/graphql_shared/queries/group_users_search.query.graphql';
@@ -87,7 +87,7 @@ describe('UserSelect component', () => {
       [searchGroupMembers, groupSearchQueryHandlerSuccess],
     ]);
 
-    wrapper = mount(UserSelect, {
+    wrapper = shallowMountExtended(UserSelect, {
       apolloProvider: fakeApollo,
       propsData: {
         existingApprovers: [],
@@ -97,6 +97,9 @@ describe('UserSelect component', () => {
         namespacePath,
         namespaceType,
         ...provide,
+      },
+      stubs: {
+        GlCollapsibleListbox,
       },
     });
   };
@@ -202,6 +205,37 @@ describe('UserSelect component', () => {
     expect(groupSearchQueryHandlerSuccess).toHaveBeenCalledWith({
       fullPath: namespacePath,
       search: '',
+    });
+  });
+
+  describe('preserving selection', () => {
+    it('preserves initial selection after search', async () => {
+      createComponent({
+        propsData: {
+          existingApprovers: [user],
+        },
+      });
+
+      await waitForApolloAndVue();
+
+      expect(findListbox().props('items')).toHaveLength(2);
+      expect(findListbox().props('toggleText')).toBe(user.name);
+
+      await findListbox().vm.$emit('search', user2.name);
+
+      expect(findListbox().props('items')).toHaveLength(1);
+      expect(findListbox().props('selected')).toEqual([user.id]);
+
+      await wrapper.findByTestId(`listbox-item-${user2.id}`).vm.$emit('select', true);
+
+      expect(wrapper.emitted('updateSelectedApprovers')).toEqual([
+        [
+          [
+            expect.objectContaining({ name: user.name }),
+            expect.objectContaining({ name: user2.name }),
+          ],
+        ],
+      ]);
     });
   });
 });
