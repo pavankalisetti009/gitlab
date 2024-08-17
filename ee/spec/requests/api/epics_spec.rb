@@ -100,7 +100,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
           get api(url, personal_access_token: pat), params: params
         end
 
-        label_2 = create(:label)
+        label_2 = create(:group_label)
         create_list(:labeled_epic, 2, group: group, labels: [label_2])
         create_list(:epic, 2, group: subgroup_1, parent_id: epic1.id)
         create_list(:epic, 2, group: subgroup_2, parent_id: epic2.id)
@@ -130,7 +130,7 @@ RSpec.describe API::Epics, :aggregate_failures, feature_category: :portfolio_man
             get api(url, personal_access_token: pat), params: params
           end
 
-          label_2 = create(:label)
+          label_2 = create(:group_label)
           create_list(:labeled_epic, 4, group: group, labels: [label_2])
 
           expect do
