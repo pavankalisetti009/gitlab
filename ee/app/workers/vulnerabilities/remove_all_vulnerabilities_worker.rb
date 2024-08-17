@@ -39,7 +39,7 @@ module Vulnerabilities
 
     def perform(project_id)
       ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
-        %w[
+        %i[
           vulnerability_feedback
           vulnerability_finding_links
           vulnerability_findings_remediations

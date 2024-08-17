@@ -24,6 +24,7 @@ module Vulnerabilities
           ::Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
             %i[
               vulnerabilities
+              vulnerability_finding_evidences
               vulnerability_finding_signatures
               vulnerability_identifiers
               vulnerability_occurrences
