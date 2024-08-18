@@ -16,16 +16,6 @@ RSpec.describe GraphqlController, feature_category: :api do
       expect(response).to be_successful
     end
 
-    context 'when allow_ai_features_token_for_graphql_ai_features is disabled' do
-      before do
-        stub_feature_flags(allow_ai_features_token_for_graphql_ai_features: false)
-      end
-
-      it 'fails' do
-        expect(response).not_to be_successful
-      end
-    end
-
     context 'when graphql_minimal_auth_methods is disabled' do
       before do
         stub_feature_flags(graphql_minimal_auth_methods: false)

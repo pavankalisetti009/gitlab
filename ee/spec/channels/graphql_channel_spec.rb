@@ -101,18 +101,6 @@ RSpec.describe GraphqlChannel, feature_category: :api do
               /graphql-event::aiCompletionResponse:aiAction:chat:clientSubscriptionId:abc123/
             )
           end
-
-          context 'when allow_ai_features_token_for_graphql_ai_features is disabled' do
-            before do
-              stub_feature_flags(allow_ai_features_token_for_graphql_ai_features: false)
-            end
-
-            it 'does not confirm the stream' do
-              subscribe(subscribe_params)
-
-              expect(subscription).not_to be_confirmed
-            end
-          end
         end
       end
     end
