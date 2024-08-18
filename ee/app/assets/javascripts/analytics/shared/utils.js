@@ -138,7 +138,6 @@ export const buildCycleAnalyticsInitialData = ({
   namespaceType = null,
   canEdit = false,
   enableVsdLink = false,
-  enableTasksByTypeChart = false,
   enableCustomizableStages = false,
   enableProjectsFilter = false,
 } = {}) => ({
@@ -186,7 +185,6 @@ export const buildCycleAnalyticsInitialData = ({
   },
   canEdit: parseBoolean(canEdit),
   enableVsdLink: parseBoolean(enableVsdLink),
-  enableTasksByTypeChart: parseBoolean(enableTasksByTypeChart),
   enableCustomizableStages: parseBoolean(enableCustomizableStages),
   enableProjectsFilter: parseBoolean(enableProjectsFilter),
   projectId: parseInt(projectId, 10),

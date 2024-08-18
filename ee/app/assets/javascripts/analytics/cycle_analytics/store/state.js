@@ -57,7 +57,6 @@ export default () => ({
   },
   canEdit: false,
   enableVsdLink: false,
-  enableTasksByTypeChart: false,
   enableCustomizableStages: false,
   enableProjectsFilter: false,
 });

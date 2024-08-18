@@ -26,11 +26,7 @@ export default {
     SafeHtml,
   },
   computed: {
-    ...mapState('typeOfWork', [
-      'isLoadingTasksByTypeChart',
-      'isLoadingTasksByTypeChartTopLabels',
-      'errorMessage',
-    ]),
+    ...mapState('typeOfWork', ['errorMessage', 'isLoading']),
     ...mapGetters('typeOfWork', [
       'selectedTasksByTypeFilters',
       'tasksByTypeChartData',
@@ -38,9 +34,6 @@ export default {
     ]),
     hasData() {
       return Boolean(this.tasksByTypeChartData?.data.length);
-    },
-    isLoading() {
-      return Boolean(this.isLoadingTasksByTypeChart || this.isLoadingTasksByTypeChartTopLabels);
     },
     tooltipText() {
       const {
@@ -75,8 +68,11 @@ export default {
       );
     },
   },
+  created() {
+    this.fetchTopRankedGroupLabels();
+  },
   methods: {
-    ...mapActions('typeOfWork', ['setTasksByTypeFilters']),
+    ...mapActions('typeOfWork', ['fetchTopRankedGroupLabels', 'setTasksByTypeFilters']),
     onUpdateFilter(e) {
       this.setTasksByTypeFilters(e);
     },

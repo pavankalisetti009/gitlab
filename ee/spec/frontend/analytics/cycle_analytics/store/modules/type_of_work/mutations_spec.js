@@ -16,35 +16,22 @@ describe('Value Stream Analytics mutations', () => {
   });
 
   it.each`
-    mutation                                         | stateKey                       | value
-    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'topRankedLabels'}           | ${[]}
-    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_ERROR}   | ${'topRankedLabels'}           | ${[]}
-    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'selectedLabels'}            | ${[]}
-    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_ERROR}   | ${'selectedLabels'}            | ${[]}
-    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'errorCode'}                 | ${null}
-    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorCode'}                 | ${null}
-    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'errorMessage'}              | ${''}
-    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorMessage'}              | ${''}
-    ${types.REQUEST_TASKS_BY_TYPE_DATA}              | ${'isLoadingTasksByTypeChart'} | ${true}
-    ${types.RECEIVE_TASKS_BY_TYPE_DATA_ERROR}        | ${'isLoadingTasksByTypeChart'} | ${false}
+    mutation                                         | stateKey             | value
+    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'topRankedLabels'} | ${[]}
+    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_ERROR}   | ${'topRankedLabels'} | ${[]}
+    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'selectedLabels'}  | ${[]}
+    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_ERROR}   | ${'selectedLabels'}  | ${[]}
+    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'errorCode'}       | ${null}
+    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorCode'}       | ${null}
+    ${types.REQUEST_TOP_RANKED_GROUP_LABELS}         | ${'errorMessage'}    | ${''}
+    ${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS} | ${'errorMessage'}    | ${''}
+    ${types.REQUEST_TASKS_BY_TYPE_DATA}              | ${'isLoading'}       | ${true}
+    ${types.RECEIVE_TASKS_BY_TYPE_DATA_ERROR}        | ${'isLoading'}       | ${false}
   `('$mutation will set $stateKey=$value', ({ mutation, stateKey, value }) => {
     mutations[mutation](state);
 
     expect(state[stateKey]).toEqual(value);
   });
-
-  it.each`
-    mutation             | payload | expectedState
-    ${types.SET_LOADING} | ${true} | ${{ isLoadingTasksByTypeChart: true, isLoadingTasksByTypeChartTopLabels: true }}
-  `(
-    '$mutation with payload $payload will update state with $expectedState',
-    ({ mutation, payload, expectedState }) => {
-      state = {};
-      mutations[mutation](state, payload);
-
-      expect(state).toMatchObject(expectedState);
-    },
-  );
 
   describe(`${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS}`, () => {
     it('sets selectedLabels to an array of label ids', () => {
@@ -55,10 +42,10 @@ describe('Value Stream Analytics mutations', () => {
   });
 
   describe(`${types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS}`, () => {
-    it('sets isLoadingTasksByTypeChart to false', () => {
+    it('sets isLoading to false', () => {
       mutations[types.RECEIVE_TASKS_BY_TYPE_DATA_SUCCESS](state, {});
 
-      expect(state.isLoadingTasksByTypeChart).toEqual(false);
+      expect(state.isLoading).toEqual(false);
     });
 
     it('sets data to the raw returned chart data', () => {

@@ -3,8 +3,6 @@ import { __ } from '~/locale';
 import { throwIfUserForbidden, checkForDataError, alertErrorIfStatusNotOk } from '../../../utils';
 import * as types from './mutation_types';
 
-export const setLoading = ({ commit }, loading) => commit(types.SET_LOADING, loading);
-
 export const receiveTopRankedGroupLabelsSuccess = ({ commit, dispatch }, data) => {
   commit(types.RECEIVE_TOP_RANKED_GROUP_LABELS_SUCCESS, data);
   dispatch('fetchTasksByTypeData');
