@@ -42,7 +42,6 @@ const defaultState = {
   activeStages,
   selectedValueStream,
   groupPath: currentGroup.fullPath,
-  enableTasksByTypeChart: true,
 };
 
 const mockGetters = {
@@ -226,27 +225,6 @@ describe('Value Stream Analytics actions', () => {
     });
   });
 
-  describe('receiveCycleAnalyticsDataSuccess', () => {
-    it(`commits the ${types.RECEIVE_VALUE_STREAM_DATA_SUCCESS} and dispatches the 'typeOfWork/fetchTopRankedGroupLabels' action`, () => {
-      return testAction(
-        actions.receiveCycleAnalyticsDataSuccess,
-        null,
-        state,
-        [{ type: types.RECEIVE_VALUE_STREAM_DATA_SUCCESS }],
-        [{ type: 'typeOfWork/fetchTopRankedGroupLabels' }],
-      );
-    });
-
-    it(`with 'enableTasksByTypeChart=false' does not dispatch the 'typeOfWork/fetchTopRankedGroupLabels' action`, () => {
-      return testAction(
-        actions.receiveCycleAnalyticsDataSuccess,
-        null,
-        { ...state, enableTasksByTypeChart: false },
-        [{ type: types.RECEIVE_VALUE_STREAM_DATA_SUCCESS }],
-      );
-    });
-  });
-
   describe('receiveCycleAnalyticsDataError', () => {
     it(`commits the ${types.RECEIVE_VALUE_STREAM_DATA_ERROR} mutation on a 403 response`, () => {
       const response = { status: HTTP_STATUS_FORBIDDEN };
@@ -311,7 +289,6 @@ describe('Value Stream Analytics actions', () => {
       selectedMilestone,
       selectedAssigneeList,
       selectedLabelList,
-      enableTasksByTypeChart: true,
     };
 
     beforeEach(() => {
@@ -343,7 +320,6 @@ describe('Value Stream Analytics actions', () => {
         ${'setPaths'}                 | ${{ namespacePath: namespace.fullPath }}
         ${'filters/initialize'}       | ${{ selectedAuthor, selectedMilestone, selectedAssigneeList, selectedLabelList }}
         ${'durationChart/setLoading'} | ${true}
-        ${'typeOfWork/setLoading'}    | ${true}
       `('dispatches $action', async ({ action, args }) => {
         await actions.initializeCycleAnalytics(store, initialData);
 
@@ -387,22 +363,6 @@ describe('Value Stream Analytics actions', () => {
           expect(mockDispatch).not.toHaveBeenCalledWith('setSelectedStage');
           expect(mockDispatch).not.toHaveBeenCalledWith('fetchStageData');
           expect(mockDispatch).toHaveBeenCalledWith('setDefaultSelectedStage');
-        });
-      });
-
-      describe('with `enableTasksByTypeChart=false`', () => {
-        it.each`
-          action                        | args
-          ${'setPaths'}                 | ${{ namespacePath: namespace.fullPath }}
-          ${'filters/initialize'}       | ${{ selectedAuthor, selectedMilestone, selectedAssigneeList, selectedLabelList }}
-          ${'durationChart/setLoading'} | ${true}
-        `('dispatches $action', async ({ action, args }) => {
-          await actions.initializeCycleAnalytics(store, {
-            ...initialData,
-            enableTasksByTypeChart: false,
-          });
-
-          expect(mockDispatch).toHaveBeenCalledWith(action, args);
         });
       });
 

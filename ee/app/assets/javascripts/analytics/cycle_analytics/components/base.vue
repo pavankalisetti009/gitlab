@@ -52,6 +52,11 @@ export default {
       type: String,
       required: true,
     },
+    enableTasksByTypeChart: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     ...mapState([
@@ -72,7 +77,6 @@ export default {
       'groupPath',
       'features',
       'canEdit',
-      'enableTasksByTypeChart',
       'enableProjectsFilter',
       'enableCustomizableStages',
       'predefinedDateRange',
@@ -97,9 +101,6 @@ export default {
     },
     shouldRenderAggregationWarning() {
       return this.isCreatingAggregation || this.isWaitingForNextAggregation;
-    },
-    shouldRenderTasksByType() {
-      return this.enableTasksByTypeChart && this.isOverviewStageSelected;
     },
     shouldRenderStageTable() {
       return !this.isOverviewStageSelected && this.selectedStageEvents.length;
@@ -270,7 +271,11 @@ export default {
         <div :class="[isOverviewStageSelected ? 'gl-mt-2' : 'gl-mt-6']">
           <duration-overview-chart v-if="isOverviewStageSelected" class="gl-mb-6" />
           <duration-chart v-else class="gl-mb-6" />
-          <type-of-work-charts v-if="shouldRenderTasksByType" class="gl-mb-6" />
+          <type-of-work-charts
+            v-if="enableTasksByTypeChart"
+            v-show="isOverviewStageSelected"
+            class="gl-mb-6"
+          />
         </div>
         <stage-table
           v-if="shouldRenderStageTable"

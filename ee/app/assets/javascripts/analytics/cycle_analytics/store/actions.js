@@ -41,16 +41,8 @@ export const fetchGroupLabels = ({ commit, getters: { namespacePath } }) => {
 
 export const requestCycleAnalyticsData = ({ commit }) => commit(types.REQUEST_VALUE_STREAM_DATA);
 
-export const receiveCycleAnalyticsDataSuccess = ({
-  commit,
-  dispatch,
-  state: { enableTasksByTypeChart },
-}) => {
+export const receiveCycleAnalyticsDataSuccess = ({ commit }) => {
   commit(types.RECEIVE_VALUE_STREAM_DATA_SUCCESS);
-
-  if (enableTasksByTypeChart) {
-    dispatch('typeOfWork/fetchTopRankedGroupLabels');
-  }
 };
 
 export const receiveCycleAnalyticsDataError = ({ commit }, { response = {} }) => {
@@ -64,7 +56,7 @@ export const receiveCycleAnalyticsDataError = ({ commit }, { response = {} }) =>
   }
 };
 
-export const fetchCycleAnalyticsData = ({ dispatch, state: { enableTasksByTypeChart } }) => {
+export const fetchCycleAnalyticsData = ({ dispatch }) => {
   removeFlash();
 
   return Promise.resolve()
@@ -76,10 +68,6 @@ export const fetchCycleAnalyticsData = ({ dispatch, state: { enableTasksByTypeCh
         dispatch('receiveCycleAnalyticsDataError', error),
         dispatch('durationChart/setLoading', false),
       ];
-
-      if (enableTasksByTypeChart) {
-        promises.push(dispatch('typeOfWork/setLoading', false));
-      }
 
       return Promise.all(promises);
     });
@@ -99,7 +87,6 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
     selectedLabelList,
     stage: selectedStage,
     namespace,
-    enableTasksByTypeChart,
   } = initialData;
   commit(types.SET_FEATURES, features);
 
@@ -114,10 +101,6 @@ export const initializeCycleAnalytics = ({ dispatch, commit }, initialData = {})
       }),
       dispatch('durationChart/setLoading', true),
     ];
-
-    if (enableTasksByTypeChart) {
-      promises = [...promises, dispatch('typeOfWork/setLoading', true)];
-    }
 
     if (selectedStage) {
       promises = [dispatch('setSelectedStage', selectedStage), ...promises];

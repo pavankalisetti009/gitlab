@@ -21,8 +21,7 @@ const error = new Error(`Request failed with status code ${HTTP_STATUS_NOT_FOUND
 describe('Type of work actions', () => {
   let mock;
   let state = {
-    isLoadingTasksByTypeChart: false,
-    isLoadingTasksByTypeChartTopLabels: false,
+    isLoading: false,
 
     subject: TASKS_BY_TYPE_SUBJECT_ISSUE,
     topRankedLabels: [],
@@ -44,18 +43,6 @@ describe('Type of work actions', () => {
   afterEach(() => {
     mock.restore();
     state = { ...mockedState, selectedGroup: null };
-  });
-
-  describe('setLoading', () => {
-    it(`commits the '${types.SET_LOADING}' action`, () => {
-      return testAction(
-        actions.setLoading,
-        true,
-        state,
-        [{ type: types.SET_LOADING, payload: true }],
-        [],
-      );
-    });
   });
 
   describe('fetchTopRankedGroupLabels', () => {

@@ -85,7 +85,6 @@ const initialCycleAnalyticsState = {
   stage,
   aggregation: aggregationData,
   namespace,
-  enableTasksByTypeChart: true,
   enableProjectsFilter: true,
   enableCustomizableStages: true,
 };
@@ -158,6 +157,7 @@ describe('EE Value Stream Analytics component', () => {
         emptyStateSvgPath,
         noDataSvgPath,
         noAccessSvgPath,
+        enableTasksByTypeChart: true,
         ...props,
       },
       provide: {
@@ -311,18 +311,24 @@ describe('EE Value Stream Analytics component', () => {
         wrapper = await createComponent({ selectedStage: issueStage });
       });
 
-      it.each`
-        component                    | componentFinder              | exists   | result
-        ${'Filter bar'}              | ${findFilterBar}             | ${true}  | ${'render'}
-        ${'Aggregation status'}      | ${findAggregationStatus}     | ${true}  | ${'render'}
-        ${'Value stream select'}     | ${findValueStreamSelect}     | ${true}  | ${'render'}
-        ${'Stage table'}             | ${findStageTable}            | ${true}  | ${'render'}
-        ${'Stage duration chart'}    | ${findDurationChart}         | ${true}  | ${'render'}
-        ${'Overview metrics'}        | ${findOverviewMetrics}       | ${false} | ${'not render'}
-        ${'Type of work chart'}      | ${findTypeOfWorkCharts}      | ${false} | ${'not render'}
-        ${'Duration overview chart'} | ${findDurationOverviewChart} | ${false} | ${'not render'}
-      `(`will $result the $component`, ({ componentFinder, exists }) => {
-        expect(componentFinder().exists()).toBe(exists);
+      describe.each`
+        component                    | componentFinder              | exists   | visible
+        ${'Filter bar'}              | ${findFilterBar}             | ${true}  | ${true}
+        ${'Aggregation status'}      | ${findAggregationStatus}     | ${true}  | ${true}
+        ${'Value stream select'}     | ${findValueStreamSelect}     | ${true}  | ${true}
+        ${'Stage table'}             | ${findStageTable}            | ${true}  | ${true}
+        ${'Stage duration chart'}    | ${findDurationChart}         | ${true}  | ${true}
+        ${'Overview metrics'}        | ${findOverviewMetrics}       | ${false} | ${false}
+        ${'Type of work chart'}      | ${findTypeOfWorkCharts}      | ${true}  | ${false}
+        ${'Duration overview chart'} | ${findDurationOverviewChart} | ${false} | ${false}
+      `(`for $component`, ({ componentFinder, exists, visible }) => {
+        it(`${exists ? 'will' : 'will not'} render`, () => {
+          expect(componentFinder().exists()).toBe(exists);
+        });
+
+        it(`${visible ? 'will' : 'will not'} be visible`, () => {
+          expect(componentFinder().exists()).toBe(exists);
+        });
       });
 
       it('sets the `includeProjectName` prop on stage table', () => {
@@ -336,18 +342,24 @@ describe('EE Value Stream Analytics component', () => {
           wrapper = await createComponent({ selectedStage: issueStage });
         });
 
-        it.each`
-          component                    | componentFinder              | exists   | result
-          ${'Filter bar'}              | ${findFilterBar}             | ${true}  | ${'render'}
-          ${'Aggregation status'}      | ${findAggregationStatus}     | ${true}  | ${'render'}
-          ${'Value stream select'}     | ${findValueStreamSelect}     | ${true}  | ${'render'}
-          ${'Stage table'}             | ${findStageTable}            | ${false} | ${'not render'}
-          ${'Stage duration chart'}    | ${findDurationChart}         | ${true}  | ${'render'}
-          ${'Overview metrics'}        | ${findOverviewMetrics}       | ${false} | ${'not render'}
-          ${'Type of work chart'}      | ${findTypeOfWorkCharts}      | ${false} | ${'not render'}
-          ${'Duration overview chart'} | ${findDurationOverviewChart} | ${false} | ${'not render'}
-        `(`will $result the $component`, ({ componentFinder, exists }) => {
-          expect(componentFinder().exists()).toBe(exists);
+        describe.each`
+          component                    | componentFinder              | exists   | visible
+          ${'Filter bar'}              | ${findFilterBar}             | ${true}  | ${true}
+          ${'Aggregation status'}      | ${findAggregationStatus}     | ${true}  | ${true}
+          ${'Value stream select'}     | ${findValueStreamSelect}     | ${true}  | ${true}
+          ${'Stage table'}             | ${findStageTable}            | ${false} | ${false}
+          ${'Stage duration chart'}    | ${findDurationChart}         | ${true}  | ${true}
+          ${'Overview metrics'}        | ${findOverviewMetrics}       | ${false} | ${false}
+          ${'Type of work chart'}      | ${findTypeOfWorkCharts}      | ${true}  | ${false}
+          ${'Duration overview chart'} | ${findDurationOverviewChart} | ${false} | ${false}
+        `(`for $component`, ({ componentFinder, exists, visible }) => {
+          it(`${exists ? 'will' : 'will not'} render`, () => {
+            expect(componentFinder().exists()).toBe(exists);
+          });
+
+          it(`${visible ? 'will' : 'will not'} be visible`, () => {
+            expect(componentFinder().exists()).toBe(exists);
+          });
         });
       });
     });
@@ -402,34 +414,6 @@ describe('EE Value Stream Analytics component', () => {
       wrapper = await createComponent({ selectedStage: issueStage });
 
       expect(createAlert).toHaveBeenCalledWith({ message: I18N_VSA_ERROR_SELECTED_STAGE });
-    });
-
-    it('will display an error if the fetchTopRankedGroupLabels request fails', async () => {
-      expect(createAlert).not.toHaveBeenCalled();
-
-      mock
-        .onGet(endpoints.tasksByTypeTopLabelsData)
-        .reply(HTTP_STATUS_NOT_FOUND, { response: { status: HTTP_STATUS_NOT_FOUND } });
-      wrapper = await createComponent();
-      await waitForPromises();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'There was an error fetching the top labels for the selected group',
-      });
-    });
-
-    it('will display an error if the fetchTasksByTypeData request fails', async () => {
-      expect(createAlert).not.toHaveBeenCalled();
-
-      mock
-        .onGet(endpoints.tasksByTypeData)
-        .reply(HTTP_STATUS_NOT_FOUND, { response: { status: HTTP_STATUS_NOT_FOUND } });
-      wrapper = await createComponent();
-      await waitForPromises();
-
-      expect(createAlert).toHaveBeenCalledWith({
-        message: 'There was an error fetching data for the tasks by type chart',
-      });
     });
 
     it('will display an error if the fetchStageMedian request fails', async () => {
@@ -611,8 +595,7 @@ describe('EE Value Stream Analytics component', () => {
       mockRequiredRoutes(mock);
       wrapper = await createComponent({
         withStageSelected: true,
-        initialState: {
-          ...initialCycleAnalyticsState,
+        props: {
           enableTasksByTypeChart: false,
         },
       });

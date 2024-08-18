@@ -2,10 +2,12 @@ import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import waitForPromises from 'helpers/wait_for_promises';
 import TasksByTypeChart from 'ee/analytics/cycle_analytics/components/tasks_by_type/chart.vue';
 import TasksByTypeFilters from 'ee/analytics/cycle_analytics/components/tasks_by_type/filters.vue';
 import TypeOfWorkCharts from 'ee/analytics/cycle_analytics/components/type_of_work_charts.vue';
 import NoDataAvailableState from 'ee/analytics/cycle_analytics/components/no_data_available_state.vue';
+import typeOfWorkModule from 'ee/analytics/cycle_analytics/store/modules/type_of_work';
 import {
   TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
   TASKS_BY_TYPE_FILTERS,
@@ -14,57 +16,99 @@ import ChartSkeletonLoader from '~/vue_shared/components/resizable_chart/skeleto
 import { tasksByTypeData, taskByTypeFilters, groupLabelNames } from '../mock_data';
 
 Vue.use(Vuex);
-
-const actionSpies = {
-  setTasksByTypeFilters: jest.fn(),
-};
-
-const fakeStore = ({ initialGetters, initialState }) =>
-  new Vuex.Store({
-    modules: {
-      typeOfWork: {
-        namespaced: true,
-        getters: {
-          tasksByTypeChartData: () => tasksByTypeData,
-          selectedTasksByTypeFilters: () => taskByTypeFilters,
-          currentGroupPath: () => 'fake/group/path',
-          selectedLabelNames: () => groupLabelNames,
-          ...initialGetters,
-        },
-        state: {
-          ...initialState,
-        },
-        actions: actionSpies,
-      },
-    },
-  });
+jest.mock('~/alert');
 
 describe('TypeOfWorkCharts', () => {
-  function createComponent({ stubs = {}, initialGetters, initialState } = {}) {
-    return shallowMount(TypeOfWorkCharts, {
-      store: fakeStore({ initialGetters, initialState }),
+  let wrapper;
+
+  const fetchTopRankedGroupLabels = jest.fn();
+  const setTasksByTypeFilters = jest.fn();
+
+  const createStore = (state, getters) =>
+    new Vuex.Store({
+      state: {
+        namespace: {
+          fullPath: 'fake/group/path',
+          name: 'Gitlab Org',
+          type: 'Group',
+        },
+        createdAfter: new Date('2019-12-11'),
+        createdBefore: new Date('2020-01-10'),
+      },
+      getters: {
+        namespacePath: () => 'fake/group/path',
+        selectedProjectIds: () => [],
+        cycleAnalyticsRequestParams: () => ({
+          project_ids: null,
+          created_after: '2019-12-11',
+          created_before: '2020-01-10',
+          author_username: null,
+          milestone_title: null,
+          assignee_username: null,
+        }),
+      },
+      modules: {
+        typeOfWork: {
+          ...typeOfWorkModule,
+          state: {
+            ...typeOfWorkModule.state,
+            ...state,
+          },
+          getters: {
+            ...typeOfWorkModule.getters,
+            tasksByTypeChartData: () => tasksByTypeData,
+            selectedTasksByTypeFilters: () => taskByTypeFilters,
+            selectedLabelNames: () => groupLabelNames,
+            ...getters,
+          },
+          actions: {
+            ...typeOfWorkModule.actions,
+            fetchTopRankedGroupLabels,
+            setTasksByTypeFilters,
+          },
+        },
+      },
+    });
+
+  const createWrapper = ({ state = {}, getters = {}, stubs = {} } = {}) => {
+    wrapper = shallowMount(TypeOfWorkCharts, {
+      store: createStore(state, getters),
       stubs: {
         TasksByTypeChart: true,
         TasksByTypeFilters: true,
         ...stubs,
       },
     });
-  }
 
-  let wrapper = null;
+    return waitForPromises();
+  };
 
-  const findSubjectFilters = (_wrapper) => _wrapper.findComponent(TasksByTypeFilters);
-  const findTasksByTypeChart = (_wrapper) => _wrapper.findComponent(TasksByTypeChart);
-  const findLoader = (_wrapper) => _wrapper.findComponent(ChartSkeletonLoader);
-  const findNoDataAvailableState = (_wrapper) => _wrapper.findComponent(NoDataAvailableState);
+  const findSubjectFilters = () => wrapper.findComponent(TasksByTypeFilters);
+  const findTasksByTypeChart = () => wrapper.findComponent(TasksByTypeChart);
+  const findLoader = () => wrapper.findComponent(ChartSkeletonLoader);
+  const findNoDataAvailableState = () => wrapper.findComponent(NoDataAvailableState);
+
+  describe('when loading', () => {
+    beforeEach(() => {
+      createWrapper({ state: { isLoading: true } });
+    });
+
+    it('renders skeleton loader', () => {
+      expect(findLoader().exists()).toBe(true);
+    });
+  });
 
   describe('with data', () => {
     beforeEach(() => {
-      wrapper = createComponent();
+      return createWrapper();
+    });
+
+    it('calls the `fetchTopRankedGroupLabels` action', () => {
+      expect(fetchTopRankedGroupLabels).toHaveBeenCalled();
     });
 
     it('renders the task by type chart', () => {
-      expect(findTasksByTypeChart(wrapper).exists()).toBe(true);
+      expect(findTasksByTypeChart().exists()).toBe(true);
     });
 
     it('renders a description of the current filters', () => {
@@ -76,12 +120,27 @@ describe('TypeOfWorkCharts', () => {
     it('does not render the loading icon', () => {
       expect(findLoader(wrapper).exists()).toBe(false);
     });
+
+    describe('when a filter is selected', () => {
+      const payload = {
+        filter: TASKS_BY_TYPE_FILTERS.SUBJECT,
+        value: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
+      };
+
+      beforeEach(() => {
+        findSubjectFilters(wrapper).vm.$emit('update-filter', payload);
+      });
+
+      it('calls the setTasksByTypeFilters method', () => {
+        expect(setTasksByTypeFilters).toHaveBeenCalledWith(expect.any(Object), payload);
+      });
+    });
   });
 
   describe('with selected projects', () => {
     const createWithProjects = (projectIds) =>
-      createComponent({
-        initialGetters: {
+      createWrapper({
+        getters: {
           selectedTasksByTypeFilters: () => ({
             ...taskByTypeFilters,
             selectedProjectIds: projectIds,
@@ -89,15 +148,15 @@ describe('TypeOfWorkCharts', () => {
         },
       });
 
-    it('renders multiple selected project counts', () => {
-      wrapper = createWithProjects([1, 2]);
+    it('renders multiple selected project counts', async () => {
+      await createWithProjects([1, 2]);
       expect(wrapper.text()).toContain(
         "Shows issues and 3 labels for group 'Gitlab Org' and 2 projects from Dec 11, 2019 to Jan 10, 2020",
       );
     });
 
-    it('renders one selected project count', () => {
-      wrapper = createWithProjects([1]);
+    it('renders one selected project count', async () => {
+      await createWithProjects([1]);
       expect(wrapper.text()).toContain(
         "Shows issues and 3 labels for group 'Gitlab Org' and 1 project from Dec 11, 2019 to Jan 10, 2020",
       );
@@ -106,8 +165,8 @@ describe('TypeOfWorkCharts', () => {
 
   describe('with no data', () => {
     beforeEach(() => {
-      wrapper = createComponent({
-        initialGetters: {
+      return createWrapper({
+        getters: {
           tasksByTypeChartData: () => ({ groupBy: [], data: [] }),
         },
       });
@@ -119,36 +178,6 @@ describe('TypeOfWorkCharts', () => {
 
     it('renders the no data available message', () => {
       expect(findNoDataAvailableState(wrapper).exists()).toBe(true);
-    });
-  });
-
-  describe('when a filter is selected', () => {
-    const payload = {
-      filter: TASKS_BY_TYPE_FILTERS.SUBJECT,
-      value: TASKS_BY_TYPE_SUBJECT_MERGE_REQUEST,
-    };
-
-    beforeEach(() => {
-      wrapper = createComponent();
-      findSubjectFilters(wrapper).vm.$emit('update-filter', payload);
-    });
-
-    it('calls the setTasksByTypeFilters method', () => {
-      expect(actionSpies.setTasksByTypeFilters).toHaveBeenCalledWith(expect.any(Object), payload);
-    });
-  });
-
-  describe.each`
-    stateKey                                | value
-    ${'isLoadingTasksByTypeChart'}          | ${true}
-    ${'isLoadingTasksByTypeChartTopLabels'} | ${true}
-  `('when $stateKey=$value', ({ stateKey, value }) => {
-    beforeEach(() => {
-      wrapper = createComponent({ initialState: { [stateKey]: value } });
-    });
-
-    it('renders loading icon', () => {
-      expect(findLoader(wrapper).exists()).toBe(true);
     });
   });
 });

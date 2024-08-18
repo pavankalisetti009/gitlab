@@ -118,7 +118,6 @@ export default {
       namespace = {},
       canEdit = false,
       enableVsdLink = false,
-      enableTasksByTypeChart = false,
       enableCustomizableStages = false,
       enableProjectsFilter = false,
       projectId = null,
@@ -135,7 +134,6 @@ export default {
     state.namespace = namespace;
     state.canEdit = canEdit;
     state.enableVsdLink = enableVsdLink;
-    state.enableTasksByTypeChart = enableTasksByTypeChart;
     state.enableCustomizableStages = enableCustomizableStages;
     state.enableProjectsFilter = enableProjectsFilter;
 

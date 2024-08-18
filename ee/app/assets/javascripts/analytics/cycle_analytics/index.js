@@ -27,6 +27,7 @@ export default () => {
     newValueStreamPath,
     editValueStreamPath,
     hasScopedLabelsFeature,
+    enableTasksByTypeChart,
   } = el.dataset;
   const initialData = buildCycleAnalyticsInitialData(el.dataset);
   const store = createStore();
@@ -60,6 +61,7 @@ export default () => {
           emptyStateSvgPath,
           noDataSvgPath,
           noAccessSvgPath,
+          enableTasksByTypeChart: parseBoolean(enableTasksByTypeChart),
         },
       }),
   });

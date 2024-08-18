@@ -31,8 +31,7 @@ const createStoryWithState = ({ typeOfWork: { getters, state } = {} }) => {
             ...getters,
           },
           state: {
-            isLoadingTasksByTypeChart: false,
-            isLoadingTasksByTypeChartTopLabels: false,
+            isLoading: false,
             errorMessage: null,
             topRankedLabels: [],
             ...state,
@@ -53,7 +52,7 @@ const noDataState = {
 export const NoData = createStoryWithState(noDataState).bind({});
 
 const isLoadingState = {
-  typeOfWork: { state: { isLoadingTasksByTypeChart: true } },
+  typeOfWork: { state: { isLoading: true } },
 };
 export const IsLoading = createStoryWithState(isLoadingState).bind({});
 
