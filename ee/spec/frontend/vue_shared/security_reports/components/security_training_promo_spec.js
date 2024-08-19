@@ -72,7 +72,7 @@ describe('Security training promo component', () => {
       const defaultScopedSlot = '<div>some slot content</div>';
 
       createComponent({ shouldShowCallout: false, defaultScopedSlot });
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
   });
 

@@ -44,7 +44,7 @@ describe('IssueNoteGraphql GraphQL', () => {
   it('should not render if no issueLinks', () => {
     createWrapper({ propsData: { issueLinks: [] } });
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 
   describe('with no attached project', () => {

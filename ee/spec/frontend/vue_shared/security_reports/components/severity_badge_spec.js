@@ -55,7 +55,7 @@ describe('Severity Badge', () => {
     });
 
     it(`renders an empty component`, () => {
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
   });
 });

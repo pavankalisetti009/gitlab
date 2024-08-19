@@ -38,7 +38,7 @@ describe('MergeRequestNoteGraphQL', () => {
   it('should not render if no merge request', () => {
     createWrapper({ propsData: { mergeRequest: null } });
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 
   describe('with no attached project', () => {

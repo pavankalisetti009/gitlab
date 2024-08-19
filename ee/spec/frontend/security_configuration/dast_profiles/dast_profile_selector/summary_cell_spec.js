@@ -25,6 +25,6 @@ describe('DastProfileSummaryCell', () => {
       value: undefined,
     });
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 });

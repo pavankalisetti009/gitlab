@@ -66,13 +66,13 @@ describe('Service Level Agreement', () => {
     it('renders an empty cell by default', () => {
       mountComponent();
 
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
 
     it('renders a empty cell for an invalid date', () => {
       mountComponent({ props: { slaDueAt: 'dfsgsdfg' } });
 
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
   });
 
