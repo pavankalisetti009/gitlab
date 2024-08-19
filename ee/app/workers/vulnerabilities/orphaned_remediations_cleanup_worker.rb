@@ -22,7 +22,9 @@ module Vulnerabilities
 
       # rubocop:disable CodeReuse/ActiveRecord
       Vulnerabilities::Remediation.where.missing(:finding_remediations).each_batch(of: BATCH_SIZE) do |batch|
-        deleted_count = batch.delete_all
+        response = Vulnerabilities::Remediations::BatchDestroyService.new(remediations: batch).execute
+
+        deleted_count = response.payload[:rows_deleted]
         stats[:rows_deleted] += deleted_count
         stats[:batches] += 1
       end
