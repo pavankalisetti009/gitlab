@@ -261,7 +261,7 @@ describe('DastSiteProfileForm', () => {
         'Headers may appear in vulnerability reports',
       );
       expect(findRequestHeadersTooltipHref()).toEqual(
-        '/help/user/application_security/dast/browser_based#available-cicd-variables',
+        '/help/user/application_security/dast/browser/configuration/variables',
       );
     });
 

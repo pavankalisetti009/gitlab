@@ -19,7 +19,6 @@ import BaseDastProfileForm from '../../components/base_dast_profile_form.vue';
 import dastProfileFormMixin from '../../dast_profile_form_mixin';
 import TooltipIcon from '../../dast_scanner_profiles/components/tooltip_icon.vue';
 import {
-  DAST_API_DOC_PATH_BASE,
   MAX_CHAR_LIMIT_EXCLUDED_URLS,
   MAX_CHAR_LIMIT_REQUEST_HEADERS,
   EXCLUDED_URLS_SEPARATOR,
@@ -28,25 +27,24 @@ import {
   TARGET_TYPES,
   SCAN_METHODS,
   I18N_DAST_URL_CHANGE_WARNING,
-  DAST_BROWSER_BASED_DOC_PATH_BASE,
 } from '../constants';
 import dastSiteProfileCreateMutation from '../graphql/dast_site_profile_create.mutation.graphql';
 import dastSiteProfileUpdateMutation from '../graphql/dast_site_profile_update.mutation.graphql';
 import DastSiteAuthSection from './dast_site_auth_section.vue';
 
 export default {
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  DAST_API_DOC_PATH: helpPagePath(DAST_API_DOC_PATH_BASE, {
-    anchor: 'enable-dast-api-scanning',
-  }),
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  DAST_API_DOC_GRAPHQL_PATH: helpPagePath(DAST_API_DOC_PATH_BASE, {
-    anchor: 'graphql-schema',
-  }),
-  // eslint-disable-next-line local-rules/require-valid-help-page-path
-  DAST_BROWSER_AVAILABLE_VARIABLES_PATH: helpPagePath(DAST_BROWSER_BASED_DOC_PATH_BASE, {
-    anchor: 'available-cicd-variables',
-  }),
+  DAST_API_DOC_PATH: helpPagePath(
+    'user/application_security/api_security_testing/configuration/enabling_the_analyzer',
+  ),
+  DAST_API_DOC_GRAPHQL_PATH: helpPagePath(
+    'user/application_security/api_security_testing/configuration/enabling_the_analyzer',
+    {
+      anchor: 'graphql-schema',
+    },
+  ),
+  DAST_BROWSER_AVAILABLE_VARIABLES_PATH: helpPagePath(
+    'user/application_security/dast/browser/configuration/variables',
+  ),
   dastSiteProfileCreateMutation,
   dastSiteProfileUpdateMutation,
   i18n: {
