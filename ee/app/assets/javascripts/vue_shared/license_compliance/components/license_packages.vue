@@ -43,7 +43,7 @@ export default {
     <button
       v-if="!showAllPackages && remainingPackages"
       type="button"
-      class="btn-link btn-show-all-packages"
+      class="btn-link gl-button btn-show-all-packages"
       @click="handleShowPackages"
     >
       {{ remainingPackages }}
