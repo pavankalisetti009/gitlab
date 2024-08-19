@@ -5,7 +5,7 @@ product_group: environments
 value_type: number
 status: active
 milestone: "14.10"
-introduced_by_url:
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/54332
 time_frame: all
 data_source: database
 data_category: optional
