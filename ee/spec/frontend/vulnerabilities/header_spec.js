@@ -418,23 +418,6 @@ describe('Vulnerability Header', () => {
     });
   });
 
-  describe('when the "explainVulnerabilityTool" feature flag is disabled', () => {
-    it('does not show the "Explain with AI" button', async () => {
-      createWrapper({
-        glFeatures: {
-          explainVulnerabilityTool: false,
-          vulnerabilityResolutionGa: false,
-        },
-        vulnerability: getVulnerability(),
-      });
-      await waitForPromises();
-
-      const buttons = findSplitButton().props('buttons');
-      expect(buttons).toHaveLength(1);
-      expect(buttons[0].name).not.toBe('Explain with AI');
-    });
-  });
-
   describe('when the "vulnerabilityResolutionGa" feature flag is disabled', () => {
     it('shows the split button and does not show the dropdown button with the list of available actions', () => {
       createWrapper({
