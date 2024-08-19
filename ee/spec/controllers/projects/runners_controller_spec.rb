@@ -25,7 +25,7 @@ RSpec.describe Projects::RunnersController, :saas, feature_category: :fleet_visi
   end
 
   describe '#toggle_shared_runners' do
-    let_it_be(:group) { create(:group) }
+    let_it_be(:group) { create(:group_with_plan, plan: :free_plan, trial_ends_on: Date.today + 1.day) }
 
     let(:project) { create(:project, group: group) }
 
@@ -73,7 +73,7 @@ RSpec.describe Projects::RunnersController, :saas, feature_category: :fleet_visi
       context 'when user has not completed identity verification' do
         before do
           # credit card verification takes precedence over identity verification so we need to disable it
-          stub_feature_flags(ci_require_credit_card_on_free_plan: false)
+          stub_feature_flags(ci_require_credit_card_on_trial_plan: false)
         end
 
         it_behaves_like 'does not permit enabling shared runners' do

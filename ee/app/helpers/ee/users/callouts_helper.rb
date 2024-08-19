@@ -61,8 +61,7 @@ module EE
         return false unless failed_pipeline
 
         project = failed_pipeline.project
-        feature_enabled = ::Feature.enabled?(:ci_require_credit_card_on_free_plan, project) ||
-          ::Feature.enabled?(:ci_require_credit_card_on_trial_plan, project)
+        feature_enabled = ::Feature.enabled?(:ci_require_credit_card_on_trial_plan, project)
 
         feature_enabled && !user_dismissed?('verification_reminder', failed_pipeline.created_at)
       end
