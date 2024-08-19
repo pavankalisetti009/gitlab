@@ -7550,6 +7550,7 @@ CREATE TABLE catalog_resource_versions (
     cached_markdown_version integer,
     readme text,
     readme_html text,
+    published_by_id bigint,
     CONSTRAINT check_701bdce47b CHECK ((char_length(semver_prerelease) <= 255))
 );
 
@@ -26903,6 +26904,8 @@ CREATE INDEX index_catalog_resource_components_on_version_id ON catalog_resource
 
 CREATE INDEX index_catalog_resource_versions_on_project_id ON catalog_resource_versions USING btree (project_id);
 
+CREATE INDEX index_catalog_resource_versions_on_published_by_id ON catalog_resource_versions USING btree (published_by_id);
+
 CREATE UNIQUE INDEX index_catalog_resource_versions_on_release_id ON catalog_resource_versions USING btree (release_id);
 
 CREATE INDEX index_catalog_resource_versions_on_resource_id_and_released_at ON catalog_resource_versions USING btree (catalog_resource_id, released_at);
@@ -33630,6 +33633,9 @@ ALTER TABLE ONLY namespace_bans
 
 ALTER TABLE ONLY gitlab_subscriptions
     ADD CONSTRAINT fk_bd0c4019c3 FOREIGN KEY (hosted_plan_id) REFERENCES plans(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY catalog_resource_versions
+    ADD CONSTRAINT fk_bd1b87591a FOREIGN KEY (published_by_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY resource_link_events
     ADD CONSTRAINT fk_bd4ae15ce4 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL;
