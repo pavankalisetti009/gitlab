@@ -21,6 +21,10 @@ RSpec.describe "Converts a work item to a new type", feature_category: :team_pla
     }
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+  end
+
   context 'when the work item type is not part of the license' do
     let(:current_user) { developer }
 
@@ -68,20 +72,39 @@ RSpec.describe "Converts a work item to a new type", feature_category: :team_pla
     let_it_be(:group) { create(:group, developers: developer) }
 
     before do
-      stub_licensed_features(okrs: true)
+      stub_licensed_features(epics: true, okrs: true)
     end
 
     context 'when epic work item does not have a synced epic' do
       let_it_be(:work_item) { create(:work_item, :epic, namespace: group) }
 
-      it 'converts the work item type', :aggregate_failures do
-        expect do
-          post_graphql_mutation(mutation, current_user: current_user)
-        end.to change { work_item.reload.work_item_type }.to(new_type)
+      context 'with group level work items license' do
+        it 'converts the work item type', :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.to change { work_item.reload.work_item_type }.to(new_type)
 
-        expect(response).to have_gitlab_http_status(:success)
-        expect(work_item.reload.work_item_type.base_type).to eq('objective')
-        expect(mutation_response['workItem']).to include('id' => work_item.to_global_id.to_s)
+          expect(response).to have_gitlab_http_status(:success)
+          expect(work_item.reload.work_item_type.base_type).to eq('objective')
+          expect(mutation_response['workItem']).to include('id' => work_item.to_global_id.to_s)
+        end
+      end
+
+      context 'without group level work items license' do
+        before do
+          stub_licensed_features(okrs: true, epics: false)
+        end
+
+        it 'does not convert the work item type', :aggregate_failures do
+          expect do
+            post_graphql_mutation(mutation, current_user: current_user)
+          end.not_to change { work_item.reload.work_item_type }
+
+          expect_graphql_errors_to_include(
+            "The resource that you are attempting to access does not exist or " \
+              "you don't have permission to perform this action"
+          )
+        end
       end
     end
 

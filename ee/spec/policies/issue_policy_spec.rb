@@ -31,6 +31,10 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     described_class.new(user, issue)
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+  end
+
   describe 'summarize_comments', :with_cloud_connector do
     let(:authorizer) { instance_double(::Gitlab::Llm::FeatureAuthorizer) }
 
@@ -147,10 +151,28 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       expect(permissions(non_member, group_issue)).to be_disallowed(:reopen_issue)
     end
 
-    it 'allows it for members', :aggregate_failures do
-      expect(permissions(guest, group_issue)).to be_disallowed(:reopen_issue)
-      expect(permissions(reporter, group_issue)).to be_allowed(:reopen_issue)
-      expect(permissions(owner, group_issue)).to be_allowed(:reopen_issue)
+    it 'does not allow for anonymous' do
+      expect(permissions(nil, group_issue)).to be_disallowed(:reopen_issue)
+    end
+
+    context 'without group level issue license' do
+      it 'dis-allows it for members', :aggregate_failures do
+        expect(permissions(guest, group_issue)).to be_disallowed(:reopen_issue)
+        expect(permissions(reporter, group_issue)).to be_disallowed(:reopen_issue)
+        expect(permissions(owner, group_issue)).to be_disallowed(:reopen_issue)
+      end
+    end
+
+    context 'with group level issue license' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'allows it for members', :aggregate_failures do
+        expect(permissions(guest, group_issue)).to be_disallowed(:reopen_issue)
+        expect(permissions(reporter, group_issue)).to be_allowed(:reopen_issue)
+        expect(permissions(owner, group_issue)).to be_allowed(:reopen_issue)
+      end
     end
   end
 
@@ -173,9 +195,19 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
     end
 
     it 'allow guest to admin_issue_relation' do
-      expect(permissions(guest, group_issue)).to be_allowed(:admin_issue_relation)
+      expect(permissions(guest, group_issue)).to be_disallowed(:admin_issue_relation)
       expect(permissions(guest, private_issue)).to be_allowed(:admin_issue_relation)
       expect(permissions(guest, public_issue)).to be_allowed(:admin_issue_relation)
+    end
+
+    context 'with group level issue license' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'allows it for guest', :aggregate_failures do
+        expect(permissions(guest, group_issue)).to be_allowed(:admin_issue_relation)
+      end
     end
 
     context 'when issue is confidential' do
@@ -200,9 +232,19 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       end
 
       it 'allows support_bot to admin_issue_relation' do
-        expect(permissions(support_bot, group_issue)).to be_allowed(:admin_issue_relation)
+        expect(permissions(support_bot, group_issue)).to be_disallowed(:admin_issue_relation)
         expect(permissions(support_bot, public_issue)).to be_allowed(:admin_issue_relation)
         expect(permissions(support_bot, private_issue)).to be_allowed(:admin_issue_relation)
+      end
+
+      context 'with group level issue license' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it 'allows it for support_bot', :aggregate_failures do
+          expect(permissions(support_bot, group_issue)).to be_allowed(:admin_issue_relation)
+        end
       end
     end
 
@@ -237,7 +279,7 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
       let_it_be_with_reload(:group_issue) { create(:issue, :with_synced_epic, namespace: group) }
 
       before do
-        stub_licensed_features(issuable_resource_links: true)
+        stub_licensed_features(issuable_resource_links: true, epics: true)
         stub_feature_flags(work_item_epics: false)
       end
 
@@ -273,37 +315,81 @@ RSpec.describe IssuePolicy, feature_category: :team_planning do
           stub_feature_flags(work_item_epics: root_group)
         end
 
-        it 'does allow' do
-          # allows some permissions as guest
-          expect(permissions(guest, group_issue)).to be_allowed(
-            :read_issue, :read_issuable, :admin_issue_link, :read_issuable_participables, :read_note, :read_work_item,
-            :read_issuable_metric_image, :read_incident_management_timeline_event, :read_cross_project
-          )
+        context 'without group level issue license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
 
-          # allows read permissions
-          expect(permissions(reporter, group_issue)).to be_allowed(:read_internal_note, :read_crm_contacts)
+          it 'does not allow' do
+            # allows some permissions as guest
+            expect(permissions(guest, group_issue)).to be_disallowed(
+              :read_issue, :read_issuable, :admin_issue_link, :read_issuable_participables, :read_note, :read_work_item,
+              :read_issuable_metric_image, :read_incident_management_timeline_event, :read_cross_project
+            )
 
-          # allows some permissions that modify the issue
-          expect(permissions(owner, group_issue)).to be_allowed(
-            :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
-            :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
-            :mark_note_as_internal, :create_timelog, :destroy_issue
-          )
+            # allows read permissions
+            expect(permissions(reporter, group_issue)).to be_disallowed(:read_internal_note, :read_crm_contacts)
+
+            # allows some permissions that modify the issue
+            expect(permissions(owner, group_issue)).to be_disallowed(
+              :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
+              :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
+              :mark_note_as_internal, :create_timelog, :destroy_issue
+            )
+          end
+
+          it 'does not allow' do
+            # these read permissions are not yet defined for group level issues
+            expect(permissions(owner, group_issue)).to be_disallowed(
+              :read_issuable_resource_link, :read_issue_iid, :read_design
+            )
+
+            # these permissions are either not yet defined for group level issues or not allowed
+            expect(permissions(owner, group_issue)).to be_disallowed(
+              :create_requirement_test_report, :resolve_note, :admin_note,
+              :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
+              :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image,
+              :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
+            )
+          end
         end
 
-        it 'does not allow' do
-          # these read permissions are not yet defined for group level issues
-          expect(permissions(owner, group_issue)).to be_disallowed(
-            :read_issuable_resource_link, :read_issue_iid, :read_design
-          )
+        context 'with group level issue license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
 
-          # these permissions are either not yet defined for group level issues or not allowed
-          expect(permissions(owner, group_issue)).to be_disallowed(
-            :create_requirement_test_report, :resolve_note, :admin_note,
-            :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
-            :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image,
-            :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
-          )
+          it 'does allow' do
+            # allows some permissions as guest
+            expect(permissions(guest, group_issue)).to be_allowed(
+              :read_issue, :read_issuable, :admin_issue_link, :read_issuable_participables, :read_note, :read_work_item,
+              :read_issuable_metric_image, :read_incident_management_timeline_event, :read_cross_project
+            )
+
+            # allows read permissions
+            expect(permissions(reporter, group_issue)).to be_allowed(:read_internal_note, :read_crm_contacts)
+
+            # allows some permissions that modify the issue
+            expect(permissions(owner, group_issue)).to be_allowed(
+              :admin_issue, :update_issue, :set_issue_metadata, :create_note, :admin_issue_relation, :award_emoji,
+              :create_todo, :update_subscription, :set_confidentiality, :set_issue_crm_contacts, :set_note_created_at,
+              :mark_note_as_internal, :create_timelog, :destroy_issue
+            )
+          end
+
+          it 'does not allow' do
+            expect(permissions(owner, group_issue)).to be_allowed(
+              :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
+            )
+
+            # these read permissions are not yet defined for group level issues
+            expect(permissions(owner, group_issue)).to be_disallowed(
+              :read_issuable_resource_link, :read_issue_iid, :read_design,
+              :create_requirement_test_report, :resolve_note, :admin_note,
+              :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
+              :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
+            )
+          end
         end
       end
     end

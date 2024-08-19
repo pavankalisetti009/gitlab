@@ -16,6 +16,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
   context 'when user has permissions to create a work item' do
     let(:current_user) { developer }
 
+    before do
+      stub_licensed_features(epics: true)
+    end
+
     shared_examples 'creates work item with iteration widget' do
       let(:fields) do
         <<~FIELDS
@@ -49,7 +53,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
 
         before do
-          stub_licensed_features(iterations: true)
+          stub_licensed_features(epics: true, iterations: true)
         end
 
         it "sets the work item's iteration", :aggregate_failures do
@@ -69,7 +73,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when iterations feature is unavailable' do
           before do
-            stub_licensed_features(iterations: false)
+            stub_licensed_features(epics: true, iterations: false)
           end
 
           # TODO: https://gitlab.com/gitlab-org/gitlab/-/issues/383322
@@ -120,7 +124,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when okrs are available' do
           before do
-            stub_licensed_features(okrs: true)
+            stub_licensed_features(epics: true, okrs: true)
           end
 
           it 'creates the work item' do
@@ -141,7 +145,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         context 'when okrs are not available' do
           before do
-            stub_licensed_features(okrs: false)
+            stub_licensed_features(epics: true, okrs: false)
           end
 
           it 'returns error' do
@@ -165,7 +169,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
 
         before do
-          stub_licensed_features(group_webhooks: true)
+          stub_licensed_features(epics: true, group_webhooks: true)
           create(:group_hook, issues_events: true, group: group)
         end
 
@@ -609,8 +613,10 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
               stub_licensed_features(epics: false)
             end
 
-            it_behaves_like 'a mutation that returns top-level errors',
-              errors: ['Epic type is not available for the given group']
+            it_behaves_like 'a mutation that returns top-level errors', errors: [
+              "The resource that you are attempting to access does not exist or you don't have " \
+                "permission to perform this action"
+            ]
           end
         end
       end
