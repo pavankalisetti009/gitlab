@@ -438,6 +438,13 @@ module EE
           alpha: { milestone: '17.3' },
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the project.'
+
+        field :observability_metrics_links,
+          ::Types::Observability::MetricType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Metrics attached to the project.',
+          resolver: ::Resolvers::Observability::MetricsResolver
       end
 
       def tracking_key

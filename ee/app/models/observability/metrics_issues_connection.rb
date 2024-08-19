@@ -4,6 +4,7 @@ module Observability
   class MetricsIssuesConnection < ApplicationRecord
     self.table_name = 'observability_metrics_issues_connections'
     belongs_to :issue, optional: false
+    belongs_to :project
 
     validates :metric_name,
       length: { maximum: 500 },
@@ -26,13 +27,19 @@ module Observability
       exponential_histogram_type: 3
     }
 
-    before_save :populate_sharding_key
+    scope :for_project_id, ->(project_id) { where(project_id: project_id) }
+    scope :by_name, ->(name) { where(metric_name: name) }
+    scope :by_type, ->(type) { where(metric_type: type) }
+    scope :by_issue, ->(issue) { where(issue_id: issue.id) }
+
+    before_save :populate_issue_metadata
 
     private
 
-    def populate_sharding_key
+    def populate_issue_metadata
       issue = self.issue
       self[:namespace_id] = issue&.namespace&.id
+      self[:project_id] = issue&.project&.id
     end
   end
 end

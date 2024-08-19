@@ -13999,6 +13999,7 @@ CREATE TABLE observability_metrics_issues_connections (
     updated_at timestamp with time zone NOT NULL,
     metric_type smallint NOT NULL,
     metric_name text NOT NULL,
+    project_id bigint,
     CONSTRAINT check_3c743c1262 CHECK ((char_length(metric_name) <= 500))
 );
 
@@ -28794,6 +28795,8 @@ CREATE INDEX index_observability_logs_issues_connections_on_project_id ON observ
 
 CREATE INDEX index_observability_metrics_issues_connections_on_namespace_id ON observability_metrics_issues_connections USING btree (namespace_id);
 
+CREATE INDEX index_observability_metrics_issues_connections_on_project_id ON observability_metrics_issues_connections USING btree (project_id);
+
 CREATE UNIQUE INDEX index_on_deploy_keys_id_and_type_and_public ON keys USING btree (id, type) WHERE (public = true);
 
 CREATE INDEX index_on_dingtalk_tracker_data_corpid ON dingtalk_tracker_data USING btree (corpid) WHERE (corpid IS NOT NULL);
@@ -33345,6 +33348,9 @@ ALTER TABLE ONLY releases
 
 ALTER TABLE ONLY protected_tags
     ADD CONSTRAINT fk_8e4af87648 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY observability_metrics_issues_connections
+    ADD CONSTRAINT fk_8e765678ba FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY audit_events_streaming_group_namespace_filters
     ADD CONSTRAINT fk_8ed182d7da FOREIGN KEY (external_streaming_destination_id) REFERENCES audit_events_group_external_streaming_destinations(id) ON DELETE CASCADE;
