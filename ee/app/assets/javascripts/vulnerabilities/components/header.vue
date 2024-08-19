@@ -87,8 +87,6 @@ export default {
   },
   computed: {
     actionButtons() {
-      const { glFeatures } = this;
-
       const buttons = [];
 
       if (this.canCreateMergeRequest) {
@@ -104,9 +102,7 @@ export default {
       }
 
       if (this.glAbilities.explainVulnerabilityWithAi) {
-        if (glFeatures.explainVulnerabilityTool) {
-          buttons.push(EXPLAIN_VULNERABILITY_AI_ACTION);
-        }
+        buttons.push(EXPLAIN_VULNERABILITY_AI_ACTION);
       }
 
       return buttons;
