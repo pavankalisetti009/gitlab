@@ -10,9 +10,14 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
   let_it_be(:group) { create(:group, :nested, developers: user) }
   let(:work_items_path) { group_work_item_path(group, work_item.iid) }
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+  end
+
   context 'for signed in user' do
     before do
       sign_in(user)
+      stub_licensed_features(epics: true)
     end
 
     it 'creates a group work item' do
@@ -51,7 +56,6 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
 
       context 'on the epics route' do
         before do
-          stub_licensed_features(epics: true)
           visit group_epic_path(group, work_item.iid)
 
           within_testid('work-item-feedback-popover') do
@@ -86,6 +90,23 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
           expect(page).to have_link('Work items', href: "#{group_work_items_path(group)}/")
           expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
         end
+      end
+    end
+
+    context 'without group level work items license' do
+      let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'shows the correct breadcrumbs' do
+        visit work_items_path
+        expect(page).to have_content("Work item not found")
+        expect(page).to have_content(
+          "This work item is not available. It either doesn't exist or you don't " \
+            "have permission to view it"
+        )
       end
     end
   end

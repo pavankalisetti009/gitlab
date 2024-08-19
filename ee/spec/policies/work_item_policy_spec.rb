@@ -18,11 +18,15 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
     described_class.new(user, work_item)
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+  end
+
   context 'when work item has a synced epic' do
     let_it_be_with_reload(:work_item) { create(:epic, :with_synced_work_item, group: group).work_item }
 
     before do
-      stub_licensed_features(issuable_resource_links: true)
+      stub_licensed_features(issuable_resource_links: true, epics: true)
       stub_feature_flags(work_item_epics: false)
     end
 
@@ -77,23 +81,21 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
       end
 
       it 'does not allow' do
-        # these read permissions are not yet defined for group level issues
-        expect(permissions(owner, work_item)).to be_disallowed(
-          :read_issuable_resource_link, :read_issue_iid, :read_design
+        expect(permissions(owner, work_item)).to be_allowed(
+          :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image
         )
-
         # these permissions are either not yet defined for group level issues or not allowed
         expect(permissions(owner, work_item)).to be_disallowed(
+          :read_issuable_resource_link, :read_issue_iid, :read_design,
           :create_requirement_test_report, :resolve_note, :admin_note,
           :reposition_note, :create_design, :update_design, :destroy_design, :move_design,
-          :upload_issuable_metric_image, :update_issuable_metric_image, :destroy_issuable_metric_image,
           :admin_issuable_resource_link, :admin_timelog, :admin_issue_metrics, :admin_issue_metrics_list
         )
       end
 
       context 'when related_epics feature is available' do
         before do
-          stub_licensed_features(related_epics: true)
+          stub_licensed_features(related_epics: true, epics: true)
         end
 
         it 'allow linking of epic work items' do
@@ -105,7 +107,7 @@ RSpec.describe WorkItemPolicy, feature_category: :team_planning do
 
       context 'when related_epics feature is not available' do
         before do
-          stub_licensed_features(related_epics: false)
+          stub_licensed_features(related_epics: false, epics: true)
         end
 
         it 'does not allow linking of epic work items' do

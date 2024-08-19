@@ -10,44 +10,6 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
   let_it_be(:project) { create(:project, :repository, :public, group: group) }
   let_it_be(:user) { create(:user) }
   let_it_be(:reporter) { create(:user, reporter_of: group) }
-  let_it_be(:label1) { create(:group_label, group: group) }
-  let_it_be(:label2) { create(:group_label, group: group) }
-  let_it_be(:milestone1) { create(:milestone, group: group) }
-  let_it_be(:milestone2) { create(:milestone, group: group) }
-
-  let_it_be(:project_work_item) { create(:work_item, project: project) }
-  let_it_be(:sub_group_work_item) do
-    create(
-      :work_item,
-      namespace: sub_group,
-      author: reporter,
-      milestone: milestone1,
-      labels: [label1]
-    ) do |work_item|
-      create(:award_emoji, name: 'star', awardable: work_item)
-    end
-  end
-
-  let_it_be(:group_work_item) do
-    create(
-      :work_item,
-      :epic_with_legacy_epic,
-      namespace: group,
-      author: reporter,
-      title: 'search_term',
-      milestone: milestone2,
-      labels: [label2]
-    ) do |work_item|
-      create(:award_emoji, name: 'star', awardable: work_item)
-      create(:award_emoji, name: 'rocket', awardable: work_item.sync_object)
-    end
-  end
-
-  let_it_be(:confidential_work_item) do
-    create(:work_item, :confidential, namespace: group, author: reporter)
-  end
-
-  let_it_be(:other_work_item) { create(:work_item) }
 
   let(:work_items_data) { graphql_data['group']['workItems']['nodes'] }
   let(:item_filter_params) { {} }
@@ -62,38 +24,77 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
     QUERY
   end
 
-  shared_examples 'work items resolver without N + 1 queries' do
-    it 'avoids N+1 queries', :use_sql_query_cache do
-      post_graphql(query, current_user: current_user) # Warmup
+  describe 'N + 1 queries' do
+    let_it_be(:label1) { create(:group_label, group: group) }
+    let_it_be(:label2) { create(:group_label, group: group) }
+    let_it_be(:milestone1) { create(:milestone, group: group) }
+    let_it_be(:milestone2) { create(:milestone, group: group) }
 
-      control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
-        post_graphql(query, current_user: current_user)
-      end
-
-      expect_graphql_errors_to_be_empty
-
-      create_list(
+    let_it_be(:project_work_item) { create(:work_item, project: project) }
+    let_it_be(:sub_group_work_item) do
+      create(
         :work_item,
-        3,
+        namespace: sub_group,
+        author: reporter,
+        milestone: milestone1,
+        labels: [label1]
+      ) do |work_item|
+        create(:award_emoji, name: 'star', awardable: work_item)
+      end
+    end
+
+    let_it_be(:group_work_item) do
+      create(
+        :work_item,
         :epic_with_legacy_epic,
         namespace: group,
-        labels: [label1, label2],
+        author: reporter,
+        title: 'search_term',
         milestone: milestone2,
-        author: reporter
+        labels: [label2]
       ) do |work_item|
-        create(:award_emoji, name: 'eyes', awardable: work_item)
+        create(:award_emoji, name: 'star', awardable: work_item)
         create(:award_emoji, name: 'rocket', awardable: work_item.sync_object)
-        create(:award_emoji, name: 'thumbsup', awardable: work_item.sync_object)
       end
-
-      expect do
-        post_graphql(query, current_user: current_user)
-      end.not_to exceed_all_query_limit(control).with_threshold(1)
-      expect_graphql_errors_to_be_empty
     end
-  end
 
-  describe 'N + 1 queries' do
+    let_it_be(:confidential_work_item) do
+      create(:work_item, :confidential, namespace: group, author: reporter)
+    end
+
+    let_it_be(:other_work_item) { create(:work_item) }
+
+    shared_examples 'work items resolver without N + 1 queries' do
+      it 'avoids N+1 queries', :use_sql_query_cache do
+        post_graphql(query, current_user: current_user) # Warmup
+
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+          post_graphql(query, current_user: current_user)
+        end
+
+        expect_graphql_errors_to_be_empty
+
+        create_list(
+          :work_item,
+          3,
+          :epic_with_legacy_epic,
+          namespace: group,
+          labels: [label1, label2],
+          milestone: milestone2,
+          author: reporter
+        ) do |work_item|
+          create(:award_emoji, name: 'eyes', awardable: work_item)
+          create(:award_emoji, name: 'rocket', awardable: work_item.sync_object)
+          create(:award_emoji, name: 'thumbsup', awardable: work_item.sync_object)
+        end
+
+        expect do
+          post_graphql(query, current_user: current_user)
+        end.not_to exceed_all_query_limit(control).with_threshold(1)
+        expect_graphql_errors_to_be_empty
+      end
+    end
+
     context 'when querying root fields' do
       it_behaves_like 'work items resolver without N + 1 queries'
     end
@@ -187,6 +188,8 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
   end
 
   context 'when work_item_epics feature flag is disabled' do
+    let_it_be(:group_work_item) { create(:work_item, :epic_with_legacy_epic, namespace: group) }
+
     context 'when namespace_level_work_items feature flag is enabled' do
       before do
         stub_feature_flags(work_item_epics: false, namespace_level_work_items: true)
@@ -211,6 +214,156 @@ RSpec.describe 'getting a work item list for a group', feature_category: :team_p
         post_graphql(query, current_user: current_user)
 
         expect(graphql_data_at(:group, :workItems)).to be_nil
+      end
+    end
+  end
+
+  describe 'license check' do
+    let_it_be(:group_issuables) { create_list(:work_item, 10, :epic, namespace: group) }
+    let_it_be(:project_issuables) { create_list(:work_item, 10, :epic, project: project) }
+
+    let(:field_name) { 'workItems' }
+    let(:container_name) { 'group' }
+    let(:container) { group }
+    let(:count_path) { ['data', container_name, field_name, 'count'] }
+
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    end
+
+    context 'with group level work items' do
+      context 'with group level work item license' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it_behaves_like 'issuables pagination and count' do
+          let(:issuables) { group_issuables }
+        end
+      end
+
+      context 'without group level work item license' do
+        let(:issuables) { group_issuables }
+        let(:page_size) { 20 }
+
+        let(:query) do
+          <<~GRAPHQL
+            query #{container_name}($fullPath: ID!, $first: Int, $after: String) {
+              #{container_name}(fullPath: $fullPath) {
+                #{field_name}(first: $first, after: $after) {
+                  count
+                  edges {
+                    node {
+                      id
+                    }
+                  }
+                  pageInfo {
+                    endCursor
+                    hasNextPage
+                  }
+                }
+              }
+            }
+          GRAPHQL
+        end
+
+        subject(:execute) do
+          GitlabSchema.execute(
+            query,
+            context: { current_user: user },
+            variables: {
+              fullPath: container.full_path,
+              first: page_size
+            }
+          ).to_h
+        end
+
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'does not return an error' do
+          expect(execute['errors']).to be_nil
+        end
+
+        it 'does not return work items' do
+          data = execute['data'][container_name]['workItems']
+
+          expect(data['edges']).to be_empty
+          expect(data['count']).to eq(10)
+        end
+      end
+    end
+
+    context 'with group and project level work items' do
+      let(:work_items_query) do
+        <<~GRAPHQL
+          query #{container_name}($fullPath: ID!, $first: Int, $after: String) {
+            #{container_name}(fullPath: $fullPath) {
+              #{field_name}(first: $first, after: $after, includeDescendants: true) {
+                count
+                edges {
+                  node {
+                    id
+                  }
+                }
+                pageInfo {
+                  endCursor
+                  hasNextPage
+                }
+              }
+            }
+          }
+        GRAPHQL
+      end
+
+      context 'with group level work item license' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it_behaves_like 'issuables pagination and count' do
+          let_it_be(:issuables) { [group_issuables, project_issuables].flatten }
+
+          let(:per_page) { 19 }
+          let(:query) { work_items_query }
+        end
+      end
+
+      context 'without group level work item license' do
+        let_it_be(:issuables) { [group_issuables, project_issuables] }
+
+        let(:page_size) { 20 }
+        let(:query) { work_items_query }
+
+        subject(:execute) do
+          GitlabSchema.execute(
+            query,
+            context: { current_user: user },
+            variables: {
+              fullPath: container.full_path,
+              first: page_size
+            }
+          ).to_h
+        end
+
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'does not return an error' do
+          expect(execute['errors']).to be_nil
+        end
+
+        it 'does not return work items' do
+          data = execute['data'][container_name]['workItems']
+
+          expect(data['count']).to eq(20)
+          expect(data['edges'].count).to eq(10)
+          expect(data['edges'].map { |node| node.dig('node', 'id') }).to match_array(
+            project_issuables.flat_map(&:to_gid).map(&:to_s)
+          )
+        end
       end
     end
   end

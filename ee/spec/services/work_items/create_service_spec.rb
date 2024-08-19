@@ -85,7 +85,10 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
 
   it_behaves_like 'creates work item in container', :project
   it_behaves_like 'creates work item in container', :project_namespace
-  it_behaves_like 'creates work item in container', :group
+  # group level work items, and epics can be created by reporter vs guest at project level
+  it_behaves_like 'creates work item in container', :group do
+    let(:current_user) { reporter }
+  end
 
   context 'for legacy epics' do
     include_context 'with container for work items service', :group
