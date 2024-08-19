@@ -55,6 +55,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:vulnerability_reads).class_name('Vulnerabilities::Read') }
     it { is_expected.to have_many(:merge_train_cars).class_name('MergeTrains::Car') }
     it { is_expected.to have_many(:xray_reports).class_name('Projects::XrayReport') }
+    it { is_expected.to have_many(:observability_metrics).class_name('Observability::MetricsIssuesConnection') }
     it { is_expected.to have_many(:security_policy_management_project_linked_configurations).class_name('Security::OrchestrationPolicyConfiguration') }
     it { is_expected.to have_many(:security_policy_project_linked_projects).through(:security_policy_management_project_linked_configurations) }
     it { is_expected.to have_many(:security_policy_project_linked_namespaces).through(:security_policy_management_project_linked_configurations) }

@@ -8,10 +8,11 @@ RSpec.describe Observability::MetricsIssuesConnection, feature_category: :metric
   end
 
   describe '#populate_sharding_key' do
-    it 'populating the namespace_id on save' do
+    it 'populating the namespace_id and project_id on save' do
       connection = create(:observability_metrics_issues_connection, namespace_id: nil)
 
       expect(connection.namespace_id).to eq(connection.issue.namespace_id)
+      expect(connection.project_id).to eq(connection.issue.project_id)
     end
   end
 
@@ -73,6 +74,77 @@ RSpec.describe Observability::MetricsIssuesConnection, feature_category: :metric
         histogram_type: 2,
         exponential_histogram_type: 3
       )
+    end
+  end
+
+  describe 'scopes' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:issue) { create(:issue, project: project) }
+    let_it_be(:connection1) do
+      create(:observability_metrics_issues_connection,
+        project: project,
+        issue: issue,
+        metric_name: 'metric1',
+        metric_type: :gauge_type
+      )
+    end
+
+    let_it_be(:connection2) do
+      create(:observability_metrics_issues_connection,
+        project: project,
+        issue: issue,
+        metric_name: 'metric2',
+        metric_type: :sum_type
+      )
+    end
+
+    let_it_be(:connection3) do
+      create(:observability_metrics_issues_connection,
+        project: create(:project),
+        issue: create(:issue),
+        metric_name: 'metric3',
+        metric_type: :histogram_type
+      )
+    end
+
+    describe '.for_project_id' do
+      it 'returns connections for the specified project' do
+        expect(described_class.for_project_id(project.id)).to contain_exactly(connection1, connection2)
+      end
+
+      it 'does not return connections for other projects' do
+        expect(described_class.for_project_id(project.id)).not_to include(connection3)
+      end
+    end
+
+    describe '.by_name' do
+      it 'returns connections with the specified metric name' do
+        expect(described_class.by_name('metric1')).to contain_exactly(connection1)
+      end
+
+      it 'does not return connections with different metric names' do
+        expect(described_class.by_name('metric1')).not_to include(connection2, connection3)
+      end
+    end
+
+    describe '.by_type' do
+      it 'returns connections with the specified metric type' do
+        expect(described_class.by_type(:gauge_type)).to contain_exactly(connection1)
+      end
+
+      it 'does not return connections with different metric types' do
+        expect(described_class.by_type(:gauge_type)).not_to include(connection2, connection3)
+      end
+    end
+
+    describe '.by_issue' do
+      it 'returns connections for the specified issue' do
+        expect(described_class.by_issue(issue)).to contain_exactly(connection1, connection2)
+      end
+
+      it 'does not return connections for other issues' do
+        expect(described_class.by_issue(issue)).not_to include(connection3)
+      end
     end
   end
 

@@ -7,7 +7,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::RubyGems, feature_category:
     expect(described_class.lang).to eq('ruby')
   end
 
-  it_behaves_like 'parsing a lock file' do
+  it_behaves_like 'parsing a valid lock file' do
     let(:lock_file_content) do
       <<~CONTENT
         GEM
@@ -30,6 +30,8 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::RubyGems, feature_category:
 
     let(:expected_formatted_lib_names) { ['bcrypt (3.1.20)', 'logger (1.5.3)'] }
   end
+
+  it_behaves_like 'parsing an invalid lock file'
 
   describe '.matches?' do
     using RSpec::Parameterized::TableSyntax

@@ -56,7 +56,7 @@ module QA
             epic.visit!
           end
 
-          it 'adds/removes issue to/from epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
+          it 'adds/removes issue to/from epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347983' do
             if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
                 show.add_child_issue_to_epic(issue)
@@ -80,7 +80,7 @@ module QA
             end
           end
 
-          it 'comments on epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347982' do
+          it 'comments on epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347982' do
             comment = 'My Epic Comment'
             if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
@@ -97,7 +97,7 @@ module QA
             end
           end
 
-          it 'closes and reopens an epic', testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
+          it 'closes and reopens an epic', :blocking, testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/347984' do
             if EE::Page::Group::WorkItem::Epic::Show.perform(&:work_item_epic?)
               EE::Page::Group::WorkItem::Epic::Show.perform do |show|
                 show.close_epic
