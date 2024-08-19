@@ -5,7 +5,7 @@ product_group: dynamic_analysis
 value_type: number
 status: removed
 milestone: '14.7'
-introduced_by_url:
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/54332
 time_frame: 7d
 data_source: redis_hll
 data_category: optional
