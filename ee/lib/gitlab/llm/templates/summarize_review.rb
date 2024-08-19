@@ -4,6 +4,8 @@ module Gitlab
   module Llm
     module Templates
       class SummarizeReview
+        include Gitlab::Llm::Chain::Concerns::AnthropicPrompt
+
         TOTAL_MODEL_TOKEN_LIMIT = 4000
 
         # 0.5 + 0.25 = 0.75, leaving a 0.25 buffer for the input token limit

@@ -49,6 +49,7 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - summarize_issue_discussions
           - generate_commit_message
           - review_merge_request
+          - summarize_review
   vertex_ai_proxy:
     backend: 'gitlab-ai-gateway'
     bundled_with:
@@ -65,7 +66,6 @@ services: # Cloud connector features (i.e. code_suggestions, duo_chat...)
           - semantic_search_issue
           - summarize_issue_discussions
           - summarize_merge_request
-          - summarize_review
   explain_vulnerability:
     backend: 'gitlab-ai-gateway'
     bundled_with:

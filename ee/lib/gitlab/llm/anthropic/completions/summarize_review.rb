@@ -2,7 +2,7 @@
 
 module Gitlab
   module Llm
-    module VertexAi
+    module Anthropic
       module Completions
         class SummarizeReview < Gitlab::Llm::Completions::Base
           DEFAULT_ERROR = 'An unexpected error has occurred.'
@@ -12,7 +12,7 @@ module Gitlab
             return if draft_notes.empty?
 
             response = response_for(user, draft_notes)
-            response_modifier = ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(response)
+            response_modifier = ::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview.new(response)
 
             ::Gitlab::Llm::GraphqlSubscriptionResponseService.new(
               user, merge_request, response_modifier, options: response_options
@@ -22,7 +22,7 @@ module Gitlab
           rescue StandardError => error
             Gitlab::ErrorTracking.track_exception(error)
 
-            response_modifier = ::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions.new(
+            response_modifier = ::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview.new(
               { error: { message: DEFAULT_ERROR } }.to_json
             )
 
@@ -40,9 +40,11 @@ module Gitlab
           end
 
           def response_for(user, draft_notes)
-            Gitlab::Llm::VertexAi::Client
+            prompt = ai_prompt_class.new(draft_notes).to_prompt
+
+            Gitlab::Llm::Anthropic::Client
               .new(user, unit_primitive: 'summarize_review', tracking_context: tracking_context)
-              .text(content: ai_prompt_class.new(draft_notes).to_prompt)
+              .messages_complete(**prompt)
           end
         end
       end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_category: :code_review_workflow do
+RSpec.describe Gitlab::Llm::Anthropic::Completions::SummarizeReview, feature_category: :code_review_workflow do
   let(:prompt_class) { Gitlab::Llm::Templates::SummarizeReview }
   let(:options) { {} }
   let(:response_modifier) { double }
@@ -18,14 +18,14 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
     build(:ai_message, :summarize_review, user: user, resource: merge_request, request_id: 'uuid')
   end
 
-  subject { described_class.new(prompt_message, prompt_class, options) }
+  subject(:summarize_review) { described_class.new(prompt_message, prompt_class, options) }
 
   describe '#execute' do
     context 'when there are no draft notes authored by user' do
       it 'does not make AI request' do
-        expect(Gitlab::Llm::VertexAi::Client).not_to receive(:new)
+        expect(Gitlab::Llm::Anthropic::Client).not_to receive(:new)
 
-        subject.execute
+        summarize_review.execute
       end
     end
 
@@ -34,16 +34,16 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
 
       context 'when the text model returns an unsuccessful response' do
         before do
-          allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-            allow(client).to receive(:text).and_return(
-              { error: 'Error' }.to_json
+          allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+            allow(client).to receive(:messages_complete).and_return(
+              { error: { message: 'Error' } }.to_json
             )
           end
         end
 
         it 'publishes the error to the graphql subscription' do
-          errors = { error: 'Error' }
-          expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions)
+          errors = { error: { message: 'Error' } }
+          expect(::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview)
             .to receive(:new)
             .with(errors.to_json)
             .and_return(response_modifier)
@@ -55,7 +55,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
 
           expect(response_service).to receive(:execute)
 
-          subject.execute
+          summarize_review.execute
         end
       end
 
@@ -87,13 +87,13 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
         end
 
         before do
-          allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-            allow(client).to receive(:text).and_return(example_response.to_json)
+          allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+            allow(client).to receive(:messages_complete).and_return(example_response.to_json)
           end
         end
 
         it 'publishes the content from the AI response' do
-          expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions)
+          expect(::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview)
             .to receive(:new)
             .with(example_response.to_json)
             .and_return(response_modifier)
@@ -105,28 +105,28 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
 
           expect(response_service).to receive(:execute)
 
-          subject.execute
+          summarize_review.execute
         end
 
         context 'when an unexpected error is raised' do
           let(:error) { StandardError.new("Error") }
 
           before do
-            allow_next_instance_of(Gitlab::Llm::VertexAi::Client) do |client|
-              allow(client).to receive(:text).and_raise(error)
+            allow_next_instance_of(Gitlab::Llm::Anthropic::Client) do |client|
+              allow(client).to receive(:messages_complete).and_raise(error)
             end
             allow(Gitlab::ErrorTracking).to receive(:track_exception)
           end
 
           it 'records the error' do
-            subject.execute
+            summarize_review.execute
             expect(Gitlab::ErrorTracking).to have_received(:track_exception).with(error)
           end
 
           it 'publishes a generic error to the graphql subscription' do
             errors = { error: { message: 'An unexpected error has occurred.' } }
 
-            expect(::Gitlab::Llm::VertexAi::ResponseModifiers::Predictions)
+            expect(::Gitlab::Llm::Anthropic::ResponseModifiers::SummarizeReview)
               .to receive(:new)
               .with(errors.to_json)
               .and_return(response_modifier)
@@ -138,7 +138,7 @@ RSpec.describe Gitlab::Llm::VertexAi::Completions::SummarizeReview, feature_cate
 
             expect(response_service).to receive(:execute)
 
-            subject.execute
+            summarize_review.execute
           end
         end
       end

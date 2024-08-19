@@ -30,6 +30,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           summarize_issue_discussions
           generate_commit_message
           review_merge_request
+          summarize_review
         ]
       }
     end
@@ -48,7 +49,6 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           semantic_search_issue
           summarize_issue_discussions
           summarize_merge_request
-          summarize_review
         ]
       }
     end
