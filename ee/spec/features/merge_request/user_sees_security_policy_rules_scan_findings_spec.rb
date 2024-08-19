@@ -125,7 +125,7 @@ RSpec.describe 'Merge request > User sees security policy with scan finding rule
         create_policy_setup
       end
 
-      it_behaves_like 'does not block the MR'
+      it_behaves_like 'blocks the MR'
     end
 
     context 'when policy is defined for protected branches using branch_type' do

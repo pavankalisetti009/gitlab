@@ -344,6 +344,25 @@ RSpec.describe Security::ScanResultPolicies::UpdateApprovalsService, feature_cat
         let(:expected_violations) { { 'newly_detected' => array_including(uuids) } }
         let(:expected_context) { { 'pipeline_ids' => [pipeline.id], 'target_pipeline_ids' => [] } }
       end
+
+      context 'with missing scan' do
+        before do
+          report_approver_rule.update!(scanners: %i[container_scanning])
+        end
+
+        it_behaves_like 'does not update approvals_required'
+        it_behaves_like 'triggers policy bot comment', :scan_finding, true
+
+        it 'persists the error in violation data' do
+          execute
+
+          expect(last_violation.violation_data)
+            .to eq('errors' => [{
+              'error' => Security::ScanResultPolicyViolation::ERRORS[:scan_removed],
+              'missing_scans' => ['container_scanning']
+            }])
+        end
+      end
     end
 
     context 'with merged results pipeline' do
