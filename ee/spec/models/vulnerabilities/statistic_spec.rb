@@ -140,4 +140,11 @@ RSpec.describe Vulnerabilities::Statistic, feature_category: :vulnerability_mana
       let!(:model) { create(:vulnerability_statistic, pipeline: parent) }
     end
   end
+
+  context 'with loose foreign key on vulnerability_statistics.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerability_statistic, project: parent) }
+    end
+  end
 end
