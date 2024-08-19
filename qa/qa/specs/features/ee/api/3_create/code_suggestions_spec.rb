@@ -94,7 +94,8 @@ module QA
           }.compact
         end
 
-        context 'on SaaS', :external_ai_provider, only: { pipeline: %w[staging-canary staging canary production] } do
+        context 'on SaaS', :smoke, :external_ai_provider,
+          only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
         end
 
@@ -127,7 +128,8 @@ module QA
           }.compact
         end
 
-        context 'on SaaS', :external_ai_provider, only: { pipeline: %w[staging-canary staging canary production] } do
+        context 'on SaaS', :smoke, :external_ai_provider,
+          only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/420973'
         end
 
@@ -156,7 +158,8 @@ module QA
         context 'when streaming' do
           let(:stream) { true }
 
-          context 'on SaaS', :external_ai_provider, only: { pipeline: %w[staging-canary staging canary production] } do
+          context 'on SaaS', :smoke, :external_ai_provider,
+            only: { pipeline: %w[staging-canary staging canary production] } do
             it_behaves_like 'code suggestions API using streaming', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436994'
           end
 
@@ -173,17 +176,29 @@ module QA
       end
 
       def get_suggestion(prompt_data)
+        token = Resource::PersonalAccessToken.fabricate!.token
+
+        # Logging the username of the token to help with debugging
+        # https://gitlab.com/gitlab-org/gitlab/-/issues/431317#note_1674666376
+        QA::Runtime::Logger.debug("Requesting code suggestions as: #{token_username(token)}")
+
         response = post(
           "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
           JSON.dump(prompt_data),
           headers: {
-            Authorization: "Bearer #{Resource::PersonalAccessToken.fabricate!.token}",
+            Authorization: "Bearer #{token}",
             'Content-Type': 'application/json'
           }
         )
 
         QA::Runtime::Logger.debug("Code Suggestion response: #{response}")
         response
+      end
+
+      def token_username(token)
+        user_response = get("#{Runtime::Scenario.gitlab_address}/api/v4/user", headers: { 'PRIVATE-TOKEN': token })
+        QA::Runtime::Logger.warn("Expected 200 from /user, got: #{user_response.code}") if user_response.code != 200
+        parse_body(user_response)[:username]
       end
 
       def expect_status_code(expected_code, response)
