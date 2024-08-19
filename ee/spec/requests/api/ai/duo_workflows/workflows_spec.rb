@@ -9,18 +9,29 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
   let(:cloud_connector_url) { 'https://duo-workflow-service.example.com' }
+  let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
 
   describe 'POST /ai/duo_workflows/workflows' do
     let(:path) { "/ai/duo_workflows/workflows" }
     let(:params) { { project_id: project.id } }
 
-    it 'creates the Ai::DuoWorkflows::Workflow' do
-      expect do
-        post api(path, user), params: params
-        expect(response).to have_gitlab_http_status(:created)
-      end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+    context 'when success' do
+      it 'creates the Ai::DuoWorkflows::Workflow' do
+        expect do
+          post api(path, user), params: params
+          expect(response).to have_gitlab_http_status(:created)
+        end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
 
-      expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+        expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+      end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it 'is successful' do
+          post api(path, oauth_access_token: oauth_token), params: params
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
     end
 
     context 'with a project where the user is not a developer' do
@@ -56,6 +67,14 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
       expect(json_response['id']).to eq(workflow.id)
     end
 
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it 'is successful' do
+        get api(path, oauth_access_token: oauth_token)
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
     context 'with a workflow belonging to a different user' do
       let(:workflow) { create(:duo_workflows_workflow) }
 
@@ -86,6 +105,15 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
       end.to change { workflow.reload.checkpoints.count }.by(2)
 
       expect(json_response['id']).to eq(Ai::DuoWorkflows::Checkpoint.last.id)
+    end
+
+    context 'when authenticated with a token that has the ai_workflows scope' do
+      it 'is successful' do
+        post api(path, oauth_access_token: oauth_token),
+          params: params.merge(thread_ts: later_thread_ts, parent_ts: thread_ts)
+
+        expect(response).to have_gitlab_http_status(:created)
+      end
     end
 
     it 'fails if the thread_ts is an empty string' do
@@ -188,6 +216,18 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(json_response['duo_workflow_service']['base_url']).to eq("duo-workflow-service.example.com:443")
         expect(json_response['duo_workflow_service']['token']).to eq('duo_workflow_token')
         expect(json_response['duo_workflow_service']['headers']['header_key']).to eq("header_value")
+      end
+
+      context 'when authenticated with a token that has the ai_workflows scope' do
+        it 'succeeds' do
+          expect_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+            expect(client).to receive(:generate_token).and_return({ status: :success, token: 'duo_workflow_token' })
+          end
+
+          post api(path, oauth_access_token: oauth_token)
+
+          expect(response).to have_gitlab_http_status(:created)
+        end
       end
     end
   end
