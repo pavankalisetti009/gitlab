@@ -202,6 +202,8 @@ module EE
 
       has_many :saved_replies, class_name: 'Projects::SavedReply'
 
+      has_many :observability_metrics, class_name: 'Observability::MetricsIssuesConnection'
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :archived
