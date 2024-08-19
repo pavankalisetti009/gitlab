@@ -196,8 +196,7 @@ module CodeSuggestions
         end
 
         def libraries_guidelines
-          return unless libraries.any? &&
-            Feature.enabled?(:code_generation_update_libraries_prompt, params[:current_user])
+          return unless libraries.any?
 
           <<~LIBRARIES_GUIDELINES
           7. Review the list of available libraries and identify which ones are relevant to the task.
