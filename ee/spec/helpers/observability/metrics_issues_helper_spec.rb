@@ -3,92 +3,37 @@
 require 'spec_helper'
 
 RSpec.describe Observability::MetricsIssuesHelper, feature_category: :metrics do
-  using RSpec::Parameterized::TableSyntax
-
-  let_it_be(:project) { build_stubbed(:project) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need a project with a repository
-  let_it_be(:developer) { build_stubbed(:user) }
-
-  let(:user) { developer }
-
-  before_all do
-    project.add_developer(developer)
-  end
-
-  describe '#observability_issue_params' do
-    let(:params) { {} }
-
-    subject(:service) do
-      ::Issues::BuildService.new(container: project, current_user: user, params: params).observability_issue_params
+  describe '#observability_metrics_issues_params' do
+    let(:params) do
+      {
+        'name' => 'CPU Usage High',
+        'fullUrl' => 'http://example.com/metric/123',
+        'type' => 'gauge',
+        'timeframe' => ['2024-08-14T00:00:00Z', '2024-08-14T23:59:59Z']
+      }
     end
 
-    context 'when feature flag or licence flag is disabled' do
-      where(:feature_flag_enabled, :licence_flag_enabled) do
-        true  | false
-        false | true
-        false | false
-      end
-
-      with_them do
-        before do
-          stub_feature_flags(observability_features: licence_flag_enabled)
-          stub_licensed_features(observability: feature_flag_enabled)
-        end
-
-        it { is_expected.to eq({}) }
+    context 'when params are blank' do
+      it 'returns an empty hash' do
+        expect(helper.observability_metrics_issues_params({})).to eq({})
+        expect(helper.observability_metrics_issues_params(nil)).to eq({})
       end
     end
 
-    context 'when feature flag and licence flag are enabled' do
-      before do
-        stub_feature_flags(observability_features: true)
-        stub_licensed_features(observability: true)
-      end
+    context 'when params are present' do
+      it 'returns the correct hash' do
+        result = helper.observability_metrics_issues_params(params)
 
-      context 'when observabiilty_links params are empty' do
-        it { is_expected.to eq({}) }
-      end
-
-      context 'when observability_links params are invalid' do
-        let(:params) { { observability_links: 'this is not valid at all' } }
-
-        it { is_expected.to eq({}) }
-      end
-
-      context 'when observability_links params are valid', :aggregate_failures do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :read_observability, project).and_return(true)
-        end
-
-        # rubocop:disable Layout/LineLength -- urls with params will be too long
-        let(:params) do
-          { observability_links: CGI.escape(
-            %({"fullUrl":"http://gdk.test:3000/gitlab-org/gitlab-test/-/metrics/app.ads.ad_requests?type=Sum&date_range=1h&group_by_fn=sum&group_by_attrs[]=app.ads.ad_request_type&group_by_attrs[]=app.ads.ad_response_type", "name": "app.ads.ad_requests", "type": "Sum", "timeframe":["2024-07-2504:47:00UTC","2024-07-2505:47:00UTC"]})
-          ) }
-        end
-        # rubocop:enable Layout/LineLength
-
-        it 'has the correct output' do
-          expect(service[:description]).to include("Name: `app.ads.ad_requests`")
-          expect(service[:description]).to include("Type: `Sum`")
-          expect(service[:description]).to include("Timeframe: `2024-07-2504:47:00UTC - 2024-07-2505:47:00UTC`")
-          expect(service[:title]).to eq("Issue created from app.ads.ad_requests")
-        end
-      end
-
-      context 'when observability_links params are invalid JSON' do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :read_observability, project).and_return(true)
-        end
-
-        # rubocop:disable Layout/LineLength -- urls with params will be too long
-        let(:params) do
-          { observability_links: "thisisnotjson" }
-        end
-        # rubocop:enable Layout/LineLength
-
-        it { is_expected.to eq({}) }
+        expect(result).to be_a(Hash)
+        expect(result[:title]).to eq("Issue created from CPU Usage High")
+        expect(result[:description]).to eq(
+          <<~TEXT
+            [Metric details](http://example.com/metric/123) \\
+            Name: `CPU Usage High` \\
+            Type: `gauge` \\
+            Timeframe: `2024-08-14T00:00:00Z - 2024-08-14T23:59:59Z`
+          TEXT
+        )
       end
     end
   end
