@@ -8,6 +8,7 @@ module Gitlab
           @prompt_message = prompt_message
           @ai_prompt_class = ai_prompt_class
           @options = options
+          @logger = Gitlab::Llm::Logger.build
         end
 
         private
@@ -43,6 +44,14 @@ module Gitlab
             client_subscription_id: response_options[:client_subscription_id],
             context: context
           }))
+        end
+
+        def log_error(error)
+          @logger.error(
+            message: "LLM completion error",
+            error: error.to_s,
+            source: self.class.to_s
+          )
         end
       end
     end
