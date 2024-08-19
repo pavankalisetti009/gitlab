@@ -10,6 +10,16 @@ RSpec.describe Search::Zoekt::Replica, feature_category: :global_search do
   describe 'relations' do
     it { is_expected.to belong_to(:zoekt_enabled_namespace).inverse_of(:replicas) }
     it { is_expected.to have_many(:indices).inverse_of(:replica) }
+
+    context 'when the parent namespace is deleted' do
+      it 'destroys replica record and nullifies replica ID for associated zoekt indices' do
+        idx = create(:zoekt_index, replica: zoekt_replica, zoekt_enabled_namespace: zoekt_enabled_namespace)
+
+        expect { namespace.destroy! }.not_to raise_error
+        expect(described_class.find_by_id(zoekt_replica.id)).to be_nil
+        expect(idx.reload.zoekt_replica_id).to be_nil
+      end
+    end
   end
 
   describe 'validations' do
