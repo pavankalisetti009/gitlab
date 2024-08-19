@@ -115,8 +115,10 @@ module Security
       end
 
       def missing_scans(approval_rule)
-        scan_types_diff = target_pipeline_security_scan_types - pipeline_security_scan_types
         scanners = approval_rule.scanners
+        return (scanners - pipeline_security_scan_types) unless target_pipeline
+
+        scan_types_diff = target_pipeline_security_scan_types - pipeline_security_scan_types
 
         return scan_types_diff if scanners.empty?
 

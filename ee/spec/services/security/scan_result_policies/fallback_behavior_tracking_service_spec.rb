@@ -58,6 +58,10 @@ RSpec.describe Security::ScanResultPolicies::FallbackBehaviorTrackingService, "#
         merge_requests_as_head_pipeline: [merge_request])
     end
 
+    let_it_be(:scan) do
+      create(:security_scan, scan_type: 'dependency_scanning', pipeline: pipeline)
+    end
+
     before do
       allow(project).to receive(:can_store_security_reports?).and_return(true)
     end
