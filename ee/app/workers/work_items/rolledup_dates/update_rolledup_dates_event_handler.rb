@@ -27,12 +27,15 @@ module WorkItems
       end
 
       def handle_event(event)
-        id = event.data[:work_item_parent_id].presence || event.data[:id]
-        work_item = ::WorkItem.find_by_id(id)
-        return if work_item.blank?
+        work_items = ::WorkItem.id_in([
+          event.data[:id],
+          event.data[:work_item_parent_id],
+          event.data[:previous_work_item_parent_id]
+        ].compact)
+        return if work_items.blank?
 
-        ::WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService
-          .new(work_item, event.data[:previous_work_item_parent_id])
+        ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService
+          .new(work_items)
           .execute
       end
     end

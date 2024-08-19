@@ -70,9 +70,13 @@ module WorkItems
             .update_all([
               %{(
                 start_date,
+                start_date_fixed,
+                start_date_is_fixed,
                 start_date_sourcing_milestone_id,
                 start_date_sourcing_epic_id,
                 end_date,
+                due_date_fixed,
+                due_date_is_fixed,
                 due_date_sourcing_milestone_id,
                 due_date_sourcing_epic_id
                 ) = (?)
@@ -85,9 +89,13 @@ module WorkItems
           dates_sources
             .select(
               'work_item_dates_sources.start_date',
+              'work_item_dates_sources.start_date_fixed',
+              'work_item_dates_sources.start_date_is_fixed',
               'work_item_dates_sources.start_date_sourcing_milestone_id',
               'start_date_sourcing_epic.id',
               'work_item_dates_sources.due_date',
+              'work_item_dates_sources.due_date_fixed',
+              'work_item_dates_sources.due_date_is_fixed',
               'work_item_dates_sources.due_date_sourcing_milestone_id',
               'due_date_sourcing_epic.id'
             )

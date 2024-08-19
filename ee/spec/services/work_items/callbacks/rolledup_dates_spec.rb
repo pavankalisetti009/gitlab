@@ -64,4 +64,19 @@ RSpec.describe WorkItems::Callbacks::RolledupDates, feature_category: :portfolio
       end
     end
   end
+
+  describe '#after_update_commit' do
+    it 'rolls up the dates' do
+      work_items = WorkItem.id_in(work_item.id)
+
+      expect_next_instance_of(
+        ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+        work_items
+      ) do |service|
+        expect(service).to receive(:execute)
+      end
+
+      callback.after_update_commit
+    end
+  end
 end

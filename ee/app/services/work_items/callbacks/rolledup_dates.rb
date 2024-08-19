@@ -12,8 +12,8 @@ module WorkItems
       end
 
       def after_update_commit
-        ::WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService
-          .new(work_item)
+        ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService
+          .new(WorkItem.id_in(work_item.id))
           .execute
       end
 

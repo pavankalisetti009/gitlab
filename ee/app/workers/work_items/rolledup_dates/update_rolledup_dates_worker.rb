@@ -11,8 +11,8 @@ module WorkItems
       idempotent!
 
       def perform(id)
-        ::WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService
-          .new(::WorkItem.find(id))
+        ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService
+          .new(::WorkItem.id_in(id))
           .execute
       end
     end
