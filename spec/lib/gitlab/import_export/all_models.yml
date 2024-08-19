@@ -456,6 +456,7 @@ builds:
 - terraform_state_versions
 - taggings
 - base_tags
+- tag_links
 - tag_taggings
 - tags
 - security_scans
