@@ -46,13 +46,26 @@ jest.mock('~/lib/logger');
 jest.mock('~/alert');
 
 describe('workspaces/user/pages/create.vue', () => {
-  const DEFAULT_MAX_HOURS_BEFORE_TERMINATION = 42;
   const selectedProjectFixture = {
     fullPath: 'gitlab-org/gitlab',
     nameWithNamespace: 'GitLab Org / GitLab',
   };
-  const selectedClusterAgentIDFixture = 'agents/1';
-  const clusterAgentsFixture = [{ text: 'Agent', value: 'agents/1' }];
+  const clusterAgentOneDefaultMaxHours = 100;
+  const clusterAgentTwoDefaultMaxHours = 200;
+  const selectedClusterAgentOneIDFixture = 'agents/1';
+  const selectedClusterAgentTwoIDFixture = 'agents/2';
+  const clusterAgentOne = {
+    text: 'Agent',
+    value: selectedClusterAgentOneIDFixture,
+    defaultMaxHoursBeforeTermination: clusterAgentOneDefaultMaxHours,
+  };
+  const clusterAgentTwo = {
+    text: 'Agent 2',
+    value: selectedClusterAgentTwoIDFixture,
+    defaultMaxHoursBeforeTermination: clusterAgentTwoDefaultMaxHours,
+  };
+  const clusterAgentsFixture = [clusterAgentOne];
+  const twoClusterAgentsFixture = [clusterAgentOne, clusterAgentTwo];
   const rootRefFixture = 'main';
   const GlFormSelectStub = stubComponent(GlFormSelect, {
     props: ['options'],
@@ -115,9 +128,6 @@ describe('workspaces/user/pages/create.vue', () => {
     // noinspection JSCheckFunctionSignatures - TODO: Address in https://gitlab.com/gitlab-org/gitlab/-/issues/437600
     wrapper = shallowMountExtended(WorkspaceCreate, {
       apolloProvider: mockApollo,
-      provide: {
-        defaultMaxHoursBeforeTermination: DEFAULT_MAX_HOURS_BEFORE_TERMINATION,
-      },
       stubs: {
         GlFormSelect: GlFormSelectStub,
         GlFormInputGroup,
@@ -183,10 +193,12 @@ describe('workspaces/user/pages/create.vue', () => {
   const findMaxHoursBeforeTerminationFieldParts = () => {
     const field = findMaxHoursBeforeTerminationField();
     const inputAppendText = findMaxHoursBeforeTerminationInputGroup().text();
+    const inputValue = findMaxHoursBeforeTerminationInput();
 
     return {
       label: field.attributes('label'),
       inputAppendText,
+      inputValue: parseInt(inputValue.attributes('value'), 10),
     };
   };
 
@@ -208,7 +220,7 @@ describe('workspaces/user/pages/create.vue', () => {
     });
   const selectProject = (project = selectedProjectFixture) =>
     findSearchProjectsListbox().vm.$emit('input', project);
-  const selectClusterAgent = () =>
+  const selectClusterAgent = (selectedClusterAgentIDFixture = selectedClusterAgentOneIDFixture) =>
     findClusterAgentsFormSelect().vm.$emit('input', selectedClusterAgentIDFixture);
   const submitCreateWorkspaceForm = () =>
     wrapper.findComponent(GlForm).vm.$emit('submit', { preventDefault: jest.fn() });
@@ -298,7 +310,7 @@ describe('workspaces/user/pages/create.vue', () => {
 
       await selectProject();
       await emitGetProjectDetailsQueryResult({
-        clusterAgents: clusterAgentsFixture,
+        clusterAgents: twoClusterAgentsFixture,
       });
       await selectClusterAgent();
     });
@@ -341,6 +353,39 @@ describe('workspaces/user/pages/create.vue', () => {
         expect(findMaxHoursBeforeTerminationFieldParts()).toEqual({
           label: 'Workspace automatically terminates after',
           inputAppendText: 'hours',
+          inputValue: clusterAgentOneDefaultMaxHours,
+        });
+      });
+    });
+
+    describe('when selecting a different cluster agent', () => {
+      beforeEach(async () => {
+        await selectClusterAgent(selectedClusterAgentTwoIDFixture);
+      });
+
+      it('auto-populates max hours before termination field value to new agent value', () => {
+        expect(findMaxHoursBeforeTerminationFieldParts()).toEqual({
+          label: 'Workspace automatically terminates after',
+          inputAppendText: 'hours',
+          inputValue: clusterAgentTwoDefaultMaxHours,
+        });
+      });
+
+      it('submits workspaceCreate mutation with correct data', async () => {
+        const devfileRef = 'mybranch';
+        findDevfileRefRefSelector().vm.$emit('input', devfileRef);
+
+        const devfilePath = 'path/to/mydevfile.yaml';
+        findDevfilePathInput().vm.$emit('input', devfilePath);
+
+        await nextTick();
+        await submitCreateWorkspaceForm();
+
+        expect(workspaceCreateMutationHandler).toHaveBeenCalledWith({
+          input: expect.objectContaining({
+            maxHoursBeforeTermination: clusterAgentTwoDefaultMaxHours,
+            clusterAgentId: selectedClusterAgentTwoIDFixture,
+          }),
         });
       });
     });
@@ -381,7 +426,7 @@ describe('workspaces/user/pages/create.vue', () => {
 
         expect(workspaceCreateMutationHandler).toHaveBeenCalledWith({
           input: {
-            clusterAgentId: selectedClusterAgentIDFixture,
+            clusterAgentId: selectedClusterAgentOneIDFixture,
             projectId: projectGid,
             editor: DEFAULT_EDITOR,
             desiredState: DEFAULT_DESIRED_STATE,
