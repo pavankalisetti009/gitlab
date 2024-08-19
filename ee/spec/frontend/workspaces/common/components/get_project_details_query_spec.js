@@ -82,18 +82,24 @@ describe('workspaces/common/components/get_project_details_query', () => {
   };
 
   const transformGroupClusterAgentGraphQLResultToClusterAgents = (clusterAgentsGraphQLResult) =>
-    clusterAgentsGraphQLResult.data.group.clusterAgents.nodes.map(({ id, name, project }) => ({
-      text: `${project.nameWithNamespace} / ${name}`,
-      value: id,
-    }));
+    clusterAgentsGraphQLResult.data.group.clusterAgents.nodes.map(
+      ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+        text: `${project.nameWithNamespace} / ${name}`,
+        value: id,
+        defaultMaxHoursBeforeTermination:
+          remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+      }),
+    );
 
   const transformRemoveDevelopmentClusterAgentGraphQLResultToClusterAgents = (
     clusterAgentsGraphQLResult,
   ) =>
     clusterAgentsGraphQLResult.data.namespace.remoteDevelopmentClusterAgents.nodes.map(
-      ({ id, name, project }) => ({
+      ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
         text: `${project.nameWithNamespace} / ${name}`,
         value: id,
+        defaultMaxHoursBeforeTermination:
+          remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
       }),
     );
 
@@ -224,6 +230,7 @@ describe('workspaces/common/components/get_project_details_query', () => {
           {
             text: 'GitLab Org / Subgroup / GitLab / subgroup-agent',
             value: 'gid://gitlab/Clusters::Agent/2',
+            defaultMaxHoursBeforeTermination: 99,
           },
         ],
         fullPath: 'gitlab-org/gitlab',

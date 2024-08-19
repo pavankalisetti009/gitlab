@@ -104,17 +104,17 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
-  inject: ['defaultMaxHoursBeforeTermination'],
   data() {
     return {
       selectedProject: null,
       selectedAgent: null,
       isCreatingWorkspace: false,
       clusterAgents: [],
+      clusterAgentsMap: {},
       devfileRef: '',
       devfilePath: DEFAULT_DEVFILE_PATH,
       projectId: null,
-      maxHoursBeforeTermination: this.defaultMaxHoursBeforeTermination,
+      maxHoursBeforeTermination: 0,
       workspaceVariables: [],
       showWorkspaceVariableValidations: false,
       projectDetailsLoaded: false,
@@ -155,6 +155,10 @@ export default {
     this.focusFirstElement();
   },
   methods: {
+    onAgentChange(agentId) {
+      this.maxHoursBeforeTermination =
+        this.clusterAgentsMap[agentId].defaultMaxHoursBeforeTermination;
+    },
     onProjectDetailsResult({ fullPath, nameWithNamespace, clusterAgents, id, rootRef }) {
       // This scenario happens when the selected project is specified in the URL as a query param
       if (!this.selectedProject) {
@@ -167,9 +171,14 @@ export default {
 
       this.clusterAgents = clusterAgents;
 
+      clusterAgents.forEach((agent) => {
+        this.clusterAgentsMap[agent.value] = agent;
+      });
+
       // Select the first agent if there are any
       if (clusterAgents.length > 0) {
         this.selectedAgent = clusterAgents[0].value;
+        this.maxHoursBeforeTermination = clusterAgents[0].defaultMaxHoursBeforeTermination;
       }
     },
     onProjectDetailsError() {
@@ -185,6 +194,7 @@ export default {
     },
     resetProjectDetails() {
       this.clusterAgents = [];
+      this.clusterAgentsMap = {};
       this.selectedAgent = null;
       this.projectDetailsLoaded = false;
     },
@@ -326,6 +336,7 @@ export default {
             class="gl-max-w-full"
             autocomplete="off"
             data-testid="workspace-cluster-agent-id-field"
+            @input="onAgentChange"
           />
         </gl-form-group>
         <template v-if="selectedAgent">

@@ -60,6 +60,11 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       wait_for_requests
       # noinspection RubyMismatchedArgumentType -- Rubymine is finding the wrong `select`
       select agent.name, from: 'Cluster agent'
+      # this field should be auto-fill when selecting agent
+      expect(page).to have_field(
+        'Workspace automatically terminates after',
+        with: agent.remote_development_agent_config.default_max_hours_before_termination
+      )
       fill_in 'Workspace automatically terminates after', with: '20'
       click_button 'Add variable'
       fill_in 'Variable Key', with: variable_key

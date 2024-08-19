@@ -113,10 +113,14 @@ export default {
 
         return {
           clusterAgents:
-            data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(({ id, name, project }) => ({
-              value: id,
-              text: `${project.nameWithNamespace} / ${name}`,
-            })) || [],
+            data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(
+              ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+                value: id,
+                text: `${project.nameWithNamespace} / ${name}`,
+                defaultMaxHoursBeforeTermination:
+                  remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+              }),
+            ) || [],
         };
       } catch (error) {
         return { errors: [error] };
@@ -159,10 +163,14 @@ export default {
 
         return {
           result:
-            data.group?.clusterAgents?.nodes.map(({ id, name, project }) => ({
-              value: id,
-              text: `${project.nameWithNamespace} / ${name}`,
-            })) || [],
+            data.group?.clusterAgents?.nodes.map(
+              ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+                value: id,
+                text: `${project.nameWithNamespace} / ${name}`,
+                defaultMaxHoursBeforeTermination:
+                  remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+              }),
+            ) || [],
         };
       } catch (error) {
         return { error };
