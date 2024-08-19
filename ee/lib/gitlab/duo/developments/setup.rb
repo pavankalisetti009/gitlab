@@ -168,6 +168,7 @@ module Gitlab
         def ensure_feature_flags!
           puts "Enabling feature flags...."
 
+          Gitlab::Duo::Developments::FeatureFlagEnabler.execute
           ::Feature.enable(:summarize_my_code_review)
           ::Feature.enable(:gitlab_com_duo_pro_bulk_user_assignment)
           ::Feature.enable(:enable_hamilton_in_user_preferences)
