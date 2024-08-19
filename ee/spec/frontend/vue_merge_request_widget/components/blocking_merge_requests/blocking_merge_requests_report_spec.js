@@ -97,7 +97,7 @@ describe('BlockingMergeRequestsReport', () => {
 
     await waitForPromises();
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 
   it('passes merged MRs as resolved issues and anything else as unresolved', async () => {

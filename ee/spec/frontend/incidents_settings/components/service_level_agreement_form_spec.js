@@ -34,7 +34,7 @@ describe('Alert integration settings form', () => {
   it('renders an empty component when feature not available', () => {
     mountComponent({ provide: { serviceLevelAgreementSettings: { available: false } } });
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 
   it('should match the default snapshot', () => {

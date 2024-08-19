@@ -55,7 +55,7 @@ describe('RunnerPerformanceStat', () => {
     });
 
     it('shows no content', () => {
-      expect(wrapper.html()).toBe('');
+      expect(wrapper.find('*').exists()).toBe(false);
     });
   });
 });

@@ -19,7 +19,7 @@ describe('Role badges', () => {
   it('does not show component if there are no badges', () => {
     createWrapper({ member: {}, role: {} });
 
-    expect(wrapper.html()).toBe('');
+    expect(wrapper.find('*').exists()).toBe(false);
   });
 
   describe('custom role badge', () => {
