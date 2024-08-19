@@ -1,6 +1,6 @@
 ---
 name: email_confirmation_sent
-description: Triggered when users add or change and email address and it needs to be confirmed.
+description: Triggered when users add or change an email address and it must be confirmed
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/377625
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/129261
 feature_category: user_profile
