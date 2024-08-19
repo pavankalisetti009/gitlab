@@ -4,8 +4,8 @@ import {
   getStartOfDay,
   dateAtFirstDayOfMonth,
   nMonthsBefore,
-  monthInWords,
   nSecondsBefore,
+  formatDate,
 } from '~/lib/utils/datetime_utility';
 import { isPositiveInteger } from '~/lib/utils/number_utils';
 import { formatMetric, percentChange, isMetricInTimePeriods } from '../utils';
@@ -26,9 +26,11 @@ const getStartOfMonth = (now) => dateAtFirstDayOfMonth(getStartOfDay(now));
  * @returns {Array} Tuple of time periods
  */
 export const generateDateRanges = (now) => {
+  const formatDateHeader = (date) => formatDate(date, 'mmm yyyy');
+
   const currentMonth = {
     key: 'this-month',
-    label: monthInWords(now, true),
+    label: formatDateHeader(now),
     start: getStartOfMonth(now),
     end: now,
     thClass: 'gl-w-1/10',
@@ -42,7 +44,7 @@ export const generateDateRanges = (now) => {
       return [
         {
           key: getColumnKeyForMonth(nMonth),
-          label: monthInWords(start, true),
+          label: formatDateHeader(start),
           start,
           end,
           thClass: 'gl-w-1/10',
