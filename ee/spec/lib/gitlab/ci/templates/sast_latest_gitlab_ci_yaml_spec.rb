@@ -141,6 +141,7 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
         where(:case_name, :files, :variables, :jobs) do
           'Golang with advanced SAST'              | { 'main.go' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
           'Java with advanced SAST'                | { 'app.java' => '' }         | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
+          'JSP with advanced SAST'                 | { 'app.jsp' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
           'Javascript with advanced SAST'          | { 'app.js' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
           'C# with advanced SAST'                  | { 'app.cs' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
           'Python with advanced SAST'              | { 'app.py' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'true' }                 | %w[gitlab-advanced-sast]
@@ -149,6 +150,7 @@ RSpec.describe 'SAST.latest.gitlab-ci.yml', feature_category: :continuous_integr
           'Golang without advanced SAST'           | { 'main.go' => '' }          | {}                                                           | %w[semgrep-sast]
           'Golang with disabled advanced SAST'     | { 'main.go' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
           'Java with disabled advanced SAST'       | { 'app.java' => '' }         | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
+          'JSP with disabled advanced SAST'        | { 'app.jsp' => '' }          | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[]
           'Python with disabled advanced SAST'     | { 'app.py' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
           'Ruby with disabled advanced SAST'       | { 'config/routes.rb' => '' } | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
           'Javascript with disabled advanced SAST' | { 'app.js' => '' }           | { 'GITLAB_ADVANCED_SAST_ENABLED' => 'false' }                | %w[semgrep-sast]
