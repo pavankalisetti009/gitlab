@@ -236,6 +236,11 @@ module EE
           resolver: ::Resolvers::MemberRoles::RolesResolver,
           alpha: { milestone: '16.5' }
 
+        field :standard_roles, ::Types::Members::StandardRoleType.connection_type,
+          null: true, description: 'Standard roles available for the instance, available only for self-managed.',
+          resolver: ::Resolvers::Members::StandardRolesResolver,
+          alpha: { milestone: '17.4' }
+
         field :pending_members,
           ::Types::PendingGroupMemberType.connection_type,
           null: true,
