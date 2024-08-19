@@ -312,6 +312,160 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
     end
   end
 
+  describe 'GET #new' do
+    before do
+      project.add_developer(user)
+      sign_in(user)
+    end
+
+    context 'when passing observability metrics' do
+      let(:metric_params) { '%7B%22fullUrl%22%3A%22http%3A%2F%2Fgdk.test%3A3443%2Fflightjs%2FFlight%2F-%2Fmetrics%2Fapp.ads.ad_requests%3Ftype%3DSum%26date_range%3Dcustom%26date_start%3D2024-08-14T16%253A02%253A49.400Z%26date_end%3D2024-08-14T17%253A02%253A49.400Z%22%2C%22name%22%3A%22app.ads.ad_requests%22%2C%22type%22%3A%22Sum%22%2C%22timeframe%22%3A%5B%22Wed%2C%2014%20Aug%202024%2016%3A02%3A49%20GMT%22%2C%22Wed%2C%2014%20Aug%202024%2017%3A02%3A49%20GMT%22%5D%7D' }
+
+      subject do
+        get :new, params: {
+          namespace_id: project.namespace,
+          project_id: project,
+          observability_metric_details: metric_params
+        }
+      end
+
+      context 'when read_observability is prevented' do
+        before do
+          stub_feature_flags(observability_features: false)
+          stub_licensed_features(observability: false)
+        end
+
+        context 'when observability_metric_details parameters exist' do
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+        end
+
+        context 'when observability_metric_details parameters do not exist' do
+          let(:metric_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+        end
+      end
+
+      context 'when read_observability is allowed' do
+        before do
+          stub_licensed_features(observability: true)
+        end
+
+        context 'when observability_metric_details parameters exist' do
+          it 'does prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to eq('Issue created from app.ads.ad_requests')
+            expect(assigns(:issue).description).to eq(
+              <<~TEXT
+                [Metric details](http://gdk.test:3443/flightjs/Flight/-/metrics/app.ads.ad_requests?type=Sum&date_range=custom&date_start=2024-08-14T16%3A02%3A49.400Z&date_end=2024-08-14T17%3A02%3A49.400Z) \\
+                Name: `app.ads.ad_requests` \\
+                Type: `Sum` \\
+                Timeframe: `Wed, 14 Aug 2024 16:02:49 GMT - Wed, 14 Aug 2024 17:02:49 GMT`
+              TEXT
+            )
+          end
+        end
+
+        context 'when observability_metric_details parameters do not exist' do
+          let(:metric_params) { {} }
+
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+      end
+    end
+
+    context 'when passing observability logs' do
+      let(:log_params) { '%7B"body"%3A"Consumed%20record%20with%20orderId%3A%200522613b-3a15-11ef-85dd-0242ac120016%2C%20and%20updated%20total%20count%20to%3A%201353"%2C"fingerprint"%3A"8d6c44aebc683e3c"%2C"fullUrl"%3A"http%3A%2F%2Fgdk.test%3A3443%2Fflightjs%2FFlight%2F-%2Flogs%3Fsearch%3D%26service%5B%5D%3Dfrauddetectionservice%26severityNumber%5B%5D%3D9%26traceId%5B%5D%3D72b72def-09b3-e29f-e195-7c6db5ee599f%26fingerprint%5B%5D%3D8d6c44aebc683e3c%26timestamp%3D2024-07-04T14%253A52%253A22.693752628Z%26drawerOpen%3Dtrue"%2C"service"%3A"frauddetectionservice"%2C"severityNumber"%3A9%2C"timestamp"%3A"2024-07-04T14%3A52%3A22.693752628Z"%2C"traceId"%3A"72b72def-09b3-e29f-e195-7c6db5ee599f"%7D' }
+
+      subject do
+        get :new, params: {
+          namespace_id: project.namespace,
+          project_id: project,
+          observability_log_details: log_params
+        }
+      end
+
+      context 'when read_observability is prevented' do
+        before do
+          stub_feature_flags(observability_features: false)
+          stub_licensed_features(observability: false)
+        end
+
+        context 'when observability_log_details parameters exist' do
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+
+        context 'when observability_log_details parameters do not exist' do
+          let(:log_params) { {} }
+
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+      end
+
+      context 'when read_observability is allowed' do
+        before do
+          stub_licensed_features(observability: true)
+        end
+
+        context 'when observability_log_details parameters exist' do
+          it 'does prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to eq("Issue created from log of 'frauddetectionservice' service at 2024-07-04T14:52:22.693752628Z")
+            expect(assigns(:issue).description).to eq(
+              <<~TEXT
+                [Log details](http://gdk.test:3443/flightjs/Flight/-/logs?search=&service[]=frauddetectionservice&severityNumber[]=9&traceId[]=72b72def-09b3-e29f-e195-7c6db5ee599f&fingerprint[]=8d6c44aebc683e3c&timestamp=2024-07-04T14%3A52%3A22.693752628Z&drawerOpen=true) \\
+                Service: `frauddetectionservice` \\
+                Trace ID: `72b72def-09b3-e29f-e195-7c6db5ee599f` \\
+                Severity Number: `9` \\
+                Timestamp: `2024-07-04T14:52:22.693752628Z` \\
+                Message:
+                ```
+                Consumed record with orderId: 0522613b-3a15-11ef-85dd-0242ac120016, and updated total count to: 1353
+                ```
+              TEXT
+            )
+          end
+        end
+
+        context 'when observability_log_details parameters do not exist' do
+          let(:log_params) { {} }
+
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+      end
+    end
+  end
+
   describe 'GET #discussions' do
     let(:issue) { create(:issue, project: project) }
     let!(:discussion) { create(:discussion_note_on_issue, noteable: issue, project: issue.project) }

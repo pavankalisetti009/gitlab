@@ -4,7 +4,7 @@ module EE
   module Issues
     module BuildService
       extend ::Gitlab::Utils::Override
-      include ::Observability::MetricsIssuesHelper
+      include ::Observability::ObservabilityIssuesHelper
 
       def issue_params_from_template
         return {} unless container.feature_available?(:issuable_default_templates)

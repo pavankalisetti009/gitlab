@@ -2,30 +2,24 @@
 
 module Observability
   module MetricsIssuesHelper
-    def observability_metric_issue_description(params)
-      <<-TEXT
-[Metric details](#{params['fullUrl']}) \\
-Name: `#{params['name']}` \\
-Type: `#{params['type']}` \\
-Timeframe: `#{params.dig('timeframe', 0)} - #{params.dig('timeframe', 1)}`
-      TEXT
+    def observability_metrics_issues_params(params)
+      return {} if params.blank?
+
+      {
+        title: "Issue created from #{params['name']}",
+        description: observability_metrics_issue_description(params)
+      }
     end
 
-    def observability_issue_params
-      return {} unless can?(current_user, :read_observability, container)
+    private
 
-      begin
-        links_params = ::Gitlab::Json.parse(CGI.unescape(params[:observability_links]))
-
-        return {} if links_params.blank?
-
-        {
-          title: "Issue created from #{links_params['name']}",
-          description: observability_metric_issue_description(links_params)
-        }
-      rescue JSON::ParserError, TypeError
-        {}
-      end
+    def observability_metrics_issue_description(params)
+      <<~TEXT
+        [Metric details](#{params['fullUrl']}) \\
+        Name: `#{params['name']}` \\
+        Type: `#{params['type']}` \\
+        Timeframe: `#{params.dig('timeframe', 0)} - #{params.dig('timeframe', 1)}`
+      TEXT
     end
   end
 end
