@@ -363,9 +363,9 @@ export default {
               class="gl-max-w-62"
             >
               <template #link="{ content }">
-                <gl-link :href="$options.DAST_API_DOC_GRAPHQL_PATH" target="_blank"
-                  >{{ content }}
-                </gl-link>
+                <gl-link :href="$options.DAST_API_DOC_GRAPHQL_PATH" target="_blank">{{
+                  content
+                }}</gl-link>
               </template>
             </gl-sprintf>
           </template>
