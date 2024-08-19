@@ -326,9 +326,9 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
             end
 
             it 'updates dates' do
-              expect(WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService)
+              expect(WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService)
                 .to receive(:new)
-                .with(work_item)
+                .with(WorkItem.id_in(work_item))
                 .and_call_original
 
               expect { subject }
@@ -351,7 +351,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
           let(:widget_params) { { rolledup_dates_widget: {} } }
 
           it 'does not update rolledup dates' do
-            expect(WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService)
+            expect(WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService)
               .not_to receive(:new)
 
             expect { subject }.not_to change { WorkItems::DatesSource.count }

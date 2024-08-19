@@ -8,8 +8,8 @@ RSpec.describe WorkItems::RolledupDates::UpdateRolledupDatesWorker, feature_cate
       work_item = create(:work_item, :epic)
 
       expect_next_instance_of(
-        ::WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService,
-        work_item
+        ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService,
+        WorkItem.id_in(work_item.id)
       ) do |service|
         expect(service).to receive(:execute)
       end

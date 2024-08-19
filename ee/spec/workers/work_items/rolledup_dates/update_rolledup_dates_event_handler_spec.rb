@@ -35,7 +35,11 @@ RSpec.describe WorkItems::RolledupDates::UpdateRolledupDatesEventHandler, featur
   end
 
   describe "handle_event" do
-    let_it_be(:service_class) { ::WorkItems::Widgets::RolledupDatesService::HierarchyUpdateService }
+    let_it_be(:service_class) { ::WorkItems::Widgets::RolledupDatesService::HierarchiesUpdateService }
+
+    let_it_be(:work_items) do
+      create_list(:work_item, 3)
+    end
 
     it "does nothing when the work item no longer exists" do
       expect(service_class).not_to receive(:new)
@@ -48,15 +52,9 @@ RSpec.describe WorkItems::RolledupDates::UpdateRolledupDatesEventHandler, featur
       expect { described_class.new.handle_event(event) }.not_to raise_error
     end
 
-    shared_examples "updates the work_item hierarchy" do |event_data:|
+    shared_examples "updates the work_item hierarchy" do
       specify do
-        work_item = instance_double(::WorkItem)
-
-        expect(::WorkItem)
-          .to receive(:find_by_id)
-          .and_return(work_item)
-
-        expect_next_instance_of(service_class, work_item, event_data[:previous_work_item_parent_id]) do |service|
+        expect_next_instance_of(service_class) do |service|
           expect(service).to receive(:execute)
         end
 
@@ -66,22 +64,29 @@ RSpec.describe WorkItems::RolledupDates::UpdateRolledupDatesEventHandler, featur
       end
     end
 
-    it_behaves_like "updates the work_item hierarchy", event_data: {
-      id: 1,
-      namespace_id: 3
-    }
+    it_behaves_like "updates the work_item hierarchy" do
+      let(:event_data) { { id: work_items[0].id, namespace_id: 1 } }
+    end
 
-    it_behaves_like "updates the work_item hierarchy", event_data: {
-      id: 1,
-      work_item_parent_id: 2,
-      namespace_id: 3
-    }
+    it_behaves_like "updates the work_item hierarchy" do
+      let(:event_data) do
+        {
+          id: work_items[0].id,
+          work_item_parent_id: work_items[1].id,
+          namespace_id: 1
+        }
+      end
+    end
 
-    it_behaves_like "updates the work_item hierarchy", event_data: {
-      id: 1,
-      work_item_parent_id: 2,
-      namespace_id: 3,
-      previous_work_item_parent_id: 4
-    }
+    it_behaves_like "updates the work_item hierarchy" do
+      let(:event_data) do
+        {
+          id: work_items[0].id,
+          work_item_parent_id: work_items[1].id,
+          previous_work_item_parent_id: work_items[2].id,
+          namespace_id: 1
+        }
+      end
+    end
   end
 end
