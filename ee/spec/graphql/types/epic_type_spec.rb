@@ -19,7 +19,7 @@ RSpec.describe GitlabSchema.types['Epic'], feature_category: :portfolio_manageme
       user_notes_count user_discussions_count health_status current_user_todos
       award_emoji events ancestors color text_color blocked blocking_count
       blocked_by_count blocked_by_epics default_project_for_issue_creation
-      commenters
+      commenters name
     ]
   end
 

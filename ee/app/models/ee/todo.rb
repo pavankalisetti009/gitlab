@@ -8,5 +8,20 @@ module EE
     prepended do
       include UsageStatistics
     end
+
+    override :target_url
+    def target_url
+      return if target.nil?
+
+      case target
+      when Epic
+        ::Gitlab::UrlBuilder.build(
+          target,
+          anchor: note.present? ? ActionView::RecordIdentifier.dom_id(note) : nil
+        )
+      else
+        super
+      end
+    end
   end
 end
