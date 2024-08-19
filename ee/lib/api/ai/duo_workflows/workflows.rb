@@ -5,10 +5,13 @@ module API
     module DuoWorkflows
       class Workflows < ::API::Base
         include PaginationParams
+        include APIGuard
 
         feature_category :duo_workflow
 
         before { authenticate! }
+
+        allow_access_with_scope :ai_workflows
 
         helpers do
           def find_workflow!(id)
