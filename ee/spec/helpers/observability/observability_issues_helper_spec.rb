@@ -13,7 +13,8 @@ RSpec.describe Observability::ObservabilityIssuesHelper, feature_category: :metr
       {
         observability_links: {
           metrics: CGI.escape('{"a":"b"}'),
-          logs: CGI.escape('{"a":"b"}')
+          logs: CGI.escape('{"a":"b"}'),
+          tracing: CGI.escape('{"a":"b"}')
         }
       }
     end
@@ -68,6 +69,14 @@ RSpec.describe Observability::ObservabilityIssuesHelper, feature_category: :metr
         it { is_expected.to eq({}) }
       end
 
+      context 'when observability_links[:tracing] is invalid JSON' do
+        let(:params) do
+          { observability_links: { tracing: 'invalidjson' } }
+        end
+
+        it { is_expected.to eq({}) }
+      end
+
       context 'when observability_links[:logs] is valid stringified JSON' do
         let(:params) do
           { observability_links: { logs: '{"a":"b"}' } }
@@ -99,6 +108,24 @@ RSpec.describe Observability::ObservabilityIssuesHelper, feature_category: :metr
 
         before do
           allow(service).to receive(:observability_metrics_issues_params).and_return(expected_params)
+        end
+
+        it { is_expected.to eq(expected_params) }
+      end
+
+      context 'when observability_links[:tracing] is valid stringified JSON' do
+        let(:params) do
+          { observability_links: { tracing: '{"a":"b"}' } }
+        end
+
+        let(:expected_params) do
+          {
+            foo: 'baz'
+          }
+        end
+
+        before do
+          allow(service).to receive(:observability_tracing_issues_params).and_return(expected_params)
         end
 
         it { is_expected.to eq(expected_params) }

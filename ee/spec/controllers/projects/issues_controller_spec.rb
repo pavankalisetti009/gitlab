@@ -464,6 +464,81 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         end
       end
     end
+
+    context 'when passing observability tracing' do
+      let(:tracing_params) { '%7B%22fullUrl%22%3A%22http%3A%2F%2Fgdk.test%3A3443%2Fflightjs%2FFlight%2F-%2Ftracing%2Fcd4cfff9-295b-f014-595c-1be1fc145822%22%2C%22name%22%3A%22frontend-proxy%20%3A%20ingress%22%2C%22traceId%22%3A%228335ed4c-c943-aeaa-7851-2b9af6c5d3b8%22%2C%22start%22%3A%22Thu%2C%2004%20Jul%202024%2014%3A44%3A21%20GMT%22%2C%22duration%22%3A%222.27ms%22%2C%22totalSpans%22%3A3%2C%22totalErrors%22%3A0%7D' }
+
+      subject do
+        get :new, params: {
+          namespace_id: project.namespace,
+          project_id: project,
+          observability_trace_details: tracing_params
+        }
+      end
+
+      context 'when read_observability is prevented' do
+        before do
+          stub_feature_flags(observability_features: false)
+          stub_licensed_features(observability: false)
+        end
+
+        context 'when observability_tracing_details parameters exist' do
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+
+        context 'when observability_tracing_details parameters do not exist' do
+          let(:tracing_params) { {} }
+
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+      end
+
+      context 'when read_observability is allowed' do
+        before do
+          stub_licensed_features(observability: true)
+        end
+
+        context 'when observability_tracing_details parameters exist' do
+          it 'does prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to eq("Issue created from trace 'frontend-proxy : ingress'")
+            expect(assigns(:issue).description).to eq(
+              <<~TEXT
+                [Trace details](http://gdk.test:3443/flightjs/Flight/-/tracing/cd4cfff9-295b-f014-595c-1be1fc145822) \\
+                Name: `frontend-proxy : ingress` \\
+                Trace ID: `8335ed4c-c943-aeaa-7851-2b9af6c5d3b8` \\
+                Trace start: `Thu, 04 Jul 2024 14:44:21 GMT` \\
+                Duration: `2.27ms` \\
+                Total spans: `3` \\
+                Total errors: `0`
+              TEXT
+            )
+          end
+        end
+
+        context 'when observability_tracing_details parameters do not exist' do
+          let(:tracing_params) { {} }
+
+          it 'does not prefill the issue title and description' do
+            subject
+
+            expect(assigns(:issue).title).to be_nil
+            expect(assigns(:issue).description).to be_nil
+          end
+        end
+      end
+    end
   end
 
   describe 'GET #discussions' do

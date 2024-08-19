@@ -4,6 +4,7 @@ module Observability
   module ObservabilityIssuesHelper
     include ::Observability::MetricsIssuesHelper
     include ::Observability::LogsIssuesHelper
+    include ::Observability::TracingIssuesHelper
 
     def observability_issue_params
       return {} unless can?(current_user, :read_observability, container)
@@ -14,6 +15,8 @@ module Observability
         observability_metrics_issues_params(links_params[:metrics])
       elsif links_params[:logs].present?
         observability_logs_issues_params(links_params[:logs])
+      elsif links_params[:tracing].present?
+        observability_tracing_issues_params(links_params[:tracing])
       else
         {}
       end
@@ -26,7 +29,8 @@ module Observability
 
       {
         metrics: safe_parse_json(links_params[:metrics]),
-        logs: safe_parse_json(links_params[:logs])
+        logs: safe_parse_json(links_params[:logs]),
+        tracing: safe_parse_json(links_params[:tracing])
       }
     end
 
