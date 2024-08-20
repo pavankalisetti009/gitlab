@@ -1571,6 +1571,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
     it 'HIGH_CONFIDENCE_AI_RESOLUTION_CWES matches the list of supported CWEs' do
       expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES).to match_array %w[
         CWE-23
+        CWE-73
         CWE-80
         CWE-116
         CWE-118
@@ -1583,6 +1584,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
         CWE-209
         CWE-272
         CWE-287
+        CWE-295
         CWE-297
         CWE-305
         CWE-310
@@ -1594,8 +1596,12 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
         CWE-338
         CWE-345
         CWE-346
+        CWE-352
+        CWE-362
         CWE-369
+        CWE-377
         CWE-378
+        CWE-400
         CWE-489
         CWE-521
         CWE-539
@@ -1609,7 +1615,7 @@ RSpec.describe Vulnerabilities::Finding, feature_category: :vulnerability_manage
         CWE-1275
       ]
 
-      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.count).to be(37)
+      expect(Vulnerabilities::Finding::HIGH_CONFIDENCE_AI_RESOLUTION_CWES.count).to be(43)
     end
   end
 
