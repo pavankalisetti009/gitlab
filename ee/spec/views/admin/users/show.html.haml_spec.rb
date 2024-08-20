@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'admin/users/show.html.haml', feature_category: :system_access do
+  using RSpec::Parameterized::TableSyntax
+
   let_it_be_with_reload(:user) { create(:user, email: 'user@example.com') }
 
   let(:page) { Nokogiri::HTML.parse(rendered) }
@@ -88,26 +90,43 @@ RSpec.describe 'admin/users/show.html.haml', feature_category: :system_access do
     end
   end
 
-  describe 'email verification last sent at' do
-    let(:verification_last_sent_at) { page.at('[data-testid="email-verification-last-sent-at"]') }
+  describe 'email confirmation/verification code last sent at' do
+    let(:timestamp) { page.at("[data-testid=\"#{test_id}\"]") }
 
-    context 'when confirmation sent at is set' do
-      before do
-        user.update!(confirmation_sent_at: Time.zone.parse('2024-04-16 20:15:32 UTC'))
-      end
-
-      it 'shows the correct date and time' do
-        render
-
-        expect(verification_last_sent_at).to have_content('Email verification last sent at: Apr 16, 2024 8:15pm')
-      end
+    where(:sent_at_attr, :test_id, :displayed, :label) do
+      :confirmation_sent_at | 'email-confirmation-code-last-sent-at' | lazy { timestamp } | 'Email confirmation code last sent at' # rubocop:disable Layout/LineLength -- should be in a single line
+      :locked_at            | 'email-verification-code-last-sent-at' | lazy { timestamp } | 'Locked account email verification code last sent at' # rubocop:disable Layout/LineLength -- should be in a single line
     end
 
-    context 'when confirmation sent at is not set' do
-      it 'shows "never"' do
-        render
+    with_them do
+      context 'when email has been sent' do
+        before do
+          user.update!(sent_at_attr => Time.zone.parse('2020-04-16 20:15:32 UTC'))
+        end
 
-        expect(verification_last_sent_at).to have_content('Email verification last sent at: never')
+        it 'shows the correct date and time' do
+          render
+
+          expect(timestamp).to have_content("#{label}: Apr 16, 2020 8:15pm (code expired)")
+        end
+
+        context 'when code has not expired' do
+          it 'does not display "(code expired)"' do
+            travel_to(Time.zone.parse('2020-04-16 20:30:00 UTC')) do
+              render
+
+              expect(timestamp).not_to have_content('(code expired)')
+            end
+          end
+        end
+      end
+
+      context 'when email has not been sent' do
+        it 'shows "never"' do
+          render
+
+          expect(timestamp).to have_content("#{label}: never")
+        end
       end
     end
   end
