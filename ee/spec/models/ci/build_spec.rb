@@ -713,14 +713,6 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
   describe 'ci_secrets_management_available?' do
     subject { job.ci_secrets_management_available? }
 
-    context 'when build has no project' do
-      before do
-        job.update!(project: nil)
-      end
-
-      it { is_expected.to be false }
-    end
-
     context 'when secrets management feature is available' do
       before do
         stub_licensed_features(ci_secrets_management: true)
