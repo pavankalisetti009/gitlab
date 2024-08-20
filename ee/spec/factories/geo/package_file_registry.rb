@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :geo_package_file_registry, class: 'Geo::PackageFileRegistry' do
-    association :package_file, factory: [:package_file, :npm]
+    association :package_file, :npm
     state { Geo::PackageFileRegistry.state_value(:pending) }
 
     trait :synced do
