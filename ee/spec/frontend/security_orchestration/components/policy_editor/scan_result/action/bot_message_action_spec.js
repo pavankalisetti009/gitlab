@@ -26,7 +26,7 @@ describe('BotCommentAction', () => {
     expect(findHelpLink().exists()).toBe(true);
     expect(findHelpLink().text()).toBe('What does an example message look like?');
     expect(findHelpLink().attributes('href')).toBe(
-      '/help/user/application_security/policies/scan-result-policies#example-bot-messages',
+      '/help/user/application_security/policies/merge_request_approval_policies#example-bot-messages',
     );
   });
 });

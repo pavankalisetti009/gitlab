@@ -53,8 +53,8 @@ export const BREAKING_CHANGES_POPOVER_CONTENTS = {
     content: s__(
       'SecurityOrchestration|You must edit the policy and replace the deprecated syntax (%{deprecatedProperties}). For details on its replacement, see the %{linkStart}policy documentation%{linkEnd}.',
     ),
-    link: helpPagePath('user/application_security/policies/scan-result-policies', {
-      anchor: 'merge-request-approval-policy-schema',
+    link: helpPagePath('user/application_security/policies/merge_request_approval_policies', {
+      anchor: 'merge-request-approval-policies-schema',
     }),
   },
   [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.text]: {

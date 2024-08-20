@@ -271,7 +271,7 @@ describe('List component', () => {
           });
           expectRenderedBreakingChangesIcon(
             'You must edit the policy and replace the deprecated syntax (test, test1). For details on its replacement, see the policy documentation.',
-            '/help/user/application_security/policies/scan-result-policies#merge-request-approval-policy-schema',
+            '/help/user/application_security/policies/merge_request_approval_policies#merge-request-approval-policies-schema',
           );
         });
 

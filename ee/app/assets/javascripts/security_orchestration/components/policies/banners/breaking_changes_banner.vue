@@ -5,14 +5,20 @@ import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 import { s__ } from '~/locale';
 
 export default {
-  MATCH_ON_INCLUSION_PATH: helpPagePath('user/application_security/policies/scan-result-policies', {
-    anchor: 'license_finding-rule-type',
-  }),
-  SCAN_FINDING_TYPE_PATH: helpPagePath('user/application_security/policies/scan-result-policies', {
-    anchor: 'scan_finding-rule-type',
-  }),
+  MATCH_ON_INCLUSION_PATH: helpPagePath(
+    'user/application_security/policies/merge_request_approval_policies',
+    {
+      anchor: 'license_finding-rule-type',
+    },
+  ),
+  SCAN_FINDING_TYPE_PATH: helpPagePath(
+    'user/application_security/policies/merge_request_approval_policies',
+    {
+      anchor: 'scan_finding-rule-type',
+    },
+  ),
   MERGE_REQUEST_APPROVAL_PATH: helpPagePath(
-    'user/application_security/policies/scan-result-policies',
+    'user/application_security/policies/merge_request_approval_policies',
     {
       anchor: 'merge-request-approval-policies-schema',
     },
