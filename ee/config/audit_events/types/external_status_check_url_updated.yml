@@ -1,6 +1,6 @@
 ---
 name: external_status_check_url_updated
-description: Whenever the URL that is used for external status checks for a pipeline is updated, this audit event is created
+description: Triggered when the URL that is used for external status checks for a pipeline is updated
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/355805
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/84624
 milestone: '15.0'
