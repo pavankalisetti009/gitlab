@@ -109,7 +109,7 @@ module Security
     def policy_by_type(type_or_types)
       return [] if policy_hash.blank?
 
-      policy_hash.values_at(*Array.wrap(type_or_types)).flatten.compact
+      policy_hash.values_at(*Array.wrap(type_or_types).map(&:to_sym)).flatten.compact
     end
 
     def default_branch_or_main
