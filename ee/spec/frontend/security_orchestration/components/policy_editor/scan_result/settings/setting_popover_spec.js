@@ -54,7 +54,9 @@ describe('SettingPopover', () => {
     });
 
     it('navigates the user to the policies page when they click the popover link', () => {
-      const link = helpPagePath('/user/application_security/policies/scan-result-policies.html');
+      const link = helpPagePath(
+        '/user/application_security/policies/merge_request_approval_policies.html',
+      );
       createComponent({ propsData: { description, link, showPopover: true } });
       expect(findLink().text()).toContain('Learn more.');
       expect(findLink().attributes('href')).toBe(link);

@@ -2,7 +2,7 @@
 import { GlSkeletonLoader, GlTooltipDirective } from '@gitlab/ui';
 import { uniqueId, orderBy } from 'lodash';
 import ApprovalCheckRulePopover from 'ee/approvals/components/mr_widget_approval_check/approval_check_rule_popover.vue';
-import EmptyRuleName from 'ee/approvals/components/rules/empty_rule_name.vue';
+import EmptyRuleApprovers from 'ee/approvals/components/rules/empty_rule_approvers.vue';
 import { RULE_TYPE_CODE_OWNER, RULE_TYPE_ANY_APPROVER } from 'ee/approvals/constants';
 import { sprintf, __, s__ } from '~/locale';
 import UserAvatarList from '~/vue_shared/components/user_avatar/user_avatar_list.vue';
@@ -60,7 +60,7 @@ export default {
     UserAvatarList,
     ApprovedIcon,
     ApprovalCheckRulePopover,
-    EmptyRuleName,
+    EmptyRuleApprovers,
     NumberOfApprovals,
     ApprovalsUsersList,
   },
@@ -217,7 +217,7 @@ export default {
           </td>
           <td :colspan="numberOfColumns(rule)" class="!gl-pl-0">
             <div class="js-name gl-hidden gl-items-center md:gl-flex">
-              <empty-rule-name
+              <empty-rule-approvers
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
               />
@@ -245,7 +245,7 @@ export default {
               />
             </div>
             <div class="flex-column js-summary gl-flex md:gl-hidden">
-              <empty-rule-name
+              <empty-rule-approvers
                 v-if="rule.type.toLowerCase() === $options.ruleTypeAnyApprover"
                 :eligible-approvers-docs-path="eligibleApproversDocsPath"
               />
