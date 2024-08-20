@@ -1590,6 +1590,23 @@ entry.
 - [Remove "use_remote_mirror_destroy_service" feature flag](https://gitlab.com/gitlab-org/gitlab/-/commit/74e1e921d003960afd6f259384aee2dfec18f30e) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155852))
 - [Protected containers: Cleanup renaming of protected_up_to_access_level](https://gitlab.com/gitlab-org/gitlab/-/commit/4606b5ef64f75acdd581258a0b93034195626e83) by @gerardo-navarro ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146177))
 
+## 17.1.5 (2024-08-20)
+
+### Fixed (1 change)
+
+- [Properly handle empty repository.ff_merge in FromTrainRef merge strategy](https://gitlab.com/gitlab-org/security/gitlab/-/commit/b3fa341da06a3cbec69e2c32c5b3a336fcba6df7) **GitLab Enterprise Edition**
+
+### Changed (1 change)
+
+- [Include language server version in code suggestions](https://gitlab.com/gitlab-org/security/gitlab/-/commit/02b9f967f7f68865d6dfcfd550e9967689239791) **GitLab Enterprise Edition**
+
+### Security (4 changes)
+
+- [Do not run pipelines when resolving vulnerability](https://gitlab.com/gitlab-org/security/gitlab/-/commit/b962ee1ac8f2ab653435937008c5c4d869aa17f8) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4308))
+- [Add Octokit::ResponseValidation middleware](https://gitlab.com/gitlab-org/security/gitlab/-/commit/f0483d356530afafa070302e50f34a12634b28a8) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4377))
+- [IP restriction to prevent all group permissions](https://gitlab.com/gitlab-org/security/gitlab/-/commit/aecd6dd35b1bfd45d1cb7442afc9a9bf312310b6) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4341))
+- [Destroy associated releases when removing a tag via Git CLI](https://gitlab.com/gitlab-org/security/gitlab/-/commit/7478a869a7a2722377da289a6b16d77b608ccfc2) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4367))
+
 ## 17.1.4 (2024-08-06)
 
 ### Changed (2 changes)
