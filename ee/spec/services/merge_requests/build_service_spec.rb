@@ -31,6 +31,8 @@ RSpec.describe MergeRequests::BuildService, feature_category: :code_review_workf
 
   before do
     allow(service).to receive(:branches_valid?) { true }
+
+    project.add_developer(user)
   end
 
   context 'project default template configured' do
