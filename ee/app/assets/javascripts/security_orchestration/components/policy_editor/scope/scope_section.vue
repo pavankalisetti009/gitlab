@@ -11,21 +11,23 @@ import {
 } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { isProject, isGroup } from 'ee/security_orchestration/components/utils';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
 import LoaderWithMessage from '../../loader_with_message.vue';
-import GroupProjectsDropdown from '../../group_projects_dropdown.vue';
 import ComplianceFrameworkDropdown from './compliance_framework_dropdown.vue';
 import ScopeSectionAlert from './scope_section_alert.vue';
+import ScopeGroupSelector from './scope_group_selector.vue';
+import ScopeProjectSelector from './scope_project_selector.vue';
 import {
   PROJECTS_WITH_FRAMEWORK,
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
+  PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   PROJECT_SCOPE_TYPE_TEXTS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
-  EXCEPTION_TYPE_TEXTS,
   WITHOUT_EXCEPTIONS,
   SPECIFIC_PROJECTS,
   EXCEPT_PROJECTS,
@@ -34,12 +36,15 @@ import {
   EXCLUDING,
   COMPLIANCE_FRAMEWORKS_KEY,
   PROJECTS_KEY,
+  ALL_PROJECTS_IN_LINKED_GROUPS,
+  GROUPS_KEY,
 } from './constants';
 
 export default {
   COMPLIANCE_FRAMEWORK_PATH: helpPagePath('user/group/compliance_frameworks.md'),
   SCOPE_HELP_PATH: helpPagePath('user/application_security/policies/index.md'),
   PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
+  PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   i18n: {
     policyScopeLoadingText: s__('SecurityOrchestration|Fetching the scope information.'),
@@ -58,7 +63,7 @@ export default {
       `SecurityOrchestration|Apply this policy to %{projectScopeType}named %{frameworkSelector}`,
     ),
     policyScopeProjectCopy: s__(
-      `SecurityOrchestration|Apply this policy to %{projectScopeType} %{exceptionType} %{projectSelector}`,
+      `SecurityOrchestration|Apply this policy to %{projectScopeType} %{projectSelector}`,
     ),
     groupProjectErrorDescription: s__('SecurityOrchestration|Failed to load group projects'),
     complianceFrameworkErrorDescription: s__(
@@ -78,10 +83,11 @@ export default {
     GlIcon,
     GlLink,
     GlSprintf,
-    GroupProjectsDropdown,
     LoaderWithMessage,
     PolicyPopover,
     ScopeSectionAlert,
+    ScopeGroupSelector,
+    ScopeProjectSelector,
   },
   directives: {
     GlTooltip: GlTooltipDirective,
@@ -121,6 +127,7 @@ export default {
       },
     },
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['existingPolicy', 'namespacePath', 'rootNamespacePath', 'namespaceType'],
   props: {
     policyScope: {
@@ -135,6 +142,7 @@ export default {
     let projectsPayloadKey = EXCLUDING;
 
     const { projects = [] } = this.policyScope || {};
+    const { groups = [] } = this.policyScope || {};
 
     if (projects?.excluding && projects.excluding.length > 0) {
       selectedExceptionType = EXCEPT_PROJECTS;
@@ -144,7 +152,11 @@ export default {
       selectedProjectScopeType = PROJECTS_WITH_FRAMEWORK;
     }
 
-    if (projects?.including) {
+    if (groups.including) {
+      selectedProjectScopeType = ALL_PROJECTS_IN_LINKED_GROUPS;
+    }
+
+    if (projects?.including && !groups.including?.length) {
       selectedProjectScopeType = SPECIFIC_PROJECTS;
       projectsPayloadKey = INCLUDING;
     }
@@ -162,6 +174,21 @@ export default {
     };
   },
   computed: {
+    showPolicyGroupScope() {
+      return this.glFeatures.policyGroupScope;
+    },
+    scopeItems() {
+      return [
+        ...PROJECT_SCOPE_TYPE_LISTBOX_ITEMS,
+        ...(this.showPolicyGroupScope ? PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS : []),
+      ];
+    },
+    hasGroups() {
+      return Boolean(this.policyScope.groups?.including);
+    },
+    showScopeGroupSelector() {
+      return this.hasGroups || this.selectedProjectScopeType === ALL_PROJECTS_IN_LINKED_GROUPS;
+    },
     hasExistingPolicy() {
       return Boolean(this.existingPolicy);
     },
@@ -188,6 +215,12 @@ export default {
     showDefaultScopeSelector() {
       return this.isProjectLevel && this.hasExistingPolicy;
     },
+    groups() {
+      return this.policyScope?.groups || {};
+    },
+    projects() {
+      return this.policyScope?.projects || {};
+    },
     projectIds() {
       /**
        * Protection from manual yam input as objects
@@ -198,6 +231,9 @@ export default {
         : [];
 
       return projects?.map(({ id }) => convertToGraphQLId(TYPENAME_PROJECT, id)) || [];
+    },
+    groupIds() {
+      return this.policyScope?.groups?.including || [];
     },
     complianceFrameworksIds() {
       /**
@@ -212,9 +248,6 @@ export default {
     selectedProjectScopeText() {
       return PROJECT_SCOPE_TYPE_TEXTS[this.selectedProjectScopeType];
     },
-    selectedExceptionTypeText() {
-      return EXCEPTION_TYPE_TEXTS[this.selectedExceptionType];
-    },
     showScopeSelector() {
       return this.isGroupLevel || this.hasMultipleProjectsLinked;
     },
@@ -224,13 +257,20 @@ export default {
     showGroupProjectsDropdown() {
       return (
         (this.showExceptionTypeDropdown && this.selectedExceptionType === EXCEPT_PROJECTS) ||
-        this.selectedProjectScopeType === SPECIFIC_PROJECTS
+        this.selectedProjectScopeType === SPECIFIC_PROJECTS ||
+        this.selectedProjectScopeType === ALL_PROJECTS_IN_GROUP
       );
     },
     payloadKey() {
-      return this.selectedProjectScopeType === PROJECTS_WITH_FRAMEWORK
-        ? COMPLIANCE_FRAMEWORKS_KEY
-        : PROJECTS_KEY;
+      if ([ALL_PROJECTS_IN_GROUP, SPECIFIC_PROJECTS].includes(this.selectedProjectScopeType)) {
+        return PROJECTS_KEY;
+      }
+
+      if (this.selectedProjectScopeType === ALL_PROJECTS_IN_LINKED_GROUPS) {
+        return GROUPS_KEY;
+      }
+
+      return COMPLIANCE_FRAMEWORKS_KEY;
     },
     policyScopeCopy() {
       return this.selectedProjectScopeType === PROJECTS_WITH_FRAMEWORK
@@ -245,6 +285,9 @@ export default {
     },
     projectsEmpty() {
       return this.projectIds.length === 0;
+    },
+    groupsEmpty() {
+      return this.groupIds.length === 0;
     },
     complianceFrameworksEmpty() {
       return this.complianceFrameworksIds.length === 0;
@@ -275,13 +318,9 @@ export default {
       this.isFormDirty = false;
 
       this.selectedExceptionType = type;
-      this.resetPolicyScope();
     },
-    setSelectedProjectIds(projects) {
+    setSelectedItems(payload) {
       this.isFormDirty = true;
-      const projectsIds = projects.map(({ id }) => ({ id: getIdFromGraphQLId(id) }));
-      const payload = { projects: { [this.projectsPayloadKey]: projectsIds } };
-
       this.triggerChanged(payload);
     },
     setSelectedFrameworkIds(ids) {
@@ -325,6 +364,7 @@ export default {
       :is-projects-without-exceptions="isProjectsWithoutExceptions"
       :project-scope-type="selectedProjectScopeType"
       :project-empty="projectsEmpty"
+      :groups-empty="groupsEmpty"
     />
 
     <gl-alert v-if="showAlert" class="gl-mb-5" variant="danger" :dismissible="false">
@@ -357,7 +397,7 @@ export default {
                   disabled: !disableScopeSelector,
                 }"
                 data-testid="project-scope-type"
-                :items="$options.PROJECT_SCOPE_TYPE_LISTBOX_ITEMS"
+                :items="scopeItems"
                 :selected="selectedProjectScopeType"
                 :toggle-text="selectedProjectScopeText"
                 :disabled="disableScopeSelector"
@@ -387,27 +427,27 @@ export default {
               </div>
             </template>
 
-            <template #exceptionType>
-              <gl-collapsible-listbox
-                v-if="showExceptionTypeDropdown"
-                data-testid="exception-type"
-                :disabled="disableScopeSelector"
-                :items="$options.EXCEPTION_TYPE_LISTBOX_ITEMS"
-                :toggle-text="selectedExceptionTypeText"
-                :selected="selectedExceptionType"
-                @select="selectExceptionType"
-              />
-            </template>
-
             <template #projectSelector>
-              <group-projects-dropdown
+              <scope-group-selector
+                v-if="showScopeGroupSelector && showPolicyGroupScope"
+                class="gl-flex-basis-full"
+                :exception-type="selectedExceptionType"
+                :groups="groups"
+                :projects="projects"
+                :disabled="disableScopeSelector"
+                :group-full-path="rootNamespacePath"
+                @select-exception-type="selectExceptionType"
+                @changed="setSelectedItems"
+              />
+              <scope-project-selector
                 v-if="showGroupProjectsDropdown"
                 :disabled="disableScopeSelector"
+                :exception-type="selectedExceptionType"
+                :projects="projects"
                 :group-full-path="groupProjectsFullPath"
-                :selected="projectIds"
-                :state="!projectsEmpty"
-                @projects-query-error="setShowAlert($options.i18n.groupProjectErrorDescription)"
-                @select="setSelectedProjectIds"
+                @error="setShowAlert($options.i18n.groupProjectErrorDescription)"
+                @select-exception-type="selectExceptionType"
+                @changed="setSelectedItems"
               />
             </template>
           </gl-sprintf>

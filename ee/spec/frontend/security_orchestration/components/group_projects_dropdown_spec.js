@@ -1,14 +1,16 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlCollapsibleListbox } from '@gitlab/ui';
-import { convertToGraphQLId } from '~/graphql_shared/utils';
-import { TYPENAME_PROJECT, TYPENAME_GROUP } from '~/graphql_shared/constants';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import {
+  generateMockGroups,
+  generateMockProjects,
+} from 'ee_jest/security_orchestration/mocks/mock_data';
 
 describe('GroupProjectsDropdown', () => {
   let wrapper;
@@ -16,23 +18,7 @@ describe('GroupProjectsDropdown', () => {
 
   const GROUP_FULL_PATH = 'gitlab-org';
 
-  const generateMockNode = (ids) =>
-    ids.map((id) => ({
-      id: convertToGraphQLId(TYPENAME_PROJECT, id),
-      name: `${id}`,
-      fullPath: `project-${id}-full-path`,
-      repository: { rootRef: 'main' },
-      group: { id: convertToGraphQLId(TYPENAME_GROUP, id) },
-    }));
-
-  const generateMockGroups = (ids) =>
-    ids.map((id) => ({
-      id: convertToGraphQLId(TYPENAME_GROUP, id),
-      name: `${id}`,
-      fullPath: `group-${id}-full-path`,
-    }));
-
-  const defaultNodes = generateMockNode([1, 2]);
+  const defaultNodes = generateMockProjects([1, 2]);
   const defaultGroups = generateMockGroups([1, 2]);
 
   const defaultNodesIds = defaultNodes.map(({ id }) => id);
@@ -497,7 +483,7 @@ describe('GroupProjectsDropdown', () => {
 
     describe('projects', () => {
       it('should add projects to existing selection after search', async () => {
-        const moreNodes = generateMockNode([1, 2, 3, 44, 444, 4444]);
+        const moreNodes = generateMockProjects([1, 2, 3, 44, 444, 4444]);
         createComponent({
           propsData: {
             selected: defaultNodesIds,
