@@ -19737,6 +19737,32 @@ CREATE SEQUENCE vulnerability_merge_request_links_id_seq
 
 ALTER SEQUENCE vulnerability_merge_request_links_id_seq OWNED BY vulnerability_merge_request_links.id;
 
+CREATE TABLE vulnerability_namespace_historical_statistics (
+    id bigint NOT NULL,
+    namespace_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    traversal_ids bigint[] DEFAULT '{}'::bigint[] NOT NULL,
+    total integer DEFAULT 0 NOT NULL,
+    critical integer DEFAULT 0 NOT NULL,
+    high integer DEFAULT 0 NOT NULL,
+    medium integer DEFAULT 0 NOT NULL,
+    low integer DEFAULT 0 NOT NULL,
+    unknown integer DEFAULT 0 NOT NULL,
+    info integer DEFAULT 0 NOT NULL,
+    date date NOT NULL,
+    letter_grade smallint NOT NULL
+);
+
+CREATE SEQUENCE vulnerability_namespace_historical_statistics_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE vulnerability_namespace_historical_statistics_id_seq OWNED BY vulnerability_namespace_historical_statistics.id;
+
 CREATE TABLE vulnerability_occurrence_identifiers (
     id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -22110,6 +22136,8 @@ ALTER TABLE ONLY vulnerability_identifiers ALTER COLUMN id SET DEFAULT nextval('
 ALTER TABLE ONLY vulnerability_issue_links ALTER COLUMN id SET DEFAULT nextval('vulnerability_issue_links_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_merge_request_links ALTER COLUMN id SET DEFAULT nextval('vulnerability_merge_request_links_id_seq'::regclass);
+
+ALTER TABLE ONLY vulnerability_namespace_historical_statistics ALTER COLUMN id SET DEFAULT nextval('vulnerability_namespace_historical_statistics_id_seq'::regclass);
 
 ALTER TABLE ONLY vulnerability_occurrence_identifiers ALTER COLUMN id SET DEFAULT nextval('vulnerability_occurrence_identifiers_id_seq'::regclass);
 
@@ -24863,6 +24891,9 @@ ALTER TABLE ONLY vulnerability_issue_links
 
 ALTER TABLE ONLY vulnerability_merge_request_links
     ADD CONSTRAINT vulnerability_merge_request_links_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY vulnerability_namespace_historical_statistics
+    ADD CONSTRAINT vulnerability_namespace_historical_statistics_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY vulnerability_occurrence_identifiers
     ADD CONSTRAINT vulnerability_occurrence_identifiers_pkey PRIMARY KEY (id);
@@ -30183,6 +30214,10 @@ CREATE INDEX index_virtual_reg_pkgs_maven_upstreams_on_group_id ON virtual_regis
 CREATE UNIQUE INDEX index_vuln_findings_on_uuid_including_vuln_id_1 ON vulnerability_occurrences USING btree (uuid) INCLUDE (vulnerability_id);
 
 CREATE UNIQUE INDEX index_vuln_historical_statistics_on_project_id_and_date ON vulnerability_historical_statistics USING btree (project_id, date);
+
+CREATE INDEX index_vuln_namespace_historical_statistics_on_namespace_id ON vulnerability_namespace_historical_statistics USING btree (namespace_id);
+
+CREATE UNIQUE INDEX index_vuln_namespace_historical_statistics_traversal_ids_date ON vulnerability_namespace_historical_statistics USING btree (traversal_ids, date);
 
 CREATE INDEX index_vuln_reads_common_query_on_resolved_on_default_branch ON vulnerability_reads USING btree (project_id, state, report_type, vulnerability_id DESC) WHERE (resolved_on_default_branch IS TRUE);
 
