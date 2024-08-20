@@ -1,3 +1,6 @@
+import { convertToGraphQLId } from '~/graphql_shared/utils';
+import { TYPENAME_GROUP, TYPENAME_PROJECT } from '~/graphql_shared/constants';
+
 export const actionId = 'action_0';
 export const ruleId = 'rule_0';
 
@@ -81,3 +84,19 @@ export const NEW_POLICY_PROJECT = {
   ...ASSIGNED_POLICY_PROJECT,
   fullPath: 'path/to/new-project',
 };
+
+export const generateMockProjects = (ids) =>
+  ids.map((id) => ({
+    id: convertToGraphQLId(TYPENAME_PROJECT, id),
+    name: `${id}`,
+    fullPath: `project-${id}-full-path`,
+    repository: { rootRef: 'main' },
+    group: { id: convertToGraphQLId(TYPENAME_GROUP, id) },
+  }));
+
+export const generateMockGroups = (ids) =>
+  ids.map((id) => ({
+    id: convertToGraphQLId(TYPENAME_GROUP, id),
+    name: `${id}`,
+    fullPath: `group-${id}-full-path`,
+  }));

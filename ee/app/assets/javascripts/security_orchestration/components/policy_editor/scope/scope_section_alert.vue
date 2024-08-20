@@ -3,6 +3,7 @@ import { GlAlert } from '@gitlab/ui';
 import { s__, __ } from '~/locale';
 import {
   ALL_PROJECTS_IN_GROUP,
+  ALL_PROJECTS_IN_LINKED_GROUPS,
   PROJECTS_WITH_FRAMEWORK,
   SPECIFIC_PROJECTS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
@@ -15,6 +16,9 @@ export default {
     ),
     exceptionProjectsErrorMessage: s__(
       'SecurityOrchestration|You must select one or more projects to be excluded from this policy.',
+    ),
+    linkedGroupsErrorMessage: s__(
+      'SecurityOrchestration|You must select one or more groups from this policy.',
     ),
     specificProjectsErrorMessage: s__(
       'SecurityOrchestration|You must select one or more projects to which this policy should apply.',
@@ -31,6 +35,11 @@ export default {
       default: PROJECTS_WITH_FRAMEWORK,
     },
     projectEmpty: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+    groupsEmpty: {
       type: Boolean,
       required: false,
       default: false,
@@ -55,6 +64,7 @@ export default {
     errorDescription() {
       const typeErrorMap = {
         [PROJECTS_WITH_FRAMEWORK]: this.$options.i18n.complianceFrameworkErrorMessage,
+        [ALL_PROJECTS_IN_LINKED_GROUPS]: this.$options.i18n.linkedGroupsErrorMessage,
         [ALL_PROJECTS_IN_GROUP]: this.$options.i18n.exceptionProjectsErrorMessage,
         [SPECIFIC_PROJECTS]: this.$options.i18n.specificProjectsErrorMessage,
       };
@@ -63,6 +73,9 @@ export default {
     },
     allProjectsInGroup() {
       return this.projectScopeType === ALL_PROJECTS_IN_GROUP;
+    },
+    allProjectsInLinkedGroup() {
+      return this.projectScopeType === ALL_PROJECTS_IN_LINKED_GROUPS;
     },
     specificProjects() {
       return this.projectScopeType === SPECIFIC_PROJECTS;
@@ -81,6 +94,10 @@ export default {
 
       if (this.allProjectsInGroup || this.specificProjects) {
         return this.projectEmpty;
+      }
+
+      if (this.allProjectsInLinkedGroup) {
+        return this.groupsEmpty;
       }
 
       if (this.projectsWithFrameworks) {
