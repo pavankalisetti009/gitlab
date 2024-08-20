@@ -36,17 +36,12 @@ export default {
       },
     },
   },
-  data() {
-    return {
-      filter: [],
-    };
-  },
   computed: {
     isLoading() {
       return Boolean(this.$apollo.queries.complianceFrameworks.loading);
     },
     filteredFrameworks() {
-      const searchTerm = this.filter?.data || '';
+      const searchTerm = this.value?.data || '';
 
       if (!searchTerm && this.complianceFrameworks) {
         return [FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK, ...this.complianceFrameworks];
@@ -80,12 +75,7 @@ export default {
 </script>
 
 <template>
-  <gl-filtered-search-token
-    :config="config"
-    v-bind="{ ...$props, ...$attrs }"
-    v-on="$listeners"
-    @input="filter"
-  >
+  <gl-filtered-search-token :config="config" v-bind="{ ...$props, ...$attrs }" v-on="$listeners">
     <template #view="{ inputValue }">
       {{ frameworkName(inputValue) }}
     </template>

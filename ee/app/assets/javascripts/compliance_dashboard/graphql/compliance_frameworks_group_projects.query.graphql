@@ -8,8 +8,8 @@ query complianceFrameworksGroupProjects(
   $first: Int
   $last: Int
   $project: String
-  $framework: ComplianceManagementFrameworkID
-  $frameworkNot: ComplianceManagementFrameworkID
+  $frameworks: [ComplianceManagementFrameworkID!]!
+  $frameworksNot: [ComplianceManagementFrameworkID!]!
   $presenceFilter: ComplianceFrameworkPresenceFilter
 ) {
   group(fullPath: $groupPath) {
@@ -22,8 +22,8 @@ query complianceFrameworksGroupProjects(
       last: $last
       search: $project
       complianceFrameworkFilters: {
-        id: $framework
-        not: { id: $frameworkNot }
+        ids: $frameworks
+        not: { ids: $frameworksNot }
         presenceFilter: $presenceFilter
       }
     ) {

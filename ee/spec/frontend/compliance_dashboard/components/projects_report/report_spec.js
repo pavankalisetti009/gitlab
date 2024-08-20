@@ -107,6 +107,8 @@ describe('ComplianceFrameworksReport component', () => {
         groupPath,
         after: undefined,
         first: 20,
+        frameworks: [],
+        frameworksNot: [],
       });
     });
 
@@ -114,12 +116,16 @@ describe('ComplianceFrameworksReport component', () => {
       createComponent(mount, {}, mockGraphQlLoading, {
         perPage: 99,
         after: 'fgfgfg-after',
+        frameworks: [],
+        frameworksNot: [],
       });
 
       expect(mockGraphQlLoading).toHaveBeenCalledWith({
         groupPath,
         after: 'fgfgfg-after',
         first: 99,
+        frameworks: [],
+        frameworksNot: [],
       });
     });
   });
@@ -277,8 +283,7 @@ describe('ComplianceFrameworksReport component', () => {
       expect($router.push).toHaveBeenCalledWith({
         query: {
           project: undefined,
-          framework: 'gid://gitlab/ComplianceManagement::Framework/1',
-          frameworkExclude: undefined,
+          'framework[]': ['gid://gitlab/ComplianceManagement::Framework/1'],
           before: undefined,
           after: undefined,
         },
@@ -290,7 +295,7 @@ describe('ComplianceFrameworksReport component', () => {
         {
           type: 'framework',
           value: {
-            data: 'gid://gitlab/ComplianceManagement::Framework/1',
+            data: ['gid://gitlab/ComplianceManagement::Framework/1'],
             operator: '=',
           },
         },
@@ -315,11 +320,9 @@ describe('ComplianceFrameworksReport component', () => {
 
   it('should open update popover on filters on update from projects table when filters are provided', async () => {
     createComponent(shallowMount, {}, mockGraphQlSuccess, {
-      framework: 'some-framework',
+      'framework[]': ['some-framework'],
     });
-
     findProjectsTable().vm.$emit('updated');
-
     await nextTick();
     expect(findFilters().props('showUpdatePopover')).toBe(true);
   });

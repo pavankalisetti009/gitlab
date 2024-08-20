@@ -1,3 +1,4 @@
+import { isEqual } from 'lodash';
 import { convertToGraphQLIds, convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { formatDate, getDateInPast, pikadayToString } from '~/lib/utils/datetime_utility';
@@ -42,21 +43,58 @@ export const buildDefaultViolationsFilterParams = (queryString) => ({
 export function mapFiltersToUrlParams(filters) {
   const urlParams = {};
 
-  const projectSearch = filters.find((filter) => filter.type === FRAMEWORKS_FILTER_TYPE_PROJECT);
-  urlParams.project = projectSearch?.value?.data ?? undefined;
+  const projectFilter = filters.find((filter) => filter.type === FRAMEWORKS_FILTER_TYPE_PROJECT);
 
-  const complianceFilter = filters.find(
+  if (projectFilter) {
+    urlParams.project = projectFilter.value.data;
+  }
+
+  const frameworkFilters = filters.filter(
     (filter) => filter.type === FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
   );
-  urlParams.framework = complianceFilter?.value?.data ?? undefined;
-  urlParams.frameworkExclude = complianceFilter?.value?.operator === '!=' ? 'true' : undefined;
+
+  const frameworksInclude = frameworkFilters
+    .filter((filter) => filter.value.operator !== '!=')
+    .map((filter) => filter.value.data);
+
+  const frameworksExclude = frameworkFilters
+    .filter((filter) => filter.value.operator === '!=')
+    .map((filter) => filter.value.data);
+
+  if (frameworksInclude.length > 0) {
+    urlParams['framework[]'] = frameworksInclude;
+  }
+
+  if (frameworksExclude.length > 0) {
+    urlParams['not[framework][]'] = frameworksExclude;
+  }
 
   return urlParams;
 }
 
 export function mapQueryToFilters(queryParams) {
-  const { project, framework, frameworkExclude } = queryParams;
   const filters = [];
+  const { project } = queryParams;
+  const frameworks = queryParams['framework[]'];
+  const notFrameworks = queryParams['not[framework][]'];
+
+  const getFrameworkFilters = (params, operator) => {
+    const frameworksArray = Array.isArray(params) ? params : [params];
+    frameworksArray.forEach((framework) => {
+      filters.push({
+        type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+        value: { data: framework, operator },
+      });
+    });
+  };
+
+  if (frameworks) {
+    getFrameworkFilters(frameworks, '=');
+  }
+
+  if (notFrameworks) {
+    getFrameworkFilters(notFrameworks, '!=');
+  }
 
   if (project) {
     filters.push({
@@ -65,20 +103,13 @@ export function mapQueryToFilters(queryParams) {
     });
   }
 
-  if (framework) {
-    filters.push({
-      type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
-      value: { data: framework, operator: frameworkExclude ? '!=' : '=' },
-    });
-  }
-
   return filters;
 }
 
 export const checkFilterForChange = ({ currentFilters = {}, newFilters = {} }) => {
-  const filterKeys = ['project', 'framework', 'frameworkExclude'];
+  const filterKeys = ['project', 'framework[]', 'not[framework][]'];
 
-  return filterKeys.some((key) => currentFilters[key] !== newFilters[key]);
+  return filterKeys.some((key) => !isEqual(currentFilters[key], newFilters[key]));
 };
 
 export function mapStandardsAdherenceQueryToFilters(filters) {
