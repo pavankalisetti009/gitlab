@@ -471,4 +471,11 @@ RSpec.describe Security::Scan, feature_category: :vulnerability_management do
       expect(scan.scanner).to eq(gemnasium_maven_scanner)
     end
   end
+
+  context 'with loose foreign key on security_scans.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:security_scan, project: parent) }
+    end
+  end
 end
