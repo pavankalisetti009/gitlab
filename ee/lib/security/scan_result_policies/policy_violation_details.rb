@@ -165,7 +165,10 @@ module Security
         return [] if uuids.blank?
 
         Security::ScanResultPolicies::FindingsFinder.new(project, pipeline,
-          { related_pipeline_ids: related_pipeline_ids, uuids: uuids.first(uuids_limit) }).execute
+          { related_pipeline_ids: related_pipeline_ids, uuids: uuids.first(uuids_limit) }
+        ).execute.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478419'
+        )
         .uniq(&:uuid).map do |finding|
           ScanFindingViolation.new(
             report_type: finding.report_type,

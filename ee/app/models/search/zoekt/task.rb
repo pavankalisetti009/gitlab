@@ -24,7 +24,7 @@ module Search
       scope :with_project, -> { includes(zoekt_repository: :project) }
       scope :perform_now, -> { where(perform_at: (..Time.zone.now)) }
       scope :pending_or_processing, -> { where(state: %i[pending processing]) }
-      scope :perform_now_to_process, -> { perform_now.pending_or_processing }
+      scope :processing_queue, -> { perform_now.pending_or_processing }
 
       enum state: {
         pending: 0,
@@ -64,7 +64,7 @@ module Search
 
         count = 0
 
-        scope = perform_now_to_process.with_project.order(:perform_at, :id)
+        scope = processing_queue.with_project.order(:perform_at, :id)
         iterator = Gitlab::Pagination::Keyset::Iterator.new(scope: scope)
         processed_project_identifiers = Set.new
         iterator.each_batch(of: PROCESSING_BATCH_SIZE) do |tasks|
