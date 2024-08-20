@@ -204,7 +204,7 @@ describe('International Phone input component', () => {
         expect(findPhoneNumberInput().attributes('state')).toBe(expectedState);
 
         const expectedButtonState = valid ? undefined : 'true';
-        expect(findSubmitButton().attributes('disabled')).toBe(expectedButtonState);
+        expect(findSubmitButton().attributes().disabled).toBe(expectedButtonState);
       },
     );
 
@@ -367,7 +367,7 @@ describe('International Phone input component', () => {
       });
 
       it('disables the submit button', () => {
-        expect(findSubmitButton().attributes('disabled')).toBe('true');
+        expect(findSubmitButton().attributes().disabled).toBe('true');
       });
 
       it('renders error message', () => {
@@ -409,7 +409,7 @@ describe('International Phone input component', () => {
         });
 
         it('should disable the submit button', () => {
-          expect(findSubmitButton().attributes('disabled')).toBe('true');
+          expect(findSubmitButton().attributes().disabled).toBe('true');
         });
       });
     });

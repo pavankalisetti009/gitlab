@@ -279,7 +279,7 @@ describe('WorkItemRolledupDates component', () => {
     it('renders as disabled when user cannot update work item', () => {
       createComponent();
 
-      expect(findRadioButton().attributes('disabled')).toBe('true');
+      expect(findRadioButton().attributes().disabled).toBe('true');
     });
 
     describe('when clicked', () => {
