@@ -8890,9 +8890,6 @@ msgstr ""
 msgid "Block user"
 msgstr ""
 
-msgid "BlockSeatOverages|Your top-level group is over the number of seats in its subscription and has been placed in a read-only state."
-msgstr ""
-
 msgid "Blocked"
 msgstr ""
 
