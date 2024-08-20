@@ -69,7 +69,7 @@ module Groups
             body: s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat", anchor: "write-tests-in-the-ide"),
+              link_path: help_page_path("user/gitlab_duo_chat/examples", anchor: "write-tests-in-the-ide"),
               track_label: 'test_generation_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
@@ -79,8 +79,8 @@ module Groups
             body: s_("DuoProDiscover|Helps you understand code by explaining it in natural language."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/ai_experiments",
-                anchor: "explain-code-in-the-web-ui-with-code-explanation"),
+              link_path: help_page_path("user/gitlab_duo_chat/examples",
+                anchor: "explain-code-in-the-ide"),
               track_label: 'code_explanation_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
@@ -90,7 +90,7 @@ module Groups
             body: s_("DuoProDiscover|Work to improve existing code quality."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_path("user/gitlab_duo_chat", anchor: "refactor-code-in-the-ide"),
+              link_path: help_page_path("user/gitlab_duo_chat/examples", anchor: "refactor-code-in-the-ide"),
               track_label: 'code_refactoring_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
@@ -100,7 +100,7 @@ module Groups
             body: s_("DuoProDiscover|Access Chat from the GitLab UI or your preferred IDE."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
-              link_path: help_page_url("user/gitlab_duo_chat", anchor: "use-gitlab-duo-chat-in-the-web-ide"),
+              link_path: help_page_path("user/gitlab_duo_chat/index", anchor: "supported-editor-extensions"),
               track_label: 'chat_feature',
               track_action: duo_pro_documentation_link_track_action(namespace)
             )
