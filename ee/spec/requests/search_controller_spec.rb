@@ -101,14 +101,6 @@ RSpec.describe SearchController, type: :request, feature_category: :global_searc
         let(:threshold) { 1 } # required for avatar cache clearance: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/122639
 
         it_behaves_like 'an efficient database result'
-
-        context 'when search_milestone_query_builder is false' do
-          before do
-            stub_feature_flags(search_milestone_query_builder: false)
-          end
-
-          it_behaves_like 'an efficient database result'
-        end
       end
 
       context 'for users scope' do

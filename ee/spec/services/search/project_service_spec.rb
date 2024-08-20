@@ -417,7 +417,11 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
         ensure_elasticsearch_index!
       end
 
-      shared_examples 'a milestone search that respects visibility' do
+      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode, :expected_count) do
+        permission_table_for_milestone_access
+      end
+
+      with_them do
         it 'respects visibility' do
           enable_admin_mode!(user) if admin_mode
           project.update!(
@@ -431,22 +435,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
           expect_search_results(user, 'milestones', expected_count: expected_count) do |user|
             described_class.new(user, project, search: milestone.title).execute
           end
-        end
-      end
-
-      where(:project_level, :issues_access_level, :merge_requests_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_milestone_access
-      end
-
-      with_them do
-        it_behaves_like 'a milestone search that respects visibility'
-
-        context 'when search_milestone_query_builder is false' do
-          before do
-            stub_feature_flags(search_milestone_query_builder: false)
-          end
-
-          it_behaves_like 'a milestone search that respects visibility'
         end
       end
     end
