@@ -2,6 +2,7 @@ import { GlAlert } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import ScopeSectionAlert from 'ee/security_orchestration/components/policy_editor/scope/scope_section_alert.vue';
 import {
+  ALL_PROJECTS_IN_LINKED_GROUPS,
   ALL_PROJECTS_IN_GROUP,
   PROJECTS_WITH_FRAMEWORK,
   SPECIFIC_PROJECTS,
@@ -61,13 +62,15 @@ describe('ScopeSectionAlert', () => {
   });
 
   it.each`
-    projectScopeType           | expectedMessage
-    ${ALL_PROJECTS_IN_GROUP}   | ${'You must select one or more projects to be excluded from this policy.'}
-    ${SPECIFIC_PROJECTS}       | ${'You must select one or more projects to which this policy should apply.'}
-    ${PROJECTS_WITH_FRAMEWORK} | ${'You must select one or more compliance frameworks to which this policy should apply.'}
+    projectScopeType                 | expectedMessage
+    ${ALL_PROJECTS_IN_GROUP}         | ${'You must select one or more projects to be excluded from this policy.'}
+    ${SPECIFIC_PROJECTS}             | ${'You must select one or more projects to which this policy should apply.'}
+    ${PROJECTS_WITH_FRAMEWORK}       | ${'You must select one or more compliance frameworks to which this policy should apply.'}
+    ${ALL_PROJECTS_IN_LINKED_GROUPS} | ${'You must select one or more groups from this policy.'}
   `('renders correct error message', ({ projectScopeType, expectedMessage }) => {
     createComponent({
       propsData: {
+        groupsEmpty: true,
         projectEmpty: true,
         complianceFrameworksEmpty: true,
         isDirty: true,
