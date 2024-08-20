@@ -764,7 +764,7 @@ RSpec.shared_context 'with remote development shared fixtures' do
                     value: "/projects"
                   }
                 ],
-                image: "alpine/git:2.36.3",
+                image: "alpine/git:2.45.2",
                 imagePullPolicy: "Always",
                 name: "gl-cloner-injector-gl-cloner-injector-command-1",
                 resources: {

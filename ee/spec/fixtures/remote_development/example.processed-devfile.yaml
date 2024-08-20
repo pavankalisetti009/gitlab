@@ -72,7 +72,7 @@ components:
       cpuRequest: 100m
   - name: gl-cloner-injector
     container:
-      image: alpine/git:2.36.3
+      image: alpine/git:2.45.2
       volumeMounts:
         - name: gl-workspace-data
           path: "/projects"
