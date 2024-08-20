@@ -7,7 +7,7 @@ import { OVERVIEW_STAGE_ID } from '~/analytics/cycle_analytics/constants';
 import { medianTimeToParsedSeconds } from '~/analytics/cycle_analytics/utils';
 import { createAlert } from '~/alert';
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { newDate, dayAfter, getDatesInRange } from '~/lib/utils/datetime_utility';
+import { cloneDate, dayAfter, getDatesInRange } from '~/lib/utils/datetime_utility';
 import { isNumeric } from '~/lib/utils/number_utils';
 import {
   HTTP_STATUS_FORBIDDEN,
@@ -193,15 +193,15 @@ export const getDurationChartData = (data, startDate, endDate) => {
   const grouped = groupDurationsByDay(flattenDurationChartData(data));
 
   const eventData = [];
-  const endOfDay = newDate(endDate);
+  const endOfDay = cloneDate(endDate);
   endOfDay.setHours(23, 59, 59); // make sure we're at the end of the day
 
   for (
-    let currentDate = newDate(startDate);
+    let currentDate = cloneDate(startDate);
     currentDate <= endOfDay;
     currentDate = dayAfter(currentDate)
   ) {
-    const currentISODate = dateFormat(newDate(currentDate), dateFormats.isoDate);
+    const currentISODate = dateFormat(cloneDate(currentDate), dateFormats.isoDate);
     const valuesForDay = grouped.has(currentISODate)
       ? grouped.get(currentISODate).filter((durationInSeconds) => isNumeric(durationInSeconds))
       : [];

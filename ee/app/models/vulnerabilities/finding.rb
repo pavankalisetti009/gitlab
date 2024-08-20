@@ -20,6 +20,7 @@ module Vulnerabilities
     # https://gitlab.com/gitlab-org/gitlab/-/issues/472861
     HIGH_CONFIDENCE_AI_RESOLUTION_CWES = %w[
       CWE-23
+      CWE-73
       CWE-80
       CWE-116
       CWE-118
@@ -32,6 +33,7 @@ module Vulnerabilities
       CWE-209
       CWE-272
       CWE-287
+      CWE-295
       CWE-297
       CWE-305
       CWE-310
@@ -43,8 +45,12 @@ module Vulnerabilities
       CWE-338
       CWE-345
       CWE-346
+      CWE-352
+      CWE-362
       CWE-369
+      CWE-377
       CWE-378
+      CWE-400
       CWE-489
       CWE-521
       CWE-539

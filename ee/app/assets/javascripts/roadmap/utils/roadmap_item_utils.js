@@ -1,5 +1,5 @@
 import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
-import { newDate, parsePikadayDate } from '~/lib/utils/datetime_utility';
+import { cloneDate, parsePikadayDate } from '~/lib/utils/datetime_utility';
 
 import { PRESET_TYPES, DAYS_IN_WEEK } from '../constants';
 
@@ -20,19 +20,19 @@ export const processRoadmapItemDates = (roadmapItem, timeframeStartDate, timefra
         startDateOutOfRange: true,
         // Use startDate object to set a proxy date so
         // that timeline bar can render it.
-        startDate: newDate(timeframeStartDate),
+        startDate: cloneDate(timeframeStartDate),
       });
     } else {
       Object.assign(roadmapItem, {
         // startDate is within range
         startDateOutOfRange: false,
         // Set startDate to original startDate
-        startDate: newDate(roadmapItem.originalStartDate),
+        startDate: cloneDate(roadmapItem.originalStartDate),
       });
     }
   } else {
     Object.assign(roadmapItem, {
-      startDate: newDate(timeframeStartDate),
+      startDate: cloneDate(timeframeStartDate),
     });
   }
 
@@ -44,19 +44,19 @@ export const processRoadmapItemDates = (roadmapItem, timeframeStartDate, timefra
         endDateOutOfRange: true,
         // Use endDate object to set a proxy date so
         // that timeline bar can render it.
-        endDate: newDate(timeframeEndDate),
+        endDate: cloneDate(timeframeEndDate),
       });
     } else {
       Object.assign(roadmapItem, {
         // startDate is within range
         endDateOutOfRange: false,
         // Set startDate to original startDate
-        endDate: newDate(roadmapItem.originalEndDate),
+        endDate: cloneDate(roadmapItem.originalEndDate),
       });
     }
   } else {
     Object.assign(roadmapItem, {
-      endDate: newDate(timeframeEndDate),
+      endDate: cloneDate(timeframeEndDate),
     });
   }
 
@@ -134,7 +134,7 @@ export const timeframeEndDate = (presetType, timeframe) => {
   if (presetType === PRESET_TYPES.MONTHS) {
     return timeframe[lastTimeframeIndex(timeframe)];
   }
-  const endDate = newDate(timeframe[lastTimeframeIndex(timeframe)]);
+  const endDate = cloneDate(timeframe[lastTimeframeIndex(timeframe)]);
   endDate.setDate(endDate.getDate() + DAYS_IN_WEEK);
   return endDate;
 };

@@ -1,4 +1,4 @@
-import { newDate } from '~/lib/utils/datetime_utility';
+import { cloneDate } from '~/lib/utils/datetime_utility';
 
 import { getLocaleOffsetDays } from '../utils/roadmap_utils';
 
@@ -9,7 +9,7 @@ export default {
      */
     hasStartDateForWeek(timeframeItem) {
       const firstDayOfWeek = timeframeItem;
-      const lastDayOfWeek = newDate(timeframeItem);
+      const lastDayOfWeek = cloneDate(timeframeItem);
       lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
 
       return (
@@ -21,7 +21,7 @@ export default {
      * Return last date of the week from provided timeframeItem
      */
     getLastDayOfWeek(timeframeItem) {
-      const lastDayOfWeek = newDate(timeframeItem);
+      const lastDayOfWeek = cloneDate(timeframeItem);
       lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
       return lastDayOfWeek;
     },

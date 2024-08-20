@@ -4300,6 +4300,29 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
+  describe '#only_allow_merge_if_pipeline_succeeds?' do
+    before do
+      stub_licensed_features(security_orchestration_policies: true)
+      project.update!(only_allow_merge_if_pipeline_succeeds: true)
+    end
+
+    context 'when project is not a security policy project' do
+      it 'returns true' do
+        expect(project.only_allow_merge_if_pipeline_succeeds?).to be_truthy
+      end
+    end
+
+    context 'when project is a security policy project' do
+      before do
+        create(:security_orchestration_policy_configuration, security_policy_management_project: project)
+      end
+
+      it 'returns false' do
+        expect(project.only_allow_merge_if_pipeline_succeeds?).to be_falsey
+      end
+    end
+  end
+
   describe '#okrs_mvc_feature_flag_enabled?' do
     let_it_be(:project) { create(:project) }
 
