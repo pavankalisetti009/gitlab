@@ -67,11 +67,11 @@ module QA
             end
 
             def pending_members
-              find_element('pending-members').text
+              find_element('pending-members-content').text
             end
 
             def click_approve_member_button
-              click_element('approve-member')
+              click_element('approve-member-button')
             end
 
             def confirm_member_approval
