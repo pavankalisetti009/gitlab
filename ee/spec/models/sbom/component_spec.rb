@@ -16,6 +16,10 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     it { is_expected.to validate_length_of(:name).is_at_most(255) }
   end
 
+  describe 'associations' do
+    it { is_expected.to belong_to(:organization) }
+  end
+
   describe '.libraries scope' do
     let_it_be(:library_sbom_component) { create(:sbom_component, component_type: :library) }
 
@@ -43,10 +47,19 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
       create(:sbom_component, component_type: :library, purl_type: :golang, name: 'component-2')
     end
 
-    subject(:results) { described_class.by_unique_attributes('component-1', :npm, :library) }
+    subject(:results) do
+      described_class.by_unique_attributes('component-1', :npm, :library, matching_component.organization_id)
+    end
 
     it 'returns only the matching component' do
       expect(results.to_a).to eq([matching_component])
+    end
+  end
+
+  context 'with loose foreign key on sbom_components.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:sbom_component, organization: parent) }
     end
   end
 end

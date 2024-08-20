@@ -16,6 +16,7 @@ module EE
         has_many :vulnerability_exports, class_name: 'Vulnerabilities::Export'
         has_many :sbom_sources, class_name: 'Sbom::Source'
         has_many :sbom_source_packages, class_name: 'Sbom::SourcePackage'
+        has_many :sbom_components, class_name: 'Sbom::Component'
 
         def has_dependencies?
           sbom_occurrences.exists?

@@ -7,6 +7,8 @@ module Sbom
     enum component_type: ::Enums::Sbom.component_types
     enum purl_type: ::Enums::Sbom.purl_types
 
+    belongs_to :organization, class_name: 'Organizations::Organization'
+
     validates :component_type, presence: true
     validates :name, presence: true, length: { maximum: 255 }
 
@@ -15,8 +17,8 @@ module Sbom
       where(name: name, purl_type: purl_type)
     end
 
-    scope :by_unique_attributes, ->(name, purl_type, component_type) do
-      where(name: name, purl_type: purl_type, component_type: component_type)
+    scope :by_unique_attributes, ->(name, purl_type, component_type, organization_id) do
+      where(name: name, purl_type: purl_type, component_type: component_type, organization_id: organization_id)
     end
   end
 end

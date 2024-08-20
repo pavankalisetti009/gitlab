@@ -4,17 +4,21 @@ module Sbom
   module Ingestion
     module Tasks
       class IngestComponents < Base
-        COMPONENT_ATTRIBUTES = %i[name purl_type component_type].freeze
+        COMPONENT_ATTRIBUTES = %i[name purl_type component_type organization_id].freeze
 
         self.model = Sbom::Component
         self.unique_by = COMPONENT_ATTRIBUTES
-        self.uses = %i[id name purl_type component_type].freeze
+        self.uses = %i[id name purl_type component_type organization_id].freeze
 
         private
 
         def existing_records
           @existing_records ||= occurrence_maps.map do |occurrence_map|
-            Sbom::Component.by_unique_attributes(*occurrence_map.to_h.values_at(:name, :purl_type, :component_type))
+            Sbom::Component.by_unique_attributes(*occurrence_map.to_h.values_at(
+              :name,
+              :purl_type,
+              :component_type,
+              :organization_id))
           end.reduce(:or)
         end
 
@@ -32,7 +36,7 @@ module Sbom
 
         def attributes
           insertable_maps.filter_map do |occurrence_map|
-            map_data = occurrence_map.to_h.slice(*COMPONENT_ATTRIBUTES)
+            map_data = occurrence_map.to_h.slice(*COMPONENT_ATTRIBUTES).merge!(organization_id: organization_id)
             existing_record = existing_record(map_data)
 
             if existing_record.present?
@@ -42,6 +46,14 @@ module Sbom
 
             map_data
           end
+        end
+
+        def grouping_key_for_map(map)
+          [map.name, map.purl_type, map.report_component.component_type, organization_id]
+        end
+
+        def organization_id
+          project&.namespace&.organization_id || Organizations::Organization::DEFAULT_ORGANIZATION_ID
         end
       end
     end

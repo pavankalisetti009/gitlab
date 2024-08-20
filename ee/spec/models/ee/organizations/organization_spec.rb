@@ -11,6 +11,7 @@ RSpec.describe Organizations::Organization, feature_category: :cell do
     it { is_expected.to have_many(:vulnerability_exports).class_name('Vulnerabilities::Export') }
     it { is_expected.to have_many(:sbom_sources).class_name('Sbom::Source') }
     it { is_expected.to have_many(:sbom_source_packages).class_name('Sbom::SourcePackage') }
+    it { is_expected.to have_many(:sbom_components).class_name('Sbom::Component') }
   end
 
   describe '#sbom_occurrences' do

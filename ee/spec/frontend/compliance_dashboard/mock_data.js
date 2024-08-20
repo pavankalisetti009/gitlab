@@ -309,12 +309,10 @@ export const createComplianceFrameworksTokenResponse = () => {
           pageInfo: mockPageInfo(),
           nodes: [
             createFramework({
-              id: 'gid://gitlab/ComplianceManagement::Framework/1',
-              name: 'some framework',
+              id: 1,
             }),
             createFramework({
-              id: 'gid://gitlab/ComplianceManagement::Framework/2',
-              name: 'another framework',
+              id: 2,
             }),
           ],
           __typename: 'ComplianceFrameworkConnection',

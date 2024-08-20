@@ -20,24 +20,14 @@ describe('ComplianceFrameworks', () => {
   };
 
   const value = {
-    id: 1,
-    name: 'Framework 1',
+    data: 'Some framework 1',
+    operator: '=',
   };
 
-  const complianceFrameworks = [
-    {
-      id: 1,
-      name: 'Framework 1',
-      description: 'This is the first framework',
-      default: true,
-    },
-    {
-      id: 2,
-      name: 'Framework 2',
-      description: 'This is the second framework',
-      default: false,
-    },
-  ];
+  const complianceFrameworksResponse = createComplianceFrameworksTokenResponse();
+
+  const complianceFrameworks =
+    complianceFrameworksResponse.data.namespace.complianceFrameworks.nodes;
 
   function createMockApolloProvider(resolverMock) {
     return createMockApollo([[getComplianceFrameworkQuery, resolverMock]]);
@@ -46,7 +36,7 @@ describe('ComplianceFrameworks', () => {
   const sentryError = new Error('GraphQL networkError');
 
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
-  const mockGraphQlSuccess = jest.fn().mockResolvedValue(createComplianceFrameworksTokenResponse());
+  const mockGraphQlSuccess = jest.fn().mockResolvedValue(complianceFrameworksResponse);
   const mockGraphQlError = jest.fn().mockRejectedValue(sentryError);
 
   let wrapper;
@@ -55,13 +45,14 @@ describe('ComplianceFrameworks', () => {
     wrapper.findAllComponents(GlFilteredSearchSuggestion);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
-  const createComponent = (resolverMock = mockGraphQlLoading) => {
+  const createComponent = (resolverMock = mockGraphQlLoading, props = {}) => {
     wrapper = extendedWrapper(
       shallowMount(ComplianceFrameworksToken, {
         apolloProvider: createMockApolloProvider(resolverMock),
         propsData: {
           config,
-          value,
+          value: {},
+          ...props,
         },
         stubs: {
           GlFilteredSearchToken: stubComponent(GlFilteredSearchToken, {
@@ -85,8 +76,15 @@ describe('ComplianceFrameworks', () => {
     await waitForPromises();
 
     expect(findLoadingIcon().exists()).toBe(false);
-    expect(findAllFilteredSearchSuggestions().exists()).toBe(true);
     expect(findAllFilteredSearchSuggestions().length).toBe(complianceFrameworks.length + 1);
+  });
+
+  it('filters compliance frameworks when value prop is provided', async () => {
+    createComponent(mockGraphQlSuccess, { value });
+
+    await waitForPromises();
+    expect(findAllFilteredSearchSuggestions().length).toBe(1);
+    expect(findAllFilteredSearchSuggestions().at(0).text()).toBe(value.data);
   });
 
   it('captures the error message', async () => {

@@ -355,9 +355,7 @@ export default {
   FORM_GROUP_CLASS: 'gl-w-full gl-sm-w-30p gl-min-w-20 gl-m-0',
   FORM_INPUT_CLASS: 'form-control gl-mr-4 gl-border-gray-200',
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
-  AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard', {
-    anchor: 'ai-impact-analytics',
-  }),
+  AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
   DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons', {
     anchor: 'assign-gitlab-duo-pro-seats',
   }),

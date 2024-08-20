@@ -98,17 +98,34 @@ export default {
       };
     },
     filterParams() {
-      const { project, framework, frameworkExclude } = this.$route.query;
-      const filters = {};
+      const { project, ...queryParams } = this.$route.query;
+      const filters = { frameworks: [], frameworksNot: [] };
+      const frameworks = queryParams['framework[]'];
+      const notFrameworks = queryParams['not[framework][]'];
 
-      if (framework && framework === FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id) {
-        filters.presenceFilter = frameworkExclude ? 'ANY' : 'NONE';
-      } else if (framework) {
-        if (frameworkExclude) filters.frameworkNot = framework;
-        else filters.framework = framework;
+      const getFrameworkParams = (params, presenceType) => {
+        const frameworksArray = Array.isArray(params) ? params : [params];
+        const filteredFrameworks = frameworksArray.filter((f) => {
+          if (f === FRAMEWORKS_FILTER_VALUE_NO_FRAMEWORK.id) {
+            filters.presenceFilter = presenceType;
+            return false;
+          }
+          return true;
+        });
+        return filteredFrameworks;
+      };
+
+      if (frameworks) {
+        filters.frameworks = getFrameworkParams(frameworks, 'NONE');
       }
 
-      if (project) filters.project = project;
+      if (notFrameworks) {
+        filters.frameworksNot = getFrameworkParams(notFrameworks, 'ANY');
+      }
+
+      if (project) {
+        filters.project = project;
+      }
 
       return filters;
     },
@@ -157,7 +174,6 @@ export default {
       if (checkFilterForChange({ currentFilters: this.$route.query, newFilters })) {
         this.$router.push({
           query: {
-            ...this.$route.query,
             before: undefined,
             after: undefined,
             ...newFilters,
@@ -189,6 +205,7 @@ export default {
       :error="hasQueryError"
       :show-update-popover="shouldShowUpdatePopover"
       @update-popover-hidden="shouldShowUpdatePopover = false"
+      @keyup.enter="onFiltersChanged"
       @submit="onFiltersChanged"
     />
 
