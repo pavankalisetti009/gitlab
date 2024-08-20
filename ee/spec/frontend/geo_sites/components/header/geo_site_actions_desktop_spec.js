@@ -72,7 +72,7 @@ describe('GeoSiteActionsDesktop', () => {
 
       describe(`when canRemoveSite is ${canRemoveSite}`, () => {
         it(`does ${canRemoveSite ? 'not ' : ''}disable the Desktop Remove button`, () => {
-          expect(findGeoDesktopActionsRemoveButton().attributes('disabled')).toBe(disabled);
+          expect(findGeoDesktopActionsRemoveButton().attributes().disabled).toBe(disabled);
         });
       });
     });

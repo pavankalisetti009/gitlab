@@ -240,7 +240,7 @@ describe('DuoProTrialStatusPopover component', () => {
           window.dispatchEvent(new Event('resize'));
           await nextTick();
 
-          expect(findGlPopover().attributes('disabled')).toBe(isDisabled);
+          expect(findGlPopover().attributes().disabled).toBe(isDisabled);
         },
       );
     });

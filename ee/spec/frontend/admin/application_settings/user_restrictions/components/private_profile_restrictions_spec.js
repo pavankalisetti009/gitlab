@@ -112,7 +112,7 @@ describe('PrivateProfileRestrictions', () => {
         });
 
         it('does disable the defaultToPrivateProfiles checkbox', () => {
-          expect(findDefaultToPrivateProfilesCheckbox().attributes('disabled')).toBe('true');
+          expect(findDefaultToPrivateProfilesCheckbox().attributes().disabled).toBe('true');
         });
 
         it('does render disabled icon, popover, or help text', () => {
@@ -206,7 +206,7 @@ describe('PrivateProfileRestrictions', () => {
         await nextTick();
 
         expect(findDefaultToPrivateProfilesCheckbox().attributes('checked')).toBeUndefined();
-        expect(findDefaultToPrivateProfilesCheckbox().attributes('disabled')).toBe('true');
+        expect(findDefaultToPrivateProfilesCheckbox().attributes().disabled).toBe('true');
         expect(findDisabledLockIcon().exists()).toBe(true);
         expect(findDisabledPopover().exists()).toBe(true);
         expect(findDisabledHelpLink().exists()).toBe(true);

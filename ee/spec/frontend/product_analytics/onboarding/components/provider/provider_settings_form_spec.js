@@ -71,12 +71,12 @@ describe('ProviderSettingsForm', () => {
     expect(findCancelButton().props('disabled')).toBe(isLoading);
 
     const expectedAttributeState = isLoading ? 'true' : undefined;
-    expect(findConfiguratorConnectionStringInput().attributes('disabled')).toBe(
+    expect(findConfiguratorConnectionStringInput().attributes().disabled).toBe(
       expectedAttributeState,
     );
-    expect(findCollectorHostInput().attributes('disabled')).toBe(expectedAttributeState);
-    expect(findCubeApiUrlInput().attributes('disabled')).toBe(expectedAttributeState);
-    expect(findCubeApiKeyInput().attributes('disabled')).toBe(expectedAttributeState);
+    expect(findCollectorHostInput().attributes().disabled).toBe(expectedAttributeState);
+    expect(findCubeApiUrlInput().attributes().disabled).toBe(expectedAttributeState);
+    expect(findCubeApiKeyInput().attributes().disabled).toBe(expectedAttributeState);
   };
 
   describe('default behaviour', () => {

@@ -82,7 +82,7 @@ describe('CustomStageFields', () => {
     it(`field '${field}' is disabled ${fieldDisabledValue ? 'true' : 'false'}`, () => {
       const $el = finder();
       expect($el.exists()).toBe(true);
-      expect($el.attributes('disabled')).toBe(fieldDisabledValue);
+      expect($el.attributes().disabled).toBe(fieldDisabledValue);
       expect($el.attributes(valueAttribute)).toBe(value);
     });
   });
