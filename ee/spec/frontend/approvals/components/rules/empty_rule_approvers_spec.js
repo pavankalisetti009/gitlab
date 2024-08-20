@@ -1,12 +1,12 @@
 import { GlLink } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import EmptyRuleName from 'ee/approvals/components/rules/empty_rule_name.vue';
+import EmptyRuleApprovers from 'ee/approvals/components/rules/empty_rule_approvers.vue';
 
 describe('Empty Rule Name', () => {
   let wrapper;
 
   const createComponent = (props = {}) => {
-    wrapper = shallowMount(EmptyRuleName, {
+    wrapper = shallowMount(EmptyRuleApprovers, {
       propsData: {
         rule: {},
         eligibleApproversDocsPath: 'some/path',
@@ -15,10 +15,10 @@ describe('Empty Rule Name', () => {
     });
   };
 
-  it('has a rule name "All eligible users"', () => {
+  it('has a rule name "Any eligible user"', () => {
     createComponent();
 
-    expect(wrapper.text()).toContain('All eligible users');
+    expect(wrapper.text()).toContain('Any eligible user');
   });
 
   it('renders a "more information" link', () => {

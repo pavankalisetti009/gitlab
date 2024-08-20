@@ -6,13 +6,13 @@ import { __ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { TABLE_HEADERS } from '../../constants';
 import RuleInput from './rule_input.vue';
-import EmptyRuleName from './empty_rule_name.vue';
+import EmptyRuleApprovers from './empty_rule_approvers.vue';
 import RuleBranches from './rule_branches.vue';
 
 export default {
   components: {
     RuleInput,
-    EmptyRuleName,
+    EmptyRuleApprovers,
     RuleBranches,
     GlButton,
   },
@@ -69,8 +69,11 @@ export default {
 
 <template>
   <tr>
-    <td colspan="2" :data-label="$options.TABLE_HEADERS.name">
-      <empty-rule-name :eligible-approvers-docs-path="eligibleApproversDocsPath" />
+    <td :data-label="$options.TABLE_HEADERS.name">
+      <div>{{ __('Minimum required approvals') }}</div>
+    </td>
+    <td :data-label="$options.TABLE_HEADERS.members">
+      <empty-rule-approvers :eligible-approvers-docs-path="eligibleApproversDocsPath" />
     </td>
     <td
       v-if="showProtectedBranch && !isBranchRulesEdit"
