@@ -22,8 +22,7 @@ module Types
 
         field :maximum_user_count, GraphQL::Types::Int,
           null: true,
-          description: 'Highest number of billable users on the system during the term of the current license.',
-          method: :maximum_user_count
+          description: 'Highest number of billable users on the system during the term of the current license.'
 
         field :users_over_license_count, GraphQL::Types::Int,
           null: true,

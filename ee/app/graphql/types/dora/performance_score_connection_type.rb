@@ -16,8 +16,7 @@ module Types
       field :no_dora_data_projects_count,
         GraphQL::Types::Int,
         null: false,
-        description: 'Count of projects without any DORA scores within the scope.',
-        resolver_method: :no_dora_data_projects_count
+        description: 'Count of projects without any DORA scores within the scope.'
 
       def authorized_projects_count
         context[:authorized_projects_count]
