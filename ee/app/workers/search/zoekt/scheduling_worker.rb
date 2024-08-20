@@ -10,7 +10,6 @@ module Search
       data_consistency :always # rubocop:disable SidekiqLoadBalancing/WorkerDataConsistency -- It is a Cronjob
       feature_category :global_search
       idempotent!
-      pause_control :zoekt
       urgency :low
 
       def perform(task = nil)
