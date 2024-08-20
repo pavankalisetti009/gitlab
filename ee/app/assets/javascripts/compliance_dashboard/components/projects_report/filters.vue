@@ -34,7 +34,6 @@ export default {
     filterTokens() {
       return [
         {
-          unique: true,
           icon: 'shield',
           title: s__('ComplianceReport|Compliance framework'),
           type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,

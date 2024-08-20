@@ -124,38 +124,43 @@ describe('compliance report utils', () => {
 
     it('maps project and framework filters to url params', () => {
       const filters = [
-        { type: 'project', value: { data: 'my-project' } },
-        { type: 'framework', value: { data: 'my-framework' } },
+        { type: FRAMEWORKS_FILTER_TYPE_PROJECT, value: { data: 'my-project' } },
+        { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework1' } },
+        { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework2' } },
       ];
       expect(utils.mapFiltersToUrlParams(filters)).toEqual({
         project: 'my-project',
-        framework: 'my-framework',
+        'framework[]': ['my-framework1', 'my-framework2'],
       });
     });
 
     it('maps frameworkExclude when operator is not equals', () => {
-      const filters = [{ type: 'framework', value: { data: 'my-framework', operator: '!=' } }];
+      const filters = [
+        { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework', operator: '!=' } },
+      ];
       expect(utils.mapFiltersToUrlParams(filters)).toEqual({
-        framework: 'my-framework',
-        frameworkExclude: 'true',
+        'not[framework][]': ['my-framework'],
       });
     });
 
     it('maps frameworkExclude when operator is equals', () => {
       const filters = utils.mapQueryToFilters({
         project: 'my-project',
-        framework: 'my-framework',
-        frameworkExclude: true,
+        'not[framework][]': ['my-framework1', 'my-framework2'],
       });
 
       expect(filters).toEqual([
         {
-          type: FRAMEWORKS_FILTER_TYPE_PROJECT,
-          value: { data: 'my-project', operator: 'matches' },
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'my-framework1', operator: '!=' },
         },
         {
           type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
-          value: { data: 'my-framework', operator: '!=' },
+          value: { data: 'my-framework2', operator: '!=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT,
+          value: { data: 'my-project', operator: 'matches' },
         },
       ]);
     });
@@ -167,17 +172,31 @@ describe('compliance report utils', () => {
     });
 
     it('maps project and framework query params to filters', () => {
-      const queryParams = { project: 'my-project', framework: 'my-framework' };
+      const queryParams = {
+        project: 'my-project',
+        'framework[]': ['my-framework1', 'my-framework2'],
+      };
       expect(utils.mapQueryToFilters(queryParams)).toEqual([
-        { type: 'project', value: { data: 'my-project', operator: 'matches' } },
-        { type: 'framework', value: { data: 'my-framework', operator: '=' } },
+        { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework1', operator: '=' } },
+        { type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK, value: { data: 'my-framework2', operator: '=' } },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_PROJECT,
+          value: { data: 'my-project', operator: 'matches' },
+        },
       ]);
     });
 
     it('maps frameworkExclude when query param is set', () => {
-      const queryParams = { framework: 'my-framework', frameworkExclude: true };
+      const queryParams = { 'not[framework][]': ['my-framework1', 'my-framework2'] };
       expect(utils.mapQueryToFilters(queryParams)).toEqual([
-        { type: 'framework', value: { data: 'my-framework', operator: '!=' } },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'my-framework1', operator: '!=' },
+        },
+        {
+          type: FRAMEWORKS_FILTER_TYPE_FRAMEWORK,
+          value: { data: 'my-framework2', operator: '!=' },
+        },
       ]);
     });
   });
@@ -194,18 +213,21 @@ describe('compliance report utils', () => {
     });
 
     it('returns true when framework filter has changed', () => {
-      const currentFilters = { project: '', framework: 'old-framework', frameworkExclude: false };
-      const newFilters = { project: '', framework: 'new-framework', frameworkExclude: false };
+      const currentFilters = { project: '', 'framework[]': ['old-framework'] };
+      const newFilters = {
+        project: '',
+        framework: ['old-framework', 'new-framework'],
+        frameworkExclude: false,
+      };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
 
     it('returns true when frameworkExclude filter has changed', () => {
       const currentFilters = {
         project: '',
-        framework: 'current-framework',
-        frameworkExclude: false,
+        'framework[]': ['current-framework'],
       };
-      const newFilters = { project: '', framework: 'current-framework', frameworkExclude: true };
+      const newFilters = { project: '', 'not[framework][]': ['current-framework'] };
       expect(utils.checkFilterForChange({ currentFilters, newFilters })).toBe(true);
     });
 
