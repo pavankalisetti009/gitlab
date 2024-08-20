@@ -136,14 +136,22 @@ module CodeSuggestions
       }
     }.freeze
 
-    # This constant need to be in sync with
+    # This constant needs to be in sync with
     # https://gitlab.com/gitlab-org/code-creation/repository-x-ray/
-    # -/blob/341394dd5961c98a0873a7064f2605957f0f0613/cmd/scan/main.go#L40
+    # -/blob/6634564818dffdeac938014a190b0c604b1da6e0/cmd/scan/main.go#L46
+    # TODO: This constant is used in Ai::Context::Dependencies::LockFiles. We won't need
+    # to keep this in sync with Repository X-Ray after we migrate its functionality to
+    # the monolith (see https://gitlab.com/gitlab-org/gitlab/-/issues/476177.)
     LANGUAGE_XRAY_NAMING = {
-      'Ruby' => 'ruby',
+      'C++' => 'cpp',
+      'C#' => 'csharp',
       'Go' => 'go',
+      'Java' => 'java',
       'JavaScript' => 'javascript',
-      'Python' => 'python'
+      'Kotlin' => 'kotlin',
+      'PHP' => 'php',
+      'Python' => 'python',
+      'Ruby' => 'ruby'
     }.freeze
 
     CODE_COMPLETIONS_EXAMPLES_URI = 'ee/lib/code_suggestions/prompts/code_completion/examples.yml'
