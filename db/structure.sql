@@ -23189,7 +23189,7 @@ ALTER TABLE ONLY ci_pipelines_config
     ADD CONSTRAINT ci_pipelines_config_pkey PRIMARY KEY (pipeline_id);
 
 ALTER TABLE ONLY ci_pipelines
-    ADD CONSTRAINT ci_pipelines_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT ci_pipelines_pkey PRIMARY KEY (id, partition_id);
 
 ALTER TABLE ONLY ci_platform_metrics
     ADD CONSTRAINT ci_platform_metrics_pkey PRIMARY KEY (id);
@@ -27211,8 +27211,6 @@ CREATE INDEX index_ci_pipelines_on_auto_canceled_by_id ON ci_pipelines USING btr
 CREATE INDEX index_ci_pipelines_on_ci_ref_id_and_more ON ci_pipelines USING btree (ci_ref_id, id DESC, source, status) WHERE (ci_ref_id IS NOT NULL);
 
 CREATE INDEX index_ci_pipelines_on_external_pull_request_id ON ci_pipelines USING btree (external_pull_request_id) WHERE (external_pull_request_id IS NOT NULL);
-
-CREATE UNIQUE INDEX index_ci_pipelines_on_id_and_partition_id ON ci_pipelines USING btree (id, partition_id);
 
 CREATE INDEX index_ci_pipelines_on_merge_request_id ON ci_pipelines USING btree (merge_request_id) WHERE (merge_request_id IS NOT NULL);
 
