@@ -3,7 +3,7 @@
 FactoryBot.define do
   # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
   factory :workspace, class: 'RemoteDevelopment::Workspace' do
-    project factory: [:project, :in_group]
+    association :project, :in_group
     user
     agent factory: [:ee_cluster_agent, :with_remote_development_agent_config]
     personal_access_token

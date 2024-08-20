@@ -43,7 +43,7 @@ FactoryBot.modify do
     end
 
     trait :with_security_orchestration_policy_configuration do
-      association :security_orchestration_policy_configuration, factory: [:security_orchestration_policy_configuration, :namespace]
+      association :security_orchestration_policy_configuration, :namespace
     end
   end
 end
