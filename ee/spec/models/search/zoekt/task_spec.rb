@@ -46,14 +46,14 @@ RSpec.describe ::Search::Zoekt::Task, feature_category: :global_search do
       end
     end
 
-    describe '.perform_now_to_process' do
+    describe '.processing_queue' do
       let_it_be(:task) { create(:zoekt_task, perform_at: 1.day.ago) }
       let_it_be(:task2) { create(:zoekt_task, perform_at: 1.day.from_now) }
       let_it_be(:task3) { create(:zoekt_task, :done, perform_at: 1.day.ago) }
       let_it_be(:task4) { create(:zoekt_task, :processing, perform_at: 1.day.ago) }
 
       it 'returns only pending or processing tasks where perform_at is older than current time' do
-        results = described_class.perform_now_to_process
+        results = described_class.processing_queue
         expect(results).to include task, task4
         expect(results).not_to include task2, task3
       end

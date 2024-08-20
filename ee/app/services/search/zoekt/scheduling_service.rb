@@ -332,6 +332,7 @@ module Search
             indices_count: node.indices.count,
             task_count_pending: node.tasks.pending.count,
             task_count_failed: node.tasks.failed.count,
+            task_count_processing_queue: node.tasks.processing_queue.count,
             task_count_orphaned: node.tasks.orphaned.count,
             task_count_done: node.tasks.done.count,
             message: 'Reporting metrics',
