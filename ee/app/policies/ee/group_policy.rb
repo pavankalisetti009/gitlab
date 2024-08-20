@@ -663,11 +663,7 @@ module EE
       end
 
       rule { ip_enforcement_prevents_access & ~owner & ~auditor }.policy do
-        prevent :read_group
-        prevent :read_milestone
-        prevent(*create_read_update_admin_destroy(:package))
-        prevent :read_dependency_proxy
-        prevent :admin_dependency_proxy
+        prevent_all
       end
 
       rule { owner & group_saml_enabled }.policy do
