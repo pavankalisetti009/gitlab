@@ -263,9 +263,7 @@ describe('CustomizableDashboard', () => {
       const link = findDashboardDescription().findAllComponents(GlLink).at(0);
 
       expect(link.text()).toBe('AI Impact analytics');
-      expect(link.attributes('href')).toBe(
-        '/help/user/analytics/value_streams_dashboard#ai-impact-analytics',
-      );
+      expect(link.attributes('href')).toBe('/help/user/analytics/ai_impact_analytics');
     });
 
     it('shows a link to the Duo Pro subscription add-ons page', () => {
