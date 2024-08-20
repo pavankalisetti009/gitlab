@@ -154,7 +154,56 @@ module BillingPlansHelper
     end
   end
 
+  def show_duo_enterprise_trial_alert?(namespace)
+    if namespace.ultimate_plan?
+      add_on = GitlabSubscriptions::DuoEnterprise.any_add_on_purchase_for_namespace(namespace)
+      add_on_eligible_for_duo_enterprise_alert?(add_on)
+    elsif namespace.premium_plan?
+      # TODO: do not show for active/expired combined Ultimate + Duo Enterprise trial
+      add_on = GitlabSubscriptions::DuoPro.any_add_on_purchase_for_namespace(namespace)
+      add_on_eligible_for_duo_enterprise_alert?(add_on)
+    elsif namespace.free_plan?
+      # TODO: do not show for active/expired combined Ultimate + Duo Enterprise trial
+      !namespace.trial_active?
+    end
+  end
+
+  def duo_enterprise_trial_alert_data(namespace)
+    if namespace.ultimate_plan?
+      {
+        title: s_('BillingPlans|Introducing GitLab Duo Enterprise'),
+        body: [
+          s_('BillingPlans|Start a GitLab Duo Enterprise trial to try all end-to-end AI capabilities from GitLab. You can try it for free for %{days} days, no credit card required.') % {
+            days: GitlabSubscriptions::Trials::AddOns::DURATION_NUMBER
+          }
+        ]
+      }
+    elsif namespace.premium_plan?
+      {
+        title: s_('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise'),
+        body: [
+          s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab. GitLab Duo Enterprise gives you access to the full product offering from GitLab, including AI-powered features.'),
+          s_('BillingPlans|Not ready to trial the full suite of GitLab and GitLab Duo features? Start a free trial of GitLab Duo Pro instead.')
+        ]
+      }
+    else
+      {
+        title: s_('BillingPlans|Get the most out of GitLab with Ultimate and GitLab Duo Enterprise'),
+        body: [
+          s_('BillingPlans|Start an Ultimate trial with GitLab Duo Enterprise to try the complete set of features from GitLab. GitLab Duo Enterprise gives you access to the full product offering from GitLab, including AI-powered features. You can try it for free, no credit card required.')
+        ]
+      }
+    end
+  end
+
   private
+
+  def add_on_eligible_for_duo_enterprise_alert?(add_on)
+    return true if add_on.blank?
+    return false if add_on.trial?
+
+    !add_on.active?
+  end
 
   def seats_last_updated_value(namespace)
     subscription = namespace.gitlab_subscription

@@ -10,7 +10,7 @@ RSpec.describe Gitlab::BackgroundMigration::PurgeSecurityScansWithEmptyFindingDa
   let(:security_findings) { table(:security_findings) }
   let(:security_scans) { table(:security_scans) }
   let(:vulnerability_scanners) { table(:vulnerability_scanners) }
-  let(:ci_pipelines) { table(:ci_pipelines, database: :ci) }
+  let(:ci_pipelines) { table(:ci_pipelines, primary_key: :id, database: :ci) }
   let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
   let(:ci_builds) { partitioned_table(:p_ci_builds, database: :ci) }

@@ -18,6 +18,9 @@
     - if current_plan
       = render 'top_level_billing_plan_header', namespace: @group, current_plan: current_plan
 
+    - if show_duo_enterprise_trial_alert?(@group)
+      = render 'shared/billings/duo_enterprise_trial_alert', namespace: @group
+
     = render 'shared/billings/billing_plans', plans_data: @plans_data, namespace: @group, current_plan: current_plan, read_only: read_only
     = render GitlabSubscriptions::DuoProCardComponent.new(namespace: @group, user: current_user)
 
