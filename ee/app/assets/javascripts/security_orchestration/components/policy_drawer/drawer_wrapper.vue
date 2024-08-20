@@ -3,10 +3,10 @@ import {
   GlButton,
   GlDrawer,
   GlLink,
+  GlPopover,
   GlSprintf,
   GlTabs,
   GlTab,
-  GlTooltip,
   GlTruncate,
 } from '@gitlab/ui';
 import { s__ } from '~/locale';
@@ -33,10 +33,10 @@ export default {
     GlButton,
     GlDrawer,
     GlLink,
+    GlPopover,
     GlSprintf,
     GlTab,
     GlTabs,
-    GlTooltip,
     GlTruncate,
     YamlEditor: () => import(/* webpackChunkName: 'policy_yaml_editor' */ '../yaml_editor.vue'),
     PipelineExecutionDrawer,
@@ -89,7 +89,7 @@ export default {
   },
   DRAWER_Z_INDEX,
   i18n: {
-    editButtonTooltipMessage: s__(
+    editButtonPopoverMessage: s__(
       'SecurityOrchestration|This policy is inherited from %{linkStart}namespace%{linkEnd} and must be edited there',
     ),
     tabDetails: s__('SecurityOrchestration|Details'),
@@ -124,20 +124,21 @@ export default {
           >{{ s__('SecurityOrchestration|Edit policy') }}</gl-button
         >
       </span>
-      <gl-tooltip
+      <gl-popover
         v-if="isPolicyInherited && policyHasNamespace"
+        triggers="hover"
         :target="() => $refs.editButton"
-        data-testid="edit-button-tooltip"
-        placement="bottom"
+        data-testid="edit-button-popover"
+        placement="right"
       >
-        <gl-sprintf :message="$options.i18n.editButtonTooltipMessage">
+        <gl-sprintf :message="$options.i18n.editButtonPopoverMessage">
           <template #link>
             <gl-link :href="sourcePolicyListUrl">
               {{ policy.source.namespace.name }}
             </gl-link>
           </template>
         </gl-sprintf>
-      </gl-tooltip>
+      </gl-popover>
     </template>
     <gl-tabs v-if="policy" class="gl-p-0!" justified content-class="gl-py-0" lazy>
       <gl-tab :title="$options.i18n.tabDetails" class="gl-mt-5 gl-ml-6 gl-mr-3">

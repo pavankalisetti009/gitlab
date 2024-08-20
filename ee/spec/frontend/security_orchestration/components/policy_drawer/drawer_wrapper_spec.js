@@ -17,13 +17,13 @@ describe('DrawerWrapper component', () => {
         open: true,
         ...propsData,
       },
-      stubs: { YamlEditor: true, GlTooltip: true, ...stubs },
+      stubs: { YamlEditor: true, ...stubs },
     });
   };
 
   // Finders
   const findEditButton = () => wrapper.findByTestId('edit-button');
-  const findTooltip = () => wrapper.findByTestId('edit-button-tooltip');
+  const findPopover = () => wrapper.findByTestId('edit-button-popover');
   const findAllTabs = () => wrapper.findAllComponents(GlTab);
   const findScanExecutionDrawer = () => wrapper.findComponent(ScanExecutionDrawer);
   const findDefaultComponentPolicyEditor = () =>
@@ -69,8 +69,8 @@ describe('DrawerWrapper component', () => {
 
     itRendersEditButton();
 
-    it('does not render the edit button tooltip', () => {
-      expect(findTooltip().exists()).toBe(false);
+    it('does not render the edit button popover', () => {
+      expect(findPopover().exists()).toBe(false);
     });
   });
 
@@ -141,13 +141,13 @@ describe('DrawerWrapper component', () => {
       expect(button.props('disabled')).toBe(true);
     });
 
-    it('renders the edit button tooltip', () => {
-      expect(findTooltip().exists()).toBe(true);
+    it('renders the edit button popover', () => {
+      expect(findPopover().exists()).toBe(true);
     });
   });
 
   describe('policy without source namespace', () => {
-    it('should not render tooltip for policy without namespace', () => {
+    it('should not render popover for policy without namespace', () => {
       factory({
         propsData: {
           policy: {
@@ -161,7 +161,7 @@ describe('DrawerWrapper component', () => {
         },
       });
 
-      expect(findTooltip().exists()).toBe(false);
+      expect(findPopover().exists()).toBe(false);
     });
   });
 });
