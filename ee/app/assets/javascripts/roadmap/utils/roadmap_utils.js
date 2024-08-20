@@ -1,4 +1,4 @@
-import { getTimeframeWindowFrom, newDate, totalDaysInMonth } from '~/lib/utils/datetime_utility';
+import { getTimeframeWindowFrom, cloneDate, totalDaysInMonth } from '~/lib/utils/datetime_utility';
 
 import { DAYS_IN_WEEK, DATE_RANGES, PRESET_TYPES } from '../constants';
 
@@ -39,8 +39,8 @@ export const getLocaleOffsetDays = () => {
 
 export const getWeeksForDates = (startDate, endDate) => {
   const timeframe = [];
-  const start = newDate(startDate);
-  const end = newDate(endDate);
+  const start = cloneDate(startDate);
+  const end = cloneDate(endDate);
 
   // Move to Sunday that comes just before startDate
   start.setDate(start.getDate() - start.getDay() + getFirstDay());
@@ -48,7 +48,7 @@ export const getWeeksForDates = (startDate, endDate) => {
   while (start.getTime() < end.getTime()) {
     // Push date to timeframe only when day is
     // first day (Sunday) of the week
-    timeframe.push(newDate(start));
+    timeframe.push(cloneDate(start));
 
     // Move date next Sunday
     start.setDate(start.getDate() + DAYS_IN_WEEK);
@@ -59,11 +59,11 @@ export const getWeeksForDates = (startDate, endDate) => {
 
 export const getMonthsForDates = (startDate, endDate) => {
   const timeframe = [];
-  const start = newDate(startDate);
-  const end = newDate(endDate);
+  const start = cloneDate(startDate);
+  const end = cloneDate(endDate);
 
   while (start.getTime() < end.getTime()) {
-    timeframe.push(newDate(start));
+    timeframe.push(cloneDate(start));
     start.setMonth(start.getMonth() + 1);
   }
 
@@ -76,7 +76,7 @@ export const getTimeframeForRangeType = ({
   initialDate = new Date(),
 }) => {
   let timeframe = [];
-  const startDate = newDate(initialDate);
+  const startDate = cloneDate(initialDate);
   startDate.setHours(0, 0, 0, 0);
 
   // We need to prepare timeframe containing all the weeks of
@@ -91,7 +91,7 @@ export const getTimeframeForRangeType = ({
     );
 
     // Get last day of the last month of current quarter
-    const endDate = newDate(startDate);
+    const endDate = cloneDate(startDate);
     if (currentMonthInCurrentQuarter === 0) {
       endDate.setMonth(endDate.getMonth() + 2);
     } else if (currentMonthInCurrentQuarter === 1) {
@@ -113,7 +113,7 @@ export const getTimeframeForRangeType = ({
       timeframe = getTimeframeWindowFrom(startDate, 12);
     } else {
       // Get last day of current year
-      const endDate = newDate(startDate);
+      const endDate = cloneDate(startDate);
       endDate.setMonth(11);
       endDate.setDate(totalDaysInMonth(endDate));
 
@@ -121,7 +121,7 @@ export const getTimeframeForRangeType = ({
     }
   } else {
     // Get last day of the month, 18 months from startDate.
-    const endDate = newDate(startDate);
+    const endDate = cloneDate(startDate);
     endDate.setMonth(endDate.getMonth() + 18);
     endDate.setDate(totalDaysInMonth(endDate));
 
@@ -192,7 +192,7 @@ export const getEpicsTimeframeRange = ({ presetType = '', timeframe = [] }) => {
     due = lastTimeframe;
   } else if (presetType === PRESET_TYPES.WEEKS) {
     start = firstTimeframe;
-    due = newDate(lastTimeframe);
+    due = cloneDate(lastTimeframe);
     due.setDate(due.getDate() + 6);
   }
 
