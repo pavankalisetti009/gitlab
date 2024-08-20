@@ -74,7 +74,7 @@ module Search
             log_payload[:message] = "Failed to delete data for project transfer"
           else
             log_payload[:deleted] = response['deleted']
-            log_payload[:message] = "Sucesfully deleted duplicate data for project transfer"
+            log_payload[:message] = "Successfully deleted duplicate data for project transfer"
           end
 
           if log_payload[:failure].present?
