@@ -29650,8 +29650,6 @@ CREATE INDEX index_saml_providers_on_member_role_id ON saml_providers USING btre
 
 CREATE UNIQUE INDEX index_saved_replies_on_name_text_pattern_ops ON saved_replies USING btree (user_id, name text_pattern_ops);
 
-CREATE INDEX index_sbom_component_versions_on_component_id ON sbom_component_versions USING btree (component_id);
-
 CREATE UNIQUE INDEX index_sbom_component_versions_on_component_id_and_version ON sbom_component_versions USING btree (component_id, version);
 
 CREATE UNIQUE INDEX index_sbom_components_on_component_type_name_and_purl_type ON sbom_components USING btree (name, purl_type, component_type);
