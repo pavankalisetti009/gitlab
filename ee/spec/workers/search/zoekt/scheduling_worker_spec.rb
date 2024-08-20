@@ -5,6 +5,10 @@ require 'spec_helper'
 RSpec.describe ::Search::Zoekt::SchedulingWorker, feature_category: :global_search do
   it_behaves_like 'worker with data consistency', described_class, data_consistency: :always
 
+  it 'is not a pause_control worker' do
+    expect(described_class.get_pause_control).not_to eq(:zoekt)
+  end
+
   describe '#perform' do
     context 'when no arguments are provided' do
       subject(:worker) { described_class.new }
