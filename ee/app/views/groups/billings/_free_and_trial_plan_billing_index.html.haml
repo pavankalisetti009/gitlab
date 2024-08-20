@@ -11,6 +11,10 @@
 
     = html_escape(s_("BillingPlans|Not the group you're looking for? %{all_groups_link}")) % { all_groups_link: all_groups_link.html_safe }
 
+  - if show_duo_enterprise_trial_alert?(namespace)
+    .billing-plan-divider.gl-mx-auto
+      = render 'shared/billings/duo_enterprise_trial_alert', namespace: namespace
+
   .gl-flex-row.gl-flex.gl-flex-wrap.gl-justify-center.gl-mb-7.gl-ml-7{ data: { track_action: 'render', testid: 'billing-plans' } }
     = render Billing::PlanComponent.with_collection(plans_data, namespace: namespace, current_plan: current_plan)
   - if namespace.never_had_trial?

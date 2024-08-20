@@ -528,4 +528,91 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
       end
     end
   end
+
+  describe '#show_duo_enterprise_trial_alert?' do
+    shared_examples 'purchase_add_ons' do
+      before do
+        allow(finder_class)
+          .to receive(:any_add_on_purchase_for_namespace)
+          .with(namespace)
+          .and_return(add_on)
+      end
+
+      context 'when there is no add_ons' do
+        let(:add_on) { nil }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when active add_on on trial' do
+        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :active_trial) }
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when expired add_on on trial' do
+        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :expired_trial) }
+
+        it { is_expected.to be(false) }
+      end
+
+      context 'when add_on is not active' do
+        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :expired) }
+
+        it { is_expected.to be(true) }
+      end
+
+      context 'when active add_on' do
+        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :active) }
+
+        it { is_expected.to be(false) }
+      end
+    end
+
+    subject { helper.show_duo_enterprise_trial_alert?(namespace) }
+
+    context 'when ultimate plan' do
+      let(:finder_class) { GitlabSubscriptions::DuoEnterprise }
+
+      let(:namespace) do
+        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :ultimate))
+      end
+
+      it_behaves_like 'purchase_add_ons'
+    end
+
+    context 'when premium plan' do
+      let(:finder_class) { GitlabSubscriptions::DuoPro }
+
+      let(:namespace) do
+        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :premium))
+      end
+
+      it_behaves_like 'purchase_add_ons'
+    end
+
+    context 'when free plan' do
+      let(:namespace) do
+        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :free))
+      end
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when ultimate trial plan' do
+      let(:namespace) do
+        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :ultimate_trial, :active_trial))
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when gold plan' do
+      let(:namespace) do
+        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :gold))
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
