@@ -123,6 +123,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         desired_sharding_key.each do |_, details|
           referenced_table_name = details['backfill_via']['parent']['table']
           column_name = details['backfill_via']['parent']['foreign_key']
+          foreign_key_name = details['backfill_via']['parent']['foreign_key_name']
           if allowed_to_be_missing_foreign_key.include?("#{table_name}.#{column_name}")
             expect(has_foreign_key?(table_name, column_name)).to eq(false),
               "The column `#{table_name}.#{column_name}` has a foreign key so cannot be " \
@@ -130,7 +131,14 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
               "If this is a foreign key referencing the specified table #{referenced_table_name} " \
               "then you must remove it from allowed_to_be_missing_foreign_key"
           else
-            expect(has_foreign_key?(table_name, column_name, to_table_name: referenced_table_name)).to eq(true),
+            expect(
+              has_foreign_key?(
+                table_name,
+                column_name,
+                to_table_name: referenced_table_name,
+                foreign_key_name: foreign_key_name
+              )
+            ).to eq(true),
               "Missing a foreign key constraint for `#{table_name}.#{column_name}` " \
               "referencing #{referenced_table_name}. " \
               "All desired sharding keys must have a foreign key constraint"
@@ -161,7 +169,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
     end
   end
 
-  context 'for tables that do not already have a backfilled, non-nullable sharding key on their parent' \
+  context 'for tables that do not already have a backfilled, non-nullable sharding key on their parent ' \
           'but only has a desired sharding key on their parent' do
     it 'the parent.belongs_to must be a model with a desired_sharding_key' do
       desired_sharding_key_entries_awaiting_backfill_on_parent.each do |entry|
