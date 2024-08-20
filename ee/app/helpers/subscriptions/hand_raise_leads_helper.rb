@@ -84,6 +84,21 @@ module Subscriptions
       }
     end
 
+    def duo_enterprise_trial_alert_hand_raise_lead_data
+      {
+        glm_content: 'billing-group',
+        cta_tracking: {
+          action: 'hand_raise_form_viewed',
+          label: 'click_duo_enterprise_trial_billing_page'
+        }.to_json,
+        button_attributes: {
+          variant: 'confirm',
+          category: 'secondary',
+          class: 'gl-w-full sm:gl-w-auto'
+        }.to_json
+      }
+    end
+
     def duo_pro_trial_status_cta_label(namespace)
       if GitlabSubscriptions::DuoPro.active_trial_add_on_purchase_for_namespace?(namespace)
         'duo_pro_active_trial'

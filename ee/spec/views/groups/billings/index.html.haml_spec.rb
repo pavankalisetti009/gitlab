@@ -36,6 +36,22 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
     end
 
+    shared_examples 'without duo enterprise trial alert' do
+      it 'does not render the component' do
+        render
+
+        expect(rendered).not_to have_css('[data-testid="duo-enterprise-trial-alert"]')
+      end
+    end
+
+    shared_examples 'with duo enterprise trial alert' do
+      it 'renders the component' do
+        render
+
+        expect(rendered).to have_css('[data-testid="duo-enterprise-trial-alert"]')
+      end
+    end
+
     context 'with free plan' do
       it 'renders the billing page' do
         render
@@ -81,6 +97,15 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
 
       it_behaves_like 'without duo pro component'
+      it_behaves_like 'with duo enterprise trial alert'
+
+      context 'when duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it_behaves_like 'without duo enterprise trial alert'
+      end
 
       def expect_to_have_tracking(action:, label: nil)
         css = "[data-track-action='#{action}']"
@@ -99,6 +124,15 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
         end
 
         it_behaves_like 'without duo pro component'
+        it_behaves_like 'with duo enterprise trial alert'
+
+        context 'when duo_enterprise_trials is disabled' do
+          before do
+            stub_feature_flags(duo_enterprise_trials: false)
+          end
+
+          it_behaves_like 'without duo enterprise trial alert'
+        end
       end
     end
 
@@ -115,6 +149,7 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
 
       it_behaves_like 'without duo pro component'
+      it_behaves_like 'without duo enterprise trial alert'
 
       context 'when duo_enterprise_trials is disabled' do
         before do
@@ -148,6 +183,15 @@ RSpec.describe 'groups/billings/index', :saas, :aggregate_failures, feature_cate
       end
 
       it_behaves_like 'with duo pro component'
+      it_behaves_like 'with duo enterprise trial alert'
+
+      context 'when duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
+
+        it_behaves_like 'without duo enterprise trial alert'
+      end
     end
 
     context 'when purchasing a plan' do
