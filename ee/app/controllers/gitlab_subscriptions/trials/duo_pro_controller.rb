@@ -74,7 +74,7 @@ module GitlabSubscriptions
       def check_trial_eligibility!
         return if eligible_namespaces_exist?
 
-        render :access_denied, layout: 'minimal', status: :forbidden
+        render 'gitlab_subscriptions/trials/duo/access_denied', layout: 'minimal', status: :forbidden
       end
 
       def eligible_namespaces_exist?
