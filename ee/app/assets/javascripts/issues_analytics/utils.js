@@ -3,7 +3,7 @@ import { convertObjectPropsToCamelCase } from '~/lib/utils/common_utils';
 import { RENAMED_FILTER_KEYS_DEFAULT } from 'ee/issues_analytics/constants';
 import { dateFormats } from '~/analytics/shared/constants';
 import dateFormat from '~/lib/dateformat';
-import { getMonthNames, newDate } from '~/lib/utils/datetime_utility';
+import { getMonthNames, cloneDate } from '~/lib/utils/datetime_utility';
 
 /**
  * Returns an object with renamed filter keys.
@@ -80,11 +80,11 @@ export const generateChartDateRangeData = (startDate, endDate, format = dateForm
   const formatDate = (date) => dateFormat(date, format, true);
 
   for (
-    let fromDate = newDate(startDate);
+    let fromDate = cloneDate(startDate);
     fromDate < endDate;
     fromDate.setMonth(fromDate.getMonth() + 1, 1)
   ) {
-    let toDate = newDate(fromDate);
+    let toDate = cloneDate(fromDate);
     toDate.setMonth(toDate.getMonth() + 1, 1);
     if (toDate > endDate) toDate = endDate;
 

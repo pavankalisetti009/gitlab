@@ -1,4 +1,4 @@
-import { newDate } from '~/lib/utils/datetime_utility';
+import { cloneDate } from '~/lib/utils/datetime_utility';
 import { sprintf, __ } from '~/locale';
 import { PRESET_DEFAULTS, DAYS_IN_WEEK } from '../../constants';
 
@@ -16,7 +16,7 @@ import { PRESET_DEFAULTS, DAYS_IN_WEEK } from '../../constants';
  */
 export const getTimeframeForWeeksView = (initialDate = new Date()) => {
   const timeframe = [];
-  const startDate = newDate(initialDate);
+  const startDate = cloneDate(initialDate);
   startDate.setHours(0, 0, 0, 0);
 
   const rangeLength = PRESET_DEFAULTS.WEEKS.TIMEFRAME_LENGTH;
@@ -25,7 +25,7 @@ export const getTimeframeForWeeksView = (initialDate = new Date()) => {
   for (let i = 0; i < rangeLength; i += 1) {
     // Push date to timeframe only when day is
     // the first day of the next week (if initial date is Tuesday next date will be also Tuesday but of the next week)
-    timeframe.push(newDate(startDate));
+    timeframe.push(cloneDate(startDate));
 
     // Move date to the next in a week
     startDate.setDate(startDate.getDate() + DAYS_IN_WEEK);
