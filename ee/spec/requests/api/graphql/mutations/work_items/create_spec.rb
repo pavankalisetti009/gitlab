@@ -536,6 +536,90 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
         end
       end
 
+      context 'with linked items widget input' do
+        using RSpec::Parameterized::TableSyntax
+
+        let_it_be(:items) { create_list(:work_item, 2, project: project) }
+
+        let(:fields) do
+          <<~FIELDS
+          workItem {
+            workItemType {
+              name
+            }
+            widgets {
+              type
+              ... on WorkItemWidgetLinkedItems {
+                linkedItems {
+                  nodes {
+                    linkType
+                    workItem { id }
+                  }
+                }
+              }
+            }
+          }
+          errors
+          FIELDS
+        end
+
+        let(:input) do
+          {
+            title: 'some WI',
+            workItemTypeId: WorkItems::Type.default_by_type(:issue).to_gid.to_s,
+            linkedItemsWidget: { 'workItemsIds' => items.map(&:to_gid).map(&:to_s), 'linkType' => link_type }
+          }
+        end
+
+        where(:link_type, :expected_type) do
+          'BLOCKS'     | 'blocks'
+          'BLOCKED_BY' | 'is_blocked_by'
+        end
+
+        with_them do
+          context 'when licensed feature `blocked_work_items` is available' do
+            before do
+              stub_licensed_features(epics: true, blocked_work_items: true)
+            end
+
+            it 'creates a work item with linked items using the corrcet type' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { WorkItem.count }.by(1)
+                 .and change { WorkItems::RelatedWorkItemLink.count }.by(2)
+
+              expect(response).to have_gitlab_http_status(:success)
+              expect(type_response).to include({ 'name' => 'Issue' })
+              expect(widgets_response).to include(
+                {
+                  'linkedItems' => { 'nodes' => [
+                    { 'linkType' => expected_type, "workItem" => { "id" => items[1].to_global_id.to_s } },
+                    { 'linkType' => expected_type, "workItem" => { "id" => items[0].to_global_id.to_s } }
+                  ] },
+                  'type' => 'LINKED_ITEMS'
+                }
+              )
+            end
+          end
+
+          context 'when licensed feature `blocked_work_items` is not available' do
+            before do
+              stub_licensed_features(epics: true, blocked_work_items: false)
+            end
+
+            it 'returns an error' do
+              expect do
+                post_graphql_mutation(mutation, current_user: current_user)
+              end.to change { WorkItem.count }.by(1)
+                 .and not_change { WorkItems::RelatedWorkItemLink.count }
+
+              expect(mutation_response['errors'])
+                .to contain_exactly('Blocked work items are not available for the current subscription tier')
+            end
+          end
+        end
+      end
+
       context 'with feature flag checks' do
         let(:fields) do
           <<~FIELDS
