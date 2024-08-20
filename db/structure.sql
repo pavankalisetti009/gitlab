@@ -11564,6 +11564,8 @@ CREATE TABLE import_source_users (
     source_hostname text NOT NULL,
     import_type text NOT NULL,
     reassigned_by_user_id bigint,
+    reassignment_error text,
+    CONSTRAINT check_05708218cd CHECK ((char_length(reassignment_error) <= 255)),
     CONSTRAINT check_0d7295a307 CHECK ((char_length(import_type) <= 255)),
     CONSTRAINT check_199c28ec54 CHECK ((char_length(source_username) <= 255)),
     CONSTRAINT check_562655155f CHECK ((char_length(source_name) <= 255)),
