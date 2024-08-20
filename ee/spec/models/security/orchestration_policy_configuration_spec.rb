@@ -1635,7 +1635,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   end
 
   describe '#active_scan_execution_policies' do
-    let(:enforce_dast_yaml) { build(:orchestration_policy_yaml, scan_execution_policy: [build(:scan_execution_policy)]) }
     let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
 
     let(:expected_active_policies) do
