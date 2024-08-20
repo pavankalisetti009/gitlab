@@ -2425,7 +2425,8 @@ CREATE TABLE p_ci_builds (
     user_id bigint,
     execution_config_id bigint,
     upstream_pipeline_partition_id bigint,
-    CONSTRAINT check_1e2fbd1b39 CHECK ((lock_version IS NOT NULL))
+    CONSTRAINT check_1e2fbd1b39 CHECK ((lock_version IS NOT NULL)),
+    CONSTRAINT check_9aa9432137 CHECK ((project_id IS NOT NULL))
 )
 PARTITION BY LIST (partition_id);
 
@@ -7769,7 +7770,8 @@ CREATE TABLE ci_builds (
     user_id bigint,
     execution_config_id bigint,
     upstream_pipeline_partition_id bigint,
-    CONSTRAINT check_1e2fbd1b39 CHECK ((lock_version IS NOT NULL))
+    CONSTRAINT check_1e2fbd1b39 CHECK ((lock_version IS NOT NULL)),
+    CONSTRAINT check_9aa9432137 CHECK ((project_id IS NOT NULL))
 );
 
 CREATE SEQUENCE ci_builds_id_seq
@@ -23038,9 +23040,6 @@ ALTER TABLE ci_runners
 
 ALTER TABLE ci_runners
     ADD CONSTRAINT check_91230910ec CHECK ((char_length((name)::text) <= 256)) NOT VALID;
-
-ALTER TABLE ci_builds
-    ADD CONSTRAINT check_9aa9432137 CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
