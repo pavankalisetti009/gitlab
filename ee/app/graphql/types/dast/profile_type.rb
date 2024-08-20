@@ -26,7 +26,7 @@ module Types
         null: true, description: 'Associated scanner profile.'
 
       field :dast_profile_schedule, ::Types::Dast::ProfileScheduleType,
-        null: true, method: :dast_profile_schedule, description: 'Associated profile schedule.'
+        null: true, description: 'Associated profile schedule.'
 
       field :branch, Dast::ProfileBranchType,
         null: true, calls_gitaly: true, description: 'Associated branch.'

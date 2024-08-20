@@ -115,8 +115,7 @@ module EE
         field :actual_repository_size_limit,
           GraphQL::Types::Float,
           null: true,
-          description: 'Size limit for the repository in bytes.',
-          method: :actual_repository_size_limit
+          description: 'Size limit for the repository in bytes.'
 
         field :code_coverage_summary,
           ::Types::Ci::CodeCoverageSummaryType,

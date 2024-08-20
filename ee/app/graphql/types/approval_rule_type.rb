@@ -100,7 +100,6 @@ module Types
 
     field :scan_result_policies,
       type: [Types::SecurityOrchestration::ApprovalScanResultPolicyType],
-      method: :scan_result_policies,
       null: true,
       description: 'List of scan result policies associated with the rule.'
   end
