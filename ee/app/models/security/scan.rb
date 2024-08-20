@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class Scan < ApplicationRecord
+  class Scan < ::Gitlab::Database::SecApplicationRecord
     include CreatedAtFilterable
 
     STALE_AFTER = 90.days
@@ -44,6 +44,9 @@ module Security
       joins(project: :vulnerability_feedback)
         .where('vulnerability_feedback.category = (security_scans.scan_type - 1)')
         .merge(Vulnerabilities::Feedback.for_dismissal)
+        .allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478409'
+        )
     end
 
     scope :latest, -> { where(latest: true) }

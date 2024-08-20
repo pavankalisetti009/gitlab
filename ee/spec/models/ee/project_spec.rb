@@ -414,9 +414,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
         project_without_security_scans = create(:project)
         project_with_security_scans = create(:project, :with_security_scans)
 
-        expect(described_class.with_security_scans)
+        expect(described_class.with_security_scans.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478409'
+        ))
           .to include(project_with_security_scans)
-        expect(described_class.with_security_scans)
+        expect(described_class.with_security_scans.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478409'
+        ))
           .not_to include(project_without_security_scans)
       end
     end

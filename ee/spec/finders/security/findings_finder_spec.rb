@@ -6,11 +6,16 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
   it_behaves_like 'security findings finder' do
     it_behaves_like 'when the pipeline has security findings' do
       let(:findings) { service_object.execute.findings }
-      let(:query_limit) { 16 }
+      let(:query_limit) { 27 } # https://gitlab.com/gitlab-org/gitlab/-/issues/478421
 
       describe '#findings' do
         context 'when the `security_findings` records have `overridden_uuid`s' do
-          let(:security_findings) { Security::Finding.by_build_ids(build_1) }
+          let(:security_findings) do
+            Security::Finding.by_build_ids(build_1).allow_cross_joins_across_databases(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478420'
+            )
+          end
+
           let(:security_finding_uuids) { Security::Finding.pluck(:uuid) }
           let(:nondeduplicated_security_finding_uuid) { Security::Finding.second[:uuid] }
           let(:expected_uuids) do
