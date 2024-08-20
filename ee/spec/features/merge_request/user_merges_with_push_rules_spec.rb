@@ -4,7 +4,11 @@ require 'spec_helper'
 
 RSpec.describe 'Merge request > User merges with push rules', :js, feature_category: :code_review_workflow do
   let(:user) { create(:user) }
-  let(:project) { create(:project, :public, :repository, push_rule: push_rule) }
+  let(:project) do
+    create(:project, :public, :repository, push_rule: push_rule, only_allow_merge_if_pipeline_succeeds:
+                         false)
+  end
+
   let(:merge_request) do
     create(:merge_request_with_diffs, source_project: project, author: user, title: 'Bug NS-04',
       merge_status: 'can_be_merged')
@@ -12,6 +16,41 @@ RSpec.describe 'Merge request > User merges with push rules', :js, feature_categ
 
   before do
     project.add_maintainer(user)
+  end
+
+  context 'when merge commit template is set and no commit message is given' do
+    let(:push_rule) { create(:push_rule, commit_message_regex: "Bug.+") }
+    let(:merge_request) do
+      create(:merge_request_with_diffs, source_project: project, author: user, title: 'Draft: Bug NS-04',
+        merge_status: 'can_be_merged')
+    end
+
+    before do
+      project.update!(merge_commit_template_or_default: "%{title}: %{approved_by}")
+
+      sign_in user
+      visit_merge_request(merge_request)
+    end
+
+    it 'merges successfuly', :sidekiq_inline do
+      click_button 'Set to auto-merge'
+
+      create(:approval, merge_request: merge_request, user: user)
+      create(:ci_pipeline, :success,
+        ref: merge_request.source_branch,
+        sha: merge_request.diff_head_sha,
+        project: merge_request.source_project)
+      merge_request.update_head_pipeline
+
+      perform_enqueued_jobs do
+        click_button('Mark as ready')
+      end
+
+      wait_for_requests
+
+      expect(page).to have_content("Merged")
+      expect(merge_request.reload.merge_commit.message).to match(/Bug NS-04: Approved-by: #{user.name}/)
+    end
   end
 
   context 'commit message is invalid' do
