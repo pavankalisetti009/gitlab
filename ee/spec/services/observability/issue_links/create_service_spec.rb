@@ -3,16 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe Observability::IssueLinks::CreateService, feature_category: :metrics do
-  let(:issue) { create(:issue) }
-  let(:project) { issue.project }
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
+  let_it_be(:project) { create(:project) }
+  let_it_be(:issue) { create(:issue, project: project) }
   let(:links) { {} }
   let(:service) { described_class.new(project, user, issue: issue, links: links) }
   let(:execute) { service.execute }
 
   describe '#execute' do
-    before do
+    before_all do
       project.add_developer(user)
+    end
+
+    before do
       stub_licensed_features(observability: true)
     end
 
@@ -59,6 +62,18 @@ RSpec.describe Observability::IssueLinks::CreateService, feature_category: :metr
         expect { execute }.to change { ::Observability::MetricsIssuesConnection.count }.by(1)
         expect(execute.status).to eq(:success)
       end
+
+      context 'when invalid link-params are passed' do
+        before do
+          links[:metric_details_name] = "*" * 501 # can be 500 characters long only
+        end
+
+        it 'creates no metric connection' do
+          expect { execute }.not_to change { ::Observability::MetricsIssuesConnection.count }
+          expect(execute.status).to eq(:error)
+          expect(execute.message).to include("Validation failed")
+        end
+      end
     end
 
     context 'when persisting observability logs links' do
@@ -79,11 +94,37 @@ RSpec.describe Observability::IssueLinks::CreateService, feature_category: :metr
 
       context 'when invalid link-params are passed' do
         before do
-          links[:log_severity_number] = 100
+          links[:log_severity_number] = 100 # can be 1 .. 24 only
         end
 
         it 'creates no log connection' do
           expect { execute }.not_to change { ::Observability::LogsIssuesConnection.count }
+          expect(execute.status).to eq(:error)
+          expect(execute.message).to include("Validation failed")
+        end
+      end
+    end
+
+    context 'when persisting observability trace links' do
+      let(:links) do
+        {
+          trace_id: "fa12d360-54cd-c4db-5241-ccf7841d3e72"
+        }
+      end
+
+      it 'creates a trace connection' do
+        expect { execute }.to change { ::Observability::TracesIssuesConnection.count }.by(1)
+        expect(execute.status).to eq(:success)
+      end
+
+      context 'when invalid link-params are passed' do
+        before do
+          links[:trace_id] = "*" * 129 # can be 128 characters only
+        end
+
+        it 'creates no trace connection' do
+          expect { execute }.not_to change { ::Observability::TracesIssuesConnection.count }
+          expect(execute.status).to eq(:error)
           expect(execute.message).to include("Validation failed")
         end
       end

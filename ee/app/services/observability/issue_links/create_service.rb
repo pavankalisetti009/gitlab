@@ -5,6 +5,7 @@ module Observability
     class CreateService < BaseService
       METRICS_ATTRS = [:metric_details_name, :metric_details_type].freeze
       LOGS_ATTRS = [:log_service_name, :log_severity_number, :log_timestamp, :log_fingerprint, :log_trace_id].freeze
+      TRACES_ATTRS = [:trace_id].freeze
 
       def execute
         return ServiceResponse.error(message: 'No permission') unless allowed?
@@ -17,6 +18,8 @@ module Observability
           persist_metrics_links(issue, links)
         elsif all_keys_present?(links, LOGS_ATTRS)
           persist_logs_links(issue, links)
+        elsif all_keys_present?(links, TRACES_ATTRS)
+          persist_traces_links(issue, links)
         else
           ServiceResponse.error(message: 'Insufficient link params')
         end
@@ -54,6 +57,19 @@ module Observability
             log_timestamp: links[:log_timestamp],
             log_fingerprint: links[:log_fingerprint],
             trace_identifier: links[:log_trace_id],
+            issue: issue
+          )
+        rescue ActiveRecord::RecordInvalid => e
+          return ServiceResponse.error(message: e.message)
+        end
+
+        ServiceResponse.success
+      end
+
+      def persist_traces_links(issue, links)
+        begin
+          ::Observability::TracesIssuesConnection.create!(
+            trace_identifier: links[:trace_id],
             issue: issue
           )
         rescue ActiveRecord::RecordInvalid => e

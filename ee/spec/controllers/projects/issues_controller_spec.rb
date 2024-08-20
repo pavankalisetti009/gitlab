@@ -510,6 +510,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         end
 
         context 'when observability_tracing_details parameters exist' do
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+
           it 'does not prefill the issue title and description' do
             subject
 
@@ -520,6 +526,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
         context 'when observability_tracing_details parameters do not exist' do
           let(:tracing_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
 
           it 'does not prefill the issue title and description' do
             subject
@@ -539,6 +551,11 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
           it 'does prefill the issue title and description' do
             subject
 
+            expect(assigns(:observability_values)).to eq({
+              trace: {
+                traceId: '8335ed4c-c943-aeaa-7851-2b9af6c5d3b8'
+              }
+            })
             expect(assigns(:issue).title).to eq("Issue created from trace 'frontend-proxy : ingress'")
             expect(assigns(:issue).description).to eq(
               <<~TEXT
@@ -556,6 +573,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
         context 'when observability_tracing_details parameters do not exist' do
           let(:tracing_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
 
           it 'does not prefill the issue title and description' do
             subject

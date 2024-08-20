@@ -23,6 +23,14 @@ module Observability
             traceId: parsed['traceId']
           }
         }
+      elsif params[:observability_trace_details].present?
+        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_trace_details]))
+
+        {
+          trace: {
+            traceId: parsed['traceId']
+          }
+        }
       end
     end
 
