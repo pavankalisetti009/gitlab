@@ -28,7 +28,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ProjectClonerComp
         }
       },
       settings: {
-        project_cloner_image: 'alpine/git:2.36.3'
+        project_cloner_image: 'alpine/git:2.45.2'
       }
     }
   end

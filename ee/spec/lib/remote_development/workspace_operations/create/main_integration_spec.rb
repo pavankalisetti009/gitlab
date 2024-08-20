@@ -65,7 +65,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
   let(:settings) do
     {
-      project_cloner_image: 'alpine/git:2.36.3',
+      project_cloner_image: 'alpine/git:2.45.2',
       tools_injector_image: tools_injector_image_from_settings
     }
   end
