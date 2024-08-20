@@ -39,7 +39,7 @@ RSpec.describe(
   let(:security_findings) { table(:security_findings) }
   let(:ci_builds) { table(:p_ci_builds, database: :ci) { |model| model.primary_key = :id } }
   let(:ci_job_artifacts) { table(:ci_job_artifacts, database: :ci) }
-  let(:ci_pipelines) { table(:ci_pipelines, database: :ci) }
+  let(:ci_pipelines) { table(:ci_pipelines, primary_key: :id, database: :ci) }
 
   let!(:user) { create_user(email: "test1@example.com", username: "test1") }
   let!(:namespace) { namespaces.create!(name: "test-1", path: "test-1", owner_id: user.id) }
