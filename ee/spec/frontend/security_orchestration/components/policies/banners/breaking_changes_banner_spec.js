@@ -3,7 +3,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
 import LocalStorageSync from '~/vue_shared/components/local_storage_sync.vue';
 
-const HELP_PATH = '/help/user/application_security/policies/scan-result-policies#';
+const HELP_PATH = '/help/user/application_security/policies/merge_request_approval_policies#';
 
 describe('BreakingChangesBanner', () => {
   let wrapper;

@@ -5,9 +5,12 @@ import { s__ } from '~/locale';
 import SectionLayout from '../../section_layout.vue';
 
 export default {
-  documentationLink: helpPagePath('user/application_security/policies/scan-result-policies', {
-    anchor: 'example-bot-messages',
-  }),
+  documentationLink: helpPagePath(
+    'user/application_security/policies/merge_request_approval_policies',
+    {
+      anchor: 'example-bot-messages',
+    },
+  ),
   i18n: {
     contentText: s__(
       'SecurityOrchestration|%{boldStart}Send a bot message%{boldEnd} as comment to merge request creator.',
