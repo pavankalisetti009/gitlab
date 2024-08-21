@@ -39,7 +39,7 @@ module EE
             project.feature_available?(:security_and_compliance, options[:current_user])
           end
           expose :pre_receive_secret_detection_enabled, documentation: { type: 'boolean' }, if: ->(project, options) { Ability.allowed?(options[:current_user], :read_pre_receive_secret_detection_info, project) } do |project|
-            project.security_setting.pre_receive_secret_detection_enabled
+            project.security_setting&.pre_receive_secret_detection_enabled
           end
           expose :compliance_frameworks do |project, _|
             project.compliance_management_frameworks_names
