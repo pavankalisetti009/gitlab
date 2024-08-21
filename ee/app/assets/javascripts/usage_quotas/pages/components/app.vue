@@ -1,9 +1,10 @@
 <script>
+import ProjectList from './project_list.vue';
 import PagesDeploymentStats from './stats.vue';
 
 export default {
   name: 'PagesDeployments',
-  components: { PagesDeploymentStats },
+  components: { ProjectList, PagesDeploymentStats },
 };
 </script>
 
@@ -13,5 +14,6 @@ export default {
     <div class="gl-mb-8">
       <pages-deployment-stats />
     </div>
+    <project-list />
   </div>
 </template>

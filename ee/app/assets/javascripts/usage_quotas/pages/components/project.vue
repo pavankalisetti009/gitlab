@@ -1,0 +1,217 @@
+<script>
+import { GlCard, GlTableLite, GlIcon, GlBadge, GlSprintf, GlLink, GlAvatar } from '@gitlab/ui';
+import NumberToHumanSize from '~/vue_shared/components/number_to_human_size/number_to_human_size.vue';
+import { SHORT_DATE_FORMAT_WITH_TIME } from '~/vue_shared/constants';
+import UserDate from '~/vue_shared/components/user_date.vue';
+import { joinPaths } from '~/lib/utils/url_utility';
+import { s__, sprintf } from '~/locale';
+import DeleteDeployment from 'ee/usage_quotas/pages/components/delete_deployment.vue';
+
+export default {
+  name: 'ProjectView',
+  components: {
+    DeleteDeployment,
+    UserDate,
+    NumberToHumanSize,
+    GlCard,
+    GlTableLite,
+    GlBadge,
+    GlIcon,
+    GlSprintf,
+    GlLink,
+    GlAvatar,
+  },
+  props: {
+    project: {
+      type: Object,
+      required: true,
+    },
+  },
+  static: {
+    SHORT_DATE_FORMAT_WITH_TIME,
+  },
+  i18n: {
+    deleteError: s__(
+      'Pages|An error occurred while deleting the deployment. Please check your connection and try again.',
+    ),
+    restoreError: s__(
+      'Pages|Restoring the deployment failed. The deployment might be permanently deleted.',
+    ),
+    extraDeploymentsLabel: s__('Pages|Extra deployments: %{count}'),
+    activeState: s__('Pages|Active'),
+    stoppedState: s__('Pages|Stopped'),
+    primaryDeploymentTitle: s__('Pages|Primary deployment'),
+    pathPrefixLabel: s__('Pages|Path prefix'),
+    createdLabel: s__('Pages|Created'),
+    deployJobLabel: s__('Pages|Deploy job'),
+    rootDirLabel: s__('Pages|Root directory'),
+    filesLabel: s__('Pages|Files'),
+    sizeLabel: s__('Pages|Size'),
+    lastUpdatedLabel: s__('Pages|Last updated'),
+    deleteScheduledAtLabel: s__('Pages|Scheduled for deletion at'),
+    deleteBtnLabel: s__('Pages|Delete'),
+    restoreBtnLabel: s__('Pages|Restore'),
+    moreDeloymentsMessage: s__('Pages|+ %{n} more deployments'),
+  },
+  fields: [
+    {
+      key: 'state',
+      label: s__('Pages|State'),
+    },
+    {
+      key: 'environment',
+      label: s__('Pages|Path prefix'),
+    },
+    {
+      key: 'url',
+      label: s__('Pages|URL'),
+      thClass: 'gl-min-w-62 gl-max-w-62',
+      tdClass: 'gl-min-w-62 gl-max-w-62 gl-truncate',
+    },
+    {
+      key: 'createdAt',
+      label: s__('Pages|Created at'),
+    },
+    {
+      key: 'ciBuildId',
+      label: s__('Pages|Deploy Job'),
+    },
+    {
+      key: 'size',
+      label: s__('Pages|Size'),
+    },
+    {
+      key: 'delete',
+      label: s__('Pages|Delete'),
+    },
+  ],
+  computed: {
+    pagesUrl() {
+      return joinPaths(gon.relative_url_root || '', '/', this.project.fullPath, 'pages');
+    },
+    deploymentsTotalCount() {
+      return this.project.pagesDeployments.count;
+    },
+    deploymentsNotShownCount() {
+      return this.deploymentsTotalCount - this.project.pagesDeployments.nodes.length;
+    },
+    moreDeploymentsMessage() {
+      return sprintf(this.$options.i18n.moreDeloymentsMessage, {
+        n: this.deploymentsNotShownCount,
+      });
+    },
+  },
+  methods: {
+    getBuildUrl(ciBuildId) {
+      return joinPaths(
+        gon.relative_url_root || '/',
+        this.project.fullPath,
+        '/-/jobs/',
+        `${ciBuildId}`,
+      );
+    },
+  },
+};
+</script>
+
+<template>
+  <gl-card body-class="gl-p-0">
+    <template #header>
+      <div class="gl-flex gl-justify-between gl-items-center" data-testid="project-name">
+        <gl-link :href="pagesUrl" class="gl-flex gl-items-center gl-no-underline">
+          <gl-avatar
+            :src="project.avatarUrl"
+            :size="32"
+            shape="rect"
+            :entity-name="project.name"
+            fallback-on-error
+            class="mr-2"
+          />
+          <span class="gl-font-bold gl-text-primary">{{ project.name }}</span>
+        </gl-link>
+        <div>
+          <gl-sprintf :message="$options.i18n.extraDeploymentsLabel">
+            <template #count>
+              <span class="gl-font-bold">
+                {{ deploymentsTotalCount }}
+              </span>
+            </template>
+          </gl-sprintf>
+        </div>
+      </div>
+    </template>
+    <div>
+      <gl-table-lite
+        :items="project.pagesDeployments.nodes"
+        :fields="$options.fields"
+        class="deployments-table gl-mb-0"
+      >
+        <template #cell(state)="{ item }">
+          <gl-badge
+            v-if="item.active"
+            variant="success"
+            size="sm"
+            icon="status_success"
+            icon-size="sm"
+          >
+            {{ $options.i18n.activeState }}
+          </gl-badge>
+          <gl-badge v-else variant="neutral" size="sm" icon="status_canceled" icon-size="sm">
+            {{ $options.i18n.stoppedState }}
+          </gl-badge>
+        </template>
+        <template #cell(environment)="{ item }">
+          <gl-icon name="environment" class="mr-1 gl-text-secondary" />
+          <span data-testid="path-prefix">{{ item.pathPrefix }}</span>
+        </template>
+        <template #cell(url)="{ item }">
+          <gl-link v-if="item.active" :href="item.url" target="_blank" data-testid="url">
+            {{ item.url }}
+          </gl-link>
+          <span v-else class="gl-text-secondary" data-testid="url">
+            {{ item.url }}
+          </span>
+        </template>
+        <template #cell(createdAt)="{ item }">
+          <gl-icon name="play" class="mr-1 gl-text-secondary" />
+          <user-date
+            :date="item.createdAt"
+            :date-format="$options.static.SHORT_DATE_FORMAT_WITH_TIME"
+          />
+        </template>
+        <template #cell(ciBuildId)="{ item }">
+          <gl-icon name="deployments" class="mr-1 gl-text-secondary" />
+          <gl-link :href="getBuildUrl(item.ciBuildId)" data-testid="ci-build">
+            {{ item.ciBuildId }}
+          </gl-link>
+        </template>
+        <template #cell(size)="{ item }">
+          <gl-icon name="disk" class="mr-1 gl-text-secondary" />
+          <number-to-human-size :value="item.size" />
+        </template>
+        <template #cell(delete)="{ item }">
+          <delete-deployment :id="item.id" :active="item.active" />
+        </template>
+      </gl-table-lite>
+      <div v-if="deploymentsNotShownCount > 0">
+        <div class="gl-py-3 gl-flex gl-justify-center">
+          {{ moreDeploymentsMessage }}
+          <gl-link :href="pagesUrl" class="gl-ml-2">{{ __('View all') }}</gl-link>
+        </div>
+      </div>
+    </div>
+  </gl-card>
+</template>
+
+<style scoped>
+/**
+ Remove the first header's top and last row's bottom border so it doesn't create
+ a double border with the card body border
+*/
+:deep(thead:first-child th) {
+  border-top: none;
+}
+.deployments-table:last-child :deep(tr:last-child td) {
+  border-bottom: none;
+}
+</style>

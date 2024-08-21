@@ -7,46 +7,46 @@ query GetNamespacePagesDeployments(
   $active: Boolean
   $versioned: Boolean
   $sort: Sort
+  $projectIds: [ID!]
 ) {
   namespace(fullPath: $fullPath) {
     id
     name
-    pagesDeployments(
-      first: $first
-      last: $last
-      after: $after
-      before: $before
-      active: $active
-      versioned: $versioned
-      sort: $sort
-    ) {
-      count
-      pageInfo {
-        startCursor
-        endCursor
-        hasNextPage
-        hasPreviousPage
-      }
-      edges {
-        cursor
-        node {
-          id
-          project {
-            id
-            name
-            fullPath
-            avatarUrl
+    projects(includeSubgroups: true, ids: $projectIds) {
+      nodes {
+        id
+        name
+        fullPath
+        avatarUrl
+        pagesDeployments(
+          first: $first
+          last: $last
+          after: $after
+          before: $before
+          active: $active
+          versioned: $versioned
+          sort: $sort
+        ) {
+          count
+          pageInfo {
+            startCursor
+            endCursor
+            hasNextPage
+            hasPreviousPage
           }
-          active
-          ciBuildId
-          createdAt
-          deletedAt
-          fileCount
-          pathPrefix
-          rootDirectory
-          size
-          updatedAt
-          url
+          nodes {
+            id
+            active
+            ciBuildId
+            createdAt
+            deletedAt
+            fileCount
+            pathPrefix
+            rootDirectory
+            size
+            updatedAt
+            url
+          }
         }
       }
     }

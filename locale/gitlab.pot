@@ -17726,6 +17726,9 @@ msgstr ""
 msgid "Delete deploy key"
 msgstr ""
 
+msgid "Delete deployment"
+msgstr ""
+
 msgid "Delete diagram"
 msgstr ""
 
@@ -38481,16 +38484,31 @@ msgstr ""
 msgid "PagesUsageQuota|Learn about Pages deployments limits"
 msgstr ""
 
+msgid "Pages|+ %{n} more deployments"
+msgstr ""
+
 msgid "Pages|Active"
+msgstr ""
+
+msgid "Pages|An error occurred trying to load the Pages deployments."
 msgstr ""
 
 msgid "Pages|An error occurred while deleting the deployment. Check your connection and try again."
 msgstr ""
 
+msgid "Pages|An error occurred while deleting the deployment. Please check your connection and try again."
+msgstr ""
+
 msgid "Pages|Created"
 msgstr ""
 
+msgid "Pages|Created at"
+msgstr ""
+
 msgid "Pages|Delete"
+msgstr ""
+
+msgid "Pages|Deploy Job"
 msgstr ""
 
 msgid "Pages|Deploy job"
@@ -38500,6 +38518,9 @@ msgid "Pages|Deployments"
 msgstr ""
 
 msgid "Pages|Environment deployments"
+msgstr ""
+
+msgid "Pages|Extra deployments: %{count}"
 msgstr ""
 
 msgid "Pages|Files"
@@ -38541,7 +38562,22 @@ msgstr ""
 msgid "Pages|Some Pages deployments could not be loaded. Try reloading the page."
 msgstr ""
 
+msgid "Pages|State"
+msgstr ""
+
 msgid "Pages|Stopped"
+msgstr ""
+
+msgid "Pages|There was an error trying to delete the deployment"
+msgstr ""
+
+msgid "Pages|There was an error trying to restore the deployment"
+msgstr ""
+
+msgid "Pages|URL"
+msgstr ""
+
+msgid "Pages|We did not find any Projects with Pages deployments in this namespace."
 msgstr ""
 
 msgid "Pagination|First"
@@ -45460,6 +45496,9 @@ msgid "Restart merge train pipelines with the merged changes."
 msgstr ""
 
 msgid "Restore"
+msgstr ""
+
+msgid "Restore deployment"
 msgstr ""
 
 msgid "Restore group"
