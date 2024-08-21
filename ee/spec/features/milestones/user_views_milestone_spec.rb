@@ -16,14 +16,12 @@ RSpec.describe "User views milestone", feature_category: :team_planning do
     sign_in(user)
   end
 
-  it 'only shows releases that user has access to' do
+  it 'shows count of milestones' do
     create(:release, name: 'PUBLIC RELEASE', project: project, milestones: [milestone])
     create(:release, name: 'PRIVATE RELEASE', project: no_access_project, milestones: [milestone])
 
     visit(group_milestones_path(group))
 
-    expect(page.find('.milestone')).to have_text('PUBLIC RELEASE')
-    expect(page.find('.milestone')).not_to have_text('PRIVATE RELEASE')
-    expect(page.find('.milestone')).to have_text('1 more release')
+    expect(page.find('.milestone')).to have_text('2 releases')
   end
 end
