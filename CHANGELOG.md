@@ -1596,6 +1596,12 @@ entry.
 - [Remove "use_remote_mirror_destroy_service" feature flag](https://gitlab.com/gitlab-org/gitlab/-/commit/74e1e921d003960afd6f259384aee2dfec18f30e) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155852))
 - [Protected containers: Cleanup renaming of protected_up_to_access_level](https://gitlab.com/gitlab-org/gitlab/-/commit/4606b5ef64f75acdd581258a0b93034195626e83) by @gerardo-navarro ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/146177))
 
+## 17.1.6 (2024-08-21)
+
+### Security (1 change)
+
+- [Always build assets image when tagging](https://gitlab.com/gitlab-org/security/gitlab/-/commit/b10a04aa687e6fbdf6c26b5756dcbb3748728e9a) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4385))
+
 ## 17.1.5 (2024-08-20)
 
 ### Fixed (1 change)
