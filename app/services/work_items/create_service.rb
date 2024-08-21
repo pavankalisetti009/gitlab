@@ -31,39 +31,6 @@ module WorkItems
       error(e.message, :unprocessable_entity)
     end
 
-    def before_create(work_item)
-      execute_widgets(
-        work_item: work_item,
-        callback: :before_create_callback,
-        widget_params: @widget_params
-      )
-
-      super
-    end
-
-    def transaction_create(work_item)
-      super.tap do |save_result|
-        if save_result
-          execute_widgets(
-            work_item: work_item,
-            callback: :after_create_in_transaction,
-            widget_params: @widget_params
-          )
-        end
-      end
-    end
-
-    def prepare_create_params(work_item)
-      execute_widgets(
-        work_item: work_item,
-        callback: :prepare_create_params,
-        widget_params: @widget_params,
-        service_params: params
-      )
-
-      super
-    end
-
     def parent
       container
     end
