@@ -2145,6 +2145,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: secrets_management_provision_project_secrets_manager
+  :worker_name: SecretsManagement::ProvisionProjectSecretsManagerWorker
+  :feature_category: :secrets_management
+  :has_external_dependencies: false
+  :urgency: :high
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: security_create_security_policy_project
   :worker_name: Security::CreateSecurityPolicyProjectWorker
   :feature_category: :security_policy_management
