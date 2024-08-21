@@ -12,6 +12,13 @@ module ComplianceManagement
 
       has_many :compliance_checks, class_name: 'ComplianceManagement::ComplianceFramework::ComplianceCheck',
         foreign_key: :requirement_id, inverse_of: :compliance_requirement
+
+      has_many :security_policy_requirements,
+        class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicyRequirement'
+
+      has_many :compliance_framework_security_policies,
+        through: :security_policy_requirements,
+        inverse_of: :compliance_requirements
     end
   end
 end
