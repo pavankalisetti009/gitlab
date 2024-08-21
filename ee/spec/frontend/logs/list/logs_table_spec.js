@@ -3,7 +3,7 @@ import { nextTick } from 'vue';
 import LogsTable from 'ee/logs/list/logs_table.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { mockLogs } from './mock_data';
+import { mockLogs } from '../mock_data';
 
 describe('LogsTable', () => {
   let wrapper;
