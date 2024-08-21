@@ -639,24 +639,30 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
 
   describe 'access_duo_chat' do
     let(:policy) { :access_duo_chat }
+    let_it_be(:before_cutoff) { Date.new(2024, 10, 16) }
+    let_it_be(:after_cutoff) { Date.new(2024, 10, 18) }
 
     let_it_be_with_reload(:current_user) { create(:user) }
 
     context 'when on .org or .com', :saas do
       where(:group_with_ai_membership, :duo_pro_seat_assigned, :requires_licensed_seat,
-        :self_hosted_duo_chat_enabled, :self_hosted_duo_chat_available, :duo_chat_enabled_for_user) do
-        false | false  | false | false | false | be_disallowed(policy)
-        false | true   | false | false | false | be_disallowed(policy)
-        true  | false  | false | false | false | be_allowed(policy)
-        true  | true   | false | false | false | be_allowed(policy)
+        :self_hosted_duo_chat_enabled, :self_hosted_duo_chat_available, :frozen_date, :duo_chat_enabled_for_user) do
+        false | false  | false | false | false | ref(:before_cutoff) | be_disallowed(policy)
+        false | true   | false | false | false | ref(:before_cutoff) | be_disallowed(policy)
+        true  | false  | false | false | false | ref(:before_cutoff) | be_allowed(policy)
+        true  | true   | false | false | false | ref(:before_cutoff) | be_allowed(policy)
 
         # When Group actor belongs to a group which requires licensed seat for chat
-        true  | false  | true  | false | false | be_disallowed(policy)
-        true  | true   | true  | false | false | be_allowed(policy)
+        true  | false  | true  | false | false | ref(:before_cutoff) | be_disallowed(policy)
+        true  | true   | true  | false | false | ref(:before_cutoff) | be_allowed(policy)
 
         # When Duo chat is self-hosted
-        false | false  | false | true  | false | be_disallowed(policy)
-        false | false  | false | true  | true  | be_allowed(policy)
+        false | false  | false | true  | false | ref(:before_cutoff) | be_disallowed(policy)
+        false | false  | false | true  | true  | ref(:before_cutoff) | be_allowed(policy)
+
+        # After free access cutoff
+        false | true   | false | false | false | ref(:after_cutoff) | be_allowed(policy)
+        true  | false  | false | false | false | ref(:after_cutoff) | be_disallowed(policy)
       end
 
       with_them do
@@ -678,6 +684,7 @@ RSpec.describe GlobalPolicy, feature_category: :shared do
             .with(current_user).and_return(self_hosted_duo_chat_available)
           allow(self_hosted_service_data).to receive(:free_access?)
             .and_return(self_hosted_duo_chat_available)
+          travel_to(frozen_date)
         end
 
         it { is_expected.to duo_chat_enabled_for_user }
