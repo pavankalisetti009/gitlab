@@ -67,10 +67,10 @@ export default {
       {{ s__('Runners|Use the dashboard to view performance statistics of your runner fleet.') }}
     </p>
 
-    <div class="sm:gl-flex gl-gap-x-4 gl-justify-between">
-      <div class="sm:gl-flex gl-gap-x-4 gl-justify-between gl-w-full">
+    <div class="gl-justify-between gl-gap-x-4 sm:gl-flex">
+      <div class="gl-w-full gl-justify-between gl-gap-x-4 sm:gl-flex">
         <div
-          class="runners-dashboard-two-thirds-gap-4 gl-display-flex gl-gap-4 gl-justify-between gl-mb-4 gl-flex-wrap"
+          class="runners-dashboard-two-thirds-gap-4 gl-mb-4 gl-flex gl-flex-wrap gl-justify-between gl-gap-4"
         >
           <runner-dashboard-stat-status
             :status="$options.STATUS_ONLINE"
@@ -87,9 +87,9 @@ export default {
           <runner-usage
             v-if="clickhouseCiAnalyticsAvailable"
             :scope="$options.INSTANCE_TYPE"
-            class="gl-flex-basis-full"
+            class="gl-basis-full"
           />
-          <runner-job-failures v-else class="gl-flex-basis-full" />
+          <runner-job-failures v-else class="gl-basis-full" />
         </div>
 
         <admin-runners-active-list class="runners-dashboard-third-gap-4 gl-mb-4" />

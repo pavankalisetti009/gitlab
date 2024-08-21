@@ -46,12 +46,12 @@ export default {
 </script>
 <template>
   <div class="gl-border gl-rounded-base gl-p-5">
-    <h2 class="gl-font-lg gl-mt-0">{{ s__('Runners|Most recent failures') }}</h2>
+    <h2 class="gl-mt-0 gl-text-lg">{{ s__('Runners|Most recent failures') }}</h2>
 
     <gl-skeleton-loader v-if="loading" />
     <gl-empty-state
       v-else-if="!failedJobs.length"
-      class="gl-mt-5 gl-lg-mx-12"
+      class="gl-mt-5 lg:gl-mx-12"
       :svg-path="$options.EMPTY_STATE_SVG_URL"
       :svg-height="72"
       :description="

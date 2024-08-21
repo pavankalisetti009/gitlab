@@ -4,7 +4,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
-import relatedIssuesQuery from 'ee/metrics/details/related_issues/graphql/get_related_issues.query.graphql';
+import relatedIssuesQuery from 'ee/metrics/details/related_issues/graphql/get_metrics_related_issues.query.graphql';
 import { mockData } from './mock_data';
 
 Vue.use(VueApollo);
@@ -13,7 +13,7 @@ describe('RelatedIssuesProvider component', () => {
   let defaultSlotSpy;
   let relatedIssuesQueryMock;
 
-  const defaultProps = { projectFullPath: 'foo/bar', metricName: 'aMetric', metricType: 'aType' };
+  const defaultProps = { projectFullPath: 'foo/bar', metricName: 'aMetric', metricType: 'Sum' };
 
   let wrapper;
 
@@ -64,12 +64,35 @@ describe('RelatedIssuesProvider component', () => {
     });
 
     it('calls issues a query for related issues', () => {
-      expect(relatedIssuesQueryMock).toHaveBeenCalledWith(defaultProps);
+      expect(relatedIssuesQueryMock).toHaveBeenCalledWith({
+        ...defaultProps,
+        metricType: 'SUM_TYPE',
+      });
     });
 
     it('calls the default slots with issues', () => {
+      const mockIssue = mockData.data.project.observabilityMetricsLinks.nodes[0].issue;
+      const expectedIssues = [
+        {
+          ...mockIssue,
+          id: 647,
+          type: 'issue',
+          path: mockIssue.webUrl,
+          milestone: {
+            ...mockIssue.milestone,
+            id: 13,
+          },
+          assignees: [
+            {
+              ...mockIssue.assignees.nodes[0],
+              id: 1,
+            },
+          ],
+        },
+      ];
+
       expect(defaultSlotSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ issues: mockData.data.project.issues.nodes }),
+        expect.objectContaining({ issues: expectedIssues }),
       );
     });
 
@@ -79,6 +102,34 @@ describe('RelatedIssuesProvider component', () => {
 
       expect(defaultSlotSpy).toHaveBeenCalledWith(expect.objectContaining({ loading: false }));
     });
+  });
+
+  describe('graphql query with types', () => {
+    it.each`
+      metricType                | graphqlType
+      ${'sum'}                  | ${'SUM_TYPE'}
+      ${'guage'}                | ${'GAUGE_TYPE'}
+      ${'histogram'}            | ${'HISTOGRAM_TYPE'}
+      ${'exponentialhistogram'} | ${'EXPONENTIAL_HISTOGRAM_TYPE'}
+      ${'foo'}                  | ${undefined}
+    `(
+      'parses the metric type "$metricType" to the GraphQL type $graphqlType',
+      async ({ metricType, graphqlType }) => {
+        createComponent({
+          props: {
+            ...defaultProps,
+            metricType,
+          },
+        });
+
+        await waitForPromises();
+
+        expect(relatedIssuesQueryMock).toHaveBeenCalledWith({
+          ...defaultProps,
+          metricType: graphqlType,
+        });
+      },
+    );
   });
 
   describe('error handling', () => {

@@ -14,15 +14,15 @@ export default {
     {
       key: 'mr',
       label: __('Merge request'),
-      thClass: 'gl-border-t-none!',
-      columnClass: 'gl-w-90p',
+      thClass: '!gl-border-t-0',
+      columnClass: 'gl-w-9/10',
     },
     {
       key: 'actions',
       label: '',
-      thClass: 'gl-border-t-none!',
+      thClass: '!gl-border-t-0',
       tdClass: 'gl-text-right',
-      columnClass: 'gl-w-10p',
+      columnClass: 'gl-w-1/10',
     },
   ],
   components: {
@@ -119,7 +119,7 @@ export default {
 
       <template #cell(mr)="{ item }">
         <ci-icon v-if="item.pipeline" :status="item.pipeline.detailedStatus" />
-        <gl-link :href="item.mergeRequest.webPath" class="gl-underline gl-ml-3">{{
+        <gl-link :href="item.mergeRequest.webPath" class="gl-ml-3 gl-underline">{{
           item.mergeRequest.title
         }}</gl-link>
         <div class="gl-ml-3 gl-inline-block">
@@ -147,7 +147,7 @@ export default {
         />
       </template>
     </gl-table>
-    <div class="gl-flex gl-justify-content-center gl-mt-5">
+    <div class="gl-mt-5 gl-flex gl-justify-center">
       <gl-keyset-pagination
         v-if="showPagination"
         v-bind="pageInfo"

@@ -16,6 +16,9 @@ import setWindowLocation from 'helpers/set_window_location_helper';
 import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { stubComponent } from 'helpers/stub_component';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
@@ -39,6 +42,7 @@ describe('MetricsDetails', () => {
   const findChart = () => wrapper.find(`[data-testid="metric-chart"]`);
   const findEmptyState = () => findMetricDetails().findComponent(GlEmptyState);
   const findFilteredSearch = () => findMetricDetails().findComponent(FilteredSearch);
+  const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
 
   const setFilters = async (attributes, dateRange, groupBy) => {
     findFilteredSearch().vm.$emit('submit', {
@@ -73,6 +77,11 @@ describe('MetricsDetails', () => {
       },
       stubs: {
         GlSprintf,
+        RelatedIssuesProvider: stubComponent(RelatedIssuesProvider, {
+          template: `<div>
+            <slot :issues="[]" :loading="false" :error="null" />
+          </div>`,
+        }),
       },
     });
     await waitForPromises();
@@ -536,6 +545,17 @@ describe('MetricsDetails', () => {
       );
     });
 
+    it('renders the related issues', () => {
+      expect(findRelatedIssues().props()).toStrictEqual({
+        issues: [],
+        fetchingIssues: false,
+        error: null,
+        helpPath: helpPagePath('/operations/metrics', {
+          anchor: 'create-an-issue-for-a-metric',
+        }),
+      });
+    });
+
     describe('with no data', () => {
       beforeEach(async () => {
         observabilityClientMock.fetchMetric.mockResolvedValue([]);
@@ -598,7 +618,7 @@ describe('MetricsDetails', () => {
     });
 
     it('renders an alert if metricId is missing', async () => {
-      await mountComponent({ metricId: undefined });
+      await mountComponent({ metricId: '' });
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Error: Failed to load metrics details. Try reloading the page.',
@@ -606,7 +626,7 @@ describe('MetricsDetails', () => {
     });
 
     it('renders an alert if metricType is missing', async () => {
-      await mountComponent({ metricType: undefined });
+      await mountComponent({ metricType: '' });
 
       expect(createAlert).toHaveBeenCalledWith({
         message: 'Error: Failed to load metrics details. Try reloading the page.',

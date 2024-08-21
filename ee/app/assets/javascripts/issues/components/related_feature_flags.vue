@@ -1,18 +1,12 @@
 <script>
-import {
-  GlIcon,
-  GlLink,
-  GlLoadingIcon,
-  GlTruncate,
-  GlCard,
-  GlTooltipDirective as GlTooltip,
-} from '@gitlab/ui';
+import { GlIcon, GlLink, GlTruncate, GlTooltipDirective as GlTooltip } from '@gitlab/ui';
 import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { __ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 
 export default {
-  components: { GlIcon, GlLink, GlLoadingIcon, GlTruncate, GlCard },
+  components: { GlIcon, GlLink, GlTruncate, CrudComponent },
   directives: {
     GlTooltip,
   },
@@ -73,57 +67,45 @@ export default {
 };
 </script>
 <template>
-  <gl-card
+  <crud-component
     v-if="shouldShowRelatedFeatureFlags"
-    id="related-feature-flags"
-    class="gl-new-card"
-    header-class="gl-new-card-header"
-    body-class="gl-new-card-body gl-mx-3"
+    anchor-id="related-feature-flags"
+    :is-loading="loading"
+    :title="$options.i18n.title"
+    icon="feature-flag"
+    :count="numberOfFeatureFlags"
+    is-collapsible
+    body-class="gl-p-3"
   >
-    <template #header>
-      <div class="gl-new-card-title-wrapper">
-        <h3 class="gl-new-card-title">
-          <gl-link
-            id="user-content-related-feature-flags"
-            class="anchor gl-absolute gl-mr-2 gl-no-underline"
-            href="#related-feature-flags"
-            aria-hidden="true"
-          />
-          {{ $options.i18n.title }}
-        </h3>
-        <div data-testid="feature-flag-number" class="gl-new-card-count">
-          <gl-icon class="gl-mr-2" name="feature-flag" />
-          <span>{{ numberOfFeatureFlags }}</span>
-        </div>
-      </div>
-    </template>
-    <gl-loading-icon v-if="loading" size="sm" class="gl-my-4" />
-    <ul v-else class="content-list related-items-list">
+    <ul class="content-list related-items-list">
       <li
         v-for="flag in featureFlags"
         :key="flag.id"
-        class="gl-flex"
+        class="!gl-p-0 !gl-border-b-0"
         data-testid="feature-flag-details"
       >
-        <gl-icon
-          v-gl-tooltip
-          :name="icon(flag)"
-          :title="iconTooltip(flag)"
-          class="gl-mr-2"
-          data-testid="feature-flag-details-icon"
-        />
-        <gl-link v-gl-tooltip :title="flag.name" :href="flag.path" class="gl-str-truncated">
-          <gl-truncate :text="flag.name" />
-        </gl-link>
-        <span
-          v-gl-tooltip
-          :title="flag.reference"
-          class="text-secondary gl-mt-3 gl-whitespace-nowrap lg:gl-ml-3 lg:gl-mt-0"
-          data-testid="feature-flag-details-reference"
-        >
-          <gl-truncate :text="flag.reference" />
-        </span>
+        <div class="item-body gl-p-3">
+          <gl-icon
+            v-gl-tooltip
+            :name="icon(flag)"
+            :title="iconTooltip(flag)"
+            class="gl-mr-2"
+            data-testid="feature-flag-details-icon"
+          />
+          <span class="item-title">
+            <gl-link :title="flag.name" :href="flag.path" class="sortable-link">
+              {{ flag.name }}
+            </gl-link>
+          </span>
+          <span
+            :title="flag.reference"
+            class="gl-text-subtle gl-mt-3 lg:gl-mt-0 lg:gl-ml-3 gl-whitespace-nowrap"
+            data-testid="feature-flag-details-reference"
+          >
+            <gl-truncate :text="flag.reference" />
+          </span>
+        </div>
       </li>
     </ul>
-  </gl-card>
+  </crud-component>
 </template>

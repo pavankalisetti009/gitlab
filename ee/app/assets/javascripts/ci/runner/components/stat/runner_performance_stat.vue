@@ -22,12 +22,12 @@ export default {
 };
 </script>
 <template>
-  <div v-if="shouldShowPerformanceStat" class="gl-leading-normal gl-p-2">
+  <div v-if="shouldShowPerformanceStat" class="gl-p-2 gl-leading-normal">
     <div class="gl-mb-4">
       <span class="gl-text-gray-700">{{ s__('Runners|Runners performance') }}</span>
     </div>
     <div>
-      <gl-link v-gl-modal="$options.MODAL_ID" class="gl-text-body!">
+      <gl-link v-gl-modal="$options.MODAL_ID" class="!gl-text-primary">
         {{ s__('Runners|View metrics') }} <gl-icon name="chart" />
       </gl-link>
       <runner-performance-modal :modal-id="$options.MODAL_ID" />

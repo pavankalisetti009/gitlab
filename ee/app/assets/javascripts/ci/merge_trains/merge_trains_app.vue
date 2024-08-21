@@ -160,8 +160,8 @@ export default {
     <template v-else>
       <merge-trains-feedback-banner />
 
-      <div class="gl-flex gl-justify-between gl-mb-5">
-        <h1 class="gl-font-size-h1">{{ s__('Pipelines|Merge train') }}</h1>
+      <div class="gl-mb-5 gl-flex gl-justify-between">
+        <h1 class="gl-text-size-h1">{{ s__('Pipelines|Merge train') }}</h1>
         <merge-train-branch-selector
           :selected-branch="selectedBranch"
           @branchChanged="selectedBranch = $event"

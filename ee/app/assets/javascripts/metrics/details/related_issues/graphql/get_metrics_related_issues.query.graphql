@@ -1,0 +1,41 @@
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+
+query getMetricsRelatedIssues(
+  $projectFullPath: ID!
+  $metricName: String!
+  $metricType: OpenTelemetryMetricType
+) {
+  project(fullPath: $projectFullPath) {
+    id
+    observabilityMetricsLinks(name: $metricName, type: $metricType) {
+      nodes {
+        issue {
+          id
+          title
+          state
+          description
+          confidential
+          createdAt
+          closedAt
+          webUrl
+          dueDate
+          reference
+          weight
+          assignees {
+            nodes {
+              ...User
+            }
+          }
+          milestone {
+            expired
+            id
+            title
+            state
+            startDate
+            dueDate
+          }
+        }
+      }
+    }
+  }
+}
