@@ -18,41 +18,16 @@ module Llm
     end
 
     def perform
-      payload = Gitlab::Llm::VertexAi::Client
-              .new(user, unit_primitive: 'glab_ask_git_command')
-              .chat(content: prompt)
+      response =
+        ::Gitlab::Llm::Anthropic::Client
+          .new(user, unit_primitive: 'glab_ask_git_command')
+          .messages_complete(
+            **::Gitlab::Llm::Templates::GitCommand.new(options[:prompt]).to_prompt
+          )
 
-      success(payload)
-    end
+      response_modifier = ::Gitlab::Llm::Anthropic::ResponseModifiers::GitCommand.new(response)
 
-    def prompt
-      <<~TEMPLATE
-      Provide the appropriate git commands for: #{options[:prompt]}.
-
-      Respond with git commands wrapped in separate ``` blocks.
-      Provide explanation for each command in a separate block.
-
-      ##
-      Example:
-
-      ```
-      git log -10
-      ```
-
-      This command will list the last 10 commits in the current branch.
-      TEMPLATE
-    end
-
-    def json_prompt
-      <<~TEMPLATE
-      Provide the appropriate git commands for: #{options[:prompt]}.
-      Respond with JSON format
-      ##
-      {
-        "commands": [The list of commands],
-        "explanation": The explanation with the commands wrapped in backticks
-      }
-      TEMPLATE
+      success(response_modifier.response_body)
     end
   end
 end
