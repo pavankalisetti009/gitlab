@@ -32,7 +32,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
 
       fill_in_company_information
 
-      submit_duo_pro_trial_company_form(with_trial: true)
+      submit_single_namespace_duo_pro_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_usage_quotas_page
     end
@@ -48,7 +48,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
       fill_in_company_information
 
       # lead failure
-      submit_duo_pro_trial_company_form(lead_success: false)
+      submit_single_namespace_duo_pro_trial_company_form(lead_success: false)
 
       expect_to_be_on_lead_form_with_errors
 
@@ -69,7 +69,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
       fill_in_company_information
 
       # trial failure
-      submit_duo_pro_trial_company_form(with_trial: true, trial_success: false)
+      submit_single_namespace_duo_pro_trial_company_form(with_trial: true, trial_success: false)
 
       expect_to_be_on_namespace_selection_with_errors
 
@@ -80,5 +80,9 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
 
       expect_to_be_on_gitlab_duo_usage_quotas_page
     end
+  end
+
+  def submit_single_namespace_duo_pro_trial_company_form(**kwargs)
+    submit_duo_pro_trial_company_form(**kwargs, button_text: 'Continue')
   end
 end
