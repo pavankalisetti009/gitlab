@@ -1,0 +1,13 @@
+---
+table_name: project_allowlist_entries
+classes:
+- ProjectAllowlistEntry
+- Security::ProjectAllowlistEntry
+feature_categories:
+- secret_detection
+description: Stores entries of secret detection project-level allowlists
+introduced_by_url:
+milestone: '17.4'
+gitlab_schema: gitlab_sec
+sharding_key:
+  project_id: projects

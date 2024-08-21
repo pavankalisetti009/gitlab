@@ -16091,6 +16091,29 @@ CREATE SEQUENCE project_aliases_id_seq
 
 ALTER SEQUENCE project_aliases_id_seq OWNED BY project_aliases.id;
 
+CREATE TABLE project_allowlist_entries (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    scanner smallint NOT NULL,
+    description text,
+    type smallint NOT NULL,
+    value text NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    CONSTRAINT check_5a28f12a9a CHECK ((char_length(value) <= 255)),
+    CONSTRAINT check_e2b3895091 CHECK ((char_length(description) <= 255))
+);
+
+CREATE SEQUENCE project_allowlist_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE project_allowlist_entries_id_seq OWNED BY project_allowlist_entries.id;
+
 CREATE TABLE project_authorizations (
     user_id integer NOT NULL,
     project_id integer NOT NULL,
@@ -22030,6 +22053,8 @@ ALTER TABLE ONLY programming_languages ALTER COLUMN id SET DEFAULT nextval('prog
 
 ALTER TABLE ONLY project_aliases ALTER COLUMN id SET DEFAULT nextval('project_aliases_id_seq'::regclass);
 
+ALTER TABLE ONLY project_allowlist_entries ALTER COLUMN id SET DEFAULT nextval('project_allowlist_entries_id_seq'::regclass);
+
 ALTER TABLE ONLY project_auto_devops ALTER COLUMN id SET DEFAULT nextval('project_auto_devops_id_seq'::regclass);
 
 ALTER TABLE ONLY project_build_artifacts_size_refreshes ALTER COLUMN id SET DEFAULT nextval('project_build_artifacts_size_refreshes_id_seq'::regclass);
@@ -24559,6 +24584,9 @@ ALTER TABLE ONLY project_alerting_settings
 
 ALTER TABLE ONLY project_aliases
     ADD CONSTRAINT project_aliases_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY project_allowlist_entries
+    ADD CONSTRAINT project_allowlist_entries_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY project_audit_events
     ADD CONSTRAINT project_audit_events_pkey PRIMARY KEY (id, created_at);
@@ -29530,6 +29558,8 @@ CREATE INDEX index_project_access_tokens_on_project_id ON project_access_tokens 
 CREATE UNIQUE INDEX index_project_aliases_on_name ON project_aliases USING btree (name);
 
 CREATE INDEX index_project_aliases_on_project_id ON project_aliases USING btree (project_id);
+
+CREATE INDEX index_project_allowlist_entries_on_project_id ON project_allowlist_entries USING btree (project_id);
 
 CREATE UNIQUE INDEX index_project_authorizations_on_project_user_access_level ON project_authorizations USING btree (project_id, user_id, access_level);
 
@@ -34687,6 +34717,9 @@ ALTER TABLE ONLY diff_note_positions
 
 ALTER TABLE ONLY analytics_cycle_analytics_aggregations
     ADD CONSTRAINT fk_rails_13c8374c7a FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY project_allowlist_entries
+    ADD CONSTRAINT fk_rails_13d47bcd1a FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY service_desk_custom_email_verifications
     ADD CONSTRAINT fk_rails_14dcaf4c92 FOREIGN KEY (triggerer_id) REFERENCES users(id) ON DELETE SET NULL;
