@@ -98,7 +98,7 @@ describe('ee/issues/components/related_feature_flags.vue', () => {
       });
 
       it('displays the number of referenced feature flags', () => {
-        const featureFlagNumber = wrapper.findByTestId('feature-flag-number');
+        const featureFlagNumber = wrapper.findByTestId('crud-count');
 
         // eslint-disable-next-line radix
         expect(parseInt(featureFlagNumber.text())).toEqual(MOCK_DATA.length);
