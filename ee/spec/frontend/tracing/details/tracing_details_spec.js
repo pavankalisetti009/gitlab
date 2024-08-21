@@ -1,4 +1,5 @@
 import { GlLoadingIcon, GlAlert, GlSprintf } from '@gitlab/ui';
+import RelatedIssuesProvider from 'ee/tracing/details/related_issues/related_issues_provider.vue';
 import TracingChart from 'ee/tracing/details/tracing_chart.vue';
 import TracingHeader from 'ee/tracing/details/tracing_header.vue';
 import TracingDrawer from 'ee/tracing/details/tracing_drawer.vue';
@@ -21,10 +22,11 @@ describe('TracingDetails', () => {
   let wrapper;
   let observabilityClientMock;
 
-  const traceId = 'test-trace-id';
   const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
   const logsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/logs';
   const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
+  const testTraceId = 'test-trace-id';
+  const projectFullPath = 'foo/bar';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
@@ -36,10 +38,11 @@ describe('TracingDetails', () => {
   const getDrawerSpan = () => findDrawer().props('span');
 
   const props = {
-    traceId,
+    traceId: testTraceId,
     tracingIndexUrl,
     logsIndexUrl,
     createIssueUrl,
+    projectFullPath,
   };
 
   const mountComponent = async () => {
@@ -88,6 +91,14 @@ describe('TracingDetails', () => {
     expect(observabilityClientMock.fetchTrace).toHaveBeenCalled();
     expect(findLoadingIcon().exists()).toBe(false);
     expect(findTraceDetails().exists()).toBe(true);
+  });
+
+  it('renders the related-issue-provider', () => {
+    const relatedIssuesProvider = wrapper.findComponent(RelatedIssuesProvider);
+    expect(relatedIssuesProvider.props()).toEqual({
+      projectFullPath,
+      traceId: testTraceId,
+    });
   });
 
   it('renders the chart component', () => {
