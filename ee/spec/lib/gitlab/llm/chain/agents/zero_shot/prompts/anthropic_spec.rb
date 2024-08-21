@@ -124,6 +124,42 @@ RSpec.describe Gitlab::Llm::Chain::Agents::ZeroShot::Prompts::Anthropic, feature
         expect(prompt).to include(hash_including(role: :assistant, content: 'duplicated response 2'))
       end
     end
+
+    context 'when message content is nil' do
+      let(:options) do
+        {
+          tools_definitions: "tool definitions",
+          tool_names: "tool names",
+          user_input: user_input,
+          agent_scratchpad: "some observation",
+          conversation: [
+            build(:ai_message, request_id: 'uuid1', role: 'user', content: 'question 1'),
+            build(:ai_message, request_id: 'uuid1', role: 'assistant', content: nil),
+            build(:ai_message, request_id: 'uuid1', role: 'user', content: 'question 2'),
+            build(:ai_message, request_id: 'uuid1', role: 'assistant', content: 'response 2')
+          ],
+          prompt_version: prompt_version,
+          current_code: "",
+          current_resource: "",
+          resources: "",
+          current_user: user,
+          zero_shot_prompt: zero_shot_prompt,
+          system_prompt: system_prompt,
+          unavailable_resources: '',
+          source_template: "source template"
+        }
+      end
+
+      it 'removes messages with nil content and deduplicates roles' do
+        prompt = subject
+
+        expect(prompt).to be_instance_of(Array)
+        expect(prompt).not_to include(hash_including(role: :user, content: 'question 1'))
+        expect(prompt).not_to include(hash_including(content: nil))
+        expect(prompt).to include(hash_including(role: :user, content: 'question 2'))
+        expect(prompt).to include(hash_including(role: :assistant, content: 'response 2'))
+      end
+    end
   end
 
   it_behaves_like 'zero shot prompt'
