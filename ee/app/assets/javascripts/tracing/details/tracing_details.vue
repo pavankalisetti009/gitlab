@@ -46,6 +46,10 @@ export default {
       required: true,
       type: String,
     },
+    createIssueUrl: {
+      required: true,
+      type: String,
+    },
   },
   data() {
     return {
@@ -132,7 +136,9 @@ export default {
     <tracing-header
       :trace="trace"
       :incomplete="spanTrees.incomplete"
+      :total-errors="spanTrees.totalErrors"
       :logs-link="logsLink"
+      :create-issue-url="createIssueUrl"
       class="gl-mb-6"
     />
 

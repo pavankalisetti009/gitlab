@@ -24,6 +24,7 @@ module Projects
         model[:traceId] = trace_id
         model[:tracingIndexUrl] = namespace_project_tracing_index_path(project.group, project)
         model[:logsIndexUrl] = namespace_project_logs_path(project.group, project)
+        model[:createIssueUrl] = new_namespace_project_issue_path(project.group, project)
       end
     end
 

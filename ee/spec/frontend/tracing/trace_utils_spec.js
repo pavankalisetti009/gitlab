@@ -109,12 +109,13 @@ describe('trace_utils', () => {
           createMockSpan('SPAN-1', '', secsToNano(10), '2023-08-07T15:03:00'),
           createMockSpan('SPAN-2', 'SPAN-1', secsToNano(9), '2023-08-07T15:03:01'),
           createMockSpan('SPAN-3', 'SPAN-2', secsToNano(8), '2023-08-07T15:03:02', true),
-          createMockSpan('SPAN-4', 'SPAN-2', secsToNano(7), '2023-08-07T15:03:03'),
+          createMockSpan('SPAN-4', 'SPAN-2', secsToNano(7), '2023-08-07T15:03:03', true),
         ],
         duration_nano: 3000000,
       };
 
       expect(mapTraceToSpanTrees(trace)).toEqual({
+        totalErrors: 2,
         incomplete: false,
         pruned: false,
         roots: [
@@ -154,7 +155,7 @@ describe('trace_utils', () => {
                     span_id: 'SPAN-4',
                     start_ms: secsToMs(3),
                     timestamp: '2023-08-07T15:03:03',
-                    hasError: false,
+                    hasError: true,
                   },
                 ],
               },
@@ -169,13 +170,14 @@ describe('trace_utils', () => {
         mapTraceToSpanTrees({
           spans: [
             createMockSpan('SPAN-2', 'SPAN-1', secsToNano(9), '2023-08-07T15:03:01'),
-            createMockSpan('SPAN-3', 'SPAN-2', secsToNano(8), '2023-08-07T15:03:02', true),
+            createMockSpan('SPAN-3', 'SPAN-2', secsToNano(8), '2023-08-07T15:03:02'),
             createMockSpan('SPAN-4', 'SPAN-2', secsToNano(7), '2023-08-07T15:03:03'),
           ],
           duration_nano: 3000000,
         }),
       ).toEqual({
         incomplete: true,
+        totalErrors: 0,
         pruned: false,
         roots: [
           {
@@ -195,7 +197,7 @@ describe('trace_utils', () => {
                 span_id: 'SPAN-3',
                 start_ms: secsToMs(1),
                 timestamp: '2023-08-07T15:03:02',
-                hasError: true,
+                hasError: false,
               },
               {
                 children: [],
@@ -219,13 +221,14 @@ describe('trace_utils', () => {
           spans: [
             createMockSpan('SPAN-1', '', secsToNano(10), '2023-08-07T15:03:00'),
             createMockSpan('SPAN-2', 'SPAN-1', secsToNano(5), '2023-08-07T15:03:05'),
-            createMockSpan('SPAN-3', '', secsToNano(10), '2023-08-07T15:03:03', true),
+            createMockSpan('SPAN-3', '', secsToNano(10), '2023-08-07T15:03:03'),
             createMockSpan('SPAN-4', 'SPAN-3', secsToNano(4), '2023-08-07T15:03:04'),
           ],
           duration_nano: 3000000,
         }),
       ).toEqual({
         incomplete: true,
+        totalErrors: 0,
         pruned: false,
         roots: [
           {
@@ -256,7 +259,7 @@ describe('trace_utils', () => {
             span_id: 'SPAN-3',
             start_ms: secsToMs(3),
             timestamp: '2023-08-07T15:03:03',
-            hasError: true,
+            hasError: false,
             children: [
               {
                 children: [],

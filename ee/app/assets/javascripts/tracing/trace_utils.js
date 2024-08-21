@@ -97,6 +97,8 @@ export const SPANS_LIMIT = 2000;
 export function mapTraceToSpanTrees(trace) {
   const nodes = {};
 
+  const hasError = (span) => span.status_code === 'STATUS_CODE_ERROR';
+
   const spanToNode = (span) => ({
     timestamp: span.timestamp,
     span_id: span.span_id,
@@ -104,7 +106,7 @@ export function mapTraceToSpanTrees(trace) {
     service: span.service_name,
     duration_ms: durationNanoToMs(span.duration_nano),
     children: [],
-    hasError: span.status_code === 'STATUS_CODE_ERROR',
+    hasError: hasError(span),
   });
 
   const pruned = trace.spans.length > SPANS_LIMIT;
@@ -117,6 +119,7 @@ export function mapTraceToSpanTrees(trace) {
   const roots = [];
 
   let incomplete = false;
+  let totalErrors = 0;
 
   // spans are ordered by timestamp, so pruning the list by selecting the first SPANS_LIMIT spans
   // should not produce incorrect trees
@@ -137,6 +140,9 @@ export function mapTraceToSpanTrees(trace) {
         incomplete = true;
       }
     }
+    if (hasError(s)) {
+      totalErrors += 1;
+    }
   });
   if (roots.length > 1) {
     // if there is more than one roots it means we have discontinuous data and trace is “incomplete”
@@ -148,5 +154,5 @@ export function mapTraceToSpanTrees(trace) {
     // and use the first root's timestamp as baseline for the other trees
     roots.forEach((root) => setNodeStartTs(root, roots[0]));
   }
-  return { roots, incomplete, pruned };
+  return { roots, incomplete, pruned, totalErrors };
 }
