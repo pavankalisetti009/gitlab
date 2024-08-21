@@ -62,14 +62,14 @@ export const approvalRulesMock = [
 
 export const statusChecksRulesMock = [
   {
-    __typename: 'StatusCheckRule',
+    __typename: 'ExternalStatusCheck',
     id: '123',
     name: 'test',
     externalUrl: 'https://test.test',
     hmac: false,
   },
   {
-    __typename: 'StatusCheckRule',
+    __typename: 'ExternalStatusCheck',
     id: '456',
     name: 'test 2',
     externalUrl: 'https://test2.test2',
@@ -383,3 +383,21 @@ export const editRuleData = [
 export const editRuleDataNoAccessLevels = [{ userId: 'gid://gitlab/User/123' }];
 
 export const editRuleDataNoOne = [{ userId: 'gid://gitlab/User/123' }, { accessLevel: 0 }];
+
+export const statusCheckCreateSuccessResponse = {
+  data: {
+    branchRuleExternalStatusCheckCreate: {
+      externalStatusCheck: statusChecksRulesMock[0],
+      errors: [],
+    },
+  },
+};
+
+export const statusCheckCreateNameTakenResponse = {
+  data: {
+    branchRuleExternalStatusCheckCreate: {
+      externalStatusCheck: null,
+      errors: ['Name has already been taken'],
+    },
+  },
+};
