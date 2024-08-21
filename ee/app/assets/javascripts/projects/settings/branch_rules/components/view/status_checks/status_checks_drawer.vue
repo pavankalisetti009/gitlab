@@ -10,12 +10,18 @@ export default {
   name: 'StatusChecksDrawer',
   i18n: {
     addStatusCheck: s__('BranchRules|Add status check'),
+    editStatusCheck: s__('BranchRules|Edit status check'),
   },
   components: {
     GlDrawer,
     StatusChecksForm,
   },
   props: {
+    selectedStatusCheck: {
+      type: Object,
+      required: false,
+      default: () => null,
+    },
     isOpen: {
       type: Boolean,
       required: false,
@@ -26,7 +32,7 @@ export default {
       required: false,
       default: false,
     },
-    statusChecks: {
+    serverValidationErrors: {
       type: Array,
       required: false,
       default: () => [],
@@ -37,6 +43,15 @@ export default {
       return getContentWrapperHeight();
     },
   },
+  methods: {
+    emitSaveEvent(statusCheck) {
+      this.$emit(
+        'save-status-check-change',
+        statusCheck,
+        this.selectedStatusCheck ? 'edit' : 'create',
+      );
+    },
+  },
 };
 </script>
 
@@ -45,7 +60,7 @@ export default {
     :header-height="getDrawerHeaderHeight"
     :z-index="$options.DRAWER_Z_INDEX"
     :open="isOpen"
-    @close="$emit('close')"
+    @close="$emit('close-status-check-drawer')"
   >
     <template #title>
       <h2 class="gl-my-0 gl-text-size-h2">{{ $options.i18n.addStatusCheck }}</h2>
@@ -53,11 +68,12 @@ export default {
 
     <template #default>
       <status-checks-form
-        :status-checks="statusChecks"
+        :selected-status-check="selectedStatusCheck"
         :is-loading="isLoading"
+        :server-validation-errors="serverValidationErrors"
         data-testid="status-checks-form"
-        @saveChanges="$emit('saveChanges')"
-        @close="$emit('close')"
+        @save-status-check-change="emitSaveEvent"
+        @close-status-check-drawer="$emit('close-status-check-drawer')"
       />
     </template>
   </gl-drawer>

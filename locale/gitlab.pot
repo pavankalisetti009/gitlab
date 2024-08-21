@@ -9451,6 +9451,9 @@ msgstr ""
 msgid "BranchRules|Edit allowed to push and merge"
 msgstr ""
 
+msgid "BranchRules|Edit status check"
+msgstr ""
+
 msgid "BranchRules|From users with push access."
 msgstr ""
 
@@ -9539,6 +9542,9 @@ msgid "BranchRules|Something went wrong while updating branch rule."
 msgstr ""
 
 msgid "BranchRules|Status checks"
+msgstr ""
+
+msgid "BranchRules|Status checks created"
 msgstr ""
 
 msgid "BranchRules|Target branch"
@@ -51908,6 +51914,9 @@ msgstr ""
 msgid "StatusChecks|Service name"
 msgstr ""
 
+msgid "StatusChecks|Unable to create status check. Please try again."
+msgstr ""
+
 msgid "StatusCheck|%{failed} failed"
 msgstr ""
 
@@ -51944,6 +51953,9 @@ msgstr ""
 msgid "StatusCheck|External API is already in use by another status check."
 msgstr ""
 
+msgid "StatusCheck|External API is already in use."
+msgstr ""
+
 msgid "StatusCheck|Failed to load status checks"
 msgstr ""
 
@@ -51953,7 +51965,16 @@ msgstr ""
 msgid "StatusCheck|Invoke an external API as part of the pipeline process."
 msgstr ""
 
+msgid "StatusCheck|Name already exists."
+msgstr ""
+
 msgid "StatusCheck|No status checks are defined yet."
+msgstr ""
+
+msgid "StatusCheck|Please provide a name."
+msgstr ""
+
+msgid "StatusCheck|Please provide a valid URL."
 msgstr ""
 
 msgid "StatusCheck|Provide a shared secret to be used when sending a request for a status check to authenticate request using HMAC."

@@ -36,7 +36,7 @@ export default {
     :count="statusChecks.length"
   >
     <template #actions>
-      <gl-button size="small" data-testid="add-btn" @click="$emit('add')">
+      <gl-button size="small" data-testid="add-btn" @click="$emit('open-status-check-drawer')">
         {{ $options.i18n.addStatusCheck }}
       </gl-button>
     </template>
@@ -61,7 +61,7 @@ export default {
           data-testid="edit-btn"
           :title="`${$options.i18n.editButton} ${statusCheck.name}`"
           :aria-label="`${$options.i18n.editButton} ${statusCheck.name}`"
-          @click="$emit('edit')"
+          @click="$emit('open-status-check-drawer', statusCheck)"
         />
         <gl-button
           v-gl-tooltip
@@ -70,7 +70,6 @@ export default {
           data-testid="delete-btn"
           :title="`${$options.i18n.deleteButton} ${statusCheck.name}`"
           :aria-label="`${$options.i18n.deleteButton} ${statusCheck.name}`"
-          @click="$emit('delete')"
         />
       </div>
     </div>

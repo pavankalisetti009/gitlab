@@ -1,4 +1,3 @@
-import { nextTick } from 'vue';
 import { GlButton } from '@gitlab/ui';
 import StatusChecksTable from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks_table.vue';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
@@ -42,15 +41,13 @@ describe('Status checks in branch rules enterprise edition', () => {
   });
 
   describe('emits events to parent component', () => {
-    it('emits add event when add button is clicked', async () => {
+    it('emits add event when add button is clicked', () => {
       findAddButton().vm.$emit('click');
-      await nextTick();
-      expect(wrapper.emitted('add')).toEqual([[]]);
+      expect(wrapper.emitted('open-status-check-drawer')).toEqual([[]]);
     });
-    it('emits edit event when edit button is clicked', async () => {
+    it('emits open event with status check when edit button is clicked', () => {
       findEditButton().vm.$emit('click');
-      await nextTick();
-      expect(wrapper.emitted('edit')).toEqual([[]]);
+      expect(wrapper.emitted('open-status-check-drawer')).toEqual([[statusChecksRulesMock[0]]]);
     });
   });
 });
