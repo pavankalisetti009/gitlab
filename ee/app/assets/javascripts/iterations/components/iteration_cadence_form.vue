@@ -424,7 +424,6 @@ export default {
               id="cadence-start-date"
               v-model="startDate"
               :placeholder="i18n.automationStartDate.placeholder"
-              class="gl-datepicker-input"
               autocomplete="off"
               inputmode="none"
               :disabled="disableAutomationFields"
