@@ -16,7 +16,7 @@ import axios from '~/lib/utils/axios_utils';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
-import { mockLogs, mockMetadata } from './mock_data';
+import { mockLogs, mockMetadata } from '../mock_data';
 
 jest.mock('~/lib/utils/axios_utils');
 jest.mock('~/alert');
@@ -52,6 +52,7 @@ describe('LogsList', () => {
 
   const testTracingIndexUrl = 'https://test.gdk/tracing';
   const testCreateIssueUrl = 'https://test.gdk/issues/new';
+  const testProjectFullPath = 'foo/bar';
 
   const mountComponent = async () => {
     wrapper = shallowMountExtended(LogsList, {
@@ -59,6 +60,7 @@ describe('LogsList', () => {
         observabilityClient: observabilityClientMock,
         tracingIndexUrl: testTracingIndexUrl,
         createIssueUrl: testCreateIssueUrl,
+        projectFullPath: testProjectFullPath,
       },
       stubs: {
         GlSprintf,
@@ -150,6 +152,7 @@ describe('LogsList', () => {
       expect(findDrawer().exists()).toBe(true);
       expect(findDrawer().props('tracingIndexUrl')).toBe(testTracingIndexUrl);
       expect(findDrawer().props('createIssueUrl')).toBe(testCreateIssueUrl);
+      expect(findDrawer().props('projectFullPath')).toBe(testProjectFullPath);
       expect(isDrawerOpen()).toBe(false);
       expect(getDrawerSelectedLog()).toBe(null);
     });

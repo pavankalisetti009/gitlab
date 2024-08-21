@@ -6,6 +6,7 @@ import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 import { createIssueUrlWithLogDetails } from '../utils';
+import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 
 const createSectionContent = (obj) =>
   Object.entries(obj)
@@ -18,6 +19,7 @@ export default {
     GlDrawer,
     GlLink,
     GlButton,
+    RelatedIssuesProvider,
   },
   i18n: {
     logDetailsTitle: s__('ObservabilityLogs|Metadata'),
@@ -42,6 +44,10 @@ export default {
     createIssueUrl: {
       required: true,
       type: String,
+    },
+    projectFullPath: {
+      type: String,
+      required: true,
     },
   },
   computed: {
@@ -105,49 +111,53 @@ export default {
 </script>
 
 <template>
-  <gl-drawer
-    :open="open"
-    :z-index="$options.DRAWER_Z_INDEX"
-    :header-height="drawerHeaderHeight"
-    header-sticky
-    @close="$emit('close')"
-  >
-    <template #title>
-      <div data-testid="drawer-title">
-        <h2 class="gl-text-size-h2 gl-mt-0">{{ title }}</h2>
-        <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
-          {{ $options.i18n.createIssueTitle }}
-        </gl-button>
-      </div>
-    </template>
-
+  <related-issues-provider :log="log" :project-full-path="projectFullPath">
     <template #default>
-      <div
-        v-for="section in sections"
-        :key="section.key"
-        :data-testid="`section-${section.key}`"
-        class="gl-border-none"
+      <gl-drawer
+        :open="open"
+        :z-index="$options.DRAWER_Z_INDEX"
+        :header-height="drawerHeaderHeight"
+        header-sticky
+        @close="$emit('close')"
       >
-        <h2 v-if="section.title" data-testid="section-title" class="gl-text-size-h2 gl-my-0">
-          {{ section.title }}
-        </h2>
-        <div
-          v-for="line in section.content"
-          :key="line.name"
-          data-testid="section-line"
-          class="gl-py-5 gl-border-b-1 gl-border-b-solid gl-border-b-gray-200"
-        >
-          <label data-testid="section-line-name">{{ line.name }}</label>
-          <div data-testid="section-line-value" class="gl-wrap-anywhere">
-            <gl-link v-if="isTraceId(line.name)" :href="traceIdLink(line.value)">
-              {{ line.value }}
-            </gl-link>
-            <template v-else>
-              {{ line.value }}
-            </template>
+        <template #title>
+          <div data-testid="drawer-title">
+            <h2 class="gl-text-size-h2 gl-mt-0">{{ title }}</h2>
+            <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
+              {{ $options.i18n.createIssueTitle }}
+            </gl-button>
           </div>
-        </div>
-      </div>
+        </template>
+
+        <template #default>
+          <div
+            v-for="section in sections"
+            :key="section.key"
+            :data-testid="`section-${section.key}`"
+            class="gl-border-none"
+          >
+            <h2 v-if="section.title" data-testid="section-title" class="gl-text-size-h2 gl-my-0">
+              {{ section.title }}
+            </h2>
+            <div
+              v-for="line in section.content"
+              :key="line.name"
+              data-testid="section-line"
+              class="gl-py-5 gl-border-b-1 gl-border-b-solid gl-border-b-gray-200"
+            >
+              <label data-testid="section-line-name">{{ line.name }}</label>
+              <div data-testid="section-line-value" class="gl-wrap-anywhere">
+                <gl-link v-if="isTraceId(line.name)" :href="traceIdLink(line.value)">
+                  {{ line.value }}
+                </gl-link>
+                <template v-else>
+                  {{ line.value }}
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </gl-drawer>
     </template>
-  </gl-drawer>
+  </related-issues-provider>
 </template>

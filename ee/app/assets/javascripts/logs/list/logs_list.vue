@@ -59,6 +59,10 @@ export default {
       required: true,
       type: String,
     },
+    projectFullPath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     const { [OPEN_DRAWER_QUERY_PARAM]: shouldOpenDrawer } = queryToObject(window.location.search);
@@ -276,6 +280,7 @@ export default {
       :open="Boolean(selectedLog)"
       :tracing-index-url="tracingIndexUrl"
       :create-issue-url="createIssueUrl"
+      :project-full-path="projectFullPath"
       @close="closeDrawer"
     />
   </div>
