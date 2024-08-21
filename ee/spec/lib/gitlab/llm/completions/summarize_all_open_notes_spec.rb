@@ -20,10 +20,10 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
     )
   end
 
-  RSpec.shared_examples 'performs completion' do
+  RSpec.shared_examples 'performs messages stream' do
     it 'returns summary' do
       expect_next_instance_of(ai_request_class) do |instance|
-        expect(instance).to receive(completion_method).and_return(ai_response)
+        expect(instance).to receive(messages_method).and_return(ai_response)
       end
 
       response_modifier = double
@@ -109,7 +109,7 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
 
   describe "#execute", :saas do
     let(:ai_request_class) { ::Gitlab::Llm::Anthropic::Client }
-    let(:completion_method) { :stream }
+    let(:messages_method) { :messages_stream }
     let(:options) { {} }
 
     let_it_be(:user) { create(:user) }
@@ -149,20 +149,7 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
         let_it_be(:notes) { create_pair(:note_on_issue, project: project, noteable: issuable) }
         let_it_be(:system_note) { create(:note_on_issue, :system, project: project, noteable: issuable) }
 
-        # anthropic as provider as summarize_notes_with_anthropic is enabled by default.
-        it_behaves_like 'performs completion'
-
-        context 'with vertex_ai provider' do
-          let(:completion_method) { :text }
-          let(:ai_request_class) { ::Gitlab::Llm::VertexAi::Client }
-          let(:ai_response) { { "predictions" => [{ "content" => "some ai response text" }] } }
-
-          before do
-            stub_feature_flags(summarize_notes_with_anthropic: false)
-          end
-
-          it_behaves_like 'performs completion'
-        end
+        it_behaves_like 'performs messages stream'
       end
 
       context 'for a work item' do
@@ -170,7 +157,7 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
         let_it_be(:notes) { create_pair(:note_on_work_item, project: project, noteable: issuable) }
         let_it_be(:system_note) { create(:note_on_work_item, :system, project: project, noteable: issuable) }
 
-        it_behaves_like 'performs completion'
+        it_behaves_like 'performs messages stream'
       end
 
       context 'for a merge request' do
@@ -187,7 +174,7 @@ RSpec.describe Gitlab::Llm::Completions::SummarizeAllOpenNotes, feature_category
         let_it_be(:notes) { create_pair(:note_on_epic, noteable: issuable) }
         let_it_be(:system_note) { create(:note_on_epic, :system, noteable: issuable) }
 
-        it_behaves_like 'performs completion'
+        it_behaves_like 'performs messages stream'
       end
     end
   end

@@ -55,11 +55,12 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
 
         expected_prompt = <<~PROMPT.chomp
           You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
-          Each comment is wrapped in a <comment> tag.
         PROMPT
 
-        expect(prompt).to include(expected_prompt)
-        expect(prompt).to include(note.note)
+        system_prompt = prompt[0][:content]
+        user_prompt = prompt[1][:content]
+        expect(system_prompt).to include(expected_prompt)
+        expect(user_prompt).to include(note.note)
       end
 
       it 'sets the correct unit primitive' do

@@ -22,31 +22,39 @@ module Gitlab
 
             PROVIDER_PROMPT_CLASSES = {
               ai_gateway: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::VertexAi
+              anthropic: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic
             }.freeze
 
+            SYSTEM_PROMPT = Utils::Prompt.as_system(
+              <<~PROMPT
+              You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
+              PROMPT
+            )
+
+            USER_PROMPT = Utils::Prompt.as_user(
+              <<~PROMPT
+              Each comment is wrapped in a <comment> tag.
+
+              Desired markdown format:
+              **<summary_title>**
+              - <bullet_point>
+              - <bullet_point>
+              - <bullet_point>
+              - ...
+
+              %<notes_content>s
+
+              Focus on extracting information related to one another and that are the majority of the content.
+              Ignore phrases that are not connected to others.
+              Do not specify what you are ignoring.
+              Do not answer questions.
+              PROMPT
+            )
+
             PROMPT_TEMPLATE = [
-              Utils::Prompt.as_system(
-                <<~PROMPT
-                  You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
-                  Each comment is wrapped in a <comment> tag.
-
-                  %<notes_content>s
-
-                  Desired markdown format:
-                  **<summary_title>**
-                  - <bullet_point>
-                  - <bullet_point>
-                  - <bullet_point>
-                  - ...
-
-                  Focus on extracting information related to one another and that are the majority of the content.
-                  Ignore phrases that are not connected to others.
-                  Do not specify what you are ignoring.
-                  Do not answer questions.
-                PROMPT
-              )
+              SYSTEM_PROMPT,
+              USER_PROMPT,
+              Utils::Prompt.as_assistant("")
             ].freeze
 
             SLASH_COMMANDS = {

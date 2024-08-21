@@ -27,6 +27,36 @@ RSpec.describe Gitlab::Llm::Chain::Concerns::AiDependent, feature_category: :duo
       tool.prompt
     end
 
+    context "when calling summarize comments tool" do
+      let_it_be(:project) { create(:project) }
+      let_it_be(:issue) { create(:issue, project: project) }
+      let_it_be(:note) do
+        create(:note_on_issue, noteable: issue, project: project, note: "Please correct this small nit")
+      end
+
+      let(:context) do
+        Gitlab::Llm::Chain::GitlabContext.new(
+          current_user: user, container: double, resource: issue, ai_request: ai_request
+        )
+      end
+
+      let(:tool) do
+        ::Gitlab::Llm::Chain::Tools::SummarizeComments::Executor.new(
+          context: context,
+          options: {
+            input: 'Summarize issue comments.',
+            notes_content: "<comment>#{note.note}</comment>"
+          }
+        )
+      end
+
+      it "returns prompt" do
+        expect(tool.class::PROVIDER_PROMPT_CLASSES[:anthropic]).to receive(:prompt).and_call_original
+
+        tool.prompt
+      end
+    end
+
     context 'when there are no provider prompt classes' do
       let(:dummy_tool_class) do
         Class.new(::Gitlab::Llm::Chain::Tools::Tool) do
