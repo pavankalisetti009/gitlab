@@ -3,7 +3,8 @@
 module SecretsManagement
   class ProjectSecretsManager < ApplicationRecord
     STATUSES = {
-      provisioning: 0
+      provisioning: 0,
+      active: 1
     }.freeze
 
     self.table_name = 'project_secrets_managers'
@@ -14,6 +15,11 @@ module SecretsManagement
 
     state_machine :status, initial: :provisioning do
       state :provisioning, value: STATUSES[:provisioning]
+      state :active, value: STATUSES[:active]
+
+      event :activate do
+        transition all - [:active] => :active
+      end
     end
 
     def ci_secrets_mount_path

@@ -220,6 +220,8 @@ export default {
 <template>
   <div>
     <related-issues-block
+      :header-text="$options.i18n.relatedIssues"
+      :add-button-text="$options.i18n.addExistingIssue"
       :help-path="helpPath"
       :is-fetching="isFetching"
       :is-submitting="isSubmitting"
@@ -240,10 +242,6 @@ export default {
       @pendingIssuableRemoveRequest="removePendingReference"
       @relatedIssueRemoveRequest="removeRelatedIssue"
     >
-      <template #header-text>
-        {{ $options.i18n.relatedIssues }}
-      </template>
-      <template #add-button-text>{{ $options.i18n.addExistingIssue }}</template>
       <template v-if="canCreateIssue" #header-actions>
         <gl-button
           ref="createIssue"
