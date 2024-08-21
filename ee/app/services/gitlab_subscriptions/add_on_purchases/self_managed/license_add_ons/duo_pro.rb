@@ -7,12 +7,14 @@ module GitlabSubscriptions
         class DuoPro < Base
           private
 
-          def seat_count_on_license
-            restrictions[:code_suggestions_seat_count].to_i
-          end
-
+          override :name
           def name
             :code_suggestions
+          end
+
+          override :name_in_license
+          def name_in_license
+            :duo_pro
           end
         end
       end

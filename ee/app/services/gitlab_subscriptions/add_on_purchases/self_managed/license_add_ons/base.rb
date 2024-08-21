@@ -5,6 +5,7 @@ module GitlabSubscriptions
     module SelfManaged
       module LicenseAddOns
         class Base
+          extend ::Gitlab::Utils::Override
           include ::Gitlab::Utils::StrongMemoize
 
           MethodNotImplementedError = Class.new(StandardError)
@@ -18,7 +19,10 @@ module GitlabSubscriptions
           def seat_count
             return 0 unless restrictions
 
-            seat_count_on_license
+            add_on_info = restrictions.deep_symbolize_keys.dig(:add_on_products, name_in_license)
+            return 0 if add_on_info.blank?
+
+            add_on_info.sum { |info| info[:quantity].to_i }
           end
           strong_memoize_attr :seat_count
 
@@ -34,12 +38,13 @@ module GitlabSubscriptions
 
           private
 
-          def seat_count_on_license
+          def name
             raise MethodNotImplementedError
           end
 
-          def name
-            raise MethodNotImplementedError
+          # needed to handle code_suggestions => duo_pro naming difference
+          def name_in_license
+            name
           end
         end
       end
