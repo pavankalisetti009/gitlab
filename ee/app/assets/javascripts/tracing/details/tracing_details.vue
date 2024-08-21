@@ -12,6 +12,7 @@ import { VIEW_TRACING_DETAILS_PAGE } from '../events';
 import TracingChart from './tracing_chart.vue';
 import TracingHeader from './tracing_header.vue';
 import TracingDrawer from './tracing_drawer.vue';
+import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 
 export default {
   i18n: {
@@ -27,6 +28,7 @@ export default {
     TracingDrawer,
     GlAlert,
     GlSprintf,
+    RelatedIssuesProvider,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -49,6 +51,10 @@ export default {
     createIssueUrl: {
       required: true,
       type: String,
+    },
+    projectFullPath: {
+      type: String,
+      required: true,
     },
   },
   data() {
@@ -128,34 +134,38 @@ export default {
 </script>
 
 <template>
-  <div v-if="loading" class="gl-py-5">
-    <gl-loading-icon size="lg" />
-  </div>
+  <related-issues-provider v-if="traceId" :trace-id="traceId" :project-full-path="projectFullPath">
+    <template #default>
+      <div v-if="loading" class="gl-py-5">
+        <gl-loading-icon size="lg" />
+      </div>
 
-  <div v-else-if="trace" data-testid="trace-details" class="gl-mx-6">
-    <tracing-header
-      :trace="trace"
-      :incomplete="spanTrees.incomplete"
-      :total-errors="spanTrees.totalErrors"
-      :logs-link="logsLink"
-      :create-issue-url="createIssueUrl"
-      class="gl-mb-6"
-    />
+      <div v-else-if="trace" data-testid="trace-details" class="gl-mx-6">
+        <tracing-header
+          :trace="trace"
+          :incomplete="spanTrees.incomplete"
+          :total-errors="spanTrees.totalErrors"
+          :logs-link="logsLink"
+          :create-issue-url="createIssueUrl"
+          class="gl-mb-6"
+        />
 
-    <gl-alert v-if="isTracePruned" variant="warning">
-      <gl-sprintf :message="$options.i18n.prunedWarning">
-        <template #totalSpans>{{ trace.spans.length }}</template>
-        <template #spansLimit>{{ $options.SPANS_LIMIT }}</template>
-      </gl-sprintf>
-    </gl-alert>
+        <gl-alert v-if="isTracePruned" variant="warning">
+          <gl-sprintf :message="$options.i18n.prunedWarning">
+            <template #totalSpans>{{ trace.spans.length }}</template>
+            <template #spansLimit>{{ $options.SPANS_LIMIT }}</template>
+          </gl-sprintf>
+        </gl-alert>
 
-    <tracing-chart
-      :span-trees="spanTrees.roots"
-      :trace="trace"
-      :selected-span-id="selectedSpan && selectedSpan.span_id"
-      @span-selected="onToggleDrawer"
-    />
+        <tracing-chart
+          :span-trees="spanTrees.roots"
+          :trace="trace"
+          :selected-span-id="selectedSpan && selectedSpan.span_id"
+          @span-selected="onToggleDrawer"
+        />
 
-    <tracing-drawer :span="selectedSpan" :open="isDrawerOpen" @close="closeDrawer" />
-  </div>
+        <tracing-drawer :span="selectedSpan" :open="isDrawerOpen" @close="closeDrawer" />
+      </div>
+    </template>
+  </related-issues-provider>
 </template>

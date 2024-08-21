@@ -5,7 +5,7 @@ module CodeSuggestions
     MAX_BODY_SIZE = 500_000
 
     def initialize(context)
-      @context = context
+      @context = context.is_a?(Array) ? context.map(&:with_indifferent_access) : context
     end
 
     def trimmed

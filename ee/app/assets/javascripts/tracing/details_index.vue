@@ -27,6 +27,10 @@ export default {
       required: true,
       type: String,
     },
+    projectFullPath: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -41,6 +45,7 @@ export default {
     :trace-id="traceId"
     :tracing-index-url="tracingIndexUrl"
     :logs-index-url="logsIndexUrl"
+    :project-full-path="projectFullPath"
     :observability-client="observabilityClient"
     :create-issue-url="createIssueUrl"
   />

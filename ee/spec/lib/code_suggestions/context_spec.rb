@@ -18,7 +18,7 @@ RSpec.describe CodeSuggestions::Context, feature_category: :code_suggestions do
           name: 'firstName func',
           content: 'func firstName(first, last string) string {\nreturn fmt.Sprintf("%s %s", first, last)\n}'
         }
-      ]
+      ].map(&:with_indifferent_access)
     end
 
     subject(:trim_context) { described_class.new(ctx).trimmed }
@@ -43,7 +43,7 @@ RSpec.describe CodeSuggestions::Context, feature_category: :code_suggestions do
               content: 'func helloWorld() {\nfmt.Println("Hello world")\n}'
             },
             { type: 'file', name: 'main.go', content: 'package main\n\nfunc main() {}' }
-          ]
+          ].map(&:with_indifferent_access)
         )
       end
     end

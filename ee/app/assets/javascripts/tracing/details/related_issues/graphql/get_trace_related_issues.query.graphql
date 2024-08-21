@@ -1,0 +1,36 @@
+#import "~/graphql_shared/fragments/user.fragment.graphql"
+
+# TODO Update to correct query when API is available (https://gitlab.com/gitlab-org/opstrace/opstrace/-/issues/2904
+query getTraceRelatedIssues($projectFullPath: ID!) {
+  project(fullPath: $projectFullPath) {
+    id
+    issues {
+      nodes {
+        id
+        title
+        state
+        description
+        confidential
+        createdAt
+        closedAt
+        webUrl
+        dueDate
+        reference
+        weight
+        assignees {
+          nodes {
+            ...User
+          }
+        }
+        milestone {
+          expired
+          id
+          title
+          state
+          startDate
+          dueDate
+        }
+      }
+    }
+  }
+}
