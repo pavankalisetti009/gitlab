@@ -43,6 +43,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
       it { is_expected.not_to allow_value(nil).for(:mirror_capacity_threshold) }
       it { is_expected.not_to allow_value(subject.mirror_max_capacity + 1).for(:mirror_capacity_threshold) }
       it { is_expected.to allow_value(nil).for(:custom_project_templates_group_id) }
+
+      it { is_expected.not_to allow_value(nil).for(:observability_backend_ssl_verification_enabled) }
     end
 
     describe 'elasticsearch', feature_category: :global_search do

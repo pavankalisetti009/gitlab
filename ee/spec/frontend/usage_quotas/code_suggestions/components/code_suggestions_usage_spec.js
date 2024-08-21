@@ -127,7 +127,7 @@ describe('GitLab Duo Usage', () => {
         addOnPurchasesHandler: noAssignedAddonDataHandler,
         provideProps: {
           isStandalonePage: true,
-          isSaaS: true,
+          isSaaS: false,
         },
       });
       await waitForPromises();
@@ -135,10 +135,10 @@ describe('GitLab Duo Usage', () => {
 
     it.each`
       description   | isSaaS   | isStandalonePage | expected
-      ${'does'}     | ${true}  | ${true}          | ${true}
+      ${'does not'} | ${true}  | ${true}          | ${false}
       ${'does not'} | ${true}  | ${false}         | ${false}
-      ${'does not'} | ${false} | ${true}          | ${true}
-      ${'does not'} | ${false} | ${false}         | ${true}
+      ${'does'}     | ${false} | ${true}          | ${true}
+      ${'does'}     | ${false} | ${false}         | ${true}
     `(
       '$description render the health check button and the probes with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
       async ({ isSaaS, isStandalonePage, expected } = {}) => {

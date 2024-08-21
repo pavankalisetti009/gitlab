@@ -1,3 +1,5 @@
+#import "../fragments/branch_rules.fragment.graphql"
+
 query getBranchRulesDetailsEE($projectPath: ID!) {
   project(fullPath: $projectPath) {
     id
@@ -73,10 +75,7 @@ query getBranchRulesDetailsEE($projectPath: ID!) {
         }
         externalStatusChecks {
           nodes {
-            id
-            name
-            externalUrl
-            hmac
+            ...ExternalStatusCheckFragment
           }
         }
         matchingBranchesCount

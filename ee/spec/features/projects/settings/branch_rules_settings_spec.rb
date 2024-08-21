@@ -106,5 +106,33 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
         end
       end
     end
+
+    context 'with branch rules details for a custom rule' do
+      before do
+        visit project_settings_repository_branch_rules_path(project, params: { branch: branch_rule.name })
+        wait_for_requests
+      end
+
+      it 'can create status check' do
+        within_testid('status-checks-table') do
+          click_button('Add status check')
+        end
+
+        within_testid('status-checks-drawer') do
+          fill_in 'Service name', with: 'QA'
+          fill_in 'API to check', with: 'https://example.com'
+          click_button('Save changes')
+        end
+
+        wait_for_requests
+
+        within_testid('status-checks-table') do
+          within_testid('crud-body') do
+            expect(page).to have_content('QA')
+            expect(page).to have_content('https://example.com')
+          end
+        end
+      end
+    end
   end
 end

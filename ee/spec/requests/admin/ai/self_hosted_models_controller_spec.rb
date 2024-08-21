@@ -119,8 +119,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
         perform_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(page.at('#self_hosted_model_api_token')['value']).to be_nil
-        expect(page.at('#self_hosted_model_api_token')['placeholder']).to be_nil
+        expect(page.at('#self_hosted_model_api_token')['value']).to be_empty
       end
     end
 
@@ -133,8 +132,7 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
         perform_request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(page.at('#self_hosted_model_api_token')['value']).to be_nil
-        expect(page.at('#self_hosted_model_api_token')['placeholder']).to eq('*************')
+        expect(page.at('#self_hosted_model_api_token')['value']).to eq(ApplicationSetting::MASK_PASSWORD)
       end
     end
 
@@ -174,39 +172,79 @@ RSpec.describe Admin::Ai::SelfHostedModelsController, :enable_admin_mode, featur
 
   describe 'PATCH #update' do
     let(:self_hosted_model) do
-      create(:ai_self_hosted_model, name: 'test', model: :mixtral)
-    end
-
-    let(:params) do
-      {
-        self_hosted_model: {
-          name: 'test_edited',
-          model: :mistral,
-          endpoint: 'https://example.com',
-          api_token: 'this_is_a_test'
-        }
-      }
+      create(:ai_self_hosted_model, name: 'test', model: :mixtral, api_token: 'did_not_change')
     end
 
     subject :perform_request do
       patch admin_ai_self_hosted_model_path(self_hosted_model), params: params
     end
 
-    it 'updates feature settings' do
-      perform_request
+    context 'when self-hosted models feature is not enabled' do
+      let(:params) do
+        {
+          self_hosted_model: {
+            name: 'test_edited',
+            model: :mistral,
+            endpoint: 'https://example.com'
+          }
+        }
+      end
 
-      self_hosted_model.reload
-
-      expect(self_hosted_model.name).to eq 'test_edited'
-      expect(self_hosted_model.model).to eq 'mistral'
-      expect(self_hosted_model.endpoint).to eq 'https://example.com'
-      expect(self_hosted_model.api_token).to eq 'this_is_a_test'
-
-      expect(response).to redirect_to(admin_ai_self_hosted_models_url)
+      it_behaves_like 'returns 404'
+      it_behaves_like 'must accept terms and conditions'
     end
 
-    it_behaves_like 'returns 404'
-    it_behaves_like 'must accept terms and conditions'
+    context 'when the api_token attribute did not changed' do
+      let(:params) do
+        {
+          self_hosted_model: {
+            name: 'test_edited',
+            model: :mistral,
+            endpoint: 'https://example.com',
+            api_token: ApplicationSetting::MASK_PASSWORD
+          }
+        }
+      end
+
+      it 'updates feature settings' do
+        perform_request
+
+        self_hosted_model.reload
+
+        expect(self_hosted_model.name).to eq 'test_edited'
+        expect(self_hosted_model.model).to eq 'mistral'
+        expect(self_hosted_model.endpoint).to eq 'https://example.com'
+        expect(self_hosted_model.api_token).to eq 'did_not_change'
+
+        expect(response).to redirect_to(admin_ai_self_hosted_models_url)
+      end
+    end
+
+    context 'when the api_token attribute did change' do
+      let(:params) do
+        {
+          self_hosted_model: {
+            name: 'test_edited',
+            model: :mistral,
+            endpoint: 'https://example.com',
+            api_token: 'api_token_changed'
+          }
+        }
+      end
+
+      it 'updates feature settings' do
+        perform_request
+
+        self_hosted_model.reload
+
+        expect(self_hosted_model.name).to eq 'test_edited'
+        expect(self_hosted_model.model).to eq 'mistral'
+        expect(self_hosted_model.endpoint).to eq 'https://example.com'
+        expect(self_hosted_model.api_token).to eq 'api_token_changed'
+
+        expect(response).to redirect_to(admin_ai_self_hosted_models_url)
+      end
+    end
   end
 
   describe 'DELETE #destroy' do
