@@ -28,7 +28,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
 
       fill_in_company_information
 
-      submit_duo_enterprise_trial_company_form(with_trial: true)
+      submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_usage_quotas_page
     end
@@ -44,12 +44,12 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       fill_in_company_information
 
       # lead failure
-      submit_duo_enterprise_trial_company_form(lead_success: false)
+      submit_single_namespace_duo_enterprise_trial_company_form(lead_success: false)
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_duo_enterprise_trial_company_form(with_trial: true)
+      submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true)
 
       expect_to_be_on_gitlab_duo_usage_quotas_page
     end
@@ -65,20 +65,22 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       fill_in_company_information
 
       # trial failure
-      submit_duo_enterprise_trial_company_form(with_trial: true, trial_success: false)
+      submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true, trial_success: false)
 
-      aggregate_failures 'content and link' do
-        expect(page).to have_content('could not be created because our system did not respond successfully')
-        expect(page).to have_content('Please try again or reach out to GitLab Support.')
-        expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
-      end
+      expect_to_be_on_duo_enterprise_namespace_selection_with_errors
 
       wait_for_all_requests
 
       # success
-      submit_duo_enterprise_trial_company_form(with_trial: true)
+      fill_in_duo_enterprise_trial_selection_form(group_select: false)
+
+      submit_duo_enterprise_trial_selection_form
 
       expect_to_be_on_gitlab_duo_usage_quotas_page
     end
+  end
+
+  def submit_single_namespace_duo_enterprise_trial_company_form(**kwargs)
+    submit_duo_enterprise_trial_company_form(**kwargs, button_text: 'Activate my trial')
   end
 end

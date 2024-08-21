@@ -22,6 +22,17 @@ module Features
       expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
     end
 
+    def expect_to_be_on_duo_enterprise_namespace_selection_with_errors
+      expect_to_be_on_duo_enterprise_namespace_selection
+      expect(page).to have_content('could not be created because our system did not respond successfully')
+      expect(page).to have_content('Please try again or reach out to GitLab Support.')
+      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
+    end
+
+    def expect_to_be_on_duo_enterprise_namespace_selection
+      expect(page).to have_content('This trial is for')
+    end
+
     def expect_to_be_on_namespace_selection
       expect(page).to have_content('This trial is for')
       expect(page).to have_content('Who will be using GitLab?')
@@ -72,6 +83,10 @@ module Features
       choose :trial_entity_company
     end
 
+    def fill_in_duo_enterprise_trial_selection_form(from: 'Please select a group', group_select: true)
+      select_from_listbox group.name, from: from if group_select
+    end
+
     def fill_in_trial_form_for_new_group(name: 'gitlab', glm_source: nil)
       fill_in 'new_group_name', with: name
       choose :trial_entity_company if glm_source != 'about.gitlab.com'
@@ -96,7 +111,7 @@ module Features
     end
 
     def submit_company_information_form(
-      trial_type: '', lead_success: true, trial_success: true, with_trial: false,
+      trial_type: '', button_text: 'Continue', lead_success: true, trial_success: true, with_trial: false,
       extra_params: {})
       # lead
       trial_user_params = {
@@ -166,16 +181,6 @@ module Features
           trial_type: trial_type
         )
       end
-
-      button_text =
-        case trial_type
-        when DUO_PRO_TRIAL
-          'Continue'
-        when DUO_ENTERPRISE_TRIAL
-          'Activate my trial'
-        else
-          'Start free GitLab Ultimate trial'
-        end
 
       click_button button_text
 
@@ -295,6 +300,17 @@ module Features
 
     def submit_duo_pro_trial_selection_form(**kwargs)
       submit_trial_selection_form(**kwargs, trial_type: DUO_PRO_TRIAL)
+    end
+
+    def submit_duo_enterprise_trial_selection_form(success: true)
+      stub_apply_trial(
+        namespace_id: group.id,
+        success: success,
+        extra_params: existing_group_attrs,
+        trial_type: DUO_ENTERPRISE_TRIAL
+      )
+
+      click_button 'Activate my trial'
     end
   end
 end

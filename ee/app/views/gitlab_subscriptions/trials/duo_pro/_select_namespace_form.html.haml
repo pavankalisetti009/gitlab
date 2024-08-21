@@ -16,7 +16,7 @@
       = yield :before_form
 
       = gitlab_ui_form_for '', url: trials_duo_pro_path(step: GitlabSubscriptions::Trials::CreateDuoProService::TRIAL), class: 'js-saas-duo-pro-trial-group', data: { testid: 'trial-form' } do |f|
-        .js-namespace-selector{ data: duo_pro_trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
+        .js-namespace-selector{ data: duo_trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
         - if should_ask_company_question?
           .form-group
             = f.label :trial_entity, _('Who will be using GitLab?')
