@@ -1,5 +1,5 @@
 <script>
-import { GlButton, GlCard, GlLoadingIcon } from '@gitlab/ui';
+import { GlButton } from '@gitlab/ui';
 import { escape } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState, mapGetters } from 'vuex';
@@ -10,6 +10,7 @@ import { createAlert } from '~/alert';
 import axios from '~/lib/utils/axios_utils';
 import { s__ } from '~/locale';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import Tracking from '~/tracking';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import SubscriptionTableRow from './subscription_table_row.vue';
@@ -29,8 +30,7 @@ export default {
   name: 'SubscriptionTable',
   components: {
     GlButton,
-    GlCard,
-    GlLoadingIcon,
+    CrudComponent,
     SubscriptionTableRow,
   },
   mixins: [glFeatureFlagsMixin(), Tracking.mixin()],
@@ -185,59 +185,43 @@ export default {
 </script>
 
 <template>
-  <div>
-    <gl-card
-      v-if="!isLoading && !hasErrorSubscription"
-      class="gl-new-card subscription-table js-subscription-table"
-      header-class="gl-new-card-header"
-      body-class="gl-new-card-body gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row gl-lg-flex-direction-column! flex-grid gl-p-0"
-    >
-      <template #header>
-        <div class="gl-new-card-title-wrapper">
-          <h5 class="gl-new-card-title" data-testid="subscription-header">
-            {{ subscriptionHeader }}
-          </h5>
-        </div>
-        <div v-if="!readOnly" class="gl-new-card-actions gl-display-flex">
-          <gl-button
-            v-for="(button, index) in buttons"
-            :key="button.text"
-            :href="button.href"
-            :class="{ 'gl-ml-3': index !== 0 }"
-            :data-testid="button.testId"
-            size="small"
-            target="_blank"
-            @click="button.clickHandler"
-            >{{ button.text }}</gl-button
-          >
-          <gl-button
-            v-if="canRefreshSeats"
-            :class="{ 'gl-ml-2': buttons.length !== 0 }"
-            data-testid="refresh-seats"
-            size="small"
-            @click="refreshSeats"
-            >{{ s__('SubscriptionTable|Refresh Seats') }}</gl-button
-          >
-        </div>
-      </template>
+  <crud-component
+    :title="subscriptionHeader"
+    :is-loading="isLoading && !hasErrorSubscription"
+    class="subscription-table js-subscription-table gl-mt-5"
+    :body-class="['gl-flex-col sm:gl-flex-row lg:gl-flex-col flex-grid', { '!gl-m-0': !isLoading }]"
+  >
+    <template v-if="!readOnly" #actions>
+      <gl-button
+        v-for="(button, index) in buttons"
+        :key="button.text"
+        :href="button.href"
+        :class="{ 'gl-ml-3': index !== 0 }"
+        :data-testid="button.testId"
+        size="small"
+        target="_blank"
+        @click="button.clickHandler"
+        >{{ button.text }}</gl-button
+      >
+      <gl-button
+        v-if="canRefreshSeats"
+        :class="{ 'gl-ml-2': buttons.length !== 0 }"
+        data-testid="refresh-seats"
+        size="small"
+        @click="refreshSeats"
+        >{{ s__('SubscriptionTable|Refresh Seats') }}</gl-button
+      >
+    </template>
 
-      <subscription-table-row
-        v-for="(row, i) in visibleRows"
-        :key="`subscription-rows-${i}`"
-        :last="isLast(i)"
-        :header="row.header"
-        :columns="row.columns"
-        :is-free-plan="isFreePlan"
-        :temporary-extension-end-date="temporaryExtensionEndDate"
-        :next-term-start-date="nextTermStartDate"
-      />
-    </gl-card>
-
-    <gl-loading-icon
-      v-else-if="isLoading && !hasErrorSubscription"
-      :label="s__('SubscriptionTable|Loading subscriptions')"
-      size="lg"
-      class="gl-mt-3 gl-mb-3"
+    <subscription-table-row
+      v-for="(row, i) in visibleRows"
+      :key="`subscription-rows-${i}`"
+      :last="isLast(i)"
+      :header="row.header"
+      :columns="row.columns"
+      :is-free-plan="isFreePlan"
+      :temporary-extension-end-date="temporaryExtensionEndDate"
+      :next-term-start-date="nextTermStartDate"
     />
-  </div>
+  </crud-component>
 </template>

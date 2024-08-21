@@ -52304,9 +52304,6 @@ msgstr ""
 msgid "SubscriptionTable|Last updated at %{seatsLastUpdated} UTC"
 msgstr ""
 
-msgid "SubscriptionTable|Loading subscriptions"
-msgstr ""
-
 msgid "SubscriptionTable|Manage"
 msgstr ""
 
