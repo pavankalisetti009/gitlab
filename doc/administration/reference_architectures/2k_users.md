@@ -383,8 +383,6 @@ the Linux package:
    redis['port'] = 6379
    redis['password'] = 'SECRET_PASSWORD_HERE'
 
-   gitlab_rails['enable'] = false
-
    # Set the network addresses that the exporters used for monitoring will listen on
    node_exporter['listen_address'] = '0.0.0.0:9100'
    redis_exporter['listen_address'] = '0.0.0.0:9121'
