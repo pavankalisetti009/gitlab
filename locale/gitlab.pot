@@ -36655,10 +36655,16 @@ msgstr ""
 msgid "Observability|%{events} events"
 msgstr ""
 
+msgid "Observability|Create issues from this page to view them as related items here."
+msgstr ""
+
 msgid "Observability|Enable tracing, metrics, or logs on your project."
 msgstr ""
 
 msgid "Observability|Failed to load observability usage data."
+msgstr ""
+
+msgid "Observability|Failed to load related issues. Try reloading the page."
 msgstr ""
 
 msgid "Observability|Filter data by month:"
@@ -36695,6 +36701,9 @@ msgid "Observability|Last 5 minutes"
 msgstr ""
 
 msgid "Observability|Last 7 days"
+msgstr ""
+
+msgid "Observability|Related issues"
 msgstr ""
 
 msgid "Observability|Sorry, there is no usage data for the selected period"

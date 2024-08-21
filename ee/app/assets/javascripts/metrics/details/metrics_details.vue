@@ -13,6 +13,8 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { TIME_RANGE_OPTIONS } from '~/observability/constants';
 import { InternalEvents } from '~/tracking';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { ingestedAtTimeAgo } from '../utils';
 import { METRIC_TYPE } from '../constants';
 import { VIEW_METRICS_DETAILS_PAGE } from '../events';
@@ -46,6 +48,7 @@ export default {
     PageHeading,
     GlButton,
     RelatedIssuesProvider,
+    RelatedIssue,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -228,6 +231,9 @@ export default {
     },
   },
   EMPTY_CHART_SVG,
+  relatedIssuesHelpPath: helpPagePath('/operations/metrics', {
+    anchor: 'create-an-issue-for-a-metric',
+  }),
 };
 </script>
 
@@ -237,7 +243,7 @@ export default {
     :metric-type="metricType"
     :metric-name="metricId"
   >
-    <template #default>
+    <template #default="{ issues, loading: fetchingIssues, error }">
       <div v-if="shouldShowLoadingIcon" class="gl-py-5">
         <gl-loading-icon size="lg" />
       </div>
@@ -287,6 +293,7 @@ export default {
             :cancelled="queryCancelled"
             data-testid="metric-chart"
           />
+
           <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
             <template #title>
               <p class="gl-font-lg gl-my-0">
@@ -307,7 +314,12 @@ export default {
             </template>
           </gl-empty-state>
 
-          <!-- TODO add related issues widget https://gitlab.com/gitlab-org/opstrace/opstrace/-/issues/2901 -->
+          <related-issue
+            :issues="issues"
+            :fetching-issues="fetchingIssues"
+            :error="error"
+            :help-path="$options.relatedIssuesHelpPath"
+          />
         </div>
       </div>
     </template>
