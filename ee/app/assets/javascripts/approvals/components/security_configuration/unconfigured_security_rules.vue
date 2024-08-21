@@ -2,7 +2,6 @@
 import { GlSkeletonLoader } from '@gitlab/ui';
 // eslint-disable-next-line no-restricted-imports
 import { mapState, mapActions } from 'vuex';
-import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { COVERAGE_CHECK_NAME } from 'ee/approvals/constants';
 import { s__ } from '~/locale';
 import UnconfiguredSecurityRule from './unconfigured_security_rule.vue';
@@ -12,7 +11,6 @@ export default {
     UnconfiguredSecurityRule,
     GlSkeletonLoader,
   },
-  mixins: [glFeatureFlagsMixin()],
   inject: {
     coverageCheckHelpPagePath: {
       default: '',
@@ -64,7 +62,7 @@ export default {
 </script>
 
 <template>
-  <tr v-if="glFeatures.editBranchRules">
+  <tr>
     <td v-if="isRulesLoading" colspan="3">
       <gl-skeleton-loader :lines="3" />
     </td>

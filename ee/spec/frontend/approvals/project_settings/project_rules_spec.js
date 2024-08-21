@@ -70,6 +70,12 @@ describe('Approvals ProjectRules', () => {
       expect(hasAnyApproverRule).toBe(false);
     });
 
+    it('does not render unconfigured security rules when `true', () => {
+      factory({ isBranchRulesEdit: true });
+
+      expect(wrapper.findComponent(UnconfiguredSecurityRules).exists()).toBe(false);
+    });
+
     it('should not have Show more pagination button', () => {
       factory({ isBranchRulesEdit: true });
 
