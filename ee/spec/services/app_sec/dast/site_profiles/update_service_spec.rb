@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe AppSec::Dast::SiteProfiles::UpdateService do
+RSpec.describe AppSec::Dast::SiteProfiles::UpdateService, feature_category: :dynamic_application_security_testing do
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, creator: user) }
   let_it_be(:dast_site_profile) { create(:dast_site_profile, project: project) }

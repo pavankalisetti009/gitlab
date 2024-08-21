@@ -119,7 +119,11 @@ class DastSiteProfile < ApplicationRecord
   private
 
   def cleanup_dast_site
-    dast_site.destroy if dast_site.dast_site_profiles.empty?
+    Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+      %w[dast_sites], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478563'
+    ) do
+      dast_site.destroy if dast_site.dast_site_profiles.empty?
+    end
   end
 
   def dast_site_project_id_fk

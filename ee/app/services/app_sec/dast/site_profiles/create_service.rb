@@ -45,7 +45,11 @@ module AppSec
         end
 
         def associate_dast_site_validation!
-          dast_site.update!(dast_site_validation_id: dast_site_validation.id)
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+            %w[dast_sites], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478563'
+          ) do
+            dast_site.update!(dast_site_validation_id: dast_site_validation.id)
+          end
         end
 
         def create_secret_variable!(key, value)
