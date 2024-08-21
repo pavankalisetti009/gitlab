@@ -37,13 +37,8 @@ module Gitlab
         private
 
         def ai_provider_request(user)
-          if Feature.enabled?(:summarize_notes_with_anthropic, user)
-            ::Gitlab::Llm::Chain::Requests::Anthropic.new(user,
-              unit_primitive: 'summarize_issue_discussions', tracking_context: tracking_context)
-          else
-            ::Gitlab::Llm::Chain::Requests::VertexAi.new(user,
-              unit_primitive: 'summarize_issue_discussions', tracking_context: tracking_context)
-          end
+          ::Gitlab::Llm::Chain::Requests::Anthropic.new(user,
+            unit_primitive: 'summarize_issue_discussions', tracking_context: tracking_context)
         end
 
         def issuable

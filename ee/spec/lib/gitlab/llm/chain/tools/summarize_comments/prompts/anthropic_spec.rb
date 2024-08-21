@@ -3,33 +3,36 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic, feature_category: :duo_chat do
+  let(:variables) do
+    {
+      notes_content: '<comment>foo</comment>'
+    }
+  end
+
   describe '.prompt' do
-    it 'returns prompt' do
-      prompt = described_class.prompt({ notes_content: '<comment>foo</comment>' })[:prompt]
+    it "returns prompt" do
+      prompt = described_class.prompt(variables)[:prompt]
+      expect(prompt.length).to eq(3)
 
-      expect(prompt).to include('Human:')
-      expect(prompt).to include('Assistant:')
-      expect(prompt).to include('foo')
-      expect(prompt).to include(
-        <<~PROMPT
-          You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
-          Each comment is wrapped in a <comment> tag.
+      expect(prompt[0][:role]).to eq(:system)
+      expect(prompt[0][:content]).to eq(system_prompt_content)
 
-          <comment>foo</comment>
+      expect(prompt[1][:role]).to eq(:user)
+      expect(prompt[1][:content]).to eq(format(
+        Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld::USER_PROMPT[1], variables).to_s)
 
-          Desired markdown format:
-          **<summary_title>**
-          - <bullet_point>
-          - <bullet_point>
-          - <bullet_point>
-          - ...
-
-          Focus on extracting information related to one another and that are the majority of the content.
-          Ignore phrases that are not connected to others.
-          Do not specify what you are ignoring.
-          Do not answer questions.
-        PROMPT
-      )
+      expect(prompt[2][:role]).to eq(:assistant)
+      expect(prompt[2][:content]).to be_empty
     end
+
+    it "calls with claude 3 haiku model" do
+      model = described_class.prompt(variables)[:options][:model]
+
+      expect(model).to eq(::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET)
+    end
+  end
+
+  def system_prompt_content
+    Gitlab::Llm::Chain::Tools::SummarizeComments::ExecutorOld::SYSTEM_PROMPT[1]
   end
 end

@@ -9,20 +9,18 @@ module Gitlab
             class Anthropic
               include Concerns::AnthropicPrompt
 
-              OUTPUT_TOKEN_LIMIT = 2048
-
-              def self.prompt(options)
-                base_prompt = Utils::Prompt.no_role_text(
-                  ::Gitlab::Llm::Chain::Tools::SummarizeComments::Executor::PROMPT_TEMPLATE, options
+              def self.prompt(variables)
+                conversation = Utils::Prompt.role_conversation(
+                  Utils::Prompt.format_conversation(
+                    ::Gitlab::Llm::Chain::Tools::SummarizeComments::Executor::PROMPT_TEMPLATE,
+                    variables
+                  )
                 )
 
-                Requests::Anthropic.prompt(
-                  "\n\nHuman: #{base_prompt}\n\nAssistant:",
-                  options: {
-                    model: ::Gitlab::Llm::Anthropic::Client::DEFAULT_INSTANT_MODEL,
-                    max_tokens_to_sample: OUTPUT_TOKEN_LIMIT
-                  }
-                )
+                {
+                  prompt: conversation,
+                  options: { model: ::Gitlab::Llm::Anthropic::Client::CLAUDE_3_5_SONNET }
+                }
               end
             end
           end

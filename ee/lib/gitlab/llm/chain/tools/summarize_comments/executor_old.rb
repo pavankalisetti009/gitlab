@@ -21,33 +21,34 @@ module Gitlab
               PROMPT
 
             PROVIDER_PROMPT_CLASSES = {
-              ai_gateway: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
-              anthropic: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic,
-              vertex_ai: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::VertexAi
+              ai_gateway: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::AnthropicOld,
+              anthropic: ::Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::AnthropicOld
             }.freeze
 
-            PROMPT_TEMPLATE = [
-              Utils::Prompt.as_system(
-                <<~PROMPT
-                  You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
-                  Each comment is wrapped in a <comment> tag.
+            SYSTEM_PROMPT = Utils::Prompt.as_system(
+              <<~PROMPT
+              You are an assistant that extracts the most important information from the comments in maximum 10 bullet points.
+              PROMPT
+            )
+            USER_PROMPT = Utils::Prompt.as_user(
+              <<~PROMPT
+              Each comment is wrapped in a <comment> tag.
 
-                  %<notes_content>s
+              Desired markdown format:
+              **<summary_title>**
+              - <bullet_point>
+              - <bullet_point>
+              - <bullet_point>
+              - ...
 
-                  Desired markdown format:
-                  **<summary_title>**
-                  - <bullet_point>
-                  - <bullet_point>
-                  - <bullet_point>
-                  - ...
+              %<notes_content>s
 
-                  Focus on extracting information related to one another and that are the majority of the content.
-                  Ignore phrases that are not connected to others.
-                  Do not specify what you are ignoring.
-                  Do not answer questions.
-                PROMPT
-              )
-            ].freeze
+              Focus on extracting information related to one another and that are the majority of the content.
+              Ignore phrases that are not connected to others.
+              Do not specify what you are ignoring.
+              Do not answer questions.
+              PROMPT
+            )
 
             def perform(&)
               notes = NotesFinder.new(context.current_user, target: resource).execute.by_humans
@@ -55,7 +56,6 @@ module Gitlab
               content = if notes.exists?
                           notes_content = notes_to_summarize(notes)
                           options[:notes_content] = notes_content
-
                           if options[:raw_ai_response]
                             request(&)
                           else
@@ -77,11 +77,9 @@ module Gitlab
 
             def notes_to_summarize(notes)
               notes_content = +""
-              input_content_limit = provider_prompt_class::MAX_CHARACTERS - PROMPT_TEMPLATE.size
+              input_content_limit = provider_prompt_class::MAX_CHARACTERS - SYSTEM_PROMPT.size - USER_PROMPT.size
               notes.each_batch do |batch|
                 batch.pluck(:id, :note).each do |note| # rubocop: disable CodeReuse/ActiveRecord -- we need to pluck just id and note
-                  input_content_limit = provider_prompt_class::MAX_CHARACTERS
-
                   break notes_content if notes_content.size + note[1].size >= input_content_limit
 
                   notes_content << (format("<comment>%<note>s</comment>", note: note[1]))

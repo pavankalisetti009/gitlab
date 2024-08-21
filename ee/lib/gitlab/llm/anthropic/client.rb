@@ -76,6 +76,24 @@ module Gitlab
           response
         end
 
+        def messages_stream(messages:, **options)
+          return unless enabled?
+
+          response_body = ""
+          perform_messages_request(messages: messages, options: options.merge(stream: true)) do |parsed_event|
+            response_body += parsed_event.dig('delta', 'text') if parsed_event.dig('delta', 'text')
+
+            yield parsed_event if block_given?
+          end
+          logger.info_or_debug(user, message: "Received response from Anthropic", response: response_body)
+
+          track_prompt_size(token_size(messages))
+          track_response_size(token_size(response_body))
+
+          response_body
+        end
+        traceable :messages_stream, name: 'Request to Anthropic', run_type: 'llm'
+
         private
 
         attr_reader :user, :logger, :tracking_context, :unit_primitive
@@ -109,7 +127,11 @@ module Gitlab
             timeout: timeout,
             allow_local_requests: true,
             stream_body: options.fetch(:stream, false)
-          )
+          ) do |fragment|
+            parse_sse_events(fragment).each do |parsed_event|
+              yield parsed_event if block_given?
+            end
+          end
 
           raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
 

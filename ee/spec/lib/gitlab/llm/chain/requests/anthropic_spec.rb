@@ -19,12 +19,27 @@ RSpec.describe Gitlab::Llm::Chain::Requests::Anthropic, feature_category: :duo_c
     let(:instance) { described_class.new(user, unit_primitive: 'duo_chat') }
     let(:logger) { instance_double(Gitlab::Llm::Logger) }
     let(:ai_client) { double }
-    let(:response) { { "completion" => "Hello World " } }
+    let(:prompt_message) do
+      [
+        {
+          role: :user,
+          content: "Some user request"
+        }
+      ]
+    end
+
+    let(:response) do
+      {
+        "delta" => {
+          "type" => "text_delta",
+          "text" => "Hello World"
+        }
+      }
+    end
+
     let(:expected_params) do
       {
-        prompt: "some user request",
-        temperature: 0.1,
-        stop_sequences: ["\n\nHuman", "Observation:"]
+        messages: prompt_message
       }
     end
 
@@ -33,41 +48,41 @@ RSpec.describe Gitlab::Llm::Chain::Requests::Anthropic, feature_category: :duo_c
       allow(instance).to receive(:ai_client).and_return(ai_client)
     end
 
-    context 'with prompt and options' do
-      let(:params) { { prompt: "some user request", options: { max_tokens: 4000 } } }
+    context 'with prompt' do
+      let(:params) do
+        { messages: prompt_message, max_tokens: 4000 }
+      end
 
-      it 'calls the anthropic streaming endpoint and yields response without stripping it' do
-        expect(ai_client).to receive(:stream).with(expected_params.merge({ max_tokens: 4000 })).and_yield(response)
+      it 'calls the anthropic messages streaming endpoint and yields response without stripping it' do
+        expect(ai_client).to receive(:messages_stream).with(expected_params.merge(max_tokens: 4000)).and_yield(response)
 
-        expect { |b| instance.request(params, &b) }.to yield_with_args(
-          "Hello World "
-        )
+        expect { |b| instance.request(params, &b) }.to yield_with_args("Hello World")
       end
 
       it 'returns the response from anthropic' do
-        expect(ai_client).to receive(:stream).with(expected_params.merge({ max_tokens: 4000 }))
-          .and_return(response["completion"])
+        expect(ai_client).to receive(:messages_stream).with(expected_params.merge({ max_tokens: 4000 }))
+          .and_return(response)
 
-        expect(request).to eq("Hello World ")
+        expect(request["delta"]["text"]).to eq("Hello World")
       end
     end
 
     context 'when options are not present' do
-      let(:params) { { prompt: "some user request" } }
+      let(:params) { { messages: prompt_message } }
 
       it 'calls the anthropic streaming endpoint' do
-        expect(ai_client).to receive(:stream).with(expected_params)
+        expect(ai_client).to receive(:messages_stream).with(expected_params)
 
         request
       end
     end
 
     context 'when stream errors' do
-      let(:params) { { prompt: "some user request" } }
+      let(:params) { { messages: prompt_message } }
       let(:response) { { "error" => { "type" => "overload_error", message: "Overloaded" } } }
 
       it 'logs the error' do
-        expect(ai_client).to receive(:stream).with(expected_params).and_yield(response)
+        expect(ai_client).to receive(:messages_stream).with(expected_params).and_yield(response)
         expect(logger).to receive(:info).with(hash_including(message: "Streaming error", error: response["error"]))
 
         request
