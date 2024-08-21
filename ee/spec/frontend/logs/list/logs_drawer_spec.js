@@ -2,8 +2,10 @@ import { GlDrawer, GlLink, GlButton } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import LogsDrawer from 'ee/logs/list/logs_drawer.vue';
+import RelatedIssuesProvider from 'ee/logs/list/related_issues/related_issues_provider.vue';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import { mockLogs } from '../mock_data';
 
 jest.mock('~/lib/utils/dom_utils');
 
@@ -12,27 +14,11 @@ describe('LogsDrawer', () => {
 
   const findDrawer = () => wrapper.findComponent(GlDrawer);
 
-  const mockLog = {
-    fingerprint: 'log-1',
-    body: 'GetCartAsync called with userId={userId}',
-    service_name: 'a/service/name',
-    log_id: 'log-id',
-    severity_text: 'Information',
-    severity_number: 1,
-    trace_flags: 1,
-    timestamp: '2024-01-28T10:36:08.2960655Z',
-    trace_id: 'trace-id',
-    resource_attributes: {
-      'container.id': '8aae63236c224245383acd38611a4e32d09b7630573421fcc801918eda378bf5',
-      'k8s.deployment.name': 'otel-demo-cartservice',
-    },
-    log_attributes: {
-      userId: 'user-id',
-    },
-  };
+  const mockLog = mockLogs[0];
 
   const testTracingIndexUrl = 'https://tracing-index-url.com';
   const testCreateIssueUrl = 'https://create-issue-url.com';
+  const testProjectFullPath = 'foo/bar';
 
   const mountComponent = ({ open = true, log = mockLog } = {}) => {
     wrapper = shallowMountExtended(LogsDrawer, {
@@ -41,6 +27,7 @@ describe('LogsDrawer', () => {
         open,
         tracingIndexUrl: testTracingIndexUrl,
         createIssueUrl: testCreateIssueUrl,
+        projectFullPath: testProjectFullPath,
       },
     });
   };
@@ -75,6 +62,15 @@ describe('LogsDrawer', () => {
     expect(findDrawer().props('open')).toBe(true);
   });
 
+  it('renders the related-issue-provider', () => {
+    const relatedIssuesProvider = wrapper.findComponent(RelatedIssuesProvider);
+    expect(relatedIssuesProvider.exists()).toBe(true);
+    expect(relatedIssuesProvider.props()).toEqual({
+      projectFullPath: testProjectFullPath,
+      log: mockLog,
+    });
+  });
+
   it('emits close', () => {
     findDrawer().vm.$emit('close');
     expect(wrapper.emitted('close').length).toBe(1);
@@ -89,15 +85,15 @@ describe('LogsDrawer', () => {
       'section-log-details',
       'Metadata',
       [
-        { name: 'body', value: 'GetCartAsync called with userId={userId}' },
-        { name: 'fingerprint', value: 'log-1' },
-        { name: 'log_id', value: 'log-id' },
-        { name: 'service_name', value: 'a/service/name' },
-        { name: 'severity_number', value: '1' },
-        { name: 'severity_text', value: 'Information' },
-        { name: 'timestamp', value: '2024-01-28T10:36:08.2960655Z' },
-        { name: 'trace_flags', value: '1' },
-        { name: 'trace_id', value: 'trace-id' },
+        { name: 'body', value: mockLog.body },
+        { name: 'fingerprint', value: mockLog.fingerprint },
+        { name: 'service_name', value: mockLog.service_name },
+        { name: 'severity_number', value: `${mockLog.severity_number}` },
+        { name: 'severity_text', value: mockLog.severity_text },
+        { name: 'span_id', value: mockLog.span_id },
+        { name: 'timestamp', value: mockLog.timestamp },
+        { name: 'trace_flags', value: `${mockLog.trace_flags}` },
+        { name: 'trace_id', value: mockLog.trace_id },
       ],
     ],
     [
@@ -106,7 +102,7 @@ describe('LogsDrawer', () => {
       [
         {
           name: 'userId',
-          value: 'user-id',
+          value: mockLog.log_attributes.userId,
         },
       ],
     ],
@@ -116,9 +112,9 @@ describe('LogsDrawer', () => {
       [
         {
           name: 'container.id',
-          value: '8aae63236c224245383acd38611a4e32d09b7630573421fcc801918eda378bf5',
+          value: mockLog.resource_attributes['container.id'],
         },
-        { name: 'k8s.deployment.name', value: 'otel-demo-cartservice' },
+        { name: 'k8s.deployment.name', value: mockLog.resource_attributes['k8s.deployment.name'] },
       ],
     ],
   ])('displays the %s section in expected order', (sectionId, expectedTitle, expectedLines) => {
@@ -152,6 +148,10 @@ describe('LogsDrawer', () => {
       expect(wrapper.findByTestId('section-log-details').exists()).toBe(false);
       expect(wrapper.findByTestId('section-log-attributes').exists()).toBe(false);
       expect(wrapper.findByTestId('section-resource-attributes').exists()).toBe(false);
+    });
+
+    it('sets the log prop to null on the related-issues-provider', () => {
+      expect(wrapper.findComponent(RelatedIssuesProvider).props('log')).toBeNull();
     });
   });
 

@@ -9,6 +9,7 @@ describe('ListIndex', () => {
     apiConfig: { ...mockApiConfig },
     tracingIndexUrl: 'https://example.com/tracing/index',
     createIssueUrl: 'https://example.com/issues/new',
+    projectFullPath: 'foo/bar',
   };
 
   let wrapper;
@@ -32,6 +33,7 @@ describe('ListIndex', () => {
     expect(list.exists()).toBe(true);
     expect(list.props('tracingIndexUrl')).toBe(props.tracingIndexUrl);
     expect(list.props('createIssueUrl')).toBe(props.createIssueUrl);
+    expect(list.props('projectFullPath')).toBe(props.projectFullPath);
   });
 
   it('builds the observability client', () => {

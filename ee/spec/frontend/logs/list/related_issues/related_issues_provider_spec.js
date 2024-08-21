@@ -3,9 +3,10 @@ import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
-import relatedIssuesQuery from 'ee/metrics/details/related_issues/graphql/get_related_issues.query.graphql';
-import { mockData } from './mock_data';
+import RelatedIssuesProvider from 'ee/logs/list/related_issues/related_issues_provider.vue';
+import relatedIssuesQuery from 'ee/logs/list/related_issues/graphql/get_logs_related_issues.query.graphql';
+import { mockLogs } from '../../mock_data';
+import { mockQueryResult } from './mock_data';
 
 Vue.use(VueApollo);
 
@@ -13,12 +14,14 @@ describe('RelatedIssuesProvider component', () => {
   let defaultSlotSpy;
   let relatedIssuesQueryMock;
 
-  const defaultProps = { projectFullPath: 'foo/bar', metricName: 'aMetric', metricType: 'aType' };
+  const mockLog = mockLogs[0];
+
+  const defaultProps = { projectFullPath: 'foo/bar', log: mockLog };
 
   let wrapper;
 
   function createComponent({ props = defaultProps, slots, queryMock } = {}) {
-    relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockData);
+    relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockQueryResult);
     const apolloProvider = createMockApollo([[relatedIssuesQuery, relatedIssuesQueryMock]]);
 
     defaultSlotSpy = jest.fn();
@@ -64,19 +67,23 @@ describe('RelatedIssuesProvider component', () => {
     });
 
     it('calls issues a query for related issues', () => {
-      expect(relatedIssuesQueryMock).toHaveBeenCalledWith(defaultProps);
+      expect(relatedIssuesQueryMock).toHaveBeenCalledWith({
+        projectFullPath: defaultProps.projectFullPath,
+        traceId: mockLog.trace_id,
+        fingerprint: mockLog.fingerprint,
+        severityNumber: mockLog.severity_number,
+        service: mockLog.service_name,
+        timestamp: mockLog.timestamp,
+      });
     });
 
     it('calls the default slots with issues', () => {
       expect(defaultSlotSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ issues: mockData.data.project.issues.nodes }),
+        expect.objectContaining({ issues: mockQueryResult.data.project.issues.nodes }),
       );
     });
 
-    it('calls the default slots with loading = false', async () => {
-      createComponent();
-      await waitForPromises();
-
+    it('calls the default slots with loading = false', () => {
       expect(defaultSlotSpy).toHaveBeenCalledWith(expect.objectContaining({ loading: false }));
     });
   });
