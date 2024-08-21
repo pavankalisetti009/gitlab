@@ -117,6 +117,9 @@ export default {
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
     },
+    statusCheckEnabled() {
+      return !this.isSaaS;
+    },
   },
   apollo: {
     addOnPurchaseData: {
@@ -204,7 +207,7 @@ export default {
             {{ codeSuggestionsTitle }}
           </h1>
 
-          <div class="gl-self-center">
+          <div v-if="statusCheckEnabled" class="gl-self-center">
             <gl-button
               data-testid="health-check-button"
               :loading="healthCheckRunning"
@@ -223,7 +226,7 @@ export default {
         </p>
       </section>
       <health-check-list
-        v-if="showTitleAndSubtitle"
+        v-if="statusCheckEnabled && showTitleAndSubtitle"
         ref="healthCheckList"
         data-testid="health-check-probes"
         @health-check-completed="healthCheckRunning = false"
