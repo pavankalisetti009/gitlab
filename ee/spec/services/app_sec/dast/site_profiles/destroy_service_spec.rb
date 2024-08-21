@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe AppSec::Dast::SiteProfiles::DestroyService do
+RSpec.describe AppSec::Dast::SiteProfiles::DestroyService, feature_category: :dynamic_application_security_testing do
   let_it_be(:user) { create(:user) }
   let_it_be(:dast_profile, reload: true) { create(:dast_site_profile) }
 

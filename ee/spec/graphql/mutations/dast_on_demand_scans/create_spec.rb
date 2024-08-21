@@ -2,9 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Mutations::DastOnDemandScans::Create do
+RSpec.describe Mutations::DastOnDemandScans::Create, feature_category: :dynamic_application_security_testing do
   include GraphqlHelpers
-
   let(:group) { create(:group) }
   let(:current_user) { create(:user) }
   let(:project) { create(:project, :repository, group: group) }
