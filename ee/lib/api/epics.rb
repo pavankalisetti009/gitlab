@@ -124,7 +124,7 @@ module API
         get path, urgency: :low do
           validate_search_rate_limit! if declared_params[:search].present?
           epics = paginate(find_epics(finder_params: { group_id: user_group.id })).with_api_entity_associations
-
+          epics.each(&:lazy_labels)
           # issuable_metadata has to be set because `Entities::Epic` doesn't inherit from `Entities::IssuableEntity`
           extra_options = {
             issuable_metadata: Gitlab::IssuableMetadata.new(current_user, epics).data,

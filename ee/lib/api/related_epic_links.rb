@@ -73,6 +73,7 @@ module API
         related_epic_links = related_epic_links.created_after(params[:created_after]) if params[:created_after]
 
         related_epic_links = paginate(related_epic_links).with_api_entity_associations
+        related_epic_links.each { |link| [link.source, link.target].each(&:lazy_labels) }
 
         # EpicLinks can link to other Epics the user has no access to.
         # For these epics we need to check permissions.
@@ -102,9 +103,10 @@ module API
       get ':id/epics/:epic_iid/related_epics' do
         authorize_can_read!
 
-        preload_for_collection = [group: [:saml_provider, :route]]
+        preload_for_collection = [:author, :sync_object, { group: [:saml_provider, :route] }]
         related_epics = epic.related_epics(current_user, preload: preload_for_collection) do |epics|
           epics.with_api_entity_associations
+          epics.each(&:lazy_labels)
         end
 
         epics_metadata = Gitlab::IssuableMetadata.new(current_user, related_epics).data

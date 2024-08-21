@@ -6,8 +6,8 @@ module QA
 
     # These tests require several feature flags, user settings, and instance configurations.
     # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
+    # https://docs.gitlab.com/ee/api/code_suggestions.html
     describe 'Code Suggestions' do
-      # https://docs.gitlab.com/ee/api/code_suggestions.html#generate-code-completions-experiment
       shared_examples 'code suggestions API' do |testcase|
         let(:expected_response_data) do
           {
@@ -32,6 +32,7 @@ module QA
           expect(actual_response_data).to match(a_hash_including(expected_response_data))
 
           suggestion = actual_response_data.dig(:choices, 0, :text)
+          expect(suggestion).not_to be_nil, "The suggestion should not be nil, got: #{actual_response_data}"
           expect(suggestion.length).to be > 0, 'The suggestion should not be blank'
         end
       end
@@ -178,11 +179,7 @@ module QA
       def get_suggestion(prompt_data)
         token = Resource::PersonalAccessToken.fabricate!.token
 
-        # Logging the username of the token to help with debugging
-        # https://gitlab.com/gitlab-org/gitlab/-/issues/431317#note_1674666376
-        QA::Runtime::Logger.debug("Requesting code suggestions as: #{token_username(token)}")
-
-        response = post(
+        response = Support::API.post(
           "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
           JSON.dump(prompt_data),
           headers: {
@@ -193,12 +190,6 @@ module QA
 
         QA::Runtime::Logger.debug("Code Suggestion response: #{response}")
         response
-      end
-
-      def token_username(token)
-        user_response = get("#{Runtime::Scenario.gitlab_address}/api/v4/user", headers: { 'PRIVATE-TOKEN': token })
-        QA::Runtime::Logger.warn("Expected 200 from /user, got: #{user_response.code}") if user_response.code != 200
-        parse_body(user_response)[:username]
       end
 
       def expect_status_code(expected_code, response)

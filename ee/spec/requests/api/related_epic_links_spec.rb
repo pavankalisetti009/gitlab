@@ -213,7 +213,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
       it 'returns multiple links without N + 1' do
         perform_request(user)
 
-        control = ActiveRecord::QueryRecorder.new { perform_request(user) }
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) { perform_request(user) }
 
         create(:related_epic_link, source: epic, target: create(:epic, group: group))
 
@@ -287,7 +287,7 @@ RSpec.describe API::RelatedEpicLinks, feature_category: :portfolio_management do
       it 'returns multiple links without N + 1' do
         perform_request(user)
 
-        control = ActiveRecord::QueryRecorder.new { perform_request(user) }
+        control = ActiveRecord::QueryRecorder.new(skip_cached: false) { perform_request(user) }
 
         create(:related_epic_link, source: epic, target: create(:epic, group: group))
 
