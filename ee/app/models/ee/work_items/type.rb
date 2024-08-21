@@ -41,8 +41,9 @@ module EE
         strong_memoize_with(:widgets, resource_parent) do
           unlicensed_classes = unlicensed_widget_classes(resource_parent)
 
-          unlicensed_classes << ::WorkItems::Widgets::Assignees if epic? && ::Feature.disabled?(
-            :work_items_beta, resource_parent)
+          if epic? && !resource_parent.try(:work_items_beta_feature_flag_enabled?)
+            unlicensed_classes << ::WorkItems::Widgets::Assignees
+          end
 
           super.reject { |widget_def| unlicensed_classes.include?(widget_def.widget_class) }
         end
