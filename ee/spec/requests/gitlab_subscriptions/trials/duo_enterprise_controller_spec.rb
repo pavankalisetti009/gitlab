@@ -25,19 +25,19 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
 
   shared_examples 'namespace is not eligible for trial' do
     context 'when free group owner' do
-      let(:base_params) { { namespace_id: another_free_group.id } }
+      let(:namespace_id) { { namespace_id: another_free_group.id } }
 
       it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
 
     context 'for an ineligible group owner' do
-      let(:base_params) { { namespace_id: ineligible_paid_group.id } }
+      let(:namespace_id) { { namespace_id: ineligible_paid_group.id } }
 
       it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
 
     context 'when eligible paid plan group developer' do
-      let(:base_params) { { namespace_id: another_ultimate_group.id } }
+      let(:namespace_id) { { namespace_id: another_ultimate_group.id } }
 
       it { is_expected.to have_gitlab_http_status(:forbidden) }
     end
@@ -51,8 +51,44 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
     it { is_expected.to have_gitlab_http_status(:forbidden) }
   end
 
+  shared_examples 'group_name assignment' do
+    context 'when there is only one eligible namespace' do
+      it 'assigns the group_name to the eligible group name' do
+        request
+
+        expect(assigns(:group_name)).to eq(group_for_trial.name)
+      end
+    end
+
+    context 'when there are multiple eligible namespaces' do
+      before_all do
+        create(:group_with_plan, plan: :ultimate_plan, owners: user)
+      end
+
+      context 'when namespace_id is provided' do
+        it 'assigns the group_name provided from params' do
+          request
+
+          expect(assigns(:group_name)).to eq(group_for_trial.name)
+        end
+      end
+
+      context 'when namespace_id is not provided' do
+        let(:namespace_id) { {} }
+
+        it 'assigns the group_name to nil' do
+          request
+
+          expect(assigns(:group_name)).to be_nil
+        end
+      end
+    end
+  end
+
   describe 'GET new' do
-    let(:base_params) { {} }
+    let(:group_for_trial) { group }
+    let(:namespace_id) { { namespace_id: group_for_trial.id } }
+    let(:base_params) { namespace_id }
 
     subject(:get_new) do
       get new_trials_duo_enterprise_path, params: base_params
@@ -68,12 +104,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         login_as(user)
       end
 
-      it { is_expected.to render_lead_form }
+      it { is_expected.to render_lead_form_duo_enterprise }
 
-      it 'assigns group_name for leads' do
-        get_new
-
-        expect(assigns(:group_name)).to eq(group.name)
+      it_behaves_like 'group_name assignment' do
+        let(:request) { get_new }
       end
 
       context 'when feature flag duo_enterprise_trials is disabled' do
@@ -110,6 +144,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
   describe 'POST create' do
     let(:group_for_trial) { group }
     let(:step) { GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD }
+    let(:namespace_id) { { namespace_id: group_for_trial.id.to_s } }
     let(:lead_params) do
       {
         company_name: '_company_name_',
@@ -124,10 +159,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
     end
 
     let(:trial_params) do
-      {
-        namespace_id: group_for_trial.id.to_s,
-        trial_entity: '_trial_entity_'
-      }.with_indifferent_access
+      namespace_id.with_indifferent_access
     end
 
     let(:base_params) { lead_params.merge(trial_params).merge(step: step) }
@@ -198,12 +230,10 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         context 'when lead creation fails' do
           let(:failure_reason) { :lead_failed }
 
-          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form_duo_enterprise }
 
-          it 'assigns group_name for leads' do
-            post_create
-
-            expect(assigns(:group_name)).to eq(group_for_trial.name)
+          it_behaves_like 'group_name assignment' do
+            let(:request) { post_create }
           end
         end
 
@@ -217,37 +247,23 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
             }
           end
 
-          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
-
-          it 'assigns group_name for leads' do
-            post_create
-
-            expect(assigns(:group_name)).to eq(group_for_trial.name)
-          end
+          it { is_expected.to redirect_to(new_trials_duo_enterprise_path(payload[:trial_selection_params])) }
         end
 
         context 'with trial failure' do
           let(:failure_reason) { :trial_failed }
 
-          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
+          it 'renders the select namespace form again with trial creation errors only' do
+            expect(post_create).to render_select_namespace_duo_enterprise
 
-          it 'assigns group_name for leads' do
-            post_create
-
-            expect(assigns(:group_name)).to eq(group_for_trial.name)
+            expect(response.body).to include(_('your GitLab Duo Enterprise trial could not be created'))
           end
         end
 
         context 'with random failure' do
           let(:failure_reason) { :random_error }
 
-          it { is_expected.to have_gitlab_http_status(:ok).and render_lead_form }
-
-          it 'assigns group_name for leads' do
-            post_create
-
-            expect(assigns(:group_name)).to eq(group_for_trial.name)
-          end
+          it { is_expected.to render_select_namespace_duo_enterprise }
         end
       end
 
@@ -280,25 +296,6 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
     expect_next_instance_of(GitlabSubscriptions::Trials::CreateDuoEnterpriseService) do |instance|
       response = ServiceResponse.error(message: '_error_', reason: reason, payload: payload)
       expect(instance).to receive(:execute).and_return(response)
-    end
-  end
-
-  RSpec::Matchers.define :render_lead_form do
-    match do |response|
-      expect(response).to have_gitlab_http_status(:ok)
-
-      expect(response.body).to include(s_('DuoProTrial|Start your free GitLab Duo Enterprise trial'))
-
-      expect(response.body).to include(
-        s_('DuoProTrial|We just need some additional information to activate your trial.')
-      )
-    end
-  end
-
-  RSpec::Matchers.define :redirect_to_sign_in do
-    match do |response|
-      expect(response).to redirect_to(new_user_session_path)
-      expect(flash[:alert]).to include('You need to sign in or sign up before continuing')
     end
   end
 end

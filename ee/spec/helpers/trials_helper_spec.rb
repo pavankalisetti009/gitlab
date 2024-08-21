@@ -135,13 +135,14 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
     end
 
     let(:params) { ActionController::Parameters.new(extra_params) }
+    let(:eligible_namespaces) { [] }
 
     before do
       allow(helper).to receive(:params).and_return(params)
       allow(helper).to receive(:current_user).and_return(user)
     end
 
-    subject(:form_data) { helper.create_duo_enterprise_lead_form_data }
+    subject(:form_data) { helper.create_duo_enterprise_lead_form_data(eligible_namespaces) }
 
     it 'provides expected form data' do
       keys = extra_params.keys + [:submit_path, :submit_button_text]
@@ -171,7 +172,23 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
           company_name: user.organization
         }
 
-        expect(helper.create_duo_enterprise_lead_form_data).to match(a_hash_including(current_user_attributes))
+        expect(form_data).to match(a_hash_including(current_user_attributes))
+      end
+    end
+
+    context 'when there is a single eligible namespace' do
+      let(:eligible_namespaces) { [build(:namespace)] }
+
+      it 'has the Activate text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Activate my trial')))
+      end
+    end
+
+    context 'when there are multiple eligible namespaces' do
+      let(:eligible_namespaces) { build_list(:namespace, 2) }
+
+      it 'has the Activate text' do
+        expect(form_data).to match(a_hash_including(submit_button_text: s_('Trial|Continue')))
       end
     end
   end
@@ -409,7 +426,7 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
       end
     end
 
-    describe '#duo_pro_trial_namespace_selector_data' do
+    describe '#duo_trial_namespace_selector_data' do
       let_it_be(:all_groups) do
         [
           premium_subscription.namespace,
@@ -422,7 +439,7 @@ RSpec.describe TrialsHelper, feature_category: :acquisition do
         create(:gitlab_subscription_add_on, :gitlab_duo_pro)
       end
 
-      subject(:selector_data) { helper.duo_pro_trial_namespace_selector_data(all_groups, nil) }
+      subject(:selector_data) { helper.duo_trial_namespace_selector_data(all_groups, nil) }
 
       it 'returns all groups without create group option' do
         group_options = all_groups.map do |group|

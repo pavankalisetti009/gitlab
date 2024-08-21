@@ -21,6 +21,6 @@
 
       = yield :before_form
 
-      #js-trial-create-lead-form{ data: create_duo_enterprise_lead_form_data }
+      #js-trial-create-lead-form{ data: create_duo_enterprise_lead_form_data(@eligible_namespaces) }
 
   = render 'advantages_list'

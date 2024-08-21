@@ -46,7 +46,7 @@ module GitlabSubscriptions
       end
 
       def after_lead_success_hook
-        if single_eligible_namespace_for_trial?
+        if GitlabSubscriptions::Trials.single_eligible_namespace?(namespaces_eligible_for_trial)
           @namespace = namespaces_eligible_for_trial.first
           apply_trial_flow
         else
@@ -70,12 +70,6 @@ module GitlabSubscriptions
 
       def lead_service_class
         raise NoMethodError, 'Subclasses must implement the lead_service_class method'
-      end
-
-      def single_eligible_namespace_for_trial?
-        return false unless namespaces_eligible_for_trial.any? # executes query and now relation is loaded
-
-        namespaces_eligible_for_trial.count == 1
       end
 
       def namespaces_eligible_for_trial

@@ -11,7 +11,7 @@
   .bg-decorations {
     @include gl-media-breakpoint-up(md) {
       background-image: url('illustrations/bg-decorations.svg');
-      background-position: top 87% right 130px;
+      background-position: top 85% left 200px;
     }
   }
 }

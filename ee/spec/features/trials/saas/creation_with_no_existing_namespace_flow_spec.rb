@@ -13,7 +13,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
       fill_in_company_information
 
-      submit_company_information_form
+      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_namespace_creation
 
@@ -54,7 +54,9 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
         fill_in_company_information
 
-        submit_company_information_form(extra_params: { glm_content: 'discover-group-security' })
+        submit_company_information_form(
+          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_content: 'discover-group-security' }
+        )
 
         expect_to_be_on_namespace_creation
 
@@ -78,7 +80,9 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
         fill_in_company_information
 
-        submit_company_information_form(extra_params: { glm_source: glm_source })
+        submit_company_information_form(
+          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_source: glm_source }
+        )
 
         expect_to_be_on_namespace_creation_without_company_question
 
@@ -100,7 +104,9 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
         fill_in_company_information
 
-        submit_company_information_form(extra_params: { glm_source: glm_source })
+        submit_company_information_form(
+          button_text: 'Start free GitLab Ultimate trial', extra_params: { glm_source: glm_source }
+        )
 
         expect_to_be_on_namespace_creation
 
@@ -123,12 +129,12 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_success: false)
+      submit_company_information_form(lead_success: false, button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_lead_form_with_errors
 
       # success
-      submit_company_information_form
+      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_namespace_creation
 
@@ -148,7 +154,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
       fill_in_company_information
 
-      submit_company_information_form
+      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_namespace_creation
 
@@ -176,7 +182,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
 
       fill_in_company_information
 
-      submit_company_information_form
+      submit_company_information_form(button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_namespace_creation
 

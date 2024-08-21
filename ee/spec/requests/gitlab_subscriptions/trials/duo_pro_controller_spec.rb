@@ -278,31 +278,4 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
       expect(instance).to receive(:execute).and_return(response)
     end
   end
-
-  RSpec::Matchers.define :render_lead_form do
-    match do |response|
-      expect(response).to have_gitlab_http_status(:ok)
-
-      expect(response.body).to include(s_('DuoProTrial|Start your free GitLab Duo Pro trial'))
-
-      expect(response.body).to include(
-        s_('DuoProTrial|We just need some additional information to activate your trial.')
-      )
-    end
-  end
-
-  RSpec::Matchers.define :render_select_namespace_duo do
-    match do |response|
-      expect(response).to have_gitlab_http_status(:ok)
-
-      expect(response.body).to include(s_('DuoProTrial|Apply your GitLab Duo Pro trial to an existing group'))
-    end
-  end
-
-  RSpec::Matchers.define :redirect_to_sign_in do
-    match do |response|
-      expect(response).to redirect_to(new_user_session_path)
-      expect(flash[:alert]).to include('You need to sign in or sign up before continuing')
-    end
-  end
 end

@@ -22,13 +22,13 @@ module TrialsHelper
     )
   end
 
-  def create_duo_enterprise_lead_form_data
+  def create_duo_enterprise_lead_form_data(eligible_namespaces)
     _lead_form_data.merge(
       submit_path: trials_duo_enterprise_path(
         step: GitlabSubscriptions::Trials::CreateDuoEnterpriseService::LEAD,
         namespace_id: params[:namespace_id]
       ),
-      submit_button_text: s_('Trial|Activate my trial')
+      submit_button_text: trial_submit_text(eligible_namespaces)
     )
   end
 
@@ -59,7 +59,7 @@ module TrialsHelper
     )
   end
 
-  def duo_pro_trial_namespace_selector_data(namespaces, namespace_create_errors)
+  def duo_trial_namespace_selector_data(namespaces, namespace_create_errors)
     namespace_selector_data(namespace_create_errors).merge(
       any_trial_eligible_namespaces: namespaces.any?.to_s,
       items: current_namespaces_for_selector(namespaces).to_json
@@ -120,6 +120,14 @@ module TrialsHelper
   end
 
   private
+
+  def trial_submit_text(eligible_namespaces)
+    if GitlabSubscriptions::Trials.single_eligible_namespace?(eligible_namespaces)
+      s_('Trial|Activate my trial')
+    else
+      s_('Trial|Continue')
+    end
+  end
 
   def current_namespaces_for_selector(namespaces)
     namespaces.map { |n| { text: n.name, value: n.id.to_s } }

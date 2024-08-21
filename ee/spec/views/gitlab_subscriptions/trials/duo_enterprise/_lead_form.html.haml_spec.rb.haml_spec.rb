@@ -7,6 +7,7 @@ RSpec.describe 'gitlab_subscriptions/trials/duo_enterprise/_lead_form.html.haml'
 
   before do
     allow(view).to receive(:current_user) { user }
+    allow(GitlabSubscriptions::Trials).to receive(:single_eligible_namespace?).and_return(true)
   end
 
   it 'renders lead form general items' do
