@@ -11,6 +11,7 @@ import {
 // eslint-disable-next-line no-restricted-imports
 import { mapActions, mapState } from 'vuex';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import { __, s__ } from '~/locale';
 import { mapComputed } from '~/vuex_shared/bindings';
 
@@ -23,6 +24,7 @@ export default {
     GlFormInput,
     GlIcon,
     GlFormCheckbox,
+    SettingsBlock,
   },
   i18n: {
     headerText: s__('StatusPage|Status page'),
@@ -80,23 +82,16 @@ export default {
 </script>
 
 <template>
-  <section id="status-page" class="settings no-animate js-status-page-settings">
-    <div class="settings-header">
-      <h4
-        ref="sectionHeader"
-        class="settings-title js-settings-toggle js-settings-toggle-trigger-only"
-      >
-        {{ $options.i18n.headerText }}
-      </h4>
-      <gl-button ref="toggleBtn" class="js-settings-toggle">{{
-        $options.i18n.expandBtnLabel
-      }}</gl-button>
-      <p ref="sectionSubHeader" class="gl-text-secondary">
-        {{ $options.i18n.subHeaderText }}
-      </p>
-    </div>
+  <settings-block id="status-page" class="js-status-page-settings">
+    <template #title>
+      <span ref="sectionHeader">{{ $options.i18n.headerText }}</span>
+    </template>
 
-    <div class="settings-content">
+    <template #description>
+      <span ref="sectionSubHeader">{{ $options.i18n.subHeaderText }}</span>
+    </template>
+
+    <template #default>
       <!-- eslint-disable @gitlab/vue-require-i18n-attribute-strings -->
       <p>
         <gl-sprintf :message="$options.i18n.introText">
@@ -201,6 +196,6 @@ export default {
           {{ $options.i18n.saveBtnLabel }}
         </gl-button>
       </form>
-    </div>
-  </section>
+    </template>
+  </settings-block>
 </template>

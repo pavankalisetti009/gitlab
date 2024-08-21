@@ -1,6 +1,7 @@
-import { shallowMount } from '@vue/test-utils';
 // eslint-disable-next-line no-restricted-imports
 import Vuex from 'vuex';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import StatusPageSettingsForm from 'ee/status_page_settings/components/settings_form.vue';
 import createStore from 'ee/status_page_settings/store';
 
@@ -19,12 +20,15 @@ describe('Status Page settings form', () => {
   };
 
   const findForm = () => wrapper.findComponent({ ref: 'settingsForm' });
-  const findToggleButton = () => wrapper.findComponent({ ref: 'toggleBtn' });
+  const findToggleButton = () => wrapper.findByTestId('settings-block-toggle');
   const findSectionHeader = () => wrapper.findComponent({ ref: 'sectionHeader' });
   const findSectionSubHeader = () => wrapper.findComponent({ ref: 'sectionSubHeader' });
 
   beforeEach(() => {
-    wrapper = shallowMount(StatusPageSettingsForm, { store: fakeStore() });
+    wrapper = shallowMountExtended(StatusPageSettingsForm, {
+      store: fakeStore(),
+      stubs: { SettingsBlock },
+    });
   });
 
   describe('default state', () => {
@@ -39,7 +43,7 @@ describe('Status Page settings form', () => {
 
   describe('expand/collapse button', () => {
     it('renders as an expand button by default', () => {
-      expect(findToggleButton().text()).toBe('Expand');
+      expect(findToggleButton().text()).toContain('Expand');
     });
   });
 
