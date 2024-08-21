@@ -297,6 +297,14 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
       end
 
       context 'when type is a string' do
+        let(:type) { 'scan_execution_policy' }
+
+        it 'retrieves policy by type' do
+          expect(policies.first[:name]).to eq('Run DAST in every pipeline')
+        end
+      end
+
+      context 'when type is a symbol' do
         let(:type) { :scan_execution_policy }
 
         it 'retrieves policy by type' do
@@ -304,7 +312,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
       end
 
-      context 'when type is a string for ci_component_publishing_policy' do
+      context 'when type is a symbol for ci_component_publishing_policy' do
         let(:type) { :ci_component_publishing_policy }
 
         it 'retrieves policy by type' do
@@ -312,7 +320,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
         end
       end
 
-      context 'when type is a string for pipeline execution' do
+      context 'when type is a symbol for pipeline execution' do
         let(:type) { :pipeline_execution_policy }
 
         it 'retrieves policy by type' do
@@ -346,7 +354,7 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
     context 'when policy is nil' do
       let(:policy_yaml) { nil }
 
-      context 'when type is a string' do
+      context 'when type is a symbol' do
         let(:type) { :scan_execution_policy }
 
         it 'returns an empty array' do
