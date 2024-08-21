@@ -25,6 +25,7 @@ module Security
             vulnerability_occurrence_identifiers
             vulnerability_occurrence_pipelines
             vulnerability_scanners
+            security_findings
           ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474635'
         ) do
           ApplicationRecord.transaction do

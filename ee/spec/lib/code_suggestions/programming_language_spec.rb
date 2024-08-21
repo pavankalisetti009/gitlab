@@ -229,10 +229,15 @@ RSpec.describe CodeSuggestions::ProgrammingLanguage, feature_category: :code_sug
     using RSpec::Parameterized::TableSyntax
 
     where(:language, :x_ray_lang_name) do
+      'C++'        | 'cpp'
+      'C#'         | 'csharp'
+      'Go'         | 'go'
+      'Java'       | 'java'
       'JavaScript' | 'javascript'
+      'Kotlin'     | 'kotlin'
+      'PHP'        | 'php'
       'Python'     | 'python'
       'Ruby'       | 'ruby'
-      'Go'         | 'go'
       'UNKNOWN'    | nil
     end
 

@@ -100,7 +100,10 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
   describe '.by_state' do
     context 'when the state is `detected`' do
-      subject(:findings) { described_class.by_state(:detected) }
+      subject(:findings) {
+        described_class.by_state(:detected).allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+      }
 
       before do
         create(:vulnerabilities_finding, :detected, uuid: finding_2.uuid)
@@ -112,7 +115,10 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
 
     context 'when the state is `dismissed`' do
-      subject { described_class.by_state(:dismissed) }
+      subject {
+        described_class.by_state(:dismissed).allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+      }
 
       before do
         create(:vulnerabilities_finding, :dismissed, uuid: finding_1.uuid)
@@ -122,7 +128,10 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
 
     context 'when the state is `confirmed`' do
-      subject { described_class.by_state(:confirmed) }
+      subject {
+        described_class.by_state(:confirmed).allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+      }
 
       before do
         create(:vulnerabilities_finding, :confirmed, uuid: finding_1.uuid)
@@ -132,7 +141,10 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     end
 
     context 'when the state is `resolved`' do
-      subject { described_class.by_state(:resolved) }
+      subject {
+        described_class.by_state(:resolved).allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+      }
 
       before do
         create(:vulnerabilities_finding, :resolved, uuid: finding_1.uuid)
@@ -183,7 +195,10 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   describe '.undismissed_by_vulnerability' do
     let(:expected_findings) { [finding_2] }
 
-    subject { described_class.undismissed_by_vulnerability }
+    subject {
+      described_class.undismissed_by_vulnerability.allow_cross_joins_across_databases(
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+    }
 
     before do
       create(:vulnerabilities_finding, :dismissed, uuid: finding_1.uuid)

@@ -16,11 +16,25 @@ describe('EE Work item system note', () => {
   let mock;
 
   const diffData = '<span class="idiff">Description</span><span class="idiff addition">Diff</span>';
+  const multilinbeDiffData = `<span class="idiff">some  text
+
+</span><span class="idiff addition">dsaf</span><span class="idiff">
+more text
+
+hello
+
+foobar</span>`;
 
   function mockFetchDiff() {
     mock
       .onGet(workItemSystemNoteWithMetadata.systemNoteMetadata.descriptionVersion.diffPath)
       .replyOnce(HTTP_STATUS_OK, diffData);
+  }
+
+  function mockFetchMultilineDiff() {
+    mock
+      .onGet(workItemSystemNoteWithMetadata.systemNoteMetadata.descriptionVersion.diffPath)
+      .replyOnce(HTTP_STATUS_OK, multilinbeDiffData);
   }
 
   function mockDeleteDiff(statusCode = HTTP_STATUS_OK) {
@@ -89,6 +103,12 @@ describe('EE Work item system note', () => {
         return waitForPromises();
       });
 
+      it('applies correct classes to delete button', () => {
+        expect(findDescriptionVersionDeleteButton().classes()).toContain('gl-top-5');
+        expect(findDescriptionVersionDeleteButton().classes()).toContain('gl-right-2');
+        expect(findDescriptionVersionDeleteButton().classes()).toContain('gl-mt-2');
+      });
+
       it('does not delete description diff if the delete request fails', async () => {
         mockDeleteDiff(HTTP_STATUS_SERVICE_UNAVAILABLE);
 
@@ -105,6 +125,19 @@ describe('EE Work item system note', () => {
         await waitForPromises();
 
         expect(findDescriptionVersion().text()).toContain('Deleted');
+      });
+    });
+
+    describe('Delete version history when multiline diff', () => {
+      beforeEach(() => {
+        mockFetchMultilineDiff();
+        findComparePreviousVersionButton().vm.$emit('click');
+        return waitForPromises();
+      });
+
+      it('applies correct classes to delete button', () => {
+        expect(findDescriptionVersionDeleteButton().classes()).toContain('gl-top-6');
+        expect(findDescriptionVersionDeleteButton().classes()).toContain('gl-right-3');
       });
     });
   });

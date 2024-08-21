@@ -13,9 +13,20 @@ describe('system note component', () => {
   let mock;
 
   const diffData = '<span class="idiff">Description</span><span class="idiff addition">Diff</span>';
+  const multilinbeDiffData = `<span class="idiff">some  text
+
+  </span><span class="idiff addition">dsaf</span><span class="idiff">
+  more text
+  
+  hello
+  
+  foobar</span>`;
 
   function mockFetchDiff() {
     mock.onGet('/path/to/diff').replyOnce(HTTP_STATUS_OK, diffData);
+  }
+  function mockFetchMultilineDiff() {
+    mock.onGet('/path/to/diff').replyOnce(HTTP_STATUS_OK, multilinbeDiffData);
   }
 
   function mockDeleteDiff(statusCode = HTTP_STATUS_OK) {
@@ -87,13 +98,30 @@ describe('system note component', () => {
     await waitForPromises();
     expect(findDescriptionVersion().exists()).toBe(true);
     expect(findDescriptionVersion().html()).toContain(diffData);
-    expect(
-      wrapper
-        .find(
-          '.description-version button.delete-description-history svg[data-testid="remove-icon"]',
-        )
-        .exists(),
-    ).toBe(true);
+    expect(findDeleteDescriptionVersionButton().exists()).toBe(true);
+  });
+
+  it('applies correct classes to delete button when single-line diff', async () => {
+    mockFetchDiff();
+
+    findBlankBtn().trigger('click');
+    await nextTick();
+    await waitForPromises();
+
+    expect(findDeleteDescriptionVersionButton().classes()).toContain('gl-top-5');
+    expect(findDeleteDescriptionVersionButton().classes()).toContain('gl-right-2');
+    expect(findDeleteDescriptionVersionButton().classes()).toContain('gl-mt-2');
+  });
+
+  it('applies correct classes to delete button when multi-line diff', async () => {
+    mockFetchMultilineDiff();
+
+    findBlankBtn().trigger('click');
+    await nextTick();
+    await waitForPromises();
+
+    expect(findDeleteDescriptionVersionButton().classes()).toContain('gl-top-6');
+    expect(findDeleteDescriptionVersionButton().classes()).toContain('gl-right-3');
   });
 
   describe('click on delete icon button', () => {
