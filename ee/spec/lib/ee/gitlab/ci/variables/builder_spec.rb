@@ -178,7 +178,6 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
     let(:job_attr) do
       {
         name: job.name,
-        user: job.user,
         stage: job.stage_name,
         yaml_variables: job.yaml_variables,
         options: job.options,
@@ -190,7 +189,9 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       builder.scoped_variables_for_pipeline_seed(
         job_attr,
         environment: environment_name,
-        kubernetes_namespace: kubernetes_namespace
+        kubernetes_namespace: kubernetes_namespace,
+        user: job.user,
+        trigger_request: nil
       )
     end
 
