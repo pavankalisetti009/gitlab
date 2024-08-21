@@ -207,6 +207,10 @@ module EE
 
       validates :code_creation, json_schema: { filename: 'application_setting_code_creation' }
 
+      validates :observability_backend_ssl_verification_enabled,
+        allow_nil: false,
+        inclusion: { in: [true, false], message: N_('must be a boolean value') }
+
       after_commit :update_personal_access_tokens_lifetime, if: :saved_change_to_max_personal_access_token_lifetime?
       after_commit :resume_elasticsearch_indexing
     end
