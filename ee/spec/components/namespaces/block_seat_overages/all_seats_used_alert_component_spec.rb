@@ -74,7 +74,7 @@ RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, type: 
         end
 
         describe 'when namespace is personal' do
-          let_it_be(:namespace) { build(:user).namespace }
+          let_it_be(:namespace) { build(:user, :with_namespace).namespace }
 
           it { is_expected.to be false }
         end
