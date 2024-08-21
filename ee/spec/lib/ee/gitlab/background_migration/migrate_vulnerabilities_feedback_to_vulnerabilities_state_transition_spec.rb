@@ -36,7 +36,7 @@ RSpec.describe(
   let(:vulnerability_feedback) { table(:vulnerability_feedback) }
   let(:vulnerability_state_transitions) { table(:vulnerability_state_transitions) }
   let(:security_scans) { table(:security_scans) }
-  let(:security_findings) { table(:security_findings) }
+  let(:security_findings) { table(:security_findings, primary_key: :id) }
   let(:ci_builds) { table(:p_ci_builds, database: :ci) { |model| model.primary_key = :id } }
   let(:ci_job_artifacts) { table(:ci_job_artifacts, database: :ci) }
   let(:ci_pipelines) { table(:ci_pipelines, primary_key: :id, database: :ci) }
@@ -182,7 +182,7 @@ RSpec.describe(
         create(:ee_ci_job_artifact,
           :sast_with_signatures_and_vulnerability_flags,
           job_id: ci_build.id,
-          partition_id: ci_testing_partition_id)
+          partition_id: ci_testing_partition_id_for_check_constraints)
         # rubocop:enable RSpec/FactoriesInMigrationSpecs
         security_scan = create_security_scan(ci_build, sast_scan_type, project_id: project.id)
         @security_finding = create_security_finding(security_scan, scanner, uuid: known_uuid)
@@ -423,7 +423,7 @@ RSpec.describe(
 
   def create_ci_pipeline(overrides = {})
     attrs = {
-      partition_id: ci_testing_partition_id
+      partition_id: ci_testing_partition_id_for_check_constraints
     }.merge(overrides)
     ci_pipelines.create!(attrs)
   end
@@ -431,7 +431,7 @@ RSpec.describe(
   def create_ci_build(overrides = {})
     attrs = {
       type: 'Ci::Build',
-      partition_id: ci_testing_partition_id
+      partition_id: ci_testing_partition_id_for_check_constraints
     }.merge(overrides)
     ci_builds.create!(attrs)
   end
@@ -441,7 +441,7 @@ RSpec.describe(
       project_id: project.id,
       file_type: file_type,
       job_id: build.id,
-      partition_id: ci_testing_partition_id
+      partition_id: ci_testing_partition_id_for_check_constraints
     }.merge(overrides)
 
     ci_job_artifacts.create!(attrs)
