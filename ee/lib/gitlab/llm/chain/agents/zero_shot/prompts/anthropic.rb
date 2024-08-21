@@ -14,7 +14,7 @@ module Gitlab
                 history = truncated_conversation_list(options[:conversation])
                 base = base_prompt(options)
 
-                text = deduplicate_roles(history + base)
+                text = clean_messages(history + base)
 
                 Requests::Anthropic.prompt(text)
               end
@@ -35,6 +35,10 @@ module Gitlab
                 conversation.map do |message, _|
                   { role: message.role.to_sym, content: message.content }
                 end
+              end
+
+              def self.clean_messages(messages)
+                deduplicate_roles(messages.reject { |message| message[:content].nil? })
               end
 
               def self.deduplicate_roles(messages)
