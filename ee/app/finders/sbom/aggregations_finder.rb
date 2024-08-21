@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module DependencyManagement
+module Sbom
   # rubocop:disable CodeReuse/ActiveRecord -- Code won't be reused outside this context
   class AggregationsFinder
     include Gitlab::Utils::StrongMemoize

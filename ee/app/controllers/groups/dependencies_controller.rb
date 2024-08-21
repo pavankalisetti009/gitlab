@@ -74,7 +74,7 @@ module Groups
 
     def dependencies
       if using_new_query?
-        finder = ::DependencyManagement::AggregationsFinder.new(group, params: dependencies_finder_params)
+        finder = ::Sbom::AggregationsFinder.new(group, params: dependencies_finder_params)
         relation = finder.execute
                          .with_component
                          .with_version
@@ -168,7 +168,7 @@ module Groups
     end
 
     def per_page
-      params[:per_page]&.to_i || DependencyManagement::AggregationsFinder::DEFAULT_PAGE_SIZE
+      params[:per_page]&.to_i || Sbom::AggregationsFinder::DEFAULT_PAGE_SIZE
     end
 
     def set_below_group_limit
