@@ -16,13 +16,13 @@ describe('Severity Badge', () => {
     wrapper = shallowMount(SeverityBadge, {
       propsData: { ...propsData },
       directives: {
-        tooltip: createMockDirective('tooltip'),
+        GlTooltip: createMockDirective('gl-tooltip'),
       },
     });
   };
 
   const findIcon = () => wrapper.findComponent(GlIcon);
-  const findTooltip = () => getBinding(findIcon().element, 'tooltip').value;
+  const findTooltip = () => getBinding(findIcon().element, 'gl-tooltip').value;
 
   describe.each(SEVERITY_LEVELS)('given a valid severity "%s"', (severity) => {
     beforeEach(() => {
