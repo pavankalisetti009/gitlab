@@ -107,7 +107,7 @@ export default {
 </script>
 <template>
   <div>
-    <h1 class="page-title gl-font-size-h-display">{{ pageTitle }}</h1>
+    <h1 class="page-title gl-text-size-h-display">{{ pageTitle }}</h1>
     <p v-if="!isEditing">{{ pageDescription }}</p>
     <secret-form
       :are-environments-loading="areEnvironmentsLoading"

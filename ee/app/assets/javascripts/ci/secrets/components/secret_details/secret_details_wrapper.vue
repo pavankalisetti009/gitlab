@@ -92,7 +92,7 @@ export default {
       {{ s__('Secrets|Failed to load secret. Please try again later.') }}
     </gl-alert>
     <div v-else>
-      <div class="gl-flex gl-justify-between gl-items-center">
+      <div class="gl-flex gl-items-center gl-justify-between">
         <h1 class="page-title gl-text-size-h-display">{{ secret.key }}</h1>
         <div>
           <gl-button
@@ -120,7 +120,7 @@ export default {
           :background-color="$options.SCOPED_LABEL_COLOR"
           scoped
         />
-        <span class="gl-text-gray-500 gl-ml-3" data-testid="secret-created-at">
+        <span class="gl-ml-3 gl-text-gray-500" data-testid="secret-created-at">
           {{ createdAtText }}
         </span>
       </div>

@@ -45,7 +45,7 @@ export default {
 </script>
 <template>
   <div class="gl-border gl-rounded-base gl-p-5">
-    <h2 class="gl-font-lg gl-mt-0">{{ s__('Runners|Active runners') }}</h2>
+    <h2 class="gl-mt-0 gl-text-lg">{{ s__('Runners|Active runners') }}</h2>
 
     <gl-table
       v-if="loading || activeRunners.length"
@@ -58,7 +58,7 @@ export default {
         <gl-skeleton-loader :lines="9" />
       </template>
       <template #cell(index)="{ index }">
-        <span class="gl-font-size-h2 gl-text-gray-500">{{ index + 1 }}</span>
+        <span class="gl-text-size-h2 gl-text-gray-500">{{ index + 1 }}</span>
       </template>
       <template #cell(runner)="{ item = {} }">
         <runner-full-name :runner="item" />
