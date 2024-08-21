@@ -1,6 +1,7 @@
 import {
   DEFAULT_PIPELINE_EXECUTION_POLICY,
   DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE,
+  DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX,
 } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import {
   createPolicyObject,
@@ -16,11 +17,12 @@ import {
 
 describe('fromYaml', () => {
   it.each`
-    title                                                                                        | input                                                                                 | output
-    ${'returns the policy object for a supported manifest'}                                      | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }}                                    | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY })}
-    ${'returns the policy object for a supported manifest with scope with validation'}           | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE, validateRuleMode: true }} | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE })}
-    ${'returns the policy object for a policy with an unsupported attribute without validation'} | ${{ manifest: customYaml }}                                                           | ${customYamlObject}
-    ${'returns the error object for a policy with an unsupported attribute with validation'}     | ${{ manifest: customYaml, validateRuleMode: true }}                                   | ${{ error: true }}
+    title                                                                                        | input                                                                                  | output
+    ${'returns the policy object for a supported manifest'}                                      | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY }}                                     | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY })}
+    ${'returns the policy object for a supported manifest with scope with validation'}           | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE, validateRuleMode: true }}  | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SCOPE })}
+    ${'returns the policy object for a supported manifest with suffix with validation'}          | ${{ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX, validateRuleMode: true }} | ${fromYaml({ manifest: DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX })}
+    ${'returns the policy object for a policy with an unsupported attribute without validation'} | ${{ manifest: customYaml }}                                                            | ${customYamlObject}
+    ${'returns the error object for a policy with an unsupported attribute with validation'}     | ${{ manifest: customYaml, validateRuleMode: true }}                                    | ${{ error: true }}
   `('$title', ({ input, output }) => {
     expect(fromYaml(input)).toStrictEqual(output);
   });

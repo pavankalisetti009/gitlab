@@ -17,7 +17,7 @@ export const fromYaml = ({ manifest, validateRuleMode = false }) => {
        * schema. These values should not be retrieved from the backend schema because
        * the UI for new attributes may not be available.
        */
-      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'pipeline_config_strategy', 'content'];
+      const primaryKeys = [...PRIMARY_POLICY_KEYS, 'pipeline_config_strategy', 'content', 'suffix'];
 
       const contentKeys = ['include'];
       const pipelineConfigStrategies = ['inject_ci', 'override_project_ci'];
