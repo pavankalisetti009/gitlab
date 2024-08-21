@@ -36,7 +36,7 @@ module Admin
       def update
         @self_hosted_model = ::Ai::SelfHostedModel.find(params[:id])
 
-        if @self_hosted_model.update(self_hosted_models_params)
+        if @self_hosted_model.update(update_self_hosted_model_params)
           redirect_to admin_ai_self_hosted_models_url, notice: _("Self-Hosted Model was updated")
         else
           render :edit
@@ -59,6 +59,15 @@ module Admin
         return if ::Ai::TestingTermsAcceptance.has_accepted?
 
         redirect_to admin_ai_terms_and_conditions_url
+      end
+
+      def update_self_hosted_model_params
+        update_params = self_hosted_models_params
+        api_token = update_params[:api_token]
+
+        return update_params.except(:api_token) if api_token == ApplicationSetting::MASK_PASSWORD
+
+        update_params
       end
 
       def self_hosted_models_params
