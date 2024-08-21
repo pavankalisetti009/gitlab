@@ -141,7 +141,7 @@ export default {
         </tr>
       </template>
       <template #tbody="{ rules, name, members, approvalsRequired, branches, actions }">
-        <unconfigured-security-rules />
+        <unconfigured-security-rules v-if="!isBranchRulesEdit" />
 
         <template v-for="(rule, index) in rules">
           <empty-rule
