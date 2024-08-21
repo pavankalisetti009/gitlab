@@ -19316,6 +19316,12 @@ msgstr ""
 msgid "Disable"
 msgstr ""
 
+msgid "Disable SSL verification for requests to GitLab Observability Backend"
+msgstr ""
+
+msgid "Disable SSL verification if GitLab Observability Backend is using a self-signed certificate inside a private network."
+msgstr ""
+
 msgid "Disable Two-factor Authentication"
 msgstr ""
 
@@ -24165,6 +24171,9 @@ msgid "GitLab Logo"
 msgstr ""
 
 msgid "GitLab Next|Next"
+msgstr ""
+
+msgid "GitLab Observability Backend requests"
 msgstr ""
 
 msgid "GitLab Pages"
