@@ -18,7 +18,10 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
       session_token: an_instance_of(String)
     }
 
-    body[:log_data] = an_instance_of(String) if user
+    if user
+      body[:log_data] = an_instance_of(String)
+      body[:email_address] = an_instance_of(String)
+    end
 
     body
   end
@@ -32,7 +35,8 @@ RSpec.describe Arkose::TokenVerificationService, feature_category: :instance_res
       .with(
         body: verify_request_body,
         headers: {
-          'Accept' => '*/*'
+          'Accept' => '*/*',
+          'Content-Type' => 'application/json'
         }
       ).to_return(
         status: 200,
