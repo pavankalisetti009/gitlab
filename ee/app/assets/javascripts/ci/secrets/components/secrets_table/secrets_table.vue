@@ -1,15 +1,8 @@
 <script>
-import {
-  GlBadge,
-  GlButton,
-  GlCard,
-  GlTableLite,
-  GlSprintf,
-  GlLabel,
-  GlPagination,
-} from '@gitlab/ui';
+import { GlBadge, GlButton, GlTableLite, GlSprintf, GlLabel, GlPagination } from '@gitlab/ui';
 import { updateHistory, getParameterByName, setUrlParams } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import TimeAgo from '~/vue_shared/components/time_ago_tooltip.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
@@ -31,7 +24,7 @@ export default {
   components: {
     GlBadge,
     GlButton,
-    GlCard,
+    CrudComponent,
     GlTableLite,
     GlSprintf,
     GlLabel,
@@ -166,24 +159,13 @@ export default {
       />
     </p>
 
-    <gl-card
-      class="gl-new-card"
-      header-class="gl-new-card-header"
-      body-class="gl-new-card-body gl-px-0"
-    >
-      <template #header>
-        <div class="gl-new-card-title-wrapper">
-          <h3 class="gl-new-card-title">
-            {{ s__('Secrets|Stored secrets') }}
-            <span class="gl-new-card-count" data-testid="secrets-count">{{ secretsCount }}</span>
-          </h3>
-        </div>
-        <div class="gl-new-card-actions">
-          <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
-            {{ s__('Secrets|New secret') }}
-          </gl-button>
-        </div>
+    <crud-component :title="s__('Secrets|Stored secrets')" icon="lock" :count="secretsCount">
+      <template #actions>
+        <gl-button size="small" :to="$options.NEW_ROUTE_NAME" data-testid="new-secret-button">
+          {{ s__('Secrets|New secret') }}
+        </gl-button>
       </template>
+
       <gl-table-lite :fields="$options.fields" :items="secretsNodes" stacked="md" class="gl-mb-0">
         <template #cell(name)="{ item: { id, name, labels, environment } }">
           <router-link data-testid="secret-details-link" :to="getDetailsRoute(id)" class="gl-block">
@@ -224,15 +206,16 @@ export default {
           <secret-actions-cell :details-route="getEditRoute(id)" />
         </template>
       </gl-table-lite>
-    </gl-card>
-    <gl-pagination
-      v-if="showPagination"
-      :value="page"
-      :per-page="$options.PAGE_SIZE"
-      :total-items="secretsCount"
-      align="center"
-      class="gl-mt-5"
-      @input="handlePageChange"
-    />
+
+      <template v-if="showPagination" #pagination>
+        <gl-pagination
+          :value="page"
+          :per-page="$options.PAGE_SIZE"
+          :total-items="secretsCount"
+          align="center"
+          @input="handlePageChange"
+        />
+      </template>
+    </crud-component>
   </div>
 </template>

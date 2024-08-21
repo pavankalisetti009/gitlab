@@ -30,7 +30,7 @@ describe('SecretsTable component', () => {
   const findNewSecretButton = () => wrapper.findByTestId('new-secret-button');
   const findSecretsTable = () => wrapper.findComponent(GlTableLite);
   const findSecretsTableRows = () => findSecretsTable().find('tbody').findAll('tr');
-  const findSecretsCount = () => wrapper.findByTestId('secrets-count');
+  const findSecretsCount = () => wrapper.findByTestId('crud-count');
   const findSecretDetailsLink = () => wrapper.findByTestId('secret-details-link');
   const findSecretLabels = () => findSecretsTableRows().at(0).findAllComponents(GlLabel);
   const findSecretLastAccessed = () => wrapper.findByTestId('secret-last-accessed');
