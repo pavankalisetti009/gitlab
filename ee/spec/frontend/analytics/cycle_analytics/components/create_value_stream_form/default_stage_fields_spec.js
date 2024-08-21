@@ -32,7 +32,6 @@ describe('DefaultStageFields', () => {
       },
       stubs: {
         'labels-selector': false,
-        'gl-form-text': false,
       },
     });
   }
