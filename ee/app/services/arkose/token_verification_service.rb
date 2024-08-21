@@ -13,7 +13,12 @@ module Arkose
     end
 
     def execute
-      parsed_response = Gitlab::HTTP.perform_request(Net::HTTP::Post, arkose_verify_url, body: body).parsed_response
+      parsed_response = Gitlab::HTTP.perform_request(
+        Net::HTTP::Post,
+        arkose_verify_url,
+        headers: { 'Content-Type': 'application/json' },
+        body: body
+      ).parsed_response
 
       @response = ::Arkose::VerifyResponse.new(parsed_response)
 
@@ -42,11 +47,10 @@ module Arkose
     private
 
     def body
-      {
-        private_key: Settings.arkose_private_api_key,
-        session_token: session_token,
-        log_data: user&.id
-      }.compact
+      data = { private_key: Settings.arkose_private_api_key, session_token: session_token }
+      data.merge!({ email_address: user.email, log_data: user.id.to_s }) if user
+
+      Gitlab::Json.generate(data)
     end
 
     def logger

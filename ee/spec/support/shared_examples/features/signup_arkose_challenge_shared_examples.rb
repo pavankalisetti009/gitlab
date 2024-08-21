@@ -16,13 +16,14 @@ RSpec.shared_examples 'creates a user with ArkoseLabs risk band' do
     request_headers = {
       Accept: '*/*',
       'Accept-Encoding': 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-      'User-Agent': 'Ruby'
+      'User-Agent': 'Ruby',
+      'Content-Type': 'application/json'
     }
     response_headers = { 'Content-Type' => 'application/json' }
 
     stub_request(:post, "https://verify-api.arkoselabs.com/api/v4/verify/")
       .with(
-        body: "private_key=#{mock_arkose_labs_key}&session_token=#{mock_arkose_labs_token}",
+        body: { private_key: mock_arkose_labs_key, session_token: mock_arkose_labs_token }.to_json,
         headers: request_headers
       ).to_return(status: 200, body: arkose_verification_response.to_json, headers: response_headers)
 
