@@ -56,11 +56,9 @@ module EE
         expose :updated_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
         expose :closed_at, documentation: { type: "dateTime", example: "2022-01-31T15:10:45.080Z" }
         expose :labels, documentation: { is_array: true } do |epic, options|
-          if options[:with_labels_details]
-            ::API::Entities::LabelBasic.represent(epic.labels.sort_by(&:title))
-          else
-            epic.labels.map(&:title).sort
-          end
+          labels = epic.lazy_labels.sort_by(&:title)
+
+          options[:with_labels_details] ? ::API::Entities::LabelBasic.represent(labels) : labels.map(&:title)
         end
         expose :upvotes, documentation: { type: "integer", example: 4 } do |epic, options|
           if options[:issuable_metadata]
