@@ -1023,7 +1023,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
 
     before do
       allow(Gitlab::IpAddressState).to receive(:current).and_return('192.168.0.2')
-      stub_licensed_features(group_ip_restriction: true)
+      stub_licensed_features(group_ip_restriction: true, epics: true)
       stub_config(dependency_proxy: { enabled: true })
     end
 
@@ -1033,6 +1033,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
       it { is_expected.to be_allowed(:read_package) }
       it { is_expected.to be_allowed(:create_package) }
       it { is_expected.to be_allowed(:destroy_package) }
+      it { is_expected.to be_allowed(:create_epic) }
       it { is_expected.to be_allowed(:read_dependency_proxy) }
       it { is_expected.to be_disallowed(:admin_package) }
       it { is_expected.to be_disallowed(:admin_dependency_proxy) }
@@ -1051,6 +1052,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
         it { is_expected.to be_allowed(:read_package) }
         it { is_expected.to be_allowed(:create_package) }
         it { is_expected.to be_allowed(:destroy_package) }
+        it { is_expected.to be_allowed(:create_epic) }
         it { is_expected.to be_allowed(:read_dependency_proxy) }
         it { is_expected.to be_disallowed(:admin_package) }
         it { is_expected.to be_disallowed(:admin_dependency_proxy) }
@@ -1065,6 +1067,7 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
           it { is_expected.to be_disallowed(:read_package) }
           it { is_expected.to be_disallowed(:create_package) }
           it { is_expected.to be_disallowed(:destroy_package) }
+          it { is_expected.to be_disallowed(:create_epic) }
           it { is_expected.to be_disallowed(:admin_package) }
           it { is_expected.to be_disallowed(:read_dependency_proxy) }
           it { is_expected.to be_disallowed(:admin_dependency_proxy) }

@@ -6,7 +6,12 @@ module EE
 
     prepended do
       with_scope :user
-      condition(:auditor, score: 0) { @user&.auditor? }
+      condition(:auditor, score: 0) do
+        # We pass in Gitlab::Auth::GroupSaml::TokenActor to policies via
+        # Groups::SsoController#check_user_can_sign_in_with_provider.
+        # However, only User can be an auditor.
+        @user.respond_to?(:auditor?) && @user.auditor?
+      end
 
       with_scope :user
       condition(:visual_review_bot, score: 0) { @user&.visual_review_bot? }

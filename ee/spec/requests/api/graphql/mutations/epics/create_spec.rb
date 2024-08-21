@@ -126,6 +126,18 @@ RSpec.describe 'Creating an Epic', feature_category: :portfolio_management do
           expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change(Epic, :count)
         end
       end
+
+      context 'when IP restriction restricts access' do
+        before do
+          allow_next_instance_of(Gitlab::IpRestriction::Enforcer) do |enforcer|
+            allow(enforcer).to receive(:allows_current_ip?).and_return(false)
+          end
+        end
+
+        it 'does not create the epic' do
+          expect { post_graphql_mutation(mutation, current_user: current_user) }.not_to change { Epic.count }
+        end
+      end
     end
   end
 end
