@@ -1,9 +1,10 @@
 <script>
 import { GlCard, GlBadge, GlButton } from '@gitlab/ui';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
-import { s__ } from '~/locale';
+import { s__, __ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import { formatTraceDuration } from '../trace_utils';
+import { createIssueUrlWithTraceDetails } from './utils';
 
 const CARD_CLASS = 'gl-mr-7 gl-w-3/20 gl-min-w-fit';
 const HEADER_CLASS = 'gl-p-2 gl-font-bold gl-flex gl-justify-center gl-items-center';
@@ -26,6 +27,7 @@ export default {
   i18n: {
     inProgress: s__('Tracing|In progress'),
     logsButtonTitle: s__('Tracing|View Logs'),
+    createIssueTitle: __('Create issue'),
   },
   props: {
     trace: {
@@ -40,6 +42,14 @@ export default {
       required: true,
       type: String,
     },
+    createIssueUrl: {
+      required: true,
+      type: String,
+    },
+    totalErrors: {
+      required: true,
+      type: Number,
+    },
   },
   computed: {
     title() {
@@ -53,6 +63,13 @@ export default {
     },
     traceDuration() {
       return formatTraceDuration(this.trace.duration_nano);
+    },
+    createIssueUrlWithQuery() {
+      return createIssueUrlWithTraceDetails({
+        trace: this.trace,
+        createIssueUrl: this.createIssueUrl,
+        totalErrors: this.totalErrors,
+      });
     },
   },
 };
@@ -69,9 +86,16 @@ export default {
           }}</gl-badge>
         </template>
         <template #actions>
-          <gl-button :title="$options.i18n.logsButtonTitle" :href="logsLink">{{
-            $options.i18n.logsButtonTitle
-          }}</gl-button>
+          <gl-button :href="createIssueUrlWithQuery">
+            {{ $options.i18n.createIssueTitle }}
+          </gl-button>
+          <gl-button
+            category="primary"
+            variant="confirm"
+            :title="$options.i18n.logsButtonTitle"
+            :href="logsLink"
+            >{{ $options.i18n.logsButtonTitle }}</gl-button
+          >
         </template>
       </page-heading>
     </header>

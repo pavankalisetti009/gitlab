@@ -9,6 +9,7 @@ describe('DetailsIndex', () => {
     traceId: 'test-trace-id',
     tracingIndexUrl: 'https://example.com/tracing/index',
     logsIndexUrl: 'https://example.com/logs/index',
+    createIssueUrl: 'https://example.com/issues/new',
     apiConfig: {
       ...mockApiConfig,
     },
@@ -36,6 +37,7 @@ describe('DetailsIndex', () => {
     expect(detailsCmp.props('traceId')).toBe(props.traceId);
     expect(detailsCmp.props('tracingIndexUrl')).toBe(props.tracingIndexUrl);
     expect(detailsCmp.props('logsIndexUrl')).toBe(props.logsIndexUrl);
+    expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
   });
 
   it('builds the observability client', () => {

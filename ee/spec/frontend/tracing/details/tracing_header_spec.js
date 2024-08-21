@@ -2,21 +2,12 @@ import { GlBadge, GlButton } from '@gitlab/ui';
 import TracingHeader from 'ee/tracing/details/tracing_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import { createMockTrace } from '../mock_data';
 
 describe('TracingHeader', () => {
   let wrapper;
 
-  const defaultTrace = {
-    service_name: 'Service',
-    operation: 'Operation',
-    timestamp: 1692021937219,
-    duration_nano: 1000000000,
-    total_spans: 10,
-    spans: [
-      { span_id: 'span-1', parent_span_id: '' },
-      { span_id: 'span-2', parent_span_id: 'span-1' },
-    ],
-  };
+  const defaultTrace = createMockTrace();
 
   const createComponent = (trace = defaultTrace, incomplete = false) => {
     wrapper = shallowMountExtended(TracingHeader, {
@@ -24,6 +15,8 @@ describe('TracingHeader', () => {
         trace,
         incomplete,
         logsLink: 'testLogsLink',
+        createIssueUrl: 'testCreateIssueUrl',
+        totalErrors: 2,
       },
     });
   };
@@ -56,9 +49,28 @@ describe('TracingHeader', () => {
   });
 
   it('renders the correct logs link', () => {
-    const button = findHeading().findComponent(GlButton);
+    const button = findHeading().findAllComponents(GlButton).at(1);
     expect(button.text()).toBe('View Logs');
     expect(button.attributes('href')).toBe('testLogsLink');
+  });
+
+  it('renders the create issue link', () => {
+    const button = findHeading().findAllComponents(GlButton).at(0);
+    expect(button.text()).toBe('Create issue');
+    const traceDetails = {
+      fullUrl: 'http://test.host/',
+      name: `Service : Operation`,
+      traceId: '8335ed4c-c943-aeaa-7851-2b9af6c5d3b8',
+      start: 'Mon, 14 Aug 2023 14:05:37 GMT',
+      duration: '1s',
+      totalSpans: 10,
+      totalErrors: 2,
+    };
+    expect(button.attributes('href')).toBe(
+      `testCreateIssueUrl?observability_trace_details=${encodeURIComponent(
+        JSON.stringify(traceDetails),
+      )}`,
+    );
   });
 
   it('renders the correct trace date', () => {

@@ -1,4 +1,4 @@
-import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { urlWithStringifiedPayloadParam } from '~/observability/utils';
 
 const COLORS_MAP = {
   trace: '#a4a3a8',
@@ -74,11 +74,5 @@ export function createIssueUrlWithLogDetails({ log, createIssueUrl }) {
     traceId,
   };
 
-  const query = {
-    observability_log_details: JSON.stringify(logDetails),
-  };
-
-  return mergeUrlParams(query, createIssueUrl, {
-    spreadArrays: true,
-  });
+  return urlWithStringifiedPayloadParam(createIssueUrl, logDetails, 'observability_log_details');
 }

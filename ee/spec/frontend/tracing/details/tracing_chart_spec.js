@@ -2,48 +2,20 @@ import { assignColorToServices, durationNanoToMs } from 'ee/tracing/trace_utils'
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingChart from 'ee/tracing/details/tracing_chart.vue';
 import TracingDetailsSpansChart from 'ee/tracing/details/tracing_spans_chart.vue';
+import { createMockTrace } from '../mock_data';
 
 jest.mock('ee/tracing/trace_utils');
 
 describe('TracingChart', () => {
   let wrapper;
 
-  const mockTrace = {
-    timestamp: '2023-08-07T15:03:32.199806Z',
-    trace_id: 'dabb7ae1-2501-8e57-18e1-30ab21a9ab19',
-    service_name: 'tracegen',
-    operation: 'lets-go',
-    statusCode: 'STATUS_CODE_UNSET',
-    duration_nano: 100120000,
-    spans: [
-      {
-        timestamp: '2023-08-07T15:03:32.199806Z',
-        span_id: 'SPAN-1',
-        trace_id: 'dabb7ae1-2501-8e57-18e1-30ab21a9ab19',
-        service_name: 'tracegen',
-        operation: 'lets-go',
-        duration_nano: 100120000,
-        parent_span_id: '',
-        statusCode: 'STATUS_CODE_UNSET',
-      },
-      {
-        timestamp: '2023-08-07T15:03:32.199806Z',
-        span_id: 'SPAN-2',
-        trace_id: 'dabb7ae1-2501-8e57-18e1-30ab21a9ab19',
-        service_name: 'tracegen',
-        operation: 'lets-go',
-        duration_nano: 100120000,
-        parent_span_id: '',
-        statusCode: 'STATUS_CODE_UNSET',
-      },
-    ],
-  };
+  const mockTrace = createMockTrace(2);
 
   const mountComponent = () => {
     wrapper = shallowMountExtended(TracingChart, {
       propsData: {
         trace: mockTrace,
-        selectedSpanId: 'foo',
+        selectedSpanId: mockTrace.spans[0].span_id,
         spanTrees: [mockTrace.spans[0], mockTrace.spans[1]],
       },
     });
@@ -70,12 +42,16 @@ describe('TracingChart', () => {
 
     expect(tracingDetailsSpansChart.props('traceDurationMs')).toBe(100);
     expect(tracingDetailsSpansChart.props('serviceToColor')).toEqual({ tracegen: 'red' });
-    expect(tracingDetailsSpansChart.props('selectedSpanId')).toEqual('foo');
+    expect(tracingDetailsSpansChart.props('selectedSpanId')).toEqual(mockTrace.spans[0].span_id);
   });
 
   it('emits span-selected upon span selection', () => {
-    getTracingDetailsSpansCharts().at(0).vm.$emit('span-selected', { spanId: 'foo' });
+    getTracingDetailsSpansCharts()
+      .at(0)
+      .vm.$emit('span-selected', { spanId: mockTrace.spans[0].span_id });
 
-    expect(wrapper.emitted('span-selected')).toStrictEqual([[{ spanId: 'foo' }]]);
+    expect(wrapper.emitted('span-selected')).toStrictEqual([
+      [{ spanId: mockTrace.spans[0].span_id }],
+    ]);
   });
 });

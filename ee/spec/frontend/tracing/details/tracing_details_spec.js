@@ -21,9 +21,10 @@ describe('TracingDetails', () => {
   let wrapper;
   let observabilityClientMock;
 
-  const TRACE_ID = 'test-trace-id';
-  const TRACING_INDEX_URL = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
-  const LOGS_INDEX_URL = 'https://www.gitlab.com/flightjs/Flight/-/logs';
+  const traceId = 'test-trace-id';
+  const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
+  const logsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/logs';
+  const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
 
@@ -35,9 +36,10 @@ describe('TracingDetails', () => {
   const getDrawerSpan = () => findDrawer().props('span');
 
   const props = {
-    traceId: TRACE_ID,
-    tracingIndexUrl: TRACING_INDEX_URL,
-    logsIndexUrl: LOGS_INDEX_URL,
+    traceId,
+    tracingIndexUrl,
+    logsIndexUrl,
+    createIssueUrl,
   };
 
   const mountComponent = async () => {
@@ -59,7 +61,12 @@ describe('TracingDetails', () => {
     traceId: 'test-trace-id',
     spans: [{ span_id: 'span-1' }, { span_id: 'span-2' }],
   };
-  const mockTree = { roots: [{ span_id: 'span-1' }], incomplete: true, pruned: true };
+  const mockTree = {
+    roots: [{ span_id: 'span-1' }],
+    incomplete: true,
+    pruned: true,
+    totalErrors: 2,
+  };
 
   beforeEach(async () => {
     observabilityClientMock = createMockClient();
@@ -96,8 +103,10 @@ describe('TracingDetails', () => {
     expect(header.props('incomplete')).toBe(mockTree.incomplete);
     expect(header.props('trace')).toEqual(mockTrace);
     expect(header.props('logsLink')).toBe(
-      `${LOGS_INDEX_URL}?traceId[]=test-trace-id&search=&date_range=30d`,
+      `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
     );
+    expect(header.props('createIssueUrl')).toBe(createIssueUrl);
+    expect(header.props('totalErrors')).toBe(mockTree.totalErrors);
   });
 
   describe('details drawer', () => {
