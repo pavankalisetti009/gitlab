@@ -171,7 +171,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
           stub_const("#{described_class}::DOT_COM_ROLLOUT_LIMIT", 0)
         end
 
-        it 'skips second execution' do
+        it 'enables the next namespace on second execution' do
           rollout_cutoff = described_class::DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER.ago - 1.hour
           ns = create(:zoekt_enabled_namespace, search: false, namespace: group,
             created_at: rollout_cutoff, updated_at: rollout_cutoff)
@@ -184,7 +184,7 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
 
           expect { execute_task }.to change { ns.reload.search }.from(false).to(true)
 
-          expect { service.execute }.not_to change { ns2.reload.search }.from(false)
+          expect { service.execute }.to change { ns2.reload.search }.from(false).to(true)
         end
       end
 
@@ -195,7 +195,11 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
         expect { execute_task }.not_to change { ns.reload.search }
       end
 
-      it 'assigns namespaces to a node' do
+      it 'creates an enabled namespace for namespaces with active subscriptions' do
+        another_group = create(:group)
+        create(:gitlab_subscription, namespace: another_group, end_date: 2.weeks.ago)
+        create(:namespace_root_storage_statistics, namespace: another_group)
+
         expect { execute_task }.to change { ::Search::Zoekt::EnabledNamespace.count }.by(1)
 
         expect(::Search::Zoekt::EnabledNamespace.pluck(:root_namespace_id)).to contain_exactly(group.id)
