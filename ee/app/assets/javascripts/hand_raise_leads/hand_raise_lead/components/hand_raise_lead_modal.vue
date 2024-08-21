@@ -243,7 +243,6 @@ export default {
     :title="$options.i18n.modalTitle"
     :action-primary="actionPrimary"
     :action-cancel="actionCancel"
-    footer-class="gl-flex gl-flex-col sm:gl-flex-row"
     @primary="submit"
     @cancel="track('hand_raise_form_canceled')"
   >
