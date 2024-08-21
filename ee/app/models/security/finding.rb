@@ -8,7 +8,7 @@
 # only stores some important meta information to
 # calculate which report artifact to download and parse.
 module Security
-  class Finding < ApplicationRecord
+  class Finding < ::Gitlab::Database::SecApplicationRecord
     include EachBatch
     include Presentable
     include PartitionedTable
