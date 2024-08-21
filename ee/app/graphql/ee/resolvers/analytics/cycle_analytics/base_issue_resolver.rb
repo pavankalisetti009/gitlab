@@ -24,7 +24,7 @@ module EE
               required: false,
               description: 'Filter by reaction emoji applied by the current user.'
 
-            argument :not, ::Types::Analytics::CycleAnalytics::NegatedIssueFilterInputType,
+            argument :not, ::Types::Analytics::CycleAnalytics::NegatedIssuableFilterInputType,
               required: false,
               description: 'Argument used for adding negated filters.'
           end
