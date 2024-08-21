@@ -103,6 +103,11 @@ RSpec.describe Gitlab::Llm::Chain::Tools::WriteTests::Executor, feature_category
           expect(answer.error_code).to eq("M4000")
         end
       end
+
+      it_behaves_like 'uses ai gateway agent prompt' do
+        let(:prompt_class) { Gitlab::Llm::Chain::Tools::WriteTests::Prompts::Anthropic }
+        let(:unit_primitive) { 'write_tests' }
+      end
     end
 
     context 'when context is not authorized' do
