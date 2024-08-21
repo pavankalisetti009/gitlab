@@ -28,7 +28,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-flex gl-flex-col gl-gap-4 gl-mt-4">
+  <div class="gl-mt-4 gl-flex gl-flex-col gl-gap-4">
     <div>
       <h2 class="gl-heading-5">{{ __('Key') }}</h2>
       <p data-testid="secret-details-key">{{ secret.key }}</p>

@@ -28,7 +28,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center gl-mt-3">
+  <div class="gl-mt-3 gl-flex gl-items-center">
     <span class="gl-mr-3">{{ s__('Pipelines|Filter by target branch') }}</span>
     <ref-selector
       :value="branch"

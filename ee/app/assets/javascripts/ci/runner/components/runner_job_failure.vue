@@ -41,8 +41,8 @@ export default {
 </script>
 <template>
   <div>
-    <time-ago v-if="job.finishedAt" :time="job.finishedAt" class="gl-text-secondary gl-font-sm" />
-    <div class="gl-mt-1 gl-mb-3">
+    <time-ago v-if="job.finishedAt" :time="job.finishedAt" class="gl-text-sm gl-text-secondary" />
+    <div class="gl-mb-3 gl-mt-1">
       <ci-icon v-if="job.detailedStatus" :status="job.detailedStatus" show-status-text />
       <gl-link v-if="runner" :href="runner.adminUrl" data-testid="runner-link">
         <runner-full-name :runner="runner" />
@@ -50,7 +50,7 @@ export default {
     </div>
     <pre
       v-if="job.userPermissions.readBuild"
-      class="gl-w-full gl-border-none gl-bg-inherit gl-m-0 gl-p-0"
+      class="gl-m-0 gl-w-full gl-border-none gl-bg-inherit gl-p-0"
     ><code v-safe-html="traceSummary" class="gl-bg-inherit gl-p-0"></code></pre>
   </div>
 </template>

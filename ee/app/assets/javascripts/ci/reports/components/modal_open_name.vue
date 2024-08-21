@@ -50,7 +50,7 @@ export default {
   <gl-button
     v-gl-tooltip="{ boundary: 'viewport' }"
     v-gl-resize-observer-directive="updateTooltipTitle"
-    class="gl-text-truncate"
+    class="gl-truncate"
     variant="link"
     :aria-label="s__('Reports|Vulnerability Name')"
     :title="tooltipTitle"

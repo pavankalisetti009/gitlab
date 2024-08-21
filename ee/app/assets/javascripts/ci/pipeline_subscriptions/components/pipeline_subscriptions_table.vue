@@ -83,7 +83,7 @@ export default {
     body-class="gl-new-card-body gl-px-0"
   >
     <template #header>
-      <div class="gl-new-card-title-wrapper gl-flex-direction-column">
+      <div class="gl-new-card-title-wrapper gl-flex-col">
         <h3 class="gl-new-card-title">
           <span data-testid="subscription-title">{{ title }}</span>
           <div class="gl-new-card-count">

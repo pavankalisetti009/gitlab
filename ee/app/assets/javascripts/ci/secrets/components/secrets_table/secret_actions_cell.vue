@@ -28,7 +28,7 @@ export default {
         <router-link
           data-testid="secret-details-link"
           :to="detailsRoute"
-          class="gl-block gl-text-body gl-hover-text-gray-900 gl-hover-text-decoration-none"
+          class="gl-block gl-text-primary hover:gl-text-gray-900 hover:gl-no-underline"
         >
           {{ s__('Secrets|Edit secret') }}
         </router-link>

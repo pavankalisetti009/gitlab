@@ -144,7 +144,7 @@ export default {
     {
       key: 'actions',
       label: '',
-      tdClass: 'gl-text-right gl-p-3!',
+      tdClass: 'gl-text-right !gl-p-3',
     },
   ],
   NEW_ROUTE_NAME,
@@ -155,7 +155,7 @@ export default {
 </script>
 <template>
   <div>
-    <h1 class="page-title gl-font-size-h-display">{{ s__('Secrets|Secrets') }}</h1>
+    <h1 class="page-title gl-text-size-h-display">{{ s__('Secrets|Secrets') }}</h1>
     <p>
       <gl-sprintf
         :message="
@@ -200,7 +200,7 @@ export default {
             :title="label"
             :background-color="getLabelBackgroundColor(label)"
             :scoped="isScopedLabel(label)"
-            class="gl-mt-3 gl-mr-3"
+            class="gl-mr-3 gl-mt-3"
           />
         </template>
         <template #cell(lastAccessed)="{ item: { lastAccessed } }">

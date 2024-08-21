@@ -102,7 +102,7 @@ export default {
       </template>
       <gl-sprintf :message="formattedDuration">
         <template #highlight="{ content }">
-          <span class="gl-font-bold gl-font-size-h-display">{{ content }}</span>
+          <span class="gl-text-size-h-display gl-font-bold">{{ content }}</span>
         </template>
       </gl-sprintf>
     </gl-card>

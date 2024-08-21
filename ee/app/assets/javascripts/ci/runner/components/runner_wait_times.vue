@@ -94,8 +94,8 @@ export default {
 </script>
 <template>
   <div class="gl-border gl-rounded-base gl-p-5">
-    <div class="gl-display-flex">
-      <h2 class="gl-font-lg gl-mt-0">
+    <div class="gl-flex">
+      <h2 class="gl-mt-0 gl-text-lg">
         {{ s__('Runners|Wait time to pick a job') }}
         <help-popover trigger-class="gl-align-baseline">
           {{ waitTimesPopoverDescription }}
@@ -107,7 +107,7 @@ export default {
       <gl-loading-icon v-if="waitTimesLoading || waitTimeHistoryLoading" class="gl-ml-auto" />
     </div>
 
-    <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+    <div class="gl-flex gl-flex-wrap gl-gap-3">
       <gl-single-stat
         v-for="stat in waitTimesStatsData"
         :key="stat.key"
@@ -119,7 +119,7 @@ export default {
     <div v-if="waitTimeHistoryEnabled">
       <div
         v-if="waitTimeHistoryLoading && !waitTimeHistoryChartData.length"
-        class="gl-py-4 gl-flex gl-justify-center gl-items-center"
+        class="gl-flex gl-items-center gl-justify-center gl-py-4"
       >
         <gl-skeleton-loader :equal-width-lines="true" />
       </div>

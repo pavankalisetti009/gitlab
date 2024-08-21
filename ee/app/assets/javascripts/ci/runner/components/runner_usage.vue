@@ -12,7 +12,7 @@ import RunnerUsageQuery from '../graphql/performance/runner_usage.query.graphql'
 import RunnerUsageByProjectQuery from '../graphql/performance/runner_usage_by_project.query.graphql';
 import RunnerUsageExportMutation from '../graphql/performance/runner_usage_export.mutation.graphql';
 
-const thClass = ['gl-font-sm!', 'gl-text-secondary!'];
+const thClass = ['!gl-text-sm', '!gl-text-secondary'];
 
 export default {
   name: 'RunnerUsage',
@@ -195,8 +195,8 @@ export default {
 </script>
 <template>
   <div class="gl-border gl-rounded-base gl-p-5">
-    <div class="gl-display-flex gl-align-items-center gl-mb-4">
-      <h2 class="gl-font-lg gl-flex-grow-1 gl-m-0">
+    <div class="gl-mb-4 gl-flex gl-items-center">
+      <h2 class="gl-m-0 gl-grow gl-text-lg">
         {{ s__('Runners|Runner Usage (previous month)') }}
       </h2>
       <gl-button :loading="loading" size="small" @click="onClick">
@@ -204,7 +204,7 @@ export default {
       </gl-button>
     </div>
 
-    <div class="md:gl-flex gl-justify-between gl-align-items-flex-start gl-gap-4">
+    <div class="gl-items-start gl-justify-between gl-gap-4 md:gl-flex">
       <gl-table-lite
         :fields="topProjectsFields"
         :items="topProjects"
@@ -215,7 +215,7 @@ export default {
           <div
             v-if="value"
             v-tooltip-on-truncate="value.nameWithNamespace"
-            class="gl-whitespace-nowrap gl-text-overflow-ellipsis gl-overflow-hidden"
+            class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
           >
             <gl-avatar
               :label="value.name"
@@ -224,7 +224,7 @@ export default {
               :size="16"
               :entity-name="value.name"
             />
-            <gl-link :href="value.webUrl" class="gl-text-body!">
+            <gl-link :href="value.webUrl" class="!gl-text-primary">
               {{ value.nameWithNamespace }}
             </gl-link>
           </div>
@@ -244,10 +244,10 @@ export default {
         <template #cell(runner)="{ value }">
           <div
             v-tooltip-on-truncate
-            class="gl-whitespace-nowrap gl-text-overflow-ellipsis gl-overflow-hidden"
+            class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
           >
             <template v-if="value">
-              <gl-link v-if="value.adminUrl" :href="value.adminUrl" class="gl-text-body!">
+              <gl-link v-if="value.adminUrl" :href="value.adminUrl" class="!gl-text-primary">
                 {{ runnerName(value) }}
               </gl-link>
               <template v-else>{{ runnerName(value) }}</template>

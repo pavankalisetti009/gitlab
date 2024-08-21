@@ -78,7 +78,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-display-contents">
+  <div class="gl-contents">
     <ce-job-log-top-bar
       :size="size"
       :raw-path="rawPath"
