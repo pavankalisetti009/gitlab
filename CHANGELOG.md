@@ -746,6 +746,12 @@ entry.
 - [Dynamically gets the column type for assertion](https://gitlab.com/gitlab-org/gitlab/-/commit/1389a3daffd104925cce71776903cbf527723222) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/159099))
 - [Quarantine a flaky test](https://gitlab.com/gitlab-org/gitlab/-/commit/c94fca35b909440ec66ea35c97ab11aa847dde58) ([merge request](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/158180))
 
+## 17.2.4 (2024-08-21)
+
+### Security (1 change)
+
+- [Always build assets image when tagging](https://gitlab.com/gitlab-org/security/gitlab/-/commit/d0e661baad53be4fb7eef3b530b544d05a609953) ([merge request](https://gitlab.com/gitlab-org/security/gitlab/-/merge_requests/4386))
+
 ## 17.2.3 (2024-08-20)
 
 ### Fixed (3 changes)
