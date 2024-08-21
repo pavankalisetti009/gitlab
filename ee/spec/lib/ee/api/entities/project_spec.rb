@@ -83,20 +83,32 @@ RSpec.describe ::EE::API::Entities::Project, feature_category: :shared do
     end
   end
 
-  describe 'secret push protection' do
+  describe 'pre_receive_secret_detection_enabled' do
     let_it_be(:project) { create(:project) }
     let(:options) { { current_user: current_user } }
 
-    context 'when user is guest' do
-      let(:current_user) { guest }
-
-      it 'does not return secret push protection' do
+    shared_examples 'returning nil' do
+      it 'returns nil' do
         expect(subject[:pre_receive_secret_detection_enabled]).to be(nil)
       end
     end
 
+    context 'when user is guest' do
+      let(:current_user) { guest }
+
+      it_behaves_like 'returning nil'
+    end
+
     context 'when user is developer' do
       let(:current_user) { developer }
+
+      context 'when project does not have security settings' do
+        before do
+          allow(project).to receive(:security_setting).and_return(nil)
+        end
+
+        it_behaves_like 'returning nil'
+      end
 
       it 'returns a boolean' do
         expect(subject[:pre_receive_secret_detection_enabled]).to be_in([true, false])
