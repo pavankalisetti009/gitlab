@@ -49,7 +49,7 @@ RSpec.shared_examples 'slash command tool' do
         "Your request does not seem to contain code to #{described_class::ACTION}. " \
           "To #{described_class::HUMAN_NAME.downcase} select the lines of code in your editor " \
           "and then type the command #{command.name} in the chat. " \
-          "You may add additional instructions after this comment. If you have no code to select, " \
+          "You may add additional instructions after this command. If you have no code to select, " \
           "you can also simply add the code after the command."
       end
 

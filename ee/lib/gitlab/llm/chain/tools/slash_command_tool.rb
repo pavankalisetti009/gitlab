@@ -108,7 +108,7 @@ module Gitlab
             content = format(s_("AI|Your request does not seem to contain code to %{action}. " \
               "To %{human_name} select the lines of code in your editor " \
               "and then type the command %{command_name} in the chat. " \
-              "You may add additional instructions after this comment. If you have no code to select, " \
+              "You may add additional instructions after this command. If you have no code to select, " \
               "you can also simply add the code after the command."),
               action: self.class::ACTION, human_name: self.class::HUMAN_NAME.downcase, command_name: command.name)
 
