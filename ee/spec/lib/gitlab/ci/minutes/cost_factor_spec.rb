@@ -33,7 +33,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
     context 'when the cost factor is zero' do
       before do
-        expect(cost_factor).to receive(:for_project).with(project) { 0 }
+        expect(cost_factor).to receive(:for_project).with(project).and_return(0)
       end
 
       it { is_expected.to be_falsey }
@@ -41,7 +41,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
     context 'when the cost factor is positive' do
       before do
-        expect(cost_factor).to receive(:for_project).with(project) { 0.5 }
+        expect(cost_factor).to receive(:for_project).with(project).and_return(0.5)
       end
 
       it { is_expected.to be_truthy }
@@ -55,7 +55,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
     context 'when the cost factor is zero' do
       before do
-        expect(cost_factor).to receive(:for_project).with(project) { 0 }
+        expect(cost_factor).to receive(:for_project).with(project).and_return(0)
       end
 
       it { is_expected.to be_truthy }
@@ -63,7 +63,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
     context 'when the cost factor is positive' do
       before do
-        expect(cost_factor).to receive(:for_project).with(project) { 0.5 }
+        expect(cost_factor).to receive(:for_project).with(project).and_return(0.5)
       end
 
       it { is_expected.to be_falsey }
@@ -134,7 +134,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
       before do
         create(:gitlab_subscription, namespace: project.namespace, hosted_plan: plan)
-        allow(Gitlab::CurrentSettings).to receive(:shared_runners_minutes) { 100 }
+        allow(Gitlab::CurrentSettings).to receive(:shared_runners_minutes).and_return(100)
       end
 
       context 'when project has an Open Source plan' do
@@ -193,7 +193,7 @@ RSpec.describe Gitlab::Ci::Minutes::CostFactor, feature_category: :hosted_runner
 
       before do
         allow(project).to receive(:fork_source).and_return(fork_source_project)
-        allow(Gitlab::CurrentSettings).to receive(:shared_runners_minutes) { 100 }
+        allow(Gitlab::CurrentSettings).to receive(:shared_runners_minutes).and_return(100)
       end
 
       context 'when the project is public' do

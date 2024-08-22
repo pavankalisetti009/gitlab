@@ -12,7 +12,7 @@ RSpec.describe PreferencesHelper do
   describe '#dashboard_choices' do
     context 'when allowed to read operations dashboard' do
       before do
-        allow(helper).to receive(:can?).with(user, :read_operations_dashboard) { true }
+        allow(helper).to receive(:can?).with(user, :read_operations_dashboard).and_return(true)
       end
 
       it 'does not contain operations dashboard' do
@@ -22,7 +22,7 @@ RSpec.describe PreferencesHelper do
 
     context 'when not allowed to read operations dashboard' do
       before do
-        allow(helper).to receive(:can?).with(user, :read_operations_dashboard) { false }
+        allow(helper).to receive(:can?).with(user, :read_operations_dashboard).and_return(false)
       end
 
       it 'does not contain operations dashboard' do

@@ -24,7 +24,7 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
     context 'with PostgreSQL' do
       context 'on the primary node' do
         it 'returns an empty string' do
-          allow(Gitlab::Geo).to receive(:secondary?) { false }
+          allow(Gitlab::Geo).to receive(:secondary?).and_return(false)
 
           expect(subject.perform_checks).to be_blank
         end
@@ -35,7 +35,7 @@ RSpec.describe Gitlab::Geo::HealthCheck, :geo, feature_category: :geo_replicatio
         let(:db_read_only) { true }
 
         before do
-          allow(Gitlab::Geo).to receive(:secondary?) { true }
+          allow(Gitlab::Geo).to receive(:secondary?).and_return(true)
           allow(Gitlab::Geo).to receive(:geo_database_configured?) { geo_database_configured }
           allow(ApplicationRecord.database).to receive(:db_read_only?) { db_read_only }
         end

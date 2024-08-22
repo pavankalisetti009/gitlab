@@ -26,7 +26,7 @@ RSpec.describe Banzai::Filter::CrossProjectIssuableInformationFilter do
 
   context 'when the user cannot read cross project' do
     before do
-      allow(Ability).to receive(:allowed?) { false }
+      allow(Ability).to receive(:allowed?).and_return(false)
     end
 
     it 'skips links to issues within the same project' do

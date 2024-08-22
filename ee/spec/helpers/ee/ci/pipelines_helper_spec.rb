@@ -47,7 +47,7 @@ RSpec.describe EE::Ci::PipelinesHelper, feature_category: :continuous_integratio
       let(:pipeline) { instance_double(Ci::Pipeline) }
 
       before do
-        allow(Gitlab).to receive(:com?) { false }
+        allow(Gitlab).to receive(:com?).and_return(false)
       end
 
       it { is_expected.to be_falsy }
