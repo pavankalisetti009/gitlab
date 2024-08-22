@@ -1,4 +1,4 @@
-import { GlSprintf, GlLink } from '@gitlab/ui';
+import { GlSprintf, GlLink, GlCard } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
@@ -25,11 +25,12 @@ describe('project component', () => {
       stubs: {
         GlSprintf,
         GlLink,
+        GlCard,
       },
     });
   };
 
-  const findDashboardCard = () => wrapper.find('[data-testid="dashboard-card-body"]');
+  const findDashboardCard = () => wrapper.find('[data-testid="dashboard-project-card"]');
 
   describe('with unlicensed project', () => {
     let project;
@@ -52,7 +53,9 @@ describe('project component', () => {
       });
 
       it('styles card with gray background', () => {
-        expect(wrapper.find('.dashboard-card-body.bg-secondary').exists()).toBe(true);
+        expect(wrapper.find('.gl-card-body:not(.gl-bg-red-50, .gl-bg-orange-50)').exists()).toBe(
+          true,
+        );
       });
 
       it('shows upgrade license text', () => {

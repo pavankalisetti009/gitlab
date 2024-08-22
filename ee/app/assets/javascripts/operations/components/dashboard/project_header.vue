@@ -32,13 +32,6 @@ export default {
     title() {
       return __('Remove card');
     },
-    headerClasses() {
-      return {
-        'dashboard-card-header-warning': this.hasErrors,
-        'dashboard-card-header-failed': this.hasPipelineFailed,
-        'bg-light': !this.hasErrors && !this.hasPipelineFailed,
-      };
-    },
   },
   methods: {
     onRemove() {
@@ -49,21 +42,17 @@ export default {
 </script>
 
 <template>
-  <div
-    :class="headerClasses"
-    class="card-header gl-border-0 gl-py-3 gl-display-flex gl-align-items-center"
-  >
+  <div class="gl-flex gl-items-center gl-gap-3 -gl-my-3 -gl-mr-3">
     <project-avatar
       :project-id="project.id"
       :project-name="project.name"
       :project-avatar-url="project.avatar_url"
       :size="24"
-      class="gl-mr-3"
     />
-    <div class="gl-flex-grow-1 block-truncated">
+    <div class="gl-grow gl-line-clamp-1">
       <gl-link
         v-gl-tooltip
-        class="gl-text-black-normal"
+        class="gl-text-default"
         :href="project.web_url"
         :title="project.name_with_namespace"
         data-testid="project-link"
