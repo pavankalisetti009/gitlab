@@ -251,11 +251,11 @@ export default {
 };
 </script>
 <template>
-  <li class="gl-py-0!">
-    <div class="gl-display-flex gl-align-items-center">
+  <li class="!gl-py-0">
+    <div class="gl-flex gl-items-center">
       <gl-button
         variant="link"
-        class="gl-font-bold gl-text-body! gl-py-5! gl-px-3! gl-mr-auto gl-min-w-0"
+        class="gl-mr-auto gl-min-w-0 !gl-px-3 !gl-py-5 gl-font-bold !gl-text-primary"
         :aria-expanded="expanded"
         @click="expanded = !expanded"
       >
@@ -317,7 +317,7 @@ export default {
             <li
               v-for="iteration in iterations"
               :key="iteration.id"
-              class="gl-bg-gray-10 gl-p-5 gl-border-t-solid gl-border-gray-100 gl-border-t-1"
+              class="gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-p-5 gl-border-t-solid"
             >
               <router-link
                 :to="path(iteration.id)"

@@ -150,7 +150,7 @@ gcloud projects add-iam-policy-binding ${this.googleCloudProjectId} \\
           <clipboard-button
             :title="s__('GoogleArtifactRegistry|Copy command')"
             :text="instructions"
-            class="gl-absolute gl-top-3 gl-right-3 gl-z-1"
+            class="gl-absolute gl-right-3 gl-top-3 gl-z-1"
           />
           <code-block-highlighted
             class="gl-border gl-p-4"

@@ -38,7 +38,7 @@ export default {
       </gl-sprintf>
     </template>
     <template #actions>
-      <div class="gl-display-flex gl-gap-3">
+      <div class="gl-flex gl-gap-3">
         <gl-button :href="path" variant="confirm">{{
           s__('GoogleArtifactRegistry|Set up Google Cloud IAM')
         }}</gl-button>

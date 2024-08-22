@@ -351,8 +351,8 @@ export default {
 
 <template>
   <article>
-    <div class="gl-display-flex">
-      <h1 ref="pageTitle" class="page-title gl-font-size-h-display">
+    <div class="gl-flex">
+      <h1 ref="pageTitle" class="page-title gl-text-size-h-display">
         {{ i18n[page].title }}
       </h1>
     </div>
@@ -409,7 +409,7 @@ export default {
         <span>{{ i18n.automatedScheduling.label }}</span>
       </gl-form-checkbox>
 
-      <div class="gl-pt-4 gl-px-4 gl-border gl-rounded-base gl-mt-4 gl-mb-6">
+      <div class="gl-border gl-mb-6 gl-mt-4 gl-rounded-base gl-px-4 gl-pt-4">
         <gl-form-group
           class="gl-pt-3"
           :label="i18n.automationStartDate.label"
@@ -498,7 +498,7 @@ export default {
         </gl-form-group>
       </div>
 
-      <div class="gl-display-flex gl-flex-wrap">
+      <div class="gl-flex gl-flex-wrap">
         <gl-button
           :loading="loading"
           data-testid="save-cadence"

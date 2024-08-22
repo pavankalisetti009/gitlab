@@ -35,7 +35,7 @@ export default {
     v-gl-tooltip
     data-testid="child-epic-issue-indicator"
     :title="__('This issue is in a child epic of the filtered epic')"
-    class="gl-display-inline-block gl-ml-1"
+    class="gl-ml-1 gl-inline-block"
   >
     <gl-icon name="file-tree" class="gl-text-secondary" />
   </span>

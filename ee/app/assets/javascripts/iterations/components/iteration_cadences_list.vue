@@ -198,7 +198,7 @@ export default {
         </p>
         <div
           v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage"
-          class="gl-display-flex gl-justify-content-center gl-mt-3"
+          class="gl-mt-3 gl-flex gl-justify-center"
         >
           <gl-keyset-pagination
             :has-next-page="pageInfo.hasNextPage"
@@ -210,7 +210,7 @@ export default {
       </template>
     </gl-tab>
     <template v-if="canCreateCadence" #tabs-end>
-      <li class="gl-ml-auto gl-display-flex gl-align-items-center">
+      <li class="gl-ml-auto gl-flex gl-items-center">
         <gl-button
           variant="confirm"
           data-testid="create-new-cadence-button"

@@ -152,7 +152,7 @@ export default {
       :empty-state-type="emptyStateType"
     />
     <div v-else-if="showChart" data-testid="issues-analytics-chart-container">
-      <h4 class="gl-mt-0 gl-mb-7">{{ $options.i18n.chartHeader }}</h4>
+      <h4 class="gl-mb-7 gl-mt-0">{{ $options.i18n.chartHeader }}</h4>
 
       <gl-column-chart
         :bars="barsData"
@@ -162,9 +162,9 @@ export default {
         x-axis-type="category"
         @created="onChartCreated"
       />
-      <div v-if="chart" class="gl-display-flex gl-align-items-center">
+      <div v-if="chart" class="gl-flex gl-items-center">
         <gl-chart-legend :chart="chart" :series-info="legendSeriesInfo" />
-        <div class="gl-font-sm gl-text-gray-500">
+        <div class="gl-text-sm gl-text-gray-500">
           {{ $options.i18n.seriesTotal }} {{ seriesTotal }}
           &#8226;
           {{ $options.i18n.seriesAvg }} {{ seriesAverage }}

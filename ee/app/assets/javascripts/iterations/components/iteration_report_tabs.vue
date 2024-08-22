@@ -137,11 +137,11 @@ export default {
   <gl-tabs>
     <gl-tab title="Issues">
       <template #title>
-        <h3 class="gl-font-base gl-m-0">{{ __('Issues') }}</h3>
+        <h3 class="gl-m-0 gl-text-base">{{ __('Issues') }}</h3>
         <gl-badge class="gl-ml-2" variant="muted">{{ issueCount }}</gl-badge>
       </template>
 
-      <div class="card gl-bg-gray-10 gl-display-flex gl-flex-direction-row gl-flex-wrap gl-px-4">
+      <div class="card gl-flex gl-flex-row gl-flex-wrap gl-bg-gray-10 gl-px-4">
         <div class="gl-my-3 gl-mr-4">
           <label for="iteration-group-by">{{ __('Group by') }}</label>
           <gl-form-select
@@ -153,11 +153,8 @@ export default {
           />
         </div>
 
-        <div
-          v-if="shouldShowFilterByLabel"
-          class="gl-display-flex gl-align-items-center gl-flex-basis-half gl-my-3"
-        >
-          <label class="gl-whitespace-nowrap gl-mb-0 gl-mr-2">{{ __('Filter by label') }}</label>
+        <div v-if="shouldShowFilterByLabel" class="gl-my-3 gl-flex gl-basis-1/2 gl-items-center">
+          <label class="gl-mb-0 gl-mr-2 gl-whitespace-nowrap">{{ __('Filter by label') }}</label>
           <labels-select
             :allow-label-create="false"
             allow-label-edit

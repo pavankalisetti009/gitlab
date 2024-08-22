@@ -234,7 +234,7 @@ export default {
       {{ error }}
     </gl-alert>
 
-    <div v-if="label.title" class="gl-display-flex gl-align-items-center gl-mb-2">
+    <div v-if="label.title" class="gl-mb-2 gl-flex gl-items-center">
       <gl-button
         category="tertiary"
         :icon="accordionIcon"
@@ -276,7 +276,7 @@ export default {
         <div>
           <work-item-type-icon :work-item-type="type" show-tooltip-on-hover />
           <gl-link
-            class="gl-text-gray-900 gl-font-bold"
+            class="gl-font-bold gl-text-gray-900"
             :href="webUrl"
             :title="title"
             data-testid="iteration-issue-link"
@@ -286,12 +286,12 @@ export default {
         </div>
         <!-- TODO: add references.relative (project name) -->
         <!-- Depends on https://gitlab.com/gitlab-org/gitlab/-/issues/222763 -->
-        <div class="gl-text-subtle gl-mt-2">#{{ iid }}</div>
+        <div class="gl-mt-2 gl-text-subtle">#{{ iid }}</div>
         <div role="group" :aria-label="__('Labels')">
           <gl-label
             v-for="l in labels"
             :key="l.id"
-            class="gl-mt-2 gl-mr-2"
+            class="gl-mr-2 gl-mt-2"
             :background-color="l.color"
             :description="l.description"
             :scoped="shouldShowScopedLabel(l)"
@@ -302,11 +302,11 @@ export default {
       </template>
 
       <template #cell(assignees)="{ item: { assignees } }">
-        <div class="gl-flex gl-flex-col gl-gap-3 gl-items-end sm:gl-items-start">
+        <div class="gl-flex gl-flex-col gl-items-end gl-gap-3 sm:gl-items-start">
           <div
             v-for="assignee in assignees"
             :key="assignee.username"
-            class="gl-flex gl-gap-3 gl-items-center"
+            class="gl-flex gl-items-center gl-gap-3"
           >
             <gl-avatar :src="assignee.avatarUrl" :size="24" />
             <div>
