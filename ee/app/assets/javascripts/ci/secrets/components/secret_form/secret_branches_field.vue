@@ -1,0 +1,125 @@
+<script>
+import { GlCollapsibleListbox, GlDropdownItem, GlDropdownDivider, GlSprintf } from '@gitlab/ui';
+import { debounce, uniq } from 'lodash';
+import { createAlert } from '~/alert';
+import { __, sprintf } from '~/locale';
+import { BRANCH_QUERY_LIMIT } from '../../constants';
+import getProjectBranches from '../../graphql/queries/get_project_branches.query.graphql';
+
+export default {
+  name: 'SecretBranchesField',
+  components: {
+    GlCollapsibleListbox,
+    GlDropdownItem,
+    GlDropdownDivider,
+    GlSprintf,
+  },
+  props: {
+    fullPath: {
+      type: String,
+      required: true,
+    },
+    selectedBranch: {
+      type: String,
+      required: true,
+    },
+  },
+  data() {
+    return {
+      branches: [],
+      searchTerm: '',
+    };
+  },
+  apollo: {
+    branches: {
+      query: getProjectBranches,
+      variables() {
+        return {
+          limit: BRANCH_QUERY_LIMIT,
+          projectPath: this.fullPath,
+          searchPattern: `*${this.searchTerm}*`,
+        };
+      },
+      update({ project: { repository = {} } } = {}) {
+        return repository.branchNames || [];
+      },
+      error() {
+        createAlert({ message: __('An error occurred while fetching branches.') });
+      },
+    },
+  },
+  computed: {
+    branchesList() {
+      let list = this.branches;
+      const showSelectedBranch = !this.searchTerm || this.selectedBranch.includes(this.searchTerm);
+
+      // selected branch can be a custom wildcard, which may not show up in search
+      if (this.selectedBranch.length > 0 && showSelectedBranch) {
+        list = uniq([this.selectedBranch, ...list]);
+      }
+
+      return list.map((branch) => ({
+        value: branch,
+        text: branch,
+      }));
+    },
+    createWildcardButtonText() {
+      return sprintf(__('Create wildcard: %{searchTerm}'), { searchTerm: this.searchTerm });
+    },
+    isLoading() {
+      return this.$apollo.queries.branches?.loading;
+    },
+    showCreateWildcardButton() {
+      return this.searchTerm && !this.branches.includes(this.searchTerm);
+    },
+    toggleText() {
+      return this.selectedBranch.length > 0
+        ? this.selectedBranch
+        : __('Select branch or create wildcard');
+    },
+  },
+  methods: {
+    debouncedSearch: debounce(function debouncedSearch(searchTerm) {
+      this.searchTerm = searchTerm.trim();
+      this.$apollo.queries.branches.refetch();
+    }, 500),
+    selectBranch(branch) {
+      this.$emit('select-branch', branch);
+    },
+  },
+  BRANCH_QUERY_LIMIT,
+  i18n: {
+    maxSearch: __('Maximum of %{limit} branches listed. For more branches, enter a search query.'),
+  },
+};
+</script>
+<template>
+  <gl-collapsible-listbox
+    block
+    searchable
+    :selected="selectedBranch"
+    :items="branchesList"
+    :loading="isLoading"
+    :searching="isLoading"
+    :toggle-text="toggleText"
+    @search="debouncedSearch"
+    @select="selectBranch"
+  >
+    <template #footer>
+      <gl-dropdown-divider v-if="!isLoading" />
+      <gl-dropdown-item class="gl-list-none" disabled>
+        <gl-sprintf :message="$options.i18n.maxSearch">
+          <template #limit>{{ $options.BRANCH_QUERY_LIMIT }}</template>
+        </gl-sprintf>
+      </gl-dropdown-item>
+      <gl-dropdown-item
+        v-if="showCreateWildcardButton"
+        class="gl-list-none"
+        data-testid="create-wildcard-button"
+        @click="selectBranch(searchTerm)"
+      >
+        {{ createWildcardButtonText }}
+      </gl-dropdown-item>
+    </template>
+  </gl-collapsible-listbox>
+</template>

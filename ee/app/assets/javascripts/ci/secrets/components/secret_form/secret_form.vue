@@ -24,6 +24,7 @@ import {
 } from '../../constants';
 import { convertRotationPeriod } from '../../utils';
 import CreateSecretMutation from '../../graphql/mutations/client/create_secret.mutation.graphql';
+import SecretBranchesField from './secret_branches_field.vue';
 
 export default {
   name: 'SecretForm',
@@ -39,6 +40,7 @@ export default {
     GlFormTextarea,
     GlLink,
     GlSprintf,
+    SecretBranchesField,
   },
   props: {
     areEnvironmentsLoading: {
@@ -64,6 +66,7 @@ export default {
       customRotationPeriod: '',
       isSubmitting: false,
       secret: {
+        branch: '',
         createdAt: undefined,
         environment: '',
         expiration: undefined,
@@ -77,6 +80,7 @@ export default {
   computed: {
     canSubmit() {
       return (
+        this.isBranchValid &&
         this.isExpirationValid &&
         this.isKeyValid &&
         this.isValueValid &&
@@ -86,6 +90,9 @@ export default {
     },
     createdAt() {
       return this.secret.createdAt || Date.now();
+    },
+    isBranchValid() {
+      return this.secret.branch.length > 0;
     },
     isDescriptionValid() {
       return this.secret.description.length <= SECRET_DESCRIPTION_MAX_LENGTH;
@@ -151,11 +158,14 @@ export default {
     editSecret() {
       // TODO
     },
+    setBranch(branch) {
+      this.secret.branch = branch;
+    },
     setCustomRotationPeriod() {
       this.secret.rotationPeriod = this.customRotationPeriod;
     },
     setEnvironment(environment) {
-      this.secret = { ...this.secret, environment };
+      this.secret.environment = environment;
     },
     async submitSecret() {
       if (this.isEditing) {
@@ -225,20 +235,31 @@ export default {
           :state="isDescriptionValid"
         />
       </gl-form-group>
-      <gl-form-group
-        :label="s__('Secrets|Environments')"
-        label-for="secret-environment"
-        class="gl-w-1/2 gl-pr-2"
-      >
-        <ci-environments-dropdown
-          :are-environments-loading="areEnvironmentsLoading"
-          :environments="environments"
-          :is-environment-required="false"
-          :selected-environment-scope="secret.environment"
-          @select-environment="setEnvironment"
-          @search-environment-scope="$emit('search-environment', $event)"
-        />
-      </gl-form-group>
+      <div class="gl-flex gl-gap-4">
+        <gl-form-group
+          :label="__('Environments')"
+          label-for="secret-environments"
+          class="gl-w-1/2 gl-pr-2"
+        >
+          <ci-environments-dropdown
+            id="secret-environments"
+            :are-environments-loading="areEnvironmentsLoading"
+            :environments="environments"
+            :is-environment-required="false"
+            :selected-environment-scope="secret.environment"
+            @select-environment="setEnvironment"
+            @search-environment-scope="$emit('search-environment', $event)"
+          />
+        </gl-form-group>
+        <gl-form-group :label="__('Branches')" label-for="secret-branches" class="gl-w-1/2 gl-pr-2">
+          <secret-branches-field
+            label-for="secret-branches"
+            :full-path="fullPath"
+            :selected-branch="secret.branch"
+            @select-branch="setBranch"
+          />
+        </gl-form-group>
+      </div>
       <div class="gl-flex gl-gap-4">
         <gl-form-group
           class="gl-w-full"

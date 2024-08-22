@@ -9,6 +9,7 @@ import { getDateInFuture } from '~/lib/utils/datetime_utility';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import CiEnvironmentsDropdown from '~/ci/common/private/ci_environments_dropdown';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
+import SecretBranchesField from 'ee/ci/secrets/components/secret_form/secret_branches_field.vue';
 import { mockProjectSecret, mockSecretId } from '../../mock_data';
 
 jest.mock('~/alert');
@@ -33,6 +34,7 @@ describe('SecretForm component', () => {
 
   const findAddCronButton = () => wrapper.findByTestId('add-custom-rotation-button');
   const findCronField = () => wrapper.findByTestId('secret-cron');
+  const findBranchField = () => wrapper.findComponent(SecretBranchesField);
   const findDescriptionField = () => wrapper.findByTestId('secret-description');
   const findDescriptionFieldGroup = () => wrapper.findByTestId('secret-description-field-group');
   const findExpirationField = () => wrapper.findComponent(GlDatepicker);
@@ -77,7 +79,10 @@ describe('SecretForm component', () => {
   const inputRequiredFields = async () => {
     findKeyField().vm.$emit('input', 'SECRET_KEY');
     findValueField().vm.$emit('input', 'SECRET_VALUE');
-    await findEnvironmentsDropdown().vm.$emit('select-environment', '*');
+    findBranchField().vm.$emit('select-branch', 'main');
+    findEnvironmentsDropdown().vm.$emit('select-environment', '*');
+
+    await nextTick();
 
     inputExpiration();
   };
@@ -102,6 +107,7 @@ describe('SecretForm component', () => {
     });
 
     it('renders all fields', () => {
+      expect(findBranchField().exists()).toBe(true);
       expect(findDescriptionField().exists()).toBe(true);
       expect(findExpirationField().exists()).toBe(true);
       expect(findEnvironmentsDropdown().exists()).toBe(true);
@@ -124,7 +130,8 @@ describe('SecretForm component', () => {
     it('sets the environment', async () => {
       expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('');
 
-      await findEnvironmentsDropdown().vm.$emit('select-environment', 'staging');
+      findEnvironmentsDropdown().vm.$emit('select-environment', 'staging');
+      await nextTick();
 
       expect(findEnvironmentsDropdown().props('selectedEnvironmentScope')).toBe('staging');
     });
@@ -134,9 +141,25 @@ describe('SecretForm component', () => {
     });
 
     it('bubbles up the search event', async () => {
-      await findEnvironmentsDropdown().vm.$emit('search-environment-scope', 'dev');
+      findEnvironmentsDropdown().vm.$emit('search-environment-scope', 'dev');
+      await nextTick();
 
       expect(wrapper.emitted('search-environment')).toEqual([['dev']]);
+    });
+  });
+
+  describe('branch dropdown', () => {
+    beforeEach(() => {
+      createComponent({ stubs: { SecretBranchesField } });
+    });
+
+    it('sets the branch', async () => {
+      expect(findBranchField().props('selectedBranch')).toBe('');
+
+      findBranchField().vm.$emit('select-branch', 'main');
+      await nextTick();
+
+      expect(findBranchField().props('selectedBranch')).toBe('main');
     });
   });
 

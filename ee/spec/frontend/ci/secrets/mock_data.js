@@ -55,13 +55,27 @@ export const mockGroupEnvironments = {
   },
 };
 
+export const mockProjectBranches = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/19',
+      repository: {
+        branchNames: ['dev', 'main', 'production', 'staging'],
+        __typename: 'Repository',
+      },
+      __typename: 'Project',
+    },
+  },
+};
+
 export const mockSecretId = 44;
 
 export const mockSecret = ({ customSecret } = {}) => ({
   __typename: 'Secret',
   id: mockSecretId,
-  environment: 'staging',
+  branch: 'main',
   createdAt: '2024-01-22T08:04:26.024Z',
+  environment: 'staging',
   expiration: '2029-01-22T08:04:26.024Z',
   description: 'This is a secret',
   key: 'APP_PWD',

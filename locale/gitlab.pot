@@ -5770,6 +5770,9 @@ msgstr ""
 msgid "An error occurred while fetching ancestors"
 msgstr ""
 
+msgid "An error occurred while fetching branches."
+msgstr ""
+
 msgid "An error occurred while fetching branches. Retry the search."
 msgstr ""
 
@@ -32599,6 +32602,9 @@ msgstr ""
 msgid "Maximum number of variables loaded (2000)"
 msgstr ""
 
+msgid "Maximum of %{limit} branches listed. For more branches, enter a search query."
+msgstr ""
+
 msgid "Maximum of 255 characters"
 msgstr ""
 
@@ -47885,9 +47891,6 @@ msgid "Secrets|Edit secret"
 msgstr ""
 
 msgid "Secrets|Enter a value for the secret"
-msgstr ""
-
-msgid "Secrets|Environments"
 msgstr ""
 
 msgid "Secrets|Expires"
