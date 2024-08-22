@@ -9,8 +9,6 @@ module Resolvers
       type Types::Members::StandardRoleType, null: true
 
       def resolve(**_args)
-        counts = Member.count_by_role
-
         result = Gitlab::Access.options_with_minimal_access.map do |name, access_level|
           row = counts.find { |c| c.access_level == access_level }
           count = row ? row.members_count : 0
@@ -22,13 +20,19 @@ module Resolvers
       end
 
       def ready?(**args)
-        if gitlab_com_subscription?
-          # TODO: change this to check the group presence when on SaaS:
-          # https://gitlab.com/gitlab-org/gitlab/-/work_items/477269
-          raise_resource_not_available_error! 'The feature is not available for SaaS.'
-        end
+        return true if object
+
+        raise_resource_not_available_error!('You have to specify group for SaaS.') if gitlab_com_subscription?
 
         super
+      end
+
+      def counts
+        if object
+          Member.for_self_and_descendants(object).count_by_role
+        else
+          Member.count_by_role
+        end
       end
     end
   end

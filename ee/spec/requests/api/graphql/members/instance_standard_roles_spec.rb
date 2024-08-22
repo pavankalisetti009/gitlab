@@ -34,9 +34,7 @@ RSpec.describe 'Query.instance_standard_role', feature_category: :system_access 
 
   context 'when on SaaS', :saas do
     it 'returns error' do
-      expect_graphql_errors_to_include(
-        'The feature is not available for SaaS.'
-      )
+      expect_graphql_errors_to_include('You have to specify group for SaaS.')
     end
   end
 

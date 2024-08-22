@@ -29,6 +29,8 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:enforce_free_user_cap) }
   it { expect(described_class).to have_graphql_field(:project_compliance_standards_adherence) }
   it { expect(described_class).to have_graphql_field(:amazon_s3_configurations) }
+  it { expect(described_class).to have_graphql_field(:member_roles) }
+  it { expect(described_class).to have_graphql_field(:standard_roles) }
   it { expect(described_class).to have_graphql_field(:pending_members) }
   it { expect(described_class).to have_graphql_field(:value_streams) }
   it { expect(described_class).to have_graphql_field(:saved_replies) }
