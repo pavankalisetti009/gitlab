@@ -17,9 +17,9 @@ describe('system note component', () => {
 
   </span><span class="idiff addition">dsaf</span><span class="idiff">
   more text
-  
+
   hello
-  
+
   foobar</span>`;
 
   function mockFetchDiff() {
@@ -35,7 +35,7 @@ describe('system note component', () => {
 
   const findBlankBtn = () => wrapper.find('[data-testid="compare-btn"]');
 
-  const findDescriptionVersion = () => wrapper.find('.description-version');
+  const findDescriptionVersion = () => wrapper.find('[data-testid="description-version"]');
 
   const findDeleteDescriptionVersionButton = () =>
     wrapper.find('[data-testid="delete-description-version-button"]');
