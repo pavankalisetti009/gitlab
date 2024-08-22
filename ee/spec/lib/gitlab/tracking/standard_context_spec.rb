@@ -6,15 +6,28 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
   let(:snowplow_context) { subject.to_context }
 
   describe '#to_context' do
-    context 'on .com' do
-      let(:user_id) { 1 }
+    let(:user_id) { 1 }
+    let(:instance_id) { SecureRandom.uuid }
 
+    before do
+      allow(Gitlab::GlobalAnonymousId).to receive(:instance_id).and_return(instance_id)
+    end
+
+    subject do
+      described_class.new(user_id: user_id)
+    end
+
+    it 'includes the instance_id' do
+      expect(snowplow_context.to_json[:data][:instance_id]).to eq(instance_id)
+    end
+
+    context 'on .com' do
       before do
         allow(Gitlab).to receive(:com?).and_return(true)
       end
 
-      subject do
-        described_class.new(user_id: user_id)
+      it 'sets the realm to saas' do
+        expect(snowplow_context.to_json[:data][:realm]).to eq('saas')
       end
 
       context 'when user_id is nil' do
@@ -43,6 +56,16 @@ RSpec.describe Gitlab::Tracking::StandardContext, feature_category: :service_pin
         it 'sets is_gitlab_team_member to false' do
           expect(snowplow_context.to_json[:data][:is_gitlab_team_member]).to eq(false)
         end
+      end
+    end
+
+    context 'on self-managed' do
+      before do
+        allow(Gitlab).to receive(:com?).and_return(false)
+      end
+
+      it 'sets the realm to self-managed' do
+        expect(snowplow_context.to_json[:data][:realm]).to eq('self-managed')
       end
     end
   end

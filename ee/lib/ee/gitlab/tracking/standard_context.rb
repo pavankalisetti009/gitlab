@@ -13,6 +13,16 @@ module EE
 
           ::Gitlab::Com.gitlab_com_group_member?(user_id)
         end
+
+        override :realm
+        def realm
+          ::Gitlab::CloudConnector.gitlab_realm
+        end
+
+        override :instance_id
+        def instance_id
+          ::Gitlab::GlobalAnonymousId.instance_id
+        end
       end
     end
   end
