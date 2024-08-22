@@ -124,6 +124,7 @@ module EE
       has_many :issuable_resource_links, class_name: 'IncidentManagement::IssuableResourceLink', inverse_of: :issue
 
       has_many :resource_weight_events
+      has_many :issue_stage_events, class_name: 'Analytics::CycleAnalytics::IssueStageEvent'
 
       has_many :observability_metrics, class_name: 'Observability::MetricsIssuesConnection', inverse_of: :issue
       has_many :observability_logs, class_name: 'Observability::LogsIssuesConnection', inverse_of: :issue

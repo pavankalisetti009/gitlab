@@ -86,6 +86,8 @@ module EE
       has_many :running_scan_result_policy_violations, -> { running }, class_name:
         'Security::ScanResultPolicyViolation', inverse_of: :merge_request
 
+      has_many :merge_request_stage_events, class_name: 'Analytics::CycleAnalytics::MergeRequestStageEvent'
+
       delegate :sha, to: :head_pipeline, prefix: :head_pipeline, allow_nil: true
       delegate :sha, to: :base_pipeline, prefix: :base_pipeline, allow_nil: true
       delegate :wrapped_approval_rules, :invalid_approvers_rules, to: :approval_state

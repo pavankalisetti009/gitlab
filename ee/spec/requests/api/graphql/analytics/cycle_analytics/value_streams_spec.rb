@@ -318,6 +318,47 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
 
     it_behaves_like 'value streams query'
 
+    context 'when using aggregated metrics' do
+      before do
+        # Enables use of aggregated values
+        stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
+
+        # Load stages data
+        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+          model: MergeRequest).execute
+
+        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+          model: Issue).execute
+      end
+
+      it_behaves_like 'value stream related stage items query', 'project' do
+        let_it_be(:resource) { project }
+
+        let_it_be(:value_stream) do
+          create(:cycle_analytics_value_stream, namespace: resource.project_namespace, name: 'custom stream', stages: [
+            create(
+              :cycle_analytics_stage,
+              namespace: resource.project_namespace,
+              name: "Issue",
+              relative_position: 1,
+              start_event_identifier: :issue_created,
+              end_event_identifier: :issue_stage_end
+            ),
+            create(
+              :cycle_analytics_stage,
+              namespace: resource.project_namespace,
+              name: "Test",
+              relative_position: 2,
+              start_event_identifier: :merge_request_last_build_started,
+              end_event_identifier: :merge_request_last_build_finished
+            )
+          ])
+        end
+
+        let(:stage_id_to_paginate) { value_stream.stages.find_by_name('Test').to_global_id.to_s }
+      end
+    end
+
     context 'when value streams are not licensed' do
       before_all do
         resource.add_reporter(current_user)
@@ -342,6 +383,49 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:end_label) { create(:group_label, group: resource, title: 'End Label') }
 
     it_behaves_like 'value streams query'
+
+    context 'when using aggregated metrics' do
+      let_it_be_with_refind(:resource) { create(:group) }
+      # Only needed by shared examples to store issues and merge requests
+      let_it_be(:project) do
+        create(:project, group: resource)
+      end
+
+      before do
+        # Enables use of aggregated values
+        stub_licensed_features(cycle_analytics_for_projects: true, cycle_analytics_for_groups: true)
+
+        # Load stages data
+        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+          model: MergeRequest).execute
+
+        Analytics::CycleAnalytics::DataLoaderService.new(group: resource.root_ancestor,
+          model: Issue).execute
+      end
+
+      it_behaves_like 'value stream related stage items query', 'group' do
+        let_it_be(:value_stream) do
+          create(:cycle_analytics_value_stream, namespace: resource, name: 'custom stream', stages: [
+            create(:cycle_analytics_stage,
+              namespace: resource,
+              name: "Issue",
+              relative_position: 1,
+              start_event_identifier: :issue_created,
+              end_event_identifier: :issue_stage_end
+            ),
+            create(:cycle_analytics_stage,
+              namespace: resource,
+              name: "Test",
+              relative_position: 2,
+              start_event_identifier: :merge_request_last_build_started,
+              end_event_identifier: :merge_request_last_build_finished
+            )
+          ])
+        end
+
+        let(:stage_id_to_paginate) { value_stream.stages.find_by_name('Test').to_global_id.to_s }
+      end
+    end
 
     context 'when current user does not have permissions' do
       it 'does not return value streams' do
