@@ -1,6 +1,7 @@
 import { GlButton, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import BreakingChangesBanner from 'ee/security_orchestration/components/policies/banners/breaking_changes_banner.vue';
+import DeprecatedCustomScanBanner from 'ee/security_orchestration/components/policies/banners/deprecated_custom_scan_banner.vue';
 import InvalidPoliciesBanner from 'ee/security_orchestration/components/policies/banners/invalid_policies_banner.vue';
 import ListHeader from 'ee/security_orchestration/components/policies/list_header.vue';
 import ProjectModal from 'ee/security_orchestration/components/policies/project_modal.vue';
@@ -25,6 +26,7 @@ describe('List Header Component', () => {
   const findSubheader = () => wrapper.findByTestId('policies-subheader');
   const findBreakingChangesBanner = () => wrapper.findComponent(BreakingChangesBanner);
   const findInvalidPoliciesBanner = () => wrapper.findComponent(InvalidPoliciesBanner);
+  const findDeprecatedCustomScanBanner = () => wrapper.findComponent(DeprecatedCustomScanBanner);
 
   const linkSecurityPoliciesProject = async () => {
     findScanNewPolicyModal().vm.$emit('project-updated', {
@@ -37,6 +39,7 @@ describe('List Header Component', () => {
   const createWrapper = ({ props = {}, provide = {} } = {}) => {
     wrapper = shallowMountExtended(ListHeader, {
       propsData: {
+        hasDeprecatedCustomScanPolicies: false,
         hasInvalidPolicies: false,
         ...props,
       },
@@ -129,6 +132,11 @@ describe('List Header Component', () => {
     it('hides breaking change alert by default', () => {
       createWrapper();
       expect(findBreakingChangesBanner().exists()).toBe(false);
+    });
+
+    it('displays the "deprecated-custom-scan-banner" when there are deprecated scans', () => {
+      createWrapper({ props: { hasDeprecatedCustomScanPolicies: true } });
+      expect(findDeprecatedCustomScanBanner().exists()).toBe(true);
     });
 
     it('displays the invalid policies banner when there are invalid policies', () => {
