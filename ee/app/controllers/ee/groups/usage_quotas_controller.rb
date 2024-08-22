@@ -25,6 +25,20 @@ module EE
         render_404 unless group.user_cap_available?
       end
 
+      def subscription_history
+        history_records = group.gitlab_subscription_histories.desc
+
+        respond_to do |format|
+          format.csv do
+            send_data(
+              GitlabSubscriptions::SeatUsageHistoryExportService.new(history_records).execute,
+              type: 'text/csv; charset=utf-8',
+              filename: "seat-usage-history-#{group.path}-#{Date.today}.csv"
+            )
+          end
+        end
+      end
+
       private
 
       override :seat_count_data

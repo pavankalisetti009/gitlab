@@ -192,6 +192,6 @@ export default {
       </div>
     </div>
 
-    <subscription-user-list />
+    <subscription-user-list :has-free-plan="hasFreePlan" />
   </section>
 </template>

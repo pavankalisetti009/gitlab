@@ -49,6 +49,14 @@ export default {
     SearchAndSortBar,
     SubscriptionSeatDetails,
   },
+  inject: ['subscriptionHistoryHref'],
+  props: {
+    hasFreePlan: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+  },
   computed: {
     ...mapState([
       'hasError',
@@ -77,6 +85,9 @@ export default {
     },
     isLoaderShown() {
       return this.isLoading || this.hasError;
+    },
+    shouldShowDownloadSeatUsageHistory() {
+      return !this.hasFreePlan;
     },
   },
   methods: {
@@ -138,6 +149,14 @@ export default {
         class="gl-ml-3"
       >
         {{ s__('Billing|Export list') }}
+      </gl-button>
+      <gl-button
+        v-if="shouldShowDownloadSeatUsageHistory"
+        :href="subscriptionHistoryHref"
+        class="gl-ml-3"
+        data-testid="subscription-seat-usage-history"
+      >
+        {{ __('Export seat usage history') }}
       </gl-button>
     </div>
 
