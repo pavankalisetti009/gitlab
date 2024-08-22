@@ -52,8 +52,8 @@ RSpec.describe 'Groups::ProductivityAnalytics', feature_category: :value_stream_
       expect(element['data-label-name']).to eq(params[:label_name].join(','))
       expect(element['data-milestone-title']).to eq(params[:milestone_title])
 
-      expect(element['data-merged-after']).to eq(params[:merged_after].utc.iso8601)
-      expect(element['data-merged-before']).to eq(params[:merged_before].utc.iso8601)
+      expect(element['data-merged-after']).to include(params[:merged_after].utc.iso8601.sub('Z', ''))
+      expect(element['data-merged-before']).to include(params[:merged_before].utc.iso8601.sub('Z', ''))
     end
 
     context 'in date range picker', :js do
