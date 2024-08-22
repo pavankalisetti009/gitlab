@@ -43,6 +43,26 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
+  describe '#has_overriding_pipeline_execution_policies?' do
+    subject { context.has_overriding_pipeline_execution_policies? }
+
+    it { is_expected.to eq(false) }
+
+    context 'with pipeline_execution_policies' do
+      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+
+      it { is_expected.to eq(false) }
+
+      context 'and overriding pipeline_execution_policies' do
+        let(:pipeline_execution_policies) do
+          build_list(:ci_pipeline_execution_policy, 2, strategy: :override_project_ci)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
+  end
+
   describe '#inject_policy_reserved_stages?' do
     subject { context.inject_policy_reserved_stages? }
 

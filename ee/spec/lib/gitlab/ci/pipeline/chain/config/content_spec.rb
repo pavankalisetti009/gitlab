@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category: :continuous_integration do
+  include FakeBlobHelpers
+
   let(:ci_config_path) { nil }
   let(:pipeline) { build(:ci_pipeline, project: project) }
   let(:content) { nil }
@@ -124,6 +126,8 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
   context 'when there are execution policy pipelines' do
     let_it_be(:project) { create(:project) }
     let(:ci_config_path) { nil }
+    let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+
     let(:config_content_result) do
       <<~EOY
           ---
@@ -135,7 +139,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
     end
 
     before do
-      command.pipeline_execution_policies = build_list(:ci_pipeline_execution_policy, 2)
+      command.pipeline_execution_policies = pipeline_execution_policies
     end
 
     it 'forces the pipeline creation' do
@@ -145,6 +149,42 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       expect(pipeline.pipeline_config.content).to eq(config_content_result)
       expect(command.config_content).to eq(config_content_result)
       expect(command.pipeline_config.internal_include_prepended?).to eq(false)
+    end
+
+    context 'and a policy uses the override_project_ci strategy' do
+      let_it_be(:project) { create(:project) }
+
+      let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
+      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2, strategy: :override_project_ci) }
+
+      let(:project_content) do
+        <<~EOY
+            ---
+            project job:
+              stage: "test"
+              script:
+              - echo "Run a test"
+        EOY
+      end
+
+      before do
+        allow(project.repository).to receive(:blob_at).with(pipeline.sha, '.gitlab-ci.yml').and_return(blob)
+      end
+
+      it 'does not include the project CI/CD configuration' do
+        step.perform!
+
+        expect(pipeline.pipeline_config.content).to eq(config_content_result)
+        expect(command.config_content).to eq(config_content_result)
+      end
+
+      it 'initializes Gitlab::Ci::ProjectConfig with the pipeline_policy_context option' do
+        expect(Gitlab::Ci::ProjectConfig).to receive(:new).with(
+          hash_including(pipeline_policy_context: anything)
+        ).and_call_original
+
+        step.perform!
+      end
     end
   end
 end

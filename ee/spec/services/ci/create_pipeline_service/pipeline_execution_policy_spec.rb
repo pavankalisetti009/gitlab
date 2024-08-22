@@ -226,6 +226,18 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       test_stage = stages.find_by(name: 'test')
       expect(test_stage.builds.map(&:name)).to contain_exactly('project_policy_job')
     end
+
+    context 'and the project has an invalid .gitlab-ci.yml' do
+      let(:project_ci_yaml) do
+        <<~YAML
+          I'm invalid
+        YAML
+      end
+
+      it 'creates the pipeline successfully' do
+        expect { execute }.to change { Ci::Build.count }.from(0).to(2)
+      end
+    end
   end
 
   describe 'reserved stages' do
