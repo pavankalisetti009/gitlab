@@ -72,6 +72,7 @@ export default {
   data() {
     return {
       activeTabIndex: 0,
+      liveOnDemandScanCounts: undefined,
       showAuditorMessageAlert: !this.canEditOnDemandScans,
     };
   },
