@@ -32,7 +32,7 @@ RSpec.describe EE::Gitlab::Checks::PushRules::BranchCheck, feature_category: :so
 
     context 'when no commits are present' do
       before do
-        allow(project.repository).to receive(:new_commits) { [] }
+        allow(project.repository).to receive(:new_commits).and_return([])
       end
 
       it 'rejects the branch that is not allowed' do

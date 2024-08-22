@@ -126,7 +126,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
       end
 
       it 'returns false when GeoNode is disabled' do
-        allow(described_class).to receive(:enabled?) { false }
+        allow(described_class).to receive(:enabled?).and_return(false)
 
         expect(described_class.primary?).to be_falsey
       end
@@ -188,7 +188,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
 
         context 'when GeoNode is disabled' do
           before do
-            allow(described_class).to receive(:enabled?) { false }
+            allow(described_class).to receive(:enabled?).and_return(false)
           end
 
           it { is_expected.to be_falsey }
@@ -488,7 +488,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
       end
 
       it 'returns false when the table does not exist' do
-        allow(GeoNode).to receive(:table_exists?) { false }
+        allow(GeoNode).to receive(:table_exists?).and_return(false)
 
         expect(described_class.connected?).to be_falsey
       end
@@ -541,7 +541,7 @@ RSpec.describe Gitlab::Geo, :geo, :request_store, feature_category: :geo_replica
     end
 
     it 'returns false if no license is present' do
-      allow(License).to receive(:current) { nil }
+      allow(License).to receive(:current).and_return(nil)
       expect(described_class.license_allows?).to be_falsey
     end
   end

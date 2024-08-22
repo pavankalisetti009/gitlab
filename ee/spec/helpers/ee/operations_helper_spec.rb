@@ -19,7 +19,7 @@ RSpec.describe OperationsHelper, :routing do
     before do
       allow(helper).to receive(:status_page_setting) { status_page_setting }
       allow(helper)
-        .to receive(:can?).with(user, :admin_operations, project) { true }
+        .to receive(:can?).with(user, :admin_operations, project).and_return(true)
     end
 
     context 'setting does not exist' do
@@ -38,7 +38,7 @@ RSpec.describe OperationsHelper, :routing do
       context 'user does not have permission' do
         before do
           allow(helper)
-            .to receive(:can?).with(user, :admin_operations, project) { false }
+            .to receive(:can?).with(user, :admin_operations, project).and_return(false)
         end
 
         it 'returns the correct values' do

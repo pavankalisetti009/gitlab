@@ -37,7 +37,7 @@ RSpec.describe Gitlab::Database do
   describe '.read_only?' do
     context 'with Geo enabled' do
       before do
-        allow(Gitlab::Geo).to receive(:enabled?) { true }
+        allow(Gitlab::Geo).to receive(:enabled?).and_return(true)
         allow(Gitlab::Geo).to receive(:current_node) { geo_node }
       end
 

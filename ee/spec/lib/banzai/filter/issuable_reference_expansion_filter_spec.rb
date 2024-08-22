@@ -33,7 +33,7 @@ RSpec.describe Banzai::Filter::IssuableReferenceExpansionFilter, feature_categor
   end
 
   it 'skips cross references if the user cannot read cross group' do
-    expect(Ability).to receive(:allowed?).with(user, :read_cross_project) { false }
+    expect(Ability).to receive(:allowed?).with(user, :read_cross_project).and_return(false)
 
     link = create_link(closed_epic.to_reference(other_group), epic: closed_epic.id, reference_type: 'epic')
 

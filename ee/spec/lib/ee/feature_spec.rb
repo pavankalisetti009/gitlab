@@ -49,7 +49,7 @@ RSpec.describe Feature, stub_feature_flags: false, query_analyzers: false do
       end
 
       it 'does not create a Geo::CacheInvalidationEvent if there are no Geo secondary nodes' do
-        allow(Gitlab::Geo).to receive(:secondary_nodes) { [] }
+        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
 
         expect { described_class.enable(:foo) }.not_to change(Geo::CacheInvalidationEvent, :count)
       end
@@ -69,7 +69,7 @@ RSpec.describe Feature, stub_feature_flags: false, query_analyzers: false do
       end
 
       it 'does not create a Geo::CacheInvalidationEvent if there are no Geo secondary nodes' do
-        allow(Gitlab::Geo).to receive(:secondary_nodes) { [] }
+        allow(Gitlab::Geo).to receive(:secondary_nodes).and_return([])
 
         expect { described_class.disable(:foo) }.not_to change(Geo::CacheInvalidationEvent, :count)
       end
