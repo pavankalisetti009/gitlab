@@ -34,13 +34,6 @@ describe('AiAdminSettings', () => {
     it('renders the component', () => {
       expect(wrapper.exists()).toBe(true);
     });
-
-    it('passes correct props to AiCommonSettings', () => {
-      expect(findAiCommonSettings().props()).toEqual({
-        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-        areDuoSettingsLocked: false,
-      });
-    });
   });
 
   describe('updateSettings', () => {
@@ -48,10 +41,12 @@ describe('AiAdminSettings', () => {
       updateApplicationSettings.mockResolvedValue();
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: false,
       });
       expect(updateApplicationSettings).toHaveBeenCalledTimes(1);
       expect(updateApplicationSettings).toHaveBeenCalledWith({
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        instance_level_ai_beta_features_enabled: false,
       });
     });
 
@@ -59,6 +54,7 @@ describe('AiAdminSettings', () => {
       updateApplicationSettings.mockResolvedValue();
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -76,6 +72,7 @@ describe('AiAdminSettings', () => {
       updateApplicationSettings.mockRejectedValue(error);
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(

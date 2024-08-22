@@ -6,9 +6,11 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
   using RSpec::Parameterized::TableSyntax
 
   let(:duo_availability) { :default_off }
+  let(:instance_level_ai_beta_features_enabled) { false }
 
   before do
     stub_ee_application_setting(duo_availability: duo_availability)
+    stub_ee_application_setting(instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled)
   end
 
   describe 'AI-Powered features settings for Self-Managed instances' do
@@ -30,6 +32,7 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
       it 'returns the expected data' do
         is_expected.to eq(
           { duo_availability: duo_availability.to_s,
+            experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
             redirect_path: general_admin_application_settings_path })
       end
     end

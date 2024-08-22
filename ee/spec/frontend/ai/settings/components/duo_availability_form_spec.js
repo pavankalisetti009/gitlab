@@ -7,19 +7,20 @@ import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 describe('DuoAvailabilityForm', () => {
   let wrapper;
 
-  const createComponent = (props = {}) => {
+  const createComponent = (props = {}, provide = {}) => {
     return shallowMount(DuoAvailabilityForm, {
       propsData: {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-        areDuoSettingsLocked: false,
         ...props,
       },
       provide: {
+        areDuoSettingsLocked: false,
         cascadingSettingsData: {
           lockedByAncestor: false,
           lockedByApplicationSetting: false,
           ancestorNamespace: null,
         },
+        ...provide,
       },
     });
   };
@@ -43,7 +44,12 @@ describe('DuoAvailabilityForm', () => {
 
   describe('when areDuoSettingsLocked is true', () => {
     beforeEach(() => {
-      wrapper = createComponent({ areDuoSettingsLocked: true });
+      wrapper = createComponent(
+        {},
+        {
+          areDuoSettingsLocked: true,
+        },
+      );
     });
 
     it('disables radio buttons', () => {
@@ -66,35 +72,29 @@ describe('DuoAvailabilityForm', () => {
     });
 
     it('does not show CascadingLockIcon when cascadingSettingsData is empty', () => {
-      wrapper = shallowMount(DuoAvailabilityForm, {
-        propsData: {
-          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-          areDuoSettingsLocked: true,
-        },
-        provide: {
+      wrapper = createComponent(
+        {},
+        {
           cascadingSettingsData: {},
         },
-      });
+      );
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
 
     it('does not show CascadingLockIcon when cascadingSettingsData is null', () => {
-      wrapper = shallowMount(DuoAvailabilityForm, {
-        propsData: {
-          duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-          areDuoSettingsLocked: true,
-        },
-        provide: {
+      wrapper = createComponent(
+        {},
+        {
           cascadingSettingsData: null,
         },
-      });
+      );
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
   });
 
   describe('when areDuoSettingsLocked is false', () => {
     it('does not show CascadingLockIcon', () => {
-      wrapper = createComponent({ areDuoSettingsLocked: false });
+      wrapper = createComponent();
       expect(findCascadingLockIcon().exists()).toBe(false);
     });
   });

@@ -17,10 +17,6 @@ export default {
     ),
   },
   props: {
-    duoAvailability: {
-      type: String,
-      required: true,
-    },
     redirectPath: {
       type: String,
       required: true,
@@ -28,12 +24,13 @@ export default {
   },
   data: () => ({ isLoading: false }),
   methods: {
-    async updateSettings({ duoAvailability }) {
+    async updateSettings({ duoAvailability, experimentFeaturesEnabled }) {
       try {
         this.isLoading = true;
 
         await updateApplicationSettings({
           duo_availability: duoAvailability,
+          instance_level_ai_beta_features_enabled: experimentFeaturesEnabled,
         });
 
         visitUrlWithAlerts(this.redirectPath, [
@@ -57,5 +54,5 @@ export default {
 };
 </script>
 <template>
-  <ai-common-settings :duo-availability="duoAvailability" @submit="updateSettings" />
+  <ai-common-settings @submit="updateSettings" />
 </template>

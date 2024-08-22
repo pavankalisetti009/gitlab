@@ -16,10 +16,6 @@ let wrapper;
 const createComponent = (props = {}) => {
   wrapper = shallowMount(AiGroupSettings, {
     propsData: {
-      duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-      areDuoSettingsLocked: false,
-      experimentSettingsAllowed: true,
-      experimentFeaturesEnabled: false,
       redirectPath: '/groups/test-group',
       updateId: '100',
       ...props,
@@ -38,13 +34,6 @@ describe('AiGroupSettings', () => {
     it('renders the component', () => {
       expect(wrapper.exists()).toBe(true);
     });
-
-    it('passes correct props to AiCommonSettings', () => {
-      expect(findAiCommonSettings().props()).toMatchObject({
-        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-        areDuoSettingsLocked: false,
-      });
-    });
   });
 
   describe('updateSettings', () => {
@@ -52,10 +41,12 @@ describe('AiGroupSettings', () => {
       updateGroupSettings.mockResolvedValue({});
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: true,
       });
       expect(updateGroupSettings).toHaveBeenCalledTimes(1);
       expect(updateGroupSettings).toHaveBeenCalledWith('100', {
         duo_availability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experiment_features_enabled: true,
       });
     });
 
@@ -63,6 +54,7 @@ describe('AiGroupSettings', () => {
       updateGroupSettings.mockResolvedValue({});
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(visitUrlWithAlerts).toHaveBeenCalledWith(
@@ -80,6 +72,7 @@ describe('AiGroupSettings', () => {
       updateGroupSettings.mockRejectedValue(error);
       await findAiCommonSettings().vm.$emit('submit', {
         duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+        experimentFeaturesEnabled: false,
       });
       await waitForPromises();
       expect(createAlert).toHaveBeenCalledWith(

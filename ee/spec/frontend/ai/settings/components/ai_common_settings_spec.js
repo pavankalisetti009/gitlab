@@ -2,6 +2,7 @@ import { shallowMount } from '@vue/test-utils';
 import { GlButton, GlAlert, GlForm } from '@gitlab/ui';
 import AiCommonSettings from 'ee/ai/settings/components/ai_common_settings.vue';
 import DuoAvailabilityForm from 'ee/ai/settings/components/duo_availability_form.vue';
+import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import { AVAILABILITY_OPTIONS } from 'ee/ai/settings/constants';
 
@@ -11,18 +12,21 @@ describe('AiCommonSettings', () => {
   const createComponent = (props = {}) => {
     wrapper = shallowMount(AiCommonSettings, {
       propsData: {
-        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
-        areDuoSettingsLocked: false,
         ...props,
+      },
+      provide: {
+        duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_ON,
+        experimentFeaturesEnabled: false,
       },
     });
   };
 
   const findSettingsBlock = () => wrapper.findComponent(SettingsBlock);
   const findDuoAvailability = () => wrapper.findComponent(DuoAvailabilityForm);
+  const findDuoExperimentBetaFeatures = () => wrapper.findComponent(DuoExperimentBetaFeaturesForm);
   const findSaveButton = () => wrapper.findComponent(GlButton);
-  const findAlert = () => wrapper.findComponent(GlAlert);
   const findForm = () => wrapper.findComponent(GlForm);
+  const findAlert = () => wrapper.findComponent(GlAlert);
 
   beforeEach(() => {
     createComponent();
@@ -48,12 +52,17 @@ describe('AiCommonSettings', () => {
     expect(findDuoAvailability().exists()).toBe(true);
   });
 
+  it('renders DuoExperimentBetaFeaturesForm component', () => {
+    expect(findDuoExperimentBetaFeatures().exists()).toBe(true);
+  });
+
   it('disables save button when no changes are made', () => {
     expect(findSaveButton().props('disabled')).toBe(true);
   });
 
   it('enables save button when changes are made', async () => {
     await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
+    await findDuoExperimentBetaFeatures().vm.$emit('change', true);
     expect(findSaveButton().props('disabled')).toBe(false);
   });
 
@@ -84,10 +93,14 @@ describe('AiCommonSettings', () => {
 
   it('emits submit event with correct data when form is submitted', async () => {
     await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
+    await findDuoExperimentBetaFeatures().vm.$emit('change', true);
     findForm().vm.$emit('submit', {
       preventDefault: jest.fn(),
     });
     const emittedData = wrapper.emitted('submit')[0][0];
-    expect(emittedData).toEqual({ duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF });
+    expect(emittedData).toEqual({
+      duoAvailability: AVAILABILITY_OPTIONS.DEFAULT_OFF,
+      experimentFeaturesEnabled: true,
+    });
   });
 });
