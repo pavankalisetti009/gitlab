@@ -49,6 +49,7 @@ describe('ScopeGroupSelector', () => {
       expect(findExceptionTypeSelector().exists()).toBe(true);
       expect(findGroupsDropdown().exists()).toBe(true);
       expect(findProjectSelector().exists()).toBe(true);
+      expect(findProjectSelector().props('loadAllProjects')).toBe(true);
     });
 
     it('does not render project selector when no groups were selected', () => {

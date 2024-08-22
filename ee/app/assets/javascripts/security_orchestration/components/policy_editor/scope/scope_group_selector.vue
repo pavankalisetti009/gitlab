@@ -165,6 +165,7 @@ export default {
     <group-projects-dropdown
       v-if="showGroupProjectsDropdown"
       data-testid="projects-dropdown"
+      load-all-projects
       :disabled="disabled"
       :group-full-path="groupFullPath"
       :selected="projectIds"

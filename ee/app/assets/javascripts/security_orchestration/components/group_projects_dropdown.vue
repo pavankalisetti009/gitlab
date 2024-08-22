@@ -6,6 +6,7 @@ import { __ } from '~/locale';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
+import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
 export default {
@@ -25,7 +26,6 @@ export default {
       query: getGroups,
       variables() {
         return {
-          fullPath: this.groupFullPath,
           search: this.searchTerm,
         };
       },
@@ -35,10 +35,10 @@ export default {
          * otherwise after performing backend search and selecting found item
          * selection is overwritten
          */
-        return uniqBy([...this.groups, ...data.group.descendantGroups.nodes], 'id');
+        return uniqBy([...this.groups, ...data.groups.nodes], 'id');
       },
       result({ data }) {
-        this.pageInfo = data?.group?.descendantGroups?.pageInfo || {};
+        this.pageInfo = data?.groups?.pageInfo || {};
       },
       error() {
         this.$emit('groups-query-error');
@@ -48,10 +48,12 @@ export default {
       },
     },
     projects: {
-      query: getGroupProjects,
+      query() {
+        return this.loadAllProjects ? getProjects : getGroupProjects;
+      },
       variables() {
         return {
-          fullPath: this.groupFullPath,
+          ...(this.loadAllProjects ? {} : { fullPath: this.groupFullPath }),
           search: this.searchTerm,
         };
       },
@@ -61,10 +63,12 @@ export default {
          * otherwise after performing backend search and selecting found item
          * selection is overwritten
          */
-        return uniqBy([...this.projects, ...data.group.projects.nodes], 'id');
+        const payload = this.loadAllProjects ? data.projects.nodes : data.group.projects.nodes;
+        return uniqBy([...this.projects, ...payload], 'id');
       },
       result({ data }) {
-        this.pageInfo = data?.group?.projects?.pageInfo || {};
+        const payload = this.loadAllProjects ? data?.projects : data?.group?.projects;
+        this.pageInfo = payload?.pageInfo || {};
       },
       error() {
         this.$emit('projects-query-error');
@@ -113,6 +117,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    loadAllProjects: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   data() {
