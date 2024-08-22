@@ -14,6 +14,8 @@ describe('Code Suggestions Intro', () => {
   const learnMoreLink = () => wrapper.find('[data-testid="duo-pro-learn-more-link"]');
   const trialBtn = () => wrapper.find('[data-testid="duo-pro-start-trial-btn"]');
   const purchaseSeatsBtn = () => wrapper.find('[data-testid="duo-pro-purchase-seats-btn"]');
+  const buySubscriptionBtn = () => wrapper.find('[data-testid="duo-pro-buy-subscription-btn"]');
+  const postTrialAlert = () => wrapper.find('[data-testid="duo-pro-post-trial-alert"]');
 
   const createComponent = (provideProps = {}) => {
     wrapper = shallowMount(CodeSuggestionsIntro, {
@@ -53,6 +55,15 @@ describe('Code Suggestions Intro', () => {
       expect(handRaiseLeadButton().exists()).toBe(true);
       expect(handRaiseLeadButton().props()).toEqual(buttonProps);
     });
+
+    it('renders post trial experience for free namespace', () => {
+      createComponent({ isFreeNamespace: true });
+
+      expect(postTrialAlert().exists()).toBe(true);
+      expect(wrapper.text()).toContain(
+        wrapper.vm.$options.i18n.postTrialForFreeNamespaceDescription,
+      );
+    });
   });
 
   describe('with CTA buttons', () => {
@@ -68,6 +79,14 @@ describe('Code Suggestions Intro', () => {
 
       expect(trialBtn().exists()).toBe(false);
       expect(purchaseSeatsBtn().attributes('category')).toEqual('primary');
+    });
+
+    it('renders buy subscription button when showing the post trial experience for free namespace', () => {
+      createComponent({ isFreeNamespace: true });
+
+      expect(buySubscriptionBtn().exists()).toBe(true);
+      expect(trialBtn().exists()).toBe(false);
+      expect(purchaseSeatsBtn().exists()).toBe(false);
     });
   });
 
@@ -85,6 +104,15 @@ describe('Code Suggestions Intro', () => {
         glIntersectionObserver().vm.$emit('appear');
         expect(trackingSpy).toHaveBeenCalledWith(undefined, 'pageview', {
           label: 'duo_pro_add_on_tab_pre_trial',
+        });
+      });
+
+      it('tracks when trial expired for free namespace', () => {
+        createComponent({ isFreeNamespace: true });
+
+        glIntersectionObserver().vm.$emit('appear');
+        expect(trackingSpy).toHaveBeenCalledWith(undefined, 'pageview', {
+          label: 'duo_pro_add_on_tab_expired_trial',
         });
       });
 
@@ -115,6 +143,15 @@ describe('Code Suggestions Intro', () => {
       purchaseSeatsBtn().vm.$emit('click');
       expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_button', {
         label: 'duo_pro_purchase_seats',
+      });
+    });
+
+    it('tracks when duo pro buy subscription button is clicked', () => {
+      createComponent({ isFreeNamespace: true });
+
+      buySubscriptionBtn().vm.$emit('click');
+      expect(trackingSpy).toHaveBeenCalledWith(undefined, 'click_button', {
+        label: 'duo_pro_buy_subscription',
       });
     });
   });

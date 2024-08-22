@@ -1,5 +1,12 @@
 <script>
-import { GlEmptyState, GlLink, GlSprintf, GlButton, GlIntersectionObserver } from '@gitlab/ui';
+import {
+  GlEmptyState,
+  GlLink,
+  GlSprintf,
+  GlButton,
+  GlIntersectionObserver,
+  GlAlert,
+} from '@gitlab/ui';
 import emptyStateSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
 import { __, s__ } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
@@ -18,9 +25,17 @@ export default {
   },
   i18n: {
     purchaseSeats: __('Purchase seats'),
+    buySubscription: __('Buy subscription'),
     trial: __('Start a trial'),
     description: s__(
       `CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code.`,
+    ),
+    postTrialForFreeNamespaceDescription: s__(
+      "CodeSuggestions|Before you can buy GitLab Duo seats, you'll need a Premium or Ultimate subscription.",
+    ),
+    postTrialAlertTitle: s__('CodeSuggestions|Your GitLab Duo Pro trial has expired'),
+    postTrialAlertBody: s__(
+      "CodeSuggestions|To buy GitLab Duo seats and regain access, you'll need a Premium or Ultimate subscription.",
     ),
     title: s__('CodeSuggestions|Introducing GitLab Duo'),
   },
@@ -34,16 +49,29 @@ export default {
     GlSprintf,
     GlButton,
     GlIntersectionObserver,
+    GlAlert,
   },
   mixins: [Tracking.mixin(), InternalEvents.mixin()],
   inject: {
     duoProTrialHref: { default: null },
     addDuoProHref: { default: null },
     handRaiseLeadData: { default: {} },
+    isFreeNamespace: { default: false },
+    duoProActiveTrialEndDate: { default: null },
+    buySubscriptionPath: { default: null },
+    isStandalonePage: { default: false },
+  },
+  data() {
+    return {
+      isAlertDismissed: false,
+    };
   },
   computed: {
     purchaseSeatsBtnCategory() {
       return this.duoProTrialHref ? 'secondary' : 'primary';
+    },
+    showPostTrialForFreeNamespace() {
+      return this.isFreeNamespace && !this.duoProActiveTrialEndDate;
     },
   },
   mounted() {
@@ -53,6 +81,8 @@ export default {
     trackPageView() {
       if (this.duoProTrialHref) {
         this.track('pageview', { label: 'duo_pro_add_on_tab_pre_trial' });
+      } else if (this.showPostTrialForFreeNamespace) {
+        this.track('pageview', { label: 'duo_pro_add_on_tab_expired_trial' });
       }
     },
     trackTrialClick() {
@@ -64,6 +94,9 @@ export default {
     trackLearnMoreClick() {
       this.track('click_link', { label: 'duo_pro_marketing_page' });
     },
+    trackBuySubscription() {
+      this.track('click_button', { label: 'duo_pro_buy_subscription' });
+    },
   },
   apolloProvider,
   emptyStateSvgUrl,
@@ -71,12 +104,27 @@ export default {
 </script>
 <template>
   <gl-intersection-observer @appear="trackPageView">
-    <gl-empty-state :svg-path="$options.emptyStateSvgUrl">
+    <gl-alert
+      v-if="showPostTrialForFreeNamespace && !isAlertDismissed"
+      class="gl-mb-9"
+      :class="{ '-gl-mt-3': !isStandalonePage }"
+      variant="danger"
+      :title="$options.i18n.postTrialAlertTitle"
+      data-testid="duo-pro-post-trial-alert"
+      @dismiss="isAlertDismissed = true"
+    >
+      {{ $options.i18n.postTrialAlertBody }}
+    </gl-alert>
+    <gl-empty-state :svg-path="$options.emptyStateSvgUrl" :svg-height="72">
       <template #title>
         <h1 class="gl-text-size-h-display gl-leading-36 h4">{{ $options.i18n.title }}</h1>
       </template>
       <template #description>
-        <gl-sprintf :message="$options.i18n.description">
+        <p v-if="showPostTrialForFreeNamespace" class="gl-max-w-48">
+          {{ $options.i18n.postTrialForFreeNamespaceDescription }}
+        </p>
+
+        <gl-sprintf v-else :message="$options.i18n.description">
           <template #link="{ content }">
             <gl-link
               :href="$options.helpLinks.codeSuggestionsLearnMoreLink"
@@ -103,6 +151,17 @@ export default {
           {{ $options.i18n.trial }}
         </gl-button>
         <gl-button
+          v-if="showPostTrialForFreeNamespace"
+          :href="buySubscriptionPath"
+          variant="confirm"
+          class="sm:gl-w-auto gl-w-full"
+          data-testid="duo-pro-buy-subscription-btn"
+          @click="trackBuySubscription"
+        >
+          {{ $options.i18n.buySubscription }}
+        </gl-button>
+        <gl-button
+          v-else
           :href="addDuoProHref"
           variant="confirm"
           :category="purchaseSeatsBtnCategory"
