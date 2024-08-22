@@ -88,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-font-sm">
+  <div class="gl-text-sm">
     <strong v-if="showSingleSeverity" :class="$options.cssClass[showSingleSeverity]">{{
       formattedCounts(highlights[showSingleSeverity])
     }}</strong>

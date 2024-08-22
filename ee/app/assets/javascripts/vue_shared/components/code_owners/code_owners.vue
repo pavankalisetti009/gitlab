@@ -139,14 +139,14 @@ export default {
 <template>
   <div
     v-if="filePath"
-    class="well-segment blob-auxiliary-viewer file-owner-content gl-display-flex gl-justify-content-space-between gl-align-items-center"
+    class="well-segment blob-auxiliary-viewer file-owner-content gl-flex gl-items-center gl-justify-between"
   >
-    <div class="gl-display-flex gl-flex-wrap gl-pr-3">
+    <div class="gl-flex gl-flex-wrap gl-pr-3">
       <div>
         <gl-icon name="users" />
         <component
           :is="hasCodeOwners ? 'gl-link' : 'span'"
-          class="gl-font-bold gl-text-black-normal!"
+          class="gl-font-bold !gl-text-default"
           :href="codeOwnersPath"
           data-testid="codeowners-file-link"
           >{{ $options.i18n.title }}
@@ -191,7 +191,7 @@ export default {
       :id="$options.helpPopoverId"
       :aria-label="$options.i18n.helpText"
       name="question-o"
-      class="gl-ml-auto gl-my-3 gl-mr-3 gl-text-blue-500 gl-cursor-pointer gl-flex-shrink-0"
+      class="gl-my-3 gl-ml-auto gl-mr-3 gl-shrink-0 gl-cursor-pointer gl-text-blue-500"
       data-testid="help-popover-trigger"
     />
     <gl-popover

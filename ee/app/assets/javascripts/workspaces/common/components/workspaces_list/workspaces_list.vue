@@ -78,16 +78,14 @@ export default {
     <gl-alert v-if="error" variant="danger" @dismiss="clearError">
       {{ error }}
     </gl-alert>
-    <div class="gl-display-flex gl-align-items-center gl-justify-content-space-between">
-      <div v-if="!isEmpty" class="gl-display-flex gl-align-items-center">
+    <div class="gl-flex gl-items-center gl-justify-between">
+      <div v-if="!isEmpty" class="gl-flex gl-items-center">
         <h2>{{ $options.i18n.heading }}</h2>
       </div>
-      <div
-        class="gl-display-flex gl-align-items-center gl-flex-direction-column gl-md-flex-direction-row"
-      >
+      <div class="gl-flex gl-flex-col gl-items-center md:gl-flex-row">
         <gl-link
           v-if="!isEmpty"
-          class="gl-mr-5 workspace-list-link gl-hidden sm:gl-block"
+          class="workspace-list-link gl-mr-5 gl-hidden sm:gl-block"
           :href="$options.workspacesHelpPath"
           >{{ $options.i18n.learnMoreHelpLink }}</gl-link
         >
@@ -96,7 +94,7 @@ export default {
     </div>
     <workspace-empty-state v-if="isEmpty" :new-workspace-path="newWorkspacePath" />
     <template v-else>
-      <div v-if="isLoading" class="gl-p-5 gl-display-flex">
+      <div v-if="isLoading" class="gl-flex gl-p-5">
         <gl-skeleton-loader :lines="4" :equal-width-lines="true" :width="600" />
       </div>
       <div v-else>

@@ -276,7 +276,7 @@ export default {
         <gl-form-group :label="$options.i18n.cityLabel" label-size="sm" class="mb-3">
           <gl-form-input v-model="cityModel" type="text" data-testid="city" />
         </gl-form-group>
-        <div class="combined gl-display-flex">
+        <div class="combined gl-flex">
           <gl-form-group
             v-if="!$apollo.loading.states && states"
             :label="$options.i18n.stateLabel"

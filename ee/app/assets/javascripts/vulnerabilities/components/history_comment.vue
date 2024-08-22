@@ -181,7 +181,7 @@ export default {
 <template>
   <history-comment-editor
     v-if="isEditingComment"
-    class="discussion-reply-holder gl-pb-4 gl-px-5"
+    class="discussion-reply-holder gl-px-5 gl-pb-4"
     :initial-comment="initialComment"
     :is-saving="isSavingComment"
     @onSave="saveComment"
@@ -198,7 +198,7 @@ export default {
     :action-buttons="actionButtons"
     icon-name="comment"
     icon-class="timeline-icon m-0"
-    class="gl-p-5 gl-border-t gl-border-gray-50"
+    class="gl-border-t gl-border-gray-50 gl-p-5"
   >
     <div v-safe-html="noteHtml" class="md">
       <gl-loading-icon size="sm" />
@@ -224,7 +224,7 @@ export default {
     </template>
   </event-item>
 
-  <div v-else class="discussion-reply-holder gl-pb-4 gl-px-5">
+  <div v-else class="discussion-reply-holder gl-px-5 gl-pb-4">
     <textarea
       rows="1"
       :placeholder="s__('vulnerability|Add a comment')"

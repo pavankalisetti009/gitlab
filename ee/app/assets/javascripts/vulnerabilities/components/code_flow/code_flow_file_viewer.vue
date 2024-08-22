@@ -162,7 +162,7 @@ export default {
 
       <div
         v-if="expanded"
-        class="file-content code js-syntax-highlight blob-content gl-flex gl-flex-col gl-overflow-auto gl-w-full blob-viewer"
+        class="file-content code js-syntax-highlight blob-content blob-viewer gl-flex gl-w-full gl-flex-col gl-overflow-auto"
         :class="userColorScheme"
         data-type="simple"
       >
@@ -177,7 +177,7 @@ export default {
               :icon="getExpandedIcon(index)"
               category="tertiary"
               size="small"
-              class="gl-border-0 mark-multiple-line-expand-button"
+              class="mark-multiple-line-expand-button gl-border-0"
               @click="handleExpandLines(index)"
             />
           </div>
@@ -199,7 +199,7 @@ export default {
               icon="expand-down"
               category="tertiary"
               size="small"
-              class="gl-border-0 mark-multiple-line-expand-button"
+              class="mark-multiple-line-expand-button gl-border-0"
               @click="handleExpandLines(codeBlocks.length)"
             />
           </div>

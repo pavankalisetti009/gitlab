@@ -86,7 +86,7 @@ export default {
       filter="name"
     >
       <template #header>
-        <div v-if="isAdmin" class="order-1 gl-display-flex gl-align-items-center">
+        <div v-if="isAdmin" class="order-1 gl-flex gl-items-center">
           <gl-button
             class="js-open-form"
             :disabled="formIsOpen"
@@ -101,7 +101,7 @@ export default {
         </div>
 
         <template v-else>
-          <div class="table-section gl-display-flex gl-pl-2 section-70" role="rowheader">
+          <div class="table-section section-70 gl-flex gl-pl-2" role="rowheader">
             {{ s__('Licenses|Policy') }}
             <gl-icon
               ref="reportInfo"
@@ -138,7 +138,7 @@ export default {
       </template>
 
       <template v-if="isAdmin" #subheader>
-        <div v-if="formIsOpen" class="gl-mt-3 gl-mb-3">
+        <div v-if="formIsOpen" class="gl-mb-3 gl-mt-3">
           <add-license-form
             :managed-licenses="managedLicenses"
             :known-licenses="knownLicenses"

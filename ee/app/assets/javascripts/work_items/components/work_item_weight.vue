@@ -130,9 +130,9 @@ export default {
 
 <template>
   <div v-if="hasIssueWeightsFeature" data-testid="work-item-weight">
-    <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+    <div class="gl-flex gl-items-center gl-justify-between">
       <!-- hide header when editing, since we then have a form label. Keep it reachable for screenreader nav  -->
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-mb-0! gl-heading-5">
+      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ __('Weight') }}
       </h3>
       <gl-button
@@ -145,7 +145,7 @@ export default {
       >
     </div>
     <gl-form v-if="isEditing" @submit.prevent="blurInput">
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <label :for="$options.inputId" class="gl-mb-0">{{ __('Weight') }}</label>
         <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
         <gl-button
@@ -159,7 +159,7 @@ export default {
         >
       </div>
       <!-- wrapper for the form input so the borders fit inside the sidebar -->
-      <div class="gl-px-2 gl-relative">
+      <div class="gl-relative gl-px-2">
         <gl-form-input
           :id="$options.inputId"
           ref="input"
@@ -183,7 +183,7 @@ export default {
           size="small"
           name="clear"
           icon="clear"
-          class="gl-clear-icon-button gl-absolute gl-top-2 gl-right-7"
+          class="gl-clear-icon-button gl-absolute gl-right-7 gl-top-2"
           :title="__('Remove weight')"
           :aria-label="__('Remove weight')"
           @mousedown="clickingClearButton = true"

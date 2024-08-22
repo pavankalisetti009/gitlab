@@ -77,9 +77,9 @@ export default {
 </script>
 
 <template>
-  <div class="gl-rounded-base gl-border-solid gl-border-1 gl-border-gray-100">
-    <div class="gl-overflow-hidden gl-border-b-solid gl-border-b-1 gl-border-b-gray-100 gl-p-3">
-      <gl-button-group class="gl-display-flex gl-float-right">
+  <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100">
+    <div class="gl-overflow-hidden gl-border-b-1 gl-border-b-gray-100 gl-p-3 gl-border-b-solid">
+      <gl-button-group class="gl-float-right gl-flex">
         <gl-button
           :class="{ selected: isDiffView }"
           data-testid="diffButton"
@@ -111,10 +111,10 @@ export default {
         class="line_holder"
         data-testid="diffLine"
       >
-        <td class="diff-line-num gl-border-t-0 gl-border-b-0" :class="changeClass(line)">
+        <td class="diff-line-num gl-border-b-0 gl-border-t-0" :class="changeClass(line)">
           {{ line.oldLine }}
         </td>
-        <td class="diff-line-num gl-border-t-0 gl-border-b-0" :class="changeClass(line)">
+        <td class="diff-line-num gl-border-b-0 gl-border-t-0" :class="changeClass(line)">
           {{ line.newLine }}
         </td>
         <td data-testid="diffContent" class="line_content" :class="changeClass(line)">

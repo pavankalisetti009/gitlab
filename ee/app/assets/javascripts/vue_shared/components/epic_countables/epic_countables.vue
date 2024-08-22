@@ -69,7 +69,7 @@ export default {
 <template>
   <span>
     <gl-popover :target="() => $refs.countBadge">
-      <p v-if="allowSubEpics" class="gl-font-bold gl-m-0">
+      <p v-if="allowSubEpics" class="gl-m-0 gl-font-bold">
         {{ __('Epics') }} &#8226;
         <span class="gl-font-normal">
           <gl-sprintf :message="__('%{openedEpics} open, %{closedEpics} closed')">
@@ -78,7 +78,7 @@ export default {
           </gl-sprintf>
         </span>
       </p>
-      <p class="gl-font-bold gl-m-0">
+      <p class="gl-m-0 gl-font-bold">
         {{ __('Issues') }} &#8226;
         <span class="gl-font-normal">
           <gl-sprintf :message="__('%{openedIssues} open, %{closedIssues} closed')">
@@ -87,19 +87,19 @@ export default {
           </gl-sprintf>
         </span>
       </p>
-      <p class="gl-font-bold gl-m-0">
+      <p class="gl-m-0 gl-font-bold">
         {{ __('Total weight') }} &#8226;
         <span class="gl-font-normal" data-testid="epic-countables-total-weight">
           {{ totalWeight }}
         </span>
       </p>
-      <gl-alert v-if="totalChildrenCount > 0" :dismissible="false" class="gl-max-w-26 gl-mb-3">
+      <gl-alert v-if="totalChildrenCount > 0" :dismissible="false" class="gl-mb-3 gl-max-w-26">
         {{ $options.i18n.epicCountPermissionText }}
       </gl-alert>
     </gl-popover>
 
     <gl-popover v-if="shouldRenderEpicProgress" :target="() => $refs.progressBadge">
-      <p class="gl-font-bold gl-m-0">
+      <p class="gl-m-0 gl-font-bold">
         {{ __('Progress') }} &#8226;
         <span class="gl-font-normal" data-testid="epic-progress-popover-content">
           <gl-sprintf :message="__('%{completedWeight} of %{totalWeight} weight completed')">
@@ -108,14 +108,14 @@ export default {
           </gl-sprintf>
         </span>
       </p>
-      <gl-alert :dismissible="false" class="gl-max-w-26 gl-mb-3">
+      <gl-alert :dismissible="false" class="gl-mb-3 gl-max-w-26">
         {{ $options.i18n.epicCountPermissionText }}
       </gl-alert>
     </gl-popover>
 
     <span
       ref="countBadge"
-      class="issue-count-badge gl-mr-0 gl-pr-0 gl-pl-3 gl-text-secondary gl-cursor-help"
+      class="issue-count-badge gl-mr-0 gl-cursor-help gl-pl-3 gl-pr-0 gl-text-secondary"
     >
       <span v-if="allowSubEpics" class="gl-mr-3">
         <gl-icon name="epic" />
@@ -134,7 +134,7 @@ export default {
     <span
       v-if="shouldRenderEpicProgress"
       ref="progressBadge"
-      class="issue-count-badge gl-pl-0 gl-text-secondary gl-cursor-help"
+      class="issue-count-badge gl-cursor-help gl-pl-0 gl-text-secondary"
     >
       <span class="gl-mr-3" data-testid="epic-progress">
         <gl-icon name="progress" />

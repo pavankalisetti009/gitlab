@@ -153,9 +153,9 @@ export default {
       <div
         v-if="searchProjectsFailed"
         data-testid="red-selector-error-list"
-        class="gl-display-flex gl-align-items-flex-start gl-text-red-500 gl-mx-4 gl-my-3"
+        class="gl-mx-4 gl-my-3 gl-flex gl-items-start gl-text-red-500"
       >
-        <gl-icon name="error" class="gl-mr-2 gl-mt-2 gl-flex-shrink-0" />
+        <gl-icon name="error" class="gl-mr-2 gl-mt-2 gl-shrink-0" />
         <span>{{ $options.i18n.searchFailedMessage }}</span>
       </div>
     </template>

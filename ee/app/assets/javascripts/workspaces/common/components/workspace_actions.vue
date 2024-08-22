@@ -124,7 +124,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-justify-content-end gl-gap-3">
+  <div class="gl-flex gl-justify-end gl-gap-3">
     <span v-for="action in actions" :id="action.id" :key="action.key">
       <gl-button
         :disabled="action.isLoading"

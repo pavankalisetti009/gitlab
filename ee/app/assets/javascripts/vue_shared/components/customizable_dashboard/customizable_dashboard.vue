@@ -352,7 +352,7 @@ export default {
     ),
   },
   HISTORY_REPLACE_UPDATE_METHOD,
-  FORM_GROUP_CLASS: 'gl-w-full gl-sm-w-30p gl-min-w-20 gl-m-0',
+  FORM_GROUP_CLASS: 'gl-w-full sm:gl-w-3/10 gl-min-w-20 gl-m-0',
   FORM_INPUT_CLASS: 'form-control gl-mr-4 gl-border-gray-200',
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
   AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
@@ -364,23 +364,23 @@ export default {
 
 <template>
   <div>
-    <section class="gl-display-flex gl-align-items-center gl-my-4">
-      <div class="gl-display-flex gl-flex-direction-column gl-w-full">
-        <h2 v-if="showEditControls" data-testid="edit-mode-title" class="gl-mt-0 gl-mb-6">
+    <section class="gl-my-4 gl-flex gl-items-center">
+      <div class="gl-flex gl-w-full gl-flex-col">
+        <h2 v-if="showEditControls" data-testid="edit-mode-title" class="gl-mb-6 gl-mt-0">
           {{
             isNewDashboard
               ? s__('Analytics|Create your dashboard')
               : s__('Analytics|Edit your dashboard')
           }}
         </h2>
-        <div v-else class="gl-display-flex gl-align-items-center">
+        <div v-else class="gl-flex gl-items-center">
           <h2 data-testid="dashboard-title" class="gl-my-0">{{ dashboard.title }}</h2>
           <gl-experiment-badge v-if="showBetaBadge" class="gl-ml-3" type="beta" />
         </div>
 
         <div
           v-if="showDashboardDescription"
-          class="gl-display-flex gl-mt-3"
+          class="gl-mt-3 gl-flex"
           data-testid="dashboard-description"
         >
           <p class="gl-mb-0">
@@ -412,7 +412,7 @@ export default {
           </p>
         </div>
 
-        <div v-if="showEditControls" class="gl-display-flex flex-fill gl-flex-direction-column">
+        <div v-if="showEditControls" class="flex-fill gl-flex gl-flex-col">
           <gl-form-group
             :label="s__('Analytics|Dashboard title')"
             label-for="title"
@@ -466,12 +466,12 @@ export default {
       >
     </section>
     <div class="-gl-mx-3">
-      <div class="gl-display-flex">
-        <div class="gl-display-flex gl-flex-direction-column gl-flex-grow-1">
+      <div class="gl-flex">
+        <div class="gl-flex gl-grow gl-flex-col">
           <section
             v-if="showFilters"
             data-testid="dashboard-filters"
-            class="gl-display-flex gl-pt-4 gl-pb-3 gl-px-3 gl-flex-direction-column gl-md-flex-direction-row gl-gap-5"
+            class="gl-flex gl-flex-col gl-gap-5 gl-px-3 gl-pb-3 gl-pt-4 md:gl-flex-row"
           >
             <date-range-filter
               v-if="showDateRangeFilter"
@@ -494,13 +494,13 @@ export default {
           />
           <button
             v-if="showEditControls"
-            class="card upload-dropzone-card upload-dropzone-border gl-display-flex gl-align-items-center gl-px-5 gl-py-3 gl-m-3"
+            class="card upload-dropzone-card upload-dropzone-border gl-m-3 gl-flex gl-items-center gl-px-5 gl-py-3"
             data-testid="add-visualization-button"
             @click="toggleVisualizationDrawer"
           >
-            <div class="gl-font-bold gl-text-gray-700 gl-display-flex gl-align-items-center">
+            <div class="gl-flex gl-items-center gl-font-bold gl-text-gray-700">
               <div
-                class="gl-h-7 gl-w-7 gl-rounded-full gl-bg-gray-100 gl-inline-flex gl-align-items-center gl-justify-content-center gl-mr-3"
+                class="gl-mr-3 gl-inline-flex gl-h-7 gl-w-7 gl-items-center gl-justify-center gl-rounded-full gl-bg-gray-100"
               >
                 <gl-icon name="plus" />
               </div>

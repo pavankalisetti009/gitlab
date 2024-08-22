@@ -62,11 +62,11 @@ export default {
 </script>
 
 <template>
-  <div :id="noteId" class="gl-display-flex gl-align-items-center">
-    <div class="circle-icon-container gl-flex-shrink-0 gl-align-self-start" :class="iconClass">
+  <div :id="noteId" class="gl-flex gl-items-center">
+    <div class="circle-icon-container gl-shrink-0 gl-self-start" :class="iconClass">
       <gl-icon :size="16" :name="iconName" />
     </div>
-    <div class="gl-ml-5 gl-flex-grow-1" data-testid="event-item-content">
+    <div class="gl-ml-5 gl-grow" data-testid="event-item-content">
       <note-header
         :note-id="id"
         :author="author"
@@ -84,7 +84,7 @@ export default {
 
     <div
       v-else-if="showActionButtons"
-      class="gl-flex-shrink-0 gl-align-self-start"
+      class="gl-shrink-0 gl-self-start"
       data-testid="action-buttons"
     >
       <gl-button

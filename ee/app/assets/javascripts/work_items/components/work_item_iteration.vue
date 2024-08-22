@@ -213,10 +213,10 @@ export default {
       <div v-if="item.title">{{ item.title }}</div>
     </template>
     <template #readonly>
-      <div class="gl-text-gray-500 gl-mr-2">
+      <div class="gl-mr-2 gl-text-gray-500">
         {{ selectedIterationCadenceName }}
       </div>
-      <gl-link class="gl-text-gray-900!" :href="localIteration.webUrl">
+      <gl-link class="!gl-text-gray-900" :href="localIteration.webUrl">
         <div>
           {{ iterationPeriod }}
         </div>

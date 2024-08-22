@@ -110,7 +110,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-flex-wrap gl-whitespace-pre-wrap">
+  <div class="gl-flex gl-flex-wrap gl-items-center gl-whitespace-pre-wrap">
     <gl-skeleton-loader v-if="isLoadingVulnerability" :lines="1" class="gl-h-auto" />
     <!-- there are cases in which `time` is undefined (e.g.: manually submitted vulnerabilities in "needs triage" state) -->
     <gl-sprintf v-else-if="time" :message="statusText">
@@ -126,13 +126,13 @@ export default {
         <time-ago-tooltip ref="timeAgo" :time="time" />
       </template>
       <template #user>
-        <gl-loading-icon v-if="isLoadingUser" class="gl-inline gl-ml-2" size="sm" />
+        <gl-loading-icon v-if="isLoadingUser" class="gl-ml-2 gl-inline" size="sm" />
         <gl-avatar-link
           v-else-if="user"
           :href="user.web_url"
           :data-user-id="user.id"
           :data-username="user.username"
-          class="js-user-link gl-font-bold gl-ml-2"
+          class="js-user-link gl-ml-2 gl-font-bold"
         >
           <gl-avatar-labeled :src="user.avatar_url" :label="user.name" :size="24" />
         </gl-avatar-link>

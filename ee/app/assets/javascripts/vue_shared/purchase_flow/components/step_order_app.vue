@@ -1,12 +1,12 @@
 <template>
   <div>
     <slot name="alerts"></slot>
-    <h2 class="gl-lg-mx-12 gl-mt-0 gl-mb-6">{{ s__('Checkout|Checkout') }}</h2>
-    <div class="lg:gl-flex gl-flex-direction-row gl-flex-nowrap">
-      <div class="gl-lg-w-40p gl-lg-ml-12 gl-lg-mr-10 gl-px-0">
+    <h2 class="gl-mb-6 gl-mt-0 lg:gl-mx-12">{{ s__('Checkout|Checkout') }}</h2>
+    <div class="gl-flex-row gl-flex-nowrap lg:gl-flex">
+      <div class="gl-px-0 lg:gl-ml-12 lg:gl-mr-10 lg:gl-w-4/10">
         <slot name="checkout"></slot>
       </div>
-      <div class="gl-lg-w-30p gl-lg-ml-10 gl-lg-mr-12 gl-px-0">
+      <div class="gl-px-0 lg:gl-ml-10 lg:gl-mr-12 lg:gl-w-3/10">
         <slot name="order-summary"></slot>
       </div>
     </div>

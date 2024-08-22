@@ -148,11 +148,11 @@ export default {
       <gl-disclosure-dropdown-group
         bordered
         :border-position="borderPosition"
-        class="edit-dropdown-group-width gl-pt-2 gl-pb-4"
+        class="edit-dropdown-group-width gl-pb-4 gl-pt-2"
         data-testid="workspaces-dropdown-group"
       >
         <template #group-label>
-          <span class="gl-display-flex gl-font-base gl-leading-1">{{
+          <span class="gl-flex gl-text-base gl-leading-1">{{
             $options.i18n.workspacesGroupLabel
           }}</span>
         </template>
@@ -183,11 +183,11 @@ export default {
               @updateWorkspace="update(workspace.id, $event)"
             />
           </template>
-          <div v-else class="gl-px-4 gl-font-base gl-text-left" data-testid="no-workspaces-message">
-            <p class="gl-mb-0 gl-font-sm gl-text-secondary">
+          <div v-else class="gl-px-4 gl-text-left gl-text-base" data-testid="no-workspaces-message">
+            <p class="gl-mb-0 gl-text-sm gl-text-secondary">
               {{ $options.i18n.noWorkspacesMessage }}
             </p>
-            <p v-if="!supportsWorkspaces" class="gl-mb-0 gl-mt-2 gl-font-sm gl-text-secondary">
+            <p v-if="!supportsWorkspaces" class="gl-mb-0 gl-mt-2 gl-text-sm gl-text-secondary">
               <gl-sprintf :message="$options.i18n.noWorkspacesSupportMessage">
                 <template #link="{ content }">
                   <gl-link
@@ -200,10 +200,7 @@ export default {
               </gl-sprintf>
             </p>
           </div>
-          <div
-            v-if="supportsWorkspaces"
-            class="gl-px-4 gl-py-3 gl-display-flex gl-justify-content-start"
-          >
+          <div v-if="supportsWorkspaces" class="gl-flex gl-justify-start gl-px-4 gl-py-3">
             <gl-button
               v-if="supportsWorkspaces"
               :href="newWorkspacePathWithProjectId"

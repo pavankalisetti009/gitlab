@@ -40,7 +40,7 @@ export default {
     v-gl-tooltip="issue.title"
     :href="issue.webUrl"
     target="__blank"
-    class="gl-inline-flex gl-flex-shrink-0 gl-items-center"
+    class="gl-inline-flex gl-shrink-0 gl-items-center"
   >
     <span
       v-if="isJira"

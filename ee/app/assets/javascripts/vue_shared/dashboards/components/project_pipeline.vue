@@ -67,7 +67,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-mt-4 -gl-ml-1">
+  <div class="-gl-ml-1 gl-mt-4">
     <template v-if="upstreamPipeline">
       <gl-link
         ref="upstreamStatus"
@@ -82,7 +82,7 @@ export default {
         <div class="gl-text-tertiary">{{ upstreamPipeline.project.full_name }}</div>
       </gl-tooltip>
 
-      <gl-icon name="arrow-right" class="gl-text-tertiary gl-align-middle gl-mx-1" />
+      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle gl-text-tertiary" />
     </template>
 
     <ci-icon
@@ -97,7 +97,7 @@ export default {
     </gl-tooltip>
 
     <template v-if="hasDownstreamPipelines">
-      <gl-icon name="arrow-right" class="gl-text-tertiary gl-align-middle gl-mx-1" />
+      <gl-icon name="arrow-right" class="gl-mx-1 gl-align-middle gl-text-tertiary" />
 
       <div
         v-for="(pipeline, index) in shownDownstreamPipelines"
@@ -122,7 +122,7 @@ export default {
         <gl-link
           ref="extraDownstream"
           :href="lastPipeline.details.status.details_path"
-          class="dashboard-card-footer-extra gl-rounded-full gl-inline-block gl-font-bold gl-align-middle gl-text-white gl-text-center js-downstream-extra-icon"
+          class="dashboard-card-footer-extra js-downstream-extra-icon gl-inline-block gl-rounded-full gl-text-center gl-align-middle gl-font-bold gl-text-white"
         >
           {{ extraDownstreamText }}
         </gl-link>

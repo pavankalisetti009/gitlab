@@ -15,7 +15,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="items.length > 0" class="gl-display-table">
+  <div v-if="items.length > 0" class="gl-table">
     <ul class="generic-report-named-list">
       <li
         v-for="{ fieldName, name, value } in items"

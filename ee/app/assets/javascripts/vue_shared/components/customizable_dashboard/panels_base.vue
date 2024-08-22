@@ -107,20 +107,17 @@ export default {
 <template>
   <div
     :id="popoverId"
-    class="grid-stack-item-content gl-border gl-rounded-base gl-p-4 gl-bg-white gl-overflow-visible! gl-h-full"
+    class="grid-stack-item-content gl-border gl-h-full !gl-overflow-visible gl-rounded-base gl-bg-white gl-p-4"
     :class="alertClasses"
   >
-    <div class="gl-h-full gl-display-flex gl-flex-direction-column">
-      <div
-        class="gl-display-flex gl-align-items-flex-start gl-justify-content-space-between"
-        data-testid="panel-title"
-      >
+    <div class="gl-flex gl-h-full gl-flex-col">
+      <div class="gl-flex gl-items-start gl-justify-between" data-testid="panel-title">
         <tooltip-on-truncate
           v-if="title"
           :title="title"
           placement="top"
           boundary="viewport"
-          class="gl-pb-3 gl-text-truncate"
+          class="gl-truncate gl-pb-3"
         >
           <gl-icon
             v-if="showAlertState"
@@ -167,8 +164,8 @@ export default {
         </gl-disclosure-dropdown>
       </div>
       <div
-        class="gl-overflow-x-hidden gl-overflow-y-auto gl-flex-grow-1"
-        :class="{ 'gl-flex gl-flex-wrap gl-text-center gl-content-center': loading }"
+        class="gl-grow gl-overflow-y-auto gl-overflow-x-hidden"
+        :class="{ 'gl-flex gl-flex-wrap gl-content-center gl-text-center': loading }"
       >
         <template v-if="loading">
           <gl-loading-icon size="lg" class="gl-w-full" />

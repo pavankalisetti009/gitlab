@@ -350,8 +350,8 @@ export default {
 
 <template>
   <section class="gl-pb-4" data-testid="work-item-rolledup-dates">
-    <div class="gl-display-flex gl-align-items-center gl-gap-3">
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-mb-0! gl-heading-5">
+    <div class="gl-flex gl-items-center gl-gap-3">
+      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.dates }}
       </h3>
       <gl-button
@@ -365,7 +365,7 @@ export default {
         >{{ __('Edit') }}</gl-button
       >
     </div>
-    <fieldset v-if="!isEditing" class="gl-display-flex gl-gap-5 gl-mt-2">
+    <fieldset v-if="!isEditing" class="gl-mt-2 gl-flex gl-gap-5">
       <gl-form-radio
         v-model="rollupType"
         value="fixed"
@@ -384,8 +384,8 @@ export default {
       </gl-form-radio>
     </fieldset>
     <fieldset v-if="isEditing" data-testid="datepicker-wrapper">
-      <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-        <legend class="gl-mb-0 gl-border-b-0 gl-font-bold gl-font-base">
+      <div class="gl-flex gl-items-center gl-justify-between">
+        <legend class="gl-mb-0 gl-border-b-0 gl-text-base gl-font-bold">
           {{ $options.i18n.dates }}
         </legend>
         <gl-button
@@ -398,12 +398,12 @@ export default {
           >{{ __('Apply') }}</gl-button
         >
       </div>
-      <div v-outside="collapseWidget" class="gl-display-flex gl-pt-2">
+      <div v-outside="collapseWidget" class="gl-flex gl-pt-2">
         <gl-form-group
           class="gl-m-0"
           :label="$options.i18n.startDate"
           :label-for="$options.startDateInputId"
-          label-class="!gl-font-normal gl-pb-2!"
+          label-class="!gl-font-normal !gl-pb-2"
         >
           <gl-datepicker
             ref="startDatePicker"
@@ -423,7 +423,7 @@ export default {
           class="gl-m-0 gl-pl-3 gl-pr-2"
           :label="$options.i18n.dueDate"
           :label-for="$options.dueDateInputId"
-          label-class="!gl-font-normal gl-pb-2!"
+          label-class="!gl-font-normal !gl-pb-2"
         >
           <gl-datepicker
             v-model="dirtyDueDate"
@@ -448,7 +448,7 @@ export default {
           {{ startDateValue }}
         </span>
       </p>
-      <p class="gl-m-0 gl-pt-1 gl-pb-3">
+      <p class="gl-m-0 gl-pb-3 gl-pt-1">
         {{ $options.i18n.dueDate }}:
         <span data-testid="due-date-value" :class="{ 'gl-text-secondary': !dueDate }">
           {{ dueDateValue }}

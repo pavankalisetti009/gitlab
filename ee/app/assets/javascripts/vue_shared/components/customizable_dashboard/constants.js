@@ -12,7 +12,7 @@ export const PANEL_POPOVER_DELAY = {
   hide: 500,
 };
 
-export const CURSOR_GRABBING_CLASS = 'gl-cursor-grabbing!';
+export const CURSOR_GRABBING_CLASS = '!gl-cursor-grabbing';
 
 export const NEW_DASHBOARD_SLUG = 'new';
 

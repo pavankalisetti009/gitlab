@@ -98,7 +98,7 @@ export default {
     :title="$options.getTabTitle(tabName)"
     :query-param-value="tabName"
   >
-    <div v-if="loading" class="gl-p-5 gl-display-flex gl-justify-content-left">
+    <div v-if="loading" class="gl-justify-content-left gl-flex gl-p-5">
       <gl-skeleton-loader :lines="4" :equal-width-lines="true" :width="600" />
     </div>
     <template v-else>
