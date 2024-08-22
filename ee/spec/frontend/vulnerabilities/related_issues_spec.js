@@ -100,6 +100,8 @@ describe('Vulnerability related issues component', () => {
       issuableType: TYPE_ISSUE,
       pathIdSeparator: PathIdSeparator.Issue,
       showCategorizedIssues: false,
+      headerText: 'Related issues',
+      addButtonText: 'Add existing issue',
     });
   });
 
