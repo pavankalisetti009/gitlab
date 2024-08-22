@@ -8,8 +8,15 @@ export const initAiSettings = (id, component) => {
     return false;
   }
 
-  const { cascadingSettingsData, duoAvailability, areDuoSettingsLocked, redirectPath, updateId } =
-    el.dataset;
+  const {
+    cascadingSettingsData,
+    duoAvailability,
+    areDuoSettingsLocked,
+    experimentFeaturesEnabled,
+    areExperimentSettingsAllowed,
+    redirectPath,
+    updateId,
+  } = el.dataset;
 
   let cascadingSettingsDataParsed;
   try {
@@ -24,12 +31,14 @@ export const initAiSettings = (id, component) => {
     el,
     provide: {
       cascadingSettingsData: cascadingSettingsDataParsed,
+      areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked) || false,
+      areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed) || true,
+      duoAvailability,
+      experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled) || false,
     },
     render: (createElement) =>
       createElement(component, {
         props: {
-          duoAvailability,
-          areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
           redirectPath,
           updateId,
         },

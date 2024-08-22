@@ -4,7 +4,9 @@ module Admin
   module ApplicationSettingsHelper
     extend self
 
-    delegate :duo_availability, to: :'Gitlab::CurrentSettings.current_application_settings'
+    delegate :duo_availability,
+      :instance_level_ai_beta_features_enabled,
+      to: :'Gitlab::CurrentSettings.current_application_settings'
 
     def ai_powered_testing_agreement
       safe_format(
@@ -31,6 +33,7 @@ module Admin
     def ai_settings_helper_data
       {
         duo_availability: duo_availability.to_s,
+        experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
         redirect_path: general_admin_application_settings_path
       }
     end

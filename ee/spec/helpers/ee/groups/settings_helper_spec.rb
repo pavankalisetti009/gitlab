@@ -38,6 +38,8 @@ RSpec.describe EE::Groups::SettingsHelper do
         { cascading_settings_data: "{\"locked_by_application_setting\":false,\"locked_by_ancestor\":false}",
           duo_availability: group.namespace_settings.duo_availability.to_s,
           are_duo_settings_locked: group.namespace_settings.duo_features_enabled_locked?.to_s,
+          experiment_features_enabled: group.namespace_settings.experiment_features_enabled.to_s,
+          are_experiment_settings_allowed: group.experiment_settings_allowed?.to_s,
           redirect_path: edit_group_path(group),
           update_id: group.id })
     end

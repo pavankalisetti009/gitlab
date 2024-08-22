@@ -30,14 +30,10 @@ export default {
     GlFormRadio,
     CascadingLockIcon,
   },
-  inject: ['cascadingSettingsData'],
+  inject: ['areDuoSettingsLocked', 'cascadingSettingsData'],
   props: {
     duoAvailability: {
       type: String,
-      required: true,
-    },
-    areDuoSettingsLocked: {
-      type: Boolean,
       required: true,
     },
   },

@@ -23,7 +23,7 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
         render
 
         expect(rendered).to render_template('groups/settings/_duo_features_enabled')
-        expect(rendered).not_to have_content('GitLab Duo features')
+        expect(rendered).not_to have_content('Use GitLab Duo features')
       end
     end
 
@@ -34,7 +34,7 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
         render
 
         expect(rendered).to render_template('groups/settings/_duo_features_enabled')
-        expect(rendered).to have_content('GitLab Duo features')
+        expect(rendered).to have_content('Use GitLab Duo features')
       end
     end
   end
