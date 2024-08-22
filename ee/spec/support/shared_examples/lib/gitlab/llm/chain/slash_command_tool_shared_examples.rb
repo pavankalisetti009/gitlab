@@ -78,7 +78,7 @@ RSpec.shared_examples 'slash command tool' do
 
   context 'when slash command is used' do
     let(:instruction) { 'command instruction' }
-    let(:command_prompt_options) { { instruction: instruction } }
+    let(:command_prompt_options) { { selected_code_without_input_instruction: instruction } }
     let(:user_input) { 'something' }
     let(:platform_origin) { nil }
     let(:command) do
@@ -89,6 +89,10 @@ RSpec.shared_examples 'slash command tool' do
         platform_origin: platform_origin,
         tool: nil,
         context: context)
+    end
+
+    it 'verifies slash commands' do
+      expect(tool.class.slash_commands).to eq(expected_slash_commands)
     end
 
     it_behaves_like 'prompt is called with command options'

@@ -72,17 +72,17 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
 
   describe '#prompt_options' do
     let(:user_input) { nil }
-    let(:instruction_with_input) { 'explain %<input>s in the code' }
-    let(:instruction_without_selected_code) { 'Explain the input provided by the user: %<input>s.' }
+    let(:selected_code_with_input_instruction) { 'explain %<input>s in the code' }
+    let(:input_without_selected_code_instruction) { 'Explain the input provided by the user: %<input>s.' }
     let(:params) do
       {
         name: content,
         user_input: user_input,
         tool: nil,
         command_options: {
-          instruction: 'explain the code',
-          instruction_with_input: instruction_with_input,
-          instruction_without_selected_code: instruction_without_selected_code
+          selected_code_without_input_instruction: 'explain the code',
+          selected_code_with_input_instruction: selected_code_with_input_instruction,
+          input_without_selected_code_instruction: input_without_selected_code_instruction
         },
         context: context
       }
@@ -97,8 +97,8 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
 
       it { is_expected.to eq({ input: 'explain method params in the code' }) }
 
-      context 'when instruction_with_input is not part of command definition' do
-        let(:instruction_with_input) { nil }
+      context 'when selected_code_with_input_instruction is not part of command definition' do
+        let(:selected_code_with_input_instruction) { nil }
 
         it { is_expected.to eq({ input: 'explain the code' }) }
       end
@@ -108,13 +108,13 @@ RSpec.describe Gitlab::Llm::Chain::SlashCommand, feature_category: :duo_chat do
 
         it { is_expected.to eq({ input: 'Explain the input provided by the user: method params.' }) }
 
-        context 'when instruction_without_selected_code is not part of command definition' do
-          let(:instruction_without_selected_code) { nil }
+        context 'when input_without_selected_code_instruction is not part of command definition' do
+          let(:input_without_selected_code_instruction) { nil }
 
           it { is_expected.to eq({ input: 'explain method params in the code' }) }
 
-          context 'when instruction_with_input is not part of command definition' do
-            let(:instruction_with_input) { nil }
+          context 'when selected_code_with_input_instruction is not part of command definition' do
+            let(:selected_code_with_input_instruction) { nil }
 
             it { is_expected.to eq({ input: 'explain the code' }) }
           end

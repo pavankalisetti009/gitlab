@@ -54,10 +54,11 @@ module Gitlab
             SLASH_COMMANDS = {
               '/tests' => {
                 description: 'Write tests for the code',
-                instruction: 'Write tests for the code user selected inside <selected_code></selected_code> tags.',
-                instruction_with_input: 'Write tests %<input>s for the code user selected inside ' \
+                selected_code_without_input_instruction: 'Write tests for the code user selected inside ' \
+                  '<selected_code></selected_code> tags.',
+                selected_code_with_input_instruction: 'Write tests %<input>s for the code user selected inside ' \
                                         '<selected_code></selected_code> tags.',
-                instruction_without_selected_code: 'Write tests for the code provided by the user: %<input>s.'
+                input_without_selected_code_instruction: 'Write tests for the code provided by the user: %<input>s.'
               }
             }.freeze
 

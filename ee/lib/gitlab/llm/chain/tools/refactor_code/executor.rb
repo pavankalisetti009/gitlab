@@ -56,10 +56,11 @@ module Gitlab
             SLASH_COMMANDS = {
               '/refactor' => {
                 description: 'Refactor the code',
-                instruction: 'Refactor the code user selected inside <selected_code></selected_code> tags.',
-                instruction_with_input: 'Refactor %<input>s in the selected code inside ' \
+                selected_code_without_input_instruction: 'Refactor the code user selected inside ' \
+                  '<selected_code></selected_code> tags.',
+                selected_code_with_input_instruction: 'Refactor %<input>s in the selected code inside ' \
                                         '<selected_code></selected_code> tags.',
-                instruction_without_selected_code: 'Refactor the code provided by the user: %<input>s.'
+                input_without_selected_code_instruction: 'Refactor the code provided by the user: %<input>s.'
               }
             }.freeze
 

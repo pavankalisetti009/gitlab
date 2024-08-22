@@ -40,9 +40,9 @@ module Gitlab
           @name = name
           @user_input = user_input
           @tool = tool
-          @instruction = command_options[:instruction]
-          @instruction_with_input = command_options[:instruction_with_input]
-          @instruction_without_selected_code = command_options[:instruction_without_selected_code]
+          @selected_code_without_input_instruction = command_options[:selected_code_without_input_instruction]
+          @selected_code_with_input_instruction = command_options[:selected_code_with_input_instruction]
+          @input_without_selected_code_instruction = command_options[:input_without_selected_code_instruction]
           @platform_origin = platform_origin
           @context = context
         end
@@ -59,16 +59,16 @@ module Gitlab
           instruction_template = select_instruction_template
           return formatted_instruction(instruction_template) if instruction_template
 
-          @instruction
+          @selected_code_without_input_instruction
         end
 
         def select_instruction_template
           return if user_input.blank?
 
-          if @context.current_file[:selected_text].nil? && @instruction_without_selected_code.present?
-            @instruction_without_selected_code
-          elsif @instruction_with_input.present?
-            @instruction_with_input
+          if @context.current_file[:selected_text].nil? && @input_without_selected_code_instruction.present?
+            @input_without_selected_code_instruction
+          elsif @selected_code_with_input_instruction.present?
+            @selected_code_with_input_instruction
           end
         end
 

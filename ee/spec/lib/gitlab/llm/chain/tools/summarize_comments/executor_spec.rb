@@ -22,6 +22,16 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
     )
   end
 
+  let(:expected_slash_commands) do
+    {
+      '/summarize_comments' => {
+        description: 'Summarize issue comments.',
+        selected_code_without_input_instruction: 'Summarize issue comments.',
+        selected_code_with_input_instruction: "Summary of issue comments. Input: %<input>s."
+      }
+    }
+  end
+
   subject(:tool) { described_class.new(context: context, options: {}) }
 
   before_all do

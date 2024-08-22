@@ -24,6 +24,19 @@ RSpec.describe Gitlab::Llm::Chain::Tools::ExplainCode::Executor, feature_categor
     )
   end
 
+  let(:expected_slash_commands) do
+    {
+      '/explain' => {
+        description: 'Explain the code',
+        selected_code_without_input_instruction: 'Explain the code user selected inside ' \
+          '<selected_code></selected_code> tags.',
+        selected_code_with_input_instruction: 'Explain %<input>s user selected inside ' \
+          '<selected_code></selected_code> tags.',
+        input_without_selected_code_instruction: 'Explain the input provided by the user: %<input>s.'
+      }
+    }
+  end
+
   subject(:tool) do
     described_class.new(
       context: context, options: options, stream_response_handler: stream_response_handler, command: command

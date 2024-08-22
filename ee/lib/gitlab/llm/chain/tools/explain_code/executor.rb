@@ -50,9 +50,11 @@ module Gitlab
             SLASH_COMMANDS = {
               '/explain' => {
                 description: 'Explain the code',
-                instruction: 'Explain the code user selected inside <selected_code></selected_code> tags.',
-                instruction_with_input: 'Explain %<input>s user selected inside <selected_code></selected_code> tags.',
-                instruction_without_selected_code: 'Explain the input provided by the user: %<input>s.'
+                selected_code_without_input_instruction: 'Explain the code user selected inside ' \
+                  '<selected_code></selected_code> tags.',
+                selected_code_with_input_instruction: 'Explain %<input>s user selected inside ' \
+                  '<selected_code></selected_code> tags.',
+                input_without_selected_code_instruction: 'Explain the input provided by the user: %<input>s.'
               }
             }.freeze
 
