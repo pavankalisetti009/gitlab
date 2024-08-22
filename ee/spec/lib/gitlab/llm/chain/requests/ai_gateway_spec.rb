@@ -49,7 +49,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     let(:provider) { :anthropic }
     let(:params) do
       {
-        max_tokens_to_sample: 2048,
+        max_tokens_to_sample: described_class::DEFAULT_MAX_TOKENS,
         stop_sequences: ["\n\nHuman", "Observation:"],
         temperature: 0.1
       }
