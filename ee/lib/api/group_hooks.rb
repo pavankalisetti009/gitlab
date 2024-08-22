@@ -158,6 +158,7 @@ module API
         mount ::API::Hooks::TriggerTest, with: {
           entity: GroupHook
         }
+        mount ::API::Hooks::ResendHook
       end
     end
   end
