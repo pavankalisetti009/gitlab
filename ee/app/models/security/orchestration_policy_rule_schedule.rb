@@ -21,6 +21,7 @@ module Security
     validates :cron, cron: true, presence: true
     validates :policy_index, presence: true
     validates :rule_index, presence: true
+    validates :policy_type, presence: true
 
     scope :runnable_schedules, -> { where("next_run_at < ?", Time.zone.now) }
     scope :with_owner, -> { includes(:owner) }
@@ -32,6 +33,11 @@ module Security
         security_orchestration_policy_configuration: [:project, :namespace, :security_policy_management_project]
       )
     end
+
+    enum policy_type: {
+      scan_execution_policy: 0,
+      pipeline_execution_policy: 1
+    }
 
     def policy
       strong_memoize(:policy) do

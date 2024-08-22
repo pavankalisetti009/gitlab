@@ -34,6 +34,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ProcessRuleService, feat
         expect(schedule.rule_index).to eq(1)
         expect(schedule.cron).to eq('*/15 * * * *')
         expect(schedule.owner).to eq(owner)
+        expect(schedule.policy_type).to eq('scan_execution_policy')
         expect(schedule.next_run_at).to be_future
       end
 
