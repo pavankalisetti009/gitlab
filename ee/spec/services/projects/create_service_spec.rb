@@ -14,6 +14,28 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
 
   subject(:response) { described_class.new(current_user, project_params).execute }
 
+  shared_examples 'override push rule for security policy project' do
+    context 'when the project is a security policy project' do
+      let(:security_policy_target_project) { create(:project) }
+
+      before do
+        extra_params[:security_policy_target_project_id] = security_policy_target_project.id
+        stub_licensed_features(security_orchestration_policies: true)
+        security_policy_target_project.add_owner(current_user)
+      end
+
+      it 'overrides push rules' do
+        expect(created_project.push_rule).to(
+          have_attributes(
+            commit_message_regex: nil,
+            commit_message_negative_regex: nil,
+            branch_name_regex: nil
+          )
+        )
+      end
+    end
+  end
+
   context 'with a built-in template' do
     let(:extra_params) { { template_name: 'rails' } }
 
@@ -281,6 +303,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
         expect(project_setting.push_rule_id).to eq(created_project.push_rule.id)
       end
 
+      it_behaves_like 'override push rule for security policy project'
+
       context 'when push rules is unlicensed' do
         before do
           stub_licensed_features(push_rules: false)
@@ -342,6 +366,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
           expect(created_project.project_setting.push_rule_id).to eq(project_push_rule.id)
         end
 
+        it_behaves_like 'override push rule for security policy project'
+
         context 'with subgroup' do
           let(:extra_params) { { namespace_id: sub_group.id } }
 
@@ -375,6 +401,8 @@ RSpec.describe Projects::CreateService, '#execute', feature_category: :groups_an
             )
           )
         end
+
+        it_behaves_like 'override push rule for security policy project'
 
         context 'with subgroup' do
           let(:extra_params) { { namespace_id: sub_group.id } }
