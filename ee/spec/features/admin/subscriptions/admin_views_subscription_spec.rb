@@ -35,7 +35,7 @@ RSpec.describe 'Admin views Subscription', :js, feature_category: :subscription_
           click_button('Remove license')
         end
 
-        page.within(find('#content-body', match: :first)) do
+        page.within(find('.alert-wrapper', match: :first)) do
           expect(page).to have_content('The license was removed.')
         end
       end

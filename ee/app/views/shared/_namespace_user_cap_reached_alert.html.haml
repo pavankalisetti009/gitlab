@@ -10,13 +10,12 @@
 - users_pending_approval_link_start = link_start.html_safe % { url: help_page_path('user/group/manage', anchor: 'approve-pending-members-for-a-group') }
 - link_end = '</a>'.html_safe
 
-.gl-mt-3.container-fluid{ class: content_class }
-  = render Pajamas::AlertComponent.new(title: s_('NamespaceUserCap|Your group has reached its billable member limit'),
-    variant: :warning,
-    close_button_options: { class: 'js-namespace-user-cap-alert-dismiss',
-                            data: { cookie_id: hide_user_cap_alert_cookie_id(root_namespace),
-                                    testid: 'namespace_user_cap_alert_dismiss' }}) do |c|
-    - c.with_body do
-      = s_('NamespaceUserCap|Pending users must be reviewed and approved by a group owner. Learn more about %{user_caps_link_start}user caps%{link_end} and %{users_pending_approval_link_start}users pending approval%{link_end}.').html_safe % { user_caps_link_start: user_caps_link_start, users_pending_approval_link_start: users_pending_approval_link_start, link_end: link_end }
-    - c.with_actions do
-      = link_button_to s_('NamespaceUserCap|View pending approvals'), pending_users_link, class: 'gl-alert-action', variant: :confirm
+= render Pajamas::AlertComponent.new(title: s_('NamespaceUserCap|Your group has reached its billable member limit'),
+  variant: :warning,
+  close_button_options: { class: 'js-namespace-user-cap-alert-dismiss',
+                          data: { cookie_id: hide_user_cap_alert_cookie_id(root_namespace),
+                                  testid: 'namespace_user_cap_alert_dismiss' }}) do |c|
+  - c.with_body do
+    = s_('NamespaceUserCap|Pending users must be reviewed and approved by a group owner. Learn more about %{user_caps_link_start}user caps%{link_end} and %{users_pending_approval_link_start}users pending approval%{link_end}.').html_safe % { user_caps_link_start: user_caps_link_start, users_pending_approval_link_start: users_pending_approval_link_start, link_end: link_end }
+  - c.with_actions do
+    = link_button_to s_('NamespaceUserCap|View pending approvals'), pending_users_link, class: 'gl-alert-action', variant: :confirm
