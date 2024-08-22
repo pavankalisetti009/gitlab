@@ -93,7 +93,6 @@ module EE
       end
 
       def create_security_policy_configuration_if_exists
-        security_policy_target = find_security_policy_target
         return if security_policy_target.blank?
 
         ::Security::Orchestration::AssignService
@@ -101,13 +100,14 @@ module EE
             .execute
       end
 
-      def find_security_policy_target
+      def security_policy_target
         if security_policy_target_project_id.present?
           ::Project.find_by_id(security_policy_target_project_id)
         elsif security_policy_target_namespace_id.present?
           ::Namespace.find_by_id(security_policy_target_namespace_id)
         end
       end
+      strong_memoize_attr :security_policy_target
 
       def sync_group_scan_result_policies
         configurations = group_security_orchestration_policy_configurations
@@ -135,6 +135,7 @@ module EE
 
         log_info(predefined_push_rule)
         push_rule = predefined_push_rule.dup.tap { |predefined_rule| predefined_rule.is_sample = false }
+        override_push_rule(push_rule) if security_policy_target.present?
         project.push_rule = push_rule
         project.project_setting.update(push_rule: push_rule)
       end
@@ -145,6 +146,12 @@ module EE
         else
           PushRule.global
         end
+      end
+
+      def override_push_rule(push_rule)
+        push_rule.commit_message_regex = nil
+        push_rule.commit_message_negative_regex = nil
+        push_rule.branch_name_regex = nil
       end
 
       def set_default_compliance_framework
