@@ -8,8 +8,8 @@ module EE
 
       private
 
-      # Rename this to authorize_read_dependency_proxy_for_tokens!
-      # when we rollout FF packages_dependency_proxy_pass_token_to_policy
+      # TODO: Rename to authorize_read_dependency_proxy_for_tokens!
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/452145
       override :authorize_read_dependency_proxy!
       def authorize_read_dependency_proxy!
         if ip_restricted?(group)
