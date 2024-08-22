@@ -251,7 +251,7 @@ export default {
       @row-selected="presentPolicyDrawer"
     >
       <template #cell(linked)="{ item }">
-        <div v-gl-tooltip="getTooltip(item)" class="gl-w-5 gl-display-inline-block">
+        <div v-gl-tooltip.placement.right="getTooltip(item)" class="gl-inline-block gl-w-5">
           <gl-form-checkbox :checked="item.isLinked" disabled />
         </div>
       </template>

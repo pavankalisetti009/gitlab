@@ -53,7 +53,7 @@ export default {
   <div>
     <drawer-section-header>{{ $options.i18n.header }}</drawer-section-header>
     <branch-details
-      class="gl-justify-content-start gl-text-gray-500"
+      class="gl-justify-start gl-text-gray-500"
       :source-branch="sourceBranchOpts"
       :target-branch="targeBranchOpts"
     />

@@ -339,7 +339,7 @@ export default {
               <gl-link
                 :href="$options.i18n.pipelineConfigurationInputDisabledPopoverLink"
                 target="_blank"
-                class="gl-font-sm"
+                class="gl-text-sm"
               >
                 {{ content }}</gl-link
               >

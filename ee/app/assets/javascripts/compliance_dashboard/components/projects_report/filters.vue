@@ -99,7 +99,7 @@ export default {
         </gl-button>
       </div>
     </gl-popover>
-    <span ref="popoverTarget" class="gl-absolute gl-h-7 gl-ml-5 gl-pointer-events-none">
+    <span ref="popoverTarget" class="gl-pointer-events-none gl-absolute gl-ml-5 gl-h-7">
       &nbsp;
     </span>
     <gl-filtered-search

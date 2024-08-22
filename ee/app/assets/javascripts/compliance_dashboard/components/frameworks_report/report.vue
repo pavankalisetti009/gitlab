@@ -128,7 +128,7 @@ export default {
 </script>
 
 <template>
-  <section class="gl-display-flex gl-flex-direction-column">
+  <section class="gl-flex gl-flex-col">
     <gl-alert
       v-if="showMaintenanceModeAlert"
       variant="warning"
@@ -174,7 +174,7 @@ export default {
 
       <gl-keyset-pagination
         v-bind="frameworks.pageInfo"
-        class="gl-align-self-center gl-mt-6"
+        class="gl-mt-6 gl-self-center"
         @prev="onPrevPage"
         @next="onNextPage"
       />

@@ -49,10 +49,10 @@ export default {
         <div
           v-for="(value, key) in $options.checkLabels"
           :key="value.id"
-          class="gl-display-flex gl-md-flex-direction-row gl-align-items-flex-start gl-border-b"
+          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
           data-testid="grouped-check"
         >
-          <gl-accordion-item class="gl-my-4!" :title="value">
+          <gl-accordion-item class="!gl-my-4" :title="value">
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"
@@ -66,10 +66,10 @@ export default {
         <div
           v-for="value in projects"
           :key="value.id"
-          class="gl-display-flex gl-md-flex-direction-row gl-align-items-flex-start gl-border-b"
+          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
           data-testid="grouped-project"
         >
-          <gl-accordion-item class="gl-my-4!" :title="value.name">
+          <gl-accordion-item class="!gl-my-4" :title="value.name">
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"
@@ -83,10 +83,10 @@ export default {
         <div
           v-for="(value, key) in $options.standardLabels"
           :key="value.id"
-          class="gl-display-flex gl-md-flex-direction-row gl-align-items-flex-start gl-border-b"
+          class="gl-border-b gl-flex gl-items-start md:gl-flex-row"
           data-testid="grouped-standard"
         >
-          <gl-accordion-item class="gl-my-4!" :title="value">
+          <gl-accordion-item class="!gl-my-4" :title="value">
             <adherences-base-table
               :is-loading="false"
               :group-path="groupPath"

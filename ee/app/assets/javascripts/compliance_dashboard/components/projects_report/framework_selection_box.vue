@@ -141,12 +141,12 @@ export default {
     <template #footer>
       <div
         v-if="isFrameworkCreatingEnabled"
-        class="gl-border-t-solid gl-border-t-1 gl-border-t-gray-100 gl-display-flex gl-flex-direction-column gl-p-2! gl-pt-0!"
+        class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-100 !gl-p-2 !gl-pt-0 gl-border-t-solid"
       >
         <gl-button
           category="tertiary"
           block
-          class="gl-justify-content-start! gl-mt-2!"
+          class="!gl-mt-2 !gl-justify-start"
           @click="createNewFramework"
         >
           {{ $options.i18n.createNewFramework }}

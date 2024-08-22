@@ -73,7 +73,7 @@ export default {
         >
           <framework-badge
             :framework="framework"
-            class="gl-mb-3 gl-mr-2 gl-display-inline-block"
+            class="gl-mb-3 gl-mr-2 gl-inline-block"
             :show-popover="false"
           />
         </div>

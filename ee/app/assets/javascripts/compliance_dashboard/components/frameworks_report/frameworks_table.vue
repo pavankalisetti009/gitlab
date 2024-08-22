@@ -88,22 +88,22 @@ export default {
     {
       key: 'frameworkName',
       label: __('Frameworks'),
-      thClass: 'gl-md-max-w-26 !gl-align-middle',
-      tdClass: 'gl-md-max-w-26 !gl-align-middle gl-cursor-pointer',
+      thClass: 'md:gl-max-w-26 !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
       sortable: true,
     },
     {
       key: 'associatedProjects',
       label: __('Associated projects'),
-      thClass: 'gl-md-max-w-26 gl-whitespace-nowrap !gl-align-middle',
-      tdClass: 'gl-md-max-w-26 !gl-align-middle gl-cursor-pointer',
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
       sortable: false,
     },
     {
       key: 'policies',
       label: __('Policies'),
-      thClass: 'gl-md-max-w-26 gl-whitespace-nowrap !gl-align-middle',
-      tdClass: 'gl-md-max-w-26 !gl-align-middle gl-cursor-pointer',
+      thClass: 'md:gl-max-w-26 gl-whitespace-nowrap !gl-align-middle',
+      tdClass: 'md:gl-max-w-26 !gl-align-middle gl-cursor-pointer',
       sortable: false,
     },
   ],
@@ -115,9 +115,9 @@ export default {
 </script>
 <template>
   <section>
-    <div class="gl-p-4 gl-bg-gray-10 gl-display-flex gl-gap-4">
+    <div class="gl-flex gl-gap-4 gl-bg-gray-10 gl-p-4">
       <gl-search-box-by-click
-        class="gl-flex-grow-1"
+        class="gl-grow"
         @submit="$emit('search', $event)"
         @clear="$emit('search', '')"
       />
@@ -145,7 +145,7 @@ export default {
         <div
           v-for="(associatedProject, index) in filterProjects(associatedProjects)"
           :key="associatedProject.id"
-          class="gl-display-inline-block"
+          class="gl-inline-block"
         >
           <gl-link :href="associatedProject.webUrl">{{ associatedProject.name }}</gl-link
           ><span v-if="!isLastItem(index, associatedProjects)">,&nbsp;</span>

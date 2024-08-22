@@ -53,7 +53,7 @@ export default {
 <template>
   <div>
     <drawer-section-header>{{ $options.i18n.header }}</drawer-section-header>
-    <div class="gl-display-flex gl-align-items-center">
+    <div class="gl-flex gl-items-center">
       <gl-avatar-link :title="name" :href="url">
         <gl-avatar-labeled
           :size="$options.DRAWER_AVATAR_SIZE"
