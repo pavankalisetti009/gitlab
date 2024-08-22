@@ -22152,6 +22152,9 @@ msgstr ""
 msgid "Export requirements"
 msgstr ""
 
+msgid "Export seat usage history"
+msgstr ""
+
 msgid "Export this group with all related data."
 msgstr ""
 

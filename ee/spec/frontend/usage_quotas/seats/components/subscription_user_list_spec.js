@@ -29,6 +29,14 @@ const actionSpies = {
 
 const MOCK_SEAT_USAGE_EXPORT_PATH = '/groups/test_group/-/seat_usage.csv';
 
+const defaultProvide = {
+  subscriptionHistoryHref: '/groups/my-group/-/usage_quotas/subscription_history.csv',
+};
+
+const defaultProps = {
+  hasFreePlan: false,
+};
+
 const fakeStore = ({ initialState, initialGetters }) =>
   new Vuex.Store({
     actions: actionSpies,
@@ -56,16 +64,28 @@ describe('Subscription User List', () => {
     initialState = {},
     mountFn = shallowMount,
     initialGetters = {},
+    provide = {},
+    props = {},
   } = {}) => {
     wrapper = extendedWrapper(
       mountFn(SubscriptionUserList, {
         store: fakeStore({ initialState, initialGetters }),
+        provide: {
+          ...defaultProvide,
+          ...provide,
+        },
+        propsData: {
+          ...defaultProps,
+          ...props,
+        },
       }),
     );
   };
 
   const findTable = () => wrapper.findComponent(GlTable);
   const findExportButton = () => wrapper.findByTestId('export-button');
+  const findExportSeatUsageHistoryButton = () =>
+    wrapper.findByTestId('subscription-seat-usage-history');
   const findSearchAndSortBar = () => wrapper.findComponent(SearchAndSortBar);
   const findPagination = () => wrapper.findComponent(GlPagination);
   const findAllRemoveUserItems = () => wrapper.findAllByTestId('remove-user');
@@ -118,6 +138,32 @@ describe('Subscription User List', () => {
     describe('export button', () => {
       it('has the correct href', () => {
         expect(findExportButton().attributes().href).toBe(MOCK_SEAT_USAGE_EXPORT_PATH);
+      });
+    });
+
+    describe('ExportSeatUsageHistoryButton', () => {
+      it('has the correct href', () => {
+        expect(findExportSeatUsageHistoryButton().attributes().href).toBe(
+          defaultProvide.subscriptionHistoryHref,
+        );
+      });
+
+      describe('with a Free Plan', () => {
+        beforeEach(() => {
+          createComponent({
+            mountFn: mount,
+            initialGetters: {
+              tableItems: () => mockTableItems,
+            },
+            props: {
+              hasFreePlan: true,
+            },
+          });
+        });
+
+        it('does not render if plan is free', () => {
+          expect(findExportSeatUsageHistoryButton().exists()).toBe(false);
+        });
       });
     });
 

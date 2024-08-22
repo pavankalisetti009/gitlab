@@ -102,6 +102,7 @@ constraints(::Constraints::GroupUrlConstrainer.new) do
     resources :usage_quotas, only: [:index] do
       collection do
         get :pending_members
+        get :subscription_history, defaults: { format: 'csv' }
       end
     end
 
