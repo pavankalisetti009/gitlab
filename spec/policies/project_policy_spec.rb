@@ -1176,8 +1176,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
@@ -1204,8 +1202,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
@@ -1214,8 +1210,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_disallowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with anonymous' do
@@ -1224,8 +1218,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_disallowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_disallowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_disallowed(:create_metrics_user_starred_dashboard) }
         end
       end
     end
@@ -1240,8 +1232,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
@@ -1270,8 +1260,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
@@ -1280,8 +1268,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_disallowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with anonymous' do
@@ -1303,8 +1289,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
@@ -1329,8 +1313,6 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
           it { is_expected.to be_allowed(:metrics_dashboard) }
           it { is_expected.to be_allowed(:read_prometheus) }
           it { is_expected.to be_allowed(:read_deployment) }
-          it { is_expected.to be_allowed(:read_metrics_user_starred_dashboard) }
-          it { is_expected.to be_allowed(:create_metrics_user_starred_dashboard) }
         end
 
         context 'with guest' do
