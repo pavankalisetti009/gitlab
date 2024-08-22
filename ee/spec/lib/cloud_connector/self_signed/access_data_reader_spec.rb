@@ -27,6 +27,7 @@ RSpec.describe CloudConnector::SelfSigned::AccessDataReader, feature_category: :
           explain_vulnerability
           resolve_vulnerability
           generate_issue_description
+          glab_ask_git_command
           summarize_issue_discussions
           generate_commit_message
           review_merge_request

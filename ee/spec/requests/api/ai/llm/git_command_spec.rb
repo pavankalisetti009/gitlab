@@ -39,16 +39,18 @@ RSpec.describe API::Ai::Llm::GitCommand, :saas, feature_category: :source_code_m
       let(:service_response) do
         ServiceResponse.new(
           status: :success,
-          payload: { predictions:
-                     [{ safetyAttributes: [{
-                       "blocked" => false,
-                       "categories" => [],
-                       "scores" => []
-                     }],
-                        candidates:
-                        [{ "content" =>
-                         "interesting AI content",
-                           "author" => "1" }] }] })
+          payload: {
+            predictions: [
+              {
+                candidates: [
+                  {
+                    content: 'interesting AI content'
+                  }
+                ]
+              }
+            ]
+          }
+        )
       end
 
       it 'responds with Workhorse send-url headers' do
