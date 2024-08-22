@@ -11,6 +11,19 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   let(:triggered_for_branch) { true }
   let(:ref) { 'master' }
   let(:has_pipeline_execution_policies) { false }
+  let(:pipeline_policy_context) do
+    Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
+  end
+
+  before do
+    allow(pipeline_policy_context).to(
+      receive(:has_overriding_pipeline_execution_policies?).and_return(false)
+    )
+
+    allow(pipeline_policy_context).to(
+      receive(:has_pipeline_execution_policies?).and_return(has_pipeline_execution_policies)
+    )
+  end
 
   subject(:config) do
     described_class.new(
@@ -21,7 +34,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
       pipeline_source_bridge: bridge,
       triggered_for_branch: triggered_for_branch,
       ref: ref,
-      has_pipeline_execution_policies: has_pipeline_execution_policies
+      pipeline_policy_context: pipeline_policy_context
     )
   end
 

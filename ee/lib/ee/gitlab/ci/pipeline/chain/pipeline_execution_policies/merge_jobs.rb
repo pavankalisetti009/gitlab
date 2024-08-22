@@ -40,13 +40,12 @@ module EE
                 # the DUMMY job to enforce the pipeline without project CI configuration.
                 # 2. any policy uses `override_project_ci` strategy.
                 # It means that we need to ignore the project CI configuration.
-                return unless pipeline.pipeline_execution_policy_forced? || override_project_ci_strategy_enforced?
+                unless pipeline.pipeline_execution_policy_forced? ||
+                    command.pipeline_policy_context.has_overriding_pipeline_execution_policies?
+                  return
+                end
 
                 pipeline.stages = []
-              end
-
-              def override_project_ci_strategy_enforced?
-                command.pipeline_execution_policies.any?(&:strategy_override_project_ci?)
               end
 
               def merge_policy_jobs
