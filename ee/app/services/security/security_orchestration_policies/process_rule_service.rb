@@ -26,7 +26,9 @@ module Security
             policy_index: policy_index,
             rule_index: rule_index,
             cron: rule[:cadence],
-            owner: policy_configuration.policy_last_updated_by)
+            owner: policy_configuration.policy_last_updated_by,
+            policy_type: 'scan_execution_policy'
+          )
 
           next if rule_schedule.exceeds_limits? || !rule_schedule.valid?
 
