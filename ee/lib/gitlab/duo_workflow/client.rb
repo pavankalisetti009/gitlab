@@ -4,31 +4,15 @@ module Gitlab
   module DuoWorkflow
     class Client
       def self.url
-        return "" unless cloud_connector_url
-
-        cloud_connector_uri = URI.parse(cloud_connector_url)
-
-        "#{cloud_connector_uri.host}:#{cloud_connector_uri.port}"
+        Gitlab.config.duo_workflow.service_url
       end
 
       def self.headers(user:)
         Gitlab::CloudConnector.headers(user)
       end
 
-      def self.cloud_connector_url
-        Gitlab.config.cloud_connector.base_url
-      rescue GitlabSettings::MissingSetting
-        Gitlab::AppLogger.error('Cloud Connector URL is not present in config/gitlab.yml')
-
-        nil
-      end
-
       def self.secure?
-        return false unless cloud_connector_url
-
-        # Since Duo Workflow Service grpc url is inferred from Cloud Connector
-        # it won't have grpcs or tls scheme, instead it may have https scheme
-        URI.parse(cloud_connector_url).scheme == 'https'
+        !!Gitlab.config.duo_workflow.secure
       end
     end
   end

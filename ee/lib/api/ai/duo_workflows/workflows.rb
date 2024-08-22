@@ -67,7 +67,8 @@ module API
                   duo_workflow_service: {
                     base_url: Gitlab::DuoWorkflow::Client.url,
                     token: duo_workflow_token_result[:token],
-                    headers: Gitlab::DuoWorkflow::Client.headers(user: current_user)
+                    headers: Gitlab::DuoWorkflow::Client.headers(user: current_user),
+                    secure: Gitlab::DuoWorkflow::Client.secure?
                   }
                 }
 

@@ -1023,6 +1023,23 @@ Gitlab.ee do
 end
 
 #
+# Duo Workflow
+#
+Gitlab.ee do
+  Settings['duo_workflow'] ||= {}
+  Settings.duo_workflow.reverse_merge!(
+    secure: true
+  )
+
+  # Default to proxy via Cloud Connector
+  unless Settings.duo_workflow['service_url'].present?
+    cloud_connector_uri = URI.parse(Settings.cloud_connector.base_url)
+    Settings.duo_workflow['service_url'] = "#{cloud_connector_uri.host}:#{cloud_connector_uri.port}"
+    Settings.duo_workflow['secure'] = cloud_connector_uri.scheme == 'https'
+  end
+end
+
+#
 # Zoekt credentials
 #
 Gitlab.ee do
