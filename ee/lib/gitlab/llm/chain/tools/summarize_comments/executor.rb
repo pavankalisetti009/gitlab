@@ -52,8 +52,8 @@ module Gitlab
             SLASH_COMMANDS = {
               '/summarize_comments' => {
                 description: 'Summarize issue comments.',
-                instruction: 'Summarize issue comments.',
-                instruction_with_input: "Summary of issue comments. Input: %<input>s."
+                selected_code_without_input_instruction: 'Summarize issue comments.',
+                selected_code_with_input_instruction: "Summary of issue comments. Input: %<input>s."
               }
             }.freeze
 

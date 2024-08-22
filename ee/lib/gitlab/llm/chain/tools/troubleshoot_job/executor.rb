@@ -60,8 +60,8 @@ module Gitlab
             SLASH_COMMANDS = {
               '/troubleshoot' => {
                 description: 'Troubleshoot a job based on the logs.',
-                instruction: 'Troubleshoot the job log.',
-                instruction_with_input: "Troubleshoot the job log. Input: %<input>s."
+                selected_code_without_input_instruction: 'Troubleshoot the job log.',
+                selected_code_with_input_instruction: "Troubleshoot the job log. Input: %<input>s."
               }
             }.freeze
 

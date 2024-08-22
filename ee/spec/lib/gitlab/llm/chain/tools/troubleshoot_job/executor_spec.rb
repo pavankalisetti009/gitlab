@@ -22,6 +22,16 @@ RSpec.describe Gitlab::Llm::Chain::Tools::TroubleshootJob::Executor, feature_cat
     )
   end
 
+  let(:expected_slash_commands) do
+    {
+      '/troubleshoot' => {
+        description: 'Troubleshoot a job based on the logs.',
+        selected_code_without_input_instruction: 'Troubleshoot the job log.',
+        selected_code_with_input_instruction: "Troubleshoot the job log. Input: %<input>s."
+      }
+    }
+  end
+
   subject(:tool) do
     described_class.new(
       context: context,
