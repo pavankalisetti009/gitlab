@@ -3,13 +3,11 @@ import { __, s__ } from '~/locale';
 import {
   generateBadges as CEGenerateBadges,
   roleDropdownItems as CERoleDropdownItems,
-  isDirectMember,
   handleMemberRoleUpdate as CEHandleMemberRoleUpdate,
 } from '~/members/utils';
 
 export {
   isGroup,
-  isDirectMember,
   isCurrentUser,
   canRemove,
   canRemoveBlockedByLastOwner,
@@ -95,7 +93,7 @@ export const canDisableTwoFactor = (member) => {
   return Boolean(member.canDisableTwoFactor);
 };
 
-export const canOverride = (member) => member.canOverride && isDirectMember(member);
+export const canOverride = (member) => member.canOverride && member.isDirectMember;
 
 export const canUnban = (member) => {
   return Boolean(member.banned) && member.canUnban;

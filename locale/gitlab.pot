@@ -19304,9 +19304,6 @@ msgstr ""
 msgid "Dimension"
 msgstr ""
 
-msgid "Direct member"
-msgstr ""
-
 msgid "Direct members"
 msgstr ""
 
@@ -28315,9 +28312,6 @@ msgstr ""
 msgid "Indexing status"
 msgstr ""
 
-msgid "Indirect"
-msgstr ""
-
 msgid "Inform users without uploaded SSH keys that they can't push over SSH until one is added"
 msgstr ""
 
@@ -28361,9 +28355,6 @@ msgid "InfrastructureRegistry|You have no Terraform modules in your group"
 msgstr ""
 
 msgid "InfrastructureRegistry|You have no Terraform modules in your project"
-msgstr ""
-
-msgid "Inherited"
 msgstr ""
 
 msgid "Inherited:"
@@ -32980,9 +32971,6 @@ msgstr[1] ""
 msgid "Membership"
 msgstr ""
 
-msgid "Members|%{group} by %{createdBy}"
-msgstr ""
-
 msgid "Members|%{time} by %{user}"
 msgstr ""
 
@@ -33052,6 +33040,9 @@ msgstr ""
 msgid "Members|Direct"
 msgstr ""
 
+msgid "Members|Direct member"
+msgstr ""
+
 msgid "Members|Direct member by %{createdBy}"
 msgstr ""
 
@@ -33083,6 +33074,12 @@ msgid "Members|Indirect"
 msgstr ""
 
 msgid "Members|Inherited"
+msgstr ""
+
+msgid "Members|Inherited from %{group}"
+msgstr ""
+
+msgid "Members|Invited group %{group}"
 msgstr ""
 
 msgid "Members|LDAP override enabled."

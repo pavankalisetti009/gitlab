@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe MemberEntity, feature_category: :system_access do
   let_it_be(:current_user) { create(:user) }
 
-  let(:entity) { described_class.new(member, { current_user: current_user, group: group }) }
+  let(:entity) { described_class.new(member, { current_user: current_user, group: group, source: source }) }
   let(:entity_hash) { entity.as_json }
 
   before do
@@ -85,6 +85,7 @@ RSpec.describe MemberEntity, feature_category: :system_access do
 
   context 'group member' do
     let(:group) { create(:group) }
+    let(:source) { group }
     let(:member) { GroupMemberPresenter.new(create(:group_member, group: group, created_by: current_user), current_user: current_user) }
 
     it_behaves_like 'member.json'
@@ -100,6 +101,7 @@ RSpec.describe MemberEntity, feature_category: :system_access do
   context 'project member' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
+    let(:source) { project }
     let_it_be(:member) { ProjectMemberPresenter.new(create(:project_member, project: project), current_user: current_user) }
 
     it_behaves_like 'member.json'
