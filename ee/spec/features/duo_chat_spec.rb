@@ -29,15 +29,14 @@ RSpec.describe 'Duo Chat', :js, :saas, :clean_gitlab_redis_cache, feature_catego
     let_it_be_with_reload(:group) { create(:group_with_plan, plan: :premium_plan) }
 
     let(:question) { 'Who are you?' }
-    let(:answer) { 'I am GitLab Duo Chat' }
-    let(:chat_response) { "Final Answer: #{answer}" }
+    let(:answer) { "Hello! I'm GitLab Duo Chat" }
+    let(:chat_response) do
+      create(:final_answer_multi_chunk, chunks: ["Hello", "!", " I", "'m Git", "Lab Duo", " Chat,"])
+    end
 
     before do
-      # TODO: remove with https://gitlab.com/gitlab-org/gitlab/-/issues/456258
-      stub_feature_flags(v2_chat_agent_integration: false)
-
-      stub_request(:post, "#{Gitlab::AiGateway.url}/v1/chat/agent")
-        .with(body: hash_including({ "stream" => true }))
+      stub_request(:post, "#{Gitlab::AiGateway.url}/v2/chat/agent")
+        .with(body: hash_including({ "prompt" => question }))
         .to_return(status: 200, body: chat_response)
 
       sign_in(user)
