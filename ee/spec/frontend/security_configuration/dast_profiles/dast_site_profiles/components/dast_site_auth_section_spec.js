@@ -110,7 +110,7 @@ describe('DastSiteAuthSection', () => {
 
       Object.keys(requiredFields).forEach((key) => {
         const input = findByNameAttribute(key);
-        expect(input.attributes('required')).toBe('required');
+        expect(input.attributes('required')).toBeDefined();
       });
 
       const optionalInput = findByNameAttribute('submitField');

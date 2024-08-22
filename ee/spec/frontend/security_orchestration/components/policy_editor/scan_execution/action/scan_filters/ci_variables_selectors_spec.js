@@ -32,7 +32,7 @@ describe('CiVariablesSelectors', () => {
     });
 
     it('displays the disabled "Add" button', () => {
-      expect(findAddButton().attributes('disabled')).toBe('true');
+      expect(findAddButton().attributes().disabled).toBe('true');
     });
 
     it('emits "input" with a new variable when the "Add" button is clicked', () => {
