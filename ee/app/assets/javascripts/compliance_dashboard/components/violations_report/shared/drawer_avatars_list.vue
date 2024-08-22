@@ -58,7 +58,7 @@ export default {
       :max-visible="$options.DRAWER_MAXIMUM_AVATARS"
       :avatar-size="$options.DRAWER_AVATAR_SIZE"
       :badge-sr-only-text="badgeSrOnlyText"
-      class="gl-flex-wrap !gl-w-full"
+      class="!gl-w-full gl-flex-wrap"
       badge-tooltip-prop="name"
     >
       <template #avatar="{ avatar }">

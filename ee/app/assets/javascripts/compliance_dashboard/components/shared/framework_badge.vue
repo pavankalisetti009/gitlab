@@ -85,7 +85,7 @@ export default {
       :title="framework.name"
       :target="() => $refs.label"
     >
-      <div v-if="framework.description" class="gl-text-left gl-mb-3">
+      <div v-if="framework.description" class="gl-mb-3 gl-text-left">
         {{ framework.description }}
       </div>
       <div class="gl-text-left">
@@ -94,7 +94,7 @@ export default {
           category="secondary"
           size="small"
           variant="confirm"
-          class="gl-font-sm"
+          class="gl-text-sm"
           @click="editFromPopover"
         >
           {{ $options.i18n.edit }}
@@ -104,7 +104,7 @@ export default {
           category="secondary"
           size="small"
           variant="confirm"
-          class="gl-font-sm"
+          class="gl-text-sm"
           @click="viewFrameworkDetails"
         >
           {{ $options.i18n.viewDetails }}
@@ -117,7 +117,7 @@ export default {
         :background-color="framework.color"
         :title="frameworkName"
         :show-close-button="closeable"
-        class="gl-md-max-w-26"
+        class="md:gl-max-w-26"
         @close="$emit('close')"
       />
     </span>

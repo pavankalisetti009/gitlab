@@ -192,28 +192,28 @@ export default {
     {
       key: 'severityLevel',
       label: __('Severity'),
-      thClass: `gl-p-5! gl-w-2/20`,
+      thClass: 'gl-w-2/20 !gl-p-5',
       tdClass: '!gl-align-middle',
       sortable: true,
     },
     {
       key: 'violationReason',
       label: __('Violation'),
-      thClass: `gl-p-5! gl-w-3/20`,
+      thClass: 'gl-w-3/20 !gl-p-5',
       tdClass: '!gl-align-middle',
       sortable: true,
     },
     {
       key: 'mergeRequestTitle',
       label: __('Merge request'),
-      thClass: `gl-p-5! gl-w-8/20`,
+      thClass: 'gl-w-8/20 !gl-p-5',
       tdClass: '!gl-align-middle',
       sortable: true,
     },
     {
       key: 'mergedAt',
       label: __('Date merged'),
-      thClass: `gl-p-5! gl-w-4/20`,
+      thClass: 'gl-w-4/20 !gl-p-5',
       tdClass: '!gl-align-middle',
       sortable: true,
     },
@@ -294,7 +294,7 @@ export default {
         </gl-button>
       </template>
     </gl-table>
-    <div v-if="showPagination" class="gl-display-flex gl-justify-content-center">
+    <div v-if="showPagination" class="gl-flex gl-justify-center">
       <gl-keyset-pagination
         v-bind="violations.pageInfo"
         :disabled="isLoading"

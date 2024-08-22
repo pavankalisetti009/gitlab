@@ -93,24 +93,19 @@ export default {
     first: 50,
     includeSubgroups: true,
   },
-  dateRangePickerClass: 'gl-display-flex gl-flex-direction-column gl-w-full gl-md-w-auto',
+  dateRangePickerClass: 'gl-flex gl-flex-col gl-w-full md:gl-w-auto',
 };
 </script>
 
 <template>
-  <div
-    class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row row-content-block gl-pb-0 gl-gap-5 gl-border-0"
-  >
-    <div
-      v-if="showProjectFilter"
-      class="gl-display-flex gl-flex-direction-column gl-mb-5 gl-sm-gap-3"
-    >
+  <div class="row-content-block gl-flex gl-flex-col gl-gap-5 gl-border-0 gl-pb-0 md:gl-flex-row">
+    <div v-if="showProjectFilter" class="gl-mb-5 gl-flex gl-flex-col sm:gl-gap-3">
       <label data-testid="dropdown-label" class="gl-leading-normal">{{
         $options.i18n.projectFilterLabel
       }}</label>
       <projects-dropdown-filter
         data-testid="violations-project-dropdown"
-        class="gl-mb-2 gl-lg-mb-0"
+        class="gl-mb-2 lg:gl-mb-0"
         toggle-classes="compliance-filter-dropdown-input"
         :group-namespace="groupPath"
         :query-params="$options.projectsFilterParams"
@@ -122,19 +117,19 @@ export default {
     </div>
 
     <gl-daterange-picker
-      class="gl-display-flex gl-mb-5"
+      class="gl-mb-5 gl-flex"
       data-testid="violations-date-range-picker"
       :default-start-date="defaultStartDate"
       :default-end-date="defaultEndDate"
       :default-max-date="$options.defaultMaxDate"
       :start-picker-class="`${$options.dateRangePickerClass}`"
       :end-picker-class="$options.dateRangePickerClass"
-      date-range-indicator-class="gl-m-0!"
+      date-range-indicator-class="!gl-m-0"
       :same-day-selection="false"
       @input="dateRangeChanged"
     />
 
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5 gl-md-pr-5 gl-sm-gap-3">
+    <div class="gl-mb-5 gl-flex gl-flex-col sm:gl-gap-3 md:gl-pr-5">
       <label for="target-branch-input" class="gl-leading-normal">
         {{ $options.i18n.branchFilterLabel }}
       </label>
@@ -142,7 +137,7 @@ export default {
         id="target-branch-input"
         :value="filterQuery.targetBranch"
         data-testid="violations-target-branch-input"
-        class="gl-mb-2 gl-lg-mb-0"
+        class="gl-mb-2 lg:gl-mb-0"
         :placeholder="$options.i18n.branchFilterPlaceholder"
         @submit="updateFilter({ targetBranch: $event })"
         @clear="updateFilter({ targetBranch: '' })"

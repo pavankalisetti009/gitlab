@@ -362,13 +362,13 @@ export default {
           :key="framework.id"
           closeable
           :show-edit="isFrameworkEditingEnabled"
-          class="gl-inline-block gl-mr-2 gl-my-2"
+          class="gl-my-2 gl-mr-2 gl-inline-block"
           :framework="framework"
           @close="handleItemDelete(id, framework.id, complianceFrameworks)"
         />
         <gl-loading-icon
           v-if="hasPendingSingleOperation(id)"
-          class="gl-inline-block gl-mr-2 gl-my-2"
+          class="gl-my-2 gl-mr-2 gl-inline-block"
           size="sm"
           inline
         />

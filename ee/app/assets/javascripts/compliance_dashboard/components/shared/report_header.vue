@@ -28,9 +28,9 @@ export default {
 };
 </script>
 <template>
-  <header class="gl-my-6 gl-flex gl-flex-col lg:gl-flex-row gl-justify-between">
+  <header class="gl-my-6 gl-flex gl-flex-col gl-justify-between lg:gl-flex-row">
     <div>
-      <h2 class="gl-flex-grow-1 gl-my-0" data-testid="heading">{{ heading }}</h2>
+      <h2 class="gl-my-0 gl-grow" data-testid="heading">{{ heading }}</h2>
       <p class="gl-mt-5" data-testid="subheading">
         {{ subheading }}
         <gl-link :href="documentationPath">{{ $options.i18n.learnMore }}</gl-link>

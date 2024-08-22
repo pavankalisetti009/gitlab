@@ -49,14 +49,14 @@ export default {
 <template>
   <div>
     <div
-      class="gl-display-flex gl-bg-gray-10 gl-p-4 gl-my-4 gl-align-items-center"
+      class="gl-my-4 gl-flex gl-items-center gl-bg-gray-10 gl-p-4"
       :class="{
         'gl-cursor-pointer': expandable,
       }"
       @click="toggleExpand"
     >
-      <div class="gl-flex-grow-1">
-        <div class="gl-font-bold gl-font-size-h2">
+      <div class="gl-grow">
+        <div class="gl-text-size-h2 gl-font-bold">
           {{ title }}
         </div>
         <span>{{ description }}</span>

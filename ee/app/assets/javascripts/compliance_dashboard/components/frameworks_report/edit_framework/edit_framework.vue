@@ -223,7 +223,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border-t-1 gl-border-t-solid gl-border-t-gray-100 gl-pt-5">
+  <div class="gl-border-t-1 gl-border-t-gray-100 gl-pt-5 gl-border-t-solid">
     <gl-alert v-if="errorMessage" class="gl-mb-5" variant="danger" :dismissible="false">
       {{ errorMessage }}
     </gl-alert>
@@ -247,7 +247,7 @@ export default {
 
         <projects-section v-if="!isNewFramework" :compliance-framework="formData" />
 
-        <div class="gl-display-flex gl-pt-5 gl-gap-3">
+        <div class="gl-flex gl-gap-3 gl-pt-5">
           <gl-button
             type="submit"
             variant="confirm"

@@ -97,10 +97,10 @@ export default {
       <div>
         <h2 class="gl-mt-0" data-testid="sidebar-title">{{ adherenceCheckName }}</h2>
         <div>
-          <span v-if="isFailedStatus" class="gl-text-red-500 gl-font-bold">
+          <span v-if="isFailedStatus" class="gl-font-bold gl-text-red-500">
             <gl-icon name="status_failed" /> {{ __('Fail') }}
           </span>
-          <span v-else class="gl-text-green-500 gl-font-bold">
+          <span v-else class="gl-font-bold gl-text-green-500">
             <gl-icon name="status_success" /> {{ __('Success') }}
           </span>
 
@@ -164,7 +164,7 @@ export default {
         </div>
       </div>
       <div v-if="project.complianceFrameworks.nodes.length">
-        <h3 class="gl-mt-0 gl-font-lg" data-testid="sidebar-frameworks-title">
+        <h3 class="gl-mt-0 gl-text-lg" data-testid="sidebar-frameworks-title">
           {{ s__('ComplianceStandardsAdherence|All attached frameworks') }}
         </h3>
 
@@ -181,7 +181,7 @@ export default {
           <framework-badge
             :framework="framework"
             show-edit
-            class="gl-display-inline-block gl-mt-3 gl-mr-2"
+            class="gl-mr-2 gl-mt-3 gl-inline-block"
           />
         </span>
       </div>

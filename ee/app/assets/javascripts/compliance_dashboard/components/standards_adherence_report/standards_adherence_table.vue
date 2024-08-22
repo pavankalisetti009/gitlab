@@ -152,24 +152,24 @@ export default {
     <gl-alert v-if="hasRawTextError" variant="warning" class="gl-mt-3" :dismissible="false">
       {{ $options.i18n.rawFiltersNotSupported }}
     </gl-alert>
-    <div class="gl-display-flex gl-md-flex-direction-row row-content-block gl-border-0">
-      <div class="gl-display-flex gl-flex-direction-column">
+    <div class="row-content-block gl-flex gl-border-0 md:gl-flex-row">
+      <div class="gl-flex gl-flex-col">
         <label data-testid="dropdown-label" class="gl-leading-normal">
           {{ $options.i18n.groupByText }}
         </label>
         <gl-disclosure-dropdown
-          class="gl-mr-6 gl-lg-mb-0"
+          class="gl-mr-6 lg:gl-mb-0"
           :items="dropdownItems"
           :toggle-text="selected"
           @action="onGroupSelected"
         />
       </div>
-      <div class="gl-display-flex gl-flex-direction-column gl-flex-grow-2">
+      <div class="gl-flex gl-grow-2 gl-flex-col">
         <label for="target-branch-input" class="gl-leading-normal">
           {{ $options.i18n.filterByText }}
         </label>
         <filters
-          class="gl-mb-2 gl-lg-mb-0"
+          class="gl-mb-2 lg:gl-mb-0"
           :projects="projectsForFilter"
           :group-path="groupPath"
           @submit="onFiltersChanged"

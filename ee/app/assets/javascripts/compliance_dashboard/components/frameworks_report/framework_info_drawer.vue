@@ -122,7 +122,7 @@ export default {
     @close="$emit('close')"
   >
     <template v-if="framework" #title>
-      <div class="gl-display-flex gl-flex-wrap gl-items-center gl-gap-4">
+      <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-4">
         <h2 class="gl-heading-2" data-testid="framework-name">
           {{ framework.name }}
         </h2>
@@ -173,7 +173,7 @@ export default {
             <gl-icon
               id="framework-id-info"
               name="question-o"
-              class="gl-text-blue-500 gl-mb-5 gl-ml-3"
+              class="gl-mb-5 gl-ml-3 gl-text-blue-500"
             />
             <gl-popover
               target="framework-id-info"
@@ -213,7 +213,7 @@ export default {
             {{ framework.description }}
           </span>
         </div>
-        <div class="gl-my-5 gl-border-t" data-testid="sidebar-projects">
+        <div class="gl-border-t gl-my-5" data-testid="sidebar-projects">
           <h3 data-testid="sidebar-projects-title" class="gl-heading-3 gl-mt-5">
             {{ associatedProjectsTitle }}
           </h3>
@@ -227,7 +227,7 @@ export default {
             </li>
           </ul>
         </div>
-        <div class="gl-mb-5 gl-border-t" data-testid="sidebar-policies">
+        <div class="gl-border-t gl-mb-5" data-testid="sidebar-policies">
           <h3 data-testid="sidebar-policies-title" class="gl-heading-3 gl-mt-5">
             {{ policiesTitle }}
           </h3>

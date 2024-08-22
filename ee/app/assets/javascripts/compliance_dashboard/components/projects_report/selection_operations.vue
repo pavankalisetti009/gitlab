@@ -159,9 +159,9 @@ export default {
 </script>
 
 <template>
-  <section class="gl-border-gray-100 gl-border-t md:gl-px-5 gl-py-5 md:gl-flex gl-items-center">
+  <section class="gl-border-t gl-items-center gl-border-gray-100 gl-py-5 md:gl-flex md:gl-px-5">
     <span
-      class="gl-inline-block gl-border-0 md:gl-border-r-1 gl-border-gray-100 gl-border-solid gl-pr-5 gl-mb-3 md:gl-mb-0"
+      class="gl-mb-3 gl-inline-block gl-border-0 gl-border-solid gl-border-gray-100 gl-pr-5 md:gl-mb-0 md:gl-border-r-1"
     >
       <gl-sprintf :message="__('%{count} selected')">
         <template #count>
@@ -172,10 +172,10 @@ export default {
     <gl-tooltip :target="() => $refs.operations" :disabled="hasSelection">
       {{ $options.i18n.operationSelectionTooltip }}
     </gl-tooltip>
-    <div ref="operations" class="md:gl-pl-5 gl-pl-0 gl-mb-4 md:gl-mb-0">
+    <div ref="operations" class="gl-mb-4 gl-pl-0 md:gl-mb-0 md:gl-pl-5">
       <gl-collapsible-listbox
         v-model="selectedOperation"
-        class="gl-block md:gl-inline gl-mb-2 md:gl-mb-0"
+        class="gl-mb-2 gl-block md:gl-mb-0 md:gl-inline"
         data-testid="choose-bulk-action"
         :disabled="!hasSelection"
         :toggle-text="
