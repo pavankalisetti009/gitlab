@@ -30310,8 +30310,6 @@ CREATE INDEX index_vulnerability_reads_common_attrs_and_detection_for_groups ON 
 
 CREATE INDEX index_vulnerability_reads_common_finder_query_2 ON vulnerability_reads USING btree (project_id, state, report_type, severity, vulnerability_id DESC, dismissal_reason);
 
-CREATE INDEX index_vulnerability_reads_common_finder_query_w_namespace_id ON vulnerability_reads USING btree (namespace_id, state, report_type, severity, vulnerability_id DESC, dismissal_reason);
-
 CREATE INDEX index_vulnerability_reads_for_vulnerability_export ON vulnerability_reads USING btree (traversal_ids, vulnerability_id) WHERE (archived = false);
 
 CREATE INDEX index_vulnerability_reads_on_cluster_agent_id ON vulnerability_reads USING btree (cluster_agent_id) WHERE (report_type = 7);
@@ -30321,8 +30319,6 @@ CREATE INDEX index_vulnerability_reads_on_location_image ON vulnerability_reads 
 CREATE INDEX index_vulnerability_reads_on_location_image_partial ON vulnerability_reads USING btree (project_id, location_image) WHERE ((report_type = ANY (ARRAY[2, 7])) AND (location_image IS NOT NULL));
 
 CREATE INDEX index_vulnerability_reads_on_location_image_trigram ON vulnerability_reads USING gin (location_image gin_trgm_ops) WHERE ((report_type = ANY (ARRAY[2, 7])) AND (location_image IS NOT NULL));
-
-CREATE INDEX index_vulnerability_reads_on_namespace_type_severity_id ON vulnerability_reads USING btree (namespace_id, report_type, severity, vulnerability_id);
 
 CREATE INDEX index_vulnerability_reads_on_project_id_and_vulnerability_id ON vulnerability_reads USING btree (project_id, vulnerability_id);
 
@@ -32980,9 +32976,6 @@ ALTER TABLE ONLY ml_model_versions
 
 ALTER TABLE ONLY user_achievements
     ADD CONSTRAINT fk_4efde02858 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_reads
-    ADD CONSTRAINT fk_4f593f6c62 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY approval_group_rules_protected_branches
     ADD CONSTRAINT fk_4f85f13b20 FOREIGN KEY (approval_group_rule_id) REFERENCES approval_group_rules(id) ON DELETE CASCADE;
