@@ -297,7 +297,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <rule-section
@@ -311,7 +311,7 @@ export default {
           @remove="removeActionOrRule($options.RULE, index)"
         />
 
-        <div class="gl-bg-gray-10 gl-rounded-base gl-p-5 gl-mb-5">
+        <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
           <gl-button variant="link" data-testid="add-rule" @click="addRule">
             {{ $options.i18n.ADD_CONDITION_LABEL }}
           </gl-button>
@@ -326,7 +326,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <scan-action
@@ -342,7 +342,7 @@ export default {
           @parsing-error="handleActionBuilderParsingError"
         />
 
-        <div class="gl-bg-gray-10 gl-rounded-base gl-p-5 gl-mb-5">
+        <div class="gl-mb-5 gl-rounded-base gl-bg-gray-10 gl-p-5">
           <gl-button variant="link" data-testid="add-action" icon="plus" @click="addAction">
             {{ $options.i18n.ADD_ACTION_LABEL }}
           </gl-button>

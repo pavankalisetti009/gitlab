@@ -32,7 +32,7 @@ export default {
 </script>
 
 <template>
-  <gl-button-group class="gl-display-flex">
+  <gl-button-group class="gl-flex">
     <gl-button
       v-for="{ text, day } in buttons"
       :key="day"

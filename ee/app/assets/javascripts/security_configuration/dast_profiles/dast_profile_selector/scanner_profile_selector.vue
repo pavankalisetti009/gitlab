@@ -67,7 +67,7 @@ export default {
 <template>
   <div>
     <div class="gl-mb-4">
-      <h4 class="gl-font-lg gl-mt-0 gl-mb-2">
+      <h4 class="gl-mb-2 gl-mt-0 gl-text-lg">
         {{ $options.i18n.emptyStateHeader }}
       </h4>
       <p>

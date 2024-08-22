@@ -42,7 +42,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-bg-gray-50 gl-rounded-base gl-mx-6 gl-border-0 gl-mb-5">
+  <div class="gl-mx-6 gl-mb-5 gl-rounded-base gl-border-0 gl-bg-gray-50">
     <pipeline-details
       class="gl-mb-4 gl-text-gray-50"
       :status="status"
@@ -53,7 +53,7 @@ export default {
     <div
       v-gl-tooltip
       :title="tooltipLabel"
-      class="gl-display-flex gl-py-2 gl-align-items-center gl-justify-content-center gl-border gl-rounded-base gl-bg-white"
+      class="gl-border gl-flex gl-items-center gl-justify-center gl-rounded-base gl-bg-white gl-py-2"
       data-testid="pre-scan-status"
       :style="styling.borderColor"
     >

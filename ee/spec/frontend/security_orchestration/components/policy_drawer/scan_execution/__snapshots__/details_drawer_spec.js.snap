@@ -5,13 +5,13 @@ exports[`DetailsDrawer component default policy renders the correct policy actio
   data-testid="policy-summary"
 >
   <h5
-    class="gl-mt-6 gl-text-body"
+    class="gl-mt-6 gl-text-primary"
     data-testid="label"
   >
     Summary
   </h5>
   <p
-    class="gl-text-body"
+    class="gl-text-primary"
     data-testid="content"
   >
     <div
@@ -54,13 +54,13 @@ exports[`DetailsDrawer component multiple action policy renders the correct poli
   data-testid="policy-summary"
 >
   <h5
-    class="gl-mt-6 gl-text-body"
+    class="gl-mt-6 gl-text-primary"
     data-testid="label"
   >
     Summary
   </h5>
   <p
-    class="gl-text-body"
+    class="gl-text-primary"
     data-testid="content"
   >
     <div
@@ -145,13 +145,13 @@ exports[`DetailsDrawer component no action policy renders the correct policy act
   data-testid="policy-summary"
 >
   <h5
-    class="gl-mt-6 gl-text-body"
+    class="gl-mt-6 gl-text-primary"
     data-testid="label"
   >
     Summary
   </h5>
   <p
-    class="gl-text-body"
+    class="gl-text-primary"
     data-testid="content"
   >
     No actions defined - policy will not run.
@@ -174,13 +174,13 @@ exports[`DetailsDrawer component policy with tags and CI variables renders the c
   data-testid="policy-summary"
 >
   <h5
-    class="gl-mt-6 gl-text-body"
+    class="gl-mt-6 gl-text-primary"
     data-testid="label"
   >
     Summary
   </h5>
   <p
-    class="gl-text-body"
+    class="gl-text-primary"
     data-testid="content"
   >
     <div
@@ -197,7 +197,7 @@ exports[`DetailsDrawer component policy with tags and CI variables renders the c
         >
           On runners with tag:
           <div
-            class="gl-display-flex gl-flex-wrap gl-gap-2 gl-mt-2"
+            class="gl-flex gl-flex-wrap gl-gap-2 gl-mt-2"
           >
             <span
               class="badge badge-info badge-pill gl-badge"
@@ -248,13 +248,13 @@ exports[`DetailsDrawer component policy with unsupported attributes renders the 
   data-testid="policy-summary"
 >
   <h5
-    class="gl-mt-6 gl-text-body"
+    class="gl-mt-6 gl-text-primary"
     data-testid="label"
   >
     Summary
   </h5>
   <p
-    class="gl-text-body"
+    class="gl-text-primary"
     data-testid="content"
   >
     <div

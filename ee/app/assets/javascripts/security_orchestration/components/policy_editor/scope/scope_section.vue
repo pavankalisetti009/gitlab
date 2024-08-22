@@ -373,11 +373,11 @@ export default {
 
     <loader-with-message v-if="showLoader" />
 
-    <div v-else class="gl-flex gl-gap-3 gl-items-center gl-flex-wrap gl-mt-2">
+    <div v-else class="gl-mt-2 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <template v-if="showLinkedSppItemsError">
         <div data-testid="policy-scope-project-error" class="gl-flex gl-items-center gl-gap-3">
           <gl-icon class="gl-text-red-500" name="status_warning" />
-          <p data-testid="policy-scope-project-error-text" class="gl-text-red-500 gl-m-0">
+          <p data-testid="policy-scope-project-error-text" class="gl-m-0 gl-text-red-500">
             {{ $options.i18n.policyScopeErrorText }}
           </p>
         </div>
@@ -386,7 +386,7 @@ export default {
       <template v-else-if="showScopeSelector">
         <div
           :class="{ 'gl-text-gray-400': disableScopeSelector }"
-          class="gl-flex gl-gap-3 gl-items-center gl-flex-wrap"
+          class="gl-flex gl-flex-wrap gl-items-center gl-gap-3"
         >
           <gl-sprintf :message="policyScopeCopy">
             <template #projectScopeType>
@@ -406,7 +406,7 @@ export default {
             </template>
 
             <template #frameworkSelector>
-              <div class="gl-inline-flex gl-items-center gl-flex-wrap gl-gap-3">
+              <div class="gl-inline-flex gl-flex-wrap gl-items-center gl-gap-3">
                 <compliance-framework-dropdown
                   :disabled="disableScopeSelector"
                   :selected-framework-ids="complianceFrameworksIds"
@@ -430,7 +430,7 @@ export default {
             <template #projectSelector>
               <scope-group-selector
                 v-if="showScopeGroupSelector && showPolicyGroupScope"
-                class="gl-flex-basis-full"
+                class="gl-basis-full"
                 :exception-type="selectedExceptionType"
                 :groups="groups"
                 :projects="projects"

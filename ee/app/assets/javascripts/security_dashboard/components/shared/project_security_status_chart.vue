@@ -167,8 +167,8 @@ export default {
     </template>
 
     <accordion
-      class="gl-px-5 gl-display-flex gl-flex-grow-1 gl-border-t-1 gl-border-t-solid gl-border-t-gray-100"
-      :list-classes="['gl-display-flex', 'gl-flex-grow-1']"
+      class="gl-flex gl-grow gl-border-t-1 gl-border-t-gray-100 gl-px-5 gl-border-t-solid"
+      :list-classes="['gl-flex', 'gl-grow']"
     >
       <template #default="{ accordionId }">
         <accordion-item
@@ -179,17 +179,17 @@ export default {
           :accordion-id="accordionId"
           :disabled="shouldAccordionItemBeDisabled(severityGroup)"
           :max-height="$options.accordionItemsContentMaxHeight"
-          class="gl-display-flex gl-flex-grow-1 gl-flex-direction-column gl-justify-content-center"
+          class="gl-flex gl-grow gl-flex-col gl-justify-center"
         >
           <template #title="{ isExpanded, isDisabled }">
             <h5
-              class="gl-display-flex gl-align-items-center gl-font-normal gl-p-0 gl-m-0"
+              class="gl-m-0 gl-flex gl-items-center gl-p-0 gl-font-normal"
               data-testid="vulnerability-severity-groups"
             >
               <span
                 v-gl-tooltip
                 :title="severityGroup.description"
-                class="gl-font-bold gl-mr-5 gl-font-lg"
+                class="gl-mr-5 gl-text-lg gl-font-bold"
                 :class="cssForSeverityGroup(severityGroup)"
               >
                 {{ severityGroup.type }}
@@ -214,7 +214,7 @@ export default {
                 <span
                   v-if="project.mostSevereVulnerability"
                   ref="mostSevereCount"
-                  class="gl-block text-lowercase"
+                  class="text-lowercase gl-block"
                   :class="cssForMostSevereVulnerability(project.mostSevereVulnerability)"
                   >{{ project.mostSevereVulnerability.count }}
                   {{ severityText(project.mostSevereVulnerability.level) }}

@@ -76,7 +76,7 @@ export default {
     <gl-collapse :visible="isSelectingVulnerabilities" data-testid="selection-summary-collapse">
       <selection-summary />
     </gl-collapse>
-    <div class="gl-responsive-table-row table-row-header gl-bg-gray-50 text-2 px-2" role="row">
+    <div class="gl-responsive-table-row table-row-header text-2 px-2 gl-bg-gray-50" role="row">
       <div v-if="canAdminVulnerability" class="table-section section-5">
         <gl-form-checkbox
           :checked="hasSelectedAllVulnerabilities"

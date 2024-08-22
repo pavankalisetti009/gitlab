@@ -7,9 +7,9 @@ export default {
 <template>
   <div>
     <div
-      class="gl-bg-gray-10 gl-display-flex gl-flex-direction-column gl-text-center gl-align-items-center gl-p-6 gl-rounded-small gl-mb-5"
+      class="gl-mb-5 gl-flex gl-flex-col gl-items-center gl-rounded-small gl-bg-gray-10 gl-p-6 gl-text-center"
     >
-      <h5 class="gl-h5 gl-text-gray-500 gl-mt-0 gl-mb-2">
+      <h5 class="gl-h5 gl-mb-2 gl-mt-0 gl-text-gray-500">
         <slot name="header"></slot>
       </h5>
       <span class="gl-text-gray-500">

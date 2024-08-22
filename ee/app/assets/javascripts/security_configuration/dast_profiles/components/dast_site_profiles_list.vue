@@ -168,7 +168,7 @@ export default {
   <profiles-list :full-path="fullPath" :profiles="profiles" v-bind="$attrs" v-on="$listeners">
     <template #head(validationStatus)="{ label }">
       {{ label }}
-      <gl-link :href="$options.DOCS_LINK" target="_blank" class="gl-text-gray-300 gl-ml-2">
+      <gl-link :href="$options.DOCS_LINK" target="_blank" class="gl-ml-2 gl-text-gray-300">
         <gl-icon name="question-o" />
       </gl-link>
     </template>

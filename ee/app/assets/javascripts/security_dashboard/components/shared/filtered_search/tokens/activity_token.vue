@@ -216,10 +216,10 @@ export default {
           <gl-dropdown-section-header v-if="group.text" :key="group.text"
             ><div
               v-if="group.icon"
-              class="gl-flex gl-justify-center gl-items-center"
+              class="gl-flex gl-items-center gl-justify-center"
               :data-testid="`header-${group.text}`"
             >
-              <div class="gl-flex-grow-1">{{ group.text }}</div>
+              <div class="gl-grow">{{ group.text }}</div>
               <gl-badge :icon="group.icon" :variant="group.variant" /></div
           ></gl-dropdown-section-header>
           <gl-filtered-search-suggestion
@@ -227,10 +227,10 @@ export default {
             :key="activity.value"
             :value="activity.value"
           >
-            <div class="gl-display-flex gl-align-items-center">
+            <div class="gl-flex gl-items-center">
               <gl-icon
                 name="check"
-                class="gl-mr-3 gl-flex-shrink-0 gl-text-gray-700"
+                class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
                 :class="{ 'gl-invisible': !isActivitySelected(activity.value) }"
                 :data-testid="`status-icon-${activity.value}`"
               />

@@ -311,7 +311,7 @@ export default {
       <gl-form-group
         v-if="isTargetAPI"
         id="scan-method-popover-container"
-        class="gl-border bl-border-red"
+        class="bl-border-red gl-border"
         :label="$options.i18n.scanMethod.label"
       >
         <gl-form-select
@@ -406,7 +406,7 @@ export default {
             <gl-icon
               id="request-headers-info"
               name="information-o"
-              class="gl-vertical-align-text-bottom gl-text-gray-400 gl-ml-2"
+              class="gl-ml-2 gl-align-text-bottom gl-text-gray-400"
             />
             <gl-popover
               data-testid="request-headers-tooltip"
@@ -416,7 +416,7 @@ export default {
             >
               <gl-sprintf :message="i18n.requestHeadersTooltip">
                 <template #link="{ content }">
-                  <gl-link class="gl-font-sm" :href="dastRequestHeadersHelpPath" target="_blank"
+                  <gl-link class="gl-text-sm" :href="dastRequestHeadersHelpPath" target="_blank"
                     >{{ content }}
                   </gl-link>
                 </template>

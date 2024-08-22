@@ -244,7 +244,7 @@ export default {
   <section class="container">
     <div class="row justify-content-center mt-md-4">
       <div class="col col-lg-7">
-        <h3 class="gl-font-lg gl-font-bold gl-mt-0">
+        <h3 class="gl-mt-0 gl-text-lg gl-font-bold">
           {{ s__('SecurityReports|Monitored projects') }}
         </h3>
         <p class="gl-mb-4 gl-pb-3">
@@ -254,7 +254,7 @@ export default {
             )
           }}
         </p>
-        <div class="gl-flex flex-column flex-md-row">
+        <div class="flex-column flex-md-row gl-flex">
           <project-selector
             class="flex-grow mr-md-2"
             :project-search-results="projectSearchResults"

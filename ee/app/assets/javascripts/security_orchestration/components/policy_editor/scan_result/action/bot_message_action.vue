@@ -30,14 +30,14 @@ export default {
 <template>
   <section-layout @remove="$emit('remove')">
     <template #content>
-      <div class="gl-flex-direction-column gl-mt-3">
+      <div class="gl-mt-3 gl-flex-col">
         <gl-sprintf :message="$options.i18n.contentText">
           <template #bold="{ content }">
             <b>{{ content }}</b>
           </template>
         </gl-sprintf>
         <gl-link
-          class="gl-block gl-mt-5 gl-min-w-fit"
+          class="gl-mt-5 gl-block gl-min-w-fit"
           :href="$options.documentationLink"
           target="_blank"
         >

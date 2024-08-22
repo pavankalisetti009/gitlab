@@ -129,7 +129,7 @@ export default {
       </gl-sprintf>
     </p>
 
-    <div class="gl-w-full gl-h-full gl-border-1 gl-border-solid gl-border-gray-100">
+    <div class="gl-h-full gl-w-full gl-border-1 gl-border-solid gl-border-gray-100">
       <source-editor ref="editor" :value="yaml" file-name="*.yml" :editor-options="editorOptions" />
     </div>
   </gl-modal>

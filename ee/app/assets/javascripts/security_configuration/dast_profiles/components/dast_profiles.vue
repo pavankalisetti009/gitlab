@@ -224,7 +224,7 @@ export default {
   <section>
     <dast-failed-site-validations :full-path="projectFullPath" />
     <header>
-      <div class="gl-display-flex gl-align-items-center gl-pt-6 gl-pb-4">
+      <div class="gl-flex gl-items-center gl-pb-4 gl-pt-6">
         <h2 class="my-0">
           {{ $options.i18n.heading }}
         </h2>

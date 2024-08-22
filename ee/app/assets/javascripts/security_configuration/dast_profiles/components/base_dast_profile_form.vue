@@ -171,7 +171,7 @@ export default {
       @dismiss="hideErrors"
     >
       <slot name="error-message"></slot>
-      <ul v-if="errors.length" class="gl-mt-3 gl-mb-0">
+      <ul v-if="errors.length" class="gl-mb-0 gl-mt-3">
         <li v-for="error in errors" :key="error" v-text="error"></li>
       </ul>
     </gl-alert>

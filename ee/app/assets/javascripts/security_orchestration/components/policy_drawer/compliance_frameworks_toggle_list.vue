@@ -70,7 +70,7 @@ export default {
       {{ header }}
     </p>
 
-    <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+    <div class="gl-flex gl-flex-wrap gl-gap-3">
       <gl-label
         v-for="item in complianceFrameworksFormatted"
         :key="item.id"

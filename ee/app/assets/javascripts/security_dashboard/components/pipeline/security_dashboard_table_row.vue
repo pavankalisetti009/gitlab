@@ -207,8 +207,8 @@ export default {
         <template v-else>
           <gl-button
             ref="vulnerability-title"
-            class="text-body gl-display-grid"
-            button-text-classes="gl-text-left gl-whitespace-normal! gl-pr-4!"
+            class="text-body gl-grid"
+            button-text-classes="gl-text-left gl-whitespace-normal! !gl-pr-4"
             variant="link"
             data-testid="security-finding-name-button"
             :data-qa-status-description="vulnerability.name"
@@ -221,13 +221,13 @@ export default {
           </span>
           <span
             v-if="isJiraIssueCreationEnabled && hasJiraIssue"
-            class="gl-inline-flex gl-align-items-baseline"
+            class="gl-inline-flex gl-items-baseline"
           >
             <span
               v-safe-html="$options.jiraLogo"
               v-gl-tooltip
               :title="s__('SecurityReports|Jira Issue Created')"
-              class="gl-align-self-end gl-mr-2"
+              class="gl-mr-2 gl-self-end"
               data-testid="jira-issue-icon"
             >
             </span>
@@ -246,17 +246,17 @@ export default {
             :project-name="vulnerability.project.name"
           />
 
-          <small v-if="vulnerabilityNamespace" class="gl-text-gray-500 gl-break-all">
+          <small v-if="vulnerabilityNamespace" class="gl-break-all gl-text-gray-500">
             {{ vulnerabilityNamespace }}
           </small>
         </template>
       </div>
     </div>
 
-    <div class="table-section gl-whitespace-normal section-15">
+    <div class="table-section section-15 gl-whitespace-normal">
       <div class="table-mobile-header" role="rowheader">{{ s__('Reports|Identifier') }}</div>
       <div class="table-mobile-content">
-        <div class="gl-text-overflow-ellipsis gl-overflow-hidden" :title="vulnerabilityIdentifier">
+        <div class="gl-overflow-hidden gl-text-ellipsis" :title="vulnerabilityIdentifier">
           {{ vulnerabilityIdentifier }}
         </div>
         <div v-if="shouldShowExtraIdentifierCount" class="gl-text-gray-300">
@@ -283,7 +283,7 @@ export default {
 
     <div class="table-section section-20">
       <div class="table-mobile-header" role="rowheader">{{ s__('Reports|Actions') }}</div>
-      <div class="table-mobile-content action-buttons gl-flex justify-content-end">
+      <div class="table-mobile-content action-buttons justify-content-end gl-flex">
         <vulnerability-action-buttons
           v-if="!isLoading"
           :vulnerability="vulnerability"

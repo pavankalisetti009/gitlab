@@ -274,10 +274,10 @@ export default {
     @select-all="selectItems(itemsIds)"
   >
     <template #list-item="{ item }">
-      <span :class="['gl-display-block', { 'gl-font-bold': item.fullPath }]">
+      <span :class="['gl-block', { 'gl-font-bold': item.fullPath }]">
         <gl-truncate :text="item.text" with-tooltip />
       </span>
-      <span v-if="item.fullPath" class="gl-display-block gl-text-gray-700 gl-font-sm gl-mt-1">
+      <span v-if="item.fullPath" class="gl-mt-1 gl-block gl-text-sm gl-text-gray-700">
         <gl-truncate position="middle" :text="item.fullPath" with-tooltip />
       </span>
     </template>

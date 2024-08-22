@@ -72,7 +72,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-py-5 gl-border-b gl-border-b-gray-100">
+  <div class="gl-border-b gl-border-b-gray-100 gl-py-5">
     <gl-badge :variant="badgeVariant">{{ badgeText }}</gl-badge>
     <span class="gl-ml-2">
       <span data-testid="dast-header-text">{{ headerText }}</span>

@@ -169,8 +169,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-w-full gl-flex-direction-column gl-gap-3">
-    <div class="gl-display-flex gl-gap-3 gl-align-items-center gl-flex-wrap">
+  <div class="gl-flex gl-w-full gl-flex-col gl-gap-3">
+    <div class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <gl-sprintf :message="fileBlockMessage">
         <template #strategySelector>
           <code-block-strategy-selector :strategy="strategy" @select="setStrategy" />
@@ -215,7 +215,7 @@ export default {
       </gl-sprintf>
     </div>
 
-    <div class="gl-display-flex gl-w-full gl-gap-3 gl-align-items-baseline gl-flex-nowrap">
+    <div class="gl-flex gl-w-full gl-flex-nowrap gl-items-baseline gl-gap-3">
       <gl-sprintf :message="$options.i18n.filePathInputCopy">
         <template #label="{ content }">
           <span class="gl-whitespace-nowrap">{{ content }}</span>
@@ -223,7 +223,7 @@ export default {
 
         <template #filePath>
           <gl-form-group
-            class="gl-w-full gl-mb-0"
+            class="gl-mb-0 gl-w-full"
             label-sr-only
             :label="$options.i18n.formGroupLabel"
             :optional="false"
@@ -247,7 +247,7 @@ export default {
                     title: selectedProjectTooltip,
                   }"
                   :class="{ 'gl-border-gray-100': !selectedProjectId }"
-                  class="gl-max-w-26 gl-max-h-full!"
+                  class="!gl-max-h-full gl-max-w-26"
                 >
                   <gl-truncate :text="selectedProjectFullPath" position="start" />
                 </gl-input-group-text>
@@ -260,7 +260,7 @@ export default {
 
     <div
       data-testid="pipeline-execution-ref-selector"
-      class="gl-flex gl-w-full gl-gap-3 gl-items-baseline gl-flex-nowrap"
+      class="gl-flex gl-w-full gl-flex-nowrap gl-items-baseline gl-gap-3"
     >
       <gl-sprintf :message="$options.i18n.fileRefCopy">
         <template #refSelector>

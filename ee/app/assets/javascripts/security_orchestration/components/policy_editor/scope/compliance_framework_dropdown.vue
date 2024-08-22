@@ -257,7 +257,7 @@ export default {
           <div class="gl-border-t">
             <gl-button
               category="tertiary"
-              class="gl-w-full gl-justify-content-start!"
+              class="gl-w-full !gl-justify-start"
               target="_blank"
               @click="showCreateFrameworkForm"
             >

@@ -75,10 +75,7 @@ export default {
 </script>
 
 <template>
-  <div
-    v-if="showDefaultMode"
-    class="gl-display-flex gl-text-gray-700 gl-align-items-center gl-gap-3"
-  >
+  <div v-if="showDefaultMode" class="gl-flex gl-items-center gl-gap-3 gl-text-gray-700">
     <span>{{ $options.i18n.defaultModeText }}</span>
     <gl-icon v-gl-tooltip name="status_warning" :title="$options.i18n.allGroupText" />
   </div>

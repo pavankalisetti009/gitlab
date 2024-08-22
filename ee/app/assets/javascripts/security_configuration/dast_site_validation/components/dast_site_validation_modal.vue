@@ -271,7 +271,7 @@ export default {
         v-else-if="isHttpHeaderValidation"
         :label="s__('DastSiteValidation|Step 2 - Add the following HTTP header to your site.')"
       >
-        <code class="gl-p-3 gl-bg-black gl-text-white">{{ httpHeader }}</code>
+        <code class="gl-bg-black gl-p-3 gl-text-white">{{ httpHeader }}</code>
         <modal-copy-button
           :text="httpHeader"
           :title="s__('DastSiteValidation|Copy HTTP header to clipboard')"
@@ -282,7 +282,7 @@ export default {
         v-else-if="isMetaTagValidation"
         :label="s__('DastSiteValidation|Step 2 - Add the following meta tag to your site.')"
       >
-        <code class="gl-p-3 gl-bg-black gl-text-white">{{ metaTag }}</code>
+        <code class="gl-bg-black gl-p-3 gl-text-white">{{ metaTag }}</code>
         <modal-copy-button
           :text="metaTag"
           :title="s__('DastSiteValidation|Copy Meta tag to clipboard')"
@@ -298,7 +298,7 @@ export default {
           </template>
           <gl-form-input
             v-model="validationPath"
-            class="gl-bg-white!"
+            class="!gl-bg-white"
             data-testid="dast-site-validation-path-input"
             @input="onValidationPathInput()"
           />

@@ -17,13 +17,13 @@ export default {
 
 <template>
   <section
-    class="gl-border-solid gl-rounded-base gl-border-1 gl-border-gray-100 gl-display-flex gl-flex-direction-column"
+    class="gl-flex gl-flex-col gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100"
   >
     <header class="gl-p-5">
-      <h4 class="gl-mt-0 gl-mb-3" data-testid="title">
+      <h4 class="gl-mb-3 gl-mt-0" data-testid="title">
         <slot name="title"></slot>
       </h4>
-      <p class="gl-text-secondary gl-m-0" data-testid="help-text">
+      <p class="gl-m-0 gl-text-secondary" data-testid="help-text">
         <slot name="help-text"></slot>
       </p>
       <div v-if="$scopedSlots.controls" class="gl-mt-5" data-testid="controls">

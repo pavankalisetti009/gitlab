@@ -53,19 +53,19 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-gap-5">
-    <div class="gl-display-flex gl-flex-direction-column gl-align-items-center">
+  <div class="gl-flex gl-gap-5">
+    <div class="gl-flex gl-flex-col gl-items-center">
       <pre-scan-verification-icon :status="status" />
       <div
         v-if="showDivider"
         data-testid="pre-scan-step-divider"
-        class="gl-bg-gray-100 -gl-translate-x-1/2 gl-h-9"
+        class="gl-h-9 -gl-translate-x-1/2 gl-bg-gray-100"
         style="width: 1px"
       ></div>
     </div>
-    <div class="gl-pr-4 gl-display-flex gl-align-items-flex-start gl-gap-3">
+    <div class="gl-flex gl-items-start gl-gap-3 gl-pr-4">
       <div data-testid="pre-scan-step-content">
-        <p class="gl-text-gray-500 gl-font-bold gl-m-0 gl-mb-2">{{ step.header }}</p>
+        <p class="gl-m-0 gl-mb-2 gl-font-bold gl-text-gray-500">{{ step.header }}</p>
         <p
           data-testid="pre-scan-step-text"
           class="gl-m-0 gl-leading-normal"

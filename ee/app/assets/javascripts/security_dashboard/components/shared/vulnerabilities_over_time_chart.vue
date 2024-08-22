@@ -17,7 +17,7 @@ import SecurityDashboardCard from './security_dashboard_card.vue';
 import ChartButtons from './vulnerabilities_over_time_chart_buttons.vue';
 
 const ISO_DATE = 'isoDate';
-const TD_CLASS = 'gl-border-none!';
+const TD_CLASS = '!gl-border-none';
 const CLASS_TEXT_RIGHT = `gl-text-right`;
 const TD_CLASS_TEXT_RIGHT = `${TD_CLASS} ${CLASS_TEXT_RIGHT}`;
 
@@ -201,7 +201,7 @@ export default {
             :data="item.chartData"
             :tooltip-label="__('Vulnerabilities')"
             :show-last-y-value="false"
-            class="gl-absolute gl-w-full gl-top-0 gl-left-0"
+            class="gl-absolute gl-left-0 gl-top-0 gl-w-full"
           />
         </div>
       </template>

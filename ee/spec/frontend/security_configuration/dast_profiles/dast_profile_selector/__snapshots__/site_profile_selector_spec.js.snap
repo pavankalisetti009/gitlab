@@ -9,7 +9,7 @@ exports[`SiteProfileSelector renders properly with no profiles 1`] = `
     class="gl-mb-4"
   >
     <h4
-      class="gl-font-lg gl-mb-2 gl-mt-0"
+      class="gl-mb-2 gl-mt-0 gl-text-lg"
     >
       Site profile
     </h4>
@@ -46,7 +46,7 @@ exports[`SiteProfileSelector renders properly with profiles 1`] = `
     class="gl-mb-4"
   >
     <h4
-      class="gl-font-lg gl-mb-2 gl-mt-0"
+      class="gl-mb-2 gl-mt-0 gl-text-lg"
     >
       Site profile
     </h4>

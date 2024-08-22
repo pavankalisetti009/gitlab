@@ -265,12 +265,12 @@ export default {
         <div v-safe-html="highlightSearchTerm(item.text)"></div>
       </template>
       <template v-if="isMaxProjectsSelected" #footer>
-        <div class="gl-pl-7 gl-pr-5 gl-py-3 gl-text-gray-600" data-testid="max-projects-message">
+        <div class="gl-py-3 gl-pl-7 gl-pr-5 gl-text-gray-600" data-testid="max-projects-message">
           {{ $options.i18n.maxProjectsSelected }}
         </div>
       </template>
       <template v-else-if="isLoadingProjects" #footer>
-        <gl-loading-icon class="gl-p-3 gl-mx-auto" />
+        <gl-loading-icon class="gl-mx-auto gl-p-3" />
       </template>
     </gl-collapsible-listbox>
   </div>

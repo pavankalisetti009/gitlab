@@ -155,11 +155,9 @@ export default {
 </script>
 
 <template>
-  <div
-    class="security-policies-bg-gray-10 gl-display-flex gl-gap-3 gl-rounded-base gl-p-5 gl-relative"
-  >
-    <div class="gl-flex-grow-1">
-      <div class="gl-w-full gl-display-flex gl-gap-3 gl-align-items-center gl-flex-wrap">
+  <div class="security-policies-bg-gray-10 gl-relative gl-flex gl-gap-3 gl-rounded-base gl-p-5">
+    <div class="gl-grow">
+      <div class="gl-flex gl-w-full gl-flex-wrap gl-items-center gl-gap-3">
         <gl-sprintf :message="message">
           <template #period>
             <slot name="period"></slot>
@@ -210,7 +208,7 @@ export default {
       </div>
     </div>
 
-    <div class="gl-min-w-7 gl-ml-4">
+    <div class="gl-ml-4 gl-min-w-7">
       <gl-button
         icon="remove"
         category="tertiary"

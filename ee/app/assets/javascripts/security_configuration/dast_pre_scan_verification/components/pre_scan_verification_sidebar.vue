@@ -58,7 +58,7 @@ export default {
     @close="$emit('close')"
   >
     <template #title>
-      <h4 data-testid="sidebar-header" class="gl-font-size-h2 gl-my-0">
+      <h4 data-testid="sidebar-header" class="gl-my-0 gl-text-size-h2">
         {{ $options.i18n.preScanVerificationSidebarHeader }}
       </h4>
     </template>
@@ -67,17 +67,17 @@ export default {
         v-if="showAlert"
         pipeline-created-at="2022-09-23 11:19:49 UTC"
         :status="status"
-        class="gl-px-9! gl-py-5! gl-mx-6 gl-mt-5 gl-border-0"
+        class="gl-mx-6 gl-mt-5 gl-border-0 !gl-px-9 !gl-py-5"
         @dismiss="$emit('dismiss-alert')"
       />
 
-      <p class="gl-text-gray-500 gl-leading-20 gl-border-0 gl-mb-0">
+      <p class="gl-mb-0 gl-border-0 gl-leading-20 gl-text-gray-500">
         {{ $options.i18n.preScanVerificationSidebarInfo }}
       </p>
 
       <pre-scan-verification-summary v-if="!isDefaultStatus" :status="status" />
 
-      <pre-scan-verification-list class="gl-pt-0!" :status="status" />
+      <pre-scan-verification-list class="!gl-pt-0" :status="status" />
     </template>
   </gl-drawer>
 </template>

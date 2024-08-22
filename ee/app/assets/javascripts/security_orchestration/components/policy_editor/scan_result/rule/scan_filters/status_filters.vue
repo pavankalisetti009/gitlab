@@ -58,7 +58,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-flex-direction-column gl-gap-3 gl-w-full">
+  <div class="gl-flex gl-w-full gl-flex-col gl-gap-3">
     <status-filter
       v-if="isFilterSelected($options.NEWLY_DETECTED)"
       :disabled="selectionDisabled"

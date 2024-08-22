@@ -117,7 +117,7 @@ export default {
   >
     <template #modal-title>
       {{ modalProps.title }}
-      <gl-link :href="docsPath" target="_blank" class="gl-text-gray-300 gl-ml-2">
+      <gl-link :href="docsPath" target="_blank" class="gl-ml-2 gl-text-gray-300">
         <gl-icon name="question-o" />
       </gl-link>
     </template>

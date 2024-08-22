@@ -251,7 +251,7 @@ export default {
     </template>
 
     <template #period>
-      <span class="gl-display-flex gl-align-items-center gl-flex-wrap gl-gap-3">
+      <span class="gl-flex gl-flex-wrap gl-items-center gl-gap-3">
         <gl-sprintf :message="$options.i18n.schedulePeriod">
           <template #period>
             <gl-collapsible-listbox

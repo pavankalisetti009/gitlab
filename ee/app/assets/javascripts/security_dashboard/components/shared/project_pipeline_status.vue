@@ -54,12 +54,10 @@ export default {
 </script>
 
 <template>
-  <div
-    class="lg:gl-flex gl-align-items-center gl-border-solid gl-border-1 gl-border-gray-100 gl-p-6"
-  >
-    <div class="gl-display-flex gl-align-items-center" data-testid="pipeline">
+  <div class="gl-items-center gl-border-1 gl-border-solid gl-border-gray-100 gl-p-6 lg:gl-flex">
+    <div class="gl-flex gl-items-center" data-testid="pipeline">
       <div class="gl-mr-3">
-        <span class="gl-font-bold gl-mr-3">{{ $options.i18n.lastUpdated }}</span
+        <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.lastUpdated }}</span
         ><span class="gl-whitespace-nowrap">
           <time-ago-tooltip class="gl-pr-3" :time="pipeline.createdAt" /><gl-link
             :href="pipeline.path"
@@ -70,7 +68,7 @@ export default {
       </div>
       <div
         v-if="parsingStatusMessage"
-        class="gl-ml-2 gl-text-orange-400 gl-font-bold"
+        class="gl-ml-2 gl-font-bold gl-text-orange-400"
         data-testid="parsing-status-notice"
       >
         <gl-icon name="warning" class="gl-mr-3" />{{ parsingStatusMessage }}
@@ -80,9 +78,9 @@ export default {
     <template v-if="showSbomPipelineStatus">
       <div class="gl-mx-3 gl-hidden lg:gl-block" data-testid="pipeline-divider">•</div>
 
-      <div class="md:gl-flex gl-align-items-center gl-mt-5 gl-lg-mt-0" data-testid="sbom-pipeline">
+      <div class="gl-mt-5 gl-items-center md:gl-flex lg:gl-mt-0" data-testid="sbom-pipeline">
         <div>
-          <span class="gl-font-bold gl-mr-3">{{ $options.i18n.sbomLastUpdated }}</span
+          <span class="gl-mr-3 gl-font-bold">{{ $options.i18n.sbomLastUpdated }}</span
           ><span class="gl-whitespace-nowrap">
             <time-ago-tooltip class="gl-pr-3" :time="sbomPipeline.createdAt" /><gl-link
               :href="sbomPipeline.path"
@@ -93,7 +91,7 @@ export default {
         </div>
         <div
           v-if="sbomParsingStatusMessage"
-          class="gl-mr-3 gl-ml-2 gl-mt-5 gl-md-mt-0 gl-text-orange-400 gl-font-bold"
+          class="gl-ml-2 gl-mr-3 gl-mt-5 gl-font-bold gl-text-orange-400 md:gl-mt-0"
           data-testid="parsing-status-notice"
         >
           <gl-icon name="warning" class="gl-mr-3" />{{ sbomParsingStatusMessage }}

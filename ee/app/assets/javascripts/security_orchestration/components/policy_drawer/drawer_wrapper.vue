@@ -107,13 +107,13 @@ export default {
   >
     <template v-if="policy" #title>
       <gl-truncate
-        class="gl-font-size-h2 gl-font-bold gl-leading-24 gl-max-w-34"
+        class="gl-max-w-34 gl-text-size-h2 gl-font-bold gl-leading-24"
         :text="policy.name"
         with-tooltip
       />
     </template>
     <template v-if="policy" #header>
-      <span v-if="!disableScanPolicyUpdate" ref="editButton" class="gl-display-inline-block">
+      <span v-if="!disableScanPolicyUpdate" ref="editButton" class="gl-inline-block">
         <gl-button
           class="gl-mt-5"
           data-testid="edit-button"
@@ -140,8 +140,8 @@ export default {
         </gl-sprintf>
       </gl-popover>
     </template>
-    <gl-tabs v-if="policy" class="gl-p-0!" justified content-class="gl-py-0" lazy>
-      <gl-tab :title="$options.i18n.tabDetails" class="gl-mt-5 gl-ml-6 gl-mr-3">
+    <gl-tabs v-if="policy" class="!gl-p-0" justified content-class="gl-py-0" lazy>
+      <gl-tab :title="$options.i18n.tabDetails" class="gl-ml-6 gl-mr-3 gl-mt-5">
         <component :is="policyComponent" v-if="policyComponent" :policy="policy" />
         <div v-else>
           <h5>{{ s__('SecurityOrchestration|Policy definition') }}</h5>

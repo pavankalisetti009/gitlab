@@ -22,7 +22,7 @@ describe('SectionLayout', () => {
     });
     it('displays the content with the correct layout', () => {
       expect(findContent().attributes('class')).toBe(
-        'gl-flex-grow-1 gl-w-full gl-display-flex gl-gap-3 gl-align-items-center gl-flex-wrap ',
+        'gl-grow gl-w-full gl-flex gl-gap-3 gl-items-center gl-flex-wrap ',
       );
     });
 

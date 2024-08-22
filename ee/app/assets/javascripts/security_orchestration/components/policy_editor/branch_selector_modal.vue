@@ -221,7 +221,7 @@ export default {
     <p
       v-if="hasAsyncValidationError"
       data-testid="async-validation-error"
-      class="gl-my-2 gl-text-red-500 gl-whitespace-pre-line"
+      class="gl-my-2 gl-whitespace-pre-line gl-text-red-500"
     >
       <gl-sprintf :message="asyncValidationErrors">
         <template #bold="{ content }">
@@ -232,7 +232,7 @@ export default {
 
     <div
       v-if="loadingValidation"
-      class="gl-display-flex gl-align-items-center gl-mt-2"
+      class="gl-mt-2 gl-flex gl-items-center"
       data-testid="loading-state"
     >
       <gl-loading-icon size="sm" />

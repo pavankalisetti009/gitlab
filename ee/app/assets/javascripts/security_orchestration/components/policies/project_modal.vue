@@ -233,12 +233,12 @@ export default {
         </gl-sprintf>
         <gl-toggle
           v-model="searchOnlyPolicyProjects"
-          class="gl-py-3 gl-flex-direction-column gl-md-flex-direction-row gl-align-items-flex-start gl-md-align-items-center"
+          class="gl-flex-col gl-items-start gl-py-3 md:gl-flex-row md:gl-items-center"
           :label="$options.i18n.modal.showOption"
           label-position="left"
         />
       </div>
-      <div class="gl-display-flex gl-mb-3">
+      <div class="gl-mb-3 gl-flex">
         <spp-selector
           class="gl-w-9/10"
           :disabled="disableSecurityPolicyProject"

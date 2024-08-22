@@ -58,13 +58,13 @@ export default {
 
 <template>
   <div>
-    <div class="gl-display-flex gl-align-items-center gl-mb-4">
-      <h4 class="gl-font-lg gl-my-0">
+    <div class="gl-mb-4 gl-flex gl-items-center">
+      <h4 class="gl-my-0 gl-text-lg">
         {{ $options.i18n.preScanVerificationListHeader }}
       </h4>
       <gl-icon
         v-gl-tooltip
-        class="gl-text-blue-500 gl-ml-3"
+        class="gl-ml-3 gl-text-blue-500"
         :title="$options.i18n.preScanVerificationListTooltip"
         name="question-o"
       />

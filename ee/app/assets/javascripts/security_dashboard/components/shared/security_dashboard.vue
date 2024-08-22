@@ -25,7 +25,7 @@ export default {
   <div>
     <h2 class="gl-mb-6">{{ $options.i18n.title }}</h2>
 
-    <div class="security-charts gl-display-grid">
+    <div class="security-charts gl-grid">
       <vulnerabilities-over-time-chart :query="historyQuery" />
       <vulnerability-severities :query="gradesQuery" />
     </div>

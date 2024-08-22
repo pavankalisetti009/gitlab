@@ -64,7 +64,7 @@ export default {
       <span>{{ $options.i18n.preScanVerificationDefaultText }}</span>
       <span v-if="showPipelineDetails">
         <pipeline-details
-          class="gl-text-gray-50 gl-inline"
+          class="gl-inline gl-text-gray-50"
           :status="status"
           :pipeline-created-at="pipelineCreatedAt"
           pipeline-id="2343434"

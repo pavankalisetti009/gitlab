@@ -101,10 +101,10 @@ export default {
       >{{ $options.i18n.submissionError }}</gl-alert
     >
 
-    <div class="gl-display-flex">
+    <div class="gl-flex">
       <gl-button
         ref="submitButton"
-        class="gl-mr-3 js-no-auto-disable"
+        class="js-no-auto-disable gl-mr-3"
         :loading="isSubmitting"
         type="submit"
         variant="confirm"

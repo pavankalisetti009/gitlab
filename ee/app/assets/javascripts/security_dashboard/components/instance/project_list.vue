@@ -64,7 +64,7 @@ export default {
 <template>
   <section>
     <h5
-      class="gl-font-bold gl-text-gray-500 gl-border-b-solid gl-border-b-1 gl-border-b-gray-100 gl-mb-5 gl-pb-3"
+      class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-3 gl-font-bold gl-text-gray-500 gl-border-b-solid"
     >
       {{ $options.i18n.projectsAdded }}
       <gl-badge class="gl-font-bold">{{ projects.length }}</gl-badge>
@@ -74,7 +74,7 @@ export default {
       <li
         v-for="project in projects"
         :key="project.id"
-        class="gl-display-flex gl-align-items-center gl-py-2 js-projects-list-project-item"
+        class="js-projects-list-project-item gl-flex gl-items-center gl-py-2"
       >
         <project-avatar
           class="gl-mr-3"
@@ -86,14 +86,14 @@ export default {
         <gl-button
           v-gl-tooltip
           icon="remove"
-          class="gl-ml-auto js-projects-list-project-remove"
+          class="js-projects-list-project-remove gl-ml-auto"
           :title="$options.i18n.removeLabel"
           :aria-label="$options.i18n.removeLabel"
           @click="projectRemoved(project)"
         />
       </li>
     </ul>
-    <p v-else class="gl-text-gray-500 js-projects-list-empty-message" data-testid="empty-message">
+    <p v-else class="js-projects-list-empty-message gl-text-gray-500" data-testid="empty-message">
       {{ $options.i18n.emptyMessage }}
     </p>
   </section>

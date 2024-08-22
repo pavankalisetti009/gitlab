@@ -25,7 +25,7 @@ export default {
   },
   computed: {
     contentClass() {
-      return `gl-flex-grow-1 gl-w-full gl-display-flex gl-gap-3 gl-align-items-center gl-flex-wrap ${this.contentClasses}`;
+      return `gl-grow gl-w-full gl-flex gl-gap-3 gl-items-center gl-flex-wrap ${this.contentClasses}`;
     },
     showLabel() {
       return Boolean(this.ruleLabel);
@@ -35,9 +35,9 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-gap-3 security-policies-bg-gray-10 gl-rounded-base gl-p-5">
+  <div class="security-policies-bg-gray-10 gl-flex gl-gap-3 gl-rounded-base gl-p-5">
     <div v-if="showLabel" class="gl-min-w-7">
-      <label data-testid="base-label" for="content" class="gl-uppercase gl-font-lg gl-w-6 gl-pl-2">
+      <label data-testid="base-label" for="content" class="gl-w-6 gl-pl-2 gl-text-lg gl-uppercase">
         {{ ruleLabel }}
       </label>
     </div>

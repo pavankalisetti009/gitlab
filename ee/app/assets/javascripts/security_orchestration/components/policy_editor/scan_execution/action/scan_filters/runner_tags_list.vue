@@ -90,7 +90,7 @@ export default {
 <template>
   <div>
     <policy-popover
-      class="gl-display-inline-block"
+      class="gl-inline-block"
       :content="$options.i18n.runnersDisabledStatePopoverContent"
       :href="runnersTagLink"
       :title="$options.i18n.runnersDisabledStatePopoverTitle"
@@ -100,7 +100,7 @@ export default {
       <template #trigger>
         <gl-collapsible-listbox
           id="runner-tags-switcher-id"
-          class="gl-mr-2 gl-mb-3 gl-sm-mb-0"
+          class="gl-mb-3 gl-mr-2 sm:gl-mb-0"
           :disabled="!areRunnersTagged"
           :items="$options.TAGS_MODES"
           :selected="selectedTagsMode"

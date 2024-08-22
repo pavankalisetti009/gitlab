@@ -63,22 +63,22 @@ export default {
 <template>
   <gl-card :class="{ 'gl-my-3': allowSelection }">
     <template #header>
-      <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+      <div class="gl-flex gl-items-center gl-justify-between">
         <div>
-          <h3 class="gl-font-lg gl-my-0 gl-inline">
+          <h3 class="gl-my-0 gl-inline gl-text-lg">
             <slot name="title"></slot>
           </h3>
           <span
             v-if="isProfileInUse"
             v-gl-tooltip="$options.i18n.selectedProfileTooltip"
             data-testid="in-use-label"
-            class="gl-text-green-500 gl-pl-2"
+            class="gl-pl-2 gl-text-green-500"
           >
             <gl-icon name="check-circle-filled" :size="16" />
             {{ $options.i18n.selectedProfileLabel }}
           </span>
         </div>
-        <div v-if="allowSelection || isEditable" class="gl-display-flex gl-gap-x-3">
+        <div v-if="allowSelection || isEditable" class="gl-flex gl-gap-x-3">
           <gl-button
             v-if="allowSelection"
             v-gl-tooltip

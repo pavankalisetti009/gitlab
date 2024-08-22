@@ -58,7 +58,7 @@ export default {
     >
       <gl-sprintf :message="content">
         <template #link="{ content: linkContent }">
-          <gl-link v-if="href" class="gl-font-sm" target="_blank" :href="href">{{
+          <gl-link v-if="href" class="gl-text-sm" target="_blank" :href="href">{{
             linkContent
           }}</gl-link>
         </template>

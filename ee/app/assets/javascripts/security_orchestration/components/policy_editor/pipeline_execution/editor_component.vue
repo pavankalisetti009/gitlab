@@ -232,7 +232,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <rule-section class="gl-mb-4" />
@@ -246,11 +246,11 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <action-section
-          class="gl-mb-4 security-policies-bg-gray-10 gl-rounded-base gl-p-5"
+          class="security-policies-bg-gray-10 gl-mb-4 gl-rounded-base gl-p-5"
           :action="policy.content"
           :does-file-exist="!disableSubmit"
           :strategy="strategy"

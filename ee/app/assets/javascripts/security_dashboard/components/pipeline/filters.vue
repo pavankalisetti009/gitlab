@@ -43,7 +43,7 @@ export default {
         data-testid="reportType"
         @filter-changed="setFilter"
       />
-      <div class="gl-display-flex ml-lg-auto p-2">
+      <div class="ml-lg-auto p-2 gl-flex">
         <slot name="buttons"></slot>
         <div class="pl-md-6 gl-pt-1">
           <gl-toggle
