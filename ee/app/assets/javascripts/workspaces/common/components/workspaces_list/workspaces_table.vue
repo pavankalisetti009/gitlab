@@ -99,8 +99,7 @@ export default {
       return this.tabsMode
         ? tableFields.map((tableField) => ({
             ...tableField,
-            // eslint-disable-next-line @gitlab/require-i18n-strings
-            thClass: `${tableField.thClass} gl-border-t-0!`,
+            thClass: `${tableField.thClass} !gl-border-t-0`,
           }))
         : tableFields;
     },
@@ -166,21 +165,18 @@ export default {
           <workspace-state-indicator class="gl-mr-5" :workspace-state="item.actualState" />
         </template>
         <template #cell(name)="{ item }">
-          <div class="gl-display-flex gl-flex-direction-column">
-            <span class="gl-text-gray-500 gl-font-sm gl-pb-1"> {{ item.projectName }} </span>
-            <span class="gl-text-black-normal"> {{ item.name }} </span>
+          <div class="gl-flex gl-flex-col">
+            <span class="gl-pb-1 gl-text-sm gl-text-gray-500"> {{ item.projectName }} </span>
+            <span class="gl-text-default"> {{ item.name }} </span>
           </div>
         </template>
         <template #cell(created)="{ item }">
-          <time-ago-tooltip
-            class="gl-whitespace-nowrap gl-font-sm-600 gl-text-secondary"
-            :time="item.createdAt"
-          />
+          <time-ago-tooltip class="gl-whitespace-nowrap gl-text-secondary" :time="item.createdAt" />
         </template>
         <template #cell(terminates)="{ item }">
           <div
             v-if="!isTerminated(item)"
-            class="gl-whitespace-nowrap gl-font-sm-600 gl-text-secondary"
+            class="gl-whitespace-nowrap gl-text-secondary"
             :data-testid="`${item.name}-terminates`"
           >
             {{ terminatesIn(item) }}

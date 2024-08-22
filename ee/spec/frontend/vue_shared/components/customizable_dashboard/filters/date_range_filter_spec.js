@@ -65,8 +65,8 @@ describe('DateRangeFilter', () => {
       expect(tooltip).toBeDefined();
     });
 
-    it('does not have the class "gl-flex-direction-column"', () => {
-      expect(wrapper.classes()).not.toContain('gl-flex-direction-column');
+    it('does not have the class "gl-flex-col"', () => {
+      expect(wrapper.classes()).not.toContain('gl-flex-col');
     });
   });
 
@@ -88,10 +88,10 @@ describe('DateRangeFilter', () => {
         createWrapper({ startDate, endDate });
       });
 
-      it('adds the class "gl-flex-direction-column" when a custom date range is selected', async () => {
+      it('adds the class "gl-flex-col" when a custom date range is selected', async () => {
         await findCollapsibleListBox().vm.$emit('select', customRangeOption.key);
 
-        expect(wrapper.classes()).toContain('gl-flex-direction-column');
+        expect(wrapper.classes()).toContain('gl-flex-col');
       });
 
       it('does not emit a new date range when the option shows the date range picker', async () => {

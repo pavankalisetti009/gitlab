@@ -201,8 +201,8 @@ export default {
 </script>
 <template>
   <div class="work-item-color">
-    <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-mb-0! gl-heading-5">
+    <div class="gl-flex gl-items-center gl-justify-between">
+      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.colorLabel }}
       </h3>
       <gl-button
@@ -215,7 +215,7 @@ export default {
       >
     </div>
     <gl-form v-if="isEditing">
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <label :for="$options.inputId" class="gl-mb-0">{{ $options.i18n.colorLabel }}</label>
         <gl-loading-icon v-if="isUpdating" size="sm" inline class="gl-ml-3" />
         <gl-button
@@ -238,11 +238,11 @@ export default {
       >
         <template #header>
           <div
-            class="gl-display-flex gl-align-items-center gl-py-2 gl-px-4 gl-min-h-8 gl-border-b-1 gl-border-b-solid gl-border-b-gray-200"
+            class="gl-flex gl-min-h-8 gl-items-center gl-border-b-1 gl-border-b-gray-200 gl-px-4 gl-py-2 gl-border-b-solid"
           >
             <span
               data-testid="color-header-title"
-              class="gl-flex-grow-1 gl-font-bold gl-font-sm gl-pr-2 gl-leading-normal"
+              class="gl-grow gl-pr-2 gl-text-sm gl-font-bold gl-leading-normal"
             >
               {{ __('Select a color') }}
             </span>
@@ -250,7 +250,7 @@ export default {
               data-testid="reset-color"
               category="tertiary"
               size="small"
-              class="gl-font-sm! gl-px-2! gl-py-2!"
+              class="!gl-px-2 !gl-py-2 !gl-text-sm"
               @click="resetColor"
               >{{ __('Reset') }}</gl-button
             >
@@ -265,7 +265,7 @@ export default {
             :autofocus="true"
             :suggested-colors="$options.suggestedColors"
             :error-message="errorMessage"
-            class="gl-px-3 gl-mt-3"
+            class="gl-mt-3 gl-px-3"
           />
         </gl-disclosure-dropdown-item>
       </gl-disclosure-dropdown>

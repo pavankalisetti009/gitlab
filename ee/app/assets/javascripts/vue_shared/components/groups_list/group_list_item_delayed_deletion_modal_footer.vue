@@ -35,7 +35,7 @@ export default {
 <template>
   <p
     v-if="canBeMarkedForDeletion"
-    class="gl-mt-3 gl-mb-0 gl-text-gray-500"
+    class="gl-mb-0 gl-mt-3 gl-text-gray-500"
     data-testid="delayed-delete-modal-footer"
   >
     <gl-sprintf :message="$options.i18n.groupRestoreMessage">

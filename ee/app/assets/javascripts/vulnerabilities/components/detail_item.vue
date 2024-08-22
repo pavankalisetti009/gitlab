@@ -16,7 +16,7 @@ export default {
 </script>
 
 <template>
-  <li :data-testid="valueName" class="gl-list-none gl-ml-0! gl-mb-4">
+  <li :data-testid="valueName" class="!gl-ml-0 gl-mb-4 gl-list-none">
     <gl-sprintf :message="sprintfMessage">
       <template #label="{ content }">
         <strong data-testid="label">{{ content }}</strong>

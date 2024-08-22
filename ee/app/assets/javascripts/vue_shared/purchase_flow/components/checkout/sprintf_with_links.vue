@@ -23,7 +23,7 @@ export default {
   <div>
     <gl-sprintf :message="message">
       <template v-for="(href, name) in linkObject" #[name]="{ content }">
-        <gl-link :key="name" class="gl-text-decoration-none!" :href="href" target="_blank">{{
+        <gl-link :key="name" class="!gl-no-underline" :href="href" target="_blank">{{
           content
         }}</gl-link>
       </template>

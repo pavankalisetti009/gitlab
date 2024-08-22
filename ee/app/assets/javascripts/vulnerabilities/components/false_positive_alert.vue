@@ -35,7 +35,7 @@ export default {
     <gl-sprintf :message="$options.i18n.message">
       <template #link="{ content }">
         <gl-link
-          class="gl-font-sm!"
+          class="!gl-text-sm"
           :href="$options.DOC_PATH_VULNERABILITY_DETAILS"
           target="_blank"
         >

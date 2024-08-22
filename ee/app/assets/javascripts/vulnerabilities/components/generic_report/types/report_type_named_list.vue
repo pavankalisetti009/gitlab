@@ -20,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-table">
+  <div class="gl-table">
     <ul v-if="hasItems" class="generic-report-named-list">
       <li
         v-for="{ label, name, ...values } in items"

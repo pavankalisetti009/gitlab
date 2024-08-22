@@ -37,14 +37,11 @@ export default {
 <template>
   <gl-disclosure-dropdown-item class="gl-my-0" :item="dropdownItem" @action="trackOpenWorkspace">
     <template #list-item>
-      <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-        <span class="gl-inline-flex gl-flex-direction-column gl-align-items-flex-start">
+      <div class="gl-flex gl-items-center gl-justify-between">
+        <span class="gl-inline-flex gl-flex-col gl-items-start">
           <workspace-state-indicator class="gl-mb-2" :workspace-state="workspace.actualState" />
-          <span class="gl-pl-1 gl-break-anywhere gl-w-9/10">{{ workspace.name }}</span>
-          <time-ago-tooltip
-            class="gl-font-sm-600 gl-pl-1 gl-text-secondary gl-mt-2"
-            :time="workspace.createdAt"
-          />
+          <span class="gl-w-9/10 gl-pl-1 gl-break-anywhere">{{ workspace.name }}</span>
+          <time-ago-tooltip class="gl-mt-2 gl-pl-1 gl-text-secondary" :time="workspace.createdAt" />
         </span>
         <workspace-actions
           :actual-state="workspace.actualState"

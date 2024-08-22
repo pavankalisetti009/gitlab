@@ -274,9 +274,9 @@ export default {
 </script>
 <template>
   <div class="gl-flex gl-flex-row gl-gap-5">
-    <div class="gl-flex-basis-third">
+    <div class="gl-basis-1/3">
       <div class="gl-flex gl-items-center">
-        <h2 ref="pageTitle" class="page-title gl-font-size-h-display">
+        <h2 ref="pageTitle" class="page-title gl-text-size-h-display">
           {{ $options.i18n.title }}
         </h2>
       </div>
@@ -289,7 +289,7 @@ export default {
       @result="onProjectDetailsResult"
       @error="onProjectDetailsError"
     />
-    <gl-form ref="form" class="gl-mt-6 gl-flex-basis-two-thirds" @submit.prevent="createWorkspace">
+    <gl-form ref="form" class="gl-mt-6 gl-basis-2/3" @submit.prevent="createWorkspace">
       <gl-form-group
         :label="$options.i18n.form.devfileProject"
         label-for="workspace-devfile-project-id"
@@ -358,8 +358,8 @@ export default {
             </div>
           </gl-form-group>
           <gl-form-group data-testid="devfile-path">
-            <div class="gl-flex gl-flex-row gl-items-center gl-gap-3 gl-mb-3">
-              <label class="gl-flex gl-mb-0" for="workspace-devfile-path">
+            <div class="gl-mb-3 gl-flex gl-flex-row gl-items-center gl-gap-3">
+              <label class="gl-mb-0 gl-flex" for="workspace-devfile-path">
                 {{ $options.i18n.form.devfileLocation.label }}
               </label>
               <gl-icon
@@ -425,7 +425,7 @@ export default {
       </template>
       <div class="gl-flex gl-gap-3">
         <gl-button
-          class="gl-flex js-no-auto-disable"
+          class="js-no-auto-disable gl-flex"
           :loading="isCreatingWorkspace"
           :disabled="!saveWorkspaceEnabled"
           type="submit"

@@ -49,7 +49,7 @@ export default {
       <template v-if="newWorkspacePath" #actions>
         <gl-button
           variant="confirm"
-          class="gl-mb-3 gl-mx-2"
+          class="gl-mx-2 gl-mb-3"
           :to="newWorkspacePath"
           data-testid="new-workspace-button"
           >{{ $options.i18n.primaryButtonText }}</gl-button

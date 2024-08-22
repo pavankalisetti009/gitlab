@@ -94,16 +94,16 @@ export default {
 
 <template>
   <div
-    class="gl-display-flex gl-sm-flex-direction-row gl-gap-3 gl-w-full gl-sm-w-auto"
-    :class="{ 'gl-flex-direction-column': selectedItem.showDateRangePicker }"
+    class="gl-flex gl-w-full gl-gap-3 sm:gl-w-auto sm:gl-flex-row"
+    :class="{ 'gl-flex-col': selectedItem.showDateRangePicker }"
   >
     <gl-collapsible-listbox
-      class="gl-w-full gl-sm-w-auto"
+      class="gl-w-full sm:gl-w-auto"
       :items="dropdownItems"
       :selected="selectedItem.key"
       @select="selectItem($event)"
     />
-    <div class="gl-display-flex gl-gap-3">
+    <div class="gl-flex gl-gap-3">
       <gl-daterange-picker
         v-if="selectedItem.showDateRangePicker"
         v-model="dateRange"
@@ -120,7 +120,7 @@ export default {
         v-gl-tooltip
         :title="s__('Analytics|Dates and times are displayed in the UTC timezone')"
         name="information-o"
-        class="gl-align-self-end gl-mb-3 gl-text-gray-500 gl-min-w-5"
+        class="gl-mb-3 gl-min-w-5 gl-self-end gl-text-gray-500"
       />
     </div>
   </div>

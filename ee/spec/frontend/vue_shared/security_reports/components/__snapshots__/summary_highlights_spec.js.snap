@@ -2,7 +2,7 @@
 
 exports[`MR Widget Security Reports - Summary Highlights should display the summary highlights properly 1`] = `
 <div
-  class="gl-font-sm"
+  class="gl-text-sm"
 >
   <strong
     class="gl-text-red-800"

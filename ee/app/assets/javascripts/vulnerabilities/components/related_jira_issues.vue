@@ -123,8 +123,8 @@ export default {
     <gl-card
       :header-class="[
         'gl-py-3',
-        'gl-display-flex',
-        'gl-align-items-center',
+        'gl-flex',
+        'gl-items-center',
         { 'gl-border-b-0': !shouldShowIssuesBody },
       ]"
       :body-class="['gl-bg-gray-10', { 'gl-hidden': !shouldShowIssuesBody }]"
@@ -136,12 +136,12 @@ export default {
           :aria-label="$options.i18n.helpPageLinkLabel"
           :href="relatedJiraIssuesHelpPath"
           target="_blank"
-          class="gl-display-flex gl-align-items-center gl-ml-2 gl-text-gray-500"
+          class="gl-ml-2 gl-flex gl-items-center gl-text-gray-500"
         >
           <gl-icon name="question-o" :size="12" />
         </gl-link>
         <span
-          class="gl-inline-flex gl-align-items-center gl-ml-4"
+          class="gl-ml-4 gl-inline-flex gl-items-center"
           data-testid="related-jira-issues-count"
         >
           <gl-icon name="issues" class="gl-mr-2 gl-text-gray-500" />
@@ -156,7 +156,7 @@ export default {
       </template>
       <section
         :hidden="!shouldShowIssuesBody"
-        class="gl-p-0 gl-m-0"
+        class="gl-m-0 gl-p-0"
         data-testid="related-jira-issues-section"
       >
         <gl-card body-class="gl-p-0">
@@ -167,11 +167,11 @@ export default {
             :label="$options.i18n.loadingStateLabel"
             class="gl-my-3"
           />
-          <ul class="gl-list-none gl-m-0 gl-p-0">
+          <ul class="gl-m-0 gl-list-none gl-p-0">
             <li
               v-for="issue in relatedIssues"
               :key="issue.created_at"
-              class="gl-display-flex gl-align-items-center gl-py-3 gl-px-4"
+              class="gl-flex gl-items-center gl-px-4 gl-py-3"
               :class="
                 issue !== lastIssue && [
                   'gl-border-b-1',
@@ -182,7 +182,7 @@ export default {
             >
               <span
                 v-safe-html="$options.jiraLogo"
-                class="gl-min-h-6 gl-mr-5 gl-inline-flex gl-align-items-center"
+                class="gl-mr-5 gl-inline-flex gl-min-h-6 gl-items-center"
               >
               </span>
               <gl-link

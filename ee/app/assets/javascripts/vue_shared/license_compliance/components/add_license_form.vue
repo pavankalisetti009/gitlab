@@ -104,7 +104,7 @@ export default {
         </gl-form-radio>
       </gl-form-radio-group>
     </div>
-    <div class="gl-display-flex">
+    <div class="gl-flex">
       <gl-button
         class="js-submit"
         :disabled="submitDisabled"

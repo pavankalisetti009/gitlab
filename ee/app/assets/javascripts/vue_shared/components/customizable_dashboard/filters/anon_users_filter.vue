@@ -20,7 +20,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-flex-direction-row gl-gap-3 gl-w-full gl-sm-w-auto">
+  <div class="gl-flex gl-w-full gl-flex-row gl-gap-3 sm:gl-w-auto">
     <gl-toggle
       :value="value"
       :label="s__('Analytics|Exclude anonymous users')"
@@ -31,7 +31,7 @@ export default {
       v-gl-tooltip
       :title="s__('Analytics|View metrics only for users who have consented to activity tracking.')"
       name="information-o"
-      class="gl-align-self-center gl-text-gray-500"
+      class="gl-self-center gl-text-gray-500"
     />
   </div>
 </template>

@@ -115,10 +115,10 @@ export default {
         v-if="workItemWeight"
         ref="weightData"
         data-testid="item-weight"
-        class="gl-display-flex gl-align-items-center gl-cursor-help gl-gap-2 gl-min-w-7"
+        class="gl-flex gl-min-w-7 gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="weight" />
-        <span data-testid="weight-value" class="gl-font-sm">{{ workItemWeight }}</span>
+        <span data-testid="weight-value" class="gl-text-sm">{{ workItemWeight }}</span>
         <gl-tooltip :target="() => $refs.weightData">
           <span class="gl-font-bold">
             {{ __('Weight') }}
@@ -129,10 +129,10 @@ export default {
         v-if="iteration"
         ref="iterationData"
         data-testid="item-iteration"
-        class="gl-display-flex gl-align-items-center gl-cursor-help gl-gap-2"
+        class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="iteration" />
-        <span data-testid="iteration-value" class="gl-font-sm">{{ iterationPeriod }}</span>
+        <span data-testid="iteration-value" class="gl-text-sm">{{ iterationPeriod }}</span>
         <gl-tooltip :target="() => $refs.iterationData">
           <div data-testid="iteration-title" class="gl-font-bold">
             {{ __('Iteration') }}
@@ -152,10 +152,10 @@ export default {
         v-if="showDate"
         ref="datesData"
         data-testid="item-dates"
-        class="gl-display-flex gl-flex-wrap gl-gap-2 gl-min-w-10 gl-max-w-26 gl-cursor-help"
+        class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
       >
         <gl-icon name="calendar" />
-        <span data-testid="dates-value" class="gl-font-sm">{{ workItemTimeframe }}</span>
+        <span data-testid="dates-value" class="gl-text-sm">{{ workItemTimeframe }}</span>
         <gl-tooltip :target="() => $refs.datesData">
           <div class="gl-font-bold">
             {{ __('Dates') }}
@@ -165,11 +165,11 @@ export default {
       <div
         v-if="hasProgress"
         ref="progressTooltip"
-        class="gl-display-flex gl-align-items-center gl-gap-2 gl-justify-content-start gl-cursor-help gl-leading-normal gl-min-w-10 gl-max-w-26"
+        class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-items-center gl-justify-start gl-gap-2 gl-leading-normal"
         data-testid="item-progress"
       >
         <gl-icon name="progress" />
-        <span data-testid="progressValue" class="gl-font-sm">{{ progress }}%</span>
+        <span data-testid="progressValue" class="gl-text-sm">{{ progress }}%</span>
         <gl-tooltip :target="() => $refs.progressTooltip">
           <div data-testid="progressTitle" class="gl-font-bold">
             {{ __('Progress') }}

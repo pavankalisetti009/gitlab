@@ -138,7 +138,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-w-full gl-pb-5 gl-border-b gl-mb-5">
+  <div class="gl-border-b gl-mb-5 gl-w-full gl-pb-5">
     <step-header
       :edit-button-text="editButtonText"
       :title="title"

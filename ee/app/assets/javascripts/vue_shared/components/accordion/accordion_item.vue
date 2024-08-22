@@ -98,11 +98,11 @@ export default {
           :disabled="isDisabled"
           :aria-expanded="isExpanded"
           :aria-controls="contentContainerId"
-          class="gl-bg-transparent border-0 rounded-0 gl-w-full p-0 text-left"
+          class="border-0 rounded-0 p-0 text-left gl-w-full gl-bg-transparent"
           :class="{ 'cursor-default': isDisabled, 'list-group-item-action': !isDisabled }"
           @click="handleClick"
         >
-          <div class="gl-flex gl-items-center p-2">
+          <div class="p-2 gl-flex gl-items-center">
             <gl-icon
               :size="16"
               class="gl-mr-3 gl-text-gray-900"
@@ -124,7 +124,7 @@ export default {
         <div data-testid="content" :style="contentStyles"><slot name="default"></slot></div>
       </section>
     </template>
-    <div v-else data-testid="loading-indicator" class="gl-flex p-2">
+    <div v-else data-testid="loading-indicator" class="p-2 gl-flex">
       <div class="h-32-px">
         <gl-skeleton-loader :height="32">
           <rect width="12" height="16" rx="4" x="0" y="8" />

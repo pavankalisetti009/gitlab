@@ -36,11 +36,11 @@ export default {
 };
 </script>
 <template>
-  <div class="report-block-list-issue-description gl-mt-2 gl-mb-2 gl-w-full">
-    <div class="report-block-list-issue-description-text gl-display-flex gl-w-full">
+  <div class="report-block-list-issue-description gl-mb-2 gl-mt-2 gl-w-full">
+    <div class="report-block-list-issue-description-text gl-flex gl-w-full">
       <severity-badge
         v-if="issue.severity"
-        class="gl-inline-flex gl-align-items-center gl-mr-1"
+        class="gl-mr-1 gl-inline-flex gl-items-center"
         :severity="issue.severity"
       />
       <modal-open-name :issue="issue" :status="status" />

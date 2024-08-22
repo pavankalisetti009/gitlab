@@ -358,9 +358,7 @@ export default {
         />
       </div>
 
-      <div
-        class="detail-page-header-actions gl-display-flex gl-flex-wrap gl-gap-3 gl-align-items-center"
-      >
+      <div class="detail-page-header-actions gl-flex gl-flex-wrap gl-items-center gl-gap-3">
         <label class="gl-mb-0">{{ __('Status') }}</label>
         <gl-loading-icon v-if="isLoadingVulnerability" size="sm" class="gl-inline" />
         <vulnerability-state-dropdown

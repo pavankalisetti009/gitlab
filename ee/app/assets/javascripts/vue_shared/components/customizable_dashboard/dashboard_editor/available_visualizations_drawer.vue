@@ -153,15 +153,15 @@ export default {
 
     <div v-else>
       <div v-for="(category, key) in filteredCategorizedVisualizations" :key="key">
-        <div data-testid="category-title" class="gl-text-gray-900 gl-font-bold gl-mb-4">
+        <div data-testid="category-title" class="gl-mb-4 gl-font-bold gl-text-gray-900">
           {{ category.title }}
         </div>
-        <ul class="gl-p-0 gl-list-none gl-mb-6">
+        <ul class="gl-mb-6 gl-list-none gl-p-0">
           <li
             v-for="(visualization, index) in category.visualizations"
             :key="index"
             :data-testid="`list-item-${visualization.slug}`"
-            class="gl-display-flex gl-mb-4 gl-px-4 gl-pt-4 gl-pb-2 gl-border gl-rounded-base gl-cursor-pointer"
+            class="gl-border gl-mb-4 gl-flex gl-cursor-pointer gl-rounded-base gl-px-4 gl-pb-2 gl-pt-4"
             @click="clickedListItem(visualization, $event)"
           >
             <gl-form-checkbox ref="checkbox" v-model="selected" :value="visualization">

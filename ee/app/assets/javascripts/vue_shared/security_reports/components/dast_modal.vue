@@ -54,11 +54,8 @@ export default {
     </div>
 
     <!-- banner -->
-    <div
-      v-if="downloadLink"
-      class="gl-display-inline-block gl-bg-gray-50 gl-my-3 gl-pl-3 gl-pr-7 gl-py-5"
-    >
-      <gl-icon name="bulb" class="gl-align-middle gl-mr-5" />
+    <div v-if="downloadLink" class="gl-my-3 gl-inline-block gl-bg-gray-50 gl-py-5 gl-pl-3 gl-pr-7">
+      <gl-icon name="bulb" class="gl-mr-5 gl-align-middle" />
       <b class="gl-align-middle">
         <gl-sprintf
           :message="

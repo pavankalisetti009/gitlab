@@ -163,8 +163,8 @@ export default {
 
 <template>
   <div data-testid="work-item-progress-wrapper">
-    <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-mb-0! gl-heading-5">
+    <div class="gl-flex gl-items-center gl-justify-between">
+      <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.progressTitle }}
         <template v-if="showProgressPopover">
           <gl-icon id="okr-progress-popover-title" class="gl-text-blue-600" name="question-o" />
@@ -187,7 +187,7 @@ export default {
       >
     </div>
     <gl-form v-if="isEditing" data-testid="work-item-progress" @submit.prevent="updateProgress">
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <label for="progress-widget-input" class="gl-mb-0"
           >{{ $options.i18n.progressTitle }}
           <template v-if="showProgressPopover">
@@ -222,7 +222,7 @@ export default {
           :min="$options.minValue"
           :max="$options.maxValue"
           data-testid="work-item-progress-input"
-          class="gl-hover-border-gray-200! gl-border-solid! hide-unfocused-input-decoration work-item-field-value gl-max-w-full!"
+          class="hide-unfocused-input-decoration work-item-field-value !gl-max-w-full !gl-border-solid hover:!gl-border-gray-200"
           :placeholder="placeholder"
           :state="isValidProgress"
           width="sm"

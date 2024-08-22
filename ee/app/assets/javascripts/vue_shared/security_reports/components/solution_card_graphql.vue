@@ -50,8 +50,8 @@ export default {
 <template>
   <gl-card v-if="solutionHtml || solutionText" class="gl-my-6">
     <template #default>
-      <div class="gl-display-flex gl-align-items-flex-start">
-        <div class="gl-pr-5 gl-display-flex gl-align-items-center gl-justify-content-end gl-pl-0">
+      <div class="gl-flex gl-items-start">
+        <div class="gl-flex gl-items-center gl-justify-end gl-pl-0 gl-pr-5">
           <gl-icon class="gl-mr-3" name="bulb" />
           <strong data-testid="solution-title">{{ s__('ciReport|Solution') }}:</strong>
         </div>

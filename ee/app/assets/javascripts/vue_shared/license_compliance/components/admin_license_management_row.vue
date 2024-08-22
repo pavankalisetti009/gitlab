@@ -79,19 +79,15 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-display-flex gl-align-items-center" data-testid="admin-license-compliance-row">
-    <issue-status-icon :status="status" class="gl-display-flex gl-mr-3" />
-    <span class="gl-flex-grow-1" data-testid="license-name">{{ license.name }}</span>
-    <div class="gl-display-flex">
-      <gl-loading-icon
-        v-if="loading"
-        size="sm"
-        class="gl-display-flex gl-align-items-center gl-mr-3"
-      />
+  <div class="gl-flex gl-items-center" data-testid="admin-license-compliance-row">
+    <issue-status-icon :status="status" class="gl-mr-3 gl-flex" />
+    <span class="gl-grow" data-testid="license-name">{{ license.name }}</span>
+    <div class="gl-flex">
+      <gl-loading-icon v-if="loading" size="sm" class="gl-mr-3 gl-flex gl-items-center" />
       <gl-dropdown
         :text="dropdownText"
         :disabled="loading"
-        toggle-class="gl-display-flex gl-justify-content-space-between gl-align-items-center"
+        toggle-class="gl-flex gl-justify-between gl-items-center"
         right
       >
         <gl-dropdown-item @click="allowLicense(license)">

@@ -30,7 +30,7 @@ export default {
 
 <template>
   <div class="gl-responsive-table-row flex-md-column align-items-md-stretch p-0">
-    <div class="md:!gl-flex gl-align-items-center js-license-row">
+    <div class="js-license-row gl-items-center md:!gl-flex">
       <!-- Name-->
       <div class="table-section section-30 section-wrap pr-md-3">
         <div class="table-mobile-header" role="rowheader">
@@ -45,7 +45,7 @@ export default {
       <div class="table-section section-70 section-wrap pr-md-3">
         <div class="table-mobile-header" role="rowheader">{{ s__('Licenses|Policy') }}</div>
         <div
-          class="table-mobile-content text-capitalize gl-flex gl-items-center justify-content-end justify-content-md-start status"
+          class="table-mobile-content text-capitalize justify-content-end justify-content-md-start status gl-flex gl-items-center"
         >
           <issue-status-icon :status="iconStatus" />
           {{ textStatus }}

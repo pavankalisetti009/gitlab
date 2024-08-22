@@ -104,7 +104,7 @@ export default {
 
 <template>
   <div class="discover-box">
-    <h2 class="gl-my-8 gl-text-center gl-text-gray-900 gl-mx-auto">
+    <h2 class="gl-mx-auto gl-my-8 gl-text-center gl-text-gray-900">
       {{ $options.i18n.discoverTitle }}
     </h2>
     <div class="gl-text-center">
@@ -117,7 +117,7 @@ export default {
         {{ caption }}
       </p>
       <div class="gl-mx-auto gl-my-0">
-        <p class="gl-text-gray-900 gl-text-center mb-7">
+        <p class="mb-7 gl-text-center gl-text-gray-900">
           <gl-sprintf :message="$options.i18n.discoverPlanCaption">
             <template #link="{ content }">
               <gl-link :href="$options.DISCOVER_PLANS_MORE_INFO_LINK" target="_blank">{{
@@ -128,7 +128,7 @@ export default {
         </p>
       </div>
     </div>
-    <div class="gl-display-flex gl-flex-direction-row gl-justify-content-center gl-mx-auto">
+    <div class="gl-mx-auto gl-flex gl-flex-row gl-justify-center">
       <template v-if="isPersonalProject">
         <gl-button v-gl-modal-directive="$options.modalId" v-bind="upgradeButtonProps">
           {{ $options.i18n.discoverUpgradeLabel }}

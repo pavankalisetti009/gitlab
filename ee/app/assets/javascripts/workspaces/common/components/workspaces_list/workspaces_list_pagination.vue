@@ -34,7 +34,7 @@ export default {
 <template>
   <div
     v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage"
-    class="gl-display-flex gl-justify-content-center gl-mt-3"
+    class="gl-mt-3 gl-flex gl-justify-center"
   >
     <gl-keyset-pagination
       :has-next-page="pageInfo.hasNextPage"

@@ -38,7 +38,7 @@ export default {
 };
 </script>
 <template>
-  <div class="license-packages gl-inline gl-font-sm">
+  <div class="license-packages gl-inline gl-text-sm">
     <div class="js-license-dependencies gl-inline">{{ packageString }}</div>
     <button
       v-if="!showAllPackages && remainingPackages"

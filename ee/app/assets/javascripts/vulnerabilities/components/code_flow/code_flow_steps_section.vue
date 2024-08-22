@@ -215,11 +215,11 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-flex-col gl-w-4/10 gl-overflow-auto gl-z-0 gl-pl-2">
+  <div class="gl-z-0 gl-flex gl-w-4/10 gl-flex-col gl-overflow-auto gl-pl-2">
     <div>
       <div class="gl-flex gl-justify-between">
         <div>
-          <div class="gl-text-lg item-title">{{ $options.i18n.steps }}</div>
+          <div class="item-title gl-text-lg">{{ $options.i18n.steps }}</div>
           <div class="gl-pt-2" data-testid="steps-header">{{ stepsHeader }}</div>
         </div>
         <gl-button-group class="gl-pr-2">
@@ -255,16 +255,16 @@ export default {
             <div
               v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
               :key="i"
-              class="gl-flex align-content-center gl-justify-between gl-pt-2 gl-pb-2 gl-pr-2 gl-pl-2"
+              class="align-content-center gl-flex gl-justify-between gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2"
               :class="{
-                'gl-bg-blue-50 gl-rounded-base':
+                'gl-rounded-base gl-bg-blue-50':
                   selectedStepNumber === vulnerabilityItem.stepNumber,
               }"
               :data-testid="`step-row-${i}`"
               @click="selectStep(vulnerabilityItem)"
             >
               <gl-badge
-                class="gl-mr-3 gl-rounded-base gl-pr-4 gl-pl-4"
+                class="gl-mr-3 gl-rounded-base gl-pl-4 gl-pr-4"
                 :class="{
                   '!gl-bg-blue-500 !gl-text-white':
                     selectedStepNumber === vulnerabilityItem.stepNumber,
@@ -275,13 +275,13 @@ export default {
                 {{ vulnerabilityItem.stepNumber }}
               </gl-badge>
               <span
-                class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-overflow-ellipsis gl-whitespace-nowrap"
+                class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
               >
                 <gl-badge
                   v-if="['source', 'sink'].includes(vulnerabilityItem.nodeType)"
                   :id="vulnerabilityItem.nodeType"
                   :data-testid="vulnerabilityItem.nodeType"
-                  class="gl-mr-3 gl-pr-4 gl-pl-4"
+                  class="gl-mr-3 gl-pl-4 gl-pr-4"
                   size="md"
                   variant="muted"
                 >

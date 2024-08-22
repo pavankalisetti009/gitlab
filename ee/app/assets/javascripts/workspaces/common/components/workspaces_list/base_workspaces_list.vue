@@ -54,18 +54,13 @@ export default {
     </gl-alert>
     <workspace-empty-state v-if="!loading && empty" :new-workspace-path="newWorkspacePath" />
     <template v-else>
-      <div
-        data-testid="workspaces-list-header"
-        class="gl-display-flex gl-align-items-center gl-justify-content-space-between"
-      >
-        <div class="gl-display-flex gl-align-items-center">
+      <div data-testid="workspaces-list-header" class="gl-flex gl-items-center gl-justify-between">
+        <div class="gl-flex gl-items-center">
           <h2>{{ $options.i18n.heading }}</h2>
         </div>
-        <div
-          class="gl-display-flex gl-align-items-center gl-flex-direction-column gl-md-flex-direction-row"
-        >
+        <div class="gl-flex gl-flex-col gl-items-center md:gl-flex-row">
           <gl-link
-            class="gl-mr-5 workspace-list-link gl-hidden gl-sm-display-block"
+            class="workspace-list-link gl-mr-5 gl-hidden sm:gl-block"
             :href="$options.workspacesHelpPath"
             >{{ $options.i18n.learnMoreHelpLink }}</gl-link
           >
