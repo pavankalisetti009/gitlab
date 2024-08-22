@@ -2,6 +2,7 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { GlLoadingIcon } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
+import getProjectBranches from 'ee/ci/secrets/graphql/queries/get_project_branches.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import CiEnvironmentsDropdown, {
@@ -13,7 +14,11 @@ import { ENTITY_GROUP, ENTITY_PROJECT } from 'ee/ci/secrets/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import SecretFormWrapper from 'ee/ci/secrets/components/secret_form/secret_form_wrapper.vue';
 import SecretForm from 'ee/ci/secrets/components/secret_form/secret_form.vue';
-import { mockGroupEnvironments, mockProjectEnvironments } from '../../mock_data';
+import {
+  mockGroupEnvironments,
+  mockProjectEnvironments,
+  mockProjectBranches,
+} from '../../mock_data';
 
 jest.mock('~/alert');
 Vue.use(VueApollo);
@@ -23,6 +28,7 @@ describe('SecretFormWrapper component', () => {
   let mockApollo;
   let mockGroupEnvQuery;
   let mockProjectEnvQuery;
+  let mockProjectBranchesResponse;
 
   const defaultProps = {
     entity: ENTITY_GROUP,
@@ -44,6 +50,7 @@ describe('SecretFormWrapper component', () => {
     const handlers = [
       [getGroupEnvironments, mockGroupEnvQuery],
       [getProjectEnvironments, mockProjectEnvQuery],
+      [getProjectBranches, mockProjectBranchesResponse],
     ];
 
     mockApollo = createMockApollo(handlers);
@@ -65,6 +72,7 @@ describe('SecretFormWrapper component', () => {
   beforeEach(() => {
     mockGroupEnvQuery = jest.fn().mockResolvedValue(mockGroupEnvironments);
     mockProjectEnvQuery = jest.fn().mockResolvedValue(mockProjectEnvironments);
+    mockProjectBranchesResponse = jest.fn().mockResolvedValue(mockProjectBranches);
   });
 
   describe('template', () => {
@@ -115,8 +123,8 @@ describe('SecretFormWrapper component', () => {
     });
 
     describe('while query is being fetched', () => {
-      it('shows a loading icon', () => {
-        createComponent({ isLoading: true, mountFn: mountExtended });
+      it('shows a loading icon', async () => {
+        await createComponent({ isLoading: true, mountFn: mountExtended });
 
         expect(findEnvironmentsLoadingIcon().exists()).toBe(true);
       });

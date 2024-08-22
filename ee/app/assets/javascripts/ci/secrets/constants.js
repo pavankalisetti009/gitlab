@@ -1,6 +1,7 @@
 import { __ } from '~/locale';
 
 export const SECRET_DESCRIPTION_MAX_LENGTH = 200;
+export const BRANCH_QUERY_LIMIT = 100;
 
 export const INDEX_ROUTE_NAME = 'index';
 export const NEW_ROUTE_NAME = 'new';
