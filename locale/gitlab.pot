@@ -48060,6 +48060,11 @@ msgstr ""
 msgid "SecurityOrchestration|%{scanners}"
 msgstr ""
 
+msgid "SecurityOrchestration|%{scanners} of %{severities} severity level"
+msgid_plural "SecurityOrchestration|%{scanners} of %{severities} severity levels"
+msgstr[0] ""
+msgstr[1] ""
+
 msgid "SecurityOrchestration|%{state} and %{statuses}"
 msgstr ""
 
@@ -48115,6 +48120,9 @@ msgid "SecurityOrchestration|All projects linked to security policy project."
 msgstr ""
 
 msgid "SecurityOrchestration|All projects linked to this project except:"
+msgstr ""
+
+msgid "SecurityOrchestration|All scanners"
 msgstr ""
 
 msgid "SecurityOrchestration|All sources"
@@ -48495,6 +48503,9 @@ msgid "SecurityOrchestration|Required approvals exceed eligible approvers."
 msgstr ""
 
 msgid "SecurityOrchestration|Requires no approvals if any of the following occur:"
+msgstr ""
+
+msgid "SecurityOrchestration|Resolve the following vulnerabilities that are no longer detected on the default branch:"
 msgstr ""
 
 msgid "SecurityOrchestration|Resolved"
