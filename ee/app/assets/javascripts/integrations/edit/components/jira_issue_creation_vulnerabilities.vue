@@ -198,7 +198,7 @@ export default {
       />
       <div
         v-if="isJiraVulnerabilitiesEnabled"
-        class="gl-mt-3 gl-ml-6"
+        class="gl-ml-6 gl-mt-3"
         data-testid="issue-type-section"
       >
         <gl-form-group
@@ -232,7 +232,7 @@ export default {
         >
           {{ loadingJiraIssueTypesErrorMessage }}
         </gl-alert>
-        <div class="gl-display-flex gl-align-items-center gl-flex-wrap gl-gap-3 gl-mb-5">
+        <div class="gl-mb-5 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
           <input
             name="service[vulnerabilities_issuetype]"
             type="hidden"

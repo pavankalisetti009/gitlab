@@ -209,7 +209,7 @@ export default {
     stacked="sm"
   >
     <template #cell(issueDetails)="{ item }">
-      <div class="gl-display-flex gl-flex-direction-column gl-flex-grow-1" data-testid="detailsCol">
+      <div class="gl-flex gl-grow gl-flex-col" data-testid="detailsCol">
         <div class="issue-title str-truncated">
           <gl-link
             :href="item.webUrl"
@@ -218,15 +218,11 @@ export default {
             >{{ item.title }}</gl-link
           >
         </div>
-        <ul class="horizontal-list list-items-separated gl-mt-2 gl-mb-0">
+        <ul class="horizontal-list list-items-separated gl-mb-0 gl-mt-2">
           <li>{{ formatIssueId(item.iid) }}</li>
           <li v-if="item.epic">{{ formatEpicId(item.epic.iid) }}</li>
           <li v-if="item.labels.count">
-            <span
-              :id="`${item.iid}-labels`"
-              class="gl-display-flex gl-align-items-center"
-              data-testid="labels"
-            >
+            <span :id="`${item.iid}-labels`" class="gl-flex gl-items-center" data-testid="labels">
               <gl-icon name="label" class="gl-mr-1" />
               {{ item.labels.count }}
             </span>
@@ -236,7 +232,7 @@ export default {
               :css-classes="['issue-labels-popover']"
               data-testid="labelsPopover"
             >
-              <div class="gl-display-flex gl-justify-content-start gl-flex-wrap gl-mr-1">
+              <div class="gl-mr-1 gl-flex gl-flex-wrap gl-justify-start">
                 <gl-label
                   v-for="label in item.labels.nodes"
                   :key="label.id"

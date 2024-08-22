@@ -132,7 +132,7 @@ gcloud iam workload-identity-pools providers create-oidc "${this.identityProvide
             :text="gCloudCommands"
             :title="__('Copy command')"
             category="tertiary"
-            class="gl-hidden md:gl-flex position-absolute position-top-0 position-right-0 gl-m-3"
+            class="position-absolute position-top-0 position-right-0 gl-m-3 gl-hidden md:gl-flex"
           />
         </div>
       </li>

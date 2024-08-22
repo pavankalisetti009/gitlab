@@ -260,7 +260,7 @@ export default {
 <template>
   <div
     v-if="isLoading"
-    class="gl-flex gl-items-center gl-justify-center issues-analytics-chart-loader"
+    class="issues-analytics-chart-loader gl-flex gl-items-center gl-justify-center"
   >
     <gl-loading-icon size="lg" />
   </div>
@@ -272,7 +272,7 @@ export default {
     :empty-state-type="emptyStateType"
   />
   <div v-else>
-    <h4 class="gl-mt-0 gl-mb-5">{{ $options.i18n.chartHeader }}</h4>
+    <h4 class="gl-mb-5 gl-mt-0">{{ $options.i18n.chartHeader }}</h4>
     <gl-stacked-column-chart
       :bars="barsData"
       :y-axis-title="$options.i18n.yAxisTitle"
@@ -289,9 +289,9 @@ export default {
         <div
           v-for="{ seriesId, seriesName, color, value } in tooltipContent"
           :key="seriesId"
-          class="gl-display-flex gl-justify-content-space-between gl-leading-24 gl-min-w-20"
+          class="gl-flex gl-min-w-20 gl-justify-between gl-leading-24"
         >
-          <gl-chart-series-label class="gl-font-sm" :color="color">
+          <gl-chart-series-label class="gl-text-sm" :color="color">
             {{ seriesName }}
           </gl-chart-series-label>
           <div class="gl-font-bold">{{ value }}</div>

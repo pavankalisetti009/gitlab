@@ -275,7 +275,7 @@ export default {
 <template>
   <div>
     <div class="gl-flex">
-      <h1 ref="pageTitle" class="page-title gl-font-size-h-display">
+      <h1 ref="pageTitle" class="page-title gl-text-size-h-display">
         {{ isEditing ? $options.i18n.title.edit : $options.i18n.title.new }}
       </h1>
     </div>
@@ -286,7 +286,7 @@ export default {
     }}</gl-alert>
     <gl-form class="common-note-form">
       <p v-if="isAutoModeEdit && title">
-        <span class="gl-font-bold gl-block gl-pb-3">{{ $options.i18n.form.title }}</span>
+        <span class="gl-block gl-pb-3 gl-font-bold">{{ $options.i18n.form.title }}</span>
         <span>{{ title }}</span>
       </p>
       <gl-form-group

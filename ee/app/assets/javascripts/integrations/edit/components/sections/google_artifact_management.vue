@@ -71,7 +71,7 @@ export default {
 <template>
   <div v-if="editable">
     <template v-if="operating">
-      <div class="gl-display-flex gl-gap-3">
+      <div class="gl-flex gl-gap-3">
         <gl-button
           :href="artifactRegistryPath"
           icon="deployments"
