@@ -505,7 +505,12 @@ RSpec.shared_examples 'migration reindexes all data' do
 
       control = ActiveRecord::QueryRecorder.new(skip_cached: false) { migration.migrate }
 
-      create_list(klass.name.downcase.to_sym, objects.size)
+      if defined?(factory_to_create_objects)
+        create_list(factory_to_create_objects, objects.size)
+      else
+        create_list(klass.name.downcase.to_sym, objects.size)
+      end
+
       ensure_elasticsearch_index!
 
       expect { migration.migrate }.to issue_same_number_of_queries_as(control)
