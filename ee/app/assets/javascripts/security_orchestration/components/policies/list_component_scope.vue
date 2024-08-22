@@ -79,7 +79,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-baseline gl-gap-3">
+  <div class="gl-flex gl-items-baseline gl-gap-3">
     <compliance-frameworks-toggle-list
       v-if="showComplianceFrameworks"
       :compliance-frameworks="policyScopeComplianceFrameworks"

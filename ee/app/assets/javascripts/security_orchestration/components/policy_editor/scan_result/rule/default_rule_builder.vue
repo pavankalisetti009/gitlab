@@ -104,7 +104,7 @@ export default {
   <div>
     <section-layout class="gl-pb-0" :show-remove-button="false" @changed="$emit('changed', $event)">
       <template #content>
-        <section-layout class="gl-bg-white!" @remove="$emit('remove')">
+        <section-layout class="!gl-bg-white" @remove="$emit('remove')">
           <template #content>
             <gl-sprintf :message="$options.emptyRuleCopy">
               <template #scanners>
@@ -146,7 +146,7 @@ export default {
         <scan-filter-selector
           :disabled="true"
           :tooltip-title="$options.i18n.tooltipFilterDisabledTitle"
-          class="gl-bg-white! gl-w-full"
+          class="gl-w-full !gl-bg-white"
         />
       </template>
     </section-layout>

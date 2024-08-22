@@ -50,7 +50,7 @@ export default {
   >
     <gl-collapsible-listbox
       :id="$options.policyTypeFilterId"
-      class="gl-display-flex"
+      class="gl-flex"
       toggle-class="gl-truncate"
       block
       :toggle-text="selectedValueText"

@@ -92,7 +92,7 @@ export default {
         @select="selectFilter"
       >
         <template #list-item="{ item }">
-          <div class="gl-display-flex">
+          <div class="gl-flex">
             <span
               :id="item.value"
               class="gl-pr-3"

@@ -131,7 +131,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-gap-3">
+  <div class="gl-flex gl-items-center gl-gap-3">
     <label for="group-level-branch-selector" class="gl-sr-only">
       {{ $options.i18n.groupLevelBranchSelector }}
     </label>
@@ -155,7 +155,7 @@ export default {
       />
     </template>
     <template v-else>
-      <span v-if="showInput" class="gl-display-flex">
+      <span v-if="showInput" class="gl-flex">
         <label for="group-level-branch-input" class="gl-sr-only">
           {{ $options.i18n.groupLevelBranchInput }}
         </label>

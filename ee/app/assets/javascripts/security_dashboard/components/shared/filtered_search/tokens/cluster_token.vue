@@ -173,7 +173,7 @@ export default {
           <div class="gl-flex gl-items-center">
             <gl-icon
               name="check"
-              class="gl-mr-3 gl-flex-shrink-0 gl-text-gray-700"
+              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
               :class="{ 'gl-invisible': !isClusterSelected(cluster.value) }"
               :data-testid="`cluster-icon-${cluster.value}`"
             />

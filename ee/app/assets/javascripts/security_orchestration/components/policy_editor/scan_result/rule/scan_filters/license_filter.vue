@@ -128,7 +128,7 @@ export default {
         />
         <gl-collapsible-listbox
           v-model="licenseTypes"
-          class="gl-align-middle !gl-inline"
+          class="!gl-inline gl-align-middle"
           :items="filteredLicenses"
           :toggle-text="toggleText"
           :header-text="$options.i18n.licenseTypeHeader"

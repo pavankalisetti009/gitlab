@@ -34,11 +34,11 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-flex-direction-column gl-align-items-center">
-    <h5 class="gl-text-secondary gl-mt-0 gl-mb-2" data-testid="empty-state-header">
+  <div class="gl-flex gl-flex-col gl-items-center">
+    <h5 class="gl-mb-2 gl-mt-0 gl-text-secondary" data-testid="empty-state-header">
       {{ emptyStateHeader }}
     </h5>
-    <span class="gl-text-gray-500 gl-text-center">
+    <span class="gl-text-center gl-text-gray-500">
       {{ $options.i18n.emptyStateContent }}
     </span>
     <gl-button

@@ -66,7 +66,7 @@ export default {
 </script>
 
 <template>
-  <section-layout class="gl-w-full gl-bg-white!" @remove="remove">
+  <section-layout class="gl-w-full !gl-bg-white" @remove="remove">
     <template #selector>
       <slot name="label">
         <label class="gl-mb-0" :title="$options.i18n.label">{{ $options.i18n.label }}</label>
@@ -91,7 +91,7 @@ export default {
         v-gl-tooltip
         name="information-o"
         :title="$options.i18n.fixAvailableTooltip"
-        class="gl-text-gray-500 gl-ml-2"
+        class="gl-ml-2 gl-text-gray-500"
       />
     </template>
   </section-layout>

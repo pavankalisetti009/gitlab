@@ -103,12 +103,12 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-bg-white gl-pt-0 gl-px-0 gl-pb-2"
-    content-classes="gl-justify-content-space-between"
+    class="gl-w-full gl-bg-white gl-px-0 gl-pb-2 gl-pt-0"
+    content-classes="gl-justify-between"
     @remove="removeVariable"
   >
     <template #selector>
-      <div class="gl-flex-grow-2 gl-w-3/10 gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-w-3/10 gl-flex-grow-2 gl-items-center">
         <label class="gl-mb-0 gl-mr-3" :title="$options.i18n.keyLabel">
           {{ $options.i18n.keyLabel }}
         </label>
@@ -140,7 +140,7 @@ export default {
       </div>
     </template>
     <template #content>
-      <div class="gl-flex-grow-1 gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-grow gl-items-center">
         <label class="gl-mb-0 gl-mr-3" :title="$options.i18n.valueLabel">
           {{ $options.i18n.valueLabel }}
         </label>

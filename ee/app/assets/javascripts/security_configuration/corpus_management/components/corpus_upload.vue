@@ -25,9 +25,7 @@ export default {
 };
 </script>
 <template>
-  <div
-    class="gl-h-11 gl-bg-gray-10 gl-display-flex gl-justify-content-space-between gl-align-items-center"
-  >
+  <div class="gl-flex gl-h-11 gl-items-center gl-justify-between gl-bg-gray-10">
     <div v-if="totalSize" class="gl-ml-5">
       <gl-sprintf :message="$options.i18n.totalSize">
         <template #totalSize>

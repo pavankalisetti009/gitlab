@@ -158,7 +158,7 @@ export default {
 
       <corpus-upload>
         <template #action>
-          <corpus-upload-button class="gl-mr-5 gl-ml-auto" @corpus-added="fetchCorpuses" />
+          <corpus-upload-button class="gl-ml-auto gl-mr-5" @corpus-added="fetchCorpuses" />
         </template>
       </corpus-upload>
 
@@ -167,7 +167,7 @@ export default {
         <corpus-table :corpuses="corpuses" @delete="onDelete" />
       </template>
 
-      <div v-if="hasPagination" class="gl-display-flex gl-justify-content-center gl-mt-5">
+      <div v-if="hasPagination" class="gl-mt-5 gl-flex gl-justify-center">
         <gl-keyset-pagination v-bind="pageInfo" @prev="prevPage" @next="nextPage" />
       </div>
     </div>

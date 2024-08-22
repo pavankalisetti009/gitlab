@@ -57,7 +57,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-gap-3">
+  <div class="gl-flex gl-items-center gl-gap-3">
     <gl-sprintf :message="exceptionText">
       <template #exceptionType>
         <gl-collapsible-listbox

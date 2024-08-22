@@ -327,8 +327,8 @@ export default {
 
 <template>
   <div>
-    <div class="gl-pt-5 gl-px-5 gl-bg-gray-10">
-      <div class="row gl-justify-content-space-between gl-align-items-center">
+    <div class="gl-bg-gray-10 gl-px-5 gl-pt-5">
+      <div class="row gl-items-center gl-justify-between">
         <div class="col-12 col-sm-8 col-md-6 col-lg-5 row">
           <type-filter
             :value="selectedPolicyType"
@@ -363,7 +363,7 @@ export default {
       @row-selected="presentPolicyDrawer"
     >
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType } }">
-        <div class="gl-display-flex gl-gap-4">
+        <div class="gl-flex gl-gap-4">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
             class="gl-text-gray-200"

@@ -211,10 +211,10 @@ export default {
       <template #group-label="{ group }">
         <div
           v-if="group.icon"
-          class="gl-flex gl-justify-center gl-items-center gl-pr-4"
+          class="gl-flex gl-items-center gl-justify-center gl-pr-4"
           :data-testid="`header-${group.text}`"
         >
-          <div class="gl-flex-grow-1">{{ group.text }}</div>
+          <div class="gl-grow">{{ group.text }}</div>
           <gl-badge :icon="group.icon" :variant="group.variant" />
         </div>
       </template>

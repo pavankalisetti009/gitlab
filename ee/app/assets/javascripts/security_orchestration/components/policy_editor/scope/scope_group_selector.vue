@@ -141,7 +141,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-gap-3 gl-items-center">
+  <div class="gl-flex gl-items-center gl-gap-3">
     <group-projects-dropdown
       groups-only
       data-testid="groups-dropdown"

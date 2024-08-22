@@ -65,7 +65,7 @@ export default {
   <section class="policy-editor">
     <gl-alert
       v-if="error"
-      class="gl-mt-5 security-policies-alert gl-z-2"
+      class="security-policies-alert gl-z-2 gl-mt-5"
       :title="error"
       dismissible
       variant="danger"
@@ -73,7 +73,7 @@ export default {
       sticky
       @dismiss="setError('')"
     >
-      <ul v-if="errorMessages.length" class="gl-mb-0! gl-ml-5">
+      <ul v-if="errorMessages.length" class="!gl-mb-0 gl-ml-5">
         <li v-for="errorMessage in errorMessages" :key="errorMessage">
           {{ errorMessage }}
         </li>

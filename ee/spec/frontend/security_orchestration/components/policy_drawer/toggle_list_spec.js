@@ -190,12 +190,7 @@ describe('ToggleList', () => {
 
       expect(findItemsList().element.tagName).toBe('DIV');
       expect(findAllListItems().at(0).element.tagName).toBe('SPAN');
-      expect(findItemsList().classes()).toEqual([
-        'gl-m-0',
-        'gl-display-flex',
-        'gl-flex-wrap',
-        'gl-gap-2',
-      ]);
+      expect(findItemsList().classes()).toEqual(['gl-m-0', 'gl-flex', 'gl-flex-wrap', 'gl-gap-2']);
     });
   });
 });

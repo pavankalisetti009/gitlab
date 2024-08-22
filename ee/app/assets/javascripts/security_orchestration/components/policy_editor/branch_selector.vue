@@ -114,15 +114,15 @@ export default {
       @hidden="finishEditing"
     >
       <template #header>
-        <div class="gl-display-flex gl-align-items-center gl-p-4 gl-min-h-8 gl-border-b">
-          <div class="gl-flex-grow-1 gl-font-bold gl-font-sm gl-pr-2">
+        <div class="gl-border-b gl-flex gl-min-h-8 gl-items-center gl-p-4">
+          <div class="gl-grow gl-pr-2 gl-text-sm gl-font-bold">
             {{ $options.i18n.header }}
           </div>
 
           <gl-button
             v-if="hasBranches"
             category="tertiary"
-            class="focus:!gl-shadow-inner-2-blue-400 gl-flex-shrink-0 gl-font-sm! gl-px-2! gl-py-0! !gl-w-auto gl-m-0! gl-max-w-1/2 gl-text-overflow-ellipsis"
+            class="!gl-m-0 !gl-w-auto gl-max-w-1/2 gl-shrink-0 gl-text-ellipsis !gl-px-2 !gl-py-0 !gl-text-sm focus:!gl-shadow-inner-2-blue-400"
             data-testid="reset-button"
             @click="onResetButtonClicked"
           >
@@ -134,7 +134,7 @@ export default {
       <div class="gl-w-full">
         <template v-if="!hasBranches">
           <div
-            class="gl-pl-4 gl-pr-4 gl-pt-2 gl-font-base security-policies-popover-content-height"
+            class="security-policies-popover-content-height gl-pl-4 gl-pr-4 gl-pt-2 gl-text-base"
             data-testid="empty-state"
           >
             <p class="gl-mb-2">{{ $options.i18n.noBranchesText }}</p>
@@ -156,7 +156,7 @@ export default {
             @select="unselectBranch(item)"
           >
             <gl-truncate :text="item.name" />
-            <p v-if="item.fullPath" class="gl-text-gray-700 gl-font-sm gl-m-0 gl-mt-1">
+            <p v-if="item.fullPath" class="gl-m-0 gl-mt-1 gl-text-sm gl-text-gray-700">
               <gl-truncate position="middle" :text="item.fullPath" />
             </p>
           </gl-listbox-item>
@@ -164,7 +164,7 @@ export default {
       </div>
 
       <template #footer>
-        <div class="gl-py-2 gl-px-2 gl-display-flex gl-border-t">
+        <div class="gl-border-t gl-flex gl-px-2 gl-py-2">
           <gl-button data-testid="add-button" category="tertiary" size="small" @click="showModal">
             {{ addButtonText }}
           </gl-button>

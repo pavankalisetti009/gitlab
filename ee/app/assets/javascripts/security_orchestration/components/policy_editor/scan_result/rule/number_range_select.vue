@@ -62,7 +62,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-gap-3">
+  <div class="gl-flex gl-gap-3">
     <gl-collapsible-listbox
       :items="operators"
       :header-text="$options.i18n.headerText"

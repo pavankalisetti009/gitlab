@@ -14,14 +14,12 @@ export default {
   <article>
     <slot name="alert"></slot>
     <header
-      class="gl-mt-5 gl-display-flex gl-justify-content-space-between"
+      class="gl-mt-5 gl-flex gl-justify-between"
       :class="{
         ['gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid']: !noBorder,
       }"
     >
-      <div
-        class="gl-display-flex gl-flex-direction-column gl-w-full gl-justify-content-space-between gl-md-flex-direction-row"
-      >
+      <div class="gl-flex gl-w-full gl-flex-col gl-justify-between md:gl-flex-row">
         <div>
           <h4 class="gl-mt-0">
             <slot name="heading"></slot>

@@ -104,7 +104,7 @@ export default {
     },
     tableFields() {
       const defaultClasses = ['gl-break-all'];
-      const defaultThClasses = ['gl-bg-transparent!', 'gl-text-black-normal'];
+      const defaultThClasses = ['!gl-bg-transparent', 'gl-text-default'];
 
       const dataFields = this.fields.map(({ key, label }) => ({
         key,
@@ -141,8 +141,9 @@ export default {
       return visitUrl(editPath);
     },
     cssDeleteActionClasses(item) {
-      return `gl-text-red-500! ${
-        this.isPolicyProfile(item) ? 'gl-cursor-default! gl-button disabled' : ''
+      // eslint-disable-next-line @gitlab/require-i18n-strings
+      return `!gl-text-red-500 ${
+        this.isPolicyProfile(item) ? 'disabled !gl-cursor-default gl-button' : ''
       }`;
     },
     actionDisclosureItemsConfig(item) {
@@ -181,8 +182,8 @@ export default {
         stacked="md"
         fixed
         hover
-        thead-class="gl-border-b-solid gl-border-gray-100 gl-border-1 gl-pt-3!"
-        tbody-tr-class="gl-hover-cursor-pointer gl-hover-bg-blue-50!"
+        thead-class="gl-border-b-solid gl-border-gray-100 gl-border-1 !gl-pt-3"
+        tbody-tr-class="hover:gl-cursor-pointer hover:!gl-bg-blue-50"
         @row-clicked="navigateToProfile"
       >
         <template v-if="hasError" #top-row>
@@ -192,7 +193,7 @@ export default {
               <ul
                 v-if="hasErrorDetails"
                 :aria-label="s__('DastProfiles|Error Details')"
-                class="gl-p-0 gl-m-0"
+                class="gl-m-0 gl-p-0"
               >
                 <li
                   v-for="errorDetail in errorDetails"
@@ -205,7 +206,7 @@ export default {
         </template>
 
         <template #cell(profileName)="{ value }">
-          <div class="gl-overflow-hidden gl-whitespace-nowrap gl-text-overflow-ellipsis">
+          <div class="gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap">
             {{ value }}
           </div>
         </template>
@@ -221,7 +222,7 @@ export default {
             <gl-disclosure-dropdown
               v-gl-tooltip
               class="gl-hidden md:!gl-inline-flex"
-              toggle-class="gl-border-0! !gl-shadow-none"
+              toggle-class="!gl-border-0 !gl-shadow-none"
               text-sr-only
               :toggle-text="__('More actions')"
               :title="__('More actions')"
@@ -249,7 +250,7 @@ export default {
               v-if="item.editPath"
               :href="item.editPath"
               category="tertiary"
-              class="gl-ml-3 gl-my-1 md:gl-hidden"
+              class="gl-my-1 gl-ml-3 md:gl-hidden"
               size="small"
             >
               {{ __('Edit') }}
@@ -287,7 +288,7 @@ export default {
         </template>
       </gl-table>
 
-      <p v-if="hasMoreProfilesToLoad" class="gl-display-flex gl-justify-content-center">
+      <p v-if="hasMoreProfilesToLoad" class="gl-flex gl-justify-center">
         <gl-button
           data-testid="loadMore"
           :loading="isLoading && !hasError"

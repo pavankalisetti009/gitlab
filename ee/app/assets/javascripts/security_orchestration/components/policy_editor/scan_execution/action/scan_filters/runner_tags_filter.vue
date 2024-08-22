@@ -47,7 +47,7 @@ export default {
       </label>
     </template>
     <template #content>
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <runner-tags-list
           id="policy-tags"
           :selected-tags="selected"
@@ -60,7 +60,7 @@ export default {
           v-gl-tooltip
           name="question-o"
           :title="$options.i18n.selectedTagsInformation"
-          class="gl-text-blue-600 gl-ml-2"
+          class="gl-ml-2 gl-text-blue-600"
         />
       </div>
     </template>

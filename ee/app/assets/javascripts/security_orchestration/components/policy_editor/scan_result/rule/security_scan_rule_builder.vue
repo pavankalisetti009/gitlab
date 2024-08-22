@@ -323,7 +323,7 @@ export default {
   <div>
     <section-layout class="gl-pb-0" :show-remove-button="false" @changed="$emit('changed', $event)">
       <template #content>
-        <section-layout class="gl-bg-white!" @remove="$emit('remove')">
+        <section-layout class="!gl-bg-white" @remove="$emit('remove')">
           <template #content>
             <gl-sprintf :message="$options.scanResultRuleCopy">
               <template #scanType>
@@ -382,7 +382,7 @@ export default {
       <template #content>
         <severity-filter
           :selected="severityLevels"
-          class="gl-bg-white!"
+          class="!gl-bg-white"
           @input="severityLevels = $event"
         />
 
@@ -410,7 +410,7 @@ export default {
         />
 
         <scan-filter-selector
-          class="gl-bg-white! gl-w-full"
+          class="gl-w-full !gl-bg-white"
           :filters="$options.FILTERS"
           :selected="filters"
           :should-disable-filter="shouldDisableFilterSelector"

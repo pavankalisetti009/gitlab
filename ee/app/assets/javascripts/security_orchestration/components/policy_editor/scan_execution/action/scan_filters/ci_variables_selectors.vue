@@ -123,7 +123,7 @@ export default {
           :disabled="hasEmptyVariable"
           variant="link"
           :aria-label="$options.i18n.addLabel"
-          class="gl-pt-2 gl-mr-3"
+          class="gl-mr-3 gl-pt-2"
           @click="addVariable"
         >
           {{ $options.i18n.addLabel }}

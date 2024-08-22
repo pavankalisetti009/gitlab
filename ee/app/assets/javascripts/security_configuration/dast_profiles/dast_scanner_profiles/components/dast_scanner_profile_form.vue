@@ -219,7 +219,7 @@ export default {
               <gl-input-group-text>{{ __('Minutes') }}</gl-input-group-text>
             </template>
           </gl-form-input-group>
-          <div class="gl-text-gray-400 gl-my-2">
+          <div class="gl-my-2 gl-text-gray-400">
             {{ s__('DastProfiles|Minimum = 0 (no timeout enabled), Maximum = 2880 minutes') }}
           </div>
         </gl-form-group>
@@ -250,7 +250,7 @@ export default {
               <gl-input-group-text>{{ __('Seconds') }}</gl-input-group-text>
             </template>
           </gl-form-input-group>
-          <div class="gl-text-gray-400 gl-my-2">
+          <div class="gl-my-2 gl-text-gray-400">
             {{ s__('DastProfiles|Minimum = 1 second, Maximum = 3600 seconds') }}
           </div>
         </gl-form-group>

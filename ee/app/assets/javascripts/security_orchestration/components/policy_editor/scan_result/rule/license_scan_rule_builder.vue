@@ -87,7 +87,7 @@ export default {
   <div>
     <section-layout class="gl-pb-0" :show-remove-button="false">
       <template #content>
-        <section-layout class="gl-bg-white!" @remove="$emit('remove')">
+        <section-layout class="!gl-bg-white" @remove="$emit('remove')">
           <template #content>
             <gl-sprintf :message="$options.i18n.licenseScanResultRuleCopy">
               <template #scanType>
@@ -118,7 +118,7 @@ export default {
 
     <section-layout class="gl-pt-3" :show-remove-button="false">
       <template #content>
-        <status-filter :show-remove-button="false" class="gl-bg-white!">
+        <status-filter :show-remove-button="false" class="!gl-bg-white">
           <rule-multi-select
             v-model="licenseStatuses"
             class="!gl-inline gl-align-middle"
@@ -128,13 +128,13 @@ export default {
           />
         </status-filter>
 
-        <license-filter class="gl-bg-white!" :init-rule="initRule" @changed="triggerChanged" />
+        <license-filter class="!gl-bg-white" :init-rule="initRule" @changed="triggerChanged" />
 
         <scan-filter-selector
           :disabled="true"
           :filters="$options.FILTERS_ITEMS"
           :tooltip-title="$options.i18n.tooltipFilterDisabledTitle"
-          class="gl-bg-white gl-w-full"
+          class="gl-w-full gl-bg-white"
         />
       </template>
     </section-layout>

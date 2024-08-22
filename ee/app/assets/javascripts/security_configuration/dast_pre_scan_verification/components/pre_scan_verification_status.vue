@@ -58,14 +58,14 @@ export default {
 
 <template>
   <div
-    class="gl-bg-gray-10 gl-border gl-rounded-base gl-p-5 gl-w-full gl-display-flex gl-gap-3 gl-align-items-center"
+    class="gl-border gl-flex gl-w-full gl-items-center gl-gap-3 gl-rounded-base gl-bg-gray-10 gl-p-5"
   >
     <pre-scan-verification-icon :status="status" />
 
-    <div class="gl-flex-grow-1">
-      <h3 class="gl-m-0 gl-mb-1 gl-font-lg">
+    <div class="gl-grow">
+      <h3 class="gl-m-0 gl-mb-1 gl-text-lg">
         {{ $options.i18n.preScanVerificationHeader }}
-        <span class="gl-ml-1 gl-text-gray-500 gl-font-base gl-font-normal">
+        <span class="gl-ml-1 gl-text-base gl-font-normal gl-text-gray-500">
           {{ $options.i18n.preScanVerificationLabel }}
         </span>
       </h3>
@@ -84,7 +84,7 @@ export default {
       </div>
     </div>
 
-    <div class="gl-align-self-center">
+    <div class="gl-self-center">
       <gl-button
         data-testid="pre-scan-results-btn"
         variant="default"

@@ -57,7 +57,7 @@ export default {
 <template>
   <section-layout
     class="gl-w-full gl-bg-white"
-    content-classes="gl-justify-content-space-between"
+    content-classes="gl-justify-between"
     :show-remove-button="false"
   >
     <template #selector>
@@ -67,7 +67,7 @@ export default {
     </template>
 
     <template #content>
-      <div class="gl-display-flex gl-flex-grow-2 gl-align-items-center">
+      <div class="gl-flex gl-flex-grow-2 gl-items-center">
         <gl-collapsible-listbox
           id="policy-template"
           :items="availableOptions"
@@ -78,7 +78,7 @@ export default {
           v-gl-tooltip
           name="question-o"
           :title="tooltipMessage"
-          class="gl-text-blue-600 gl-ml-3"
+          class="gl-ml-3 gl-text-blue-600"
         />
       </div>
     </template>

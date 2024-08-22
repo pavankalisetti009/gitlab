@@ -48,7 +48,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-bg-white gl-rounded-base">
+  <div class="gl-w-full gl-rounded-base gl-bg-white">
     <attribute-filter
       v-for="({ attribute, value }, idx) in selectedItems"
       :key="attribute"
@@ -64,7 +64,7 @@ export default {
         <label v-if="idx === 0" v-gl-tooltip class="gl-mb-0" :title="$options.i18n.labelTooltip">{{
           $options.i18n.label
         }}</label>
-        <label v-else class="gl-mb-0 gl-uppercase gl-w-11 gl-font-normal">{{
+        <label v-else class="gl-mb-0 gl-w-11 gl-font-normal gl-uppercase">{{
           $options.i18n.andOperator
         }}</label>
       </template>

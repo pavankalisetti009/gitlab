@@ -106,9 +106,9 @@ export default {
     >
       {{ alertText }}
     </gl-alert>
-    <header class="gl-my-6 gl-display-flex gl-flex-direction-column">
-      <div class="gl-display-flex gl-align-items-flex-start">
-        <div class="gl-flex-grow-1 gl-my-0">
+    <header class="gl-my-6 gl-flex gl-flex-col">
+      <div class="gl-flex gl-items-start">
+        <div class="gl-my-0 gl-grow">
           <h2 class="gl-mt-0">
             {{ $options.i18n.title }}
           </h2>
@@ -116,7 +116,7 @@ export default {
             <gl-sprintf :message="$options.i18n.subtitle[namespaceType]">
               <template #link="{ content }">
                 <gl-button
-                  class="gl-pb-1!"
+                  class="!gl-pb-1"
                   variant="link"
                   :href="documentationPath"
                   target="_blank"
@@ -165,7 +165,7 @@ export default {
     </header>
 
     <!-- <breaking-changes-banner class="gl-mt-3 gl-mb-6" /> -->
-    <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mt-3 gl-mb-6" />
+    <deprecated-custom-scan-banner v-if="hasDeprecatedCustomScanPolicies" class="gl-mb-6 gl-mt-3" />
 
     <invalid-policies-banner v-if="hasInvalidPolicies" />
   </div>

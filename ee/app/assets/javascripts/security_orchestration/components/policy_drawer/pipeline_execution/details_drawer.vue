@@ -58,7 +58,7 @@ export default {
           <ul
             v-for="action in humanizedActions"
             :key="action.project"
-            class="gl-list-style-none gl-pl-0"
+            class="gl-list-none gl-pl-0"
             data-testid="summary-fields"
           >
             <li v-for="prop in action" :key="prop" class="gl-mb-2">{{ prop }}</li>

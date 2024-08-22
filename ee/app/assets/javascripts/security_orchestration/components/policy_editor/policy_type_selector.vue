@@ -132,25 +132,18 @@ export default {
 </script>
 <template>
   <div class="gl-mb-4">
-    <div
-      class="gl-display-grid gl-md-grid-template-columns-2 gl-gap-6 gl-mb-4"
-      data-testid="policy-selection-wizard"
-    >
-      <gl-card
-        v-for="option in policies"
-        :key="option.title"
-        body-class="gl-p-6 gl-display-flex gl-flex-grow-1"
-      >
+    <div class="gl-mb-4 gl-grid gl-gap-6 md:gl-grid-cols-2" data-testid="policy-selection-wizard">
+      <gl-card v-for="option in policies" :key="option.title" body-class="gl-p-6 gl-flex gl-grow">
         <div class="gl-mr-6 gl-text-white">
           <img :alt="option.title" aria-hidden="true" :src="option.imageSrc" />
         </div>
-        <div class="gl-display-flex gl-flex-direction-column">
+        <div class="gl-flex gl-flex-col">
           <div>
-            <h4 class="gl-display-inline-block gl-my-0">{{ option.title }}</h4>
+            <h4 class="gl-my-0 gl-inline-block">{{ option.title }}</h4>
           </div>
           <p class="gl-mt-5">{{ option.description }}</p>
           <h5>{{ $options.i18n.examples }}</h5>
-          <p class="gl-flex-grow-1">{{ option.example }}</p>
+          <p class="gl-grow">{{ option.example }}</p>
           <div>
             <gl-button
               v-if="!option.hasMax"

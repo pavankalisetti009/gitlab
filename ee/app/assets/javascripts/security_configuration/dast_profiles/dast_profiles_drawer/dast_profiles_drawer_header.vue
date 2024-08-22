@@ -47,8 +47,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-w-full gl-align-items-center gl-justify-content-space-between">
-    <h4 data-testid="drawer-header" class="gl-font-size-h2 gl-my-0 gl-mr-3">
+  <div class="gl-flex gl-w-full gl-items-center gl-justify-between">
+    <h4 data-testid="drawer-header" class="gl-my-0 gl-mr-3 gl-text-size-h2">
       <template v-if="!isEditingMode">
         {{ drawerHeader }}
       </template>

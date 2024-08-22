@@ -104,7 +104,7 @@ export default {
       </gl-sprintf>
     </gl-alert>
 
-    <div v-if="!isFirstRule" class="gl-text-gray-500 gl-mb-4 gl-ml-5" data-testid="rule-separator">
+    <div v-if="!isFirstRule" class="gl-mb-4 gl-ml-5 gl-text-gray-500" data-testid="rule-separator">
       {{ $options.RULE_OR_LABEL }}
     </div>
 

@@ -4,7 +4,7 @@ import { s__, __, sprintf } from '~/locale';
 
 const ITEMS_MAX_LIST = 5;
 const NO_STYLE_LIST_ITEMS_CSS = ['gl-list-none'];
-const INLINE_STYLE_CSS = ['gl-display-flex', 'gl-flex-wrap', 'gl-gap-2'];
+const INLINE_STYLE_CSS = ['gl-flex', 'gl-flex-wrap', 'gl-gap-2'];
 
 export default {
   NO_STYLE_LIST_ITEMS_CSS,
@@ -144,7 +144,7 @@ export default {
         v-for="(item, itemIdx) in initialList"
         :key="itemIdx"
         data-testid="list-item"
-        class="gl-mt-2 gl-text"
+        class="gl-text gl-mt-2"
       >
         <gl-sprintf :message="item">
           <template #code="{ content }">

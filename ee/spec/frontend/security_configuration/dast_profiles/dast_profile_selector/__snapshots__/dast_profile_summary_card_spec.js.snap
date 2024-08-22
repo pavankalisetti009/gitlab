@@ -8,15 +8,15 @@ exports[`DastProfileSummaryCard renders properly 1`] = `
     class="gl-card-header"
   >
     <div
-      class="gl-align-items-center gl-display-flex gl-justify-content-space-between"
+      class="gl-flex gl-items-center gl-justify-between"
     >
       <div>
         <h3
-          class="gl-font-lg gl-inline gl-my-0"
+          class="gl-inline gl-my-0 gl-text-lg"
         />
       </div>
       <div
-        class="gl-display-flex gl-gap-x-3"
+        class="gl-flex gl-gap-x-3"
       >
         <gl-button-stub
           buttontextclasses=""

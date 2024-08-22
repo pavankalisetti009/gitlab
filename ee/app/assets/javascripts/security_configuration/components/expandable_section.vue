@@ -34,11 +34,11 @@ export default {
 
 <template>
   <section
-    class="gl-py-6 gl-border-t-1 gl-border-b-1 gl-border-gray-100 gl-border-t-solid gl-border-b-solid"
+    class="gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-py-6 gl-border-b-solid gl-border-t-solid"
   >
-    <header class="gl-display-flex">
-      <div class="gl-flex-grow-1">
-        <component :is="headingTag" class="gl-font-size-h2 gl-mt-0" data-testid="heading">
+    <header class="gl-flex">
+      <div class="gl-grow">
+        <component :is="headingTag" class="gl-mt-0 gl-text-size-h2" data-testid="heading">
           <slot name="heading"></slot>
         </component>
         <p class="gl-mb-0" data-testid="sub-heading">
@@ -46,11 +46,9 @@ export default {
         </p>
       </div>
 
-      <gl-button
-        v-collapse-toggle="collapseId"
-        class="gl-flex-shrink-0 gl-align-self-start gl-ml-3"
-        >{{ toggleText }}</gl-button
-      >
+      <gl-button v-collapse-toggle="collapseId" class="gl-ml-3 gl-shrink-0 gl-self-start">{{
+        toggleText
+      }}</gl-button>
     </header>
 
     <gl-collapse :id="collapseId" v-model="visible" data-testid="content">

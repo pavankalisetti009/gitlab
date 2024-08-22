@@ -235,11 +235,11 @@ export default {
 <template>
   <section class="gl-mt-6">
     <div class="gl-mb-5">
-      <div class="gl-border-b-solid gl-border-b-1 gl-border-gray-100 gl-mb-6 gl-pb-6">
+      <div class="gl-mb-6 gl-border-b-1 gl-border-gray-100 gl-pb-6 gl-border-b-solid">
         <segmented-control-button-group v-model="selectedEditorMode" :options="editorModes" />
       </div>
-      <div class="gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row">
-        <section class="gl-w-full gl-mr-7">
+      <div class="gl-flex gl-flex-col lg:gl-flex-row">
+        <section class="gl-mr-7 gl-w-full">
           <slot name="modal"></slot>
           <div v-if="shouldShowRuleEditor" data-testid="rule-editor">
             <gl-alert v-if="hasParsingError" class="gl-mb-5" variant="warning" :dismissible="false">
@@ -285,7 +285,7 @@ export default {
                   disabled: !policyLimitDetails.radioButton.disabled,
                   title: policyLimitDetails.radioButton.text,
                 }"
-                class="gl-display-inline-block"
+                class="gl-inline-block"
                 :options="$options.STATUS_OPTIONS"
                 :disabled="hasParsingError || policyLimitDetails.radioButton.disabled"
                 :checked="policy.enabled"
@@ -299,7 +299,7 @@ export default {
               </template>
 
               <template #disabled>
-                <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+                <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
               </template>
 
               <scope-section
@@ -325,7 +325,7 @@ export default {
         </section>
         <section
           v-if="shouldShowRuleEditor"
-          class="security-policies-bg-gray-10 gl-px-5 gl-pb-5 gl-w-full lg:gl-w-3/10 gl-lg-ml-10 gl-align-self-start"
+          class="security-policies-bg-gray-10 gl-w-full gl-self-start gl-px-5 gl-pb-5 lg:gl-ml-10 lg:gl-w-3/10"
           data-testid="rule-editor-preview"
         >
           <h5>{{ $options.i18n.yamlPreview }}</h5>
@@ -339,7 +339,7 @@ export default {
       </div>
     </div>
     <div
-      class="gl-display-flex gl-flex-direction-column gl-align-items-baseline"
+      class="gl-flex gl-flex-col gl-items-baseline"
       :class="{
         'md:gl-block': !shouldShowRuntimeMessage,
         'lg:gl-block': shouldShowRuntimeMessage,
@@ -359,10 +359,10 @@ export default {
       <gl-button
         v-if="isEditing"
         v-gl-modal="'delete-modal'"
-        class="gl-mt-5 gl-mr-3"
+        class="gl-mr-3 gl-mt-5"
         :class="{
-          'gl-md-mt-0': !shouldShowRuntimeMessage,
-          'gl-lg-mt-0': shouldShowRuntimeMessage,
+          'md:gl-mt-0': !shouldShowRuntimeMessage,
+          'lg:gl-mt-0': shouldShowRuntimeMessage,
         }"
         category="secondary"
         variant="danger"
@@ -374,8 +374,8 @@ export default {
       <gl-button
         class="gl-mt-5"
         :class="{
-          'gl-md-mt-0': !shouldShowRuntimeMessage,
-          'gl-lg-mt-0': shouldShowRuntimeMessage,
+          'md:gl-mt-0': !shouldShowRuntimeMessage,
+          'lg:gl-mt-0': shouldShowRuntimeMessage,
         }"
         category="secondary"
         :href="policiesPath"
@@ -384,10 +384,10 @@ export default {
       </gl-button>
       <span
         v-if="shouldShowRuntimeMessage"
-        class="gl-mt-5 gl-lg-ml-10"
+        class="gl-mt-5 lg:gl-ml-10"
         :class="{
-          'gl-md-mt-0': !shouldShowRuntimeMessage,
-          'gl-lg-mt-0': shouldShowRuntimeMessage,
+          'md:gl-mt-0': !shouldShowRuntimeMessage,
+          'lg:gl-mt-0': shouldShowRuntimeMessage,
         }"
         data-testid="scan-result-policy-run-time-info"
       >

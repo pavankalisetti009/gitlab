@@ -27,7 +27,7 @@ export default {
       key: 'name',
       label: s__('CorpusManagement|Corpus name'),
       thClass: 'gl-w-8/20',
-      tdClass: 'gl-text-truncate gl-max-w-15',
+      tdClass: 'gl-truncate gl-max-w-15',
     },
     {
       key: 'target',

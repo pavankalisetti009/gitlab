@@ -155,14 +155,14 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-py-0 gl-pr-0 gl-rounded-none gl-bg-white gl-items-end md:gl-items-start"
+    class="gl-w-full gl-items-end gl-rounded-none gl-bg-white gl-py-0 gl-pr-0 md:gl-items-start"
     content-classes="gl-flex gl-w-full "
     :show-remove-button="showRemoveButton"
     @remove="handleRemoveApprover"
   >
     <template #content>
-      <gl-form class="md:gl-flex gl-items-center gl-w-full" @submit.prevent>
-        <div class="gl-flex gl-items-center md:gl-justify-end gl-w-30 gl-mb-3 md:!gl-mb-0">
+      <gl-form class="gl-w-full gl-items-center md:gl-flex" @submit.prevent>
+        <div class="gl-mb-3 gl-flex gl-w-30 gl-items-center md:!gl-mb-0 md:gl-justify-end">
           <gl-sprintf :message="actionText">
             <template #require="{ content }">
               <strong>{{ content }}</strong>
@@ -174,7 +174,7 @@ export default {
                 :value="approvalsRequired"
                 data-testid="approvals-required-input"
                 type="number"
-                class="!gl-w-11 gl-mx-3"
+                class="gl-mx-3 !gl-w-11"
                 :min="1"
                 :max="100"
                 @update="approvalsRequiredChanged"
@@ -188,7 +188,7 @@ export default {
         </div>
 
         <gl-collapsible-listbox
-          class="gl-mx-0 md:gl-ml-3 md:gl-mr-3 gl-mb-3 md:gl-mb-0 gl-block md:gl-inline-flex"
+          class="gl-mx-0 gl-mb-3 gl-block md:gl-mb-0 md:gl-ml-3 md:gl-mr-3 md:gl-inline-flex"
           data-testid="available-types"
           :items="listBoxItems"
           :selected="selected"
@@ -241,7 +241,7 @@ export default {
       </gl-form>
       <gl-button
         v-if="showAddButton"
-        class="gl-mt-4 gl-ml-2"
+        class="gl-ml-2 gl-mt-4"
         variant="link"
         data-testid="add-approver"
         @click="addApproverType"

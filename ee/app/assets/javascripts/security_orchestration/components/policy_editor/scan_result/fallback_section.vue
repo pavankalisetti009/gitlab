@@ -83,7 +83,7 @@ export default {
       </template>
 
       <template #disabled>
-        <div class="gl-bg-gray-10 rounded gl-p-6"></div>
+        <div class="rounded gl-bg-gray-10 gl-p-6"></div>
       </template>
 
       <div>

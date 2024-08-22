@@ -470,7 +470,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <rule-section
@@ -487,7 +487,7 @@ export default {
 
         <div
           v-if="isWithinLimit"
-          class="security-policies-bg-gray-10 gl-rounded-base gl-p-5 gl-mb-5"
+          class="security-policies-bg-gray-10 gl-mb-5 gl-rounded-base gl-p-5"
         >
           <gl-button variant="link" data-testid="add-rule" @click="addRule">
             {{ $options.ADD_RULE_LABEL }}
@@ -502,7 +502,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <action-section
@@ -537,7 +537,7 @@ export default {
         </template>
 
         <template #disabled>
-          <div class="gl-bg-gray-10 gl-rounded-base gl-p-6"></div>
+          <div class="gl-rounded-base gl-bg-gray-10 gl-p-6"></div>
         </template>
 
         <settings-section :rules="policy.rules" :settings="settings" @changed="updateSettings" />

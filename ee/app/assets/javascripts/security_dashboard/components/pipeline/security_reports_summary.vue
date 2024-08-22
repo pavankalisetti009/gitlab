@@ -126,7 +126,7 @@ export default {
 <template>
   <gl-card
     body-class="gl-py-0 gl-pr-4"
-    :header-class="`gl-display-flex gl-align-items-center gl-justify-content-space-between gl-py-4 gl-pr-4 ${
+    :header-class="`gl-flex gl-items-center gl-justify-between gl-py-4 gl-pr-4 ${
       isVisible ? 'gl-border-b-1' : 'gl-border-b-0 gl-rounded-base'
     }`"
   >
@@ -140,7 +140,7 @@ export default {
     </template>
     <div
       v-if="isVisible"
-      class="gl-display-grid scan-reports-summary-grid gl-align-items-center gl-gap-y-2 gl-my-3"
+      class="scan-reports-summary-grid gl-my-3 gl-grid gl-items-center gl-gap-y-2"
     >
       <template v-for="[scanType, scanSummary] in formattedSummary">
         <div :key="scanType" class="gl-leading-24">

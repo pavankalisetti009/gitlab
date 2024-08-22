@@ -201,7 +201,7 @@ export default {
     @select="selectProject"
   >
     <template #list-item="{ item }">
-      <div class="gl-display-flex gl-flex-nowrap gl-gap-3 gl-align-items-center">
+      <div class="gl-flex gl-flex-nowrap gl-items-center gl-gap-3">
         <gl-avatar
           fallback-on-error
           :shape="$options.AVATAR_SHAPE_OPTION_RECT"
@@ -217,7 +217,7 @@ export default {
       <div
         v-if="isErrorOfType($options.SEARCH_ERROR)"
         data-testid="error-message"
-        class="gl-text-red-500 gl-pl-7 gl-pr-3 gl-pb-3 js-search-error-message"
+        class="js-search-error-message gl-pb-3 gl-pl-7 gl-pr-3 gl-text-red-500"
       >
         {{ $options.i18n.errorNetworkMessage }}
       </div>

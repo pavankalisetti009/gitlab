@@ -169,10 +169,10 @@ export default {
           :key="image.value"
           :value="image.value"
         >
-          <div class="gl-display-flex gl-align-items-center">
+          <div class="gl-flex gl-items-center">
             <gl-icon
               name="check"
-              class="gl-mr-3 gl-flex-shrink-0 gl-text-gray-700"
+              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
               :class="{ 'gl-invisible': !isImageSelected(image.value) }"
               :data-testid="`image-icon-${image.value}`"
             />
