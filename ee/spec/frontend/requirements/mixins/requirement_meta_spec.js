@@ -53,7 +53,7 @@ describe('RequirementMeta Mixin', () => {
 
     describe('author', () => {
       it('returns value of `requirement.author`', () => {
-        expect(wrapper.vm.author).toBe(mockAuthor);
+        expect(wrapper.vm.author).toStrictEqual(mockAuthor);
       });
     });
 
@@ -75,7 +75,7 @@ describe('RequirementMeta Mixin', () => {
 
     describe('testReport', () => {
       it('returns testReport object from reports array within `requirement`', () => {
-        expect(wrapper.vm.testReport).toBe(mockTestReport);
+        expect(wrapper.vm.testReport).toStrictEqual(mockTestReport);
       });
     });
 
