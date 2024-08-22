@@ -67,12 +67,12 @@ export default {
 };
 </script>
 <template>
-  <div class="dashboard-card-footer gl-py-2 gl-px-3 gl-mt-5 gl-bg-default">
+  <div class="gl-mt-4 -gl-ml-1">
     <template v-if="upstreamPipeline">
       <gl-link
         ref="upstreamStatus"
         :href="upstreamPipeline.details.status.details_path"
-        class="gl-inline-block align-middle"
+        class="gl-inline-block gl-align-middle"
       >
         <ci-icon :status="upstreamPipeline.details.status" class="js-upstream-pipeline-status" />
       </gl-link>
@@ -82,14 +82,14 @@ export default {
         <div class="gl-text-tertiary">{{ upstreamPipeline.project.full_name }}</div>
       </gl-tooltip>
 
-      <gl-icon name="arrow-right" class="dashboard-card-footer-arrow align-middle mx-1" />
+      <gl-icon name="arrow-right" class="gl-text-tertiary gl-align-middle gl-mx-1" />
     </template>
 
     <ci-icon
       ref="status"
       :status="lastPipeline.details.status"
       show-status-text
-      class="gl-inline-block align-middle"
+      class="gl-inline-block gl-align-middle"
     />
     <gl-tooltip :target="() => $refs.status">
       <div class="gl-font-bold">{{ $options.relations.current }}</div>
@@ -97,18 +97,18 @@ export default {
     </gl-tooltip>
 
     <template v-if="hasDownstreamPipelines">
-      <gl-icon name="arrow-right" class="dashboard-card-footer-arrow align-middle mx-1" />
+      <gl-icon name="arrow-right" class="gl-text-tertiary gl-align-middle gl-mx-1" />
 
       <div
         v-for="(pipeline, index) in shownDownstreamPipelines"
         :key="pipeline.id"
         :style="`z-index: ${shownDownstreamPipelines.length + 1 - index}`"
-        class="dashboard-card-footer-downstream position-relative gl-inline"
+        class="gl-inline"
       >
         <gl-link
           ref="downstreamStatus"
           :href="pipeline.details.status.details_path"
-          class="gl-inline-block align-middle"
+          class="gl-inline-block gl-align-middle"
         >
           <ci-icon :status="pipeline.details.status" class="js-downstream-pipeline-status" />
         </gl-link>
@@ -122,7 +122,7 @@ export default {
         <gl-link
           ref="extraDownstream"
           :href="lastPipeline.details.status.details_path"
-          class="dashboard-card-footer-extra rounded-circle gl-inline-block gl-font-bold align-middle text-white text-center js-downstream-extra-icon"
+          class="dashboard-card-footer-extra gl-rounded-full gl-inline-block gl-font-bold gl-align-middle gl-text-white gl-text-center js-downstream-extra-icon"
         >
           {{ extraDownstreamText }}
         </gl-link>

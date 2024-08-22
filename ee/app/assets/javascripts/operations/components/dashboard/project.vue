@@ -3,7 +3,7 @@
 import { isEmpty } from 'lodash';
 // eslint-disable-next-line no-restricted-imports
 import { mapActions } from 'vuex';
-import { GlSprintf, GlLink } from '@gitlab/ui';
+import { GlSprintf, GlLink, GlCard } from '@gitlab/ui';
 import Alerts from 'ee/vue_shared/dashboards/components/alerts.vue';
 import ProjectPipeline from 'ee/vue_shared/dashboards/components/project_pipeline.vue';
 import TimeAgo from 'ee/vue_shared/dashboards/components/time_ago.vue';
@@ -24,6 +24,7 @@ export default {
     TimeAgo,
     GlSprintf,
     GlLink,
+    GlCard,
   },
   mixins: [timeagoMixin],
   props: {
@@ -58,9 +59,20 @@ export default {
     },
     cardClasses() {
       return {
-        'dashboard-card-body-warning': !this.hasPipelineFailed && this.hasPipelineErrors,
-        'dashboard-card-body-failed': this.hasPipelineFailed,
-        'bg-secondary': !this.hasPipelineFailed && !this.hasPipelineErrors,
+        'gl-border-orange-500': !this.hasPipelineFailed && this.hasPipelineErrors,
+        'gl-border-red-500': this.hasPipelineFailed,
+      };
+    },
+    bodyClasses() {
+      return {
+        'gl-bg-orange-50': !this.hasPipelineFailed && this.hasPipelineErrors,
+        'gl-bg-red-50': this.hasPipelineFailed,
+      };
+    },
+    headerClasses() {
+      return {
+        'gl-bg-orange-100 gl-border-orange-500': this.hasPipelineErrors,
+        'gl-bg-red-100 gl-border-red-500': this.hasPipelineFailed,
       };
     },
     noPipelineMessage() {
@@ -104,46 +116,53 @@ export default {
 };
 </script>
 <template>
-  <div
-    class="js-dashboard-project dashboard-card card border-0"
+  <gl-card
+    :class="[cardClasses, 'js-dashboard-project']"
+    :header-class="headerClasses"
+    :body-class="[bodyClasses, 'gl-rounded-b-base']"
+    footer-class="gl-border-none"
     data-testid="dashboard-project-card"
   >
-    <project-header
-      :project="project"
-      :has-pipeline-failed="hasPipelineFailed"
-      :has-errors="hasPipelineErrors"
-      @remove="removeProject"
-    />
+    <template #header>
+      <project-header
+        :project="project"
+        :has-pipeline-failed="hasPipelineFailed"
+        :has-errors="hasPipelineErrors"
+        @remove="removeProject"
+      />
+    </template>
 
-    <div
-      v-if="project.upgrade_required"
-      data-testid="dashboard-card-body"
-      class="dashboard-card-body card-body bg-secondary"
-    >
-      <gl-sprintf v-if="project.upgrade_path" :message="$options.unlicensedMessages.canUpgrade">
+    <template v-if="project.upgrade_required">
+      <gl-sprintf
+        v-if="project.upgrade_path"
+        :message="$options.unlicensedMessages.canUpgrade"
+        data-testid="dashboard-card-body"
+      >
         <template #link="{ content }">
           <gl-link :href="project.upgrade_path" target="_blank">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
 
-      <gl-sprintf v-else :message="$options.unlicensedMessages.cannotUpgrade">
+      <gl-sprintf
+        v-else
+        :message="$options.unlicensedMessages.cannotUpgrade"
+        data-testid="dashboard-card-body"
+      >
         <template #groupName>{{ project.namespace.name }}</template>
       </gl-sprintf>
-    </div>
+    </template>
 
-    <div v-else :class="cardClasses" class="dashboard-card-body card-body">
-      <div v-if="lastPipeline" class="row">
-        <div class="col-1 align-self-center">
+    <template v-else>
+      <template v-if="lastPipeline">
+        <div class="gl-flex gl-gap-4 gl-items-center">
           <user-avatar-link
             v-if="user"
             :link-href="user.path"
             :img-src="user.avatar_url"
             :tooltip-text="user.name"
             :img-size="32"
+            class="-gl-ml-1"
           />
-        </div>
-
-        <div class="col-10 col-sm-7 pr-0 pl-5 align-self-center align-middle ci-table">
           <commit
             :tag="commitRef.tag"
             :commit-ref="commitRef"
@@ -155,7 +174,7 @@ export default {
           />
         </div>
 
-        <div class="col-sm-4 pl-0 text-right align-self-center gl-hidden sm:gl-block">
+        <div class="gl-flex gl-gap-5 gl-flex-wrap gl-mt-2">
           <time-ago
             v-if="shouldShowTimeAgo"
             :time="finishedTime"
@@ -163,17 +182,12 @@ export default {
           />
           <alerts :count="project.alert_count" />
         </div>
+        <project-pipeline :last-pipeline="lastPipeline" />
+      </template>
 
-        <div class="col-12">
-          <project-pipeline :last-pipeline="lastPipeline" />
-        </div>
+      <div v-else class="gl-text-default gl-text-center">
+        {{ noPipelineMessage }}
       </div>
-
-      <div v-else class="gl-h-full gl-flex justify-content-center gl-items-center">
-        <div class="gl-text-default gl-text-sm gl-text-center gl-font-bold w-75">
-          {{ noPipelineMessage }}
-        </div>
-      </div>
-    </div>
-  </div>
+    </template>
+  </gl-card>
 </template>

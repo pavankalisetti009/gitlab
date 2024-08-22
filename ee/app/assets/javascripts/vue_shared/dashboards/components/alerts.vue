@@ -17,7 +17,6 @@ export default {
   computed: {
     alertClasses() {
       return {
-        'dashboard-card-icon': this.count <= 0,
         'gl-text-danger': this.count > 0,
       };
     },
@@ -29,14 +28,8 @@ export default {
 </script>
 
 <template>
-  <div class="dashboard-card-alert row">
-    <div class="col-12">
-      <gl-icon
-        :class="alertClasses"
-        class="align-text-bottom js-dashboard-alerts-icon"
-        name="warning"
-      />
-      <span class="js-alert-count text-secondary gl-ml-2"> {{ alertCount }} </span>
-    </div>
+  <div class="gl-text-secondary">
+    <gl-icon :class="alertClasses" class="js-dashboard-alerts-icon" name="warning" :size="12" />
+    <span class="js-alert-count"> {{ alertCount }} </span>
   </div>
 </template>
