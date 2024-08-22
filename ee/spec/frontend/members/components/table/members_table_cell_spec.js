@@ -17,10 +17,6 @@ describe('MemberTableCell', () => {
         type: String,
         required: true,
       },
-      isDirectMember: {
-        type: Boolean,
-        required: true,
-      },
       isCurrentUser: {
         type: Boolean,
         required: true,
@@ -61,7 +57,6 @@ describe('MemberTableCell', () => {
         default: `
           <wrapped-component
             :member-type="props.memberType"
-            :is-direct-member="props.isDirectMember"
             :is-current-user="props.isCurrentUser"
             :permissions="props.permissions"
           />
