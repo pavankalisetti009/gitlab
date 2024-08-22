@@ -33718,6 +33718,9 @@ msgstr ""
 msgid "MergeRequest|No files found"
 msgstr ""
 
+msgid "MergeRequest|Remove reviewer"
+msgstr ""
+
 msgid "MergeRequest|Reviewed by @%{username} but not yet approved"
 msgstr ""
 
@@ -57326,6 +57329,9 @@ msgid "Unable to parse JSON"
 msgstr ""
 
 msgid "Unable to parse the vulnerability report's options."
+msgstr ""
+
+msgid "Unable to remove a reviewer at the moment, try again later"
 msgstr ""
 
 msgid "Unable to save iteration. Please try again"
