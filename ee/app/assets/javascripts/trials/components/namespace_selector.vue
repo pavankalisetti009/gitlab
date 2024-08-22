@@ -8,7 +8,7 @@ export const CREATE_GROUP_OPTION_VALUE = '0';
 export default {
   i18n: {
     groupSelectLabel: __('This trial is for'),
-    defaultToggleText: __('Please select a group'),
+    defaultToggleText: __('Select a group'),
     newGroupNameLabel: __('New group name'),
   },
   components: { GlFormGroup, GlFormInput, ListboxInput },
