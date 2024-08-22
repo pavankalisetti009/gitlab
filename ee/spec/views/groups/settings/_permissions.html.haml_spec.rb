@@ -131,4 +131,33 @@ RSpec.describe 'groups/settings/_permissions.html.haml', :saas, feature_category
       end
     end
   end
+
+  context 'for extensions marketplace settings' do
+    let_it_be(:section_title) { _('Web IDE and workspaces') }
+    let_it_be(:checkbox_label) { s_('GroupSettings|Enable extension marketplace') }
+
+    context 'when cannot manage extensions marketplace for enterprise users' do
+      it 'renders nothing', :aggregate_failures do
+        allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(false)
+
+        render
+
+        expect(rendered).to render_template('groups/settings/_extensions_marketplace')
+        expect(rendered).not_to have_content(section_title)
+        expect(rendered).not_to have_field(checkbox_label, type: 'checkbox')
+      end
+    end
+
+    context 'when can manage extensions marketplace for enterprise users' do
+      it 'renders checkbox', :aggregate_failures do
+        allow(group).to receive(:can_manage_extensions_marketplace_for_enterprise_users?).and_return(true)
+
+        render
+
+        expect(rendered).to render_template('groups/settings/_extensions_marketplace')
+        expect(rendered).to have_content(section_title)
+        expect(rendered).to have_unchecked_field(checkbox_label, type: 'checkbox')
+      end
+    end
+  end
 end

@@ -344,7 +344,6 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to delegate_method(:duo_availability=).to(:namespace_settings).with_arguments(:args) }
     it { is_expected.to delegate_method(:experiment_settings_allowed?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:user_cap_enabled?).to(:namespace_settings) }
-    it { is_expected.to delegate_method(:enterprise_users_extensions_marketplace_enabled?).to(:namespace_settings) }
     it { is_expected.to delegate_method(:enterprise_users_extensions_marketplace_enabled=).to(:namespace_settings).with_arguments(:args) }
   end
 
@@ -3976,6 +3975,51 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
 
       it { is_expected.to be false }
+    end
+  end
+
+  describe '#can_manage_extensions_marketplace_for_enterprise_users?' do
+    let_it_be(:root_group) { create(:group) }
+    let_it_be(:child_group) { create(:group, parent: root_group) }
+
+    subject(:can_manage_extensions_marketplace_for_enterprise_users?) { group.can_manage_extensions_marketplace_for_enterprise_users? }
+
+    where(:group, :licensed_feature_available, :feature_flags_enabled, :expected) do
+      ref(:root_group)  | true  | true  | true
+      ref(:child_group) | true  | true  | false
+      ref(:root_group)  | false | true  | false
+      ref(:root_group)  | true  | false | false
+    end
+
+    with_them do
+      before do
+        allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled_for_any_user?).and_return(feature_flags_enabled)
+        stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
+      end
+
+      it { is_expected.to eq(expected) }
+    end
+  end
+
+  describe '#enterprise_users_extensions_marketplace_enabled?' do
+    let_it_be(:group) { create(:group) }
+
+    subject(:enterprise_users_extensions_marketplace_enabled?) { group.enterprise_users_extensions_marketplace_enabled? }
+
+    where(:value, :licensed_feature_available, :expected) do
+      true  | true  | true
+      false | true  | false
+      false | false | true
+    end
+
+    with_them do
+      before do
+        group.update!(enterprise_users_extensions_marketplace_enabled: value)
+        allow(::WebIde::ExtensionsMarketplace).to receive(:feature_enabled_for_any_user?).and_return(true)
+        stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: licensed_feature_available)
+      end
+
+      it { is_expected.to eq(expected) }
     end
   end
 end

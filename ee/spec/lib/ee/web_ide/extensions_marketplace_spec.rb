@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe WebIde::ExtensionsMarketplace, feature_category: :web_ide do
   using RSpec::Parameterized::TableSyntax
 
-  let_it_be_with_reload(:group) { create(:group) }
+  let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:current_user) { create(:user) }
 
   describe '#webide_extensions_gallery_settings' do
@@ -35,11 +35,15 @@ RSpec.describe WebIde::ExtensionsMarketplace, feature_category: :web_ide do
           web_ide_oauth: current_user,
           vscode_web_ide: current_user
         )
-        current_user.update!(extensions_marketplace_opt_in_status: :enabled, enterprise_group: enterprise_group)
-        group.update!(enterprise_users_extensions_marketplace_enabled: extensions_enabled)
+
+        current_user.update!(enterprise_group: enterprise_group, extensions_marketplace_opt_in_status: :enabled)
       end
 
       it 'returns expected settings' do
+        if enterprise_group
+          expect(group).to receive(:enterprise_users_extensions_marketplace_enabled?).and_return(extensions_enabled)
+        end
+
         expect(webide_settings).to match(expectation)
       end
     end
