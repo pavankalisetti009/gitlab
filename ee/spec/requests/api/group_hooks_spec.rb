@@ -78,6 +78,10 @@ RSpec.describe API::GroupHooks, :aggregate_failures, feature_category: :webhooks
       let_it_be(:project) { create(:project, :repository, group: group, creator_id: user.id) }
 
       it_behaves_like 'test web-hook endpoint'
+      it_behaves_like 'resend web-hook event endpoint' do
+        let(:unauthorized_user) { user3 }
+      end
+
       it_behaves_like 'get web-hook event endpoint' do
         let(:unauthorized_user) { non_admin_user }
       end
