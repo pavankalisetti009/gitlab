@@ -105,6 +105,7 @@ module GitlabSubscriptions
       default_project_deletion_protection
       delete_unconfirmed_users
       dependency_proxy_for_packages
+      disable_extensions_marketplace_for_enterprise_users
       disable_name_update_for_users
       disable_personal_access_tokens
       domain_verification

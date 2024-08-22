@@ -22,7 +22,7 @@ module EE
 
       private
 
-      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity -- The .tap block
+      # rubocop:disable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize -- The .tap block
       # requires many necessary checks for each parameter.
       def group_params_ee
         [
@@ -73,9 +73,13 @@ module EE
 
           params_ee << :disable_personal_access_tokens
           params_ee << :enable_auto_assign_gitlab_duo_pro_seats if allow_update_enable_auto_assign_gitlab_duo_pro_seats?
+
+          if current_group&.can_manage_extensions_marketplace_for_enterprise_users?
+            params_ee << :enterprise_users_extensions_marketplace_enabled
+          end
         end
       end
-      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity
+      # rubocop:enable Metrics/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/AbcSize
 
       def allow_update_enable_auto_assign_gitlab_duo_pro_seats?
         ::Feature.enabled?(:auto_assign_gitlab_duo_pro_seats, current_group) &&

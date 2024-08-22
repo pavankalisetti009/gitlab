@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disable RSpec/FilePath -- This cop fails because the spec is named 'settings_integration_spec.rb' but describes ::WebIde::Settings class. But we want it that way, because it's an integration spec, not a unit spec, but we still want to be able to use `described_class`
-  let_it_be_with_reload(:group) { create(:group, :private, :nested) }
+  let_it_be_with_reload(:group) { create(:group, :private) }
   let_it_be_with_reload(:user) { create(:enterprise_user, enterprise_group: group) }
   let_it_be(:options) do
     {
@@ -15,6 +15,8 @@ RSpec.describe ::WebIde::Settings, feature_category: :web_ide do # rubocop:disab
   subject(:settings) { described_class.get([:vscode_extensions_gallery_metadata], options) }
 
   before do
+    stub_feature_flags(vscode_web_ide: true, web_ide_oauth: true, web_ide_extensions_marketplace: true)
+    stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: true)
     user.update!(extensions_marketplace_enabled: true)
   end
 

@@ -99,7 +99,7 @@ module EE
       delegate :user_cap_enabled?, to: :namespace_settings
 
       delegate :disable_personal_access_tokens=, to: :namespace_settings
-      delegate :enterprise_users_extensions_marketplace_enabled?, :enterprise_users_extensions_marketplace_enabled=, to: :namespace_settings
+      delegate :enterprise_users_extensions_marketplace_enabled=, to: :namespace_settings
 
       delegate :wiki_access_level, :wiki_access_level=, to: :group_feature, allow_nil: true
       delegate :enable_auto_assign_gitlab_duo_pro_seats, :enable_auto_assign_gitlab_duo_pro_seats=, :enable_auto_assign_gitlab_duo_pro_seats_human_readable, :enable_auto_assign_gitlab_duo_pro_seats_human_readable=, to: :namespace_settings, allow_nil: true
@@ -1018,6 +1018,18 @@ module EE
 
     def code_suggestions_purchased?
       ::CloudConnector::AvailableServices.find_by_name(:code_suggestions).purchased?(self)
+    end
+
+    def can_manage_extensions_marketplace_for_enterprise_users?
+      root? &&
+        licensed_feature_available?(:disable_extensions_marketplace_for_enterprise_users) &&
+        ::WebIde::ExtensionsMarketplace.feature_enabled_for_any_user?
+    end
+
+    def enterprise_users_extensions_marketplace_enabled?
+      return true unless can_manage_extensions_marketplace_for_enterprise_users?
+
+      namespace_settings.enterprise_users_extensions_marketplace_enabled?
     end
 
     # Disable personal access tokens for enterprise users of this group

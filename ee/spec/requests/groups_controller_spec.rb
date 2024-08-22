@@ -363,6 +363,34 @@ RSpec.describe GroupsController, type: :request, feature_category: :groups_and_p
       end
     end
 
+    context 'settings enterprise_users_extensions_marketplace_enabled' do
+      let(:params) { { group: { enterprise_users_extensions_marketplace_enabled: true } } }
+
+      before do
+        stub_feature_flags(
+          vscode_web_ide: true,
+          web_ide_oauth: true,
+          web_ide_extensions_marketplace: true
+        )
+      end
+
+      it 'does not change the column' do
+        expect { subject }.not_to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
+        expect(response).to have_gitlab_http_status(:found)
+      end
+
+      context 'when disable_extensions_marketplace_for_enterprise_users feature is available' do
+        before do
+          stub_licensed_features(disable_extensions_marketplace_for_enterprise_users: true)
+        end
+
+        it 'successfully changes the column' do
+          expect { subject }.to change { group.reload.enterprise_users_extensions_marketplace_enabled? }
+          expect(response).to have_gitlab_http_status(:found)
+        end
+      end
+    end
+
     context 'setting enable_auto_assign_gitlab_duo_pro_seats' do
       let(:params) { { group: { enable_auto_assign_gitlab_duo_pro_seats: true } } }
 
