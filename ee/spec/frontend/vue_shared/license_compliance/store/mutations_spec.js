@@ -16,7 +16,7 @@ describe('License store mutations', () => {
     it('opens modal and sets passed license', () => {
       store.commit(`licenseManagement/${types.SET_LICENSE_IN_MODAL}`, allowedLicense);
 
-      expect(store.state.licenseManagement.currentLicenseInModal).toBe(allowedLicense);
+      expect(store.state.licenseManagement.currentLicenseInModal).toStrictEqual(allowedLicense);
     });
   });
 
@@ -25,7 +25,7 @@ describe('License store mutations', () => {
       const licenses = [{ name: 'BSD' }, { name: 'Apache' }];
       store.commit(`licenseManagement/${types.SET_KNOWN_LICENSES}`, licenses);
 
-      expect(store.state.licenseManagement.knownLicenses).toBe(licenses);
+      expect(store.state.licenseManagement.knownLicenses).toStrictEqual(licenses);
     });
   });
 
@@ -204,8 +204,8 @@ describe('License store mutations', () => {
     });
 
     it('should set the new and existing reports', () => {
-      expect(store.state.licenseManagement.newLicenses).toBe(newLicenses);
-      expect(store.state.licenseManagement.existingLicenses).toBe(existingLicenses);
+      expect(store.state.licenseManagement.newLicenses).toStrictEqual(newLicenses);
+      expect(store.state.licenseManagement.existingLicenses).toStrictEqual(existingLicenses);
     });
 
     it('should cancel loading and clear any errors', () => {

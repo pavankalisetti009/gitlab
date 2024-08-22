@@ -91,7 +91,7 @@ describe('EE Approvals LicenseCompliance Modal', () => {
 
   describe('rule form', () => {
     it(`receives the modal's states data so it can display and edit the containing rule`, () => {
-      expect(findRuleForm().props('initRule')).toBe(store.state.approvalsModal.data);
+      expect(findRuleForm().props('initRule')).toStrictEqual(store.state.approvalsModal.data);
     });
   });
 

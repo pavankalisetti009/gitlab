@@ -199,7 +199,9 @@ describe('ProjectsTable component', () => {
       await selectRow(0);
 
       expect(wrapper.findComponent(SelectionOperations).props().selection).toHaveLength(1);
-      expect(wrapper.findComponent(SelectionOperations).props().selection[0]).toBe(projects[0]);
+      expect(wrapper.findComponent(SelectionOperations).props().selection[0]).toStrictEqual(
+        projects[0],
+      );
     });
 
     it('passes group path to selection operations component', () => {
