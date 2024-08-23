@@ -85,7 +85,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       expect_to_be_on_namespace_selection
 
-      select_from_listbox 'Create group', from: 'Please select a group'
+      select_from_listbox 'Create group', from: 'Select a group'
       wait_for_requests
 
       # success
@@ -110,7 +110,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
 
       expect_to_be_on_namespace_selection
 
-      select_from_listbox 'Create group', from: 'Please select a group'
+      select_from_listbox 'Create group', from: 'Select a group'
       wait_for_requests
 
       # namespace invalid check

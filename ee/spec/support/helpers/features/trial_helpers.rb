@@ -78,12 +78,12 @@ module Features
       end
     end
 
-    def fill_in_trial_selection_form(from: 'Please select a group', group_select: true)
+    def fill_in_trial_selection_form(from: 'Select a group', group_select: true)
       select_from_listbox group.name, from: from if group_select
       choose :trial_entity_company
     end
 
-    def fill_in_duo_enterprise_trial_selection_form(from: 'Please select a group', group_select: true)
+    def fill_in_duo_enterprise_trial_selection_form(from: 'Select a group', group_select: true)
       select_from_listbox group.name, from: from if group_select
     end
 
