@@ -146,10 +146,7 @@ module EE
         # Remove the inline rubocop disablement of Metrics/PerceivedComplexity when we can move
         # pre_receive_secret_detection_enabled to the simple License feature => attribute name
         # hash above.
-        if (::Gitlab::CurrentSettings.gitlab_dedicated_instance? ||
-            ::Feature.enabled?(:pre_receive_secret_detection_beta_release)) &&
-            License.feature_available?(:pre_receive_secret_detection)
-
+        if License.feature_available?(:pre_receive_secret_detection)
           attrs << :pre_receive_secret_detection_enabled
         end
 

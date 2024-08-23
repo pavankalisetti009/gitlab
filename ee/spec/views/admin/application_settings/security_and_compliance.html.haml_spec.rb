@@ -33,45 +33,15 @@ RSpec.describe 'admin/application_settings/security_and_compliance.html.haml', f
     end
   end
 
-  context 'when instance is dedicated' do
-    before do
-      stub_application_setting(gitlab_dedicated_instance: true)
-    end
-
-    describe 'feature available' do
-      let(:feature_available) { true }
-
-      it_behaves_like 'renders pre receive secret detection setting'
-    end
-
-    describe 'feature not available' do
-      let(:feature_available) { false }
-
-      it_behaves_like 'does not render pre receive secret detection setting'
-    end
-  end
-
-  context 'when instance is not dedicated but feature flag is enabled' do
-    before do
-      stub_feature_flags(pre_receive_secret_detection_beta_release: true)
-    end
-
+  describe 'feature available' do
     let(:feature_available) { true }
 
-    describe 'feature available' do
-      it_behaves_like 'renders pre receive secret detection setting'
-    end
+    it_behaves_like 'renders pre receive secret detection setting'
   end
 
-  context 'when instance is not dedicated and feature flag is disabled' do
-    before do
-      stub_feature_flags(pre_receive_secret_detection_beta_release: false)
-    end
+  describe 'feature not available' do
+    let(:feature_available) { false }
 
-    let(:feature_available) { true }
-
-    describe 'feature available' do
-      it_behaves_like 'does not render pre receive secret detection setting'
-    end
+    it_behaves_like 'does not render pre receive secret detection setting'
   end
 end

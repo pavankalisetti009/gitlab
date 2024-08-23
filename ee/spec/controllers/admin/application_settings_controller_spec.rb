@@ -268,33 +268,13 @@ RSpec.describe Admin::ApplicationSettingsController do
 
       before do
         stub_licensed_features(feature => true)
-        stub_application_setting(gitlab_dedicated_instance: true)
-        stub_feature_flags(pre_receive_secret_detection_beta_release: false)
       end
 
       it_behaves_like 'settings for licensed features'
 
-      context 'when instance is not dedicated' do
-        before do
-          stub_application_setting(gitlab_dedicated_instance: false)
-        end
-
-        it 'does not update pre_receive_secret_detection_enabled setting' do
-          expect { put :update, params: { application_setting: settings } }
-            .not_to change { ApplicationSetting.current.reload.attributes['pre_receive_secret_detection_enabled'] }
-        end
-      end
-
-      context 'when pre_receive_secret_detection_beta_release feature flag is enabled' do
-        before do
-          stub_application_setting(gitlab_dedicated_instance: false)
-          stub_feature_flags(pre_receive_secret_detection_beta_release: true)
-        end
-
-        it 'updates pre_receive_secret_detection_enabled setting' do
-          expect { put :update, params: { application_setting: settings } }
-            .to change { ApplicationSetting.current.reload.attributes['pre_receive_secret_detection_enabled'] }
-        end
+      it 'updates pre_receive_secret_detection_enabled setting' do
+        expect { put :update, params: { application_setting: settings } }
+          .to change { ApplicationSetting.current.reload.attributes['pre_receive_secret_detection_enabled'] }
       end
     end
 
