@@ -26,15 +26,9 @@ export default {
 </script>
 
 <template>
-  <div
-    class="card-header gl-display-flex gl-p-3 gl-pr-4 gl-flex-direction-column gl-sm-flex-direction-row gl-border-bottom-0"
-  >
+  <div class="card-header gl-flex gl-flex-col gl-border-b-0 gl-p-3 gl-pr-4 sm:gl-flex-row">
     <div>
-      <gl-button-group
-        v-if="allowSubEpics"
-        data-testid="buttons"
-        class="gl-flex-grow-1 gl-display-flex"
-      >
+      <gl-button-group v-if="allowSubEpics" data-testid="buttons" class="gl-flex gl-grow">
         <gl-button
           class="js-epic-tree-tab"
           data-testid="tree-view-button"
@@ -55,9 +49,9 @@ export default {
     </div>
     <div
       v-if="activeTab === $options.ITEM_TABS.TREE"
-      class="gl-flex sm:gl-inline-flex gl-mt-3 gl-sm-mt-0 gl-sm-ml-auto"
+      class="gl-mt-3 gl-flex sm:gl-ml-auto sm:gl-mt-0 sm:gl-inline-flex"
     >
-      <toggle-labels class="gl-sm-ml-3! gl-ml-0!" />
+      <toggle-labels class="!gl-ml-0 sm:!gl-ml-3" />
     </div>
   </div>
 </template>

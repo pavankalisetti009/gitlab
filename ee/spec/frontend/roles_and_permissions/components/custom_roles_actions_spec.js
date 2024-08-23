@@ -53,7 +53,7 @@ describe('CustomRolesActions', () => {
     it('renders the delete role action item', () => {
       expect(findDeleteRole().props('item')).toMatchObject({
         text: 'Delete role',
-        extraAttrs: { class: 'gl-text-red-500!' },
+        extraAttrs: { class: '!gl-text-red-500' },
       });
     });
 

@@ -19,10 +19,10 @@ export default {
     <gl-empty-state
       :svg-path="testRunsEmptyStateImagePath"
       :svg-height="null"
-      class="gl-align-items-center"
+      class="gl-items-center"
     >
       <template #title>
-        <h5 class="gl-block gl-font-lg gl-my-4">
+        <h5 class="gl-my-4 gl-block gl-text-lg">
           {{ $options.i18n.testRuns.title }}
         </h5>
       </template>

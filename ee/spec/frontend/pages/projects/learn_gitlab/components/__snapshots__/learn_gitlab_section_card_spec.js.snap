@@ -11,7 +11,7 @@ exports[`Learn GitLab Section Card renders correctly 1`] = `
       src="workspace.svg"
     />
     <h2
-      class="gl-font-lg gl-mb-3"
+      class="gl-mb-3 gl-text-lg"
     >
       Configure your project
     </h2>

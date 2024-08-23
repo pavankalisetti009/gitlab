@@ -288,7 +288,7 @@ export default {
             data-testid="requirement-save"
             variant="confirm"
             category="primary"
-            class="gl-mr-auto js-requirement-save"
+            class="js-requirement-save gl-mr-auto"
             @click="handleSave(issuableMeta)"
           >
             {{ saveButtonLabel }}
@@ -306,14 +306,14 @@ export default {
       </template>
       <template #secondary-content>
         <aside>
-          <h2 class="gl-font-base">
+          <h2 class="gl-text-base">
             <gl-sprintf :message="$options.i18n.legacyReferenceDeprecationTitle">
               <template #legacyId
                 ><span class="gl-font-normal">{{ legacyReference }}</span></template
               >
             </gl-sprintf>
           </h2>
-          <p class="gl-font-sm gl-leading-20">
+          <p class="gl-text-sm gl-leading-20">
             <gl-sprintf :message="$options.i18n.legacyReferenceDeprecationText">
               <template #id>{{ reference }}</template>
               <template #link="{ content }">

@@ -199,7 +199,7 @@ export default {
       <gl-button
         type="submit"
         variant="confirm"
-        class="gl-mr-3 js-no-auto-disable"
+        class="js-no-auto-disable gl-mr-3"
         :loading="isSaving"
         @click="onClick"
       >

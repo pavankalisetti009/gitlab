@@ -115,13 +115,13 @@ export default {
 <template>
   <div
     :style="sectionContainerStyles"
-    class="milestones-list-section gl-table clearfix"
+    class="milestones-list-section clearfix gl-table"
     data-testid="milestones-list-wrapper"
   >
     <div
-      class="milestones-list-title gl-table-cell border-bottom gl-align-top position-sticky gl-pl-5 xl:gl-pl-6 gl-pr-3 gl-pt-2"
+      class="milestones-list-title border-bottom position-sticky gl-table-cell gl-pl-5 gl-pr-3 gl-pt-2 gl-align-top xl:gl-pl-6"
     >
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <span
           v-gl-tooltip.hover.topright="{
             title: expandButton.tooltip,
@@ -138,12 +138,12 @@ export default {
             @click="toggleMilestonesExpanded"
           />
         </span>
-        <div class="gl-overflow-hidden gl-flex-grow-1 gl-ml-2 gl-mr-3 gl-font-bold">
+        <div class="gl-ml-2 gl-mr-3 gl-grow gl-overflow-hidden gl-font-bold">
           {{ __('Milestones') }}
         </div>
         <div
           v-gl-tooltip="milestonesCountText"
-          class="gl-display-flex gl-align-items-center gl-justify-content-center text-secondary gl-whitespace-nowrap"
+          class="text-secondary gl-flex gl-items-center gl-justify-center gl-whitespace-nowrap"
           data-testid="count"
         >
           <gl-icon name="milestone" class="gl-mr-2" />

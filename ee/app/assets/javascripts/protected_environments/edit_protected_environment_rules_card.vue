@@ -42,22 +42,19 @@ export default {
 <template>
   <div>
     <template v-if="rules.length">
-      <div class="gl-p-5 gl-bg-gray-50 gl-w-full gl-display-flex gl-font-bold">
+      <div class="gl-flex gl-w-full gl-bg-gray-50 gl-p-5 gl-font-bold">
         <slot name="card-header"></slot>
       </div>
       <div
         v-for="rule in rules"
         :key="rule.id"
         :data-testid="`${ruleKey}-${rule.id}`"
-        class="gl-border-t gl-p-5 gl-display-flex gl-align-items-center gl-w-full gl-bg-white"
+        class="gl-border-t gl-flex gl-w-full gl-items-center gl-bg-white gl-p-5"
       >
         <slot name="rule" :rule="rule" :rule-key="ruleKey"></slot>
       </div>
     </template>
-    <div
-      class="gl-p-5 gl-display-flex gl-align-items-center"
-      :class="{ 'gl-border-t': rules.length }"
-    >
+    <div class="gl-flex gl-items-center gl-p-5" :class="{ 'gl-border-t': rules.length }">
       <gl-button
         category="secondary"
         variant="confirm"

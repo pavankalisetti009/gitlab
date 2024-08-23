@@ -35,7 +35,7 @@ export default {
 <template>
   <div>
     <h1>{{ $options.i18n.title }}</h1>
-    <p class="gl-pt-3 gl-pb-2">
+    <p class="gl-pb-2 gl-pt-3">
       {{ $options.i18n.description }}
     </p>
     <self-hosted-model-form

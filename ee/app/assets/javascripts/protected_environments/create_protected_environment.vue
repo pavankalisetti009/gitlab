@@ -266,7 +266,7 @@ export default {
         />
       </gl-collapse>
 
-      <div class="gl-display-flex gl-mt-5">
+      <div class="gl-mt-5 gl-flex">
         <gl-button
           type="submit"
           category="primary"

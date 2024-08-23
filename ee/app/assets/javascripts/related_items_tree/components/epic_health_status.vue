@@ -26,12 +26,12 @@ export default {
   i18n: {
     epicCountPermissionText,
   },
-  badgeClasses: 'gl-ml-0! gl-mr-2 gl-font-bold',
+  badgeClasses: '!gl-ml-0 gl-mr-2 gl-font-bold',
 };
 </script>
 
 <template>
-  <div v-if="hasHealthStatus" ref="healthStatus" class="gl-inline-flex gl-align-items-center">
+  <div v-if="hasHealthStatus" ref="healthStatus" class="gl-inline-flex gl-items-center">
     <gl-popover :target="() => $refs.healthStatus" placement="top">
       <span
         ><strong>{{ healthStatus.issuesOnTrack }}</strong
@@ -47,7 +47,7 @@ export default {
         ><strong>{{ healthStatus.issuesAtRisk }}</strong
         >&nbsp;<span>{{ __('issues at risk') }}</span></span
       >
-      <gl-alert :dismissible="false" class="gl-max-w-26 gl-mt-3">
+      <gl-alert :dismissible="false" class="gl-mt-3 gl-max-w-26">
         {{ $options.i18n.epicCountPermissionText }}
       </gl-alert>
     </gl-popover>

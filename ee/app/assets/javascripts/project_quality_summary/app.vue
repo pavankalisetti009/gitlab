@@ -112,12 +112,12 @@ export default {
     <feedback-banner />
     <gl-card v-if="$apollo.queries.projectQuality.loading || hasTestRunsData" class="gl-mt-6">
       <template #header>
-        <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-          <h5 class="gl-font-lg gl-m-2">{{ $options.i18n.testRuns.title }}</h5>
+        <div class="gl-flex gl-items-center gl-justify-between">
+          <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.testRuns.title }}</h5>
           <gl-icon
             id="test-runs-question-icon"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-pointer gl-mx-2"
+            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
           />
           <gl-popover
             target="test-runs-question-icon"
@@ -127,14 +127,14 @@ export default {
             triggers="hover focus"
           >
             <p>{{ $options.i18n.testRuns.popoverBody }}</p>
-            <gl-link :href="$options.testRunsHelpPath" class="gl-font-sm" target="_blank">
+            <gl-link :href="$options.testRunsHelpPath" class="gl-text-sm" target="_blank">
               {{ $options.i18n.testRuns.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-text-gray-500 gl-mx-2">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="pipelineTestReportPath"
-            class="gl-flex-grow-1 gl-text-right gl-mx-2"
+            class="gl-mx-2 gl-grow gl-text-right"
             data-testid="test-runs-link"
           >
             {{ $options.i18n.testRuns.fullReportLink }}
@@ -181,12 +181,12 @@ export default {
 
     <gl-card v-if="isShowCodeQualityCard" class="gl-mt-6">
       <template #header>
-        <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-          <h5 class="gl-font-lg gl-m-2">{{ $options.i18n.codeQuality.title }}</h5>
+        <div class="gl-flex gl-items-center gl-justify-between">
+          <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.codeQuality.title }}</h5>
           <gl-icon
             id="code-quality-icon"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-pointer gl-mx-2"
+            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
           />
           <gl-popover
             target="code-quality-icon"
@@ -196,14 +196,14 @@ export default {
             triggers="hover focus"
           >
             <p>{{ $options.i18n.codeQuality.popoverBody }}</p>
-            <gl-link :href="$options.codeQualityHelpPath" class="gl-font-sm" target="_blank">
+            <gl-link :href="$options.codeQualityHelpPath" class="gl-text-sm" target="_blank">
               {{ $options.i18n.codeQuality.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-text-gray-500 gl-mx-2">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="pipelineCodeQualityReportPath"
-            class="gl-flex-grow-1 gl-text-right gl-mx-2"
+            class="gl-mx-2 gl-grow gl-text-right"
             data-testid="code-quality-link"
           >
             {{ $options.i18n.codeQuality.fullReportLink }}
@@ -243,12 +243,12 @@ export default {
 
     <gl-card class="gl-mt-6">
       <template #header>
-        <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
-          <h5 class="gl-font-lg gl-m-2">{{ $options.i18n.coverage.title }}</h5>
+        <div class="gl-flex gl-items-center gl-justify-between">
+          <h5 class="gl-m-2 gl-text-lg">{{ $options.i18n.coverage.title }}</h5>
           <gl-icon
             id="coverage-question-icon"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-pointer gl-mx-2"
+            class="gl-mx-2 gl-cursor-pointer gl-text-blue-600"
           />
           <gl-popover
             target="coverage-question-icon"
@@ -258,14 +258,14 @@ export default {
             triggers="hover focus"
           >
             <p>{{ $options.i18n.coverage.popoverBody }}</p>
-            <gl-link :href="$options.coverageHelpPath" class="gl-font-sm" target="_blank">
+            <gl-link :href="$options.coverageHelpPath" class="gl-text-sm" target="_blank">
               {{ $options.i18n.coverage.learnMoreLink }}
             </gl-link>
           </gl-popover>
-          <strong class="gl-text-gray-500 gl-mx-2">{{ $options.i18n.subHeader }}</strong>
+          <strong class="gl-mx-2 gl-text-gray-500">{{ $options.i18n.subHeader }}</strong>
           <gl-link
             :href="coverageChartPath"
-            class="gl-flex-grow-1 gl-text-right gl-mx-2"
+            class="gl-mx-2 gl-grow gl-text-right"
             data-testid="coverage-link"
           >
             {{ $options.i18n.coverage.fullReportLink }}

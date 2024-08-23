@@ -79,7 +79,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-justify-content-space-between">
+  <div class="gl-flex gl-items-center gl-justify-between">
     <gl-tabs content-class="gl-p-0">
       <gl-tab
         :title-link-attributes="/* eslint-disable @gitlab/vue-no-new-non-primitive-in-template */ {

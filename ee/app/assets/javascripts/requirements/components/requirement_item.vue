@@ -96,11 +96,11 @@ export default {
     @click="$emit('show-click', requirement)"
   >
     <div class="issuable-info-container">
-      <span class="issuable-reference gl-text-gray-600 gl-hidden sm:!gl-block gl-mr-3">{{
+      <span class="issuable-reference gl-mr-3 gl-hidden gl-text-gray-600 sm:!gl-block">{{
         reference
       }}</span>
       <div class="issuable-main-info">
-        <span class="issuable-reference gl-text-gray-600 gl-block sm:!gl-hidden">{{
+        <span class="issuable-reference gl-block gl-text-gray-600 sm:!gl-hidden">{{
           reference
         }}</span>
         <div class="issue-title title">
@@ -134,10 +134,7 @@ export default {
         />
       </div>
       <div class="gl-flex">
-        <ul
-          v-if="showIssuableMetaActions"
-          class="controls gl-flex-direction-column gl-sm-flex-direction-row!"
-        >
+        <ul v-if="showIssuableMetaActions" class="controls gl-flex-col sm:!gl-flex-row">
           <requirement-status-badge
             v-if="testReport"
             :test-report="testReport"
@@ -174,13 +171,13 @@ export default {
       </div>
     </div>
     <gl-popover :target="getAuthorPopoverTarget()" placement="top">
-      <div class="gl-leading-normal gl-flex">
-        <div class="gl-p-2 gl-flex-shrink-1">
+      <div class="gl-flex gl-leading-normal">
+        <div class="gl-flex-shrink-1 gl-p-2">
           <gl-avatar :entity-name="author.name" :alt="author.name" :src="author.avatarUrl" />
         </div>
-        <div class="gl-p-2 gl-w-full">
+        <div class="gl-w-full gl-p-2">
           <h5 class="gl-m-0">{{ author.name }}</h5>
-          <div class="gl-text-gray-500 gl-mb-3">@{{ author.username }}</div>
+          <div class="gl-mb-3 gl-text-gray-500">@{{ author.username }}</div>
         </div>
       </div>
     </gl-popover>

@@ -169,7 +169,7 @@ export default {
           :environment="environment"
           :rule-key="$options.DEPLOYER_RULE_KEY"
           :data-testid="`protected-environment-${environment.name}-deployers`"
-          class="gl-rounded-top-base gl-border gl-border-b-initial"
+          class="gl-border gl-rounded-t-base gl-border-b-initial"
           @addRule="addRule"
         >
           <template #card-header>
@@ -218,7 +218,7 @@ export default {
           :environment="environment"
           :rule-key="$options.APPROVER_RULE_KEY"
           :data-testid="`protected-environment-${environment.name}-approvers`"
-          class="gl-rounded-bottom-left-base gl-rounded-bottom-right-base gl-border"
+          class="gl-border gl-rounded-bl-base gl-rounded-br-base"
           @addRule="addRule"
         >
           <template #card-header>
@@ -263,7 +263,7 @@ export default {
                 :label-for="`approval-count-${rule.id}`"
                 :label="$options.i18n.approvalCount"
                 label-sr-only
-                class="gl-w-2/10 gl-mb-0"
+                class="gl-mb-0 gl-w-2/10"
               >
                 <gl-form-input
                   :id="`approval-count-${rule.id}`"
@@ -280,7 +280,7 @@ export default {
                 :name="`approval-inheritance-${rule.id}`"
                 :value="isUsingGroupInheritance(editingRules[rule.id])"
                 label-position="hidden"
-                class="gl-ml-11 gl-align-items-center"
+                class="gl-ml-11 gl-items-center"
                 @change="updateApproverInheritance({ rule, value: $event })"
               />
               <span v-else></span>
@@ -299,7 +299,7 @@ export default {
                 :label="$options.i18n.inheritanceLabel"
                 :name="`approval-inheritance-${rule.id}`"
                 :value="isUsingGroupInheritance(rule)"
-                class="gl-ml-11 gl-align-items-center"
+                class="gl-ml-11 gl-items-center"
                 label-position="hidden"
                 disabled
               />

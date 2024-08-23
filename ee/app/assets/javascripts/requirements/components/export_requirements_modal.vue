@@ -143,7 +143,7 @@ export default {
     </p>
 
     <div>
-      <h5 class="gl-mb-0! gl-mt-5">{{ __('Advanced export options') }}</h5>
+      <h5 class="!gl-mb-0 gl-mt-5">{{ __('Advanced export options') }}</h5>
       <p class="gl-mb-3">
         {{ __('Please select what should be included in each exported requirement.') }}
       </p>
@@ -157,11 +157,11 @@ export default {
             >{{ __('Select all') }}</gl-form-checkbox
           >
         </div>
-        <div class="gl-pt-5 gl-pb-4 gl-pl-6 scrollbox-body">
+        <div class="scrollbox-body gl-pb-4 gl-pl-6 gl-pt-5">
           <gl-form-checkbox
             v-for="field in $options.fields"
             :key="field.key"
-            class="gl-mb-0 gl-mr-0 form-check gl-pb-5 gl-ml-5"
+            class="form-check gl-mb-0 gl-ml-5 gl-mr-0 gl-pb-5"
             :checked="isFieldSelected(field.key)"
             @change="() => toggleField(field.key)"
             >{{ field.value }}</gl-form-checkbox

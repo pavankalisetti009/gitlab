@@ -167,7 +167,7 @@ export default {
     data-testid="epic-details-cell"
   >
     <div
-      class="gl-flex align-items-start gl-p-3 gl-pl-5 xl:gl-pl-6"
+      class="align-items-start gl-flex gl-p-3 gl-pl-5 xl:gl-pl-6"
       :class="[epic.isChildEpic ? childMarginClassname : '']"
       data-testid="epic-container"
     >
@@ -198,7 +198,7 @@ export default {
         {{ expandIconLabel }}
       </gl-tooltip>
       <div class="flex-grow-1 mx-1 gl-w-13">
-        <div class="gl-flex gl-mt-1">
+        <div class="gl-mt-1 gl-flex">
           <issuable-blocked-icon
             v-if="epic.blocked"
             :item="epic"
@@ -215,7 +215,7 @@ export default {
             {{ epic.title }}
           </a>
         </div>
-        <div class="epic-group-timeframe gl-flex text-secondary">
+        <div class="epic-group-timeframe text-secondary gl-flex">
           <span
             v-if="isEpicGroupDifferent && !epic.hasParent"
             :title="epic.group.fullName"
@@ -233,7 +233,7 @@ export default {
           <gl-label
             v-for="label in epicLabels"
             :key="label.id"
-            class="js-no-trigger gl-mt-2 gl-mr-2"
+            class="js-no-trigger gl-mr-2 gl-mt-2"
             :background-color="label.color"
             :title="label.title"
             :target="filterByLabelUrl(label)"
@@ -246,7 +246,7 @@ export default {
       <template v-if="allowSubEpics">
         <div
           ref="childEpicsCount"
-          class="gl-mt-1 gl-flex text-secondary text-nowrap"
+          class="text-secondary text-nowrap gl-mt-1 gl-flex"
           data-testid="child-epics-count"
         >
           <gl-icon name="epic" class="align-text-bottom mr-1" />

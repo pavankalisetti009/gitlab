@@ -9,7 +9,7 @@ export const FIELDS = [
   { key: 'checkbox', label: '' },
   { key: 'name', label: s__('MemberRole|Permission') },
   { key: 'description', label: s__('MemberRole|Description') },
-].map((field) => ({ ...field, class: 'gl-pt-6! gl-pb-6!' }));
+].map((field) => ({ ...field, class: '!gl-pt-6 !gl-pb-6' }));
 
 export default {
   i18n: {
@@ -158,11 +158,11 @@ export default {
 
 <template>
   <fieldset>
-    <legend class="gl-mb-1 gl-border-b-0 gl-font-base">
+    <legend class="gl-mb-1 gl-border-b-0 gl-text-base">
       <span class="gl-font-bold">{{ $options.i18n.customPermissionsLabel }}</span>
       <span
         v-if="hasAvailablePermissions"
-        class="gl-text-gray-400 gl-ml-3"
+        class="gl-ml-3 gl-text-gray-400"
         data-testid="permissions-selected-message"
       >
         <gl-sprintf :message="$options.i18n.permissionsSelected">
@@ -186,7 +186,7 @@ export default {
       v-if="isErrorLoadingPermissions"
       :dismissible="false"
       variant="danger"
-      class="gl-mb-6 gl-display-inline-block"
+      class="gl-mb-6 gl-inline-block"
     >
       {{ $options.i18n.permissionsFetchError }}
     </gl-alert>

@@ -144,18 +144,15 @@ export default {
       class="epic-bar rounded"
     >
       <div class="epic-bar-inner gl-px-3 gl-py-2" :style="timelineBarInnerStyle">
-        <p class="epic-bar-title gl-text-truncate gl-m-0">{{ timelineBarTitle }}</p>
+        <p class="epic-bar-title gl-m-0 gl-truncate">{{ timelineBarTitle }}</p>
 
-        <div
-          v-if="!isTimelineBarSmall && isProgressTrackingActive"
-          class="gl-display-flex gl-align-items-center"
-        >
+        <div v-if="!isTimelineBarSmall && isProgressTrackingActive" class="gl-flex gl-items-center">
           <gl-progress-bar
-            class="epic-bar-progress gl-flex-grow-1 gl-mr-2"
+            class="epic-bar-progress gl-mr-2 gl-grow"
             :value="epicPercentage"
             aria-hidden="true"
           />
-          <div class="gl-font-sm gl-display-flex gl-align-items-center gl-whitespace-nowrap">
+          <div class="gl-flex gl-items-center gl-whitespace-nowrap gl-text-sm">
             <gl-icon class="gl-mr-1" :size="12" :name="progressIcon" />
             <p class="gl-m-0" :aria-label="epicPercentageText">{{ epicPercentage }}%</p>
           </div>
@@ -163,7 +160,7 @@ export default {
       </div>
     </a>
     <gl-popover :target="generateKey(epic)" :title="epic.title" placement="left">
-      <p class="gl-text-gray-500 gl-m-0">{{ timeframeString(epic) }}</p>
+      <p class="gl-m-0 gl-text-gray-500">{{ timeframeString(epic) }}</p>
       <p class="gl-m-0">{{ popoverText }}</p>
     </gl-popover>
   </div>

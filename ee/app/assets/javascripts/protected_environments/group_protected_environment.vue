@@ -73,11 +73,7 @@ export default {
       </gl-button>
     </div>
     <gl-popover :target="target" :title="title">
-      <div
-        v-for="group in groups"
-        :key="group.id"
-        class="gl-display-flex gl-align-items-center gl-mb-4"
-      >
+      <div v-for="group in groups" :key="group.id" class="gl-mb-4 gl-flex gl-items-center">
         <gl-avatar
           :src="group.avatar_url"
           :size="16"

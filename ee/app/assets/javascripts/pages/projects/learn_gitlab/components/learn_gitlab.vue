@@ -78,7 +78,7 @@ export default {
     },
     progressBarBlockClasses() {
       return {
-        'gl-mt-6 gl-display-inline-block': true,
+        'gl-mt-6 gl-inline-block': true,
         'gl-ml-5': !this.isDesktop,
         'gl-h-0 gl-mr-5 gl-ml-auto': this.isDesktop,
       };
@@ -173,18 +173,18 @@ export default {
     </gl-alert>
     <div class="row">
       <div class="col-sm-12 col-mb-9 col-lg-9">
-        <h1 class="gl-font-size-h1">{{ $options.i18n.title }}</h1>
-        <p class="gl-text-gray-700 gl-mb-0">{{ $options.i18n.description }}</p>
+        <h1 class="gl-text-size-h1">{{ $options.i18n.title }}</h1>
+        <p class="gl-mb-0 gl-text-gray-700">{{ $options.i18n.description }}</p>
       </div>
 
       <div :class="progressBarBlockClasses" data-testid="progress-bar-block">
         <circular-progress-bar :percentage="progressPercentage" />
 
-        <div class="gl-mt-5 gl-text-center gl-font-lg gl-font-bold">
+        <div class="gl-mt-5 gl-text-center gl-text-lg gl-font-bold">
           {{ progressBarLabel }}
         </div>
 
-        <div class="gl-flex gl-justify-center gl-mt-3">
+        <div class="gl-mt-3 gl-flex gl-justify-center">
           <gl-button
             :disabled="disableEndTutorialButton"
             category="tertiary"
@@ -198,7 +198,7 @@ export default {
     </div>
 
     <div class="gl-mt-6">
-      <h2 class="gl-font-bold gl-font-size-h2">
+      <h2 class="gl-text-size-h2 gl-font-bold">
         {{ $options.i18n.addCodeBlockTitle }}
       </h2>
     </div>
@@ -207,7 +207,7 @@ export default {
       <div
         v-for="section in firstBlockSections"
         :key="section"
-        class="gl-mt-5 col-sm-12 col-mb-6 col-lg-4"
+        class="col-sm-12 col-mb-6 col-lg-4 gl-mt-5"
       >
         <learn-gitlab-section-card
           :section="section"
@@ -218,7 +218,7 @@ export default {
     </div>
 
     <div class="gl-mt-6">
-      <h2 class="gl-font-bold gl-font-size-h2">
+      <h2 class="gl-text-size-h2 gl-font-bold">
         {{ $options.i18n.buildBlockTitle }}
       </h2>
     </div>
@@ -227,7 +227,7 @@ export default {
       <div
         v-for="section in secondBlockSections"
         :key="section"
-        class="gl-mt-5 col-sm-12 col-mb-6 col-lg-4"
+        class="col-sm-12 col-mb-6 col-lg-4 gl-mt-5"
       >
         <learn-gitlab-section-card
           :section="section"

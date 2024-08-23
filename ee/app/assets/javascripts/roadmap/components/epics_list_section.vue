@@ -204,7 +204,7 @@ export default {
         <span
           v-for="(timeframeItem, index) in timeframe"
           :key="index"
-          class="epic-timeline-cell gl-display-flex"
+          class="epic-timeline-cell gl-flex"
         >
           <current-day-indicator :timeframe-item="timeframeItem" />
         </span>
@@ -213,7 +213,7 @@ export default {
     <gl-intersection-observer v-if="hasNextPage" @appear="handleScrolledToEnd">
       <div
         v-if="epicsFetchNextPageInProgress"
-        class="gl-text-center gl-py-3"
+        class="gl-py-3 gl-text-center"
         data-testid="next-page-loading"
       >
         <gl-loading-icon inline class="gl-mr-2" />
@@ -223,7 +223,7 @@ export default {
     <div
       v-show="showBottomShadow"
       data-testid="epic-scroll-bottom-shadow"
-      class="gl-left-auto epic-scroll-bottom-shadow"
+      class="epic-scroll-bottom-shadow gl-left-auto"
     ></div>
   </div>
 </template>

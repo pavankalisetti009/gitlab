@@ -202,7 +202,7 @@ export default {
 <template>
   <form data-testid="form" @submit.prevent="createIssue">
     <div class="row mb-3">
-      <div class="col-sm-6 gl-mb-3 gl-sm-mb-0">
+      <div class="col-sm-6 gl-mb-3 sm:gl-mb-0">
         <label class="label-bold">{{ s__('Issue|Title') }}</label>
         <gl-form-input
           ref="titleInput"
@@ -219,9 +219,9 @@ export default {
         <gl-dropdown
           ref="dropdownButton"
           :text="dropdownToggleText"
-          class="gl-w-full projects-dropdown"
-          menu-class="!gl-w-full gl-overflow-hidden!"
-          toggle-class="gl-display-flex gl-align-items-center gl-justify-content-between gl-text-truncate"
+          class="projects-dropdown gl-w-full"
+          menu-class="!gl-w-full !gl-overflow-hidden"
+          toggle-class="gl-flex gl-items-center gl-justify-content-between gl-truncate"
           @show="handleDropdownShow"
         >
           <gl-search-box-by-type
@@ -239,10 +239,10 @@ export default {
               <gl-dropdown-item
                 v-for="project in frequentProjects"
                 :key="`frequent-${project.id}`"
-                class="gl-w-full select-project-dropdown"
+                class="select-project-dropdown gl-w-full"
                 @click="() => handleFrequentProjectSelection(project)"
               >
-                <div class="gl-display-flex">
+                <div class="gl-flex">
                   <project-avatar
                     :project-id="project.id"
                     :project-avatar-url="project.avatar_url"
@@ -258,17 +258,17 @@ export default {
 
             <gl-dropdown-divider v-if="frequentProjects.length > 0" />
             <template v-if="!projectsFetchInProgress">
-              <span v-if="!projects.length" class="gl-block text-center gl-p-3">{{
+              <span v-if="!projects.length" class="text-center gl-block gl-p-3">{{
                 __('No matches found')
               }}</span>
               <gl-dropdown-item
                 v-for="project in projects"
                 :key="project.id"
                 :data-testid="`project-item-${project.id}`"
-                class="gl-w-full select-project-dropdown"
+                class="select-project-dropdown gl-w-full"
                 @click="selectedProject = project"
               >
-                <div class="gl-display-flex">
+                <div class="gl-flex">
                   <project-avatar
                     :project-id="project.id"
                     :project-avatar-url="project.avatar_url"
@@ -284,7 +284,7 @@ export default {
           </div>
           <gl-loading-icon
             v-show="projectsFetchInProgress"
-            class="projects-fetch-loading gl-align-items-center gl-p-3"
+            class="projects-fetch-loading gl-items-center gl-p-3"
             size="lg"
           />
         </gl-dropdown>

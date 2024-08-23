@@ -156,7 +156,7 @@ export default {
         </gl-sprintf>
       </p>
       <h2 v-if="isOptionsHeaderVisible">{{ __('Select an option') }}</h2>
-      <div class="gl-display-flex gl-flex-wrap gl-md-flex-nowrap gl-gap-5">
+      <div class="gl-flex gl-flex-wrap gl-gap-5 md:gl-flex-nowrap">
         <template v-if="isLoadingSettings">
           <div class="gl-w-1/2">
             <gl-skeleton-loader data-testid="provider-card-skeleton-loader" />

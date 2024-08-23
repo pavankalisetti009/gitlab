@@ -101,12 +101,12 @@ export default {
       :key="item.id"
       :parent-item="parentItem"
       :item="item"
-      class="gl-pt-3! gl-border-t-1 gl-border-t-solid gl-border-t-gray-100"
+      class="gl-border-t-1 gl-border-t-gray-100 !gl-pt-3 gl-border-t-solid"
     />
-    <li v-if="hasMoreChildren" class="tree-item list-item pt-0 pb-0 gl-flex justify-content-center">
+    <li v-if="hasMoreChildren" class="tree-item list-item pt-0 pb-0 justify-content-center gl-flex">
       <gl-button
         v-if="!fetchInProgress"
-        class="gl-inline-block mb-2"
+        class="mb-2 gl-inline-block"
         category="tertiary"
         variant="confirm"
         @click="handleShowMoreClick($event)"
