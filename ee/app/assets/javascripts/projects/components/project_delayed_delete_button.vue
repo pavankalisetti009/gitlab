@@ -66,15 +66,13 @@ export default {
     :stars-count="starsCount"
   >
     <template #modal-footer>
-      <p
-        class="gl-display-flex gl-display-flex gl-align-items-center gl-mt-3 gl-mb-0 gl-text-gray-500"
-      >
+      <p class="gl-mb-0 gl-mt-3 gl-flex gl-items-center gl-text-gray-500">
         <gl-sprintf :message="$options.strings.restoreMessage">
           <template #date>{{ delayedDeletionDate }}</template>
         </gl-sprintf>
         <gl-link
           :aria-label="$options.strings.restoreLabel"
-          class="gl-display-flex gl-ml-2"
+          class="gl-ml-2 gl-flex"
           :href="restoreHelpPath"
           >{{ __('Learn More.') }}
         </gl-link>

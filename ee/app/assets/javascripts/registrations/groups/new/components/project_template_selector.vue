@@ -136,11 +136,11 @@ export default {
     >
       <template #toggle>
         <gl-button class="gl-w-full" button-text-classes="gl-w-full">
-          <span class="gl-display-flex gl-justify-content-space-between">
-            <span class="gl-display-flex gl-align-items-center gl-gap-2">
+          <span class="gl-flex gl-justify-between">
+            <span class="gl-flex gl-items-center gl-gap-2">
               <img
                 v-if="selectedLogo"
-                class="gl-w-5 gl-h-5"
+                class="gl-h-5 gl-w-5"
                 data-testid="selected-logo"
                 :alt="selected"
                 :src="selectedLogo"
@@ -155,8 +155,8 @@ export default {
       </template>
 
       <template #list-item="{ item }">
-        <span class="gl-display-flex gl-align-items-center gl-gap-2">
-          <img class="gl-w-5 gl-h-5" :alt="item.value" :src="item.logoSrc" />
+        <span class="gl-flex gl-items-center gl-gap-2">
+          <img class="gl-h-5 gl-w-5" :alt="item.value" :src="item.logoSrc" />
           {{ item.text }}
         </span>
       </template>

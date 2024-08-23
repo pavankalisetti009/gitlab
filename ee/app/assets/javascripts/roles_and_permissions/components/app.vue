@@ -91,10 +91,8 @@ export default {
 
   <section v-else>
     <header>
-      <div
-        class="gl-display-flex gl-align-items-flex-start gl-flex-wrap page-title gl-mb-2 gl-gap-2"
-      >
-        <h1 class="gl-font-size-h-display gl-m-0 gl-mr-auto gl-whitespace-nowrap">
+      <div class="page-title gl-mb-2 gl-flex gl-flex-wrap gl-items-start gl-gap-2">
+        <h1 class="gl-m-0 gl-mr-auto gl-whitespace-nowrap gl-text-size-h-display">
           {{ $options.i18n.title }}
         </h1>
         <gl-button :href="newRolePath" variant="confirm">
@@ -113,7 +111,7 @@ export default {
       </p>
     </header>
 
-    <div class="gl-font-bold gl-mb-4" data-testid="custom-roles-count">
+    <div class="gl-mb-4 gl-font-bold" data-testid="custom-roles-count">
       <gl-icon name="shield" class="gl-mr-2" />
       <span>{{ customRolesCount }}</span>
     </div>

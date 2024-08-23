@@ -264,13 +264,13 @@ export default {
     </gl-form-group>
 
     <h4 v-if="embedded" class="gl-mt-7">{{ $options.i18n.permissionsLabel }}</h4>
-    <h3 v-else class="gl-mt-8 gl-mb-6">{{ $options.i18n.permissionsLabel }}</h3>
+    <h3 v-else class="gl-mb-6 gl-mt-8">{{ $options.i18n.permissionsLabel }}</h3>
 
     <gl-form-group
       :label="$options.i18n.baseRoleLabel"
       :invalid-feedback="$options.i18n.invalidFeedback"
       label-for="base-role-select"
-      label-class="gl-pb-1!"
+      label-class="!gl-pb-1"
       class="gl-mb-6"
     >
       <template #label-description>
@@ -294,7 +294,7 @@ export default {
 
     <permissions-selector v-model="memberRole.permissions" :is-valid="isPermissionsValid" />
 
-    <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+    <div class="gl-flex gl-flex-wrap gl-gap-3">
       <gl-button
         type="submit"
         :loading="isSubmitting"

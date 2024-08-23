@@ -92,13 +92,13 @@ export default {
 <template>
   <div class="gl-new-card-header">
     <div class="gl-new-card-title-wrapper">
-      <div class="gl-display-flex gl-flex-shrink-0 gl-align-items-center gl-flex-wrap">
+      <div class="gl-flex gl-shrink-0 gl-flex-wrap gl-items-center">
         <h3 class="gl-new-card-title">
           {{ allowSubEpics ? __('Child issues and epics') : $options.treeTitle[parentItem.type] }}
         </h3>
         <div
           v-if="parentIsEpic"
-          class="gl-inline-flex gl-leading-1 gl-align-middle gl-ml-3 gl-flex-wrap"
+          class="gl-ml-3 gl-inline-flex gl-flex-wrap gl-align-middle gl-leading-1"
         >
           <epic-countables
             :allow-sub-epics="allowSubEpics"
@@ -112,7 +112,7 @@ export default {
         </div>
       </div>
       <div
-        class="gl-flex sm:gl-inline-flex gl-leading-1 gl-align-middle gl-sm-ml-2 gl-ml-0 gl-flex-wrap gl-mt-2 gl-sm-mt-0"
+        class="gl-sm-ml-2 gl-ml-0 gl-mt-2 gl-flex gl-flex-wrap gl-align-middle gl-leading-1 sm:gl-mt-0 sm:gl-inline-flex"
       >
         <epic-health-status v-if="showHealthStatus" :health-status="healthStatus" />
       </div>
@@ -120,11 +120,9 @@ export default {
 
     <div
       v-if="parentIsEpic"
-      class="gl-flex sm:gl-inline-flex gl-sm-ml-auto gl-leading-1 gl-align-middle gl-mt-3 gl-sm-mt-0 gl-pl-0 gl-sm-pl-7"
+      class="gl-sm-pl-7 gl-mt-3 gl-flex gl-pl-0 gl-align-middle gl-leading-1 sm:gl-ml-auto sm:gl-mt-0 sm:gl-inline-flex"
     >
-      <div
-        class="gl-flex-grow-1 gl-flex-direction-column gl-sm-flex-direction-row js-button-container"
-      >
+      <div class="js-button-container gl-grow gl-flex-col sm:gl-flex-row">
         <epic-actions-split-button
           :allow-sub-epics="allowSubEpics"
           class="js-add-epics-issues-button gl-w-full"

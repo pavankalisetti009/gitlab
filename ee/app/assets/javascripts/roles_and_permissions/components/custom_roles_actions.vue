@@ -38,7 +38,7 @@ export default {
         action: () => this.$emit('delete'),
         extraAttrs: {
           disabled: this.hasAssignedUsers,
-          class: this.hasAssignedUsers ? '' : 'gl-text-red-500!',
+          class: this.hasAssignedUsers ? '' : '!gl-text-red-500',
         },
       };
     },

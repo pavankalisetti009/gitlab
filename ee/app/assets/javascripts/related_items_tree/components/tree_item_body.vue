@@ -211,20 +211,20 @@ export default {
 </script>
 
 <template>
-  <div class="sortable-row gl-flex-grow-1">
+  <div class="sortable-row gl-grow">
     <div
-      class="item-body gl-display-flex gl-align-items-center gl-pl-3 gl-pr-2 gl-py-2 -gl-mx-2"
+      class="item-body -gl-mx-2 gl-flex gl-items-center gl-py-2 gl-pl-3 gl-pr-2"
       :class="{
         'item-logged-out': !userSignedIn,
         'item-closed': isClosed,
       }"
     >
-      <div class="gl-display-flex gl-align-items-center gl-flex-nowrap gl-flex-grow-1">
-        <div class="item-title-wrapper gl-flex-grow-1 gl-mr-3">
-          <div class="item-title gl-display-flex gl-mb-0 gl-py-1">
+      <div class="gl-flex gl-grow gl-flex-nowrap gl-items-center">
+        <div class="item-title-wrapper gl-mr-3 gl-grow">
+          <div class="item-title gl-mb-0 gl-flex gl-py-1">
             <gl-icon
               ref="stateIconMd"
-              class="gl-block gl-mr-3"
+              class="gl-mr-3 gl-block"
               :class="stateIconClass"
               :name="stateIconName"
               :aria-label="stateText"
@@ -243,7 +243,7 @@ export default {
               :title="__('Confidential')"
               :aria-label="__('Confidential')"
               name="eye-slash"
-              class="confidential-icon gl-mr-2 align-self-baseline align-self-md-auto mt-xl-0"
+              class="confidential-icon align-self-baseline align-self-md-auto mt-xl-0 gl-mr-2"
             />
             <gl-link
               v-gl-tooltip.hover
@@ -255,14 +255,12 @@ export default {
             >
           </div>
 
-          <div
-            class="item-meta gl-display-flex gl-flex-wrap mt-xl-0 gl-align-items-center gl-font-sm gl-ml-6"
-          >
-            <span class="gl-mr-4 gl-mb-1">{{ itemHierarchy }}</span>
+          <div class="item-meta mt-xl-0 gl-ml-6 gl-flex gl-flex-wrap gl-items-center gl-text-sm">
+            <span class="gl-mb-1 gl-mr-4">{{ itemHierarchy }}</span>
             <gl-tooltip v-if="isEpic" :target="() => $refs.countBadge">
-              <p v-if="allowSubEpics" class="gl-font-bold gl-m-0">
+              <p v-if="allowSubEpics" class="gl-m-0 gl-font-bold">
                 {{ __('Epics') }} &#8226;
-                <span class="gl-text-gray-400 gl-font-normal"
+                <span class="gl-font-normal gl-text-gray-400"
                   >{{
                     sprintf(__('%{openedEpics} open, %{closedEpics} closed'), {
                       openedEpics: item.descendantCounts && item.descendantCounts.openedEpics,
@@ -271,9 +269,9 @@ export default {
                   }}
                 </span>
               </p>
-              <p class="gl-font-bold gl-m-0">
+              <p class="gl-m-0 gl-font-bold">
                 {{ __('Issues') }} &#8226;
-                <span class="gl-text-gray-400 gl-font-normal"
+                <span class="gl-font-normal gl-text-gray-400"
                   >{{
                     sprintf(__('%{openedIssues} open, %{closedIssues} closed'), {
                       openedIssues: item.descendantCounts && item.descendantCounts.openedIssues,
@@ -287,16 +285,13 @@ export default {
             <div
               v-if="isEpic"
               ref="countBadge"
-              class="gl-text-gray-500 gl-inline-flex gl-py-0 p-lg-0"
+              class="p-lg-0 gl-inline-flex gl-py-0 gl-text-gray-500"
             >
-              <span
-                v-if="allowSubEpics"
-                class="gl-inline-flex gl-align-items-center gl-mr-4 gl-mb-1"
-              >
+              <span v-if="allowSubEpics" class="gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center">
                 <gl-icon name="epic" class="gl-mr-2" />
                 {{ totalEpicsCount }}
               </span>
-              <span class="gl-inline-flex gl-align-items-center gl-mr-4 gl-mb-1">
+              <span class="gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center">
                 <gl-icon name="issues" class="gl-mr-2" />
                 {{ totalIssuesCount }}
               </span>
@@ -305,7 +300,7 @@ export default {
             <item-milestone
               v-if="hasMilestone"
               :milestone="item.milestone"
-              class="item-milestone gl-display-flex gl-align-items-center gl-mr-4 gl-mb-1"
+              class="item-milestone gl-mb-1 gl-mr-4 gl-flex gl-items-center"
             />
 
             <item-due-date
@@ -313,30 +308,30 @@ export default {
               :date="item.dueDate"
               :closed="Boolean(item.closedAt)"
               tooltip-placement="top"
-              css-class="item-due-date gl-display-flex gl-align-items-center gl-mr-4! gl-mb-1"
+              css-class="item-due-date gl-flex gl-items-center !gl-mr-4 gl-mb-1"
             />
 
             <item-weight
               v-if="hasWeight"
               :weight="item.weight"
-              class="item-weight gl-flex gl-items-center !gl-mr-4 gl-mb-1"
+              class="item-weight !gl-mr-4 gl-mb-1 gl-flex gl-items-center"
             />
 
             <item-assignees
               v-if="hasAssignees"
               :assignees="item.assignees"
-              class="item-assignees gl-inline-flex gl-align-items-center gl-mr-4 gl-mb-1 flex-xl-grow-0"
+              class="item-assignees flex-xl-grow-0 gl-mb-1 gl-mr-4 gl-inline-flex gl-items-center"
             />
 
             <epic-health-status
               v-if="showEpicHealthStatus"
               :health-status="item.healthStatus"
-              class="gl-mr-4 gl-mb-1"
+              class="gl-mb-1 gl-mr-4"
             />
             <issue-health-status
               v-if="showIssueHealthStatus"
               :health-status="item.healthStatus"
-              class="gl-mr-4 gl-mb-1"
+              class="gl-mb-1 gl-mr-4"
             />
 
             <template v-if="showLabels">
@@ -348,7 +343,7 @@ export default {
                 :scoped="showScopedLabel(label)"
                 :target="labelFilterUrl(label)"
                 :title="label.title"
-                class="gl-mr-2 gl-mb-1"
+                class="gl-mb-1 gl-mr-2"
                 tooltip-placement="top"
               />
             </template>
@@ -365,7 +360,7 @@ export default {
           :aria-label="__('Remove')"
           :disabled="itemActionInProgress"
           icon="close"
-          class="js-issue-item-remove-button gl-align-self-start"
+          class="js-issue-item-remove-button gl-self-start"
           data-testid="remove-issue-button"
           @click="handleRemoveClick"
         />

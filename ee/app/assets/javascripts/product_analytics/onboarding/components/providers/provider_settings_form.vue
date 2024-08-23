@@ -172,13 +172,13 @@ export default {
 
     <p
       v-if="hasApiError"
-      class="gl-text-red-500 gl-mt-5"
+      class="gl-mt-5 gl-text-red-500"
       data-testid="clear-project-level-settings-confirmation-modal-error"
     >
       {{ s__('Analytics|Failed to update project-level settings. Please try again.') }}
     </p>
 
-    <div class="gl-flex gl-gap-3 gl-justify-content-end">
+    <div class="gl-flex gl-justify-end gl-gap-3">
       <gl-button
         type="button"
         data-testid="cancel-button"

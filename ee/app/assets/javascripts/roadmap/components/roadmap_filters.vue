@@ -124,7 +124,7 @@ export default {
 <template>
   <div class="epics-filters epics-roadmap-filters epics-roadmap-filters-gl-ui gl-relative">
     <div
-      class="epics-details-filters filtered-search-block gl-flex gl-flex-col sm:gl-flex-row gl-py-3 gl-px-5 xl:gl-px-6 row-content-block second-block sm:gl-gap-3"
+      class="epics-details-filters filtered-search-block row-content-block second-block gl-flex gl-flex-col gl-px-5 gl-py-3 sm:gl-flex-row sm:gl-gap-3 xl:gl-px-6"
     >
       <filtered-search-bar
         :namespace="groupFullPath"
@@ -135,13 +135,13 @@ export default {
         sync-filter-and-sort
         terms-as-tokens
         recent-searches-storage-key="epics"
-        class="gl-flex-grow-1"
+        class="gl-grow"
         @onFilter="handleFilterEpics"
         @onSort="handleSortEpics"
       />
       <gl-button
         icon="settings"
-        class="sm:gl-mt-0 gl-mt-3 !gl-shadow-inner-1-gray-400"
+        class="gl-mt-3 !gl-shadow-inner-1-gray-400 sm:gl-mt-0"
         :aria-label="$options.i18n.settings"
         data-testid="settings-button"
         @click="$emit('toggleSettings', $event)"

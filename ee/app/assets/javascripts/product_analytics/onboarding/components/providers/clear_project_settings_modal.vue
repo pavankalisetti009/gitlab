@@ -94,7 +94,7 @@ export default {
     @canceled="onCancelClearSettings"
   >
     <slot></slot>
-    <p v-if="hasError" class="gl-text-red-500 gl-mt-5" data-testid="modal-error">
+    <p v-if="hasError" class="gl-mt-5 gl-text-red-500" data-testid="modal-error">
       <gl-sprintf
         :message="
           s__(

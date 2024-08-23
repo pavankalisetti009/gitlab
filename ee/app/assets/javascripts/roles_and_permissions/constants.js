@@ -20,7 +20,7 @@ export const TABLE_FIELDS = [
     key: 'actions',
     label: s__('MemberRole|Actions'),
     thClass: 'gl-w-12',
-    tdClass: 'gl-text-right gl-p-3!',
+    tdClass: 'gl-text-right !gl-p-3',
   },
 ];
 

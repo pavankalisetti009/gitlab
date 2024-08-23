@@ -118,13 +118,13 @@ export default {
         smallClass,
       ]"
       :style="timelineBarStyles(milestone)"
-      class="milestone-item-details gl-inline-block position-absolute"
+      class="milestone-item-details position-absolute gl-inline-block"
       data-testid="milestone-item-wrapper"
     >
       <a :href="milestone.webPath" class="milestone-url gl-block">
         <span
           :id="`milestone-item-${milestone.id}`"
-          class="milestone-item-title str-truncated-100 gl-font-bold position-sticky"
+          class="milestone-item-title str-truncated-100 position-sticky gl-font-bold"
           >{{ milestone.title }}</span
         >
         <span class="timeline-bar position-relative gl-block"></span>

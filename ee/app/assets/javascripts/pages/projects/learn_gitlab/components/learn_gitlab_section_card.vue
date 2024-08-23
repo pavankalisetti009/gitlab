@@ -35,14 +35,14 @@ export default {
 </script>
 <template>
   <gl-card
-    class="gl-pt-0 gl-h-full"
+    class="gl-h-full gl-pt-0"
     header-class="gl-bg-white gl-border-0 gl-pb-0"
     body-class="gl-pt-0"
   >
     <template #header>
       <img :src="svg" />
-      <h2 class="gl-font-lg gl-mb-3">{{ $options.i18n[section].title }}</h2>
-      <p class="gl-text-gray-700 gl-mb-6">{{ $options.i18n[section].description }}</p>
+      <h2 class="gl-mb-3 gl-text-lg">{{ $options.i18n[section].title }}</h2>
+      <p class="gl-mb-6 gl-text-gray-700">{{ $options.i18n[section].description }}</p>
     </template>
     <template #default>
       <learn-gitlab-section-link

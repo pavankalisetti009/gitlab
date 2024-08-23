@@ -207,7 +207,7 @@ export default {
     />
     <div
       :class="{ 'overflow-reset': epicsFetchResultEmpty }"
-      class="roadmap-container gl-rounded-bottom-base gl-relative"
+      class="roadmap-container gl-relative gl-rounded-b-base"
     >
       <gl-loading-icon v-if="epicsFetchInProgress" class="gl-my-5" size="lg" />
       <epics-list-empty

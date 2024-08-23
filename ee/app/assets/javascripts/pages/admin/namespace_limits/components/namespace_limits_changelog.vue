@@ -35,7 +35,7 @@ export default {
 </script>
 <template>
   <div>
-    <p v-if="transformedEntries.length" class="gl-mt-4 gl-mb-2 gl-font-bold">
+    <p v-if="transformedEntries.length" class="gl-mb-2 gl-mt-4 gl-font-bold">
       {{ __('Changelog') }}
     </p>
     <ul v-if="transformedEntries.length" data-testid="changelog-entries">

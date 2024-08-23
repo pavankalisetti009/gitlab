@@ -170,13 +170,13 @@ export default {
               block
               category="tertiary"
               variant="confirm"
-              class="!gl-px-5 !gl-py-4 !gl-rounded-none"
+              class="!gl-rounded-none !gl-px-5 !gl-py-4"
               button-text-classes="gl-flex gl-w-full gl-items-baseline"
               :aria-label="environment.name"
               data-testid="protected-environment-item-toggle"
               @click="toggleCollapse(environment)"
             >
-              <span class="gl-text-gray-900 gl-py-2">{{ environment.name }}</span>
+              <span class="gl-py-2 gl-text-gray-900">{{ environment.name }}</span>
               <gl-badge v-if="!isExpanded(environment)" class="gl-ml-auto">
                 {{ deploymentRulesText(environment) }}
               </gl-badge>
@@ -195,7 +195,7 @@ export default {
             </gl-button>
             <gl-collapse
               :visible="isExpanded(environment)"
-              class="gl-flex gl-flex-col gl-mt-3 gl-mx-5 gl-mb-5"
+              class="gl-mx-5 gl-mb-5 gl-mt-3 gl-flex gl-flex-col"
             >
               <slot :environment="environment"></slot>
               <gl-button

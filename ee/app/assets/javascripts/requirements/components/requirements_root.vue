@@ -699,7 +699,7 @@ export default {
       v-if="alert"
       :variant="alert.variant"
       :dismissible="true"
-      class="gl-mt-3 gl-mb-4"
+      class="gl-mb-4 gl-mt-3"
       @dismiss="alert = null"
       >{{ alert.message }}</gl-alert
     >

@@ -274,7 +274,7 @@ export default {
       <span class="gl-font-bold">{{ $options.i18n.approvalRulesLabel }}</span>
       <div
         data-testid="approval-rules"
-        class="protected-environment-approvers gl-display-grid gl-gap-5 gl-align-items-center"
+        class="protected-environment-approvers gl-grid gl-items-center gl-gap-5"
       >
         <span class="protected-environment-approvers-label">{{ __('Approvers') }}</span>
         <span>{{ __('Approvals required') }}</span>
@@ -334,7 +334,7 @@ export default {
             :name="`approval-inheritance-${approver.name}`"
             :value="approver.groupInheritanceType"
             label-position="hidden"
-            class="gl-align-items-center"
+            class="gl-items-center"
             @change="updateApproverInheritance(approver, $event)"
           />
           <span v-else :key="`${index}-inheritance`"></span>

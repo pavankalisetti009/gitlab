@@ -69,13 +69,13 @@ export default {
     <div>
       <gl-form-group
         label="Upload CSV file"
-        class="gl-text-truncate"
+        class="gl-truncate"
         label-for="import-requirements-file-input"
       >
         <input
           id="import-requirements-file-input"
           ref="fileInput"
-          class="gl-mt-3 gl-mb-2"
+          class="gl-mb-2 gl-mt-3"
           type="file"
           accept=".csv,text/csv"
           @change="handleCSVFile"

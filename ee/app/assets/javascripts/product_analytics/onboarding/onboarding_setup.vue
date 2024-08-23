@@ -100,7 +100,7 @@ export default {
   <gl-loading-icon v-if="!appIdKey" size="lg" class="gl-my-7" />
 
   <section v-else>
-    <header class="gl-display-flex gl-justify-content-space-between gl-align-items-flex-start">
+    <header class="gl-flex gl-items-start gl-justify-between">
       <div class="gl-mb-7">
         <h2 class="gl-mb-4" data-testid="title">{{ $options.i18n.title }}</h2>
         <p class="gl-mb-0" data-testid="description">

@@ -83,13 +83,13 @@ export default {
 </script>
 <template>
   <div
-    class="gl-display-flex gl-gap-6 gl-border-gray-100 gl-border-solid border-radius-default gl-w-full gl-p-6"
+    class="border-radius-default gl-flex gl-w-full gl-gap-6 gl-border-solid gl-border-gray-100 gl-p-6"
   >
-    <div class="gl-flex-shrink-0 gl-hidden md:gl-block">
+    <div class="gl-hidden gl-shrink-0 md:gl-block">
       <img class="gl-dark-invert-keep-hue" :src="$options.CloudUserIllustrationPath" :alt="''" />
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-flex-grow-1 gl-w-full">
-      <h3 class="gl-mt-0 text-4">
+    <div class="gl-flex gl-w-full gl-grow gl-flex-col">
+      <h3 class="text-4 gl-mt-0">
         {{ s__('ProductAnalytics|Self-managed provider') }}
       </h3>
       <p class="gl-mb-6">
@@ -130,7 +130,7 @@ export default {
         />
       </template>
       <template v-else>
-        <h4 class="gl-font-lg gl-mt-0">{{ s__('ProductAnalytics|For this option, you need:') }}</h4>
+        <h4 class="gl-mt-0 gl-text-lg">{{ s__('ProductAnalytics|For this option, you need:') }}</h4>
         <ul class="gl-mb-6">
           <li>
             <gl-sprintf
@@ -156,7 +156,7 @@ export default {
       <gl-button
         category="primary"
         variant="confirm"
-        class="gl-mt-auto gl-align-self-start"
+        class="gl-mt-auto gl-self-start"
         data-testid="connect-your-own-provider-btn"
         @click="onSelected"
         >{{ s__('ProductAnalytics|Connect your own provider') }}</gl-button

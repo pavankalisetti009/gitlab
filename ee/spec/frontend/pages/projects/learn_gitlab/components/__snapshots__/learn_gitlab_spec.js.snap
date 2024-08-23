@@ -9,7 +9,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
       class="col-lg-9 col-mb-9 col-sm-12"
     >
       <h1
-        class="gl-font-size-h1"
+        class="gl-text-size-h1"
       >
         Learn GitLab
       </h1>
@@ -20,7 +20,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
       </p>
     </div>
     <div
-      class="gl-display-inline-block gl-h-0 gl-ml-auto gl-mr-5 gl-mt-6"
+      class="gl-h-0 gl-inline-block gl-ml-auto gl-mr-5 gl-mt-6"
       data-testid="progress-bar-block"
     >
       <div
@@ -28,7 +28,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
         style="--gray100: #dcdcde; --logo-url: url(file-mock); --percentage: 25%; --progress-bar-color: #e24329;"
       />
       <div
-        class="gl-font-bold gl-font-lg gl-mt-5 gl-text-center"
+        class="gl-font-bold gl-mt-5 gl-text-center gl-text-lg"
       >
         9 tasks to go
       </div>
@@ -53,7 +53,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
     class="gl-mt-6"
   >
     <h2
-      class="gl-font-bold gl-font-size-h2"
+      class="gl-font-bold gl-text-size-h2"
     >
       Get started
     </h2>
@@ -74,7 +74,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             src="code.svg"
           />
           <h2
-            class="gl-font-lg gl-mb-3"
+            class="gl-mb-3 gl-text-lg"
           >
             Set up your code
           </h2>
@@ -141,7 +141,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
     class="gl-mt-6"
   >
     <h2
-      class="gl-font-bold gl-font-size-h2"
+      class="gl-font-bold gl-text-size-h2"
     >
       Next steps
     </h2>
@@ -162,7 +162,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             src="workspace.svg"
           />
           <h2
-            class="gl-font-lg gl-mb-3"
+            class="gl-mb-3 gl-text-lg"
           >
             Configure your project
           </h2>
@@ -309,7 +309,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             src="deploy.svg"
           />
           <h2
-            class="gl-font-lg gl-mb-3"
+            class="gl-mb-3 gl-text-lg"
           >
             Secure your deployment
           </h2>
@@ -419,7 +419,7 @@ exports[`Learn GitLab Initial rendering concerns renders correctly 1`] = `
             src="plan.svg"
           />
           <h2
-            class="gl-font-lg gl-mb-3"
+            class="gl-mb-3 gl-text-lg"
           >
             Plan and execute work together
           </h2>

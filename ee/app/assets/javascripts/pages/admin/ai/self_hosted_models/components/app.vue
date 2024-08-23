@@ -64,10 +64,10 @@ export default {
 <template>
   <div>
     <section>
-      <h1 class="page-title gl-font-size-h-display">
+      <h1 class="page-title gl-text-size-h-display">
         {{ s__('AdminSelfHostedModels|Self-hosted models') }}
       </h1>
-      <div class="gl-flex gl-justify-between gl-items-top">
+      <div class="gl-items-top gl-flex gl-justify-between">
         <p>
           {{
             s__(

@@ -40,7 +40,7 @@ export default {
         {{ $options.i18n.addStatusCheck }}
       </gl-button>
     </template>
-    <p v-if="!statusChecks.length" class="gl-text-secondary gl-break-words">
+    <p v-if="!statusChecks.length" class="gl-break-words gl-text-secondary">
       {{ $options.i18n.statusChecksEmptyState }}
     </p>
 

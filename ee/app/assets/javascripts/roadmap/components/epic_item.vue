@@ -166,9 +166,7 @@ export default {
 
 <template>
   <div class="epic-item-container">
-    <div
-      class="epics-list-item gl-clearfix gl-display-flex gl-flex-direction-row gl-align-items-stretch"
-    >
+    <div class="epics-list-item gl-flex gl-flex-row gl-items-stretch gl-clearfix">
       <epic-item-details
         :epic="epic"
         :epics-have-children="epicsHaveChildren"
@@ -184,7 +182,7 @@ export default {
       <span
         v-for="(timeframeItem, index) in timeframe"
         :key="index"
-        class="epic-timeline-cell gl-display-flex"
+        class="epic-timeline-cell gl-flex"
         data-testid="epic-timeline-cell"
       >
         <!--

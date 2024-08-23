@@ -250,9 +250,9 @@ export default {
 
 <template>
   <div>
-    <div class="gl-display-flex gl-justify-content-space-between">
-      <h1 class="page-title gl-font-size-h-display">{{ $options.PENDING_MEMBERS_TITLE }}</h1>
-      <div v-if="!isLoading" class="gl-align-self-center">
+    <div class="gl-flex gl-justify-between">
+      <h1 class="page-title gl-text-size-h-display">{{ $options.PENDING_MEMBERS_TITLE }}</h1>
+      <div v-if="!isLoading" class="gl-self-center">
         <gl-button
           v-gl-modal-directive="`approve-all-confirmation-modal`"
           :loading="approveAllMembersLoading"
@@ -272,7 +272,7 @@ export default {
       </div>
     </div>
 
-    <div v-if="isLoading" class="gl-text-center loading">
+    <div v-if="isLoading" class="loading gl-text-center">
       <gl-loading-icon class="mt-5" size="lg" />
     </div>
     <template v-else>
@@ -291,7 +291,7 @@ export default {
           v-for="item in pendingMembers"
           v-else
           :key="item.id"
-          class="gl-p-5 gl-border-0 gl-border-b-1! gl-border-gray-100 gl-border-solid gl-display-flex gl-justify-content-space-between"
+          class="gl-flex gl-justify-between gl-border-0 !gl-border-b-1 gl-border-solid gl-border-gray-100 gl-p-5"
           data-testid="pending-members-content"
         >
           <gl-avatar-link target="blank" :href="item.webUrl" :alt="item.name">
@@ -326,7 +326,7 @@ export default {
         </div>
       </div>
     </template>
-    <div v-if="showPagination" class="gl-text-center gl-mt-5">
+    <div v-if="showPagination" class="gl-mt-5 gl-text-center">
       <gl-keyset-pagination
         v-if="showPagination"
         v-bind="pendingMembersPageInfo"

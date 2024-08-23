@@ -123,7 +123,7 @@ export default {
         <span class="gl-block gl-font-bold">
           {{ item.full_name }}
         </span>
-        <span class="gl-block gl-mt-1 gl-text-gray-300">
+        <span class="gl-mt-1 gl-block gl-text-gray-300">
           {{ item.full_path }}
         </span>
       </template>

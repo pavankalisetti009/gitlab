@@ -40,7 +40,7 @@ export default {
     <gl-form-group
       class="gl-mb-0"
       :label="$options.i18n.header"
-      label-class="gl-pb-2!"
+      label-class="!gl-pb-2"
       data-testid="roadmap-progress-tracking"
     >
       <gl-toggle
