@@ -88,7 +88,6 @@ describe('Saved tab', () => {
   const createComponentFactory =
     (mountFn = shallowMountExtended) =>
     (options = {}, glFeatures = {}) => {
-      router = createRouter();
       wrapper = mountFn(
         SavedTab,
         merge(
@@ -123,6 +122,11 @@ describe('Saved tab', () => {
       dastProfileRunMutation: jest.fn().mockResolvedValue(makeDastProfileRunResponse()),
       dastProfileDeleteMutation: jest.fn().mockResolvedValue(makeDastProfileDeleteResponse()),
     };
+    router = createRouter();
+    router.addRoute({
+      path: '/',
+      redirect: { name: 'tab', params: { tabId: 'all' } },
+    });
   });
 
   afterEach(() => {
