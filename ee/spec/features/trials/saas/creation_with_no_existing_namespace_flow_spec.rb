@@ -129,7 +129,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_success: false, button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(lead_result: lead_failure, button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_lead_form_with_errors
 
@@ -161,7 +161,7 @@ RSpec.describe 'Trial lead submission, group and trial creation', :saas_trial, :
       fill_in_trial_form_for_new_group
 
       # trial failure
-      submit_new_group_trial_selection_form(success: false, extra_params: new_group_attrs)
+      submit_new_group_trial_selection_form(result: trial_failure, extra_params: new_group_attrs)
 
       expect_to_be_on_namespace_selection_with_errors
 

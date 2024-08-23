@@ -48,7 +48,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_success: false, button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(lead_result: lead_failure, button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_lead_form_with_errors
 
@@ -70,7 +70,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       # trial failure
       submit_company_information_form(
-        with_trial: true, trial_success: false, button_text: 'Start free GitLab Ultimate trial'
+        with_trial: true, trial_result: trial_failure, button_text: 'Start free GitLab Ultimate trial'
       )
 
       expect_to_be_on_namespace_selection_with_errors
@@ -93,7 +93,7 @@ RSpec.describe 'Trial lead submission and creation with one eligible namespace',
 
       # trial failure
       submit_company_information_form(
-        with_trial: true, trial_success: false, button_text: 'Start free GitLab Ultimate trial'
+        with_trial: true, trial_result: trial_failure, button_text: 'Start free GitLab Ultimate trial'
       )
 
       expect_to_be_on_namespace_selection_with_errors

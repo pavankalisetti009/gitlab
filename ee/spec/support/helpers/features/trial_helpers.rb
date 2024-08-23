@@ -5,8 +5,6 @@ require 'support/helpers/listbox_helpers'
 module Features
   module TrialHelpers
     include ListboxHelpers
-    DUO_PRO_TRIAL = 'duo_pro_trial'
-    DUO_ENTERPRISE_TRIAL = 'duo_enterprise_trial'
 
     def expect_to_be_on_group_page(path: 'gitlab', name: 'gitlab')
       expect(page).to have_current_path("/#{path}?trial=true")
@@ -111,8 +109,12 @@ module Features
     end
 
     def submit_company_information_form(
-      trial_type: '', button_text: 'Continue', lead_success: true, trial_success: true, with_trial: false,
-      extra_params: {})
+      button_text: 'Continue',
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      with_trial: false,
+      extra_params: {}
+    )
       # lead
       trial_user_params = {
         company_name: form_data[:company_name],
@@ -130,55 +132,14 @@ module Features
         state: form_data.dig(:state, :name)
       }.merge(extra_params)
 
-      if trial_type == DUO_PRO_TRIAL
-        trial_user_params = trial_user_params.merge(
-          {
-            product_interaction: DUO_PRO_TRIAL,
-            preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-            opt_in: user.onboarding_status_email_opt_in
-          }
-        )
-      elsif trial_type == DUO_ENTERPRISE_TRIAL
-        trial_user_params = trial_user_params.merge(
-          {
-            product_interaction: DUO_ENTERPRISE_TRIAL,
-            preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
-            opt_in: user.onboarding_status_email_opt_in
-          }
-        )
-      end
-
-      lead_params = {
-        trial_user: trial_user_params
-      }
-
-      lead_result = if lead_success
-                      ServiceResponse.success
-                    else
-                      ServiceResponse.error(message: '_lead_fail_', reason: :lead_failed)
-                    end
-
-      create_lead_class =
-        case trial_type
-        when DUO_PRO_TRIAL
-          GitlabSubscriptions::Trials::CreateAddOnLeadService
-        when DUO_ENTERPRISE_TRIAL
-          GitlabSubscriptions::Trials::CreateAddOnLeadService
-        else
-          GitlabSubscriptions::CreateLeadService
-        end
-
-      expect_next_instance_of(create_lead_class) do |service|
-        expect(service).to receive(:execute).with(lead_params).and_return(lead_result)
+      expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
+        expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
       end
 
       # trial
       if with_trial
         stub_apply_trial(
-          namespace_id: group.id,
-          success: trial_success,
-          extra_params: extra_params.merge(existing_group_attrs),
-          trial_type: trial_type
+          namespace_id: group.id, result: trial_result, extra_params: extra_params.merge(existing_group_attrs)
         )
       end
 
@@ -187,37 +148,20 @@ module Features
       wait_for_requests
     end
 
-    def submit_trial_selection_form(success: true, extra_params: {}, trial_type: '')
+    def submit_trial_selection_form(result: ServiceResponse.success, extra_params: {})
       stub_apply_trial(
         namespace_id: group.id,
-        success: success,
-        extra_params: extra_with_glm_source(extra_params).merge(existing_group_attrs),
-        trial_type: trial_type
+        result: result,
+        extra_params: extra_with_glm_source(extra_params).merge(existing_group_attrs)
       )
 
-      button_text =
-        case trial_type
-        when DUO_PRO_TRIAL
-          'Activate my trial'
-        else
-          'Start your free trial'
-        end
-
-      click_button button_text
+      click_button 'Start your free trial'
     end
 
-    def submit_new_group_trial_selection_form(success: true, extra_params: {}, trial_type: '')
-      stub_apply_trial(success: success, extra_params: extra_with_glm_source(extra_params), trial_type: trial_type)
+    def submit_new_group_trial_selection_form(result: ServiceResponse.success, extra_params: {})
+      stub_apply_trial(result: result, extra_params: extra_with_glm_source(extra_params))
 
-      button_text =
-        case trial_type
-        when DUO_PRO_TRIAL
-          'Activate my trial'
-        else
-          'Start your free trial'
-        end
-
-      click_button button_text
+      click_button 'Start your free trial'
     end
 
     def extra_with_glm_source(extra_params)
@@ -243,16 +187,8 @@ module Features
       }
     end
 
-    def stub_apply_trial(trial_type: '', namespace_id: anything, success: true, extra_params: {})
-      appended_extra_params =
-        case trial_type
-        when DUO_PRO_TRIAL
-          {}
-        when DUO_ENTERPRISE_TRIAL
-          {}
-        else
-          { organization_id: anything }
-        end.merge(extra_params)
+    def stub_apply_trial(namespace_id: anything, result: ServiceResponse.success, extra_params: {})
+      appended_extra_params = { organization_id: anything }.merge(extra_params)
 
       trial_user_params = {
         namespace_id: namespace_id,
@@ -265,50 +201,136 @@ module Features
         uid: user.id
       }
 
-      # TODO: remove with duo_enterprise_trials cleanup
-      service_params[:user] = user if trial_type == DUO_PRO_TRIAL
-
-      trial_success = if success
-                        ServiceResponse.success
-                      else
-                        ServiceResponse.error(message: '_trial_fail_',
-                          reason: GitlabSubscriptions::Trials::BaseApplyTrialService::GENERIC_TRIAL_ERROR)
-                      end
-
-      apply_trial_class =
-        case trial_type
-        when DUO_PRO_TRIAL
-          GitlabSubscriptions::Trials::ApplyDuoProService
-        when DUO_ENTERPRISE_TRIAL
-          GitlabSubscriptions::Trials::ApplyDuoEnterpriseService
-        else
-          GitlabSubscriptions::Trials::ApplyTrialService
-        end
-
-      expect_next_instance_of(apply_trial_class, service_params) do |instance|
-        expect(instance).to receive(:execute).and_return(trial_success)
+      expect_next_instance_of(GitlabSubscriptions::Trials::ApplyTrialService, service_params) do |instance|
+        expect(instance).to receive(:execute).and_return(result)
       end
     end
 
-    def submit_duo_pro_trial_company_form(**kwargs)
-      submit_company_information_form(**kwargs, trial_type: DUO_PRO_TRIAL)
+    def submit_duo_pro_trial_company_form(
+      lead_result: ServiceResponse.success, trial_result: ServiceResponse.success, with_trial: false
+    )
+      # lead
+      trial_user_params = {
+        company_name: form_data[:company_name],
+        company_size: form_data[:company_size].delete(' '),
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone_number: form_data[:phone_number],
+        country: form_data.dig(:country, :id),
+        work_email: user.email,
+        uid: user.id,
+        setup_for_company: user.setup_for_company,
+        skip_email_confirmation: true,
+        gitlab_com_trial: true,
+        provider: 'gitlab',
+        state: form_data.dig(:state, :name),
+        product_interaction: 'duo_pro_trial',
+        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
+        opt_in: user.onboarding_status_email_opt_in
+      }
+
+      expect_next_instance_of(GitlabSubscriptions::Trials::CreateAddOnLeadService) do |service|
+        expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
+      end
+
+      # trial
+      stub_apply_duo_pro_trial(result: trial_result) if with_trial
+
+      click_button 'Continue'
+
+      wait_for_requests
     end
 
-    def submit_duo_enterprise_trial_company_form(**kwargs)
-      submit_company_information_form(**kwargs, trial_type: DUO_ENTERPRISE_TRIAL)
-    end
-
-    def submit_duo_pro_trial_selection_form(**kwargs)
-      submit_trial_selection_form(**kwargs, trial_type: DUO_PRO_TRIAL)
-    end
-
-    def submit_duo_enterprise_trial_selection_form(success: true)
-      stub_apply_trial(
+    def stub_apply_duo_pro_trial(result: ServiceResponse.success, extra_params: {})
+      trial_user_params = {
         namespace_id: group.id,
-        success: success,
-        extra_params: existing_group_attrs,
-        trial_type: DUO_ENTERPRISE_TRIAL
-      )
+        gitlab_com_trial: true,
+        sync_to_gl: true
+      }.merge(existing_group_attrs).merge(extra_params)
+
+      service_params = {
+        trial_user_information: trial_user_params,
+        uid: user.id,
+        user: user # TODO: remove with duo_enterprise_trials cleanup
+      }
+
+      expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoProService, service_params) do |instance|
+        expect(instance).to receive(:execute).and_return(result)
+      end
+    end
+
+    def stub_apply_duo_enterprise_trial(result: ServiceResponse.success, extra_params: {})
+      trial_user_params = {
+        namespace_id: group.id,
+        gitlab_com_trial: true,
+        sync_to_gl: true
+      }.merge(existing_group_attrs).merge(extra_params)
+
+      service_params = {
+        trial_user_information: trial_user_params,
+        uid: user.id
+      }
+
+      expect_next_instance_of(GitlabSubscriptions::Trials::ApplyDuoEnterpriseService, service_params) do |instance|
+        expect(instance).to receive(:execute).and_return(result)
+      end
+    end
+
+    def trial_failure
+      ServiceResponse
+        .error(message: '_trial_fail_', reason: GitlabSubscriptions::Trials::BaseApplyTrialService::GENERIC_TRIAL_ERROR)
+    end
+
+    def lead_failure
+      ServiceResponse.error(message: '_lead_fail_', reason: :lead_failed)
+    end
+
+    def submit_duo_enterprise_trial_company_form(
+      lead_result: ServiceResponse.success,
+      trial_result: ServiceResponse.success,
+      with_trial: false,
+      button_text: 'Continue'
+    )
+      # lead
+      trial_user_params = {
+        company_name: form_data[:company_name],
+        company_size: form_data[:company_size].delete(' '),
+        first_name: user.first_name,
+        last_name: user.last_name,
+        phone_number: form_data[:phone_number],
+        country: form_data.dig(:country, :id),
+        work_email: user.email,
+        uid: user.id,
+        setup_for_company: user.setup_for_company,
+        skip_email_confirmation: true,
+        gitlab_com_trial: true,
+        provider: 'gitlab',
+        state: form_data.dig(:state, :name),
+        product_interaction: 'duo_enterprise_trial',
+        preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
+        opt_in: user.onboarding_status_email_opt_in
+      }
+
+      expect_next_instance_of(GitlabSubscriptions::Trials::CreateAddOnLeadService) do |service|
+        expect(service).to receive(:execute).with({ trial_user: trial_user_params }).and_return(lead_result)
+      end
+
+      # trial
+      stub_apply_duo_enterprise_trial(result: trial_result) if with_trial
+
+      click_button button_text
+
+      wait_for_requests
+    end
+
+    def submit_duo_pro_trial_selection_form(result: ServiceResponse.success)
+      stub_apply_duo_pro_trial(result: result, extra_params: { trial_entity: 'company' })
+
+      click_button 'Activate my trial'
+    end
+
+    def submit_duo_enterprise_trial_selection_form(result: ServiceResponse.success)
+      stub_apply_duo_enterprise_trial(result: result)
 
       click_button 'Activate my trial'
     end
