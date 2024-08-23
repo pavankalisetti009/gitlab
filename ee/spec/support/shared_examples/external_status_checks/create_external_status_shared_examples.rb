@@ -25,7 +25,7 @@ RSpec.shared_examples_for 'create external status services' do
     end
 
     it 'responds with the expected errors' do
-      expect(execute.message).to eq('Failed to create rule')
+      expect(execute.message).to eq('Failed to create external status check')
       expect(execute.payload[:errors]).to contain_exactly 'Not allowed'
     end
   end

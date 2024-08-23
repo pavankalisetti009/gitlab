@@ -15,7 +15,7 @@ module ExternalStatusChecks
       if with_audit_logged(rule, 'create_status_check') { rule.save }
         ServiceResponse.success(payload: { rule: rule })
       else
-        ServiceResponse.error(message: 'Failed to create rule', payload: { errors: rule.errors.full_messages }, http_status: :unprocessable_entity)
+        ServiceResponse.error(message: 'Failed to create external status check', payload: { errors: rule.errors.full_messages }, http_status: :unprocessable_entity)
       end
     end
 
@@ -24,7 +24,7 @@ module ExternalStatusChecks
     end
 
     def access_denied_error
-      ServiceResponse.error(message: 'Failed to create rule', payload: { errors: ['Not allowed'] }, reason: :access_denied)
+      ServiceResponse.error(message: 'Failed to create external status check', payload: { errors: ['Not allowed'] }, reason: :access_denied)
     end
   end
 end

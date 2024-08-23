@@ -51,6 +51,20 @@ RSpec.describe BranchRules::ExternalStatusChecks::DestroyService, feature_catego
     end
   end
 
+  describe 'when the service raises a Gitlab::Access::AccessDeniedError' do
+    before do
+      allow_next_instance_of(described_class) do |instance|
+        allow(instance).to receive(:authorized?).and_return(false)
+      end
+    end
+
+    it 'returns the corresponding error response' do
+      expect(execute.message).to eq('Failed to destroy external status check')
+      expect(execute.payload[:errors]).to contain_exactly('Not allowed')
+      expect(execute.reason).to eq(:access_denied)
+    end
+  end
+
   context 'when the service execution fails' do
     context 'when id parameter is missing' do
       let(:params) { { branch_rule_id: branch_rule.id } }

@@ -3,20 +3,10 @@
 module BranchRules
   module ExternalStatusChecks
     class DestroyService < BaseService
-      def execute(skip_authorization: false)
-        super
-      rescue Gitlab::Access::AccessDeniedError
-        ServiceResponse.error(
-          message: 'Failed to destroy external status check',
-          payload: { errors: ['Not allowed'] },
-          reason: :access_denied
-        )
-      end
-
       private
 
-      def authorized?
-        can?(current_user, :update_branch_rule, branch_rule)
+      def action_name
+        'destroy'
       end
 
       def execute_on_branch_rule
@@ -30,14 +20,6 @@ module BranchRules
           payload: { errors: ['Not found'] },
           reason: :not_found
         )
-      end
-
-      def execute_on_all_branches_rule
-        ServiceResponse.error(message: 'All branch rules cannot configure external status checks')
-      end
-
-      def execute_on_all_protected_branches_rule
-        ServiceResponse.error(message: 'All protected branch rules cannot configure external status checks')
       end
 
       def external_status_check
