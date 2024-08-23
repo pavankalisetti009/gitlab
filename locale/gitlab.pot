@@ -1610,6 +1610,9 @@ msgstr ""
 msgid "(Unlimited compute minutes)"
 msgstr ""
 
+msgid "(code expired)"
+msgstr ""
+
 msgid "(deleted)"
 msgstr ""
 
@@ -58612,7 +58615,7 @@ msgstr ""
 msgid "UserProfile|Edit profile"
 msgstr ""
 
-msgid "UserProfile|Email verification last sent at:"
+msgid "UserProfile|Email confirmation code last sent at:"
 msgstr ""
 
 msgid "UserProfile|Explore public groups to find projects to contribute to"
@@ -58640,6 +58643,9 @@ msgid "UserProfile|Info"
 msgstr ""
 
 msgid "UserProfile|Join or create a group to start contributing by commenting on issues or submitting merge requests!"
+msgstr ""
+
+msgid "UserProfile|Locked account email verification code last sent at:"
 msgstr ""
 
 msgid "UserProfile|No activities found"
