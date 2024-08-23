@@ -10,7 +10,43 @@ module Sbom
         self.unique_by = %i[uuid].freeze
         self.uses = %i[id uuid].freeze
 
+        CONTAINER_IMAGE_PREFIX = "container-image:"
         PIPELINE_ATTRIBUTES_KEYS = %i[pipeline_id commit_sha].freeze
+        VulnerabilityData = Struct.new(
+          'VulnerabilityData',
+          :vulnerabilities_info,
+          :occurrence_map,
+          :project,
+          :key) do
+          include Gitlab::Utils::StrongMemoize
+
+          def count
+            return occurrence_map.vulnerability_count unless deprecation_flag_enabled?
+
+            vulnerabilities_info.dig(key, :vulnerability_count) || 0
+          end
+
+          def highest_severity
+            return occurrence_map.highest_severity unless deprecation_flag_enabled?
+
+            vulnerabilities_info.dig(key, :highest_severity)
+          end
+
+          private
+
+          def key
+            @key ||= [
+              occurrence_map.name,
+              occurrence_map.version,
+              occurrence_map.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)
+            ]
+          end
+
+          def deprecation_flag_enabled?
+            ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+          end
+          strong_memoize_attr :deprecation_flag_enabled?
+        end
 
         private
 
@@ -30,6 +66,12 @@ module Sbom
           occurrence_maps.filter_map do |occurrence_map|
             uuid = occurrence_map.uuid
 
+            vulnerability_data = VulnerabilityData.new(
+              vulnerabilities_info,
+              occurrence_map,
+              project
+            )
+
             new_attributes = {
               project_id: project.id,
               pipeline_id: pipeline.id,
@@ -43,8 +85,8 @@ module Sbom
               input_file_path: occurrence_map.input_file_path,
               licenses: licenses.fetch(occurrence_map.report_component, []),
               component_name: occurrence_map.name,
-              highest_severity: occurrence_map.highest_severity,
-              vulnerability_count: occurrence_map.vulnerability_count,
+              highest_severity: vulnerability_data.highest_severity,
+              vulnerability_count: vulnerability_data.count,
               traversal_ids: project.namespace.traversal_ids,
               archived: project.archived,
               ancestors: occurrence_map.ancestors
@@ -58,6 +100,63 @@ module Sbom
               new_attributes
             end
           end
+        end
+
+        def vulnerabilities_info
+          @vulnerabilities_info ||= build_vulnerabilities_info
+        end
+
+        def build_vulnerabilities_info
+          return {} unless ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+
+          # rubocop:disable CodeReuse/ActiveRecord -- highly customized query
+          occurrence_maps_values = occurrence_maps.map do |om|
+            [om.name, om.version, om.input_file_path&.delete_prefix(CONTAINER_IMAGE_PREFIX)]
+          end
+
+          as_values = Arel::Nodes::ValuesList.new(occurrence_maps_values).to_sql
+
+          # We don't use Gitlab::SQL::CTE (or Arel directly) because
+          # this table is coming from a VALUES list
+          cte_sql = "WITH occurrence_maps (name, version, path) AS (#{as_values})"
+
+          select_sql = <<-SQL
+             occurrence_maps.name,
+             occurrence_maps.version,
+             occurrence_maps.path,
+             MAX(vulnerability_occurrences.severity) as highest_severity,
+             COUNT(vulnerability_occurrences.id) as vulnerability_count
+          SQL
+
+          join_sql = <<-SQL
+            JOIN occurrence_maps
+            ON occurrence_maps.name = (vulnerability_occurrences.location -> 'dependency' -> 'package' ->> 'name')::text
+            AND occurrence_maps.version = (vulnerability_occurrences.location -> 'dependency' ->> 'version')::text
+            AND occurrence_maps.path = COALESCE(
+              vulnerability_occurrences.location ->> 'file',
+              vulnerability_occurrences.location ->> 'image'
+            )::text
+          SQL
+
+          query = ::Vulnerabilities::Finding
+                    .select(select_sql)
+                    .joins(join_sql)
+                    .by_report_types(%i[container_scanning dependency_scanning])
+                    .by_projects(project)
+                    .group("occurrence_maps.name, occurrence_maps.version, occurrence_maps.path")
+
+          full_query = [cte_sql, query.to_sql].join("\n")
+
+          results = ::Vulnerabilities::Finding.connection.execute(full_query)
+          results.each_with_object({}) do |row, result|
+            key = row.values_at('name', 'version', 'path')
+            value = {
+              highest_severity: row['highest_severity'],
+              vulnerability_count: row['vulnerability_count']
+            }
+            result[key] = value
+          end
+          # rubocop:enable CodeReuse/ActiveRecord
         end
 
         def uuids
@@ -137,9 +236,9 @@ module Sbom
             )
             finder.fetch.each_with_object({}) do |result, hash|
               licenses = result
-                .fetch(:licenses, [])
-                .filter_map { |license| map_from(license) }
-                .sort_by { |license| license[:spdx_identifier] }
+                           .fetch(:licenses, [])
+                           .filter_map { |license| map_from(license) }
+                           .sort_by { |license| license[:spdx_identifier] }
               hash[key_for(result)] = licenses if licenses.present?
             end
           end
