@@ -326,8 +326,9 @@ To enable and configure SAST with customizations:
 
 1. On the left sidebar, select **Search or go to** and find your project.
 1. Select **Secure > Security configuration**.
-1. If the project does not have a `.gitlab-ci.yml` file, select **Enable SAST** in the Static
-   Application Security Testing (SAST) row, otherwise select **Configure SAST**.
+1. If the latest pipeline for the default branch of the project has completed
+   and produced valid `SAST` artifacts, select **Configure SAST**, otherwise
+   select **Enable SAST** in the Static Application Security Testing (SAST) row.
 1. Enter the custom SAST values.
 
    Custom values are stored in the `.gitlab-ci.yml` file. For CI/CD variables not in the SAST
