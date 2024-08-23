@@ -55,7 +55,7 @@ describe('DuoAvailabilityForm', () => {
     it('disables radio buttons', () => {
       const radios = wrapper.findAllComponents(GlFormRadio);
       radios.wrappers.forEach((radio) => {
-        expect(radio.attributes('disabled')).toBe('true');
+        expect(radio.attributes().disabled).toBe('true');
       });
     });
 

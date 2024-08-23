@@ -159,9 +159,7 @@ describe('ee/deployments/components/deployment_approvals.vue', () => {
       findCommentBox().vm.$emit('input', new Array(251).fill('a').join(''));
       await nextTick();
 
-      findButtons().wrappers.forEach((button) =>
-        expect(button.attributes('disabled')).toBe('true'),
-      );
+      findButtons().wrappers.forEach((button) => expect(button.attributes().disabled).toBe('true'));
     });
 
     it.each`

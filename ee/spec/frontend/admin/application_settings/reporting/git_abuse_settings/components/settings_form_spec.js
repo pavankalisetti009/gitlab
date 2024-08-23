@@ -118,7 +118,7 @@ describe('Git abuse rate limit settings form component', () => {
 
         expect(findNumberOfReposInput().classes('is-invalid')).toBe(!valid);
 
-        expect(findSubmitButton().attributes('disabled')).toBe(expectedButtonState);
+        expect(findSubmitButton().attributes().disabled).toBe(expectedButtonState);
       },
     );
   });
@@ -173,7 +173,7 @@ describe('Git abuse rate limit settings form component', () => {
 
         expect(findReportingTimePeriodInput().classes('is-invalid')).toBe(!valid);
 
-        expect(findSubmitButton().attributes('disabled')).toBe(expectedButtonState);
+        expect(findSubmitButton().attributes().disabled).toBe(expectedButtonState);
       },
     );
   });
