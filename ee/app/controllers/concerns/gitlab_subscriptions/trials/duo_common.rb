@@ -50,7 +50,7 @@ module GitlabSubscriptions
 
       def success_doc_link
         assign_doc_url = helpers.help_page_path(
-          'subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-pro-seats'
+          'subscriptions/subscription-add-ons', anchor: 'assign-gitlab-duo-seats'
         )
         assign_link = helpers.link_to('', assign_doc_url, target: '_blank', rel: 'noopener noreferrer')
         tag_pair(assign_link, :assign_link_start, :assign_link_end)

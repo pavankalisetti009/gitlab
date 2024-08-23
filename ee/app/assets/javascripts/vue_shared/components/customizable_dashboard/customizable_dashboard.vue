@@ -357,7 +357,7 @@ export default {
   VSD_DOCUMENTATION_LINK: helpPagePath('user/analytics/value_streams_dashboard'),
   AI_IMPACT_DOCUMENTATION_LINK: helpPagePath('user/analytics/ai_impact_analytics'),
   DUO_PRO_SUBSCRIPTION_ADD_ON_LINK: helpPagePath('subscriptions/subscription-add-ons', {
-    anchor: 'assign-gitlab-duo-pro-seats',
+    anchor: 'assign-gitlab-duo-seats',
   }),
 };
 </script>
