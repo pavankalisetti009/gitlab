@@ -6,6 +6,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
+import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
 import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
 import {
   generateMockGroups,
@@ -43,13 +44,17 @@ describe('GroupProjectsDropdown', () => {
     return {
       getGroups: jest.fn().mockResolvedValue({
         data: {
-          group: {
-            id: '1',
-            name: 'gitlab-policies',
-            descendantGroups: {
-              nodes: groups,
-              pageInfo: { ...defaultPageInfo, hasNextPage },
-            },
+          groups: {
+            nodes: groups,
+            pageInfo: { ...defaultPageInfo, hasNextPage },
+          },
+        },
+      }),
+      getProjects: jest.fn().mockResolvedValue({
+        data: {
+          projects: {
+            nodes,
+            pageInfo: { ...defaultPageInfo, hasNextPage },
           },
         },
       }),
@@ -75,6 +80,7 @@ describe('GroupProjectsDropdown', () => {
     return createMockApollo([
       [getGroupProjects, requestHandlers.getGroupProjects],
       [getGroups, requestHandlers.getGroups],
+      [getProjects, requestHandlers.getProjects],
     ]);
   };
 
@@ -295,6 +301,19 @@ describe('GroupProjectsDropdown', () => {
           expect(requestHandlers.getGroups).toHaveBeenCalledTimes(0);
         });
 
+        it('loads all projects when property is set to true', async () => {
+          createComponent({
+            propsData: { loadAllProjects: true },
+          });
+          await waitForPromises();
+
+          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
+          expect(requestHandlers.getProjects).toHaveBeenCalledWith({
+            projectIds: null,
+            search: '',
+          });
+        });
+
         it.each`
           hasNextPage | expectedText
           ${true}     | ${'1, 2'}
@@ -469,7 +488,6 @@ describe('GroupProjectsDropdown', () => {
 
         expect(requestHandlers.getGroups).toHaveBeenCalledWith({
           search: '4',
-          fullPath: GROUP_FULL_PATH,
         });
         expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
 

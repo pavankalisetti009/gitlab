@@ -1,18 +1,14 @@
 #import "~/graphql_shared/fragments/page_info.fragment.graphql"
 
-query getGroupsForPolicies($fullPath: ID!, $search: String, $after: String) {
-  group(fullPath: $fullPath) {
-    id
-    name
-    descendantGroups(search: $search, after: $after, first: 100) {
-      nodes {
-        id
-        name
-        fullPath
-      }
-      pageInfo {
-        ...PageInfo
-      }
+query getGroupsForPolicies($search: String, $after: String) {
+  groups(search: $search, after: $after, first: 100) {
+    nodes {
+      id
+      name
+      fullPath
+    }
+    pageInfo {
+      ...PageInfo
     }
   }
 }
