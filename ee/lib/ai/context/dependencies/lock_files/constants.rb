@@ -6,6 +6,7 @@ module Ai
       module LockFiles
         module Constants
           LOCK_FILE_CLASSES = [
+            LockFiles::GoModules,
             LockFiles::RubyGems
           ].freeze
         end
