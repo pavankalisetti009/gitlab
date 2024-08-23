@@ -188,7 +188,7 @@ export default {
       />
     </gl-form-group>
 
-    <div v-if="!disableSubmitButton" class="gl-font-sm gl-text-secondary">
+    <div v-if="!disableSubmitButton" class="gl-text-sm gl-text-secondary">
       <gl-icon name="information-o" :size="12" class="gl-mt-2" />
       <gl-sprintf v-if="sendCodeAllowed" :message="$options.i18n.noCode">
         <template #codeLink="{ content }">
@@ -229,7 +229,7 @@ export default {
     <gl-button
       type="submit"
       variant="confirm"
-      class="!gl-w-full gl-mt-5"
+      class="gl-mt-5 !gl-w-full"
       :disabled="isSubmitButtonDisabled"
       :loading="isLoading"
     >

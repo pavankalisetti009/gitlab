@@ -126,7 +126,7 @@ export default {
             category="primary"
             variant="confirm"
             data-testid="purchase-more-storage"
-            class="gl-absolute gl-top-4 gl-right-4"
+            class="gl-absolute gl-right-4 gl-top-4"
           >
             {{ $options.i18n.BUY_STORAGE }}
           </gl-button>
@@ -136,13 +136,13 @@ export default {
             category="primary"
             variant="confirm"
             data-testid="purchase-more-storage"
-            class="gl-absolute gl-top-4 gl-right-4"
+            class="gl-absolute gl-right-4 gl-top-4"
           >
             {{ $options.i18n.BUY_STORAGE }}
           </gl-button>
         </template>
       </div>
-      <div class="gl-text-size-h-display gl-font-bold gl-leading-1 gl-my-3">
+      <div class="gl-my-3 gl-text-size-h-display gl-font-bold gl-leading-1">
         <number-to-human-size
           label-class="gl-text-lg"
           :value="Number(totalRepositorySizeExcess)"

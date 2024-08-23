@@ -318,16 +318,16 @@ export default {
   <div class="gl-flex gl-justify-center">
     <div class="gl-max-w-88">
       <h2 class="gl-text-center">{{ title }}</h2>
-      <div class="gl-max-w-62 gl-m-auto">
+      <div class="gl-m-auto gl-max-w-62">
         <p
           v-if="!hasEligibleGroups"
           data-testid="group-description"
-          class="gl-mt-7 gl-mb-0 gl-text-center"
+          class="gl-mb-0 gl-mt-7 gl-text-center"
         >
           {{ $options.i18n.groupDescription }}
         </p>
       </div>
-      <gl-card class="gl-max-w-62 gl-mx-auto gl-p-5 gl-mt-7">
+      <gl-card class="gl-mx-auto gl-mt-7 gl-max-w-62 gl-p-5">
         <gl-alert v-if="errorMessage" variant="danger" :dismissible="false" class="gl-mb-5">
           <span v-safe-html="errorMessage"></span>
         </gl-alert>
@@ -353,12 +353,12 @@ export default {
               >
                 <template #footer>
                   <div
-                    class="gl-border-t-solid gl-border-t-1 gl-border-t-gray-200 gl-flex gl-flex-col gl-p-2 gl-pt-0"
+                    class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-200 gl-p-2 gl-pt-0 gl-border-t-solid"
                   >
                     <gl-button
                       category="tertiary"
                       block
-                      class="!gl-justify-start !gl-mt-2"
+                      class="!gl-mt-2 !gl-justify-start"
                       data-testid="show-new-group-form-button"
                       @click="showNewGroupForm"
                       >{{ $options.i18n.groupSelection.newGroupOption }}</gl-button
@@ -391,11 +391,11 @@ export default {
             <template #after(groupName)>
               <p class="gl-text-center">{{ $options.i18n.groupPath.urlHeader }}</p>
 
-              <p class="gl-text-center gl-font-monospace gl-break-words" data-testid="group-url">
+              <p class="gl-break-words gl-text-center gl-font-monospace" data-testid="group-url">
                 {{ rootUrl }}{{ groupSlug }}
               </p>
 
-              <p class="gl-text-secondary gl-text-center gl-mb-5">
+              <p class="gl-mb-5 gl-text-center gl-text-secondary">
                 {{ $options.i18n.groupPath.urlFooter }}
               </p>
             </template>

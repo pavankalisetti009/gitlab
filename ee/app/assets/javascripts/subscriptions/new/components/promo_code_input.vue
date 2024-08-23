@@ -79,7 +79,7 @@ export default {
   <div>
     <gl-form-group
       :label="$options.i18n.label"
-      class="gl-mt-6 gl-mb-4"
+      class="gl-mb-4 gl-mt-6"
       :invalid-feedback="promoCodeError"
       :state="isPromoCodeValid"
     >
@@ -106,7 +106,7 @@ export default {
       <gl-sprintf :message="$options.PROMO_CODE_SUCCESS_MESSAGE">
         <template #link="{ content }">
           <gl-link
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             :href="$options.PROMO_CODE_TERMS_LINK"
             target="_blank"
             >{{ content }}</gl-link

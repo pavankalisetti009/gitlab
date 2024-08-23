@@ -127,15 +127,15 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="order-summary gl-display-flex gl-flex-direction-column gl-flex-grow-1">
+  <gl-card class="order-summary gl-flex gl-grow gl-flex-col">
     <div class="lg:gl-hidden">
       <h4
         v-gl-collapse-toggle.summary-details
-        class="gl-display-flex gl-justify-content-space-between gl-align-items-center gl-font-lg gl-my-0"
+        class="gl-my-0 gl-flex gl-items-center gl-justify-between gl-text-lg"
       >
-        <div class="gl-display-flex gl-align-items-center">
-          <gl-icon v-if="summaryDetailsAreVisible" name="chevron-down" class="gl-flex-shrink-0" />
-          <gl-icon v-else name="chevron-right" class="gl-flex-shrink-0" />
+        <div class="gl-flex gl-items-center">
+          <gl-icon v-if="summaryDetailsAreVisible" name="chevron-down" class="gl-shrink-0" />
+          <gl-icon v-else name="chevron-right" class="gl-shrink-0" />
           <span class="gl-ml-2" data-testid="title">{{ titleWithName }}</span>
         </div>
         <span class="gl-ml-3" data-testid="amount">
@@ -163,7 +163,7 @@ export default {
       </gl-collapse>
     </div>
     <div class="gl-hidden lg:gl-block">
-      <h4 class="gl-my-0 gl-font-lg">
+      <h4 class="gl-my-0 gl-text-lg">
         {{ titleWithName }}
       </h4>
       <summary-details

@@ -75,7 +75,7 @@ export default {
           </gl-link>
         </template>
       </gl-table-lite>
-      <p class="gl-text-center gl-py-5">
+      <p class="gl-py-5 gl-text-center">
         {{
           s__(
             'ProductAnalytics|This table excludes projects that do not have product analytics onboarded.',

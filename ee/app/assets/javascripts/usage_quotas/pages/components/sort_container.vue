@@ -47,7 +47,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-gap-4 gl-items-center">
+  <div class="gl-flex gl-items-center gl-gap-4">
     <label for="sort" class="gl-m-0 gl-text-nowrap">{{ __('Sort by') }}</label>
     <gl-sorting
       id="sort"

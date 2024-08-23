@@ -207,7 +207,7 @@ export default {
         <gl-disclosure-dropdown
           v-if="canEditTestCase"
           data-testid="actions-dropdown"
-          class="md:gl-hidden gl-ml-auto"
+          class="gl-ml-auto md:gl-hidden"
           placement="bottom-end"
           category="secondary"
           :toggle-text="__('Options')"
@@ -244,7 +244,7 @@ export default {
           category="secondary"
           variant="confirm"
           class="md:gl-inline-block"
-          :class="{ 'gl-hidden': canEditTestCase, 'gl-flex-grow-1': !canEditTestCase }"
+          :class="{ 'gl-hidden': canEditTestCase, 'gl-grow': !canEditTestCase }"
           :href="testCaseNewPath"
           >{{ __('New test case') }}</gl-button
         >

@@ -170,7 +170,7 @@ export default {
 
 <template>
   <div
-    class="gl-py-5 gl-px-3 gl-bg-gray-10 gl-border-b-1 gl-border-b-solid gl-border-t-1 gl-border-t-solid gl-border-gray-100"
+    class="gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
   >
     <filtered-search
       recent-searches-storage-key="recent-tracing-filter-search"
@@ -198,7 +198,7 @@ export default {
         @onDateRangeSelected="onDateRangeSelected"
       />
 
-      <div class="gl-text-secondary gl-align-self-center">
+      <div class="gl-self-center gl-text-secondary">
         <gl-icon
           v-tooltip="$options.i18n.dateRangeLimitInfoMessage"
           name="information-o"

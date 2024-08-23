@@ -140,7 +140,7 @@ export default {
           <rect width="240" height="10" x="0" y="40" rx="4" />
         </gl-skeleton-loader>
       </div>
-      <div class="gl-w-full gl-mt-5">
+      <div class="gl-mt-5 gl-w-full">
         <gl-skeleton-loader :height="16" :width="1248">
           <rect x="0" y="0" rx="12" ry="12" width="1248" height="16" />
         </gl-skeleton-loader>
@@ -149,11 +149,11 @@ export default {
     <template v-else>
       <div class="gl-flex gl-justify-between">
         <div>
-          <h4 class="gl-text-lg gl-mb-3 gl-mt-0">{{ $options.i18n.title }}</h4>
+          <h4 class="gl-mb-3 gl-mt-0 gl-text-lg">{{ $options.i18n.title }}</h4>
           <p>{{ $options.i18n.description }}</p>
         </div>
         <p
-          class="gl-m-0 gl-text-size-h-display gl-font-bold gl-whitespace-nowrap"
+          class="gl-m-0 gl-whitespace-nowrap gl-text-size-h-display gl-font-bold"
           data-testid="total-egress"
         >
           {{ totalEgressCombinedHumanSize }}
@@ -175,7 +175,7 @@ export default {
         <div v-else class="gl-flex gl-flex-row" data-testid="transfer-type-column">
           <gl-icon :name="icon" class="gl-mr-4 gl-shrink-0" />
           <div>
-            <p class="gl-font-bold gl-mb-0">
+            <p class="gl-mb-0 gl-font-bold">
               {{ label }}
               <gl-link :href="helpPath" target="_blank">
                 <gl-icon name="question-o" :size="12" />

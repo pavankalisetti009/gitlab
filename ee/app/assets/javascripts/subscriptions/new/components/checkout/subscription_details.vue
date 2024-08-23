@@ -321,7 +321,7 @@ export default {
     <template #body>
       <div
         data-testid="subscription-loading-container"
-        class="gl-flex gl-h-200! gl-justify-content-center gl-align-items-center gl-flex-direction-column"
+        class="gl-h-200! gl-flex gl-flex-col gl-items-center gl-justify-center"
       >
         <gl-loading-icon v-if="true" size="lg" />
         <span>{{ $options.i18n.loadingText }}</span>
@@ -405,7 +405,7 @@ export default {
         <gl-form-group
           v-if="shouldDisableNumberOfUsers"
           ref="company-link"
-          class="label gl-mb-0 ml-3 align-self-end"
+          class="label ml-3 align-self-end gl-mb-0"
         >
           <gl-sprintf :message="$options.i18n.needMoreUsersLink">
             <template #company>

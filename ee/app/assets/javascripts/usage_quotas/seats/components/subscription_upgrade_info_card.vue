@@ -50,10 +50,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-bg-white gl-border-1 gl-border-blue-300 gl-border-solid gl-p-6 gl-rounded-base">
+  <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-blue-300 gl-bg-white gl-p-6">
     <div class="gl-flex gl-flex-col md:gl-flex-row">
-      <div class="gl-mb-3 md:gl-mb-0 md:gl-mr-5 sm:gl-mr-0">
-        <p class="gl-font-bold gl-mb-3" data-testid="title">
+      <div class="gl-mb-3 sm:gl-mr-0 md:gl-mb-0 md:gl-mr-5">
+        <p class="gl-mb-3 gl-font-bold" data-testid="title">
           {{ title }}
         </p>
         <p class="gl-m-0" data-testid="description">

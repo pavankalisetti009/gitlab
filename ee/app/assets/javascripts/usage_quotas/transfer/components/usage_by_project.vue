@@ -75,7 +75,7 @@ export default {
 
 <template>
   <div class="gl-mt-5">
-    <h4 class="gl-text-lg gl-mb-5">{{ $options.i18n.USAGE_BY_PROJECT_HEADER }}</h4>
+    <h4 class="gl-mb-5 gl-text-lg">{{ $options.i18n.USAGE_BY_PROJECT_HEADER }}</h4>
     <gl-table :fields="$options.fields" :items="items">
       <template #cell(project)="{ item: { id, avatarUrl, webUrl, name, nameWithNamespace } }">
         <div v-if="loading" class="gl-w-20">
@@ -105,7 +105,7 @@ export default {
         <span v-else data-testid="transfer-data-used">{{ dataUsed }}</span>
       </template>
     </gl-table>
-    <div v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage" class="gl-text-center gl-mt-5">
+    <div v-if="pageInfo.hasNextPage || pageInfo.hasPreviousPage" class="gl-mt-5 gl-text-center">
       <gl-keyset-pagination
         v-bind="pageInfo"
         @prev="$emit('prev', $event)"

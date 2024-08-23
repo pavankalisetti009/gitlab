@@ -84,12 +84,12 @@ export default {
 <template>
   <gl-form :action="submitPath" method="post" @submit="onSubmit">
     <input :value="$options.csrf.token" type="hidden" name="authenticity_token" />
-    <div class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row gl-mt-5">
+    <div class="gl-mt-5 gl-flex gl-flex-col sm:gl-flex-row">
       <gl-form-group
         :label="$options.i18n.firstNameLabel"
         label-size="sm"
         label-for="first_name"
-        class="gl-mr-5 gl-w-full gl-sm-w-half"
+        class="gl-mr-5 gl-w-full sm:gl-w-1/2"
       >
         <gl-form-input
           id="first_name"
@@ -103,7 +103,7 @@ export default {
         :label="$options.i18n.lastNameLabel"
         label-size="sm"
         label-for="last_name"
-        class="gl-w-full gl-sm-w-half"
+        class="gl-w-full sm:gl-w-1/2"
       >
         <gl-form-input
           id="last_name"

@@ -437,7 +437,7 @@ export default {
     </gl-alert>
     <div
       v-if="isAnyUserSelected"
-      class="gl-flex gl-mt-5 gl-bg-gray-10 gl-p-5 gl-items-center gl-justify-between"
+      class="gl-mt-5 gl-flex gl-items-center gl-justify-between gl-bg-gray-10 gl-p-5"
     >
       <span v-safe-html="pluralisedSelectedUsers" data-testid="selected-users-summary"></span>
       <div class="gl-flex gl-gap-3">
@@ -540,7 +540,7 @@ export default {
         </span>
       </template>
     </gl-table>
-    <div v-if="showPagination" class="gl-flex gl-justify-center gl-mt-5">
+    <div v-if="showPagination" class="gl-mt-5 gl-flex gl-justify-center">
       <gl-keyset-pagination v-bind="pageInfo" @prev="prevPage" @next="nextPage" />
     </div>
 

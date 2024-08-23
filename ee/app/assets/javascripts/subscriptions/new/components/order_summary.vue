@@ -199,13 +199,11 @@ export default {
 <template>
   <gl-card
     v-if="!isGroupSelected || isSelectedGroupPresent"
-    class="order-summary gl-display-flex gl-flex-direction-column gl-flex-grow-1"
+    class="order-summary gl-flex gl-grow gl-flex-col"
   >
     <div class="lg:gl-hidden">
-      <h4
-        class="gl-display-flex gl-justify-content-space-between gl-align-items-center gl-font-lg gl-my-0"
-      >
-        <div class="gl-display-flex gl-align-items-center">
+      <h4 class="gl-my-0 gl-flex gl-items-center gl-justify-between gl-text-lg">
+        <div class="gl-flex gl-items-center">
           <span class="gl-ml-2">{{ titleWithName }}</span>
         </div>
         <gl-loading-icon v-if="isLoading" inline size="sm" class="gl-my-auto gl-ml-3" />
@@ -225,7 +223,7 @@ export default {
       </summary-details>
     </div>
     <div class="gl-hidden lg:gl-block" data-testid="order-summary">
-      <h4 class="gl-my-0 gl-font-lg" data-testid="title">{{ titleWithName }}</h4>
+      <h4 class="gl-my-0 gl-text-lg" data-testid="title">{{ titleWithName }}</h4>
       <summary-details class="gl-mt-6">
         <template v-if="isEligibleToUsePromoCode" #promo-code>
           <promo-code-input

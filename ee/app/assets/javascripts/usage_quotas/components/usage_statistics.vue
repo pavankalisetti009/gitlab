@@ -43,9 +43,9 @@ export default {
 
 <template>
   <div>
-    <section class="gl-flex gl-justify-between gl-mb-3">
+    <section class="gl-mb-3 gl-flex gl-justify-between">
       <section>
-        <p v-if="usageValue" class="gl-text-size-h-display gl-font-bold gl-mb-3">
+        <p v-if="usageValue" class="gl-mb-3 gl-text-size-h-display gl-font-bold">
           <span data-testid="usage-value">{{ usageValue }}</span>
           <span v-if="usageUnit" data-testid="usage-unit" class="gl-text-lg">{{ usageUnit }}</span>
           <span v-if="totalValue">

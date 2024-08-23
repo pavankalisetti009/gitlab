@@ -133,7 +133,7 @@ export default {
 
 <template>
   <section>
-    <div class="gl-bg-gray-10 gl-p-5 gl-flex">
+    <div class="gl-flex gl-bg-gray-10 gl-p-5">
       <search-and-sort-bar
         :namespace="namespaceId"
         :search-input-placeholder="$options.i18n.filterUsersPlaceholder"
@@ -171,7 +171,7 @@ export default {
       <template #cell(disclosure)="{ item, toggleDetails, detailsShowing }">
         <gl-button
           variant="link"
-          class="gl-w-7 gl-h-7"
+          class="gl-h-7 gl-w-7"
           :aria-label="s__('Billing|Toggle seat details')"
           :aria-expanded="detailsShowing ? 'true' : 'false'"
           :data-testid="`toggle-seat-usage-details-${item.user.id}`"

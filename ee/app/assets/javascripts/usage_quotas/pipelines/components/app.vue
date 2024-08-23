@@ -353,7 +353,7 @@ export default {
       />
     </section>
 
-    <div class="gl-flex gl-my-5">
+    <div class="gl-my-5 gl-flex">
       <gl-form-group :label="s__('UsageQuota|Filter charts by year')">
         <gl-collapsible-listbox
           v-model="selectedYear"
@@ -384,7 +384,7 @@ export default {
     <section class="gl-my-5">
       <h2 class="gl-text-lg">{{ $options.USAGE_BY_PROJECT_HEADER }}</h2>
 
-      <div class="gl-flex gl-my-3">
+      <div class="gl-my-3 gl-flex">
         <gl-form-group :label="s__('UsageQuota|Filter projects data by month')">
           <gl-collapsible-listbox
             v-model="selectedMonth"

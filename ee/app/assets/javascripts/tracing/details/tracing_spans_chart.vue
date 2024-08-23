@@ -132,16 +132,16 @@ export default {
     >
       <div
         data-testid="span-inner-container"
-        class="gl-display-flex gl-border-b gl-cursor-pointer"
+        class="gl-border-b gl-flex gl-cursor-pointer"
         :class="{
           'gl-bg-blue-100': isSpanSelected(span),
-          'gl-hover-bg-t-gray-a-08': !isSpanSelected(span),
+          'hover:gl-bg-alpha-dark-8': !isSpanSelected(span),
         }"
         @click="onSelect({ spanId: span.span_id })"
       >
         <div
           data-testid="span-details"
-          class="gl-w-3/10 gl-min-w-20 gl-display-flex gl-flex-direction-row gl-p-3 gl-border-r"
+          class="gl-border-r gl-flex gl-w-3/10 gl-min-w-20 gl-flex-row gl-p-3"
           :style="spanDetailsStyle"
         >
           <div>
@@ -162,15 +162,13 @@ export default {
             />
           </div>
 
-          <div class="gl-display-flex gl-flex-direction-column gl-text-truncate">
+          <div class="gl-flex gl-flex-col gl-truncate">
             <gl-truncate class="gl-font-bold gl-text-primary" :text="span.operation" with-tooltip />
             <gl-truncate class="gl-text-secondary" :text="span.service" with-tooltip />
           </div>
         </div>
 
-        <div
-          class="gl-display-flex gl-flex-grow-1 gl-flex-direction-column gl-justify-content-center gl-px-4 gl-py-3"
-        >
+        <div class="gl-flex gl-grow gl-flex-col gl-justify-center gl-px-4 gl-py-3">
           <div
             data-testid="span-duration-bar"
             :style="durationBarStyle(span)"

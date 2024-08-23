@@ -75,7 +75,7 @@ export default {
 </script>
 <template>
   <div>
-    <div v-if="showRecaptchaChallenge" class="gl-text-center gl-mt-3">
+    <div v-if="showRecaptchaChallenge" class="gl-mt-3 gl-text-center">
       <re-captcha
         :captcha-site-key="recaptchaSiteKey"
         :show-modal="false"

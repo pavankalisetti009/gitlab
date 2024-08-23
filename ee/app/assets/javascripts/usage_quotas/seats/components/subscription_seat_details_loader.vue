@@ -31,7 +31,7 @@ export default {
         <rect width="500" height="10" x="0" y="15" rx="4" />
       </gl-skeleton-loader>
     </div>
-    <div class="gl-hidden sm:gl-flex gl-flex-col" data-testid="desktop-loader">
+    <div class="gl-hidden gl-flex-col sm:gl-flex" data-testid="desktop-loader">
       <gl-skeleton-loader
         v-for="index in $options.rowsToRender.desktop"
         :key="index"

@@ -62,12 +62,12 @@ export default {
       :usage-value="`${usageValue}`"
     >
       <template #description>
-        <p class="gl-text-sm gl-font-bold gl-mb-0" data-testid="code-suggestions-info">
+        <p class="gl-mb-0 gl-text-sm gl-font-bold" data-testid="code-suggestions-info">
           {{ sprintf($options.i18n.codeSuggestionsAssignedInfoText, { title: duoTitle }) }}
         </p>
       </template>
       <template #additional-info>
-        <p class="gl-text-sm gl-mt-5" data-testid="code-suggestions-description">
+        <p class="gl-mt-5 gl-text-sm" data-testid="code-suggestions-description">
           {{ sprintf($options.i18n.codeSuggestionsIntroDescriptionText, { title: duoTitle }) }}
         </p>
       </template>

@@ -117,7 +117,7 @@ export default {
     </gl-alert>
     <gl-empty-state :svg-path="$options.emptyStateSvgUrl" :svg-height="72">
       <template #title>
-        <h1 class="gl-text-size-h-display gl-leading-36 h4">{{ $options.i18n.title }}</h1>
+        <h1 class="h4 gl-text-size-h-display gl-leading-36">{{ $options.i18n.title }}</h1>
       </template>
       <template #description>
         <p v-if="showPostTrialForFreeNamespace" class="gl-max-w-48">
@@ -144,7 +144,7 @@ export default {
           :href="duoProTrialHref"
           variant="confirm"
           category="primary"
-          class="sm:gl-w-auto gl-w-full"
+          class="gl-w-full sm:gl-w-auto"
           data-testid="duo-pro-start-trial-btn"
           @click="trackTrialClick"
         >
@@ -154,7 +154,7 @@ export default {
           v-if="showPostTrialForFreeNamespace"
           :href="buySubscriptionPath"
           variant="confirm"
-          class="sm:gl-w-auto gl-w-full"
+          class="gl-w-full sm:gl-w-auto"
           data-testid="duo-pro-buy-subscription-btn"
           @click="trackBuySubscription"
         >
@@ -165,7 +165,7 @@ export default {
           :href="addDuoProHref"
           variant="confirm"
           :category="purchaseSeatsBtnCategory"
-          class="sm:gl-w-auto gl-w-full sm:gl-ml-3 sm:gl-mt-0 gl-mt-3"
+          class="gl-mt-3 gl-w-full sm:gl-ml-3 sm:gl-mt-0 sm:gl-w-auto"
           data-testid="duo-pro-purchase-seats-btn"
           @click="trackPurchaseSeatsClick"
         >

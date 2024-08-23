@@ -183,7 +183,7 @@ export default {
 };
 </script>
 <template>
-  <div v-if="isActive" class="full-width gl-mt-5 gl-mb-7">
+  <div v-if="isActive" class="full-width gl-mb-7 gl-mt-5">
     <privacy-and-terms-confirm
       v-model="didAcceptTerms"
       class="mb-2"
