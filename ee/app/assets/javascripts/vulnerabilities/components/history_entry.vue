@@ -41,16 +41,16 @@ export default {
     </event-item>
     <history-comment
       v-for="comment in comments"
-      ref="existingComment"
       :key="comment.id"
       :comment="comment"
       :discussion-id="discussion.replyId"
+      data-testid="existing-comment"
       v-on="$listeners"
     />
     <history-comment
       v-if="!comments.length"
-      ref="newComment"
       :discussion-id="discussion.replyId"
+      data-testid="new-comment"
       v-on="$listeners"
     />
   </div>
