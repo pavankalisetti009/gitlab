@@ -6,17 +6,21 @@ exports[`MR Widget Security Reports - Summary Highlights should display the summ
 >
   <strong
     class="gl-text-red-800"
+    data-testid="critical"
   >
     10 critical
   </strong>
   ,
   <strong
     class="gl-text-red-600"
+    data-testid="high"
   >
     20 high
   </strong>
   and
-  <strong>
+  <strong
+    data-testid="other"
+  >
     60 others
   </strong>
 </div>

@@ -45,13 +45,13 @@ export default {
     },
   },
   computed: {
-    criticalSeverity() {
+    criticalSeverityCount() {
       return this.formattedCounts(this.highlights[CRITICAL]);
     },
-    highSeverity() {
+    highSeverityCount() {
       return this.formattedCounts(this.highlights[HIGH]);
     },
-    otherSeverity() {
+    otherSeverityCount() {
       if (typeof this.highlights.other !== 'undefined') {
         return this.formattedCounts(this.highlights.other);
       }
@@ -82,6 +82,13 @@ export default {
 
       return count;
     },
+    component(count) {
+      if (parseInt(count, 10) > 0) {
+        return 'strong';
+      }
+
+      return 'span';
+    },
   },
   cssClass: SEVERITY_CLASS_NAME_MAP,
 };
@@ -94,13 +101,22 @@ export default {
     }}</strong>
     <gl-sprintf v-else :message="$options.i18n.highlights">
       <template #critical="{ content }"
-        ><strong class="gl-text-red-800">{{ criticalSeverity }} {{ content }}</strong></template
+        ><component
+          :is="component(criticalSeverityCount)"
+          class="gl-text-red-800"
+          data-testid="critical"
+          >{{ criticalSeverityCount }} {{ content }}</component
+        ></template
       >
       <template #high="{ content }"
-        ><strong class="gl-text-red-600">{{ highSeverity }} {{ content }}</strong></template
+        ><component :is="component(highSeverityCount)" class="gl-text-red-600" data-testid="high"
+          >{{ highSeverityCount }} {{ content }}</component
+        ></template
       >
       <template #other="{ content }"
-        ><strong>{{ otherSeverity }} {{ content }}</strong></template
+        ><component :is="component(otherSeverityCount)" data-testid="other"
+          >{{ otherSeverityCount }} {{ content }}</component
+        ></template
       >
     </gl-sprintf>
   </div>
