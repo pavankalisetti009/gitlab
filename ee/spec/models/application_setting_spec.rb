@@ -202,6 +202,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           expect(setting.lock_duo_features_enabled).to be lock_duo_features_enabled_expectation
         end
       end
+
+      context 'when value is "never_on"' do
+        it 'disables instance level AI and beta features' do
+          setting.duo_availability = "never_on"
+
+          expect(setting.instance_level_ai_beta_features_enabled).to be false
+        end
+      end
     end
 
     context 'when validating geo_node_allowed_ips', feature_category: :geo_replication do

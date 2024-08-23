@@ -333,6 +333,14 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(setting.duo_availability).to eq(expectation)
       end
     end
+
+    context 'when value is "never_on"' do
+      it 'sets experiment_features_enabled to false' do
+        setting.duo_availability = "never_on"
+
+        expect(setting.experiment_features_enabled).to be false
+      end
+    end
   end
 
   describe '#duo_availability=' do

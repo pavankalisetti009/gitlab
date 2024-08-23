@@ -119,6 +119,7 @@ module EE
         else
           self.duo_features_enabled = false
           self.lock_duo_features_enabled = true
+          self.experiment_features_enabled = false
         end
       end
 
