@@ -5,8 +5,8 @@ import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 import { severityNumberToConfig } from '../utils';
 
-const tdClass = 'gl-px-2! gl-py-3! gl-mx-0';
-const thClass = 'gl-px-2!';
+const tdClass = '!gl-px-2 !gl-py-3 gl-mx-0';
+const thClass = '!gl-px-2';
 export default {
   i18n: {
     title: s__('ObservabilityLogs|Logs'),
@@ -75,7 +75,7 @@ export default {
 
 <template>
   <div>
-    <h4 class="gl-block md:!gl-hidden gl-my-5">{{ $options.i18n.title }}</h4>
+    <h4 class="gl-my-5 gl-block md:!gl-hidden">{{ $options.i18n.title }}</h4>
 
     <gl-table
       :items="formattedLogs"
@@ -96,7 +96,7 @@ export default {
       </template>
 
       <template #cell(body)="{ item }">
-        <div class="gl-text-truncate">
+        <div class="gl-truncate">
           {{ item.body }}
         </div>
       </template>

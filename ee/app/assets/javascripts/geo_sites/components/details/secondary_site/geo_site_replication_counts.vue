@@ -31,7 +31,7 @@ export default {
 
 <template>
   <div>
-    <div class="gl-display-grid geo-site-replication-counts-grid gl-align-items-center gl-mb-3">
+    <div class="geo-site-replication-counts-grid gl-mb-3 gl-grid gl-items-center">
       <span>{{ $options.i18n.dataType }}</span>
       <span class="gl-text-right">{{ $options.i18n.synchronization }}</span>
       <span class="gl-text-right">{{ $options.i18n.verification }}</span>
@@ -39,7 +39,7 @@ export default {
     <div
       v-for="type in replicationOverview"
       :key="type.title"
-      class="gl-display-grid geo-site-replication-counts-grid gl-align-items-center gl-mb-3"
+      class="geo-site-replication-counts-grid gl-mb-3 gl-grid gl-items-center"
       data-testid="replication-type"
     >
       <span>{{ type.title }}</span>

@@ -73,22 +73,19 @@ export default {
           </template>
         </gl-sprintf>
       </template>
-      <div
-        :class="{ 'is-invalid': Boolean(formErrors.name) }"
-        class="gl-display-flex gl-align-items-center"
-      >
+      <div :class="{ 'is-invalid': Boolean(formErrors.name) }" class="gl-flex gl-items-center">
         <!-- eslint-disable vue/no-mutating-props -->
         <gl-form-input
           id="site-name-field"
           v-model="siteData.name"
-          class="col-sm-6 gl-pr-8!"
+          class="col-sm-6 !gl-pr-8"
           :class="{ 'is-invalid': Boolean(formErrors.name) }"
           data-testid="site-name-field"
           type="text"
           @update="checkName"
         />
         <!-- eslint-enable vue/no-mutating-props -->
-        <span class="gl-text-gray-500 m-n5 gl-z-2">{{ 255 - siteData.name.length }}</span>
+        <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.name.length }}</span>
       </div>
     </gl-form-group>
     <section class="form-row">
@@ -106,22 +103,19 @@ export default {
             </template>
           </gl-sprintf>
         </template>
-        <div
-          :class="{ 'is-invalid': Boolean(formErrors.url) }"
-          class="gl-display-flex gl-align-items-center"
-        >
+        <div :class="{ 'is-invalid': Boolean(formErrors.url) }" class="gl-flex gl-items-center">
           <!-- eslint-disable vue/no-mutating-props -->
           <gl-form-input
             id="site-url-field"
             v-model="siteData.url"
-            class="gl-pr-8!"
+            class="!gl-pr-8"
             :class="{ 'is-invalid': Boolean(formErrors.url) }"
             data-testid="site-url-field"
             type="text"
             @update="checkUrl"
           />
           <!-- eslint-enable vue/no-mutating-props -->
-          <span class="gl-text-gray-500 m-n5 gl-z-2">{{ 255 - siteData.url.length }}</span>
+          <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.url.length }}</span>
         </div>
       </gl-form-group>
       <gl-form-group
@@ -130,16 +124,16 @@ export default {
         label-for="site-internal-url-field"
         :description="internalUrlDescription"
       >
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <!-- eslint-disable vue/no-mutating-props -->
           <gl-form-input
             id="site-internal-url-field"
             v-model="siteData.internalUrl"
-            class="gl-pr-8!"
+            class="!gl-pr-8"
             type="text"
           />
           <!-- eslint-enable vue/no-mutating-props -->
-          <span class="gl-text-gray-500 m-n5 gl-z-2">{{ 255 - siteData.internalUrl.length }}</span>
+          <span class="m-n5 gl-z-2 gl-text-gray-500">{{ 255 - siteData.internalUrl.length }}</span>
         </div>
       </gl-form-group>
     </section>

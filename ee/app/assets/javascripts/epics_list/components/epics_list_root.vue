@@ -271,17 +271,17 @@ export default {
     @filter="handleFilterEpics"
   >
     <template v-if="canCreateEpic || canBulkEditEpics" #nav-actions>
-      <div class="gl-display-flex gl-gap-3">
+      <div class="gl-flex gl-gap-3">
         <gl-button
           v-if="canBulkEditEpics"
-          class="!gl-w-auto gl-flex-grow-1"
+          class="!gl-w-auto gl-grow"
           :disabled="showBulkEditSidebar"
           @click="showBulkEditSidebar = true"
           >{{ __('Bulk edit') }}</gl-button
         >
         <create-work-item-modal
           v-if="canCreateEpic && glFeatures.namespaceLevelWorkItems"
-          class="gl-flex-grow-1"
+          class="gl-grow"
           :work-item-type-name="$options.WORK_ITEM_TYPE_ENUM_EPIC"
           @workItemCreated="handleWorkItemCreated"
         />
@@ -289,7 +289,7 @@ export default {
           v-else-if="canCreateEpic"
           category="primary"
           variant="confirm"
-          class="!gl-w-auto gl-flex-grow-1"
+          class="!gl-w-auto gl-grow"
           :href="epicNewPath"
           data-testid="new-epic-button"
           >{{ __('New epic') }}</gl-button

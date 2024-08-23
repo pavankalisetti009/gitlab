@@ -111,10 +111,8 @@ export default {
 
 <template>
   <nav class="gl-bg-gray-50 gl-p-5">
-    <div class="gl-display-grid geo-replicable-filter-grid gl-gap-3">
-      <div
-        class="gl-display-flex gl-align-items-center gl-flex-direction-column gl-sm-flex-direction-row"
-      >
+    <div class="geo-replicable-filter-grid gl-grid gl-gap-3">
+      <div class="gl-flex gl-flex-col gl-items-center sm:gl-flex-row">
         <gl-collapsible-listbox
           class="gl-w-1/2"
           :items="dropdownItems"
@@ -126,7 +124,7 @@ export default {
           v-if="showSearch"
           v-model="search"
           :debounce="$options.debounce"
-          class="gl-w-full gl-mt-3 gl-ml-0 gl-sm-mt-0 gl-sm-ml-3"
+          class="gl-ml-0 gl-mt-3 gl-w-full sm:gl-ml-3 sm:gl-mt-0"
           :placeholder="$options.i18n.searchPlaceholder"
         />
       </div>

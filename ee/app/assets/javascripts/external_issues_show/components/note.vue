@@ -60,18 +60,18 @@ export default {
 
 <template>
   <timeline-entry-item class="gl-p-5">
-    <timeline-icon class="gl-mr-5 gl-ml-2">
+    <timeline-icon class="gl-ml-2 gl-mr-5">
       <gl-avatar-link target="_blank" :href="authorWebUrl">
         <gl-avatar :size="32" :src="authorAvatarUrl" :alt="authorName" />
       </gl-avatar-link>
     </timeline-icon>
 
     <div>
-      <div class="gl-display-flex gl-justify-content-space-between">
-        <div class="gl-display-flex gl-align-items-center gl-mb-3">
+      <div class="gl-flex gl-justify-between">
+        <div class="gl-mb-3 gl-flex gl-items-center">
           <gl-link
             :href="authorWebUrl"
-            class="gl-text-black-normal gl-font-bold gl-whitespace-nowrap gl-mr-2"
+            class="gl-mr-2 gl-whitespace-nowrap gl-font-bold gl-text-default"
           >
             {{ authorName }}
           </gl-link>
@@ -79,13 +79,13 @@ export default {
           <gl-link
             v-if="authorUsername"
             :href="authorWebUrl"
-            class="gl-text-gray-500 gl-mr-2 gl-whitespace-nowrap"
+            class="gl-mr-2 gl-whitespace-nowrap gl-text-gray-500"
             data-testid="author-username"
           >
             @{{ authorUsername }}
           </gl-link>
 
-          <span class="gl-text-gray-500 gl-mr-2">·</span>
+          <span class="gl-mr-2 gl-text-gray-500">·</span>
 
           <gl-link class="gl-text-gray-500" :href="noteAnchor" data-testid="time-ago-link">
             <time-ago-tooltip :time="noteCreatedAt" tooltip-placement="bottom" />

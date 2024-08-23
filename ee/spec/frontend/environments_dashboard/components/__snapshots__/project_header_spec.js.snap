@@ -2,10 +2,10 @@
 
 exports[`Project Header matches the snapshot 1`] = `
 <div
-  class="gl-align-items-center gl-border-1 gl-border-b-solid gl-border-gray-100 gl-display-flex gl-justify-content-space-between gl-mb-5 gl-pb-3 gl-text-gray-500"
+  class="gl-border-1 gl-border-b-solid gl-border-gray-100 gl-flex gl-items-center gl-justify-between gl-mb-5 gl-pb-3 gl-text-gray-500"
 >
   <div
-    class="gl-align-items-center gl-display-flex"
+    class="gl-flex gl-items-center"
   >
     <project-avatar-stub
       class="gl-mr-3"
@@ -41,7 +41,7 @@ exports[`Project Header matches the snapshot 1`] = `
     </gl-link-stub>
   </div>
   <div
-    class="gl-display-flex"
+    class="gl-flex"
   >
     <gl-disclosure-dropdown-stub
       autoclose="true"
@@ -55,7 +55,7 @@ exports[`Project Header matches the snapshot 1`] = `
       size="medium"
       textsronly="true"
       title="More actions"
-      toggleclass="gl-display-flex gl-align-items-center gl-px-3! gl-bg-transparent !gl-shadow-none"
+      toggleclass="gl-flex gl-items-center !gl-px-3 gl-bg-transparent !gl-shadow-none"
       toggleid="dropdown-toggle-btn-2"
       toggletext="More actions"
       variant="default"

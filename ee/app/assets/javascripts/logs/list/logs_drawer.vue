@@ -122,7 +122,7 @@ export default {
       >
         <template #title>
           <div data-testid="drawer-title">
-            <h2 class="gl-text-size-h2 gl-mt-0">{{ title }}</h2>
+            <h2 class="gl-mt-0 gl-text-size-h2">{{ title }}</h2>
             <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
               {{ $options.i18n.createIssueTitle }}
             </gl-button>
@@ -136,14 +136,14 @@ export default {
             :data-testid="`section-${section.key}`"
             class="gl-border-none"
           >
-            <h2 v-if="section.title" data-testid="section-title" class="gl-text-size-h2 gl-my-0">
+            <h2 v-if="section.title" data-testid="section-title" class="gl-my-0 gl-text-size-h2">
               {{ section.title }}
             </h2>
             <div
               v-for="line in section.content"
               :key="line.name"
               data-testid="section-line"
-              class="gl-py-5 gl-border-b-1 gl-border-b-solid gl-border-b-gray-200"
+              class="gl-border-b-1 gl-border-b-gray-200 gl-py-5 gl-border-b-solid"
             >
               <label data-testid="section-line-name">{{ line.name }}</label>
               <div data-testid="section-line-value" class="gl-wrap-anywhere">

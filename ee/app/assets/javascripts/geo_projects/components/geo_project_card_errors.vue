@@ -39,7 +39,7 @@ export default {
 
 <template>
   <div class="project-card-errors">
-    <div class="card-header gl-bg-transparent! gl-border-bottom-0! border-top">
+    <div class="card-header border-top !gl-border-b-0 !gl-bg-transparent">
       <gl-accordion :header-level="3">
         <gl-accordion-item :title="$options.i18n.showMore">
           <div class="card-body">
@@ -47,7 +47,7 @@ export default {
               <div class="row">
                 <div class="col-sm-8">
                   <ul class="unstyled-list list-items-py-2">
-                    <li v-if="synchronizationFailure" class="gl-display-flex! gl-text-red-500">
+                    <li v-if="synchronizationFailure" class="!gl-flex gl-text-red-500">
                       <gl-icon name="warning" size="16" />
                       <span class="gl-ml-2">
                         <gl-sprintf :message="$options.i18n.synchronizationFailed">
@@ -57,7 +57,7 @@ export default {
                         </gl-sprintf>
                       </span>
                     </li>
-                    <li v-if="verificationFailure" class="gl-display-flex! gl-text-red-500">
+                    <li v-if="verificationFailure" class="!gl-flex gl-text-red-500">
                       <gl-icon name="warning" size="16" />
                       <span class="gl-ml-2">
                         <gl-sprintf :message="$options.i18n.verificationFailed">

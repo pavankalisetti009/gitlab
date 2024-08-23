@@ -146,10 +146,10 @@ export default {
 
 <template>
   <div
-    class="gl-py-5 gl-px-3 gl-bg-gray-10 gl-border-b-1 gl-border-b-solid gl-border-t-1 gl-border-t-solid gl-border-gray-100"
+    class="gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
   >
     <filtered-search
-      class="filtered-search-box gl-display-flex gl-border-none"
+      class="filtered-search-box gl-flex gl-border-none"
       recent-searches-storage-key="recent-logs-filter-search"
       namespace="logs-details-filtered-search"
       :search-input-placeholder="$options.i18n.searchInputPlaceholder"

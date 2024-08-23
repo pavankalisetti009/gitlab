@@ -57,7 +57,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center">
+  <div class="gl-flex gl-items-center">
     <span class="gl-text-gray-500" data-testid="last-updated-main-text">
       <gl-sprintf :message="$options.i18n.timeAgoMainText">
         <template #timeAgo>
@@ -69,10 +69,10 @@ export default {
       ref="lastUpdated"
       tabindex="0"
       name="question-o"
-      class="gl-text-blue-600 gl-cursor-pointer gl-ml-2"
+      class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
     />
     <gl-popover :target="() => $refs.lastUpdated.$el" placement="top">
-      <p class="gl-font-base" data-testid="geo-last-updated-text">
+      <p class="gl-text-base" data-testid="geo-last-updated-text">
         <gl-sprintf :message="$options.i18n.timeAgoPopoverText">
           <template #timeAgo>
             <time-ago :time="statusCheckTimestamp" />

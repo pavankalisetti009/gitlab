@@ -87,24 +87,24 @@ export default {
       :title="title"
     >
       <section>
-        <div class="gl-display-flex gl-align-items-center gl-my-3" data-testid="geo-progress-count">
-          <div class="gl-mr-3 gl-bg-transparent gl-w-5 gl-h-2"></div>
-          <span class="gl-flex-grow-1 gl-mr-4">{{ $options.i18n.total }}</span>
+        <div class="gl-my-3 gl-flex gl-items-center" data-testid="geo-progress-count">
+          <div class="gl-mr-3 gl-h-2 gl-w-5 gl-bg-transparent"></div>
+          <span class="gl-mr-4 gl-grow">{{ $options.i18n.total }}</span>
           <span class="gl-font-bold">{{ totalCount.toLocaleString() }}</span>
         </div>
-        <div class="gl-display-flex gl-align-items-center gl-my-3" data-testid="geo-progress-count">
-          <div class="gl-mr-3 gl-bg-green-500 gl-w-5 gl-h-2"></div>
-          <span class="gl-flex-grow-1 gl-mr-4">{{ successLabel }}</span>
+        <div class="gl-my-3 gl-flex gl-items-center" data-testid="geo-progress-count">
+          <div class="gl-mr-3 gl-h-2 gl-w-5 gl-bg-green-500"></div>
+          <span class="gl-mr-4 gl-grow">{{ successLabel }}</span>
           <span class="gl-font-bold">{{ successCount.toLocaleString() }}</span>
         </div>
-        <div class="gl-display-flex gl-align-items-center gl-my-3" data-testid="geo-progress-count">
-          <div class="gl-mr-3 gl-bg-gray-200 gl-w-5 gl-h-2"></div>
-          <span class="gl-flex-grow-1 gl-mr-4">{{ queuedLabel }}</span>
+        <div class="gl-my-3 gl-flex gl-items-center" data-testid="geo-progress-count">
+          <div class="gl-mr-3 gl-h-2 gl-w-5 gl-bg-gray-200"></div>
+          <span class="gl-mr-4 gl-grow">{{ queuedLabel }}</span>
           <span class="gl-font-bold">{{ queuedCount.toLocaleString() }}</span>
         </div>
-        <div class="gl-display-flex gl-align-items-center gl-my-3" data-testid="geo-progress-count">
-          <div class="gl-mr-3 gl-bg-red-500 gl-w-5 gl-h-2"></div>
-          <span class="gl-flex-grow-1 gl-mr-4">{{ failedLabel }}</span>
+        <div class="gl-my-3 gl-flex gl-items-center" data-testid="geo-progress-count">
+          <div class="gl-mr-3 gl-h-2 gl-w-5 gl-bg-red-500"></div>
+          <span class="gl-mr-4 gl-grow">{{ failedLabel }}</span>
           <span class="gl-font-bold">{{ failureCount.toLocaleString() }}</span>
         </div>
       </section>

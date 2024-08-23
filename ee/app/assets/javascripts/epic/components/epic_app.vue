@@ -56,7 +56,7 @@ export default {
 <template>
   <div class="epic-page-container">
     <div
-      class="issuable-details detail-page-description content-block gl-pt-3 gl-pb-0 gl-border-none"
+      class="issuable-details detail-page-description content-block gl-border-none gl-pb-0 gl-pt-3"
     >
       <issuable-body
         :author="formattedAuthor"

@@ -42,7 +42,7 @@ export default {
       ];
     },
     dropdownRemoveClass() {
-      return this.canRemoveSite(this.site.id) ? 'gl-text-red-500!' : 'gl-text-gray-400!';
+      return this.canRemoveSite(this.site.id) ? '!gl-text-red-500' : '!gl-text-gray-400';
     },
   },
 };

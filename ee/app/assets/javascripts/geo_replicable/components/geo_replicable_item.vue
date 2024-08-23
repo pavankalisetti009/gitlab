@@ -78,7 +78,7 @@ export default {
 <template>
   <div class="gl-border-b gl-p-5">
     <div
-      class="geo-replicable-item-grid gl-display-grid gl-align-items-center gl-pb-4"
+      class="geo-replicable-item-grid gl-grid gl-items-center gl-pb-4"
       data-testid="replicable-item-header"
     >
       <geo-replicable-status :status="syncStatus" />
@@ -105,7 +105,7 @@ export default {
         </gl-button>
       </div>
     </div>
-    <div class="gl-display-flex gl-align-items-center gl-flex-wrap">
+    <div class="gl-flex gl-flex-wrap gl-items-center">
       <geo-replicable-time-ago
         v-for="(timeAgo, index) in timeAgoArray"
         :key="index"

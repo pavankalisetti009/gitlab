@@ -75,8 +75,8 @@ describe('GeoSiteActionsMobile', () => {
 
     describe.each`
       canRemoveSite | disabled      | dropdownClass
-      ${false}      | ${'disabled'} | ${'gl-text-gray-400!'}
-      ${true}       | ${undefined}  | ${'gl-text-red-500!'}
+      ${false}      | ${'disabled'} | ${'!gl-text-gray-400'}
+      ${true}       | ${undefined}  | ${'!gl-text-red-500'}
     `(`conditionally`, ({ canRemoveSite, disabled, dropdownClass }) => {
       beforeEach(() => {
         createComponent({}, { canRemoveSite: () => () => canRemoveSite }, mountExtended);

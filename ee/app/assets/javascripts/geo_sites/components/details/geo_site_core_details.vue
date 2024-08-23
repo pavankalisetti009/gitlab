@@ -38,11 +38,11 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-grid lg:!gl-block geo-site-core-details-grid-columns">
-    <div class="gl-display-flex gl-flex-direction-column gl-lg-mb-5">
+  <div class="geo-site-core-details-grid-columns gl-grid lg:!gl-block">
+    <div class="gl-flex gl-flex-col lg:gl-mb-5">
       <span>{{ $options.i18n.url }}</span>
       <gl-link
-        class="gl-text-gray-900 gl-font-bold gl-underline"
+        class="gl-font-bold gl-text-gray-900 gl-underline"
         :href="site.url"
         target="_blank"
         rel="noopener noreferrer"
@@ -51,11 +51,11 @@ export default {
         <gl-icon name="external-link" class="gl-ml-1" />
       </gl-link>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-lg-my-5">
+    <div class="gl-flex gl-flex-col lg:gl-my-5">
       <span>{{ $options.i18n.internalUrl }}</span>
       <span class="gl-font-bold" data-testid="site-internal-url">{{ site.internalUrl }}</span>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-lg-mt-5">
+    <div class="gl-flex gl-flex-col lg:gl-mt-5">
       <span>{{ $options.i18n.gitlabVersion }}</span>
       <span
         :class="{ 'gl-text-red-500': hasMismatchVersion }"

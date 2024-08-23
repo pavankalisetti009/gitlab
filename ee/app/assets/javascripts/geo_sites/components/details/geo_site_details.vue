@@ -26,27 +26,25 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-grid geo-site-details-grid-columns gl-p-5">
+  <div class="geo-site-details-grid-columns gl-grid gl-p-5">
     <geo-site-core-details :site="site" />
     <div
       v-if="site.primary"
-      class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row gl-align-items-flex-start gl-h-full gl-w-full"
+      class="gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start md:gl-flex-row"
     >
       <geo-site-verification-info
-        class="gl-flex-grow-1 gl-mb-5 gl-md-mb-0 gl-md-mr-5 gl-h-full gl-w-full"
+        class="gl-mb-5 gl-h-full gl-w-full gl-grow md:gl-mb-0 md:gl-mr-5"
         :site="site"
       />
-      <geo-site-primary-other-info class="gl-flex-grow-1 gl-h-full gl-w-full" :site="site" />
+      <geo-site-primary-other-info class="gl-h-full gl-w-full gl-grow" :site="site" />
     </div>
-    <div v-else class="gl-display-flex gl-flex-direction-column gl-h-full gl-w-full">
-      <div
-        class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row gl-align-items-flex-start gl-h-full gl-w-full gl-mb-5"
-      >
+    <div v-else class="gl-flex gl-h-full gl-w-full gl-flex-col">
+      <div class="gl-mb-5 gl-flex gl-h-full gl-w-full gl-flex-col gl-items-start md:gl-flex-row">
         <geo-site-replication-summary
-          class="gl-flex-grow-1 gl-mb-5 gl-md-mb-0 gl-md-mr-5 gl-h-full gl-w-full"
+          class="gl-mb-5 gl-h-full gl-w-full gl-grow md:gl-mb-0 md:gl-mr-5"
           :site="site"
         />
-        <geo-site-secondary-other-info class="gl-flex-grow-1 gl-h-full gl-w-full" :site="site" />
+        <geo-site-secondary-other-info class="gl-h-full gl-w-full gl-grow" :site="site" />
       </div>
       <geo-site-replication-details :site="site" />
     </div>

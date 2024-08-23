@@ -68,7 +68,7 @@ export default {
 
 <template>
   <gl-tabs
-    class="gl-display-grid geo-site-filter-grid-columns"
+    class="geo-site-filter-grid-columns gl-grid"
     sync-active-tab-with-query-params
     :query-param-name="$options.STATUS_FILTER_QUERY_PARAM"
     data-testid="geo-sites-filter"
@@ -80,7 +80,7 @@ export default {
         <gl-badge class="gl-tab-counter-badge">{{ tab.count }}</gl-badge>
       </template>
     </gl-tab>
-    <div class="gl-pb-3 gl-border-b-1 gl-border-b-solid gl-border-gray-100">
+    <div class="gl-border-b-1 gl-border-gray-100 gl-pb-3 gl-border-b-solid">
       <gl-search-box-by-type v-model="search" :placeholder="$options.i18n.searchPlaceholder" />
     </div>
   </gl-tabs>

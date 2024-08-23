@@ -194,14 +194,14 @@ export default {
 </script>
 
 <template>
-  <gl-card ref="ruleContainer" class="gl-border-0 gl-bg-gray-10 gl-mb-3 gl-relative">
+  <gl-card ref="ruleContainer" class="gl-relative gl-mb-3 gl-border-0 gl-bg-gray-10">
     <gl-button
       v-if="index !== 0"
       category="tertiary"
       size="small"
       icon="close"
       :aria-label="$options.i18n.fields.rules.removeRuleLabel"
-      class="gl-absolute rule-close-icon"
+      class="rule-close-icon gl-absolute"
       @click="$emit('remove-escalation-rule', index)"
     />
     <gl-form-group :state="isValid" class="gl-mb-0">
@@ -209,15 +209,15 @@ export default {
         <div v-if="!isScheduleValid && !hasFocus">
           {{ $options.i18n.fields.rules.emptyScheduleValidationMsg }}
         </div>
-        <div v-if="!isUserValid && !hasFocus" class="gl-display-inline-block gl-mt-2">
+        <div v-if="!isUserValid && !hasFocus" class="gl-mt-2 gl-inline-block">
           {{ $options.i18n.fields.rules.invalidUserValidationMsg }}
         </div>
-        <div v-if="!isTimeValid && !hasFocus" class="gl-display-inline-block gl-mt-2">
+        <div v-if="!isTimeValid && !hasFocus" class="gl-mt-2 gl-inline-block">
           {{ $options.i18n.fields.rules.invalidTimeValidationMsg }}
         </div>
       </template>
 
-      <div class="gl-display-flex gl-align-items-center">
+      <div class="gl-flex gl-items-center">
         <gl-sprintf :message="$options.i18n.fields.rules.condition">
           <template #alertStatus>
             <gl-collapsible-listbox
@@ -233,7 +233,7 @@ export default {
           <template #minutes>
             <gl-form-input
               v-model="elapsedTimeMinutes"
-              class="gl-mx-3 !gl-shadow-inner-1-gray-200 gl-w-12"
+              class="gl-mx-3 gl-w-12 !gl-shadow-inner-1-gray-200"
               number
               min="0"
               @input="emitUpdate"
@@ -241,7 +241,7 @@ export default {
           </template>
         </gl-sprintf>
       </div>
-      <div class="gl-display-flex gl-align-items-center gl-mt-3">
+      <div class="gl-mt-3 gl-flex gl-items-center">
         <gl-sprintf :message="$options.i18n.fields.rules.action">
           <template #doAction>
             <gl-collapsible-listbox
@@ -271,7 +271,7 @@ export default {
                 v-gl-tooltip
                 :title="$options.i18n.fields.rules.noSchedules"
                 name="information-o"
-                class="gl-text-gray-500 gl-ml-3"
+                class="gl-ml-3 gl-text-gray-500"
                 data-testid="no-schedules-info-icon"
               />
             </template>

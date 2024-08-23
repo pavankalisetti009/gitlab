@@ -106,7 +106,7 @@ export default {
 
 <template>
   <div>
-    <h2 class="gl-font-size-h2 gl-my-5">{{ $options.i18n.tuningSettings }}</h2>
+    <h2 class="gl-my-5 gl-text-size-h2">{{ $options.i18n.tuningSettings }}</h2>
     <p class="gl-mb-5">
       {{ sectionDescription }}
       <gl-link :href="sectionLink" target="_blank">{{ $options.i18n.learnMore }}</gl-link>

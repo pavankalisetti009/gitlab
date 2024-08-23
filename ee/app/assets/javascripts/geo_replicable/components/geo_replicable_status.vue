@@ -38,11 +38,11 @@ export default {
 
 <template>
   <div
-    class="gl-display-flex gl-align-items-center"
+    class="gl-flex gl-items-center"
     :class="styleProperties.cssClass"
     data-testid="replicable-item-status"
   >
     <gl-icon :name="styleProperties.iconName" class="gl-mr-2" />
-    <span class="gl-font-bold gl-font-sm">{{ capitalizedStatus }}</span>
+    <span class="gl-text-sm gl-font-bold">{{ capitalizedStatus }}</span>
   </div>
 </template>

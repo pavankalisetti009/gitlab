@@ -40,10 +40,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-justify-content-end">
+  <div class="gl-flex gl-items-center gl-justify-end">
     <div
       :class="percentColor"
-      class="gl-rounded-full gl-w-3 gl-h-3 gl-mr-2"
+      class="gl-mr-2 gl-h-3 gl-w-3 gl-rounded-full"
       data-testid="geo-sync-percentage-indicator"
     ></div>
     <span class="gl-font-bold" data-testid="geo-sync-percentage">

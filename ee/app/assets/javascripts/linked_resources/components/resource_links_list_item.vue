@@ -71,12 +71,12 @@ export default {
     :class="{
       'gl-pr-2': canRemove,
     }"
-    class="item-body gl-flex gl-align-items-center gl-px-3 -gl-mx-2"
+    class="item-body -gl-mx-2 gl-flex gl-items-center gl-px-3"
   >
     <div
-      class="item-contents gl-flex gl-items-center gl-flex-wrap gl-flex-grow-1 flex-xl-nowrap gl-min-h-7"
+      class="item-contents flex-xl-nowrap gl-flex gl-min-h-7 gl-grow gl-flex-wrap gl-items-center"
     >
-      <div class="item-title sm:gl-flex align-items-xl-center mb-xl-0 gl-min-w-0">
+      <div class="item-title align-items-xl-center mb-xl-0 gl-min-w-0 sm:gl-flex">
         <gl-icon
           class="gl-mr-3 gl-text-gray-500"
           :name="getLinkIcon(iconName)"

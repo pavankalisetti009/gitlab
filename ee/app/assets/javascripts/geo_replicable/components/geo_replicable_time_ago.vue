@@ -36,8 +36,8 @@ export default {
 </script>
 
 <template>
-  <div class="gl-text-gray-700 gl-font-sm" data-testid="replicable-time-ago">
-    <span class="gl-px-2" :class="{ 'gl-border-r-solid gl-border-r-1': showDivider }">
+  <div class="gl-text-sm gl-text-gray-700" data-testid="replicable-time-ago">
+    <span class="gl-px-2" :class="{ 'gl-border-r-1 gl-border-r-solid': showDivider }">
       <gl-sprintf :message="$options.i18n.timeAgoString">
         <template #label>
           <span>{{ label }}</span>
