@@ -69,6 +69,10 @@ module API
                     token: duo_workflow_token_result[:token],
                     headers: Gitlab::DuoWorkflow::Client.headers(user: current_user),
                     secure: Gitlab::DuoWorkflow::Client.secure?
+                  },
+                  duo_workflow_executor: {
+                    executor_binary_url: Gitlab::DuoWorkflow::Executor.executor_binary_url,
+                    version: Gitlab::DuoWorkflow::Executor.version
                   }
                 }
 

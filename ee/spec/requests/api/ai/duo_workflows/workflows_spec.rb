@@ -147,6 +147,12 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
 
     before do
       allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
+      stub_config(duo_workflow: {
+        executor_binary_url: 'https://example.com/executor',
+        service_url: duo_workflow_service_url,
+        executor_version: 'v1.2.3',
+        secure: true
+      })
     end
 
     context 'when the duo_workflows feature flag is disabled for the user' do
@@ -217,6 +223,8 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(json_response['duo_workflow_service']['token']).to eq('duo_workflow_token')
         expect(json_response['duo_workflow_service']['headers']['header_key']).to eq("header_value")
         expect(json_response['duo_workflow_service']['secure']).to eq(Gitlab::DuoWorkflow::Client.secure?)
+        expect(json_response['duo_workflow_executor']['executor_binary_url']).to eq('https://example.com/executor')
+        expect(json_response['duo_workflow_executor']['version']).to eq('v1.2.3')
       end
 
       context 'when authenticated with a token that has the ai_workflows scope' do
