@@ -86,9 +86,10 @@ module QA
             end
 
             def set_experimental_features_enabled
-              expand_content('permissions-settings')
-              check_element('use-experimental-features-checkbox', true)
-              click_element('save-permissions-changes-button')
+              expand_content('permissions-settings') do
+                check_element('use-experimental-features-checkbox', true)
+                click_element('save-permissions-changes-button')
+              end
             end
 
             def set_membership_lock_enabled
