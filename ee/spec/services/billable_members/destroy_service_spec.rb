@@ -2,16 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_management do
+RSpec.describe BillableMembers::DestroyService do
   describe '#execute' do
     let_it_be(:current_user) { create(:user) }
     let_it_be(:root_group) { create(:group) }
 
     let(:group) { root_group }
-    let(:user_id) { nil }
-    let(:async) { false }
 
-    subject(:execute) { described_class.new(group, user_id: user_id, current_user: current_user, async: async).execute }
+    let(:user_id) { nil }
+
+    subject(:execute) { described_class.new(group, user_id: user_id, current_user: current_user).execute }
 
     context 'when unauthorized' do
       it 'raises an access error' do
@@ -46,16 +46,6 @@ RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_man
         end
       end
 
-      shared_examples 'supports async removal' do
-        let(:async) { true }
-
-        it 'enqueues the destroy worker' do
-          expect(::Members::DestroyWorker).to receive(:perform_async).once
-
-          subject
-        end
-      end
-
       context 'when removing a group member' do
         let(:user_id) { group_member.user_id }
 
@@ -64,8 +54,6 @@ RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_man
 
           expect(root_group.members).not_to include(group_member)
         end
-
-        it_behaves_like 'supports async removal'
       end
 
       context 'when removing a subgroup member' do
@@ -76,8 +64,6 @@ RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_man
 
           expect(subgroup.members).not_to include(subgroup_member)
         end
-
-        it_behaves_like 'supports async removal'
       end
 
       context 'when removing a project member' do
@@ -88,34 +74,20 @@ RSpec.describe BillableMembers::DestroyService, feature_category: :seat_cost_man
 
           expect(project_1.members).not_to include(project_member)
         end
-
-        it_behaves_like 'supports async removal'
       end
 
       context 'when the user is a direct member of multiple projects' do
         let(:multi_project_user) { create(:user) }
         let(:user_id) { multi_project_user.id }
 
-        before do
+        it 'removes the user from all the projects' do
           project_1.add_developer(multi_project_user)
           project_2.add_developer(multi_project_user)
-        end
 
-        it 'removes the user from all the projects' do
           execute
 
           expect(multi_project_user.projects).not_to include(project_1)
           expect(multi_project_user.projects).not_to include(project_2)
-        end
-
-        context 'when processing asynchronously' do
-          let(:async) { true }
-
-          it 'enqueues a job per membership' do
-            expect(::Members::DestroyWorker).to receive(:perform_async).twice
-
-            execute
-          end
         end
       end
 

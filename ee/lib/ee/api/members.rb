@@ -220,12 +220,11 @@ module EE
           desc 'Removes a billable member from a group or project.'
           params do
             requires :user_id, type: Integer, desc: 'The user ID of the member'
-            optional :async, type: Grape::API::Boolean, desc: 'Remove the billable member asynchronously. **Status:** Beta'
           end
           delete ":id/billable_members/:user_id", feature_category: :seat_cost_management do
             group = find_group!(params[:id])
 
-            result = ::BillableMembers::DestroyService.new(group, user_id: params[:user_id], current_user: current_user, async: params[:async]).execute
+            result = ::BillableMembers::DestroyService.new(group, user_id: params[:user_id], current_user: current_user).execute
 
             if result[:status] == :success
               no_content!
