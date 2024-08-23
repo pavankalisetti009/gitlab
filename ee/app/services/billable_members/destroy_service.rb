@@ -14,11 +14,10 @@ module BillableMembers
     InvalidGroupError = Class.new(StandardError)
     InvalidMemberError = Class.new(StandardError)
 
-    def initialize(group, user_id:, current_user:, async: false)
+    def initialize(group, user_id:, current_user:)
       @group = group
       @user_id = user_id
       @current_user = current_user
-      @async = async
     end
 
     def execute
@@ -34,7 +33,7 @@ module BillableMembers
 
     private
 
-    attr_reader :group, :user_id, :current_user, :async
+    attr_reader :group, :user_id, :current_user
 
     # rubocop: disable CodeReuse/ActiveRecord
     def remove_user_from_resources
@@ -43,12 +42,7 @@ module BillableMembers
 
       memberships.find_each do |member|
         memberships_found = true
-
-        if async
-          ::Members::DestroyWorker.perform_async(member.id, current_user.id, skip_subresources: true)
-        else
-          ::Members::DestroyService.new(current_user).execute(member, skip_subresources: true)
-        end
+        ::Members::DestroyService.new(current_user).execute(member, skip_subresources: true)
       end
 
       raise InvalidMemberError, 'No member found for the given user_id' unless memberships_found
