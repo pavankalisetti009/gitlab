@@ -36,7 +36,7 @@ module WorkItems
                 proxy_association.owner.own_award_emoji
               ],
               remove_duplicates: false
-            )
+            ).preload(:user)
           end
         end
 

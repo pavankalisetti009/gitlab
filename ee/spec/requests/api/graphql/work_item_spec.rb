@@ -1380,6 +1380,108 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           end
         end
       end
+
+      shared_examples 'avoids N+1 queries for processing participants' do
+        specify do
+          users = create_list(:user, 6)
+
+          # Add 3 participant to the legacy epic
+          create(:award_emoji, name: 'thumbsup', awardable: work_item, user: users[0])
+          note = create(:note, noteable: work_item.synced_epic, author: users[1], project: project)
+          create(:award_emoji, name: 'thumbsup', awardable: note, user: users[2])
+
+          post_graphql(query, current_user: current_user) # warm-up
+
+          control = ActiveRecord::QueryRecorder.new(skip_cached: false) do
+            post_graphql(query, current_user: current_user)
+          end
+
+          # Add 3 more participants to the legacy epic
+          create(:award_emoji, name: 'thumbsup', awardable: work_item.synced_epic, user: users[3])
+          note = create(:note, noteable: work_item.synced_epic, author: users[4], project: project)
+          create(:award_emoji, name: 'thumbsup', awardable: note, user: users[5])
+
+          expect do
+            post_graphql(query, current_user: current_user)
+          end.not_to exceed_all_query_limit(control)
+        end
+      end
+
+      describe 'notifications widget' do
+        let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+
+        let(:work_item_fields) do
+          <<~GRAPHQL
+            id
+            widgets {
+              type
+              ... on WorkItemWidgetNotifications {
+                subscribed
+              }
+            }
+          GRAPHQL
+        end
+
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it 'returns widget information' do
+          post_graphql(query, current_user: current_user)
+
+          expect(work_item_data).to include(
+            'id' => work_item.to_gid.to_s,
+            'widgets' => include(
+              hash_including(
+                'type' => 'NOTIFICATIONS',
+                'subscribed' => work_item.subscribed?(current_user, project)
+              )
+            )
+          )
+        end
+
+        it_behaves_like 'avoids N+1 queries for processing participants'
+      end
+
+      describe 'participants widget' do
+        let_it_be(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+
+        let(:work_item_fields) do
+          <<~GRAPHQL
+            id
+            widgets {
+              type
+              ... on WorkItemWidgetParticipants {
+                participants {
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          GRAPHQL
+        end
+
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it 'returns participants' do
+          post_graphql(query, current_user: current_user)
+
+          expect(work_item_data).to include(
+            'id' => work_item.to_gid.to_s,
+            'widgets' => include(
+              hash_including(
+                'type' => 'PARTICIPANTS',
+                'participants' => { 'nodes' => [{ "id" => "gid://gitlab/User/#{work_item.author.id}" }] }
+              )
+            )
+          )
+        end
+
+        it_behaves_like 'avoids N+1 queries for processing participants'
+      end
     end
 
     context 'when querying work item type information' do
