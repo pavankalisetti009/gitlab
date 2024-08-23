@@ -6,7 +6,7 @@ module Gitlab
       include Gitlab::ExclusiveLeaseHelpers
 
       def initialize(namespace:, import_type:, source_hostname:)
-        @namespace = namespace
+        @namespace = namespace.root_ancestor
         @import_type = import_type
         @source_hostname = source_hostname
       end
@@ -65,7 +65,8 @@ module Gitlab
       end
 
       def create_placeholder_user(source_name, source_username)
-        # If limit is reached, get import user instead, but that's not implemented yet
+        return namespace_import_user if placeholder_user_limit_exceeded?
+
         Gitlab::Import::PlaceholderUserCreator.new(
           import_type: import_type,
           source_hostname: source_hostname,
@@ -73,6 +74,14 @@ module Gitlab
           source_username: source_username,
           namespace: namespace
         ).execute
+      end
+
+      def namespace_import_user
+        Gitlab::Import::ImportUserCreator.new(portable: namespace).execute
+      end
+
+      def placeholder_user_limit_exceeded?
+        ::Import::PlaceholderUserLimit.new(namespace: namespace).exceeded?
       end
 
       def lock_key(source_user_identifier)
