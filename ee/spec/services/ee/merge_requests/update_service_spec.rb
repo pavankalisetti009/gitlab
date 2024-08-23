@@ -567,6 +567,7 @@ RSpec.describe MergeRequests::UpdateService, :mailer, feature_category: :code_re
               labels: [],
               mentioned_users: [],
               assignees: [user3],
+              closing_issues_ids: [],
               reviewers: [],
               target_branch: "master",
               milestone: nil,
