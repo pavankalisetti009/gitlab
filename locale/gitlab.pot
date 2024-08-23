@@ -58522,6 +58522,9 @@ msgstr ""
 msgid "UserMapping|Review reassignment details"
 msgstr ""
 
+msgid "UserMapping|Search placeholder users"
+msgstr ""
+
 msgid "UserMapping|Select user"
 msgstr ""
 
