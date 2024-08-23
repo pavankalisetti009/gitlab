@@ -10,3 +10,5 @@
 = hidden_field_tag 'observability_links[log_trace_id]', observability_values.dig(:log, :traceId)
 = hidden_field_tag 'observability_links[log_timestamp]', observability_values.dig(:log, :timestamp)
 = hidden_field_tag 'observability_links[log_fingerprint]', observability_values.dig(:log, :fingerprint)
+
+= hidden_field_tag 'observability_links[trace_id]', observability_values.dig(:trace, :traceId)
