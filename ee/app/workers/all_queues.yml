@@ -1695,15 +1695,6 @@
   :weight: 1
   :idempotent: true
   :tags: []
-- :name: members_destroy
-  :worker_name: Members::DestroyWorker
-  :feature_category: :user_management
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
 - :name: members_destroyer_clean_up_group_protected_branch_rules
   :worker_name: MembersDestroyer::CleanUpGroupProtectedBranchRulesWorker
   :feature_category: :groups_and_projects
