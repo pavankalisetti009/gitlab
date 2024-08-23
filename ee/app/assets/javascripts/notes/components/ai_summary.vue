@@ -145,7 +145,7 @@ export default {
       text: __('Remove summary'),
       extraAttrs: {
         variant: 'danger',
-        class: 'gl-text-red-500!',
+        class: '!gl-text-red-500',
       },
     },
   },
@@ -153,9 +153,9 @@ export default {
 </script>
 
 <template>
-  <div v-if="markdown || aiLoading" class="ai-summary-card gl-rounded-base gl-border gl-bg-gray-10">
-    <div class="gl-px-5 gl-py-4 gl-bg-white gl-rounded-top-base gl-border-b">
-      <div class="gl-display-flex gl-align-items-center gl-gap-3">
+  <div v-if="markdown || aiLoading" class="ai-summary-card gl-border gl-rounded-base gl-bg-gray-10">
+    <div class="gl-border-b gl-rounded-t-base gl-bg-white gl-px-5 gl-py-4">
+      <div class="gl-flex gl-items-center gl-gap-3">
         <gl-icon name="tanuki-ai" class="gl-text-purple-600" />
         <h5 class="gl-my-0">{{ __('AI-generated summary') }}</h5>
         <gl-disclosure-dropdown
@@ -191,12 +191,12 @@ export default {
       <div v-else>
         <div v-if="markdown" ref="markdown" v-safe-html="markdown" class="gl-mb-2"></div>
 
-        <div class="gl-text-secondary gl-font-sm">
-          <gl-icon name="eye-slash" class="gl-text-gray-400 gl-mr-2" :size="12" />{{
+        <div class="gl-text-sm gl-text-secondary">
+          <gl-icon name="eye-slash" class="gl-mr-2 gl-text-gray-400" :size="12" />{{
             $options.i18n.onlyVisibleToYou
           }}
           &middot;
-          <gl-link :href="$options.feedback.link" target="_blank" class="gl-font-sm">{{
+          <gl-link :href="$options.feedback.link" target="_blank" class="gl-text-sm">{{
             __('Leave feedback')
           }}</gl-link>
         </div>

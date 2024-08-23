@@ -18,7 +18,7 @@ export default {
     <gl-button
       :href="manageMemberRolesPath"
       category="tertiary"
-      class="gl-w-full gl-justify-content-start!"
+      class="gl-w-full !gl-justify-start"
     >
       {{ s__('MemberRole|Manage roles') }}
     </gl-button>

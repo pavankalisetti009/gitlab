@@ -119,7 +119,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-justify-content-end">
+  <div class="gl-flex gl-justify-end">
     <gl-button
       v-if="hasResults"
       data-testid="view-scan-results-button"

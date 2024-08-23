@@ -296,7 +296,7 @@ export default {
 
           <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
             <template #title>
-              <p class="gl-font-lg gl-my-0">
+              <p class="gl-my-0 gl-text-lg">
                 <gl-sprintf
                   :message="
                     s__('ObservabilityMetrics|No data found for the selected time range %{time}')

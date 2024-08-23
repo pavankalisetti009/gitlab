@@ -69,7 +69,7 @@ export default {
     </gl-sprintf>
 
     <runner-tags-dropdown
-      toggle-class="gl-w-full gl-mb-1! gl-mt-4"
+      toggle-class="gl-w-full !gl-mb-1 gl-mt-4"
       :block="true"
       :disabled="isRunnerTagsDisabled"
       :empty-tags-list-placeholder="$options.i18n.noRunnerTagsText"

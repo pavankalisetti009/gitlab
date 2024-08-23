@@ -2,6 +2,6 @@
 
 exports[`Actions doesn't render anything if the scan status is not supported 1`] = `
 <div
-  class="gl-display-flex gl-justify-content-end"
+  class="gl-flex gl-justify-end"
 />
 `;

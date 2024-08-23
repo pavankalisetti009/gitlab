@@ -161,7 +161,7 @@ export default {
       return [...this.fields, ACTION_COLUMN].map((field) => ({
         ...field,
         class: ['gl-text-primary'],
-        thClass: ['gl-bg-transparent!', 'gl-whitespace-nowrap'],
+        thClass: ['!gl-bg-transparent', 'gl-whitespace-nowrap'],
       }));
     },
   },
@@ -306,7 +306,7 @@ export default {
         </template>
       </gl-table>
 
-      <div class="gl-display-flex gl-justify-content-center">
+      <div class="gl-flex gl-justify-center">
         <gl-keyset-pagination
           data-testid="pagination"
           v-bind="pageInfo"

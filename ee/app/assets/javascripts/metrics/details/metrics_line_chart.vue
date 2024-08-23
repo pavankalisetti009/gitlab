@@ -119,9 +119,9 @@ export default {
           v-for="(metric, index) in tooltipContent"
           :key="`${metric.seriesId}_${index}`"
           data-testid="metric-tooltip-content"
-          class="gl-display-flex gl-justify-content-space-between gl-font-sm gl-mb-1"
+          class="gl-mb-1 gl-flex gl-justify-between gl-text-sm"
         >
-          <gl-chart-series-label :color="metric.color" class="gl-leading-normal gl-mr-7">
+          <gl-chart-series-label :color="metric.color" class="gl-mr-7 gl-leading-normal">
             <div v-for="attr in metric.attributes" :key="attr.key + attr.value">
               <span class="gl-font-bold">{{ attr.key }}: </span>{{ attr.value }}
             </div>
@@ -136,7 +136,7 @@ export default {
 
     <div
       v-if="cancelled"
-      class="gl-absolute gl-right-0 gl-left-0 gl-top-0 gl-bottom-0 gl-text-center gl-font-bold gl-font-lg gl-py-13"
+      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-0 gl-top-0 gl-py-13 gl-text-center gl-text-lg gl-font-bold"
     >
       <span>{{ $options.i18n.cancelledText }}</span>
     </div>

@@ -112,7 +112,7 @@ export default {
 
 <template>
   <gl-form>
-    <div class="gl-w-full gl-sm-w-75p">
+    <div class="gl-w-full sm:gl-w-3/4">
       <gl-form-group
         :label="$options.i18n.fields.name.title"
         label-size="sm"
@@ -166,11 +166,11 @@ export default {
         :invalid-feedback="$options.i18n.fields.rotationLength.error"
         :state="validationState.rotationLength"
       >
-        <div class="gl-display-flex">
+        <div class="gl-flex">
           <gl-form-input
             id="rotation-length"
             type="number"
-            class="gl-w-12 gl-mr-3"
+            class="gl-mr-3 gl-w-12"
             min="1"
             :value="form.rotationLength.length"
             @input="$emit('update-rotation-form', { type: 'rotationLength.length', value: $event })"
@@ -195,7 +195,7 @@ export default {
         :invalid-feedback="$options.i18n.fields.startsAt.error"
         :state="validationState.startsAt"
       >
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <gl-datepicker
             class="gl-mr-3"
             :value="form.startsAt.date"
@@ -230,7 +230,7 @@ export default {
         </div>
       </gl-form-group>
     </div>
-    <div class="gl-display-inline-block">
+    <div class="gl-inline-block">
       <gl-toggle
         :value="form.isEndDateEnabled"
         :label="$options.i18n.fields.endsAt.enableToggle"
@@ -253,7 +253,7 @@ export default {
           :invalid-feedback="$options.i18n.fields.endsAt.error"
           class="gl-mb-0"
         >
-          <div class="gl-display-flex gl-align-items-center">
+          <div class="gl-flex gl-items-center">
             <gl-datepicker
               class="gl-mr-3"
               :value="form.endsAt.date"
@@ -313,7 +313,7 @@ export default {
           :invalid-feedback="$options.i18n.fields.endsAt.error"
           class="gl-mb-0"
         >
-          <div class="gl-display-flex gl-align-items-center">
+          <div class="gl-flex gl-items-center">
             <span> {{ __('From') }} </span>
             <gl-dropdown
               data-testid="restricted-from"

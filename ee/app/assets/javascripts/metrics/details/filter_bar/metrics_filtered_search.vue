@@ -115,10 +115,10 @@ export default {
 
 <template>
   <div
-    class="gl-mt-3 gl-mb-6 gl-py-5 gl-px-3 gl-bg-gray-10 gl-border-b-1 gl-border-b-solid gl-border-t-1 gl-border-t-solid gl-border-gray-100"
+    class="gl-mb-6 gl-mt-3 gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
   >
     <filtered-search
-      class="filtered-search-box gl-display-flex gl-border-none"
+      class="filtered-search-box gl-flex gl-border-none"
       recent-searches-storage-key="recent-metrics-filter-search"
       namespace="metrics-details-filtered-search"
       :search-input-placeholder="$options.i18n.searchInputPlaceholder"
@@ -147,7 +147,7 @@ export default {
     <gl-button
       type="submit"
       :variant="loading ? 'danger' : 'confirm'"
-      class="gl-my-5 gl-mb-0!"
+      class="gl-my-5 !gl-mb-0"
       @click="onSubmit"
     >
       <template v-if="loading">

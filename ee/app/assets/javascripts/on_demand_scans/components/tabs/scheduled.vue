@@ -46,7 +46,7 @@ export default {
   >
     <template #cell(nextRun)="{ value: { date, time, timezone } }">
       <div class="gl-whitespace-nowrap"><gl-icon :size="12" name="calendar" /> {{ date }}</div>
-      <div class="gl-text-secondary gl-whitespace-nowrap">
+      <div class="gl-whitespace-nowrap gl-text-secondary">
         <gl-icon :size="12" name="clock" /> {{ time }} {{ getTimezoneCode(timezone) }}
       </div>
     </template>

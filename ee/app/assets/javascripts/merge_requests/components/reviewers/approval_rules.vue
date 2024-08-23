@@ -51,19 +51,19 @@ export default {
   fields: [
     {
       key: 'rule_name',
-      thClass: 'gl-text-secondary! gl-font-sm! !gl-font-semibold gl-border-t-0! w-60p',
-      class: 'gl-px-0! gl-py-4!',
+      thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-60p',
+      class: '!gl-px-0 !gl-py-4',
     },
     {
       key: 'rule_approvals',
-      thClass: 'gl-text-secondary! gl-font-sm! !gl-font-semibold gl-border-t-0! w-30p',
-      class: 'gl-px-0! gl-py-4!',
+      thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-30p',
+      class: '!gl-px-0 !gl-py-4',
     },
     {
       key: 'dropdown',
       label: '',
-      thClass: 'gl-border-t-0! w-30p',
-      class: 'gl-px-0! gl-py-4!',
+      thClass: '!gl-border-t-0 w-30p',
+      class: '!gl-px-0 !gl-py-4',
     },
   ],
 };
@@ -71,19 +71,19 @@ export default {
 
 <template>
   <div class="gl-mb-2">
-    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="gl-mb-0!">
+    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0">
       <template #head(rule_name)>{{ group.label }}</template>
       <template #head(rule_approvals)>{{ __('Approvals') }}</template>
 
       <template #cell(rule_name)="{ item }">{{ item.name }}</template>
       <template #cell(rule_approvals)="{ item }">{{ getApprovalsLeftText(item) }}</template>
       <template #cell(dropdown)="{ item }">
-        <div class="gl-display-flex gl-justify-content-end">
+        <div class="gl-flex gl-justify-end">
           <reviewer-dropdown :selected-reviewers="reviewers" :users="item.eligibleApprovers" />
         </div>
       </template>
     </gl-table-lite>
-    <div v-if="optionalRulesLength" class="gl-py-3 gl-border-b">
+    <div v-if="optionalRulesLength" class="gl-border-b gl-py-3">
       <gl-button
         category="tertiary"
         size="small"

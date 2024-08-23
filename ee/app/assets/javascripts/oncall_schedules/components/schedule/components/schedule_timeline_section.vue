@@ -54,7 +54,7 @@ export default {
 <template>
   <div class="timeline-section clearfix gl-sticky gl-top-0">
     <div>
-      <span class="timeline-header-label gl-text-gray-700 gl-float-left">{{
+      <span class="timeline-header-label gl-float-left gl-text-gray-700">{{
         presetIsDay ? __('Hour') : __('Date')
       }}</span>
     </div>

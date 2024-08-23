@@ -88,7 +88,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-flex-direction-row gl-align-items-center gl-gap-3">
+  <div class="gl-flex gl-flex-row gl-items-center gl-gap-3">
     <gl-collapsible-listbox
       v-model="groupByFunction"
       data-testid="group-by-function-dropdown"

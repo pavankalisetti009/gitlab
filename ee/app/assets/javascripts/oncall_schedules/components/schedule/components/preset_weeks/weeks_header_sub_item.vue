@@ -32,7 +32,7 @@ export default {
     getSubItemValueClass(subItem) {
       // Show dark color text only for the current date
       if (subItem.getTime() === this.$options.currentDate.getTime()) {
-        return 'gl-text-gray-900! gl-font-bold';
+        return '!gl-text-gray-900 gl-font-bold';
       }
 
       return '';
@@ -45,13 +45,13 @@ export default {
 </script>
 
 <template>
-  <div class="item-sublabel week-item-sublabel gl-pb-3 gl-relative gl-display-flex">
+  <div class="item-sublabel week-item-sublabel gl-relative gl-flex gl-pb-3">
     <span
       v-for="(subItem, index) in headerSubItems"
       :key="index"
       ref="weeklyDayCell"
       :class="getSubItemValueClass(subItem)"
-      class="sublabel-value gl-text-gray-700 gl-font-normal gl-text-center gl-flex-grow-1 gl-flex-basis-0"
+      class="sublabel-value gl-grow gl-basis-0 gl-text-center gl-font-normal gl-text-gray-700"
       data-testid="sublabel-value"
       >{{ getSubItemValue(subItem) }}</span
     >

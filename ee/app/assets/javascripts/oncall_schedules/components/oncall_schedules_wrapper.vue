@@ -109,7 +109,7 @@ export default {
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-3" />
 
     <template v-else-if="hasSchedules">
-      <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+      <div class="gl-flex gl-items-center gl-justify-between">
         <h1>{{ $options.i18n.title }}</h1>
         <gl-button
           v-if="userCanCreateSchedule"

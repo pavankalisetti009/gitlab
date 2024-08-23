@@ -111,7 +111,7 @@ export default {
         <router-link
           :to="{ name: $options.ROUTE_SHOW_AGENT, params: { agentId: item.routeId } }"
           data-testid="agent-item"
-          class="gl-text-body gl-leading-24"
+          class="gl-leading-24 gl-text-primary"
         >
           {{ item.name }}
         </router-link>

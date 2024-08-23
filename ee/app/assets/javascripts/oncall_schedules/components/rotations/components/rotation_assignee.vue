@@ -11,7 +11,7 @@ export const SHIFT_WIDTHS = {
   xs: 20,
 };
 
-const ROTATION_CENTER_CLASS = 'gl-rounded-base gl-display-flex gl-align-items-center';
+const ROTATION_CENTER_CLASS = 'gl-rounded-base gl-flex gl-items-center';
 export const TIME_DATE_FORMAT = 'mmmm d, yyyy, HH:MM ("UTC:" o)';
 
 export default {
@@ -85,17 +85,14 @@ export default {
 
 <template>
   <div
-    class="rotation-asignee-container gl-absolute gl-h-7 gl-mt-3 gl-pr-1"
+    class="rotation-asignee-container gl-absolute gl-mt-3 gl-h-7 gl-pr-1"
     :style="containerStyle"
   >
     <div
       :id="rotationAssigneeUniqueID"
       class="gl-h-6"
       :style="backgroundStyle"
-      :class="[
-        $options.ROTATION_CENTER_CLASS,
-        { 'gl-justify-content-center': hasRotationMobileViewText },
-      ]"
+      :class="[$options.ROTATION_CENTER_CLASS, { 'gl-justify-center': hasRotationMobileViewText }]"
       data-testid="rotation-assignee"
     >
       <div

@@ -87,7 +87,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-ml-auto gl-mb-4">
+  <div class="gl-mb-4 gl-ml-auto">
     <gl-button
       ref="button"
       icon="tanuki-ai"
@@ -111,7 +111,7 @@ export default {
           @close-button-clicked="dismiss"
         >
           <div v-outside="() => dismiss()">
-            <p class="gl-mb-2 -gl-mt-3">
+            <p class="-gl-mt-3 gl-mb-2">
               <gl-icon name="tanuki-ai" class="gl-mr-2" />
               <strong>{{ __('Introducing: Summarize code changes') }}</strong>
             </p>
