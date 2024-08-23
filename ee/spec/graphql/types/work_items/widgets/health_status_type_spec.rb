@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Types::WorkItems::Widgets::HealthStatusType, feature_category: :team_planning do
   let(:fields) do
-    %i[type widget_definition health_status rolled_up_health_status]
+    %i[type health_status rolled_up_health_status]
   end
 
   specify { expect(described_class.graphql_name).to eq('WorkItemWidgetHealthStatus') }

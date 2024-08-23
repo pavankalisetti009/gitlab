@@ -333,10 +333,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             widgets {
               type
               ... on WorkItemWidgetHealthStatus {
-                widgetDefinition {
-                  editable
-                  rollUp
-                }
                 healthStatus
                 rolledUpHealthStatus {
                   healthStatus
@@ -353,10 +349,6 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
             'widgets' => include(
               hash_including(
                 'type' => 'HEALTH_STATUS',
-                'widgetDefinition' => {
-                  'editable' => true,
-                  'rollUp' => false
-                },
                 'healthStatus' => 'atRisk',
                 'rolledUpHealthStatus' => match_array([
                   { 'healthStatus' => 'onTrack', 'count' => 0 },

@@ -34835,18 +34835,6 @@ Represents a generic widget definition.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgetdefinitiongenerictype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
 
-### `WorkItemWidgetDefinitionHealthStatus`
-
-Represents a health status widget definition.
-
-#### Fields
-
-| Name | Type | Description |
-| ---- | ---- | ----------- |
-| <a id="workitemwidgetdefinitionhealthstatuseditable"></a>`editable` | [`Boolean!`](#boolean) | Indicates whether editable health status is available. |
-| <a id="workitemwidgetdefinitionhealthstatusrollup"></a>`rollUp` | [`Boolean!`](#boolean) | Indicates whether rolled up health status is available. |
-| <a id="workitemwidgetdefinitionhealthstatustype"></a>`type` | [`WorkItemWidgetType!`](#workitemwidgettype) | Widget type. |
-
 ### `WorkItemWidgetDefinitionHierarchy`
 
 Represents a hierarchy widget definition.
@@ -34933,7 +34921,6 @@ Represents a health status widget.
 | <a id="workitemwidgethealthstatushealthstatus"></a>`healthStatus` | [`HealthStatus`](#healthstatus) | Health status of the work item. |
 | <a id="workitemwidgethealthstatusrolleduphealthstatus"></a>`rolledUpHealthStatus` **{warning-solid}** | [`[WorkItemWidgetHealthStatusCount!]`](#workitemwidgethealthstatuscount) | **Introduced** in GitLab 17.3. **Status**: Experiment. Rolled up health status of the work item. |
 | <a id="workitemwidgethealthstatustype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
-| <a id="workitemwidgethealthstatuswidgetdefinition"></a>`widgetDefinition` | [`WorkItemWidgetDefinitionHealthStatus`](#workitemwidgetdefinitionhealthstatus) | Health status widget definition. |
 
 ### `WorkItemWidgetHealthStatusCount`
 
@@ -40667,7 +40654,6 @@ Implementations:
 
 - [`WorkItemWidgetDefinitionAssignees`](#workitemwidgetdefinitionassignees)
 - [`WorkItemWidgetDefinitionGeneric`](#workitemwidgetdefinitiongeneric)
-- [`WorkItemWidgetDefinitionHealthStatus`](#workitemwidgetdefinitionhealthstatus)
 - [`WorkItemWidgetDefinitionHierarchy`](#workitemwidgetdefinitionhierarchy)
 - [`WorkItemWidgetDefinitionLabels`](#workitemwidgetdefinitionlabels)
 - [`WorkItemWidgetDefinitionWeight`](#workitemwidgetdefinitionweight)
