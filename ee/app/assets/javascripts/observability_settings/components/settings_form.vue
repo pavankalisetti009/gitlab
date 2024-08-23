@@ -1,13 +1,14 @@
 <script>
-import { GlButton, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlSprintf, GlLink } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 
 export default {
   components: {
-    GlButton,
     GlSprintf,
     GlLink,
+    SettingsBlock,
   },
   docsLink: `${DOCS_URL_IN_EE_DIR}/operations`,
   i18n: {
@@ -23,18 +24,16 @@ export default {
 </script>
 
 <template>
-  <section class="settings no-animate">
-    <div class="settings-header">
-      <h4 class="settings-title js-settings-toggle js-settings-toggle-trigger-only">
-        {{ $options.i18n.headerText }}
-      </h4>
-      <gl-button class="js-settings-toggle">{{ $options.i18n.expandBtnLabel }}</gl-button>
-      <p class="gl-text-secondary">
-        {{ $options.i18n.subHeaderText }}
-      </p>
-    </div>
+  <settings-block>
+    <template #title>
+      <span ref="sectionHeader">{{ $options.i18n.headerText }}</span>
+    </template>
 
-    <div class="settings-content">
+    <template #description>
+      <span ref="sectionSubHeader">{{ $options.i18n.subHeaderText }}</span>
+    </template>
+
+    <template #default>
       <p>
         <gl-sprintf :message="$options.i18n.introText">
           <template #docsLink>
@@ -44,6 +43,6 @@ export default {
           </template>
         </gl-sprintf>
       </p>
-    </div>
-  </section>
+    </template>
+  </settings-block>
 </template>

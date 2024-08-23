@@ -1,5 +1,6 @@
-import { GlButton, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlSprintf, GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import SettingsBlock from '~/vue_shared/components/settings/settings_block.vue';
 import SettingsForm from 'ee/observability_settings/components/settings_form.vue';
 import { DOCS_URL_IN_EE_DIR } from '~/lib/utils/url_utility';
 
@@ -8,24 +9,25 @@ describe('SettingsForm', () => {
 
   beforeEach(() => {
     wrapper = shallowMountExtended(SettingsForm, {
-      stubs: { GlSprintf },
+      stubs: { GlSprintf, SettingsBlock },
     });
   });
 
-  const findContent = () => wrapper.find('.settings-content');
+  const findContent = () => wrapper.findByTestId('settings-block-content');
+  const findToggleButton = () => wrapper.findByTestId('settings-block-toggle');
+
   it('renders a title', () => {
-    expect(wrapper.find('.settings-title').text()).toBe('Tracing, Metrics & Logs');
+    expect(wrapper.findComponent({ ref: 'sectionHeader' }).text()).toBe('Tracing, Metrics & Logs');
   });
 
   it('renders a subtitle', () => {
-    expect(wrapper.find('.gl-text-secondary').text()).toBe(
+    expect(wrapper.findComponent({ ref: 'sectionSubHeader' }).text()).toBe(
       'Enable tracing, metrics, or logs on your project.',
     );
   });
 
   it('renders an expand button', () => {
-    expect(wrapper.findComponent(GlButton).text()).toBe('Expand');
-    expect(wrapper.findComponent(GlButton).classes('js-settings-toggle')).toBe(true);
+    expect(findToggleButton().text()).toContain('Expand');
   });
 
   it('renders an intro text with link', () => {
