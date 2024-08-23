@@ -348,7 +348,7 @@ export default {
         @dismiss="hideErrors"
       >
         {{ errorMessage }}
-        <ul v-if="errors.length" class="gl-mt-3 gl-mb-0">
+        <ul v-if="errors.length" class="gl-mb-0 gl-mt-3">
           <li v-for="error in errors" :key="error" v-safe-html="error"></li>
         </ul>
       </gl-alert>
@@ -394,7 +394,7 @@ export default {
             <gl-icon
               id="scan-type-info"
               name="question-o"
-              class="gl-ml-2 gl-link gl-cursor-pointer"
+              class="gl-link gl-ml-2 gl-cursor-pointer"
             />
             <gl-popover target="scan-type-info" placement="top" triggers="focus hover">
               <span>{{ $options.i18n.scanTypeTooltip }}</span>
@@ -402,7 +402,7 @@ export default {
           </gl-form-group>
 
           <gl-form-group class="gl-mb-3" :label="__('Branch')">
-            <small class="form-text gl-text-secondary gl-mt-0 gl-mb-5">
+            <small class="form-text gl-mb-5 gl-mt-0 gl-text-secondary">
               {{ $options.i18n.branchSelectorHelpText }}
             </small>
             <ref-selector
@@ -413,12 +413,12 @@ export default {
               :project-id="projectPath"
               :translations="$options.i18n.scanConfigurationBranchDropDown"
             />
-            <div v-if="!defaultBranch" class="gl-text-red-500 gl-mt-3">
+            <div v-if="!defaultBranch" class="gl-mt-3 gl-text-red-500">
               {{ $options.i18n.scanConfigurationDefaultBranchLabel }}
             </div>
           </gl-form-group>
           <gl-form-group
-            class="gl-mt-6 gl-mb-3"
+            class="gl-mb-3 gl-mt-6"
             data-testid="on-demand-scan-runner-tags"
             optional
             :label="$options.i18n.runnerTagsLabel"

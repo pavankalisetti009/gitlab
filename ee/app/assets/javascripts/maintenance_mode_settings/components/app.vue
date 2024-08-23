@@ -40,7 +40,7 @@ export default {
   <section>
     <gl-loading-icon v-if="loading" size="xl" />
     <gl-form v-else @submit.prevent="updateMaintenanceModeSettings">
-      <div class="gl-display-flex gl-align-items-center gl-mb-4">
+      <div class="gl-mb-4 gl-flex gl-items-center">
         <gl-toggle
           v-model="maintenanceEnabled"
           :label="$options.i18n.toggleLabel"

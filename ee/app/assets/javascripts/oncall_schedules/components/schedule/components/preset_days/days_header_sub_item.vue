@@ -20,20 +20,20 @@ export default {
         return '';
       }
 
-      return 'gl-text-gray-900! gl-font-bold';
+      return '!gl-text-gray-900 gl-font-bold';
     },
   },
 };
 </script>
 
 <template>
-  <div class="item-sublabel gl-pb-3 gl-relative gl-display-flex" data-testid="day-item-sublabel">
+  <div class="item-sublabel gl-relative gl-flex gl-pb-3" data-testid="day-item-sublabel">
     <span
       v-for="hour in $options.HOURS_IN_DAY"
       :key="hour"
       ref="dailyHourCell"
       :class="getSubItemValueClass(hour)"
-      class="sublabel-value gl-text-gray-700 gl-font-normal gl-text-center gl-flex-grow-1 gl-flex-basis-0"
+      class="sublabel-value gl-grow gl-basis-0 gl-text-center gl-font-normal gl-text-gray-700"
       data-testid="sublabel-value"
       >{{ hour - 1 }}</span
     >

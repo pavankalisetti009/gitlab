@@ -164,7 +164,7 @@ export default {
           extraAttrs: {
             'aria-label': this.$options.i18n.deleteProfile,
             'data-testid': 'delete-scan-button-desktop',
-            class: 'gl-text-red-500!',
+            class: '!gl-text-red-500',
             boundary: 'viewport',
             variant: 'danger',
           },
@@ -213,7 +213,7 @@ export default {
       <div
         v-if="canEditOnDemandScans"
         data-testid="saved-scanners-actions"
-        class="gl-md-w-full gl-text-right"
+        class="gl-text-right md:gl-w-full"
       >
         <gl-button
           size="small"
@@ -235,7 +235,7 @@ export default {
           size="small"
           icon="ellipsis_v"
           class="gl-hidden md:!gl-inline-flex"
-          toggle-class="gl-border-0! !gl-shadow-none"
+          toggle-class="!gl-border-0 !gl-shadow-none"
           :toggle-text="$options.i18n.moreActions"
           :title="$options.i18n.moreActions"
         >

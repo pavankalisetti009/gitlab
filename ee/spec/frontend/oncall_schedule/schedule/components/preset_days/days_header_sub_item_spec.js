@@ -47,12 +47,12 @@ describe('ee/oncall_schedules/components/schedule/components/preset_days/days_he
       const currentHour = currentDate.getHours();
       expect(findSublabels().at(currentHour).classes()).toStrictEqual([
         'sublabel-value',
-        'gl-text-gray-700',
-        'gl-font-normal',
+        'gl-grow',
+        'gl-basis-0',
         'gl-text-center',
-        'gl-flex-grow-1',
-        'gl-flex-basis-0',
-        'gl-text-gray-900!',
+        'gl-font-normal',
+        'gl-text-gray-700',
+        '!gl-text-gray-900',
         'gl-font-bold',
       ]);
       expect(findDaysHeaderCurrentIndicator().exists()).toBe(true);

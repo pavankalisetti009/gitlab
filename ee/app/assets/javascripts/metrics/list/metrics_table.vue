@@ -104,7 +104,7 @@ export default {
 
 <template>
   <div>
-    <h4 class="gl-block md:!gl-hidden gl-my-5">{{ $options.i18n.title }}</h4>
+    <h4 class="gl-my-5 gl-block md:!gl-hidden">{{ $options.i18n.title }}</h4>
 
     <gl-table
       :items="formattedMetrics"
@@ -130,7 +130,7 @@ export default {
           v-if="metricAttributesTruncatedItems(item) > 0"
           v-gl-tooltip="metricAttributesTooltipContent(item)"
           data-testid="metric-attributes-tooltip"
-          class="gl-link gl-hover-text-decoration-underline"
+          class="gl-link hover:gl-underline"
         >
           <gl-sprintf :message="$options.i18n.moreAttributes">
             <template #count>{{ metricAttributesTruncatedItems(item) }}</template>

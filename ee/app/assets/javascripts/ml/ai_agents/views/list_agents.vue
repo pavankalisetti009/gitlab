@@ -30,7 +30,7 @@ export default {
   <div>
     <title-area>
       <template #title>
-        <div class="gl-flex-grow-1 gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-grow gl-items-center">
           <span>{{ s__('AIAgents|AI Agents') }}</span>
           <gl-experiment-badge />
         </div>

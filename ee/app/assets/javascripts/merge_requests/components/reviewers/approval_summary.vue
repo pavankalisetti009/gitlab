@@ -97,9 +97,9 @@ export default {
 <template>
   <div
     v-if="isLoading"
-    class="gl-animate-skeleton-loader gl-mt-3 gl-h-4 gl-rounded-base gl-w-full"
+    class="gl-animate-skeleton-loader gl-mt-3 gl-h-4 gl-w-full gl-rounded-base"
   ></div>
-  <p v-else-if="mergeRequest" :class="{ 'text-muted': approvalsOptional }" class="gl-mt-3 gl-mb-0">
+  <p v-else-if="mergeRequest" :class="{ 'text-muted': approvalsOptional }" class="gl-mb-0 gl-mt-3">
     {{ approvalsLeftMessage }}
   </p>
 </template>

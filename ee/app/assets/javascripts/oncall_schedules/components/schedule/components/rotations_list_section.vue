@@ -90,14 +90,14 @@ export default {
 <template>
   <div class="list-section">
     <gl-loading-icon v-if="loading" size="sm" />
-    <div v-else-if="rotations.length === 0 && !loading" class="gl-clearfix gl-border-t">
+    <div v-else-if="rotations.length === 0 && !loading" class="gl-border-t gl-clearfix">
       <span
-        class="details-cell gl-sticky gl-left-0 gl-float-left gl-display-flex gl-justify-content-space-between gl-align-items-center"
+        class="details-cell gl-sticky gl-left-0 gl-float-left gl-flex gl-items-center gl-justify-between"
       >
-        <span class="gl-text-truncate gl-text-gray-700">{{ $options.i18n.addRotationLabel }}</span>
+        <span class="gl-truncate gl-text-gray-700">{{ $options.i18n.addRotationLabel }}</span>
       </span>
       <span
-        class="timeline-cell gl-float-left gl-overflow-hidden gl-relative"
+        class="timeline-cell gl-relative gl-float-left gl-overflow-hidden"
         :style="timelineStyles"
       >
         <current-day-indicator
@@ -108,13 +108,13 @@ export default {
       </span>
     </div>
     <div v-else>
-      <div v-for="rotation in rotations" :key="rotation.id" class="gl-clearfix gl-border-t">
+      <div v-for="rotation in rotations" :key="rotation.id" class="gl-border-t gl-clearfix">
         <span
-          class="details-cell gl-sticky gl-left-0 gl-float-left gl-display-flex gl-justify-content-space-between gl-align-items-center"
+          class="details-cell gl-sticky gl-left-0 gl-float-left gl-flex gl-items-center gl-justify-between"
         >
           <span
             v-gl-tooltip="{ boundary: 'viewport', title: rotation.name }"
-            class="gl-text-truncate gl-text-gray-700"
+            class="gl-truncate gl-text-gray-700"
             :aria-label="rotation.name"
             :data-testid="`rotation-name-${rotation.id}`"
             >{{ rotation.name }}</span
@@ -145,7 +145,7 @@ export default {
           </gl-button-group>
         </span>
         <span
-          class="timeline-cell gl-float-left gl-overflow-hidden gl-relative"
+          class="timeline-cell gl-relative gl-float-left gl-overflow-hidden"
           :style="timelineStyles"
           data-testid="timeline-cell"
         >

@@ -137,7 +137,7 @@ export default {
         <user-date :date="item.createdAt" />
       </template>
     </gl-table>
-    <div class="gl-flex gl-flex-col gl-items-center gl-mt-4">
+    <div class="gl-mt-4 gl-flex gl-flex-col gl-items-center">
       <gl-keyset-pagination
         v-bind="pendingMemberApprovals.pageInfo"
         :disabled="isLoading"

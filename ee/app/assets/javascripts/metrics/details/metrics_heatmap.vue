@@ -102,7 +102,7 @@ export default {
     />
     <div
       v-if="cancelled"
-      class="gl-absolute gl-right-0 gl-left-0 gl-top-0 gl-bottom-0 gl-text-center gl-font-bold gl-font-lg gl-py-2"
+      class="gl-absolute gl-bottom-0 gl-left-0 gl-right-0 gl-top-0 gl-py-2 gl-text-center gl-text-lg gl-font-bold"
     >
       <span>{{ $options.i18n.cancelledText }}</span>
     </div>

@@ -267,15 +267,15 @@ export default {
   <div>
     <gl-card
       class="gl-mt-5"
-      :class="{ 'gl-border-bottom-0': !scheduleVisible }"
+      :class="{ 'gl-border-b-0': !scheduleVisible }"
       body-class="gl-bg-gray-10 gl-py-0"
       :header-class="{ 'gl-bg-white': true, 'gl-rounded-small': !scheduleVisible }"
     >
       <template #header>
-        <div class="gl-display-flex gl-align-items-flex-start" data-testid="schedule-header">
-          <div class="gl-flex-grow-1">
-            <h2 class="gl-font-bold gl-m-0">{{ schedule.name }}</h2>
-            <p class="gl-text-gray-500 gl-m-0">
+        <div class="gl-flex gl-items-start" data-testid="schedule-header">
+          <div class="gl-grow">
+            <h2 class="gl-m-0 gl-font-bold">{{ schedule.name }}</h2>
+            <p class="gl-m-0 gl-text-gray-500">
               {{ scheduleInfo }}
             </p>
           </div>
@@ -283,7 +283,7 @@ export default {
             v-if="userCanCreateSchedule"
             v-gl-tooltip.hover
             :title="$options.i18n.moreActions"
-            toggle-class="gl-mr-2 gl-py-2!"
+            toggle-class="gl-mr-2 !gl-py-2"
             class="gl-border-r"
             data-testid="schedule-edit-button-group"
             icon="ellipsis_v"
@@ -318,11 +318,8 @@ export default {
         </div>
       </template>
       <gl-collapse :visible="scheduleVisible">
-        <div
-          class="gl-mt-3 gl-display-flex gl-justify-content-space-between"
-          data-testid="rotations-header"
-        >
-          <h3 class="gl-font-lg gl-m-0">{{ $options.i18n.rotationTitle }}</h3>
+        <div class="gl-mt-3 gl-flex gl-justify-between" data-testid="rotations-header">
+          <h3 class="gl-m-0 gl-text-lg">{{ $options.i18n.rotationTitle }}</h3>
           <gl-button v-if="userCanCreateSchedule" v-gl-modal="addRotationModalId" variant="link"
             >{{ $options.i18n.addARotation }}
           </gl-button>
@@ -330,9 +327,9 @@ export default {
 
         <hr class="gl-my-3" />
 
-        <div class="gl-display-flex gl-align-items-center gl-mb-3">
-          <gl-icon name="calendar" :size="14" class="gl-text-gray-700 gl-mr-2" />
-          <div class="gl-flex-grow-1 gl-text-gray-700 gl-font-bold">{{ scheduleRange }}</div>
+        <div class="gl-mb-3 gl-flex gl-items-center">
+          <gl-icon name="calendar" :size="14" class="gl-mr-2 gl-text-gray-700" />
+          <div class="gl-grow gl-font-bold gl-text-gray-700">{{ scheduleRange }}</div>
 
           <gl-collapsible-listbox
             :items="$options.presetListboxItems"

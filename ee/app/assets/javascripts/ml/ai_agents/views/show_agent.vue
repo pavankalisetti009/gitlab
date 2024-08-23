@@ -139,7 +139,7 @@ export default {
     <div v-else-if="latestVersion">
       <title-area>
         <template #title>
-          <div class="gl-flex-grow-1 gl-display-flex gl-align-items-center">
+          <div class="gl-flex gl-grow gl-items-center">
             <span>{{ agentWithVersion.name }}</span>
             <gl-experiment-badge />
           </div>
@@ -158,7 +158,7 @@ export default {
         :is-loading="isLoading"
         :predefined-prompts="$options.predefinedPrompts"
         :tool-name="s__('AIAgent|Agent')"
-        class="ai-agent-chat !gl-w-full gl-static gl-border-r gl-border-transparent"
+        class="ai-agent-chat gl-border-r gl-static !gl-w-full gl-border-transparent"
         :empty-state-title="s__('AIAgent|Try out your agent')"
         :empty-state-description="
           s__('AIAgent|Your agent\'s system prompt will be applied to the chat input.')
