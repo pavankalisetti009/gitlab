@@ -37,24 +37,6 @@ RSpec.describe API::UsageData, feature_category: :service_ping do
 
         expect(response).to have_gitlab_http_status(:ok)
       end
-
-      context 'with transition approach' do
-        before do
-          allow(Gitlab::Tracking::AiTracking)
-            .to receive(:track_via_code_suggestions?).with(event_name, anything).and_return(true)
-        end
-
-        it 'does not trigger AI tracking' do
-          expect(Gitlab::Tracking::AiTracking).not_to receive(:track_event)
-
-          post api(endpoint, user), params: {
-            event: event_name,
-            additional_properties: additional_properties
-          }
-
-          expect(response).to have_gitlab_http_status(:ok)
-        end
-      end
     end
   end
 end

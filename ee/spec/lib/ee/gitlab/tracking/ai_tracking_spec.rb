@@ -68,32 +68,4 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       let(:event_name) { 'request_duo_chat_response' }
     end
   end
-
-  describe 'track_via_code_suggestions?' do
-    let(:current_user) { build_stubbed(:user) }
-
-    context 'with disabled direct code suggestions' do
-      before do
-        allow(::Gitlab::CurrentSettings).to receive(:disabled_direct_code_suggestions).and_return(true)
-      end
-
-      it 'is true for code_suggestions_requested event' do
-        expect(described_class.track_via_code_suggestions?('code_suggestions_requested', current_user)).to be_truthy
-      end
-
-      it 'is false with different event' do
-        expect(described_class.track_via_code_suggestions?('irrelevant_event', current_user)).to be_falsey
-      end
-    end
-
-    context 'with enabled direct code suggestions' do
-      before do
-        allow(::Gitlab::CurrentSettings).to receive(:disabled_direct_code_suggestions).and_return(false)
-      end
-
-      it 'is false' do
-        expect(described_class.track_via_code_suggestions?('code_suggestions_requested', current_user)).to be_falsey
-      end
-    end
-  end
 end
