@@ -106,6 +106,11 @@ The following GitLab analyzers have reached [End of Support](../../../update/ter
 status and do not receive updates. They were replaced by the Semgrep-based analyzer with
 [GitLab-managed rules](rules.md).
 
+After you upgrade to GitLab 17.3.1, a one-time data migration [automatically resolves](#automatic-vulnerability-resolution) findings from the analyzers that reached End of Support.
+This includes all of the analyzers listed below except for SpotBugs, because SpotBugs still scans Groovy code.
+The migration only resolves vulnerabilities that you haven't confirmed or dismissed, and it doesn't affect vulnerabilities that were [automatically translated to Semgrep-based scanning](analyzers.md#transition-to-semgrep-based-scanning).
+For details, see [issue 444926](https://gitlab.com/gitlab-org/gitlab/-/issues/444926).
+
 | Language / framework         | [Analyzer](analyzers.md) used for scanning                                                                   | Minimum supported GitLab version         | End Of Support GitLab version                                 |
 |------------------------------|--------------------------------------------------------------------------------------------------------------| ---------------------------------        | ------------------------------------------------------------- |
 | .NET Core                    | [Security Code Scan](https://gitlab.com/gitlab-org/security-products/analyzers/security-code-scan)           | 11.0                                     | [16.0](https://gitlab.com/gitlab-org/gitlab/-/issues/390416)  |
