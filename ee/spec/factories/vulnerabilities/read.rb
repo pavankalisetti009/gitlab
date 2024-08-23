@@ -14,7 +14,6 @@ FactoryBot.define do
     after(:build) do |vulnerability_read, _|
       vulnerability_read.archived = vulnerability_read.project&.archived
       vulnerability_read.traversal_ids = vulnerability_read.project&.namespace&.traversal_ids
-      vulnerability_read.namespace_id = vulnerability_read.project&.namespace_id
     end
   end
 

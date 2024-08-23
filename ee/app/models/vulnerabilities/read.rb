@@ -9,6 +9,8 @@ module Vulnerabilities
     include SafelyChangeColumnDefault
     include IgnorableColumns
 
+    ignore_column :namespace_id, remove_with: '17.6', remove_after: '2024-11-21'
+
     declarative_enum DismissalReasonEnum
 
     SEVERITY_COUNT_LIMIT = 1001
