@@ -6,11 +6,10 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
   let_it_be(:num_components) { 283 }
   let_it_be(:pipeline) { build_stubbed(:ci_pipeline) }
   let_it_be(:sbom_report) { create(:ci_reports_sbom_report, num_components: num_components) }
-  let(:vulnerability_info) { instance_double('Sbom::Ingestion::Vulnerabilities') }
 
   let(:sequencer) { ::Ingestion::Sequencer.new }
 
-  subject(:execute) { described_class.execute(pipeline, sbom_report, vulnerability_info) }
+  subject(:execute) { described_class.execute(pipeline, sbom_report, {}) }
 
   describe '#execute' do
     before do

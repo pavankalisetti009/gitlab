@@ -62,17 +62,11 @@ RSpec.describe Sbom::Ingestion::OccurrenceMapCollection, feature_category: :depe
         ref: "pkg:deb/debian/readline-common@8.1-1?distro=debian-11.4" }
     ].map do |attributes|
       component = Gitlab::Ci::Reports::Sbom::Component.new(**component_attributes(attributes))
-      an_occurrence_map(Sbom::Ingestion::OccurrenceMap.new(component, sbom_report.source, vulnerability_info))
+      an_occurrence_map(Sbom::Ingestion::OccurrenceMap.new(component, sbom_report.source, {}))
     end
   end
 
-  let(:vulnerability_info) { instance_double('Sbom::Ingestion::Vulnerabilities') }
-
-  subject(:occurrence_map_collection) { described_class.new(sbom_report, vulnerability_info) }
-
-  before do
-    allow(vulnerability_info).to receive(:fetch).and_return({ vulnerability_ids: [], highest_severity: nil })
-  end
+  subject(:occurrence_map_collection) { described_class.new(sbom_report, {}) }
 
   RSpec::Matchers.define :an_occurrence_map do |expected|
     attributes = %i[
