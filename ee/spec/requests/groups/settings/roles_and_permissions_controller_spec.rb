@@ -6,38 +6,35 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
   include AdminModeHelper
 
   let_it_be(:user) { create(:user) }
+  let_it_be(:admin) { create(:admin) }
   let_it_be_with_reload(:group) { create(:group) }
+  let_it_be(:member_role) { create(:member_role, namespace: group, name: 'Custom role') }
+  let_it_be(:role_id) { member_role.id }
 
   before do
     stub_saas_features(gitlab_com_subscriptions: true)
   end
 
-  describe 'GET #index' do
-    subject(:get_index) { get(group_settings_roles_and_permissions_path(group)) }
+  shared_examples 'page is not found' do
+    it 'has correct status' do
+      get_method
 
-    shared_examples 'page is not found' do
-      it 'has correct status' do
-        get_index
-
-        expect(response).to have_gitlab_http_status(:not_found)
-      end
+      expect(response).to have_gitlab_http_status(:not_found)
     end
+  end
 
+  shared_examples 'access control' do
     shared_examples 'page is found under proper conditions' do
       it 'returns a 200 status code' do
-        get_index
+        get_method
 
         expect(response).to have_gitlab_http_status(:ok)
       end
 
       context 'when accessing a subgroup' do
-        let_it_be(:subgroup) { create(:group, parent: group) }
+        let_it_be(:group) { create(:group, parent: group) }
 
-        it 'is not found' do
-          get group_settings_roles_and_permissions_path(subgroup)
-
-          expect(response).to have_gitlab_http_status(:not_found)
-        end
+        it_behaves_like 'page is not found'
       end
 
       context 'when `custom_roles` license is disabled' do
@@ -71,8 +68,6 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
     end
 
     context 'with admins' do
-      let_it_be(:admin) { create(:admin) }
-
       before do
         sign_in(admin)
         enable_admin_mode!(admin)
@@ -109,5 +104,59 @@ RSpec.describe Groups::Settings::RolesAndPermissionsController, feature_category
 
       it_behaves_like 'page is found under proper conditions'
     end
+  end
+
+  shared_examples 'role existence check' do
+    before do
+      group.add_member(user, :owner)
+      sign_in(user)
+      stub_licensed_features(custom_roles: true)
+    end
+
+    context 'with a valid custom role' do
+      it 'returns a 200 status code' do
+        get_method
+
+        expect(response).to have_gitlab_http_status(:ok)
+      end
+    end
+
+    context 'when the ID is for a non-existent custom role' do
+      let_it_be(:role_id) { non_existing_record_id }
+
+      it_behaves_like 'page is not found'
+    end
+
+    context 'when the ID is for a non-existent standard role' do
+      let_it_be(:role_id) { 'NONEXISTENT_ROLE' }
+
+      it_behaves_like 'page is not found'
+    end
+
+    context 'when the ID is for the minimal access role' do
+      let_it_be(:role_id) { 'MINIMAL_ACCESS' }
+
+      it_behaves_like 'page is not found'
+    end
+  end
+
+  describe 'GET #index' do
+    subject(:get_method) { get(group_settings_roles_and_permissions_path(group)) }
+
+    it_behaves_like 'access control'
+  end
+
+  describe 'GET #show' do
+    subject(:get_method) { get(group_settings_roles_and_permission_path(group, role_id)) }
+
+    it_behaves_like 'access control'
+    it_behaves_like 'role existence check'
+  end
+
+  describe 'GET #edit' do
+    subject(:get_method) { get(edit_group_settings_roles_and_permission_path(group, role_id)) }
+
+    it_behaves_like 'access control'
+    it_behaves_like 'role existence check'
   end
 end

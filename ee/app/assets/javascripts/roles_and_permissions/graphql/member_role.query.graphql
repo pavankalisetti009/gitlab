@@ -3,8 +3,12 @@ query memberRole($id: MemberRoleID!) {
     id
     name
     description
+    createdAt
+    editPath
+    membersCount
     baseAccessLevel {
       stringValue
+      humanAccess
     }
     enabledPermissions {
       nodes {
