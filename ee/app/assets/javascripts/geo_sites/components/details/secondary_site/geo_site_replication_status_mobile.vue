@@ -21,8 +21,8 @@ export default {
 
 <template>
   <div>
-    <div class="gl-mb-5 gl-display-flex gl-flex-direction-column" data-testid="sync-status">
-      <span class="gl-font-sm gl-mb-3">{{ translations.syncStatus }}</span>
+    <div class="gl-mb-5 gl-flex gl-flex-col" data-testid="sync-status">
+      <span class="gl-mb-3 gl-text-sm">{{ translations.syncStatus }}</span>
       <geo-site-progress-bar
         v-if="item.syncValues"
         :title="
@@ -34,10 +34,10 @@ export default {
         :target="`mobile-sync-progress-${item.component}`"
         :values="item.syncValues"
       />
-      <span v-else class="gl-text-gray-400 gl-font-sm">{{ translations.nA }}</span>
+      <span v-else class="gl-text-sm gl-text-gray-400">{{ translations.nA }}</span>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column" data-testid="verification-status">
-      <span class="gl-font-sm gl-mb-3">{{ translations.verifStatus }}</span>
+    <div class="gl-flex gl-flex-col" data-testid="verification-status">
+      <span class="gl-mb-3 gl-text-sm">{{ translations.verifStatus }}</span>
       <geo-site-progress-bar
         v-if="item.verificationValues"
         :title="
@@ -51,7 +51,7 @@ export default {
         :success-label="translations.verified"
         :unavailable-label="translations.nothingToVerify"
       />
-      <span v-else class="gl-text-gray-400 gl-font-sm">{{ translations.nA }}</span>
+      <span v-else class="gl-text-sm gl-text-gray-400">{{ translations.nA }}</span>
     </div>
   </div>
 </template>

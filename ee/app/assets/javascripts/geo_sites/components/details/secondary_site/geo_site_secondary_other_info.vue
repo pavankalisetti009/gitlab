@@ -16,7 +16,7 @@ export default {
     unknown: __('Unknown'),
     ok: __('OK'),
   },
-  classTimestamp: 'gl-text-gray-500 gl-font-sm gl-font-normal',
+  classTimestamp: 'gl-text-gray-500 gl-text-sm gl-font-normal',
   components: {
     GlCard,
     TimeAgo,
@@ -72,13 +72,13 @@ export default {
     <template #header>
       <h5 class="gl-my-0">{{ $options.i18n.otherInfo }}</h5>
     </template>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.dbReplicationLag }}</span>
-      <span class="gl-font-bold gl-mt-2" data-testid="replication-lag">{{ dbReplicationLag }}</span>
+      <span class="gl-mt-2 gl-font-bold" data-testid="replication-lag">{{ dbReplicationLag }}</span>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.lastEventId }}</span>
-      <div class="gl-font-bold gl-mt-2" data-testid="last-event">
+      <div class="gl-mt-2 gl-font-bold" data-testid="last-event">
         <template v-if="hasEventInfo">
           <span v-if="site.lastEventId">{{ site.lastEventId }}</span>
           <span v-if="lastEventTimestamp" :class="$options.classTimestamp">
@@ -88,9 +88,9 @@ export default {
         <span v-else>{{ $options.i18n.unknown }}</span>
       </div>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.lastCursorEventId }}</span>
-      <div class="gl-font-bold gl-mt-2" data-testid="last-cursor-event">
+      <div class="gl-mt-2 gl-font-bold" data-testid="last-cursor-event">
         <template v-if="hasCursorEventInfo">
           <span v-if="site.cursorLastEventId">{{ site.cursorLastEventId }}</span>
           <span v-if="lastCursorEventTimestamp" :class="$options.classTimestamp">
@@ -100,9 +100,9 @@ export default {
         <span v-else>{{ $options.i18n.unknown }}</span>
       </div>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.storageConfig }}</span>
-      <span class="gl-font-bold gl-mt-2" data-testid="storage-shards">{{
+      <span class="gl-mt-2 gl-font-bold" data-testid="storage-shards">{{
         storageShardsStatus
       }}</span>
     </div>

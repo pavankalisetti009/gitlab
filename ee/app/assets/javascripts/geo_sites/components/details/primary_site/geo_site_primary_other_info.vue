@@ -72,21 +72,21 @@ export default {
         :unavailable-label="$options.i18n.noAvailableSlots"
       />
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.replicationSlotWAL }}</span>
-      <span class="gl-font-bold gl-mt-2" data-testid="replication-slot-wal">{{
+      <span class="gl-mt-2 gl-font-bold" data-testid="replication-slot-wal">{{
         replicationSlotWAL
       }}</span>
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.lastEventId }}</span>
-      <div class="gl-font-bold gl-mt-2" data-testid="last-event">
+      <div class="gl-mt-2 gl-font-bold" data-testid="last-event">
         <template v-if="hasEventInfo">
           <span>{{ site.lastEventId }}</span>
           <time-ago
             v-if="lastEventTimestampInMillis"
             :time="lastEventTimestampInMillis"
-            class="gl-text-gray-500 gl-font-sm gl-font-normal"
+            class="gl-text-sm gl-font-normal gl-text-gray-500"
           />
         </template>
         <span v-else>{{ $options.i18n.unknown }}</span>

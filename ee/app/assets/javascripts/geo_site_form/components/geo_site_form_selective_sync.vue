@@ -68,7 +68,7 @@ export default {
 
 <template>
   <div ref="geoSiteFormSelectiveSyncContainer">
-    <h2 class="gl-font-size-h2 gl-my-5">{{ $options.i18n.syncSettings }}</h2>
+    <h2 class="gl-my-5 gl-text-size-h2">{{ $options.i18n.syncSettings }}</h2>
     <p class="gl-mb-5">
       {{ $options.i18n.syncSubtitle }}
     </p>
@@ -77,7 +77,7 @@ export default {
       data-testid="selective-sync-form-group"
     >
       <template #label>
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <label for="site-selective-synchronization-field" class="gl-mb-0">{{
             $options.i18n.selectiveSyncFieldLabel
           }}</label>
@@ -85,7 +85,7 @@ export default {
             ref="selectiveSyncPopover"
             tabindex="0"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-pointer gl-ml-2"
+            class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
           />
           <gl-popover
             :target="() => $refs.selectiveSyncPopover.$el"
@@ -93,7 +93,7 @@ export default {
             triggers="hover focus"
             :title="$options.i18n.selectiveSyncFieldLabel"
           >
-            <p class="gl-font-base">
+            <p class="gl-text-base">
               {{ $options.i18n.selectiveSyncPopoverText }}
             </p>
             <gl-link :href="$options.SELECTIVE_SYNC_MORE_INFO" target="_blank">{{
@@ -141,7 +141,7 @@ export default {
       data-testid="object-storage-form-group"
     >
       <template #label>
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <label for="site-object-storage-field" class="gl-mb-0">{{
             $options.i18n.objectStorageFieldLabel
           }}</label>
@@ -149,7 +149,7 @@ export default {
             ref="objectStoragePopover"
             tabindex="0"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-pointer gl-ml-2"
+            class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
           />
           <gl-popover
             :target="() => $refs.objectStoragePopover.$el"
@@ -157,7 +157,7 @@ export default {
             triggers="hover focus"
             :title="$options.i18n.objectStorageFieldLabel"
           >
-            <p class="gl-font-base">
+            <p class="gl-text-base">
               {{ $options.i18n.objectStorageFieldPopoverText }}
             </p>
             <gl-link :href="$options.OBJECT_STORAGE_MORE_INFO" target="_blank">{{

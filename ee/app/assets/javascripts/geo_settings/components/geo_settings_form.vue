@@ -87,7 +87,7 @@ export default {
         @blur="checkAllowedIp"
       />
     </gl-form-group>
-    <section class="gl-display-flex">
+    <section class="gl-flex">
       <gl-button
         data-testid="settingsSaveButton"
         class="gl-mr-3"

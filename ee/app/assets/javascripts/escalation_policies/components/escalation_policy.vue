@@ -142,15 +142,15 @@ export default {
   <div>
     <gl-card
       class="gl-mt-5"
-      :class="{ 'gl-border-bottom-0': !isPolicyVisible }"
+      :class="{ 'gl-border-b-0': !isPolicyVisible }"
       :body-class="bodyClass"
       :header-class="{ 'gl-py-3': true, 'gl-rounded-base': !isPolicyVisible }"
     >
       <template #header>
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <gl-button
             v-gl-tooltip
-            class="gl-mr-2 gl-p-0!"
+            class="gl-mr-2 !gl-p-0"
             :title="policyVisibleChevronIconLabel"
             :aria-label="policyVisibleChevronIconLabel"
             category="tertiary"
@@ -159,7 +159,7 @@ export default {
             <gl-icon :size="12" :name="policyVisibleChevronIcon" />
           </gl-button>
 
-          <h3 class="gl-font-bold gl-font-lg gl-m-0">{{ policy.name }}</h3>
+          <h3 class="gl-m-0 gl-text-lg gl-font-bold">{{ policy.name }}</h3>
           <gl-button-group class="gl-ml-auto">
             <gl-button
               v-gl-modal="editPolicyModalId"
@@ -183,10 +183,10 @@ export default {
         @hidden="bodyClass = 'gl-p-0'"
         @show="bodyClass = 'gl-p-5'"
       >
-        <p v-if="policy.description" class="gl-text-gray-500 gl-mb-5">
+        <p v-if="policy.description" class="gl-mb-5 gl-text-gray-500">
           {{ policy.description }}
         </p>
-        <div class="gl-border-solid gl-border-1 gl-border-gray-100 gl-rounded-base gl-p-5">
+        <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-p-5">
           <div v-if="!policy.rules.length" class="gl-text-red-500">
             <gl-icon name="status_warning" class="gl-mr-3" /> {{ $options.i18n.noRules }}
           </div>
@@ -195,9 +195,9 @@ export default {
               v-for="(rule, ruleIndex) in policy.rules"
               :key="rule.id"
               :class="{ 'gl-mb-5': ruleIndex !== policy.rules.length - 1 }"
-              class="gl-display-flex gl-align-items-center escalation-rule-row"
+              class="escalation-rule-row gl-flex gl-items-center"
             >
-              <span class="rule-condition gl-md-w-full">
+              <span class="rule-condition md:gl-w-full">
                 <gl-sprintf :message="$options.i18n.escalationRuleCondition">
                   <template #clockIcon>
                     <gl-icon name="clock" class="gl-mr-3" />
@@ -214,14 +214,14 @@ export default {
               </span>
 
               <span
-                class="right-arrow gl-relative gl-min-w-7 gl-bg-gray-900 gl-hidden lg:gl-block gl-flex-shrink-0 gl-mx-5"
+                class="right-arrow gl-relative gl-mx-5 gl-hidden gl-min-w-7 gl-shrink-0 gl-bg-gray-900 lg:gl-block"
                 :style="{ width: getArrowLength(ruleIndex) }"
               >
-                <i class="right-arrow-head gl-absolute gl-p-1 gl-border-solid"></i>
+                <i class="right-arrow-head gl-absolute gl-border-solid gl-p-1"></i>
               </span>
 
-              <span class="gl-display-flex gl-align-items-center gl-min-w-0">
-                <span v-gl-tooltip class="gl-text-truncate" :title="getActionTooltip(rule)">
+              <span class="gl-flex gl-min-w-0 gl-items-center">
+                <span v-gl-tooltip class="gl-truncate" :title="getActionTooltip(rule)">
                   <gl-sprintf :message="$options.i18n.escalationRuleAction">
                     <template #notificationIcon>
                       <gl-icon name="notifications" class="gl-mr-3" />

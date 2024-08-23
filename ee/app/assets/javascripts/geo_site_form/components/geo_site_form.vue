@@ -79,11 +79,11 @@ export default {
   <form>
     <geo-site-form-core
       :site-data="siteData"
-      class="gl-pb-4 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid"
+      class="gl-border-b-1 gl-border-b-gray-100 gl-pb-4 gl-border-b-solid"
     />
     <geo-site-form-selective-sync
       v-if="!siteData.primary"
-      class="gl-pb-4 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid"
+      class="gl-border-b-1 gl-border-b-gray-100 gl-pb-4 gl-border-b-solid"
       :site-data="siteData"
       :selective-sync-types="selectiveSyncTypes"
       :sync-shards-options="syncShardsOptions"
@@ -91,7 +91,7 @@ export default {
     />
     <geo-site-form-capacities :site-data="siteData" />
     <section
-      class="gl-display-flex gl-align-items-center gl-py-5 gl-mt-6 gl-border-t-solid gl-border-t-1 gl-border-gray-100"
+      class="gl-mt-6 gl-flex gl-items-center gl-border-t-1 gl-border-gray-100 gl-py-5 gl-border-t-solid"
     >
       <gl-button
         id="site-save-button"

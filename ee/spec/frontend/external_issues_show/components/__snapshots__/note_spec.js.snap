@@ -23,13 +23,13 @@ exports[`JiraIssuesNote template renders note 1`] = `
   </timeline-icon-stub>
   <div>
     <div
-      class="gl-display-flex gl-justify-content-space-between"
+      class="gl-flex gl-justify-between"
     >
       <div
-        class="gl-align-items-center gl-display-flex gl-mb-3"
+        class="gl-flex gl-items-center gl-mb-3"
       >
         <gl-link-stub
-          class="gl-font-bold gl-mr-2 gl-text-black-normal gl-whitespace-nowrap"
+          class="gl-font-bold gl-mr-2 gl-text-default gl-whitespace-nowrap"
           href="http://127.0.0.1:3000/root"
         >
           Justin Ho

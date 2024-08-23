@@ -102,7 +102,7 @@ export default {
     <gl-loading-icon v-if="isLoading" size="lg" class="gl-mt-3" />
 
     <template v-else-if="hasPolicies">
-      <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+      <div class="gl-flex gl-items-center gl-justify-between">
         <h2>{{ $options.i18n.title }}</h2>
       </div>
 

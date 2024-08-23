@@ -164,7 +164,7 @@ export default {
 
 <template>
   <div>
-    <h1 class="page-title gl-font-size-h-display gl-pb-5">
+    <h1 class="page-title gl-pb-5 gl-text-size-h-display">
       {{ __('New Epic') }}
     </h1>
     <gl-form class="common-note-form new-epic-form" @submit.prevent="save">
@@ -217,7 +217,7 @@ export default {
         >
       </gl-form-group>
       <gl-form-group :label="__('Start date')" :description="$options.i18n.epicDatesHint">
-        <div class="gl-display-inline-block gl-mb-3 gl-sm-mb-0">
+        <div class="gl-mb-3 gl-inline-block sm:gl-mb-0">
           <gl-datepicker
             v-model="startDateFixed"
             :max-date="dueDateFixed"
@@ -235,7 +235,7 @@ export default {
         >
       </gl-form-group>
       <gl-form-group :label="__('Due date')" :description="$options.i18n.epicDatesHint">
-        <div class="gl-display-inline-block gl-mb-3 gl-sm-mb-0">
+        <div class="gl-mb-3 gl-inline-block sm:gl-mb-0">
           <gl-datepicker
             v-model="dueDateFixed"
             :min-date="startDateFixed"

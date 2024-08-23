@@ -64,10 +64,10 @@ export default {
 <template>
   <article class="geo-site-form-container">
     <div class="gl-my-5">
-      <div class="gl-display-flex gl-align-items-center gl-pb-3">
-        <h2 class="gl-font-size-h2 gl-my-0">{{ pageTitle }}</h2>
+      <div class="gl-flex gl-items-center gl-pb-3">
+        <h2 class="gl-my-0 gl-text-size-h2">{{ pageTitle }}</h2>
         <gl-badge
-          class="rounded-pill gl-font-sm gl-px-3 gl-py-2 gl-ml-3"
+          class="rounded-pill gl-ml-3 gl-px-3 gl-py-2 gl-text-sm"
           :variant="pillDetails.variant"
           >{{ pillDetails.label }}</gl-badge
         >

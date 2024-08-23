@@ -187,10 +187,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-contents">
+  <div class="gl-contents">
     <gl-disclosure-dropdown
       ref="epicActionsDropdownMobile"
-      class="gl-block md:!gl-hidden gl-w-full gl-mt-3"
+      class="gl-mt-3 gl-block gl-w-full md:!gl-hidden"
       category="secondary"
       :auto-close="false"
       toggle-class="gl-w-full"

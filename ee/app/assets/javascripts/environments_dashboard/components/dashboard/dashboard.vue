@@ -191,7 +191,7 @@ export default {
       <div v-if="projects.length">
         <div v-for="project in projects" :key="project.id">
           <project-header :project="project" @remove="removeProject" />
-          <div class="gl-grid md:gl-grid-cols-3 gl-gap-5">
+          <div class="gl-grid gl-gap-5 md:gl-grid-cols-3">
             <environment
               v-for="environment in project.environments"
               :key="environment.id"
@@ -206,7 +206,7 @@ export default {
           :per-page="projectsPerPage"
           :total-items="totalProjects"
           align="center"
-          class="gl-w-full gl-mt-3"
+          class="gl-mt-3 gl-w-full"
         />
       </div>
 

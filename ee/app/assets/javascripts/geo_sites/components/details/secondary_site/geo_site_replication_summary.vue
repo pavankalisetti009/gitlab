@@ -32,11 +32,11 @@ export default {
     <template #header>
       <h5 class="gl-my-0">{{ $options.i18n.replicationSummary }}</h5>
     </template>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.replicationStatus }}</span>
       <geo-site-replication-status class="gl-mt-3" :site="site" />
     </div>
-    <div class="gl-display-flex gl-flex-direction-column gl-mb-5">
+    <div class="gl-mb-5 gl-flex gl-flex-col">
       <span>{{ $options.i18n.syncSettings }}</span>
       <geo-site-sync-settings class="gl-mt-2" :site="site" />
     </div>

@@ -51,11 +51,11 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-align-items-center">
+  <div class="gl-flex gl-items-center">
     <span class="gl-font-bold" data-testid="sync-type">{{ syncType }}</span>
     <span
       v-if="!eventTimestampEmpty"
-      class="gl-ml-3 gl-text-gray-500 gl-font-sm"
+      class="gl-ml-3 gl-text-sm gl-text-gray-500"
       data-testid="sync-status-event-info"
     >
       {{ syncStatusEventInfo }}

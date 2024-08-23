@@ -231,7 +231,7 @@ export default {
           <h3 class="gl-new-card-title">
             <gl-link
               id="user-content-resource-links"
-              class="anchor gl-absolute gl-text-decoration-none"
+              class="anchor gl-absolute gl-no-underline"
               href="#resource-links"
               aria-hidden="true"
             />

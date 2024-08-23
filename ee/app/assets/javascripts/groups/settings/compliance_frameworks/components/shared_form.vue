@@ -252,7 +252,7 @@ export default {
               <gl-link
                 :href="$options.i18n.pipelineConfigurationInputDisabledPopoverLink"
                 target="_blank"
-                class="gl-font-sm"
+                class="gl-text-sm"
               >
                 {{ content }}</gl-link
               >
@@ -270,7 +270,7 @@ export default {
     />
 
     <div
-      class="gl-display-flex gl-pt-5 gl-border-t-1 gl-border-t-solid gl-border-t-gray-100 gl-justify-content-end gl-gap-3"
+      class="gl-flex gl-justify-end gl-gap-3 gl-border-t-1 gl-border-t-gray-100 gl-pt-5 gl-border-t-solid"
     >
       <gl-button data-testid="cancel-btn" @click="onCancel">{{
         $options.i18n.cancelBtnText

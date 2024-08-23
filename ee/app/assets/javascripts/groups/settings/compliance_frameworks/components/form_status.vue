@@ -22,7 +22,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-border-t-1 gl-border-t-solid gl-border-t-gray-100 gl-pt-5">
+  <div class="gl-border-t-1 gl-border-t-gray-100 gl-pt-5 gl-border-t-solid">
     <gl-alert v-if="error" class="gl-mb-5" variant="danger" :dismissible="false">
       {{ error }}
     </gl-alert>

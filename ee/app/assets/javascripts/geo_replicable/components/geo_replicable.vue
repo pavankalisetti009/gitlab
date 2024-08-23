@@ -36,7 +36,7 @@ export default {
       :last-synced="item.lastSyncedAt"
       :last-verified="item.verifiedAt"
     />
-    <div class="gl-display-flex gl-justify-content-center gl-mt-6">
+    <div class="gl-mt-6 gl-flex gl-justify-center">
       <gl-keyset-pagination
         v-bind="paginationData"
         @next="fetchReplicableItems($options.NEXT)"

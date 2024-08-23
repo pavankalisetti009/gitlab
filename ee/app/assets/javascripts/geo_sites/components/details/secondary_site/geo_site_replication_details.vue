@@ -84,9 +84,9 @@ export default {
 
 <template>
   <div>
-    <div class="gl-py-5 gl-border-b gl-border-t">
+    <div class="gl-border-t gl-border-b gl-py-5">
       <gl-button
-        class="gl-mr-1 gl-p-0!"
+        class="gl-mr-1 !gl-p-0"
         category="tertiary"
         variant="confirm"
         :icon="chevronIcon"

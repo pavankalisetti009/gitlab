@@ -42,20 +42,20 @@ export default {
 </script>
 
 <template>
-  <gl-card header-class="gl-display-flex gl-align-items-center">
+  <gl-card header-class="gl-flex gl-items-center">
     <template #header>
       <h5 class="gl-my-0">{{ $options.i18n.verificationInfo }}</h5>
       <gl-icon
         ref="verificationInfo"
         name="question-o"
-        class="gl-text-blue-600 gl-cursor-pointer gl-ml-2"
+        class="gl-ml-2 gl-cursor-pointer gl-text-blue-600"
       />
       <gl-popover
         :target="() => $refs.verificationInfo && $refs.verificationInfo.$el"
         placement="top"
         triggers="hover focus"
       >
-        <p class="gl-font-base">
+        <p class="gl-text-base">
           {{ $options.i18n.replicationHelpText }}
         </p>
         <gl-link :href="$options.HELP_INFO_URL" target="_blank">{{

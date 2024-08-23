@@ -33,7 +33,7 @@ export default {
         v-for="link in resourceLinks"
         :key="link.id"
         :data-key="link.id"
-        class="list-item gl-py-0! gl-border-0!"
+        class="list-item !gl-border-0 !gl-py-0"
       >
         <resource-link-item
           data-testid="resource-link-item"

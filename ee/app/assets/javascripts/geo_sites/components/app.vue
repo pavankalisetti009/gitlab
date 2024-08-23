@@ -126,7 +126,7 @@ export default {
     <template v-if="!isLoading">
       <div v-if="hasSites">
         <geo-sites-filters :total-sites="sites.length" />
-        <h4 v-if="primarySites.length" class="gl-font-lg gl-my-5">
+        <h4 v-if="primarySites.length" class="gl-my-5 gl-text-lg">
           {{ $options.i18n.primarySite }}
         </h4>
         <geo-sites
@@ -135,7 +135,7 @@ export default {
           :site="site"
           data-testid="primary-sites"
         />
-        <h4 v-if="secondarySites.length" class="gl-font-lg gl-my-5">
+        <h4 v-if="secondarySites.length" class="gl-my-5 gl-text-lg">
           {{ $options.i18n.secondarySite }}
         </h4>
         <geo-sites
