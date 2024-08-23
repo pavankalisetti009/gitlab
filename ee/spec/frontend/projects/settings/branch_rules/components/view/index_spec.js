@@ -19,7 +19,7 @@ import {
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
   statusChecksRulesMock,
-  protectionMockProps,
+  protectionPropsMock,
 } from './mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -99,17 +99,17 @@ describe('View branch rules in enterprise edition', () => {
 
   it('renders a branch protection component for push rules', () => {
     expect(findAllowedToPush().props()).toMatchObject({
+      roles: protectionPropsMock.roles,
       header: 'Allowed to push and merge',
       count: 2,
-      ...protectionMockProps,
     });
   });
 
   it('renders a branch protection component for merge rules', () => {
     expect(findAllowedToMerge().props()).toMatchObject({
+      roles: protectionPropsMock.roles,
       header: 'Allowed to merge',
       count: 2,
-      ...protectionMockProps,
     });
   });
 
