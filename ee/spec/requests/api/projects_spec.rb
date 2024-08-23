@@ -150,6 +150,16 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response['external_authorization_classification_label']).to eq('the-label')
         end
+
+        context 'when authenticated with a token that has the ai_workflows scope' do
+          let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
+
+          it 'is successful' do
+            get api("/projects/#{project.id}", oauth_access_token: oauth_token)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
       end
 
       context 'when the external service denies access' do
