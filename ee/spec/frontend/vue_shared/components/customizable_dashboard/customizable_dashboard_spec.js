@@ -271,7 +271,7 @@ describe('CustomizableDashboard', () => {
 
       expect(link.text()).toBe('GitLab Duo Pro seats usage');
       expect(link.attributes('href')).toBe(
-        '/help/subscriptions/subscription-add-ons#assign-gitlab-duo-pro-seats',
+        '/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats',
       );
     });
   });

@@ -177,7 +177,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
               'DuoProTrial|Congratulations, your free GitLab Duo Pro trial is activated and will expire on ' \
                 '%{exp_date}. The new license might take a minute to show on the page. To give members access to new ' \
                 'GitLab Duo Pro features, <a target="_blank" rel="noopener noreferrer" ' \
-                'href="/help/subscriptions/subscription-add-ons#assign-gitlab-duo-pro-seats">assign them</a> ' \
+                'href="/help/subscriptions/subscription-add-ons#assign-gitlab-duo-seats">assign them</a> ' \
                 'to GitLab Duo Pro seats.'
             ), exp_date: expires_on)
           )
