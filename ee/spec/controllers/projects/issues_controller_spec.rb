@@ -406,6 +406,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
         end
 
         context 'when observability_log_details parameters exist' do
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
+
           it 'does not prefill the issue title and description' do
             subject
 
@@ -416,6 +422,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
         context 'when observability_log_details parameters do not exist' do
           let(:log_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
 
           it 'does not prefill the issue title and description' do
             subject
@@ -435,6 +447,15 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
           it 'does prefill the issue title and description' do
             subject
 
+            expect(assigns(:observability_values)).to eq({
+              log: {
+                service: 'frauddetectionservice',
+                severityNumber: 9,
+                fingerprint: '8d6c44aebc683e3c',
+                timestamp: '2024-07-04T14:52:22.693752628Z',
+                traceId: '72b72def-09b3-e29f-e195-7c6db5ee599f'
+              }
+            })
             expect(assigns(:issue).title).to eq("Issue created from log of 'frauddetectionservice' service at 2024-07-04T14:52:22.693752628Z")
             expect(assigns(:issue).description).to eq(
               <<~TEXT
@@ -454,6 +475,12 @@ RSpec.describe Projects::IssuesController, feature_category: :team_planning do
 
         context 'when observability_log_details parameters do not exist' do
           let(:log_params) { {} }
+
+          it 'does not populate observability_values' do
+            subject
+
+            expect(assigns(:observability_values)).to be_nil
+          end
 
           it 'does not prefill the issue title and description' do
             subject
