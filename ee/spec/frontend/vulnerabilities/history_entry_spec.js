@@ -1,4 +1,4 @@
-import { shallowMount } from '@vue/test-utils';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import EventItem from 'ee/vue_shared/security_reports/components/event_item.vue';
 import HistoryEntry from 'ee/vulnerabilities/components/history_entry.vue';
 
@@ -28,7 +28,7 @@ describe('History Entry', () => {
   const createWrapper = (...notes) => {
     const discussion = { notes };
 
-    wrapper = shallowMount(HistoryEntry, {
+    wrapper = shallowMountExtended(HistoryEntry, {
       propsData: {
         discussion,
       },
@@ -37,8 +37,8 @@ describe('History Entry', () => {
   };
 
   const eventItem = () => wrapper.findComponent(EventItem);
-  const newComment = () => wrapper.findComponent({ ref: 'newComment' });
-  const existingComments = () => wrapper.findAllComponents({ ref: 'existingComment' });
+  const newComment = () => wrapper.findByTestId('new-comment');
+  const existingComments = () => wrapper.findAllByTestId('existing-comment');
   const commentAt = (index) => existingComments().at(index);
 
   it('passes the expected values to the event item component', () => {
