@@ -13,7 +13,7 @@ import memberRoleQuery from 'ee/roles_and_permissions/graphql/member_role.query.
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
 import { BASE_ROLES } from '~/access_level/constants';
-import { mockMemberRoleQueryResponse } from '../mock_data';
+import { getMemberRoleQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
 
@@ -36,7 +36,7 @@ describe('CreateMemberRole', () => {
 
   const createMutationSuccessHandler = jest.fn().mockResolvedValue(mutationSuccessData);
   const updateMutationSuccessHandler = jest.fn().mockResolvedValue(mutationSuccessData);
-  const defaultMemberRoleHandler = jest.fn().mockResolvedValue(mockMemberRoleQueryResponse);
+  const defaultMemberRoleHandler = jest.fn().mockResolvedValue(getMemberRoleQueryResponse());
 
   const createComponent = ({
     stubs,

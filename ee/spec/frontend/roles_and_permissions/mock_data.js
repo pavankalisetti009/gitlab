@@ -119,16 +119,19 @@ export const mockInstanceMemberRoles = {
   },
 };
 
-export const mockMemberRoleQueryResponse = {
-  data: {
-    memberRole: {
-      id: 1,
-      name: 'Custom role',
-      description: 'Custom role description',
-      baseAccessLevel: { stringValue: 'DEVELOPER' },
-      enabledPermissions: {
-        nodes: [{ value: 'A' }, { value: 'B' }],
-      },
-    },
+export const mockMemberRole = {
+  id: 1,
+  name: 'Custom role',
+  description: 'Custom role description',
+  createdAt: '2024-08-04T12:20:43Z',
+  editPath: 'role/edit/path',
+  membersCount: 0,
+  baseAccessLevel: { stringValue: 'DEVELOPER', humanAccess: 'Developer' },
+  enabledPermissions: {
+    nodes: [{ value: 'A' }, { value: 'B' }],
   },
 };
+
+export const getMemberRoleQueryResponse = (memberRole = mockMemberRole) => ({
+  data: { memberRole },
+});

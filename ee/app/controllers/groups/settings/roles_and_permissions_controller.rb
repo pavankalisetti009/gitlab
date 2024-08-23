@@ -4,6 +4,7 @@ module Groups
   module Settings
     class RolesAndPermissionsController < Groups::ApplicationController
       include ::GitlabSubscriptions::SubscriptionHelper
+      include ::EE::RolesAndPermissions # rubocop: disable Cop/InjectEnterpriseEditionModule -- EE-only concern
 
       feature_category :user_management
 
