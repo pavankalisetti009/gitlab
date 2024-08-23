@@ -117,6 +117,7 @@ RSpec.describe Groups::IssuesController, feature_category: :team_planning do
           .and(
             change { updatable_issues.map { |i| i.subscribed?(developer, project) } }.from([true] * 2).to([false] * 2)
           )
+          .and(change { ResourceMilestoneEvent.count }.from(0).to(2))
       end
 
       context 'when setting arguments to null or none' do
