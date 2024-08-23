@@ -11,7 +11,7 @@
         = _('License Compliance')
   = render 'license_compliance'
 
-- if (::Gitlab::CurrentSettings.gitlab_dedicated_instance? || Feature.enabled?(:pre_receive_secret_detection_beta_release)) && License.feature_available?(:pre_receive_secret_detection)
+- if License.feature_available?(:pre_receive_secret_detection)
   .settings-section{ data: { testid: 'admin-secret-detection-settings' } }
     .settings-sticky-header
       .settings-sticky-header-inner
