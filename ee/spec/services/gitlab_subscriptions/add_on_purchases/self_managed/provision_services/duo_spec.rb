@@ -17,13 +17,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     let(:namespace) { nil }
 
     let!(:current_license) do
+      add_on_products = {}
+      add_on_products[:duo_pro] = [{ quantity: quantity_duo_pro }] if quantity_duo_pro > 0
+      add_on_products[:duo_enterprise] = [{ quantity: quantity_duo_enterprise }] if quantity_duo_enterprise > 0
+
       create_current_license(
         cloud_licensing_enabled: true,
         restrictions: {
-          code_suggestions_seat_count: quantity_duo_pro,
-          add_on_products: {
-            duo_enterprise: [{ quantity: quantity_duo_enterprise }]
-          },
+          add_on_products: add_on_products,
           subscription_name: 'A-S00000001'
         }
       )

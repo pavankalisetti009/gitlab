@@ -11,20 +11,25 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     let!(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
 
     let(:dummy_add_on_license_class) do
-      seat_count_on_license = seat_count
-
       Class.new(described_class) do
-        define_method :seat_count_on_license do
-          seat_count_on_license
-        end
-
         def name
           :code_suggestions
+        end
+
+        def name_in_license
+          :duo_pro
         end
       end
     end
 
-    let(:restrictions) { { seat_count: seat_count } }
+    let(:restrictions) do
+      {
+        add_on_products: {
+          "duo_pro" => [{ "quantity" => seat_count }]
+        }
+      }
+    end
+
     let(:seat_count) { 1 }
 
     describe "#seat_count" do
