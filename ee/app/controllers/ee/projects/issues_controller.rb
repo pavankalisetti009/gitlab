@@ -12,6 +12,7 @@ module EE
         include DescriptionDiffActions
         include GeoInstrumentation
         include GitlabSubscriptions::SeatCountAlert
+        include Observability::ObservabilityIssuesHelper
 
         before_action :disable_query_limiting_ee, only: [:update]
         before_action only: [:new, :create] do
@@ -23,10 +24,8 @@ module EE
         end
 
         before_action only: :new do
-          if can?(current_user, :read_observability, project) && params[:observability_metric_details]
-            parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_metric_details]))
-
-            @observability_values = { metric: { name: parsed['name'], type: "#{parsed['type'].downcase}_type" } }
+          if can?(current_user, :read_observability, project)
+            @observability_values = gather_observability_values(params)
           end
         end
 

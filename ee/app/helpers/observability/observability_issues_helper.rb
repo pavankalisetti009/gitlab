@@ -6,6 +6,26 @@ module Observability
     include ::Observability::LogsIssuesHelper
     include ::Observability::TracingIssuesHelper
 
+    def gather_observability_values(params)
+      if params[:observability_metric_details].present?
+        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_metric_details]))
+
+        { metric: { name: parsed['name'], type: "#{parsed['type'].downcase}_type" } }
+      elsif params[:observability_log_details].present?
+        parsed = ::Gitlab::Json.parse(CGI.unescape(params[:observability_log_details]))
+
+        {
+          log: {
+            service: parsed['service'],
+            severityNumber: parsed['severityNumber'],
+            fingerprint: parsed['fingerprint'],
+            timestamp: parsed['timestamp'],
+            traceId: parsed['traceId']
+          }
+        }
+      end
+    end
+
     def observability_issue_params
       return {} unless can?(current_user, :read_observability, container)
 

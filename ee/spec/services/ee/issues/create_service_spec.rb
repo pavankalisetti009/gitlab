@@ -359,6 +359,60 @@ RSpec.describe Issues::CreateService, feature_category: :team_planning do
       end
     end
 
+    context 'when handling issues linked to observability logs' do
+      before do
+        project.add_developer(user)
+      end
+
+      let(:additional_params) do
+        {
+          observability_links: {
+            log_service_name: "test service name",
+            log_severity_number: 9,
+            log_timestamp: 1.day.ago.to_date,
+            log_trace_id: "fa12d360-54cd-c4db-5241-ccf7841d3e72",
+            log_fingerprint: "03fe551c28e5c64b"
+          }
+        }
+      end
+
+      let(:execute) { service.execute }
+      let(:returned_issue) { execute[:issue] }
+
+      context 'when observability is enabled and licensed' do
+        before do
+          stub_licensed_features(observability: true)
+        end
+
+        it "creates a logs connection" do
+          expect { execute }.to change { ::Observability::LogsIssuesConnection.count }.by(1)
+        end
+
+        context 'when no o11y params exist' do
+          let(:additional_params) { {} }
+
+          it "creates no logs connection" do
+            expect { execute }.not_to change { ::Observability::LogsIssuesConnection.count }
+          end
+
+          it "creates an issue" do
+            expect { execute }.to change { ::Issue.count }.by(1)
+          end
+        end
+      end
+
+      context 'when observability is not enabled and licensed' do
+        before do
+          stub_feature_flags(observability_features: false)
+          stub_licensed_features(observability: false)
+        end
+
+        it "creates no logs connection" do
+          expect { execute }.not_to change { ::Observability::LogsIssuesConnection.count }
+        end
+      end
+    end
+
     it_behaves_like 'new issuable with scoped labels' do
       let(:parent) { project }
       let(:service_result) { described_class.new(**args).execute }
