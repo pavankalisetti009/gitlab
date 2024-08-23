@@ -8,7 +8,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
-  let(:cloud_connector_url) { 'https://duo-workflow-service.example.com' }
+  let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
   let(:oauth_token) { create(:oauth_access_token, user: user, scopes: [:ai_workflows]) }
 
   describe 'POST /ai/duo_workflows/workflows' do
@@ -146,7 +146,7 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
     let(:path) { '/ai/duo_workflows/direct_access' }
 
     before do
-      allow(Gitlab.config.cloud_connector).to receive(:base_url).and_return cloud_connector_url
+      allow(Gitlab.config.duo_workflow).to receive(:service_url).and_return duo_workflow_service_url
     end
 
     context 'when the duo_workflows feature flag is disabled for the user' do
@@ -213,9 +213,10 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
         expect(response).to have_gitlab_http_status(:created)
         expect(json_response['gitlab_rails']['base_url']).to eq(Gitlab.config.gitlab.url)
         expect(json_response['gitlab_rails']['token']).to eq('oauth_token')
-        expect(json_response['duo_workflow_service']['base_url']).to eq("duo-workflow-service.example.com:443")
+        expect(json_response['duo_workflow_service']['base_url']).to eq("duo-workflow-service.example.com:50052")
         expect(json_response['duo_workflow_service']['token']).to eq('duo_workflow_token')
         expect(json_response['duo_workflow_service']['headers']['header_key']).to eq("header_value")
+        expect(json_response['duo_workflow_service']['secure']).to eq(Gitlab::DuoWorkflow::Client.secure?)
       end
 
       context 'when authenticated with a token that has the ai_workflows scope' do

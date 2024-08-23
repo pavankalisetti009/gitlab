@@ -58,6 +58,53 @@ RSpec.describe '1_settings' do
     end
   end
 
+  describe 'duo_workflow' do
+    before do
+      Settings.duo_workflow = config
+    end
+
+    context 'when service_url is set' do
+      let(:config) do
+        {
+          service_url: "duo-workflow-service.example.com:50052",
+          secure: false
+        }
+      end
+
+      it 'uses provided config' do
+        load_settings
+
+        expect(Settings.duo_workflow.service_url).to eq('duo-workflow-service.example.com:50052')
+        expect(Settings.duo_workflow.secure).to eq(false)
+      end
+    end
+
+    context 'when service_url is not set' do
+      let(:config) do
+        {
+          service_url: ""
+        }
+      end
+
+      it 'defaults to cloud connector config' do
+        stub_env("CLOUD_CONNECTOR_BASE_URL", 'https://www.cloud.example.com')
+
+        load_settings
+        expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:443')
+        expect(Settings.duo_workflow.secure).to eq(true)
+      end
+
+      it 'infers secure and port from scheme' do
+        stub_env("CLOUD_CONNECTOR_BASE_URL", 'http://www.cloud.example.com')
+
+        load_settings
+
+        expect(Settings.duo_workflow.service_url).to eq('www.cloud.example.com:80')
+        expect(Settings.duo_workflow.secure).to eq(false)
+      end
+    end
+  end
+
   def load_settings
     load Rails.root.join('config/initializers/1_settings.rb')
   end
