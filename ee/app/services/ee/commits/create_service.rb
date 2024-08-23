@@ -12,18 +12,12 @@ module EE
         super
 
         check_free_user_cap_over_limit! # order matters here, this needs to come before size check for storage limits
-        check_seat_overage!
         validate_repository_size!
       end
 
       def check_free_user_cap_over_limit!
         ::Namespaces::FreeUserCap::Enforcement.new(project.root_ancestor)
                                               .git_check_over_limit!(::Commits::CreateService::ValidationError)
-      end
-
-      def check_seat_overage!
-        ::Namespaces::BlockSeatOverages::Enforcement.new(project.root_ancestor)
-          .git_check_seat_overage!(::Commits::CreateService::ValidationError)
       end
 
       def validate_repository_size!

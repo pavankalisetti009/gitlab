@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe Commits::CreateService, feature_category: :source_code_management do
   include NamespaceStorageHelpers
-  include BillableMembersHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:group) { create(:group) }
@@ -110,44 +109,6 @@ RSpec.describe Commits::CreateService, feature_category: :source_code_management
 
         expect(result[:status]).to be(:error)
         expect(result[:message]).to match(/Your top-level group is over the user limit/)
-      end
-    end
-
-    context 'when the group is over the number of seats in its subscription', :saas,
-      :use_clean_rails_memory_store_caching do
-      before do
-        create(:gitlab_subscription, :premium, namespace: group, seats: 1)
-
-        project.add_developer(create(:user))
-
-        stub_billable_members_reactive_cache(group)
-      end
-
-      context 'when block seat overages is enabled' do
-        it 'raises an error' do
-          expect(Gitlab::ErrorTracking).to receive(:log_exception)
-            .with(instance_of(Commits::CreateService::ValidationError))
-            .and_call_original
-
-          result = service.execute
-
-          expect(result[:status]).to be(:error)
-          expect(result[:message]).to match(/Your top-level group is over the number of seats in its subscription/)
-        end
-      end
-
-      context 'when block seat overages is disabled' do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
-        it 'creates a commit' do
-          expect(service).to receive(:create_commit!)
-
-          result = service.execute
-
-          expect(result[:status]).to be(:success)
-        end
       end
     end
   end

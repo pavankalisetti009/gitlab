@@ -4,7 +4,6 @@ require 'spec_helper'
 
 RSpec.describe MergeRequests::MergeService, feature_category: :source_code_management do
   include NamespaceStorageHelpers
-  include BillableMembersHelpers
 
   let_it_be(:user) { create(:user) }
   let_it_be(:merge_request, reload: true) { create(:merge_request, :simple) }
@@ -108,42 +107,6 @@ RSpec.describe MergeRequests::MergeService, feature_category: :source_code_manag
         service.execute(merge_request)
 
         expect(merge_request.merge_error).to match(/Your top-level group is over the user limit/)
-      end
-    end
-
-    context 'when the group is over the number of seats in its subscription', :saas, :use_clean_rails_memory_store_caching do
-      before do
-        group = create(:group)
-
-        create(:gitlab_subscription, :premium, namespace: group, seats: 1)
-
-        project.update!(namespace: group)
-
-        project.add_developer(create(:user))
-
-        stub_billable_members_reactive_cache(group)
-      end
-
-      context 'when block seat overages is enabled' do
-        it 'persists the correct error message' do
-          service.execute(merge_request)
-
-          expect(merge_request.merge_error).to match(/Your top-level group is over the number of seats in its subscription/)
-          expect(merge_request).not_to be_merged
-        end
-      end
-
-      context 'when block seat overages is disabled' do
-        before do
-          stub_feature_flags(block_seat_overages: false)
-        end
-
-        it 'merges the merge request' do
-          service.execute(merge_request)
-
-          expect(merge_request.merge_error).to be_nil
-          expect(merge_request).to be_merged
-        end
       end
     end
 

@@ -8,7 +8,6 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
   include WorkhorseLfsHelpers
   include EE::GeoHelpers
   include NamespaceStorageHelpers
-  include BillableMembersHelpers
 
   let(:user) { create(:user) }
   let!(:lfs_object) { create(:lfs_object, :with_file) }
@@ -176,42 +175,6 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
                 expect(response).to have_gitlab_http_status(:not_acceptable)
                 expect(json_response['documentation_url']).to include('/help', 'free_user_limit')
                 expect(json_response['message']).to match(/Your top-level group is over the user limit/)
-              end
-            end
-
-            context 'when the group is over the number of seats in the subscription', :saas, :use_clean_rails_memory_store_caching do
-              let(:namespace) { create(:group) }
-
-              before do
-                project.update!(namespace: namespace)
-
-                create(:gitlab_subscription, :premium, namespace: namespace, seats: 1)
-
-                namespace.add_developer(create(:user))
-
-                stub_billable_members_reactive_cache(namespace)
-              end
-
-              context 'when block seat overages is enabled' do
-                it 'responds with status 406', :aggregate_failures do
-                  batch_request
-
-                  expect(response).to have_gitlab_http_status(:not_acceptable)
-                  expect(json_response['documentation_url']).to include('/help', 'read_only_namespaces')
-                  expect(json_response['message']).to match(/Your top-level group is over the number of seats in its subscription/)
-                end
-              end
-
-              context 'when block seat overages is disabled' do
-                before do
-                  stub_feature_flags(block_seat_overages: false)
-                end
-
-                it 'accepts the push', :aggregate_failures do
-                  batch_request
-
-                  expect(response).to have_gitlab_http_status(:ok)
-                end
               end
             end
           end

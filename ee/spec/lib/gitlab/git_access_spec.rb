@@ -7,7 +7,6 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
   include AdminModeHelper
   include NamespaceStorageHelpers
   include SessionHelpers
-  include BillableMembersHelpers
 
   let_it_be_with_reload(:user) { create(:user) }
 
@@ -376,37 +375,6 @@ RSpec.describe Gitlab::GitAccess, feature_category: :system_access do
 
     it 'rejects the push' do
       expect { push_changes }.to raise_error(described_class::ForbiddenError, /Your top-level group is over the user limit/)
-    end
-  end
-
-  context 'when the group is over the number of seats in the subscription', :saas, :use_clean_rails_memory_store_caching do
-    let(:sha_with_smallest_changes) { 'b9238ee5bf1d7359dd3b8c89fd76c1c7f8b75aba' }
-    let(:namespace) { create(:group) }
-
-    before do
-      namespace.add_developer(create(:user))
-      project.add_developer(user)
-      project.update!(namespace: namespace)
-
-      create(:gitlab_subscription, :premium, namespace: namespace, seats: 1)
-
-      stub_billable_members_reactive_cache(namespace)
-    end
-
-    context 'when block seat overages is enabled' do
-      it 'rejects the push' do
-        expect { push_changes }.to raise_error(described_class::ForbiddenError, /Your top-level group is over the number of seats in its subscription/)
-      end
-    end
-
-    context 'when block seat overages is disabled' do
-      before do
-        stub_feature_flags(block_seat_overages: false)
-      end
-
-      it 'accepts the push' do
-        expect { push_changes }.not_to raise_error
-      end
     end
   end
 

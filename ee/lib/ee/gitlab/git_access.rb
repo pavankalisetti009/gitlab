@@ -91,7 +91,6 @@ module EE
       override :check_change_access!
       def check_change_access!
         check_free_user_cap_over_limit! # order matters here, this needs to come before size check for storage limits
-        check_seat_overage!
         check_size_before_push!
 
         check_if_license_blocks_changes!
@@ -104,11 +103,6 @@ module EE
       def check_free_user_cap_over_limit!
         ::Namespaces::FreeUserCap::Enforcement.new(container.root_ancestor)
                                               .git_check_over_limit!(::Gitlab::GitAccess::ForbiddenError)
-      end
-
-      def check_seat_overage!
-        ::Namespaces::BlockSeatOverages::Enforcement.new(container.root_ancestor)
-          .git_check_seat_overage!(::Gitlab::GitAccess::ForbiddenError)
       end
 
       override :check_active_user!
