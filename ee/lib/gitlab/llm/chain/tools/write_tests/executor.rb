@@ -7,6 +7,7 @@ module Gitlab
         module WriteTests
           class Executor < SlashCommandTool
             extend ::Gitlab::Utils::Override
+            prepend Concerns::UseAiGatewayAgentPrompt
 
             NAME = 'WriteTests'
             HUMAN_NAME = 'Write Tests'
