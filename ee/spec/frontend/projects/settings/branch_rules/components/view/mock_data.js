@@ -1,3 +1,5 @@
+// Mocks for child components
+
 export const usersMock = [
   {
     id: '123',
@@ -36,18 +38,11 @@ export const usersMock = [
   },
 ];
 
+export const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
+
 const accessLevelsMock = [40];
 
-export const protectionMockProps = {
-  headerLinkHref: 'protected/branches',
-  headerLinkTitle: 'Manage in protected branches',
-  roles: accessLevelsMock,
-  users: [{ avatarUrl: 'test.com/user.png', name: 'peter', webUrl: 'test.com' }],
-};
-
 const approvalsRequired = 3;
-
-export const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
 
 export const approvalRulesMock = [
   {
@@ -78,9 +73,9 @@ export const statusChecksRulesMock = [
 ];
 
 export const protectionPropsMock = {
-  header: 'Test protection',
-  headerLinkTitle: 'Test link title',
-  headerLinkHref: 'Test link href',
+  header: 'Allowed to push and merge',
+  headerLinkTitle: 'Manage in protected branches',
+  headerLinkHref: 'protected/branches',
   roles: accessLevelsMock,
   users: usersMock,
   groups: groupsMock,
@@ -95,62 +90,63 @@ export const protectionRowPropsMock = {
   statusCheckUrl: statusChecksRulesMock[0].externalUrl,
 };
 
-export const accessLevelsMockResponse = [
+// Mocks for getBranchRulesDetails
+
+const maintainersAccessLevel = {
+  accessLevel: 40,
+  accessLevelDescription: 'Maintainers',
+  group: null,
+  user: null,
+};
+
+const userAccessLevel = {
+  accessLevel: 40,
+  accessLevelDescription: 'Jona Langworth',
+  group: null,
+  user: {
+    __typename: 'UserCore',
+    id: '123',
+    webUrl: 'test.com',
+    name: 'peter',
+    username: 'peter',
+    avatarUrl: 'test.com/user.png',
+    src: 'test.com/user.png',
+  },
+};
+
+const pushAccessLevelEdges = [
   {
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
-      accessLevel: 40,
-      accessLevelDescription: 'Jona Langworth',
-      group: null,
-      user: {
-        __typename: 'UserCore',
-        id: '123',
-        webUrl: 'test.com',
-        name: 'peter',
-        username: 'peter',
-        avatarUrl: 'test.com/user.png',
-        src: 'test.com/user.png',
-      },
+      ...userAccessLevel,
     },
   },
   {
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
-      accessLevel: 40,
-      accessLevelDescription: 'Maintainers',
-      group: null,
-      user: null,
+      ...maintainersAccessLevel,
     },
   },
 ];
 
-export const mergeAccessLevelsMockResponse = {
-  nodes: [
-    {
-      accessLevel: 40,
-      accessLevelDescription: 'Administrator',
-      user: {
-        id: 'gid://gitlab/User/1',
-        __typename: 'AccessLevelUser',
-      },
-      group: null,
+const mergeAccessLevelEdges = [
+  {
+    __typename: 'MergeAccessLevelEdge',
+    node: {
       __typename: 'MergeAccessLevel',
+      ...userAccessLevel,
     },
-    {
-      accessLevel: 40,
-      accessLevelDescription: 'Carlos Orn',
-      user: {
-        id: 'gid://gitlab/User/3',
-        __typename: 'AccessLevelUser',
-      },
-      group: null,
+  },
+  {
+    __typename: 'MergeAccessLevelEdge',
+    node: {
       __typename: 'MergeAccessLevel',
+      ...maintainersAccessLevel,
     },
-  ],
-  __typename: 'MergeAccessLevelConnection',
-};
+  },
+];
 
 export const matchingBranchesCount = 3;
 
@@ -178,11 +174,11 @@ export const branchProtectionsMockResponse = {
               codeOwnerApprovalRequired: true,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
-                edges: accessLevelsMockResponse,
+                edges: mergeAccessLevelEdges,
               },
               pushAccessLevels: {
                 __typename: 'PushAccessLevelConnection',
-                edges: accessLevelsMockResponse,
+                edges: pushAccessLevelEdges,
               },
             },
             approvalRules: {
@@ -247,7 +243,7 @@ export const branchProtectionsNoPushAccessMockResponse = {
               allowForcePush: false,
               mergeAccessLevels: {
                 __typename: 'MergeAccessLevelConnection',
-                edges: accessLevelsMockResponse,
+                edges: mergeAccessLevelEdges,
               },
               pushAccessLevels: {
                 __typename: 'PushAccessLevelConnection',
@@ -319,6 +315,8 @@ export const predefinedBranchRulesMockResponse = {
   },
 };
 
+// Mocks for branchRuleDelete mutation
+
 export const deleteBranchRuleMockResponse = {
   data: {
     branchRuleDelete: {
@@ -326,6 +324,34 @@ export const deleteBranchRuleMockResponse = {
       __typename: 'BranchRuleDeletePayload',
     },
   },
+};
+
+// Mocks for editBrachRule mutation
+
+export const mergeAccessLevelsEditResponse = {
+  nodes: [
+    {
+      accessLevel: 40,
+      accessLevelDescription: 'Administrator',
+      user: {
+        id: 'gid://gitlab/User/1',
+        __typename: 'AccessLevelUser',
+      },
+      group: null,
+      __typename: 'MergeAccessLevel',
+    },
+    {
+      accessLevel: 40,
+      accessLevelDescription: 'Carlos Orn',
+      user: {
+        id: 'gid://gitlab/User/3',
+        __typename: 'AccessLevelUser',
+      },
+      group: null,
+      __typename: 'MergeAccessLevel',
+    },
+  ],
+  __typename: 'MergeAccessLevelConnection',
 };
 
 export const editBranchRuleMockResponse = {
@@ -343,7 +369,7 @@ export const editBranchRuleMockResponse = {
           __typename: 'BranchProtection',
           allowForcePush: true,
           codeOwnerApprovalRequired: true,
-          mergeAccessLevels: mergeAccessLevelsMockResponse,
+          mergeAccessLevels: mergeAccessLevelsEditResponse,
           pushAccessLevels: {
             __typename: 'PushAccessLevelConnection',
             nodes: [],
@@ -352,25 +378,6 @@ export const editBranchRuleMockResponse = {
       },
     },
   },
-};
-
-export const protectableBranchesMockResponse = {
-  data: {
-    project: {
-      id: 'gid://gitlab/Project/1',
-      protectableBranches: ['make-release-umd-bundle', 'main', 'v2.x'],
-      __typename: 'Project',
-    },
-  },
-};
-
-export const allowedToMergeDrawerProps = {
-  groups: [],
-  isLoading: false,
-  isOpen: false,
-  title: 'Edit allowed to merge',
-  roles: accessLevelsMock,
-  users: [accessLevelsMockResponse[0].node.user],
 };
 
 export const editRuleData = [
@@ -383,6 +390,20 @@ export const editRuleData = [
 export const editRuleDataNoAccessLevels = [{ userId: 'gid://gitlab/User/123' }];
 
 export const editRuleDataNoOne = [{ userId: 'gid://gitlab/User/123' }, { accessLevel: 0 }];
+
+// Mocks for getBranches query
+
+export const protectableBranchesMockResponse = {
+  data: {
+    project: {
+      id: 'gid://gitlab/Project/1',
+      protectableBranches: ['make-release-umd-bundle', 'main', 'v2.x'],
+      __typename: 'Project',
+    },
+  },
+};
+
+// Mocks for createStatusCheck mutation
 
 export const statusCheckCreateSuccessResponse = {
   data: {
@@ -400,4 +421,15 @@ export const statusCheckCreateNameTakenResponse = {
       errors: ['Name has already been taken'],
     },
   },
+};
+
+// Mocks for drawer component
+
+export const allowedToMergeDrawerProps = {
+  groups: [],
+  isLoading: false,
+  isOpen: false,
+  title: 'Edit allowed to merge',
+  roles: accessLevelsMock,
+  users: [mergeAccessLevelEdges[0].node.user],
 };
