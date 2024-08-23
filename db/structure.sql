@@ -28246,8 +28246,6 @@ CREATE INDEX index_import_source_users_on_namespace_id_and_status ON import_sour
 
 CREATE INDEX index_import_source_users_on_placeholder_user_id ON import_source_users USING btree (placeholder_user_id);
 
-CREATE INDEX index_import_source_users_on_reassign_to_user_id ON import_source_users USING btree (reassign_to_user_id);
-
 CREATE INDEX index_import_source_users_on_reassigned_by_user_id ON import_source_users USING btree (reassigned_by_user_id);
 
 CREATE INDEX index_imported_projects_on_import_type_creator_id_created_at ON projects USING btree (import_type, creator_id, created_at) WHERE (import_type IS NOT NULL);
@@ -30827,6 +30825,8 @@ CREATE UNIQUE INDEX unique_google_cloud_logging_configurations_on_namespace_id O
 CREATE UNIQUE INDEX unique_idx_member_approvals_on_pending_status ON member_approvals USING btree (user_id, member_namespace_id) WHERE (status = 0);
 
 CREATE UNIQUE INDEX unique_idx_namespaces_storage_limit_exclusions_on_namespace_id ON namespaces_storage_limit_exclusions USING btree (namespace_id);
+
+CREATE UNIQUE INDEX unique_import_source_users_on_reassign_to_user_id_and_import ON import_source_users USING btree (reassign_to_user_id, namespace_id, source_hostname, import_type);
 
 CREATE UNIQUE INDEX unique_import_source_users_source_identifier_and_import_source ON import_source_users USING btree (source_user_identifier, namespace_id, source_hostname, import_type);
 
