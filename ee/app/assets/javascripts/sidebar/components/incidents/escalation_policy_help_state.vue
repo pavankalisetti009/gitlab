@@ -15,7 +15,7 @@ export default {
 <template>
   <transition name="help-state-toggle">
     <div
-      class="sidebar-help-state gl-bg-white gl-border-gray-100 gl-border-t-solid gl-border-b-solid gl-border-1"
+      class="sidebar-help-state gl-border-1 gl-border-gray-100 gl-bg-white gl-border-b-solid gl-border-t-solid"
     >
       <div>
         <h4>{{ $options.i18n.title }}</h4>

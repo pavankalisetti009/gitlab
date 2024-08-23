@@ -82,7 +82,7 @@ export default {
     <p data-testid="bulk-action-confirmation-modal-body">{{ modalBodyText }}</p>
 
     <template #modal-footer>
-      <div class="gl-flex gl-flex-row gl-justify-end gl-flex-wrap gl-m-0">
+      <div class="gl-m-0 gl-flex gl-flex-row gl-flex-wrap gl-justify-end">
         <gl-button
           data-testid="bulk-action-cancel-button"
           :disabled="isBulkActionInProgress"

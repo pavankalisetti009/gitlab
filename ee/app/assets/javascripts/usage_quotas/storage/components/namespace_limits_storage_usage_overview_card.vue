@@ -87,9 +87,9 @@ export default {
 
     <div
       v-if="loading"
-      class="gl-animate-skeleton-loader gl-max-w-26 gl-h-7 gl-rounded-base gl-my-3"
+      class="gl-my-3 gl-h-7 gl-max-w-26 gl-rounded-base gl-animate-skeleton-loader"
     ></div>
-    <div v-else class="gl-text-size-h-display gl-font-bold gl-leading-1 gl-my-3">
+    <div v-else class="gl-my-3 gl-text-size-h-display gl-font-bold gl-leading-1">
       <number-to-human-size label-class="gl-text-lg" :value="usedStorage" plain-zero />
       <template v-if="totalStorageAvailable">
         /
@@ -100,13 +100,13 @@ export default {
     <template v-if="percentageUsed !== null">
       <div
         v-if="loading"
-        class="gl-animate-skeleton-loader gl-h-2 !gl-max-w-none gl-rounded-base gl-mb-4"
+        class="gl-mb-4 gl-h-2 !gl-max-w-none gl-rounded-base gl-animate-skeleton-loader"
       ></div>
       <gl-progress-bar v-else :value="percentageUsed" class="gl-my-4" />
 
       <div
         v-if="loading"
-        class="gl-animate-skeleton-loader gl-max-w-26 gl-h-5 gl-rounded-base gl-my-3"
+        class="gl-my-3 gl-h-5 gl-max-w-26 gl-rounded-base gl-animate-skeleton-loader"
       ></div>
       <div v-else data-testid="namespace-storage-percentage-remaining">
         {{ percentageRemaining }}

@@ -177,7 +177,7 @@ export default {
 
 <template>
   <div
-    class="gl-bg-white gl-border-1 gl-border-gray-100 gl-border-solid gl-p-5 gl-rounded-base gl-flex"
+    class="gl-flex gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-p-5"
   >
     <gl-skeleton-loader v-if="isLoading" :height="64">
       <rect width="140" height="30" x="5" y="0" rx="4" />
@@ -187,7 +187,7 @@ export default {
     <div v-else class="gl-grow">
       <p
         v-if="shouldRenderSeatsUsedBlock"
-        class="gl-text-size-h-display gl-font-bold gl-mb-3"
+        class="gl-mb-3 gl-text-size-h-display gl-font-bold"
         data-testid="seats-used"
       >
         <span class="gl-relative gl-top-1">
@@ -199,14 +199,14 @@ export default {
         <gl-link
           :href="$options.helpLinks.seatsUsedLink"
           :aria-label="$options.i18n.seatsUsedHelpText"
-          class="gl-ml-2 gl-relative"
+          class="gl-relative gl-ml-2"
         >
           <gl-icon name="question-o" />
         </gl-link>
       </p>
       <p
         v-if="shouldRenderSeatsOwedBlock"
-        class="gl-text-size-h-display gl-font-bold gl-mb-0"
+        class="gl-mb-0 gl-text-size-h-display gl-font-bold"
         data-testid="seats-owed"
       >
         <span class="gl-relative gl-top-1">
@@ -218,7 +218,7 @@ export default {
         <gl-link
           :href="$options.helpLinks.seatsOwedLink"
           :aria-label="$options.i18n.seatsOwedHelpText"
-          class="gl-ml-2 gl-relative"
+          class="gl-relative gl-ml-2"
         >
           <gl-icon name="question-o" />
         </gl-link>

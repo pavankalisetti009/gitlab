@@ -100,7 +100,7 @@ export default {
 };
 </script>
 <template>
-  <section class="gl-mt-5 gl-mb-7">
+  <section class="gl-mb-7 gl-mt-5">
     <h2>{{ s__('Analytics|Overview') }}</h2>
     <p>
       <gl-sprintf

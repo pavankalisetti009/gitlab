@@ -166,7 +166,7 @@ export default {
       >
         <gl-icon name="status-health" />
         <gl-loading-icon v-if="isLoading" />
-        <p v-else class="collapse-truncated-title gl-font-sm gl-pt-2 gl-px-3">
+        <p v-else class="collapse-truncated-title gl-px-3 gl-pt-2 gl-text-sm">
           {{ healthStatusText }}
         </p>
       </div>

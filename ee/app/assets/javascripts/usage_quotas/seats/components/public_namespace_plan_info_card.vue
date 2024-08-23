@@ -64,7 +64,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-bg-white gl-border-1 gl-border-gray-100 gl-border-solid gl-p-6 gl-rounded-base">
+  <div class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-p-6">
     <usage-statistics>
       <template #actions>
         <gl-button

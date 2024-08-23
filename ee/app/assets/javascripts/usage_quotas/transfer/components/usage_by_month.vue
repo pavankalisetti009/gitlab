@@ -85,8 +85,8 @@ export default {
 
 <template>
   <div class="gl-mt-5">
-    <h4 class="gl-text-lg gl-m-0">{{ $options.i18n.USAGE_BY_MONTH_HEADER }}</h4>
-    <div class="gl-w-full gl-mt-3">
+    <h4 class="gl-m-0 gl-text-lg">{{ $options.i18n.USAGE_BY_MONTH_HEADER }}</h4>
+    <div class="gl-mt-3 gl-w-full">
       <div v-if="shouldRenderSkeletonLoader">
         <gl-skeleton-loader :height="335" :width="1248">
           <path

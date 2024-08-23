@@ -168,7 +168,7 @@ export default {
       v-if="offerPhoneNumberExemption"
       block
       variant="link"
-      class="gl-mt-5 gl-font-sm"
+      class="gl-mt-5 gl-text-sm"
       @click="$emit('exemptionRequested')"
       >{{ $options.i18n.verifyWithCreditCard }}</gl-button
     >

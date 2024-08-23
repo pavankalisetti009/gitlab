@@ -106,7 +106,7 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-display-flex gl-justify-content-space-between gl-font-bold gl-mb-3">
+    <div class="gl-mb-3 gl-flex gl-justify-between gl-font-bold">
       <div data-testid="selected-plan">
         {{ selectedPlanText }}
         <span v-if="hasPositiveQuantity" data-testid="quantity">{{
@@ -117,7 +117,7 @@ export default {
         {{ renderedAmount }}
       </div>
     </div>
-    <div class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-pb-5 gl-mb-5">
+    <div class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-5 gl-border-b-solid">
       <div class="gl-text-gray-500" data-testid="price-per-unit">
         <slot name="price-per-unit" :price="formattedPrice"></slot>
       </div>
@@ -138,19 +138,19 @@ export default {
         />
       </div>
     </div>
-    <div class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-pb-5 gl-mb-5">
-      <div class="gl-display-flex gl-justify-content-space-between gl-text-gray-500 gl-mb-2">
+    <div class="gl-mb-5 gl-border-b-1 gl-border-b-gray-100 gl-pb-5 gl-border-b-solid">
+      <div class="gl-mb-2 gl-flex gl-justify-between gl-text-gray-500">
         <div>{{ $options.i18n.subtotal }}</div>
         <div data-testid="total-ex-vat">
           {{ renderedAmount }}
         </div>
       </div>
-      <div class="gl-display-flex gl-justify-content-space-between gl-text-gray-500">
+      <div class="gl-flex gl-justify-between gl-text-gray-500">
         <div data-testid="vat-info-line">
           <gl-sprintf :message="taxLine">
             <template #link="{ content }">
               <gl-link
-                class="gl-underline gl-text-gray-500"
+                class="gl-text-gray-500 gl-underline"
                 :href="$options.vatHelpUrl"
                 target="_blank"
                 data-testid="vat-help-link"
@@ -162,7 +162,7 @@ export default {
         <div data-testid="vat">{{ taxAmount }}</div>
       </div>
     </div>
-    <div class="gl-display-flex gl-justify-content-space-between gl-font-bold gl-font-lg">
+    <div class="gl-flex gl-justify-between gl-text-lg gl-font-bold">
       <div>{{ $options.i18n.total }}</div>
       <div data-testid="total-amount">
         {{ renderedAmount }}

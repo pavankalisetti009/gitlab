@@ -215,18 +215,18 @@ export default {
     @close="setWeight()"
   >
     <template #collapsed>
-      <div class="gl-display-flex gl-align-items-center hide-collapsed">
+      <div class="hide-collapsed gl-flex gl-items-center">
         <span
-          :class="hasWeight ? 'gl-text-gray-900 gl-font-bold' : 'gl-text-gray-500'"
+          :class="hasWeight ? 'gl-font-bold gl-text-gray-900' : 'gl-text-gray-500'"
           data-testid="sidebar-weight-value"
         >
           {{ weightLabel }}
         </span>
-        <div v-if="hasWeight && canUpdate" class="gl-display-flex">
+        <div v-if="hasWeight && canUpdate" class="gl-flex">
           <span class="gl-mx-2">-</span>
           <gl-button
             variant="link"
-            class="gl-text-gray-500!"
+            class="!gl-text-gray-500"
             :disabled="loading"
             @click="setWeight(true)"
           >
@@ -244,7 +244,7 @@ export default {
         <gl-loading-icon v-if="isLoading" class="js-weight-collapsed-loading-icon" />
         <span
           v-else
-          class="js-weight-collapsed-weight-label collapse-truncated-title gl-pt-2 gl-px-3 gl-font-sm"
+          class="js-weight-collapsed-weight-label collapse-truncated-title gl-px-3 gl-pt-2 gl-text-sm"
         >
           {{ collapsedWeightLabel }}
           <template v-if="weight > $options.maxDisplayWeight">&hellip;</template>

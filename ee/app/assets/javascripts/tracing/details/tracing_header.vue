@@ -9,7 +9,7 @@ import { createIssueUrlWithTraceDetails } from './utils';
 const CARD_CLASS = 'gl-mr-7 gl-w-3/20 gl-min-w-fit';
 const HEADER_CLASS = 'gl-p-2 gl-font-bold gl-flex gl-justify-center gl-items-center';
 const BODY_CLASS =
-  'gl-flex gl-justify-center gl-items-center gl-flex-direction-column gl-my-0 gl-p-4 gl-font-bold gl-text-center gl-flex-grow-1 gl-font-lg';
+  'gl-flex gl-justify-center gl-items-center gl-flex-col gl-my-0 gl-p-4 gl-font-bold gl-text-center gl-grow gl-text-lg';
 
 const DATE_FORMAT = 'mmm d, yyyy';
 const TIME_FORMAT = 'H:MM:ss.l Z';
@@ -99,7 +99,7 @@ export default {
         </template>
       </page-heading>
     </header>
-    <div class="gl-display-flex gl-flex-wrap gl-justify-content-center gl-my-7 gl-gap-y-6">
+    <div class="gl-my-7 gl-flex gl-flex-wrap gl-justify-center gl-gap-y-6">
       <gl-card
         data-testid="trace-date-card"
         :class="$options.CARD_CLASS"
@@ -112,7 +112,7 @@ export default {
 
         <template #default>
           <span>{{ traceDate }}</span>
-          <span class="gl-text-secondary gl-font-normal">{{ traceTime }}</span>
+          <span class="gl-font-normal gl-text-secondary">{{ traceTime }}</span>
         </template>
       </gl-card>
 

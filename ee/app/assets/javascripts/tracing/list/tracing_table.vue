@@ -94,7 +94,7 @@ export default {
 
 <template>
   <div>
-    <h4 class="gl-block md:!gl-hidden gl-my-5">{{ $options.i18n.title }}</h4>
+    <h4 class="gl-my-5 gl-block md:!gl-hidden">{{ $options.i18n.title }}</h4>
 
     <gl-table
       :items="formattedTraces"
@@ -110,7 +110,7 @@ export default {
     >
       <template #cell(timestamp)="{ item }">
         {{ item.timestamp }}
-        <div class="gl-mt-4 gl-display-flex">
+        <div class="gl-mt-4 gl-flex">
           <gl-badge variant="info">{{ matchesBadgeContent(item) }}</gl-badge>
           <gl-badge v-if="item.in_progress" variant="warning" class="gl-ml-3">{{
             $options.i18n.inProgress

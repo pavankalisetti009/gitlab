@@ -97,7 +97,7 @@ exports[`ee/BoardContentSidebar incident sidebar matches the snapshot 1`] = `
         variant="current"
       />
       <p
-        class="collapse-truncated-title gl-font-sm gl-pt-2 gl-px-3"
+        class="collapse-truncated-title gl-pt-2 gl-px-3 gl-text-sm"
       >
         None
       </p>
@@ -231,7 +231,7 @@ exports[`ee/BoardContentSidebar issue sidebar matches the snapshot 1`] = `
     tracking="[object Object]"
   >
     <div
-      class="gl-align-items-center gl-display-flex hide-collapsed"
+      class="gl-flex gl-items-center hide-collapsed"
     >
       <span
         class="gl-text-gray-500"
@@ -250,7 +250,7 @@ exports[`ee/BoardContentSidebar issue sidebar matches the snapshot 1`] = `
         variant="current"
       />
       <span
-        class="collapse-truncated-title gl-font-sm gl-pt-2 gl-px-3 js-weight-collapsed-weight-label"
+        class="collapse-truncated-title gl-pt-2 gl-px-3 gl-text-sm js-weight-collapsed-weight-label"
       >
         None
       </span>
@@ -291,7 +291,7 @@ exports[`ee/BoardContentSidebar issue sidebar matches the snapshot 1`] = `
         variant="current"
       />
       <p
-        class="collapse-truncated-title gl-font-sm gl-pt-2 gl-px-3"
+        class="collapse-truncated-title gl-pt-2 gl-px-3 gl-text-sm"
       >
         None
       </p>

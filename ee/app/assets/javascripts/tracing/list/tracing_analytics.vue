@@ -177,7 +177,7 @@ export default {
   },
 
   SKELETON_CLASS: 'analytics-chart gl-mx-7 gl-my-4',
-  CONTAINER_CLASS: 'gl-display-flex gl-flex-direction-row gl-mb-6',
+  CONTAINER_CLASS: 'gl-flex gl-flex-row gl-mb-6',
 };
 </script>
 

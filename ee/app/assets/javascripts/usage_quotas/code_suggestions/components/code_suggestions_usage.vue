@@ -182,8 +182,8 @@ export default {
 
 <template>
   <section>
-    <section v-if="isLoading" class="gl-grid md:gl-grid-cols-2 gl-gap-5 gl-mt-5">
-      <div class="gl-bg-white gl-border gl-p-5 gl-rounded-base">
+    <section v-if="isLoading" class="gl-mt-5 gl-grid gl-gap-5 md:gl-grid-cols-2">
+      <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
         <gl-skeleton-loader :height="64">
           <rect width="140" height="30" x="5" y="0" rx="4" />
           <rect width="240" height="10" x="5" y="40" rx="4" />
@@ -191,7 +191,7 @@ export default {
         </gl-skeleton-loader>
       </div>
 
-      <div class="gl-bg-white gl-border gl-p-5 gl-rounded-base">
+      <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
         <gl-skeleton-loader :height="64">
           <rect width="240" height="10" x="5" y="0" rx="4" />
           <rect width="340" height="10" x="5" y="14" rx="4" />
@@ -232,7 +232,7 @@ export default {
         @health-check-completed="healthCheckRunning = false"
       />
       <section v-if="hasCodeSuggestions">
-        <section class="gl-grid md:gl-grid-cols-2 gl-gap-5">
+        <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
           <code-suggestions-statistics-card
             :total-value="totalValue"
             :usage-value="usageValue"

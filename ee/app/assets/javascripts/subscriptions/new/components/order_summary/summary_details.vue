@@ -55,7 +55,7 @@ export default {
 </script>
 <template>
   <div>
-    <div class="gl-display-flex gl-justify-content-space-between gl-font-bold gl-mb-3">
+    <div class="gl-mb-3 gl-flex gl-justify-between gl-font-bold">
       <div data-testid="selected-plan">
         {{ sprintf($options.i18n.selectedPlanText, { selectedPlanText }) }}
         <span v-if="usersPresent" data-testid="number-of-users">{{
@@ -96,26 +96,23 @@ export default {
     </gl-alert>
     <slot name="promo-code"></slot>
     <div>
-      <div class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-my-5"></div>
-      <div class="gl-display-flex gl-justify-content-space-between gl-text-gray-500 gl-mb-2">
+      <div class="gl-my-5 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid"></div>
+      <div class="gl-mb-2 gl-flex gl-justify-between gl-text-gray-500">
         <div>{{ $options.i18n.subtotal }}</div>
         <gl-loading-icon v-if="isInvoicePreviewLoading" inline class="gl-my-auto" />
         <div v-else data-testid="total-ex-vat">{{ formatAmount(totalExVat, showAmount) }}</div>
       </div>
-      <div
-        v-if="discount"
-        class="gl-display-flex gl-justify-content-space-between gl-text-gray-500 gl-mb-2"
-      >
+      <div v-if="discount" class="gl-mb-2 gl-flex gl-justify-between gl-text-gray-500">
         <div>{{ $options.i18n.discount }}</div>
         <gl-loading-icon v-if="isInvoicePreviewLoading" inline class="gl-my-auto" />
         <div v-else data-testid="discount">{{ formatAmount(discount, showAmount) }}</div>
       </div>
-      <div class="gl-display-flex gl-justify-content-space-between gl-text-gray-500">
+      <div class="gl-flex gl-justify-between gl-text-gray-500">
         <div data-testid="tax-info-line">
           <gl-sprintf :message="taxLine">
             <template #link="{ content }">
               <gl-link
-                class="gl-underline gl-text-gray-500"
+                class="gl-text-gray-500 gl-underline"
                 :href="$options.taxHelpUrl"
                 target="_blank"
                 data-testid="tax-help-link"
@@ -129,8 +126,8 @@ export default {
         <div v-else data-testid="vat">{{ taxAmount }}</div>
       </div>
     </div>
-    <div class="gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid gl-my-5"></div>
-    <div class="gl-display-flex gl-justify-content-space-between gl-font-lg gl-font-bold">
+    <div class="gl-my-5 gl-border-b-1 gl-border-b-gray-100 gl-border-b-solid"></div>
+    <div class="gl-flex gl-justify-between gl-text-lg gl-font-bold">
       <div>{{ $options.i18n.total }}</div>
       <gl-loading-icon v-if="isInvoicePreviewLoading" inline class="gl-my-auto" />
       <div v-else data-testid="total-amount">

@@ -44,7 +44,7 @@ export default {
 
 <template>
   <div>
-    <div class="gl-text-size-h1 gl-font-bold gl-flex gl-flex-col gl-items-end">
+    <div class="gl-flex gl-flex-col gl-items-end gl-text-size-h1 gl-font-bold">
       <number-to-human-size v-if="isBytes" :value="usageTotal" :fraction-digits="2" />
       <gl-sprintf v-else :message="$options.i18n.eventsTotal">
         <template #events>{{ usageTotal }}</template>

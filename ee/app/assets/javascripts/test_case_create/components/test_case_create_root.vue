@@ -86,7 +86,7 @@ export default {
     :issuable-type="$options.TYPE_TEST_CASE"
   >
     <template #title>
-      <h1 class="page-title gl-font-size-h-display">{{ s__('TestCases|New test case') }}</h1>
+      <h1 class="page-title gl-text-size-h-display">{{ s__('TestCases|New test case') }}</h1>
     </template>
     <template #actions="issuableMeta">
       <gl-button

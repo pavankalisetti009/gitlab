@@ -74,7 +74,7 @@ export default {
   <div class="ancestor-tree">
     <div ref="sidebarIcon" class="sidebar-collapsed-icon">
       <div><gl-icon name="epic" /></div>
-      <span v-if="!isFetching" class="collapse-truncated-title gl-pt-2 gl-px-3 gl-font-sm">{{
+      <span v-if="!isFetching" class="collapse-truncated-title gl-px-3 gl-pt-2 gl-text-sm">{{
         tooltipText
       }}</span>
     </div>
@@ -89,10 +89,10 @@ export default {
         <li
           v-if="ancestor.hasParent && index === 0"
           :key="`${ancestor.id}-has-parent`"
-          class="vertical-timeline-row gl-display-flex"
+          class="vertical-timeline-row gl-flex"
           data-testid="ancestor-parent-warning"
         >
-          <div class="vertical-timeline-icon gl-text-orange-500 gl-bg-default">
+          <div class="vertical-timeline-icon gl-bg-default gl-text-orange-500">
             <gl-icon name="warning" />
           </div>
           <div class="vertical-timeline-content">
@@ -101,7 +101,7 @@ export default {
             }}</span>
           </div>
         </li>
-        <li :key="ancestor.id" class="vertical-timeline-row gl-display-flex">
+        <li :key="ancestor.id" class="vertical-timeline-row gl-flex">
           <div
             class="vertical-timeline-icon gl-bg-default"
             :class="[getTimelineClass(ancestor), getLastItemClass(index, ancestors.length)]"

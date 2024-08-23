@@ -74,11 +74,11 @@ export default {
     @attribute-updated="$emit('iteration-updated', $event)"
   >
     <template #value="{ attributeUrl, currentAttribute }">
-      <p class="gl-text-gray-500 gl-font-size-sm gl-line-height-21 gl-my-1">
+      <p class="gl-font-size-sm gl-line-height-21 gl-my-1 gl-text-gray-500">
         {{ getCadenceTitle(currentAttribute) }}
       </p>
       <gl-link
-        class="gl-text-gray-900! gl-leading-20"
+        class="gl-leading-20 !gl-text-gray-900"
         :href="attributeUrl"
         data-testid="iteration-link"
       >
@@ -97,7 +97,7 @@ export default {
         class="sidebar-collapsed-icon"
       >
         <gl-icon :aria-label="__('Iteration')" name="iteration" />
-        <span class="collapse-truncated-title gl-pt-2 gl-px-3 gl-font-sm">
+        <span class="collapse-truncated-title gl-px-3 gl-pt-2 gl-text-sm">
           {{ getIterationPeriod(currentAttribute, true) }}
         </span>
       </div>

@@ -168,7 +168,7 @@ export default {
         </gl-sprintf>
       </div>
       <gl-button
-        class="gl-mt-5 gl-mb-3"
+        class="gl-mb-3 gl-mt-5"
         block
         variant="confirm"
         type="submit"

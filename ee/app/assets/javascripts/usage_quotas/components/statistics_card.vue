@@ -86,7 +86,7 @@ export default {
 
 <template>
   <div
-    class="gl-bg-white gl-border-1 gl-border-gray-100 gl-border-solid gl-p-6 gl-rounded-base"
+    class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-p-6"
     data-testid="container"
     :class="cssClass"
   >
@@ -100,7 +100,7 @@ export default {
       <div class="gl-flex gl-justify-between">
         <p
           v-if="usageValue"
-          class="gl-text-size-h-display gl-font-bold gl-mb-3"
+          class="gl-mb-3 gl-text-size-h-display gl-font-bold"
           data-testid="denominator"
         >
           {{ usageValue }}
@@ -127,7 +127,7 @@ export default {
           </gl-button>
         </div>
       </div>
-      <p v-if="description" class="gl-font-bold gl-mb-0" data-testid="description">
+      <p v-if="description" class="gl-mb-0 gl-font-bold" data-testid="description">
         {{ description }}
         <gl-link
           v-if="helpLink"

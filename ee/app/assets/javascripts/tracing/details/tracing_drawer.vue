@@ -105,7 +105,7 @@ export default {
   >
     <template #title>
       <div data-testid="drawer-title">
-        <h2 class="gl-font-size-h2 gl-mt-0 gl-mb-0 gl-wrap-anywhere">{{ title }}</h2>
+        <h2 class="gl-mb-0 gl-mt-0 gl-text-size-h2 gl-wrap-anywhere">{{ title }}</h2>
       </div>
     </template>
 
@@ -119,7 +119,7 @@ export default {
         <h2
           v-if="section.title"
           data-testid="section-title"
-          class="gl-font-size-h2 gl-mt-0 gl-mb-0"
+          class="gl-mb-0 gl-mt-0 gl-text-size-h2"
         >
           {{ section.title }}
         </h2>
@@ -127,7 +127,7 @@ export default {
           v-for="line in section.content"
           :key="line.name"
           data-testid="section-line"
-          class="gl-py-5 gl-border-b-1 gl-border-b-solid gl-border-b-gray-200"
+          class="gl-border-b-1 gl-border-b-gray-200 gl-py-5 gl-border-b-solid"
           :class="{ 'gl-bg-red-100': hasError(line) }"
         >
           <label data-testid="section-line-name">{{ line.name }}</label>

@@ -100,12 +100,7 @@ export default {
       <label for="quantity" data-testid="product-label">
         {{ productLabel }}
       </label>
-      <div
-        :class="[
-          { 'gl-mb-5': isValid },
-          'gl-display-flex gl-flex-direction-row gl-align-items-center',
-        ]"
-      >
+      <div :class="[{ 'gl-mb-5': isValid }, 'gl-flex gl-flex-row gl-items-center']">
         <gl-form-input
           ref="quantity"
           v-model.number="quantityModel"

@@ -270,7 +270,7 @@ export default {
     </gl-skeleton-loader>
     <usage-statistics v-else>
       <template #description>
-        <h4 class="gl-font-bold gl-m-0" data-testid="title">
+        <h4 class="gl-m-0 gl-font-bold" data-testid="title">
           {{ sprintf($options.i18n.title, { title: duoTitle }) }}
         </h4>
       </template>
@@ -289,13 +289,13 @@ export default {
         </p>
         <div data-testid="subscription-info">
           <div class="gl-flex gl-gap-3">
-            <span class="gl-basis-1/3 gl-font-bold gl-min-w-20">{{
+            <span class="gl-min-w-20 gl-basis-1/3 gl-font-bold">{{
               subscriptionStartDateText
             }}</span>
             <span>{{ startDate }}</span>
           </div>
-          <div class="gl-flex gl-mt-2 gl-gap-3">
-            <span class="gl-basis-1/3 gl-font-bold gl-min-w-20">{{ subscriptionEndDateText }}</span>
+          <div class="gl-mt-2 gl-flex gl-gap-3">
+            <span class="gl-min-w-20 gl-basis-1/3 gl-font-bold">{{ subscriptionEndDateText }}</span>
             <span>{{ endDate }}</span>
           </div>
         </div>

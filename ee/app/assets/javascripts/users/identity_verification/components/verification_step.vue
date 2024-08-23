@@ -30,8 +30,7 @@ export default {
     },
     titleClasses() {
       const borderClasses = 'gl-pb-5 gl-border-1 gl-border-b-solid gl-border-gray-100';
-      const defaultClasses =
-        'gl-font-base gl-my-2 gl-display-flex gl-justify-content-space-between';
+      const defaultClasses = 'gl-text-base gl-my-2 gl-flex gl-justify-between';
       return { [borderClasses]: this.isActive, [defaultClasses]: true };
     },
   },

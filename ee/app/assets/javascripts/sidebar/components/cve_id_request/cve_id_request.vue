@@ -74,7 +74,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="confidential" class="sidebar-contained-width cve-id-request gl-pb-0 gl-border-b-0">
+  <div v-if="confidential" class="sidebar-contained-width cve-id-request gl-border-b-0 gl-pb-0">
     <div
       v-gl-tooltip.viewport.left
       :title="tooltipTitle"

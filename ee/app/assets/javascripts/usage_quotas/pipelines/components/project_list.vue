@@ -83,7 +83,7 @@ export default {
         <span data-testid="project_amount_used">{{ item.minutes }}</span>
       </template>
     </gl-table-lite>
-    <p v-if="!ciMinutesAnyProjectEnabled" class="gl-text-center gl-p-5">
+    <p v-if="!ciMinutesAnyProjectEnabled" class="gl-p-5 gl-text-center">
       <gl-sprintf :message="$options.LABEL_CI_MINUTES_DISABLED">
         <template #link="{ content }">
           <gl-link :href="$options.SHARED_RUNNERS_DOC_LINK">{{ content }}</gl-link>
@@ -93,15 +93,15 @@ export default {
     <div v-else>
       <p
         v-if="!projects.length"
-        class="gl-text-center gl-border-b-1 gl-border-b-solid gl-border-gray-100 gl-pb-5 gl-mb-0"
+        class="gl-mb-0 gl-border-b-1 gl-border-gray-100 gl-pb-5 gl-text-center gl-border-b-solid"
       >
         {{ $options.PROJECTS_NO_SHARED_RUNNERS }}
       </p>
-      <p class="gl-text-center gl-py-5">
+      <p class="gl-py-5 gl-text-center">
         {{ $options.PROJECTS_TABLE_OMITS_MESSAGE }}
       </p>
     </div>
-    <div class="gl-flex gl-justify-center gl-mt-5">
+    <div class="gl-mt-5 gl-flex gl-justify-center">
       <gl-keyset-pagination v-if="showPagination" v-bind="pageInfo" @prev="onPrev" @next="onNext" />
     </div>
   </section>

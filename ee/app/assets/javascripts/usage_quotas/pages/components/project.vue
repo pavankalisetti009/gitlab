@@ -117,7 +117,7 @@ export default {
 <template>
   <gl-card body-class="gl-p-0">
     <template #header>
-      <div class="gl-flex gl-justify-between gl-items-center" data-testid="project-name">
+      <div class="gl-flex gl-items-center gl-justify-between" data-testid="project-name">
         <gl-link :href="pagesUrl" class="gl-flex gl-items-center gl-no-underline">
           <gl-avatar
             :src="project.avatarUrl"
@@ -194,7 +194,7 @@ export default {
         </template>
       </gl-table-lite>
       <div v-if="deploymentsNotShownCount > 0">
-        <div class="gl-py-3 gl-flex gl-justify-center">
+        <div class="gl-flex gl-justify-center gl-py-3">
           {{ moreDeploymentsMessage }}
           <gl-link :href="pagesUrl" class="gl-ml-2">{{ __('View all') }}</gl-link>
         </div>

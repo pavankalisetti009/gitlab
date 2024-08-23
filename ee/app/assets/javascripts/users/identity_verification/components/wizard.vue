@@ -136,8 +136,8 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-flex gl-justify-center gl-items-center">
-    <div class="gl-flex-grow-1 gl-max-w-62">
+  <div class="gl-flex gl-items-center gl-justify-center">
+    <div class="gl-max-w-62 gl-grow">
       <header class="gl-text-center">
         <h2>{{ $options.i18n.pageTitle }}</h2>
         <p>{{ pageDescription }}</p>
