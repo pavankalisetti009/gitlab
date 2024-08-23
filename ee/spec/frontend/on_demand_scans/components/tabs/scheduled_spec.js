@@ -45,7 +45,6 @@ describe('Scheduled tab', () => {
   const createComponentFactory =
     (mountFn = shallowMountExtended) =>
     (options = {}) => {
-      router = createRouter();
       wrapper = mountFn(
         ScheduledTab,
         merge(
@@ -76,6 +75,11 @@ describe('Scheduled tab', () => {
 
   beforeEach(() => {
     requestHandler = jest.fn().mockResolvedValue(scheduledDastProfilesMock);
+    router = createRouter();
+    router.addRoute({
+      path: '/',
+      redirect: { name: 'tab', params: { tabId: 'all' } },
+    });
   });
 
   afterEach(() => {
