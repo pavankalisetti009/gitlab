@@ -341,3 +341,79 @@ ci_component_publishing_policy:
     enabled: false
     allowed_sources: {}
     policy_scope: {}
+vulnerability_management_policy:
+  - name: Resolve no longer detected low SAST
+    description: This policy resolves low severity SAST vulnerabilities that are no longer detected
+    enabled: true
+    rules: 
+    - type: no_longer_detected
+      scanners: 
+      - sast
+      severity_levels:
+      - low  
+    actions:
+    - type: auto_resolve
+    policy_scope: {}
+  - name: Resolve no longer detected medium DAST
+    description: This policy resolves mediun severity DAST vulnerabilities that are no longer detected
+    enabled: true
+    rules: 
+    - type: no_longer_detected
+      scanners: 
+      - dast
+      severity_levels:
+      - medium  
+    actions:
+    - type: auto_resolve
+    policy_scope: {}
+  - name: Resolve no longer detected container scanning
+    description: This policy resolves all severity container scanning vulnerabilities that are no longer detected
+    enabled: true
+    rules: 
+    - type: no_longer_detected
+      scanners: 
+      - container_scanning
+      severity_levels: []
+    actions:
+    - type: auto_resolve
+    policy_scope: {}
+  - name: Resolve no longer detected critical
+    description: This policy resolves all critical severity vulnerabilities that are no longer detected
+    enabled: true
+    rules: 
+    - type: no_longer_detected
+      scanners: []
+      severity_levels:
+      - critical
+    actions:
+    - type: auto_resolve
+    policy_scope: {}
+  - name: Resolve no longer detected medium sast and low dast
+    description: This policy resolves medium severity sast and low severity dast vulnerabilities that are no longer detected
+    enabled: true
+    rules: 
+    - type: no_longer_detected
+      scanners:
+      - sast
+      severity_levels:
+      - medium
+    - type: no_longer_detected
+      scanners:
+      - dast
+      severity_levels:
+      - low
+    actions:
+      - type: auto_resolve
+    policy_scope: {}
+  - name: Resolve no longer detected high dependency scanning
+    description: This policy resolves high severity dependency scanning vulnerabilities that are no longer detected
+    enabled: false
+    rules: 
+    - type: no_longer_detected
+      scanners:
+      - dependency_scanning
+      severity_levels:
+      - high
+    actions:
+      - type: auto_resolve
+    policy_scope: {}

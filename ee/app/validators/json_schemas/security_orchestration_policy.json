@@ -28,9 +28,123 @@
       "required": [
         "ci_component_publishing_policy"
       ]
+    },
+    {
+      "required": [
+        "vulnerability_management_policy"
+      ]
     }
   ],
   "properties": {
+    "vulnerability_management_policy": {
+      "type": "array",
+      "description": "Declares auto-resolve or auto-dismiss configuration for a policy.",
+      "additionalItems": false,
+      "items": {
+        "maxItems": 5,
+        "required": [
+          "name",
+          "enabled",
+          "rules",
+          "actions"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name for the policy.",
+            "minLength": 1,
+            "maxLength": 255,
+            "type": "string"
+          },
+          "description": {
+            "description": "Specifies the longer description of the policy.",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Whether to enforce this policy or not.",
+            "type": "boolean"
+          },
+          "rules": {
+            "description": "Specifies conditions when this policy should be applied.",
+            "type": "array",
+            "additionalItems": false,
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "scanners",
+                "severity_levels"
+              ],
+              "properties": {
+                "type": {
+                  "enum": [
+                    "no_longer_detected"
+                  ],
+                  "type": "string",
+                  "description": "Specifies a type of the policy rule."
+                },
+                "scanners": {
+                  "description": "Specifies a list of scanners that should be considered to enforce this policy. Possible values: `sast`, `secret_detection`, `dependency_scanning`, `container_scanning`, `dast`, `coverage_fuzzing`, `api_fuzzing`.",
+                  "type": "array",
+                  "additionalItems": false,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "sast",
+                      "secret_detection",
+                      "dependency_scanning",
+                      "container_scanning",
+                      "dast",
+                      "coverage_fuzzing",
+                      "api_fuzzing"
+                    ]
+                  }
+                },
+                "severity_levels": {
+                  "description": "Specifies a list of vulnerability security levels that should be considered to enforce this policy. Possible values: `info`, `unknown`, `low`, `medium`, `high`, `critical`.",
+                  "type": "array",
+                  "additionalItems": false,
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "critical",
+                      "high",
+                      "medium",
+                      "low",
+                      "info",
+                      "unknown"
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "actions": {
+            "type": "array",
+            "description": "Specificies what actions should be performed on the matched vulnerabilities.",
+            "additionalItems": false,
+            "maxItems": 1,
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "description": "The type of action that should be taken. Available: `auto_resolve`.",
+                  "enum": [
+                    "auto_resolve"
+                  ],
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "policy_scope": {
+            "$ref": "#/$defs/policy_scope"
+          }
+        }
+      }
+    },
     "ci_component_publishing_policy": {
       "type": "array",
       "description": "Allows the publishing of components from specific sources to the catalog.",
