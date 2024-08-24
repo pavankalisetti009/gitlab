@@ -838,7 +838,7 @@ RSpec.shared_examples 'issues or work items finder' do |factory, execute_context
         end
 
         context 'user filters for subscribed items' do
-          let(:params) { { subscribed: true } }
+          let(:params) { { subscribed: :explicitly_subscribed } }
 
           it 'returns only subscribed items' do
             expect(items).to contain_exactly(subscribed_item)
@@ -846,7 +846,7 @@ RSpec.shared_examples 'issues or work items finder' do |factory, execute_context
         end
 
         context 'user filters out subscribed items' do
-          let(:params) { { subscribed: false } }
+          let(:params) { { subscribed: :explicitly_unsubscribed } }
 
           it 'returns only unsubscribed items' do
             expect(items).to contain_exactly(unsubscribed_item)

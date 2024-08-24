@@ -147,13 +147,13 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
     let_it_be(:unsubscription) { create(:subscription, subscribable: unsubscribed_epic, user: user, subscribed: false) }
 
     it 'filters to subscribed epics' do
-      post_graphql(epics_query(group, subscribed: true), current_user: user)
+      post_graphql(epics_query(group, subscribed: :EXPLICITLY_SUBSCRIBED), current_user: user)
 
       expect_epics_response([subscribed_epic], node_path: node_path)
     end
 
     it 'filters to unsubscribed epics' do
-      post_graphql(epics_query(group, subscribed: false), current_user: user)
+      post_graphql(epics_query(group, subscribed: :EXPLICITLY_UNSUBSCRIBED), current_user: user)
 
       expect_epics_response([unsubscribed_epic], node_path: node_path)
     end
@@ -168,7 +168,7 @@ RSpec.describe 'getting epics information', feature_category: :portfolio_managem
       it 'does not filter out subscribed epics' do
         stub_feature_flags(filter_subscriptions: false)
 
-        post_graphql(epics_query(group, subscribed: true), current_user: user)
+        post_graphql(epics_query(group, subscribed: :EXPLICITLY_SUBSCRIBED), current_user: user)
 
         expect_epics_response([subscribed_epic, unsubscribed_epic, regular_epic], node_path: node_path)
       end

@@ -208,7 +208,7 @@ RSpec.shared_examples 'graphql issue list request spec' do
       end
 
       context 'with user filters for subscribed items' do
-        let(:issue_filter_params) { { subscribed: true } }
+        let(:issue_filter_params) { { subscribed: :EXPLICITLY_SUBSCRIBED } }
 
         it 'returns only subscribed items' do
           post_query
@@ -218,7 +218,7 @@ RSpec.shared_examples 'graphql issue list request spec' do
       end
 
       context 'with user filters out subscribed items' do
-        let(:issue_filter_params) { { subscribed: false } }
+        let(:issue_filter_params) { { subscribed: :EXPLICITLY_UNSUBSCRIBED } }
 
         it 'returns only unsubscribed items' do
           post_query
@@ -228,7 +228,7 @@ RSpec.shared_examples 'graphql issue list request spec' do
       end
 
       context 'with feature flag disabled' do
-        let(:issue_filter_params) { { subscribed: true } }
+        let(:issue_filter_params) { { subscribed: :EXPLICITLY_SUBSCRIBED } }
 
         it 'does not filter out subscribed issues' do
           stub_feature_flags(filter_subscriptions: false)

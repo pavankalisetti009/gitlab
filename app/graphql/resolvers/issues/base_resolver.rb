@@ -76,10 +76,10 @@ module Resolvers
       argument :or, Types::Issues::UnionedIssueFilterInputType,
         description: 'List of arguments with inclusive OR.',
         required: false
-      argument :subscribed, GraphQL::Types::Boolean,
+      argument :subscribed, Types::Issuables::SubscriptionStatusEnum,
         description: 'Issues the current user is subscribed to. Is ignored if ' \
                      '`filter_subscriptions` feature flag is disabled.',
-        alpha: { milestone: '17.0' },
+        alpha: { milestone: '17.4' },
         required: false
       argument :types, [Types::IssueTypeEnum],
         as: :issue_types,

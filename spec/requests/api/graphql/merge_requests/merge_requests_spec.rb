@@ -28,16 +28,15 @@ RSpec.describe 'getting merge_requests information', feature_category: :code_rev
     end
 
     it 'filters to subscribed merge_requests' do
-      post_graphql(mr_query(project, subscribed: true), current_user: user)
+      post_graphql(mr_query(project, subscribed: :EXPLICITLY_SUBSCRIBED), current_user: user)
 
       expect_mr_response([subscribed_merge_request], node_path: node_path)
     end
 
     it 'filters to unsubscribed merge_requests' do
-      post_graphql(mr_query(project, subscribed: false), current_user: user)
+      post_graphql(mr_query(project, subscribed: :EXPLICITLY_UNSUBSCRIBED), current_user: user)
 
       expect_mr_response([unsubscribed_merge_request], node_path: node_path)
-      # expect(resolve_mr(project, subscribed: false)).to contain_exactly(unsubscribed_merge_request)
     end
 
     it 'does not filter out subscribed merge_requests' do
@@ -53,7 +52,7 @@ RSpec.describe 'getting merge_requests information', feature_category: :code_rev
       end
 
       it 'does not filter out subscribed merge requests' do
-        post_graphql(mr_query(project, subscribed: true), current_user: user)
+        post_graphql(mr_query(project, subscribed: :EXPLICITLY_SUBSCRIBED), current_user: user)
 
         expect_mr_response([subscribed_merge_request, unsubscribed_merge_request, regular_merge_request],
           node_path: node_path)

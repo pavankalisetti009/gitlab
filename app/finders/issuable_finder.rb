@@ -503,7 +503,14 @@ class IssuableFinder
   def by_subscribed(items)
     return items if params[:subscribed].nil? || !current_user
 
-    params[:subscribed] ? items.subscribed(current_user) : items.unsubscribed(current_user)
+    case params[:subscribed]
+    when :explicitly_subscribed
+      items.subscribed(current_user)
+    when :explicitly_unsubscribed
+      items.unsubscribed(current_user)
+    else
+      items
+    end
   end
 
   def can_filter_by_crm_contact?

@@ -56,10 +56,10 @@ module Resolvers
       required: false,
       description: 'Filter by reaction emoji applied by the current user.'
 
-    argument :subscribed, GraphQL::Types::Boolean,
+    argument :subscribed, Types::Issuables::SubscriptionStatusEnum,
       description: 'Epics the current user is subscribed to. Is ignored if ' \
         '`filter_subscriptions` feature flag is disabled.',
-      alpha: { milestone: '17.0' },
+      alpha: { milestone: '17.4' },
       required: false
 
     argument :created_after, Types::TimeType,
