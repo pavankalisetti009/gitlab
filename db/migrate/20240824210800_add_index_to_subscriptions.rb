@@ -1,10 +1,8 @@
 # frozen_string_literal: true
 
-# See https://docs.gitlab.com/ee/development/migration_style_guide.html
-# for more information on how to write migrations for GitLab.
-
-class AddIndexToSubscriptions < Gitlab::Database::Migration[2.1]
+class AddIndexToSubscriptions < Gitlab::Database::Migration[2.2]
   disable_ddl_transaction!
+  milestone '17.4'
 
   INDEX_NAME = 'index_subscriptions_on_user_and_project'
 
