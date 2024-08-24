@@ -52,7 +52,10 @@ module EE::SecurityOrchestrationHelper
       max_ci_component_publishing_policies_reached: max_active_ci_component_publishing_policies_reached?(container)
                                                       .to_s,
       max_active_pipeline_execution_policies_reached: max_active_pipeline_execution_policies_reached?(container).to_s,
-      max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT
+      max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT,
+      max_active_vulnerability_management_policies_reached:
+        max_active_vulnerability_management_policies_reached?(container).to_s,
+      max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT
     }
 
     if container.is_a?(::Project)
@@ -98,6 +101,17 @@ module EE::SecurityOrchestrationHelper
     container
       &.security_orchestration_policy_configuration
       &.active_ci_component_publishing_policies
+      &.length || 0
+  end
+
+  def max_active_vulnerability_management_policies_reached?(container)
+    active_vulnerability_management_policy_count(container) >= Security::VulnerabilityManagementPolicy::POLICY_LIMIT
+  end
+
+  def active_vulnerability_management_policy_count(container)
+    container
+      &.security_orchestration_policy_configuration
+      &.active_vulnerability_management_policies
       &.length || 0
   end
 

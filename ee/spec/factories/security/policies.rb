@@ -92,6 +92,37 @@ FactoryBot.define do
     end
   end
 
+  factory :vulnerability_management_policy,
+    class: Struct.new(:name, :description, :enabled, :rules, :actions, :policy_scope) do
+    skip_create
+
+    initialize_with do
+      name = attributes[:name]
+      description = attributes[:description]
+      enabled = attributes[:enabled]
+      rules = attributes[:rules]
+      actions = attributes[:actions]
+      policy_scope = attributes[:policy_scope]
+
+      new(name, description, enabled, rules, actions, policy_scope).to_h
+    end
+
+    sequence(:name) { |n| "test-vulnerability-management-policy-#{n}" }
+    description { 'This policy enforces resolving of no longer detected low SAST vulnerabilities' }
+    enabled { true }
+    rules do
+      [
+        {
+          type: 'no_longer_detected',
+          scanners: %w[sast],
+          severity_levels: %w[low]
+        }
+      ]
+    end
+    actions { [{ type: 'auto_resolve' }] }
+    policy_scope { {} }
+  end
+
   factory :ci_component_publishing_policy,
     class: Struct.new(:name, :description, :enabled, :allowed_sources, :policy_scope) do
     skip_create
@@ -291,7 +322,7 @@ FactoryBot.define do
 
   factory :orchestration_policy_yaml,
     class: Struct.new(:scan_execution_policy, :scan_result_policy, :approval_policy, :pipeline_execution_policy,
-      :ci_component_publishing_policy) do
+      :ci_component_publishing_policy, :vulnerability_management_policy) do
     skip_create
 
     initialize_with do
@@ -300,6 +331,7 @@ FactoryBot.define do
       approval_policy = attributes[:approval_policy]
       pipeline_execution_policy = attributes[:pipeline_execution_policy]
       ci_component_publishing_policy = attributes[:ci_component_publishing_policy]
+      vulnerability_management_policy = attributes[:vulnerability_management_policy]
 
       YAML.dump(
         new(
@@ -307,7 +339,8 @@ FactoryBot.define do
           scan_result_policy,
           approval_policy,
           pipeline_execution_policy,
-          ci_component_publishing_policy
+          ci_component_publishing_policy,
+          vulnerability_management_policy
         ).to_h.compact.deep_stringify_keys
       )
     end

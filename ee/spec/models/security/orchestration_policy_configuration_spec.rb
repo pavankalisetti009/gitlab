@@ -292,7 +292,8 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           scan_result_policy: [build(:scan_result_policy, name: 'Require approvals for scan result policy')],
           approval_policy: [build(:approval_policy, name: 'Require approvals for approval policy')],
           pipeline_execution_policy: [build(:pipeline_execution_policy, name: 'Run custom pipeline configuration')],
-          ci_component_publishing_policy: [build(:ci_component_publishing_policy, name: 'Allow publishing from auth sources')]
+          ci_component_publishing_policy: [build(:ci_component_publishing_policy, name: 'Allow publishing from auth sources')],
+          vulnerability_management_policy: [build(:vulnerability_management_policy, name: 'Resolve no longer detected vulnerabilities')]
         )
       end
 
@@ -589,7 +590,8 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
           "root is missing required keys: scan_result_policy",
           "root is missing required keys: approval_policy",
           "root is missing required keys: pipeline_execution_policy",
-          "root is missing required keys: ci_component_publishing_policy")
+          "root is missing required keys: ci_component_publishing_policy",
+          "root is missing required keys: vulnerability_management_policy")
       end
     end
 
@@ -2430,6 +2432,45 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
 
       it 'returns only 5 from all active policies' do
         expect(active_ci_component_publishing_policies.count).to be(5)
+      end
+    end
+  end
+
+  describe '#active_vulnerability_management_policies' do
+    let(:vulnerability_management_yaml) do
+      build(:orchestration_policy_yaml, vulnerability_management_policy: [build(:vulnerability_management_policy)])
+    end
+
+    let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
+
+    subject(:active_vulnerability_management_policies) do
+      security_orchestration_policy_configuration.active_vulnerability_management_policies
+    end
+
+    before do
+      allow(security_policy_management_project).to receive(:repository).and_return(repository)
+      allow(repository).to receive(:blob_data_at).with(default_branch, Security::OrchestrationPolicyConfiguration::POLICY_PATH).and_return(policy_yaml)
+    end
+
+    it 'returns only enabled policies' do
+      expect(active_vulnerability_management_policies.pluck(:enabled).uniq).to contain_exactly(true)
+    end
+
+    it 'returns only the limit (5) from all active policies' do
+      expect(active_vulnerability_management_policies.count).to be(5)
+    end
+
+    context 'when policy configuration is configured for namespace' do
+      let(:security_orchestration_policy_configuration) do
+        create(:security_orchestration_policy_configuration, :namespace, security_policy_management_project: security_policy_management_project)
+      end
+
+      it 'returns only enabled policies' do
+        expect(active_vulnerability_management_policies.pluck(:enabled).uniq).to contain_exactly(true)
+      end
+
+      it 'returns only 5 from all active policies' do
+        expect(active_vulnerability_management_policies.count).to be(5)
       end
     end
   end
