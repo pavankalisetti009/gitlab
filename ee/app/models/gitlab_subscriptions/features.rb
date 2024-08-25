@@ -228,7 +228,6 @@ module GitlabSubscriptions
       product_analytics
       project_quality_summary
       project_level_analytics_dashboard
-      prometheus_alerts
       quality_management
       related_epics
       release_evidence_test_artifacts
