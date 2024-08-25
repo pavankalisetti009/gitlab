@@ -59,7 +59,7 @@ export default {
       <gl-token
         v-if="activeStatus"
         variant="search-value"
-        :class="['gl-display-flex', activeStatus.containerClass]"
+        :class="['gl-flex', activeStatus.containerClass]"
       >
         <gl-icon :name="activeStatus.icon" :class="activeStatus.iconClass" />
         <div class="gl-ml-2">{{ activeStatus.text }}</div>
@@ -71,7 +71,7 @@ export default {
         :key="status.id"
         :value="status.value"
       >
-        <div class="gl-display-flex">
+        <div class="gl-flex">
           <gl-icon :name="status.icon" :class="status.iconClass" />
           <div class="gl-ml-2">{{ status.text }}</div>
         </div>
