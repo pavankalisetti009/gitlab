@@ -123,7 +123,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-mt-5 gl-relative">
+  <div class="gl-relative gl-mt-5">
     <gl-modal
       v-model="modalVisible"
       :modal-id="$options.modal.id"
@@ -135,10 +135,7 @@ export default {
     >
       {{ $options.i18n.modal.body }}
     </gl-modal>
-    <div
-      v-if="loading"
-      class="gl-absolute gl-top-5 gl-left-0 gl-right-0 gl-display-flex gl-justify-content-center"
-    >
+    <div v-if="loading" class="gl-absolute gl-left-0 gl-right-0 gl-top-5 gl-flex gl-justify-center">
       <gl-loading-icon size="lg" />
     </div>
     <div

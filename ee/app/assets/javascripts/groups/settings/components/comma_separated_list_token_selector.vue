@@ -129,7 +129,7 @@ export default {
   <gl-token-selector
     ref="tokenSelector"
     v-model="selectedTokens"
-    container-class="gl-h-auto!"
+    container-class="!gl-h-auto"
     :allow-user-defined-tokens="tokenIsValid"
     :hide-dropdown-with-no-items="hideErrorMessage"
     :aria-labelledby="ariaLabelledby"

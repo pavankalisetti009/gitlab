@@ -159,13 +159,13 @@ export default {
     <div
       v-for="(rule, index) in ruleList"
       :key="rule.text"
-      class="gl-leading-28 gl-display-flex gl-align-items-center"
+      class="gl-flex gl-items-center gl-leading-28"
       aria-live="polite"
     >
       <span
         :class="{ [$options.HIDDEN_ELEMENT_CLASS]: !rule.valid }"
         :data-testid="`password-${ruleTypes[index]}-status-icon`"
-        class="gl-display-flex gl-align-items-center gl-mr-2 password-status-icon password-status-icon-success"
+        class="password-status-icon password-status-icon-success gl-mr-2 gl-flex gl-items-center"
         :aria-label="getAriaLabel(rule)"
       >
         <gl-icon name="check" :size="16" />
