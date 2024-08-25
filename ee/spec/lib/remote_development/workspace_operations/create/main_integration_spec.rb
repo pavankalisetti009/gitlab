@@ -34,7 +34,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
   end
 
   let(:agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
   end
 
   let(:params) do
@@ -113,7 +113,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
         expect(workspace.namespace).to eq("gl-rd-ns-#{agent.id}-#{user.id}-#{random_string}")
         expect(workspace.editor).to eq('webide')
         expect(workspace.url).to eq(URI::HTTPS.build({
-          host: "60001-#{workspace.name}.#{workspace.agent.remote_development_agent_config.dns_zone}",
+          host: "60001-#{workspace.name}.#{workspace.agent.workspaces_agent_config.dns_zone}",
           query: {
             folder: "#{workspace_root}/#{project.path}"
           }.to_query
@@ -177,13 +177,13 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_t
 
       it 'does not create the workspace and returns error' do
         # sanity check on fixture
-        expect(agent.remote_development_agent_config).to be_nil
+        expect(agent.workspaces_agent_config).to be_nil
 
         expect { response }.not_to change { RemoteDevelopment::Workspace.count }
 
         expect(response).to eq({
           status: :error,
-          message: "Workspace create params validation failed: No RemoteDevelopmentAgentConfig found for agent '007'",
+          message: "Workspace create params validation failed: No WorkspacesAgentConfig found for agent '007'",
           reason: :bad_request
         })
       end

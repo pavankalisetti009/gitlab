@@ -52,7 +52,7 @@ module RemoteDevelopment
 
           set_workspace_url(
             workspace: workspace,
-            agent_dns_zone: agent.remote_development_agent_config.dns_zone,
+            agent_dns_zone: agent.workspaces_agent_config.dns_zone,
             project_dir: project_dir
           )
 

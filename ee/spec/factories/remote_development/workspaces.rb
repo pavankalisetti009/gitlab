@@ -5,7 +5,7 @@ FactoryBot.define do
   factory :workspace, class: 'RemoteDevelopment::Workspace' do
     association :project, :in_group
     user
-    agent factory: [:ee_cluster_agent, :with_remote_development_agent_config]
+    agent factory: [:ee_cluster_agent, :with_existing_workspaces_agent_config]
     personal_access_token
 
     name { "workspace-#{agent.id}-#{user.id}-#{random_string}" }
@@ -57,7 +57,7 @@ FactoryBot.define do
       user = workspace.user
       workspace.project.add_developer(user)
       workspace.agent.project.add_developer(user)
-      workspace.dns_zone = workspace.agent.remote_development_agent_config&.dns_zone || 'example.com'
+      workspace.dns_zone ||= workspace.agent.workspaces_agent_config&.dns_zone || 'example.com'
       workspace.url_prefix ||= "60001-#{workspace.name}"
       workspace.url_query_string ||= "folder=dir%2Ffile"
     end

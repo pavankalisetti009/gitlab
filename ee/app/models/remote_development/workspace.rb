@@ -14,8 +14,12 @@ module RemoteDevelopment
     belongs_to :agent, class_name: 'Clusters::Agent', foreign_key: 'cluster_agent_id', inverse_of: :workspaces
     belongs_to :personal_access_token, inverse_of: :workspace
 
+    # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
     # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
     has_one :remote_development_agent_config, through: :agent, source: :remote_development_agent_config
+
+    # noinspection RailsParamDefResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
+    has_one :workspaces_agent_config, through: :agent, source: :workspaces_agent_config
     has_many :workspace_variables, class_name: 'RemoteDevelopment::WorkspaceVariable', inverse_of: :workspace
 
     validates :user, presence: true
@@ -23,11 +27,11 @@ module RemoteDevelopment
     validates :editor, presence: true
     validates :personal_access_token, presence: true
 
-    # Ensure that the associated agent has an existing RemoteDevelopmentAgentConfig before we allow it
+    # Ensure that the associated agent has an existing WorkspacesAgentConfig before we allow it
     # to be used to create a new workspace
     validate :validate_agent_config_present_and_enabled, on: :create
 
-    validate :validate_dns_zone_matches_remote_development_agent_config_dns_zone
+    validate :validate_dns_zone_matches_workspaces_agent_config_dns_zone
 
     # See https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/blob/main/doc/architecture.md?plain=0#workspace-states
     # for state validation rules
@@ -92,10 +96,10 @@ module RemoteDevelopment
     strong_memoize_attr :workspaces_count_for_current_agent
 
     def exceeds_workspaces_per_user_quota?
-      return unless remote_development_agent_config
+      return unless workspaces_agent_config
 
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-      quota = remote_development_agent_config.workspaces_per_user_quota
+      quota = workspaces_agent_config.workspaces_per_user_quota
       return true if quota == 0
       return false if quota == -1
 
@@ -103,10 +107,10 @@ module RemoteDevelopment
     end
 
     def exceeds_workspaces_quota?
-      return unless remote_development_agent_config
+      return unless workspaces_agent_config
 
       # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-      quota = remote_development_agent_config.workspaces_quota
+      quota = workspaces_agent_config.workspaces_quota
       return true if quota == 0
       return false if quota == -1
 
@@ -128,24 +132,24 @@ module RemoteDevelopment
     end
 
     def validate_agent_config_present_and_enabled
-      unless agent&.remote_development_agent_config
-        errors.add(:agent, _('for Workspace must have an associated RemoteDevelopmentAgentConfig'))
+      unless agent&.workspaces_agent_config
+        errors.add(:agent, _('for Workspace must have an associated WorkspacesAgentConfig'))
         return false
       end
 
-      return true if agent.remote_development_agent_config.enabled
+      return true if agent.workspaces_agent_config.enabled
 
       errors.add(:agent, _("must have the 'enabled' flag set to true"))
       false
     end
 
-    def validate_dns_zone_matches_remote_development_agent_config_dns_zone
+    def validate_dns_zone_matches_workspaces_agent_config_dns_zone
       return if desired_state == TERMINATED
 
-      unless agent&.remote_development_agent_config&.dns_zone == dns_zone
+      unless agent&.workspaces_agent_config&.dns_zone == dns_zone
         errors.add(
           :dns_zone,
-          _('for Workspace must match the dns_zone of the associated RemoteDevelopmentAgentConfig'))
+          _('for Workspace must match the dns_zone of the associated WorkspacesAgentConfig'))
         return false
       end
 
@@ -160,7 +164,7 @@ module RemoteDevelopment
 
     # rubocop:disable Layout/LineLength  -- Long messages for UI
     def enforce_quotas
-      agent_config = remote_development_agent_config
+      agent_config = workspaces_agent_config
       if exceeds_workspaces_per_user_quota?
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         errors.add :base,

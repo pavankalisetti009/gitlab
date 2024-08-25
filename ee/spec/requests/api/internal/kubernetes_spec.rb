@@ -165,8 +165,8 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
       it 'creates the remote dev configuration' do
         send_request(params: { agent_id: agent.id, agent_config: config })
         expect(response).to have_gitlab_http_status(:no_content)
-        expect(agent.reload.remote_development_agent_config).to be_enabled
-        expect(agent.reload.remote_development_agent_config.dns_zone).to eq(dns_zone)
+        expect(agent.reload.workspaces_agent_config).to be_enabled
+        expect(agent.reload.workspaces_agent_config.dns_zone).to eq(dns_zone)
       end
 
       context 'when remote_development feature is unlicensed' do
@@ -177,7 +177,7 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
         it 'creates the remote dev configuration' do
           send_request(params: { agent_id: agent.id, agent_config: config })
           expect(response).to have_gitlab_http_status(:no_content)
-          expect(agent.reload.remote_development_agent_config).to be_nil
+          expect(agent.reload.workspaces_agent_config).to be_nil
         end
       end
     end

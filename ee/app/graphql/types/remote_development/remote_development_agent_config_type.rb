@@ -1,12 +1,13 @@
 # frozen_string_literal: true
 
+# TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
 module Types
   module RemoteDevelopment
     class RemoteDevelopmentAgentConfigType < ::Types::BaseObject
       graphql_name 'RemoteDevelopmentAgentConfig'
       description 'Represents a remote development agent configuration'
 
-      authorize :read_remote_development_agent_config
+      authorize :read_workspaces_agent_config
 
       field :id, ::Types::GlobalIDType[::RemoteDevelopment::RemoteDevelopmentAgentConfig],
         null: false, description: 'Global ID of the remote development agent config.'

@@ -24,11 +24,11 @@ module RemoteDevelopment
             domain_template = get_domain_template_annotation(name: workspace.name, dns_zone: workspace.dns_zone)
             inventory_name = "#{workspace.name}-workspace-inventory"
 
-            remote_development_agent_config = workspace.agent.remote_development_agent_config
+            workspaces_agent_config = workspace.agent.workspaces_agent_config
             max_resources_per_workspace =
-              remote_development_agent_config.max_resources_per_workspace.deep_symbolize_keys
+              workspaces_agent_config.max_resources_per_workspace.deep_symbolize_keys
             default_resources_per_workspace_container =
-              remote_development_agent_config.default_resources_per_workspace_container.deep_symbolize_keys
+              workspaces_agent_config.default_resources_per_workspace_container.deep_symbolize_keys
 
             labels, annotations = get_labels_and_annotations(
               agent_id: workspace.agent.id,
@@ -66,15 +66,15 @@ module RemoteDevelopment
 
             desired_config.append(k8s_inventory_for_workspace_core, *k8s_resources_for_workspace_core)
 
-            if remote_development_agent_config.network_policy_enabled
-              gitlab_workspaces_proxy_namespace = remote_development_agent_config.gitlab_workspaces_proxy_namespace
+            if workspaces_agent_config.network_policy_enabled
+              gitlab_workspaces_proxy_namespace = workspaces_agent_config.gitlab_workspaces_proxy_namespace
               network_policy = get_network_policy(
                 name: workspace.name,
                 namespace: workspace.namespace,
                 labels: labels,
                 annotations: annotations,
                 gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
-                egress_ip_rules: remote_development_agent_config.network_policy_egress
+                egress_ip_rules: workspaces_agent_config.network_policy_egress
               )
               desired_config.append(network_policy)
             end

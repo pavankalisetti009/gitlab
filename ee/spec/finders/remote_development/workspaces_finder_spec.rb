@@ -9,11 +9,11 @@ RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_de
 
   let_it_be(:cluster_admin_user) { create(:user) }
   let_it_be(:agent_a) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, created_by_user: cluster_admin_user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, created_by_user: cluster_admin_user)
   end
 
   let_it_be(:agent_b) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, created_by_user: cluster_admin_user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, created_by_user: cluster_admin_user)
   end
 
   let_it_be(:workspace_owner_user) { create(:user) }

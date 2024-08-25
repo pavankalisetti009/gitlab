@@ -14,7 +14,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, featur
   end
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let(:random_string) { 'abcdef' }
 
   let(:params) do

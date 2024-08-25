@@ -13,7 +13,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial
   let(:logger) { instance_double(::Logger) }
   let_it_be(:user) { create(:user) }
 
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
   before do
     allow(logger).to receive(:debug)

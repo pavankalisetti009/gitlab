@@ -24,7 +24,15 @@ module EE
             extras: [:lookahead],
             null: true,
             description: 'Remote development agent config for the cluster agent.',
-            resolver: ::Resolvers::RemoteDevelopment::AgentConfigForAgentResolver
+            resolver: ::Resolvers::RemoteDevelopment::RemoteDevelopmentAgentConfigForAgentResolver,
+            deprecated: { reason: 'Use workspaces_agent_config field instead', milestone: '17.10' }
+
+          field :workspaces_agent_config,
+            ::Types::RemoteDevelopment::WorkspacesAgentConfigType,
+            extras: [:lookahead],
+            null: true,
+            description: 'Workspaces agent config for the cluster agent.',
+            resolver: ::Resolvers::RemoteDevelopment::WorkspacesAgentConfigForAgentResolver
         end
       end
     end

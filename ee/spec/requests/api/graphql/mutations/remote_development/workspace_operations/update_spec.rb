@@ -13,7 +13,7 @@ RSpec.describe 'Updating a workspace', feature_category: :remote_development do
 
   let_it_be(:agent) do
     create(:ee_cluster_agent,
-      :with_remote_development_agent_config).tap { |agent| agent.project.add_developer(user) }
+      :with_existing_workspaces_agent_config).tap { |agent| agent.project.add_developer(user) }
   end
 
   let_it_be(:workspace, refind: true) do

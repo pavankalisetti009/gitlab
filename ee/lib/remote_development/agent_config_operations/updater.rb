@@ -17,7 +17,7 @@ module RemoteDevelopment
           )
         end
 
-        remote_development_agent_config = find_or_initialize_remote_development_agent_config(
+        workspaces_agent_config = find_or_initialize_workspaces_agent_config(
           agent: agent,
           config_from_agent_config_file: config_from_agent_config_file
         )
@@ -26,10 +26,10 @@ module RemoteDevelopment
         workspaces_update_all_error = nil
 
         ApplicationRecord.transaction do
-          # First, create or update the remote_development_agent_config record
+          # First, create or update the workspaces_agent_config record
 
-          unless remote_development_agent_config.save
-            model_errors = remote_development_agent_config.errors
+          unless workspaces_agent_config.save
+            model_errors = workspaces_agent_config.errors
             raise ActiveRecord::Rollback
           end
 
@@ -38,13 +38,13 @@ module RemoteDevelopment
           workspaces_update_fields = { force_include_all_resources: true }
 
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-          if remote_development_agent_config.dns_zone_previously_was
-            workspaces_update_fields[:dns_zone] = remote_development_agent_config.dns_zone
+          if workspaces_agent_config.dns_zone_previously_was
+            workspaces_update_fields[:dns_zone] = workspaces_agent_config.dns_zone
           end
 
           begin
-            remote_development_agent_config.workspaces.desired_state_not_terminated.touch_all
-            remote_development_agent_config.workspaces.desired_state_not_terminated.update_all(workspaces_update_fields)
+            workspaces_agent_config.workspaces.desired_state_not_terminated.touch_all
+            workspaces_agent_config.workspaces.desired_state_not_terminated.update_all(workspaces_update_fields)
           rescue ActiveRecord::ActiveRecordError => e
             workspaces_update_all_error = "Error updating associated workspaces with update_all: #{e.message}"
             raise ActiveRecord::Rollback
@@ -58,15 +58,15 @@ module RemoteDevelopment
         end
 
         Gitlab::Fp::Result.ok(
-          AgentConfigUpdateSuccessful.new({ remote_development_agent_config: remote_development_agent_config })
+          AgentConfigUpdateSuccessful.new({ workspaces_agent_config: workspaces_agent_config })
         )
       end
 
       # @param [Clusters::Agent] agent
       # @param [Hash] config_from_agent_config_file
-      # @return [RemoteDevelopment::RemoteDevelopmentAgentConfig]
-      def self.find_or_initialize_remote_development_agent_config(agent:, config_from_agent_config_file:)
-        model_instance = RemoteDevelopmentAgentConfig.find_or_initialize_by(agent: agent) # rubocop:todo CodeReuse/ActiveRecord -- Use a finder class here
+      # @return [RemoteDevelopment::WorkspacesAgentConfig]
+      def self.find_or_initialize_workspaces_agent_config(agent:, config_from_agent_config_file:)
+        model_instance = WorkspacesAgentConfig.find_or_initialize_by(agent: agent) # rubocop:todo CodeReuse/ActiveRecord -- Use a finder class here
 
         normalized_config_from_file = config_from_agent_config_file.dup.to_h.transform_keys(&:to_sym)
 
@@ -106,6 +106,7 @@ module RemoteDevelopment
         #       remains hardcoded here.
         model_instance.enabled = agent_config_values.fetch(:enabled, false)
 
+        model_instance.project_id = agent.project_id
         model_instance.workspaces_quota = agent_config_values.fetch(:workspaces_quota)
         model_instance.workspaces_per_user_quota = agent_config_values.fetch(:workspaces_per_user_quota)
         model_instance.dns_zone = agent_config_values[:dns_zone]
@@ -123,7 +124,7 @@ module RemoteDevelopment
         model_instance
       end
 
-      private_class_method :find_or_initialize_remote_development_agent_config
+      private_class_method :find_or_initialize_workspaces_agent_config
     end
   end
 end
