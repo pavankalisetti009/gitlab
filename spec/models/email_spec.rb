@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Email do
+  let_it_be(:user) { create(:user) }
+
   describe 'modules' do
     subject { described_class }
 
@@ -15,7 +17,6 @@ RSpec.describe Email do
     end
 
     context 'when the email conflicts with the primary email of a different user' do
-      let(:user) { create(:user) }
       let(:email) { build(:email, email: user.email) }
 
       it 'is invalid' do
@@ -30,8 +31,6 @@ RSpec.describe Email do
   end
 
   describe '#update_invalid_gpg_signatures' do
-    let(:user) { create(:user) }
-
     it 'synchronizes the gpg keys when the email is updated' do
       email = user.emails.create!(email: 'new@email.com')
 
@@ -56,7 +55,8 @@ RSpec.describe Email do
         expect(described_class.confirmed).to contain_exactly(
           # after user's primary email is confirmed it is stored to 'emails' table
           confirmed_primary_email,
-          confirmed_secondary_email
+          confirmed_secondary_email,
+          user.emails.first
         )
       end
     end
@@ -114,8 +114,6 @@ RSpec.describe Email do
   end
 
   describe 'Devise emails' do
-    let!(:user) { create(:user) }
-
     describe 'behaviour' do
       it 'sends emails asynchronously' do
         expect do
@@ -206,8 +204,6 @@ RSpec.describe Email do
   end
 
   describe '#before_save' do
-    let_it_be(:user) { create(:user) }
-
     context 'when the feature flag is enabled' do
       it 'sets the detumbled_email attribute' do
         email = described_class.new(user: user, email: 'test.user+gitlab@example.com')
