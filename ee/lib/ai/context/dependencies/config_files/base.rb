@@ -3,11 +3,11 @@
 module Ai
   module Context
     module Dependencies
-      module LockFiles
-        # This class represents a dependency manager lock file. It contains logic
+      module ConfigFiles
+        # This class represents a dependency manager config file. It contains logic
         # to parse and extract libraries from the file content. To support a new
-        # lock file type/language, create a new class that inherits from this Base.
-        # Then append the new class name to LockFiles::Constants::LOCK_FILE_CLASSES.
+        # config file type/language, create a new class that inherits from this Base.
+        # Then append the new class name to ConfigFiles::Constants::CONFIG_FILE_CLASSES.
         class Base
           include Gitlab::Utils::StrongMemoize
 
@@ -15,6 +15,8 @@ module Ai
           # however, it's not applicable here so we just set it to a placeholder value.
           # It may be removed entirely in https://gitlab.com/gitlab-org/gitlab/-/issues/479185.
           SCANNER_VERSION = '0.0.0'
+
+          ParsingError = Class.new(StandardError)
 
           Lib = Struct.new(:name, :version, keyword_init: true)
 
@@ -47,6 +49,8 @@ module Ai
 
             # Default error message if there are no other errors
             error('format not recognized or dependencies not present') if libs.blank? && errors.empty?
+          rescue ParsingError => e
+            error(e)
           end
 
           # This hash matches the current XrayReport payload schema
@@ -75,6 +79,7 @@ module Ai
 
           attr_reader :content, :path, :libs, :errors
 
+          # To record an error, either use error() directly or raise ParsingError
           def extract_libs
             raise NotImplementedError
           end
@@ -95,6 +100,15 @@ module Ai
             Digest::SHA256.hexdigest(content)
           end
           strong_memoize_attr :checksum
+
+          # dig() throws a generic error in certain cases, e.g. when accessing an array with
+          # a string key or calling it on an integer or nil. This method wraps dig() so that
+          # we can capture these exceptions and re-raise them with a specific error message.
+          def dig_in(obj, *keys)
+            obj.dig(*keys)
+          rescue NoMethodError, TypeError
+            raise ParsingError, 'encountered invalid node'
+          end
         end
       end
     end

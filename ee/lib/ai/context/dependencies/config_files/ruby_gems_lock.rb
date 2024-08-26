@@ -3,8 +3,8 @@
 module Ai
   module Context
     module Dependencies
-      module LockFiles
-        class RubyGems < Base
+      module ConfigFiles
+        class RubyGemsLock < Base
           def self.file_name_glob
             'Gemfile.lock'
           end

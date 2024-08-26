@@ -3,7 +3,7 @@
 module Ai
   module Context
     module Dependencies
-      module LockFiles
+      module ConfigFiles
         class GoModules < Base
           KEYWORD = 'require ' # Identifies the dependencies section/line
           EXCLUDE_KEYWORD = '// indirect' # Indirect dependencies are excluded
