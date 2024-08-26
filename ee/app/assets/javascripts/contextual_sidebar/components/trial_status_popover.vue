@@ -46,7 +46,7 @@ export default {
     variant: 'confirm',
     category: 'secondary',
     class: 'gl-w-full',
-    buttonTextClasses: 'gl-font-sm',
+    buttonTextClasses: 'gl-text-sm',
     href: '#',
     'data-testid': 'trial-popover-hand-raise-lead-button',
   },
@@ -141,7 +141,7 @@ export default {
     @shown="onShown"
   >
     <template #title>
-      <div class="gl-font-size-h2">
+      <div class="gl-text-size-h2">
         {{ popoverTitle }}
       </div>
     </template>
@@ -168,7 +168,7 @@ export default {
         :title="$options.i18n.compareAllButtonTitle"
         @click="trackPageAction('compareBtnClick')"
       >
-        <span class="gl-font-sm">{{ $options.i18n.compareAllButtonTitle }}</span>
+        <span class="gl-text-sm">{{ $options.i18n.compareAllButtonTitle }}</span>
       </gl-button>
 
       <hand-raise-lead-button
@@ -189,7 +189,7 @@ export default {
         :title="$options.i18n.learnAboutButtonTitle"
         @click="trackPageAction('learnAboutFeaturesClick')"
       >
-        <span class="gl-font-sm">{{ $options.i18n.learnAboutButtonTitle }}</span>
+        <span class="gl-text-sm">{{ $options.i18n.learnAboutButtonTitle }}</span>
       </gl-button>
     </div>
   </gl-popover>

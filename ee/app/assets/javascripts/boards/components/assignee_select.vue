@@ -144,7 +144,7 @@ export default {
       </gl-button>
     </div>
     <div v-if="!isEditing" data-testid="selected-assignee">
-      <div v-if="!anyAssignee" class="gl-display-flex gl-align-items-center">
+      <div v-if="!anyAssignee" class="gl-flex gl-items-center">
         <user-avatar-image :img-src="selected.avatarUrl || selected.avatar_url" :size="32" />
         <div>
           <div class="gl-font-bold">{{ selected.name }}</div>

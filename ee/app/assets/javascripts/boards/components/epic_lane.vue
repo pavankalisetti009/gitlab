@@ -191,15 +191,15 @@ export default {
   <div v-if="shouldDisplay" class="board-epic-lane-container">
     <div
       ref="header"
-      class="board-epic-lane gl-w-full gl-max-w-full gl-sticky gl-display-inline-block"
+      class="board-epic-lane gl-sticky gl-inline-block gl-w-full gl-max-w-full"
       :class="{
         'board-epic-lane-shadow': !isCollapsed,
         show: showShadow,
       }"
       data-testid="board-epic-lane"
     >
-      <div class="gl-py-3 gl-px-3 gl-display-flex gl-align-items-center">
-        <div class="gl-display-flex gl-align-items-center gl-sticky gl-left-4">
+      <div class="gl-flex gl-items-center gl-px-3 gl-py-3">
+        <div class="gl-sticky gl-left-4 gl-flex gl-items-center">
           <gl-button
             v-gl-tooltip.hover.right
             :aria-label="chevronTooltip"
@@ -212,7 +212,7 @@ export default {
           />
           <h4
             ref="epicTitle"
-            class="gl-my-0 gl-mr-3 gl-font-bold gl-font-base gl-whitespace-nowrap gl-text-overflow-ellipsis gl-overflow-hidden"
+            class="gl-my-0 gl-mr-3 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap gl-text-base gl-font-bold"
           >
             {{ epic.title }}
           </h4>
@@ -220,18 +220,18 @@ export default {
             <template #title>{{ epic.title }} &middot; {{ epic.reference }}</template>
             <div>{{ epicTimeAgoString }}</div>
             <div class="gl-mb-2">{{ epicDateString }}</div>
-            <gl-link :href="epic.webUrl" class="gl-font-sm">{{ __('Go to epic') }}</gl-link>
+            <gl-link :href="epic.webUrl" class="gl-text-sm">{{ __('Go to epic') }}</gl-link>
           </gl-popover>
           <span
             v-if="!isLoading"
             v-gl-tooltip.hover
             :title="issuesCountTooltipText"
-            class="gl-display-flex gl-align-items-center gl-text-gray-500"
+            class="gl-flex gl-items-center gl-text-gray-500"
             tabindex="0"
             :aria-label="issuesCountTooltipText"
             data-testid="epic-lane-issue-count"
           >
-            <gl-icon class="gl-mr-2 gl-flex-shrink-0" name="issues" />
+            <gl-icon class="gl-mr-2 gl-shrink-0" name="issues" />
             <span aria-hidden="true">{{ issuesCount }}</span>
           </span>
           <gl-loading-icon v-else class="gl-p-2" />
@@ -247,7 +247,7 @@ export default {
     </div>
     <div
       v-if="showIssuesLane"
-      class="gl-display-flex gl-pt-3 gl-pb-5 board-epic-lane-issues"
+      class="board-epic-lane-issues gl-flex gl-pb-5 gl-pt-3"
       data-testid="board-epic-lane-issues"
     >
       <issues-lane-list

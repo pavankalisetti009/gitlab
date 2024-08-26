@@ -59,23 +59,23 @@ export default {
   <div
     :id="$options.containerId"
     data-testid="trial-widget-menu"
-    class="gl-display-flex gl-flex-direction-column gl-align-items-stretch gl-w-full"
+    class="gl-flex gl-w-full gl-flex-col gl-items-stretch"
   >
     <div v-if="isTrialActive">
-      <div class="gl-display-flex gl-w-full gl-align-items-center">
-        <span class="nav-icon-container svg-container gl-mr-3 gl-mb-1">
+      <div class="gl-flex gl-w-full gl-items-center">
+        <span class="nav-icon-container svg-container gl-mb-1 gl-mr-3">
           <!-- eslint-disable @gitlab/vue-require-i18n-attribute-strings -->
           <img alt="" :src="navIconImagePath" width="16" class="svg" />
         </span>
-        <span class="nav-item-name gl-flex-grow-1">
+        <span class="nav-item-name gl-grow">
           {{ widgetTitle }}
         </span>
-        <span class="gl-whitespace-nowrap gl-overflow-hidden gl-font-sm gl-mr-auto">
+        <span class="gl-mr-auto gl-overflow-hidden gl-whitespace-nowrap gl-text-sm">
           {{ widgetRemainingDays }}
         </span>
       </div>
-      <div class="gl-display-flex gl-align-items-stretch gl-mt-2">
-        <gl-progress-bar :value="percentageComplete" class="gl-flex-grow-1" aria-hidden="true" />
+      <div class="gl-mt-2 gl-flex gl-items-stretch">
+        <gl-progress-bar :value="percentageComplete" class="gl-grow" aria-hidden="true" />
       </div>
 
       <gl-button
@@ -90,8 +90,8 @@ export default {
         {{ $options.i18n.learnAboutButtonTitle }}
       </gl-button>
     </div>
-    <div v-else class="gl-display-flex gl-gap-4 gl-w-full gl-px-2">
-      <gl-icon name="information-o" class="gl-text-blue-600! gl-shrink-0" />
+    <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
+      <gl-icon name="information-o" class="gl-shrink-0 !gl-text-blue-600" />
       <div>
         <div class="gl-font-bold">
           {{ widgetTitle }}
@@ -100,7 +100,7 @@ export default {
           {{ $options.i18n.widgetBodyExpiredTrial }}
           <gl-button
             :href="trialDiscoverPagePath"
-            class="gl-mb-1 gl-text-black-normal! gl-underline"
+            class="gl-mb-1 !gl-text-default gl-underline"
             variant="link"
             size="small"
             data-testid="learn-about-features-btn"

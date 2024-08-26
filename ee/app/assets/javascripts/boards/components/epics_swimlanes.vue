@@ -243,7 +243,7 @@ export default {
 <template>
   <div
     ref="scrollableContainer"
-    class="board-swimlanes gl-whitespace-nowrap gl-pb-5 xl:gl-pl-3 gl-pr-5 xl:gl-pr-6 gl-display-flex gl-flex-grow-1"
+    class="board-swimlanes gl-flex gl-grow gl-whitespace-nowrap gl-pb-5 gl-pr-5 xl:gl-pl-3 xl:gl-pr-6"
     data-testid="board-swimlanes"
   >
     <swimlanes-loading-skeleton v-if="isLoading" />
@@ -251,7 +251,7 @@ export default {
       <component
         :is="treeRootWrapper"
         v-bind="treeRootOptions"
-        class="board-swimlanes-headers gl-display-table gl-sticky gl-pt-5 gl-mb-5 gl-top-0 gl-z-3"
+        class="board-swimlanes-headers gl-sticky gl-top-0 gl-z-3 gl-mb-5 gl-table gl-pt-5"
         data-testid="board-swimlanes-headers"
         @end="$emit('move-list', $event)"
       >
@@ -262,7 +262,7 @@ export default {
             'is-collapsed gl-w-10': list.collapsed,
             'is-draggable': isListDraggable(list),
           }"
-          class="board gl-display-inline-block gl-px-3 gl-align-top gl-whitespace-normal"
+          class="board gl-inline-block gl-whitespace-normal gl-px-3 gl-align-top"
           :data-list-id="list.id"
           data-testid="board-header-container"
           :data-draggable-item-type="$options.draggableItemTypes.list"
@@ -280,7 +280,7 @@ export default {
           />
         </div>
       </component>
-      <div class="board-epics-swimlanes gl-display-table">
+      <div class="board-epics-swimlanes gl-table">
         <virtual-list
           v-if="epics.length"
           :size="$options.epicLaneBaseHeight"
@@ -303,7 +303,7 @@ export default {
             @setFilters="$emit('setFilters', $event)"
           />
         </virtual-list>
-        <div v-if="hasMoreEpicsToLoad" class="swimlanes-button gl-pb-3 gl-pl-3 gl-sticky">
+        <div v-if="hasMoreEpicsToLoad" class="swimlanes-button gl-sticky gl-pb-3 gl-pl-3">
           <gl-button
             category="tertiary"
             variant="confirm"
@@ -328,14 +328,14 @@ export default {
             </div>
           </div>
           <div
-            class="board-lane-unassigned-issues-title gl-w-full gl-max-w-full gl-sticky gl-display-inline-block gl-left-0"
+            class="board-lane-unassigned-issues-title gl-sticky gl-left-0 gl-inline-block gl-w-full gl-max-w-full"
             :class="{
               'board-epic-lane-shadow': !isUnassignedCollapsed,
               show: showShadow,
             }"
             data-testid="board-lane-unassigned-issues-title"
           >
-            <div class="gl-py-3 gl-px-3 gl-display-flex gl-align-items-center">
+            <div class="gl-flex gl-items-center gl-px-3 gl-py-3">
               <div class="gl-sticky gl-left-4">
                 <gl-button
                   v-gl-tooltip.hover.right
@@ -349,7 +349,7 @@ export default {
                   @click="toggleUnassignedLane"
                 />
                 <span
-                  class="gl-mr-3 gl-font-bold gl-whitespace-nowrap gl-text-overflow-ellipsis gl-overflow-hidden"
+                  class="gl-mr-3 gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap gl-font-bold"
                 >
                   {{ __('Issues with no epic assigned') }}
                 </span>
@@ -357,7 +357,7 @@ export default {
             </div>
           </div>
           <div v-if="!isUnassignedCollapsed" data-testid="board-lane-unassigned-issues">
-            <div class="gl-display-flex gl-pt-3">
+            <div class="gl-flex gl-pt-3">
               <issues-lane-list
                 v-for="list in lists"
                 :key="`${list.id}-issues`"
@@ -383,7 +383,7 @@ export default {
       </div>
       <div
         v-if="shouldShowLoadMoreUnassignedIssues"
-        class="swimlanes-button gl-p-3 gl-pr-0 gl-sticky gl-left-0"
+        class="swimlanes-button gl-sticky gl-left-0 gl-p-3 gl-pr-0"
       >
         <gl-button
           category="tertiary"

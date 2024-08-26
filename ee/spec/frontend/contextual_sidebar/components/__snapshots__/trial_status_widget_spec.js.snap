@@ -2,13 +2,13 @@
 
 exports[`TrialStatusWidget component rendered content matches the snapshot for namespace in active trial 1`] = `
 <div
-  class="gl-align-items-stretch gl-display-flex gl-flex-direction-column gl-w-full"
+  class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
   data-testid="trial-widget-menu"
   id="reference-0"
 >
   <div>
     <div
-      class="gl-align-items-center gl-display-flex gl-w-full"
+      class="gl-flex gl-items-center gl-w-full"
     >
       <span
         class="gl-mb-1 gl-mr-3 nav-icon-container svg-container"
@@ -21,22 +21,22 @@ exports[`TrialStatusWidget component rendered content matches the snapshot for n
         />
       </span>
       <span
-        class="gl-flex-grow-1 nav-item-name"
+        class="gl-grow nav-item-name"
       >
         Ultimate Trial
       </span>
       <span
-        class="gl-font-sm gl-mr-auto gl-overflow-hidden gl-whitespace-nowrap"
+        class="gl-mr-auto gl-overflow-hidden gl-text-sm gl-whitespace-nowrap"
       >
         Day 10/30
       </span>
     </div>
     <div
-      class="gl-align-items-stretch gl-display-flex gl-mt-2"
+      class="gl-flex gl-items-stretch gl-mt-2"
     >
       <gl-progress-bar-stub
         aria-hidden="true"
-        class="gl-flex-grow-1"
+        class="gl-grow"
         value="10"
       />
     </div>
@@ -62,15 +62,15 @@ exports[`TrialStatusWidget component rendered content matches the snapshot for n
 
 exports[`TrialStatusWidget component rendered content matches the snapshot for namespace not in active trial 1`] = `
 <div
-  class="gl-align-items-stretch gl-display-flex gl-flex-direction-column gl-w-full"
+  class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
   data-testid="trial-widget-menu"
   id="reference-0"
 >
   <div
-    class="gl-display-flex gl-gap-4 gl-px-2 gl-w-full"
+    class="gl-flex gl-gap-4 gl-px-2 gl-w-full"
   >
     <gl-icon-stub
-      class="gl-shrink-0 gl-text-blue-600!"
+      class="!gl-text-blue-600 gl-shrink-0"
       name="information-o"
       size="16"
       variant="current"
@@ -86,7 +86,7 @@ exports[`TrialStatusWidget component rendered content matches the snapshot for n
       >
         Looking to do more with GitLab?
         <b-button-stub
-          class="gl-button gl-mb-1 gl-text-black-normal! gl-underline"
+          class="!gl-text-default gl-button gl-mb-1 gl-underline"
           data-testid="learn-about-features-btn"
           href="discover-path"
           size="sm"
