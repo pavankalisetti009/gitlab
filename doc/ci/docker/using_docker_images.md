@@ -198,7 +198,12 @@ image:
 
 ## Define image and services in `config.toml`
 
-Look for the `[runners.docker]` section:
+In the `config.toml` file, you can define:
+
+- In the [`[runners.docker]`](https://docs.gitlab.com/runner/configuration/advanced-configuration#the-runnersdocker-section) section,
+  the container image used to run CI/CD jobs
+- In the [`[[runners.docker.services]]`](https://docs.gitlab.com/runner/configuration/advanced-configuration#the-runnersdockerservices-section) section,
+  the [services](../services/index.md) container
 
 ```toml
 [runners.docker]
