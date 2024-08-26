@@ -92,29 +92,26 @@ export default {
 <template>
   <gl-card data-testid="release-stats-card">
     <template #header>
-      <header class="gl-display-flex gl-align-items-baseline">
-        <h1 class="gl-m-0 gl-mr-5 gl-font-lg">{{ s__('CICDAnalytics|Releases') }}</h1>
-        <h2 class="gl-m-0 gl-font-base gl-text-gray-500 gl-font-normal">
+      <header class="gl-flex gl-items-baseline">
+        <h1 class="gl-m-0 gl-mr-5 gl-text-lg">{{ s__('CICDAnalytics|Releases') }}</h1>
+        <h2 class="gl-m-0 gl-text-base gl-font-normal gl-text-gray-500">
           {{ s__('CICDAnalytics|All time') }}
         </h2>
       </header>
     </template>
 
-    <div
-      class="gl-display-flex gl-flex-direction-column gl-flex-direction-column gl-sm-flex-direction-row gl-gap-4"
-      data-testid="stats-container"
-    >
+    <div class="gl-flex gl-flex-col gl-gap-4 sm:gl-flex-row" data-testid="stats-container">
       <div
         v-for="stat of formattedStats"
         :key="stat.id"
-        class="gl-flex-grow-1 gl-h-11 gl-flex-basis-0 gl-display-flex gl-align-items-center gl-flex-direction-column"
+        class="gl-flex gl-h-11 gl-grow gl-basis-0 gl-flex-col gl-items-center"
       >
         <gl-skeleton-loader v-if="isLoading">
           <rect x="0" y="21" rx="3" ry="3" width="400" height="48" />
           <rect x="50" y="94" rx="3" ry="3" width="300" height="31" />
         </gl-skeleton-loader>
         <template v-else>
-          <span class="gl-font-size-h-display gl-leading-42">{{ stat.stat }}</span>
+          <span class="gl-text-size-h-display gl-leading-42">{{ stat.stat }}</span>
           {{ stat.title }}
         </template>
       </div>

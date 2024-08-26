@@ -70,7 +70,7 @@ export default {
       </div>
 
       <div class="row gl-mt-7">
-        <div class="col-lg-6 gl-sm-mb-7">
+        <div class="col-lg-6 sm:gl-mb-7">
           <subscription-trial-card />
         </div>
         <div class="col-lg-6">

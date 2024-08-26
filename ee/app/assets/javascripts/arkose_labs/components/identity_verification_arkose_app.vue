@@ -82,10 +82,7 @@ export default {
       :value="arkoseToken"
       data-testid="arkose-labs-token-input"
     />
-    <div
-      class="gl-display-flex gl-justify-content-center"
-      :class="$options.CHALLENGE_CONTAINER_CLASS"
-    >
+    <div class="gl-flex gl-justify-center" :class="$options.CHALLENGE_CONTAINER_CLASS">
       <gl-loading-icon v-if="!arkoseLabsIframeShown" size="lg" class="gl-my-4" />
     </div>
   </gl-form>

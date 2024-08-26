@@ -198,13 +198,13 @@ export default {
 <template>
   <gl-card>
     <template #header>
-      <div class="gl-display-flex gl-flex-wrap gl-align-items-center gl-justify-content-end">
-        <div class="gl-flex-grow-1">
-          <h5 class="gl-display-inline-block">{{ $options.i18n.header }}</h5>
+      <div class="gl-flex gl-flex-wrap gl-items-center gl-justify-end">
+        <div class="gl-grow">
+          <h5 class="gl-inline-block">{{ $options.i18n.header }}</h5>
           <gl-icon
             id="latest-coverage-help-icon"
             name="question-o"
-            class="gl-text-blue-600 gl-cursor-help"
+            class="gl-cursor-help gl-text-blue-600"
           />
           <gl-popover target="latest-coverage-help-icon" :title="$options.i18n.header">
             <gl-sprintf :message="$options.i18n.popover">
@@ -213,7 +213,7 @@ export default {
           </gl-popover>
         </div>
         <select-projects-dropdown
-          class="gl-w-full gl-sm-w-auto gl-mb-3 gl-sm-mb-0"
+          class="gl-mb-3 gl-w-full sm:gl-mb-0 sm:gl-w-auto"
           placement="bottom-end"
           @projects-query-error="handleError"
           @select-all-projects="selectAllProjects"

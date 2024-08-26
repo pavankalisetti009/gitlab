@@ -93,8 +93,8 @@ export default {
     <gl-alert v-if="formError" class="gl-mb-4" variant="danger" @dismiss="setFormError">
       {{ formError }}
     </gl-alert>
-    <div class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row">
-      <div class="gl-flex-grow-1 gl-mr-2">
+    <div class="gl-flex gl-flex-col sm:gl-flex-row">
+      <div class="gl-mr-2 gl-grow">
         <gl-form-group
           :label="stageLabel"
           :state="hasFieldErrors('name')"
@@ -111,7 +111,7 @@ export default {
           />
           <!-- eslint-enable vue/no-mutating-props -->
         </gl-form-group>
-        <div class="gl-display-flex gl-justify-content-between gl-mt-3">
+        <div class="gl-justify-content-between gl-mt-3 gl-flex">
           <custom-stage-event-field
             event-type="start-event"
             :index="index"
@@ -135,7 +135,7 @@ export default {
             @error="setFormError"
           />
         </div>
-        <div class="gl-display-flex gl-justify-content-between">
+        <div class="gl-justify-content-between gl-flex">
           <custom-stage-event-field
             event-type="end-event"
             :index="index"
@@ -163,7 +163,7 @@ export default {
       </div>
       <stage-field-actions
         v-if="hasMultipleStages"
-        class="gl-mt-0 gl-sm-mt-6!"
+        class="gl-mt-0 sm:!gl-mt-6"
         :index="index"
         :stage-count="totalStages"
         :can-remove="true"

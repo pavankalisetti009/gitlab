@@ -74,7 +74,7 @@ export default {
       </div>
     </div>
     <div v-if="resultVisualization && isQueryPresent">
-      <div class="gl-m-5 gl-gap-5 gl-flex gl-flex-wrap-reverse gl-justify-between gl-items-center">
+      <div class="gl-m-5 gl-flex gl-flex-wrap-reverse gl-items-center gl-justify-between gl-gap-5">
         <div class="gl-flex gl-gap-3">
           <gl-button-group>
             <gl-button
@@ -95,7 +95,7 @@ export default {
               )
             "
             name="information-o"
-            class="gl-align-self-end gl-mb-3 gl-text-gray-500 gl-min-w-5"
+            class="gl-mb-3 gl-min-w-5 gl-self-end gl-text-gray-500"
           />
         </div>
         <ai-cube-query-feedback
@@ -104,7 +104,7 @@ export default {
           class="gl-ml-auto gl-h-full"
         />
       </div>
-      <div class="border-light gl-border gl-rounded-base gl-m-5 gl-shadow-sm gl-overflow-auto">
+      <div class="border-light gl-border gl-m-5 gl-overflow-auto gl-rounded-base gl-shadow-sm">
         <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.VISUALIZATION">
           <analytics-dashboard-panel
             v-if="selectedVisualizationType"
@@ -116,7 +116,7 @@ export default {
           />
           <div
             v-else
-            class="col-12 gl-bg-white gl-overflow-y-auto"
+            class="col-12 gl-overflow-y-auto gl-bg-white"
             :style="{ height: $options.PANEL_VISUALIZATION_HEIGHT }"
           >
             <div class="text-content text-center gl-text-gray-400">
@@ -129,7 +129,7 @@ export default {
 
         <div v-if="displayType === $options.PANEL_DISPLAY_TYPES.CODE" class="gl-bg-white gl-p-4">
           <pre
-            class="code highlight gl-flex gl-bg-transparent gl-border-none"
+            class="code highlight gl-flex gl-border-none gl-bg-transparent"
             data-testid="preview-code"
           ><code>{{ previewYamlConfiguration }}</code></pre>
         </div>

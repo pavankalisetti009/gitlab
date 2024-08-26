@@ -348,12 +348,12 @@ export default {
           rows="16"
           no-resize
           :formatter="privateKeyFormatter"
-          class="gl-h-auto!"
+          class="!gl-h-auto"
           data-testid="private-key"
         />
       </gl-form-group>
 
-      <div class="gl-display-flex">
+      <div class="gl-flex">
         <gl-button
           :disabled="isSubmitButtonDisabled"
           :loading="loading"

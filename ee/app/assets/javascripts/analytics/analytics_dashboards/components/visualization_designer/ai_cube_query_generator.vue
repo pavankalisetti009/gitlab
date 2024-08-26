@@ -213,7 +213,7 @@ export default {
         :submit-on-enter="true"
         :state="isValid"
         no-resize
-        class="gl-w-full gl-md-max-w-70p gl-lg-w-30p gl-min-w-20"
+        class="gl-w-full gl-min-w-20 md:gl-max-w-7/10 lg:gl-w-3/10"
         data-testid="generate-cube-query-prompt-input"
         @submit="generateAiQuery"
       />

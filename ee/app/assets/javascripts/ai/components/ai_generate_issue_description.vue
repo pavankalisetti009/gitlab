@@ -172,13 +172,13 @@ export default {
       @primary="submit"
     >
       <template #modal-title>
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <gl-icon name="tanuki-ai" class="gl-text-purple-600" />
           <span class="gl-mx-3">{{ $options.i18n.modalTitle }}</span>
           <gl-badge variant="neutral">{{ $options.i18n.experiment }}</gl-badge>
         </div>
       </template>
-      <div v-if="loading" class="gl-flex gl-justify-center gl-items-center">
+      <div v-if="loading" class="gl-flex gl-items-center gl-justify-center">
         <gl-loading-icon size="md" /><span class="gl-ml-3">{{ loadingText }}</span>
       </div>
       <div v-else>

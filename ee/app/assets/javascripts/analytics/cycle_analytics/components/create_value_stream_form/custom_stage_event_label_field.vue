@@ -118,7 +118,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-w-1/2 gl-ml-2">
+  <div class="gl-ml-2 gl-w-1/2">
     <transition name="fade">
       <gl-form-group
         v-if="requiresLabel"
@@ -141,13 +141,13 @@ export default {
             <gl-button
               data-testid="listbox-toggle-btn"
               block
-              button-text-classes="gl-w-full gl-display-flex gl-justify-content-space-between"
+              button-text-classes="gl-w-full gl-flex gl-justify-between"
               :loading="loading"
             >
               <div v-if="selectedLabel">
                 <span
                   :style="{ backgroundColor: selectedLabel.color }"
-                  class="gl-display-inline-block dropdown-label-box"
+                  class="dropdown-label-box gl-inline-block"
                 >
                 </span>
                 {{ selectedLabel.title }}
@@ -157,10 +157,7 @@ export default {
             </gl-button>
           </template>
           <template #list-item="{ item: { text, color } }">
-            <span
-              :style="{ backgroundColor: color }"
-              class="gl-display-inline-block dropdown-label-box"
-            >
+            <span :style="{ backgroundColor: color }" class="dropdown-label-box gl-inline-block">
             </span>
             {{ text }}
           </template>

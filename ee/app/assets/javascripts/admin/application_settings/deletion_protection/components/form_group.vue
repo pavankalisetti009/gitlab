@@ -72,10 +72,7 @@ export default {
       <span>{{ $options.i18n.helpText }}</span>
       <gl-link :href="$options.helpPath" target="_blank">{{ $options.i18n.learnMore }}</gl-link>
     </template>
-    <div
-      data-testid="deletion_adjourned_period_group"
-      class="gl-display-flex gl-align-items-center"
-    >
+    <div data-testid="deletion_adjourned_period_group" class="gl-flex gl-items-center">
       <gl-form-input
         :id="$options.inputId"
         ref="formInput"

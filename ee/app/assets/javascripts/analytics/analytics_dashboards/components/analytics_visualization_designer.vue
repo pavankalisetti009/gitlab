@@ -312,11 +312,11 @@ export default {
       </p>
     </header>
     <section class="gl-flex">
-      <div class="gl-flex flex-fill gl-flex-col">
+      <div class="flex-fill gl-flex gl-flex-col">
         <gl-form-group
           :label="s__('Analytics|Visualization title')"
           label-for="title"
-          class="gl-w-full gl-md-max-w-70p gl-lg-w-30p gl-min-w-20"
+          class="gl-w-full gl-min-w-20 md:gl-max-w-7/10 lg:gl-w-3/10"
           data-testid="visualization-title-form-group"
           :invalid-feedback="titleValidationError"
           :state="!titleValidationError"
@@ -349,9 +349,9 @@ export default {
       class="gl-border-t gl-border-b gl-mb-6 gl-flex gl-flex-wrap"
       data-testid="query-builder"
     >
-      <div class="gl-flex gl-w-full gl-gap-3 gl-py-4 gl-flex-col md:gl-flex-row gl-border-b">
+      <div class="gl-border-b gl-flex gl-w-full gl-flex-col gl-gap-3 gl-py-4 md:gl-flex-row">
         <gl-form-group
-          class="gl-w-full md:gl-max-w-20 gl-m-0"
+          class="gl-m-0 gl-w-full md:gl-max-w-20"
           data-testid="visualization-type-form-group"
         >
           <visualization-type-selector
@@ -367,13 +367,13 @@ export default {
           :available-dimensions="filterOptions.availableDimensions"
           :available-time-dimensions="filterOptions.availableTimeDimensions"
           data-testid="visualization-filtered-search"
-          class="gl-py-3 gl-w-full"
+          class="gl-w-full gl-py-3"
           @input="onFilterChange"
           @submit="onFilterChange"
         />
       </div>
 
-      <div class="gl-grow gl-bg-gray-10 gl-overflow-auto">
+      <div class="gl-grow gl-overflow-auto gl-bg-gray-10">
         <visualization-preview
           data-testid="visualization-previewer"
           :selected-visualization-type="selectedVisualizationType"

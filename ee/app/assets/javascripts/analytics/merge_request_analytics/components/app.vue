@@ -52,14 +52,14 @@ export default {
   <div class="merge-request-analytics-wrapper">
     <page-heading :heading="__('Merge request analytics')" />
     <div
-      class="gl-display-flex gl-flex-direction-column gl-lg-flex-direction-row gl-justify-content-space-between gl-bg-gray-10 gl-border-t-solid gl-border-t-1 gl-border-t-gray-100 gl-border-b-solid gl-border-b-1 gl-border-b-gray-100 gl-py-3"
+      class="gl-flex gl-flex-col gl-justify-between gl-border-b-1 gl-border-t-1 gl-border-b-gray-100 gl-border-t-gray-100 gl-bg-gray-10 gl-py-3 gl-border-b-solid gl-border-t-solid lg:gl-flex-row"
     >
-      <filter-bar class="gl-flex-grow-1 gl-lg-ml-3 gl-mb-2 gl-lg-mb-0" />
+      <filter-bar class="gl-mb-2 gl-grow lg:gl-mb-0 lg:gl-ml-3" />
       <date-range
         :start-date="startDate"
         :end-date="endDate"
         :max-date-range="$options.dateRangeLimit"
-        class="gl-lg-mx-3"
+        class="lg:gl-mx-3"
         @change="setDateRange"
       />
     </div>

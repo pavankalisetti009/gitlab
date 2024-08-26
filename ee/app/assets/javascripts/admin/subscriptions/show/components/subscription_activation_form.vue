@@ -193,7 +193,7 @@ export default {
       v-if="!hideSubmitButton"
       :loading="isLoading"
       category="primary"
-      class="gl-mt-6 js-no-auto-disable"
+      class="js-no-auto-disable gl-mt-6"
       data-testid="activate-button"
       type="submit"
       variant="confirm"

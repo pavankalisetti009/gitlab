@@ -49,15 +49,11 @@ export default {
 </script>
 
 <template>
-  <header
-    class="page-title gl-display-flex gl-flex-wrap gl-gap-5 gl-align-items-center gl-justify-content-space-between"
-  >
-    <h1 data-testid="value-stream-form-title" class="gl-font-size-h-display gl-my-0">
+  <header class="page-title gl-flex gl-flex-wrap gl-items-center gl-justify-between gl-gap-5">
+    <h1 data-testid="value-stream-form-title" class="gl-my-0 gl-text-size-h-display">
       {{ formTitle }}
     </h1>
-    <div
-      class="gl-display-flex gl-w-full gl-sm-w-auto gl-sm-flex-direction-row gl-flex-direction-column gl-gap-3"
-    >
+    <div class="gl-flex gl-w-full gl-flex-col gl-gap-3 sm:gl-w-auto sm:gl-flex-row">
       <gl-button
         v-if="isEditing"
         category="secondary"

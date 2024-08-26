@@ -38,15 +38,15 @@ export default {
 
 <template>
   <tr v-if="policy.isSelected">
-    <td colspan="4" class="gl-border-top-0! gl-pt-0!">
+    <td colspan="4" class="!gl-border-t-0 !gl-pt-0">
       <div
-        class="gl-border-solid gl-border-1 gl-rounded-base gl-border-gray-100 gl-bg-white gl-py-4 gl-px-5"
+        class="gl-rounded-base gl-border-1 gl-border-solid gl-border-gray-100 gl-bg-white gl-px-5 gl-py-4"
       >
         <policy-approvals :action="policyAction" :approvers="approvers" />
         <div
           v-for="{ summary, criteriaList } in humanizedRules"
           :key="summary"
-          class="gl-mt-5 gl-mb-1"
+          class="gl-mb-1 gl-mt-5"
         >
           {{ summary }}
           <ul class="gl-m-0">

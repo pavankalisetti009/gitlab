@@ -129,7 +129,7 @@ export default {
         </gl-tab>
       </template>
       <template v-if="canViewGroupUsageQuotaBoolean" #tabs-end>
-        <gl-link :href="pipelineGroupUsageQuotaPath" class="gl-align-self-center gl-ml-auto">{{
+        <gl-link :href="pipelineGroupUsageQuotaPath" class="gl-ml-auto gl-self-center">{{
           __('View group pipeline usage quota')
         }}</gl-link>
       </template>

@@ -343,7 +343,7 @@ export default {
   <gl-modal
     data-testid="value-stream-form-modal"
     modal-id="value-stream-form-modal"
-    dialog-class="gl-align-items-flex-start! gl-py-7"
+    dialog-class="!gl-items-start gl-py-7"
     scrollable
     :title="formTitle"
     :action-primary="primaryProps"
@@ -371,7 +371,7 @@ export default {
         :invalid-feedback="invalidNameFeedback"
         :state="isValueStreamNameValid"
       >
-        <div class="gl-display-flex gl-justify-content-space-between">
+        <div class="gl-flex gl-justify-between">
           <gl-form-input
             id="create-value-stream-name"
             v-model.trim="name"
@@ -443,7 +443,7 @@ export default {
             :key="stage.id"
             data-testid="vsa-hidden-stage"
           >
-            <span class="gl-m-0 gl-align-middle gl-mr-3 gl-font-bold">{{
+            <span class="gl-m-0 gl-mr-3 gl-align-middle gl-font-bold">{{
               recoverStageTitle(stage.name)
             }}</span>
             <gl-button

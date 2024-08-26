@@ -89,10 +89,10 @@ export default {
             <img :src="promoImagePath" :alt="promoImageAlt" class="svg" />
 
             <div class="gl-grow">
-              <h4 class="gl-text-base gl-line-height-20 gl-mt-0 gl-mb-3">
+              <h4 class="gl-mb-3 gl-mt-0 gl-text-base gl-leading-20">
                 {{ $options.i18n.promoTitle }}
               </h4>
-              <ul class="gl-list-inside gl-p-0 gl-mb-3">
+              <ul class="gl-mb-3 gl-list-inside gl-p-0">
                 <li v-for="(statement, index) in $options.i18n.valueStatements" :key="index">
                   {{ statement }}
                 </li>

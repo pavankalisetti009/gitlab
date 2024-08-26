@@ -129,7 +129,7 @@ export default {
 </script>
 <template>
   <chart-skeleton-loader v-if="isLoading" size="md" class="gl-my-4 gl-py-4" />
-  <div v-else class="gl-display-flex gl-flex-direction-column" data-testid="vsa-duration-chart">
+  <div v-else class="gl-flex gl-flex-col" data-testid="vsa-duration-chart">
     <h4 class="gl-mt-0">
       {{ title }}&nbsp;<gl-icon v-gl-tooltip.hover name="information-o" :title="tooltipText" />
     </h4>

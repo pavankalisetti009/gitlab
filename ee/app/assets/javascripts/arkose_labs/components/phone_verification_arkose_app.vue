@@ -86,7 +86,7 @@ export default {
 
     <div
       v-show="arkoseLabsIframeShown"
-      class="gl-display-flex gl-justify-content-center"
+      class="gl-flex gl-justify-center"
       :class="arkoseLabsContainerClass"
       data-testid="arkose-labs-challenge"
     ></div>

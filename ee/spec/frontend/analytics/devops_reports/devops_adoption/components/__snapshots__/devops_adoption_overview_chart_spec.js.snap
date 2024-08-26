@@ -26,11 +26,11 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         Dev
       </div>
       <div
-        class="gl-display-flex gl-flex-direction-column gl-gap-2"
+        class="gl-flex gl-flex-col gl-gap-2"
       >
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -40,7 +40,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -50,7 +50,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -60,7 +60,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -80,11 +80,11 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         Sec
       </div>
       <div
-        class="gl-display-flex gl-flex-direction-column gl-gap-2"
+        class="gl-flex gl-flex-col gl-gap-2"
       >
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -95,7 +95,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -106,7 +106,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -117,7 +117,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -135,11 +135,11 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         Ops
       </div>
       <div
-        class="gl-display-flex gl-flex-direction-column gl-gap-2"
+        class="gl-flex gl-flex-col gl-gap-2"
       >
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -150,7 +150,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"
@@ -160,7 +160,7 @@ exports[`DevopsAdoptionOverviewChart chart tooltip displays the tooltip informat
         </div>
         <div>
           <div
-            class="gl-display-flex"
+            class="gl-flex"
           >
             <devops-adoption-table-cell-flag-stub
               class="gl-mr-3"

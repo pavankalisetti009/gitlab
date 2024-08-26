@@ -49,7 +49,7 @@ export default {
 </script>
 <template>
   <div>
-    <span class="gl-font-sm gl-text-gray-900 gl-mr-2">{{ $options.i18n.filteredBy }}</span>
+    <span class="gl-mr-2 gl-text-sm gl-text-gray-900">{{ $options.i18n.filteredBy }}</span>
     <span data-testid="primary-badges">
       <gl-badge
         v-for="topic in primaryBadges"
@@ -64,7 +64,7 @@ export default {
     <template v-if="showMoreVisible">
       <gl-button
         ref="popoverTarget"
-        class="gl-ml-2 gl-text-decoration-none!"
+        class="gl-ml-2 !gl-no-underline"
         variant="link"
         size="small"
         button-text-classes="gl-text-secondary"
@@ -72,7 +72,7 @@ export default {
         {{ showMoreButtonText }}
       </gl-button>
       <gl-popover :target="popoverTargetFn" :title="$options.i18n.allTopics" placement="bottom">
-        <div class="gl-display-flex gl-flex-direction-column gl-gap-2">
+        <div class="gl-flex gl-flex-col gl-gap-2">
           <div v-for="topic in topics" :key="topic">
             <gl-badge variant="neutral" :href="getHref(topic)">{{ topic }}</gl-badge>
           </div>

@@ -3,7 +3,7 @@
 exports[`DevopsAdoptionTableCellFlag disabled matches the snapshot 1`] = `
 <div>
   <div
-    class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start"
+    class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
       class="gl-text-gray-500"
@@ -18,7 +18,7 @@ exports[`DevopsAdoptionTableCellFlag disabled matches the snapshot 1`] = `
 exports[`DevopsAdoptionTableCellFlag disabled when the enabled flag is changed to true matches the snapshot 1`] = `
 <div>
   <div
-    class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start"
+    class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
       class="gl-text-green-500"
@@ -33,7 +33,7 @@ exports[`DevopsAdoptionTableCellFlag disabled when the enabled flag is changed t
 exports[`DevopsAdoptionTableCellFlag enabled matches the snapshot 1`] = `
 <div>
   <div
-    class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start"
+    class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
       class="gl-text-green-500"
@@ -48,7 +48,7 @@ exports[`DevopsAdoptionTableCellFlag enabled matches the snapshot 1`] = `
 exports[`DevopsAdoptionTableCellFlag enabled when the enabled flag is changed to false matches the snapshot 1`] = `
 <div>
   <div
-    class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start"
+    class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
       class="gl-text-gray-500"
@@ -65,7 +65,7 @@ exports[`DevopsAdoptionTableCellFlag enabled with a variant specified matches th
   variant="primary"
 >
   <div
-    class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start"
+    class="gl-flex gl-justify-end sm:gl-justify-start"
   >
     <gl-icon-stub
       class="gl-text-green-500"

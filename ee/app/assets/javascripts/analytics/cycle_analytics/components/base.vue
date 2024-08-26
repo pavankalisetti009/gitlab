@@ -213,7 +213,7 @@ export default {
     <template v-else>
       <page-heading :heading="__('Value stream analytics')" />
       <div
-        class="gl-display-flex gl-flex-direction-column gl-sm-flex-direction-row gl-sm-align-items-center gl-justify-content-space-between gl-mb-6 gl-gap-3"
+        class="gl-mb-6 gl-flex gl-flex-col gl-justify-between gl-gap-3 sm:gl-flex-row sm:gl-items-center"
       >
         <value-stream-select v-if="shouldDisplayCreateMultipleValueStreams" :can-edit="canEdit" />
         <value-stream-aggregation-status v-if="isAggregationStatusAvailable" :data="aggregation" />
@@ -235,7 +235,7 @@ export default {
       <path-navigation
         v-if="selectedStageReady"
         data-testid="vsa-path-navigation"
-        class="gl-w-full gl-mt-4"
+        class="gl-mt-4 gl-w-full"
         :loading="isLoading"
         :stages="pathNavigationData"
         :selected-stage="selectedStage"

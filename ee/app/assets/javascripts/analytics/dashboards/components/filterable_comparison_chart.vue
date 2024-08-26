@@ -102,7 +102,7 @@ export default {
     <gl-skeleton-loader :lines="1" />
   </div>
   <div v-else>
-    <div class="gl-text-right gl-py-2">
+    <div class="gl-py-2 gl-text-right">
       <comparison-chart-labels
         v-if="filterLabelsResults.length"
         :labels="filterLabelsResults"

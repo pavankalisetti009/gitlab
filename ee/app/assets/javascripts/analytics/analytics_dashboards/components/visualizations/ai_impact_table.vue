@@ -23,7 +23,7 @@ export default {
     #default="{ isProject, isNamespaceLoading }"
     :full-path="data.namespace"
   >
-    <div v-if="isNamespaceLoading" class="gl-flex gl-justify-center gl-items-center gl-h-full">
+    <div v-if="isNamespaceLoading" class="gl-flex gl-h-full gl-items-center gl-justify-center">
       <gl-loading-icon size="lg" />
     </div>
     <metric-table

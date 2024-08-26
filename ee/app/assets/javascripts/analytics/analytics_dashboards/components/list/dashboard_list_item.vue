@@ -80,23 +80,21 @@ export default {
 
 <template>
   <li
-    class="gl-display-flex! gl-px-5! gl-align-items-center gl-hover-cursor-pointer gl-hover-bg-blue-50"
+    class="!gl-flex gl-items-center !gl-px-5 hover:gl-cursor-pointer hover:gl-bg-blue-50"
     data-testid="dashboard-list-item"
     @click="routeToDashboard"
   >
-    <div class="gl-float-left gl-mr-4 gl-display-flex gl-align-items-center">
-      <gl-icon name="dashboard" class="gl-text-gray-200 gl-mr-3" :size="16" />
+    <div class="gl-float-left gl-mr-4 gl-flex gl-items-center">
+      <gl-icon name="dashboard" class="gl-mr-3 gl-text-gray-200" :size="16" />
     </div>
-    <div
-      class="gl-display-flex gl-align-items-center gl-justify-content-space-between gl-flex-grow-1"
-    >
-      <div class="gl-display-flex gl-flex-direction-column">
-        <div class="gl-display-flex gl-align-items-center">
+    <div class="gl-flex gl-grow gl-items-center gl-justify-between">
+      <div class="gl-flex gl-flex-col">
+        <div class="gl-flex gl-items-center">
           <gl-link
             v-if="dashboard.redirect"
             data-testid="dashboard-redirect-link"
             :href="redirectHref"
-            class="gl-font-bold gl-leading-normal gl-text-decoration-none!"
+            class="gl-font-bold gl-leading-normal !gl-no-underline"
             >{{ dashboard.title }}</gl-link
           >
           <router-link
@@ -127,7 +125,7 @@ export default {
           {{ dashboard.description }}
         </gl-truncate-text>
       </div>
-      <div class="gl-float-right gl-flex gl-gap-3 gl-items-baseline">
+      <div class="gl-float-right gl-flex gl-items-baseline gl-gap-3">
         <div>
           <gl-badge
             v-if="isBuiltInDashboard"

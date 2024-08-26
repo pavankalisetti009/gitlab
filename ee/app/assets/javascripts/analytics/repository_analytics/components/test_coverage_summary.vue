@@ -191,15 +191,13 @@ export default {
         </gl-sprintf>
       </strong>
     </div>
-    <div
-      class="gl-flex gl-flex-direction-column gl-md-flex-direction-row gl-my-6 gl-align-items-flex-start"
-    >
+    <div class="gl-my-6 gl-flex gl-flex-col gl-items-start md:gl-flex-row">
       <gl-skeleton-loader v-if="isLoading" />
       <template v-for="metric in metrics" v-else>
         <gl-single-stat
           :id="metric.key"
           :key="metric.key"
-          class="gl-pr-9 gl-my-4 gl-md-mt-0 gl-md-mb-0"
+          class="gl-my-4 gl-pr-9 md:gl-mb-0 md:gl-mt-0"
           :value="`${metric.value || '-'}`"
           :unit="metric.value ? metric.unit : null"
           :title="metric.label"
@@ -218,7 +216,7 @@ export default {
       <template #header>
         <div class="gl-flex gl-items-center">
           <h5>{{ $options.i18n.graphCardHeader }}</h5>
-          <strong class="gl-font-sm gl-ml-3 gl-text-gray-600">{{
+          <strong class="gl-ml-3 gl-text-sm gl-text-gray-600">{{
             $options.i18n.graphCardSubheader
           }}</strong>
         </div>

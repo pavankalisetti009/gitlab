@@ -9,10 +9,10 @@ exports[`ChartTooltipText with no tooltipValue data renders the tooltip empty st
 exports[`ChartTooltipText with tooltipValue data renders the tooltip 1`] = `
 <div>
   <div
-    class="gl-display-flex gl-flex-direction-column"
+    class="gl-flex gl-flex-col"
   >
     <div
-      class="gl-display-flex gl-justify-content-space-between"
+      class="gl-flex gl-justify-between"
     >
       <div
         class="gl-mr-5"

@@ -83,7 +83,7 @@ export default {
   <div class="js-tasks-by-type-chart">
     <chart-skeleton-loader v-if="isLoading" class="gl-my-4 gl-py-4" />
     <div v-else>
-      <div class="gl-display-flex gl-justify-content-space-between">
+      <div class="gl-flex gl-justify-between">
         <h4 class="gl-mt-0">
           {{ s__('ValueStreamAnalytics|Tasks by type') }}&nbsp;
           <span ref="tooltipTrigger" data-testid="vsa-task-by-type-description">

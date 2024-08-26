@@ -68,7 +68,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-flex-wrap">
+  <div class="gl-flex gl-flex-wrap gl-items-center">
     <span v-if="hasSubmitted">{{ s__('ProductAnalytics|Thank you for your feedback.') }}</span>
     <template v-else>
       <div class="gl-mr-3">
@@ -93,7 +93,7 @@ export default {
           }}
         </gl-popover>
       </div>
-      <div class="gl-display-flex gl-flex-wrap gl-gap-3">
+      <div class="gl-flex gl-flex-wrap gl-gap-3">
         <gl-button
           v-for="feedbackOption in $options.feedbackOptions"
           :key="feedbackOption.event"

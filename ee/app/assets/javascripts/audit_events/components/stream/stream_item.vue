@@ -98,10 +98,10 @@ export default {
 
 <template>
   <li class="list-item py-0">
-    <div class="gl-display-flex gl-align-items-center gl-justify-content-space-between gl-py-6">
+    <div class="gl-flex gl-items-center gl-justify-between gl-py-6">
       <gl-button
         variant="link"
-        class="gl-text-body! gl-font-bold gl-min-w-0"
+        class="gl-min-w-0 gl-font-bold !gl-text-primary"
         :aria-expanded="isEditing"
         data-testid="toggle-btn"
         @click="toggleEditMode"
@@ -110,7 +110,7 @@ export default {
           name="chevron-right"
           class="gl-transition-all"
           :class="{ 'gl-rotate-90': isEditing }"
-        /><span class="gl-font-lg gl-ml-2">{{ destinationTitle }}</span>
+        /><span class="gl-ml-2 gl-text-lg">{{ destinationTitle }}</span>
       </gl-button>
 
       <template v-if="isItemFiltered">
@@ -138,7 +138,7 @@ export default {
       <gl-alert
         v-if="successMessage"
         :dismissible="true"
-        class="gl-ml-6 gl-mb-6"
+        class="gl-mb-6 gl-ml-6"
         variant="success"
         @dismiss="clearSuccessMessage"
       >
@@ -147,7 +147,7 @@ export default {
       <stream-destination-editor
         v-if="type == $options.DESTINATION_TYPE_HTTP"
         :item="item"
-        class="gl-pr-0 gl-pl-6 gl-pb-5"
+        class="gl-pb-5 gl-pl-6 gl-pr-0"
         @updated="onUpdated"
         @deleted="onDelete"
         @error="onEditorError"
@@ -156,7 +156,7 @@ export default {
       <stream-gcp-logging-destination-editor
         v-else-if="type == $options.DESTINATION_TYPE_GCP_LOGGING"
         :item="item"
-        class="gl-pr-0 gl-pl-6 gl-pb-5"
+        class="gl-pb-5 gl-pl-6 gl-pr-0"
         @updated="onUpdated"
         @deleted="onDelete"
         @error="onEditorError"
@@ -165,7 +165,7 @@ export default {
       <stream-amazon-s3-destination-editor
         v-else-if="type == $options.DESTINATION_TYPE_AMAZON_S3"
         :item="item"
-        class="gl-pr-0 gl-pl-6 gl-pb-5"
+        class="gl-pb-5 gl-pl-6 gl-pr-0"
         @updated="onUpdated"
         @deleted="onDelete"
         @error="onEditorError"

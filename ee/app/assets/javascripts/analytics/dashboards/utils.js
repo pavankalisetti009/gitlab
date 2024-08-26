@@ -317,7 +317,7 @@ export const generateDashboardTableFields = (now) => {
       start: nMonthsBefore(now, 6),
       end: now,
       thClass: 'gl-w-3/20',
-      tdClass: 'gl-py-2!',
+      tdClass: '!gl-py-2',
     },
   ];
 };

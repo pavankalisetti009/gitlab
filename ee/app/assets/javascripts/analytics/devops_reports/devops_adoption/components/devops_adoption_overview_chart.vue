@@ -157,12 +157,9 @@ export default {
           :class="{ 'gl-mb-3': !lastItemInList(index, tooltipContentData.length) }"
         >
           <div class="gl-font-bold">{{ section.title }}</div>
-          <div
-            v-if="hasFeaturesAvailable(section)"
-            class="gl-display-flex gl-gap-2 gl-flex-direction-column"
-          >
+          <div v-if="hasFeaturesAvailable(section)" class="gl-flex gl-flex-col gl-gap-2">
             <div v-for="feature in section.featureMeta" :key="feature.title">
-              <div v-if="feature.tracked" class="gl-display-flex">
+              <div v-if="feature.tracked" class="gl-flex">
                 <devops-adoption-table-cell-flag :enabled="feature.adopted" class="gl-mr-3" />
                 {{ feature.title }}
               </div>

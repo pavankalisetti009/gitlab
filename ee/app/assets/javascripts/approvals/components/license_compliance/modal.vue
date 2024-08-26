@@ -47,7 +47,7 @@ export default {
   >
     <rule-form ref="form" :init-rule="licenseApprovalRule" />
     <template #modal-footer="{ ok, cancel }">
-      <section class="gl-display-flex gl-w-full">
+      <section class="gl-flex gl-w-full">
         <p>
           <gl-icon name="question-o" :size="12" class="gl-text-blue-600" />
           <gl-sprintf
