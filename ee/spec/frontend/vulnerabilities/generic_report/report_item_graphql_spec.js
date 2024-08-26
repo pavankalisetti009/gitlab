@@ -20,7 +20,7 @@ describe('ee/vulnerabilities/components/generic_report/report_item_graphql.vue',
       }),
     );
 
-  const findReportComponent = () => wrapper.findByTestId('reportComponent');
+  const findReportComponent = () => wrapper.findComponentByTestId('report-component');
 
   describe.each(GRAPHQL_TYPENAMES)('with report type "%s"', (reportType) => {
     const testData = Object.values(vulnerabilityDetails).find((item) => item.type === reportType);
@@ -28,10 +28,6 @@ describe('ee/vulnerabilities/components/generic_report/report_item_graphql.vue',
 
     beforeEach(() => {
       wrapper = createWrapper({ props: { item: reportItem } });
-    });
-
-    it('renders the corresponding component', () => {
-      expect(findReportComponent().exists()).toBe(true);
     });
 
     it('passes the report data as props', () => {

@@ -33,5 +33,5 @@ export default {
 };
 </script>
 <template>
-  <component :is="item.type" v-bind="item" data-testid="reportComponent" />
+  <component :is="item.type" v-bind="item" data-testid="report-component" />
 </template>
