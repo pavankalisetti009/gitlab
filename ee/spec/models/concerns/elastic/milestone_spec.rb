@@ -25,24 +25,12 @@ RSpec.describe Milestone, :elastic, feature_category: :global_search do
       ensure_elasticsearch_index!
     end
 
-    shared_examples 'a milestone search' do
-      it 'searches milestones', :sidekiq_inline do
-        options = { project_ids: [project.id], current_user: user }
+    it 'searches milestones', :sidekiq_inline do
+      options = { project_ids: [project.id], current_user: user }
 
-        expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count)
-          .to eq(2)
-        expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).total_count).to eq(3)
-      end
-    end
-
-    it_behaves_like 'a milestone search'
-
-    context 'when search_milestone_query_builder is false' do
-      before do
-        stub_feature_flags(search_milestone_query_builder: false)
-      end
-
-      it_behaves_like 'a milestone search'
+      expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count)
+        .to eq(2)
+      expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).total_count).to eq(3)
     end
   end
 

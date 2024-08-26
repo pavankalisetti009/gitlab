@@ -867,14 +867,6 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         ensure_elasticsearch_index!
       end
 
-      context 'when search_milestone_query_builder is false' do
-        before do
-          stub_feature_flags(search_milestone_query_builder: false)
-        end
-
-        include_examples 'search results filtered by archived', nil, nil
-      end
-
       include_examples 'search results filtered by archived', nil, nil
     end
   end
@@ -1383,140 +1375,128 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     end
 
     describe 'milestones' do
-      shared_examples 'a milestone scoped result' do
-        let_it_be_with_reload(:milestone_1) { create(:milestone, project: internal_project, title: "Internal project") }
-        let_it_be_with_reload(:milestone_2) { create(:milestone, project: private_project1, title: "Private project") }
-        let_it_be_with_reload(:milestone_3) do
-          create(:milestone, project: private_project2, title: "Private project which user is member")
-        end
+      let_it_be_with_reload(:milestone_1) { create(:milestone, project: internal_project, title: "Internal project") }
+      let_it_be_with_reload(:milestone_2) { create(:milestone, project: private_project1, title: "Private project") }
+      let_it_be_with_reload(:milestone_3) do
+        create(:milestone, project: private_project2, title: "Private project which user is member")
+      end
 
-        let_it_be_with_reload(:milestone_4) { create(:milestone, project: public_project, title: "Public project") }
+      let_it_be_with_reload(:milestone_4) { create(:milestone, project: public_project, title: "Public project") }
 
-        before do
-          Elastic::ProcessInitialBookkeepingService.track!(milestone_1, milestone_2, milestone_3, milestone_4)
-          ensure_elasticsearch_index!
-        end
+      before do
+        Elastic::ProcessInitialBookkeepingService.track!(milestone_1, milestone_2, milestone_3, milestone_4)
+        ensure_elasticsearch_index!
+      end
 
-        it_behaves_like 'a paginated object', 'milestones'
+      it_behaves_like 'a paginated object', 'milestones'
 
-        context 'when project ids are present' do
-          context 'when authenticated' do
-            context 'when user and merge requests are disabled in a project' do
+      context 'when project ids are present' do
+        context 'when authenticated' do
+          context 'when user and merge requests are disabled in a project' do
+            it 'returns right set of milestones' do
+              private_project2.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
+              private_project2.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
+              public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
+              public_project.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
+              internal_project.project_feature.update!(issues_access_level: ProjectFeature::DISABLED)
+              ensure_elasticsearch_index!
+
+              projects = user.authorized_projects
+              results = described_class.new(user, 'project', projects.pluck_primary_key)
+              milestones = results.objects('milestones')
+
+              expect(milestones).to match_array([milestone_1, milestone_3])
+            end
+          end
+
+          context 'when user is admin' do
+            context 'when admin mode enabled', :enable_admin_mode do
               it 'returns right set of milestones' do
-                private_project2.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
-                private_project2.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
+                user.update!(admin: true)
                 public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
                 public_project.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
                 internal_project.project_feature.update!(issues_access_level: ProjectFeature::DISABLED)
+                internal_project.project_feature.update!(merge_requests_access_level: ProjectFeature::DISABLED)
                 ensure_elasticsearch_index!
 
-                projects = user.authorized_projects
-                results = described_class.new(user, 'project', projects.pluck_primary_key)
+                results = described_class.new(user, 'project', :any)
                 milestones = results.objects('milestones')
 
-                expect(milestones).to match_array([milestone_1, milestone_3])
-              end
-            end
-
-            context 'when user is admin' do
-              context 'when admin mode enabled', :enable_admin_mode do
-                it 'returns right set of milestones' do
-                  user.update!(admin: true)
-                  public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
-                  public_project.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
-                  internal_project.project_feature.update!(issues_access_level: ProjectFeature::DISABLED)
-                  internal_project.project_feature.update!(merge_requests_access_level: ProjectFeature::DISABLED)
-                  ensure_elasticsearch_index!
-
-                  results = described_class.new(user, 'project', :any)
-                  milestones = results.objects('milestones')
-
-                  expect(milestones).to match_array([milestone_2, milestone_3, milestone_4])
-                end
-              end
-            end
-
-            context 'when user can read milestones' do
-              it 'returns right set of milestones' do
-                # Authenticated search
-                projects = user.authorized_projects
-                results = described_class.new(user, 'project', projects.pluck_primary_key)
-                milestones = results.objects('milestones')
-
-                expect(milestones).to match_array([milestone_1, milestone_3, milestone_4])
+                expect(milestones).to match_array([milestone_2, milestone_3, milestone_4])
               end
             end
           end
-        end
 
-        context 'when not authenticated' do
-          it 'returns right set of milestones' do
-            results = described_class.new(nil, 'project', [])
-            milestones = results.objects('milestones')
-
-            expect(milestones).to include milestone_4
-            expect(results.milestones_count).to eq 1
-          end
-        end
-
-        context 'when project_ids is not present' do
-          context 'when project_ids is :any' do
-            it 'returns all milestones' do
-              results = described_class.new(user, 'project', :any)
-
-              milestones = results.objects('milestones')
-
-              expect(results.milestones_count).to eq(4)
-
-              expect(milestones).to include(milestone_1)
-              expect(milestones).to include(milestone_2)
-              expect(milestones).to include(milestone_3)
-              expect(milestones).to include(milestone_4)
-            end
-          end
-
-          context 'when authenticated' do
+          context 'when user can read milestones' do
             it 'returns right set of milestones' do
-              results = described_class.new(user, 'project', [])
+              # Authenticated search
+              projects = user.authorized_projects
+              results = described_class.new(user, 'project', projects.pluck_primary_key)
               milestones = results.objects('milestones')
 
-              expect(milestones).to include(milestone_1)
-              expect(milestones).to include(milestone_4)
-              expect(results.milestones_count).to eq(2)
-            end
-          end
-
-          context 'when not authenticated' do
-            it 'returns right set of milestones' do
-              # Should not be returned because issues and merge requests feature are disabled
-              other_public_project = create(:project, :public)
-              create(:milestone, project: other_public_project, title: 'Public project milestone 1')
-              other_public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
-              other_public_project.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
-              # Should be returned because only issues is disabled
-              other_public_project_1 = create(:project, :public)
-              milestone_5 = create(:milestone, project: other_public_project_1, title: 'Public project milestone 2')
-              other_public_project_1.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
-              ensure_elasticsearch_index!
-
-              results = described_class.new(nil, 'project', [])
-              milestones = results.objects('milestones')
-
-              expect(milestones).to match_array([milestone_4, milestone_5])
-              expect(results.milestones_count).to eq(2)
+              expect(milestones).to match_array([milestone_1, milestone_3, milestone_4])
             end
           end
         end
       end
 
-      it_behaves_like 'a milestone scoped result'
+      context 'when not authenticated' do
+        it 'returns right set of milestones' do
+          results = described_class.new(nil, 'project', [])
+          milestones = results.objects('milestones')
 
-      context 'when search_milestone_query_builder is false' do
-        before do
-          stub_feature_flags(search_milestone_query_builder: false)
+          expect(milestones).to include milestone_4
+          expect(results.milestones_count).to eq 1
+        end
+      end
+
+      context 'when project_ids is not present' do
+        context 'when project_ids is :any' do
+          it 'returns all milestones' do
+            results = described_class.new(user, 'project', :any)
+
+            milestones = results.objects('milestones')
+
+            expect(results.milestones_count).to eq(4)
+
+            expect(milestones).to include(milestone_1)
+            expect(milestones).to include(milestone_2)
+            expect(milestones).to include(milestone_3)
+            expect(milestones).to include(milestone_4)
+          end
         end
 
-        it_behaves_like 'a milestone scoped result'
+        context 'when authenticated' do
+          it 'returns right set of milestones' do
+            results = described_class.new(user, 'project', [])
+            milestones = results.objects('milestones')
+
+            expect(milestones).to include(milestone_1)
+            expect(milestones).to include(milestone_4)
+            expect(results.milestones_count).to eq(2)
+          end
+        end
+
+        context 'when not authenticated' do
+          it 'returns right set of milestones' do
+            # Should not be returned because issues and merge requests feature are disabled
+            other_public_project = create(:project, :public)
+            create(:milestone, project: other_public_project, title: 'Public project milestone 1')
+            other_public_project.project_feature.update!(merge_requests_access_level: ProjectFeature::PRIVATE)
+            other_public_project.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
+            # Should be returned because only issues is disabled
+            other_public_project_1 = create(:project, :public)
+            milestone_5 = create(:milestone, project: other_public_project_1, title: 'Public project milestone 2')
+            other_public_project_1.project_feature.update!(issues_access_level: ProjectFeature::PRIVATE)
+            ensure_elasticsearch_index!
+
+            results = described_class.new(nil, 'project', [])
+            milestones = results.objects('milestones')
+
+            expect(milestones).to match_array([milestone_4, milestone_5])
+            expect(results.milestones_count).to eq(2)
+          end
+        end
       end
     end
 

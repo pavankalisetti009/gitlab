@@ -135,67 +135,6 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
           )
         end
       end
-
-      context 'when search_milestone_query_builder flag is false' do
-        before do
-          stub_feature_flags(search_milestone_query_builder: false)
-        end
-
-        it 'has the correct named queries' do
-          result.response
-
-          expected_queries = %w[milestone:multi_match:or:search_terms
-            milestone:multi_match:and:search_terms
-            milestone:multi_match_phrase:search_terms
-            milestone:related:project
-            milestone:archived:non_archived
-            doc:is_a:milestone]
-
-          expected_queries << if projects == :any
-                                'milestone:related:project:any'
-                              else
-                                'milestone:related:project:membership:id'
-                              end
-
-          if public_and_internal_projects
-            expected_queries << 'milestone:related:project:visibility:10'
-            expected_queries << 'milestone:related:project:visibility:20'
-          end
-
-          assert_named_queries(
-            *expected_queries
-          )
-        end
-
-        context 'when search_uses_match_queries ff is false' do
-          before do
-            stub_feature_flags(search_uses_match_queries: false)
-          end
-
-          it 'has the correct named queries' do
-            result.response
-            expected_queries = %w[milestone:match:search_terms
-              milestone:related:project
-              milestone:archived:non_archived
-              doc:is_a:milestone]
-
-            expected_queries << if projects == :any
-                                  'milestone:related:project:any'
-                                else
-                                  'milestone:related:project:membership:id'
-                                end
-
-            if public_and_internal_projects
-              expected_queries << 'milestone:related:project:visibility:10'
-              expected_queries << 'milestone:related:project:visibility:20'
-            end
-
-            assert_named_queries(
-              *expected_queries
-            )
-          end
-        end
-      end
     end
   end
 end
