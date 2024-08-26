@@ -9,6 +9,7 @@ RSpec.describe Sbom::SourcePackage, type: :model, feature_category: :dependency_
 
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
+    it { is_expected.to have_many(:occurrences) }
   end
 
   describe '.by_purl_type_and_name scope' do
