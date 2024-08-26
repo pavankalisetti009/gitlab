@@ -7,6 +7,7 @@ import {
   formattedTimeFromDate,
   isTracingDateRangeOutOfBounds,
   validatedDateRangeQuery,
+  parseGraphQLIssueLinksToRelatedIssues,
   createIssueUrlWithDetails,
 } from '~/observability/utils';
 import {
@@ -17,6 +18,8 @@ import {
   TIMESTAMP_QUERY_KEY,
   TIME_RANGE_OPTIONS_VALUES,
 } from '~/observability/constants';
+
+import { mockGraphQlIssueLinks, mockRelatedIssues } from './mock_data';
 
 const MOCK_NOW_DATE = new Date('2023-10-09 15:30:00');
 const realDateNow = Date.now;
@@ -280,5 +283,11 @@ describe('createIssueUrlWithDetails', () => {
     ).toBe(
       'http://gdk.test:3443/?foo=bar&my_param=%7B%22a%22%3A%22b%22%2C%22c%22%3A%22d%22%7D&issue%5Bconfidential%5D=true',
     );
+  });
+});
+
+describe('parseGraphQLIssueLinksToRelatedIssues', () => {
+  it('converts a graphql issue object to a related issue', () => {
+    expect(parseGraphQLIssueLinksToRelatedIssues(mockGraphQlIssueLinks)).toEqual(mockRelatedIssues);
   });
 });

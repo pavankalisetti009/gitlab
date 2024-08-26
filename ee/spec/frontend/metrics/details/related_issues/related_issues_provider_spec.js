@@ -5,7 +5,10 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
 import relatedIssuesQuery from 'ee/metrics/details/related_issues/graphql/get_metrics_related_issues.query.graphql';
-import { mockData } from './mock_data';
+import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
+import { mockQueryResult } from './mock_data';
+
+jest.mock('~/observability/utils');
 
 Vue.use(VueApollo);
 
@@ -18,7 +21,7 @@ describe('RelatedIssuesProvider component', () => {
   let wrapper;
 
   function createComponent({ props = defaultProps, slots, queryMock } = {}) {
-    relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockData);
+    relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockQueryResult);
     const apolloProvider = createMockApollo([[relatedIssuesQuery, relatedIssuesQueryMock]]);
 
     defaultSlotSpy = jest.fn();
@@ -33,6 +36,16 @@ describe('RelatedIssuesProvider component', () => {
       },
     });
   }
+
+  const mockIssues = [
+    {
+      id: 'mock-issue',
+    },
+  ];
+
+  beforeEach(() => {
+    parseGraphQLIssueLinksToRelatedIssues.mockReturnValue(mockIssues);
+  });
 
   describe('rendered output', () => {
     it('renders correctly with default slot', () => {
@@ -70,30 +83,8 @@ describe('RelatedIssuesProvider component', () => {
       });
     });
 
-    it('calls the default slots with issues', () => {
-      const mockIssue = mockData.data.project.observabilityMetricsLinks.nodes[0].issue;
-      const expectedIssues = [
-        {
-          ...mockIssue,
-          id: 647,
-          type: 'issue',
-          path: mockIssue.webUrl,
-          milestone: {
-            ...mockIssue.milestone,
-            id: 13,
-          },
-          assignees: [
-            {
-              ...mockIssue.assignees.nodes[0],
-              id: 1,
-            },
-          ],
-        },
-      ];
-
-      expect(defaultSlotSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ issues: expectedIssues }),
-      );
+    it('calls the default slots with parsed issue objects', () => {
+      expect(defaultSlotSpy).toHaveBeenCalledWith(expect.objectContaining({ issues: mockIssues }));
     });
 
     it('calls the default slots with loading = false', async () => {

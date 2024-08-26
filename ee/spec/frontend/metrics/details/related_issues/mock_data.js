@@ -1,4 +1,4 @@
-export const mockData = {
+export const mockQueryResult = {
   data: {
     project: {
       __typename: 'Project',

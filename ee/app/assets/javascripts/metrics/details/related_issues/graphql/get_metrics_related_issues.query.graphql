@@ -1,4 +1,4 @@
-#import "~/graphql_shared/fragments/user.fragment.graphql"
+#import "ee/graphql_shared/fragments/related_issue.fragment.graphql"
 
 query getMetricsRelatedIssues(
   $projectFullPath: ID!
@@ -10,30 +10,7 @@ query getMetricsRelatedIssues(
     observabilityMetricsLinks(name: $metricName, type: $metricType) {
       nodes {
         issue {
-          id
-          title
-          state
-          description
-          confidential
-          createdAt
-          closedAt
-          webUrl
-          dueDate
-          reference
-          weight
-          assignees {
-            nodes {
-              ...User
-            }
-          }
-          milestone {
-            expired
-            id
-            title
-            state
-            startDate
-            dueDate
-          }
+          ...RelatedIssue
         }
       }
     }

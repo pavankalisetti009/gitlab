@@ -43,6 +43,7 @@ describe('MetricsDetails', () => {
   const findEmptyState = () => findMetricDetails().findComponent(GlEmptyState);
   const findFilteredSearch = () => findMetricDetails().findComponent(FilteredSearch);
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
+  const findRelatedIssuesProvider = () => wrapper.findComponent(RelatedIssuesProvider);
 
   const setFilters = async (attributes, dateRange, groupBy) => {
     findFilteredSearch().vm.$emit('submit', {
@@ -146,9 +147,7 @@ describe('MetricsDetails', () => {
     });
 
     it('renders the related-issue-provider', () => {
-      const relatedIssues = wrapper.findComponent(RelatedIssuesProvider);
-      expect(relatedIssues.exists()).toBe(true);
-      expect(relatedIssues.props()).toEqual({
+      expect(findRelatedIssuesProvider().props()).toEqual({
         metricName: defaultProps.metricId,
         metricType: defaultProps.metricType,
         projectFullPath: defaultProps.projectFullPath,
