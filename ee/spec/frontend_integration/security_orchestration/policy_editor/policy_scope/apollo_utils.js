@@ -11,6 +11,8 @@ import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_complianc
 import createComplianceFrameworkMutation from 'ee/groups/settings/compliance_frameworks/graphql/queries/create_compliance_framework.mutation.graphql';
 import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/queries/get_spp_linked_projects_namespaces.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
+import securityPolicyProjectCreated from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
+import { createSppSubscriptionHandler } from '../utils';
 
 const defaultNodes = [
   {
@@ -115,6 +117,7 @@ const mockApolloProjectHandlers = () => {
 export const defaultHandlers = {
   ...mockApolloHandlers(),
   sppLinkedItemsHandler: createSppLinkedItemsHandler(),
+  securityPolicyProjectCreatedHandler: createSppSubscriptionHandler(),
 };
 
 export const createMockApolloProvider = (handlers = defaultHandlers) => {
@@ -125,5 +128,6 @@ export const createMockApolloProvider = (handlers = defaultHandlers) => {
     [createComplianceFrameworkMutation, handlers.createFrameworkHandler],
     [getSppLinkedProjectsNamespaces, handlers.sppLinkedItemsHandler],
     [getGroupProjects, mockApolloProjectHandlers],
+    [securityPolicyProjectCreated, handlers.securityPolicyProjectCreatedHandler],
   ]);
 };

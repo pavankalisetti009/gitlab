@@ -20,7 +20,7 @@ import { getPolicyType } from '../../utils';
 import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
 import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
 import { SECURITY_POLICY_ACTIONS } from '../policy_editor/constants';
-import { modifyPolicy, redirectToMergeRequest } from '../policy_editor/utils';
+import { goToPolicyMR } from '../policy_editor/utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
@@ -214,7 +214,7 @@ export default {
       this.isProcessingAction = true;
 
       try {
-        const mergeRequest = await modifyPolicy({
+        await goToPolicyMR({
           action,
           assignedPolicyProject: this.assignedPolicyProject,
           name: policy.name,
@@ -223,11 +223,6 @@ export default {
             // eslint-disable-next-line no-underscore-dangle
             `type: ${getPolicyType(policy.__typename, 'urlParameter')}`,
           ),
-        });
-
-        redirectToMergeRequest({
-          mergeRequestId: mergeRequest.id,
-          assignedPolicyProjectFullPath: this.assignedPolicyProject.fullPath,
         });
       } catch (e) {
         this.alert = createAlert({ message: e.message });

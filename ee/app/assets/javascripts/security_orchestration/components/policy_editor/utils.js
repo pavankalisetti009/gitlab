@@ -131,6 +131,27 @@ export const redirectToMergeRequest = ({ mergeRequestId, assignedPolicyProjectFu
   );
 };
 
+export const goToPolicyMR = async ({
+  action,
+  assignedPolicyProject,
+  name,
+  namespacePath,
+  yamlEditorValue,
+}) => {
+  const mergeRequest = await modifyPolicy({
+    action,
+    assignedPolicyProject,
+    name,
+    namespacePath,
+    yamlEditorValue,
+  });
+
+  redirectToMergeRequest({
+    mergeRequestId: mergeRequest.id,
+    assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
+  });
+};
+
 /**
  * Creates a new security policy project and assigns it to the current project
  * @param {String} fullPath

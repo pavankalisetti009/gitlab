@@ -2,6 +2,8 @@ import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
+import securityPolicyProjectCreated from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
+import { createSppSubscriptionHandler } from '../utils';
 
 const mockApolloHandlers = () => {
   return {
@@ -21,5 +23,8 @@ const mockApolloHandlers = () => {
 
 export const createMockApolloProvider = () => {
   Vue.use(VueApollo);
-  return createMockApollo([[getGroupProjects, mockApolloHandlers]]);
+  return createMockApollo([
+    [getGroupProjects, mockApolloHandlers],
+    [securityPolicyProjectCreated, createSppSubscriptionHandler()],
+  ]);
 };

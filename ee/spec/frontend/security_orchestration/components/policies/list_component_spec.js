@@ -12,10 +12,7 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
-import {
-  modifyPolicy,
-  redirectToMergeRequest,
-} from 'ee/security_orchestration/components/policy_editor/utils';
+import { goToPolicyMR } from 'ee/security_orchestration/components/policy_editor/utils';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trimText } from 'helpers/text_helper';
@@ -27,8 +24,7 @@ jest.mock('~/alert');
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
-  modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
-  redirectToMergeRequest: jest.fn(),
+  goToPolicyMR: jest.fn().mockResolvedValue({ id: '2' }),
 }));
 
 const namespacePath = 'path/to/project/or/group';
@@ -409,8 +405,8 @@ describe('List component', () => {
             await waitForPromises();
           });
 
-          it('creates the merge request', () => {
-            expect(modifyPolicy).toHaveBeenCalledWith(
+          it('makes the call to create the merge request', () => {
+            expect(goToPolicyMR).toHaveBeenCalledWith(
               expect.objectContaining({
                 action: 'REMOVE',
                 assignedPolicyProject: {
@@ -421,13 +417,6 @@ describe('List component', () => {
                 namespacePath: 'path/to/project/or/group',
               }),
             );
-          });
-
-          it('redirects to the merge request', () => {
-            expect(redirectToMergeRequest).toHaveBeenCalledWith({
-              mergeRequestId: '2',
-              assignedPolicyProjectFullPath: 'path/to/policy-project',
-            });
           });
 
           it('sets the table to busy', () => {
@@ -444,7 +433,7 @@ describe('List component', () => {
 
           beforeEach(async () => {
             createAlert.mockClear();
-            modifyPolicy.mockRejectedValue(error);
+            goToPolicyMR.mockRejectedValue(error);
             mountWrapper();
             const policyCell = findNonInheritedPolicyCell(findActionCells);
             const deleteAction = findDeleteAction(policyCell);

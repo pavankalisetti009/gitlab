@@ -3,6 +3,7 @@ import {
   assignSecurityPolicyProject,
   doesFileExist,
   getPolicyLimitDetails,
+  goToPolicyMR,
   modifyPolicy,
   redirectToMergeRequest,
   createHumanizedScanners,
@@ -191,6 +192,16 @@ describe('redirectToMergeRequest', () => {
       assignedPolicyProjectFullPath: 'path/to/project',
     });
     expect(visitUrl).toHaveBeenCalledWith('/path/to/project/-/merge_requests/01');
+  });
+});
+
+describe('goToPolicyMR', () => {
+  it('redirects to the newly created merge request', async () => {
+    gqClient.mutate.mockImplementation(mockApolloResponses());
+
+    await goToPolicyMR(createSavePolicyInput(DEFAULT_ASSIGNED_POLICY_PROJECT));
+
+    expect(visitUrl).toHaveBeenCalledWith('/-/merge_requests/01');
   });
 });
 
