@@ -602,13 +602,28 @@ module Search
         end
 
         def find_labels_by_name(names, options)
+          raise ArgumentError, 'search_scope is a required option' unless options.key?(:search_scope)
+
           return [] unless names.any?
 
+          search_level = options[:search_scope].to_sym
           project_ids = options[:project_ids]
           group_ids = options[:group_ids]
+
           finder_params = { name: names }
-          finder_params[:project_ids] = project_ids if project_ids&.any? && project_ids != :any
-          finder_params[:group_id] = group_ids.first if group_ids&.any?
+
+          case search_level
+          when :global
+          # no-op
+          # no group or project filtering applied
+          when :group
+            finder_params[:group_id] = group_ids.first if group_ids&.any?
+          when :project
+            finder_params[:group_id] = group_ids.first if group_ids&.any?
+            finder_params[:project_ids] = project_ids if project_ids != :any && project_ids&.any?
+          else
+            raise ArgumentError, 'Invalid search_scope option provided'
+          end
 
           labels = LabelsFinder.new(nil, finder_params).execute(skip_authorization: true)
           labels.each_with_object(Hash.new { |h, k| h[k] = [] }) do |label, hash|

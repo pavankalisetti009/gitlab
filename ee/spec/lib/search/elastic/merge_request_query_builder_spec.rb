@@ -7,6 +7,7 @@ RSpec.describe ::Search::Elastic::MergeRequestQueryBuilder, :elastic_helpers, fe
   let(:base_options) do
     {
       current_user: user,
+      search_scope: 'global',
       project_ids: project_ids,
       group_ids: [],
       public_and_internal_projects: true
