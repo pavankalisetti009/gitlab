@@ -22,18 +22,6 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::ScheduleBulkRefreshUserAssig
 
         subject.perform
       end
-
-      context 'when feature flag bulk_add_on_assignment_refresh_worker is disabled' do
-        before do
-          stub_feature_flags(bulk_add_on_assignment_refresh_worker: false)
-        end
-
-        it 'does not schedule the worker to perform with capacity' do
-          expect(worker_class).not_to receive(:perform_with_capacity)
-
-          subject.perform
-        end
-      end
     end
   end
 end
