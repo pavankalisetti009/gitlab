@@ -49,7 +49,7 @@ sudo gitlab-runner register \
   --description "docker-ruby:2.6" \
   --executor "docker" \
   --template-config /tmp/test-config.template.toml \
-  --docker-image ruby:2.6
+  --docker-image ruby:3.3
 ```
 
 The registered runner uses the `ruby:2.6` Docker image and runs two
