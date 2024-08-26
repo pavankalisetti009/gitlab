@@ -7,6 +7,8 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
 
   before do
     sign_in(admin)
+    # disables WIP feature settings vue app while running test suite
+    stub_feature_flags(custom_models_feature_settings_vue_app: false)
   end
 
   shared_examples 'returns 404 when feature is disabled' do
