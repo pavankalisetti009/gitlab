@@ -27,7 +27,7 @@ export const CREATE_HAND_RAISE_LEAD_PATH = '/-/subscriptions/hand_raise_leads';
 
 export const BUTTON_ATTRIBUTES = {
   href: '#',
-  buttonTextClasses: 'gl-font-sm',
+  buttonTextClasses: 'mocked-testing-class',
 };
 
 export const FORM_DATA = {
