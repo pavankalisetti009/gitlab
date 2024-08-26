@@ -86,7 +86,7 @@ export default {
       filter="name"
     >
       <template #header>
-        <div v-if="isAdmin" class="order-1 gl-flex gl-items-center">
+        <div v-if="isAdmin" class="gl-flex gl-items-center order-1">
           <gl-button
             class="js-open-form"
             :disabled="formIsOpen"

@@ -236,7 +236,7 @@ export default {
 
           <div
             v-if="release.assets.links.length !== 1"
-            class="mb-5 mb-sm-3 mt-sm-4 col col-sm-auto"
+            class="mb-sm-3 mt-sm-4 col col-sm-auto mb-5"
           >
             <gl-button
               class="remove-button form-control gl-w-full"
@@ -246,7 +246,7 @@ export default {
               @click="onRemoveClicked(link.id)"
             >
               <div class="gl-flex">
-                <gl-icon class="mr-1 mr-sm-0" :size="16" name="remove" />
+                <gl-icon class="mr-sm-0 mr-1" :size="16" name="remove" />
                 <span class="d-inline d-sm-none">{{ __('Remove asset link') }}</span>
               </div>
             </gl-button>

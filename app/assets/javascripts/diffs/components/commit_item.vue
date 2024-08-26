@@ -99,7 +99,7 @@ export default {
         <commit-pipeline-status
           v-if="commit.pipeline_status_path"
           :endpoint="commit.pipeline_status_path"
-          class="mb-2 gl-inline-flex"
+          class="gl-inline-flex mb-2"
         />
         <gl-button-group class="gl-ml-4" data-testid="commit-sha-group">
           <gl-button label class="gl-font-monospace" data-testid="commit-sha-short-id">{{
@@ -113,7 +113,7 @@ export default {
         </gl-button-group>
       </div>
       <div>
-        <div class="float-left align-self-start gl-flex gl-items-center">
+        <div class="align-self-start gl-flex gl-items-center float-left">
           <gl-form-checkbox
             v-if="isSelectable"
             :checked="checked"

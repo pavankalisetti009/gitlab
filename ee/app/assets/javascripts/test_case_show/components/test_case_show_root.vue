@@ -196,7 +196,7 @@ export default {
           :message="__('Archived (%{movedToStart}moved%{movedToEnd})')"
         >
           <template #movedTo="{ content }">
-            <gl-link :href="testCase.movedTo.webUrl" class="text-white text-underline">{{
+            <gl-link :href="testCase.movedTo.webUrl" class="text-underline text-white">{{
               content
             }}</gl-link>
           </template>

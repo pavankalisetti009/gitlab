@@ -206,7 +206,7 @@ export default {
 
 <template>
   <tr class="tree-item">
-    <td class="tree-item-file-name cursor-default position-relative">
+    <td class="tree-item-file-name position-relative cursor-default">
       <component
         :is="linkComponent"
         ref="link"
@@ -228,7 +228,7 @@ export default {
           :submodule="isSubmodule"
           :loading="path === loadingPath"
           css-classes="position-relative file-icon"
-          class="mr-1 position-relative text-secondary"
+          class="position-relative text-secondary mr-1"
         /><span class="position-relative">{{ fullPath }}</span>
       </component>
       <!-- eslint-disable @gitlab/vue-require-i18n-strings -->
@@ -246,7 +246,7 @@ export default {
         class="ml-1"
       />
     </td>
-    <td class="tree-commit cursor-default gl-hidden sm:gl-table-cell">
+    <td class="tree-commit gl-hidden sm:gl-table-cell cursor-default">
       <gl-link
         v-if="commitData"
         v-safe-html:[$options.safeHtmlConfig]="commitData.titleHtml"
@@ -258,7 +258,7 @@ export default {
         <gl-skeleton-loader v-if="showSkeletonLoader" :lines="1" />
       </gl-intersection-observer>
     </td>
-    <td class="tree-time-ago text-right cursor-default gl-text-gray-600">
+    <td class="tree-time-ago gl-text-gray-600 cursor-default text-right">
       <gl-intersection-observer @appear="rowAppeared" @disappear="rowDisappeared">
         <timeago-tooltip v-if="commitData" :time="commitData.committedDate" />
       </gl-intersection-observer>

@@ -138,7 +138,7 @@ export default {
           </gl-avatar-link>
         </div>
 
-        <div class="col-10 col-sm-7 pr-0 pl-5 align-self-center align-middle ci-table">
+        <div class="col-10 col-sm-7 align-self-center ci-table pl-5 pr-0 align-middle">
           <div class="branch-commit">
             <gl-icon name="work" :size="14" />
             <gl-link
@@ -163,7 +163,7 @@ export default {
         </div>
 
         <div
-          class="col-sm-3 mt-0 pl-6 pr-0 pl-sm-0 offset-1 offset-sm-0 text-sm-right align-self-center col-12 d-sm-block"
+          class="col-sm-3 pl-sm-0 offset-1 offset-sm-0 text-sm-right align-self-center col-12 d-sm-block mt-0 pl-6 pr-0"
         >
           <time-ago
             v-if="shouldShowTimeAgo"

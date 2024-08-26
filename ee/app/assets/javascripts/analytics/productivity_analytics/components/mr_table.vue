@@ -57,7 +57,7 @@ export default {
   <div class="mr-table">
     <div class="card">
       <div class="card-header border-bottom-0">
-        <div role="row" class="gl-responsive-table-row table-row-header py-0 gl-flex">
+        <div role="row" class="gl-responsive-table-row table-row-header gl-flex py-0">
           <div role="rowheader" class="table-section section-50 gl-hidden md:gl-flex">
             {{ __('Title') }}
           </div>

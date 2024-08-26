@@ -34,16 +34,16 @@ export default {
   <div class="dashboard-filters border-bottom gl-bg-gray-10">
     <div class="row mx-0 p-2">
       <severity-filter
-        class="col-sm-6 col-md-4 col-lg-2 p-2 js-filter"
+        class="col-sm-6 col-md-4 col-lg-2 js-filter p-2"
         data-testid="severity"
         @filter-changed="setFilter"
       />
       <tool-filter
-        class="col-sm-6 col-md-4 col-lg-2 p-2 js-filter"
+        class="col-sm-6 col-md-4 col-lg-2 js-filter p-2"
         data-testid="reportType"
         @filter-changed="setFilter"
       />
-      <div class="ml-lg-auto p-2 gl-flex">
+      <div class="ml-lg-auto gl-flex p-2">
         <slot name="buttons"></slot>
         <div class="pl-md-6 gl-pt-1">
           <gl-toggle

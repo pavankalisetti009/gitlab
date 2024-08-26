@@ -253,7 +253,7 @@ export default {
       id="service-desk-checkbox"
       :value="isEnabled"
       :disabled="!isIssueTrackerEnabled"
-      class="align-middle mr-1 !gl-inline-block"
+      class="!gl-inline-block mr-1 align-middle"
       :label="$options.i18n.toggleLabel"
       label-position="hidden"
       @change="onCheckboxToggle"

@@ -43,7 +43,7 @@ export default {
       <gl-accordion :header-level="3">
         <gl-accordion-item :title="$options.i18n.showMore">
           <div class="card-body">
-            <div class="container gl-p-0">
+            <div class="gl-p-0 container">
               <div class="row">
                 <div class="col-sm-8">
                   <ul class="unstyled-list list-items-py-2">

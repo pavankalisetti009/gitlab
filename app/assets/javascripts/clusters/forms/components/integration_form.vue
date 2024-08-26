@@ -136,7 +136,7 @@ export default {
         </gl-sprintf>
       </div>
     </gl-form-group>
-    <div v-if="editable" class="form group gl-flex gl-justify-end">
+    <div v-if="editable" class="form gl-flex gl-justify-end group">
       <gl-button
         category="primary"
         variant="confirm"

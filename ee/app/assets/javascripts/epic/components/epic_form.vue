@@ -201,7 +201,7 @@ export default {
 
       <gl-form-group :label="__('Labels')">
         <labels-select-widget
-          class="block labels js-labels-block"
+          class="labels js-labels-block block"
           :full-path="groupPath"
           allow-label-create
           allow-multiselect
@@ -259,7 +259,7 @@ export default {
         :label="__('Color')"
       >
         <color-select-dropdown
-          class="block colors js-colors-block"
+          class="colors js-colors-block block"
           :full-path="groupPath"
           :attr-workspace-path="groupPath"
           workspace-type="group"

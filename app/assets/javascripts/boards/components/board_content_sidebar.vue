@@ -354,7 +354,7 @@ export default {
           data-testid="sidebar-due-date"
         />
         <sidebar-labels-widget
-          class="block labels"
+          class="labels block"
           :iid="activeBoardIssuable.iid"
           :full-path="projectPathForActiveIssue"
           :allow-label-remove="allowLabelEdit"

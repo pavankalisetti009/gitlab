@@ -61,7 +61,7 @@ export default {
           type="hidden"
         />
         <labels-select
-          class="block labels"
+          class="labels block"
           :allow-label-remove="allowLabelRemove"
           :allow-multiselect="true"
           :show-embedded-labels-list="true"

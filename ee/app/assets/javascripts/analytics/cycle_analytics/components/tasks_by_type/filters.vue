@@ -171,14 +171,14 @@ export default {
         <small
           v-if="selected.length > 0"
           data-testid="selected-labels-count"
-          class="text-center gl-border-t-1 gl-border-t-gray-200 !gl-p-2 gl-text-gray-500 gl-border-t-solid"
+          class="gl-border-t-1 gl-border-t-gray-200 !gl-p-2 gl-text-gray-500 gl-border-t-solid text-center"
         >
           {{ labelsSelectedText }}
         </small>
         <div
           class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-200 !gl-p-4 !gl-pt-3 gl-border-t-solid"
         >
-          <p class="font-weight-bold text-left mb-2">{{ s__('CycleAnalytics|Show') }}</p>
+          <p class="font-weight-bold mb-2 text-left">{{ s__('CycleAnalytics|Show') }}</p>
           <gl-segmented-control
             data-testid="type-of-work-filters-subject"
             :checked="subjectFilter"

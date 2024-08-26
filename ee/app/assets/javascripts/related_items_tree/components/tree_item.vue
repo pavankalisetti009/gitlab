@@ -75,7 +75,7 @@ export default {
 
 <template>
   <li
-    class="tree-item list-item gl-py-0"
+    class="tree-item gl-py-0 list-item"
     data-testid="related-issue-item"
     :class="{
       'has-children': hasChildren,

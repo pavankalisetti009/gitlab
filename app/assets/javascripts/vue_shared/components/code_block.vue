@@ -30,7 +30,7 @@ export default {
 </script>
 <template>
   <pre
-    class="code-block rounded code"
+    class="code-block code rounded"
     :class="$options.userColorScheme"
     :style="styleObject"
   ><slot><code class="gl-block">{{ code }}</code></slot></pre>

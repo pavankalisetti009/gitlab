@@ -138,13 +138,13 @@ export default {
         <gl-loading-icon
           v-if="isLoadingRollout(row.item.rolloutStatus)"
           size="sm"
-          class="mt-1 gl-inline-flex"
+          class="gl-inline-flex mt-1"
         />
 
         <!-- Rollout Instances -->
         <div
           v-else-if="hasInstances(row.item.rolloutStatus)"
-          class="flex-row justify-content-end justify-content-md-start gl-flex gl-flex-wrap"
+          class="justify-content-end justify-content-md-start gl-flex gl-flex-wrap flex-row"
         >
           <template v-for="(instance, i) in row.item.rolloutStatus.instances">
             <deployment-instance
@@ -159,7 +159,7 @@ export default {
 
         <!-- Empty state -->
         <div v-else class="deployments-empty gl-flex">
-          <gl-icon name="warning" class="mr-2 align-self-center flex-shrink-0 gl-text-orange-500" />
+          <gl-icon name="warning" class="align-self-center gl-text-orange-500 mr-2 flex-shrink-0" />
           <span>
             <gl-sprintf
               :message="

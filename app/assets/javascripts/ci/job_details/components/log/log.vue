@@ -93,7 +93,7 @@ export default {
       </template>
     </template>
 
-    <div v-if="!isJobLogComplete" class="js-log-animation loader-animation pt-3 pl-3">
+    <div v-if="!isJobLogComplete" class="js-log-animation loader-animation pl-3 pt-3">
       <div class="dot"></div>
       <div class="dot"></div>
       <div class="dot"></div>

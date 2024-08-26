@@ -161,7 +161,7 @@ export default {
           </gl-badge>
         </template>
         <template #cell(environment)="{ item }">
-          <gl-icon name="environment" class="mr-1 gl-text-secondary" />
+          <gl-icon name="environment" class="gl-text-secondary mr-1" />
           <span data-testid="path-prefix">{{ item.pathPrefix }}</span>
         </template>
         <template #cell(url)="{ item }">
@@ -173,20 +173,20 @@ export default {
           </span>
         </template>
         <template #cell(createdAt)="{ item }">
-          <gl-icon name="play" class="mr-1 gl-text-secondary" />
+          <gl-icon name="play" class="gl-text-secondary mr-1" />
           <user-date
             :date="item.createdAt"
             :date-format="$options.static.SHORT_DATE_FORMAT_WITH_TIME"
           />
         </template>
         <template #cell(ciBuildId)="{ item }">
-          <gl-icon name="deployments" class="mr-1 gl-text-secondary" />
+          <gl-icon name="deployments" class="gl-text-secondary mr-1" />
           <gl-link :href="getBuildUrl(item.ciBuildId)" data-testid="ci-build">
             {{ item.ciBuildId }}
           </gl-link>
         </template>
         <template #cell(size)="{ item }">
-          <gl-icon name="disk" class="mr-1 gl-text-secondary" />
+          <gl-icon name="disk" class="gl-text-secondary mr-1" />
           <number-to-human-size :value="item.size" />
         </template>
         <template #cell(delete)="{ item }">

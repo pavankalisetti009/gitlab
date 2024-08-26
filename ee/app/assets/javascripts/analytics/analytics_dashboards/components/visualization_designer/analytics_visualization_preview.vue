@@ -66,7 +66,7 @@ export default {
   <div>
     <div v-if="!isQueryPresent">
       <div class="col-12 gl-mt-4">
-        <div class="text-content text-center gl-text-gray-400">
+        <div class="text-content gl-text-gray-400 text-center">
           <h3 data-testid="measurement-hl" class="gl-text-gray-400">
             {{ s__('Analytics|Start by choosing a measure') }}
           </h3>
@@ -119,7 +119,7 @@ export default {
             class="col-12 gl-overflow-y-auto gl-bg-white"
             :style="{ height: $options.PANEL_VISUALIZATION_HEIGHT }"
           >
-            <div class="text-content text-center gl-text-gray-400">
+            <div class="text-content gl-text-gray-400 text-center">
               <h3 class="gl-text-gray-400">
                 {{ s__('Analytics|Select a visualization type') }}
               </h3>

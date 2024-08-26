@@ -33,10 +33,10 @@ export default {
 <template>
   <dropdown-button class="!gl-w-full">
     <span class="row gl-flex-nowrap">
-      <span class="col-auto flex-fill text-truncate">
+      <span class="flex-fill text-truncate col-auto">
         <gl-icon :size="16" :aria-label="__('Current Branch')" name="branch" /> {{ branchLabel }}
       </span>
-      <span v-if="showMergeRequests" class="col-auto pl-0 text-truncate">
+      <span v-if="showMergeRequests" class="text-truncate col-auto pl-0">
         <gl-icon :size="16" :aria-label="__('Merge request')" name="merge-request" />
         {{ mergeRequestLabel }}
       </span>

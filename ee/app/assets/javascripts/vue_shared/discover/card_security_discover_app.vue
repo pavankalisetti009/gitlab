@@ -117,7 +117,7 @@ export default {
         {{ caption }}
       </p>
       <div class="gl-mx-auto gl-my-0">
-        <p class="mb-7 gl-text-center gl-text-gray-900">
+        <p class="gl-text-center gl-text-gray-900 mb-7">
           <gl-sprintf :message="$options.i18n.discoverPlanCaption">
             <template #link="{ content }">
               <gl-link :href="$options.DISCOVER_PLANS_MORE_INFO_LINK" target="_blank">{{

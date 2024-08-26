@@ -150,7 +150,7 @@ export default {
         @dueDateUpdated="updateMaxDate"
       />
       <labels-select-widget
-        class="block labels js-labels-block"
+        class="labels js-labels-block block"
         :iid="String(iid)"
         :full-path="fullPath"
         :allow-label-remove="canUpdate"
@@ -168,7 +168,7 @@ export default {
       </labels-select-widget>
 
       <color-select-dropdown
-        class="block colors js-colors-block"
+        class="colors js-colors-block block"
         :allow-edit="canUpdate"
         :iid="String(iid)"
         :full-path="fullPath"

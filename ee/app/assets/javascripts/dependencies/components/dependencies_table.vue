@@ -219,7 +219,7 @@ export default {
         href="#"
         @click.native="rowExpanded(toggleDetails, item)"
       >
-        <gl-icon name="warning" class="mr-1 gl-text-orange-500" />
+        <gl-icon name="warning" class="gl-text-orange-500 mr-1" />
         {{
           n__(
             'Dependencies|%d vulnerability detected',

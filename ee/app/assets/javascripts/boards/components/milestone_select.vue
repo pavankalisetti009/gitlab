@@ -119,7 +119,7 @@ export default {
 </script>
 
 <template>
-  <div class="block milestone">
+  <div class="milestone block">
     <div class="title gl-mb-3">
       {{ $options.i18n.label }}
       <gl-button

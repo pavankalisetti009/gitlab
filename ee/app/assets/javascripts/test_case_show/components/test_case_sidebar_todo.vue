@@ -65,7 +65,7 @@ export default {
         >{{ todoActionText }}</gl-button
       >
     </div>
-    <div v-else class="block todo">
+    <div v-else class="todo block">
       <gl-button
         v-gl-tooltip:body.viewport.left
         :title="todoActionText"

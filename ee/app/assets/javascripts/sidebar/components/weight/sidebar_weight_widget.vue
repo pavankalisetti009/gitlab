@@ -209,7 +209,7 @@ export default {
     :title="$options.i18n.weight"
     :tracking="$options.tracking"
     :loading="isLoading"
-    class="block weight"
+    class="weight block"
     data-testid="sidebar-weight"
     @open="oldIid = null"
     @close="setWeight()"

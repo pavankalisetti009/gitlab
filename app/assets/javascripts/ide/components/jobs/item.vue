@@ -30,7 +30,7 @@ export default {
 <template>
   <div class="ide-job-item">
     <job-description :job="job" class="gl-mr-3" />
-    <div class="ml-auto align-self-center">
+    <div class="align-self-center ml-auto">
       <gl-button v-if="job.started" category="secondary" size="small" @click="clickViewLog">
         {{ __('View log') }}
       </gl-button>

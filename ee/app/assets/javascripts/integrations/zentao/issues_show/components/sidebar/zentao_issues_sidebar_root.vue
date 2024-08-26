@@ -45,7 +45,7 @@ export default {
       :allow-scoped-labels="true"
       :selected-labels="issue.labels"
       variant="sidebar"
-      class="block labels"
+      class="labels block"
     >
       {{ __('None') }}
     </labels-select>

@@ -192,7 +192,7 @@ export default {
         <severity-badge
           v-if="vulnerability.severity"
           :severity="vulnerability.severity"
-          class="text-right text-md-left"
+          class="text-md-left text-right"
         />
       </div>
     </div>

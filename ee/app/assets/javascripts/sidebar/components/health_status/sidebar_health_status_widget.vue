@@ -150,7 +150,7 @@ export default {
 <template>
   <sidebar-editable-item
     ref="editable"
-    class="block health-status"
+    class="health-status block"
     :can-edit="canEdit"
     :loading="isLoading"
     :title="$options.HEALTH_STATUS_I18N_HEALTH_STATUS"

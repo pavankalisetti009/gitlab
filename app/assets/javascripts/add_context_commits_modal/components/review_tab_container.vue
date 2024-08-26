@@ -39,7 +39,7 @@ export default {
   <gl-alert v-else-if="loadingError" variant="danger" :dismissible="false" class="mt-3">
     {{ loadingFailedText }}
   </gl-alert>
-  <div v-else-if="commits.length === 0" class="text-center mt-4">
+  <div v-else-if="commits.length === 0" class="mt-4 text-center">
     <span>{{ emptyListText }}</span>
   </div>
   <div v-else>

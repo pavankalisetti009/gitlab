@@ -112,7 +112,7 @@ export default {
 
 <template>
   <gl-card
-    class="collapsible-card border gl-mb-5 gl-p-0"
+    class="collapsible-card gl-mb-5 gl-p-0 border"
     header-class="gl-flex gl-items-center gl-border-b-0 gl-py-3"
     :body-class="bodyClass"
   >

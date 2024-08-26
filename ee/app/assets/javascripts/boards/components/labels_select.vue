@@ -172,7 +172,7 @@ export default {
 </script>
 
 <template>
-  <div class="block labels labels-select-wrapper">
+  <div class="labels labels-select-wrapper block">
     <div class="title gl-mb-3">
       {{ $options.i18n.label }}
       <gl-button

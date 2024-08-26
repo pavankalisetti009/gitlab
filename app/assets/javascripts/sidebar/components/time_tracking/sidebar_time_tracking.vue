@@ -71,7 +71,7 @@ export default {
 </script>
 
 <template>
-  <div class="block time-tracking">
+  <div class="time-tracking block">
     <issuable-time-tracker
       :full-path="fullPath"
       :issuable-id="issuableId"

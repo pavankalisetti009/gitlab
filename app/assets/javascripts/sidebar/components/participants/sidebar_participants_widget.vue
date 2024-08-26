@@ -68,7 +68,7 @@ export default {
     :participants="participants"
     :number-of-less-participants="8"
     :lazy="false"
-    class="block participants"
+    class="participants block"
     @toggleSidebar="$emit('toggleSidebar')"
   />
 </template>

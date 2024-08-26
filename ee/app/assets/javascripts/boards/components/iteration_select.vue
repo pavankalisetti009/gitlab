@@ -208,7 +208,7 @@ export default {
 </script>
 
 <template>
-  <div class="block iteration">
+  <div class="iteration block">
     <div class="title gl-mb-3">
       {{ $options.i18n.label }}
       <gl-button

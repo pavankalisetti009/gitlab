@@ -148,7 +148,7 @@ export default {
               <span ref="percentage" class="gl-text-center gl-text-lg gl-text-default"
                 >{{ deployBoardData.completion }}%</span
               >
-              <span class="text text-center text-secondary">{{ __('Complete') }}</span>
+              <span class="text text-secondary text-center">{{ __('Complete') }}</span>
             </span>
           </section>
 
@@ -174,7 +174,7 @@ export default {
               </gl-tooltip>
             </div>
 
-            <div class="deploy-board-instances-container flex-wrap flex-row gl-flex">
+            <div class="deploy-board-instances-container gl-flex flex-row flex-wrap">
               <template v-for="(instance, i) in deployBoardData.instances">
                 <instance-component
                   :key="i"

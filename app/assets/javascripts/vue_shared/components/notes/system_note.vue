@@ -224,7 +224,7 @@ export default {
         ></div>
         <div v-if="hasMoreCommits" class="flex-list">
           <div
-            class="flex-row gl-pl-4 gl-pt-3 gl-text-blue-500 gl-cursor-pointer hover:gl-underline gl-relative gl-z-2"
+            class="gl-pl-4 gl-pt-3 gl-text-blue-500 gl-cursor-pointer hover:gl-underline gl-relative gl-z-2 flex-row"
             @click="expanded = !expanded"
           >
             <gl-icon :name="toggleIcon" :size="12" class="gl-mr-2" />

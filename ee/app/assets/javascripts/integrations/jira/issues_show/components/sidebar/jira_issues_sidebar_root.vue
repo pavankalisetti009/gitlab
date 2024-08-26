@@ -74,7 +74,7 @@ export default {
       :labels-filter-base-path="issuesListPath"
       :labels-filter-param="$options.labelsFilterParam"
       variant="sidebar"
-      class="block labels js-labels-block"
+      class="labels js-labels-block block"
       @toggleCollapse="expandSidebar"
     >
       {{ __('None') }}

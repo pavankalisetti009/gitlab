@@ -250,7 +250,7 @@ export default {
                   />
                   <span
                     ><span class="block">{{ project.name }}</span>
-                    <span class="block text-secondary">{{ project.namespace }}</span></span
+                    <span class="text-secondary block">{{ project.namespace }}</span></span
                   >
                 </div>
               </gl-dropdown-item>
@@ -258,7 +258,7 @@ export default {
 
             <gl-dropdown-divider v-if="frequentProjects.length > 0" />
             <template v-if="!projectsFetchInProgress">
-              <span v-if="!projects.length" class="text-center gl-block gl-p-3">{{
+              <span v-if="!projects.length" class="gl-block gl-p-3 text-center">{{
                 __('No matches found')
               }}</span>
               <gl-dropdown-item
@@ -276,7 +276,7 @@ export default {
                   />
                   <span
                     ><span class="block">{{ project.name }}</span>
-                    <span class="block text-secondary">{{ project.namespace.name }}</span></span
+                    <span class="text-secondary block">{{ project.namespace.name }}</span></span
                   >
                 </div>
               </gl-dropdown-item>

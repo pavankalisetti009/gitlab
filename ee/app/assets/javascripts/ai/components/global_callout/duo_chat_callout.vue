@@ -96,7 +96,7 @@ export default {
         </ul>
         <gl-link
           ref="popoverLink"
-          class="gl-button btn btn-confirm block gl-mb-2 gl-mt-4"
+          class="gl-button btn btn-confirm gl-mb-2 gl-mt-4 block"
           variant="confirm"
           category="primary"
           target="_blank"

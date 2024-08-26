@@ -58,7 +58,7 @@ export default {
 <template>
   <div
     :class="{ full: isFullWidth }"
-    class="position-relative float-left pt-1 graph-side gl-h-full"
+    class="position-relative graph-side gl-h-full float-left pt-1"
   >
     <div
       :style="style"

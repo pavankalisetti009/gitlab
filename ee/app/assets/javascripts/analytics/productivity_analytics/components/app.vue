@@ -308,7 +308,7 @@ export default {
           </div>
 
           <div
-            class="js-mr-table-sort flex-column flex-md-row align-items-md-center justify-content-between mb-2 gl-flex"
+            class="js-mr-table-sort flex-column flex-md-row align-items-md-center justify-content-between gl-flex mb-2"
           >
             <h5>{{ s__('ProductivityAnalytics|List') }}</h5>
             <div
@@ -319,7 +319,7 @@ export default {
               <div class="gl-flex">
                 <gl-collapsible-listbox
                   block
-                  class="flex-grow gl-mr-3"
+                  class="gl-mr-3 flex-grow"
                   fluid-width
                   is-check-centered
                   placement="bottom-end"

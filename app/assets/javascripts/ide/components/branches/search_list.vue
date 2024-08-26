@@ -76,9 +76,9 @@ export default {
       <gl-loading-icon
         v-if="isLoading"
         size="lg"
-        class="mt-3 mb-3 align-self-center ml-auto mr-auto"
+        class="align-self-center mb-3 ml-auto mr-auto mt-3"
       />
-      <ul v-else class="mb-0 gl-w-full">
+      <ul v-else class="gl-w-full mb-0">
         <template v-if="hasBranches">
           <li v-for="item in branches" :key="item.name">
             <item :item="item" :project-id="currentProjectId" :is-active="isActiveBranch(item)" />

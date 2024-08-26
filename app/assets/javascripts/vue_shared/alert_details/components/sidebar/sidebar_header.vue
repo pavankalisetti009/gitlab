@@ -25,7 +25,7 @@ export default {
 </script>
 
 <template>
-  <div class="block gl-flex gl-justify-between !gl-border-b-gray-100">
+  <div class="gl-flex gl-justify-between !gl-border-b-gray-100 block">
     <sidebar-todo
       v-if="!sidebarCollapsed"
       :project-path="projectPath"
