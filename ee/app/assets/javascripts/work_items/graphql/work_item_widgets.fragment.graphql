@@ -196,6 +196,8 @@ fragment WorkItemWidgets on WorkItemWidget {
         organization {
           id
           name
+          description
+          defaultRate
         }
       }
     }

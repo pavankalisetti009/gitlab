@@ -16329,7 +16329,13 @@ msgstr ""
 msgid "Crm|Organizations"
 msgstr ""
 
+msgid "Crm|Rate"
+msgstr ""
+
 msgid "Crm|Select contacts"
+msgstr ""
+
+msgid "Crm|View contact details"
 msgstr ""
 
 msgid "Cron time zone"
