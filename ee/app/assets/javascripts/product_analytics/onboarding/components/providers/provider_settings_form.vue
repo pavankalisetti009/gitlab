@@ -1,5 +1,6 @@
 <script>
-import { GlButton, GlFormInput, GlFormGroup } from '@gitlab/ui';
+import { GlAlert, GlButton, GlFormInput, GlFormGroup } from '@gitlab/ui';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import InputCopyToggleVisibility from '~/vue_shared/components/form/input_copy_toggle_visibility.vue';
 import productAnalyticsProjectSettingsUpdate from 'ee/product_analytics/graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
 import {
@@ -16,7 +17,7 @@ import {
 
 export default {
   name: 'ProviderSettingsForm',
-  components: { GlButton, GlFormInput, GlFormGroup, InputCopyToggleVisibility },
+  components: { GlAlert, GlButton, GlFormInput, GlFormGroup, InputCopyToggleVisibility },
   inject: ['namespaceFullPath'],
   props: {
     projectSettings: {
@@ -67,30 +68,36 @@ export default {
 
       this.isLoading = true;
 
-      const { data } = await this.$apollo.mutate({
-        mutation: productAnalyticsProjectSettingsUpdate,
-        variables: {
-          fullPath: this.namespaceFullPath,
-          ...this.modifiedProjectSettings,
-        },
-        update: (store) => {
-          updateProjectSettingsApolloCache(
-            store,
-            this.namespaceFullPath,
-            this.modifiedProjectSettings,
-          );
-        },
-      });
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: productAnalyticsProjectSettingsUpdate,
+          variables: {
+            fullPath: this.namespaceFullPath,
+            ...this.modifiedProjectSettings,
+          },
+          update: (store) => {
+            updateProjectSettingsApolloCache(
+              store,
+              this.namespaceFullPath,
+              this.modifiedProjectSettings,
+            );
+          },
+        });
 
-      this.isLoading = false;
-      const { errors } = data.productAnalyticsProjectSettingsUpdate;
+        const { errors } = data.productAnalyticsProjectSettingsUpdate;
 
-      if (errors?.length) {
+        if (errors?.length) {
+          this.hasApiError = true;
+          return;
+        }
+
+        this.$emit('saved');
+      } catch (error) {
         this.hasApiError = true;
-        return;
+        Sentry.captureException(error);
+      } finally {
+        this.isLoading = false;
       }
-
-      this.$emit('saved');
     },
     getInputState(property) {
       if (!this.submitted) {
@@ -106,6 +113,16 @@ export default {
 </script>
 <template>
   <form @submit.prevent="onFormSubmit">
+    <gl-alert
+      v-if="hasApiError"
+      :dismissible="false"
+      variant="danger"
+      class="gl-mb-5"
+      data-testid="clear-project-level-settings-confirmation-modal-error"
+    >
+      {{ s__('Analytics|Failed to update project-level settings. Please try again.') }}
+    </gl-alert>
+
     <p>
       {{ s__('ProductAnalytics|Override the instance analytics configuration for this project.') }}
     </p>
@@ -169,14 +186,6 @@ export default {
       :form-input-group-props="cubeApiKeyInputProps"
       :invalid-feedback="validationErrors.cubeApiKey"
     />
-
-    <p
-      v-if="hasApiError"
-      class="gl-mt-5 gl-text-red-500"
-      data-testid="clear-project-level-settings-confirmation-modal-error"
-    >
-      {{ s__('Analytics|Failed to update project-level settings. Please try again.') }}
-    </p>
 
     <div class="gl-flex gl-justify-end gl-gap-3">
       <gl-button
