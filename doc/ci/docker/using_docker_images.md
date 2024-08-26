@@ -158,12 +158,11 @@ CI/CD jobs:
 1. The runner sends the script to the container's shell `stdin` and receives the
    output.
 
-To override the entrypoint of a Docker image,
-define an empty `entrypoint` in the `.gitlab-ci.yml` file, so the runner does not start
-a useless shell layer. However, that does not work for all Docker versions.
+To override the [entrypoint](https://docs.gitlab.com/runner/executors/docker.html#configure-a-docker-entrypoint) of a Docker image,
+in the `.gitlab-ci.yml` file:
 
-- For Docker 17.06 and later, the `entrypoint` can be set to an empty value.
-- For Docker 17.03 and earlier, the `entrypoint` can be set to
+- For Docker 17.06 and later, set `entrypoint` to an empty value.
+- For Docker 17.03 and earlier, set `entrypoint` to
   `/bin/sh -c`, `/bin/bash -c`, or an equivalent shell available in the image.
 
 The syntax of `image:entrypoint` is similar to [Dockerfile `ENTRYPOINT`](https://docs.docker.com/reference/dockerfile/#entrypoint).
