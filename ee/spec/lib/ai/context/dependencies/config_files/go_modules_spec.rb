@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Dependencies::LockFiles::GoModules, feature_category: :code_suggestions do
+RSpec.describe Ai::Context::Dependencies::ConfigFiles::GoModules, feature_category: :code_suggestions do
   it 'returns the expected language value' do
     expect(described_class.lang).to eq('go')
   end
 
-  it_behaves_like 'parsing a valid lock file' do
-    let(:lock_file_content) do
+  it_behaves_like 'parsing a valid dependency config file' do
+    let(:config_file_content) do
       <<~CONTENT
         require golang.org/x/mod v0.15.0
         require github.com/pmezard/go-difflib v1.0.0 // indirect
@@ -33,7 +33,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::GoModules, feature_category
     end
   end
 
-  it_behaves_like 'parsing an invalid lock file'
+  it_behaves_like 'parsing an invalid dependency config file'
 
   describe '.matches?' do
     using RSpec::Parameterized::TableSyntax

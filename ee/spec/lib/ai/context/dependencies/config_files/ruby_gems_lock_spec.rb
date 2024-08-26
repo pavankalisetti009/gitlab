@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Dependencies::LockFiles::RubyGems, feature_category: :code_suggestions do
+RSpec.describe Ai::Context::Dependencies::ConfigFiles::RubyGemsLock, feature_category: :code_suggestions do
   it 'returns the expected language value' do
     expect(described_class.lang).to eq('ruby')
   end
 
-  it_behaves_like 'parsing a valid lock file' do
-    let(:lock_file_content) do
+  it_behaves_like 'parsing a valid dependency config file' do
+    let(:config_file_content) do
       <<~CONTENT
         GEM
           remote: https://rubygems.org/
@@ -31,7 +31,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::RubyGems, feature_category:
     let(:expected_formatted_lib_names) { ['bcrypt (3.1.20)', 'logger (1.5.3)'] }
   end
 
-  it_behaves_like 'parsing an invalid lock file'
+  it_behaves_like 'parsing an invalid dependency config file'
 
   describe '.matches?' do
     using RSpec::Parameterized::TableSyntax

@@ -2,8 +2,8 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :code_suggestions do
-  let(:lock_file_class) do
+RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :code_suggestions do
+  let(:config_file_class) do
     Class.new(described_class) do
       def self.file_name_glob
         'test.json'
@@ -15,7 +15,8 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
 
       def extract_libs
         parsed = Gitlab::Json.parse(content)
-        parsed['test_libs'].map { |hash| self.class::Lib.new(**hash) }
+        libs = dig_in(parsed, 'parent_node', 'child_node')
+        libs.try(:map) { |hash| self.class::Lib.new(**hash) }
       rescue JSON::ParserError
         error('content is not a valid JSON')
         nil
@@ -24,7 +25,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
   end
 
   it 'defines the expected interface for child classes' do
-    blob = instance_double('Gitlab::Git::Blob', path: 'path/to/lockfile', data: 'content')
+    blob = instance_double('Gitlab::Git::Blob', path: 'path/to/configfile', data: 'content')
 
     expect { described_class.file_name_glob }.to raise_error(NotImplementedError)
     expect { described_class.lang_name }.to raise_error(NotImplementedError)
@@ -32,29 +33,47 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
   end
 
   it 'returns the expected language value' do
-    expect(lock_file_class.lang).to eq('go')
+    expect(config_file_class.lang).to eq('go')
   end
 
-  it_behaves_like 'parsing a valid lock file' do
-    let(:lock_file_content) do
+  it_behaves_like 'parsing a valid dependency config file' do
+    let(:config_file_content) do
       Gitlab::Json.dump({
-        'test_libs' => [
+        'parent_node' => { 'child_node' => [
           { name: 'lib1' },
           { name: 'lib2', version: '2.1.0' }
-        ]
+        ] }
       })
     end
 
     let(:expected_formatted_lib_names) { ['lib1', 'lib2 (2.1.0)'] }
   end
 
-  it_behaves_like 'parsing an invalid lock file' do
+  it_behaves_like 'parsing an invalid dependency config file' do
     let(:expected_parsing_error_message) { 'content is not a valid JSON' }
   end
 
-  context 'when the lock file content is empty' do
-    it_behaves_like 'parsing an invalid lock file' do
-      let(:invalid_lock_file_content) { '' }
+  context 'when the content has an invalid node' do
+    where(:content) do
+      [
+        [{ 'parent_node' => [] }],
+        [{ 'parent_node' => 123 }],
+        [123],
+        [nil]
+      ]
+    end
+
+    with_them do
+      it_behaves_like 'parsing an invalid dependency config file' do
+        let(:invalid_config_file_content) { Gitlab::Json.dump(content) }
+        let(:expected_parsing_error_message) { 'encountered invalid node' }
+      end
+    end
+  end
+
+  context 'when the content is empty' do
+    it_behaves_like 'parsing an invalid dependency config file' do
+      let(:invalid_config_file_content) { '' }
       let(:expected_parsing_error_message) { 'file empty' }
     end
   end
@@ -75,7 +94,7 @@ RSpec.describe Ai::Context::Dependencies::LockFiles::Base, feature_category: :co
 
     with_them do
       it 'matches the file name glob pattern at various directory levels' do
-        expect(lock_file_class.matches?(path)).to eq(matches)
+        expect(config_file_class.matches?(path)).to eq(matches)
       end
     end
   end
