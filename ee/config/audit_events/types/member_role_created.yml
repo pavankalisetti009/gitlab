@@ -1,6 +1,6 @@
 ---
 name: member_role_created
-description: Event triggered when a custom role is created.
+description: Triggered when a custom role is created
 introduced_by_issue: https://gitlab.com/gitlab-org/gitlab/-/issues/388934
 introduced_by_mr: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/137087
 feature_category: permissions
