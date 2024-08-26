@@ -28,6 +28,33 @@ describe('MR Widget Security Reports - Summary Highlights', () => {
     expect(wrapper.html()).toMatchSnapshot();
   });
 
+  describe.each`
+    severity      | count
+    ${'critical'} | ${5022}
+    ${'high'}     | ${20}
+    ${'other'}    | ${1}
+  `('should only emphasize counts higher than 0 for $severity', ({ severity, count }) => {
+    it('should emphasize counts higher than 0', () => {
+      createComponent({
+        highlights: {
+          [severity]: count,
+        },
+      });
+
+      expect(wrapper.findByTestId(severity).element.tagName).toBe('STRONG');
+    });
+
+    it('should use regular font for counts equal to 0', () => {
+      createComponent({
+        highlights: {
+          [severity]: 0,
+        },
+      });
+
+      expect(wrapper.findByTestId(severity).element.tagName).toBe('SPAN');
+    });
+  });
+
   it("calculate 'others' when other severities are provided", () => {
     const others = { medium: 50, low: 30, unknown: 20 };
 
