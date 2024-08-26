@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Matching::RunnerMatcher do
+RSpec.describe Gitlab::Ci::Matching::RunnerMatcher, feature_category: :continuous_integration do
   let(:dummy_attributes) do
     {
       runner_ids: [1],
@@ -11,7 +11,8 @@ RSpec.describe Gitlab::Ci::Matching::RunnerMatcher do
       private_projects_minutes_cost_factor: 1.0,
       run_untagged: false,
       access_level: 'ref_protected',
-      tag_list: %w[tag1 tag2]
+      tag_list: %w[tag1 tag2],
+      allowed_plan_ids: []
     }
   end
 
@@ -111,6 +112,59 @@ RSpec.describe Gitlab::Ci::Matching::RunnerMatcher do
             end
           end
         end.not_to exceed_query_limit(control)
+      end
+    end
+  end
+
+  describe '#matches_allowed_plans?', :saas do
+    let_it_be(:namespace) { create(:namespace) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:premium_plan) { create(:premium_plan) }
+    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+    let!(:subscription) { create(:gitlab_subscription, namespace: namespace, hosted_plan: plan) }
+
+    let(:pipeline) { create(:ci_pipeline, project: project) }
+    let(:build) { create(:ci_build, pipeline: pipeline) }
+
+    let(:runner_attributes) do
+      { allowed_plan_ids: allowed_plan_ids }
+    end
+
+    let(:runner_matcher) do
+      described_class.new(dummy_attributes.merge(runner_attributes))
+    end
+
+    subject(:matches_allowed_plans) { runner_matcher.matches_allowed_plans?(build) }
+
+    context 'when allowed plans are not defined' do
+      let(:allowed_plan_ids) { [] }
+      let(:plan) { premium_plan }
+
+      it { is_expected.to be_truthy }
+    end
+
+    context 'when allowed_plans are defined' do
+      let(:allowed_plan_ids) { [premium_plan.id] }
+
+      context 'when plans match allowed plans' do
+        let(:plan) { premium_plan }
+
+        it { is_expected.to be_truthy }
+      end
+
+      context 'when plans do not match allowed plans' do
+        let(:plan) { ultimate_plan }
+
+        it { is_expected.to be_falsey }
+
+        context 'when ci_runner_separation_by_plan feature flag is disabled' do
+          before do
+            stub_feature_flags(ci_runner_separation_by_plan: false)
+          end
+
+          it { is_expected.to be_truthy }
+        end
       end
     end
   end

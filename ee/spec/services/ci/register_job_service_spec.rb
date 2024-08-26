@@ -258,8 +258,11 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
   include_examples 'namespace minutes quota'
 
   describe 'ensure plan limitation', :saas do
-    let(:allowed_plans) { [] }
-    let(:plan_check_runner) { create(:ci_runner, :instance, allowed_plans: allowed_plans) }
+    let_it_be(:premium_plan) { create(:premium_plan) }
+    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+    let(:allowed_plan_ids) { [] }
+    let(:plan_check_runner) { create(:ci_runner, :instance, allowed_plan_ids: allowed_plan_ids) }
 
     subject { described_class.new(plan_check_runner, nil).execute.build }
 
@@ -269,7 +272,7 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
       end
 
       context 'runner defines allowed plans' do
-        let(:allowed_plans) { ['free'] }
+        let(:allowed_plan_ids) { [premium_plan.id] }
 
         it { is_expected.to be_nil }
       end
@@ -283,14 +286,22 @@ RSpec.describe Ci::RegisterJobService, '#execute', feature_category: :continuous
       end
 
       context 'runner defines allowed plans' do
-        let(:allowed_plans) { ['premium'] }
+        let(:allowed_plan_ids) { [premium_plan.id] }
 
         it { is_expected.to be_kind_of(Ci::Build) }
 
         context 'allowed plans do not match namespace plan' do
-          let(:allowed_plans) { ['ultimate'] }
+          let(:allowed_plan_ids) { [ultimate_plan.id] }
 
           it { is_expected.to be_nil }
+
+          context 'when in disaster recovery' do
+            it 'ignores quota and returns anyway' do
+              stub_feature_flags(ci_queuing_disaster_recovery_disable_allowed_plans: true)
+
+              is_expected.to be_kind_of(Ci::Build)
+            end
+          end
         end
       end
     end

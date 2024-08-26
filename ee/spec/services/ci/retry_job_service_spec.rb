@@ -103,5 +103,52 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
         end
       end
     end
+
+    context 'when allowed_plans are not matched', :saas do
+      let_it_be(:premium_plan) { create(:premium_plan) }
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+      let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
+      let_it_be(:project) { create(:project, namespace: namespace) }
+
+      context 'when there are no runners available' do
+        it { expect(new_build).not_to be_failed }
+      end
+
+      context 'when shared runners are available' do
+        let_it_be(:runner) { create(:ci_runner, :instance, :online, allowed_plan_ids: [ultimate_plan.id]) }
+
+        it 'fails the build' do
+          expect(new_build).to be_failed
+          expect(new_build.failure_reason).to eq('no_matching_runner')
+        end
+
+        context 'with private runners' do
+          let_it_be(:private_runner) do
+            create(:ci_runner, :project, :online, projects: [project])
+          end
+
+          it { expect(new_build).not_to be_failed }
+        end
+      end
+    end
+
+    context 'when both CI quota and allowed_plans are violated', :saas do
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+      let_it_be(:namespace) { create(:namespace_with_plan, :with_used_build_minutes_limit, plan: :premium_plan) }
+      let_it_be(:project) { create(:project, namespace: namespace, creator: user) }
+
+      context 'when there are no runners available' do
+        it { expect(new_build).not_to be_failed }
+      end
+
+      context 'when shared runners are available' do
+        let_it_be(:runner) { create(:ci_runner, :instance, :online, allowed_plan_ids: [ultimate_plan.id]) }
+
+        it 'fails the build' do
+          expect(new_build).to be_failed
+          expect(new_build.failure_reason).to eq('ci_quota_exceeded')
+        end
+      end
+    end
   end
 end

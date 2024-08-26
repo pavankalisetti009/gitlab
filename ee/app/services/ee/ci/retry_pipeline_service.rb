@@ -25,12 +25,12 @@ module EE
 
       override :can_be_retried?
       def can_be_retried?(build)
-        build_matcher = build.build_matcher
-        super && runner_minutes.available?(build_matcher)
+        result = runners_availability_checker.check(build.build_matcher)
+        super && result.available?
       end
 
-      def runner_minutes
-        ::Gitlab::Ci::RunnersAvailabilityBuilder.instance_for(project).minutes_checker
+      def runners_availability_checker
+        ::Gitlab::Ci::RunnersAvailabilityChecker.instance_for(project)
       end
     end
   end

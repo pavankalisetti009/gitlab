@@ -37,6 +37,54 @@ RSpec.describe Ci::RetryPipelineService, feature_category: :continuous_integrati
     end
   end
 
+  context 'when allowed_plans are not matched', :saas do
+    let_it_be(:namespace) { create(:namespace_with_plan, plan: :premium_plan) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+    let_it_be(:restricted_runner) do
+      create(:ci_runner, :instance, :online,
+        tag_list: ['for_plan'], run_untagged: false,
+        allowed_plan_ids: [ultimate_plan.id])
+    end
+
+    before do
+      create_build('rspec 1', :failed, tag_list: ['for_plan'])
+      create_build('rspec 2', :canceled)
+    end
+
+    it 'retries the builds with runners matching the plan of the namespace' do
+      service.execute(pipeline)
+
+      expect(pipeline.statuses.count).to eq(3)
+      expect(build('rspec 1')).to be_failed
+      expect(build('rspec 2')).to be_pending
+      expect(pipeline.reload).to be_running
+    end
+  end
+
+  context 'when both compute minutes and allowed plans are violated', :saas do
+    let_it_be(:namespace) { create(:namespace_with_plan, :with_used_build_minutes_limit, plan: :premium_plan) }
+    let_it_be(:project) { create(:project, namespace: namespace) }
+    let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+    let_it_be(:restricted_runner) do
+      create(:ci_runner, :instance, :online,
+        tag_list: ['for_plan'], run_untagged: false,
+        allowed_plan_ids: [ultimate_plan.id])
+    end
+
+    before do
+      create_build('rspec 1', :failed, tag_list: ['for_plan'])
+    end
+
+    it 'does not retry jobs that do not have available runner' do
+      service.execute(pipeline)
+
+      expect(pipeline.statuses.count).to eq(1)
+      expect(build('rspec 1')).to be_failed
+      expect(pipeline.reload).to be_failed
+    end
+  end
+
   context 'when the user is not authorized to run jobs' do
     before do
       allow_next_instance_of(::Users::IdentityVerification::AuthorizeCi) do |instance|
