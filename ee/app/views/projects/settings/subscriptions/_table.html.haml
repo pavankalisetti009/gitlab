@@ -12,7 +12,7 @@
   options: { class: 'gl-mt-5 js-toggle-container', data: { testid: "#{mode}-project-subscriptions" } }) do |c|
   - c.with_actions do
     - if is_upstream_mode
-      = render Pajamas::ButtonComponent.new(size: :small, button_options: { class: "js-toggle-button js-toggle-content #{hide_class}", data: { testid: "add-new-subscription-btn" } }) do
+      = render Pajamas::ButtonComponent.new(size: :small, button_options: { class: "js-toggle-button js-toggle-content #{hide_class}", data: { testid: "crud-form-toggle" } }) do
         = _('Add new')
 
   - c.with_form do

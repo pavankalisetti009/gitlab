@@ -1,6 +1,7 @@
 <script>
-import { GlButton, GlCard, GlIcon, GlLink, GlTable, GlTooltipDirective } from '@gitlab/ui';
+import { GlButton, GlLink, GlTable, GlTooltipDirective } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import PipelineSubscriptionsForm from './pipeline_subscriptions_form.vue';
 
 export default {
@@ -31,8 +32,7 @@ export default {
   ],
   components: {
     GlButton,
-    GlCard,
-    GlIcon,
+    CrudComponent,
     GlLink,
     GlTable,
     PipelineSubscriptionsForm,
@@ -63,52 +63,24 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      isAddNewClicked: false,
-    };
-  },
-  computed: {
-    showForm() {
-      return this.showActions && this.isAddNewClicked;
-    },
-  },
 };
 </script>
 
 <template>
-  <gl-card
-    class="gl-new-card"
-    header-class="gl-new-card-header"
-    body-class="gl-new-card-body gl-px-0"
+  <crud-component
+    ref="pipelineSubscriptionsTable"
+    :title="title"
+    icon="pipeline"
+    :count="count"
+    :toggle-text="showActions ? $options.i18n.newBtnText : ''"
+    class="gl-mt-5"
   >
-    <template #header>
-      <div class="gl-new-card-title-wrapper gl-flex-col">
-        <h3 class="gl-new-card-title">
-          <span data-testid="subscription-title">{{ title }}</span>
-          <div class="gl-new-card-count">
-            <gl-icon name="pipeline" class="gl-mr-2" />
-            <span data-testid="subscription-count">{{ count }}</span>
-          </div>
-        </h3>
-      </div>
-      <div v-if="showActions" class="gl-new-card-actions">
-        <gl-button
-          v-if="!isAddNewClicked"
-          size="small"
-          data-testid="add-new-subscription-btn"
-          @click="isAddNewClicked = true"
-        >
-          {{ $options.i18n.newBtnText }}
-        </gl-button>
-      </div>
+    <template #form>
+      <pipeline-subscriptions-form
+        @canceled="$refs.pipelineSubscriptionsTable.hideForm"
+        @addSubscriptionSuccess="$emit('refetchSubscriptions')"
+      />
     </template>
-
-    <pipeline-subscriptions-form
-      v-if="showForm"
-      @canceled="isAddNewClicked = false"
-      @addSubscriptionSuccess="$emit('refetchSubscriptions')"
-    />
 
     <gl-table
       :fields="$options.fields"
@@ -143,5 +115,5 @@ export default {
         />
       </template>
     </gl-table>
-  </gl-card>
+  </crud-component>
 </template>

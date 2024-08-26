@@ -79,7 +79,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-new-card-add-form gl-m-3">
+  <div>
     <h4 class="gl-mt-0">{{ $options.i18n.addSubscription }}</h4>
     <gl-form>
       <gl-form-group label-for="project-path">
@@ -98,12 +98,14 @@ export default {
         />
       </gl-form-group>
 
-      <gl-button variant="confirm" data-testid="subscribe-button" @click="createSubscription">
-        {{ $options.i18n.subscribe }}
-      </gl-button>
-      <gl-button class="gl-ml-3" data-testid="cancel-button" @click="cancelSubscription">
-        {{ $options.i18n.cancel }}
-      </gl-button>
+      <div class="gl-flex gl-gap-3">
+        <gl-button variant="confirm" data-testid="subscribe-button" @click="createSubscription">
+          {{ $options.i18n.subscribe }}
+        </gl-button>
+        <gl-button data-testid="cancel-button" @click="cancelSubscription">
+          {{ $options.i18n.cancel }}
+        </gl-button>
+      </div>
     </gl-form>
   </div>
 </template>

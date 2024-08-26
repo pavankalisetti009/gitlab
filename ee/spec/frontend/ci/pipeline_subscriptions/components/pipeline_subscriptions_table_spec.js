@@ -26,9 +26,9 @@ describe('Pipeline Subscriptions Table', () => {
   };
 
   const findDeleteBtn = () => wrapper.findByTestId('delete-subscription-btn');
-  const findAddNewBtn = () => wrapper.findByTestId('add-new-subscription-btn');
-  const findTitle = () => wrapper.findByTestId('subscription-title');
-  const findCount = () => wrapper.findByTestId('subscription-count');
+  const findAddNewBtn = () => wrapper.findByTestId('crud-form-toggle');
+  const findTitle = () => wrapper.findByTestId('crud-title');
+  const findCount = () => wrapper.findByTestId('crud-count');
   const findNamespace = () => wrapper.findByTestId('subscription-namespace');
   const findProject = () => wrapper.findComponent(GlLink);
   const findTable = () => wrapper.findComponent(GlTable);
@@ -45,7 +45,7 @@ describe('Pipeline Subscriptions Table', () => {
   it('displays title', () => {
     createComponent();
 
-    expect(findTitle().text()).toBe(defaultProps.title);
+    expect(findTitle().text()).toContain(defaultProps.title);
   });
 
   it('displays count', () => {
