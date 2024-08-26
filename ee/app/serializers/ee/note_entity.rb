@@ -5,14 +5,14 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
-      with_options if: -> (note, _) { note.system? && note.resource_parent.feature_available?(:description_diffs) } do
+      with_options if: ->(note, _) { note.system? && note.resource_parent.feature_available?(:description_diffs) } do
         expose :description_version_id
 
-        expose :description_diff_path, if: -> (_) { description_version_id } do |note|
+        expose :description_diff_path, if: ->(_) { description_version_id } do |note|
           description_diff_path(note.noteable, description_version_id)
         end
 
-        expose :delete_description_version_path, if: -> (_) { description_version_id } do |note|
+        expose :delete_description_version_path, if: ->(_) { description_version_id } do |note|
           delete_description_version_path(note.noteable, description_version_id)
         end
 

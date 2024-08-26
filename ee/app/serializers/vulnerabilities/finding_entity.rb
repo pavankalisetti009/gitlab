@@ -13,7 +13,7 @@ class Vulnerabilities::FindingEntity < Grape::Entity
   expose :create_jira_issue_url do |occurrence|
     create_jira_issue_url_for(occurrence)
   end
-  expose :false_positive?, as: :false_positive, if: -> (_, _) { expose_false_positive? }
+  expose :false_positive?, as: :false_positive, if: ->(_, _) { expose_false_positive? }
   expose :create_vulnerability_feedback_issue_path do |occurrence|
     create_vulnerability_feedback_issue_path(occurrence.project)
   end
@@ -64,7 +64,7 @@ class Vulnerabilities::FindingEntity < Grape::Entity
     occurrence.present(presenter_class: Vulnerabilities::FindingPresenter).blob_path
   end
 
-  expose :found_by_pipeline, if: -> (finding, _) { finding.respond_to?(:found_by_pipeline) } do
+  expose :found_by_pipeline, if: ->(finding, _) { finding.respond_to?(:found_by_pipeline) } do
     expose(:iid) { |finding| finding.found_by_pipeline&.iid }
   end
 

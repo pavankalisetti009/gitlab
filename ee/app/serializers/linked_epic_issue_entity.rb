@@ -15,7 +15,7 @@ class LinkedEpicIssueEntity < LinkedIssueEntity
 
   expose :epic_issue_id
 
-  with_options if: -> (_, options) { options[:blocked_issues_ids] } do
+  with_options if: ->(_, options) { options[:blocked_issues_ids] } do
     expose :blocked do |issue, options|
       options[:blocked_issues_ids].include?(issue.id)
     end

@@ -7,7 +7,7 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
   expose :created_at
   expose :project_id
   expose :author, using: UserEntity
-  expose :comment_details, if: -> (feedback, _) { feedback.has_comment? } do
+  expose :comment_details, if: ->(feedback, _) { feedback.has_comment? } do
     expose :comment
     expose :comment_timestamp
     expose :comment_author, using: UserEntity
@@ -15,7 +15,7 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
   expose :finding_uuid
 
   # TODO: Remove project_id comparison once bad/invalid data has been deleted https://gitlab.com/gitlab-org/gitlab/-/issues/218837
-  expose :pipeline, if: -> (feedback, _) { feedback.pipeline.present? && feedback.pipeline.project_id == feedback.project_id } do
+  expose :pipeline, if: ->(feedback, _) { feedback.pipeline.present? && feedback.pipeline.project_id == feedback.project_id } do
     expose :id do |feedback|
       feedback.pipeline.id
     end
@@ -25,19 +25,19 @@ class Vulnerabilities::FeedbackEntity < Grape::Entity
     end
   end
 
-  expose :issue_iid, if: -> (feedback, _) { feedback.issue.present? } do |feedback|
+  expose :issue_iid, if: ->(feedback, _) { feedback.issue.present? } do |feedback|
     feedback.issue.iid
   end
 
-  expose :issue_url, if: -> (_, _) { can_read_issue? } do |feedback|
+  expose :issue_url, if: ->(_, _) { can_read_issue? } do |feedback|
     project_issue_url(feedback.project, feedback.issue)
   end
 
-  expose :merge_request_iid, if: -> (feedback, _) { feedback.merge_request.present? } do |feedback|
+  expose :merge_request_iid, if: ->(feedback, _) { feedback.merge_request.present? } do |feedback|
     feedback.merge_request.iid
   end
 
-  expose :merge_request_path, if: -> (_, _) { can_read_merge_request? } do |feedback|
+  expose :merge_request_path, if: ->(_, _) { can_read_merge_request? } do |feedback|
     project_merge_request_path(feedback.project, feedback.merge_request)
   end
 

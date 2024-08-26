@@ -55,7 +55,7 @@ class EpicEntity < IssuableEntity
     preview_markdown_path(epic.group, target_type: 'Epic', target_id: epic.iid)
   end
 
-  expose :confidential_epics_docs_path, if: -> (epic) { epic.confidential? } do |epic|
+  expose :confidential_epics_docs_path, if: ->(epic) { epic.confidential? } do |epic|
     help_page_path('user/group/epics/manage_epics', anchor: 'make-an-epic-confidential')
   end
 end
