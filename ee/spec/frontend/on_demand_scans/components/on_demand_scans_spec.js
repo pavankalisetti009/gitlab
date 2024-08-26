@@ -96,6 +96,11 @@ describe('OnDemandScans', () => {
   beforeEach(() => {
     requestHandler = jest.fn().mockResolvedValue(onDemandScansCountsMock);
     router = createRouter();
+
+    router.addRoute({
+      path: '/',
+      redirect: { name: 'tab', params: { tabId: 'all' } },
+    });
   });
 
   it('renders an empty state when there is no data', () => {
@@ -170,7 +175,8 @@ describe('OnDemandScans', () => {
       expectTabsToBeRendered();
     });
 
-    it('sets the initial route to /all', () => {
+    it('sets the initial route to /all', async () => {
+      await waitForPromises();
       expect(findTabs().props('value')).toBe(0);
       expect(router.currentRoute.path).toBe('/all');
     });
