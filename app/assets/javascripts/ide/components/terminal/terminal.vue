@@ -93,7 +93,7 @@ export default {
 </script>
 
 <template>
-  <div class="flex-column flex-fill min-height-0 gl-flex pr-3">
+  <div class="flex-column flex-fill min-height-0 pr-3 gl-flex">
     <div class="top-bar border-left-0 gl-flex gl-items-center">
       <div v-if="loadingText">
         <gl-loading-icon size="sm" :inline="true" />

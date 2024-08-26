@@ -187,7 +187,7 @@ export default {
           :can-inherit="true"
         />
         <sidebar-labels-widget
-          class="labels block"
+          class="block labels"
           data-testid="sidebar-labels"
           :iid="activeBoardCard.iid"
           :full-path="fullPath"

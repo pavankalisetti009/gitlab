@@ -252,7 +252,7 @@ export default {
         :label="$options.i18n.firstNameLabel"
         label-size="sm"
         label-for="first-name"
-        class="w-50 mr-3"
+        class="mr-3 w-50"
       >
         <gl-form-input
           id="first-name"
@@ -282,7 +282,7 @@ export default {
         :label="$options.i18n.companyNameLabel"
         label-size="sm"
         label-for="company-name"
-        class="w-50 mr-3"
+        class="mr-3 w-50"
       >
         <gl-form-input
           id="company-name"

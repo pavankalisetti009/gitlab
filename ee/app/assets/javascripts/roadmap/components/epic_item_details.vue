@@ -197,7 +197,7 @@ export default {
       >
         {{ expandIconLabel }}
       </gl-tooltip>
-      <div class="flex-grow-1 gl-w-13 mx-1">
+      <div class="flex-grow-1 mx-1 gl-w-13">
         <div class="gl-mt-1 gl-flex">
           <issuable-blocked-icon
             v-if="epic.blocked"
@@ -246,10 +246,10 @@ export default {
       <template v-if="allowSubEpics">
         <div
           ref="childEpicsCount"
-          class="text-secondary gl-mt-1 gl-flex text-nowrap"
+          class="text-secondary text-nowrap gl-mt-1 gl-flex"
           data-testid="child-epics-count"
         >
-          <gl-icon name="epic" class="mr-1 align-text-bottom" />
+          <gl-icon name="epic" class="align-text-bottom mr-1" />
           <p class="m-0" :aria-label="childEpicsCountText">{{ childEpicsCount }}</p>
         </div>
         <gl-tooltip

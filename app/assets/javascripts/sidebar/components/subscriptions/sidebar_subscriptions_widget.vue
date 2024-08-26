@@ -250,7 +250,7 @@ export default {
     :tracking="$options.tracking"
     :loading="isLoading"
     :can-edit="false"
-    class="subscriptions block"
+    class="block subscriptions"
   >
     <template #collapsed-right>
       <gl-toggle

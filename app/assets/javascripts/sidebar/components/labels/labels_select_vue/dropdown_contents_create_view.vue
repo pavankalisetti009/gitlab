@@ -55,7 +55,7 @@ export default {
 
 <template>
   <div class="labels-select-contents-create">
-    <div class="dropdown-title gl-mb-0 gl-flex gl-items-center pb-2 pt-0">
+    <div class="dropdown-title pt-0 pb-2 gl-mb-0 gl-flex gl-items-center">
       <gl-button
         :aria-label="__('Go back')"
         category="tertiary"
@@ -83,7 +83,7 @@ export default {
       />
     </div>
     <div class="dropdown-content px-2">
-      <div class="suggest-colors suggest-colors-dropdown mb-2 mt-0">
+      <div class="suggest-colors suggest-colors-dropdown mt-0 mb-2">
         <gl-link
           v-for="(color, index) in suggestedColors"
           :key="index"
@@ -109,12 +109,12 @@ export default {
         />
       </div>
     </div>
-    <div class="dropdown-actions clearfix px-2 pt-2">
+    <div class="dropdown-actions clearfix pt-2 px-2">
       <gl-button
         :disabled="disableCreate"
         category="primary"
         variant="confirm"
-        class="gl-flex gl-items-center float-left"
+        class="float-left gl-flex gl-items-center"
         data-testid="create-click"
         @click="handleCreateClick"
       >

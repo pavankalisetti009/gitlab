@@ -181,7 +181,7 @@ export default {
               <rule-input :rule="rule" :is-branch-rules-edit="isBranchRulesEdit" />
             </td>
             <td
-              class="md:!gl-pl-0 md:!gl-pr-0 text-nowrap"
+              class="text-nowrap md:!gl-pl-0 md:!gl-pr-0"
               data-testid="approvals-table-controls"
               :data-label="actions"
             >

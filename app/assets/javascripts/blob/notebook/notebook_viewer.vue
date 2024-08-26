@@ -64,7 +64,7 @@ export default {
 
 <template>
   <div class="js-notebook-viewer-mounted container-fluid md gl-mb-3 gl-mt-3">
-    <div v-if="loading && !error" class="loading text-center">
+    <div v-if="loading && !error" class="text-center loading">
       <gl-loading-icon class="mt-5" size="lg" />
     </div>
     <notebook-lab v-if="!loading && !error" :notebook="json" />

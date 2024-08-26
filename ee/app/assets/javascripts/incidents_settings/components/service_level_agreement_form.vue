@@ -139,7 +139,7 @@ export default {
           />
           <gl-form-select
             v-model="unit"
-            class="gl-w-auto gl-ml-3 gl-leading-normal gl-border-gray-400"
+            class="gl-ml-3 gl-w-auto gl-border-gray-400 gl-leading-normal"
             :options="$options.selectOptions"
           />
         </div>

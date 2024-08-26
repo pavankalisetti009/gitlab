@@ -91,7 +91,7 @@ export default {
       @addToBatch="addSuggestionToBatch"
       @removeFromBatch="removeSuggestionFromBatch"
     />
-    <table class="md-suggestion-diff js-syntax-highlight code mb-3">
+    <table class="mb-3 md-suggestion-diff js-syntax-highlight code">
       <tbody>
         <suggestion-diff-row
           v-for="(line, index) of lines"

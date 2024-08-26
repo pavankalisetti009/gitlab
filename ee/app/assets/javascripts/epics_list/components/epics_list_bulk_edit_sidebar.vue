@@ -118,7 +118,7 @@ export default {
 
 <template>
   <gl-form id="epics-list-bulk-edit" @submit.prevent="handleFormSubmitted">
-    <gl-form-group :label="__('Labels')" class="gl-m-auto gl-mt-6 !gl-p-0 block">
+    <gl-form-group :label="__('Labels')" class="block gl-m-auto gl-mt-6 !gl-p-0">
       <labels-select-widget
         :allow-label-edit="true"
         :allow-multiselect="true"

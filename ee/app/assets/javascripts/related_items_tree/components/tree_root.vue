@@ -103,16 +103,16 @@ export default {
       :item="item"
       class="gl-border-t-1 gl-border-t-gray-100 !gl-pt-3 gl-border-t-solid"
     />
-    <li v-if="hasMoreChildren" class="tree-item justify-content-center gl-flex list-item pb-0 pt-0">
+    <li v-if="hasMoreChildren" class="tree-item list-item pt-0 pb-0 justify-content-center gl-flex">
       <gl-button
         v-if="!fetchInProgress"
-        class="gl-inline-block mb-2"
+        class="mb-2 gl-inline-block"
         category="tertiary"
         variant="confirm"
         @click="handleShowMoreClick($event)"
         >{{ __('Show more') }}</gl-button
       >
-      <gl-loading-icon v-else size="sm" class="mb-1 mt-1" />
+      <gl-loading-icon v-else size="sm" class="mt-1 mb-1" />
     </li>
   </component>
 </template>

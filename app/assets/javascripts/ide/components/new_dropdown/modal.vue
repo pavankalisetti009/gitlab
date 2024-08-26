@@ -183,7 +183,7 @@ export default {
             <gl-button
               variant="dashed"
               category="secondary"
-              class="p-1 pl-2 pr-2"
+              class="p-1 pr-2 pl-2"
               @click="createFromTemplate(template)"
             >
               {{ template.name }}

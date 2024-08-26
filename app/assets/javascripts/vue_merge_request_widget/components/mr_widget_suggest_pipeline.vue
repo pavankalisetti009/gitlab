@@ -95,7 +95,7 @@ export default {
         <img data-testid="pipeline-image" :src="pipelineSvgPath" />
       </div>
       <div class="col-md-7 order-md-first col-12">
-        <div class="gl-pt-5 ml-6">
+        <div class="ml-6 gl-pt-5">
           <p class="gl-mt-2">
             <gl-sprintf :message="$options.SP_HELP_CONTENT">
               <template #link="{ content }">

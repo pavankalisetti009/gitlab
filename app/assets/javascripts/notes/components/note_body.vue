@@ -192,7 +192,7 @@ export default {
       v-if="canEdit"
       v-model="note.note"
       :data-update-url="note.path"
-      class="js-task-list-field hidden"
+      class="hidden js-task-list-field"
       dir="auto"
     ></textarea>
     <!-- eslint-enable vue/no-mutating-props -->

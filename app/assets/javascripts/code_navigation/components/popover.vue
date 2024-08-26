@@ -92,7 +92,7 @@ export default {
     <div :style="{ left: `${offsetLeft}px` }" class="arrow"></div>
     <gl-tabs content-class="gl-py-0">
       <gl-tab :title="__('Definition')">
-        <div class="code-navigation-popover-container overflow-auto">
+        <div class="overflow-auto code-navigation-popover-container">
           <div
             v-for="(hover, index) in data.hover"
             :key="index"
@@ -102,9 +102,9 @@ export default {
               v-if="hover.language"
               ref="code-output"
               :class="$options.colorScheme"
-              class="code highlight m-0 text-wrap border-0 bg-transparent"
+              class="border-0 bg-transparent m-0 code highlight text-wrap"
             ><doc-line v-for="(tokens, tokenIndex) in hover.tokens" :key="tokenIndex" :language="hover.language" :tokens="tokens" /></pre>
-            <p v-else ref="doc-output" class="m-0 p-3">
+            <p v-else ref="doc-output" class="p-3 m-0">
               {{ hover.value }}
             </p>
           </div>

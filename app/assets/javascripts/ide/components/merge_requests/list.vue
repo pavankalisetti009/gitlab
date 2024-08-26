@@ -89,16 +89,16 @@ export default {
         @input="searchMergeRequests"
         @removeToken="setSearchType(null)"
       />
-      <gl-icon :size="16" name="search" class="input-icon ml-3" />
+      <gl-icon :size="16" name="search" class="ml-3 input-icon" />
     </label>
     <div class="dropdown-content ide-merge-requests-dropdown-content gl-flex">
       <gl-loading-icon
         v-if="isLoading"
         size="lg"
-        class="align-self-center mb-3 ml-auto mr-auto mt-3"
+        class="mt-3 mb-3 align-self-center ml-auto mr-auto"
       />
       <template v-else>
-        <ul class="gl-w-full mb-0">
+        <ul class="mb-0 gl-w-full">
           <template v-if="showSearchTypes">
             <li v-for="searchType in $options.searchTypes" :key="searchType.type">
               <button

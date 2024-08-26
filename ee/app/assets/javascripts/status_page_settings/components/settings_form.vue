@@ -103,7 +103,7 @@ export default {
         </gl-sprintf>
       </p>
       <form ref="settingsForm" @submit.prevent="updateStatusPageSettings">
-        <gl-form-group class="gl-pl-0 mb-3">
+        <gl-form-group class="mb-3 gl-pl-0">
           <gl-form-checkbox v-model="enabled">
             <span class="gl-font-bold">{{ $options.i18n.activeLabel }}</span></gl-form-checkbox
           >
@@ -113,7 +113,7 @@ export default {
           :label="$options.i18n.url.label"
           label-size="sm"
           label-for="status-page-url"
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-url" v-model="url" />
           <p class="form-text text-muted">
@@ -127,7 +127,7 @@ export default {
           :label="$options.i18n.bucket.label"
           label-size="sm"
           label-for="status-page-s3-bucket-name"
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-s3-bucket-name" v-model="bucketName" />
           <p class="form-text text-muted">
@@ -149,7 +149,7 @@ export default {
           :label="$options.i18n.region.label"
           label-size="sm"
           label-for="status-page-aws-region"
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input
             id="status-page-aws-region"
@@ -172,7 +172,7 @@ export default {
           :label="$options.i18n.accessKey.label"
           label-size="sm"
           label-for="status-page-aws-access-key"
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-aws-access-key " v-model="awsAccessKey" />
         </gl-form-group>
@@ -181,7 +181,7 @@ export default {
           :label="$options.i18n.secretAccessKey.label"
           label-size="sm"
           label-for="status-page-aws-secret-access-key"
-          class="col-8 col-md-9 gl-pl-0 mb-3"
+          class="col-8 col-md-9 mb-3 gl-pl-0"
         >
           <gl-form-input id="status-page-aws-secret-access-key " v-model="awsSecretKey" />
         </gl-form-group>

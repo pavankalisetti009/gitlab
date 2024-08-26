@@ -120,7 +120,7 @@ export default {
         ref="textarea"
         :placeholder="placeholder"
         :value="text"
-        class="gl-absolute gl-z-2 gl-h-full gl-w-full gl-border-0 gl-bg-transparent gl-outline-none gl-font-monospace p-0"
+        class="p-0 gl-absolute gl-z-2 gl-h-full gl-w-full gl-border-0 gl-bg-transparent gl-outline-none gl-font-monospace"
         dir="auto"
         name="commit-message"
         @scroll="handleScroll"

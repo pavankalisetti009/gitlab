@@ -271,7 +271,7 @@ export default {
           <gl-form-input v-model="cityModel" type="text" data-testid="city" />
         </gl-form-group>
         <div class="combined gl-flex">
-          <gl-form-group :label="$options.i18n.stateLabel" label-size="sm" class="w-50 mr-3">
+          <gl-form-group :label="$options.i18n.stateLabel" label-size="sm" class="mr-3 w-50">
             <gl-form-select
               v-model="countryStateModel"
               :options="stateOptionsWithDefault"

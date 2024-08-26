@@ -42,7 +42,7 @@ export default {
         <template v-if="fileSize > 0"> ({{ fileSizeReadable }}) </template>
       </p>
       <a :href="path" class="btn btn-default" rel="nofollow" :download="fileName" target="_blank">
-        <gl-icon :size="16" name="download" class="gl-mr-3 float-left" />
+        <gl-icon :size="16" name="download" class="float-left gl-mr-3" />
         {{ __('Download') }}
       </a>
     </div>

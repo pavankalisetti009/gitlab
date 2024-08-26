@@ -104,8 +104,8 @@ export default {
     stacked="sm"
   >
     <template #cell(mr_details)="items">
-      <div class="flex-column align-items-end align-items-sm-start gl-flex flex-grow">
-        <div class="str-truncated gl-max-w-34 my-2">
+      <div class="flex-column flex-grow align-items-end align-items-sm-start gl-flex">
+        <div class="str-truncated my-2 gl-max-w-34">
           <gl-link
             :href="items.item.web_url"
             target="_blank"

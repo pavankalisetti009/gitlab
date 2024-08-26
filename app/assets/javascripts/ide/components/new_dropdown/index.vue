@@ -65,7 +65,7 @@ export default {
       <button
         :aria-label="__('Create new file or directory')"
         type="button"
-        class="ide-entry-dropdown-toggle gl-flex rounded border-0"
+        class="rounded border-0 ide-entry-dropdown-toggle gl-flex"
         @click.stop="openDropdown()"
       >
         <gl-icon name="ellipsis_v" />

@@ -120,7 +120,7 @@ export default {
     <div class="table-holder bordered-box">
       <table
         :aria-label="tableCaption"
-        class="tree-table table"
+        class="table tree-table"
         :class="{ 'gl-table-fixed': !showParentRow }"
         aria-live="polite"
         data-testid="file-tree-table"

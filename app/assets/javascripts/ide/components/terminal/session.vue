@@ -42,7 +42,7 @@ export default {
   <div v-if="session" class="ide-terminal flex-column gl-flex">
     <header class="ide-job-header gl-flex gl-items-center">
       <h5>{{ __('Web Terminal') }}</h5>
-      <div class="align-self-center ml-auto">
+      <div class="ml-auto align-self-center">
         <gl-button
           v-if="actionButton"
           :variant="actionButton.variant"

@@ -15,7 +15,7 @@ export default {
 </script>
 <template>
   <div class="gl-pl-7">
-    <table class="m-0 table">
+    <table class="table m-0">
       <thead class="thead-white text-nowrap">
         <tr class="gl-hidden sm:gl-table-row">
           <th>{{ __('Artifact') }}</th>

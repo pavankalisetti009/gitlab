@@ -87,7 +87,7 @@ export default {
 </script>
 
 <template>
-  <div class="weight block">
+  <div class="block weight">
     <div class="title gl-mb-3">
       {{ $options.i18n.label }}
       <gl-button

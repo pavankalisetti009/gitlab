@@ -77,7 +77,7 @@ export default {
       :page-info="module.pageInfo"
       align="center"
     />
-    <div v-if="showKeysetPagination" class="gl-text-center gl-mt-5">
+    <div v-if="showKeysetPagination" class="gl-mt-5 gl-text-center">
       <gl-keyset-pagination
         v-bind="module.pageInfo"
         @prev="fetchCursorPage"

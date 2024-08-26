@@ -174,7 +174,7 @@ export default {
         />
       </div>
       <hr />
-      <table class="gl-table table">
+      <table class="table gl-table">
         <template v-if="sortedList.length">
           <tr v-for="item in sortedList" :key="item.id">
             <td data-testid="performance-item-duration">
@@ -188,7 +188,7 @@ export default {
                   v-for="(key, keyIndex) in keys"
                   :key="key"
                   class="text-break-word"
-                  :class="{ 'gl-font-semibold mb-3': keyIndex == 0 }"
+                  :class="{ 'mb-3 gl-font-semibold': keyIndex == 0 }"
                 >
                   {{ item[key] }}
                   <gl-button

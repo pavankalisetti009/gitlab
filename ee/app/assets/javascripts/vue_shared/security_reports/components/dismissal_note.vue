@@ -140,7 +140,7 @@ export default {
         {{ commentDetails.comment }}
 
         <template #right-content>
-          <div class="flex-grow-1 align-self-start gl-flex flex-row-reverse">
+          <div class="flex-grow-1 align-self-start flex-row-reverse gl-flex">
             <gl-button category="primary" variant="danger" @click="$emit('deleteDismissalComment')">
               {{ __('Delete comment') }}
             </gl-button>

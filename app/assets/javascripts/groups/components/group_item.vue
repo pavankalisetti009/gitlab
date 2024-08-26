@@ -152,7 +152,7 @@ export default {
   >
     <div
       :class="{ 'project-row-contents': !isGroup }"
-      class="group-row-contents gl-flex gl-items-center py-2 pr-3"
+      class="group-row-contents py-2 pr-3 gl-flex gl-items-center"
     >
       <div class="folder-toggle-wrap gl-mr-2 !gl-flex gl-items-center">
         <gl-button
@@ -170,7 +170,7 @@ export default {
       <gl-loading-icon
         v-if="group.isChildrenLoading"
         size="lg"
-        class="gl-mr-3 gl-hidden sm:gl-inline-flex flex-shrink-0"
+        class="flex-shrink-0 gl-mr-3 gl-hidden sm:gl-inline-flex"
       />
       <a
         :class="{ 'sm:gl-flex': !group.isChildrenLoading }"

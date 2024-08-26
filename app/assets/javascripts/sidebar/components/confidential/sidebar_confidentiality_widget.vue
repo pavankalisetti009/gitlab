@@ -137,7 +137,7 @@ export default {
     :title="__('Confidentiality')"
     :tracking="$options.tracking"
     :loading="isLoading"
-    class="confidentiality block"
+    class="block confidentiality"
     data-testid="sidebar-confidentiality"
   >
     <template #collapsed>

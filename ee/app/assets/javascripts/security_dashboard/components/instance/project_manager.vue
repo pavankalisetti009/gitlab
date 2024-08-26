@@ -256,7 +256,7 @@ export default {
         </p>
         <div class="flex-column flex-md-row gl-flex">
           <project-selector
-            class="mr-md-2 flex-grow"
+            class="flex-grow mr-md-2"
             :project-search-results="projectSearchResults"
             :selected-projects="selectedProjects"
             :show-no-results-message="messages.noResults"

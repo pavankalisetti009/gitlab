@@ -42,14 +42,14 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-items-center gl-gap-3 -gl-my-3 -gl-mr-3">
+  <div class="-gl-my-3 -gl-mr-3 gl-flex gl-items-center gl-gap-3">
     <project-avatar
       :project-id="project.id"
       :project-name="project.name"
       :project-avatar-url="project.avatar_url"
       :size="24"
     />
-    <div class="gl-grow gl-line-clamp-1">
+    <div class="gl-line-clamp-1 gl-grow">
       <gl-link
         v-gl-tooltip
         class="gl-text-default"

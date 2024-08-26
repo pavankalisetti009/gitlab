@@ -48,8 +48,8 @@ export default {
     <gl-skeleton-loader v-if="$apollo.queries.containerScanningData.loading" :lines="1" />
     <template v-if="isMetaVisible">
       <div id="popover-target" data-testid="container-scanning-metadata">
-        <gl-icon name="shield" class="gl-text-gray-500 gl-min-w-5 gl-mr-3" /><span
-          class="gl-font-bold gl-inline-flex"
+        <gl-icon name="shield" class="gl-mr-3 gl-min-w-5 gl-text-gray-500" /><span
+          class="gl-inline-flex gl-font-bold"
           >{{ metaText }}</span
         >
       </div>

@@ -41,7 +41,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="hasSeverityBadge" class="severity-badge text-sm-left gl-text-gray-900 text-nowrap">
+  <div v-if="hasSeverityBadge" class="severity-badge text-sm-left text-nowrap gl-text-gray-900">
     <span :class="className"
       ><gl-icon v-gl-tooltip="tooltipTitle" :name="iconName" :size="12" class="gl-mr-3"
     /></span>

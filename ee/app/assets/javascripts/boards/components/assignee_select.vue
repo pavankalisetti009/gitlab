@@ -130,7 +130,7 @@ export default {
 </script>
 
 <template>
-  <div class="assignee block">
+  <div class="block assignee">
     <div class="title gl-mb-3">
       {{ $options.i18n.label }}
       <gl-button

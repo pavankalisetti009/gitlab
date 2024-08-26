@@ -281,7 +281,7 @@ export default {
             v-if="!$apollo.loading.states && states"
             :label="$options.i18n.stateLabel"
             label-size="sm"
-            class="w-50 mr-3"
+            class="mr-3 w-50"
           >
             <gl-form-select
               v-model="countryStateModel"

@@ -78,7 +78,7 @@ export default {
 </script>
 
 <template>
-  <div v-if="message" class="plr-3 merge-train-position-indicator pb-2 pl-3 pt-2">
+  <div v-if="message" class="pt-2 pb-2 pl-3 plr-3 merge-train-position-indicator">
     <div class="media-body gl-text-secondary">
       {{ message }}
       <gl-link v-if="mergeTrainsPath" :href="mergeTrainsPath">

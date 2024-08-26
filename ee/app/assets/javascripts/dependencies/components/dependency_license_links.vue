@@ -84,7 +84,7 @@ export default {
         v-if="hasLicensesInModal"
         v-gl-modal-directive="modalId"
         variant="link"
-        class="js-license-links-modal-trigger align-baseline"
+        class="align-baseline js-license-links-modal-trigger"
         >{{ modalButtonText }}</gl-button
       >
     </gl-intersperse>

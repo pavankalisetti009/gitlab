@@ -182,7 +182,7 @@ export default {
   <div class="js-environment-container gl-mb-3 gl-mt-3">
     <div class="environment-information">
       <ci-icon :status="iconStatus" />
-      <p class="gl-mb-0 inline">
+      <p class="inline gl-mb-0">
         <gl-sprintf :message="environment">
           <template #environmentLink>
             <gl-link

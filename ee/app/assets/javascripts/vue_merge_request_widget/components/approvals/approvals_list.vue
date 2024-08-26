@@ -158,7 +158,7 @@ export default {
 </script>
 
 <template>
-  <table class="gl-border-t m-0 table">
+  <table class="table m-0 gl-border-t">
     <thead class="thead-white text-nowrap">
       <tr class="gl-hidden gl-text-sm md:gl-table-row">
         <th class="!gl-bg-white"></th>
@@ -282,7 +282,7 @@ export default {
               class="gl-flex gl-flex-wrap gl-gap-y-2"
             />
           </td>
-          <td class="js-pending gl-hidden gl-whitespace-nowrap md:gl-table-cell w-0">
+          <td class="w-0 js-pending gl-hidden gl-whitespace-nowrap md:gl-table-cell">
             <number-of-approvals :rule="rule" />
           </td>
           <td class="js-commented-by gl-hidden md:gl-table-cell">

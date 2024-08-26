@@ -106,7 +106,7 @@ export default {
   </gl-alert>
 
   <div v-else data-testid="role-details">
-    <header class="gl-flex gl-gap-3 gl-items-center gl-mt-6 gl-mb-4 gl-flex-wrap">
+    <header class="gl-mb-4 gl-mt-6 gl-flex gl-flex-wrap gl-items-center gl-gap-3">
       <h1 class="gl-m-0 gl-mr-auto">{{ role.name || role.text }}</h1>
 
       <div v-if="memberRole" class="gl-flex gl-items-center gl-gap-3">

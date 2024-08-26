@@ -120,7 +120,7 @@ export default {
           }"
           :data-key="issue.id"
           :data-ordering-id="issuableOrderingId(issue)"
-          class="js-related-issues-token-list-item !gl-border-b-0 !gl-p-0 list-item"
+          class="js-related-issues-token-list-item list-item !gl-border-b-0 !gl-p-0"
         >
           <related-issuable-item
             :id-key="issue.id"

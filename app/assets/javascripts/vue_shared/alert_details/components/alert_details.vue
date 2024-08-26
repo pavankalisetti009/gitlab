@@ -253,7 +253,7 @@ export default {
       :class="{ 'pr-sm-8': sidebarStatus }"
     >
       <div
-        class="py-md-4 gl-flex gl-flex-col gl-items-center gl-justify-between gl-border-b-1 gl-border-b-gray-100 gl-px-1 gl-border-b-solid sm:gl-flex-row py-3"
+        class="py-3 py-md-4 gl-flex gl-flex-col gl-items-center gl-justify-between gl-border-b-1 gl-border-b-gray-100 gl-px-1 gl-border-b-solid sm:gl-flex-row"
       >
         <div data-testid="alert-header">
           <gl-badge class="gl-mr-3">

@@ -31,7 +31,7 @@ export default {
 
 <template>
   <div>
-    <div :class="{ 'border-bottom-0': loadingStacktrace }" class="card card-slim mb-0 mt-4">
+    <div :class="{ 'border-bottom-0': loadingStacktrace }" class="card card-slim mt-4 mb-0">
       <div class="card-header border-bottom-0">
         <h5 class="card-title my-1">{{ __('Stack trace') }}</h5>
       </div>

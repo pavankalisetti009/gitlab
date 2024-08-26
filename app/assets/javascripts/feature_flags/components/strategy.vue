@@ -160,7 +160,7 @@ export default {
         </div>
 
         <div
-          class="align-self-end align-self-md-stretch offset-md-0 order-md-0 gl-ml-auto order-first"
+          class="align-self-end align-self-md-stretch order-first offset-md-0 order-md-0 gl-ml-auto"
         >
           <gl-button
             data-testid="delete-strategy-button"

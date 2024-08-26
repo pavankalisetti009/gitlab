@@ -204,7 +204,7 @@ export default {
           </template>
 
           <div :key="`sub-div-${i}`">
-            <div class="gl-mt-3 text-center">
+            <div class="text-center gl-mt-3">
               <a :href="folderUrl(model)" class="btn btn-default">
                 {{ s__('Environments|Show all') }}
               </a>

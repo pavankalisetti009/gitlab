@@ -152,7 +152,7 @@ export default {
       :issuable-type="$options.TYPE_TEST_CASE"
       :attr-workspace-path="projectFullPath"
       workspace-type="project"
-      class="labels js-labels-block block"
+      class="block labels js-labels-block"
       variant="sidebar"
       :label-create-type="$options.WORKSPACE_PROJECT"
       :labels-filter-base-path="testCasesPath"

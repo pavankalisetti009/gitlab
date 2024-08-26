@@ -413,7 +413,7 @@ export default {
       v-if="descriptionText"
       :value="descriptionText"
       :data-update-url="updateUrl"
-      class="js-task-list-field hidden"
+      class="hidden js-task-list-field"
       dir="auto"
       data-testid="textarea"
     >
