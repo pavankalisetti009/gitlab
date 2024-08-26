@@ -386,6 +386,9 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
 
     context 'project with vulnerabilities' do
+      let_it_be(:vulnerability) { create(:vulnerability, project: project) }
+      let(:scanner) { vulnerability.vulnerability_finding.scanner }
+
       let(:base_values) do
         {
           has_vulnerabilities: 'true',
@@ -398,7 +401,13 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           operational_configuration_path: new_project_security_policy_path(project),
           security_dashboard_empty_svg_path: start_with('/assets/illustrations/empty-state/empty-secure-md'),
           new_project_pipeline_path: "/#{project.full_path}/-/pipelines/new",
-          scanners: '[{"id":123,"vendor":"Security Vendor","report_type":"SAST","name":"Find Security Bugs","external_id":"find_sec_bugs_1"}]',
+          scanners: [{
+            id: scanner.id,
+            vendor: scanner.vendor,
+            report_type: vulnerability.report_type.upcase,
+            name: scanner.name,
+            external_id: scanner.external_id
+          }].to_json,
           can_admin_vulnerability: 'true',
           can_view_false_positive: 'false',
           security_configuration_path: kind_of(String),
@@ -406,12 +415,6 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
           dismissal_descriptions: dismissal_descriptions_json,
           hide_third_party_offers: 'false'
         }
-      end
-
-      before do
-        create(:vulnerability, project: project)
-        scanner = create(:vulnerabilities_scanner, project: project, id: 123, name: "Find Security Bugs", external_id: "find_sec_bugs_1")
-        create(:vulnerabilities_finding, project: project, scanner: scanner)
       end
 
       context 'with related_url_root set' do

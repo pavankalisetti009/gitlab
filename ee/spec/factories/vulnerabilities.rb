@@ -2,7 +2,7 @@
 
 FactoryBot.define do
   factory :vulnerability do
-    association :vulnerability_finding, factory: :vulnerabilities_finding
+    vulnerability_finding { association(:vulnerabilities_finding, project: project) }
     project
     author
     title { generate(:title) }

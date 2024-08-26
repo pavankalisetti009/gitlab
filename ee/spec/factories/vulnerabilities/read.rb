@@ -2,9 +2,9 @@
 
 FactoryBot.define do
   factory :vulnerability_read, class: 'Vulnerabilities::Read' do
-    vulnerability factory: :vulnerability
+    vulnerability { association(:vulnerability, project: project) }
     project factory: :project
-    scanner factory: :vulnerabilities_scanner
+    scanner { association(:vulnerabilities_scanner, project: project) }
     report_type { :sast }
     severity { :high }
     state { :detected }

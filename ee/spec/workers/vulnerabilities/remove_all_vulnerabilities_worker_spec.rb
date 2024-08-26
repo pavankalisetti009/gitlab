@@ -36,7 +36,7 @@ RSpec.describe Vulnerabilities::RemoveAllVulnerabilitiesWorker, feature_category
 
       expected_counts = {
         Vulnerability => 2,
-        Vulnerabilities::Finding => 8,
+        Vulnerabilities::Finding => 10,
         Vulnerabilities::IssueLink => 4,
         Vulnerabilities::StateTransition => 2,
         VulnerabilityUserMention => 2
