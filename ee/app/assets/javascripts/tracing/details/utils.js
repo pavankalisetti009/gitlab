@@ -1,4 +1,4 @@
-import { urlWithStringifiedPayloadParam } from '~/observability/utils';
+import { createIssueUrlWithDetails } from '~/observability/utils';
 import { formatTraceDuration } from '../trace_utils';
 
 export function createIssueUrlWithTraceDetails({ trace, totalErrors, createIssueUrl }) {
@@ -11,10 +11,5 @@ export function createIssueUrlWithTraceDetails({ trace, totalErrors, createIssue
     totalSpans: trace.total_spans,
     totalErrors,
   };
-
-  return urlWithStringifiedPayloadParam(
-    createIssueUrl,
-    traceDetails,
-    'observability_trace_details',
-  );
+  return createIssueUrlWithDetails(createIssueUrl, traceDetails, 'observability_trace_details');
 }

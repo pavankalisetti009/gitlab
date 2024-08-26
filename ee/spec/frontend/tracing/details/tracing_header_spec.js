@@ -8,6 +8,7 @@ describe('TracingHeader', () => {
   let wrapper;
 
   const defaultTrace = createMockTrace();
+  const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
 
   const createComponent = (trace = defaultTrace, incomplete = false) => {
     wrapper = shallowMountExtended(TracingHeader, {
@@ -15,7 +16,7 @@ describe('TracingHeader', () => {
         trace,
         incomplete,
         logsLink: 'testLogsLink',
-        createIssueUrl: 'testCreateIssueUrl',
+        createIssueUrl,
         totalErrors: 2,
       },
     });
@@ -67,9 +68,9 @@ describe('TracingHeader', () => {
       totalErrors: 2,
     };
     expect(button.attributes('href')).toBe(
-      `testCreateIssueUrl?observability_trace_details=${encodeURIComponent(
+      `${createIssueUrl}?observability_trace_details=${encodeURIComponent(
         JSON.stringify(traceDetails),
-      )}`,
+      )}&${encodeURIComponent('issue[confidential]')}=true`,
     );
   });
 

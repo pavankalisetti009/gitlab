@@ -31,7 +31,7 @@ describe('createIssueUrlWithMetricDetails', () => {
       type: metricType,
       timeframe: ['Thu, 01 Aug 2024 10:55:00 GMT', 'Thu, 01 Aug 2024 11:00:00 GMT'],
     };
-    const expectedUrl = `https://example.com/issues/new?observability_metric_details=${encodeURIComponent(JSON.stringify(metricsDetails))}`;
+    const expectedUrl = `https://example.com/issues/new?observability_metric_details=${encodeURIComponent(JSON.stringify(metricsDetails))}&${encodeURIComponent('issue[confidential]')}=true`;
 
     expect(
       createIssueUrlWithMetricDetails({ metricName, metricType, filters, createIssueUrl }),
@@ -53,7 +53,7 @@ describe('createIssueUrlWithMetricDetails', () => {
         type: metricType,
         timeframe: ['Sun, 01 Jan 2023 00:00:00 GMT', 'Tue, 31 Jan 2023 00:00:00 GMT'],
       }),
-    )}`;
+    )}&${encodeURIComponent('issue[confidential]')}=true`;
 
     expect(
       createIssueUrlWithMetricDetails({

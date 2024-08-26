@@ -192,7 +192,7 @@ describe('LogsDrawer', () => {
     expect(button.attributes('href')).toBe(
       `${testCreateIssueUrl}?observability_log_details=${encodeURIComponent(
         JSON.stringify(logsDetails),
-      )}`,
+      )}&${encodeURIComponent('issue[confidential]')}=true`,
     );
   });
 });

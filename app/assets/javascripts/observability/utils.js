@@ -195,8 +195,24 @@ export function isTracingDateRangeOutOfBounds({ value, startDate, endDate }) {
   return false;
 }
 
-export function urlWithStringifiedPayloadParam(url, payload, paramName) {
-  return mergeUrlParams({ [paramName]: JSON.stringify(payload) }, url, {
-    spreadArrays: true,
-  });
+/**
+ * Creates a URL for creating an issue with prefilled details.
+ *
+ * @param {string} createIssueUrl - The base URL for creating an issue.
+ * @param {Object} detailsPayload - An object containing the details used to generate the issue title and description
+ * @param {string} paramName - The name of the parameter to be used for the details in the URL.
+ * @returns {string} The URL with the added details for creating an issue.
+ */
+
+export function createIssueUrlWithDetails(createIssueUrl, detailsPayload, paramName) {
+  return mergeUrlParams(
+    {
+      [paramName]: JSON.stringify(detailsPayload),
+      'issue[confidential]': true,
+    },
+    createIssueUrl,
+    {
+      spreadArrays: true,
+    },
+  );
 }
