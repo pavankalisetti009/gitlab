@@ -9,14 +9,14 @@ import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_help
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 import memberRolePermissionsQuery from 'ee/roles_and_permissions/graphql/member_role_permissions.query.graphql';
-import { mockPermissions, mockDefaultPermissions } from '../mock_data';
+import { mockPermissionsResponse, mockDefaultPermissions } from '../mock_data';
 
 Vue.use(VueApollo);
 
 describe('Permissions Selector component', () => {
   let wrapper;
 
-  const defaultAvailablePermissionsHandler = jest.fn().mockResolvedValue(mockPermissions);
+  const defaultAvailablePermissionsHandler = jest.fn().mockResolvedValue(mockPermissionsResponse);
   const glTableStub = stubComponent(GlTable, { props: ['items', 'fields', 'busy'] });
 
   const createComponent = ({

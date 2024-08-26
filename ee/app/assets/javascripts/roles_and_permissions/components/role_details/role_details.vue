@@ -1,5 +1,12 @@
 <script>
-import { GlSprintf, GlAlert, GlButton, GlTooltipDirective, GlLoadingIcon } from '@gitlab/ui';
+import {
+  GlSprintf,
+  GlTabs,
+  GlAlert,
+  GlButton,
+  GlTooltipDirective,
+  GlLoadingIcon,
+} from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
@@ -8,10 +15,13 @@ import { TYPENAME_MEMBER_ROLE } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import DeleteRoleModal from '../delete_role_modal.vue';
 import memberRoleQuery from '../../graphql/member_role.query.graphql';
+import DetailsTab from './details_tab.vue';
 
 export default {
   components: {
     GlSprintf,
+    GlTabs,
+    DetailsTab,
     GlAlert,
     GlButton,
     GlLoadingIcon,
@@ -99,7 +109,7 @@ export default {
     <header class="gl-flex gl-gap-3 gl-items-center gl-mt-6 gl-mb-4 gl-flex-wrap">
       <h1 class="gl-m-0 gl-mr-auto">{{ role.name || role.text }}</h1>
 
-      <div v-if="memberRole" class="gl-flex gl-items-center gl-gap-3" data-testid="action-buttons">
+      <div v-if="memberRole" class="gl-flex gl-items-center gl-gap-3">
         <gl-button
           v-gl-tooltip="s__('MemberRole|Edit role')"
           icon="pencil"
@@ -130,5 +140,9 @@ export default {
         <template #dateTime>{{ createdDate }}</template>
       </gl-sprintf>
     </p>
+
+    <gl-tabs>
+      <details-tab :role="role" />
+    </gl-tabs>
   </div>
 </template>

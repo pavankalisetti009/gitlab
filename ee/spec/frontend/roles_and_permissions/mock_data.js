@@ -8,7 +8,7 @@ export const mockDefaultPermissions = [
   { value: 'G', name: 'G', description: 'G', requirements: ['A', 'B', 'C'] }, // Multiple dependencies
 ];
 
-export const mockPermissions = {
+export const mockPermissionsResponse = {
   data: {
     memberRolePermissions: {
       nodes: mockDefaultPermissions,
