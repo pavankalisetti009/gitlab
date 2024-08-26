@@ -62,6 +62,8 @@ export const mockCrmContacts = [
       __typename: 'CustomerRelationsOrganization',
       id: 'gid://gitlab/CustomerRelations::Organization/55',
       name: 'Anderson LLC-4',
+      description: null,
+      defaultRate: null,
     },
   },
   {
@@ -77,6 +79,8 @@ export const mockCrmContacts = [
       __typename: 'CustomerRelationsOrganization',
       id: 'gid://gitlab/CustomerRelations::Organization/55',
       name: 'Anderson LLC-4',
+      description: null,
+      defaultRate: null,
     },
   },
   {
