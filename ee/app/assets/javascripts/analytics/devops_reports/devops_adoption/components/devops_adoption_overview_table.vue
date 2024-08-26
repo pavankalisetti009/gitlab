@@ -26,7 +26,7 @@ import {
 import { getGroupAdoptionPath } from '../utils/helpers';
 import DevopsAdoptionDeleteModal from './devops_adoption_delete_modal.vue';
 
-const thClass = ['gl-bg-white!', 'gl-text-gray-400'];
+const thClass = ['!gl-bg-white', 'gl-text-gray-400'];
 
 const formatter = (value, key, item) => {
   if (key === OVERVIEW_TABLE_NAME_KEY) {
@@ -177,13 +177,13 @@ export default {
         <div data-testid="namespace">
           <template v-if="item.group.latestSnapshot">
             <template v-if="isCurrentGroup(item.group)">
-              <span class="gl-text-gray-500 gl-font-bold">{{ item.group.namespace.fullName }}</span>
+              <span class="gl-font-bold gl-text-gray-500">{{ item.group.namespace.fullName }}</span>
               <gl-badge class="gl-ml-1" variant="info">{{ __('This group') }}</gl-badge>
             </template>
             <gl-link
               v-else
               :href="getGroupAdoptionPath(item.group.namespace.fullPath)"
-              class="gl-text-gray-500 gl-font-bold"
+              class="gl-font-bold gl-text-gray-500"
             >
               {{ item.group.namespace.fullName }}
             </gl-link>
@@ -200,7 +200,7 @@ export default {
           v-if="item.group.latestSnapshot"
           :key="col.key"
           :data-testid="col.testId"
-          class="gl-display-flex gl-flex-direction-column gl-gap-3 gl-align-items-flex-end gl-md-align-items-flex-start"
+          class="gl-flex gl-flex-col gl-items-end gl-gap-3 md:gl-items-start"
         >
           {{ item.adoption[col.key].adopted }}/{{ item.adoption[col.key].total }}
           {{ __('features adopted') }}

@@ -369,7 +369,7 @@ export default {
         v-else
         v-gl-tooltip="tooltip"
         :aria-label="tooltip"
-        class="gl-text-sm gl-text-gray-500 hover:gl-underline gl-cursor-pointer"
+        class="gl-cursor-pointer gl-text-sm gl-text-gray-500 hover:gl-underline"
         data-testid="metric-cell-no-change"
         tabindex="0"
       >

@@ -187,7 +187,7 @@ export default {
       @reject="reject"
     />
 
-    <div class="gl--flex-center gl-mt-4">
+    <div class="gl-mt-4 gl-flex gl-items-center gl-justify-center">
       <gl-keyset-pagination
         v-bind="usersQueuedForLicenseSeat.pageInfo"
         :disabled="isLoading"

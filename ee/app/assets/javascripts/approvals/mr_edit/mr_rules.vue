@@ -148,7 +148,7 @@ export default {
               </div>
             </div>
           </td>
-          <td class="gl-py-5!" data-testid="approvals-table-members" :data-label="members">
+          <td class="!gl-py-5" data-testid="approvals-table-members" :data-label="members">
             <user-avatar-list
               :items="rule.approvers"
               :img-size="24"
@@ -164,7 +164,7 @@ export default {
             <rule-input :rule="rule" />
           </td>
           <td
-            class="gl-md-pl-0! gl-md-pr-0!"
+            class="md:!gl-pl-0 md:!gl-pr-0"
             data-testid="approvals-table-controls"
             :data-label="actions"
           >

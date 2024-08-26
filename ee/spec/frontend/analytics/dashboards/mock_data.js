@@ -87,7 +87,7 @@ export const MOCK_DASHBOARD_TABLE_FIELDS = [
     start: new Date('2020-01-06T00:00:00.000Z'),
     end: new Date('2020-07-06T00:00:00.000Z'),
     thClass: 'gl-w-3/20',
-    tdClass: 'gl-py-2!',
+    tdClass: '!gl-py-2',
   },
 ];
 

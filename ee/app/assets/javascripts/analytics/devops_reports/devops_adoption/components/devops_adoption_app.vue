@@ -329,10 +329,7 @@ export default {
       </gl-tab>
 
       <template #tabs-end>
-        <span
-          class="nav-item gl-align-self-center gl-flex-grow-1 gl-hidden md:gl-block"
-          align="right"
-        >
+        <span class="nav-item gl-hidden gl-grow gl-self-center md:gl-block" align="right">
           <devops-adoption-add-dropdown
             :search-term="groupsSearchTerm"
             :groups="availableGroups"

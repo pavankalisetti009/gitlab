@@ -287,9 +287,7 @@ export default {
     >
       {{ successMessage }}
     </gl-alert>
-    <div
-      class="gl-display-flex gl-justify-content-space-between gl-align-items-center gl-mb-6 gl-mt-3"
-    >
+    <div class="gl-mb-6 gl-mt-3 gl-flex gl-items-center gl-justify-between">
       <h4 class="gl-m-0">
         {{ $options.i18n.streamsLabel(totalCount) }}
       </h4>
@@ -301,7 +299,7 @@ export default {
         :items="destinationOptions"
       />
     </div>
-    <div v-if="isEditorVisible" class="gl-mb-4 gl-p-4 gl-border gl-rounded-base">
+    <div v-if="isEditorVisible" class="gl-border gl-mb-4 gl-rounded-base gl-p-4">
       <stream-destination-editor
         v-if="editorType === $options.DESTINATION_TYPE_HTTP"
         @added="onAddedDestination"

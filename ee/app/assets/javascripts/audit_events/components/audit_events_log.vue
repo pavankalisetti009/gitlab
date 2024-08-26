@@ -48,7 +48,7 @@ export default {
 <template>
   <div>
     <div class="row-content-block gl-border-t-0">
-      <div class="gl-flex gl-gap-3 gl-flex-col md:gl-flex-row gl-mb-3">
+      <div class="gl-mb-3 gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
         <audit-events-filter
           :filter-token-options="filterTokenOptions"
           :value="filterValue"

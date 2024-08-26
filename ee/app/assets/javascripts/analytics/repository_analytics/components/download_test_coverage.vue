@@ -110,12 +110,12 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-sm-w-auto gl-sm-ml-3">
+  <div class="gl-w-full sm:gl-ml-3 sm:gl-w-auto">
     <gl-button
       v-gl-modal-directive="'download-csv-modal'"
       category="primary"
       variant="confirm"
-      class="gl-w-full gl-sm-w-auto"
+      class="gl-w-full sm:gl-w-auto"
       data-testid="group-code-coverage-modal-button"
       :aria-label="$options.i18n.downloadCSVButton"
       >{{ $options.i18n.downloadCSVButton }}</gl-button
@@ -133,11 +133,11 @@ export default {
       }}</gl-alert>
       <div>{{ $options.i18n.downloadCSVModalDescription }}</div>
       <div class="gl-my-4">
-        <label class="gl-block col-form-label-sm col-form-label">
+        <label class="col-form-label-sm col-form-label gl-block">
           {{ $options.i18n.projectDropdownHeader }}
         </label>
 
-        <div class="gl-display-inline-block gl-w-1/2">
+        <div class="gl-inline-block gl-w-1/2">
           <select-projects-dropdown
             ref="projectsDropdown"
             @projects-query-error="projectsQueryError"
@@ -156,7 +156,7 @@ export default {
       </div>
 
       <div class="gl-my-4">
-        <label class="gl-block col-form-label-sm col-form-label">
+        <label class="col-form-label-sm col-form-label gl-block">
           {{ $options.i18n.dateRangeHeader }}
         </label>
         <gl-collapsible-listbox

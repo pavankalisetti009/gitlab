@@ -39,7 +39,7 @@ export default {
 };
 </script>
 <template>
-  <span :class="`gl-ml-3 gl-font-sm ${textColor}`">
+  <span :class="`gl-ml-3 gl-text-sm ${textColor}`">
     <gl-icon :name="iconName" />
     {{ formattedChange }}
   </span>

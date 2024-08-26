@@ -146,7 +146,7 @@ export default {
       v-on="$listeners"
     />
     <subscription-sync-notifications v-if="shouldShowNotifications" class="gl-mb-4" />
-    <div class="gl-grid sm:gl-grid-cols-2 gl-gap-5 gl-mb-5">
+    <div class="gl-mb-5 gl-grid gl-gap-5 sm:gl-grid-cols-2">
       <subscription-details-card
         :details-fields="subscriptionDetailsFields"
         :header-text="$options.i18n.subscriptionDetailsHeaderText"
@@ -154,9 +154,7 @@ export default {
         data-testid="subscription-details-card"
       >
         <template v-if="shouldShowFooter" #footer>
-          <div
-            class="gl-display-flex gl-flex-wrap gl-align-items-flex-start gl-justify-content-space-between"
-          >
+          <div class="gl-flex gl-flex-wrap gl-items-start gl-justify-between">
             <div class="gl-flex gl-gap-3">
               <gl-button
                 v-gl-modal-directive="$options.activateSubscriptionModal.id"

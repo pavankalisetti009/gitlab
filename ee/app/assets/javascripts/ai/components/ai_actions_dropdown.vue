@@ -173,15 +173,15 @@ export default {
         :aria-label="__('GitLab Duo')"
         category="tertiary"
         size="small"
-        class="gl-mr-2 gl-px-2!"
+        class="gl-mr-2 !gl-px-2"
       >
         <gl-loading-icon v-if="loading" />
         <gl-icon v-else name="tanuki-ai" />
       </gl-button>
     </template>
     <template #list-item="{ item }">
-      <div class="gl-display-flex js-comment-template-content">
-        <div class="gl-font-sm">
+      <div class="js-comment-template-content gl-flex">
+        <div class="gl-text-sm">
           <strong>{{ item.title }}</strong>
           <br /><span>{{ item.description }}</span>
         </div>

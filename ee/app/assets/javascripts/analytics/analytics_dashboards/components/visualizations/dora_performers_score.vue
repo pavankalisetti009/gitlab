@@ -50,7 +50,7 @@ export default {
     @done="handleResolveNamespace"
     @error="handleError"
   >
-    <div v-if="isNamespaceLoading" class="gl-flex gl-justify-center gl-items-center gl-h-full">
+    <div v-if="isNamespaceLoading" class="gl-flex gl-h-full gl-items-center gl-justify-center">
       <gl-loading-icon size="lg" />
     </div>
     <dora-performers-score-chart

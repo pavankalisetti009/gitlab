@@ -62,10 +62,10 @@ export default {
 </script>
 
 <template>
-  <div class="gl-grid sm:gl-grid-cols-2 gl-gap-5 gl-mb-6">
+  <div class="gl-mb-6 gl-grid gl-gap-5 sm:gl-grid-cols-2">
     <gl-card>
       <header>
-        <h5 class="gl-font-normal gl-text-secondary gl-mt-0">{{ usersInSubscriptionTitle }}</h5>
+        <h5 class="gl-mt-0 gl-font-normal gl-text-secondary">{{ usersInSubscriptionTitle }}</h5>
         <h2 class="!gl-mt-0" data-testid="users-in-subscription-content">
           {{ usersInSubscription }}
         </h2>
@@ -81,7 +81,7 @@ export default {
 
     <gl-card data-testid="billable-users">
       <header>
-        <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
+        <h5 class="gl-mt-0 gl-font-normal gl-text-secondary">
           {{ __('Billable users') }}
         </h5>
         <h2 class="!gl-mt-0" data-testid="billable-users-count">{{ billableUsers }}</h2>
@@ -105,7 +105,7 @@ export default {
 
     <gl-card data-testid="maximum-users">
       <header>
-        <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
+        <h5 class="gl-mt-0 gl-font-normal gl-text-secondary">
           {{ __('Maximum users') }}
         </h5>
         <h2 class="!gl-mt-0">{{ maximumUsers }}</h2>
@@ -119,7 +119,7 @@ export default {
 
     <gl-card data-testid="users-over-license">
       <header>
-        <h5 class="gl-font-normal gl-text-secondary gl-mt-0">
+        <h5 class="gl-mt-0 gl-font-normal gl-text-secondary">
           {{ __('Users over subscription') }}
         </h5>
         <h2 class="!gl-mt-0">{{ usersOverSubscription }}</h2>

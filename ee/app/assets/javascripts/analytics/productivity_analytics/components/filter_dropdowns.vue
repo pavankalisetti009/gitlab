@@ -62,7 +62,7 @@ export default {
 </script>
 
 <template>
-  <div class="dropdown-container gl-flex flex-column flex-lg-row">
+  <div class="dropdown-container flex-column flex-lg-row gl-flex">
     <projects-dropdown-filter
       v-if="showProjectsDropdownFilter"
       :key="groupId"

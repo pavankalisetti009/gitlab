@@ -209,7 +209,7 @@ export default {
           data-testid="require-user-password"
           @input="setRequireUserPassword"
         />
-        <div class="gl-mt-5 gl-mb-3">{{ settingsLabels.whenCommitAddedLabel }}</div>
+        <div class="gl-mb-3 gl-mt-5">{{ settingsLabels.whenCommitAddedLabel }}</div>
         <gl-form-radio-group
           :checked="whenCommitIsAddedRadioGroupValue"
           data-testid="when-commit-is-added-radios"

@@ -30,7 +30,7 @@ export default {
 </script>
 <template>
   <div>
-    <div v-if="enabled" class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start">
+    <div v-if="enabled" class="gl-flex gl-justify-end sm:gl-justify-start">
       <gl-icon
         name="status_success_solid"
         class="gl-text-green-500"
@@ -38,7 +38,7 @@ export default {
       />
       <div v-if="withText">{{ __('Adopted') }}</div>
     </div>
-    <div v-if="!enabled" class="gl-display-flex gl-justify-content-end gl-sm-justify-content-start">
+    <div v-if="!enabled" class="gl-flex gl-justify-end sm:gl-justify-start">
       <gl-icon name="issue-open-m" class="gl-text-gray-500" :class="{ 'gl-mr-3': withText }" />
       <div v-if="withText">{{ __('Not adopted') }}</div>
     </div>

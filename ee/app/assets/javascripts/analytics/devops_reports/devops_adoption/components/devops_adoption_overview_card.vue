@@ -56,10 +56,8 @@ export default {
 };
 </script>
 <template>
-  <div
-    class="devops-overview-card gl-display-flex gl-flex-direction-column gl-flex-grow-1 gl-md-mr-5 gl-mb-4"
-  >
-    <div class="gl-display-flex gl-align-items-center gl-mb-3" data-testid="card-title">
+  <div class="devops-overview-card gl-mb-4 gl-flex gl-grow gl-flex-col md:gl-mr-5">
+    <div class="gl-mb-3 gl-flex gl-items-center" data-testid="card-title">
       <gl-icon :name="icon" class="gl-mr-3 gl-text-gray-500" />
       <gl-button
         v-if="displayMeta"
@@ -74,19 +72,19 @@ export default {
     <gl-progress-bar
       :value="adoptedCount"
       :max="featuresCount"
-      class="gl-mb-2 gl-md-mr-5"
+      class="gl-mb-2 md:gl-mr-5"
       :height="$options.progressBarHeight"
     />
-    <div class="gl-text-gray-400 gl-mb-1" data-testid="card-description">{{ description }}</div>
+    <div class="gl-mb-1 gl-text-gray-400" data-testid="card-description">{{ description }}</div>
     <template v-if="displayMeta">
       <div
         v-for="feature in featureMeta"
         :key="feature.title"
-        class="gl-display-flex gl-align-items-center gl-mt-2"
+        class="gl-mt-2 gl-flex gl-items-center"
         data-testid="card-meta-row"
       >
         <devops-adoption-table-cell-flag :enabled="feature.adopted" class="gl-mr-3" />
-        <span class="gl-text-gray-600 gl-font-sm" data-testid="card-meta-row-title">{{
+        <span class="gl-text-sm gl-text-gray-600" data-testid="card-meta-row-title">{{
           feature.title
         }}</span>
       </div>

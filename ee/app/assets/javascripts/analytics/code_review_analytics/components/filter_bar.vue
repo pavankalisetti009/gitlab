@@ -92,7 +92,7 @@ export default {
 <template>
   <div>
     <filtered-search-bar
-      class="gl-flex-grow-1 row-content-block"
+      class="row-content-block gl-grow"
       :namespace="projectPath"
       recent-searches-storage-key="code-review-analytics"
       :search-input-placeholder="__('Filter results')"

@@ -66,22 +66,16 @@ export default {
       :css-classes="['stage-item-popover']"
     >
       <div class="gl-px-4">
-        <div
-          data-testid="vsa-data-refresh-last"
-          class="gl-display-flex gl-justify-content-space-between"
-        >
-          <div class="gl-pr-4 gl-pb-4">
+        <div data-testid="vsa-data-refresh-last" class="gl-flex gl-justify-between">
+          <div class="gl-pb-4 gl-pr-4">
             {{ $options.i18n.LAST_UPDATED_TEXT }}
           </div>
           <div class="gl-pb-4 gl-font-bold">
             {{ formattedLastUpdated }}
           </div>
         </div>
-        <div
-          data-testid="vsa-data-refresh-next"
-          class="gl-display-flex gl-justify-content-space-between"
-        >
-          <div class="gl-pr-4 gl-pb-4">
+        <div data-testid="vsa-data-refresh-next" class="gl-flex gl-justify-between">
+          <div class="gl-pb-4 gl-pr-4">
             {{ $options.i18n.NEXT_UPDATE_TEXT }}
           </div>
           <div class="gl-pb-4 gl-font-bold">

@@ -57,7 +57,7 @@ describe('DataTable Visualization', () => {
       Object.values(data[0]).forEach((value, idx) => {
         expect(rowCells.at(idx).text()).toBe(value);
         expect(rowCells.at(idx).classes()).toEqual(
-          expect.arrayContaining(['gl-text-truncate', 'gl-max-w-0']),
+          expect.arrayContaining(['gl-truncate', 'gl-max-w-0']),
         );
       });
     });

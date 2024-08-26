@@ -79,7 +79,7 @@ export default {
       </template>
 
       <template #cell(actions)="{ item: { user } }">
-        <div class="gl-flex gl-gap-3 gl-items-center">
+        <div class="gl-flex gl-items-center gl-gap-3">
           <gl-button @click="$emit('reject', user.id)">{{ __('Reject') }}</gl-button>
           <gl-button variant="confirm" @click="$emit('approve', user.id)">{{
             __('Approve')

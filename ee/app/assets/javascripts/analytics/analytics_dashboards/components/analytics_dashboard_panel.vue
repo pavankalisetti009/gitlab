@@ -301,7 +301,7 @@ export default {
     <template #alert-popover>
       <gl-sprintf :message="alertDescription">
         <template #link="{ content }">
-          <gl-link :href="alertDescriptionLink" class="gl-font-sm">{{ content }}</gl-link>
+          <gl-link :href="alertDescriptionLink" class="gl-text-sm">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
       <ul v-if="alertMessages.length" data-testid="alert-messages" class="gl-mb-0">
@@ -309,14 +309,14 @@ export default {
           <span v-if="message.link && message.description">
             <gl-sprintf :message="message.description">
               <template #link="{ content }">
-                <gl-link :href="message.link" class="gl-font-sm">{{ content }}</gl-link>
+                <gl-link :href="message.link" class="gl-text-sm">{{ content }}</gl-link>
               </template>
             </gl-sprintf>
           </span>
           <span v-else>{{ message }}</span>
         </li>
       </ul>
-      <gl-button v-if="canRetryError" class="gl-block gl-mt-3" @click="fetchData">{{
+      <gl-button v-if="canRetryError" class="gl-mt-3 gl-block" @click="fetchData">{{
         __('Retry')
       }}</gl-button>
     </template>

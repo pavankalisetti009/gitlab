@@ -64,7 +64,7 @@ export default {
 <template>
   <div class="gl-mb-4" data-testid="value-stream-stage-fields">
     <div class="gl-flex gl-flex-col sm:gl-flex-row">
-      <div class="gl-grow gl-mr-2">
+      <div class="gl-mr-2 gl-grow">
         <gl-form-group
           :label="stageLabel"
           :state="isValid('name')"

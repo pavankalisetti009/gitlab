@@ -353,7 +353,7 @@ export default {
         :invalid-feedback="invalidNameFeedback"
         :state="isValueStreamNameValid"
       >
-        <div class="gl-display-flex gl-justify-content-space-between">
+        <div class="gl-flex gl-justify-between">
           <gl-form-input
             id="create-value-stream-name"
             v-model.trim="name"
@@ -420,7 +420,7 @@ export default {
           </div>
         </transition-group>
         <div>
-          <hr class="gl-mt-2 gl-mb-5" />
+          <hr class="gl-mb-5 gl-mt-2" />
           <gl-button
             data-testid="vsa-add-stage-button"
             category="secondary"
@@ -437,7 +437,7 @@ export default {
             :key="stage.id"
             data-testid="vsa-hidden-stage"
           >
-            <span class="gl-m-0 gl-align-middle gl-mr-3 gl-font-bold">{{
+            <span class="gl-m-0 gl-mr-3 gl-align-middle gl-font-bold">{{
               recoverStageTitle(stage.name)
             }}</span>
             <gl-button

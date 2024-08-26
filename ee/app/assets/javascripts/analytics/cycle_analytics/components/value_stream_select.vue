@@ -142,7 +142,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-display-flex gl-align-items-center gl-gap-3">
+  <div class="gl-flex gl-items-center gl-gap-3">
     <label class="gl-m-0">{{ s__('ValueStreamAnalytics|Value stream') }}</label>
     <gl-collapsible-listbox
       v-if="hasValueStreams"
@@ -156,7 +156,7 @@ export default {
         <div class="gl-border-t gl-p-2">
           <gl-button
             v-gl-modal-directive="valueStreamFormModalId"
-            class="gl-w-full gl-justify-content-start!"
+            class="gl-w-full !gl-justify-start"
             category="tertiary"
             :href="createValueStreamButtonHref"
             data-testid="create-value-stream-option"
@@ -168,7 +168,7 @@ export default {
           <gl-button
             v-if="isCustomValueStream"
             v-gl-modal-directive="'delete-value-stream-modal'"
-            class="gl-w-full gl-justify-content-start!"
+            class="gl-w-full !gl-justify-start"
             category="tertiary"
             variant="danger"
             data-testid="delete-value-stream"

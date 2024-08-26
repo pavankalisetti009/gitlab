@@ -215,10 +215,10 @@ export default {
 <template>
   <div>
     <gl-skeleton-loader v-if="isLoading" :lines="1" :width="450" />
-    <div v-else class="gl-display-flex gl-justify-content-space-between gl-align-items-center">
+    <div v-else class="gl-flex gl-items-center gl-justify-between">
       <div
         data-testid="dora-performers-score-chart-title"
-        class="gl-my-0 gl-display-flex gl-gap-3 gl-align-items-center"
+        class="gl-my-0 gl-flex gl-items-center gl-gap-3"
       >
         {{ panelTitle }}
         <gl-icon
@@ -259,9 +259,9 @@ export default {
           <div
             v-for="{ seriesId, seriesName, color, value } in tooltip.scores"
             :key="seriesId"
-            class="gl-display-flex gl-justify-content-space-between gl-leading-24 gl-min-w-20"
+            class="gl-flex gl-min-w-20 gl-justify-between gl-leading-24"
           >
-            <gl-chart-series-label class="gl-mr-7 gl-font-sm" :color="color">
+            <gl-chart-series-label class="gl-mr-7 gl-text-sm" :color="color">
               {{ seriesName }}
             </gl-chart-series-label>
             <div>{{ value }}</div>

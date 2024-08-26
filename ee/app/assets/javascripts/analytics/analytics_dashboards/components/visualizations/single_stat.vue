@@ -39,9 +39,9 @@ export default {
 </script>
 
 <template>
-  <div class="gl-h-full gl-display-flex gl-align-items-center">
+  <div class="gl-flex gl-h-full gl-items-center">
     <gl-single-stat
-      class="gl-p-0!"
+      class="!gl-p-0"
       :value="data"
       :title="title"
       :meta-text="options.metaText"

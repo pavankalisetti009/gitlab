@@ -175,11 +175,7 @@ export default {
 
 <template>
   <chart-skeleton-loader v-if="isLoading" size="md" class="gl-my-4 gl-py-4" />
-  <div
-    v-else
-    class="gl-display-flex gl-flex-direction-column"
-    data-testid="vsa-duration-overview-chart"
-  >
+  <div v-else class="gl-flex gl-flex-col" data-testid="vsa-duration-overview-chart">
     <h4 class="gl-mt-0">
       {{ $options.i18n.title }}&nbsp;<gl-icon
         v-gl-tooltip.hover
@@ -204,7 +200,7 @@ export default {
         <div
           v-for="metric in tooltipContent"
           :key="metric.seriesId"
-          class="gl-display-flex gl-justify-content-space-between gl-leading-24 gl-min-w-20"
+          class="gl-flex gl-min-w-20 gl-justify-between gl-leading-24"
           :class="{ 'gl-font-bold': activeDataSeries === metric.seriesId }"
         >
           <gl-chart-series-label class="gl-mr-7" :color="metric.color">

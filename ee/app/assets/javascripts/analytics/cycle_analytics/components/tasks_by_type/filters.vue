@@ -163,10 +163,7 @@ export default {
       @search="searchTerm = arguments[0]"
     >
       <template #list-item="{ item: { text, color } }">
-        <span
-          :style="{ backgroundColor: color }"
-          class="gl-display-inline-block dropdown-label-box"
-        >
+        <span :style="{ backgroundColor: color }" class="dropdown-label-box gl-inline-block">
         </span>
         {{ text }}
       </template>
@@ -174,12 +171,12 @@ export default {
         <small
           v-if="selected.length > 0"
           data-testid="selected-labels-count"
-          class="gl-border-t-solid gl-border-t-1 gl-border-t-gray-200 gl-text-gray-500 gl-p-2! text-center"
+          class="text-center gl-border-t-1 gl-border-t-gray-200 !gl-p-2 gl-text-gray-500 gl-border-t-solid"
         >
           {{ labelsSelectedText }}
         </small>
         <div
-          class="gl-border-t-solid gl-border-t-1 gl-border-t-gray-200 gl-display-flex gl-flex-direction-column gl-p-4! gl-pt-3!"
+          class="gl-flex gl-flex-col gl-border-t-1 gl-border-t-gray-200 !gl-p-4 !gl-pt-3 gl-border-t-solid"
         >
           <p class="font-weight-bold text-left mb-2">{{ s__('CycleAnalytics|Show') }}</p>
           <gl-segmented-control

@@ -152,7 +152,7 @@ export default {
           <gl-link
             :href="$options.links.troubleshootingHelpLink"
             target="_blank"
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             >{{ content }}</gl-link
           >
         </template>
@@ -181,34 +181,25 @@ export default {
           n__('user', 'users', subscriptionOveragesErrorValues.overageCount)
         }}</template>
         <template #purchaseLink="{ content }">
-          <gl-link
-            :href="$options.links.addSeats"
-            target="_blank"
-            class="gl-text-decoration-none!"
-            >{{ content }}</gl-link
-          >
+          <gl-link :href="$options.links.addSeats" target="_blank" class="!gl-no-underline">{{
+            content
+          }}</gl-link>
         </template>
         <template #deactivateLink="{ content }">
-          <gl-link
-            :href="$options.links.deactivateUser"
-            target="_blank"
-            class="gl-text-decoration-none!"
-            >{{ content }}</gl-link
-          >
+          <gl-link :href="$options.links.deactivateUser" target="_blank" class="!gl-no-underline">{{
+            content
+          }}</gl-link>
         </template>
         <template #blockLink="{ content }">
-          <gl-link
-            :href="$options.links.blockUser"
-            target="_blank"
-            class="gl-text-decoration-none!"
-            >{{ content }}</gl-link
-          >
+          <gl-link :href="$options.links.blockUser" target="_blank" class="!gl-no-underline">{{
+            content
+          }}</gl-link>
         </template>
         <template #licenseSupportLink="{ content }">
           <gl-link
             :href="$options.links.licenseSupportLink"
             target="_blank"
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             >{{ content }}</gl-link
           >
         </template>
@@ -236,7 +227,7 @@ export default {
           <gl-link
             :href="$options.links.licenseSupportLink"
             target="_blank"
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             >{{ content }}</gl-link
           >
         </template>
@@ -254,14 +245,11 @@ export default {
           <gl-link
             :href="$options.links.purchaseSubscriptionLink"
             target="_blank"
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             >{{ content }}</gl-link
           > </template
         ><template #supportLink="{ content }">
-          <gl-link
-            :href="$options.links.supportLink"
-            target="_blank"
-            class="gl-text-decoration-none!"
+          <gl-link :href="$options.links.supportLink" target="_blank" class="!gl-no-underline"
             >{{ content }}
           </gl-link>
         </template>
@@ -279,14 +267,11 @@ export default {
           <gl-link
             :href="$options.links.purchaseSubscriptionLink"
             target="_blank"
-            class="gl-text-decoration-none!"
+            class="!gl-no-underline"
             >{{ content }}
           </gl-link> </template
         ><template #supportLink="{ content }">
-          <gl-link
-            :href="$options.links.supportLink"
-            target="_blank"
-            class="gl-text-decoration-none!"
+          <gl-link :href="$options.links.supportLink" target="_blank" class="!gl-no-underline"
             >{{ content }}
           </gl-link>
         </template>

@@ -38,7 +38,7 @@ const formatter = (value, key, item) => {
   return 0;
 };
 
-const thClass = ['gl-bg-white!', 'gl-text-gray-400'];
+const thClass = ['!gl-bg-white', 'gl-text-gray-400'];
 
 const fieldOptions = {
   thClass,
@@ -152,7 +152,7 @@ export default {
       stacked="sm"
     >
       <template v-for="header in tableHeaderFields" #[headerSlotName(header.key)]>
-        <div :key="header.key" class="gl-display-flex gl-align-items-center">
+        <div :key="header.key" class="gl-flex gl-items-center">
           <span>{{ header.label }}</span>
           <gl-icon
             v-if="header.tooltip"
@@ -169,13 +169,13 @@ export default {
         <div data-testid="namespace">
           <template v-if="item.latestSnapshot">
             <template v-if="isCurrentGroup(item)">
-              <span class="gl-text-gray-500 gl-font-bold">{{ item.namespace.fullName }}</span>
+              <span class="gl-font-bold gl-text-gray-500">{{ item.namespace.fullName }}</span>
               <gl-badge class="gl-ml-1" variant="info">{{ __('This group') }}</gl-badge>
             </template>
             <gl-link
               v-else
               :href="getGroupAdoptionPath(item.namespace.fullPath)"
-              class="gl-text-gray-500 gl-font-bold"
+              class="gl-font-bold gl-text-gray-500"
             >
               {{ item.namespace.fullName }}
             </gl-link>

@@ -58,10 +58,10 @@ import StreamDeleteModal from './stream_delete_modal.vue';
 
 const { CREATING_ERROR, UPDATING_ERROR } = AUDIT_STREAMS_NETWORK_ERRORS;
 
-const thClasses = `gl-p-0! gl-border-0!`;
-const tdClasses = `gl-p-3! gl-pr-4! gl-pl-0! gl-border-0!`;
+const thClasses = `!gl-p-0 !gl-border-0`;
+const tdClasses = `!gl-p-3 !gl-pr-4 !gl-pl-0 !gl-border-0`;
 const activeTdClasses = `gl-whitespace-nowrap gl-w-2 ${tdClasses}`;
-const actionsTdClasses = `gl-w-2 gl-py-3! gl-px-0! gl-border-0!`;
+const actionsTdClasses = `gl-w-2 !gl-py-3 !gl-px-0 !gl-border-0`;
 
 export default {
   components: {
@@ -825,7 +825,7 @@ export default {
       </gl-form-group>
 
       <div class="gl-mb-5">
-        <label class="gl-block gl-font-lg gl-mb-3">{{ $options.i18n.HEADERS_LABEL }}</label>
+        <label class="gl-mb-3 gl-block gl-text-lg">{{ $options.i18n.HEADERS_LABEL }}</label>
         <gl-table-lite :items="headers" :fields="$options.fields">
           <template #cell(active)="{ index, item: { active } }">
             <gl-form-checkbox
@@ -848,7 +848,7 @@ export default {
           >
             <gl-form-input-group
               class="gl-m-0"
-              label-class="gl-m-0! gl-p-0!"
+              label-class="!gl-m-0 !gl-p-0"
               :invalid-feedback="feedback"
             >
               <template #prepend>
@@ -867,7 +867,7 @@ export default {
             </gl-form-input-group>
           </template>
           <template #cell(value)="{ index, item: { disabled, value } }">
-            <gl-form-input-group class="gl-m-0" label-class="gl-m-0! gl-p-0!">
+            <gl-form-input-group class="gl-m-0" label-class="!gl-m-0 !gl-p-0">
               <template #prepend>
                 <gl-input-group-text>
                   {{ $options.i18n.TABLE_COLUMN_VALUE_LABEL }}
@@ -898,7 +898,7 @@ export default {
         </p>
         <p
           v-if="hasReachedMaxHeaders"
-          class="gl-mt-5 gl-mb-0 gl-text-gray-500"
+          class="gl-mb-0 gl-mt-5 gl-text-gray-500"
           data-testid="maximum-headers"
         >
           <gl-sprintf :message="$options.i18n.MAXIMUM_HEADERS_TEXT">
@@ -922,12 +922,12 @@ export default {
       </div>
 
       <div class="gl-mb-5">
-        <label class="gl-block gl-font-lg" data-testid="filtering-header">{{
+        <label class="gl-block gl-text-lg" data-testid="filtering-header">{{
           $options.i18n.HEADER_FILTERING
         }}</label>
         <div class="gl-ml-5">
           <label
-            class="gl-block gl-mb-3 gl-mt-5"
+            class="gl-mb-3 gl-mt-5 gl-block"
             for="audit-event-type-filter"
             data-testid="event-type-filtering-header"
             >{{ $options.i18n.FILTER_BY_AUDIT_EVENT_TYPE }}</label
@@ -936,7 +936,7 @@ export default {
         </div>
         <div v-if="!isInstance" class="gl-ml-5">
           <label
-            class="gl-block gl-mb-3 gl-mt-5"
+            class="gl-mb-3 gl-mt-5 gl-block"
             for="audit-event-namespace-filter"
             data-testid="event-namespace-filtering-header"
             >{{ $options.i18n.FILTER_BY_NAMESPACE }}</label
@@ -945,7 +945,7 @@ export default {
         </div>
       </div>
 
-      <div class="gl-display-flex">
+      <div class="gl-flex">
         <gl-button
           :disabled="isSubmitButtonDisabled"
           :loading="loading"

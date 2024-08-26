@@ -70,7 +70,7 @@ export default {
 
       <container :rules="policies">
         <template #thead="{ name, approvalsRequired, branches }">
-          <tr class="gl-display-table-row!">
+          <tr class="!gl-table-row">
             <th class="!gl-w-1/2">{{ name }}</th>
             <th>{{ branches }}</th>
             <th>{{ approvalsRequired }}</th>
@@ -79,7 +79,7 @@ export default {
         </template>
         <template #tbody>
           <tr v-if="!hasPolicies">
-            <td colspan="4" class="gl-text-secondary gl-text-center gl-p-5">
+            <td colspan="4" class="gl-p-5 gl-text-center gl-text-secondary">
               {{ $options.i18n.noPolicies }}.
             </td>
           </tr>

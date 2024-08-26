@@ -107,23 +107,21 @@ export default {
 </script>
 
 <template>
-  <div
-    class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row gl-mt-6 gl-mb-4 gl-align-items-flex-start"
-  >
-    <div class="gl-display-flex gl-flex-direction-column gl-pr-9 gl-flex-shrink-0">
+  <div class="gl-mb-4 gl-mt-6 gl-flex gl-flex-col gl-items-start md:gl-flex-row">
+    <div class="gl-flex gl-shrink-0 gl-flex-col gl-pr-9">
       <span>{{ s__('GroupActivityMetrics|Recent activity') }}</span>
       <span class="gl-font-bold">{{ $options.activityTimeSpan }}</span>
     </div>
     <div
       v-for="{ key, value, label, link, trackingLabel } in metricsArray"
       :key="key"
-      class="gl-pr-9 gl-my-4 gl-md-mt-0 gl-md-mb-0"
+      class="gl-my-4 gl-pr-9 md:gl-mb-0 md:gl-mt-0"
     >
       <gl-skeleton-loader v-if="isLoading" />
       <a
         v-else
         :href="link"
-        class="gl-block gl-text-decoration-none! gl-hover-bg-gray-50 gl-rounded-base"
+        class="gl-block gl-rounded-base !gl-no-underline hover:gl-bg-gray-50"
         data-testid="single-stat-link"
         @click="clickMetric(trackingLabel)"
       >

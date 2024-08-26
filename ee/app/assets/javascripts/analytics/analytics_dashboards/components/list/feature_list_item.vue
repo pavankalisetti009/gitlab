@@ -50,18 +50,16 @@ export default {
 </script>
 
 <template>
-  <li class="gl-display-flex! gl-px-5! gl-align-items-center">
-    <div class="gl-float-left gl-mr-4 gl-display-flex gl-align-items-center">
-      <gl-icon name="cloud-gear" class="gl-text-gray-200 gl-mr-3" :size="16" />
+  <li class="!gl-flex gl-items-center !gl-px-5">
+    <div class="gl-float-left gl-mr-4 gl-flex gl-items-center">
+      <gl-icon name="cloud-gear" class="gl-mr-3 gl-text-gray-200" :size="16" />
     </div>
-    <div
-      class="gl-display-flex gl-align-items-center gl-justify-content-space-between gl-flex-grow-1"
-    >
-      <div class="gl-display-flex gl-flex-direction-column">
+    <div class="gl-flex gl-grow gl-items-center gl-justify-between">
+      <div class="gl-flex gl-flex-col">
         <strong class="gl-text-gray-300">
           {{ title }}
         </strong>
-        <p class="gl-leading-normal gl-m-0 gl-text-gray-300">
+        <p class="gl-m-0 gl-leading-normal gl-text-gray-300">
           {{ description }}
         </p>
       </div>

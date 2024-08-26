@@ -85,11 +85,11 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-display-flex gl-md-flex-direction-column gl-flex-direction-row gl-font-size-sm">
+  <div class="gl-font-size-sm gl-flex gl-flex-row md:gl-flex-col">
     <div
       v-if="data.namespace"
       data-testid="usage-overview-namespace"
-      class="gl-display-flex gl-align-items-center gl-gap-3 gl-pr-9"
+      class="gl-flex gl-items-center gl-gap-3 gl-pr-9"
     >
       <gl-avatar
         shape="rect"
@@ -102,11 +102,11 @@ export default {
       />
 
       <div class="gl-leading-20">
-        <span class="gl-block gl-mb-1 gl-font-base gl-font-normal gl-text-gray-700">{{
+        <span class="gl-mb-1 gl-block gl-text-base gl-font-normal gl-text-gray-700">{{
           data.namespace.namespaceType
         }}</span>
-        <div class="gl-display-flex gl-align-items-center gl-gap-2">
-          <span class="gl-font-size-h2 gl-font-bold gl-text-gray-900 gl-truncate-end">{{
+        <div class="gl-flex gl-items-center gl-gap-2">
+          <span class="gl-truncate-end gl-text-size-h2 gl-font-bold gl-text-gray-900">{{
             data.namespace.fullName
           }}</span>
           <gl-icon

@@ -56,7 +56,7 @@ export default {
 </script>
 
 <template>
-  <div class="gl-flex gl-gap-3 gl-flex-col md:gl-flex-row gl-mb-3">
+  <div class="gl-mb-3 gl-flex gl-flex-col gl-gap-3 md:gl-flex-row">
     <date-range-buttons :date-range="defaultDateRange" @input="onInput" />
     <gl-daterange-picker
       class="daterange-picker md:gl-flex"

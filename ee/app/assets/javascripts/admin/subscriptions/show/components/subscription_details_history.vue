@@ -6,7 +6,7 @@ import { detailsLabels, subscriptionTable } from '../constants';
 import { getLicenseTypeLabel } from '../utils';
 
 const tdAttr = (_, key) => ({ 'data-testid': `subscription-cell-${kebabCase(key)}` });
-const tdClassHighlight = 'gl-bg-blue-50!';
+const tdClassHighlight = '!gl-bg-blue-50';
 
 export default {
   i18n: {

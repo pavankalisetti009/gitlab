@@ -83,7 +83,7 @@ export default {
         <img
           :src="$options.DUO_CHAT_ILLUSTRATION"
           :alt="''"
-          class="gl-absolute gl-top-0 gl-left-0 gl-w-full gl-pointer-events-none"
+          class="gl-pointer-events-none gl-absolute gl-left-0 gl-top-0 gl-w-full"
         />
         <h5 class="gl-my-3 gl-mr-3">
           {{ $options.i18n.POPOVER_LABEL }}
@@ -91,7 +91,7 @@ export default {
         <p class="gl-m-0 gl-w-7/10" data-testid="duo-chat-callout-description">
           {{ $options.i18n.POPOVER_DESCRIPTION }}
         </p>
-        <ul class="gl-pt-3 gl-pl-5">
+        <ul class="gl-pl-5 gl-pt-3">
           <li v-for="item in $options.i18n.POPOVER_LIST_ITEMS" :key="item">{{ item }}</li>
         </ul>
         <gl-link

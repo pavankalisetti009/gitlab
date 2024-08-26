@@ -278,14 +278,14 @@ export default {
     >
       <template #cell(mr_details)="{ item }">
         <div
-          class="gl-display-flex gl-flex-direction-column gl-flex-grow-1"
+          class="gl-flex gl-grow gl-flex-col"
           :data-testid="$options.testIds.MERGE_REQUEST_DETAILS"
         >
           <div class="merge-request-title gl-str-truncated">
             <gl-link :href="item.webUrl" target="_blank" class="gl-font-bold gl-text-gray-900">{{
               item.title
             }}</gl-link>
-            <ul class="horizontal-list gl-mt-2 gl-mb-0">
+            <ul class="horizontal-list gl-mb-0 gl-mt-2">
               <li class="gl-mr-3">{{ formatMergeRequestId(item.iid) }}</li>
               <li v-if="hasPipelineNodes(item) && item.pipelines.nodes.length" class="gl-mr-3">
                 <gl-icon
@@ -294,14 +294,14 @@ export default {
                 />
               </li>
               <li
-                class="gl-mr-3 gl-display-flex gl-align-items-center"
+                class="gl-mr-3 gl-flex gl-items-center"
                 :class="{ 'gl-opacity-5': !item.labels.count }"
                 :data-testid="$options.testIds.LABEL_DETAILS"
               >
                 <gl-icon name="label" class="gl-mr-1" /><span>{{ item.labels.count }}</span>
               </li>
               <li
-                class="gl-mr-3 gl-display-flex gl-align-items-center"
+                class="gl-mr-3 gl-flex gl-items-center"
                 :class="{ 'gl-opacity-5': !item.userNotesCount }"
                 :data-testid="$options.testIds.COMMENT_COUNT"
               >
