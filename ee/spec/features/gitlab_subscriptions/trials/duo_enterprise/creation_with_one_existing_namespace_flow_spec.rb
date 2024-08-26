@@ -44,7 +44,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       fill_in_company_information
 
       # lead failure
-      submit_single_namespace_duo_enterprise_trial_company_form(lead_success: false)
+      submit_single_namespace_duo_enterprise_trial_company_form(lead_result: lead_failure)
 
       expect_to_be_on_lead_form_with_errors
 
@@ -65,7 +65,7 @@ RSpec.describe 'Duo Enterprise trial lead submission and creation with one eligi
       fill_in_company_information
 
       # trial failure
-      submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true, trial_success: false)
+      submit_single_namespace_duo_enterprise_trial_company_form(with_trial: true, trial_result: trial_failure)
 
       expect_to_be_on_duo_enterprise_namespace_selection_with_errors
 

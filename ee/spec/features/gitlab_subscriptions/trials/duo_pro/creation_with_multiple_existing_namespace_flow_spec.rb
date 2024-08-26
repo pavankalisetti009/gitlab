@@ -73,7 +73,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
       fill_in_company_information
 
       # lead failure
-      submit_duo_pro_trial_company_form(lead_success: false)
+      submit_duo_pro_trial_company_form(lead_result: lead_failure)
 
       expect_to_be_on_lead_form_with_errors
 
@@ -106,7 +106,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
       fill_in_trial_selection_form
 
       # trial failure
-      submit_duo_pro_trial_selection_form(success: false)
+      submit_duo_pro_trial_selection_form(result: trial_failure)
 
       expect_to_be_on_namespace_selection_with_errors
 

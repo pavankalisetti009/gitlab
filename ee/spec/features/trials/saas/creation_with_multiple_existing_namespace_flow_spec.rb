@@ -140,7 +140,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       fill_in_company_information
 
       # lead failure
-      submit_company_information_form(lead_success: false, button_text: 'Start free GitLab Ultimate trial')
+      submit_company_information_form(lead_result: lead_failure, button_text: 'Start free GitLab Ultimate trial')
 
       expect_to_be_on_lead_form_with_errors
 
@@ -173,7 +173,7 @@ RSpec.describe 'Trial lead submission and creation with multiple eligible namesp
       fill_in_trial_selection_form
 
       # trial failure
-      submit_trial_selection_form(success: false)
+      submit_trial_selection_form(result: trial_failure)
 
       expect_to_be_on_namespace_selection_with_errors
 
