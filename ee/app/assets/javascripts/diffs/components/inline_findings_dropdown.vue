@@ -58,28 +58,28 @@ export default {
     :items="items"
     :fluid-width="true"
     positioning-strategy="absolute"
-    class="gl-whitespace-normal gl-text-body! findings-dropdown"
+    class="findings-dropdown gl-whitespace-normal !gl-text-primary"
   >
     <template #group-label="{ group }">
       {{ group.name }}
     </template>
 
     <template #list-item="{ item }">
-      <span class="gl-display-flex gl-align-items-center gl-text-gray-600">
+      <span class="gl-flex gl-items-center gl-text-gray-600">
         <gl-icon
           :size="12"
           :name="item.name"
           :class="item.class"
           class="inline-findings-severity-icon gl-mr-4"
         />
-        <span class="!gl-whitespace-nowrap gl-text-truncate gl-display-flex findings-dropdown-width"
-          ><span class="gl-font-bold gl-capitalize gl-text-black-normal gl-align-self-center"
+        <span class="findings-dropdown-width gl-flex gl-truncate !gl-whitespace-nowrap"
+          ><span class="gl-self-center gl-font-bold gl-capitalize gl-text-default"
             >{{ item.severity }}: </span
           ><gl-truncate
-            class="findings-dropdown-truncate gl-align-self-center"
+            class="findings-dropdown-truncate gl-self-center"
             :text="firstSentence(item.text)"
           />
-          <gl-badge v-if="findingsStatus(item)" variant="neutral" class="gl-capitalize gl-ml-3">{{
+          <gl-badge v-if="findingsStatus(item)" variant="neutral" class="gl-ml-3 gl-capitalize">{{
             item.state
           }}</gl-badge>
         </span>
@@ -93,7 +93,7 @@ export default {
         :name="iconName"
         :class="iconClass"
         data-testid="toggle-icon"
-        class="gl-hover-cursor-pointer gl-relative gl-top-1 inline-findings-severity-icon !gl-align-baseline"
+        class="inline-findings-severity-icon gl-relative gl-top-1 !gl-align-baseline hover:gl-cursor-pointer"
         @mouseenter="emitMouseEnter"
         @mouseleave="emitMouseLeave"
       />

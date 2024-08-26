@@ -67,7 +67,7 @@ export default {
     </template>
 
     <template #content>
-      <div class="gl-flex gl-flex-grow-2 gl-items-center">
+      <div class="gl-flex gl-grow-2 gl-items-center">
         <gl-collapsible-listbox
           id="policy-template"
           :items="availableOptions"
