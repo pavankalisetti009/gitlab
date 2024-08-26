@@ -10,10 +10,7 @@ DETAILS:
 **Tier:** Free, Premium, Ultimate
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
-You can run your CI/CD jobs in separate, isolated Docker containers.
-
-If you run Docker on your local machine, you can run tests in the container,
-rather than testing on a dedicated CI/CD server.
+You can run your CI/CD jobs in Docker containers hosted on dedicated CI/CD build servers or your local machine.
 
 To run CI/CD jobs in a Docker container, you need to:
 
