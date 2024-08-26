@@ -424,7 +424,7 @@ export default {
       <gl-form-group
         v-if="showListTypeSelector"
         :description="$options.i18n.scopeDescription"
-        class="gl-px-5 gl-py-0 gl-mb-3"
+        class="gl-mb-3 gl-px-5 gl-py-0"
         label-for="list-type"
       >
         <gl-form-radio-group v-model="columnType">
@@ -432,7 +432,7 @@ export default {
             v-for="{ text, value } in columnTypes"
             :key="value"
             :value="value"
-            class="gl-mb-0 gl-align-self-center"
+            class="gl-mb-0 gl-self-center"
             @change="setColumnType"
           >
             {{ text }}
@@ -456,39 +456,35 @@ export default {
       >
         <template #toggle>
           <gl-button
-            class="gl-max-w-full gl-display-flex gl-align-items-center gl-text-truncate"
+            class="gl-flex gl-max-w-full gl-items-center gl-truncate"
             :class="{ '!gl-shadow-inner-1-red-400': !selectedIdValid }"
-            button-text-classes="gl-display-flex"
+            button-text-classes="gl-flex"
           >
             <template v-if="hasLabelSelection">
               <span
-                class="dropdown-label-box gl-top-0 gl-flex-shrink-0"
+                class="dropdown-label-box gl-top-0 gl-shrink-0"
                 :style="{
                   backgroundColor: selectedItem.color,
                 }"
               ></span>
-              <div class="gl-text-truncate">{{ selectedItem.title }}</div>
+              <div class="gl-truncate">{{ selectedItem.title }}</div>
             </template>
 
             <template v-else-if="hasMilestoneSelection">
-              <gl-icon class="gl-flex-shrink-0" name="milestone" />
-              <span class="gl-text-truncate">{{ selectedItem.title }}</span>
+              <gl-icon class="gl-shrink-0" name="milestone" />
+              <span class="gl-truncate">{{ selectedItem.title }}</span>
             </template>
 
             <template v-else-if="hasIterationSelection">
-              <gl-icon class="gl-flex-shrink-0" name="iteration" />
-              <span class="gl-text-truncate">{{
+              <gl-icon class="gl-shrink-0" name="iteration" />
+              <span class="gl-truncate">{{
                 selectedItem.title || getIterationPeriod(selectedItem, null, true)
               }}</span>
             </template>
 
             <template v-else-if="hasAssigneeSelection">
-              <gl-avatar
-                class="gl-mr-2 gl-flex-shrink-0"
-                :size="16"
-                :src="selectedItem.avatarUrl"
-              />
-              <div class="gl-text-truncate">
+              <gl-avatar class="gl-mr-2 gl-shrink-0" :size="16" :src="selectedItem.avatarUrl" />
+              <div class="gl-truncate">
                 <b class="gl-mr-2">{{ selectedItem.name }}</b>
                 <span class="gl-text-gray-700">@{{ selectedItem.username }}</span>
               </div>
@@ -504,10 +500,10 @@ export default {
         </template>
 
         <template #list-item="{ item }">
-          <label class="gl-display-flex gl-font-normal gl-break-words gl-hyphens-auto gl-mb-0">
+          <label class="gl-mb-0 gl-flex gl-hyphens-auto gl-break-words gl-font-normal">
             <span
               v-if="labelTypeSelected"
-              class="dropdown-label-box gl-top-0 gl-flex-shrink-0"
+              class="dropdown-label-box gl-top-0 gl-shrink-0"
               :style="{
                 backgroundColor: item.color,
               }"
@@ -515,7 +511,7 @@ export default {
 
             <gl-avatar-labeled
               v-if="assigneeTypeSelected"
-              class="gl-display-flex gl-align-items-center"
+              class="gl-flex gl-items-center"
               :size="32"
               :label="item.name"
               :sub-label="`@${item.username}`"
@@ -523,13 +519,13 @@ export default {
             />
             <div
               v-else-if="iterationTypeSelected"
-              class="gl-display-inline-block"
+              class="gl-inline-block"
               data-testid="new-column-iteration-item"
             >
               {{ item.text }}
               <iteration-title v-if="item.title" :title="item.title" />
             </div>
-            <div v-else class="gl-display-inline-block">
+            <div v-else class="gl-inline-block">
               {{ item.text }}
             </div>
           </label>

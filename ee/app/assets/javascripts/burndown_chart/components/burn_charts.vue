@@ -315,7 +315,7 @@ export default {
 
 <template>
   <div>
-    <div class="burndown-header gl-display-flex gl-align-items-center gl-flex-wrap gl-gap-2">
+    <div class="burndown-header gl-flex gl-flex-wrap gl-items-center gl-gap-2">
       <strong ref="filterLabel">{{ __('Display by') }}</strong>
       <segmented-control-button-group
         :value="filterBySelectedValue"

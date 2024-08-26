@@ -72,12 +72,12 @@ export default {
 <template>
   <div data-testid="board-scope-modal">
     <div v-if="canAdminBoard" class="media">
-      <label class="label-bold gl-font-lg media-body">{{ __('Scope') }}</label>
+      <label class="label-bold media-body gl-text-lg">{{ __('Scope') }}</label>
       <gl-button v-if="collapseScope" @click="expanded = !expanded">
         {{ expandButtonText }}
       </gl-button>
     </div>
-    <div v-else class="gl-font-bold gl-font-lg gl-mb-2">{{ __('Scope') }}</div>
+    <div v-else class="gl-mb-2 gl-text-lg gl-font-bold">{{ __('Scope') }}</div>
     <p class="text-secondary gl-mb-3">
       {{ scopeText }}
     </p>

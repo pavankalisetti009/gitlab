@@ -107,11 +107,11 @@ export default {
 </script>
 
 <template>
-  <div class="gl-display-flex gl-justify-content-space-between gl-flex-direction-column">
-    <div class="gl-display-flex gl-justify-content-space-between gl-align-items-center gl-mb-2">
+  <div class="gl-flex gl-flex-col gl-justify-between">
+    <div class="gl-mb-2 gl-flex gl-items-center gl-justify-between">
       <label class="m-0">{{ $options.i18n.wipLimitText }}</label>
       <gl-button
-        class="gl-h-full gl-border-0 text-dark"
+        class="text-dark gl-h-full gl-border-0"
         category="tertiary"
         size="small"
         data-testid="edit-button"
@@ -133,14 +133,14 @@ export default {
       @keydown.enter.native="onEnter"
       @blur="offFocus"
     />
-    <div v-else class="gl-display-flex gl-align-items-center">
-      <p class="gl-font-bold gl-m-0 text-secondary" data-testid="wip-limit">
+    <div v-else class="gl-flex gl-items-center">
+      <p class="text-secondary gl-m-0 gl-font-bold" data-testid="wip-limit">
         {{ activeListWipLimit }}
       </p>
       <template v-if="wipLimitIsSet">
         <span class="m-1">-</span>
         <gl-button
-          class="gl-h-full gl-border-0 text-secondary"
+          class="text-secondary gl-h-full gl-border-0"
           category="tertiary"
           size="small"
           data-testid="remove-limit"

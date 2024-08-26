@@ -25,8 +25,8 @@ export default {
 </script>
 
 <template>
-  <span ref="iteration" class="board-card-info gl-text-sm gl-text-secondary gl-cursor-help">
-    <gl-icon class="board-card-info-icon gl-mr-2 flex-shrink-0" name="iteration" />
+  <span ref="iteration" class="board-card-info gl-cursor-help gl-text-sm gl-text-secondary">
+    <gl-icon class="board-card-info-icon flex-shrink-0 gl-mr-2" name="iteration" />
     <span class="board-card-info gl-mr-3" data-testid="issue-iteration-body">
       {{ iterationPeriod }}
     </span>

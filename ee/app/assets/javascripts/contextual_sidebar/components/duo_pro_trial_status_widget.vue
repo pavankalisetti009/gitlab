@@ -71,7 +71,7 @@ export default {
   >
     <div
       data-testid="duo-pro-trial-widget-menu"
-      class="gl-flex gl-flex-col gl-items-stretch gl-w-full"
+      class="gl-flex gl-w-full gl-flex-col gl-items-stretch"
     >
       <div v-if="isTrialActive">
         <div class="gl-flex gl-w-full">
@@ -81,17 +81,17 @@ export default {
           <span class="nav-item-name gl-grow">
             {{ widgetTitle }}
           </span>
-          <span class="gl-whitespace-nowrap gl-overflow-hidden gl-text-sm gl-mr-auto">
+          <span class="gl-mr-auto gl-overflow-hidden gl-whitespace-nowrap gl-text-sm">
             {{ widgetRemainingDays }}
           </span>
         </div>
 
-        <div class="gl-flex gl-items-stretch gl-mt-2">
+        <div class="gl-mt-2 gl-flex gl-items-stretch">
           <gl-progress-bar :value="percentageComplete" class="gl-grow" aria-hidden="true" />
         </div>
       </div>
 
-      <div v-else class="gl-flex gl-gap-4 gl-w-full gl-px-2">
+      <div v-else class="gl-flex gl-w-full gl-gap-4 gl-px-2">
         <div>
           <div class="gl-font-bold">
             {{ widgetTitle }}

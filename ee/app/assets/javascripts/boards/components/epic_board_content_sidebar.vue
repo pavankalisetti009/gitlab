@@ -159,7 +159,7 @@ export default {
       @close="handleClose"
     >
       <template #title>
-        <h2 class="gl-my-0 gl-font-size-h2 gl-leading-24">{{ __('Epic details') }}</h2>
+        <h2 class="gl-my-0 gl-text-size-h2 gl-leading-24">{{ __('Epic details') }}</h2>
       </template>
       <template #header>
         <sidebar-todo-widget

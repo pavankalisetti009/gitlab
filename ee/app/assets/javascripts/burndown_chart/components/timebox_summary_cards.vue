@@ -2,7 +2,7 @@
 import { GlCard, GlSkeletonLoader, GlSprintf } from '@gitlab/ui';
 
 export default {
-  cardBodyClass: 'gl-text-center gl-py-3 gl-font-size-h2',
+  cardBodyClass: 'gl-text-center gl-py-3 gl-text-size-h2',
   cardClass: 'gl-bg-gray-10 gl-border-0 gl-mb-5',
   components: {
     GlCard,
@@ -42,7 +42,7 @@ export default {
           <rect x="200" y="4" width="86" height="20" rx="4" />
         </gl-skeleton-loader>
         <div v-else>
-          <span class="gl-border-1 gl-border-r-solid gl-border-gray-100 gl-pr-3 gl-mr-2">
+          <span class="gl-mr-2 gl-border-1 gl-border-gray-100 gl-pr-3 gl-border-r-solid">
             {{ column.title }}
             <span class="gl-font-bold"
               >{{ percent(column.value) }}<small class="gl-text-gray-500">%</small></span

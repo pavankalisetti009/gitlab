@@ -243,17 +243,11 @@ export default {
         <template v-for="(cadence, index) in iterationsByCadence">
           <gl-dropdown-divider v-if="index !== 0" :key="index" />
           <gl-dropdown-section-header :key="cadence.id">
-            <div class="gl-display-flex gl-max-w-full gl-justify-content-space-between">
-              <tooltip-on-truncate
-                :title="cadence.title"
-                class="gl-text-truncate gl-max-w-full gl-mr-3"
-              >
+            <div class="gl-flex gl-max-w-full gl-justify-between">
+              <tooltip-on-truncate :title="cadence.title" class="gl-mr-3 gl-max-w-full gl-truncate">
                 {{ cadence.title }}
               </tooltip-on-truncate>
-              <span
-                v-if="cadence.secondaryText"
-                class="gl-float-right gl-font-normal gl-flex-shrink-0"
-              >
+              <span v-if="cadence.secondaryText" class="gl-float-right gl-shrink-0 gl-font-normal">
                 <gl-icon name="clock" class="gl-mr-2" />
                 {{ cadence.secondaryText }}
               </span>

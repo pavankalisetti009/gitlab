@@ -22,7 +22,7 @@ describe('TrialStatusPopover component', () => {
     variant: 'confirm',
     category: 'secondary',
     class: 'gl-w-full',
-    buttonTextClasses: 'gl-font-sm',
+    buttonTextClasses: 'gl-text-sm',
     href: '#',
     'data-testid': 'trial-popover-hand-raise-lead-button',
   };

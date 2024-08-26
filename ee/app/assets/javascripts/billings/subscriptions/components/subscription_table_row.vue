@@ -115,10 +115,7 @@ export default {
 </script>
 
 <template>
-  <div
-    :class="rowClasses"
-    class="gl-display-flex gl-flex-grow-1 gl-flex-direction-column gl-lg-flex-direction-row"
-  >
+  <div :class="rowClasses" class="gl-flex gl-grow gl-flex-col lg:gl-flex-row">
     <div class="grid-cell header-cell" data-testid="header-cell">
       <span class="icon-wrapper">
         <gl-icon v-if="header.icon" class="gl-mr-3" :name="header.icon" />
@@ -128,7 +125,7 @@ export default {
     <template v-for="(col, i) in columns">
       <div
         :key="`subscription-col-${i}`"
-        class="grid-cell gl-display-flex gl-flex-direction-column gl-align-items-baseline"
+        class="grid-cell gl-flex gl-flex-col gl-items-baseline"
         data-testid="content-cell"
         :class="[col.hideContent ? 'no-value' : '']"
       >
@@ -137,14 +134,14 @@ export default {
           <popover v-if="col.popover" :options="getPopoverOptions(col)" />
         </span>
         <p
-          class="property-value gl-mt-2 gl-mb-0 gl-flex-grow-1"
+          class="property-value gl-mb-0 gl-mt-2 gl-grow"
           :data-testid="testIdSelectorValue(col)"
           :class="[col.colClass ? col.colClass : '']"
         >
           {{ getDisplayValue(col) }}
           <template v-if="col.id === 'subscriptionEndDate' && temporaryExtensionEndDate">
             <p
-              class="gl-mb-0 gl-pt-3 gl-font-sm gl-text-secondary"
+              class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-secondary"
               data-testid="temporary-extension-label"
             >
               <gl-sprintf :message="$options.i18n.TEMPORARY_EXTENSION_LABEL">
@@ -165,7 +162,7 @@ export default {
         >
         <p
           v-if="seatsLastUpdated && col.type === $options.TABLE_TYPE_DEFAULT"
-          class="gl-mb-0 gl-pt-3 gl-font-sm gl-text-secondary"
+          class="gl-mb-0 gl-pt-3 gl-text-sm gl-text-secondary"
           data-testid="seats-last-updated"
         >
           <template v-if="col.id === 'seatsInSubscription'">
