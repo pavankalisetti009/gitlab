@@ -107,7 +107,7 @@ export default {
         <!-- footer -->
         <div class="gl-mt-4">
           <gl-icon class="!gl-align-middle gl-text-blue-600" name="information" :size="12" />
-          <span class="gl-text-gray-500 gl-align-middle">
+          <span class="gl-align-middle gl-text-gray-500">
             {{ s__('Dependencies|There may be multiple paths') }}
           </span>
         </div>

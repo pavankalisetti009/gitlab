@@ -154,7 +154,7 @@ export default {
 
     <template v-else>
       <template v-if="lastPipeline">
-        <div class="gl-flex gl-gap-4 gl-items-center">
+        <div class="gl-flex gl-items-center gl-gap-4">
           <user-avatar-link
             v-if="user"
             :link-href="user.path"
@@ -174,7 +174,7 @@ export default {
           />
         </div>
 
-        <div class="gl-flex gl-gap-5 gl-flex-wrap gl-mt-2">
+        <div class="gl-mt-2 gl-flex gl-flex-wrap gl-gap-5">
           <time-ago
             v-if="shouldShowTimeAgo"
             :time="finishedTime"
@@ -185,7 +185,7 @@ export default {
         <project-pipeline :last-pipeline="lastPipeline" />
       </template>
 
-      <div v-else class="gl-text-default gl-text-center">
+      <div v-else class="gl-text-center gl-text-default">
         {{ noPipelineMessage }}
       </div>
     </template>

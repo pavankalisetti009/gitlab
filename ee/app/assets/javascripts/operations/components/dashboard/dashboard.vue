@@ -179,7 +179,7 @@ export default {
         v-if="projects.length"
         v-model="projects"
         group="dashboard-projects"
-        class="gl-grid md:gl-grid-cols-3 gl-gap-5 gl-items-start"
+        class="gl-grid gl-items-start gl-gap-5 md:gl-grid-cols-3"
       >
         <dashboard-project v-for="project in projects" :key="project.id" :project="project" />
       </vue-draggable>
@@ -198,14 +198,14 @@ export default {
           v-gl-modal="$options.modalId"
           variant="confirm"
           data-testid="add-projects-button"
-          class="gl-mb-3 gl-mx-2"
+          class="gl-mx-2 gl-mb-3"
         >
           {{ $options.addProjectsSubmitButton }}
         </gl-button>
         <gl-button
           :href="emptyDashboardHelpPath"
           data-testid="documentation-link"
-          class="gl-mb-3 gl-mx-2"
+          class="gl-mx-2 gl-mb-3"
         >
           {{ $options.moreInformationButton }}
         </gl-button>

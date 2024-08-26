@@ -81,7 +81,7 @@ export default {
       <li
         v-for="flag in featureFlags"
         :key="flag.id"
-        class="!gl-p-0 !gl-border-b-0"
+        class="!gl-border-b-0 !gl-p-0"
         data-testid="feature-flag-details"
       >
         <div class="item-body gl-p-3">
@@ -99,7 +99,7 @@ export default {
           </span>
           <span
             :title="flag.reference"
-            class="gl-text-subtle gl-mt-3 lg:gl-mt-0 lg:gl-ml-3 gl-whitespace-nowrap"
+            class="gl-mt-3 gl-whitespace-nowrap gl-text-subtle lg:gl-ml-3 lg:gl-mt-0"
             data-testid="feature-flag-details-reference"
           >
             <gl-truncate :text="flag.reference" />
