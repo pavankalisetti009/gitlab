@@ -169,16 +169,16 @@ export default {
 <template>
   <div
     v-if="requiresApproval"
-    class="gl-border-l gl-border-t gl-border-r gl-rounded-base"
+    class="gl-border-t gl-border-r gl-border-l gl-rounded-base"
     :class="classes"
   >
-    <div class="gl-block gl-m-5 gl-font-bold" data-testid="deployment-approval-header">
+    <div class="gl-m-5 gl-block gl-font-bold" data-testid="deployment-approval-header">
       <gl-icon name="approval" class="gl-mr-2" /> <span>{{ header }}</span>
     </div>
     <multiple-approval-rules-table :rules="approvalSummary.rules" @select-rule="onRuleSelected" />
 
     <template v-if="needsApproval">
-      <div class="gl-display-flex gl-flex-direction-column gl-m-5">
+      <div class="gl-m-5 gl-flex gl-flex-col">
         <gl-alert v-if="hasError" variant="danger" class="gl-mb-5" @dismiss="errorMessage = ''">
           {{ errorMessage }}
         </gl-alert>
@@ -201,12 +201,12 @@ export default {
           :title="characterCountTooltip"
           :class="commentCharacterCountClasses"
           data-testid="approval-character-count"
-          class="gl-align-self-end"
+          class="gl-self-end"
         >
           {{ remainingCharacterCount }}
         </span>
       </div>
-      <div class="gl-display-flex gl-justify-content-end gl-m-5 gl-gap-3">
+      <div class="gl-m-5 gl-flex gl-justify-end gl-gap-3">
         <gl-button
           :loading="approveLoading"
           :disabled="disableSubmit"

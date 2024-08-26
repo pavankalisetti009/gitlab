@@ -164,7 +164,7 @@ describe('ee/deployments/components/deployment_approvals.vue', () => {
 
     it.each`
       count  | classes                 | tooltip
-      ${50}  | ${'gl-align-self-end'}  | ${'Characters left'}
+      ${50}  | ${'gl-self-end'}        | ${'Characters left'}
       ${230} | ${'gl-text-orange-500'} | ${'Characters left'}
       ${251} | ${'gl-text-red-500'}    | ${'Characters over limit'}
     `(

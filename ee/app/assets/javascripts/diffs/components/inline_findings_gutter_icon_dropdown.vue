@@ -146,18 +146,18 @@ export default {
             :key="item.description"
             :name="item.name"
             :class="item.class"
-            class="gl-hover-cursor-pointer gl-relative gl-top-1 inline-findings-severity-icon gl-absolute gl-left-0"
+            class="inline-findings-severity-icon gl-absolute gl-relative gl-left-0 gl-top-1 hover:gl-cursor-pointer"
           />
           <!-- eslint-enable -->
         </transition-group>
         <transition name="more-count">
           <div
             v-if="showMoreCount"
-            class="more-count gl-px-2 gl-w-auto gl-absolute gl-left-0 gl-relative gl-top-1"
+            class="more-count gl-absolute gl-relative gl-left-0 gl-top-1 gl-w-auto gl-px-2"
           >
             <p
               data-testid="inline-findings-more-count"
-              class="gl-mb-0 gl-block gl-w-3 more-count-copy-dropdown"
+              class="more-count-copy-dropdown gl-mb-0 gl-block gl-w-3"
             >
               {{ moreCount }}
             </p>

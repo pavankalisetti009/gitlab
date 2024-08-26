@@ -61,7 +61,7 @@ export default {
         <div class="gl-flex gl-grow gl-basis-0 gl-items-center">
           <h4 class="gl-text-lg">{{ site.name }}</h4>
         </div>
-        <div class="gl-flex gl-flex-grow-2 gl-basis-0 gl-items-center">
+        <div class="gl-flex gl-grow-2 gl-basis-0 gl-items-center">
           <geo-site-health-status :status="site.healthStatus" />
           <geo-site-last-updated
             v-if="statusCheckTimestamp"
