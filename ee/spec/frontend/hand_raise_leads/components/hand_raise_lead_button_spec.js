@@ -46,7 +46,7 @@ describe('HandRaiseLeadButton', () => {
             href: '#',
             size: 'small',
             variant: 'confirm',
-            buttonTextClasses: 'gl-font-sm',
+            buttonTextClasses: 'other-mocked-testing-class',
           },
           buttonText: '_other_button_text_',
         };
