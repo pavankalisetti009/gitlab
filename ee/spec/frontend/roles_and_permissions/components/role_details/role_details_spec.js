@@ -1,8 +1,9 @@
-import { GlAlert, GlSprintf, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { GlAlert, GlSprintf, GlTabs, GlButton, GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleDetails from 'ee/roles_and_permissions/components/role_details/role_details.vue';
+import DetailsTab from 'ee/roles_and_permissions/components/role_details/details_tab.vue';
 import DeleteRoleModal from 'ee/roles_and_permissions/components/delete_role_modal.vue';
 import { BASE_ROLES_WITHOUT_MINIMAL_ACCESS } from '~/access_level/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
@@ -40,8 +41,8 @@ describe('Role details', () => {
 
   const findRoleDetails = () => wrapper.findByTestId('role-details');
   const findRoleName = () => wrapper.find('h1');
-  const findActionButtons = () => wrapper.findByTestId('action-buttons');
   const findHeaderDescription = () => wrapper.find('p');
+  const findDetailsTab = () => wrapper.findComponent(GlTabs).findComponent(DetailsTab);
   const findEditButton = () => wrapper.findByTestId('edit-button');
   const findDeleteButtonWrapper = () => wrapper.findByTestId('delete-button');
   const findDeleteButton = () => findDeleteButtonWrapper().findComponent(GlButton);
@@ -63,6 +64,14 @@ describe('Role details', () => {
     });
   });
 
+  describe('for all roles', () => {
+    beforeEach(() => createWrapper());
+
+    it('shows role details tab', () => {
+      expect(findDetailsTab().props('role')).toEqual(mockMemberRole);
+    });
+  });
+
   describe('when the role is a standard role', () => {
     describe.each(BASE_ROLES_WITHOUT_MINIMAL_ACCESS)('$text', (role) => {
       beforeEach(() => createWrapper({ roleId: role.value }));
@@ -76,7 +85,8 @@ describe('Role details', () => {
       });
 
       it('does not show action buttons', () => {
-        expect(findActionButtons().exists()).toBe(false);
+        expect(findEditButton().exists()).toBe(false);
+        expect(findDeleteButtonWrapper().exists()).toBe(false);
       });
 
       it('shows header description', () => {
@@ -109,7 +119,8 @@ describe('Role details', () => {
       });
 
       it('shows action buttons', () => {
-        expect(findActionButtons().exists()).toBe(true);
+        expect(findEditButton().exists()).toBe(true);
+        expect(findDeleteButton().exists()).toBe(true);
       });
 
       it('shows header description', () => {
