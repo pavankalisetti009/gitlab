@@ -500,8 +500,8 @@ and update Docker images on Amazon ECR, without using manual credential manageme
 
    ```Dockerfile
    # Control package versions
-   ARG GITLAB_RUNNER_VERSION=v16.4.0
-   ARG AWS_CLI_VERSION=2.2.30
+   ARG GITLAB_RUNNER_VERSION=v17.3.0
+   ARG AWS_CLI_VERSION=2.17.36
 
    # AWS CLI and Amazon ECR Credential Helper
    FROM amazonlinux as aws-tools
@@ -541,8 +541,8 @@ and update Docker images on Amazon ECR, without using manual credential manageme
    variables:
      DOCKER_DRIVER: overlay2
      IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_NAME
-     GITLAB_RUNNER_VERSION: v16.4.0
-     AWS_CLI_VERSION: 2.13.21
+     GITLAB_RUNNER_VERSION: v17.3.0
+     AWS_CLI_VERSION: 2.17.36
 
    stages:
      - build
