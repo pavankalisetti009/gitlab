@@ -1,17 +1,16 @@
 <script>
-import { GlSkeletonLoader, GlButton } from '@gitlab/ui';
+import { GlSkeletonLoader, GlBadge } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
-import { s__, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import getAddOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
 import {
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
-  CODE_SUGGESTIONS_TITLE,
   DUO_ENTERPRISE,
-  DUO_ENTERPRISE_TITLE,
   DUO_PRO,
-  CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT,
+  DUO_ENTERPRISE_TITLE,
+  CODE_SUGGESTIONS_TITLE,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/saas_add_on_eligible_user_list.vue';
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
@@ -38,12 +37,12 @@ export default {
     CodeSuggestionsStatisticsCard,
     GlSkeletonLoader,
     HealthCheckList,
-    GlButton,
+    GlBadge,
   },
   inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
-    CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT,
+    codeSuggestionTitle: __('GitLab Duo'),
   },
   data() {
     return {
@@ -51,7 +50,6 @@ export default {
       addOnPurchaseFetchError: undefined,
       deprecatedAddOnPurchaseData: undefined,
       useDeprecatedAddOnPurchaseQuery: false,
-      healthCheckRunning: false,
     };
   },
   computed: {
@@ -94,6 +92,7 @@ export default {
       if (this.isSaaS && !this.isStandalonePage) {
         return false;
       }
+
       return !this.isLoading && (this.hasCodeSuggestions || this.addOnPurchaseFetchError);
     },
     saasSubtitle() {
@@ -110,9 +109,6 @@ export default {
           addOnName: this.codeSuggestionsFriendlyName,
         },
       );
-    },
-    codeSuggestionsTitle() {
-      return this.codeSuggestionsFriendlyName;
     },
     codeSuggestionsFriendlyName() {
       return this.duoTier === DUO_ENTERPRISE ? DUO_ENTERPRISE_TITLE : CODE_SUGGESTIONS_TITLE;
@@ -172,65 +168,66 @@ export default {
         },
       });
     },
-    runHealthCheck() {
-      this.healthCheckRunning = true;
-      this.$refs.healthCheckList.runHealthCheck();
-    },
   },
 };
 </script>
 
 <template>
   <section>
-    <section v-if="isLoading" class="gl-mt-5 gl-grid gl-gap-5 md:gl-grid-cols-2">
-      <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
-        <gl-skeleton-loader :height="64">
-          <rect width="140" height="30" x="5" y="0" rx="4" />
-          <rect width="240" height="10" x="5" y="40" rx="4" />
-          <rect width="340" height="10" x="5" y="54" rx="4" />
-        </gl-skeleton-loader>
+    <section v-if="isLoading">
+      <div class="gl-mt-5">
+        <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
+          <gl-skeleton-loader :height="10">
+            <circle cx="4" cy="6" r="2" />
+            <rect width="100" height="4" x="8" y="4" rx="2" />
+            <rect width="10%" height="100%" x="90%" y="0" rx="1" />
+          </gl-skeleton-loader>
+        </div>
       </div>
 
-      <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
-        <gl-skeleton-loader :height="64">
-          <rect width="240" height="10" x="5" y="0" rx="4" />
-          <rect width="340" height="10" x="5" y="14" rx="4" />
-          <rect width="220" height="8" x="5" y="40" rx="4" />
-          <rect width="220" height="8" x="5" y="54" rx="4" />
-        </gl-skeleton-loader>
+      <div class="gl-mt-5 gl-grid gl-gap-5 md:gl-grid-cols-2">
+        <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
+          <gl-skeleton-loader :height="64">
+            <rect width="140" height="30" x="5" y="0" rx="4" />
+            <rect width="240" height="10" x="5" y="40" rx="4" />
+            <rect width="340" height="10" x="5" y="54" rx="4" />
+          </gl-skeleton-loader>
+        </div>
+
+        <div class="gl-border gl-rounded-base gl-bg-white gl-p-5">
+          <gl-skeleton-loader :height="64">
+            <rect width="240" height="10" x="5" y="0" rx="4" />
+            <rect width="340" height="10" x="5" y="14" rx="4" />
+            <rect width="220" height="8" x="5" y="40" rx="4" />
+            <rect width="220" height="8" x="5" y="54" rx="4" />
+          </gl-skeleton-loader>
+        </div>
       </div>
     </section>
     <template v-else>
-      <section v-if="showTitleAndSubtitle">
-        <header class="gl-flex gl-justify-between">
-          <h1 data-testid="code-suggestions-title" class="page-title gl-text-size-h-display">
-            {{ codeSuggestionsTitle }}
-          </h1>
+      <template v-if="showTitleAndSubtitle">
+        <section>
+          <header class="gl-flex gl-items-center">
+            <h1 data-testid="code-suggestions-title" class="page-title gl-text-size-h-display">
+              {{ $options.i18n.codeSuggestionTitle }}
+            </h1>
 
-          <div v-if="statusCheckEnabled" class="gl-self-center">
-            <gl-button
-              data-testid="health-check-button"
-              :loading="healthCheckRunning"
-              :disabled="healthCheckRunning"
-              @click="runHealthCheck"
-              >{{ $options.i18n.CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT }}</gl-button
-            >
-          </div>
-        </header>
+            <gl-badge variant="tier" icon="license" class="gl-capitalize gl-ml-3 gl-py-2 gl-px-3">{{
+              duoTier
+            }}</gl-badge>
+          </header>
 
-        <p v-if="isSaaS" data-testid="code-suggestions-subtitle">
-          {{ saasSubtitle }}
-        </p>
-        <p v-else data-testid="code-suggestions-subtitle">
-          {{ selfManagedSubtitle }}
-        </p>
-      </section>
-      <health-check-list
-        v-if="statusCheckEnabled && showTitleAndSubtitle"
-        ref="healthCheckList"
-        data-testid="health-check-probes"
-        @health-check-completed="healthCheckRunning = false"
-      />
+          <p v-if="isSaaS" data-testid="code-suggestions-subtitle">
+            {{ saasSubtitle }}
+          </p>
+          <p v-else data-testid="code-suggestions-subtitle">
+            {{ selfManagedSubtitle }}
+          </p>
+        </section>
+
+        <health-check-list v-if="statusCheckEnabled" />
+      </template>
+
       <section v-if="hasCodeSuggestions">
         <section class="gl-grid gl-gap-5 md:gl-grid-cols-2">
           <code-suggestions-statistics-card

@@ -9,7 +9,30 @@ export const codeSuggestionsLearnMoreLink = `${PROMO_URL}/gitlab-duo/`;
 
 export const CODE_SUGGESTIONS_TITLE = s__('CodeSuggestions|GitLab Duo Pro');
 export const DUO_ENTERPRISE_TITLE = s__('CodeSuggestions|GitLab Duo Enterprise');
-export const CLOUD_CONNECTOR_HEALTH_CHECK_BUTTON_TEXT = s__('CodeSuggestions|Run health check');
+
+export const DUO_HEALTH_CHECK_CATEGORIES = [
+  {
+    values: ['host_probe'],
+    title: __('Network'),
+    description: s__(
+      'CodeSuggestions|Outbound and inbound connections from clients to the GitLab instance must be allowed.',
+    ),
+  },
+  {
+    values: ['license_probe', 'access_probe'],
+    title: __('Synchronization'),
+    description: s__(
+      'CodeSuggestions|The active subscription must sync with customers.gitlab.com every 72 hours.',
+    ),
+  },
+  {
+    values: ['end_to_end_probe'],
+    title: __('System exchange'),
+    description: s__(
+      'CodeSuggestions|A code snippet must be passable to the AI-gateway for users to utilize GitLab Duo in their IDE.',
+    ),
+  },
+];
 
 export const addOnEligibleUserListTableFields = {
   codeSuggestionsAddon: {

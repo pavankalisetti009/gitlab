@@ -1,43 +1,103 @@
 <script>
 import {
-  GlAlert,
-  GlBadge,
   GlCard,
+  GlButton,
+  GlIcon,
   GlLoadingIcon,
   GlSkeletonLoader,
+  GlCollapse,
   GlExperimentBadge,
 } from '@gitlab/ui';
-import { s__ } from '~/locale';
+import { fetchPolicies } from '~/lib/graphql';
+import { __, s__ } from '~/locale';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
+import { probesByCategory } from '../utils';
 
 export default {
   name: 'HealthCheckList',
   components: {
-    GlAlert,
-    GlBadge,
     GlCard,
+    GlButton,
+    GlIcon,
     GlLoadingIcon,
     GlSkeletonLoader,
+    GlCollapse,
     GlExperimentBadge,
   },
   data() {
     return {
       healthStatus: null,
       probes: [],
-      isLoading: false,
+      isLoading: true,
+      expanded: false,
     };
   },
   computed: {
-    hasProbes() {
-      return this.probes.length > 0;
+    healthCheckUI() {
+      if (this.isLoading) {
+        return {
+          title: this.$options.i18n.updating,
+          icon: 'status-health',
+          variant: 'disabled',
+        };
+      }
+
+      if (this.healthStatus) {
+        return {
+          title: this.$options.i18n.noHealthProblems,
+          icon: 'check-circle-filled',
+          variant: 'success',
+        };
+      }
+
+      return {
+        title: this.$options.i18n.problemsWithSetup,
+        icon: 'error',
+        variant: 'danger',
+      };
     },
-    shouldBeShown() {
-      return this.hasProbes || this.isLoading;
+    probesByCategory() {
+      return probesByCategory(this.probes);
+    },
+
+    healthStatusText() {
+      return this.healthStatus
+        ? this.$options.i18n.healthCheckSucceeded
+        : this.$options.i18n.healthCheckFailed;
+    },
+    expandIcon() {
+      return this.expanded ? 'chevron-down' : 'chevron-right';
+    },
+    expandLabel() {
+      return this.expanded ? this.$options.i18n.hideResults : this.$options.i18n.showResults;
+    },
+    expandText() {
+      if (this.isLoading) {
+        return this.$options.i18n.loadingTests;
+      }
+
+      return this.expanded ? this.$options.i18n.hideResults : this.healthStatusText;
     },
   },
+  created() {
+    this.runHealthCheck();
+  },
   methods: {
-    getVariantForProbe(probe) {
-      return probe.success ? 'success' : 'danger';
+    getCSSForProbe(probe) {
+      return probe.success ? 'gl-text-green-900 gl-bg-green-50' : 'gl-text-red-900 gl-bg-red-50';
+    },
+    getIconForProbe(probe) {
+      return probe.success
+        ? { name: 'check-circle', variant: 'success' }
+        : { name: 'error', variant: 'danger' };
+    },
+    toggleExpanded() {
+      this.expanded = !this.expanded;
+    },
+    onRunHealthCheckClick() {
+      this.expanded = true;
+
+      this.runHealthCheck();
     },
     async runHealthCheck() {
       this.probes = [];
@@ -45,6 +105,7 @@ export default {
       try {
         const { data } = await this.$apollo.query({
           query: getCloudConnectorHealthStatus,
+          fetchPolicy: fetchPolicies.NETWORK_ONLY,
         });
         this.healthStatus = data?.cloudConnectorStatus?.success || false;
         this.probes = data?.cloudConnectorStatus?.probeResults || [];
@@ -53,77 +114,126 @@ export default {
         this.probes = [];
       } finally {
         this.isLoading = false;
-        this.$emit('health-check-completed');
       }
     },
   },
   i18n: {
-    healthCheckTitle: s__('UsageQuotas|Health check results'),
-    healthCheckSucceeded: s__('UsageQuotas|GitLab Duo should be operational.'),
-    healthCheckFailed: s__('UsageQuotas|Not operational. Resolve issues to use GitLab Duo.'),
-    healthUp: s__('UsageQuotas|Passed'),
-    healthDown: s__('UsageQuotas|Failed'),
-    loadingTests: s__('UsageQuotas|Tests are running...'),
+    healthCheckSucceeded: s__('CodeSuggestions|GitLab Duo should be operational.'),
+    healthCheckFailed: s__('CodeSuggestions|Not operational. Resolve issues to use GitLab Duo.'),
+    loadingTests: s__('CodeSuggestions|Tests are running'),
+    runHealthCheck: s__('CodeSuggestions|Run health check'),
+    showResults: __('Show results'),
+    hideResults: __('Hide results'),
+    updating: s__('CodeSuggestions|Updating...'),
+    noHealthProblems: s__('CodeSuggestions|No health problems detected'),
+    problemsWithSetup: s__('CodeSuggestions|Problems detected with setup'),
   },
 };
 </script>
 <template>
   <gl-card
-    v-if="shouldBeShown"
-    class="gl-new-card gl-mb-5"
-    header-class="gl-new-card-header"
-    body-class="gl-new-card-body gl-px-0"
+    class="gl-new-card gl-mb-5 gl-bg-white"
+    header-class="gl-flex gl-flex-col sm:gl-flex-row gl-items-center gl-bg-white"
+    body-class="gl-new-card-body gl-p-0"
   >
     <template #header>
-      <strong>{{ $options.i18n.healthCheckTitle }}</strong>
-      <gl-experiment-badge type="beta" />
+      <gl-icon
+        :name="healthCheckUI.icon"
+        :variant="healthCheckUI.variant"
+        class="gl-mr-3"
+        data-testid="health-check-icon"
+      />
+      <h4 :class="{ 'gl-text-gray-500': isLoading }" data-testid="health-check-title">
+        {{ healthCheckUI.title }}
+      </h4>
+
+      <gl-button
+        class="gl-ml-auto gl-w-full sm:gl-w-auto"
+        :loading="isLoading"
+        :disabled="isLoading"
+        data-testid="run-health-check-button"
+        @click="onRunHealthCheckClick"
+        >{{ $options.i18n.runHealthCheck }}</gl-button
+      >
     </template>
 
     <template #default>
-      <div v-if="isLoading" class="gl-px-3 gl-py-5">
-        <gl-skeleton-loader :width="1248" :height="232">
-          <rect x="8" y="0" width="24" height="24" rx="16" />
-          <rect x="48" y="4" width="247" height="16" rx="4" />
-
-          <rect x="8" y="52" width="24" height="24" rx="16" />
-          <rect x="48" y="56" width="185" height="16" rx="4" />
-
-          <rect x="8" y="104" width="24" height="24" rx="16" />
-          <rect x="48" y="108" width="311" height="16" rx="4" />
-
-          <rect x="8" y="156" width="24" height="24" rx="16" />
-          <rect x="48" y="160" width="167" height="16" rx="4" />
-
-          <rect x="8" y="208" width="24" height="24" rx="16" />
-          <rect x="48" y="212" width="227" height="16" rx="4" />
-        </gl-skeleton-loader>
+      <div class="gl-flex gl-items-center gl-pl-4 gl-pr-5 gl-py-3">
+        <gl-button
+          :icon="expandIcon"
+          :aria-label="expandLabel"
+          size="small"
+          class="gl-mr-3"
+          data-testid="health-check-expand-button"
+          @click="toggleExpanded"
+        />
+        <p class="gl-mb-0" data-testid="health-check-expand-text">{{ expandText }}</p>
+        <gl-experiment-badge type="beta" class="gl-ml-auto gl-mr-0" />
       </div>
-      <div v-else>
-        <gl-alert
-          v-for="(probe, i) in probes"
-          :key="`probe.name-${i}`"
-          :dismissible="false"
-          :variant="getVariantForProbe(probe)"
-          class="gl-font-monospace"
-        >
-          {{ probe.message }}
-        </gl-alert>
-      </div>
+      <gl-collapse :visible="expanded" class="gl-border-t border-gray-100">
+        <div class="gl-p-5">
+          <div v-if="isLoading">
+            <gl-skeleton-loader :width="1248" :height="360">
+              <rect x="8" y="0" width="300" height="40" rx="4" />
+
+              <rect x="8" y="56" width="20" height="20" rx="16" />
+              <rect x="40" y="58" width="300" height="16" rx="4" />
+              <rect x="350" y="58" width="300" height="16" rx="4" />
+              <rect x="8" y="94" width="20" height="20" rx="16" />
+              <rect x="40" y="96" width="200" height="16" rx="4" />
+
+              <rect x="8" y="140" width="350" height="40" rx="4" />
+
+              <rect x="8" y="196" width="20" height="20" rx="16" />
+              <rect x="40" y="198" width="450" height="16" rx="4" />
+              <rect x="8" y="234" width="20" height="20" rx="16" />
+              <rect x="40" y="236" width="360" height="16" rx="4" />
+
+              <rect x="8" y="280" width="200" height="40" rx="4" />
+
+              <rect x="8" y="336" width="20" height="20" rx="16" />
+              <rect x="40" y="338" width="260" height="16" rx="4" />
+            </gl-skeleton-loader>
+          </div>
+
+          <div v-else class="gl-font-monospace" data-testid="health-check-probes">
+            <article
+              v-for="category in probesByCategory"
+              :key="category.title"
+              data-testid="health-check-probe-category"
+            >
+              <header
+                class="gl-font-bold gl-text-gray-700 gl-mb-2"
+                data-testid="health-check-probe-category-title"
+              >
+                {{ category.title }}
+              </header>
+              <p
+                class="gl-text-gray-700 gl-mb-0"
+                data-testid="health-check-probe-category-description"
+              >
+                {{ category.description }}
+              </p>
+
+              <div
+                v-for="(probe, index) in category.probes"
+                :key="index"
+                class="gl-my-3 gl-px-3 gl-py-2 gl-rounded-small"
+                :class="getCSSForProbe(probe)"
+                data-testid="health-check-probe"
+              >
+                <gl-icon v-bind="getIconForProbe(probe)" />
+                {{ probe.message }}
+              </div>
+            </article>
+          </div>
+        </div>
+      </gl-collapse>
     </template>
 
-    <template #footer>
-      <div v-if="isLoading" class="gl-flex gl-items-center gl-gap-3">
-        <gl-loading-icon size="sm" />
-        <span>{{ $options.i18n.loadingTests }}</span>
-      </div>
-      <div v-else-if="healthStatus" class="gl-flex gl-items-center gl-gap-3">
-        <gl-badge variant="success">{{ $options.i18n.healthUp }}</gl-badge>
-        <span>{{ $options.i18n.healthCheckSucceeded }}</span>
-      </div>
-      <div v-else class="gl-flex gl-items-center gl-gap-3">
-        <gl-badge variant="danger">{{ $options.i18n.healthDown }}</gl-badge>
-        <span>{{ $options.i18n.healthCheckFailed }}</span>
-      </div>
+    <template v-if="expanded" #footer>
+      <gl-loading-icon v-if="isLoading" size="sm" class="gl-text-left" />
+      <p v-else class="gl-mb-0" data-testid="health-check-footer-text">{{ healthStatusText }}</p>
     </template>
   </gl-card>
 </template>

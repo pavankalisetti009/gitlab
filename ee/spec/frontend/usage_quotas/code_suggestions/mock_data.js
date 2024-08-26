@@ -323,3 +323,75 @@ export const mockHandRaiseLeadData = {
   buttonAttributes: {},
   ctaTracking: {},
 };
+
+export const MOCK_NETWORK_PROBES = {
+  success: [
+    {
+      name: 'host_probe',
+      success: true,
+      message: 'customers.staging.gitlab.com reachable.',
+    },
+    {
+      name: 'host_probe',
+      success: true,
+      message: 'cloud.gitlab.com reachable.',
+    },
+  ],
+  error: [
+    {
+      name: 'host_probe',
+      success: false,
+      message: 'customers.staging.gitlab.com is not reachable.',
+    },
+    {
+      name: 'host_probe',
+      success: false,
+      message: 'cloud.gitlab.com is not reachable.',
+    },
+  ],
+};
+
+export const MOCK_SYNCHRONIZATION_PROBES = {
+  success: [
+    {
+      name: 'access_probe',
+      success: true,
+      message: 'Subscription can be synchronized.',
+    },
+    {
+      name: 'license_probe',
+      success: true,
+      message: 'Subscription synchronized successfully.',
+    },
+  ],
+  error: [
+    {
+      name: 'access_probe',
+      success: false,
+      message: 'Subscription has not yet been synchronized. Synchronize your subscription.',
+    },
+    {
+      name: 'license_probe',
+      success: false,
+      message:
+        'Subscription for this instance cannot be synchronized. Contact GitLab customer support to upgrade your license.',
+    },
+  ],
+};
+
+export const MOCK_SYSTEM_EXCHANGE_PROBES = {
+  success: [
+    {
+      name: 'end_to_end_probe',
+      success: true,
+      message: 'Authentication with GitLab Cloud services succeeded.',
+    },
+  ],
+  error: [
+    {
+      name: 'end_to_end_probe',
+      success: false,
+      message: 'Authentication with GitLab Cloud services failed: Access token is missing',
+    },
+  ],
+};
