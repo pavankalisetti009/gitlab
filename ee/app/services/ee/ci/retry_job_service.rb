@@ -21,12 +21,12 @@ module EE
 
       override :check_assignable_runners!
       def check_assignable_runners!(build)
-        build_matcher = build.build_matcher
-        build.drop!(:ci_quota_exceeded) unless runner_minutes.available?(build_matcher)
+        result = runners_availability_checker.check(build.build_matcher)
+        build.drop!(result.drop_reason) unless result.available?
       end
 
-      def runner_minutes
-        ::Gitlab::Ci::RunnersAvailabilityBuilder.instance_for(project).minutes_checker
+      def runners_availability_checker
+        ::Gitlab::Ci::RunnersAvailabilityChecker.instance_for(project)
       end
     end
   end

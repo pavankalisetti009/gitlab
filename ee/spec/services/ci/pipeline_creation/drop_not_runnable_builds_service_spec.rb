@@ -90,6 +90,65 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
       it_behaves_like 'always running'
     end
 
+    shared_examples 'plan not allowed' do
+      let_it_be(:premium_plan) { create(:premium_plan) }
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+      let!(:instance_runner) do
+        create(:ci_runner,
+          :online,
+          runner_type: :instance_type,
+          allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
+      end
+
+      it 'drops the job with no_matching_runner reason' do
+        execute
+        [job, job_with_tags].each(&:reload)
+
+        expect(job).to be_failed
+        expect(job.failure_reason).to eq('no_matching_runner')
+
+        expect(job_with_tags).to be_pending
+      end
+
+      it_behaves_like 'always running'
+    end
+
+    shared_examples 'both quota and allowed_plans violated' do
+      let_it_be(:premium_plan) { create(:premium_plan) }
+      let_it_be(:ultimate_plan) { create(:ultimate_plan) }
+
+      let!(:instance_runner) do
+        create(:ci_runner,
+          :online,
+          runner_type: :instance_type,
+          public_projects_minutes_cost_factor: 1,
+          private_projects_minutes_cost_factor: 1,
+          allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
+      end
+
+      before do
+        allow(pipeline.project).to receive(:ci_minutes_usage)
+          .and_return(double('usage', minutes_used_up?: true, quota_enabled?: true))
+      end
+
+      it 'drops the job with ci_quota_exceeded reason' do
+        execute
+        [job, job_with_tags].each(&:reload)
+
+        expect(job).to be_failed
+        expect(job.failure_reason).to eq('ci_quota_exceeded')
+
+        expect(job_with_tags).to be_pending
+      end
+
+      it_behaves_like 'always running'
+    end
+
+    before do
+      stub_feature_flags(ci_runner_separation_by_plan: true)
+    end
+
     context 'with public projects' do
       before do
         pipeline.project.update!(visibility_level: ::Gitlab::VisibilityLevel::PUBLIC)
@@ -97,6 +156,8 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
 
       it_behaves_like 'jobs allowed to run'
       it_behaves_like 'quota exceeded'
+      it_behaves_like 'plan not allowed'
+      it_behaves_like 'both quota and allowed_plans violated'
     end
 
     context 'with internal projects' do
@@ -106,6 +167,8 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
 
       it_behaves_like 'jobs allowed to run'
       it_behaves_like 'quota exceeded'
+      it_behaves_like 'plan not allowed'
+      it_behaves_like 'both quota and allowed_plans violated'
     end
 
     context 'with private projects' do
@@ -115,6 +178,8 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
 
       it_behaves_like 'jobs allowed to run'
       it_behaves_like 'quota exceeded'
+      it_behaves_like 'plan not allowed'
+      it_behaves_like 'both quota and allowed_plans violated'
     end
   end
 end

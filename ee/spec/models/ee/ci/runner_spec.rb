@@ -166,49 +166,6 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
     end
   end
 
-  describe '#allowed_for_plans?', :saas do
-    let(:namespace) { create(:namespace_with_plan, plan: plan) }
-    let(:project) { create(:project, namespace: namespace) }
-    let(:pipeline) { create(:ci_pipeline, project: project) }
-    let(:build) { create(:ci_build, pipeline: pipeline) }
-
-    subject { create(:ci_runner, :instance, allowed_plans: allowed_plans).allowed_for_plans?(build) }
-
-    context 'when allowed plans are not defined' do
-      let(:allowed_plans) { [] }
-      let(:plan) { :premium_plan }
-
-      it { is_expected.to be_truthy }
-    end
-
-    context 'when allowed_plans are defined' do
-      let(:allowed_plans) { %w[silver premium] }
-
-      context 'when plans match allowed plans' do
-        let(:plan) { :premium_plan }
-
-        it { is_expected.to be_truthy }
-      end
-
-      context 'when plans do not match allowed plans' do
-        let(:plan) { :ultimate_plan }
-
-        it { is_expected.to be_falsey }
-      end
-    end
-
-    context 'when ci_runner_separation_by_plan feature flag is disabled' do
-      let(:allowed_plans) { %w[silver premium] }
-      let(:plan) { :ultimate_plan }
-
-      before do
-        stub_feature_flags(ci_runner_separation_by_plan: false)
-      end
-
-      it { is_expected.to be_truthy }
-    end
-  end
-
   describe '.order_most_active_desc' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
@@ -306,6 +263,35 @@ RSpec.describe Ci::Runner, feature_category: :hosted_runners do
 
           is_expected.to eq(expected_runner_ids)
         end
+      end
+    end
+  end
+
+  describe "allowed_plans support" do
+    let_it_be(:free_plan) { create(:free_plan) }
+    let_it_be(:premium_plan) { create(:premium_plan) }
+
+    let(:runner) { create(:ci_runner) }
+
+    describe '#allowed_plans=' do
+      it do
+        expect do
+          runner.allowed_plans = %w[free premium]
+          runner.save!
+        end.to change { runner.allowed_plan_ids }.from([]).to([free_plan.id, premium_plan.id])
+      end
+    end
+
+    describe '#allowed_plan_names' do
+      subject(:names) { runner.allowed_plan_names }
+
+      it { is_expected.to be_empty }
+
+      context 'when allowed_plan_ids are set' do
+        let(:runner) { create(:ci_runner, allowed_plan_ids: [free_plan.id, premium_plan.id]) }
+
+        it { is_expected.to include(free_plan.name) }
+        it { is_expected.to include(premium_plan.name) }
       end
     end
   end

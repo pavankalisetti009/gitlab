@@ -8,8 +8,7 @@ module Ci
       def initialize(pipeline)
         @pipeline = pipeline
 
-        runners_availability = ::Gitlab::Ci::RunnersAvailabilityBuilder.instance_for(pipeline.project)
-        @runner_minutes = runners_availability.minutes_checker
+        @runners_availability = ::Gitlab::Ci::RunnersAvailabilityChecker.instance_for(pipeline.project)
       end
 
       ##
@@ -25,20 +24,22 @@ module Ci
       private
 
       attr_reader :pipeline
-      attr_reader :runner_minutes
+      attr_reader :runners_availability
 
       delegate :project, to: :pipeline
 
       def drop_non_matching_jobs
-        drop_by_pipeline_minutes
-      end
+        builds_to_drop = {}
 
-      def drop_by_pipeline_minutes
-        build_ids = build_matchers
-          .filter_map { |matcher| matcher.build_ids unless runner_minutes.available?(matcher) }
-          .flatten
+        build_matchers.each do |matcher|
+          result = runners_availability.check(matcher)
+          next if result.available?
 
-        drop_all_builds(build_ids, :ci_quota_exceeded)
+          builds_to_drop[result.drop_reason] ||= []
+          builds_to_drop[result.drop_reason] |= matcher.build_ids
+        end
+
+        builds_to_drop.each { |drop_reason, build_ids| drop_all_builds(build_ids, drop_reason) }
       end
 
       def build_matchers

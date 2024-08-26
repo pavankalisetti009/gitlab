@@ -7,6 +7,8 @@ module EE
 
       prepended do
         scope :with_ci_minutes_available, -> { where(minutes_exceeded: false) }
+
+        scope :with_allowed_plan_ids, ->(allowed_plan_ids) { where(plan_id: allowed_plan_ids) }
       end
 
       class_methods do
@@ -14,7 +16,11 @@ module EE
 
         override :args_from_build
         def args_from_build(build)
-          super.merge(minutes_exceeded: minutes_exceeded?(build.project))
+          fields = { minutes_exceeded: minutes_exceeded?(build.project) }
+          fields[:plan_id] = build.project.actual_plan.id if
+            ::Gitlab::Saas.feature_available?(:ci_runners_allowed_plans)
+
+          super.merge(fields)
         end
 
         private

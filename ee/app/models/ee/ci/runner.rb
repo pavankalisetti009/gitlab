@@ -42,20 +42,12 @@ module EE
         cost_factor.enabled?(project)
       end
 
-      def matches_build?(build)
-        return false unless super(build)
-
-        allowed_for_plans?(build)
+      def allowed_plan_names
+        ::Plan.names_for_ids(allowed_plan_ids)
       end
 
-      def allowed_for_plans?(build)
-        return true unless ::Feature.enabled?(:ci_runner_separation_by_plan, self, type: :ops)
-        return true if allowed_plans.empty?
-
-        plans = build.namespace&.plans || []
-
-        common = allowed_plans & plans.map(&:name)
-        common.any?
+      def allowed_plans=(names)
+        self.allowed_plan_ids = ::Plan.ids_for_names(names)
       end
 
       private
