@@ -859,7 +859,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
     where(:invited_group, :member, :expected_access_level, :expected_member_role) do
       ref(:sre_group) | ref(:kate)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
-      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
+      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:developer_lead)
       ref(:sre_group) | ref(:mark)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
       ref(:sre_group) | ref(:jake)  | Gitlab::Access::DEVELOPER | nil
       ref(:sre_group) | ref(:mary)  | Gitlab::Access::GUEST | nil

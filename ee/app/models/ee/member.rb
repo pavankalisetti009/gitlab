@@ -91,13 +91,13 @@ module EE
         group_link_member_role = group_link_table[:member_role_id]
 
         access_level = arel_table[:access_level]
-        group_member_role = arel_table[:member_role_id]
+        member_role = arel_table[:member_role_id]
 
         Arel::Nodes::Case.new
           .when(access_level.gt(group_access)).then(group_link_member_role)
-          .when(access_level.lt(group_access)).then(group_member_role)
-          .when(group_member_role.not_eq(nil)).then(group_link_member_role)
-          .else(group_member_role)
+          .when(access_level.lt(group_access)).then(member_role)
+          .when(group_link_member_role.eq(nil)).then(nil)
+          .else(member_role)
       end
     end
 
