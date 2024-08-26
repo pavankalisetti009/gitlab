@@ -160,13 +160,14 @@ RSpec.describe 'Git LFS API and storage', feature_category: :source_code_managem
               let(:namespace) { create(:group_with_plan, :private, :with_root_storage_statistics, plan: :free_plan) }
 
               before do
-                project.add_developer(create(:user))
                 project.update!(namespace: namespace)
                 stub_ee_application_setting(dashboard_limit_enabled: true)
-                stub_ee_application_setting(dashboard_limit: 1)
                 enforce_namespace_storage_limit(namespace)
                 set_enforcement_limit(namespace, megabytes: 100)
                 set_used_storage(namespace, megabytes: 90)
+                allow_next_instance_of(Repositories::LfsApiController) do |instance|
+                  allow(instance).to receive(:lfs_upload_access?).and_return(false)
+                end
               end
 
               it 'responds with status 406', :aggregate_failures do
