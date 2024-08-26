@@ -1097,15 +1097,6 @@ RETURN NEW;
 END
 $$;
 
-CREATE FUNCTION trigger_388e93f88fdd() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  NEW."pipeline_id_convert_to_bigint" := NEW."pipeline_id";
-  RETURN NEW;
-END;
-$$;
-
 CREATE FUNCTION trigger_3fe922f4db67() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -14398,7 +14389,6 @@ ALTER SEQUENCE p_ci_job_annotations_id_seq OWNED BY p_ci_job_annotations.id;
 CREATE TABLE packages_build_infos (
     id bigint NOT NULL,
     package_id integer NOT NULL,
-    pipeline_id_convert_to_bigint integer,
     pipeline_id bigint,
     project_id bigint
 );
@@ -32524,8 +32514,6 @@ CREATE TRIGGER trigger_25fe4f7da510 BEFORE INSERT OR UPDATE ON vulnerability_iss
 CREATE TRIGGER trigger_2b8fdc9b4a4e BEFORE INSERT OR UPDATE ON ml_experiment_metadata FOR EACH ROW EXECUTE FUNCTION trigger_2b8fdc9b4a4e();
 
 CREATE TRIGGER trigger_3691f9f6a69f BEFORE INSERT OR UPDATE ON remote_development_agent_configs FOR EACH ROW EXECUTE FUNCTION trigger_3691f9f6a69f();
-
-CREATE TRIGGER trigger_388e93f88fdd BEFORE INSERT OR UPDATE ON packages_build_infos FOR EACH ROW EXECUTE FUNCTION trigger_388e93f88fdd();
 
 CREATE TRIGGER trigger_3fe922f4db67 BEFORE INSERT OR UPDATE ON vulnerability_merge_request_links FOR EACH ROW EXECUTE FUNCTION trigger_3fe922f4db67();
 
