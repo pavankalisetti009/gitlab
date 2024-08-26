@@ -1,7 +1,8 @@
 <script>
-import { GlLink, GlModal, GlSprintf } from '@gitlab/ui';
+import { GlAlert, GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 
 import { __ } from '~/locale';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import productAnalyticsProjectSettingsUpdate from '../../../graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
 import { updateProjectSettingsApolloCache } from './utils';
@@ -15,7 +16,7 @@ const NULL_PROJECT_SETTINGS = {
 
 export default {
   name: 'ClearProjectSettingsModal',
-  components: { GlLink, GlModal, GlSprintf },
+  components: { GlAlert, GlLink, GlModal, GlSprintf },
   inject: ['analyticsSettingsPath', 'namespaceFullPath'],
   props: {
     visible: {
@@ -56,27 +57,33 @@ export default {
       this.hasError = false;
       this.isLoading = true;
 
-      const { data } = await this.$apollo.mutate({
-        mutation: productAnalyticsProjectSettingsUpdate,
-        variables: {
-          fullPath: this.namespaceFullPath,
-          ...NULL_PROJECT_SETTINGS,
-        },
-        update: (store) => {
-          updateProjectSettingsApolloCache(store, this.namespaceFullPath, NULL_PROJECT_SETTINGS);
-        },
-      });
+      try {
+        const { data } = await this.$apollo.mutate({
+          mutation: productAnalyticsProjectSettingsUpdate,
+          variables: {
+            fullPath: this.namespaceFullPath,
+            ...NULL_PROJECT_SETTINGS,
+          },
+          update: (store) => {
+            updateProjectSettingsApolloCache(store, this.namespaceFullPath, NULL_PROJECT_SETTINGS);
+          },
+        });
 
-      this.isLoading = false;
-      const { errors } = data.productAnalyticsProjectSettingsUpdate;
+        const { errors } = data.productAnalyticsProjectSettingsUpdate;
 
-      if (errors?.length) {
+        if (errors?.length) {
+          this.hasError = true;
+          return;
+        }
+
+        this.$emit('hide');
+        this.$emit('cleared');
+      } catch (error) {
         this.hasError = true;
-        return;
+        Sentry.captureException(error);
+      } finally {
+        this.isLoading = false;
       }
-
-      this.$emit('hide');
-      this.$emit('cleared');
     },
   },
 };
@@ -93,8 +100,13 @@ export default {
     @primary="clearProductAnalyticsProjectSettings"
     @canceled="onCancelClearSettings"
   >
-    <slot></slot>
-    <p v-if="hasError" class="gl-mt-5 gl-text-red-500" data-testid="modal-error">
+    <gl-alert
+      v-if="hasError"
+      :dismissible="false"
+      variant="danger"
+      class="gl-mb-5"
+      data-testid="modal-error"
+    >
       <gl-sprintf
         :message="
           s__(
@@ -106,6 +118,7 @@ export default {
           <gl-link :href="analyticsSettingsPath">{{ content }}</gl-link>
         </template>
       </gl-sprintf>
-    </p>
+    </gl-alert>
+    <slot></slot>
   </gl-modal>
 </template>

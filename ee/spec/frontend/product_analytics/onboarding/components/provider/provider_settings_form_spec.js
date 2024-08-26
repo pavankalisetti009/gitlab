@@ -4,6 +4,7 @@ import VueApollo from 'vue-apollo';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import ProviderSettingsForm from 'ee/product_analytics/onboarding/components/providers/provider_settings_form.vue';
 import productAnalyticsProjectSettingsUpdate from 'ee/product_analytics/graphql/mutations/product_analytics_project_settings_update.mutation.graphql';
@@ -17,6 +18,8 @@ import {
 } from '../../../mock_data';
 
 Vue.use(VueApollo);
+
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('ProviderSettingsForm', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -215,24 +218,53 @@ describe('ProviderSettingsForm', () => {
     });
 
     describe('when the mutation fails', () => {
-      beforeEach(async () => {
-        mockMutate.mockResolvedValue(
-          getProductAnalyticsProjectSettingsUpdateResponse(validProjectSettings, [
-            new Error('uh oh!'),
-          ]),
-        );
-        await submitForm();
-        return waitForPromises();
+      describe('with a network level error', () => {
+        const error = new Error('uh oh!');
+        beforeEach(async () => {
+          mockMutate.mockRejectedValue(error);
+          await submitForm();
+          return waitForPromises();
+        });
+
+        it('should display an error', () => {
+          expect(findModalError().text()).toContain(
+            'Failed to update project-level settings. Please try again.',
+          );
+        });
+
+        it('should not show loading state', () => {
+          expectLoadingState(false);
+        });
+
+        it('should log to Sentry', () => {
+          expect(Sentry.captureException).toHaveBeenCalledWith(error);
+        });
       });
 
-      it('should display an error when the mutation fails', () => {
-        expect(findModalError().text()).toContain(
-          'Failed to update project-level settings. Please try again.',
-        );
-      });
+      describe('with a response error', () => {
+        beforeEach(async () => {
+          mockMutate.mockResolvedValue(
+            getProductAnalyticsProjectSettingsUpdateResponse(validProjectSettings, [
+              new Error('uh oh!'),
+            ]),
+          );
+          await submitForm();
+          return waitForPromises();
+        });
 
-      it('should not show loading state', () => {
-        expectLoadingState(false);
+        it('should display an error', () => {
+          expect(findModalError().text()).toContain(
+            'Failed to update project-level settings. Please try again.',
+          );
+        });
+
+        it('should not show loading state', () => {
+          expectLoadingState(false);
+        });
+
+        it('should not log to Sentry', () => {
+          expect(Sentry.captureException).not.toHaveBeenCalled();
+        });
       });
     });
 

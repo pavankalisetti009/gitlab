@@ -3,6 +3,7 @@ import VueApollo from 'vue-apollo';
 
 import { GlLink, GlModal, GlSprintf } from '@gitlab/ui';
 
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
@@ -19,6 +20,8 @@ import {
 } from '../../../mock_data';
 
 Vue.use(VueApollo);
+
+jest.mock('~/sentry/sentry_browser_wrapper');
 
 describe('ClearProjectSettingsModal', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -55,7 +58,7 @@ describe('ClearProjectSettingsModal', () => {
   };
 
   const confirmRemoveSetting = async () => {
-    findModal().vm.$emit('primary');
+    findModal().vm.$emit('primary', { preventDefault: jest.fn() });
     await nextTick();
   };
 
@@ -138,36 +141,64 @@ describe('ClearProjectSettingsModal', () => {
     });
 
     describe('when the mutation fails', () => {
-      beforeEach(async () => {
-        mockMutate.mockResolvedValue(
-          getProductAnalyticsProjectSettingsUpdateResponse(
-            {
-              productAnalyticsConfiguratorConnectionString: null,
-              productAnalyticsDataCollectorHost: null,
-              cubeApiBaseUrl: null,
-              cubeApiKey: null,
-            },
-            [new Error('uh oh!')],
-          ),
-        );
-        await confirmRemoveSetting();
-        return waitForPromises();
+      describe('with a network level error', () => {
+        const error = new Error('uh oh!');
+        beforeEach(async () => {
+          mockMutate.mockRejectedValue(error);
+          await confirmRemoveSetting();
+          return waitForPromises();
+        });
+
+        it('should display an error', () => {
+          expect(findModalError().text()).toContain(
+            'Failed to clear project-level settings. Please try again or clear them manually.',
+          );
+          expect(findModalError().findComponent(GlLink).attributes('href')).toBe(
+            '/group-1/project-1/-/settings/analytics',
+          );
+        });
+
+        it('should not show loading state', () => {
+          const modal = findModal();
+          expect(modal.props('actionPrimary').attributes.loading).toBe(false);
+          expect(modal.props('actionCancel').attributes.disabled).toBe(false);
+        });
+
+        it('should log to Sentry', () => {
+          expect(Sentry.captureException).toHaveBeenCalledWith(error);
+        });
       });
 
-      it('should display an error when the mutation fails', () => {
-        expect(findModalError().text()).toContain(
-          'Failed to clear project-level settings. Please try again or clear them manually.',
-        );
-        expect(findModalError().findComponent(GlLink).attributes('href')).toBe(
-          '/group-1/project-1/-/settings/analytics',
-        );
-      });
+      describe('with a response error', () => {
+        beforeEach(async () => {
+          mockMutate.mockResolvedValue(
+            getProductAnalyticsProjectSettingsUpdateResponse(
+              getEmptyProjectLevelAnalyticsProviderSettings(),
+              [new Error('uh oh!')],
+            ),
+          );
+          await confirmRemoveSetting();
+          return waitForPromises();
+        });
 
-      it('should not show loading state', () => {
-        const modal = findModal();
+        it('should display an error', () => {
+          expect(findModalError().text()).toContain(
+            'Failed to clear project-level settings. Please try again or clear them manually.',
+          );
+          expect(findModalError().findComponent(GlLink).attributes('href')).toBe(
+            '/group-1/project-1/-/settings/analytics',
+          );
+        });
 
-        expect(modal.props('actionPrimary').attributes.loading).toBe(false);
-        expect(modal.props('actionCancel').attributes.disabled).toBe(false);
+        it('should not show loading state', () => {
+          const modal = findModal();
+          expect(modal.props('actionPrimary').attributes.loading).toBe(false);
+          expect(modal.props('actionCancel').attributes.disabled).toBe(false);
+        });
+
+        it('should not log to Sentry', () => {
+          expect(Sentry.captureException).not.toHaveBeenCalled();
+        });
       });
     });
 
