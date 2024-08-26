@@ -1,4 +1,5 @@
-import Vue, { nextTick } from 'vue';
+import { GlBadge } from '@gitlab/ui';
+import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
@@ -16,9 +17,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   CODE_SUGGESTIONS_TITLE,
-  DUO_ENTERPRISE,
   DUO_ENTERPRISE_TITLE,
-  DUO_PRO,
 } from 'ee/usage_quotas/code_suggestions/constants';
 import {
   ADD_ON_ERROR_DICTIONARY,
@@ -98,9 +97,9 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsStatistics = () => wrapper.findComponent(CodeSuggestionsStatisticsCard);
   const findCodeSuggestionsSubtitle = () => wrapper.findByTestId('code-suggestions-subtitle');
   const findCodeSuggestionsTitle = () => wrapper.findByTestId('code-suggestions-title');
+  const findCodeSuggestionsTitleTierBadge = () => wrapper.findComponent(GlBadge);
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
-  const findHealthCheckButton = () => wrapper.findByTestId('health-check-button');
-  const findHealthCheckProbes = () => wrapper.findByTestId('health-check-probes');
+  const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
   const findSelfManagedAddOnEligibleUserList = () =>
     wrapper.findComponent(SelfManagedAddOnEligibleUserList);
   const findErrorAlert = () => wrapper.findByTestId('add-on-purchase-fetch-error');
@@ -112,27 +111,12 @@ describe('GitLab Duo Usage', () => {
         ...provideProps,
       },
       apolloProvider: createMockApolloProvider({ addOnPurchaseHandler, addOnPurchasesHandler }),
-      stubs: {
-        HealthCheckList,
-      },
     });
 
     return waitForPromises();
   };
 
   describe('Cloud Connector health status check', () => {
-    const buildComponent = async () => {
-      createComponent({
-        addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
-        addOnPurchasesHandler: noAssignedAddonDataHandler,
-        provideProps: {
-          isStandalonePage: true,
-          isSaaS: false,
-        },
-      });
-      await waitForPromises();
-    };
-
     it.each`
       description   | isSaaS   | isStandalonePage | expected
       ${'does not'} | ${true}  | ${true}          | ${false}
@@ -140,7 +124,7 @@ describe('GitLab Duo Usage', () => {
       ${'does'}     | ${false} | ${true}          | ${true}
       ${'does'}     | ${false} | ${false}         | ${true}
     `(
-      '$description render the health check button and the probes with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
+      '$description render the health check list with isSaaS is $isSaaS, and isStandalonePage is $isStandalonePage',
       async ({ isSaaS, isStandalonePage, expected } = {}) => {
         createComponent({
           addOnPurchaseHandler: deprecatedNoAssignedAddonDataHandler,
@@ -151,48 +135,10 @@ describe('GitLab Duo Usage', () => {
           },
         });
         await waitForPromises();
-        expect(findHealthCheckButton().exists()).toBe(expected);
-        expect(findHealthCheckProbes().exists()).toBe(expected);
+
+        expect(findHealthCheckList().exists()).toBe(expected);
       },
     );
-
-    it('renders the health check probes once the button is clicked', async () => {
-      await buildComponent();
-      findHealthCheckButton().vm.$emit('click');
-      await nextTick();
-      expect(findHealthCheckProbes().exists()).toBe(true);
-    });
-
-    it('re-runs the health check on repetitive button clicks', async () => {
-      await buildComponent();
-
-      const runHealthCheckSpy = jest.spyOn(findHealthCheckProbes().vm, 'runHealthCheck');
-      findHealthCheckButton().vm.$emit('click');
-      await nextTick();
-      expect(runHealthCheckSpy).toHaveBeenCalledTimes(1);
-
-      findHealthCheckButton().vm.$emit('click');
-      await nextTick();
-      expect(runHealthCheckSpy).toHaveBeenCalledTimes(2);
-    });
-
-    it('disables the button and sets it into loading state once clicked', async () => {
-      await buildComponent();
-      findHealthCheckButton().vm.$emit('click');
-      await nextTick();
-      expect(findHealthCheckButton().props('loading')).toBe(true);
-      expect(findHealthCheckButton().props('disabled')).toBe(true);
-    });
-
-    it('listerns to and unblocks the button onthe health-check-completed event emitted by the HealthCheckList component', async () => {
-      await buildComponent();
-      findHealthCheckButton().vm.$emit('click');
-      await nextTick();
-      findHealthCheckProbes().vm.$emit('health-check-completed');
-      await nextTick();
-      expect(findHealthCheckButton().props('loading')).toBe(false);
-      expect(findHealthCheckButton().props('disabled')).toBe(false);
-    });
   });
 
   describe('when no group id prop is provided', () => {
@@ -305,8 +251,9 @@ describe('GitLab Duo Usage', () => {
           });
         });
 
-        it('renders code suggestions title', () => {
-          expect(findCodeSuggestionsTitle().text()).toBe(CODE_SUGGESTIONS_TITLE);
+        it('renders code suggestions title and pro tier badge', () => {
+          expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+          expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
         });
 
         it('renders code suggestions subtitle', () => {
@@ -332,7 +279,7 @@ describe('GitLab Duo Usage', () => {
             expect(findCodeSuggestionsStatistics().props()).toEqual({
               usageValue: 0,
               totalValue: 20,
-              duoTier: DUO_PRO,
+              duoTier: 'pro',
             });
           });
 
@@ -340,7 +287,7 @@ describe('GitLab Duo Usage', () => {
             expect(findCodeSuggestionsInfo().exists()).toBe(true);
             expect(findCodeSuggestionsInfo().props()).toEqual({
               groupId: '289561',
-              duoTier: DUO_PRO,
+              duoTier: 'pro',
             });
           });
         });
@@ -360,7 +307,7 @@ describe('GitLab Duo Usage', () => {
             expect(findCodeSuggestionsInfo().exists()).toBe(true);
             expect(findCodeSuggestionsInfo().props()).toEqual({
               groupId: '289561',
-              duoTier: DUO_PRO,
+              duoTier: 'pro',
             });
           });
         });
@@ -379,7 +326,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsStatistics().props()).toEqual({
             usageValue: 0,
             totalValue: 20,
-            duoTier: DUO_ENTERPRISE,
+            duoTier: 'enterprise',
           });
         });
 
@@ -387,7 +334,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
             groupId: '289561',
-            duoTier: DUO_ENTERPRISE,
+            duoTier: 'enterprise',
           });
         });
       });
@@ -404,7 +351,7 @@ describe('GitLab Duo Usage', () => {
         it('renders addon user list for duo enterprise', () => {
           expect(findSaasAddOnEligibleUserList().props()).toEqual({
             addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/4',
-            duoTier: DUO_ENTERPRISE,
+            duoTier: 'enterprise',
           });
         });
 
@@ -412,7 +359,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsStatistics().props()).toEqual({
             usageValue: 0,
             totalValue: 20,
-            duoTier: DUO_ENTERPRISE,
+            duoTier: 'enterprise',
           });
         });
 
@@ -420,7 +367,7 @@ describe('GitLab Duo Usage', () => {
           expect(findCodeSuggestionsInfo().exists()).toBe(true);
           expect(findCodeSuggestionsInfo().props()).toEqual({
             groupId: '289561',
-            duoTier: DUO_ENTERPRISE,
+            duoTier: 'enterprise',
           });
         });
       });
@@ -435,8 +382,9 @@ describe('GitLab Duo Usage', () => {
         });
       });
 
-      it('renders code suggestions title', () => {
-        expect(findCodeSuggestionsTitle().text()).toBe(CODE_SUGGESTIONS_TITLE);
+      it('renders code suggestions title and pro tier badge', () => {
+        expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+        expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 
       it('renders code suggestions subtitle', () => {
@@ -459,8 +407,9 @@ describe('GitLab Duo Usage', () => {
           });
         });
 
-        it('renders code suggestions title', () => {
-          expect(findCodeSuggestionsTitle().text()).toBe(DUO_ENTERPRISE_TITLE);
+        it('renders code suggestions title and enterprise tier badge', () => {
+          expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+          expect(findCodeSuggestionsTitleTierBadge().text()).toBe('enterprise');
         });
 
         it('renders code suggestions subtitle', () => {
@@ -483,7 +432,7 @@ describe('GitLab Duo Usage', () => {
         expect(findCodeSuggestionsStatistics().props()).toEqual({
           usageValue: 0,
           totalValue: 20,
-          duoTier: DUO_PRO,
+          duoTier: 'pro',
         });
       });
 
@@ -504,7 +453,7 @@ describe('GitLab Duo Usage', () => {
 
       expect(findSaasAddOnEligibleUserList().props()).toEqual({
         addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        duoTier: DUO_PRO,
+        duoTier: 'pro',
       });
     });
 
@@ -518,7 +467,7 @@ describe('GitLab Duo Usage', () => {
 
       expect(findSelfManagedAddOnEligibleUserList().props()).toEqual({
         addOnPurchaseId: 'gid://gitlab/GitlabSubscriptions::AddOnPurchase/3',
-        duoTier: DUO_PRO,
+        duoTier: 'pro',
       });
     });
   });
@@ -580,8 +529,9 @@ describe('GitLab Duo Usage', () => {
         });
       });
 
-      it('renders code suggestions title', () => {
-        expect(findCodeSuggestionsTitle().text()).toBe(CODE_SUGGESTIONS_TITLE);
+      it('renders code suggestions title and pro tier badge', () => {
+        expect(findCodeSuggestionsTitle().text()).toBe('GitLab Duo');
+        expect(findCodeSuggestionsTitleTierBadge().text()).toBe('pro');
       });
 
       it('renders code suggestions subtitle', () => {

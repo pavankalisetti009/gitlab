@@ -27,36 +27,11 @@ RSpec.describe Admin::CodeSuggestionsController, :cloud_licenses, feature_catego
       context 'when duo pro addon is purchased' do
         let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase, :gitlab_duo_pro, :active) }
 
-        context 'when connection check succeeds' do
-          before do
-            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
-              allow(client).to receive(:test_completion).and_return(nil)
-            end
-          end
+        it 'renders the activation form' do
+          get admin_code_suggestions_path
 
-          it 'renders the activation form' do
-            get admin_code_suggestions_path
-
-            expect(response).to render_template(:index)
-            expect(response.body).to include('js-code-suggestions-page')
-            expect(flash.now[:notice]).to eq("Code completion test was successful")
-          end
-        end
-
-        context 'when connection check fails' do
-          before do
-            allow_next_instance_of(Gitlab::Llm::AiGateway::CodeSuggestionsClient) do |client|
-              allow(client).to receive(:test_completion).and_return('an error')
-            end
-          end
-
-          it 'renders the activation form with alert message' do
-            get admin_code_suggestions_path
-
-            expect(response).to render_template(:index)
-            expect(response.body).to include('js-code-suggestions-page')
-            expect(flash.now[:alert]).to eq("Code completion test failed: an error")
-          end
+          expect(response).to render_template(:index)
+          expect(response.body).to include('js-code-suggestions-page')
         end
       end
     end

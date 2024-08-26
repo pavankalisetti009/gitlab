@@ -1,67 +1,54 @@
+import { GlCollapse, GlIcon, GlLoadingIcon, GlSkeletonLoader } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlAlert, GlSkeletonLoader, GlLoadingIcon, GlCard, GlBadge } from '@gitlab/ui';
 
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
+import { probesByCategory } from 'ee/usage_quotas/code_suggestions/utils';
+
+import {
+  MOCK_NETWORK_PROBES,
+  MOCK_SYNCHRONIZATION_PROBES,
+  MOCK_SYSTEM_EXCHANGE_PROBES,
+} from '../mock_data';
 
 const success = {
   data: {
     cloudConnectorStatus: {
       success: true,
       probeResults: [
-        {
-          name: 'license_probe',
-          success: true,
-          message: 'Online Cloud License found',
-        },
-        {
-          name: 'host_probe',
-          success: true,
-          message: 'customers.gitlab.com reachable',
-        },
-        {
-          name: 'host_probe',
-          success: true,
-          message: 'cloud.gitlab.com reachable',
-        },
+        ...MOCK_NETWORK_PROBES.success,
+        ...MOCK_SYNCHRONIZATION_PROBES.success,
+        ...MOCK_SYSTEM_EXCHANGE_PROBES.success,
       ],
     },
   },
 };
 
-const emptySuccess = {
-  data: {
-    cloudConnectorStatus: {
-      success: true,
-      probeResults: [],
-    },
-  },
-};
-
-const failure = {
+const partialFailure = {
   data: {
     cloudConnectorStatus: {
       success: false,
       probeResults: [
-        {
-          name: 'license_probe',
-          success: true,
-          message: 'Online Cloud License found',
-        },
-        {
-          name: 'host_probe',
-          success: false,
-          message: 'customers.gitlab.com not reachable',
-        },
-        {
-          name: 'host_probe',
-          success: true,
-          message: 'cloud.gitlab.com reachable',
-        },
+        ...MOCK_NETWORK_PROBES.success,
+        ...MOCK_SYNCHRONIZATION_PROBES.error,
+        ...MOCK_SYSTEM_EXCHANGE_PROBES.error,
+      ],
+    },
+  },
+};
+
+const totalFailure = {
+  data: {
+    cloudConnectorStatus: {
+      success: false,
+      probeResults: [
+        ...MOCK_NETWORK_PROBES.error,
+        ...MOCK_SYNCHRONIZATION_PROBES.error,
+        ...MOCK_SYSTEM_EXCHANGE_PROBES.error,
       ],
     },
   },
@@ -72,148 +59,347 @@ Vue.use(VueApollo);
 describe('HealthCheckList', () => {
   let wrapper;
   let mockApollo;
+  let healthStatusReq;
 
-  const findCard = () => wrapper.findComponent(GlCard);
-  const findProbes = () => wrapper.findAllComponents(GlAlert);
-  const findSkeletonLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
-  const findStatusBadge = () => wrapper.findComponent(GlBadge);
+  const findGlCollapse = () => wrapper.findComponent(GlCollapse);
+  const findHealthCheckIcon = () => wrapper.findByTestId('health-check-icon');
+  const findHealthCheckTitle = () => wrapper.findByTestId('health-check-title');
+  const findRunHealthCheckButton = () => wrapper.findByTestId('run-health-check-button');
+  const findHealthCheckExpandButton = () => wrapper.findByTestId('health-check-expand-button');
+  const findHealthCheckExpandText = () => wrapper.findByTestId('health-check-expand-text');
+  const findHealthCheckFooterLoader = () => wrapper.findComponent(GlLoadingIcon);
+  const findHealthCheckFooterText = () => wrapper.findByTestId('health-check-footer-text');
+  const findHealthCheckProbesLoader = () => wrapper.findComponent(GlSkeletonLoader);
+  const findHealthCheckProbes = () => wrapper.findByTestId('health-check-probes');
+  const findAllHealthCheckProbes = () => wrapper.findAllByTestId('health-check-probe');
+  const findAllHealthCheckProbeCategories = () =>
+    wrapper.findAllByTestId('health-check-probe-category');
+  const findAllHealthCheckProbeCategoryTitles = () =>
+    wrapper.findAllByTestId('health-check-probe-category-title');
+  const findAllHealthCheckProbeCategoryDescriptions = () =>
+    wrapper.findAllByTestId('health-check-probe-category-description');
 
-  let getHealthStatusSuccess = jest.fn().mockResolvedValue(success);
-
-  const createComponent = ({ data = {} } = {}) => {
-    mockApollo = createMockApollo([[getCloudConnectorHealthStatus, getHealthStatusSuccess]]);
+  const createComponent = ({ response = success } = {}) => {
+    healthStatusReq = jest.fn().mockResolvedValue(response);
+    mockApollo = createMockApollo([[getCloudConnectorHealthStatus, healthStatusReq]]);
 
     wrapper = shallowMountExtended(HealthCheckList, {
       apolloProvider: mockApollo,
-      data() {
-        return data;
-      },
     });
   };
 
   afterEach(() => {
     mockApollo = null;
+    healthStatusReq = null;
   });
 
-  it('does not get rendered if there are no probes and no loading happening', async () => {
-    createComponent();
-    await waitForPromises();
-    expect(findCard().exists()).toBe(false);
-  });
+  describe('when collapse is not expanded', () => {
+    describe('default', () => {
+      beforeEach(() => {
+        createComponent();
+      });
 
-  describe('loading state', () => {
-    beforeEach(() => {
-      createComponent({
-        data: {
-          isLoading: true,
-        },
+      it('renders with the collapse not expanded', () => {
+        expect(findGlCollapse().props('visible')).toBe(false);
+      });
+
+      it('renders expand button as collapsed', () => {
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
       });
     });
 
-    it('shows skeleton loader when loading', () => {
-      expect(findSkeletonLoader().exists()).toBe(true);
+    describe('loading state', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('renders health check icon as status-health', () => {
+        expect(findHealthCheckIcon().props('name')).toBe('status-health');
+      });
+
+      it('renders health check title as Updating...', () => {
+        expect(findHealthCheckTitle().text()).toBe('Updating...');
+      });
+
+      it('disables run health check button', () => {
+        expect(findRunHealthCheckButton().attributes('disabled')).toBe('true');
+        expect(findRunHealthCheckButton().props('loading')).toBe(true);
+      });
+
+      it('renders expand button text as Tests are running', () => {
+        expect(findHealthCheckExpandText().text()).toBe('Tests are running');
+      });
     });
 
-    it('does not show probes listing when loading', () => {
-      expect(findProbes()).toHaveLength(0);
-    });
+    describe.each`
+      description                | response          | icon                     | title                             | expandText
+      ${'success state'}         | ${success}        | ${'check-circle-filled'} | ${'No health problems detected'}  | ${'GitLab Duo should be operational.'}
+      ${'partial failure state'} | ${partialFailure} | ${'error'}               | ${'Problems detected with setup'} | ${'Not operational. Resolve issues to use GitLab Duo.'}
+      ${'total failure state'}   | ${totalFailure}   | ${'error'}               | ${'Problems detected with setup'} | ${'Not operational. Resolve issues to use GitLab Duo.'}
+    `('$description', ({ response, icon, title, expandText }) => {
+      beforeEach(async () => {
+        createComponent({ response });
+        await waitForPromises();
+      });
 
-    it('shows loading icon in footer when loading', () => {
-      expect(findLoadingIcon().exists()).toBe(true);
-    });
+      it(`renders health check icon as ${icon}`, () => {
+        expect(findHealthCheckIcon().props('name')).toBe(icon);
+      });
 
-    it('shows loading text in footer when loading', () => {
-      expect(wrapper.text()).toContain('Tests are running...');
+      it(`renders health check title as ${title}`, () => {
+        expect(findHealthCheckTitle().text()).toBe(title);
+      });
+
+      it(`renders expand button text as ${expandText}`, () => {
+        expect(findHealthCheckExpandText().text()).toBe(expandText);
+      });
+
+      it('does not disable run health check button', () => {
+        expect(findRunHealthCheckButton().attributes('disabled')).toBeUndefined();
+        expect(findRunHealthCheckButton().props('loading')).toBe(false);
+      });
     });
   });
 
-  it('does not fetch health status on load', async () => {
-    createComponent();
-    await waitForPromises();
-    expect(getHealthStatusSuccess).not.toHaveBeenCalled();
+  describe('when collapse is expanded', () => {
+    describe('default', () => {
+      beforeEach(() => {
+        createComponent();
+        findHealthCheckExpandButton().vm.$emit('click');
+      });
+
+      it('renders with the collapse as expanded', () => {
+        expect(findGlCollapse().props('visible')).toBe(true);
+      });
+
+      it('renders expand button as expanded', () => {
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
+      });
+    });
+
+    describe('loading state', () => {
+      beforeEach(() => {
+        createComponent();
+        findHealthCheckExpandButton().vm.$emit('click');
+      });
+
+      it('renders health check icon as status-health', () => {
+        expect(findHealthCheckIcon().props('name')).toBe('status-health');
+      });
+
+      it('renders health check title as Updating...', () => {
+        expect(findHealthCheckTitle().text()).toBe('Updating...');
+      });
+
+      it('disables run health check button', () => {
+        expect(findRunHealthCheckButton().attributes('disabled')).toBe('true');
+        expect(findRunHealthCheckButton().props('loading')).toBe(true);
+      });
+
+      it('renders expand button text as Tests are running', () => {
+        expect(findHealthCheckExpandText().text()).toBe('Tests are running');
+      });
+
+      it('renders health check probe loader', () => {
+        expect(findHealthCheckProbesLoader().exists()).toBe(true);
+        expect(findHealthCheckProbes().exists()).toBe(false);
+      });
+
+      it('render the footer as a loading icon', () => {
+        expect(findHealthCheckFooterLoader().exists()).toBe(true);
+        expect(findHealthCheckFooterText().exists()).toBe(false);
+      });
+    });
+
+    describe.each`
+      description                | response          | icon                     | title                             | expandText        | footerText
+      ${'success state'}         | ${success}        | ${'check-circle-filled'} | ${'No health problems detected'}  | ${'Hide results'} | ${'GitLab Duo should be operational.'}
+      ${'partial failure state'} | ${partialFailure} | ${'error'}               | ${'Problems detected with setup'} | ${'Hide results'} | ${'Not operational. Resolve issues to use GitLab Duo.'}
+      ${'total failure state'}   | ${totalFailure}   | ${'error'}               | ${'Problems detected with setup'} | ${'Hide results'} | ${'Not operational. Resolve issues to use GitLab Duo.'}
+    `('$description', ({ response, icon, title, expandText, footerText }) => {
+      beforeEach(async () => {
+        createComponent({ response });
+        findHealthCheckExpandButton().vm.$emit('click');
+        await waitForPromises();
+      });
+
+      it(`renders health check icon as ${icon}`, () => {
+        expect(findHealthCheckIcon().props('name')).toBe(icon);
+      });
+
+      it(`renders health check title as ${title}`, () => {
+        expect(findHealthCheckTitle().text()).toBe(title);
+      });
+
+      it(`renders expand button text as ${expandText}`, () => {
+        expect(findHealthCheckExpandText().text()).toBe(expandText);
+      });
+
+      it('does not disable run health check button', () => {
+        expect(findRunHealthCheckButton().attributes('disabled')).toBeUndefined();
+        expect(findRunHealthCheckButton().props('loading')).toBe(false);
+      });
+
+      it('renders health check probes', () => {
+        expect(findHealthCheckProbesLoader().exists()).toBe(false);
+        expect(findHealthCheckProbes().exists()).toBe(true);
+      });
+
+      it(`render the footer as a ${footerText}`, () => {
+        expect(findHealthCheckFooterLoader().exists()).toBe(false);
+        expect(findHealthCheckFooterText().text()).toBe(footerText);
+      });
+    });
   });
 
-  describe('runHealthCheck', () => {
-    it('fetches health status on demand', async () => {
-      createComponent();
+  describe('health check categories', () => {
+    const { probeResults } = success.data.cloudConnectorStatus;
+    const categories = probesByCategory(probeResults);
+
+    beforeEach(async () => {
+      createComponent({ response: success });
+      findHealthCheckExpandButton().vm.$emit('click');
       await waitForPromises();
-
-      await wrapper.vm.runHealthCheck();
-
-      expect(getHealthStatusSuccess).toHaveBeenCalled();
-
-      expect(wrapper.text()).toContain('Health check results');
-
-      const probeResults = findProbes().wrappers.map((probe) => probe.text());
-      expect(probeResults).toEqual([
-        'Online Cloud License found',
-        'customers.gitlab.com reachable',
-        'cloud.gitlab.com reachable',
-      ]);
     });
 
-    it('renders the probes when those are available', async () => {
-      createComponent();
-      await waitForPromises();
-      await wrapper.vm.runHealthCheck();
-
-      expect(findProbes()).toHaveLength(3);
+    it('renders category title for each health check category', () => {
+      expect(findAllHealthCheckProbeCategoryTitles().wrappers.map((w) => w.text())).toStrictEqual(
+        categories.map((category) => category.title),
+      );
     });
 
-    it('resets the current probes', async () => {
+    it('renders category description for each health check category', () => {
+      expect(
+        findAllHealthCheckProbeCategoryDescriptions().wrappers.map((w) => w.text()),
+      ).toStrictEqual(categories.map((category) => category.description));
+    });
+
+    it('renders probes correctly under each health check category', () => {
+      const probes = findAllHealthCheckProbeCategories().wrappers.map((w) =>
+        w.findAll(`[data-testid="health-check-probe"]`).wrappers.map((p) => p.text()),
+      );
+      const expectedProbes = categories.map((c) => c.probes.map((p) => p.message));
+
+      expect(probes).toStrictEqual(expectedProbes);
+    });
+  });
+
+  describe('health check probes', () => {
+    describe.each`
+      description                | response
+      ${'success state'}         | ${success}
+      ${'partial failure state'} | ${partialFailure}
+      ${'total failure state'}   | ${totalFailure}
+    `('$description', ({ response }) => {
+      let probeResults = [];
+
+      beforeEach(async () => {
+        createComponent({ response });
+        findHealthCheckExpandButton().vm.$emit('click');
+        await waitForPromises();
+
+        probeResults = response.data.cloudConnectorStatus.probeResults;
+      });
+
+      it('renders each probe item icon correctly', () => {
+        expect(
+          findAllHealthCheckProbes().wrappers.map((w) => w.findComponent(GlIcon).props('name')),
+        ).toStrictEqual(probeResults.map((p) => (p.success ? 'check-circle' : 'error')));
+      });
+
+      it('renders each probe item css correctly', () => {
+        const BASE_CSS = 'gl-my-3 gl-px-3 gl-py-2 gl-rounded-small';
+        expect(findAllHealthCheckProbes().wrappers.map((w) => w.classes().join(' '))).toStrictEqual(
+          probeResults.map((p) =>
+            p.success
+              ? `${BASE_CSS} gl-text-green-900 gl-bg-green-50`
+              : `${BASE_CSS} gl-text-red-900 gl-bg-red-50`,
+          ),
+        );
+      });
+
+      it('renders each probe item message correctly', () => {
+        expect(findAllHealthCheckProbes().wrappers.map((w) => w.text())).toStrictEqual(
+          probeResults.map((p) => p.message),
+        );
+      });
+    });
+  });
+
+  describe('onMount', () => {
+    beforeEach(() => {
+      createComponent();
+    });
+
+    it('fetches health check immediately', () => {
+      expect(healthStatusReq).toHaveBeenCalled();
+    });
+
+    it('renders with the collapse not expanded', () => {
+      expect(findGlCollapse().props('visible')).toBe(false);
+    });
+  });
+
+  describe('onExpandToggle', () => {
+    describe('when collapse is not expanded', () => {
+      beforeEach(() => {
+        createComponent();
+      });
+
+      it('properly expands collapse after click', async () => {
+        expect(findGlCollapse().props('visible')).toBe(false);
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
+
+        findHealthCheckExpandButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findGlCollapse().props('visible')).toBe(true);
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
+      });
+    });
+
+    describe('when collapse is expanded', () => {
+      beforeEach(() => {
+        createComponent();
+        findHealthCheckExpandButton().vm.$emit('click');
+      });
+
+      it('properly collapses collapse after click', async () => {
+        expect(findGlCollapse().props('visible')).toBe(true);
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-down');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Hide results');
+
+        findHealthCheckExpandButton().vm.$emit('click');
+        await nextTick();
+
+        expect(findGlCollapse().props('visible')).toBe(false);
+        expect(findHealthCheckExpandButton().props('icon')).toBe('chevron-right');
+        expect(findHealthCheckExpandButton().attributes('aria-label')).toBe('Show results');
+      });
+    });
+  });
+
+  describe('onRunHealthCheck', () => {
+    beforeEach(async () => {
       createComponent();
       await waitForPromises();
-      await wrapper.vm.runHealthCheck();
 
-      expect(findProbes()).toHaveLength(3);
+      healthStatusReq.mockClear();
+    });
 
-      wrapper.vm.runHealthCheck();
+    it('when button clicked, API is called and loading state is set', async () => {
+      expect(findHealthCheckTitle().text()).toBe('No health problems detected');
+      expect(healthStatusReq).not.toHaveBeenCalled();
+
+      findRunHealthCheckButton().vm.$emit('click');
       await nextTick();
-      expect(findProbes()).toHaveLength(0);
-      await waitForPromises();
-      expect(findProbes()).toHaveLength(3);
-    });
 
-    it('does not render probes if there are none', async () => {
-      getHealthStatusSuccess = jest.fn().mockResolvedValue(emptySuccess);
-      createComponent();
-      await waitForPromises();
-      await wrapper.vm.runHealthCheck();
-
-      expect(findProbes()).toHaveLength(0);
-    });
-
-    it('emits the event when query succeeds', async () => {
-      createComponent();
-      await waitForPromises();
-      await wrapper.vm.runHealthCheck();
-      expect(wrapper.emitted('health-check-completed')).toHaveLength(1);
-    });
-
-    it('emits the event when query fails', async () => {
-      getHealthStatusSuccess = jest.fn().mockRejectedValue({});
-      createComponent();
-      await waitForPromises();
-      await wrapper.vm.runHealthCheck();
-      expect(wrapper.emitted('health-check-completed')).toHaveLength(1);
-    });
-  });
-
-  describe('the Health Check status', () => {
-    it.each([
-      ['success', true],
-      ['danger', false],
-    ])('renders the %s status badge when healthStatus is %s', async (expected, healthStatus) => {
-      if (healthStatus) {
-        getHealthStatusSuccess = jest.fn().mockResolvedValue(success);
-      } else {
-        getHealthStatusSuccess = jest.fn().mockResolvedValue(failure);
-      }
-      createComponent();
-      await waitForPromises();
-      await wrapper.vm.runHealthCheck();
-      expect(findStatusBadge().props('variant')).toBe(expected);
+      expect(findHealthCheckTitle().text()).toBe('Updating...');
+      expect(healthStatusReq).toHaveBeenCalledTimes(1);
     });
   });
 });

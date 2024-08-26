@@ -13,24 +13,12 @@ module Admin
     before_action :ensure_feature_available!
 
     def index
-      run_test if CloudConnector::AvailableServices.find_by_name(:code_suggestions)&.purchased?
-
       @subscription_name = License.current.subscription_name
       @subscription_start_date = License.current.starts_at
       @subscription_end_date = License.current.expires_at
     end
 
     private
-
-    def run_test
-      error = ::Gitlab::Llm::AiGateway::CodeSuggestionsClient.new(current_user).test_completion
-
-      if error.blank?
-        flash.now[:notice] = _('Code completion test was successful')
-      else
-        flash.now[:alert] = format(_('Code completion test failed: %{error}'), error: error)
-      end
-    end
 
     def ensure_feature_available!
       render_404 unless !gitlab_com_subscription? && License.current&.paid?
