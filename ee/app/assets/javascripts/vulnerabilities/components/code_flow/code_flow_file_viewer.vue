@@ -169,7 +169,7 @@ export default {
         <div v-for="(highlightSectionInfo, index) in codeBlocks" :key="index">
           <div
             v-if="highlightSectionInfo.blockStartLine !== 1"
-            class="expansion-line gl-bg-gray-50"
+            class="expansion-line gl-bg-gray-50 gl-p-1"
           >
             <gl-button
               :title="$options.i18n.expandAllLines"
@@ -192,7 +192,7 @@ export default {
             @codeFlowFileLoaded="$emit('codeFlowFileLoaded')"
           />
 
-          <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-gray-50">
+          <div v-if="isEndOfCodeBlock(index)" class="expansion-line gl-bg-gray-50 gl-p-1">
             <gl-button
               :title="$options.i18n.expandAllLines"
               :aria-label="$options.i18n.expandAllLines"
