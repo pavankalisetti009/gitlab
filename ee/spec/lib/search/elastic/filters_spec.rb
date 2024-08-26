@@ -362,6 +362,8 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     let_it_be(:project) { create(:project, group: group) }
     # project label must be defined first or the title cannot match
     let_it_be(:project_label) { create(:label, project: project, title: label_title) }
+    let_it_be(:project_2) { create(:project, group: group) }
+    let_it_be(:project_label_2) { create(:label, project: project_2, title: label_title) }
     let_it_be(:group_label) { create(:group_label, group: group, title: label_title) }
 
     subject(:by_label_ids) { described_class.by_label_ids(query_hash: query_hash, options: options) }
@@ -397,7 +399,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       end
 
       context 'when options[:aggregation] is true' do
-        let(:options) { { labels: [project_label.id], aggregation: true } }
+        let(:options) { { labels: [project.id], aggregation: true } }
 
         it_behaves_like 'does not modify the query_hash'
       end
@@ -410,59 +412,153 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
 
     context 'when options[:label_name] is provided' do
-      let(:options) { { label_name: [label_title] } }
-
-      it 'adds the label_ids filter to query_hash' do
-        expected_filter = [
-          bool: {
-            must: [{
-              terms: {
-                _name: 'filters:label_ids',
-                label_ids: contain_exactly(group_label.id, project_label.id)
-              }
-            }]
-          }
-        ]
-
-        expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
-        expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
-        expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
-        expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+      let(:label_name) { [label_title] }
+      let(:aggregations) { false }
+      let(:count_only) { false }
+      let(:group_ids) { nil }
+      let(:project_ids) { nil }
+      let(:options) do
+        {
+          label_name: label_name, search_scope: search_level, count_only: count_only, aggregations: aggregations,
+          group_ids: group_ids, project_ids: project_ids
+        }
       end
 
-      context 'when multiple label names are provided' do
-        let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
-        let(:options) { { label_name: [label_title, another_label.title] } }
+      context 'when search_level invalid' do
+        let(:search_level) { :not_supported }
 
-        it 'adds the label_ids filter to query_hash' do
-          expected_filter = [
-            bool: {
-              must: contain_exactly(
-                {
-                  terms: {
-                    _name: 'filters:label_ids',
-                    label_ids: contain_exactly(group_label.id, project_label.id)
-                  }
-                },
-                {
-                  terms: {
-                    _name: 'filters:label_ids',
-                    label_ids: contain_exactly(another_label.id)
-                  }
-                }
-              )
-            }
-          ]
-
-          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
-          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
-          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+        it 'raises an exception' do
+          expect { by_label_ids }.to raise_exception(ArgumentError)
         end
       end
 
-      context 'when options[:group_ids] is provided' do
-        let(:options) { { label_name: [label_title], group_ids: [group.id] } }
+      context 'when search_level is not provided' do
+        let(:options) { { label_name: label_name } }
+
+        it 'raises an exception' do
+          expect { by_label_ids }.to raise_exception(ArgumentError)
+        end
+      end
+
+      context 'for global search' do
+        let(:search_level) { :global }
+
+        context 'when multiple label names are provided' do
+          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
+          let(:label_name) { [label_title, another_label.title] }
+
+          it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: contain_exactly(
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                    }
+                  },
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(another_label.id)
+                    }
+                  }
+                )
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+
+        context 'when options[:group_ids] is provided' do
+          let(:group_ids) { [group.id] }
+
+          it 'adds the label_ids filter to query_hash with no group filtering' do
+            expected_filter = [
+              bool: {
+                must: [{
+                  terms: {
+                    _name: 'filters:label_ids',
+                    label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                  }
+                }]
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+
+          context 'when options[:project_ids] is provided' do
+            let(:project_ids) { [project.id] }
+
+            it 'adds the label_ids filter to query_hash' do
+              expected_filter = [
+                bool: {
+                  must: [{
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                    }
+                  }]
+                }
+              ]
+
+              expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+              expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+              expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+            end
+          end
+        end
+
+        context 'when options[:project_ids] is provided' do
+          using RSpec::Parameterized::TableSyntax
+
+          let(:project_ids) { projects == :any ? projects : [projects.id] }
+
+          where(:projects) do
+            [:any, ref(:project), ref(:project_2)]
+          end
+
+          with_them do
+            it 'adds the label_ids filter to query_hash with no project filtering' do
+              expected_filter = [
+                bool: {
+                  must: [{
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                    }
+                  }]
+                }
+              ]
+
+              expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+              expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+              expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+            end
+          end
+        end
+
+        context 'when options[:count_only] is true' do
+          let(:count_only) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
+
+        context 'when options[:aggregation] is true' do
+          let(:aggregation) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
 
         it 'adds the label_ids filter to query_hash' do
           expected_filter = [
@@ -470,7 +566,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
               must: [{
                 terms: {
                   _name: 'filters:label_ids',
-                  label_ids: contain_exactly(group_label.id, project_label.id)
+                  label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
                 }
               }]
             }
@@ -481,13 +577,115 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
           expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
         end
+      end
 
-        context 'when options[:project_ids] is provided' do
-          let(:options) do
-            { label_name: [label_title], group_id: [group.id], project_ids: [project.id] }
-          end
+      context 'for group search' do
+        let(:search_level) { :group }
+        let(:group_ids) { [group.id] }
+        let(:project_ids) { nil }
+
+        context 'when multiple label names are provided' do
+          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
+          let(:label_name) { [label_title, another_label.title] }
 
           it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: contain_exactly(
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                    }
+                  },
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(another_label.id)
+                    }
+                  }
+                )
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+
+        context 'when options[:count_only] is true' do
+          let(:count_only) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
+
+        context 'when options[:aggregation] is true' do
+          let(:aggregation) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
+
+        it 'adds the label_ids filter to query_hash' do
+          expected_filter = [
+            bool: {
+              must: [{
+                terms: {
+                  _name: 'filters:label_ids',
+                  label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
+                }
+              }]
+            }
+          ]
+
+          expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+          expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+          expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+        end
+      end
+
+      context 'for project search' do
+        let(:search_level) { :project }
+        let(:group_ids) { nil }
+        let(:project_ids) { [project.id] }
+
+        context 'when multiple label names are provided' do
+          let_it_be(:another_label) { create(:label, project: project, title: 'Another label') }
+          let(:label_name) { [label_title, another_label.title] }
+
+          it 'adds the label_ids filter to query_hash' do
+            expected_filter = [
+              bool: {
+                must: contain_exactly(
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(group_label.id, project_label.id)
+                    }
+                  },
+                  {
+                    terms: {
+                      _name: 'filters:label_ids',
+                      label_ids: contain_exactly(another_label.id)
+                    }
+                  }
+                )
+              }
+            ]
+
+            expect(by_label_ids.dig(:query, :bool, :filter)).to match(expected_filter)
+            expect(by_label_ids.dig(:query, :bool, :must)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+
+        context 'when options[:group_ids] is provided' do
+          let(:group_ids) { [group.id] }
+
+          it 'adds the label_ids filter to query_hash with no group filtering' do
             expected_filter = [
               bool: {
                 must: [{
@@ -505,10 +703,18 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
           end
         end
-      end
 
-      context 'when options[:project_ids] is provided' do
-        let(:options) { { label_name: [label_title], project_ids: [project.id] } }
+        context 'when options[:count_only] is true' do
+          let(:count_only) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
+
+        context 'when options[:aggregation] is true' do
+          let(:aggregation) { true }
+
+          it_behaves_like 'does not modify the query_hash'
+        end
 
         it 'adds the label_ids filter to query_hash' do
           expected_filter = [
@@ -528,22 +734,10 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
           expect(by_label_ids.dig(:query, :bool, :should)).to be_empty
         end
       end
-
-      context 'when options[:count_only] is true' do
-        let(:options) { { label_name: [label_title], count_only: true } }
-
-        it_behaves_like 'does not modify the query_hash'
-      end
-
-      context 'when options[:aggregation] is true' do
-        let(:options) { { label_name: [label_title], aggregation: true } }
-
-        it_behaves_like 'does not modify the query_hash'
-      end
     end
 
     context 'when options[:labels] and options[:label_name] are provided' do
-      let(:options) { { labels: [project_label.id], label_name: [label_title] } }
+      let(:options) { { labels: [project_label.id], label_name: [label_title], search_scope: :global } }
 
       it 'uses label_name option and adds the label_ids filter to query_hash' do
         expected_filter = [
@@ -551,7 +745,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             must: [{
               terms: {
                 _name: 'filters:label_ids',
-                label_ids: contain_exactly(group_label.id, project_label.id)
+                label_ids: contain_exactly(group_label.id, project_label.id, project_label_2.id)
               }
             }]
           }

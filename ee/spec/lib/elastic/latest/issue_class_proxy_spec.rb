@@ -101,11 +101,11 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
     describe 'named queries' do
       using RSpec::Parameterized::TableSyntax
 
-      where(:projects, :groups) do
-        [] | []
-        [ref(:project)] | []
-        [] | [ref(:group)]
-        [ref(:project)] | [ref(:group)]
+      where(:search_level, :projects, :groups) do
+        :global   | []              | []
+        :project  | [ref(:project)] | []
+        :group    | []              | [ref(:group)]
+        :project  | [ref(:project)] | [ref(:group)]
       end
 
       with_them do
@@ -116,6 +116,7 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
         let(:base_options) do
           {
             current_user: user,
+            search_scope: search_level,
             project_ids: project_ids,
             group_ids: group_ids,
             public_and_internal_projects: false,

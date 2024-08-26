@@ -7,6 +7,7 @@ RSpec.describe ::Search::Elastic::IssueQueryBuilder, :elastic_helpers, feature_c
   let(:base_options) do
     {
       current_user: user,
+      search_scope: 'global',
       project_ids: project_ids,
       group_ids: [],
       public_and_internal_projects: false
