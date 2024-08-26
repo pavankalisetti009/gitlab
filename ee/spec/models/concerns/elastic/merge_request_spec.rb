@@ -26,16 +26,16 @@ RSpec.describe MergeRequest, :elastic, feature_category: :global_search do
 
     ensure_elasticsearch_index!
 
-    options = { project_ids: [project.id] }
+    options = { project_ids: [project.id], search_level: 'global' }
 
     expect(described_class.elastic_search('term1 | term2 | term3', options: options).total_count).to eq(2)
     expect(described_class.elastic_search(described_class.last.to_reference, options: options).total_count).to eq(1)
     expect(described_class.elastic_search('term3', options: options).total_count).to eq(0)
-    expect(described_class.elastic_search('term3', options: { project_ids: :any, public_and_internal_projects: true }).total_count).to eq(1)
+    expect(described_class.elastic_search('term3', options: { search_level: 'global', project_ids: :any, public_and_internal_projects: true }).total_count).to eq(1)
   end
 
   it 'names elasticsearch queries' do
-    described_class.elastic_search('*').total_count
+    described_class.elastic_search('*', options: { search_level: 'global' }).total_count
 
     assert_named_queries('merge_request:match:search_terms', 'filters:project')
   end

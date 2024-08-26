@@ -42,8 +42,8 @@ module Elastic
       private
 
       def search_query(query, options)
-        search_scope = options[:search_scope]
-        return match_none if search_scope == 'group' && options[:group_ids].blank?
+        search_level = options[:search_level]
+        return match_none if search_level == 'group' && options[:group_ids].blank?
 
         bool_expr = { filter: [], must: [], must_not: [] }
         query_hash = { query: { bool: bool_expr } }
@@ -57,7 +57,7 @@ module Elastic
         bool_expr[:must_not] << { term: { wiki_access_level: Featurable::DISABLED } }
         bool_expr[:filter] << { terms: { language: Wiki::MARKUPS.values.pluck(:name) } } # rubocop: disable CodeReuse/ActiveRecord -- It is not an ActiveRecord
 
-        if search_scope == 'project' && options[:repository_id].present?
+        if search_level == 'project' && options[:repository_id].present?
           query_hash = add_filter(query_hash, :query, :bool, :filter) do
             { term: { rid: options[:repository_id] } }
           end
@@ -65,7 +65,7 @@ module Elastic
 
         query_hash = archived_filter(query_hash) if archived_filter_applicable_on_wiki?(options)
         user = options[:current_user]
-        query_hash = add_namespace_ancestry_filter(query_hash, options[:group_id], user) if search_scope == 'group'
+        query_hash = add_namespace_ancestry_filter(query_hash, options[:group_id], user) if search_level == 'group'
 
         if options.key?(:current_user)
           return query_hash if user&.can_read_all_resources?
@@ -86,10 +86,10 @@ module Elastic
       end
 
       def add_should_query_for_private_group_documents(should_collection, user, options)
-        return should_collection if options[:search_scope] == 'project' || user.nil?
+        return should_collection if options[:search_level] == 'project' || user.nil?
 
         finder_params = { min_access_level: ::Gitlab::Access::GUEST }
-        if options[:search_scope] == 'group'
+        if options[:search_level] == 'group'
           searched_group = searched_group(options[:group_id], user)
           finder_params[:filter_group_ids] = searched_group.self_and_descendants.pluck_primary_key if searched_group
         end
@@ -162,7 +162,7 @@ module Elastic
       end
 
       def archived_filter_applicable_on_wiki?(options)
-        !options[:include_archived] && options[:search_scope] != 'project' &&
+        !options[:include_archived] && options[:search_level] != 'project' &&
           ::Elastic::DataMigrationService.migration_has_finished?(:reindex_wikis_to_fix_routing_and_backfill_archived)
       end
 

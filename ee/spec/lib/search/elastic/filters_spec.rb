@@ -306,6 +306,14 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
   describe '.by_archived' do
     subject(:by_archived) { described_class.by_archived(query_hash: query_hash, options: options) }
 
+    context 'when search_level not provided in options' do
+      let(:options) { {} }
+
+      it 'raises an exception' do
+        expect { by_archived }.to raise_exception(ArgumentError)
+      end
+    end
+
     context 'when options[:include_archived] is empty or false' do
       let(:options) { { include_archived: false, search_level: 'group' } }
 
@@ -327,20 +335,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       context 'when options[:search_level] is project' do
         let(:options) { { include_archived: false, search_level: 'project' } }
 
-        it 'adds the archived filter to query_hash' do
-          expected_filter = [
-            { bool: { _name: 'filters:non_archived',
-                      should: [
-                        { bool: { filter: { term: { archived: { value: false } } } } },
-                        { bool: { must_not: { exists: { field: 'archived' } } } }
-                      ] } }
-          ]
-
-          expect(by_archived.dig(:query, :bool, :filter)).to eq(expected_filter)
-          expect(by_archived.dig(:query, :bool, :must)).to be_empty
-          expect(by_archived.dig(:query, :bool, :must_not)).to be_empty
-          expect(by_archived.dig(:query, :bool, :should)).to be_empty
-        end
+        it_behaves_like 'does not modify the query_hash'
       end
     end
 
@@ -348,6 +343,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       let(:options) { { include_archived: true, search_level: 'group' } }
 
       it_behaves_like 'does not modify the query_hash'
+
       context 'when options[:search_level] is project' do
         let(:options) { { include_archived: true, search_level: 'project' } }
 
@@ -419,7 +415,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
       let(:project_ids) { nil }
       let(:options) do
         {
-          label_name: label_name, search_scope: search_level, count_only: count_only, aggregations: aggregations,
+          label_name: label_name, search_level: search_level, count_only: count_only, aggregations: aggregations,
           group_ids: group_ids, project_ids: project_ids
         }
       end
@@ -737,7 +733,7 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
     end
 
     context 'when options[:labels] and options[:label_name] are provided' do
-      let(:options) { { labels: [project_label.id], label_name: [label_title], search_scope: :global } }
+      let(:options) { { labels: [project_label.id], label_name: [label_title], search_level: :global } }
 
       it 'uses label_name option and adds the label_ids filter to query_hash' do
         expected_filter = [

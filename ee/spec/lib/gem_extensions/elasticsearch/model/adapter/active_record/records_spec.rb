@@ -9,7 +9,7 @@ RSpec.describe Elasticsearch::Model::Adapter::ActiveRecord::Records, :elastic do
 
   describe '#records' do
     let(:user) { create(:user) }
-    let(:search_options) { { options: { current_user: user, project_ids: :any, order_by: 'created_at', sort: 'desc' } } }
+    let(:search_options) { { options: { search_level: 'global', current_user: user, project_ids: :any, order_by: 'created_at', sort: 'desc' } } }
     let(:results) { Issue.elastic_search('*', **search_options).records.to_a }
 
     let!(:new_issue) { create(:issue) }

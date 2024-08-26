@@ -18,7 +18,8 @@ RSpec.shared_examples 'no results when the user cannot read cross project' do
       'test',
       options: {
         current_user: user,
-        project_ids: [project.id]
+        project_ids: [project.id],
+        search_level: 'global'
       }
     )
 
@@ -30,7 +31,8 @@ RSpec.shared_examples 'no results when the user cannot read cross project' do
       'test',
       options: {
         current_user: user,
-        project_ids: [project.id, project2.id]
+        project_ids: [project.id, project2.id],
+        search_level: 'global'
       }
     )
 

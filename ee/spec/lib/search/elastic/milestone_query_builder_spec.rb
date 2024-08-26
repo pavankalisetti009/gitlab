@@ -9,6 +9,7 @@ RSpec.describe ::Search::Elastic::MilestoneQueryBuilder, :elastic_helpers, featu
       current_user: user,
       project_ids: project_ids,
       group_ids: [],
+      search_level: 'global',
       public_and_internal_projects: true
     }
   end

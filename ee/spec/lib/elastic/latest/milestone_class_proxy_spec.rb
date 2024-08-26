@@ -27,15 +27,19 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
       ensure_elasticsearch_index!
     end
 
-    where(:projects, :groups, :public_and_internal_projects) do
-      :any | [] | true
-      :any | [] | false
-      [ref(:project)] | [] | true
-      [ref(:project)] | [] | false
-      :any | [ref(:group)] | true
-      :any | [ref(:group)] | false
-      [ref(:project)] | [ref(:group)] | true
-      [ref(:project)] | [ref(:group)] | false
+    where(:search_level, :projects, :groups, :public_and_internal_projects) do
+      'global'  | :any            | []            | true
+      'global'  | :any            | []            | false
+      'group'   | :any            | [ref(:group)] | true
+      'group'   | :any            | [ref(:group)] | false
+      'group'   | []              | [ref(:group)] | true
+      'group'   | []              | [ref(:group)] | false
+      'project' | :any            | []            | true
+      'project' | :any            | []            | false
+      'project' | [ref(:project)] | []            | true
+      'project' | [ref(:project)] | []            | false
+      'project' | [ref(:project)] | [ref(:group)] | true
+      'project' | [ref(:project)] | [ref(:group)] | false
     end
 
     with_them do
@@ -45,6 +49,7 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
       let(:options) do
         {
           current_user: current_user,
+          search_level: search_level,
           project_ids: project_ids,
           group_ids: group_ids,
           public_and_internal_projects: public_and_internal_projects,
@@ -60,8 +65,9 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
           milestone:multi_match:and:search_terms
           milestone:multi_match_phrase:search_terms
           filters:project
-          filters:non_archived
           filters:doc:is_a:milestone]
+
+        expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 
         # for when the multi match is turned off
         # milestone:match:search_terms
@@ -104,8 +110,9 @@ RSpec.describe Elastic::Latest::MilestoneClassProxy, :elastic, :sidekiq_inline, 
 
           expected_queries = %w[milestone:match:search_terms
             filters:project
-            filters:non_archived
             filters:doc:is_a:milestone]
+
+          expected_queries.concat(%w[filters:non_archived]) if search_level != 'project'
 
           if projects == :any
             any_filter = %w[

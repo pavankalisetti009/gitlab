@@ -119,9 +119,12 @@ module Search
         end
 
         def by_archived(query_hash:, options:)
-          include_archived = options[:include_archived]
-          search_level = options[:search_scope]
-          return query_hash unless !include_archived && search_level != 'project'
+          raise ArgumentError, 'search_level is a required option' unless options.key?(:search_level)
+
+          include_archived = !!options[:include_archived]
+          search_level = options[:search_level].to_sym
+          return query_hash if search_level == :project
+          return query_hash if include_archived
 
           context.name(:filters) do
             archived_false_filter = { bool: { filter: { term: { archived: { value: false } } } } }
@@ -602,11 +605,11 @@ module Search
         end
 
         def find_labels_by_name(names, options)
-          raise ArgumentError, 'search_scope is a required option' unless options.key?(:search_scope)
+          raise ArgumentError, 'search_level is a required option' unless options.key?(:search_level)
 
           return [] unless names.any?
 
-          search_level = options[:search_scope].to_sym
+          search_level = options[:search_level].to_sym
           project_ids = options[:project_ids]
           group_ids = options[:group_ids]
 
@@ -622,7 +625,7 @@ module Search
             finder_params[:group_id] = group_ids.first if group_ids&.any?
             finder_params[:project_ids] = project_ids if project_ids != :any && project_ids&.any?
           else
-            raise ArgumentError, 'Invalid search_scope option provided'
+            raise ArgumentError, 'Invalid search_level option provided'
           end
 
           labels = LabelsFinder.new(nil, finder_params).execute(skip_authorization: true)

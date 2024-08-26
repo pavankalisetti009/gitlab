@@ -11,7 +11,7 @@ module Elastic
         @current_user = options[:current_user]
         @options = options
 
-        query_hash = if options[:search_scope].in?(%w[global group])
+        query_hash = if options[:search_level].in?(%w[global group])
                        query_hash = basic_query_hash(%w[title^2 description], query, options)
                        query_hash = build_es_query(query_hash)
                        query_hash = apply_groups_filter(query_hash)
@@ -24,7 +24,7 @@ module Elastic
       end
 
       def routing_options(options)
-        return {} if options[:search_scope] == 'global'
+        return {} if options[:search_level] == 'global'
 
         root_namespace_id = group.root_ancestor.id
 
@@ -68,7 +68,7 @@ module Elastic
       end
 
       def apply_groups_filter(query_hash)
-        return query_hash unless options[:search_scope] == 'group'
+        return query_hash unless options[:search_level] == 'group'
 
         traversal_ids_ancestry_filter(query_hash, [group.elastic_namespace_ancestry],
           options)
@@ -82,7 +82,7 @@ module Elastic
       def group_ids_user_can_read_epics(confidential: false)
         min_access_level = confidential ? ::Gitlab::Access::REPORTER : ::Gitlab::Access::GUEST
         finder_params = { min_access_level: min_access_level }
-        if options[:search_scope] == 'group'
+        if options[:search_level] == 'group'
           finder_params[:filter_group_ids] = group.self_and_descendants.pluck_primary_key
         end
 

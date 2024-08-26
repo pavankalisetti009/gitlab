@@ -80,7 +80,7 @@ module Gitlab
 
       override :base_options
       def base_options
-        super.merge(search_scope: 'project')
+        super.merge(search_level: 'project')
       end
 
       override :scope_options

@@ -138,7 +138,7 @@ module Elastic
       end
 
       def archived_filter_applicable?(options)
-        !(options[:include_archived] || options[:search_scope] == 'project')
+        !(options[:include_archived] || options[:search_level] == 'project')
       end
 
       override :project_ids_filter
