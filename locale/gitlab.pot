@@ -58456,6 +58456,9 @@ msgstr ""
 msgid "UserMapping|Download the pre-filled CSV template."
 msgstr ""
 
+msgid "UserMapping|Drop your file here or %{linkStart}click to upload%{linkEnd}."
+msgstr ""
+
 msgid "UserMapping|Import details:"
 msgstr ""
 
@@ -58477,7 +58480,7 @@ msgstr ""
 msgid "UserMapping|Notify again"
 msgstr ""
 
-msgid "UserMapping|Once you select \"Reassign\", the processing will start and users will receive and email to accept the contribution reassignment. Once a users has accepted the reassignment, it cannot be undone. Check all data is correct before continuing."
+msgid "UserMapping|Once you select \"Reassign\", the processing will start and users will receive an email to accept the contribution reassignment. Once a user has accepted the reassignment, it cannot be undone. Check all data is correct before continuing."
 msgstr ""
 
 msgid "UserMapping|Original user: %{source_name} (%{source_username})"
@@ -58610,6 +58613,9 @@ msgid "UserMapping|To learn more about reassignments, %{link_start}visit the doc
 msgstr ""
 
 msgid "UserMapping|To learn more about reassignments, visit the docs (%{help_link}). If you don't recognize this request, report abuse (%{report_link})."
+msgstr ""
+
+msgid "UserMapping|Unable to upload the file. Check that the file follows the CSV template and try again."
 msgstr ""
 
 msgid "UserMapping|Upload reviewed and completed CSV file."
