@@ -113,10 +113,16 @@ RSpec.describe PersonalAccessTokens::CreateService, feature_category: :system_ac
               context 'when expires_at is nil' do
                 let(:params) { valid_params.merge(expires_at: nil) }
 
+                around do |example|
+                  travel_to(Date.new(2024, 8, 24))
+                  example.run
+                  travel_back
+                end
+
                 where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
-                  true | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                  true | true | Date.new(2025, 8, 24) # 1 year from now
                   true | false | nil
-                  false | true | PersonalAccessToken::MAX_PERSONAL_ACCESS_TOKEN_LIFETIME_IN_DAYS.days.from_now.to_date
+                  false | true | Date.new(2025, 8, 24) # 1 year from now
                   false | false | nil
                 end
                 with_them do
