@@ -12,7 +12,7 @@ import createStore from 'ee/subscriptions/new/store';
 import * as types from 'ee/subscriptions/new/store/mutation_types';
 import Step from 'ee/vue_shared/purchase_flow/components/step.vue';
 import { createMockApolloProvider } from 'ee_jest/vue_shared/purchase_flow/spec_helper';
-import { mountExtended } from 'helpers/vue_test_utils_helper';
+import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import getBillableMembersCountQuery from 'ee/subscriptions/graphql/queries/billable_members_count.query.graphql';
 import waitForPromises from 'helpers/wait_for_promises';
 import { mockInvoicePreviewBronze } from 'ee_jest/subscriptions/mock_data';
@@ -58,7 +58,7 @@ describe('Subscription Details', () => {
   let wrapper;
 
   function createComponent(options = {}) {
-    const { store, billableMembersCountMock } = options;
+    const { store, billableMembersCountMock, mountFn = mountExtended } = options;
     const mockHandler = billableMembersCountMock || defaultBillableMembersCountMock;
     const handlers = [[getBillableMembersCountQuery, mockHandler]];
     const apolloProvider = createMockApolloProvider(STEPS, 1, {}, handlers);
@@ -67,7 +67,7 @@ describe('Subscription Details', () => {
       data: { furthestAccessedStep: STEPS.find((step) => step.id === STEP_BILLING_ADDRESS) },
     });
 
-    wrapper = mountExtended(Component, {
+    wrapper = mountFn(Component, {
       store,
       apolloProvider,
       stubs: {
@@ -80,6 +80,8 @@ describe('Subscription Details', () => {
 
   const organizationNameInput = () => wrapper.findComponent({ ref: 'organization-name' });
   const groupSelect = () => wrapper.findComponent({ ref: 'group-select' });
+  const findGroupSelectFormGroup = () => wrapper.findByTestId('group-select-form-group');
+
   const numberOfUsersInput = () => wrapper.findComponent({ ref: 'number-of-users' });
   const companyLink = () => wrapper.findComponent({ ref: 'company-link' });
   const findQsrOverageMessage = () => wrapper.findByTestId('qsr-overage-message');
@@ -419,7 +421,7 @@ describe('Subscription Details', () => {
           setupForCompany: '',
         }),
       );
-      return createComponent({ store, billableMembersCountMock });
+      return createComponent({ store, billableMembersCountMock, mountFn: shallowMountExtended });
     });
 
     it('should not display an input field for the company or group name', () => {
@@ -452,7 +454,7 @@ describe('Subscription Details', () => {
     });
 
     it('should set the selected group to initial namespace id', () => {
-      expect(groupSelect().element.value).toBe(firstGroup.id.toString());
+      expect(groupSelect().attributes('value')).toBe(firstGroup.id.toString());
     });
 
     it('should not show a link to change to setting up for a company', () => {
@@ -471,7 +473,9 @@ describe('Subscription Details', () => {
       });
 
       it('should display the correct description', () => {
-        expect(wrapper.text()).toContain('Your subscription will be applied to this group');
+        expect(findGroupSelectFormGroup().attributes('description')).toBe(
+          'Your subscription will be applied to this group',
+        );
       });
 
       it('should set the min number of users to 12', () => {
@@ -485,7 +489,7 @@ describe('Subscription Details', () => {
       });
 
       it('should set the selected group to the user selected namespace id', () => {
-        expect(groupSelect().element.value).toBe(secondGroup.id.toString());
+        expect(groupSelect().attributes('value')).toBe(secondGroup.id.toString());
       });
     });
   });
