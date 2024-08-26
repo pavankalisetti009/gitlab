@@ -273,10 +273,10 @@ RSpec.describe Gitlab::Auth::Ldap::Person, feature_category: :system_access do
 
     it 'returns the values of `memberof` if the field was present' do
       example_memberof = ['CN=Group Policy Creator Owners,CN=Users,DC=Vosmaer,DC=com',
-                          'CN=Domain Admins,CN=Users,DC=Vosmaer,DC=com',
-                          'CN=Enterprise Admins,CN=Users,DC=Vosmaer,DC=com',
-                          'CN=Schema Admins,CN=Users,DC=Vosmaer,DC=com',
-                          'CN=Administrators,CN=Builtin,DC=Vosmaer,DC=com']
+        'CN=Domain Admins,CN=Users,DC=Vosmaer,DC=com',
+        'CN=Enterprise Admins,CN=Users,DC=Vosmaer,DC=com',
+        'CN=Schema Admins,CN=Users,DC=Vosmaer,DC=com',
+        'CN=Administrators,CN=Builtin,DC=Vosmaer,DC=com']
       entry['memberof'] = example_memberof
       person = described_class.new(entry, 'ldapmain')
 
@@ -310,7 +310,7 @@ RSpec.describe Gitlab::Auth::Ldap::Person, feature_category: :system_access do
   describe '#group_cns' do
     it 'returns only CNs from the memberof values' do
       example_memberof = ['CN=Group Policy Creator Owners,CN=Users,DC=Vosmaer,DC=com',
-                          'CN=Administrators,CN=Builtin,DC=Vosmaer,DC=com']
+        'CN=Administrators,CN=Builtin,DC=Vosmaer,DC=com']
       entry['memberof'] = example_memberof
       person = described_class.new(entry, 'ldapmain')
 

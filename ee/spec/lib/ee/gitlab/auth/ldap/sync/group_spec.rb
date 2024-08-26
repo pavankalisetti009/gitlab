@@ -527,7 +527,7 @@ RSpec.describe EE::Gitlab::Auth::Ldap::Sync::Group, feature_category: :system_ac
         let(:ldap_group1) do
           ldap_group_entry(%W[
             #{user_dn(user1.username).upcase}
-                             #{user_dn(user2.username)}
+            #{user_dn(user2.username)}
           ])
         end
 
