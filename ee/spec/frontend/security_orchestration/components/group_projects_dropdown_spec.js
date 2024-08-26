@@ -314,6 +314,24 @@ describe('GroupProjectsDropdown', () => {
           });
         });
 
+        it('loads more projects when bottom is reached', async () => {
+          createComponent({
+            propsData: { loadAllProjects: true },
+            handlers: mockApolloHandlers({ hasNextPage: true }),
+          });
+          await waitForPromises();
+
+          findDropdown().vm.$emit('bottom-reached');
+          expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
+          expect(requestHandlers.getProjects).toHaveBeenCalledTimes(2);
+          expect(requestHandlers.getProjects).toHaveBeenNthCalledWith(2, {
+            after: undefined,
+            fullPath: GROUP_FULL_PATH,
+            projectIds: null,
+            search: '',
+          });
+        });
+
         it.each`
           hasNextPage | expectedText
           ${true}     | ${'1, 2'}
