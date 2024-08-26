@@ -1,5 +1,5 @@
 <script>
-import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlPopover } from '@gitlab/ui';
+import { GlBadge, GlButton, GlButtonGroup, GlCollapse, GlLink, GlPopover } from '@gitlab/ui';
 import { flattenDeep } from 'lodash';
 import { renderGFM } from '~/behaviors/markdown/render_gfm';
 import SafeHtml from '~/vue_shared/directives/safe_html';
@@ -13,6 +13,7 @@ export default {
     GlButtonGroup,
     GlCollapse,
     GlBadge,
+    GlLink,
   },
   directives: {
     SafeHtml,
@@ -132,7 +133,7 @@ export default {
       });
       const element = document.querySelector(`[id^="TEXT-SPAN-MARKER${this.selectedStepNumber}"]`);
       if (element) {
-        element.classList.add('selected-inline-item-mark');
+        element.classList.add('selected-inline-item-mark', 'gs');
       }
     },
     markdownRowNumber() {
@@ -215,14 +216,14 @@ export default {
 </script>
 
 <template>
-  <div class="gl-z-0 gl-flex gl-w-4/10 gl-flex-col gl-overflow-auto gl-pl-2">
+  <div class="gl-z-0 gl-flex gl-w-4/10 gl-flex-col gl-overflow-auto gl-pl-2 gl-pr-2">
     <div>
-      <div class="gl-flex gl-justify-between">
+      <div class="gl-flex gl-justify-between gl-pt-2">
         <div>
           <div class="item-title gl-text-lg">{{ $options.i18n.steps }}</div>
           <div class="gl-pt-2" data-testid="steps-header">{{ stepsHeader }}</div>
         </div>
-        <gl-button-group class="gl-pr-2">
+        <gl-button-group>
           <gl-button
             icon="chevron-up"
             :aria-label="__(`Previous step`)"
@@ -237,7 +238,7 @@ export default {
           />
         </gl-button-group>
       </div>
-      <div class="gl-pt-3">
+      <div class="gl-pt-3 gl-ml-4">
         <div
           v-for="(vulnerabilityFlow, index) in vulnerabilityFlowDetails"
           :key="index"
@@ -252,7 +253,7 @@ export default {
           />
           <span v-safe-html="getBoldFileName(vulnerabilityFlow[0].fileLocation.fileName)"></span>
           <gl-collapse class="gl-mt-2 gl-pl-6" :visible="!!stepsExpanded[index]">
-            <div
+            <gl-link
               v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
               :key="i"
               class="align-content-center gl-flex gl-justify-between gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2"
@@ -264,7 +265,7 @@ export default {
               @click="selectStep(vulnerabilityItem)"
             >
               <gl-badge
-                class="gl-mr-3 gl-rounded-base gl-pl-4 gl-pr-4"
+                class="gl-mr-3 gl-rounded-base gl-pl-4 gl-pr-4 gl-w-6 gl-h-6"
                 :class="{
                   '!gl-bg-blue-500 !gl-text-white':
                     selectedStepNumber === vulnerabilityItem.stepNumber,
@@ -272,7 +273,10 @@ export default {
                 size="lg"
                 variant="muted"
               >
-                {{ vulnerabilityItem.stepNumber }}
+                <strong v-if="selectedStepNumber === vulnerabilityItem.stepNumber">{{
+                  vulnerabilityItem.stepNumber
+                }}</strong>
+                <span v-else>{{ vulnerabilityItem.stepNumber }}</span>
               </gl-badge>
               <span
                 class="align-content-center gl-mr-auto gl-overflow-hidden gl-text-ellipsis gl-whitespace-nowrap"
@@ -297,13 +301,22 @@ export default {
 
                 {{ vulnerabilityItem.fileDescription }}
               </span>
-              <span class="align-content-center gl-pr-3">{{
+              <span class="align-content-center gl-pr-3 gl-text-gray-600">{{
                 vulnerabilityItem.fileLocation.lineStart
               }}</span>
-            </div>
+            </gl-link>
           </gl-collapse>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style>
+.gl-link,
+&:hover {
+  text-decoration: none !important;
+  color: inherit !important;
+  border-radius: 0.25rem !important;
+}
+</style>
