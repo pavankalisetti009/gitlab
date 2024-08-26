@@ -82,12 +82,12 @@ describe('ListTable', () => {
         key: 'image',
         label: 'Name',
         thClass: 'gl-w-2/5',
-        tdClass: 'gl-pt-3!',
+        tdClass: '!gl-pt-3',
       },
       {
         key: 'tags',
         label: 'Tags',
-        tdClass: 'gl-pt-4!',
+        tdClass: '!gl-pt-4',
       },
       {
         key: 'uploadTime',

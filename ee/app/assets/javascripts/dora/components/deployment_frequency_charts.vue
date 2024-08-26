@@ -369,16 +369,16 @@ export default {
         <div
           v-for="{ key, name, color, value } in tooltipContent"
           :key="key"
-          class="gl-display-flex gl-justify-content-space-between"
+          class="gl-flex gl-justify-between"
         >
-          <gl-chart-series-label class="gl-font-sm gl-mr-7" :color="color">
+          <gl-chart-series-label class="gl-mr-7 gl-text-sm" :color="color">
             {{ name }}
           </gl-chart-series-label>
           <div class="gl-font-bold">{{ value }}</div>
         </div>
       </template>
       <template v-if="glFeatures.doraChartsForecast" #extend-button-group>
-        <div class="gl-display-flex gl-align-items-center">
+        <div class="gl-flex gl-items-center">
           <gl-toggle
             :value="showForecast"
             :label="$options.i18n.showForecast"
@@ -400,7 +400,7 @@ export default {
           <gl-sprintf :message="$options.i18n.forecastFeedbackText">
             <template #link="{ content }">
               <gl-link
-                class="gl-text-decoration-none!"
+                class="!gl-no-underline"
                 :href="$options.FORECAST_FEEDBACK_ISSUE_URL"
                 target="_blank"
                 >{{ content }}</gl-link
@@ -420,7 +420,7 @@ export default {
             <gl-sprintf v-if="!isForecastUnavailableError" :message="forecastRequestErrorMessage">
               <template #link="{ content }">
                 <gl-link
-                  class="gl-display-inline-block"
+                  class="gl-inline-block"
                   :href="$options.FORECAST_FEEDBACK_ISSUE_URL"
                   target="_blank"
                   >{{ content }}</gl-link

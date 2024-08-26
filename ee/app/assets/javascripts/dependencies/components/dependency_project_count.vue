@@ -122,14 +122,14 @@ export default {
     @shown="onShown"
   >
     <template #toggle>
-      <span class="md:gl-whitespace-nowrap gl-text-blue-500" data-testid="toggle-text">
+      <span class="gl-text-blue-500 md:gl-whitespace-nowrap" data-testid="toggle-text">
         <gl-icon name="project" />
         <span class="md:gl-hidden">{{ projectCount }}</span>
         <span class="gl-hidden md:gl-inline-flex">{{ headerText }}</span>
       </span>
     </template>
     <template #list-item="{ item }">
-      <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 gl-hover-text-decoration-none">
+      <gl-link :href="getUrl(item)" class="gl-flex gl-gap-3 hover:gl-no-underline">
         <gl-avatar
           class="gl-align-middle"
           :alt="item.name"

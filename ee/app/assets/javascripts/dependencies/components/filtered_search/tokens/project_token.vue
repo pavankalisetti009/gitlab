@@ -148,11 +148,11 @@ export default {
           :key="project.id"
           :value="project"
         >
-          <div class="gl-display-flex gl-align-items-center">
+          <div class="gl-flex gl-items-center">
             <gl-icon
               v-if="config.multiSelect"
               name="check"
-              class="gl-mr-3 gl-flex-shrink-0 gl-text-gray-700"
+              class="gl-mr-3 gl-shrink-0 gl-text-gray-700"
               :class="{ 'gl-invisible': !isProjectSelected(project) }"
             />
             {{ project.name }}

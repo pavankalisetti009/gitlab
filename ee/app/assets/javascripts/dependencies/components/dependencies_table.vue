@@ -39,7 +39,7 @@ const sharedFields = [
   {
     key: 'location',
     label: DEPENDENCIES_TABLE_I18N.location,
-    tdClass: tdClass(['gl-md-max-w-26']),
+    tdClass: tdClass(['md:gl-max-w-26']),
   },
   { key: 'license', label: DEPENDENCIES_TABLE_I18N.license, tdClass: tdClass() },
 ];
@@ -155,7 +155,7 @@ export default {
   >
     <template #head(location)="data">
       {{ data.label }}
-      <gl-icon id="location-info" name="information-o" class="gl-text-blue-600 gl-ml-2" />
+      <gl-icon id="location-info" name="information-o" class="gl-ml-2 gl-text-blue-600" />
       <gl-popover
         target="location-info"
         placement="top"
@@ -219,7 +219,7 @@ export default {
         href="#"
         @click.native="rowExpanded(toggleDetails, item)"
       >
-        <gl-icon name="warning" class="gl-text-orange-500 mr-1" />
+        <gl-icon name="warning" class="mr-1 gl-text-orange-500" />
         {{
           n__(
             'Dependencies|%d vulnerability detected',

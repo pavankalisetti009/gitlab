@@ -157,9 +157,9 @@ export default {
       class="gl-my-5"
     />
 
-    <header class="md:gl-flex gl-align-items-flex-start gl-my-5">
+    <header class="gl-my-5 gl-items-start md:gl-flex">
       <div class="gl-mr-auto">
-        <h2 class="h4 gl-mb-2 gl-mt-0 gl-display-flex gl-align-items-center">
+        <h2 class="h4 gl-mb-2 gl-mt-0 gl-flex gl-items-center">
           {{ __('Dependencies') }}
           <gl-link
             class="gl-ml-3"
@@ -192,7 +192,7 @@ export default {
         v-if="exportEndpoint"
         v-gl-tooltip.hover
         :title="exportTooltip"
-        class="gl-mt-3 gl-md-mt-0"
+        class="gl-mt-3 md:gl-mt-0"
         :icon="exportButtonIcon"
         data-testid="export"
         :loading="fetchingInProgress"

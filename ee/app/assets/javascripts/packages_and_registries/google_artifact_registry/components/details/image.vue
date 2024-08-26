@@ -99,10 +99,10 @@ export default {
     <li
       v-for="[key, row] in rows"
       :key="key"
-      class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row gl-md-align-items-center"
+      class="gl-flex gl-flex-col md:gl-flex-row md:gl-items-center"
       :class="{ 'gl-py-2': !isDigest(key) }"
     >
-      <span class="gl-font-bold gl-md-flex-basis-13 gl-flex-shrink-0">{{ row.label }}</span>
+      <span class="gl-shrink-0 gl-font-bold md:gl-basis-13">{{ row.label }}</span>
       <span>
         <span class="gl-break-anywhere" :data-testid="key">{{ row.value }}</span>
         <clipboard-button
@@ -114,11 +114,11 @@ export default {
         />
       </span>
     </li>
-    <li class="gl-display-flex gl-flex-direction-column gl-md-flex-direction-row gl-py-2">
-      <span class="gl-font-bold gl-md-flex-basis-13 gl-flex-shrink-0">{{
+    <li class="gl-flex gl-flex-col gl-py-2 md:gl-flex-row">
+      <span class="gl-shrink-0 gl-font-bold md:gl-basis-13">{{
         s__('GoogleArtifactRegistry|Tags')
       }}</span>
-      <span class="gl-display-flex gl-gap-2 gl-flex-wrap" data-testid="tags">
+      <span class="gl-flex gl-flex-wrap gl-gap-2" data-testid="tags">
         <gl-badge v-for="tag in data.tags" :key="tag" class="gl-max-w-12">
           <gl-truncate class="gl-max-w-80p" :text="tag" :with-tooltip="true" />
         </gl-badge>
