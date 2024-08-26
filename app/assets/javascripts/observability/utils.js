@@ -1,6 +1,8 @@
 import { padWithZeros } from '~/lib/utils/datetime/date_format_utility';
 import { isValidDate, differenceInMinutes } from '~/lib/utils/datetime_utility';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { TYPE_ISSUE } from '~/issues/constants';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 import {
   CUSTOM_DATE_RANGE_OPTION,
@@ -215,4 +217,24 @@ export function createIssueUrlWithDetails(createIssueUrl, detailsPayload, paramN
       spreadArrays: true,
     },
   );
+}
+
+function parseGraphQLObject(obj) {
+  if (!obj) return null;
+
+  return {
+    ...obj,
+    id: getIdFromGraphQLId(obj.id),
+  };
+}
+
+export function parseGraphQLIssueLinksToRelatedIssues(issueLinks) {
+  return issueLinks.map(({ issue }) => ({
+    ...issue,
+    id: getIdFromGraphQLId(issue.id),
+    path: issue.webUrl,
+    type: TYPE_ISSUE,
+    milestone: parseGraphQLObject(issue.milestone),
+    assignees: issue.assignees.nodes.map(parseGraphQLObject),
+  }));
 }
