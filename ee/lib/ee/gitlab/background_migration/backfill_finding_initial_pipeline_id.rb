@@ -19,9 +19,13 @@ module EE
 
         override :perform
         def perform
-          each_sub_batch do |sub_batch|
-            connection.exec_update(update_initial_sql(sub_batch))
-            connection.exec_update(update_latest_sql(sub_batch))
+          ::Gitlab::Database.allow_cross_joins_across_databases(
+            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480364'
+          ) do
+            each_sub_batch do |sub_batch|
+              connection.exec_update(update_initial_sql(sub_batch))
+              connection.exec_update(update_latest_sql(sub_batch))
+            end
           end
         end
 

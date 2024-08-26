@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingPipeline < ApplicationRecord
+  class FindingPipeline < Gitlab::Database::SecApplicationRecord
     include EachBatch
 
     self.table_name = "vulnerability_occurrence_pipelines"
