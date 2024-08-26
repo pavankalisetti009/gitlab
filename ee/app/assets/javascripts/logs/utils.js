@@ -1,4 +1,4 @@
-import { urlWithStringifiedPayloadParam } from '~/observability/utils';
+import { createIssueUrlWithDetails } from '~/observability/utils';
 
 const COLORS_MAP = {
   trace: '#a4a3a8',
@@ -74,5 +74,5 @@ export function createIssueUrlWithLogDetails({ log, createIssueUrl }) {
     traceId,
   };
 
-  return urlWithStringifiedPayloadParam(createIssueUrl, logDetails, 'observability_log_details');
+  return createIssueUrlWithDetails(createIssueUrl, logDetails, 'observability_log_details');
 }

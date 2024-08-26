@@ -28,11 +28,11 @@ describe('MetricsDetails', () => {
   let wrapper;
   let observabilityClientMock;
 
-  const METRIC_ID = 'test.metric';
-  const METRIC_TYPE = 'Sum';
-  const METRICS_INDEX_URL = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
-  const CREATE_ISSUE_URL = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
-  const PROJECT_PATH = 'test/project';
+  const metricId = 'test.metric';
+  const metricType = 'Sum';
+  const metricsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
+  const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
+  const projectFullPath = 'test/project';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findMetricDetails = () => wrapper.findComponentByTestId('metric-details');
@@ -54,11 +54,11 @@ describe('MetricsDetails', () => {
   };
 
   const defaultProps = {
-    metricId: METRIC_ID,
-    metricType: METRIC_TYPE,
-    metricsIndexUrl: METRICS_INDEX_URL,
-    createIssueUrl: CREATE_ISSUE_URL,
-    projectFullPath: PROJECT_PATH,
+    metricId,
+    metricType,
+    metricsIndexUrl,
+    createIssueUrl,
+    projectFullPath,
   };
 
   const showToast = jest.fn();
@@ -164,13 +164,13 @@ describe('MetricsDetails', () => {
 
     it('fetches data', () => {
       expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(
-        METRIC_ID,
-        METRIC_TYPE,
+        metricId,
+        metricType,
         expect.any(Object),
       );
       expect(observabilityClientMock.fetchMetricSearchMetadata).toHaveBeenCalledWith(
-        METRIC_ID,
-        METRIC_TYPE,
+        metricId,
+        metricType,
       );
     });
 
@@ -182,7 +182,7 @@ describe('MetricsDetails', () => {
       });
 
       it('fetches data with heatmap visual', () => {
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(METRIC_ID, 'histogram', {
+        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, 'histogram', {
           abortController: expect.any(AbortController),
           filters: expect.any(Object),
           visual: 'heatmap',
@@ -196,7 +196,7 @@ describe('MetricsDetails', () => {
     });
 
     it('renders the metrics details', () => {
-      expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(METRIC_ID, METRIC_TYPE, {
+      expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
         abortController: expect.any(AbortController),
         filters: expect.any(Object),
       });
@@ -236,7 +236,7 @@ describe('MetricsDetails', () => {
       });
 
       it('fetches metrics with filters', () => {
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(METRIC_ID, METRIC_TYPE, {
+        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
           abortController: expect.any(AbortController),
           filters: {
             attributes: {
@@ -314,7 +314,7 @@ describe('MetricsDetails', () => {
         expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
           value: '1h',
         });
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(METRIC_ID, METRIC_TYPE, {
+        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
           abortController: expect.any(AbortController),
           filters: {
             attributes: {},
@@ -449,8 +449,8 @@ describe('MetricsDetails', () => {
 
         it('fetches traces with updated filters', () => {
           expect(observabilityClientMock.fetchMetric).toHaveBeenLastCalledWith(
-            METRIC_ID,
-            METRIC_TYPE,
+            metricId,
+            metricType,
             {
               abortController: expect.any(AbortController),
               filters: {
@@ -521,8 +521,8 @@ describe('MetricsDetails', () => {
 
     it('renders the details header', () => {
       expect(findHeader().exists()).toBe(true);
-      expect(findHeader().props('heading')).toBe(METRIC_ID);
-      expect(findHeader().text()).toContain(`Type:\u00a0${METRIC_TYPE}`);
+      expect(findHeader().props('heading')).toBe(metricId);
+      expect(findHeader().text()).toContain(`Type:\u00a0${metricType}`);
       expect(findHeader().text()).toContain('System disk operations');
       expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
       expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
@@ -539,9 +539,9 @@ describe('MetricsDetails', () => {
         timeframe: ['Sun, 05 Jul 2020 23:00:00 GMT', 'Mon, 06 Jul 2020 00:00:00 GMT'],
       };
       expect(button.attributes('href')).toBe(
-        `https://www.gitlab.com/flightjs/Flight/-/issues/new?observability_metric_details=${encodeURIComponent(
+        `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
           JSON.stringify(metricsDetails),
-        )}`,
+        )}&${encodeURIComponent('issue[confidential]')}=true`,
       );
     });
 
@@ -565,8 +565,8 @@ describe('MetricsDetails', () => {
 
       it('renders the header', () => {
         expect(findHeader().exists()).toBe(true);
-        expect(findHeader().props('heading')).toBe(METRIC_ID);
-        expect(findHeader().text()).toContain(`Type:\u00a0${METRIC_TYPE}`);
+        expect(findHeader().props('heading')).toBe(metricId);
+        expect(findHeader().text()).toContain(`Type:\u00a0${metricType}`);
         expect(findHeader().text()).toContain('System disk operations');
         expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
       });

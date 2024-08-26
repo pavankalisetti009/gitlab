@@ -1,5 +1,5 @@
 import { CUSTOM_DATE_RANGE_OPTION } from '~/observability/constants';
-import { periodToDateRange, urlWithStringifiedPayloadParam } from '~/observability/utils';
+import { periodToDateRange, createIssueUrlWithDetails } from '~/observability/utils';
 import { mergeUrlParams } from '~/lib/utils/url_utility';
 import { filterObjToQuery } from './filters';
 
@@ -28,9 +28,5 @@ export function createIssueUrlWithMetricDetails({
     timeframe: [absoluteDateRange.startDate.toUTCString(), absoluteDateRange.endDate.toUTCString()],
   };
 
-  return urlWithStringifiedPayloadParam(
-    createIssueUrl,
-    metricsDetails,
-    'observability_metric_details',
-  );
+  return createIssueUrlWithDetails(createIssueUrl, metricsDetails, 'observability_metric_details');
 }

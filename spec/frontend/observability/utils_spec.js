@@ -7,7 +7,7 @@ import {
   formattedTimeFromDate,
   isTracingDateRangeOutOfBounds,
   validatedDateRangeQuery,
-  urlWithStringifiedPayloadParam,
+  createIssueUrlWithDetails,
 } from '~/observability/utils';
 import {
   CUSTOM_DATE_RANGE_OPTION,
@@ -273,14 +273,12 @@ describe('validatedDateRangeQuery', () => {
   });
 });
 
-describe('urlWithStringifiedPayloadParam', () => {
-  it('returns the url with a stringified param', () => {
+describe('createIssueUrlWithDetails', () => {
+  it('returns the create issue urls with params', () => {
     expect(
-      urlWithStringifiedPayloadParam(
-        'http://gdk.test:3443/?foo=bar',
-        { a: 'b', c: 'd' },
-        'my_param',
-      ),
-    ).toBe('http://gdk.test:3443/?foo=bar&my_param=%7B%22a%22%3A%22b%22%2C%22c%22%3A%22d%22%7D');
+      createIssueUrlWithDetails('http://gdk.test:3443/?foo=bar', { a: 'b', c: 'd' }, 'my_param'),
+    ).toBe(
+      'http://gdk.test:3443/?foo=bar&my_param=%7B%22a%22%3A%22b%22%2C%22c%22%3A%22d%22%7D&issue%5Bconfidential%5D=true',
+    );
   });
 });

@@ -36,6 +36,8 @@ describe('createIssueUrlWithLogDetails', () => {
       timestamp: '2023-05-20T12:34:56Z',
       body: 'This is a test log message',
     });
+
+    expect(url.searchParams.get('issue[confidential]')).toBe('true');
   });
 
   it('should truncate log body if it exceeds LOG_BODY_LIMIT', () => {
