@@ -204,24 +204,10 @@ RSpec.describe Email do
   end
 
   describe '#before_save' do
-    context 'when the feature flag is enabled' do
-      it 'sets the detumbled_email attribute' do
-        email = described_class.new(user: user, email: 'test.user+gitlab@example.com')
+    it 'sets the detumbled_email attribute' do
+      email = described_class.new(user: user, email: 'test.user+gitlab@example.com')
 
-        expect { email.save! }.to change { email.detumbled_email }.from(nil).to('test.user@example.com')
-      end
-    end
-
-    context 'when the feature flag is disabled' do
-      before do
-        stub_feature_flags(store_detumbled_email: false)
-      end
-
-      it 'does not set the detumbled_email attribute' do
-        email = described_class.new(user: user, email: 'test.user+gitlab@example.com')
-
-        expect { email.save! }.not_to change { email.detumbled_email }
-      end
+      expect { email.save! }.to change { email.detumbled_email }.from(nil).to('test.user@example.com')
     end
 
     context 'when the email attribute has not changed' do
