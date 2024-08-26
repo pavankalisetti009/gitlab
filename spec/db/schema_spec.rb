@@ -145,6 +145,7 @@ RSpec.describe 'Database schema', feature_category: :database do
     p_catalog_resource_component_usages: %w[used_by_project_id], # No FK constraint because we want to preserve historical usage data
     p_ci_finished_build_ch_sync_events: %w[build_id],
     p_ci_finished_pipeline_ch_sync_events: %w[pipeline_id project_namespace_id],
+    p_ci_job_annotations: %w[partition_id job_id project_id],
     p_ci_job_artifacts: %w[partition_id project_id job_id],
     p_ci_pipeline_variables: %w[partition_id],
     p_ci_builds_execution_configs: %w[partition_id],
