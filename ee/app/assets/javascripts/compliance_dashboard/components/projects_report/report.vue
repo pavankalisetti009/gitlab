@@ -32,8 +32,8 @@ export default {
       type: String,
       required: true,
     },
-    rootAncestorPath: {
-      type: String,
+    rootAncestor: {
+      type: Object,
       required: true,
     },
   },
@@ -209,7 +209,13 @@ export default {
       @submit="onFiltersChanged"
     />
 
-    <gl-alert v-if="hasQueryError" variant="danger" class="gl-my-3" :dismissible="false">
+    <gl-alert
+      v-if="hasQueryError"
+      variant="danger"
+      class="gl-my-3"
+      :dismissible="false"
+      data-test-id="query-error-alert"
+    >
       {{ $options.i18n.queryError }}
     </gl-alert>
 
@@ -217,7 +223,7 @@ export default {
       v-else
       :is-loading="isLoading"
       :projects="projects.list"
-      :root-ancestor-path="rootAncestorPath"
+      :root-ancestor="rootAncestor"
       :group-path="groupPath"
       :has-filters="hasFilters"
       @updated="showUpdatePopoverIfNeeded"

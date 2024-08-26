@@ -1,21 +1,32 @@
-import { GlFormCheckbox, GlLabel, GlLoadingIcon, GlTable, GlModal } from '@gitlab/ui';
+import {
+  GlFormCheckbox,
+  GlLabel,
+  GlLoadingIcon,
+  GlTable,
+  GlModal,
+  GlAlert,
+  GlLink,
+} from '@gitlab/ui';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
 import CreateForm from 'ee/groups/settings/compliance_frameworks/components/create_form.vue';
 import waitForPromises from 'helpers/wait_for_promises';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
+import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 
 import {
   createComplianceFrameworksResponse,
   createProjectUpdateComplianceFrameworksResponse,
+  createComplianceFrameworksReportResponse,
 } from 'ee_jest/compliance_dashboard/mock_data';
 import FrameworkSelectionBox from 'ee/compliance_dashboard/components/projects_report/framework_selection_box.vue';
 import ProjectsTable from 'ee/compliance_dashboard/components/projects_report/projects_table.vue';
 import SelectionOperations from 'ee/compliance_dashboard/components/projects_report/selection_operations.vue';
 import FrameworkBadge from 'ee/compliance_dashboard/components/shared/framework_badge.vue';
+import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
 
 import { mapProjects } from 'ee/compliance_dashboard/graphql/mappers';
 
@@ -33,6 +44,11 @@ describe('ProjectsTable component', () => {
 
   const groupPath = 'group-path';
   const subgroupPath = 'group-path/child';
+  const rootAncestor = {
+    path: 'group-path',
+    name: 'Root Ancestor',
+    complianceCenterPath: 'group-path/compliance_dashboard',
+  };
   const hasFilters = false;
 
   const COMPLIANCE_FRAMEWORK_COLUMN_IDX = 3;
@@ -50,6 +66,7 @@ describe('ProjectsTable component', () => {
     wrapper.findAllComponents(GlModal).wrappers.find((w) => w.props('modalId') === modalId);
 
   const findCreateModal = () => findModalByModalId('create-framework-form-modal');
+  const findNoFrameworksAlert = () => wrapper.findComponent(GlAlert);
 
   const findSelectAllCheckbox = () =>
     findTable().findAll('th > div').at(0).findComponent(GlFormCheckbox);
@@ -58,14 +75,19 @@ describe('ProjectsTable component', () => {
   const isIndeterminate = (glFormCheckbox) => glFormCheckbox.vm.$attrs.indeterminate;
 
   const selectRow = (index) => findTableRowData(index).at(0).trigger('click');
-
-  const createComponent = (props = {}) => {
+  const getMockFrameworksGraphQl = (count = 2) =>
+    jest.fn().mockResolvedValue(createComplianceFrameworksReportResponse({ count, projects: 2 }));
+  const createComponent = (
+    props = {},
+    mockFrameworksGraphQlResponse = getMockFrameworksGraphQl(),
+  ) => {
     updateComplianceFrameworkMockResponse = jest
       .fn()
       .mockResolvedValue(createProjectUpdateComplianceFrameworksResponse());
 
     apolloProvider = createMockApollo([
       [updateComplianceFrameworksMutation, updateComplianceFrameworkMockResponse],
+      [getComplianceFrameworkQuery, mockFrameworksGraphQlResponse],
     ]);
 
     toastMock = { show: jest.fn() };
@@ -73,7 +95,7 @@ describe('ProjectsTable component', () => {
       apolloProvider,
       propsData: {
         groupPath,
-        rootAncestorPath: groupPath,
+        rootAncestor,
         hasFilters,
         ...props,
       },
@@ -145,6 +167,38 @@ describe('ProjectsTable component', () => {
       wrapper = createComponent({
         projects,
         isLoading: false,
+      });
+    });
+
+    describe('no frameworks alert', () => {
+      it('does not render alert in top level group', () => {
+        expect(findNoFrameworksAlert().exists()).toBe(false);
+      });
+
+      it('renders alert with links for sub group', () => {
+        const links = () => findNoFrameworksAlert().findAllComponents(GlLink);
+        wrapper = createComponent(
+          { projects, isLoading: false, groupPath: 'sub-group-path' },
+          getMockFrameworksGraphQl(0),
+        );
+
+        expect(findNoFrameworksAlert().text()).toMatchInterpolatedText(
+          'No frameworks found. Create a framework in top-level group Root Ancestor to assign it to a project. Learn more.',
+        );
+        expect(links().at(0).attributes('href')).toBe('group-path/compliance_dashboard');
+        expect(links().at(1).attributes('href')).toBe(
+          `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`,
+        );
+      });
+
+      it('does not render alert for sub group when there are frameworks', async () => {
+        wrapper = await createComponent({
+          projects,
+          isLoading: false,
+          groupPath: 'sub-group-path',
+        });
+        await waitForPromises();
+        expect(findNoFrameworksAlert().exists()).toBe(false);
       });
     });
 
@@ -405,6 +459,15 @@ describe('ProjectsTable component', () => {
         .findComponent(FrameworkBadge);
 
       expect(badge.props('showEdit')).toBe(false);
+    });
+
+    it('does not render framework selection if no frameworks', async () => {
+      wrapper = createComponent(
+        { projects, isLoading: false, groupPath: subgroupPath },
+        getMockFrameworksGraphQl(0),
+      );
+      await waitForPromises();
+      expect(wrapper.findComponent(FrameworkSelectionBox).exists()).toBe(false);
     });
   });
 });

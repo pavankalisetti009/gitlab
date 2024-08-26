@@ -72,3 +72,5 @@ export const i18n = {
 };
 
 export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies-to-projects`;
+
+export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;

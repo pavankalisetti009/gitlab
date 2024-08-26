@@ -70,7 +70,11 @@ export function createRouter(basePath, props) {
       component: ProjectsReport,
       props: {
         groupPath,
-        rootAncestorPath,
+        rootAncestor: {
+          path: rootAncestorPath,
+          name: rootAncestorName,
+          complianceCenterPath: rootAncestorComplianceCenterPath,
+        },
       },
     },
   ].filter(({ name }) => availableRoutes.includes(name));

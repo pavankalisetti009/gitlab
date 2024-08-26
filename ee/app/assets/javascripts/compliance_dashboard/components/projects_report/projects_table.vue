@@ -4,10 +4,12 @@ import {
   GlFormCheckbox,
   GlButton,
   GlLink,
+  GlAlert,
   GlLoadingIcon,
   GlModal,
   GlTable,
   GlToast,
+  GlSprintf,
 } from '@gitlab/ui';
 
 import { __, s__ } from '~/locale';
@@ -15,9 +17,12 @@ import { createAlert } from '~/alert';
 
 import CreateForm from 'ee/groups/settings/compliance_frameworks/components/create_form.vue';
 import EditForm from 'ee/groups/settings/compliance_frameworks/components/edit_form.vue';
+import getComplianceFrameworkQuery from 'ee/graphql_shared/queries/get_compliance_framework.query.graphql';
+import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import FrameworkBadge from '../shared/framework_badge.vue';
 import { isTopLevelGroup } from '../../utils';
 import updateComplianceFrameworksMutation from '../../graphql/mutations/project_update_compliance_frameworks.graphql';
+import { CREATE_FRAMEWORKS_DOCS_URL } from '../../constants';
 import SelectionOperations from './selection_operations.vue';
 import FrameworkSelectionBox from './framework_selection_box.vue';
 
@@ -39,6 +44,8 @@ export default {
     GlLoadingIcon,
     GlModal,
     GlTable,
+    GlAlert,
+    GlSprintf,
   },
   props: {
     projects: {
@@ -49,13 +56,12 @@ export default {
       type: Boolean,
       required: true,
     },
-
     groupPath: {
       type: String,
       required: true,
     },
-    rootAncestorPath: {
-      type: String,
+    rootAncestor: {
+      type: Object,
       required: true,
     },
     hasFilters: {
@@ -64,8 +70,26 @@ export default {
     },
   },
   emits: ['updated'],
+  apollo: {
+    frameworks: {
+      query: getComplianceFrameworkQuery,
+      variables() {
+        return { fullPath: this.groupPath };
+      },
+      update(data) {
+        return data.namespace.complianceFrameworks.nodes || [];
+      },
+      error(error) {
+        createAlert({
+          message: __('Something went wrong on our end.'),
+        });
+        Sentry.captureException(error);
+      },
+    },
+  },
   data() {
     return {
+      frameworks: [],
       selectedRows: [],
       projectWhichInvokedModal: null,
       frameworkSelectedForEdit: null,
@@ -77,7 +101,7 @@ export default {
   },
   computed: {
     isFrameworkEditingEnabled() {
-      return isTopLevelGroup(this.groupPath, this.rootAncestorPath);
+      return isTopLevelGroup(this.groupPath, this.rootAncestor.path);
     },
 
     tableFields() {
@@ -105,6 +129,12 @@ export default {
       return this.hasFilters
         ? this.$options.i18n.noProjectsFoundMatchingFilters
         : this.$options.i18n.noProjectsFound;
+    },
+    showNoFrameworksAlert() {
+      return !this.frameworks.length && !this.isLoading && !this.isFrameworkEditingEnabled;
+    },
+    isFrameworkSelectionAvailable() {
+      return this.isFrameworkEditingEnabled || this.frameworks.length;
     },
   },
   methods: {
@@ -277,8 +307,13 @@ export default {
     selectFrameworks: s__('ComplianceReport|Select frameworks'),
     noFrameworks: s__('ComplianceReport|No frameworks'),
     successUpdateToastMessage: s__('ComplianceReport|Frameworks have been successfully updated.'),
+    noFrameworksText: s__(
+      'ComplianceFrameworks|No frameworks found. Create a framework in top-level group %{linkStart}namespace%{linkEnd} to assign it to a project.',
+    ),
+    learnMore: __('Learn more'),
   },
   BULK_FRAMEWORK_ID: '__INTERNAL_BULK_FRAMEWORK_VALUE',
+  CREATE_FRAMEWORKS_DOCS_URL,
 };
 </script>
 <template>
@@ -305,6 +340,22 @@ export default {
         @cancel="resetEditModal"
       />
     </gl-modal>
+    <gl-alert
+      v-if="showNoFrameworksAlert"
+      variant="info"
+      data-testid="no-frameworks-alert"
+      :dismissible="false"
+    >
+      <gl-sprintf :message="$options.i18n.noFrameworksText">
+        <template #link>
+          <gl-link :href="rootAncestor.complianceCenterPath">{{ rootAncestor.name }}</gl-link>
+        </template>
+      </gl-sprintf>
+
+      <gl-link :href="$options.CREATE_FRAMEWORKS_DOCS_URL" target="blank"
+        >{{ $options.i18n.learnMore }}.</gl-link
+      >
+    </gl-alert>
     <selection-operations
       :selection="selectedRows"
       :group-path="groupPath"
@@ -375,6 +426,7 @@ export default {
       </template>
       <template #cell(action)="{ item: { id, complianceFrameworks } }">
         <framework-selection-box
+          v-if="isFrameworkSelectionAvailable"
           :is-framework-creating-enabled="isFrameworkEditingEnabled"
           :selected="complianceFrameworks.map((f) => f.id)"
           :group-path="groupPath"

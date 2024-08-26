@@ -24,7 +24,11 @@ describe('ComplianceFrameworksReport component', () => {
   let wrapper;
   let apolloProvider;
   const groupPath = 'group-path';
-  const rootAncestorPath = 'root-ancestor-path';
+  const rootAncestor = {
+    path: 'root-ancestor-path',
+    name: 'Root Ancestor',
+    complianceCenterPath: '/root-ancestor-path/compliance_dashboard',
+  };
   let $router;
 
   const sentryError = new Error('GraphQL networkError');
@@ -63,7 +67,7 @@ describe('ComplianceFrameworksReport component', () => {
         apolloProvider,
         propsData: {
           groupPath,
-          rootAncestorPath,
+          rootAncestor,
           ...props,
         },
         mocks: {
