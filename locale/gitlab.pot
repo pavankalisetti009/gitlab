@@ -2936,9 +2936,6 @@ msgstr ""
 msgid "Account and limit"
 msgstr ""
 
-msgid "Account:"
-msgstr ""
-
 msgid "Account: %{account}"
 msgstr ""
 
@@ -16257,13 +16254,13 @@ msgstr ""
 msgid "CredentialsInventory|SSH Keys"
 msgstr ""
 
+msgid "Credit card"
+msgstr ""
+
 msgid "Credit card required to be on file in order to run CI jobs"
 msgstr ""
 
 msgid "Credit card validation record saved"
-msgstr ""
-
-msgid "Credit card:"
 msgstr ""
 
 msgid "Critical - S1"
@@ -39076,9 +39073,6 @@ msgid "PersonalProject|Your project %{projectName} is not in a group"
 msgstr ""
 
 msgid "Phone"
-msgstr ""
-
-msgid "Phone:"
 msgstr ""
 
 msgid "PhoneVerification|Enter a valid code."
