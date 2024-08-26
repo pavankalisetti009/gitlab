@@ -4,6 +4,7 @@ exports[`TasksByTypeChart no data available should render the no data available 
 <gl-stacked-column-chart-stub
   bars=""
   groupby=""
+  includelegendavgmax="true"
   legendaveragetext="Avg"
   legendcurrenttext="Current"
   legendlayout="inline"
@@ -26,6 +27,7 @@ exports[`TasksByTypeChart with data available should render the loading chart 1`
 <gl-stacked-column-chart-stub
   bars="0,1,2,5,2,3,2,4,1"
   groupby="Group 1,Group 2,Group 3"
+  includelegendavgmax="true"
   legendaveragetext="Avg"
   legendcurrenttext="Current"
   legendlayout="inline"

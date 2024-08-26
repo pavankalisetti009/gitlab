@@ -223,7 +223,7 @@ describe('Billing Address', () => {
     });
 
     it('should fetch states when selecting a country', async () => {
-      countrySelect().trigger('change');
+      countrySelect().vm.$emit('change');
       await nextTick();
 
       expect(actionMocks.fetchStates).toHaveBeenCalled();

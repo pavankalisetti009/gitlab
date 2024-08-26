@@ -348,6 +348,7 @@ export default {
       </gl-form-group>
       <gl-form-group
         v-if="isShowingGroupSelector"
+        data-testid="group-select-form-group"
         :label="$options.i18n.selectedGroupLabel"
         :description="groupSelectDescription"
         label-size="sm"
