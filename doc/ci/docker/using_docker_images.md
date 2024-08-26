@@ -14,7 +14,7 @@ You can run your CI/CD jobs in Docker containers hosted on dedicated CI/CD build
 
 To run CI/CD jobs in a Docker container, you need to:
 
-1. Register a runner so that all jobs run in Docker containers. Do this by choosing the Docker executor during registration.
+1. Register a runner and configure it to use the [Docker executor](https://docs.gitlab.com/runner/executors/docker.html).
 1. Specify the container image where you want to run the CI/CD jobs in the `.gitlab-ci.yml` file.
 1. Optional. Run other services, like MySQL, in containers. Do this by specifying [services](../services/index.md)
    in your `.gitlab-ci.yml` file.
