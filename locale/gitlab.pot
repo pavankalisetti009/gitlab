@@ -60990,6 +60990,9 @@ msgstr ""
 msgid "WorkItem|All activity"
 msgstr ""
 
+msgid "WorkItem|An error occurred while getting work item counts."
+msgstr ""
+
 msgid "WorkItem|Ancestor"
 msgstr ""
 
