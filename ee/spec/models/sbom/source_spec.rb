@@ -11,6 +11,7 @@ RSpec.describe Sbom::Source, type: :model, feature_category: :dependency_managem
 
   describe 'associations' do
     it { is_expected.to belong_to(:organization) }
+    it { is_expected.to have_many(:occurrences) }
   end
 
   describe 'validations' do
