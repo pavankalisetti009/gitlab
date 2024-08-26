@@ -13818,6 +13818,12 @@ msgstr ""
 msgid "ComplianceFrameworks|No framework"
 msgstr ""
 
+msgid "ComplianceFrameworks|No frameworks found. Create a framework in top-level group"
+msgstr ""
+
+msgid "ComplianceFrameworks|No frameworks found. Create a framework in top-level group %{linkStart}namespace%{linkEnd} to assign it to a project."
+msgstr ""
+
 msgid "ComplianceFrameworks|Policy"
 msgstr ""
 

@@ -1,10 +1,10 @@
 <script>
 import Vue from 'vue';
-import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlToast, GlLink } from '@gitlab/ui';
+import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlToast, GlLink, GlAlert } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import FrameworkBadge from '../shared/framework_badge.vue';
-import { ROUTE_EDIT_FRAMEWORK } from '../../constants';
+import { ROUTE_EDIT_FRAMEWORK, CREATE_FRAMEWORKS_DOCS_URL } from '../../constants';
 import { isTopLevelGroup, convertFrameworkIdToGraphQl } from '../../utils';
 import FrameworkInfoDrawer from './framework_info_drawer.vue';
 
@@ -17,6 +17,7 @@ export default {
     GlSearchBoxByClick,
     GlTable,
     GlLink,
+    GlAlert,
     FrameworkInfoDrawer,
     FrameworkBadge,
   },
@@ -52,6 +53,9 @@ export default {
     },
     showDrawer() {
       return this.selectedFramework !== null;
+    },
+    showNoFrameworksAlert() {
+      return !this.frameworks.length && !this.isLoading && !this.isTopLevelGroup;
     },
   },
   methods: {
@@ -110,7 +114,12 @@ export default {
   i18n: {
     noFrameworksFound: s__('ComplianceReport|No frameworks found'),
     editTitle: s__('ComplianceFrameworks|Edit compliance framework'),
+    noFrameworksText: s__(
+      'ComplianceFrameworks|No frameworks found. Create a framework in top-level group',
+    ),
+    learnMore: __('Learn more'),
   },
+  CREATE_FRAMEWORKS_DOCS_URL,
 };
 </script>
 <template>
@@ -122,6 +131,21 @@ export default {
         @clear="$emit('search', '')"
       />
     </div>
+    <gl-alert
+      v-if="showNoFrameworksAlert"
+      variant="info"
+      data-testid="no-frameworks-alert"
+      :dismissible="false"
+    >
+      <div>
+        {{ $options.i18n.noFrameworksText }}
+        <gl-link :href="rootAncestor.complianceCenterPath"> {{ rootAncestor.name }}</gl-link
+        >.
+        <gl-link :href="$options.CREATE_FRAMEWORKS_DOCS_URL"
+          >{{ $options.i18n.learnMore }}.</gl-link
+        >
+      </div>
+    </gl-alert>
     <gl-table
       :fields="$options.fields"
       :busy="isLoading"

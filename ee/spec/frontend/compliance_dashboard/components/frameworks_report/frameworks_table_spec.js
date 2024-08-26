@@ -1,4 +1,4 @@
-import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlLink, GlModal } from '@gitlab/ui';
+import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlLink, GlModal, GlAlert } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -9,6 +9,7 @@ import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_das
 import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_report/frameworks_table.vue';
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
+import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
 
 Vue.use(VueApollo);
 
@@ -17,6 +18,7 @@ describe('FrameworksTable component', () => {
   let $router;
 
   const GROUP_PATH = 'group';
+  const SUBGROUP_PATH = `${GROUP_PATH}/subgroup`;
   const frameworksResponse = createComplianceFrameworksReportResponse({
     count: 2,
     projects: 2,
@@ -36,6 +38,7 @@ describe('FrameworksTable component', () => {
   const findTableLinks = (idx) => findTableRow(idx).findAllComponents(GlLink);
   const findFrameworkInfoSidebar = () => wrapper.findComponent(FrameworkInfoDrawer);
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByClick);
+  const findNoFrameworksAlert = () => wrapper.findComponent(GlAlert);
 
   const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
@@ -54,6 +57,8 @@ describe('FrameworksTable component', () => {
         groupPath: GROUP_PATH,
         rootAncestor: {
           path: GROUP_PATH,
+          name: 'Group',
+          complianceCenterPath: 'group/compliance_dashboard',
         },
         frameworks: [],
         isLoading: true,
@@ -111,6 +116,39 @@ describe('FrameworksTable component', () => {
 
       findSearchBox().vm.$emit('clear');
       expect(wrapper.emitted('search').at(-1)).toStrictEqual(['']);
+    });
+  });
+
+  describe('No frameworks alert', () => {
+    it('does not render for a top-level group when there are frameworks', () => {
+      wrapper = createComponent({
+        isLoading: false,
+      });
+      expect(findNoFrameworksAlert().exists()).toBe(false);
+    });
+
+    it('renders alert with links for a sub group when there are no frameworks', () => {
+      const links = () => findNoFrameworksAlert().findAllComponents(GlLink);
+      wrapper = createComponent({
+        isLoading: false,
+        groupPath: SUBGROUP_PATH,
+      });
+      expect(findNoFrameworksAlert().text()).toMatchInterpolatedText(
+        'No frameworks found. Create a framework in top-level group Group. Learn more.',
+      );
+      expect(links().at(0).attributes('href')).toBe('group/compliance_dashboard');
+      expect(links().at(1).attributes('href')).toBe(
+        `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`,
+      );
+    });
+
+    it('does not render for a sub group when there are frameworks', () => {
+      wrapper = createComponent({
+        frameworks,
+        groupPath: SUBGROUP_PATH,
+        isLoading: false,
+      });
+      expect(findNoFrameworksAlert().exists()).toBe(false);
     });
   });
 
@@ -228,7 +266,6 @@ describe('FrameworksTable component', () => {
   });
 
   describe('when opened in a subgroup', () => {
-    const SUBGROUP_PATH = `${GROUP_PATH}/subgroup`;
     const subgroupFrameworksResponse = createComplianceFrameworksReportResponse({
       count: 2,
       projects: 2,
