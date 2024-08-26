@@ -114,7 +114,9 @@ module EE
       end
 
       def vulnerability_findings
-        return super unless ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+        unless ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+          return super.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480363')
+        end
 
         raise NotImplementedError, 'Use pipeline.project.vulnerability_findings instead'
       end
