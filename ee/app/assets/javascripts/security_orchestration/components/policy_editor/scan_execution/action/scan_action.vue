@@ -1,13 +1,12 @@
 <script>
 import { isEmpty } from 'lodash';
-import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlSprintf, GlButton } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { REPORT_TYPE_DAST } from '~/vue_shared/security_reports/constants';
 import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { isProject, isGroup, isScanningReport } from 'ee/security_orchestration/components/utils';
 import SectionLayout from '../../section_layout.vue';
 import { ACTION_AND_LABEL, RULE_MODE_SCANNERS } from '../../constants';
-import ScanFilterSelector from '../../scan_filter_selector.vue';
 import {
   DEFAULT_SCANNER,
   SCANNER_HUMANIZED_TEMPLATE,
@@ -27,11 +26,13 @@ export default {
   ACTION_AND_LABEL,
   CI_VARIABLE,
   FILTERS,
+  VARIABLE_FILTER: FILTERS[0].value,
   SCANNERS: RULE_MODE_SCANNERS,
   TEMPLATE,
   POLICY_ACTION_BUILDER_DAST_PROFILES_ERROR_KEY,
   POLICY_ACTION_BUILDER_TAGS_ERROR_KEY,
   components: {
+    GlButton,
     GlCollapsibleListbox,
     GlSprintf,
     SectionLayout,
@@ -39,7 +40,6 @@ export default {
     ProjectDastProfileSelector,
     GroupDastProfileSelector,
     RunnerTagsFilter,
-    ScanFilterSelector,
     TemplateSelector,
   },
   mixins: [glFeatureFlagsMixin()],
@@ -69,6 +69,9 @@ export default {
     };
   },
   computed: {
+    filtersDisabled() {
+      return Boolean(this.filters[FILTERS[0].value]);
+    },
     actionScannerList() {
       return Object.entries(RULE_MODE_SCANNERS).map(([value, text]) => ({
         value,
@@ -177,6 +180,7 @@ export default {
   },
   i18n: {
     scannersHeaderText: s__('ScanExecutionPolicy|Select a scanner'),
+    addVariableButtonText: s__('ScanExecutionPolicy|Add new CI variables'),
   },
 };
 </script>
@@ -243,7 +247,6 @@ export default {
 
         <ci-variables-selectors
           v-if="isCIVariableSelectorSelected"
-          class="gl-bg-white"
           :scan-type="initAction.scan"
           :selected="initAction.variables"
           :action-index="actionIndex"
@@ -252,12 +255,16 @@ export default {
           @remove="removeFilter($options.CI_VARIABLE)"
         />
 
-        <scan-filter-selector
-          class="gl-w-full gl-bg-white"
-          :filters="$options.FILTERS"
-          :selected="filters"
-          @select="selectFilter"
-        />
+        <gl-button
+          v-if="!filtersDisabled"
+          class="gl-mt-4 gl-ml-4"
+          data-testid="add-variable-button"
+          :aria-label="$options.i18n.addVariableButtonText"
+          variant="link"
+          @click="selectFilter($options.VARIABLE_FILTER)"
+        >
+          {{ $options.i18n.addVariableButtonText }}
+        </gl-button>
       </template>
     </section-layout>
   </div>

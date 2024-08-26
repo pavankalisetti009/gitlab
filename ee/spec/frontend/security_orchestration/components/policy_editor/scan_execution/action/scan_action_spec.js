@@ -9,7 +9,6 @@ import GroupDastProfileSelector from 'ee/security_orchestration/components/polic
 import RunnerTagsFilter from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/runner_tags_filter.vue';
 import CiVariablesSelectors from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variables_selectors.vue';
 import TemplateSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/template_selector.vue';
-import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import { buildScannerAction } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import {
@@ -25,9 +24,7 @@ import {
 import { createMockApolloProvider } from 'ee_jest/security_configuration/dast_profiles/graphql/create_mock_apollo_provider';
 import { RUNNER_TAG_LIST_MOCK } from 'ee_jest/vue_shared/components/runner_tags_dropdown/mocks/mocks';
 import {
-  CI_VARIABLE,
   DEFAULT_TEMPLATE,
-  FILTERS,
   LATEST_TEMPLATE,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
 
@@ -93,11 +90,11 @@ describe('PolicyActionBuilder', () => {
   const findTemplateFilter = () => wrapper.findComponent(TemplateSelector);
   const findSectionLayout = () => wrapper.findAllComponents(SectionLayout).at(1);
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
-  const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
   const findSprintf = () => wrapper.findComponent(GlSprintf);
   const findTagsFilter = () => wrapper.findComponent(RunnerTagsFilter);
   const findProjectDastSelector = () => wrapper.findComponent(ProjectDastProfileSelector);
   const findGroupDastSelector = () => wrapper.findComponent(GroupDastProfileSelector);
+  const findAddVariableButton = () => wrapper.findByTestId('add-variable-button');
 
   it('renders default scanner', () => {
     factory();
@@ -261,15 +258,15 @@ describe('PolicyActionBuilder', () => {
         factory();
       });
 
-      it('displays the scan filter selector', () => {
-        expect(findScanFilterSelector().props()).toMatchObject({
-          filters: FILTERS,
-          selected: { [CI_VARIABLE]: false },
-        });
+      it('displays the add variable button', () => {
+        expect(findAddVariableButton().exists()).toBe(true);
+        expect(findAddVariableButton().attributes().disabled === undefined).toBe(true);
       });
 
       it('displays the ci variable filter when the scan filter selector selects it', async () => {
-        await findScanFilterSelector().vm.$emit('select', CI_VARIABLE);
+        await findAddVariableButton().vm.$emit('click');
+
+        expect(findAddVariableButton().exists()).toBe(false);
         expect(findCiVariablesSelectors().exists()).toBe(true);
       });
     });

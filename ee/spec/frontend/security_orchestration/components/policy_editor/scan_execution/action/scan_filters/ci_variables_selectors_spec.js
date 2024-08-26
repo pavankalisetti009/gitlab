@@ -1,4 +1,3 @@
-import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CiVariablesSelectors from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variables_selectors.vue';
 import CiVariableSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variable_selector.vue';
@@ -23,7 +22,7 @@ describe('CiVariablesSelectors', () => {
 
   const findAllCiVariableSelectors = () => wrapper.findAllComponents(CiVariableSelector);
   const findCiVariableSelector = () => findAllCiVariableSelectors().at(0);
-  const findAddButton = () => wrapper.findComponent(GlButton);
+  const findAddButton = () => wrapper.findByTestId('add-variable-button');
   const findSectionLayout = () => wrapper.findComponent(SectionLayout);
 
   describe('default', () => {
