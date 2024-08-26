@@ -45,7 +45,7 @@ Then use this template to register the runner:
 ```shell
 sudo gitlab-runner register \
   --url "https://gitlab.example.com/" \
-  --registration-token "PROJECT_REGISTRATION_TOKEN" \
+  --token "$RUNNER_TOKEN" \
   --description "docker-ruby:2.6" \
   --executor "docker" \
   --template-config /tmp/test-config.template.toml \
