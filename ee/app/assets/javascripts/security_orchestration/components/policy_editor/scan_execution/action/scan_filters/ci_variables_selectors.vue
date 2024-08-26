@@ -101,34 +101,44 @@ export default {
 </script>
 
 <template>
-  <section-layout @remove="remove">
-    <template #selector>
-      <label class="gl-mb-0" :title="$options.i18n.label">
-        {{ $options.i18n.label }}
-      </label>
-      <p class="gl-mb-0">{{ $options.i18n.subLabel }}</p>
-      <ci-variable-selector
-        v-for="([key, value], index) in variables"
-        :key="variableTracker[index]"
-        :variable="key"
-        :value="value"
-        :scan-type="scanType"
-        :selected="selected"
-        :is-error-source="isErrorSource"
-        @input="updateVariable($event, index)"
-        @remove="removeVariable($event, index)"
-      />
-      <span v-gl-tooltip.hover="$options.i18n.tooltipText">
-        <gl-button
-          :disabled="hasEmptyVariable"
-          variant="link"
-          :aria-label="$options.i18n.addLabel"
-          class="gl-mr-3 gl-pt-2"
-          @click="addVariable"
-        >
-          {{ $options.i18n.addLabel }}
-        </gl-button>
-      </span>
-    </template>
-  </section-layout>
+  <div class="gl-w-full gl-bg-white gl-rounded-base">
+    <section-layout
+      class="gl-pb-0 gl-bg-white gl-mb-2"
+      content-classes="gl-gap-y-2"
+      @remove="remove"
+    >
+      <template #selector>
+        <label class="gl-mb-0" :title="$options.i18n.label">
+          {{ $options.i18n.label }}
+        </label>
+        <p class="gl-mb-4 gl-text-sm gl-basis-full">{{ $options.i18n.subLabel }}</p>
+      </template>
+    </section-layout>
+
+    <ci-variable-selector
+      v-for="([key, value], index) in variables"
+      :key="variableTracker[index]"
+      :variable="key"
+      :value="value"
+      :scan-type="scanType"
+      :selected="selected"
+      :is-error-source="isErrorSource"
+      class="gl-mb-2"
+      @input="updateVariable($event, index)"
+      @remove="removeVariable($event, index)"
+    />
+
+    <span v-gl-tooltip.hover="$options.i18n.tooltipText">
+      <gl-button
+        :disabled="hasEmptyVariable"
+        variant="link"
+        data-testid="add-variable-button"
+        :aria-label="$options.i18n.addLabel"
+        class="gl-pt-2 gl-mr-3 gl-mt-4 gl-mb-5 gl-ml-4"
+        @click="addVariable"
+      >
+        {{ $options.i18n.addLabel }}
+      </gl-button>
+    </span>
+  </div>
 </template>

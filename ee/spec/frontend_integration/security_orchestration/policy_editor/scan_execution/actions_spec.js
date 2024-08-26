@@ -4,13 +4,11 @@ import App from 'ee/security_orchestration/components/policy_editor/app.vue';
 import GroupDastProfileSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/group_dast_profile_selector.vue';
 import ProjectDastProfileSelector from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/project_dast_profile_selector.vue';
 import RunnerTagsList from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/runner_tags_list.vue';
-import ScanFilterSelector from 'ee/security_orchestration/components/policy_editor/scan_filter_selector.vue';
 import CiVariablesSelectors from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/ci_variables_selectors.vue';
 import {
   DEFAULT_ASSIGNED_POLICY_PROJECT,
   NAMESPACE_TYPES,
 } from 'ee/security_orchestration/constants';
-import { CI_VARIABLE } from 'ee/security_orchestration/components/policy_editor/scan_execution/action/scan_filters/constants';
 import {
   REPORT_TYPE_SAST,
   REPORT_TYPE_SAST_IAC,
@@ -61,7 +59,7 @@ describe('Scan execution policy actions', () => {
   const findGroupDastProfileSelector = () => wrapper.findComponent(GroupDastProfileSelector);
   const findProjectDastProfileSelector = () => wrapper.findComponent(ProjectDastProfileSelector);
   const findRunnerTagsList = () => wrapper.findComponent(RunnerTagsList);
-  const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
+  const findScanFilterButton = () => wrapper.findByTestId('add-variable-button');
 
   describe('secret detection', () => {
     beforeEach(() => {
@@ -144,7 +142,7 @@ describe('Scan execution policy actions', () => {
         expect(findCiVariablesSelectors().exists()).toBe(true);
       };
 
-      await findScanFilterSelector().vm.$emit('select', CI_VARIABLE);
+      await findScanFilterButton().vm.$emit('click');
       await verify({
         manifest: mockActionsVariablesScanExecutionManifest,
         verifyRuleMode,
