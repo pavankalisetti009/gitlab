@@ -108,7 +108,7 @@ export default {
     @shown="onShown"
   >
     <template #toggle>
-      <span class="md:gl-whitespace-nowrap gl-text-blue-500" data-testid="toggle-text">
+      <span class="gl-text-blue-500 md:gl-whitespace-nowrap" data-testid="toggle-text">
         <gl-icon name="doc-text" />
         <span class="md:gl-hidden">{{ locationCount }}</span>
         <span class="gl-hidden md:gl-inline-flex">{{ locationText }}</span>
@@ -116,11 +116,11 @@ export default {
     </template>
     <template #list-item="{ item }">
       <div v-if="item">
-        <div class="md:gl-whitespace-nowrap gl-text-blue-500">
+        <div class="gl-text-blue-500 md:gl-whitespace-nowrap">
           <gl-link
             v-if="hasLocationPath(item)"
             :href="item.location.blob_path"
-            class="gl-hover-text-decoration-none"
+            class="hover:gl-no-underline"
           >
             <gl-icon name="doc-text" class="gl-absolute" />
             <gl-truncate position="start" :text="item.location.path" with-tooltip class="gl-pl-6" />

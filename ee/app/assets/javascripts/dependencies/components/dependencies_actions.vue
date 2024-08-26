@@ -79,11 +79,11 @@ export default {
 
 <template>
   <div
-    class="gl-display-flex gl-p-5 gl-bg-gray-10 gl-border-t-1 gl-border-t-solid gl-border-gray-100 gl-align-items-flex-start"
+    class="gl-flex gl-items-start gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-p-5 gl-border-t-solid"
   >
     <group-dependencies-filtered-search
       v-if="!isProjectNamespace"
-      class="gl-mr-3 gl-flex-grow-1 gl-min-w-0"
+      class="gl-mr-3 gl-min-w-0 gl-grow"
     />
     <gl-sorting
       :text="sortFieldName"

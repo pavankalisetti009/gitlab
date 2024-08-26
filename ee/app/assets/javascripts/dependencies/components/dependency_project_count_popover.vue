@@ -26,7 +26,7 @@ export default {
 
 <template>
   <div>
-    <gl-button :id="targetId" variant="link" class="gl-hover-text-decoration-none">{{
+    <gl-button :id="targetId" variant="link" class="hover:gl-no-underline">{{
       targetText
     }}</gl-button>
     <gl-popover
@@ -38,7 +38,7 @@ export default {
     >
       <gl-sprintf :message="$options.i18n.description">
         <template #link="{ content }">
-          <gl-link :href="$options.GROUP_LEVEL_DEPENDENCY_LIST_DOC" class="gl-font-sm">
+          <gl-link :href="$options.GROUP_LEVEL_DEPENDENCY_LIST_DOC" class="gl-text-sm">
             {{ content }}
           </gl-link>
         </template>

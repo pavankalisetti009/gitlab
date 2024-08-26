@@ -91,12 +91,12 @@ export default {
       key: 'image',
       label: s__('GoogleArtifactRegistry|Name'),
       thClass: 'gl-w-2/5',
-      tdClass: 'gl-pt-3!',
+      tdClass: '!gl-pt-3',
     },
     {
       key: 'tags',
       label: s__('GoogleArtifactRegistry|Tags'),
-      tdClass: 'gl-pt-4!',
+      tdClass: '!gl-pt-4',
     },
     {
       key: 'uploadTime',
@@ -132,10 +132,8 @@ export default {
         <gl-loading-icon size="sm" class="gl-my-5" />
       </template>
       <template #cell(image)="{ item }">
-        <div
-          class="gl-display-flex gl-align-items-center gl-justify-content-end gl-md-justify-content-start"
-        >
-          <router-link class="gl-text-body gl-min-w-0" :to="item.name">
+        <div class="gl-flex gl-items-center gl-justify-end md:gl-justify-start">
+          <router-link class="gl-min-w-0 gl-text-primary" :to="item.name">
             <gl-truncate
               class="gl-font-bold"
               position="middle"
@@ -151,9 +149,7 @@ export default {
         </div>
       </template>
       <template #cell(tags)="{ item }">
-        <div
-          class="gl-display-flex gl-flex-wrap gl-gap-2 gl-justify-content-end gl-md-justify-content-start"
-        >
+        <div class="gl-flex gl-flex-wrap gl-justify-end gl-gap-2 md:gl-justify-start">
           <gl-badge v-for="tag in getTagsToShow(item)" :key="tag" class="gl-max-w-12">
             <gl-truncate class="gl-max-w-80p" :text="tag" :with-tooltip="true" /> </gl-badge
           ><gl-badge
@@ -179,7 +175,7 @@ export default {
         <time-ago-tooltip :time="item.updateTime" />
       </template>
     </gl-table>
-    <div class="gl-display-flex gl-justify-content-center">
+    <div class="gl-flex gl-justify-center">
       <gl-keyset-pagination
         v-bind="pageInfo"
         @prev="$emit('prev-page')"
