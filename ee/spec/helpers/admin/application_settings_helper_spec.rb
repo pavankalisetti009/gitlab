@@ -7,10 +7,15 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
 
   let(:duo_availability) { :default_off }
   let(:instance_level_ai_beta_features_enabled) { false }
+  let(:disabled_direct_code_suggestions) { false }
+  let(:code_suggestions_service) { instance_double(CloudConnector::AvailableServices) }
 
   before do
     stub_ee_application_setting(duo_availability: duo_availability)
     stub_ee_application_setting(instance_level_ai_beta_features_enabled: instance_level_ai_beta_features_enabled)
+    stub_ee_application_setting(disabled_direct_code_suggestions: disabled_direct_code_suggestions)
+    allow(CloudConnector::AvailableServices)
+      .to receive(:find_by_name).with(:code_suggestions).and_return(code_suggestions_service)
   end
 
   describe 'AI-Powered features settings for Self-Managed instances' do
@@ -29,11 +34,42 @@ RSpec.describe Admin::ApplicationSettingsHelper, feature_category: :code_suggest
     describe '#ai_settings_helper_data' do
       subject { helper.ai_settings_helper_data }
 
-      it 'returns the expected data' do
-        is_expected.to eq(
-          { duo_availability: duo_availability.to_s,
-            experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
-            redirect_path: general_admin_application_settings_path })
+      let(:expected_settings_helper_data) do
+        {
+          duo_availability: duo_availability.to_s,
+          experiment_features_enabled: instance_level_ai_beta_features_enabled.to_s,
+          disabled_direct_connection_method: disabled_direct_code_suggestions.to_s,
+          redirect_path: general_admin_application_settings_path
+        }
+      end
+
+      shared_examples 'returns expected data' do |duo_pro_visible, purchased|
+        before do
+          if purchased.nil?
+            allow(CloudConnector::AvailableServices)
+              .to receive(:find_by_name).with(:code_suggestions).and_return(nil)
+          else
+            allow(CloudConnector::AvailableServices)
+              .to receive_message_chain(:find_by_name, :purchased?).and_return(purchased)
+          end
+        end
+
+        it "returns the expected data when duo_pro_visible is '#{duo_pro_visible}'" do
+          expected_data = expected_settings_helper_data.merge(duo_pro_visible: duo_pro_visible)
+          is_expected.to eq(expected_data)
+        end
+      end
+
+      context 'when code suggestions are purchased' do
+        it_behaves_like 'returns expected data', 'true', true
+      end
+
+      context 'when code suggestions are not purchased' do
+        it_behaves_like 'returns expected data', 'false', false
+      end
+
+      context 'when code suggestions service is not found' do
+        it_behaves_like 'returns expected data', '', nil
       end
     end
   end
