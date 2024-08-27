@@ -1,12 +1,11 @@
 ---
 table_name: group_allowlist_entries
 classes:
-- GroupAllowlistEntry
 - Security::GroupAllowlistEntry
 feature_categories:
 - secret_detection
 description: Stores entries of secret detection group-level allowlists
-introduced_by_url:
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163733
 milestone: '17.4'
 gitlab_schema: gitlab_sec
 sharding_key:
