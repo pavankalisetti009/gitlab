@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class TrainingProvider < ::Gitlab::Database::SecApplicationRecord
+  class TrainingProvider < ApplicationRecord
     self.table_name = 'security_training_providers'
 
     has_many :trainings, inverse_of: :provider, class_name: 'Security::Training'
