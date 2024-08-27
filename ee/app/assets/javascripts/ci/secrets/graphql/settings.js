@@ -81,8 +81,26 @@ export const resolvers = {
             secret: {
               id,
               ...secret,
+              branch: secret.branch || 'main',
+              branchMatchesCount: 2,
+              branchMatchesPath: '/branches',
               createdAt: dateAndTimeToISOString(new Date(), '00:00'),
+              envMatchesCount: 2,
+              envMatchesPath: '/environments',
               expiration: dateAndTimeToISOString(secret.expiration, '00:00'),
+              lastAccessed: '2024-03-19T20:55:08.551Z',
+              lastAccessedUser: {
+                id: 1,
+                avatarUrl:
+                  'https://www.gravatar.com/avatar/83f082bcac69be6bda7945a24ae1a1fda41e864296bd32356819a09cc342e384?s=80&d=identicon',
+                // eslint-disable-next-line @gitlab/require-i18n-strings
+                name: 'Jane Doe',
+                userId: 1,
+                username: 'root',
+                webUrl: 'http://127.0.0.1:3000/root',
+              },
+              nextRotation: secret.rotationPeriod ? '2024-09-22T08:04:26.024Z' : null,
+              status: 'enabled',
               // eslint-disable-next-line @gitlab/require-i18n-strings
               __typename: 'Secret',
             },

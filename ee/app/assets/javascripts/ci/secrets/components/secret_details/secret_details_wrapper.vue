@@ -1,9 +1,15 @@
 <script>
-import { GlAlert, GlButton, GlLabel, GlLoadingIcon } from '@gitlab/ui';
-import { __, sprintf } from '~/locale';
+import { GlAlert, GlBadge, GlButton, GlLoadingIcon } from '@gitlab/ui';
+import { __, s__, sprintf } from '~/locale';
+import { createAlert } from '~/alert';
 import { localeDateFormat } from '~/lib/utils/datetime_utility';
 import { convertEnvironmentScope } from '~/ci/common/private/ci_environments_dropdown';
-import { DETAILS_ROUTE_NAME, EDIT_ROUTE_NAME, SCOPED_LABEL_COLOR } from '../../constants';
+import {
+  DETAILS_ROUTE_NAME,
+  EDIT_ROUTE_NAME,
+  SECRET_STATUS,
+  SCOPED_LABEL_COLOR,
+} from '../../constants';
 import getSecretDetailsQuery from '../../graphql/queries/client/get_secret_details.query.graphql';
 import SecretDetails from './secret_details.vue';
 
@@ -11,8 +17,8 @@ export default {
   name: 'SecretDetailsWrapper',
   components: {
     GlAlert,
+    GlBadge,
     GlButton,
-    GlLabel,
     GlLoadingIcon,
     SecretDetails,
   },
@@ -46,6 +52,9 @@ export default {
       update(data) {
         return data.project?.secret || null;
       },
+      error() {
+        createAlert({ message: this.$options.i18n.queryError });
+      },
     },
   },
   data() {
@@ -55,8 +64,7 @@ export default {
   },
   computed: {
     createdAtText() {
-      const { createdAt } = this.secret;
-      const date = localeDateFormat.asDateTimeFull.format(createdAt);
+      const date = localeDateFormat.asDate.format(new Date(this.secret.createdAt));
       return sprintf(__('Created on %{date}'), { date });
     },
     environmentLabelText() {
@@ -78,18 +86,20 @@ export default {
       }
     },
   },
+  i18n: {
+    queryError: s__('Secrets|Failed to load secret. Please try again later.'),
+  },
   DETAILS_ROUTE_NAME,
   EDIT_ROUTE_NAME,
   SCOPED_LABEL_COLOR,
+  SECRET_STATUS,
 };
 </script>
 <template>
   <div>
     <gl-loading-icon v-if="isSecretLoading" size="lg" class="gl-mt-6" />
-    <!-- TODO: Update error handling when designs and API are available -->
-    <!-- See: https://gitlab.com/gitlab-org/gitlab/-/issues/464683 -->
     <gl-alert v-else-if="!secret" variant="danger" :dismissible="false" class="gl-mt-3">
-      {{ s__('Secrets|Failed to load secret. Please try again later.') }}
+      {{ $options.i18n.queryError }}
     </gl-alert>
     <div v-else>
       <div class="gl-flex gl-items-center gl-justify-between">
@@ -115,16 +125,18 @@ export default {
         </div>
       </div>
       <div class="gl-mb-4">
-        <gl-label
-          :title="environmentLabelText"
-          :background-color="$options.SCOPED_LABEL_COLOR"
-          scoped
-        />
-        <span class="gl-ml-3 gl-text-gray-500" data-testid="secret-created-at">
+        <gl-badge
+          icon-size="sm"
+          :icon="$options.SECRET_STATUS[secret.status].icon"
+          :variant="$options.SECRET_STATUS[secret.status].variant"
+        >
+          {{ $options.SECRET_STATUS[secret.status].text }}
+        </gl-badge>
+        <span class="gl-text-gray-500 gl-ml-3" data-testid="secret-created-at">
           {{ createdAtText }}
         </span>
       </div>
-      <secret-details :secret="secret" />
+      <secret-details :full-path="fullPath" :secret="secret" />
     </div>
   </div>
 </template>
