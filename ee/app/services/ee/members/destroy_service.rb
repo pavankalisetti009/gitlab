@@ -19,7 +19,7 @@ module EE
         cleanup_group_deletion_schedule(member) if member.source.is_a?(Group)
         cleanup_oncall_rotations(member)
         cleanup_escalation_rules(member) if member.user
-        reset_seats_usage_callouts(member) if member.is_using_seat
+        reset_seats_usage_callouts(member)
       end
 
       private
@@ -149,6 +149,8 @@ module EE
 
       def reset_seats_usage_callouts(member)
         namespace = member.source.root_ancestor
+
+        return unless ::Feature.enabled?(:reset_seat_banner_callouts, namespace)
 
         member.run_after_commit_or_now do
           ::Groups::ResetSeatCalloutsWorker.perform_async(namespace)
