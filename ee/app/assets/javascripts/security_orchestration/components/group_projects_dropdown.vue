@@ -1,6 +1,6 @@
 <script>
 import { GlCollapsibleListbox, GlTruncate } from '@gitlab/ui';
-import { debounce, uniqBy } from 'lodash';
+import { debounce, uniqBy, get } from 'lodash';
 import produce from 'immer';
 import { __ } from '~/locale';
 import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
@@ -217,7 +217,7 @@ export default {
   },
   methods: {
     fetchMoreItems() {
-      const { groupsOnly } = this;
+      const { groupsOnly, loadAllProjects } = this;
       const variables = {
         after: this.pageInfo.endCursor,
         fullPath: this.groupFullPath,
@@ -229,14 +229,16 @@ export default {
           updateQuery(previousResult, { fetchMoreResult }) {
             return produce(fetchMoreResult, (draftData) => {
               if (groupsOnly) {
-                draftData.group.descendantGroups.nodes = [
-                  ...previousResult.group.descendantGroups.nodes,
-                  ...draftData.group.descendantGroups.nodes,
-                ];
+                draftData.group.nodes = [...previousResult.group.nodes, ...draftData.group.nodes];
               } else {
-                draftData.group.projects.nodes = [
-                  ...previousResult.group.projects.nodes,
-                  ...draftData.group.projects.nodes,
+                const getSourceObject = (source) => {
+                  const path = loadAllProjects ? 'projects' : 'group.projects';
+                  return get(source, path);
+                };
+
+                getSourceObject(draftData).nodes = [
+                  ...getSourceObject(previousResult).nodes,
+                  ...getSourceObject(draftData).nodes,
                 ];
               }
             });
