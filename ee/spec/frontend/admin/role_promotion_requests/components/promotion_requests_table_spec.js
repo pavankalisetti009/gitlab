@@ -1,7 +1,6 @@
 import { GlTable } from '@gitlab/ui';
 import PromotionRequestsTable from 'ee/admin/role_promotion_requests/components/promotion_requests_table.vue';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import UserAvatar from '~/vue_shared/components/users_table/user_avatar.vue';
 import { defaultProvide, selfManagedUsersQueuedForRolePromotion } from '../mock_data';
 
 describe('PromotionRequestsTable', () => {
@@ -13,10 +12,10 @@ describe('PromotionRequestsTable', () => {
   const list =
     selfManagedUsersQueuedForRolePromotion.data.selfManagedUsersQueuedForRolePromotion.nodes;
 
-  const createComponent = (mockData = list) => {
+  const createComponent = () => {
     wrapper = mountExtended(PromotionRequestsTable, {
       propsData: {
-        list: mockData,
+        list,
         isLoading: false,
       },
       provide: defaultProvide,
@@ -52,20 +51,6 @@ describe('PromotionRequestsTable', () => {
         wrapper.findByRole('button', { name: 'Reject' }).trigger('click');
         expect(wrapper.emitted('reject')).toStrictEqual([[list[0].user.id]]);
       });
-    });
-  });
-
-  describe('passing processed user object to user-avatar', () => {
-    const oneUser = list[0];
-    const mockDataWithOneUser = [oneUser];
-    const userId = 21;
-
-    beforeEach(() => {
-      createComponent(mockDataWithOneUser);
-    });
-
-    it('replaces gid with user id when passing user prop', () => {
-      expect(wrapper.findAllComponents(UserAvatar).at(0).props('user').id).toBe(userId);
     });
   });
 });

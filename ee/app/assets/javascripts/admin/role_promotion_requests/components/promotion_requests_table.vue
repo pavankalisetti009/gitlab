@@ -3,7 +3,6 @@ import { GlTable, GlButton } from '@gitlab/ui';
 import { __, s__ } from '~/locale';
 import UserDate from '~/vue_shared/components/user_date.vue';
 import UserAvatar from '~/vue_shared/components/users_table/user_avatar.vue';
-import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 
 export default {
   name: 'PromotionRequestsTable',
@@ -43,12 +42,6 @@ export default {
       label: __('Actions'),
     },
   ],
-  methods: {
-    transformUser(user) {
-      // changing the id from gid to normal id
-      return { ...user, id: getIdFromGraphQLId(user.id) };
-    },
-  },
 };
 </script>
 
@@ -63,7 +56,7 @@ export default {
       :busy="isLoading"
     >
       <template #cell(name)="{ item: { user } }">
-        <user-avatar :user="transformUser(user)" :admin-user-path="paths.adminUser" />
+        <user-avatar :user="user" :admin-user-path="paths.adminUser" />
       </template>
 
       <template #cell(requestedRole)="{ item: { newAccessLevel } }">
