@@ -233,6 +233,14 @@ RSpec.describe EE::Users::CalloutsHelper do
     end
   end
 
+  # This test fails with Rails 7.0.8 + rails-dom-testing 2.2.0
+  # However it passes with:
+  #  - Rails 7.0.8 + rails-dom-testing 2.0.3
+  #  - Rails 7.1.3 + rails-dom-testing 2.2.0
+  #
+  #  TODO: Either investigate it on rails-dom-testing gem upgrade or remove this comment after 7.1.3 upgrade
+  #
+  #  Related to Gitlab.next_rails?
   describe '.show_joining_a_project_alert?', feature_category: :onboarding do
     where(:cookie_present?, :onboarding?, :user_dismissed_callout?, :expected_result) do
       true | true | true | false
