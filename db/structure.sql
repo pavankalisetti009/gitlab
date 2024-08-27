@@ -16093,14 +16093,14 @@ ALTER SEQUENCE project_aliases_id_seq OWNED BY project_aliases.id;
 
 CREATE TABLE project_allowlist_entries (
     id bigint NOT NULL,
-    project_id bigint NOT NULL,
-    scanner smallint NOT NULL,
-    description text,
-    type smallint NOT NULL,
-    value text NOT NULL,
-    active boolean DEFAULT true NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
+    project_id bigint NOT NULL,
+    scanner smallint NOT NULL,
+    type smallint NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    description text,
+    value text NOT NULL,
     CONSTRAINT check_5a28f12a9a CHECK ((char_length(value) <= 255)),
     CONSTRAINT check_e2b3895091 CHECK ((char_length(description) <= 255))
 );
