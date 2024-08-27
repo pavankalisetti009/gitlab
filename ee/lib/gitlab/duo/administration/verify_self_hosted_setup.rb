@@ -1,0 +1,95 @@
+# frozen_string_literal: true
+
+module Gitlab
+  module Duo
+    module Administration
+      class VerifySelfHostedSetup
+        attr_reader :ai_gateway_url
+
+        def initialize
+          @root_user = User.find_by_id(1)
+          @ai_gateway_url = ENV['AI_GATEWAY_URL']
+        end
+
+        def execute
+          puts <<~MSG
+            This task will help you debug issues with your self-hosted Duo installation.
+            For additional logs, enable 'expanded_ai_logging' Feature flag
+
+          MSG
+
+          verify_environmental_variables!
+          verify_license_access!
+          enable_feature_flag
+          verify_aigateway_access!
+        end
+
+        def verify_environmental_variables!
+          puts "Verifying environmental variables..."
+
+          unless ENV['CLOUD_CONNECTOR_SELF_SIGN_TOKENS'] == "1"
+            raise "Set 'CLOUD_CONNECTOR_SELF_SIGN_TOKENS' environmental variable to 1"
+          end
+
+          puts ">> CLOUD_CONNECTOR_SELF_SIGN_TOKENS set to 1 ✔"
+
+          raise "Set 'AI_GATEWAY_URL' to point to your AI Gateway Instance" unless ai_gateway_url
+
+          puts ">> 'AI_GATEWAY_URL' set to #{ai_gateway_url} ✔"
+
+          puts ""
+        end
+
+        def verify_license_access!
+          print "Verifying license access to code suggestions..."
+
+          if Ability.allowed?(@root_user, :access_code_suggestions)
+            puts "✔"
+            return true
+          end
+
+          puts("Access invalid, debugging cause")
+
+          if ::License.feature_available?(:code_suggestions)
+            raise <<~MSG
+              License is correct, but user does not have access to code suggestions. Please submit an issue to GitLab.
+            MSG
+          end
+
+          raise "License does not provide access to code suggestions, verify your license"
+        end
+
+        def enable_feature_flag
+          Feature.enable(:ai_custom_model)
+
+          puts("Feature flag enabled ✔")
+        end
+
+        def verify_aigateway_access!
+          puts "Checking if AI Gateway is accessible..."
+
+          begin
+            request = Gitlab::HTTP.get("#{ai_gateway_url}/monitoring/healthz",
+              headers: { 'accept' => 'application/json' },
+              allow_local_requests: true)
+
+            if request.code == 200
+              puts ">> AI Gateway server is accessible ✔"
+              return
+            end
+          rescue *Gitlab::HTTP::HTTP_ERRORS => e
+            puts e.message
+          end
+
+          raise <<~MSG
+              Cannot access AI Gateway. Possible causes:
+              - AI Gateway is not running
+              - 'AI_GATEWAY_URL' has an incorrect value
+              - the network configuration doesn't allow communication between GitLab and AI Gateway.
+
+          MSG
+        end
+      end
+    end
+  end
+end

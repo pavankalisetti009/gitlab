@@ -17,5 +17,10 @@ namespace :gitlab do
       group = Gitlab::Duo::Developments::Setup.new(args).execute
       Gitlab::Duo::Developments::SetupGroupsForModelEvaluation.new(group).execute
     end
+
+    desc 'GitLab | Duo | Verify self-hosted Duo setup'
+    task verify_self_hosted_setup: :gitlab_environment do
+      Gitlab::Duo::Administration::VerifySelfHostedSetup.new.execute
+    end
   end
 end
