@@ -257,6 +257,22 @@ RSpec.describe Gitlab::Llm::Completions::Chat, :clean_gitlab_redis_chat, feature
       end
     end
 
+    context 'with predefined Commit' do
+      let!(:commit) { create(:commit, project: project, safe_message: "message") }
+
+      where(:input_template, :tools) do
+        'Summarize this Commit' | %w[CommitReader]
+        'Summarize %<commit_identifier>s Commit' | %w[CommitReader]
+      end
+
+      with_them do
+        let(:resource) { commit }
+        let(:input) { format(input_template, commit_identifier: commit.to_reference(full: true).to_s) }
+
+        it_behaves_like 'successful prompt processing'
+      end
+    end
+
     context 'when asking to explain code' do
       # rubocop: disable Layout/LineLength -- keep table structure readable
       where(:input_template, :tools) do

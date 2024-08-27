@@ -116,4 +116,38 @@ RSpec.describe Llm::CompletionWorker, feature_category: :ai_abstraction_layer do
       )
     end
   end
+
+  describe '.resource' do
+    subject { described_class.resource(message_hash) }
+
+    let(:message_hash) do
+      {
+        'context' => {
+          'resource' => resource.to_gid.to_s
+        }
+      }
+    end
+
+    it 'returns the resource' do
+      expect(subject).to eq(resource)
+    end
+
+    context 'when the resource is a commit' do
+      let_it_be(:project) { create(:project, :public, :repository) }
+      let_it_be(:commit)  { project.commit }
+
+      let(:message_hash) do
+        {
+          'context' => {
+            'resource' => commit.to_gid.to_s,
+            'project' => project.to_gid.to_s
+          }
+        }
+      end
+
+      it 'returns the project commit' do
+        expect(subject).to eq(commit)
+      end
+    end
+  end
 end

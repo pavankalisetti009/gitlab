@@ -212,6 +212,7 @@ client_subscription_id: 'someid' }
       allow(context).to receive(:tools_used).and_return([Gitlab::Llm::Chain::Tools::IssueReader::Executor])
       stub_saas_features(duo_chat_categorize_question: true)
       stub_feature_flags(ai_merge_request_reader_for_chat: false)
+      stub_feature_flags(ai_commit_reader_for_chat: false)
     end
 
     context 'when resource is an issue' do

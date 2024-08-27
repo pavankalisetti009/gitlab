@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe EE::Projects::Commit, feature_category: :source_code_management do
-  let_it_be(:project) { create(:project, :public, :repository) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need to create a repository on the project
+  let_it_be(:project) { create(:project, :public, :repository) }
   let_it_be(:commit)  { project.commit }
 
   it { is_expected.to include_module(::Ai::Model) }
