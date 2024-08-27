@@ -62,15 +62,15 @@ export default {
     GlModalDirective,
   },
   mixins: [InternalEvents.mixin()],
-  inject: [
-    'addDuoProHref',
-    'isSaaS',
-    'subscriptionName',
-    'subscriptionStartDate',
-    'subscriptionEndDate',
-    'duoProActiveTrialStartDate',
-    'duoProActiveTrialEndDate',
-  ],
+  inject: {
+    addDuoProHref: { default: null },
+    isSaaS: { default: false },
+    subscriptionName: { default: null },
+    subscriptionStartDate: { default: null },
+    subscriptionEndDate: { default: null },
+    duoProActiveTrialStartDate: { default: null },
+    duoProActiveTrialEndDate: { default: null },
+  },
   props: {
     groupId: {
       type: String,

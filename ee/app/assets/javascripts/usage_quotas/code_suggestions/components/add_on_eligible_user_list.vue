@@ -72,8 +72,8 @@ export default {
   },
   mixins: [glFeatureFlagMixin(), trackingMixin],
   inject: {
-    addDuoProHref: {},
-    groupId: {},
+    addDuoProHref: { default: null },
+    groupId: { default: null },
     isBulkAddOnAssignmentEnabled: { default: false },
     subscriptionName: { default: null },
   },
