@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module Ai
-  class CodeSuggestionsUsage < ClickHouseModel
-    self.table_name = 'code_suggestion_usages'
+  class CodeSuggestionsUsage
+    include ClickHouseModel
+
+    self.clickhouse_table_name = 'code_suggestion_usages'
 
     EVENTS = {
       'code_suggestions_requested' => 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809

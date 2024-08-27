@@ -1,8 +1,10 @@
 # frozen_string_literal: true
 
 module Ai
-  class DuoChatEvent < ClickHouseModel
-    self.table_name = 'duo_chat_events'
+  class DuoChatEvent
+    include ClickHouseModel
+
+    self.clickhouse_table_name = 'duo_chat_events'
 
     EVENTS = {
       'request_duo_chat_response' => 1

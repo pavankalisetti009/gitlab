@@ -43,7 +43,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
       it 'stores new event' do
         expect_next_instance_of(model_class, expected_event_hash) do |instance|
-          expect(instance).to receive(:store).once
+          expect(instance).to receive(:store_to_clickhouse).once
         end
 
         track_event

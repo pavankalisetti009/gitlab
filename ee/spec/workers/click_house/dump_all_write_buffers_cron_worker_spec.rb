@@ -18,18 +18,12 @@ RSpec.describe ClickHouse::DumpAllWriteBuffersCronWorker, feature_category: :dat
   end
 
   context 'when ClickHouse is enabled', :click_house do
-    let(:clickhouse_model) do
-      Class.new(ClickHouseModel) do
-        self.table_name = 'test_table'
-      end
-    end
-
     before do
       stub_application_setting(use_clickhouse_for_analytics: true)
     end
 
-    it 'schedules DumpWriteBufferWorker for each clickhouse model' do
-      allow(ClickHouseModel).to receive(:descendants).and_return([clickhouse_model])
+    it 'schedules DumpWriteBufferWorker for each clickhouse model table' do
+      stub_const('ClickHouse::DumpAllWriteBuffersCronWorker::TABLES', ['test_table'])
       expect(ClickHouse::DumpWriteBufferWorker).to receive(:perform_async).with('test_table')
 
       job.perform
