@@ -1,0 +1,13 @@
+---
+description: Tracks duo workflow finish event
+internal_events: true
+action: finish_duo_workflow_execution
+identifiers:
+- user
+product_group: ai_framework
+milestone: '17.4'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163342
+distributions:
+- ee
+tiers:
+- ultimate
