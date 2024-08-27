@@ -245,11 +245,10 @@ class Gitlab::Seeder::CustomizableCycleAnalytics
   end
 
   def create_custom_value_stream_for!(parent)
-    Analytics::CycleAnalytics::ValueStreams::CreateService.new(
-      current_user: user,
-      namespace: parent,
-      params: { name: "vs #{suffix}" }
-    ).execute.payload[:value_stream]
+    Analytics::CycleAnalytics::ValueStream.create!(
+      name: "vs #{suffix}",
+      namespace: parent
+    )
   end
 
   def create_developers!
