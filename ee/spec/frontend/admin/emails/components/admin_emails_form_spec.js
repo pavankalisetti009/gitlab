@@ -35,8 +35,7 @@ describe('AdminEmailsForm', () => {
     wrapper.findComponent(GlForm).trigger('submit');
     await nextTick();
   };
-  const findSubmitButton = () =>
-    wrapper.findByRole('button', { name: AdminEmailsForm.i18n.submitButton });
+  const findSubmitButton = () => wrapper.findByTestId('submit-button');
   const findGlListbox = () => wrapper.findComponent(GlCollapsibleListbox);
   const showGlListbox = async () => {
     findGlListbox().vm.$emit('shown');

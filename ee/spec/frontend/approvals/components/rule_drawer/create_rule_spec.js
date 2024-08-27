@@ -24,8 +24,8 @@ describe('Approvals DrawerRuleCreate', () => {
 
   const findDrawer = () => wrapper.findComponent(GlDrawer);
   const findForm = () => wrapper.findComponent(RuleForm);
-  const findSaveChangeButton = () => wrapper.findByText('Save changes');
-  const findCancelButton = () => wrapper.findByText('Cancel');
+  const findSaveChangeButton = () => wrapper.findByTestId('save-approval-rule-button');
+  const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findHeader = () => wrapper.find('h2');
 
   const createComponent = () => {

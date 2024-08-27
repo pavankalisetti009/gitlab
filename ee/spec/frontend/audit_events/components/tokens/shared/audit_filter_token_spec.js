@@ -23,7 +23,7 @@ describe('AuditFilterToken', () => {
   const mockFetchLoading = () => new Promise(() => {});
 
   const findFilteredSearchSuggestions = () => wrapper.findAllByTestId('audit-filter-suggestion');
-  const findFilteredSearchToken = () => wrapper.find('#filtered-search-token');
+  const findFilteredSearchToken = () => wrapper.findComponentByTestId('filtered-search-token');
   const findItemAvatar = () => wrapper.findByTestId('audit-filter-item-avatar');
   const findLoadingIcon = (type) => wrapper.find(type).findComponent(GlLoadingIcon);
   const findViewLoadingIcon = () => findLoadingIcon('.view');
@@ -52,7 +52,7 @@ describe('AuditFilterToken', () => {
         },
         stubs: {
           GlFilteredSearchToken: {
-            template: `<div id="filtered-search-token">
+            template: `<div data-testid="filtered-search-token">
             <div class="view"><slot name="view"></slot></div>
             <div class="suggestions"><slot name="suggestions"></slot></div>
           </div>`,
