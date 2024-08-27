@@ -50,6 +50,14 @@ module EE
         }
       end
 
+      def seat_controls_disabled_help_text(group)
+        if ::Feature.enabled?(:block_seat_overages, group)
+          _("Restricted access and user cap cannot be turned on. The group or one of its subgroups or projects is shared externally.")
+        else
+          _("User cap cannot be turned on. The group or one of its subgroups or projects is shared externally.")
+        end
+      end
+
       private
 
       def saas_user_caps_i18n_string(group)

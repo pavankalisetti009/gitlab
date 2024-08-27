@@ -198,6 +198,7 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: true)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       it 'adds the member when there are open seats in the subscription' do
@@ -532,6 +533,7 @@ RSpec.describe API::Invitations, 'EE Invitations', :aggregate_failures, feature_
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: true)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       it 'adds the member when there are open seats in the subscription' do

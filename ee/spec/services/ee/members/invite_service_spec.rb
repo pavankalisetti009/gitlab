@@ -80,6 +80,7 @@ RSpec.describe Members::InviteService, :aggregate_failures, :saas, feature_categ
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: true)
+        root_ancestor.namespace_settings.update!(seat_control: :block_overages)
       end
 
       context 'with an email invite that begins with the id of a user in the group' do

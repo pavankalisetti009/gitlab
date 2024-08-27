@@ -7,7 +7,7 @@ RSpec.describe 'Projects > Members > Import project members', :js, feature_categ
 
   let_it_be(:user) { create(:user) }
   let_it_be(:user_mike) { create(:user, name: 'Mike') }
-  let_it_be(:group) { create(:group) }
+  let_it_be_with_refind(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
   let_it_be(:source_project) { create(:project) }
 
@@ -29,6 +29,10 @@ RSpec.describe 'Projects > Members > Import project members', :js, feature_categ
     let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 2) }
 
     context 'when block seat overages is enabled for the group' do
+      before do
+        group.namespace_settings.update!(seat_control: :block_overages)
+      end
+
       context 'when the user is a group owner' do
         before_all do
           group.add_owner(user)

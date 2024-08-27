@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_projects do
   describe '#execute' do
-    let_it_be(:group) { create(:group) }
+    let_it_be_with_refind(:group) { create(:group) }
     let_it_be(:source_project) { create(:project) }
     let_it_be(:target_project, refind: true) { create(:project, group: group) }
     let_it_be(:user) { create(:user) }
@@ -64,6 +64,7 @@ RSpec.describe Members::ImportProjectTeamService, feature_category: :groups_and_
 
       before do
         stub_feature_flags(block_seat_overages: group)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       context 'when there are no seats left in the subscription' do

@@ -3517,32 +3517,31 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#block_seat_overages?' do
-    context 'when gitlab subscriptions are available' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-      end
-
-      it 'returns true when the feature flag is enabled' do
-        expect(group.block_seat_overages?).to eq(true)
-      end
-
-      it 'returns false when the feature flag is disabled' do
-        stub_feature_flags(block_seat_overages: false)
-
-        expect(group.block_seat_overages?).to eq(false)
-      end
+  describe '#block_seat_overages?', :saas do
+    where(:subscriptions, :seat_control, :user_cap, :flag, :result) do
+      true  | :off            | nil | true  | false
+      true  | :user_cap       | 1   | true  | false
+      true  | :block_overages | nil | true  | true
+      true  | :off            | nil | false | false
+      true  | :user_cap       | 1   | false | false
+      true  | :block_overages | nil | false | false
+      false | :off            | nil | true  | false
+      false | :user_cap       | 1   | true  | false
+      false | :block_overages | nil | true  | false
+      false | :off            | nil | false | false
+      false | :user_cap       | 1   | false | false
+      false | :block_overages | nil | false | false
     end
 
-    context 'when gitlab subscriptions are not available' do
-      it 'returns false when the feature flag is enabled' do
-        expect(group.block_seat_overages?).to eq(false)
+    with_them do
+      before do
+        stub_saas_features(gitlab_com_subscriptions: subscriptions)
+        stub_feature_flags(block_seat_overages: flag)
+        group.namespace_settings.update!(seat_control: seat_control, new_user_signups_cap: user_cap)
       end
 
-      it 'returns false when the feature flag is disabled' do
-        stub_feature_flags(block_seat_overages: false)
-
-        expect(group.block_seat_overages?).to eq(false)
+      it 'returns the expected result' do
+        expect(group.block_seat_overages?).to eq(result)
       end
     end
   end
