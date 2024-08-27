@@ -22,6 +22,10 @@ module Mutations
         required: false,
         description: 'Specifies the origin platform of the request.'
 
+      argument :project_id, ::Types::GlobalIDType[::Project],
+        required: false,
+        description: "Global ID of the project the user is acting on."
+
       # We need to re-declare the `errors` because we want to allow ai_features token to work for this
       field :errors, [GraphQL::Types::String],
         null: false,
@@ -50,7 +54,7 @@ module Mutations
 
         check_feature_flag_enabled!(method)
 
-        resource = resource_id&.then { |id| authorized_find!(id: id) }
+        resource = find_resource(GlobalID.parse(resource_id), options[:project_id])
 
         options[:referer_url] = context[:request].headers["Referer"] if method == :chat
         options[:user_agent] = context[:request].headers["User-Agent"]
@@ -65,6 +69,13 @@ module Mutations
       end
 
       private
+
+      def find_resource(resource_id, project_id)
+        return unless resource_id
+        return find_commit_in_project(resource_id, project_id) if resource_id.model_class == Commit
+
+        resource_id.then { |id| authorized_find!(id: id) }
+      end
 
       def check_feature_flag_enabled!(method)
         return if Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(method)
@@ -94,7 +105,7 @@ module Mutations
       end
 
       def extract_method_params!(attributes)
-        options = attributes.extract!(:client_subscription_id, :platform_origin)
+        options = attributes.extract!(:client_subscription_id, :platform_origin, :project_id)
         methods = methods(attributes.transform_values(&:to_h))
 
         # At this point, we only have one method since we filtered it in `#ready?`
@@ -105,6 +116,13 @@ module Mutations
         method_arguments.delete(:additional_context) if Feature.disabled?(:duo_additional_context, current_user)
 
         [method_arguments.delete(:resource_id), method, method_arguments]
+      end
+
+      def find_commit_in_project(resource_id, project_id)
+        project = authorized_find!(id: project_id)
+        return unless project
+
+        project.commit_by(oid: resource_id.model_id)
       end
     end
   end
