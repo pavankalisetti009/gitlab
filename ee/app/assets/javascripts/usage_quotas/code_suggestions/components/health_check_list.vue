@@ -1,18 +1,11 @@
 <script>
-import {
-  GlCard,
-  GlButton,
-  GlIcon,
-  GlLoadingIcon,
-  GlSkeletonLoader,
-  GlCollapse,
-  GlExperimentBadge,
-} from '@gitlab/ui';
+import { GlCard, GlButton, GlIcon, GlLoadingIcon, GlCollapse, GlExperimentBadge } from '@gitlab/ui';
 import { fetchPolicies } from '~/lib/graphql';
 import { __, s__ } from '~/locale';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { probesByCategory } from '../utils';
 import HealthCheckListCategory from './health_check_list_category.vue';
+import HealthCheckListLoader from './health_check_list_loader.vue';
 
 export default {
   name: 'HealthCheckList',
@@ -21,7 +14,7 @@ export default {
     GlButton,
     GlIcon,
     GlLoadingIcon,
-    GlSkeletonLoader,
+    HealthCheckListLoader,
     GlCollapse,
     GlExperimentBadge,
     HealthCheckListCategory,
@@ -166,31 +159,8 @@ export default {
       </div>
       <gl-collapse :visible="expanded" class="border-gray-100 gl-border-t">
         <div class="gl-p-5">
-          <div v-if="isLoading">
-            <gl-skeleton-loader :width="1248" :height="360">
-              <rect x="8" y="0" width="300" height="40" rx="4" />
-
-              <rect x="8" y="56" width="20" height="20" rx="16" />
-              <rect x="40" y="58" width="300" height="16" rx="4" />
-              <rect x="350" y="58" width="300" height="16" rx="4" />
-              <rect x="8" y="94" width="20" height="20" rx="16" />
-              <rect x="40" y="96" width="200" height="16" rx="4" />
-
-              <rect x="8" y="140" width="350" height="40" rx="4" />
-
-              <rect x="8" y="196" width="20" height="20" rx="16" />
-              <rect x="40" y="198" width="450" height="16" rx="4" />
-              <rect x="8" y="234" width="20" height="20" rx="16" />
-              <rect x="40" y="236" width="360" height="16" rx="4" />
-
-              <rect x="8" y="280" width="200" height="40" rx="4" />
-
-              <rect x="8" y="336" width="20" height="20" rx="16" />
-              <rect x="40" y="338" width="260" height="16" rx="4" />
-            </gl-skeleton-loader>
-          </div>
-
-          <div v-else class="gl-font-monospace" data-testid="health-check-probes">
+          <health-check-list-loader v-if="isLoading" />
+          <div v-else class="gl-font-monospace" data-testid="health-check-results">
             <health-check-list-category
               v-for="category in probesByCategory"
               :key="category.title"
