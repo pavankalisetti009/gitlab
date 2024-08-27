@@ -257,7 +257,7 @@ export default {
 
         <gl-button
           v-if="!filtersDisabled"
-          class="gl-mt-4 gl-ml-4"
+          class="gl-ml-4 gl-mt-4"
           data-testid="add-variable-button"
           :aria-label="$options.i18n.addVariableButtonText"
           variant="link"

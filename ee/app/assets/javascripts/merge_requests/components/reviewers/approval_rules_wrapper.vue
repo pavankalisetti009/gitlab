@@ -86,10 +86,10 @@ export default {
 
 <template>
   <div v-if="isLoading">
-    <div class="gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base gl-animate-skeleton-loader"></div>
-    <div class="gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base gl-animate-skeleton-loader"></div>
-    <div class="gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base gl-animate-skeleton-loader"></div>
-    <div class="gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base gl-animate-skeleton-loader"></div>
+    <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
+    <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
+    <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
+    <div class="gl-animate-skeleton-loader gl-mb-3 gl-h-4 !gl-max-w-30 gl-rounded-base"></div>
   </div>
   <div v-else>
     <approval-rules

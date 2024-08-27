@@ -55,7 +55,7 @@ export default {
   <gl-card data-testid="storage-detail-card">
     <div class="gl-flex gl-justify-between gl-gap-5" data-testid="storage-included-in-plan">
       <div class="gl-w-80p">{{ planStorageDescription }}</div>
-      <div v-if="loading" class="gl-h-5 gl-w-8 gl-rounded-base gl-animate-skeleton-loader"></div>
+      <div v-if="loading" class="gl-animate-skeleton-loader gl-h-5 gl-w-8 gl-rounded-base"></div>
       <number-to-human-size v-else class="gl-whitespace-nowrap" :value="namespaceStorageLimit" />
     </div>
     <div class="gl-flex gl-justify-between">
@@ -70,7 +70,7 @@ export default {
           <gl-icon name="question-o" />
         </gl-link>
       </div>
-      <div v-if="loading" class="gl-h-5 gl-w-8 gl-rounded-base gl-animate-skeleton-loader"></div>
+      <div v-if="loading" class="gl-animate-skeleton-loader gl-h-5 gl-w-8 gl-rounded-base"></div>
       <number-to-human-size
         v-else
         class="gl-whitespace-nowrap"
@@ -81,7 +81,7 @@ export default {
     <hr />
     <div class="gl-flex gl-justify-between">
       <div class="gl-w-80p">{{ $options.i18n.STORAGE_STATISTICS_TOTAL_STORAGE }}</div>
-      <div v-if="loading" class="gl-h-5 gl-w-8 gl-rounded-base gl-animate-skeleton-loader"></div>
+      <div v-if="loading" class="gl-animate-skeleton-loader gl-h-5 gl-w-8 gl-rounded-base"></div>
       <number-to-human-size
         v-else
         class="gl-whitespace-nowrap"

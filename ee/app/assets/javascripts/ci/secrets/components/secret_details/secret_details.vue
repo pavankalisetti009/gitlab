@@ -113,7 +113,7 @@ export default {
         {{ descriptionText }}
       </p>
     </div>
-    <div class="gl-flex gl-mb-4">
+    <div class="gl-mb-4 gl-flex">
       <b class="gl-basis-1/4">{{ __('Environments') }}</b>
       <gl-label
         :title="environmentLabelText"
@@ -129,7 +129,7 @@ export default {
         >{{ matchingEnvsText }}
       </gl-link>
     </div>
-    <div class="gl-flex gl-mb-4">
+    <div class="gl-mb-4 gl-flex">
       <b class="gl-basis-1/4">{{ __('Branches') }}</b>
       <code data-testid="secret-details-branches">
         <gl-icon name="branch" :size="12" class="gl-mr-1" />

@@ -149,7 +149,7 @@ export default {
 <template>
   <gl-card :class="cardClasses">
     <div class="gl-flex gl-items-baseline">
-      <h3 class="gl-text-lg gl-m-0 gl-mr-3">
+      <h3 class="gl-m-0 gl-mr-3 gl-text-lg">
         {{ feature.name }}
         <gl-icon v-if="showLock" id="ContainerScanningLockIcon" name="lock" class="gl-mb-1" />
       </h3>
@@ -185,7 +185,7 @@ export default {
         @dismiss="isAlertDismissed = true"
         >{{ errorMessage }}</gl-alert
       >
-      <div class="gl-flex gl-items-center gl-mt-5">
+      <div class="gl-mt-5 gl-flex gl-items-center">
         <gl-toggle
           :disabled="isToggleDisabled"
           :value="toggleValue"

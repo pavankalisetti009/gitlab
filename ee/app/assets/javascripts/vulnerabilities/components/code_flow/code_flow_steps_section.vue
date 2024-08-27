@@ -238,7 +238,7 @@ export default {
           />
         </gl-button-group>
       </div>
-      <div class="gl-pt-3 gl-ml-4">
+      <div class="gl-ml-4 gl-pt-3">
         <div
           v-for="(vulnerabilityFlow, index) in vulnerabilityFlowDetails"
           :key="index"
@@ -265,7 +265,7 @@ export default {
               @click="selectStep(vulnerabilityItem)"
             >
               <gl-badge
-                class="gl-mr-3 gl-rounded-base gl-pl-4 gl-pr-4 gl-w-6 gl-h-6"
+                class="gl-mr-3 gl-h-6 gl-w-6 gl-rounded-base gl-pl-4 gl-pr-4"
                 :class="{
                   '!gl-bg-blue-500 !gl-text-white':
                     selectedStepNumber === vulnerabilityItem.stepNumber,
