@@ -13,6 +13,16 @@ export default {
       required: false,
       default: '',
     },
+    popoverId: {
+      type: String,
+      required: false,
+      default: 'pop-approver',
+    },
+    popoverContainerId: {
+      type: String,
+      required: false,
+      default: 'popovercontainer',
+    },
   },
 };
 </script>
@@ -20,16 +30,16 @@ export default {
 <template>
   <div class="gl-flex gl-items-center">
     <span>{{ __('Any eligible user') }}</span>
-    <span id="popovercontainer" class="gl-ml-2 gl-inline-flex">
+    <span :id="popoverContainerId" class="gl-ml-2 gl-inline-flex">
       <gl-icon
-        id="pop-approver"
+        :id="popoverId"
         tabindex="0"
         name="question-o"
         :aria-label="__('help')"
         :size="14"
         class="author-link gl-cursor-help"
       />
-      <gl-popover target="pop-approver" container="popovercontainer" placement="top">
+      <gl-popover :target="popoverId" :container="popoverContainerId" placement="top">
         <template #title>{{ __('Who can approve?') }}</template>
         <ul class="gl-pl-5">
           <li>
