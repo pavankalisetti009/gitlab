@@ -92,7 +92,7 @@ RSpec.describe Registrations::CompanyController, feature_category: :onboarding d
         company_size: '1-99',
         phone_number: '+1 23 456-78-90',
         country: 'US',
-        state: 'California',
+        state: 'CA',
         website_url: 'gitlab.com'
       }.merge(glm_params)
     end

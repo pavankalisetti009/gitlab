@@ -138,7 +138,7 @@ export default {
         v-autofocusonshow
         name="state"
         :options="stateOptionsWithDefault"
-        value-field="name"
+        value-field="id"
         text-field="name"
         data-testid="state-dropdown"
         :required="required"

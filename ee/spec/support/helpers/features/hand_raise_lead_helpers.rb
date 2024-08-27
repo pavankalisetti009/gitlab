@@ -20,7 +20,7 @@ module Features
         "company_size" => form_data[:company_size].delete(' '),
         "phone_number" => form_data[:phone_number],
         "country" => form_data.dig(:country, :id),
-        "state" => form_data.dig(:state, :name),
+        "state" => form_data.dig(:state, :id),
         "namespace_id" => namespace.id,
         "comment" => '',
         "glm_content" => glm_content,

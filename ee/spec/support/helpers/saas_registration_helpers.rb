@@ -429,7 +429,7 @@ module SaasRegistrationHelpers
       last_name: 'User',
       phone_number: '+1234567890',
       country: 'US',
-      state: 'Florida',
+      state: 'FL',
       website_url: 'https://gitlab.com',
       # these are the passed through params
       role: 'software_developer',

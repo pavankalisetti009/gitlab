@@ -126,7 +126,7 @@ describe('CountryOrRegionSelector', () => {
     it('has the proper value field populated with name', () => {
       wrapper = createComponent();
 
-      expect(findFormInput('state-dropdown').attributes('value-field')).toBe('name');
+      expect(findFormInput('state-dropdown').attributes('value-field')).toBe('id');
     });
   });
 });
