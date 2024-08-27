@@ -38,8 +38,20 @@ RSpec.describe Security::Ingestion::Tasks::IngestRemediations, feature_category:
     it 'creates remediations and updates the associations' do
       expect { ingest_finding_remediations }.to change { Vulnerabilities::Remediation.count }.by(1)
                                             .and change { existing_remediation_2.reload.findings }.from([finding_1]).to([])
-                                            .and change { finding_2.reload.association(:remediations).scope.count }.from(0).to(2)
-                                            .and not_change { finding_1.reload.association(:remediations).scope.count }.from(2)
+                                            .and change {
+                                              finding_2.reload
+                                                       .association(:remediations)
+                                                       .scope
+                                                       .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480165')
+                                                       .count
+                                            }.from(0).to(2)
+                                            .and not_change {
+                                              finding_1.reload
+                                                       .association(:remediations)
+                                                       .scope
+                                                       .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480165')
+                                                       .count
+                                            }.from(2)
 
       expect(finding_2.remediations).to include({ "diff" => existing_diff, "summary" => "Foo Summary" }, { "summary" => "Bar Summary", "diff" => new_diff })
       expect(finding_1.remediations).to include({ "diff" => existing_diff, "summary" => "Foo Summary" }, { "summary" => "Bar Summary", "diff" => new_diff })

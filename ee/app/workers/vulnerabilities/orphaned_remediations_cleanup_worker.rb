@@ -21,12 +21,16 @@ module Vulnerabilities
       log_extra_metadata_on_done(:stats, stats)
 
       # rubocop:disable CodeReuse/ActiveRecord
-      Vulnerabilities::Remediation.where.missing(:finding_remediations).each_batch(of: BATCH_SIZE) do |batch|
-        response = Vulnerabilities::Remediations::BatchDestroyService.new(remediations: batch).execute
+      Gitlab::Database.allow_cross_joins_across_databases(
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480161'
+      ) do
+        Vulnerabilities::Remediation.where.missing(:finding_remediations).each_batch(of: BATCH_SIZE) do |batch|
+          response = Vulnerabilities::Remediations::BatchDestroyService.new(remediations: batch).execute
 
-        deleted_count = response.payload[:rows_deleted]
-        stats[:rows_deleted] += deleted_count
-        stats[:batches] += 1
+          deleted_count = response.payload[:rows_deleted]
+          stats[:rows_deleted] += deleted_count
+          stats[:batches] += 1
+        end
       end
       # rubocop:enable CodeReuse/ActiveRecord
     end
