@@ -8412,24 +8412,6 @@ CREATE TABLE ci_pipelines_config (
     partition_id bigint NOT NULL
 );
 
-CREATE TABLE ci_platform_metrics (
-    id bigint NOT NULL,
-    recorded_at timestamp with time zone NOT NULL,
-    platform_target text NOT NULL,
-    count integer NOT NULL,
-    CONSTRAINT check_f922abc32b CHECK ((char_length(platform_target) <= 255)),
-    CONSTRAINT ci_platform_metrics_check_count_positive CHECK ((count > 0))
-);
-
-CREATE SEQUENCE ci_platform_metrics_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE ci_platform_metrics_id_seq OWNED BY ci_platform_metrics.id;
-
 CREATE TABLE ci_project_mirrors (
     id bigint NOT NULL,
     project_id integer NOT NULL,
@@ -21323,8 +21305,6 @@ ALTER TABLE ONLY ci_pipeline_schedule_variables ALTER COLUMN id SET DEFAULT next
 
 ALTER TABLE ONLY ci_pipeline_schedules ALTER COLUMN id SET DEFAULT nextval('ci_pipeline_schedules_id_seq'::regclass);
 
-ALTER TABLE ONLY ci_platform_metrics ALTER COLUMN id SET DEFAULT nextval('ci_platform_metrics_id_seq'::regclass);
-
 ALTER TABLE ONLY ci_project_mirrors ALTER COLUMN id SET DEFAULT nextval('ci_project_mirrors_id_seq'::regclass);
 
 ALTER TABLE ONLY ci_project_monthly_usages ALTER COLUMN id SET DEFAULT nextval('ci_project_monthly_usages_id_seq'::regclass);
@@ -23335,9 +23315,6 @@ ALTER TABLE ONLY p_ci_pipelines
 
 ALTER TABLE ONLY ci_pipelines
     ADD CONSTRAINT ci_pipelines_pkey PRIMARY KEY (id, partition_id);
-
-ALTER TABLE ONLY ci_platform_metrics
-    ADD CONSTRAINT ci_platform_metrics_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY ci_project_mirrors
     ADD CONSTRAINT ci_project_mirrors_pkey PRIMARY KEY (id);
