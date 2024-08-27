@@ -29,6 +29,7 @@ FactoryBot.define do
     policy_index { 0 }
     type { Security::Policy.types[:approval_policy] }
     enabled { true }
+    metadata { {} }
     scope { {} }
     content { {} }
     security_policy_management_project_id do
@@ -56,7 +57,8 @@ FactoryBot.define do
     end
   end
 
-  factory :scan_execution_policy, class: Struct.new(:name, :description, :enabled, :actions, :rules, :policy_scope) do
+  factory :scan_execution_policy,
+    class: Struct.new(:name, :description, :enabled, :actions, :rules, :policy_scope, :metadata) do
     skip_create
 
     initialize_with do
@@ -66,8 +68,9 @@ FactoryBot.define do
       actions = attributes[:actions]
       rules = attributes[:rules]
       policy_scope = attributes[:policy_scope]
+      metadata = attributes[:metadata]
 
-      new(name, description, enabled, actions, rules, policy_scope).to_h
+      new(name, description, enabled, actions, rules, policy_scope, metadata).to_h
     end
 
     transient do
@@ -81,6 +84,7 @@ FactoryBot.define do
     rules { [{ type: 'pipeline', branches: %w[master] }] }
     actions { [{ scan: 'dast', site_profile: 'Site Profile', scanner_profile: 'Scanner Profile' }] }
     policy_scope { {} }
+    metadata { {} }
 
     trait :with_schedule do
       rules { [{ type: 'schedule', branches: %w[master], cadence: '*/15 * * * *' }] }
@@ -124,7 +128,7 @@ FactoryBot.define do
   end
 
   factory :ci_component_publishing_policy,
-    class: Struct.new(:name, :description, :enabled, :allowed_sources, :policy_scope) do
+    class: Struct.new(:name, :description, :enabled, :allowed_sources, :policy_scope, :metadata) do
     skip_create
 
     initialize_with do
@@ -133,13 +137,15 @@ FactoryBot.define do
       enabled = attributes[:enabled]
       allowed_sources = attributes[:allowed_sources]
       policy_scope = attributes[:policy_scope]
+      metadata = attributes[:metadata]
 
-      new(name, description, enabled, allowed_sources, policy_scope).to_h
+      new(name, description, enabled, allowed_sources, policy_scope, metadata).to_h
     end
 
     sequence(:name) { |n| "ci-component-sources-policy-#{n}" }
     description { 'This policy enforces an allowlist of groups and projects that can publish CI/CD components' }
     enabled { true }
+    metadata { {} }
     allowed_sources { {} }
     policy_scope { {} }
 
@@ -160,7 +166,7 @@ FactoryBot.define do
   end
 
   factory :pipeline_execution_policy,
-    class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope) do
+    class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata) do
     skip_create
 
     initialize_with do
@@ -170,8 +176,9 @@ FactoryBot.define do
       pipeline_config_strategy = attributes[:pipeline_config_strategy]
       content = attributes[:content]
       policy_scope = attributes[:policy_scope]
+      metadata = attributes[:metadata]
 
-      new(name, description, enabled, pipeline_config_strategy, content, policy_scope).to_h
+      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata).to_h
     end
 
     sequence(:name) { |n| "test-pipeline-execution-policy-#{n}" }
@@ -180,6 +187,7 @@ FactoryBot.define do
     sequence(:content) { |n| { include: [{ project: 'compliance-project', file: "compliance-pipeline-#{n}.yml" }] } }
     pipeline_config_strategy { 'inject_ci' }
     policy_scope { {} }
+    metadata { {} }
 
     trait :override_project_ci do
       pipeline_config_strategy { 'override_project_ci' }
@@ -203,7 +211,7 @@ FactoryBot.define do
 
   factory :scan_result_policy,
     class: Struct.new(:name, :description, :enabled, :actions, :rules, :approval_settings, :policy_scope,
-      :fallback_behavior),
+      :fallback_behavior, :metadata),
     aliases: %i[approval_policy] do
     skip_create
 
@@ -216,8 +224,9 @@ FactoryBot.define do
       approval_settings = attributes[:approval_settings]
       policy_scope = attributes[:policy_scope]
       fallback_behavior = attributes[:fallback_behavior]
+      metadata = attributes[:metadata]
 
-      new(name, description, enabled, actions, rules, approval_settings, policy_scope, fallback_behavior).to_h
+      new(name, description, enabled, actions, rules, approval_settings, policy_scope, fallback_behavior, metadata).to_h
     end
 
     transient do
@@ -229,6 +238,7 @@ FactoryBot.define do
     sequence(:name) { |n| "test-policy-#{n}" }
     description { 'This policy considers only container scanning and critical severities' }
     enabled { true }
+    metadata { {} }
     rules do
       [
         {

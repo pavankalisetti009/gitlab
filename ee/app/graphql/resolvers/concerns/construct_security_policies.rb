@@ -5,7 +5,7 @@ module ConstructSecurityPolicies
   include Security::SecurityOrchestrationPolicies::DeprecatedPropertiesChecker
 
   POLICY_YAML_ATTRIBUTES = %i[name description enabled actions rules approval_settings policy_scope
-    fallback_behavior].freeze
+    fallback_behavior metadata].freeze
 
   def construct_pipeline_execution_policies(policies)
     policies.map do |policy|
@@ -16,7 +16,7 @@ module ConstructSecurityPolicies
         enabled: policy[:enabled],
         policy_scope: policy_scope(policy[:policy_scope]),
         yaml: YAML.dump(
-          policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope)
+          policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata)
                 .deep_stringify_keys
         ),
         updated_at: policy[:config].policy_last_updated_at,
