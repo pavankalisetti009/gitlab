@@ -92,6 +92,7 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
 
       context 'when user cannot read resource' do
         it 'raises error' do
+          allow(Ability).to receive(:allowed?).and_call_original
           allow(Ability)
             .to receive(:allowed?)
             .with(user, "read_#{resource.to_ability_name}", resource)
@@ -257,6 +258,27 @@ RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
       end
 
       it_behaves_like 'an AI action'
+    end
+
+    context 'when resource is a commit with project ID set' do
+      let_it_be(:project) { create(:project, :repository) }
+
+      let(:resource) { project.repository.commit }
+      let(:input) { { chat: { resource_id: resource_id }, project_id: project_id } }
+      let(:expected_method) { :chat }
+      let(:project_id) { resource.project.to_gid.to_s }
+      let(:expected_options) { { user_agent: "user-agent", project_id: project_id, referer_url: "foobar" } }
+
+      before do
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability)
+          .to receive(:allowed?)
+          .with(user, "read_project", resource.project)
+          .and_return(true)
+      end
+
+      it_behaves_like 'an AI action'
+      it_behaves_like 'an AI action when feature flag disabled', :ai_duo_chat_switch
     end
 
     context 'when explain_vulnerability input is set', :saas do
