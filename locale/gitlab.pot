@@ -10434,7 +10434,16 @@ msgstr ""
 msgid "CVE|Why Request a CVE ID?"
 msgstr ""
 
-msgid "CVS|Toggle CVS"
+msgid "CVS|Action unavailable"
+msgstr ""
+
+msgid "CVS|Container Scanning for Registry is disabled"
+msgstr ""
+
+msgid "CVS|Container Scanning for Registry is enabled"
+msgstr ""
+
+msgid "CVS|Only a project maintainer or owner can toggle this feature."
 msgstr ""
 
 msgid "Cadence is not automated"
@@ -48281,6 +48290,9 @@ msgid "SecurityConfiguration|Something went wrong. Please refresh the page, or t
 msgstr ""
 
 msgid "SecurityConfiguration|The status of the tools only applies to the default branch and is based on the %{linkStart}latest pipeline%{linkEnd}."
+msgstr ""
+
+msgid "SecurityConfiguration|Toggle Container Scanning for Registry"
 msgstr ""
 
 msgid "SecurityConfiguration|Toggle secret push protection"
