@@ -376,6 +376,28 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   describe '#policy_configuration_valid?' do
     subject { security_orchestration_policy_configuration.policy_configuration_valid? }
 
+    describe 'metadata' do
+      context 'when metadata is invalid' do
+        context 'when metadata is not an object' do
+          let(:policy_yaml) do
+            build(:orchestration_policy_yaml, scan_execution_policy:
+            [build(:scan_execution_policy, metadata: { 'test' => { 'key' => 'value' } })])
+          end
+
+          it { is_expected.to eq(false) }
+        end
+      end
+
+      context 'when metadata is valid' do
+        let(:policy_yaml) do
+          build(:orchestration_policy_yaml, scan_execution_policy:
+          [build(:scan_execution_policy, metadata: { 'test' => true })])
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
+
     context 'when file is invalid' do
       let(:policy_yaml) do
         build(:orchestration_policy_yaml, scan_execution_policy:

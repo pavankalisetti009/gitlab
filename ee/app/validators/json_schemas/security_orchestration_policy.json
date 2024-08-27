@@ -208,6 +208,9 @@
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },
+          "metadata": {
+            "$ref": "#/$defs/metadata"
+          },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
             "type": "boolean"
@@ -284,6 +287,9 @@
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },
+          "metadata": {
+            "$ref": "#/$defs/metadata"
+          },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
             "type": "boolean"
@@ -317,6 +323,9 @@
           },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
+          },
+          "metadata": {
+            "$ref": "#/$defs/metadata"
           },
           "enabled": {
             "description": "Whether to enforce this policy or not.",
@@ -699,6 +708,9 @@
           },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
+          },
+          "metadata": {
+            "$ref": "#/$defs/metadata"
           },
           "rules": {
             "description": "Specifies conditions when a this policy should be applied.",
@@ -1242,6 +1254,20 @@
           }
         }
       }
+    },
+    "metadata": {
+      "description": "Specifies custom annotations in a form of key-value pairs.",
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z$][\\w$]*$": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ]
+        }
+      },
+      "additionalProperties": false
     }
   }
 }

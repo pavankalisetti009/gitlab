@@ -54,6 +54,7 @@ module Security
         name: policy_hash[:name],
         description: policy_hash[:description],
         enabled: policy_hash[:enabled],
+        metadata: policy_hash.fetch(:metadata, {}),
         scope: policy_hash.fetch(:policy_scope, {}),
         content: policy_hash.slice(*POLICY_CONTENT_FIELDS[policy_type]),
         checksum: checksum(policy_hash),
