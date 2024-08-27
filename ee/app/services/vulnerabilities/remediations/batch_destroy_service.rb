@@ -10,13 +10,17 @@ module Vulnerabilities
       end
 
       def execute
-        return success_response if remediations.blank?
-        raise argument_error unless remediations.is_a?(ActiveRecord::Relation)
+        Gitlab::Database.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480163'
+        ) do
+          return success_response if remediations.blank? # rubocop:disable Cop/AvoidReturnFromBlocks -- Temp for decomp
+          raise argument_error unless remediations.is_a?(ActiveRecord::Relation)
 
-        remediations
-          .tap { |remediations| destroy_uploads!(remediations) }
-          .then(&:delete_all)
-          .then { |deleted_count| success_response(deleted_count) }
+          remediations
+            .tap { |remediations| destroy_uploads!(remediations) }
+            .then(&:delete_all)
+            .then { |deleted_count| success_response(deleted_count) }
+        end
       end
 
       private

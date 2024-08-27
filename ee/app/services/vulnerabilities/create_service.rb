@@ -32,15 +32,19 @@ module Vulnerabilities
 
       vulnerability = Vulnerability.new
 
-      Vulnerabilities::Finding.transaction do
-        save_vulnerability(vulnerability, finding)
-      rescue ActiveRecord::RecordNotFound
-        vulnerability.errors.add(:base, _('finding is not found or is already attached to a vulnerability'))
-        raise ActiveRecord::Rollback
-      end
+      Gitlab::Database.allow_cross_joins_across_databases(
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/479586'
+      ) do
+        Vulnerabilities::Finding.transaction do
+          save_vulnerability(vulnerability, finding)
+        rescue ActiveRecord::RecordNotFound
+          vulnerability.errors.add(:base, _('finding is not found or is already attached to a vulnerability'))
+          raise ActiveRecord::Rollback
+        end
 
-      if vulnerability.persisted?
-        Statistics::UpdateService.update_for(vulnerability)
+        if vulnerability.persisted?
+          Statistics::UpdateService.update_for(vulnerability)
+        end
       end
 
       vulnerability

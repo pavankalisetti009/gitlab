@@ -339,9 +339,11 @@ module Vulnerabilities
     end
 
     def remediations
-      return metadata.dig('remediations') unless super.present?
+      rems = super.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
 
-      super.as_json(only: [:summary], methods: [:diff])
+      return metadata.dig('remediations') unless rems.present?
+
+      rems.as_json(only: [:summary], methods: [:diff])
     end
 
     def build_evidence_request(data)
