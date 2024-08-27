@@ -10,15 +10,14 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
     let(:subscription_portal_url) { ::Gitlab::Routing.url_helpers.subscription_portal_url }
     let(:seat_link_url) { [subscription_portal_url, '/api/v1/seat_links'].join }
-    let(:body) { { success: true }.to_json }
+    let(:body) { { success: true } }
 
     let_it_be(:default_organization) { create(:organization, :default) }
 
     before do
-      stub_request(:post, seat_link_url).to_return(
+      stub_request(:post, seat_link_url).to_return_json(
         status: 200,
-        body: body,
-        headers: { content_type: 'application/json' }
+        body: body.to_json
       )
     end
 
@@ -28,10 +27,9 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
       sync_seat_link
 
       expect(WebMock).to have_requested(:post, seat_link_url).with(
-        headers: { 'Content-Type' => 'application/json' },
         body: {
           gitlab_version: Gitlab::VERSION,
-          timestamp: '2019-12-31T23:20:12Z',
+          timestamp: '2020-01-01T01:20:12+02:00',
           license_key: '123',
           max_historical_user_count: 5,
           billable_users_count: 4,
@@ -43,7 +41,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
     context 'when response contains a license' do
       let(:license_key) { build(:gitlab_license, :cloud).export }
-      let(:body) { { success: true, license: license_key }.to_json }
+      let(:body) { { success: true, license: license_key } }
 
       shared_examples 'clearing license cache' do
         it 'resets the current license cache', :request_store do
@@ -151,7 +149,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     end
 
     context 'when response contains reconciliation dates' do
-      let(:body) { { success: true, next_reconciliation_date: today.to_s, display_alert_from: (today - 7.days).to_s }.to_json }
+      let(:body) { { success: true, next_reconciliation_date: today.to_s, display_alert_from: (today - 7.days).to_s } }
       let(:today) { Date.current }
 
       it 'creates reconciliation record with correct attributes' do
@@ -179,7 +177,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
     context 'when response contains future subscription information' do
       let(:future_subscriptions) { [{ 'foo' => 'bar' }] }
-      let(:body) { { success: true, future_subscriptions: future_subscriptions }.to_json }
+      let(:body) { { success: true, future_subscriptions: future_subscriptions } }
       let(:today) { Date.current }
 
       context 'when future subscription information is present in the response' do
@@ -243,7 +241,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
         ).export
       end
 
-      let(:body) { { success: true, license: license_key }.to_json }
+      let(:body) { { success: true, license: license_key } }
 
       it_behaves_like 'call runner to handle the provision of add-ons'
     end
@@ -254,7 +252,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
           success: true,
           next_reconciliation_date: nil,
           display_alert_from: nil
-        }.to_json
+        }
       end
 
       it 'destroys the existing upcoming reconciliation record for the instance' do
@@ -295,11 +293,11 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
     end
 
     context 'when the request is not successful' do
-      let(:body) { { success: false, error: "Bad Request" }.to_json }
+      let(:body) { { success: false, error: "Bad Request" } }
 
       before do
         stub_request(:post, seat_link_url)
-          .to_return(status: 400, body: body)
+          .to_return_json(status: 400, body: body)
       end
 
       it 'does not call CloudConnector::SyncServiceTokenWorker' do
@@ -307,7 +305,7 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
 
         expect { sync_seat_link }.to raise_error(
           described_class::RequestError,
-          'Seat Link request failed! Code:400 Body:{"success":false,"error":"Bad Request"}'
+          'HTTP status code: 400'
         )
       end
     end
@@ -316,13 +314,13 @@ RSpec.describe SyncSeatLinkRequestWorker, type: :worker, feature_category: :plan
       context 'when the request is not successful' do
         before do
           stub_request(:post, seat_link_url)
-            .to_return(status: 400, body: '{"success":false,"error":"Bad Request"}')
+            .to_return_json(status: 400, body: { success: false, error: "Bad Request" })
         end
 
         it 'raises an error with the expected message' do
           expect { sync_seat_link }.to raise_error(
             described_class::RequestError,
-            'Seat Link request failed! Code:400 Body:{"success":false,"error":"Bad Request"}'
+            'HTTP status code: 400'
           )
         end
       end
