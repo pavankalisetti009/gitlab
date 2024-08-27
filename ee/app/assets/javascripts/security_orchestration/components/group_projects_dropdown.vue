@@ -7,6 +7,7 @@ import { renderMultiSelectText } from 'ee/security_orchestration/components/poli
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
+import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 
 export default {
@@ -188,9 +189,12 @@ export default {
       }, {});
     },
     listBoxItems() {
-      return this.items
-        .map(({ id, fullPath, name }) => ({ text: name, value: id, fullPath }))
-        .filter(({ text }) => text.toLowerCase().includes(this.searchTerm.toLowerCase()));
+      const items = this.items.map(({ id, fullPath, name }) => ({
+        text: name,
+        value: id,
+        fullPath,
+      }));
+      return searchInItemsProperties({ items, properties: ['text'], searchQuery: this.searchTerm });
     },
     itemsIds() {
       return this.items.map(({ id }) => id);
