@@ -13,7 +13,7 @@ module EE
       git_guardian
     ].freeze
 
-    EE_PROJECT_SPECIFIC_INTEGRATION_NAMES = %w[
+    EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES = %w[
       github
       google_cloud_platform_artifact_registry
     ].freeze
@@ -41,7 +41,7 @@ module EE
 
       override :project_specific_integration_names
       def project_specific_integration_names
-        names = super + EE_PROJECT_SPECIFIC_INTEGRATION_NAMES
+        names = super + EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES
 
         unless ::Gitlab::Saas.feature_available?(:google_cloud_support)
           names.delete('google_cloud_platform_artifact_registry')

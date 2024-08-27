@@ -47,7 +47,7 @@ RSpec.describe Integration, feature_category: :integrations do
         stub_saas_features(google_cloud_support: true)
       end
 
-      it { is_expected.to include(*described_class::EE_PROJECT_SPECIFIC_INTEGRATION_NAMES) }
+      it { is_expected.to include(*described_class::EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES) }
     end
   end
 

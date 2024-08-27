@@ -11,7 +11,7 @@ RSpec.describe API::Integrations, feature_category: :integrations do
   let_it_be(:project2) { create(:project, creator_id: user.id, namespace: user.namespace) }
 
   let_it_be(:available_integration_names) do
-    Integration::EE_PROJECT_SPECIFIC_INTEGRATION_NAMES.union(Integration::GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES)
+    Integration::EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES.union(Integration::GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES)
   end
 
   let_it_be(:project_integrations_map) do
@@ -43,7 +43,7 @@ RSpec.describe API::Integrations, feature_category: :integrations do
 
   %w[integrations services].each do |endpoint|
     where(:integration) do
-      Integration::EE_PROJECT_SPECIFIC_INTEGRATION_NAMES.union(Integration::GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES)
+      Integration::EE_PROJECT_LEVEL_ONLY_INTEGRATION_NAMES.union(Integration::GOOGLE_CLOUD_PLATFORM_INTEGRATION_NAMES)
     end
 
     with_them do
