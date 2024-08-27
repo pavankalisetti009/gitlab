@@ -43,7 +43,7 @@ describe('Edit Framework Form', () => {
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findError = () => wrapper.findComponent(GlAlert);
-  const findDeleteButton = () => wrapper.findByText('Delete framework');
+  const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findDeleteModal = () => wrapper.findComponent(DeleteModal);
 
   const invalidFeedback = (input) =>

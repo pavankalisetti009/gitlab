@@ -7,7 +7,7 @@ describe('ValueStreamFormContentHeader', () => {
 
   const findPrimaryActionBtn = () => wrapper.findByTestId('value-stream-form-primary-btn');
   const findFormTitle = () => wrapper.findByTestId('value-stream-form-title');
-  const findViewValueStreamBtn = () => wrapper.findByText('View value stream');
+  const findViewValueStreamBtn = () => wrapper.findByTestId('view-value-stream');
 
   const createComponent = ({ props = {} } = {}) => {
     wrapper = shallowMountExtended(ValueStreamFormContentHeader, {

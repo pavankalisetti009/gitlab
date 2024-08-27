@@ -187,6 +187,7 @@ export default {
       :disabled="adminEmailsAreCurrentlyRateLimited"
       category="primary"
       variant="confirm"
+      data-testid="submit-button"
       >{{ $options.i18n.submitButton }}</gl-button
     >
   </gl-form>

@@ -60,6 +60,7 @@ export default {
         variant="confirm"
         :href="valueStreamPath"
         :disabled="isLoading"
+        data-testid="view-value-stream"
         >{{ $options.i18n.viewValueStreamAction }}</gl-button
       >
       <gl-button
