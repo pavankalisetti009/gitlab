@@ -8,6 +8,7 @@ import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
 import { USER_TYPE } from 'ee/security_orchestration/constants';
 import { isProject } from 'ee/security_orchestration/components/utils';
+import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { renderMultiSelectText } from '../../utils';
 
 const createUserObject = (user) => ({
@@ -67,11 +68,11 @@ export default {
   },
   computed: {
     listBoxItems() {
-      const containsValue = (value) => value.toLowerCase().includes(this.search.toLowerCase());
-
-      return this.users.filter(
-        ({ text, username }) => containsValue(text) || containsValue(username),
-      );
+      return searchInItemsProperties({
+        items: this.users,
+        properties: ['text', 'username'],
+        searchQuery: this.search,
+      });
     },
     selectedUsersValues() {
       return this.selectedUsers.map((u) => u.value);
