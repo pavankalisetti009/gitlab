@@ -5,7 +5,6 @@ import { fullEpicBoardId } from 'ee_component/boards/boards_util';
 
 import BoardApp from '~/boards/components/board_app.vue';
 
-import '~/boards/filters/due_date_filters';
 import {
   navigationType,
   isLoggedIn,
