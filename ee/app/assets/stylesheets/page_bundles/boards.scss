@@ -35,7 +35,9 @@
 }
 
 .board-title-text {
-  margin-right: $gl-padding-8;
+  margin: calc(-1 * $gl-padding-4);
+  margin-right: $gl-padding-4;
+  padding: $gl-padding-4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
