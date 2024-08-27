@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class RemoveAllFromProjectService
+  class ScheduleRemovingAllFromProjectService
     def initialize(projects)
       @projects = projects
     end
