@@ -1,13 +1,18 @@
 import '~/pages/groups/edit';
 import initAccessRestrictionField from 'ee/groups/settings/access_restriction_field';
 import validateRestrictedIpAddress from 'ee/groups/settings/access_restriction_field/validate_ip_address';
-import { initGroupPermissionsFormSubmit } from 'ee/groups/settings/permissions';
+import {
+  initGroupPermissionsFormSubmit,
+  initSetUserCapRadio,
+} from 'ee/groups/settings/permissions';
 import { initServicePingSettingsClickTracking } from 'ee/registration_features_discovery_message';
 import { createAlert } from '~/alert';
 import { initMergeRequestMergeChecksApp } from 'ee/merge_checks';
 import { __ } from '~/locale';
 
 initGroupPermissionsFormSubmit();
+
+initSetUserCapRadio();
 
 initAccessRestrictionField({
   selector: '.js-allowed-email-domains',

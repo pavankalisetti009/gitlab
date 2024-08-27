@@ -561,6 +561,8 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'will save positive numbers' do
+          find_by_testid("seat-control-user-cap-radio").click
+
           find(user_caps_selector).set(5)
 
           click_button 'Save changes'
@@ -570,6 +572,8 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'will not allow negative number' do
+          find_by_testid("seat-control-user-cap-radio").click
+
           find(user_caps_selector).set(-5)
 
           click_button 'Save changes'
@@ -578,6 +582,38 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           wait_for_requests
 
           expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
+        end
+
+        it 'requires a number' do
+          find_by_testid("seat-control-user-cap-radio").click
+
+          expect(find(user_caps_selector).value).to eq("")
+
+          click_button 'Save changes'
+          expect(page).to have_content('This field is required.')
+
+          wait_for_requests
+
+          expect(page).not_to have_content("Group 'Foo bar' was successfully updated.")
+        end
+
+        it 'hides the required error when the user selects open access' do
+          find_by_testid("seat-control-user-cap-radio").click
+
+          expect(find(user_caps_selector).value).to eq("")
+
+          click_button 'Save changes'
+          expect(page).to have_content('This field is required.')
+          expect(page).to have_css("#{user_caps_selector}.gl-field-error-outline")
+
+          find_by_testid("seat-control-off-radio").click
+
+          expect(page).not_to have_content('This field is required.')
+          expect(page).not_to have_css("#{user_caps_selector}.gl-field-error-outline")
+        end
+
+        it 'disables the user cap input field when open access is selected' do
+          expect(find('#group_new_user_signups_cap')).to be_disabled
         end
 
         context 'when the group cannot set a user cap' do

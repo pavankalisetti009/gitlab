@@ -107,3 +107,37 @@ export const initGroupPermissionsFormSubmit = () => {
 
   groupPermissionsForm.addEventListener('submit', onGroupPermissionsFormSubmit);
 };
+
+export const initSetUserCapRadio = () => {
+  const section = document.querySelector('#js-seat-control');
+
+  if (!section) {
+    return;
+  }
+
+  const allRelatedRadioButtons = section.querySelectorAll('input[type="radio"]');
+  const userCapRadioButton = section.querySelector('input[type="radio"][value="user_cap"]');
+  const numberInput = section.querySelector('input[name="group[new_user_signups_cap]"]');
+  const fieldError = section.querySelector('.gl-field-error');
+
+  let savedInputValue = numberInput.value;
+
+  const handleEvent = () => {
+    if (userCapRadioButton.checked) {
+      numberInput.disabled = false;
+      numberInput.value = savedInputValue;
+    } else {
+      numberInput.disabled = true;
+      savedInputValue = numberInput.value;
+      numberInput.value = '';
+      numberInput.classList.remove('gl-field-error-outline');
+      fieldError.classList.add('hidden');
+    }
+  };
+
+  allRelatedRadioButtons.forEach((radioButton) => {
+    radioButton.addEventListener('change', handleEvent);
+  });
+
+  handleEvent();
+};
