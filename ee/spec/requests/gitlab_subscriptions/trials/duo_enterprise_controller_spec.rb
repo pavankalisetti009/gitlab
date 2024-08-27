@@ -190,7 +190,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoEnterpriseController, :saas, :unl
         it 'shows valid flash message', :freeze_time do
           post_create
 
-          expires_on = GitlabSubscriptions::Trials::AddOns::DURATION.from_now.strftime('%Y-%m-%d')
+          expires_on = GitlabSubscriptions::Trials::AddOns::DURATION.from_now.to_date.iso8601
           message = format(
             s_(
               'DuoEnterpriseTrial|Congratulations, your free GitLab Duo Enterprise trial is activated and will ' \

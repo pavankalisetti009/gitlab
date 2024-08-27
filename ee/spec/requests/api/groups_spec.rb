@@ -229,7 +229,7 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
         expect(response).to include_pagination_headers
         expect(json_response).to be_an Array
         expect(response_groups).to contain_exactly(group_with_deletion_on.id)
-        expect(json_response.map { |group| group["marked_for_deletion_on"] }).to contain_exactly(Date.parse('2024-01-01').strftime('%Y-%m-%d'))
+        expect(json_response.map { |group| group["marked_for_deletion_on"] }).to contain_exactly(Date.parse('2024-01-01').iso8601)
       end
 
       it 'returns all groups when marked_for_deletion_on is not specified' do

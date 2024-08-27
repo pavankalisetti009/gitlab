@@ -88,7 +88,7 @@ module GitlabSubscriptions
               '%{assign_link_start}assign them%{assign_link_end} to GitLab Duo Enterprise seats.'
           ),
           success_doc_link,
-          exp_date: GitlabSubscriptions::Trials::AddOns::DURATION.from_now.strftime('%Y-%m-%d')
+          exp_date: GitlabSubscriptions::Trials::AddOns::DURATION.from_now.to_date.iso8601
         )
       end
     end

@@ -110,8 +110,8 @@ module Analytics
       def placeholders
         {
           traversal_path: namespace.traversal_path,
-          from: from.strftime('%Y-%m-%d'),
-          to: to.strftime('%Y-%m-%d')
+          from: from.to_date.iso8601,
+          to: to.to_date.iso8601
         }
       end
     end

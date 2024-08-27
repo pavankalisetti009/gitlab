@@ -345,7 +345,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
         expect(response).to include_pagination_headers
         expect(json_response).to be_an Array
         expect(json_response.map { |project| project["id"] }).to contain_exactly(marked_for_deletion_project.id)
-        expect(json_response.map { |project| project["marked_for_deletion_on"] }).to contain_exactly(Date.parse('2024-01-01').strftime('%Y-%m-%d'))
+        expect(json_response.map { |project| project["marked_for_deletion_on"] }).to contain_exactly(Date.parse('2024-01-01').iso8601)
       end
 
       it 'returns all projects when marked_for_deletion_on is not specified' do
