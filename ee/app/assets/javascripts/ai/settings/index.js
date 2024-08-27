@@ -16,6 +16,8 @@ export const initAiSettings = (id, component) => {
     areExperimentSettingsAllowed,
     redirectPath,
     updateId,
+    duoProVisible,
+    disabledDirectConnectionMethod,
   } = el.dataset;
 
   let cascadingSettingsDataParsed;
@@ -35,12 +37,14 @@ export const initAiSettings = (id, component) => {
       areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed) || true,
       duoAvailability,
       experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled) || false,
+      disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod) || false,
     },
     render: (createElement) =>
       createElement(component, {
         props: {
           redirectPath,
           updateId,
+          duoProVisible: parseBoolean(duoProVisible),
         },
       }),
   });

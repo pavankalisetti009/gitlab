@@ -33,6 +33,13 @@ export default {
     ),
   },
   inject: ['duoAvailability', 'experimentFeaturesEnabled'],
+  props: {
+    hasParentFormChanged: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
   data() {
     return {
       availability: this.duoAvailability,
@@ -47,7 +54,11 @@ export default {
       return this.experimentsEnabled !== this.experimentFeaturesEnabled;
     },
     hasFormChanged() {
-      return this.hasAvailabilityChanged || this.hasExperimentCheckboxChanged;
+      return (
+        this.hasAvailabilityChanged ||
+        this.hasExperimentCheckboxChanged ||
+        this.hasParentFormChanged
+      );
     },
     showWarning() {
       return this.hasAvailabilityChanged && this.warningAvailability;
@@ -104,12 +115,14 @@ export default {
     </template>
     <template #default>
       <gl-form @submit.prevent="submitForm">
+        <slot name="ai-common-settings-top"></slot>
         <duo-availability :duo-availability="availability" @change="onRadioChanged" />
         <duo-experiment-beta-features
           :experiment-features-enabled="experimentsEnabled"
           :disabled-checkbox="disableExperimentCheckbox"
           @change="onCheckboxChanged"
         />
+        <slot name="ai-common-settings-bottom"></slot>
         <gl-alert v-if="showWarning" :dismissible="false" variant="warning">{{
           warningMessage
         }}</gl-alert>

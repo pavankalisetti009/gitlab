@@ -12,6 +12,7 @@ describe('AiCommonSettings', () => {
   const createComponent = (props = {}) => {
     wrapper = shallowMount(AiCommonSettings, {
       propsData: {
+        hasParentFormChanged: false,
         ...props,
       },
       provide: {
@@ -63,6 +64,11 @@ describe('AiCommonSettings', () => {
   it('enables save button when changes are made', async () => {
     await findDuoAvailability().vm.$emit('change', AVAILABILITY_OPTIONS.DEFAULT_OFF);
     await findDuoExperimentBetaFeatures().vm.$emit('change', true);
+    expect(findSaveButton().props('disabled')).toBe(false);
+  });
+
+  it('enables save button when parent form changes are made', () => {
+    createComponent({ hasParentFormChanged: true });
     expect(findSaveButton().props('disabled')).toBe(false);
   });
 
