@@ -6,7 +6,7 @@
   .issuable-sidebar.hidden
     = form_tag [:bulk_update, group, type], method: :post, class: "bulk-update" do
       .block.issuable-sidebar-header
-        .filter-item.inline.update-issues-btn{ class: '!gl-float-left' }
+        .filter-item.gl-inline-block.update-issues-btn{ class: '!gl-float-left' }
           = render Pajamas::ButtonComponent.new(variant: :confirm, disabled: true, button_options: { type: 'submit', class: 'js-update-selected-issues' }) do
             = _('Update selected')
         = render Pajamas::ButtonComponent.new(button_options: { class: 'js-bulk-update-menu-hide gl-float-right' }) do
