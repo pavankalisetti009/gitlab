@@ -213,6 +213,12 @@ module EE
           description: 'Run a series of status checks for Cloud Connector features.',
           resolver: ::Resolvers::CloudConnector::StatusResolver,
           alpha: { milestone: '17.3' }
+
+        field :project_secrets_manager, ::Types::SecretsManagement::ProjectSecretsManagerType,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Find a project secrets manager.',
+          resolver: ::Resolvers::SecretsManagement::ProjectSecretsManagerResolver
       end
 
       def vulnerability(id:)
