@@ -98,6 +98,7 @@ RSpec.describe 'Group information', :js, :aggregate_failures, feature_category: 
       let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 1) }
 
       before do
+        group.namespace_settings.update!(seat_control: :block_overages)
         stub_billable_members_reactive_cache(group)
       end
 

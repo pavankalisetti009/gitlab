@@ -6,7 +6,7 @@ RSpec.describe Namespaces::BlockSeatOverages::AllSeatsUsedAlertComponent, type: 
   include ReactiveCachingHelpers
 
   let_it_be(:current_user) { build(:user) }
-  let_it_be(:namespace) { build(:group) }
+  let_it_be(:namespace) { build(:group, namespace_settings: build(:namespace_settings, seat_control: :block_overages)) }
 
   let(:billable_members_count) { 2 }
   let(:permission_owner) { true }

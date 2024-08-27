@@ -639,6 +639,7 @@ RSpec.describe API::Members, feature_category: :groups_and_projects do
       context 'when block seat overages is enabled and there are no seats left in the group' do
         before do
           stub_feature_flags(block_seat_overages: true)
+          group.namespace_settings.update!(seat_control: :block_overages)
         end
 
         it 'rejects the request' do

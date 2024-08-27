@@ -747,6 +747,7 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: group)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       it 'returns false' do

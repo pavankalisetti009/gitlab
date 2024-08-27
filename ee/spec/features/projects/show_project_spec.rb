@@ -120,11 +120,12 @@ RSpec.describe 'Project show page', :feature, feature_category: :groups_and_proj
   end
 
   describe 'all seats used alert', :saas, :use_clean_rails_memory_store_caching do
-    let_it_be(:group) { create(:group) }
+    let_it_be_with_refind(:group) { create(:group) }
     let_it_be(:project) { create(:project, namespace: group) }
 
     before do
       group.add_member(create(:user), GroupMember::DEVELOPER)
+      group.namespace_settings.update!(seat_control: :block_overages)
       sign_in(user)
     end
 

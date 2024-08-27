@@ -599,6 +599,7 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
         before do
           stub_saas_features(gitlab_com_subscriptions: true)
           stub_feature_flags(block_seat_overages: true)
+          group.namespace_settings.update!(seat_control: :block_overages)
         end
 
         it 'will not set prevent_sharing_groups_outside_hierarchy to false' do
@@ -1914,6 +1915,7 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: true)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       context 'when the invited group is outside the hierarchy' do

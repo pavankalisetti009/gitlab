@@ -513,7 +513,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
     end
   end
 
-  describe 'user caps settings' do
+  describe 'seat control settings' do
     let(:user_cap_available) { true }
 
     before do
@@ -531,6 +531,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
 
       it 'is not visible' do
         expect(page).not_to have_content('Seat controls')
+        expect(page).not_to have_content('Restricted access')
         expect(page).not_to have_content('Set user cap')
       end
     end
@@ -546,7 +547,9 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         end
 
         it 'is not visible' do
-          expect(page).not_to have_content('User cap')
+          expect(page).not_to have_content('Seat controls')
+          expect(page).not_to have_content('Restricted access')
+          expect(page).not_to have_content('Set user cap')
         end
       end
 
@@ -558,9 +561,10 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
         it 'is visible' do
           expect(page).to have_content('Seat controls')
           expect(page).to have_content('Set user cap')
+          expect(page).to have_content('Restricted access')
         end
 
-        it 'will save positive numbers' do
+        it 'will save positive numbers for the user cap' do
           find_by_testid("seat-control-user-cap-radio").click
 
           find(user_caps_selector).set(5)
@@ -571,7 +575,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           expect(page).to have_content("Group 'Foo bar' was successfully updated.")
         end
 
-        it 'will not allow negative number' do
+        it 'will not allow a negative number for the user cap' do
           find_by_testid("seat-control-user-cap-radio").click
 
           find(user_caps_selector).set(-5)
@@ -616,18 +620,55 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
           expect(find('#group_new_user_signups_cap')).to be_disabled
         end
 
-        context 'when the group cannot set a user cap' do
+        it 'will save restricted access' do
+          choose 'Restricted access'
+
+          click_button 'Save changes'
+
+          expect(page).to have_content("Group 'Foo bar' was successfully updated.")
+          expect(page).to have_checked_field 'Restricted access'
+        end
+
+        context 'when the group cannot set a user cap or block seat overages' do
           before do
             create(:group_group_link, shared_group: group)
-
-            visit edit_group_path(group)
           end
 
-          it 'will be a disabled input' do
+          it 'will disable both options' do
+            visit edit_group_path(group)
+
+            expect(find('#group_seat_control_block_overages')).to be_disabled
             expect(find('#group_seat_control_user_cap')).to be_disabled
             expect(find(user_caps_selector)).to be_disabled
-            expect(page).to have_content 'User cap cannot be enabled. ' \
+            expect(page).to have_content 'Restricted access and user cap cannot be turned on. ' \
               'The group or one of its subgroups or projects is shared externally.'
+          end
+
+          context 'when the block_seat_overages flag is disabled' do
+            before do
+              stub_feature_flags(block_seat_overages: false)
+            end
+
+            it 'mentions only user caps in the help text' do
+              visit edit_group_path(group)
+
+              expect(page).to have_content 'User cap cannot be turned on. ' \
+                'The group or one of its subgroups or projects is shared externally.'
+            end
+          end
+        end
+
+        context 'when the block_seat_overages flag is disabled' do
+          before do
+            stub_feature_flags(block_seat_overages: false)
+          end
+
+          it 'shows user cap, but not restricted access' do
+            visit edit_group_path(group)
+
+            expect(page).to have_content('Seat controls')
+            expect(page).not_to have_content('Restricted access')
+            expect(page).to have_content('Set user cap')
           end
         end
       end
@@ -767,6 +808,7 @@ RSpec.describe 'Edit group settings', :js, feature_category: :groups_and_project
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: true)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       it 'is not present' do

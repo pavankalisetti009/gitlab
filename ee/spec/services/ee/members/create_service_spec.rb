@@ -260,7 +260,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
   context 'with seat availability concerns', :saas do
     let_it_be(:root_ancestor) { create(:group_with_plan, :private, plan: :free_plan) }
-    let_it_be(:project) { create(:project, group: root_ancestor) }
+    let_it_be_with_refind(:project) { create(:project, group: root_ancestor) }
 
     before do
       project.add_maintainer(user)
@@ -447,7 +447,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     let_it_be(:owner) { create(:user) }
     let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
 
-    let_it_be(:project) { create(:project, group: group) }
+    let_it_be_with_refind(:project) { create(:project, group: group) }
 
     before_all do
       project.add_maintainer(user)
@@ -457,6 +457,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       stub_saas_features(gitlab_com_subscriptions: true)
       group.add_owner(owner)
       group.gitlab_subscription.update!(seats: 1)
+      group.namespace_settings.update!(seat_control: :block_overages)
     end
 
     it 'notifies the admin about the requested membership' do
@@ -472,9 +473,13 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
     context 'when current user is the owner' do
       let_it_be(:owner) { user }
       let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
-      let_it_be(:project) { create(:project, group: group) }
+      let_it_be_with_refind(:project) { create(:project, group: group) }
 
       let(:invites) { create(:user).id.to_s }
+
+      before do
+        group.namespace_settings.update!(seat_control: :block_overages)
+      end
 
       it 'does not notify the admin about the requested membership' do
         expect(::NotificationService).not_to receive(:new)

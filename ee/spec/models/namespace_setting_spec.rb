@@ -486,12 +486,13 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
 
   describe '#prevent_sharing_groups_outside_hierarchy' do
     context 'when block seat overages is enabled for the group', :saas do
-      let_it_be(:group) { create(:group_with_plan, plan: :premium_plan, name: "Root") }
+      let_it_be_with_reload(:group) { create(:group_with_plan, plan: :premium_plan, name: "Root") }
       let(:settings) { group.namespace_settings }
 
       before do
         stub_saas_features(gitlab_com_subscriptions: true)
         stub_feature_flags(block_seat_overages: group)
+        group.namespace_settings.update!(seat_control: :block_overages)
       end
 
       it 'returns true even if the database value is false' do

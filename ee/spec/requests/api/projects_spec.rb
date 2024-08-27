@@ -2041,6 +2041,10 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       let_it_be(:subscription) { create(:gitlab_subscription, :premium, namespace: group, seats: 1) }
 
       context 'when block seat overages is enabled' do
+        before do
+          group.namespace_settings.update!(seat_control: :block_overages)
+        end
+
         it 'rejects adding more members than there are available seats' do
           post api("/projects/#{target_project.id}/import_project_members/#{project.id}", another_user)
 
