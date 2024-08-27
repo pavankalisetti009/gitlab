@@ -17,6 +17,9 @@ module Llm
         message.to_h.tap do |hash|
           hash['user'] &&= hash['user'].to_gid
           hash['context'] = hash['context'].to_h
+          resource = hash['context']['resource']
+          project = resource.project if resource.respond_to?(:project)
+          hash['context']['project'] = project.to_gid if project
           hash['context']['resource'] &&= hash['context']['resource'].to_gid
         end
       end
@@ -25,7 +28,7 @@ module Llm
         # rubocop: disable Gitlab/NoFindInWorkers -- not ActiveRecordFind
         message_hash['user'] &&= GitlabSchema.parse_gid(message_hash['user']).find
         message_hash['context'] = begin
-          message_hash['context']['resource'] &&= GitlabSchema.parse_gid(message_hash['context']['resource']).find
+          message_hash['context']['resource'] &&= resource(message_hash)
           ::Gitlab::Llm::AiMessageContext.new(message_hash['context'])
         end
         # rubocop: enable Gitlab/NoFindInWorkers
@@ -38,6 +41,14 @@ module Llm
         with_ip_address_state.set(
           Gitlab::SidekiqMiddleware::SetSession::Server::SESSION_ID_HASH_KEY => ::Gitlab::Session.session_id_for_worker
         ).perform_async(serialize_message(message), options)
+      end
+
+      def resource(message_hash)
+        resource_gid = GitlabSchema.parse_gid(message_hash['context']['resource'])
+        return resource_gid.find unless resource_gid.model_class == Commit # rubocop: disable Gitlab/NoFindInWorkers -- not ActiveRecordFind
+
+        project = GitlabSchema.parse_gid(message_hash['context']['project']).find # rubocop: disable Gitlab/NoFindInWorkers -- not ActiveRecordFind
+        project&.commit_by(oid: resource_gid.model_id)
       end
     end
 

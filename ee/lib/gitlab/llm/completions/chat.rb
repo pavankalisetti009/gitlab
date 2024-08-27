@@ -99,6 +99,8 @@ module Gitlab
             tools << ::Gitlab::Llm::Chain::Tools::MergeRequestReader
           end
 
+          tools << ::Gitlab::Llm::Chain::Tools::CommitReader if Feature.enabled?(:ai_commit_reader_for_chat, user)
+
           tools
         end
 
