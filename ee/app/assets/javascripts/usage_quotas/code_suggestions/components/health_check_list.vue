@@ -158,7 +158,7 @@ export default {
     </template>
 
     <template #default>
-      <div class="gl-flex gl-items-center gl-pl-4 gl-pr-5 gl-py-3">
+      <div class="gl-flex gl-items-center gl-py-3 gl-pl-4 gl-pr-5">
         <gl-button
           :icon="expandIcon"
           :aria-label="expandLabel"
@@ -170,7 +170,7 @@ export default {
         <p class="gl-mb-0" data-testid="health-check-expand-text">{{ expandText }}</p>
         <gl-experiment-badge type="beta" class="gl-ml-auto gl-mr-0" />
       </div>
-      <gl-collapse :visible="expanded" class="gl-border-t border-gray-100">
+      <gl-collapse :visible="expanded" class="border-gray-100 gl-border-t">
         <div class="gl-p-5">
           <div v-if="isLoading">
             <gl-skeleton-loader :width="1248" :height="360">
@@ -203,13 +203,13 @@ export default {
               data-testid="health-check-probe-category"
             >
               <header
-                class="gl-font-bold gl-text-gray-700 gl-mb-2"
+                class="gl-mb-2 gl-font-bold gl-text-gray-700"
                 data-testid="health-check-probe-category-title"
               >
                 {{ category.title }}
               </header>
               <p
-                class="gl-text-gray-700 gl-mb-0"
+                class="gl-mb-0 gl-text-gray-700"
                 data-testid="health-check-probe-category-description"
               >
                 {{ category.description }}
@@ -218,7 +218,7 @@ export default {
               <div
                 v-for="(probe, index) in category.probes"
                 :key="index"
-                class="gl-my-3 gl-px-3 gl-py-2 gl-rounded-small"
+                class="gl-my-3 gl-rounded-small gl-px-3 gl-py-2"
                 :class="getCSSForProbe(probe)"
                 data-testid="health-check-probe"
               >

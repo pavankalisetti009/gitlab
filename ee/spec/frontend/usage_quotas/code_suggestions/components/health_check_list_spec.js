@@ -310,7 +310,7 @@ describe('HealthCheckList', () => {
       });
 
       it('renders each probe item css correctly', () => {
-        const BASE_CSS = 'gl-my-3 gl-px-3 gl-py-2 gl-rounded-small';
+        const BASE_CSS = 'gl-my-3 gl-rounded-small gl-px-3 gl-py-2';
         expect(findAllHealthCheckProbes().wrappers.map((w) => w.classes().join(' '))).toStrictEqual(
           probeResults.map((p) =>
             p.success

@@ -132,7 +132,7 @@ export default {
         >
           {{ $options.SECRET_STATUS[secret.status].text }}
         </gl-badge>
-        <span class="gl-text-gray-500 gl-ml-3" data-testid="secret-created-at">
+        <span class="gl-ml-3 gl-text-gray-500" data-testid="secret-created-at">
           {{ createdAtText }}
         </span>
       </div>

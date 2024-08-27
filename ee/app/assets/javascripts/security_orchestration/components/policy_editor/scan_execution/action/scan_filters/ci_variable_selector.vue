@@ -103,7 +103,7 @@ export default {
 
 <template>
   <section-layout
-    class="gl-w-full gl-bg-white gl-pt-0 gl-pb-2"
+    class="gl-w-full gl-bg-white gl-pb-2 gl-pt-0"
     content-classes="gl-justify-between"
     @remove="removeVariable"
   >

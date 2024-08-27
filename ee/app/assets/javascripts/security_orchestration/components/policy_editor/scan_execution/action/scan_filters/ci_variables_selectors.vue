@@ -101,9 +101,9 @@ export default {
 </script>
 
 <template>
-  <div class="gl-w-full gl-bg-white gl-rounded-base">
+  <div class="gl-w-full gl-rounded-base gl-bg-white">
     <section-layout
-      class="gl-pb-0 gl-bg-white gl-mb-2"
+      class="gl-mb-2 gl-bg-white gl-pb-0"
       content-classes="gl-gap-y-2"
       @remove="remove"
     >
@@ -111,7 +111,7 @@ export default {
         <label class="gl-mb-0" :title="$options.i18n.label">
           {{ $options.i18n.label }}
         </label>
-        <p class="gl-mb-4 gl-text-sm gl-basis-full">{{ $options.i18n.subLabel }}</p>
+        <p class="gl-mb-4 gl-basis-full gl-text-sm">{{ $options.i18n.subLabel }}</p>
       </template>
     </section-layout>
 
@@ -134,7 +134,7 @@ export default {
         variant="link"
         data-testid="add-variable-button"
         :aria-label="$options.i18n.addLabel"
-        class="gl-pt-2 gl-mr-3 gl-mt-4 gl-mb-5 gl-ml-4"
+        class="gl-mb-5 gl-ml-4 gl-mr-3 gl-mt-4 gl-pt-2"
         @click="addVariable"
       >
         {{ $options.i18n.addLabel }}

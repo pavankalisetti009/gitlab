@@ -212,7 +212,7 @@ export default {
               {{ $options.i18n.codeSuggestionTitle }}
             </h1>
 
-            <gl-badge variant="tier" icon="license" class="gl-capitalize gl-ml-3 gl-py-2 gl-px-3">{{
+            <gl-badge variant="tier" icon="license" class="gl-ml-3 gl-px-3 gl-py-2 gl-capitalize">{{
               duoTier
             }}</gl-badge>
           </header>
