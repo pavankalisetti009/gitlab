@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-require 'airborne'
-
 module QA
   RSpec.describe 'Plan', product_group: :product_planning do
+    include Support::API
     # TODO: Convert back to blocking once proved to be stable. Related issue: https://gitlab.com/gitlab-org/gitlab/-/issues/219495
     describe 'Epics milestone dates API' do
       let(:milestone_start_date) { (Date.today + 100).iso8601 }
@@ -21,8 +20,8 @@ module QA
 
         # Update Milestone to different dates and see it reflecting in the epics
         request = create_request("/projects/#{project.id}/milestones/#{milestone.id}")
-        put request.url, start_date: new_milestone_start_date, due_date: new_milestone_due_date
-        expect_status(200)
+        response = Support::API.put(request.url, start_date: new_milestone_start_date, due_date: new_milestone_due_date)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
         epic.reload!
 
@@ -60,14 +59,16 @@ module QA
 
         # Get epic_issue_id
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}/issues")
-        get request.url
-        expect_status(200)
-        epic_issue_id = json_body[0][:epic_issue_id]
+        response = Support::API.get(request.url)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
+        response_body = parse_body(response)
+
+        epic_issue_id = response_body[0][:epic_issue_id]
 
         # Remove Issue
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}/issues/#{epic_issue_id}")
-        delete request.url
-        expect_status(200)
+        response = Support::API.delete(request.url)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
         epic.reload!
 
@@ -129,18 +130,20 @@ module QA
       def add_issue_to_epic(epic, issue)
         # Add Issue with milestone to an epic
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}/issues/#{issue.id}")
-        post request.url
+        response = Support::API.post(request.url, {})
 
-        expect_status(201)
-        expect_json('epic.title', 'My New Epic')
-        expect_json('issue.title', 'My Test Issue')
+        expect(response.code).to eq(Support::API::HTTP_STATUS_CREATED)
+        response_body = parse_body(response)
+
+        expect(response_body[:epic][:title]).to eq('My New Epic')
+        expect(response_body[:issue][:title]).to eq('My Test Issue')
       end
 
       def use_epics_milestone_dates(epic)
         # Update Epic to use Milestone Dates
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}")
-        put request.url, start_date_is_fixed: false, due_date_is_fixed: false
-        expect_status(200)
+        response = Support::API.put(request.url, start_date_is_fixed: false, due_date_is_fixed: false)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
         epic.reload!
 
