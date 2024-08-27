@@ -4,6 +4,12 @@ import { TYPENAME_MERGE_REQUEST } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import approvalRulesQuery from 'ee/vue_merge_request_widget/components/approvals/queries/approval_rules.query.graphql';
 import approvalRulesSubscription from 'ee/vue_merge_request_widget/components/approvals/queries/approval_rules.subscription.graphql';
+import {
+  RULE_TYPE_ANY_APPROVER,
+  RULE_TYPE_REGULAR,
+  RULE_TYPE_REPORT_APPROVER,
+  RULE_TYPE_CODE_OWNER,
+} from 'ee/approvals/constants';
 import ApprovalRules from './approval_rules.vue';
 
 export default {
@@ -62,10 +68,18 @@ export default {
       return this.$apollo?.queries.approvalRules.loading;
     },
     mappedApprovalRules() {
-      const codeOwners = this.approvalRules.filter(({ type }) => type === 'CODE_OWNER');
-      const regular = this.approvalRules.filter(
-        ({ type }) => type === 'REGULAR' || type === 'ANY_APPROVER',
+      const codeOwners = this.approvalRules.filter(
+        ({ type }) => type.toLowerCase() === RULE_TYPE_CODE_OWNER,
       );
+      const regular = this.approvalRules.filter((r) => {
+        const type = r.type.toLowerCase();
+
+        return (
+          type === RULE_TYPE_REGULAR ||
+          type === RULE_TYPE_ANY_APPROVER ||
+          type === RULE_TYPE_REPORT_APPROVER
+        );
+      });
 
       return [
         {
