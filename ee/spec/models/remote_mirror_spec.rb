@@ -68,8 +68,8 @@ RSpec.describe RemoteMirror do
       end
 
       before do
-        project.repository.create_branch('matched', create_commit)
-        project.repository.create_branch('mismatched', create_commit)
+        project.repository.create_branch(branch_name = 'matched', create_commit(branch_name))
+        project.repository.create_branch(branch_name = 'mismatched', create_commit(branch_name))
       end
 
       it 'only sync matched and recently updated branch' do
@@ -80,10 +80,10 @@ RSpec.describe RemoteMirror do
     end
   end
 
-  def create_commit
+  def create_commit(branch_name)
     project.repository.commit_files(
       user,
-      branch_name: 'HEAD',
+      branch_name: branch_name,
       message: 'commit message',
       actions: []
     )

@@ -490,12 +490,12 @@ module Gitlab
 
       # rubocop:disable Metrics/ParameterLists
       def user_commit_files(
-        user, branch_name, commit_message, actions, author_email, author_name,
-        start_branch_name, start_repository, force = false, start_sha = nil, sign = true)
+        user, branch_name, commit_message, actions, author_email, author_name, start_branch_name,
+        start_repository, force = false, start_sha = nil, sign = true, target_sha = nil)
         req_enum = Enumerator.new do |y|
           header = user_commit_files_request_header(user, branch_name,
-            commit_message, actions, author_email, author_name,
-            start_branch_name, start_repository, force, start_sha, sign)
+            commit_message, actions, author_email, author_name, start_branch_name,
+            start_repository, force, start_sha, sign, target_sha)
 
           y.yield Gitaly::UserCommitFilesRequest.new(header: header)
 
@@ -544,13 +544,7 @@ module Gitlab
         when :index_update
           raise Gitlab::Git::Index::IndexError, index_error_message(detailed_error.index_update)
         else
-          # Some invalid path errors are caught by Gitaly directly and returned
-          # as an :index_update error, while others are found by libgit2 and
-          # come as generic errors. We need to convert the latter as IndexErrors
-          # as well.
-          if e.to_status.details.start_with?('invalid path')
-            raise Gitlab::Git::Index::IndexError, e.to_status.details
-          end
+          handle_undetailed_bad_status_errors(e)
 
           raise e
         end
@@ -597,7 +591,7 @@ module Gitlab
       # rubocop:disable Metrics/ParameterLists
       def user_commit_files_request_header(
         user, branch_name, commit_message, actions, author_email, author_name,
-        start_branch_name, start_repository, force, start_sha, sign)
+        start_branch_name, start_repository, force, start_sha, sign, target_sha)
 
         Gitaly::UserCommitFilesRequestHeader.new(
           repository: @gitaly_repo,
@@ -611,6 +605,7 @@ module Gitlab
           force: force,
           start_sha: encode_binary(start_sha),
           sign: sign,
+          expected_old_oid: target_sha,
           timestamp: Google::Protobuf::Timestamp.new(seconds: Time.now.utc.to_i)
         )
       end
@@ -654,6 +649,18 @@ module Gitlab
           "A file with this name doesn't exist"
         else
           "Unknown error performing git operation"
+        end
+      end
+
+      def handle_undetailed_bad_status_errors(error)
+        # Some invalid path errors are caught by Gitaly directly and returned
+        # as an :index_update error, while others are found by libgit2 and
+        # come as generic errors. We need to convert the latter as IndexErrors
+        # as well.
+        if error.to_status.details.start_with?('invalid path')
+          raise Gitlab::Git::Index::IndexError, error.to_status.details
+        elsif error.is_a?(GRPC::InvalidArgument) && error.to_status.details.include?('expected old object ID')
+          raise Gitlab::Git::CommandError, error
         end
       end
     end
