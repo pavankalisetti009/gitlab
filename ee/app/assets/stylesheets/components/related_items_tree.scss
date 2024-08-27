@@ -1,12 +1,4 @@
 .related-items-tree {
-  .add-item-form-container {
-    border-bottom: 1px solid $border-color;
-
-    .projects-dropdown .dropdown-contents {
-      max-height: $dropdown-max-height - 50;
-    }
-  }
-
   .sub-tree-root {
     margin-left: $gl-padding-24;
     padding: 0;
@@ -30,7 +22,7 @@
     .item-meta {
       line-height: $gl-line-height-18;
     }
-    
+
     .tree-item-noexpand {
       margin-left: $gl-sidebar-padding - 2;
     }
