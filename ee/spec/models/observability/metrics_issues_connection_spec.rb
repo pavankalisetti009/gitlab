@@ -29,10 +29,8 @@ RSpec.describe Observability::MetricsIssuesConnection, feature_category: :metric
         metric_type: :gauge_type,
         issue: issue
       )
-      duplicate = build_stubbed(:observability_metrics_issues_connection,
-        metric_name: 'test_metric',
-        metric_type: :gauge_type,
-        issue: issue
+      duplicate = build(:observability_metrics_issues_connection,
+        metric_name: 'test_metric', metric_type: :gauge_type, issue: issue
       )
       expect(duplicate).not_to be_valid
       expect(duplicate.errors[:metric_name]).to include(_('and metric_type combination must be unique per issue'))
