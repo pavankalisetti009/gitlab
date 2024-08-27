@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require 'airborne'
-
 module QA
   # Spec can be removed once epic migration to work items is complete
   RSpec.describe 'Plan',
     only: { condition: -> { ENV["EPIC_SYNC_TEST"] == "true" } }, product_group: :product_planning do
+    include Support::API
+
     describe 'Legacy Epics to Work Items Migration' do
       let(:milestone_start_date) { (Date.today + 100).iso8601 }
       let(:milestone_due_date) { (Date.today + 120).iso8601 }
@@ -33,8 +33,9 @@ module QA
         it 'syncs changes from legacy epic to work item epic', :aggregate_failures,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/465880' do
           request = create_request("/groups/#{CGI.escape(group.full_path)}/epics/#{legacy_epic.iid}")
-          put request.url, title: "this is an updated title", description: "this is an updated description"
-          expect_status(200)
+          response = Support::API.put(request.url, title: "this is an updated title",
+            description: "this is an updated description")
+          expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
           legacy_epic.reload!
 
@@ -51,8 +52,8 @@ module QA
         it 'syncs changes when changing confidentiality', :aggregate_failures,
           testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/465882' do
           request = create_request("/groups/#{CGI.escape(group.full_path)}/epics/#{legacy_epic.iid}")
-          put request.url, confidential: true
-          expect_status(200)
+          response = Support::API.put(request.url, confidential: true)
+          expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
           legacy_epic.reload!
 
@@ -70,8 +71,8 @@ module QA
 
         # Update Milestone to different dates and see it reflecting in the epics
         request = create_request("/projects/#{project.id}/milestones/#{milestone.id}")
-        put request.url, start_date: new_milestone_start_date, due_date: new_milestone_due_date
-        expect_status(200)
+        response = Support::API.put(request.url, start_date: new_milestone_start_date, due_date: new_milestone_due_date)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
         legacy_epic.reload!
 
@@ -142,18 +143,20 @@ module QA
       def add_issue_to_epic(epic, issue)
         # Add Issue with milestone to an epic
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}/issues/#{issue.id}")
-        post request.url
+        response = Support::API.post(request.url, {})
 
-        expect_status(201)
-        expect_json('epic.title', 'My New Epic')
-        expect_json('issue.title', 'My Test Issue')
+        expect(response.code).to eq(Support::API::HTTP_STATUS_CREATED)
+        response_body = parse_body(response)
+
+        expect(response_body[:epic][:title]).to eq('My New Epic')
+        expect(response_body[:issue][:title]).to eq('My Test Issue')
       end
 
       def use_epics_milestone_dates(epic)
         # Update Epic to use Milestone Dates
         request = create_request("/groups/#{group.id}/epics/#{epic.iid}")
-        put request.url, start_date_is_fixed: false, due_date_is_fixed: false
-        expect_status(200)
+        response = Support::API.put(request.url, start_date_is_fixed: false, due_date_is_fixed: false)
+        expect(response.code).to eq(Support::API::HTTP_STATUS_OK)
 
         epic.reload!
 
