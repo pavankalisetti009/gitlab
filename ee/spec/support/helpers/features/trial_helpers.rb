@@ -129,7 +129,7 @@ module Features
         skip_email_confirmation: true,
         gitlab_com_trial: true,
         provider: 'gitlab',
-        state: form_data.dig(:state, :name)
+        state: form_data.dig(:state, :id)
       }.merge(extra_params)
 
       expect_next_instance_of(GitlabSubscriptions::CreateLeadService) do |service|
@@ -223,7 +223,7 @@ module Features
         skip_email_confirmation: true,
         gitlab_com_trial: true,
         provider: 'gitlab',
-        state: form_data.dig(:state, :name),
+        state: form_data.dig(:state, :id),
         product_interaction: 'duo_pro_trial',
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
         opt_in: user.onboarding_status_email_opt_in
@@ -305,7 +305,7 @@ module Features
         skip_email_confirmation: true,
         gitlab_com_trial: true,
         provider: 'gitlab',
-        state: form_data.dig(:state, :name),
+        state: form_data.dig(:state, :id),
         product_interaction: 'duo_enterprise_trial',
         preferred_language: ::Gitlab::I18n.trimmed_language_name(user.preferred_language),
         opt_in: user.onboarding_status_email_opt_in
