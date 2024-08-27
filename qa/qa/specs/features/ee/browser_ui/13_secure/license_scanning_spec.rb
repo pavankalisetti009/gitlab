@@ -9,7 +9,7 @@ module QA
       end
 
       let!(:licenses) do
-        ['Academic Free License v2.1', 'Apache License 2.0', 'BSD 2-Clause "Simplified" License',
+        ['Apache License 2.0', 'BSD 2-Clause "Simplified" License',
           'BSD 3-Clause "New" or "Revised" License', 'Creative Commons Attribution 3.0 Unported',
           'Creative Commons Zero v1.0 Universal', 'ISC License', 'MIT License', 'The Unlicense',
           'unknown']
