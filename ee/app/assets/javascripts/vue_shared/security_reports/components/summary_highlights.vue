@@ -29,14 +29,14 @@ export default {
       type: String,
       required: false,
       default: '',
-      validate: (severity) =>
-        !severity || [CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN].contains(severity),
+      validator: (severity) =>
+        !severity || [CRITICAL, HIGH, MEDIUM, LOW, INFO, UNKNOWN].includes(severity),
     },
     highlights: {
       type: Object,
       required: true,
-      validate: (highlights) =>
-        [CRITICAL, HIGH].every((requiredField) => typeof highlights[requiredField] !== 'undefined'),
+      validator: (highlights) =>
+        [CRITICAL, HIGH].every((requiredField) => Number.isInteger(highlights[requiredField])),
     },
     capped: {
       type: Boolean,
