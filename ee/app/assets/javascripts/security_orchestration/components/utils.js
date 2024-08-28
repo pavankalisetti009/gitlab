@@ -66,6 +66,17 @@ export const policyScopeProjectsKey = (policyScope = {}) => {
 };
 
 /**
+ * Based on existence including groups on policy scope
+ * return appropriate key
+ * @param {Object} policyScope policy scope object on security policy
+ * @returns {boolean}
+ */
+export const policyScopeHasGroups = (policyScope = {}) => {
+  const { includingGroups: { nodes = [] } = {} } = policyScope || {};
+  return nodes?.filter(Boolean).length > 0;
+};
+
+/**
  * Number of linked to policy scope projects
  * @param policyScope policyScope policy scope object on security policy
  * @returns {Number}
@@ -85,6 +96,24 @@ export const policyScopeProjectLength = (policyScope = {}) => {
 export const policyScopeHasComplianceFrameworks = (policyScope = {}) => {
   const { complianceFrameworks: { nodes = [] } = {} } = policyScope || {};
   return nodes?.filter(Boolean).length > 0;
+};
+
+/**
+ * Extract ids from including groups
+ * @param policyScope policyScope policy scope object on security policy
+ * @returns {Array}
+ */
+export const policyScopeGroups = (policyScope = {}) => {
+  return policyScope?.includingGroups?.nodes || [];
+};
+
+/**
+ * Extract ids from excluding projects
+ * @param policyScope policyScope policy scope object on security policy
+ * @returns {Array}
+ */
+export const policyExcludingProjects = (policyScope = {}) => {
+  return policyScope?.excludingProjects?.nodes || [];
 };
 
 /**
