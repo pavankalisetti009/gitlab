@@ -14,14 +14,6 @@ import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 jest.mock('~/alert');
 
-const makeMockCiCdAnalyticsCharts = ({ selectedChart = 0 } = {}) => ({
-  render() {
-    return this.$scopedSlots.metrics({
-      selectedChart,
-    });
-  },
-});
-
 describe('time_to_restore_service_charts.vue', () => {
   useFixturesFakeDate();
 
@@ -46,7 +38,16 @@ describe('time_to_restore_service_charts.vue', () => {
   };
 
   const createComponent = (mountOptions = defaultMountOptions) => {
-    wrapper = extendedWrapper(shallowMount(TimeToRestoreServiceCharts, mountOptions));
+    wrapper = extendedWrapper(
+      shallowMount(TimeToRestoreServiceCharts, {
+        stubs: {
+          CiCdAnalyticsCharts: {
+            template: `<div><slot name="metrics" :selectedChart="1"></slot></div>`,
+          },
+        },
+        ...mountOptions,
+      }),
+    );
   };
 
   const setUpMockTimetoRestoreService = ({ start_date, data }) => {
@@ -111,11 +112,6 @@ describe('time_to_restore_service_charts.vue', () => {
       beforeEach(() => {
         createComponent({
           ...defaultMountOptions,
-          stubs: {
-            CiCdAnalyticsCharts: makeMockCiCdAnalyticsCharts({
-              selectedChart: 1,
-            }),
-          },
         });
       });
 
