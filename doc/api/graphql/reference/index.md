@@ -6425,7 +6425,7 @@ Input type: `JiraImportStartInput`
 | ---- | ---- | ----------- |
 | <a id="mutationjiraimportstartclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
 | <a id="mutationjiraimportstartjiraprojectkey"></a>`jiraProjectKey` | [`String!`](#string) | Project key of the importer Jira project. |
-| <a id="mutationjiraimportstartjiraprojectname"></a>`jiraProjectName` | [`String`](#string) | Project name of the importer Jira project. |
+| <a id="mutationjiraimportstartjiraprojectname"></a>`jiraProjectName` **{warning-solid}** | [`String`](#string) | **Deprecated:** Argument is not used. Deprecated in GitLab 17.4. |
 | <a id="mutationjiraimportstartprojectpath"></a>`projectPath` | [`ID!`](#id) | Project to import the Jira project into. |
 | <a id="mutationjiraimportstartusersmapping"></a>`usersMapping` | [`[JiraUsersMappingInputType!]`](#jirausersmappinginputtype) | Mapping of Jira to GitLab users. |
 
