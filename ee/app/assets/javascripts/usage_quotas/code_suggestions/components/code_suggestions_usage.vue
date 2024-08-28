@@ -1,9 +1,12 @@
 <script>
-import { GlSkeletonLoader, GlBadge } from '@gitlab/ui';
+import { GlSkeletonLoader, GlBadge, GlAlert, GlSprintf } from '@gitlab/ui';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { __, s__, sprintf } from '~/locale';
+import { isInFuture } from '~/lib/utils/datetime/date_calculation_utility';
 import getAddOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
 import getAddOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
+import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
+
 import {
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
@@ -12,6 +15,15 @@ import {
   DUO_ENTERPRISE_TITLE,
   CODE_SUGGESTIONS_TITLE,
 } from 'ee/usage_quotas/code_suggestions/constants';
+
+import {
+  currentSubscriptionsEntryName,
+  subscriptionHistoryFailedTitle,
+  subscriptionHistoryFailedMessage,
+  subscriptionActivationFutureDatedNotificationTitle,
+  SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
+} from 'ee/admin/subscriptions/show/constants';
+
 import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/saas_add_on_eligible_user_list.vue';
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
 import { TYPENAME_GROUP } from '~/graphql_shared/constants';
@@ -38,11 +50,23 @@ export default {
     GlSkeletonLoader,
     HealthCheckList,
     GlBadge,
+    GlAlert,
+    GlSprintf,
   },
   inject: { isSaaS: {}, isStandalonePage: { default: false }, groupId: { default: null } },
   addOnErrorDictionary: ADD_ON_ERROR_DICTIONARY,
   i18n: {
+    currentSubscriptionsEntryName,
+    subscriptionHistoryFailedTitle,
+    subscriptionHistoryFailedMessage,
+    subscriptionActivationFutureDatedNotificationTitle,
     codeSuggestionTitle: __('GitLab Duo'),
+    subscriptionActivationNotificationText: s__(
+      'CodeSuggestions|Your subscription was successfully activated.',
+    ),
+    subscriptionActivationFutureDatedNotificationMessage: s__(
+      'CodeSuggestions|You have successfully added a license that activates on %{date}.',
+    ),
   },
   data() {
     return {
@@ -50,6 +74,9 @@ export default {
       addOnPurchaseFetchError: undefined,
       deprecatedAddOnPurchaseData: undefined,
       useDeprecatedAddOnPurchaseQuery: false,
+      currentSubscription: {},
+      activationNotification: null,
+      subscriptionFetchError: null,
     };
   },
   computed: {
@@ -82,7 +109,8 @@ export default {
     isLoading() {
       return (
         this.$apollo.queries.addOnPurchaseData.loading ||
-        this.$apollo.queries.deprecatedAddOnPurchaseData.loading
+        this.$apollo.queries.deprecatedAddOnPurchaseData.loading ||
+        this.$apollo.queries.currentSubscription.loading
       );
     },
     duoTier() {
@@ -115,6 +143,11 @@ export default {
     },
     statusCheckEnabled() {
       return !this.isSaaS;
+    },
+    activationListeners() {
+      return {
+        [SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT]: this.displayActivationNotification,
+      };
     },
   },
   apollo: {
@@ -156,6 +189,15 @@ export default {
         this.reportError(error);
       },
     },
+    currentSubscription: {
+      query: getCurrentLicense,
+      update({ currentLicense }) {
+        return currentLicense || {};
+      },
+      error() {
+        this.subscriptionFetchError = currentSubscriptionsEntryName;
+      },
+    },
   },
   methods: {
     handleAddOnPurchaseFetchError(error) {
@@ -167,6 +209,33 @@ export default {
           vue_component: this.$options.name,
         },
       });
+    },
+    createFutureDatedNotification(startsAt) {
+      this.activationNotification = {
+        title: this.$options.i18n.subscriptionActivationFutureDatedNotificationTitle,
+        message: sprintf(this.$options.i18n.subscriptionActivationFutureDatedNotificationMessage, {
+          date: startsAt,
+        }),
+      };
+    },
+    displayActivationNotification(license) {
+      if (isInFuture(new Date(license.startsAt))) {
+        this.createFutureDatedNotification(license.startsAt);
+      } else {
+        this.activationNotification = {
+          title: this.$options.i18n.subscriptionActivationNotificationText,
+        };
+      }
+
+      this.$apollo.queries.addOnPurchaseData.refetch();
+      this.$apollo.queries.deprecatedAddOnPurchaseData.refetch();
+      this.$apollo.queries.currentSubscription.refetch();
+    },
+    dismissActivationNotification() {
+      this.activationNotification = null;
+    },
+    dismissSubscriptionFetchError() {
+      this.subscriptionFetchError = null;
     },
   },
 };
@@ -205,6 +274,32 @@ export default {
       </div>
     </section>
     <template v-else>
+      <gl-alert
+        v-if="activationNotification"
+        variant="success"
+        :title="activationNotification.title"
+        class="gl-mb-6"
+        data-testid="subscription-activation-success-alert"
+        @dismiss="dismissActivationNotification"
+      >
+        {{ activationNotification.message }}
+      </gl-alert>
+
+      <gl-alert
+        v-if="subscriptionFetchError"
+        :title="$options.i18n.subscriptionHistoryFailedTitle"
+        variant="danger"
+        class="gl-mb-6"
+        data-testid="subscription-fetch-error-alert"
+        @dismiss="dismissSubscriptionFetchError"
+      >
+        <gl-sprintf :message="$options.i18n.subscriptionHistoryFailedMessage">
+          <template #subscriptionEntryName>
+            {{ subscriptionFetchError }}
+          </template>
+        </gl-sprintf>
+      </gl-alert>
+
       <template v-if="showTitleAndSubtitle">
         <section>
           <header class="gl-flex gl-items-center">
@@ -259,7 +354,11 @@ export default {
         :error-dictionary="$options.addOnErrorDictionary"
         class="gl-mt-5"
       />
-      <code-suggestions-intro v-else />
+      <code-suggestions-intro
+        v-else
+        :subscription="currentSubscription"
+        v-on="activationListeners"
+      />
     </template>
   </section>
 </template>

@@ -21,7 +21,8 @@ RSpec.describe 'Groups > Usage Quotas > Code Suggestions tab', :js, :saas, featu
   end
 
   context 'when user interactive with hand raise lead button' do
-    it 'renders and submits in-app hand raise lead for code suggestions' do
+    # Disabled because of https://gitlab.com/gitlab-org/gitlab/-/issues/473266
+    xit 'renders and submits in-app hand raise lead for code suggestions' do
       find_by_testid('code-suggestions-hand-raise-lead-button').click
 
       fill_in_and_submit_hand_raise_lead(
