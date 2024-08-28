@@ -1,3 +1,5 @@
+// TODO https://gitlab.com/gitlab-org/opstrace/opstrace/-/issues/2905 use createRelatedIssuesQueryMockResult from spec/frontend/observability/mock_data.js when updating the mock
+
 export const mockQueryResult = {
   data: {
     project: {

@@ -1,4 +1,5 @@
 <script>
+import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
 import getLogsRelatedIssues from './graphql/get_logs_related_issues.query.graphql';
 
 export default {
@@ -44,7 +45,8 @@ export default {
         return !this.log;
       },
       update(data) {
-        return data.project?.issues?.nodes || [];
+        const links = data.project?.observabilityLogsLinks?.nodes || [];
+        return parseGraphQLIssueLinksToRelatedIssues(links);
       },
       error(error) {
         this.error = error;
