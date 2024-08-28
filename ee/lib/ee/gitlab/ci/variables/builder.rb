@@ -19,7 +19,7 @@ module EE
           def scoped_variables_for_pipeline_seed(job_attr, environment:, kubernetes_namespace:, user:, trigger_request:)
             super.tap do |variables|
               variables.concat(
-                scan_execution_policies_variables_builder.variables(job_attr[:name], user)
+                scan_execution_policies_variables_builder.variables(job_attr[:name])
               )
               # pipeline_execution_policy_variables: No need to add because it is used after the Seed step.
             end
@@ -31,7 +31,7 @@ module EE
           override :scoped_variables
           def scoped_variables(job, environment:, dependencies:)
             super.tap do |variables|
-              variables.concat(scan_execution_policies_variables_builder.variables(job.name, job.user))
+              variables.concat(scan_execution_policies_variables_builder.variables(job.name))
               # Reapply the PEP job YAML variables at the end to enforce the highest precedence
               variables.concat(pipeline_execution_policy_variables(job))
             end
