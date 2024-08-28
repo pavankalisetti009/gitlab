@@ -22,11 +22,6 @@ module EE
       })
     end
 
-    override :show_prevent_inviting_groups_outside_hierarchy_setting?
-    def show_prevent_inviting_groups_outside_hierarchy_setting?(group)
-      super && !group.block_seat_overages?
-    end
-
     override :can_admin_service_accounts?
     def can_admin_service_accounts?(group)
       Ability.allowed?(current_user, :admin_service_accounts, group)
