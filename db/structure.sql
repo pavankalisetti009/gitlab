@@ -26665,6 +26665,8 @@ CREATE INDEX idx_user_credit_card_validations_on_similar_to_meta_data ON user_cr
 
 CREATE INDEX idx_user_details_on_provisioned_by_group_id_user_id ON user_details USING btree (provisioned_by_group_id, user_id);
 
+CREATE INDEX idx_vreg_pkgs_maven_cached_responses_on_relative_path_trigram ON virtual_registries_packages_maven_cached_responses USING gin (relative_path gin_trgm_ops);
+
 CREATE UNIQUE INDEX idx_vregs_pkgs_mvn_cached_resp_on_uniq_upstrm_id_and_rel_path ON virtual_registries_packages_maven_cached_responses USING btree (upstream_id, relative_path);
 
 CREATE INDEX idx_vuln_reads_for_filtering ON vulnerability_reads USING btree (project_id, state, dismissal_reason, severity DESC, vulnerability_id DESC NULLS LAST);
