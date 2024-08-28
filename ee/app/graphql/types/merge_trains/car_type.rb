@@ -12,6 +12,7 @@ module Types
       authorize :read_merge_train_car
 
       expose_permissions Types::PermissionTypes::MergeTrains::Car
+      alias_method :car, :object
 
       field :created_at,
         Types::TimeType,
@@ -25,6 +26,11 @@ module Types
         Types::GlobalIDType[::MergeTrains::Car],
         null: false,
         description: 'Global ID of the car.'
+      field :index,
+        GraphQL::Types::Int,
+        null: true,
+        description: 'Zero-based position of the car in the merge train. ' \
+          'Returns `null` if the car is not active in a merge train.'
       field :merge_request,
         Types::MergeRequestType,
         null: false,

@@ -19,6 +19,9 @@ module MergeTrains
 
     alias_attribute :project, :target_project
 
+    # Non-persistent/virtual attribute, calculated in using .indexed to avoid N+1s
+    attribute :index
+
     after_destroy do |car|
       run_after_commit do
         ::Ci::CancelPipelineService.new( # rubocop: disable CodeReuse/ServiceClass
@@ -80,6 +83,20 @@ module MergeTrains
     scope :complete, -> { with_status(*COMPLETE_STATUSES) }
     scope :for_target, ->(project_id, branch) { where(target_project_id: project_id, target_branch: branch) }
     scope :by_id, ->(sort = :asc) { order(id: sort) }
+    scope :indexed, -> do
+      index_name = MergeTrains::Car.arel_table[:index].name
+
+      select(Arel.sql(<<~SQL.squish))
+        merge_trains.*,
+        (
+          SELECT COUNT(*)
+          FROM merge_trains AS m2
+          WHERE m2.target_branch = merge_trains.target_branch
+            AND m2.target_project_id = merge_trains.target_project_id
+            AND m2.id < merge_trains.id
+        ) AS #{index_name}
+      SQL
+    end
 
     scope :preload_api_entities, -> do
       preload(:user, :merge_request, pipeline: Ci::Pipeline::PROJECT_ROUTE_AND_NAMESPACE_ROUTE)
@@ -127,10 +144,13 @@ module MergeTrains
       all_prev.last
     end
 
+    # Use the preloaded index attribute if it exists
+    # gitlab's strong_memoize only supports instance attrs (e.g. @index)
+    # Manually setting car.index = ..., will be ignored
     def index
       return unless active?
 
-      all_prev.count
+      super || all_prev.count
     end
 
     def previous_ref

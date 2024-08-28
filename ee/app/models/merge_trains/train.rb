@@ -85,6 +85,10 @@ module MergeTrains
       persisted_cars.active.by_id.limit(limit)
     end
 
+    def all_cars_indexed(limit: nil)
+      all_cars(limit: limit).indexed
+    end
+
     def completed_cars(limit: nil)
       persisted_cars.complete.by_id(:desc).limit(limit)
     end

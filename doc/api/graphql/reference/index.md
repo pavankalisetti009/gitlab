@@ -25304,8 +25304,8 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestmergestatus"></a>`mergeStatus` **{warning-solid}** | [`String`](#string) | **Deprecated** in GitLab 14.0. This was renamed. Use: [`MergeRequest.mergeStatusEnum`](#mergerequestmergestatusenum). |
 | <a id="mergerequestmergestatusenum"></a>`mergeStatusEnum` | [`MergeStatus`](#mergestatus) | Merge status of the merge request. |
 | <a id="mergerequestmergetraincar"></a>`mergeTrainCar` **{warning-solid}** | [`MergeTrainCar`](#mergetraincar) | **Introduced** in GitLab 17.2. **Status**: Experiment. Represents the merge request in a merge train. |
-| <a id="mergerequestmergetrainindex"></a>`mergeTrainIndex` | [`Int`](#int) | Zero-based position of the merge request in the merge train. Returns `null` if the merge request is not in a merge train. |
-| <a id="mergerequestmergetrainscount"></a>`mergeTrainsCount` | [`Int`](#int) | Number of merge requests in the merge train. |
+| <a id="mergerequestmergetrainindex"></a>`mergeTrainIndex` **{warning-solid}** | [`Int`](#int) | **Deprecated** in GitLab 17.4. Use `index` on `MergeTrains::CarType` instead. |
+| <a id="mergerequestmergetrainscount"></a>`mergeTrainsCount` **{warning-solid}** | [`Int`](#int) | **Deprecated** in GitLab 17.4. Use `count` from `cars` connection on `MergeTrains::TrainType` instead. |
 | <a id="mergerequestmergeuser"></a>`mergeUser` | [`UserCore`](#usercore) | User who merged this merge request or set it to auto-merge. |
 | <a id="mergerequestmergewhenpipelinesucceeds"></a>`mergeWhenPipelineSucceeds` | [`Boolean`](#boolean) | Indicates if the merge has been set to auto-merge. |
 | <a id="mergerequestmergeabilitychecks"></a>`mergeabilityChecks` **{warning-solid}** | [`[MergeRequestMergeabilityCheck!]!`](#mergerequestmergeabilitycheck) | **Introduced** in GitLab 16.5. **Status**: Experiment. Status of all mergeability checks of the merge request. |
@@ -27090,6 +27090,7 @@ MergeTrainCar represents an attempt to merge a merge requestusing merge trains.
 | <a id="mergetraincarcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the car was created. |
 | <a id="mergetraincarduration"></a>`duration` | [`Int`](#int) | Duration of the car. |
 | <a id="mergetraincarid"></a>`id` | [`MergeTrainsCarID!`](#mergetrainscarid) | Global ID of the car. |
+| <a id="mergetraincarindex"></a>`index` | [`Int`](#int) | Zero-based position of the car in the merge train. Returns `null` if the car is not active in a merge train. |
 | <a id="mergetraincarmergerequest"></a>`mergeRequest` | [`MergeRequest!`](#mergerequest) | Merge request the car contains. |
 | <a id="mergetraincarmergedat"></a>`mergedAt` | [`Time`](#time) | Timestamp of when the car was merged. |
 | <a id="mergetraincarpipeline"></a>`pipeline` | [`Pipeline`](#pipeline) | Pipeline of the car. |
