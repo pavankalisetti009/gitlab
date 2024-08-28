@@ -54,6 +54,7 @@ module Dependencies
     end
 
     def exportable
+      # Order is important. Pipeline exports also have a project.
       pipeline || project || group || organization
     end
 
@@ -67,6 +68,8 @@ module Dependencies
         self.organization = value
       when Ci::Pipeline
         self.pipeline = value
+        # `project_id` is used as sharding key for cells
+        self.project = value.project
       else
         raise "Can not assign #{value.class} as exportable"
       end
@@ -87,6 +90,11 @@ module Dependencies
     private
 
     def only_one_exportable
+      # When we have a pipeline, it is ok to also have a project. All pipeline exports _should_
+      # have a project, but we must backfill existing records before we can validate this.
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/454947
+      return if pipeline.present? && project.present? && group.blank? && organization.blank?
+
       errors.add(:base, 'Only one exportable is required') unless [project, group, pipeline, organization].one?
     end
   end
