@@ -6,6 +6,7 @@ module API
       before do
         authenticate!
 
+        not_found! unless user_project.licensed_feature_available?(:cluster_receptive_agents)
         not_found! unless ::Gitlab::CurrentSettings.receptive_cluster_agents_enabled
       end
 
