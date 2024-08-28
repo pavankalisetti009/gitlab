@@ -3,6 +3,9 @@
 require 'spec_helper'
 
 RSpec.describe Observability::TracesIssuesConnection, feature_category: :tracing do
+  let_it_be(:issue) { create(:issue) }
+  let_it_be(:connection) { create(:observability_traces_issues_connection) }
+
   describe 'associations' do
     it { is_expected.to belong_to(:issue).inverse_of(:observability_traces) }
   end
@@ -22,7 +25,6 @@ RSpec.describe Observability::TracesIssuesConnection, feature_category: :tracing
   end
 
   it 'validates trace_identifier cannot be empty when creating connection' do
-    issue = create(:issue)
     connection = build(:observability_traces_issues_connection,
       issue: issue,
       trace_identifier: '' # empty trace identifier
