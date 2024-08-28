@@ -3696,25 +3696,25 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
         it 'ensures all visibility_level updates are correctly applied in issue searches', :sidekiq_inline do
           ensure_elasticsearch_index!
-          results = Issue.elastic_search('*', options: { public_and_internal_projects: true })
+          results = Issue.elastic_search('*', options: { search_level: 'global', public_and_internal_projects: true })
           expect(results.count).to eq(1)
 
           project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
           ensure_elasticsearch_index!
 
-          results = Issue.elastic_search('*', options: { public_and_internal_projects: true })
+          results = Issue.elastic_search('*', options: { search_level: 'global', public_and_internal_projects: true })
           expect(results.count).to eq(0)
         end
 
         it 'ensures all visibility_level updates are correctly applied in merge_request searches', :sidekiq_inline do
           ensure_elasticsearch_index!
-          results = MergeRequest.elastic_search('*', options: { public_and_internal_projects: true })
+          results = MergeRequest.elastic_search('*', options: { search_level: 'global', public_and_internal_projects: true })
           expect(results.count).to eq(1)
 
           project.update!(visibility_level: Gitlab::VisibilityLevel::INTERNAL)
           ensure_elasticsearch_index!
 
-          results = MergeRequest.elastic_search('*', options: { public_and_internal_projects: true })
+          results = MergeRequest.elastic_search('*', options: { search_level: 'global', public_and_internal_projects: true })
           expect(results.count).to eq(0)
         end
       end

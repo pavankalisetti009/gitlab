@@ -26,11 +26,11 @@ RSpec.describe Issue, :elastic_delete_by_query, feature_category: :global_search
 
       ensure_elasticsearch_index!
 
-      options = { project_ids: [project.id] }
+      options = { project_ids: [project.id], search_level: 'global' }
 
       expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count).to eq(2)
       expect(described_class.elastic_search(described_class.last.to_reference, options: options).total_count).to eq(1)
-      expect(described_class.elastic_search('bla-bla', options: { project_ids: :any, public_and_internal_projects: true }).total_count).to eq(3)
+      expect(described_class.elastic_search('bla-bla', options: { search_level: 'global', project_ids: :any, public_and_internal_projects: true }).total_count).to eq(3)
     end
 
     it 'searches by iid and scopes to type: issue only', :sidekiq_inline do
@@ -44,7 +44,7 @@ RSpec.describe Issue, :elastic_delete_by_query, feature_category: :global_search
 
       # User needs to be admin or the MergeRequest would just be filtered by
       # confidential: false
-      options = { project_ids: [project.id], current_user: admin }
+      options = { project_ids: [project.id], current_user: admin, search_level: 'global' }
 
       results = described_class.elastic_search("##{issue.iid}", options: options)
       expect(results.total_count).to eq(1)

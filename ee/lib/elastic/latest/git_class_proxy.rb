@@ -175,7 +175,7 @@ module Elastic
       end
 
       def archived_filter_applicable_for_commit_search?(options)
-        !options[:include_archived] && options[:search_scope] != 'project'
+        !options[:include_archived] && options[:search_level] != 'project'
       end
 
       def search_blob(query, type: 'blob', page: 1, per: 20, options: {})
@@ -373,7 +373,7 @@ module Elastic
       # rubocop:enable Metrics/CyclomaticComplexity
 
       def archived_filter_applicable_for_blob_search?(options)
-        !options[:include_archived] && options[:search_scope] != 'project'
+        !options[:include_archived] && options[:search_level] != 'project'
       end
 
       def disable_project_joins_for_blob?

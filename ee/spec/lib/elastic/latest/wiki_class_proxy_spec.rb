@@ -17,7 +17,7 @@ RSpec.describe Elastic::Latest::WikiClassProxy, feature_category: :global_search
         current_user: nil,
         project_ids: [project.id],
         public_and_internal_projects: false,
-        search_scope: 'project',
+        search_level: 'project',
         repository_id: "wiki_#{project.id}"
       }
     end

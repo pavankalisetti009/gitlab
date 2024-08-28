@@ -19,6 +19,7 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
   let(:options) do
     {
       current_user: user,
+      search_level: 'global',
       project_ids: [project.id],
       public_and_internal_projects: false,
       order_by: nil,
@@ -102,21 +103,23 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
       using RSpec::Parameterized::TableSyntax
 
       where(:search_level, :projects, :groups) do
-        :global   | []              | []
-        :project  | [ref(:project)] | []
-        :group    | []              | [ref(:group)]
-        :project  | [ref(:project)] | [ref(:group)]
+        'global'   | []              | []
+        'group'    | []              | [ref(:group)]
+        'group'    | :any            | [ref(:group)]
+        'project'  | :any            | []
+        'project'  | [ref(:project)] | []
+        'project'  | [ref(:project)] | [ref(:group)]
       end
 
       with_them do
-        let(:project_ids) { projects.map(&:id) }
+        let(:project_ids) { projects.eql?(:any) ? projects : projects.map(&:id) }
         let(:group_ids) { groups.map(&:id) }
         let(:options) { base_options }
 
         let(:base_options) do
           {
             current_user: user,
-            search_scope: search_level,
+            search_level: search_level,
             project_ids: project_ids,
             group_ids: group_ids,
             public_and_internal_projects: false,
@@ -254,7 +257,7 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
 
         describe 'archived filter' do
           context 'when include_archived is set' do
-            let(:options) { { include_archived: true } }
+            let(:options) { base_options.merge(include_archived: true) }
 
             it 'does not have a filter for archived' do
               result.response
@@ -264,12 +267,16 @@ RSpec.describe Elastic::Latest::IssueClassProxy, :elastic, :sidekiq_inline, feat
           end
 
           context 'when include_archived is not set' do
-            let(:options) { {} }
+            let(:options) { base_options }
 
-            it 'does have a filter for archived' do
+            it 'applies the filter for archived based on search_level' do
               result.response
 
-              assert_named_queries('filters:non_archived')
+              if search_level != 'project'
+                assert_named_queries('filters:non_archived')
+              else
+                assert_named_queries(without: ['filters:non_archived'])
+              end
             end
           end
         end

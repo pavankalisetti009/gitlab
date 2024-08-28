@@ -45,7 +45,7 @@ RSpec.describe Elastic::Latest::GitClassProxy, :elastic, :sidekiq_inline, featur
             project_ids: [project.id],
             group_ids: [project.namespace.id],
             public_and_internal_projects: false,
-            search_scope: "group",
+            search_level: "group",
             order_by: nil,
             sort: nil
           }

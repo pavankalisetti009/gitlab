@@ -26,11 +26,12 @@ RSpec.describe Milestone, :elastic, feature_category: :global_search do
     end
 
     it 'searches milestones', :sidekiq_inline do
-      options = { project_ids: [project.id], current_user: user }
+      options = { search_level: 'global', project_ids: [project.id], current_user: user }
 
-      expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count)
-        .to eq(2)
-      expect(described_class.elastic_search('bla-bla', options: { project_ids: :any }).total_count).to eq(3)
+      expect(described_class.elastic_search('(term1 | term2 | term3) +bla-bla', options: options).total_count).to eq(2)
+
+      options = { search_level: 'global', project_ids: :any }
+      expect(described_class.elastic_search('bla-bla', options: options).total_count).to eq(3)
     end
   end
 

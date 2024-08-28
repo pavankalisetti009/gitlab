@@ -24,7 +24,7 @@ RSpec.describe ElasticDeleteProjectWorker, :elastic, feature_category: :global_s
   # Extracted to a method as the `#elastic_search` methods using it below will
   # mutate the hash and mess up the following searches
   def search_options
-    { options: { current_user: user, project_ids: :any } }
+    { options: { search_level: 'global', current_user: user, project_ids: :any } }
   end
 
   it 'deletes a project with all nested objects and clears the index_status', :sidekiq_inline do

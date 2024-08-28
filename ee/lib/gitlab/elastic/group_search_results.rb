@@ -22,7 +22,7 @@ module Gitlab
 
       override :base_options
       def base_options
-        super.merge(search_scope: 'group', group_id: group.id, group_ids: [group.id]) # group_ids to options for traversal_ids filtering
+        super.merge(search_level: 'group', group_id: group.id, group_ids: [group.id]) # group_ids to options for traversal_ids filtering
       end
 
       override :scope_options

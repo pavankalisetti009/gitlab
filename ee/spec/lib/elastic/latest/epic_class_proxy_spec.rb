@@ -28,7 +28,7 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
           current_user: nil,
           public_and_internal_projects: false,
           order_by: nil,
-          search_scope: 'global',
+          search_level: 'global',
           sort: nil,
           group_ids: [],
           count_only: false
@@ -85,7 +85,7 @@ RSpec.describe Elastic::Latest::EpicClassProxy, feature_category: :global_search
           sort: nil,
           group_ids: [group.id],
           count_only: false,
-          search_scope: 'group'
+          search_level: 'group'
         }
       end
 

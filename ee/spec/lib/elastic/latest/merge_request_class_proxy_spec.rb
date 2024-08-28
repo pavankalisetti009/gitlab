@@ -14,7 +14,7 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
     let_it_be(:query) { 'Foo' }
     let_it_be(:user) { create(:user) }
     let(:current_user) { user }
-    let(:options) { { current_user: current_user, project_ids: [project.id] } }
+    let(:options) { { current_user: current_user, project_ids: [project.id], search_level: 'global' } }
     let_it_be(:project) { create(:project, :public) }
     let_it_be(:active_user) { create(:user) }
     let_it_be(:banned_user) { create(:user, :banned) }
@@ -48,7 +48,7 @@ RSpec.describe Elastic::Latest::MergeRequestClassProxy, :elastic, :sidekiq_inlin
     end
 
     context 'when include_archived is set' do
-      let(:options) { { include_archived: true } }
+      let(:options) { { include_archived: true, search_level: 'global' } }
 
       it 'does not have a filter for archived' do
         result.response

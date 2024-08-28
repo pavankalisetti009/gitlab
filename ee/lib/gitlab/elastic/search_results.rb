@@ -311,7 +311,7 @@ module Gitlab
           public_and_internal_projects: public_and_internal_projects,
           order_by: order_by,
           sort: sort,
-          search_scope: 'global'
+          search_level: 'global'
         }
       end
 
