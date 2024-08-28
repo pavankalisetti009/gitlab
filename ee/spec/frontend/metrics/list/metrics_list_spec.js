@@ -130,7 +130,7 @@ describe('MetricsComponent', () => {
 
   describe('filtered search', () => {
     beforeEach(async () => {
-      setWindowLocation('?search=foo+bar&attribute[]=test.attr');
+      setWindowLocation('?search=foo+bar&attribute[]=test.attr&traceId[]=test-trace-id');
       await mountComponent();
     });
 
@@ -139,6 +139,7 @@ describe('MetricsComponent', () => {
         filterObjToFilterToken({
           search: [{ value: 'foo bar' }],
           attribute: [{ value: 'test.attr', operator: '=' }],
+          traceId: [{ value: 'test-trace-id', operator: '=' }],
         }),
       );
     });
@@ -161,6 +162,8 @@ describe('MetricsComponent', () => {
         search: 'foo bar',
         attribute: ['test.attr'],
         'not[attribute]': null,
+        traceId: ['test-trace-id'],
+        'not[traceId]': null,
       });
     });
 
@@ -169,6 +172,7 @@ describe('MetricsComponent', () => {
         filters: {
           search: [{ value: 'foo bar' }],
           attribute: [{ value: 'test.attr', operator: '=' }],
+          traceId: [{ value: 'test-trace-id', operator: '=' }],
         },
         limit: 50,
       });
@@ -179,6 +183,7 @@ describe('MetricsComponent', () => {
         await setFilters({
           search: [{ value: 'search query' }],
           attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+          traceId: [{ value: 'updated-trace-id', operator: '=' }],
         });
       });
 
@@ -194,6 +199,8 @@ describe('MetricsComponent', () => {
           search: 'search query',
           attribute: ['updated.attr.filter'],
           'not[attribute]': null,
+          traceId: ['updated-trace-id'],
+          'not[traceId]': null,
         });
       });
 
@@ -202,6 +209,7 @@ describe('MetricsComponent', () => {
           filters: {
             search: [{ value: 'search query' }],
             attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+            traceId: [{ value: 'updated-trace-id', operator: '=' }],
           },
           limit: 50,
         });
@@ -212,6 +220,7 @@ describe('MetricsComponent', () => {
           filterObjToFilterToken({
             search: [{ value: 'search query' }],
             attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+            traceId: [{ value: 'updated-trace-id', operator: '=' }],
           }),
         );
       });
