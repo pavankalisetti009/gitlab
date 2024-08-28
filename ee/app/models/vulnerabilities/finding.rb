@@ -82,7 +82,9 @@ module Vulnerabilities
     has_many :merge_request_links, through: :vulnerability
 
     has_many :finding_identifiers, class_name: 'Vulnerabilities::FindingIdentifier', inverse_of: :finding, foreign_key: 'occurrence_id'
-    has_many :identifiers, through: :finding_identifiers, class_name: 'Vulnerabilities::Identifier'
+    has_many :identifiers, -> {
+      allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474747')
+    }, through: :finding_identifiers, class_name: 'Vulnerabilities::Identifier'
 
     has_many :finding_links, class_name: 'Vulnerabilities::FindingLink', inverse_of: :finding, foreign_key: 'vulnerability_occurrence_id'
 

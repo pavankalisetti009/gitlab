@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class FindingIdentifier < ApplicationRecord
+  class FindingIdentifier < Gitlab::Database::SecApplicationRecord
     self.table_name = "vulnerability_occurrence_identifiers"
 
     alias_attribute :finding_id, :occurrence_id
