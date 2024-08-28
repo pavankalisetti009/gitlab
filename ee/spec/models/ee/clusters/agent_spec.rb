@@ -10,6 +10,12 @@ RSpec.describe Clusters::Agent, feature_category: :deployment_management do
   it { is_expected.to include_module(EE::Clusters::Agent) }
   it { is_expected.to have_many(:vulnerability_reads) }
 
+  it do
+    is_expected.to have_one(:agent_url_configuration)
+      .class_name('Clusters::Agents::UrlConfiguration')
+      .inverse_of(:agent)
+  end
+
   describe '.for_projects' do
     it 'return agents for selected projects' do
       expect(described_class.for_projects([agent_1.project, agent_3.project])).to contain_exactly(agent_1, agent_3)

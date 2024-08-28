@@ -6,6 +6,8 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
+        has_one :agent_url_configuration, class_name: 'Clusters::Agents::UrlConfiguration', inverse_of: :agent
+
         has_many :vulnerability_reads, class_name: 'Vulnerabilities::Read', foreign_key: :casted_cluster_agent_id
 
         has_many :workspaces,
