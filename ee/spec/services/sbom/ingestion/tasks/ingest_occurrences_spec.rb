@@ -44,9 +44,21 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:feature_flag, :feature_flag_stub) do
-      :deprecate_vulnerability_occurrence_pipelines | false
-      :deprecate_vulnerability_occurrence_pipelines | true
+    where(:case_name, :feature_flag, :feature_flag_stub, :passes_correct_vulnerability_ids_value) do
+      [
+        [
+          'We are running all original code paths that depend on the vulnerability_occurrence_pipelines table',
+          :deprecate_vulnerability_occurrence_pipelines,
+          false,
+          'passes nil into the occurrence_map'
+        ],
+        [
+          'We are simulating dropping the vulnerability_occurrence_pipelines with a FF',
+          :deprecate_vulnerability_occurrence_pipelines,
+          true,
+          'passes an array of vulnerability ids into the occurrence_map'
+        ]
+      ]
     end
 
     with_them do
@@ -105,6 +117,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
 
             expect(Sbom::Occurrence.last&.attributes).to match(expected_attrs)
           end
+
+          context "for each occurrence_map" do
+            let(:expected_value) { feature_flag_stub ? [finding.vulnerability_id] : nil }
+
+            before do
+              allow(occurrence_map).to receive(:vulnerability_ids=).once
+            end
+
+            it params[:passes_correct_vulnerability_ids_value] do
+              task
+
+              expect(occurrence_map).to have_received(:vulnerability_ids=).with(expected_value)
+            end
+          end
         end
 
         context 'for a container scanning occurrence' do
@@ -135,6 +161,20 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrences, feature_category: :dep
             task
 
             expect(Sbom::Occurrence.last&.attributes).to match(expected_attrs)
+          end
+
+          context "for each occurrence_map" do
+            let(:expected_value) { feature_flag_stub ? [finding.vulnerability_id] : nil }
+
+            before do
+              allow(occurrence_map).to receive(:vulnerability_ids=).once
+            end
+
+            it params[:passes_correct_vulnerability_ids_value] do
+              task
+
+              expect(occurrence_map).to have_received(:vulnerability_ids=).with(expected_value)
+            end
           end
         end
       end

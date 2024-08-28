@@ -86,6 +86,8 @@ module Sbom
       end
 
       def vulnerabilities_info
+        return {} if ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+
         @vulnerabilities_info ||= Sbom::Ingestion::Vulnerabilities.new(pipeline)
       end
 
