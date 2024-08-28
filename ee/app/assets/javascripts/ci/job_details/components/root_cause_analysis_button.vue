@@ -30,7 +30,7 @@ export default {
 <template>
   <gl-button
     v-if="glAbilities.troubleshootJobWithAi && jobFailed"
-    icon="tanuki-ai"
+    icon="duo-chat"
     class="gl-mr-3"
     variant="confirm"
     data-testid="rca-duo-button"
