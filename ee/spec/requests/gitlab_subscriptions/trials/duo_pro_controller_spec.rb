@@ -171,7 +171,7 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProController, :saas, :unlimited_
         it 'shows valid flash message', :freeze_time do
           post_create
 
-          expires_on = 60.days.from_now.strftime('%Y-%m-%d')
+          expires_on = 60.days.from_now.to_date.iso8601
           expect(flash[:success]).to eq(
             format(s_(
               'DuoProTrial|Congratulations, your free GitLab Duo Pro trial is activated and will expire on ' \

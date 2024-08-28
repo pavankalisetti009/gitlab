@@ -68,7 +68,7 @@ module Gitlab
 
     def formatted_date
       strong_memoize(:formatted_date) do
-        next_reconciliation_date.strftime('%Y-%m-%d')
+        next_reconciliation_date.to_date.iso8601
       end
     end
 

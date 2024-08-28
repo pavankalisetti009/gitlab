@@ -57,7 +57,7 @@ module Gitlab
       end
 
       def format_date(date)
-        date.utc.strftime('%Y-%m-%d')
+        date.utc.to_date.iso8601
       end
 
       def placeholders

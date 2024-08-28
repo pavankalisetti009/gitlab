@@ -67,7 +67,7 @@ module Analytics
       end
 
       def format_date(date)
-        date.strftime('%Y-%m-%d')
+        date.to_date.iso8601
       end
 
       def placeholders

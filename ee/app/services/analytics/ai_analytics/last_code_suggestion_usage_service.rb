@@ -49,8 +49,8 @@ module Analytics
             raw_query: QUERY,
             placeholders: {
               user_ids: user_ids_slice.to_json,
-              from: from.strftime('%Y-%m-%d'),
-              to: to.strftime('%Y-%m-%d')
+              from: from.to_date.iso8601,
+              to: to.to_date.iso8601
             })
 
           data += ClickHouse::Client.select(query, :main)
