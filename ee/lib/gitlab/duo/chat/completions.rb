@@ -12,7 +12,7 @@ module Gitlab
         def execute(safe_params: {})
           action_name = 'chat'
 
-          options = safe_params.slice(:referer_url)
+          options = safe_params.slice(:referer_url, :current_file, :additional_context).compact_blank
           message_attributes = {
             request_id: SecureRandom.uuid,
             role: ::Gitlab::Llm::AiMessage::ROLE_USER,

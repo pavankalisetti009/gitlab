@@ -22,7 +22,17 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
   let(:headers) { {} }
   let(:resource) { issue }
   let(:content) { 'what is this issue about' }
-  let(:params) { { content: content, resource_type: resource.class.to_s.downcase, resource_id: resource.id } }
+  let(:additional_context) { nil }
+  let(:current_file) { nil }
+  let(:params) do
+    {
+      content: content,
+      resource_type: resource.class.to_s.downcase,
+      resource_id: resource.id,
+      additional_context: additional_context,
+      current_file: current_file
+    }
+  end
 
   before do
     group.add_member(authorized_user, :developer)
@@ -272,6 +282,34 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
             expect(Gitlab::Llm::ChatMessage).to receive(:new).with(reset_params).twice.and_return(reset_message)
             expect(chat_message).to receive(:save!)
             expect(reset_message).to receive(:save!).twice
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
+        context 'with additional context' do
+          let(:additional_context) { [{ type: "file", name: "test.py", content: "print('hello world')" }] }
+          let(:options) { { additional_context: additional_context } }
+
+          it 'sends additional context to the chat' do
+            expect(chat_message).to receive(:save!)
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
+        context 'with current file' do
+          let(:current_file) { { file_name: "test.py", selected_text: "print('hello world')" } }
+          let(:options) { { current_file: current_file } }
+
+          it 'sends current file to the chat' do
+            expect(chat_message).to receive(:save!)
             expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
             expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
             expect(chat).to receive(:execute)
