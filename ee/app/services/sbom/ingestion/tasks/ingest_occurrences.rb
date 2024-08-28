@@ -32,6 +32,12 @@ module Sbom
             vulnerabilities_info.dig(key, :highest_severity)
           end
 
+          def vulnerability_ids
+            return unless deprecation_flag_enabled?
+
+            vulnerabilities_info.dig(key, :vulnerability_ids) || []
+          end
+
           private
 
           def key
@@ -95,6 +101,8 @@ module Sbom
                 ancestors: occurrence_map.ancestors
               }
 
+              occurrence_map.vulnerability_ids = vulnerability_data.vulnerability_ids
+
               if attributes_changed?(new_attributes)
                 # Remove updated items from the list so that we don't have to iterate over them
                 # twice when setting the ids in `after_ingest`.
@@ -128,6 +136,7 @@ module Sbom
              occurrence_maps.name,
              occurrence_maps.version,
              occurrence_maps.path,
+             array_to_json(array_agg(vulnerability_occurrences.vulnerability_id)) as vulnerability_ids,
              MAX(vulnerability_occurrences.severity) as highest_severity,
              COUNT(vulnerability_occurrences.id) as vulnerability_count
           SQL
@@ -150,13 +159,17 @@ module Sbom
                     .group("occurrence_maps.name, occurrence_maps.version, occurrence_maps.path")
 
           full_query = [cte_sql, query.to_sql].join("\n")
-
           results = ::Vulnerabilities::Finding.connection.execute(full_query)
+
           results.each_with_object({}) do |row, result|
             key = row.values_at('name', 'version', 'path')
             value = {
               highest_severity: row['highest_severity'],
-              vulnerability_count: row['vulnerability_count']
+              vulnerability_count: row['vulnerability_count'],
+              vulnerability_ids: ::Gitlab::Json.parse(row['vulnerability_ids']).filter_map do |id|
+                id_i = id.to_i
+                id_i if id_i > 0
+              end
             }
             result[key] = value
           end

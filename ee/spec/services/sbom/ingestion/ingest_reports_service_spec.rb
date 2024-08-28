@@ -21,9 +21,9 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
   describe '#execute' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:feature_flag, :feature_flag_stub) do
-      :deprecate_vulnerability_occurrence_pipelines | false
-      :deprecate_vulnerability_occurrence_pipelines | true
+    where(:feature_flag, :feature_flag_stub, :expected_vulnerability_info) do
+      :deprecate_vulnerability_occurrence_pipelines | false | ref(:vulnerability_info)
+      :deprecate_vulnerability_occurrence_pipelines | true | {}
     end
 
     with_them do
@@ -39,7 +39,7 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
       it 'executes IngestReportService for each report' do
         reports.each do |report|
           expect(::Sbom::Ingestion::IngestReportService).to receive(:execute).with(pipeline, report,
-            vulnerability_info)
+            expected_vulnerability_info)
         end
 
         execute
@@ -109,7 +109,7 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
 
           valid_reports.each do |report|
             expect(::Sbom::Ingestion::IngestReportService).to receive(:execute).with(pipeline, report,
-              vulnerability_info)
+              expected_vulnerability_info)
           end
 
           execute
@@ -153,7 +153,7 @@ RSpec.describe Sbom::Ingestion::IngestReportsService, feature_category: :depende
         it 'ingest the report but does not delete the existing occurrences' do
           expect(::Sbom::Ingestion::IngestReportService).to receive(:execute).with(pipeline,
             reports.first,
-            vulnerability_info)
+            expected_vulnerability_info)
 
           execute
 
