@@ -40075,13 +40075,22 @@ msgstr ""
 msgid "Pipeline|Merge request pipeline"
 msgstr ""
 
+msgid "Pipeline|Merge request pipeline runs on the contents of the merge request's source branch, not the target branch."
+msgstr ""
+
 msgid "Pipeline|Merge train pipeline"
 msgstr ""
 
 msgid "Pipeline|Merge train pipeline jobs can not be retried"
 msgstr ""
 
+msgid "Pipeline|Merge train pipeline runs on the contents of the merge request combined with the contents of all other merge requests queued for merging into the target branch."
+msgstr ""
+
 msgid "Pipeline|Merged result pipeline"
+msgstr ""
+
+msgid "Pipeline|Merged result pipeline runs on the contents of the merge request combined with the contents of the target branch."
 msgstr ""
 
 msgid "Pipeline|No failed jobs in this pipeline 🎉"
@@ -40214,6 +40223,15 @@ msgid "Pipeline|View pipeline"
 msgstr ""
 
 msgid "Pipeline|We are currently unable to fetch pipeline data"
+msgstr ""
+
+msgid "Pipeline|What is a merge request pipeline?"
+msgstr ""
+
+msgid "Pipeline|What is a merge train pipeline?"
+msgstr ""
+
+msgid "Pipeline|What is a merged result pipeline?"
 msgstr ""
 
 msgid "Pipeline|You're about to stop pipeline #%{pipelineId}."
