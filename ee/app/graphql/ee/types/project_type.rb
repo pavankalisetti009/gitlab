@@ -451,6 +451,13 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'Metrics attached to the project.',
           resolver: ::Resolvers::Observability::MetricsResolver
+
+        field :observability_traces_links,
+          ::Types::Observability::TraceType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Traces attached to the project.',
+          resolver: ::Resolvers::Observability::TracesResolver
       end
 
       def tracking_key
