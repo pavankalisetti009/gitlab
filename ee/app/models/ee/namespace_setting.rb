@@ -141,9 +141,9 @@ module EE
       end
 
       def set_prevent_sharing_groups_outside_hierarchy
-        if user_cap_enabled? || (namespace.block_seat_overages? && prevent_sharing_groups_outside_hierarchy_changed?)
-          self.prevent_sharing_groups_outside_hierarchy = true
-        end
+        return unless user_cap_enabled? || namespace.block_seat_overages?
+
+        self.prevent_sharing_groups_outside_hierarchy = true
       end
 
       def disable_project_sharing!
@@ -193,11 +193,6 @@ module EE
       def allowed_namespace_settings_params
         super + EE_NAMESPACE_SETTINGS_PARAMS
       end
-    end
-
-    override :prevent_sharing_groups_outside_hierarchy
-    def prevent_sharing_groups_outside_hierarchy
-      namespace.root_ancestor.block_seat_overages? || super
     end
   end
 end
