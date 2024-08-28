@@ -25,6 +25,7 @@ import {
   filterObjToFilterToken,
   filterTokensToFilterObj,
   ATTRIBUTE_FILTER_TOKEN_TYPE,
+  TRACE_ID_FILTER_TOKEN_TYPE,
 } from './filters';
 import MetricsTable from './metrics_table.vue';
 
@@ -46,7 +47,6 @@ export default {
   mixins: [InternalEvents.mixin()],
   i18n: {
     searchInputPlaceholder: s__('ObservabilityMetrics|Search metrics...'),
-    attributeFilterTitle: s__('ObservabilityMetrics|Dimension'),
     pageTitle: s__(`ObservabilityMetrics|Metrics`),
     description: s__(
       `ObservabilityMetrics|Track health data from your systems. Send metric data to this project using OpenTelemetry. %{docsLink}`,
@@ -87,11 +87,17 @@ export default {
     tokens() {
       return [
         {
-          title: this.$options.i18n.attributeFilterTitle,
+          title: s__('ObservabilityMetrics|Dimension'),
           type: ATTRIBUTE_FILTER_TOKEN_TYPE,
           token: GlFilteredSearchToken,
           operators: OPERATORS_IS,
           options: this.availableAttributes,
+        },
+        {
+          title: s__('ObservabilityMetrics|Trace ID'),
+          type: TRACE_ID_FILTER_TOKEN_TYPE,
+          token: GlFilteredSearchToken,
+          operators: OPERATORS_IS,
         },
       ];
     },
