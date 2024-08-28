@@ -7,7 +7,7 @@ class QueueBackfillProjectIdToSecurityScans < Gitlab::Database::Migration[2.2]
 
   MIGRATION = "BackfillProjectIdToSecurityScans"
   DELAY_INTERVAL = 2.minutes
-  BATCH_SIZE = 1000
+  BATCH_SIZE = 10_000
   SUB_BATCH_SIZE = 100
 
   def up
