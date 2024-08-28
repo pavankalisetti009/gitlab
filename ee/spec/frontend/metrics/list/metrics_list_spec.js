@@ -70,12 +70,12 @@ describe('MetricsComponent', () => {
   });
 
   describe('initial metrics fetching', () => {
-    it('only renders the loading indicator while fetching metrics', () => {
+    it('renders the loading indicator and search bar while fetching metrics', () => {
       mountComponent();
 
       expect(findLoadingIcon().exists()).toBe(true);
+      expect(findFilteredSearch().exists()).toBe(true);
       expect(findInfiniteScrolling().exists()).toBe(false);
-      expect(findFilteredSearch().exists()).toBe(false);
       expect(findNoDataEmptyState().exists()).toBe(false);
 
       expect(observabilityClientMock.fetchMetrics).toHaveBeenCalledWith({
@@ -96,7 +96,7 @@ describe('MetricsComponent', () => {
         expect(findFilteredSearch().exists()).toBe(true);
       });
 
-      it('renders renders infinite scrolling list', () => {
+      it('renders infinite scrolling list', () => {
         expect(findInfiniteScrolling().exists()).toBe(true);
         expect(findInfiniteScrolling().props('fetchedItems')).toBe(mockResponse.metrics.length);
         expect(
