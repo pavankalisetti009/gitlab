@@ -1,5 +1,6 @@
 <script>
 import { GlAlert, GlFormGroup, GlFormSelect } from '@gitlab/ui';
+import getSecurityPolicyProjectSub from 'ee/security_orchestration/graphql/queries/security_policy_project_created.subscription.graphql';
 import { NAMESPACE_TYPES } from '../../constants';
 import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
 import PipelineExecutionPolicyEditor from './pipeline_execution/editor_component.vue';
@@ -8,6 +9,35 @@ import ScanResultPolicyEditor from './scan_result/editor_component.vue';
 import VulnerabilityManagementPolicyEditor from './vulnerability_management/editor_component.vue';
 
 export default {
+  apollo: {
+    $subscribe: {
+      newlyCreatedPolicyProject: {
+        query() {
+          return getSecurityPolicyProjectSub;
+        },
+        variables() {
+          return { fullPath: this.namespacePath };
+        },
+        result({ data: { securityPolicyProjectCreated } }) {
+          const project = securityPolicyProjectCreated?.project;
+
+          if (project) {
+            this.currentAssignedPolicyProject = {
+              ...project,
+              branch: project?.branch?.rootRef,
+            };
+          }
+        },
+        error(e) {
+          this.setError(e);
+        },
+        skip() {
+          // TODO toggle with feature flag in next MR
+          return true;
+        },
+      },
+    },
+  },
   components: {
     GlAlert,
     GlFormGroup,
@@ -21,6 +51,7 @@ export default {
     assignedPolicyProject: { default: null },
     existingPolicy: { default: null },
     namespaceType: { default: NAMESPACE_TYPES.PROJECT },
+    namespacePath: { default: '' },
   },
   props: {
     // This is the `value` field of the POLICY_TYPE_COMPONENT_OPTIONS
@@ -31,6 +62,7 @@ export default {
   },
   data() {
     return {
+      currentAssignedPolicyProject: this.assignedPolicyProject,
       error: '',
       errorMessages: [],
     };
@@ -82,7 +114,7 @@ export default {
     <component
       :is="policyOptions.component"
       :existing-policy="existingPolicy"
-      :assigned-policy-project="assignedPolicyProject"
+      :assigned-policy-project="currentAssignedPolicyProject"
       :is-editing="isEditing"
       @error="setError($event)"
     />

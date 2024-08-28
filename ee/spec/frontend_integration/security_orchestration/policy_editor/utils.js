@@ -29,3 +29,21 @@ export const verify = async ({ manifest, verifyRuleMode, wrapper }) => {
   expect(normaliseYaml(getYamlPreviewText(wrapper))).toBe(normaliseYaml(manifest));
   verifyRuleMode();
 };
+
+export const createSppSubscriptionHandler = () =>
+  jest.fn().mockResolvedValue({
+    data: {
+      securityPolicyProjectCreated: {
+        project: {
+          name: 'New project',
+          fullPath: 'path/to/new-project',
+          id: '01',
+          branch: {
+            rootRef: 'main',
+          },
+        },
+        status: null,
+        errorMessage: '',
+      },
+    },
+  });
