@@ -1,9 +1,13 @@
 <script>
+import { GlButton } from '@gitlab/ui';
 import { s__, sprintf } from '~/locale';
 import { getPackagesString } from '../store/utils';
 
 export default {
   name: 'LicensePackages',
+  components: {
+    GlButton,
+  },
   props: {
     packages: {
       type: Array,
@@ -40,13 +44,13 @@ export default {
 <template>
   <div class="license-packages gl-inline gl-text-sm">
     <div class="js-license-dependencies gl-inline">{{ packageString }}</div>
-    <button
+    <gl-button
       v-if="!showAllPackages && remainingPackages"
-      type="button"
-      class="btn-link gl-button btn-show-all-packages"
+      variant="link"
+      class="btn-show-all-packages"
       @click="handleShowPackages"
     >
       {{ remainingPackages }}
-    </button>
+    </gl-button>
   </div>
 </template>
