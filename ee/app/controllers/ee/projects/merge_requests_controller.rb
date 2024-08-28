@@ -31,7 +31,7 @@ module EE
         feature_category :metrics, [:metrics_reports]
         feature_category :software_composition_analysis,
           [:license_scanning_reports, :license_scanning_reports_collapsed]
-        feature_category :code_review_workflow, [:delete_description_version, :description_diff]
+        feature_category :code_review_workflow, [:delete_description_version, :description_diff, :reports]
 
         urgency :high, [:delete_description_version]
         urgency :low, [:container_scanning_reports,
@@ -40,7 +40,13 @@ module EE
                        :coverage_fuzzing_reports, :api_fuzzing_reports,
                        :metrics_reports, :description_diff,
                        :license_scanning_reports, :license_scanning_reports_collapsed,
-                       :security_reports]
+                       :security_reports, :reports]
+
+        def reports
+          return render_404 unless ::Feature.enabled?(:mr_reports_tab, current_user, type: :wip)
+
+          show_merge_request
+        end
       end
 
       def can_run_sast_experiments_on?(project)

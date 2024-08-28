@@ -45159,6 +45159,9 @@ msgstr ""
 msgid "Reporting"
 msgstr ""
 
+msgid "Reports"
+msgstr ""
+
 msgid "Reports|%{combinedString} and %{resolvedString}"
 msgstr ""
 
