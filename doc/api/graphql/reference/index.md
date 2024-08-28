@@ -23499,8 +23499,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="grouplabelsincludeancestorgroups"></a>`includeAncestorGroups` | [`Boolean`](#boolean) | Include labels from ancestor groups. |
 | <a id="grouplabelsincludedescendantgroups"></a>`includeDescendantGroups` | [`Boolean`](#boolean) | Include labels from descendant groups. |
 | <a id="grouplabelsonlygrouplabels"></a>`onlyGroupLabels` | [`Boolean`](#boolean) | Include only group level labels. |
-| <a id="grouplabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. |
+| <a id="grouplabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. Ignored if using `title`. |
 | <a id="grouplabelssearchterm"></a>`searchTerm` | [`String`](#string) | Search term to find labels with. |
+| <a id="grouplabelstitle"></a>`title` | [`String`](#string) | Exact match on title. Cannot be used with `searchTerm`. `searchIn` will be ignored if `title` argument is provided. |
 
 ##### `Group.memberRoles`
 
@@ -29990,8 +29991,9 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectlabelsincludeancestorgroups"></a>`includeAncestorGroups` | [`Boolean`](#boolean) | Include labels from ancestor groups. |
-| <a id="projectlabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. |
+| <a id="projectlabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. Ignored if using `title`. |
 | <a id="projectlabelssearchterm"></a>`searchTerm` | [`String`](#string) | Search term to find labels with. |
+| <a id="projectlabelstitle"></a>`title` | [`String`](#string) | Exact match on title. Cannot be used with `searchTerm`. `searchIn` will be ignored if `title` argument is provided. |
 
 ##### `Project.memberRoles`
 
