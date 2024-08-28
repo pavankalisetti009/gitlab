@@ -438,6 +438,13 @@ module EE
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the project.'
 
+        field :observability_logs_links,
+          ::Types::Observability::LogType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Logs attached to the project.',
+          resolver: ::Resolvers::Observability::LogsResolver
+
         field :observability_metrics_links,
           ::Types::Observability::MetricType.connection_type,
           null: true,
