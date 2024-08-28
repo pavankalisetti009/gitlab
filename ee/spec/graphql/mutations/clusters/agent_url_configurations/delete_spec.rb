@@ -16,6 +16,10 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Delete, feature_cate
     )
   end
 
+  before do
+    stub_licensed_features(cluster_receptive_agents: true)
+  end
+
   it { expect(described_class.graphql_name).to eq('ClusterAgentUrlConfigurationDelete') }
   it { expect(described_class).to require_graphql_authorizations(:admin_cluster) }
 
@@ -45,6 +49,19 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Delete, feature_cate
           expect { mutate }.to change { ::Clusters::Agents::UrlConfiguration.count }.by(-1)
           expect { url_configuration.reload }.to raise_error(ActiveRecord::RecordNotFound)
         end
+      end
+    end
+
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+        url_configuration.agent.project.add_maintainer(current_user)
+      end
+
+      it 'raises an error' do
+        expect { mutate }.not_to change { ::Clusters::Agents::UrlConfiguration.count }
+        expect { url_configuration.reload }.not_to raise_error
+        expect(mutate[:errors]).to eq(["Receptive agents are unavailable for this GitLab instance"])
       end
     end
 

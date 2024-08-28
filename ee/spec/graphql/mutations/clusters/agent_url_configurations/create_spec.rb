@@ -8,6 +8,10 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Create, feature_cate
   let_it_be(:cluster_agent) { create(:cluster_agent) }
   let_it_be(:current_user) { create(:user) }
 
+  before do
+    stub_licensed_features(cluster_receptive_agents: true)
+  end
+
   subject(:mutation) { described_class.new(object: nil, context: query_context, field: nil) }
 
   specify { expect(described_class).to require_graphql_authorizations(:create_cluster) }
@@ -94,6 +98,18 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Create, feature_cate
             expect(mutate[:errors]).to eq(["URL configuration already exists for this agent"])
           end
         end
+      end
+    end
+
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+        cluster_agent.project.add_maintainer(current_user)
+      end
+
+      it 'raises an error' do
+        expect { mutate }.not_to change { ::Clusters::Agents::UrlConfiguration.count }
+        expect(mutate[:errors]).to eq(["Receptive agents are unavailable for this GitLab instance"])
       end
     end
 
