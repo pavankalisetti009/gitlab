@@ -199,6 +199,25 @@ RSpec.describe Projects::UpdateService, '#execute', feature_category: :groups_an
       }
     end
 
+    describe '#topics' do
+      let(:topics) { %w[foo bar] }
+      let(:topic_changed_audits) { AuditEvent.where(%q("details" LIKE '%:event_name: project_topics_updated%')) }
+
+      it 'audits when topics change' do
+        expect { update_project(project, user, topics: topics) }.to change { topic_changed_audits.count }.by(1)
+        expect(topic_changed_audits.last.details[:to]).to match_array(topics)
+      end
+
+      it 'does not audit when topics are unchanged' do
+        # with unrleated field change
+        expect { update_project(project, user, name: 'foo') }.not_to change { topic_changed_audits.count }
+
+        update_project(project, user, topics: topics)
+        # with change where topic list is stable across update
+        expect { update_project(project, user, topics: topics) }.not_to change { topic_changed_audits.count }
+      end
+    end
+
     describe '#name' do
       include_examples 'audit event logging' do
         let!(:old_name) { project.full_name }
