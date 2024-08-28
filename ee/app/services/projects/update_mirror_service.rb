@@ -8,24 +8,13 @@ module Projects
     UpdateError = Class.new(Error)
 
     def execute
-      if project.import_url &&
-          Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
-            normalized_url(project.import_url),
-            schemes: Project::VALID_MIRROR_PROTOCOLS,
-            allow_localhost: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,
-            allow_local_network: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,
-            deny_all_requests_except_allowed: Gitlab::CurrentSettings.deny_all_requests_except_allowed?,
-            outbound_local_requests_allowlist: Gitlab::CurrentSettings.outbound_local_requests_whitelist) # rubocop:disable Naming/InclusiveLanguage -- existing setting
-        return error("The import URL is invalid.")
-      end
+      return error("The import URL is invalid.") if import_url_invalid?
 
       unless can?(current_user, :access_git)
         return error('The mirror user is not allowed to perform any git operations.')
       end
 
-      unless project.mirror?
-        return success
-      end
+      return success unless project.mirror?
 
       # This should be an error, but to prevent the mirroring
       # from being disabled when moving between shards
@@ -47,7 +36,7 @@ module Projects
 
       # Updating LFS objects is expensive since it requires scanning for blobs with pointers.
       # Let's skip this if the repository hasn't changed.
-      update_lfs_objects if project.repository.checksum != checksum_before
+      update_lfs_objects if update_lfs_objects?(checksum_before)
 
       # Running git fetch in the repository creates loose objects in the same
       # way running git push *to* the repository does, so ensure we run regular
@@ -60,6 +49,20 @@ module Projects
     end
 
     private
+
+    def update_lfs_objects?(checksum)
+      project.lfs_enabled? && project.repository.checksum != checksum
+    end
+
+    def import_url_invalid?
+      project.import_url && Gitlab::HTTP_V2::UrlBlocker.blocked_url?(
+        normalized_url(project.import_url),
+        schemes: Project::VALID_MIRROR_PROTOCOLS,
+        allow_localhost: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,
+        allow_local_network: Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?,
+        deny_all_requests_except_allowed: Gitlab::CurrentSettings.deny_all_requests_except_allowed?,
+        outbound_local_requests_allowlist: Gitlab::CurrentSettings.outbound_local_requests_whitelist) # rubocop:disable Naming/InclusiveLanguage -- existing setting
+    end
 
     def normalized_url(url)
       strong_memoize_with(:normalized_url, url) do
