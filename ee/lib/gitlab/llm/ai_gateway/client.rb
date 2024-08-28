@@ -50,7 +50,9 @@ module Gitlab
 
             response_body
           else
-            logger.error(message: "Received error from AI gateway", response: response_body)
+            parsed_response = ::Gitlab::Json.parse(response_body)
+
+            logger.error(message: "Received error from AI gateway", response: parsed_response.dig('detail', 0, 'msg'))
 
             raise Gitlab::AiGateway::ForbiddenError if response.forbidden?
 
