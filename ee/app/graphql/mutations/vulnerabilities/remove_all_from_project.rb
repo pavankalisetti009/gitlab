@@ -22,7 +22,7 @@ module Mutations
 
         projects = find_projects(project_ids)
 
-        result = ::Vulnerabilities::RemoveAllFromProjectService.new(projects).execute
+        result = ::Vulnerabilities::ScheduleRemovingAllFromProjectService.new(projects).execute
 
         {
           projects: result.payload[:projects],

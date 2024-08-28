@@ -15,8 +15,6 @@ RSpec.describe Mutations::Vulnerabilities::RemoveAllFromProject, feature_categor
 
   before do
     stub_licensed_features(security_dashboard: true)
-    create_list(:vulnerability, 2, :with_findings, project: project1)
-    create_list(:vulnerability, 2, :with_findings, project: project2)
   end
 
   describe '#resolve' do

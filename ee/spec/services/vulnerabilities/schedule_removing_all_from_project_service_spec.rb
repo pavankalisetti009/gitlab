@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Vulnerabilities::RemoveAllFromProjectService, feature_category: :vulnerability_management do
+RSpec.describe Vulnerabilities::ScheduleRemovingAllFromProjectService, feature_category: :vulnerability_management do
   let_it_be(:project1) { create(:project) }
   let_it_be(:project2) { create(:project) }
   let_it_be(:user) { create(:user) }
