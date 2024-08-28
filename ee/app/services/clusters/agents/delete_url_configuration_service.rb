@@ -12,6 +12,7 @@ module Clusters
       end
 
       def execute
+        return error_unavailable unless feature_available?
         return error_receptive_agents_disabled unless receptive_agents_enabled?
         return error_no_permissions unless current_user.can?(:admin_cluster, agent)
 
@@ -25,6 +26,16 @@ module Clusters
       private
 
       delegate :project, to: :agent
+
+      def feature_available?
+        project.licensed_feature_available?(:cluster_receptive_agents)
+      end
+
+      def error_unavailable
+        ServiceResponse.error(
+          message: s_('ClusterAgent|Receptive agents are unavailable for this GitLab instance')
+        )
+      end
 
       def error_no_permissions
         ServiceResponse.error(
