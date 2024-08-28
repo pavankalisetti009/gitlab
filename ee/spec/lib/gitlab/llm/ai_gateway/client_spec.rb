@@ -213,18 +213,21 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       end
 
       context 'when response is not successful' do
-        let(:response_body) { expected_response.to_json }
+        let(:response_body) do
+          { "detail" => [{ "msg" => "Input is invalid" }] }.to_json
+        end
+
         let(:failure) do
           instance_double(HTTParty::Response,
             code: http_code,
             success?: false,
-            parsed_response: response_body,
-            headers: response_headers
+            headers: response_headers,
+            body: response_body
           )
         end
 
         before do
-          allow(Gitlab::HTTP).to receive(:post).and_return(failure)
+          allow(ai_client).to receive(:perform_completion_request).and_yield(response_body).and_return(failure)
           allow(logger).to receive(:error)
           allow(failure).to receive(:forbidden?).and_return(forbidden_status)
         end
@@ -237,7 +240,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(endpoint: endpoint, body: expected_body) }
               .to raise_error(Gitlab::Llm::AiGateway::Client::ConnectionError)
 
-            expect(logger).to have_received(:error).with(message: "Received error from AI gateway", response: "")
+            expect(logger).to have_received(:error).with(message: "Received error from AI gateway",
+              response: "Input is invalid")
           end
         end
 
@@ -249,7 +253,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             expect { ai_client.stream(endpoint: endpoint, body: expected_body) }
               .to raise_error(Gitlab::AiGateway::ForbiddenError)
 
-            expect(logger).to have_received(:error).with(message: "Received error from AI gateway", response: "")
+            expect(logger).to have_received(:error).with(message: "Received error from AI gateway",
+              response: "Input is invalid")
           end
         end
       end
