@@ -105,6 +105,7 @@ describe('DoraPerformersScoreChart', () => {
         xAxisType: 'category',
         xAxisTitle: '',
         yAxisTitle: '',
+        includeLegendAvgMax: false,
       });
     });
   });
