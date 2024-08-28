@@ -204,6 +204,10 @@
           }
         }
       }
+
+      mark {
+        @include str-highlighted;
+      }
     }
   }
 }
