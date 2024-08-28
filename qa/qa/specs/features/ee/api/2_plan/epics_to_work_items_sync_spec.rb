@@ -76,10 +76,10 @@ module QA
 
         legacy_epic.reload!
 
-        expect(legacy_epic.start_date_from_milestones).to eq(new_milestone_start_date)
-        expect(legacy_epic.due_date_from_milestones).to eq(new_milestone_due_date)
-        expect(legacy_epic.start_date).to eq(new_milestone_start_date)
-        expect(legacy_epic.due_date).to eq(new_milestone_due_date)
+        expect { legacy_epic.reload!.start_date_from_milestones }.to eventually_eq(new_milestone_start_date)
+        expect { legacy_epic.reload!.due_date_from_milestones }.to eventually_eq(new_milestone_due_date)
+        expect { legacy_epic.reload!.start_date }.to eventually_eq(new_milestone_start_date)
+        expect { legacy_epic.reload!.due_date }.to eventually_eq(new_milestone_due_date)
 
         compare_legacy_epic_to_work_item_epic(legacy_epic, work_item_epic)
       end
