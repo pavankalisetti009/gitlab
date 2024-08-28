@@ -19996,6 +19996,57 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="currentuserassignedmergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
 | <a id="currentuserassignedmergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
 
+##### `CurrentUser.assigneeOrReviewerMergeRequests`
+
+Merge requests the current user is an assignee or a reviewer of.Ignored if `merge_request_dashboard` feature flag is disabled.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`MergeRequestConnection`](#mergerequestconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="currentuserassigneeorreviewermergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
+| <a id="currentuserassigneeorreviewermergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="currentuserassigneeorreviewermergerequestsassignedreviewstates"></a>`assignedReviewStates` | [`[MergeRequestReviewState!]`](#mergerequestreviewstate) | Reviewer states for merge requests the current user is assigned to. |
+| <a id="currentuserassigneeorreviewermergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
+| <a id="currentuserassigneeorreviewermergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
+| <a id="currentuserassigneeorreviewermergerequestsdeployedafter"></a>`deployedAfter` | [`Time`](#time) | Merge requests deployed after the timestamp. |
+| <a id="currentuserassigneeorreviewermergerequestsdeployedbefore"></a>`deployedBefore` | [`Time`](#time) | Merge requests deployed before the timestamp. |
+| <a id="currentuserassigneeorreviewermergerequestsdeploymentid"></a>`deploymentId` | [`String`](#string) | ID of the deployment. |
+| <a id="currentuserassigneeorreviewermergerequestsdraft"></a>`draft` | [`Boolean`](#boolean) | Limit result to draft merge requests. |
+| <a id="currentuserassigneeorreviewermergerequestsgroupid"></a>`groupId` | [`GroupID`](#groupid) | The global ID of the group the authored merge requests should be in. Merge requests in subgroups are included. |
+| <a id="currentuserassigneeorreviewermergerequestsiids"></a>`iids` | [`[String!]`](#string) | Array of IIDs of merge requests, for example `[1, 2]`. |
+| <a id="currentuserassigneeorreviewermergerequestslabelname"></a>`labelName` | [`[String]`](#string) | Labels applied to the merge request. |
+| <a id="currentuserassigneeorreviewermergerequestslabels"></a>`labels` **{warning-solid}** | [`[String!]`](#string) | **Deprecated** in GitLab 17.1. Use `labelName`. |
+| <a id="currentuserassigneeorreviewermergerequestsmergedafter"></a>`mergedAfter` | [`Time`](#time) | Merge requests merged after the date. |
+| <a id="currentuserassigneeorreviewermergerequestsmergedbefore"></a>`mergedBefore` | [`Time`](#time) | Merge requests merged before the date. |
+| <a id="currentuserassigneeorreviewermergerequestsmergedby"></a>`mergedBy` | [`String`](#string) | Username of the merger. |
+| <a id="currentuserassigneeorreviewermergerequestsmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Title of the milestone. Incompatible with milestoneWildcardId. |
+| <a id="currentuserassigneeorreviewermergerequestsmilestonewildcardid"></a>`milestoneWildcardId` | [`MilestoneWildcardId`](#milestonewildcardid) | Filter issues by milestone ID wildcard. Incompatible with milestoneTitle. |
+| <a id="currentuserassigneeorreviewermergerequestsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by your reaction emoji. |
+| <a id="currentuserassigneeorreviewermergerequestsnot"></a>`not` | [`MergeRequestsResolverNegatedParams`](#mergerequestsresolvernegatedparams) | List of negated arguments. Warning: this argument is experimental and a subject to change in future. |
+| <a id="currentuserassigneeorreviewermergerequestsprojectid"></a>`projectId` | [`ProjectID`](#projectid) | The global ID of the project the authored merge requests should be in. Incompatible with projectPath. |
+| <a id="currentuserassigneeorreviewermergerequestsprojectpath"></a>`projectPath` | [`String`](#string) | The full-path of the project the authored merge requests should be in. Incompatible with projectId. |
+| <a id="currentuserassigneeorreviewermergerequestsreleasetag"></a>`releaseTag` | [`String`](#string) | Filter by release tag. |
+| <a id="currentuserassigneeorreviewermergerequestsreviewstate"></a>`reviewState` **{warning-solid}** | [`MergeRequestReviewState`](#mergerequestreviewstate) | **Introduced** in GitLab 17.0. **Status**: Experiment. Reviewer state of the merge request. |
+| <a id="currentuserassigneeorreviewermergerequestsreviewstates"></a>`reviewStates` **{warning-solid}** | [`[MergeRequestReviewState!]`](#mergerequestreviewstate) | **Introduced** in GitLab 17.0. **Status**: Experiment. Reviewer states of the merge request. |
+| <a id="currentuserassigneeorreviewermergerequestsreviewerreviewstates"></a>`reviewerReviewStates` | [`[MergeRequestReviewState!]`](#mergerequestreviewstate) | Reviewer states for the merge requests the current user is a reviewer of. |
+| <a id="currentuserassigneeorreviewermergerequestssort"></a>`sort` | [`MergeRequestSort`](#mergerequestsort) | Sort merge requests by the criteria. |
+| <a id="currentuserassigneeorreviewermergerequestssourcebranches"></a>`sourceBranches` | [`[String!]`](#string) | Array of source branch names. All resolved merge requests will have one of these branches as their source. |
+| <a id="currentuserassigneeorreviewermergerequestsstate"></a>`state` | [`MergeRequestState`](#mergerequeststate) | Merge request state. If provided, all resolved merge requests will have the state. |
+| <a id="currentuserassigneeorreviewermergerequeststargetbranches"></a>`targetBranches` | [`[String!]`](#string) | Array of target branch names. All resolved merge requests will have one of these branches as their target. |
+| <a id="currentuserassigneeorreviewermergerequestsupdatedafter"></a>`updatedAfter` | [`Time`](#time) | Merge requests updated after the timestamp. |
+| <a id="currentuserassigneeorreviewermergerequestsupdatedbefore"></a>`updatedBefore` | [`Time`](#time) | Merge requests updated before the timestamp. |
+
 ##### `CurrentUser.authoredMergeRequests`
 
 Merge requests authored by the user.
