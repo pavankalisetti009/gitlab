@@ -4,6 +4,8 @@ module Observability
   class LogsIssuesConnection < ApplicationRecord
     self.table_name = 'observability_logs_issues_connections'
     belongs_to :issue, inverse_of: :observability_logs
+    belongs_to :project, inverse_of: :observability_logs
+
     validates :issue_id, presence: true
 
     validates :service_name, presence: true, length: { maximum: 500 }
@@ -18,6 +20,15 @@ module Observability
     validates :log_fingerprint, presence: true, length: { maximum: 128 }
 
     before_save :populate_sharding_key
+
+    scope :with_params, ->(params) do
+      where(log_timestamp: params[:timestamp],
+        service_name: params[:service_name],
+        severity_number: params[:severity_number],
+        trace_identifier: params[:trace_identifier],
+        log_fingerprint: params[:fingerprint]
+      )
+    end
 
     private
 
