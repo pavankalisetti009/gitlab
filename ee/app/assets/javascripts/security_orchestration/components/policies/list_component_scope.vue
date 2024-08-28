@@ -1,7 +1,9 @@
 <script>
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import ProjectsToggleList from 'ee/security_orchestration/components/policy_drawer/projects_toggle_list.vue';
+import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 import { s__ } from '~/locale';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
 import {
   policyScopeHasComplianceFrameworks,
@@ -11,6 +13,9 @@ import {
   policyScopeProjects,
   isDefaultMode,
   isGroup,
+  policyScopeGroups,
+  policyScopeHasGroups,
+  policyExcludingProjects,
 } from 'ee/security_orchestration/components/utils';
 
 export default {
@@ -23,8 +28,10 @@ export default {
   components: {
     ComplianceFrameworksToggleList,
     ScopeDefaultLabel,
+    GroupsToggleList,
     ProjectsToggleList,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType'],
   props: {
     policyScope: {
@@ -54,6 +61,12 @@ export default {
     policyScopeProjects() {
       return policyScopeProjects(this.policyScope);
     },
+    policyScopeGroups() {
+      return policyScopeGroups(this.policyScope);
+    },
+    policyExcludingProjects() {
+      return policyExcludingProjects(this.policyScope);
+    },
     policyHasProjects() {
       return (
         this.policyScopeHasIncludingProjects || policyScopeHasExcludingProjects(this.policyScope)
@@ -71,6 +84,9 @@ export default {
     showProjects() {
       return this.policyHasProjects && this.showScopeSection;
     },
+    showGroups() {
+      return policyScopeHasGroups(this.policyScope) && this.glFeatures.policyGroupScope;
+    },
     showDefaultLabel() {
       return this.isDefaultMode && this.showScopeSection;
     },
@@ -84,6 +100,13 @@ export default {
       v-if="showComplianceFrameworks"
       :compliance-frameworks="policyScopeComplianceFrameworks"
       :labels-to-show="$options.MAX_NUMBER_OF_VISIBLE_LABELS"
+    />
+
+    <groups-toggle-list
+      v-else-if="showGroups"
+      inline-list
+      :groups="policyScopeGroups"
+      :projects="policyExcludingProjects"
     />
 
     <projects-toggle-list
