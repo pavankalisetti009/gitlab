@@ -151,52 +151,46 @@ export default {
 
 <template>
   <div class="gl-mx-6">
-    <div v-if="loading && metrics.length === 0" class="gl-py-5">
-      <gl-loading-icon size="lg" />
+    <url-sync :query="query" />
+
+    <header>
+      <page-heading :heading="$options.i18n.pageTitle">
+        <template #description>
+          <gl-sprintf :message="$options.i18n.description">
+            <template #docsLink>
+              <gl-link target="_blank" :href="$options.docsLink">
+                <span>{{ $options.i18n.docsLinkText }}</span>
+              </gl-link>
+            </template>
+          </gl-sprintf>
+        </template>
+      </page-heading>
+    </header>
+
+    <div
+      class="gl-mt-3 gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
+    >
+      <filtered-search
+        :initial-filter-value="initialFilterValue"
+        recent-searches-storage-key="recent-metrics-filter-search"
+        namespace="metrics-list-filtered-search"
+        :tokens="tokens"
+        :search-input-placeholder="$options.i18n.searchInputPlaceholder"
+        terms-as-tokens
+        @onFilter="onFilter"
+      />
     </div>
 
-    <template v-else>
-      <url-sync :query="query" />
+    <gl-loading-icon v-if="loading" size="lg" class="gl-py-5" />
 
-      <header>
-        <page-heading :heading="$options.i18n.pageTitle">
-          <template #description>
-            <gl-sprintf :message="$options.i18n.description">
-              <template #docsLink>
-                <gl-link target="_blank" :href="$options.docsLink">
-                  <span>{{ $options.i18n.docsLinkText }}</span>
-                </gl-link>
-              </template>
-            </gl-sprintf>
-          </template>
-        </page-heading>
-      </header>
-
-      <div
-        class="gl-mt-3 gl-border-b-1 gl-border-t-1 gl-border-gray-100 gl-bg-gray-10 gl-px-3 gl-py-5 gl-border-b-solid gl-border-t-solid"
-      >
-        <filtered-search
-          :initial-filter-value="initialFilterValue"
-          recent-searches-storage-key="recent-metrics-filter-search"
-          namespace="metrics-list-filtered-search"
-          :tokens="tokens"
-          :search-input-placeholder="$options.i18n.searchInputPlaceholder"
-          terms-as-tokens
-          @onFilter="onFilter"
-        />
-      </div>
-
-      <gl-loading-icon v-if="loading && metrics.length > 0" size="lg" />
-      <gl-infinite-scroll v-else :fetched-items="metrics.length" :max-list-height="listHeight">
-        <template #items>
-          <observability-no-data-empty-state v-if="!metrics.length" />
-          <metrics-table v-else :metrics="metrics" @metric-clicked="onMetricClicked" />
-        </template>
-        <template #default>
-          <!-- Override default footer -->
-          <span data-testid="metrics-infinite-scrolling-legend"></span>
-        </template>
-      </gl-infinite-scroll>
-    </template>
+    <gl-infinite-scroll v-else :fetched-items="metrics.length" :max-list-height="listHeight">
+      <template #items>
+        <observability-no-data-empty-state v-if="!metrics.length" />
+        <metrics-table v-else :metrics="metrics" @metric-clicked="onMetricClicked" />
+      </template>
+      <template #default>
+        <span data-testid="metrics-infinite-scrolling-legend"></span>
+      </template>
+    </gl-infinite-scroll>
   </div>
 </template>
