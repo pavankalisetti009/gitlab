@@ -2,6 +2,9 @@ import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
+import { SCAN_EXECUTION_RULES_SCHEDULE_KEY } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import { fromYaml } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib';
+import { POLICY_TYPE_COMPONENT_OPTIONS } from '../constants';
 
 /**
  * @param {Object} allowedValues
@@ -57,3 +60,19 @@ export const extractTypeParameter = (type) => {
  */
 export const extractSourceParameter = (source) =>
   validateSourceFilter(source) ? source?.toUpperCase() : POLICY_SOURCE_OPTIONS.ALL.value;
+
+/**
+ * Check if the policy is a scan execution policy and has a scheduled rule
+ * @param {Object} policy
+ * @returns {Boolean}
+ */
+export const hasScheduledRule = (policy) => {
+  // eslint-disable-next-line no-underscore-dangle
+  if (policy.__typename === POLICY_TYPE_COMPONENT_OPTIONS.scanExecution.typeName) {
+    return fromYaml({ manifest: policy.yaml })?.rules?.some(
+      ({ type }) => type === SCAN_EXECUTION_RULES_SCHEDULE_KEY,
+    );
+  }
+
+  return false;
+};

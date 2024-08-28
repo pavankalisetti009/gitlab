@@ -1,8 +1,10 @@
 import { GlDisclosureDropdown, GlDrawer, GlLink, GlPopover, GlTable, GlTooltip } from '@gitlab/ui';
 import { nextTick } from 'vue';
+import createMockApollo from 'helpers/mock_apollo_helper';
 import { createAlert } from '~/alert';
 import * as urlUtils from '~/lib/utils/url_utility';
 import waitForPromises from 'helpers/wait_for_promises';
+import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
 import ListComponent from 'ee/security_orchestration/components/policies/list_component.vue';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
 import DrawerWrapper from 'ee/security_orchestration/components/policy_drawer/drawer_wrapper.vue';
@@ -13,11 +15,15 @@ import {
   POLICY_TYPE_FILTER_OPTIONS,
 } from 'ee/security_orchestration/components/policies/constants';
 import { goToPolicyMR } from 'ee/security_orchestration/components/policy_editor/utils';
+import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
 import { stubComponent } from 'helpers/stub_component';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { trimText } from 'helpers/text_helper';
 import { mockPipelineExecutionPoliciesResponse } from '../../mocks/mock_pipeline_execution_policy_data';
-import { mockScanExecutionPoliciesResponse } from '../../mocks/mock_scan_execution_policy_data';
+import {
+  mockScanExecutionPoliciesResponse,
+  mockScheduleScanExecutionPoliciesResponse,
+} from '../../mocks/mock_scan_execution_policy_data';
 import { mockScanResultPoliciesResponse } from '../../mocks/mock_scan_result_policy_data';
 
 jest.mock('~/alert');
@@ -29,13 +35,15 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
 
 const namespacePath = 'path/to/project/or/group';
 const defaultAssignedPolicyProject = { fullPath: 'path/to/policy-project', branch: 'main' };
+const createGetGroupProjectsCountSpy = (count = 0) =>
+  jest.fn().mockResolvedValue({ data: { group: { id: '1', projects: { count } } } });
 
 describe('List component', () => {
   let wrapper;
 
   const factory =
     (mountFn = mountExtended) =>
-    ({ props = {}, provide = {} } = {}) => {
+    ({ props = {}, provide = {}, groupProjectsCount } = {}) => {
       wrapper = mountFn(ListComponent, {
         propsData: {
           policiesByType: {
@@ -51,6 +59,9 @@ describe('List component', () => {
           assignedPolicyProject: defaultAssignedPolicyProject,
           ...provide,
         },
+        apolloProvider: createMockApollo([
+          [getGroupProjectsCount, createGetGroupProjectsCountSpy(groupProjectsCount)],
+        ]),
         stubs: {
           DrawerWrapper: stubComponent(DrawerWrapper, {
             props: {
@@ -83,6 +94,7 @@ describe('List component', () => {
   const findInheritedPolicyCell = (findMethod) => findMethod().at(1);
   const findNonInheritedPolicyCell = (findMethod) => findMethod().at(0);
   const findDeleteAction = (root) => root.findAll('button').at(1);
+  const findOverloadWarningModal = () => wrapper.findComponent(OverloadWarningModal);
 
   describe('initial state while loading', () => {
     it('renders closed editor drawer', () => {
@@ -391,7 +403,10 @@ describe('List component', () => {
 
         it('renders items for a group', () => {
           const policyCell = findNonInheritedPolicyCell(findActionCells);
-          expect(findDisclosureDropdown(policyCell).props('items')).toEqual([EDIT_ACTION]);
+          expect(findDisclosureDropdown(policyCell).props('items')).toEqual([
+            EDIT_ACTION,
+            DELETE_ACTION,
+          ]);
         });
       });
 
@@ -426,6 +441,10 @@ describe('List component', () => {
           it('does not call an alert', () => {
             expect(createAlert).not.toHaveBeenCalled();
           });
+
+          it('does not show the modal', () => {
+            expect(findOverloadWarningModal().props('visible')).toBe(false);
+          });
         });
 
         describe('failure', () => {
@@ -447,6 +466,91 @@ describe('List component', () => {
 
           it('sets table to not busy', () => {
             expect(findTable().attributes('aria-busy')).toBe('false');
+          });
+        });
+
+        describe('group', () => {
+          describe.each`
+            title                                                   | groupProjectsCount | hasScheduleScanPolicy
+            ${'w/out schedule scan and w/out performance concerns'} | ${0}               | ${false}
+            ${'w/out schedule scan and w performance concerns'}     | ${1001}            | ${false}
+            ${'w/ schedule scan and w/out performance concerns'}    | ${0}               | ${true}
+          `('$title', ({ groupProjectsCount, hasScheduleScanPolicy }) => {
+            it('makes the call to create the merge request', async () => {
+              const props = hasScheduleScanPolicy
+                ? {
+                    policiesByType: {
+                      [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
+                        mockScheduleScanExecutionPoliciesResponse,
+                    },
+                  }
+                : {};
+              mountWrapper({
+                props,
+                provide: { namespaceType: NAMESPACE_TYPES.GROUP },
+                groupProjectsCount,
+              });
+              const policyCell = findNonInheritedPolicyCell(findActionCells);
+              const deleteAction = findDeleteAction(policyCell);
+              await deleteAction.trigger('click');
+              await waitForPromises();
+              expect(goToPolicyMR).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  action: 'REMOVE',
+                  assignedPolicyProject: {
+                    branch: 'main',
+                    fullPath: 'path/to/policy-project',
+                  },
+                  name: 'Scheduled Dast/SAST scan-project',
+                  namespacePath: 'path/to/project/or/group',
+                }),
+              );
+            });
+          });
+
+          describe('w/ schedule scan and w/ performance concerns', () => {
+            beforeEach(async () => {
+              mountWrapper({
+                props: {
+                  policiesByType: {
+                    [POLICY_TYPE_FILTER_OPTIONS.SCAN_EXECUTION.value]:
+                      mockScheduleScanExecutionPoliciesResponse,
+                  },
+                },
+                provide: { namespaceType: NAMESPACE_TYPES.GROUP },
+                groupProjectsCount: 1001,
+              });
+              await waitForPromises();
+              const policyCell = findNonInheritedPolicyCell(findActionCells);
+              const deleteAction = findDeleteAction(policyCell);
+              await deleteAction.trigger('click');
+              await waitForPromises();
+            });
+
+            it('shows the performance concern modal and does not make the call to create the merge request', () => {
+              expect(goToPolicyMR).not.toHaveBeenCalled();
+              expect(findOverloadWarningModal().props('visible')).toBe(true);
+            });
+
+            it('does make the call to create the merge request after confirming the modal', async () => {
+              await findOverloadWarningModal().vm.$emit('confirm-submit');
+              expect(goToPolicyMR).toHaveBeenCalledWith(
+                expect.objectContaining({
+                  action: 'REMOVE',
+                  assignedPolicyProject: {
+                    branch: 'main',
+                    fullPath: 'path/to/policy-project',
+                  },
+                  name: 'Scheduled Dast/SAST scan-project',
+                  namespacePath: 'path/to/project/or/group',
+                }),
+              );
+            });
+
+            it('does not make the call to create the merge request after cancelling the modal', async () => {
+              await findOverloadWarningModal().vm.$emit('cancel-submit');
+              expect(goToPolicyMR).not.toHaveBeenCalled();
+            });
           });
         });
       });
