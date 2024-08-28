@@ -87,8 +87,7 @@ $system-note-icon-m-left: $avatar-m-left + $icon-size-diff / $avatar-m-ratio;
     }
 
     &.note-comment,
-    &.note-skeleton,
-    .draft-note {
+    &.note-skeleton {
       .timeline-avatar {
         margin-top: 5px;
       }
@@ -102,10 +101,6 @@ $system-note-icon-m-left: $avatar-m-left + $icon-size-diff / $avatar-m-ratio;
 
       &:not(.target) .timeline-content {
         background-color: $white;
-      }
-
-      &.draft-note .timeline-content {
-        border: 0;
       }
 
       .note-header-info {
@@ -145,12 +140,6 @@ $system-note-icon-m-left: $avatar-m-left + $icon-size-diff / $avatar-m-ratio;
 
           &:not(.target) .timeline-content {
             background-color: $white;
-          }
-
-          &.draft-note .timeline-content {
-            margin-left: 0;
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
           }
 
           &:not(:first-of-type) .timeline-entry-inner {
@@ -1051,16 +1040,6 @@ $system-note-icon-m-left: $avatar-m-left + $icon-size-diff / $avatar-m-ratio;
           border: 0;
         }
       }
-    }
-  }
-
-  .draft-note-component.draft-note.timeline-entry {
-    .timeline-content {
-      padding: $gl-padding-8 $gl-padding-8 $gl-padding-8 $gl-padding;
-    }
-
-    .timeline-avatar {
-      margin: $avatar-m-top 0 0 $avatar-m-left;
     }
   }
 
