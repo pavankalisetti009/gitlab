@@ -73,4 +73,106 @@ RSpec.describe Gitlab::Llm::Utils::MergeRequestTool, feature_category: :ai_abstr
       end
     end
   end
+
+  describe '.extract_diff_for_duo_chat' do
+    let(:merge_request) { create(:merge_request, source_project: project, target_project: project) }
+    let(:character_limit) { 1000 }
+
+    let(:arguments) do
+      {
+        merge_request: merge_request,
+        character_limit: character_limit
+      }
+    end
+
+    let(:good_diff) do
+      instance_double(Gitlab::Git::Diff,
+        old_path: 'old_path',
+        new_path: 'new_path',
+        diff: "@@ -0,0 +1,2 @@\n+hellothere\n+🌚\n",
+        has_binary_notice?: false)
+    end
+
+    before do
+      allow(merge_request).to receive_message_chain(:diffs, :diffs).and_return([good_diff])
+    end
+
+    it 'returns the expected diff in the proper format' do
+      expected_diff = "--- old_path\n+++ new_path\n\n+hellothere\n+🌚\n\n"
+      expect(described_class.extract_diff_for_duo_chat(**arguments)).to eq(expected_diff)
+    end
+
+    context 'when a diff is not encoded with UTF-8' do
+      let(:non_utf8_diff) do
+        instance_double(Gitlab::Git::Diff,
+          old_path: 'non_utf8_path',
+          new_path: 'non_utf8_path',
+          diff: "@@ -1 +1 @@\n-This should not be in the prompt\n+non-utf8-content\n"
+                  .encode('ASCII-8BIT'),
+          has_binary_notice?: false)
+      end
+
+      before do
+        allow(merge_request).to receive_message_chain(:diffs, :diffs).and_return([good_diff, non_utf8_diff])
+      end
+
+      it 'does not include the non-UTF-8 diff' do
+        expected_diff = "--- old_path\n+++ new_path\n\n+hellothere\n+🌚\n\n"
+        expect(described_class.extract_diff_for_duo_chat(**arguments)).to eq(expected_diff)
+      end
+    end
+
+    context 'when a diff is binary' do
+      let(:binary_diff) do
+        instance_double(Gitlab::Git::Diff,
+          old_path: 'binary_path',
+          new_path: 'binary_path',
+          diff: 'Binary files /dev/null and b/file.bin differ',
+          has_binary_notice?: true)
+      end
+
+      before do
+        allow(merge_request).to receive_message_chain(:diffs, :diffs).and_return([good_diff, binary_diff])
+      end
+
+      it 'does not include the binary diff' do
+        expected_diff = "--- old_path\n+++ new_path\n\n+hellothere\n+🌚\n\n"
+        expect(described_class.extract_diff_for_duo_chat(**arguments)).to eq(expected_diff)
+      end
+    end
+
+    context 'when extracted diff is blank' do
+      before do
+        allow(merge_request).to receive_message_chain(:diffs, :diffs).and_return([])
+      end
+
+      it 'returns nil' do
+        expect(described_class.extract_diff_for_duo_chat(**arguments)).to be_nil
+      end
+    end
+
+    context 'when a small character limit is set' do
+      let(:small_character_limit) { 20 }
+      let(:long_diff) do
+        instance_double(Gitlab::Git::Diff,
+          old_path: 'long_path',
+          new_path: 'long_path',
+          diff: "@@ -1,5 +1,5 @@\n-This is a very long diff\n+This is a modified very long diff\n
+          that exceeds the small character limit we set for this test.\n It should be truncated in the result.\n",
+          has_binary_notice?: false)
+      end
+
+      before do
+        allow(merge_request).to receive_message_chain(:diffs, :diffs).and_return([long_diff])
+      end
+
+      it 'truncates the diff to the specified character limit' do
+        expected_diff = "--- long_path\n+++..."
+        extracted_diff = described_class.extract_diff_for_duo_chat(merge_request: merge_request,
+          character_limit: small_character_limit)
+        expect(extracted_diff).to eq(expected_diff)
+        expect(extracted_diff.length).to eq(small_character_limit)
+      end
+    end
+  end
 end
