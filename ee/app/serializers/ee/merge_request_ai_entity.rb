@@ -3,11 +3,8 @@
 module EE
   class MergeRequestAiEntity < ::API::Entities::MergeRequest
     expose :diff do |mr, options|
-      ::Gitlab::Llm::Utils::MergeRequestTool.extract_diff(
-        source_project: mr.source_project,
-        source_branch: mr.source_branch,
-        target_project: mr.target_project,
-        target_branch: mr.target_branch,
+      ::Gitlab::Llm::Utils::MergeRequestTool.extract_diff_for_duo_chat(
+        merge_request: mr,
         character_limit: options[:notes_limit] / 2
       )
     end

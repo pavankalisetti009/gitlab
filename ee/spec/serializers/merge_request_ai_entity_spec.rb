@@ -44,19 +44,27 @@ RSpec.describe EE::MergeRequestAiEntity, feature_category: :ai_abstraction_layer
 
   context "with diff on the entity" do
     it "exposes the diff information" do
-      expect(basic_entity[:diff]).to include("--- CHANGELOG")
+      allow(Gitlab::Llm::Utils::MergeRequestTool).to receive(:extract_diff_for_duo_chat)
+        .and_return("--- CHANGELOG\n+++ CHANGELOG\n\n+Some changes\n")
+
+      expect(basic_entity[:diff]).to eq("--- CHANGELOG\n+++ CHANGELOG\n\n+Some changes\n")
     end
   end
 
   context "with mr comments and diff on the entity" do
     let!(:note) { create(:note_on_merge_request, noteable: merge_request, project: merge_request.project) } # rubocop:disable RSpec/FactoryBot/AvoidCreate -- we need create it
 
+    before do
+      allow(Gitlab::Llm::Utils::MergeRequestTool).to receive(:extract_diff_for_duo_chat)
+        .and_return("--- CHANGELOG\n+++ CHANGELOG\n\n+Some changes\n")
+    end
+
     it "exposes the number of comments" do
       expect(basic_entity[:mr_comments]).to match_array([note.note])
     end
 
     it "exposes the diff information" do
-      expect(basic_entity[:diff]).to include("--- CHANGELOG")
+      expect(basic_entity[:diff]).to eq("--- CHANGELOG\n+++ CHANGELOG\n\n+Some changes\n")
     end
 
     it "ensures diff comes before mr_comments if serialized" do
