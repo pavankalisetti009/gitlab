@@ -8,7 +8,7 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToSecurityScans, fe
   let(:projects) { table(:projects) }
   let(:namespaces) { table(:namespaces) }
 
-  let!(:ci_build) { create_ci_build }
+  let!(:ci_build) { create_ci_build('build-1') }
 
   let(:args) do
     min, max = security_scans.pick('MIN(id)', 'MAX(id)')
@@ -47,8 +47,17 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToSecurityScans, fe
       )
     end
 
+    let!(:other_build) { create_ci_build('build-2') }
+    let!(:other_scan) do
+      security_scans.create!(
+        build_id: other_build.id,
+        scan_type: 1
+      )
+    end
+
     it 'sets the project_id to build.project_id' do
       expect { perform_migration }.to change { scan.reload.project_id }.from(nil).to(ci_build.project_id)
+        .and change { other_scan.reload.project_id }.from(nil).to(other_build.project_id)
     end
   end
 
@@ -66,14 +75,14 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToSecurityScans, fe
     end
   end
 
-  def create_ci_build
-    namespace = namespaces.create!(name: 'gitlab-org', path: 'gitlab-org')
-    project_namespace = namespaces.create!(name: 'gitlab', path: 'gitlab')
+  def create_ci_build(name)
+    namespace = namespaces.create!(name: "group-#{name}", path: "group-#{name}")
+    project_namespace = namespaces.create!(name: "project-#{name}", path: "project-#{name}")
     project = projects.create!(
       namespace_id: namespace.id,
       project_namespace_id: project_namespace.id,
-      name: 'gitlab',
-      path: 'gitlab'
+      name: "project-#{name}",
+      path: "project-#{name}"
     )
     ci_builds.create!(project_id: project.id, partition_id: 100)
   end

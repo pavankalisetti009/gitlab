@@ -21,7 +21,7 @@ module Gitlab
 
           missing_build_ids = []
 
-          scans.each do |scan|
+          tuples_to_update = scans.filter_map do |scan|
             build = builds.find { |build| build.id == scan.build_id }
 
             if build.blank?
@@ -29,14 +29,30 @@ module Gitlab
               next
             end
 
-            scan.project_id = build.project_id
-
-            # Can this be done in bulk?
-            scan.save!
+            [scan.id, build.project_id] if build.project_id != scan.project_id
           end
 
           Scan.id_in(missing_build_ids).delete_all if missing_build_ids.present?
+          bulk_update!(tuples_to_update)
         end
+      end
+
+      def bulk_update!(tuples)
+        return if tuples.blank?
+
+        values_sql = Arel::Nodes::ValuesList.new(tuples).to_sql
+
+        sql = <<~SQL
+          UPDATE
+            security_scans
+          SET
+            project_id = tuples.project_id
+          FROM
+            (#{values_sql}) AS tuples(scan_id, project_id)
+          WHERE security_scans.id = tuples.scan_id;
+        SQL
+
+        Scan.connection.execute(sql)
       end
     end
   end
