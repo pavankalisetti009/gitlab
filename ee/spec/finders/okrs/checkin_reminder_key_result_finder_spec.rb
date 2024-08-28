@@ -91,13 +91,16 @@ RSpec.describe Okrs::CheckinReminderKeyResultFinder, feature_category: :team_pla
 
     using RSpec::Parameterized::TableSyntax
 
-    where(:frequency, :expected_date) do
-      'monthly' | (Date.today - 27.days)
-      'twice_monthly' | (Date.today - 13.days)
-      'weekly' | (Date.today - 6.days)
-      'foo' | nil
+    around do |example|
+      travel_to(Date.new(2024, 8, 26)) { example.run }
     end
 
+    where(:frequency, :expected_date) do
+      'monthly' | (Date.new(2024, 7, 30)) # - 27.days
+      'twice_monthly' | Date.new(2024, 8, 13) # - 13.days
+      'weekly' | Date.new(2024, 8, 20) # - 6.days
+      'foo' | nil
+    end
     with_them do
       it { is_expected.to eq(expected_date) }
     end
