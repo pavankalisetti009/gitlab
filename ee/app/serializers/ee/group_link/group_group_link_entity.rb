@@ -6,10 +6,12 @@ module EE
       extend ActiveSupport::Concern
 
       prepended do
+        include GroupLinksHelper
+
         expose :access_level, override: true do
           expose :human_access, as: :string_value
           expose :group_access, as: :integer_value
-          expose :member_role_id, if: ->(group_link) { can_assign_custom_roles_to_group_links?(group_link) }
+          expose :member_role_id, if: ->(group_link) { custom_role_for_group_link_enabled?(group_link.shared_group) }
         end
 
         expose :custom_roles do |group_link|
@@ -18,13 +20,8 @@ module EE
 
         private
 
-        def can_assign_custom_roles_to_group_links?(group_link)
-          group_link.shared_group.custom_roles_enabled? &&
-            ::Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
-        end
-
         def custom_roles(group_link)
-          return [] unless can_assign_custom_roles_to_group_links?(group_link)
+          return [] unless custom_role_for_group_link_enabled?(group_link.shared_group)
 
           member_roles = ::MemberRoles::RolesFinder.new(current_user, { parent: group_link.shared_group }).execute
 

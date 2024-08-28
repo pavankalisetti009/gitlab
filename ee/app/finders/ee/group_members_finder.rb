@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module EE::GroupMembersFinder
+  include GroupLinksHelper
   extend ActiveSupport::Concern
   extend ::Gitlab::Utils::Override
 

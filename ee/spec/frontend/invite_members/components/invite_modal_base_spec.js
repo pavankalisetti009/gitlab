@@ -54,6 +54,7 @@ describe('EEInviteModalBase', () => {
     props = {},
     glFeatures = {},
     overageMembersModalAvailable = true,
+    customRoleForGroupLinkEnabled = false,
     queryHandler = defaultReconciliationMock,
     showModal = true,
   } = {}) => {
@@ -79,6 +80,7 @@ describe('EEInviteModalBase', () => {
       provide: {
         glFeatures,
         overageMembersModalAvailable,
+        customRoleForGroupLinkEnabled,
       },
       stubs: {
         GlSprintf,
@@ -195,11 +197,11 @@ describe('EEInviteModalBase', () => {
         expect(projectMemberRolesResponse).toHaveBeenCalledTimes(0);
       });
 
-      describe('when assignCustomRolesToGroupLinks is true', () => {
+      describe('when customRoleForGroupLinkEnabled is true', () => {
         it('fetches custom roles', async () => {
           createComponent({
             props: { isGroupInvite: true },
-            glFeatures: { assignCustomRolesToGroupLinks: true },
+            customRoleForGroupLinkEnabled: true,
           });
 
           await waitForPromises();
@@ -209,11 +211,11 @@ describe('EEInviteModalBase', () => {
         });
       });
 
-      describe('when assignCustomRolesToGroupLinks is false', () => {
+      describe('when customRoleForGroupLinkEnabled is false', () => {
         it('fetches custom roles', async () => {
           createComponent({
             props: { isGroupInvite: true },
-            glFeatures: { assignCustomRolesToGroupLinks: false },
+            customRoleForGroupLinkEnabled: false,
           });
 
           await waitForPromises();

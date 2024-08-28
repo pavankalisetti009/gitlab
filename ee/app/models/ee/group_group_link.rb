@@ -7,6 +7,7 @@ module EE
 
     prepended do
       include ::MemberRoles::MemberRoleRelation
+      include GroupLinksHelper
 
       base_access_level_attr :group_access
       alias_attribute :group, :shared_group
@@ -19,7 +20,7 @@ module EE
 
     override :human_access
     def human_access
-      return member_role.name if member_role
+      return member_role.name if custom_role_for_group_link_enabled?(group) && member_role
 
       super
     end

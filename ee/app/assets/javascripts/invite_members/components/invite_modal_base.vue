@@ -39,7 +39,14 @@ export default {
   },
   apolloProvider,
   mixins: [glFeatureFlagsMixin()],
-  inject: ['overageMembersModalAvailable'],
+  inject: {
+    overageMembersModalAvailable: {
+      default: false,
+    },
+    customRoleForGroupLinkEnabled: {
+      default: false,
+    },
+  },
   inheritAttrs: false,
   props: {
     accessLevels: {
@@ -128,7 +135,7 @@ export default {
         Sentry.captureException(error);
       },
       skip() {
-        if (this.glFeatures.assignCustomRolesToGroupLinks) {
+        if (this.customRoleForGroupLinkEnabled) {
           return !this.isVisible;
         }
 

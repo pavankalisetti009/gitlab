@@ -109,8 +109,25 @@ RSpec.describe GroupGroupLink, feature_category: :system_access do
       let_it_be(:member_role) { create(:member_role, :instance) }
       let_it_be(:group_group_link) { create(:group_group_link, member_role_id: member_role.id) }
 
-      it 'returns member role name' do
-        expect(group_group_link.human_access).to eq(member_role.name)
+      before do
+        allow(group_group_link).to receive(:custom_role_for_group_link_enabled?)
+          .and_return(custom_role_for_group_link_enabled)
+      end
+
+      context 'when `custom_role_for_group_link_enabled` is false' do
+        let(:custom_role_for_group_link_enabled) { false }
+
+        it 'returns access level name' do
+          expect(group_group_link.human_access).to eq('Developer')
+        end
+      end
+
+      context 'when `custom_role_for_group_link_enabled` is true' do
+        let(:custom_role_for_group_link_enabled) { true }
+
+        it 'returns member role name' do
+          expect(group_group_link.human_access).to eq(member_role.name)
+        end
       end
     end
   end
