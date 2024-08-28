@@ -110,6 +110,41 @@ RSpec.describe MergeTrains::Car, feature_category: :merge_trains do
     end
   end
 
+  describe '.indexed' do
+    let(:indexed_cars) { described_class.indexed }
+
+    let(:cars) { described_class.all }
+
+    let_it_be(:train_car_1) { create(:merge_train_car, target_project: project, target_branch: 'master') }
+    let_it_be(:train_car_2) { create(:merge_train_car, target_project: project, target_branch: 'master') }
+
+    it 'returns merge trains with preloaded indexes' do
+      expect { indexed_cars.each(&:index) }.to match_query_count(1)
+    end
+
+    it 'indexes the cars correctly' do
+      indexed_cars.each do |car|
+        non_indexed_car = described_class.find(car.id)
+        expect(car.index).to eq(non_indexed_car.index)
+      end
+    end
+
+    context 'when only one car is loaded from the train' do
+      let(:indexed_car) { described_class.indexed.find(train_car_2.id) }
+
+      it 'indexes the cars correctly' do
+        non_indexed_car = described_class.find(indexed_car.id)
+        expect(indexed_car.index).to eq(non_indexed_car.index)
+      end
+    end
+
+    context 'when the index is not preloaded' do
+      it 'returns merge trains with preloaded indexes' do
+        expect { cars.each(&:index) }.to match_query_count(3)
+      end
+    end
+  end
+
   describe '.insert_skip_merged_car_for', :aggregate_failures do
     let(:maintainer)    { create(:user, maintainer_of: merge_request.project) }
     let(:merge_train)   { MergeTrains::Train.new(merge_request.project_id, merge_request.target_branch) }

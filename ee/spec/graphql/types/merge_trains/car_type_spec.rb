@@ -9,7 +9,7 @@ RSpec.describe Types::MergeTrains::CarType, feature_category: :merge_trains do
 
   it 'has the expected fields' do
     expected_fields = %w[
-      id merge_request user pipeline
+      id index merge_request user pipeline
       created_at updated_at target_project
       target_branch status merged_at duration
     ]

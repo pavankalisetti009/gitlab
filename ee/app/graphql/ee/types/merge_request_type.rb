@@ -21,10 +21,18 @@ module EE
 
         field :merge_trains_count, GraphQL::Types::Int,
           null: true,
+          deprecated: {
+            reason: 'Use `count` from `cars` connection on `MergeTrains::TrainType` instead',
+            milestone: '17.4'
+          },
           description: 'Number of merge requests in the merge train.'
 
         field :merge_train_index, GraphQL::Types::Int,
           null: true,
+          deprecated: {
+            reason: 'Use `index` on `MergeTrains::CarType` instead',
+            milestone: '17.4'
+          },
           description: 'Zero-based position of the merge request in the merge train. ' \
             'Returns `null` if the merge request is not in a merge train.'
 
@@ -79,12 +87,14 @@ module EE
         object.merge_train_car
       end
 
+      # TODO: remove when field fully deprecated https://gitlab.com/groups/gitlab-org/-/epics/14560
       def merge_trains_count
         return unless merge_trains_enabled
 
         object.merge_train.car_count
       end
 
+      # TODO: remove when field fully deprecated https://gitlab.com/groups/gitlab-org/-/epics/14560
       def merge_train_index
         return unless merge_trains_enabled
 

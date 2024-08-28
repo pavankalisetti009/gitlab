@@ -24,7 +24,7 @@ module Resolvers
           tuples.each do |tuple|
             case activity_status
             when 'active'
-              result = merge_train.all_cars
+              result = merge_train.all_cars_indexed
             when 'completed'
               result = merge_train.completed_cars
             end
