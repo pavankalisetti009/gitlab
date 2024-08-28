@@ -1,4 +1,3 @@
-import { GlIcon } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 // eslint-disable-next-line no-restricted-imports
@@ -37,7 +36,7 @@ describe('Approvals HiddenGroupsItem', () => {
   it('shows a folder icon', () => {
     const folderIcon = findFolderIcon();
 
-    expect(folderIcon.is(GlIcon)).toBe(true);
+    expect(folderIcon.element.tagName).toBe('GL-ICON-STUB');
     expect(folderIcon.props('name')).toBe('folder');
   });
 
@@ -45,7 +44,7 @@ describe('Approvals HiddenGroupsItem', () => {
     const helpIcon = findHelpIcon();
     const tooltip = getBinding(helpIcon.element, 'gl-tooltip');
 
-    expect(helpIcon.is(GlIcon)).toBe(true);
+    expect(helpIcon.element.tagName).toBe('GL-ICON-STUB');
     expect(helpIcon.props('name')).toBe('question-o');
 
     expect(tooltip).not.toBe(undefined);
