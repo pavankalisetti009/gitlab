@@ -6,9 +6,10 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
   include GraphqlHelpers
 
   describe '#resolve' do
-    subject { resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user }) }
+    subject { resolve(described_class, obj: vulnerable, args: params, ctx: { current_user: current_user, **extra_context }) }
 
-    let_it_be_with_reload(:project) { create(:project) }
+    let_it_be(:group) { create(:group) }
+    let_it_be_with_reload(:project) { create(:project, namespace: group) }
     let_it_be(:user) { create(:user, security_dashboard_projects: [project]) }
 
     let_it_be(:low_vulnerability) do
@@ -25,6 +26,7 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
 
     let(:current_user) { user }
     let(:params) { {} }
+    let(:extra_context) { {} }
     let(:vulnerable) { project }
 
     context 'when given sort' do
@@ -318,6 +320,44 @@ RSpec.describe Resolvers::VulnerabilitiesResolver, feature_category: :vulnerabil
       it 'only returns vulnerabilities with owasp_top_10' do
         is_expected.to contain_exactly(vuln_read_with_owasp_top_10_first.vulnerability,
           vuln_read_with_owasp_top_10_second.vulnerability)
+      end
+    end
+
+    describe 'before and after cursors' do
+      let(:vulnerable) { group }
+      let(:cursor) { Base64.urlsafe_encode64({ severity: 'high' }.to_json) }
+
+      before_all do
+        project.vulnerability_reads.update_all(traversal_ids: group.traversal_ids)
+      end
+
+      context 'when there is `before` cursor' do
+        let(:extra_context) { { current_arguments: { before: cursor } } }
+
+        it { is_expected.to match_array([critical_vulnerability, high_vulnerability]) }
+      end
+
+      context 'when there is `after` cursor' do
+        let(:extra_context) { { current_arguments: { after: cursor } } }
+
+        it { is_expected.to match_array([low_vulnerability, high_vulnerability]) }
+      end
+
+      context 'when the given cursor is not Base64 encoded' do
+        let(:extra_context) { { current_arguments: { after: 'cursor' } } }
+
+        it 'does not raise an error' do
+          expect { subject }.not_to raise_error
+        end
+      end
+
+      context 'when the given cursor does not contain a valid JSON' do
+        let(:cursor) { Base64.urlsafe_encode64('{ invalid JSON') }
+        let(:extra_context) { { current_arguments: { after: cursor } } }
+
+        it 'does not raise an error' do
+          expect { subject }.not_to raise_error
+        end
       end
     end
 

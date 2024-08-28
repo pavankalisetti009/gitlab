@@ -109,7 +109,32 @@ module Resolvers
     private
 
     def vulnerabilities(params)
-      apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, params).execute.as_vulnerabilities)
+      finder_params = params.merge(before_severity: before_severity, after_severity: after_severity)
+
+      apply_lookahead(::Security::VulnerabilityReadsFinder.new(vulnerable, finder_params).execute.as_vulnerabilities)
+    end
+
+    def after_severity
+      severity_from_cursor(:after)
+    end
+
+    def before_severity
+      severity_from_cursor(:before)
+    end
+
+    def severity_from_cursor(cursor)
+      cursor_value = current_arguments && current_arguments[cursor]
+
+      return unless cursor_value
+
+      decoded_cursor = Base64.urlsafe_decode64(cursor_value)
+
+      Gitlab::Json.parse(decoded_cursor)['severity']
+    rescue ArgumentError, JSON::ParserError
+    end
+
+    def current_arguments
+      context[:current_arguments]
     end
   end
 end
