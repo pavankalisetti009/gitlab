@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::ProjectAllowlistEntry, feature_category: :secret_detection, type: :model do
+RSpec.describe Security::ProjectSecurityIgnorelistEntry, feature_category: :secret_detection, type: :model do
   describe 'associations' do
     it { is_expected.to belong_to(:project) }
   end
@@ -16,6 +16,13 @@ RSpec.describe Security::ProjectAllowlistEntry, feature_category: :secret_detect
 
   describe 'enums' do
     it { is_expected.to define_enum_for(:scanner).with_values([:secret_push_protection]) }
-    it { is_expected.to define_enum_for(:type).with_values([:path, :pattern, :raw_value]) }
+    it { is_expected.to define_enum_for(:type).with_values([:path, :regex_pattern, :raw_value, :rule]) }
+  end
+
+  context 'with loose foreign key on project_security_ignorelist_entries.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:project_security_ignorelist_entry, project: parent) }
+    end
   end
 end

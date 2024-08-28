@@ -96,7 +96,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:software_licenses) }
     it { is_expected.to have_many(:custom_software_licenses) }
 
-    it { is_expected.to have_many(:allowlist_entries).class_name('Security::ProjectAllowlistEntry') }
+    it { is_expected.to have_many(:security_ignorelist_entries).class_name('Security::ProjectSecurityIgnorelistEntry') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do

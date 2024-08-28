@@ -1,11 +1,10 @@
 ---
-table_name: project_allowlist_entries
+table_name: project_security_ignorelist_entries
 classes:
-- ProjectAllowlistEntry
-- Security::ProjectAllowlistEntry
+- Security::ProjectSecurityIgnorelistEntry
 feature_categories:
 - secret_detection
-description: Stores entries of secret detection project-level allowlists
+description: Store entries of project-level ignorelists for security scanners
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163732
 milestone: '17.4'
 gitlab_schema: gitlab_sec

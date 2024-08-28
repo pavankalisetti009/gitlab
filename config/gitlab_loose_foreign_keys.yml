@@ -576,3 +576,7 @@ vulnerability_statistics:
   - table: projects
     column: project_id
     on_delete: async_delete
+project_security_ignorelist_entries:
+  - table: projects
+    column: project_id
+    on_delete: async_delete
