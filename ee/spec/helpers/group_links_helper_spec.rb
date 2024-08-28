@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require "spec_helper"
+require 'spec_helper'
 
 RSpec.describe GroupLinksHelper, feature_category: :system_access do
   let_it_be(:group) { create_default(:group) }
-  let_it_be(:user) { create_default(:user) }
+  let_it_be(:user) { create_default(:user, owner_of: group) }
   let_it_be(:member_role) { create_default(:member_role, namespace: group) }
   let_it_be(:group_link) { create_default(:saml_group_link, group: group, member_role: member_role) }
 
@@ -17,10 +17,6 @@ RSpec.describe GroupLinksHelper, feature_category: :system_access do
     end
 
     subject(:data) { helper.group_link_role_selector_data(group, user) }
-
-    before_all do
-      group.add_owner(user)
-    end
 
     before do
       stub_licensed_features(custom_roles: true)
