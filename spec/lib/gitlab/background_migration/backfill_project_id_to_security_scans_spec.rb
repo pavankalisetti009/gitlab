@@ -59,6 +59,10 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToSecurityScans, fe
       expect { perform_migration }.to change { scan.reload.project_id }.from(nil).to(ci_build.project_id)
         .and change { other_scan.reload.project_id }.from(nil).to(other_build.project_id)
     end
+
+    it 'touches updated_at' do
+      expect { perform_migration }.to change { scan.reload.updated_at }
+    end
   end
 
   context 'when security_scan does not need to be changed' do

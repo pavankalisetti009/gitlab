@@ -46,7 +46,8 @@ module Gitlab
           UPDATE
             security_scans
           SET
-            project_id = tuples.project_id
+            project_id = tuples.project_id,
+            updated_at = NOW()
           FROM
             (#{values_sql}) AS tuples(scan_id, project_id)
           WHERE security_scans.id = tuples.scan_id;
