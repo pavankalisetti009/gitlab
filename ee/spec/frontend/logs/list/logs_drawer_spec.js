@@ -5,6 +5,9 @@ import LogsDrawer from 'ee/logs/list/logs_drawer.vue';
 import RelatedIssuesProvider from 'ee/logs/list/related_issues/related_issues_provider.vue';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
+import { stubComponent } from 'helpers/stub_component';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { mockLogs } from '../mock_data';
 
 jest.mock('~/lib/utils/dom_utils');
@@ -29,6 +32,13 @@ describe('LogsDrawer', () => {
         createIssueUrl: testCreateIssueUrl,
         projectFullPath: testProjectFullPath,
       },
+      stubs: {
+        RelatedIssuesProvider: stubComponent(RelatedIssuesProvider, {
+          template: `<div>
+            <slot :issues="[]" :loading="false" :error="null" />
+          </div>`,
+        }),
+      },
     });
   };
 
@@ -44,6 +54,9 @@ describe('LogsDrawer', () => {
       lines,
     };
   };
+
+  const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
+  const findRelatedIssuesProvider = () => wrapper.findComponent(RelatedIssuesProvider);
 
   const getSectionLineWrapperByName = (name) =>
     wrapper
@@ -63,11 +76,20 @@ describe('LogsDrawer', () => {
   });
 
   it('renders the related-issue-provider', () => {
-    const relatedIssuesProvider = wrapper.findComponent(RelatedIssuesProvider);
-    expect(relatedIssuesProvider.exists()).toBe(true);
-    expect(relatedIssuesProvider.props()).toEqual({
+    expect(findRelatedIssuesProvider().props()).toEqual({
       projectFullPath: testProjectFullPath,
       log: mockLog,
+    });
+  });
+
+  it('renders the related issues', () => {
+    expect(findRelatedIssues().props()).toStrictEqual({
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+      helpPath: helpPagePath('/operations/logs', {
+        anchor: 'create-an-issue-for-a-log',
+      }),
     });
   });
 

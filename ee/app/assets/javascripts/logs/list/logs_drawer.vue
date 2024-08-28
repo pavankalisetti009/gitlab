@@ -5,6 +5,8 @@ import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { createIssueUrlWithLogDetails } from '../utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 
@@ -20,6 +22,7 @@ export default {
     GlLink,
     GlButton,
     RelatedIssuesProvider,
+    RelatedIssue,
   },
   i18n: {
     logDetailsTitle: s__('ObservabilityLogs|Metadata'),
@@ -107,12 +110,15 @@ export default {
     },
   },
   DRAWER_Z_INDEX,
+  relatedIssuesHelpPath: helpPagePath('/operations/logs', {
+    anchor: 'create-an-issue-for-a-log',
+  }),
 };
 </script>
 
 <template>
   <related-issues-provider :log="log" :project-full-path="projectFullPath">
-    <template #default>
+    <template #default="{ issues, loading: fetchingIssues, error }">
       <gl-drawer
         :open="open"
         :z-index="$options.DRAWER_Z_INDEX"
@@ -134,7 +140,7 @@ export default {
             v-for="section in sections"
             :key="section.key"
             :data-testid="`section-${section.key}`"
-            class="gl-border-none"
+            class="gl-border-none !gl-pb-0"
           >
             <h2 v-if="section.title" data-testid="section-title" class="gl-my-0 gl-text-size-h2">
               {{ section.title }}
@@ -156,6 +162,13 @@ export default {
               </div>
             </div>
           </div>
+          <related-issue
+            class="!gl-pt-0"
+            :issues="issues"
+            :fetching-issues="fetchingIssues"
+            :error="error"
+            :help-path="$options.relatedIssuesHelpPath"
+          />
         </template>
       </gl-drawer>
     </template>
