@@ -10,8 +10,7 @@ module EE
       def update
         return super unless pull_mirror_change?
 
-        return deprecated_pull_mirror_procedure unless pull_mirror_create? && ::Feature.enabled?(
-          :use_pull_mirror_update_service, project)
+        return deprecated_pull_mirror_procedure unless pull_mirror_create?
 
         result = ::Repositories::PullMirrors::UpdateService.new(project, current_user, safe_mirror_params).execute
 
