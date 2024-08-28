@@ -12,12 +12,7 @@ import {
   PARSING_ERROR_MESSAGE,
   SECURITY_POLICY_ACTIONS,
 } from '../constants';
-import {
-  assignSecurityPolicyProject,
-  doesFileExist,
-  modifyPolicy,
-  redirectToMergeRequest,
-} from '../utils';
+import { assignSecurityPolicyProject, doesFileExist, goToPolicyMR } from '../utils';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
 import ActionSection from './action/action_section.vue';
@@ -88,8 +83,10 @@ export default {
       isCreatingMR: false,
       isRemovingPolicy: false,
       mode: EDITOR_MODE_RULE,
+      newlyCreatedPolicyProject: null,
       parsingError,
       policy,
+      policyModificationAction: null,
       yamlEditorValue,
     };
   },
@@ -102,6 +99,11 @@ export default {
     },
     content() {
       return this.policy?.content;
+    },
+    policyActionName() {
+      return this.isEditing
+        ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
+        : this.$options.SECURITY_POLICY_ACTIONS.APPEND;
     },
   },
   watch: {
@@ -139,32 +141,24 @@ export default {
       }
     },
     async handleModifyPolicy(act) {
-      const action =
-        act ||
-        (this.isEditing
-          ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
-          : this.$options.SECURITY_POLICY_ACTIONS.APPEND);
+      this.policyModificationAction = act || this.policyActionName;
 
       this.$emit('error', '');
-      this.setLoadingFlag(action, true);
+      this.setLoadingFlag(true);
 
       try {
         const assignedPolicyProject = await this.getSecurityPolicyProject();
-        const mergeRequest = await modifyPolicy({
-          action,
+        await goToPolicyMR({
+          action: this.policyModificationAction,
           assignedPolicyProject,
           name: this.originalName || fromYaml({ manifest: this.yamlEditorValue })?.name,
           namespacePath: this.namespacePath,
           yamlEditorValue: this.yamlEditorValue,
         });
-
-        redirectToMergeRequest({
-          mergeRequestId: mergeRequest.id,
-          assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
-        });
       } catch (e) {
         this.handleError(e);
-        this.setLoadingFlag(action, false);
+        this.setLoadingFlag(false);
+        this.policyModificationAction = null;
       }
     },
     async doesFileExist(value) {
@@ -194,8 +188,8 @@ export default {
       this.parsingError = hasParsingError ? this.$options.i18n.PARSING_ERROR_MESSAGE : '';
       this.policy = policy;
     },
-    setLoadingFlag(action, val) {
-      if (action === SECURITY_POLICY_ACTIONS.REMOVE) {
+    setLoadingFlag(val) {
+      if (this.policyModificationAction === SECURITY_POLICY_ACTIONS.REMOVE) {
         this.isRemovingPolicy = val;
       } else {
         this.isCreatingMR = val;

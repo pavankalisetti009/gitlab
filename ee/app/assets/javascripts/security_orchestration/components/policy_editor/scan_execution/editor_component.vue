@@ -15,12 +15,7 @@ import {
 } from '../constants';
 import EditorLayout from '../editor_layout.vue';
 import DimDisableContainer from '../dim_disable_container.vue';
-import {
-  assignSecurityPolicyProject,
-  modifyPolicy,
-  parseError,
-  redirectToMergeRequest,
-} from '../utils';
+import { assignSecurityPolicyProject, goToPolicyMR, parseError } from '../utils';
 import RuleSection from './rule/rule_section.vue';
 import ScanAction from './action/scan_action.vue';
 import OverloadWarningModal from './overload_warning_modal.vue';
@@ -131,6 +126,7 @@ export default {
       isRemovingPolicy: false,
       newlyCreatedPolicyProject: null,
       policy,
+      policyModificationAction: null,
       hasParsingError,
       parsingError,
       yamlEditorValue,
@@ -155,6 +151,11 @@ export default {
     },
     originalName() {
       return this.existingPolicy?.name;
+    },
+    policyActionName() {
+      return this.isEditing
+        ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
+        : this.$options.SECURITY_POLICY_ACTIONS.APPEND;
     },
   },
   methods: {
@@ -222,36 +223,28 @@ export default {
         return;
       }
 
-      const action =
-        act ||
-        (this.isEditing
-          ? this.$options.SECURITY_POLICY_ACTIONS.REPLACE
-          : this.$options.SECURITY_POLICY_ACTIONS.APPEND);
+      this.policyModificationAction = act || this.policyActionName;
 
       this.$emit('error', '');
-      this.setLoadingFlag(action, true);
+      this.setLoadingFlag(true);
 
       try {
         const assignedPolicyProject = await this.getSecurityPolicyProject();
-        const mergeRequest = await modifyPolicy({
-          action,
+        await goToPolicyMR({
+          action: this.policyModificationAction,
           assignedPolicyProject,
           name: this.originalName || fromYaml({ manifest: this.yamlEditorValue })?.name,
           namespacePath: this.namespacePath,
           yamlEditorValue: this.yamlEditorValue,
         });
-
-        redirectToMergeRequest({
-          mergeRequestId: mergeRequest.id,
-          assignedPolicyProjectFullPath: assignedPolicyProject.fullPath,
-        });
       } catch (e) {
         this.handleError(e);
-        this.setLoadingFlag(action, false);
+        this.setLoadingFlag(false);
+        this.policyModificationAction = null;
       }
     },
-    setLoadingFlag(action, val) {
-      if (action === SECURITY_POLICY_ACTIONS.REMOVE) {
+    setLoadingFlag(val) {
+      if (this.policyModificationAction === SECURITY_POLICY_ACTIONS.REMOVE) {
         this.isRemovingPolicy = val;
       } else {
         this.isCreatingMR = val;
