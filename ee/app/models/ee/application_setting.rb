@@ -34,6 +34,11 @@ module EE
 
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
 
+      jsonb_accessor :cluster_agents,
+        receptive_cluster_agents_enabled: [:boolean, { default: false }]
+
+      validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
+
       validates :shared_runners_minutes,
         numericality: { greater_than_or_equal_to: 0 }
 

@@ -66,6 +66,7 @@ module EE
             optional :duo_features_enabled, type: ::Grape::API::Boolean, desc: "Indicates whether GitLab Duo features are enabled for the group"
             optional :lock_duo_features_enabled, type: ::Grape::API::Boolean, desc: "Indicates if the GitLab Duo features enabled setting is enforced for all subgroups"
             optional :disabled_direct_code_suggestions, type: ::Grape::API::Boolean, desc: "Indicates if direct connection for Code Suggestions is disabled for users"
+            optional :receptive_cluster_agents_enabled, type: ::Grape::API::Boolean, desc: 'Enable receptive mode for GitLab Agents for Kubernetes'
           end
         end
 

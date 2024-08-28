@@ -21,6 +21,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   describe 'default values' do
     subject(:setting) { described_class.new }
 
+    it { expect(setting.receptive_cluster_agents_enabled).to eq(false) }
     it { expect(setting.security_approval_policies_limit).to eq(5) }
     it { expect(setting.use_clickhouse_for_analytics).to eq(false) }
     it { expect(setting.zoekt_auto_index_root_namespace).to eq(false) }
@@ -30,6 +31,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   end
 
   describe 'validations' do
+    it { expect(described_class).to validate_jsonb_schema(['application_setting_cluster_agents']) }
+
     describe 'mirror', feature_category: :source_code_management do
       it { is_expected.to validate_numericality_of(:mirror_max_delay).only_integer }
       it { is_expected.not_to allow_value(nil).for(:mirror_max_delay) }
