@@ -66,11 +66,11 @@ RSpec.describe Analytics::DevopsAdoption::SnapshotCalculator, feature_category: 
   describe 'runner_configured' do
     subject { data[:runner_configured] }
 
-    let!(:inactive_runner) { create(:ci_runner, :project, active: false) }
-    let!(:ci_runner_project) { create(:ci_runner_project, project: project, runner: inactive_runner) }
+    let!(:paused_runner) { create(:ci_runner, :project, :paused) }
+    let!(:ci_runner_project) { create(:ci_runner_project, project: project, runner: paused_runner) }
 
     context 'with active runner present' do
-      let!(:active_runner) { create(:ci_runner, :project, active: true) }
+      let!(:active_runner) { create(:ci_runner, :project) }
       let!(:ci_runner_project) { create(:ci_runner_project, project: subproject, runner: active_runner) }
 
       it { is_expected.to eq true }
