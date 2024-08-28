@@ -85,7 +85,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-font-size-sm gl-flex gl-flex-row md:gl-flex-col">
+  <div class="gl-font-size-sm gl-flex gl-flex-row">
     <div
       v-if="data.namespace"
       data-testid="usage-overview-namespace"
