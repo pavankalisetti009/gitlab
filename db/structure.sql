@@ -11314,29 +11314,6 @@ CREATE SEQUENCE grafana_integrations_id_seq
 
 ALTER SEQUENCE grafana_integrations_id_seq OWNED BY grafana_integrations.id;
 
-CREATE TABLE group_allowlist_entries (
-    id bigint NOT NULL,
-    group_id bigint NOT NULL,
-    scanner smallint NOT NULL,
-    description text,
-    type smallint NOT NULL,
-    value text NOT NULL,
-    active boolean DEFAULT true NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    CONSTRAINT check_1d1fcae6e4 CHECK ((char_length(description) <= 255)),
-    CONSTRAINT check_c0fd2e382c CHECK ((char_length(value) <= 255))
-);
-
-CREATE SEQUENCE group_allowlist_entries_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-ALTER SEQUENCE group_allowlist_entries_id_seq OWNED BY group_allowlist_entries.id;
-
 CREATE TABLE group_crm_settings (
     group_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -11541,6 +11518,29 @@ CREATE SEQUENCE group_saved_replies_id_seq
     CACHE 1;
 
 ALTER SEQUENCE group_saved_replies_id_seq OWNED BY group_saved_replies.id;
+
+CREATE TABLE group_security_ignorelist_entries (
+    id bigint NOT NULL,
+    group_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    scanner smallint NOT NULL,
+    type smallint NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    description text,
+    value text NOT NULL,
+    CONSTRAINT check_0add0c010a CHECK ((char_length(value) <= 255)),
+    CONSTRAINT check_efc4fb2e08 CHECK ((char_length(description) <= 255))
+);
+
+CREATE SEQUENCE group_security_ignorelist_entries_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE group_security_ignorelist_entries_id_seq OWNED BY group_security_ignorelist_entries.id;
 
 CREATE TABLE group_ssh_certificates (
     id bigint NOT NULL,
@@ -21705,8 +21705,6 @@ ALTER TABLE ONLY gpg_signatures ALTER COLUMN id SET DEFAULT nextval('gpg_signatu
 
 ALTER TABLE ONLY grafana_integrations ALTER COLUMN id SET DEFAULT nextval('grafana_integrations_id_seq'::regclass);
 
-ALTER TABLE ONLY group_allowlist_entries ALTER COLUMN id SET DEFAULT nextval('group_allowlist_entries_id_seq'::regclass);
-
 ALTER TABLE ONLY group_crm_settings ALTER COLUMN group_id SET DEFAULT nextval('group_crm_settings_group_id_seq'::regclass);
 
 ALTER TABLE ONLY group_custom_attributes ALTER COLUMN id SET DEFAULT nextval('group_custom_attributes_id_seq'::regclass);
@@ -21724,6 +21722,8 @@ ALTER TABLE ONLY group_import_states ALTER COLUMN group_id SET DEFAULT nextval('
 ALTER TABLE ONLY group_repository_storage_moves ALTER COLUMN id SET DEFAULT nextval('group_repository_storage_moves_id_seq'::regclass);
 
 ALTER TABLE ONLY group_saved_replies ALTER COLUMN id SET DEFAULT nextval('group_saved_replies_id_seq'::regclass);
+
+ALTER TABLE ONLY group_security_ignorelist_entries ALTER COLUMN id SET DEFAULT nextval('group_security_ignorelist_entries_id_seq'::regclass);
 
 ALTER TABLE ONLY group_ssh_certificates ALTER COLUMN id SET DEFAULT nextval('group_ssh_certificates_id_seq'::regclass);
 
@@ -23915,9 +23915,6 @@ ALTER TABLE ONLY gpg_signatures
 ALTER TABLE ONLY grafana_integrations
     ADD CONSTRAINT grafana_integrations_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY group_allowlist_entries
-    ADD CONSTRAINT group_allowlist_entries_pkey PRIMARY KEY (id);
-
 ALTER TABLE ONLY group_audit_events
     ADD CONSTRAINT group_audit_events_pkey PRIMARY KEY (id, created_at);
 
@@ -23956,6 +23953,9 @@ ALTER TABLE ONLY group_repository_storage_moves
 
 ALTER TABLE ONLY group_saved_replies
     ADD CONSTRAINT group_saved_replies_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY group_security_ignorelist_entries
+    ADD CONSTRAINT group_security_ignorelist_entries_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY group_ssh_certificates
     ADD CONSTRAINT group_ssh_certificates_pkey PRIMARY KEY (id);
@@ -28374,8 +28374,6 @@ CREATE INDEX index_grafana_integrations_on_enabled ON grafana_integrations USING
 
 CREATE INDEX index_grafana_integrations_on_project_id ON grafana_integrations USING btree (project_id);
 
-CREATE INDEX index_group_allowlist_entries_on_group_id ON group_allowlist_entries USING btree (group_id);
-
 CREATE INDEX index_group_crm_settings_on_group_id ON group_crm_settings USING btree (group_id);
 
 CREATE INDEX index_group_crm_settings_on_source_group_id ON group_crm_settings USING btree (source_group_id);
@@ -28417,6 +28415,8 @@ CREATE INDEX index_group_import_states_on_user_id ON group_import_states USING b
 CREATE INDEX index_group_repository_storage_moves_on_group_id ON group_repository_storage_moves USING btree (group_id);
 
 CREATE INDEX index_group_saved_replies_on_group_id ON group_saved_replies USING btree (group_id);
+
+CREATE INDEX index_group_security_ignorelist_entries_on_group_id ON group_security_ignorelist_entries USING btree (group_id);
 
 CREATE UNIQUE INDEX index_group_ssh_certificates_on_fingerprint ON group_ssh_certificates USING btree (fingerprint);
 
@@ -34945,9 +34945,6 @@ ALTER TABLE ONLY work_item_colors
 
 ALTER TABLE ONLY onboarding_progresses
     ADD CONSTRAINT fk_rails_2ccfd420cc FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY group_allowlist_entries
-    ADD CONSTRAINT fk_rails_2d180ff301 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY protected_branch_unprotect_access_levels
     ADD CONSTRAINT fk_rails_2d2aba21ef FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;

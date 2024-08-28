@@ -44,7 +44,7 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:analytics_dashboards_configuration_project) }
     it { is_expected.to have_one(:value_stream_dashboard_aggregation).with_foreign_key(:namespace_id) }
     it { is_expected.to have_one(:index_status).class_name(Elastic::GroupIndexStatus).with_foreign_key(:namespace_id).dependent(:destroy) }
-    it { is_expected.to have_many(:allowlist_entries).class_name('Security::GroupAllowlistEntry') }
+    it { is_expected.to have_many(:security_ignorelist_entries).class_name('Security::GroupSecurityIgnorelistEntry') }
 
     it do
       is_expected.to have_many(:ssh_certificates).class_name('Groups::SshCertificate')

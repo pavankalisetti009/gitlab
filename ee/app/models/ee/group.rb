@@ -89,7 +89,7 @@ module EE
 
       has_many :saved_replies, class_name: 'Groups::SavedReply'
 
-      has_many :allowlist_entries, class_name: 'Security::GroupAllowlistEntry'
+      has_many :security_ignorelist_entries, class_name: 'Security::GroupSecurityIgnorelistEntry'
 
       delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
