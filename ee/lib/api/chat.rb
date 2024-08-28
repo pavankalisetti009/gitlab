@@ -40,6 +40,28 @@ module API
           optional :client_subscription_id, type: String, limit: 500, desc: 'Client Subscription ID'
           optional :with_clean_history, type: Boolean,
             desc: 'Indicates if we need to reset the history before and after the request'
+          optional :current_file, type: Hash do
+            optional :file_name, type: String, limit: 1000, desc: 'The name of the current file'
+            optional :content_above_cursor, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE, desc: 'The content above cursor'
+            optional :content_below_cursor, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE, desc: 'The content below cursor'
+            optional :selected_text, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE,
+              desc: 'The content currently selected by the user'
+          end
+          optional :additional_context, type: Array, allow_blank: true,
+            desc: 'List of additional context to be passed for the chat' do
+            requires :type, type: String,
+              values: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.values,
+              desc: 'Type of the additional context.'
+            requires :name, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTEXT_NAME_SIZE, allow_blank: false,
+              desc: 'Name of the additional context.'
+            requires :content, type: String,
+              limit: ::API::CodeSuggestions::MAX_BODY_SIZE, allow_blank: false,
+              desc: 'Content of the additional context.'
+          end
         end
         post do
           safe_params = declared_params(include_missing: false)
