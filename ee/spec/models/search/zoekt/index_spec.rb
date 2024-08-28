@@ -18,6 +18,18 @@ RSpec.describe Search::Zoekt::Index, feature_category: :global_search do
     it { is_expected.to belong_to(:node).inverse_of(:indices) }
     it { is_expected.to belong_to(:replica).inverse_of(:indices) }
     it { is_expected.to have_many(:zoekt_repositories).inverse_of(:zoekt_index) }
+
+    it 'restricts deletion when there are associated zoekt repositories' do
+      project = create(:project, namespace_id: zoekt_index.namespace_id)
+      repo = zoekt_index.zoekt_repositories.create!(project: project, state: :pending)
+
+      expect(zoekt_index.zoekt_repositories).to match_array([repo])
+      expect { zoekt_index.destroy! }.to raise_error ActiveRecord::InvalidForeignKey
+
+      repo.destroy!
+
+      expect { zoekt_index.destroy! }.not_to raise_error
+    end
   end
 
   it { expect(described_class.new.reserved_storage_bytes).to eq 10.gigabytes }
