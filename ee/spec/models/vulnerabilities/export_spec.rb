@@ -290,4 +290,32 @@ RSpec.describe Vulnerabilities::Export, feature_category: :vulnerability_managem
       it { is_expected.to be_truthy }
     end
   end
+
+  context 'with loose foreign key on vulnerability_exports.organization_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:organization) }
+      let_it_be(:model) { create(:vulnerability_export, organization: parent) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_exports.group_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:namespace) }
+      let_it_be(:model) { create(:vulnerability_export, group_id: parent.id) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_exports.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerability_export, project: parent) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerability_exports.author_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:vulnerability_export, author_id: parent.id) }
+    end
+  end
 end
