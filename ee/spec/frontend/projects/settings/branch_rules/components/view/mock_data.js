@@ -119,6 +119,7 @@ const pushAccessLevelEdges = [
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
+      deployKey: null,
       ...userAccessLevel,
     },
   },
@@ -126,6 +127,7 @@ const pushAccessLevelEdges = [
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
+      deployKey: null,
       ...maintainersAccessLevel,
     },
   },
@@ -424,7 +426,6 @@ export const statusCheckCreateNameTakenResponse = {
 };
 
 // Mocks for drawer component
-
 export const allowedToMergeDrawerProps = {
   groups: [],
   isLoading: false,
@@ -432,4 +433,13 @@ export const allowedToMergeDrawerProps = {
   title: 'Edit allowed to merge',
   roles: accessLevelsMock,
   users: [mergeAccessLevelEdges[0].node.user],
+};
+
+export const allowedToPushDrawerProps = {
+  groups: [],
+  isLoading: false,
+  isOpen: false,
+  title: 'Edit allowed to merge',
+  roles: accessLevelsMock,
+  users: [pushAccessLevelEdges[0].node.user],
 };

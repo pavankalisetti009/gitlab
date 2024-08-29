@@ -1,27 +1,6 @@
-import { joinPaths } from '~/lib/utils/url_utility';
-
-export const generateRefDestinationPath = (selectedRef) => {
-  const namespace = '-/settings/ci_cd';
-  const { pathname } = window.location;
-
-  if (!selectedRef || !pathname.includes(namespace)) {
-    return window.location.href;
-  }
-
-  const [projectRootPath] = pathname.split(namespace);
-
-  const destinationPath = joinPaths(projectRootPath, namespace);
-
-  const newURL = new URL(window.location);
-  newURL.pathname = destinationPath;
-  newURL.searchParams.set('ref', selectedRef);
-
-  return newURL.href;
-};
-
 export const getAccessLevels = (accessLevels = {}) => {
   const total = accessLevels.edges?.length;
-  const accessLevelTypes = { total, users: [], groups: [], roles: [] };
+  const accessLevelTypes = { total, users: [], groups: [], deployKeys: [], roles: [] };
 
   (accessLevels.edges || []).forEach(({ node }) => {
     if (node.user) {
@@ -29,6 +8,8 @@ export const getAccessLevels = (accessLevels = {}) => {
       accessLevelTypes.users.push({ src, ...node.user });
     } else if (node.group) {
       accessLevelTypes.groups.push(node.group);
+    } else if (node.deployKey) {
+      accessLevelTypes.deployKeys.push(node.deployKey);
     } else {
       accessLevelTypes.roles.push(node.accessLevel);
     }
@@ -53,6 +34,11 @@ export const getAccessLevelInputFromEdges = (edges) => {
     if (node.user?.id !== undefined) {
       result.userId = node.user.id;
       delete result.accessLevel; // backend only expects userId
+    }
+
+    if (node.deployKey?.id !== undefined) {
+      result.deployKeyId = node.deployKey.id;
+      delete result.accessLevel; // backend only expects deployKeyId
     }
 
     return Object.keys(result).length > 0 ? [result] : [];
