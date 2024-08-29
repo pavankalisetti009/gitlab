@@ -26,7 +26,8 @@ export default {
   },
   i18n: {
     inProgress: s__('Tracing|In progress'),
-    logsButtonTitle: s__('Tracing|View Logs'),
+    logsButtonTitle: s__('Tracing|View logs'),
+    metricsButtonTitle: s__('Tracing|View metrics'),
     createIssueTitle: __('Create issue'),
   },
   props: {
@@ -38,7 +39,11 @@ export default {
       required: true,
       type: Boolean,
     },
-    logsLink: {
+    viewLogsUrl: {
+      required: true,
+      type: String,
+    },
+    viewMetricsUrl: {
       required: true,
       type: String,
     },
@@ -86,16 +91,15 @@ export default {
           }}</gl-badge>
         </template>
         <template #actions>
-          <gl-button :href="createIssueUrlWithQuery">
+          <gl-button :title="$options.i18n.logsButtonTitle" :href="viewLogsUrl">{{
+            $options.i18n.logsButtonTitle
+          }}</gl-button>
+          <gl-button :title="$options.i18n.metricsButtonTitle" :href="viewMetricsUrl">{{
+            $options.i18n.metricsButtonTitle
+          }}</gl-button>
+          <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
             {{ $options.i18n.createIssueTitle }}
           </gl-button>
-          <gl-button
-            category="primary"
-            variant="confirm"
-            :title="$options.i18n.logsButtonTitle"
-            :href="logsLink"
-            >{{ $options.i18n.logsButtonTitle }}</gl-button
-          >
         </template>
       </page-heading>
     </header>

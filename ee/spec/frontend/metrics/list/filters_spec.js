@@ -3,6 +3,7 @@ import {
   filterObjToQuery,
   filterObjToFilterToken,
   filterTokensToFilterObj,
+  metricsListQueryFromAttributes,
 } from 'ee/metrics/list/filters';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 
@@ -80,5 +81,13 @@ describe('filterTokensToFilterObj', () => {
     expect(
       filterTokensToFilterObj([{ type: 'unsupported', value: { data: 'foo.bar', operator: '=' } }]),
     ).toEqual({});
+  });
+});
+
+describe('metricsListQueryFromAttributes', () => {
+  it('return the metrics list query object from given attributes', () => {
+    expect(metricsListQueryFromAttributes({ traceId: 'test-trace-id' })).toMatchObject({
+      traceId: ['test-trace-id'],
+    });
   });
 });

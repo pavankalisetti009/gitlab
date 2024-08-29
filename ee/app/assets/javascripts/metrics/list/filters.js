@@ -57,3 +57,9 @@ export function filterTokensToFilterObj(tokens) {
     traceId,
   };
 }
+
+export function metricsListQueryFromAttributes({ traceId }) {
+  return filterObjToQuery({
+    traceId: traceId ? [{ value: traceId, operator: '=' }] : undefined,
+  });
+}

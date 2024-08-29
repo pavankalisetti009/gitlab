@@ -24,6 +24,7 @@ describe('TracingDetails', () => {
 
   const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
   const logsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/logs';
+  const metricsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
   const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
   const testTraceId = 'test-trace-id';
   const projectFullPath = 'foo/bar';
@@ -41,6 +42,7 @@ describe('TracingDetails', () => {
     traceId: testTraceId,
     tracingIndexUrl,
     logsIndexUrl,
+    metricsIndexUrl,
     createIssueUrl,
     projectFullPath,
   };
@@ -113,9 +115,10 @@ describe('TracingDetails', () => {
     expect(header.exists()).toBe(true);
     expect(header.props('incomplete')).toBe(mockTree.incomplete);
     expect(header.props('trace')).toEqual(mockTrace);
-    expect(header.props('logsLink')).toBe(
+    expect(header.props('viewLogsUrl')).toBe(
       `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
     );
+    expect(header.props('viewMetricsUrl')).toBe(`${metricsIndexUrl}?traceId[]=test-trace-id`);
     expect(header.props('createIssueUrl')).toBe(createIssueUrl);
     expect(header.props('totalErrors')).toBe(mockTree.totalErrors);
   });

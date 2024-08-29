@@ -5,6 +5,8 @@ import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
 import { visitUrl, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
 import { logsQueryFromAttributes } from 'ee/logs/list/filter_bar/filters';
+import { metricsListQueryFromAttributes } from 'ee/metrics/list/filters';
+
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
 import { validatedDateRangeQuery } from '~/observability/utils';
 import { mapTraceToSpanTrees, SPANS_LIMIT } from '../trace_utils';
@@ -48,6 +50,10 @@ export default {
       required: true,
       type: String,
     },
+    metricsIndexUrl: {
+      required: true,
+      type: String,
+    },
     createIssueUrl: {
       required: true,
       type: String,
@@ -68,16 +74,21 @@ export default {
     };
   },
   computed: {
-    logsLink() {
-      return setUrlParams(
+    viewLogsUrl() {
+      return this.buildUrlWithQuery(
         logsQueryFromAttributes({
           traceId: this.traceId,
           dateRange: validatedDateRangeQuery(TIME_RANGE_OPTIONS_VALUES.ONE_MONTH),
         }),
-        getNormalizedURL(this.logsIndexUrl),
-        true, // clearParams
-        true, // railsArraySyntax
-        true, // decodeParams
+        this.logsIndexUrl,
+      );
+    },
+    viewMetricsUrl() {
+      return this.buildUrlWithQuery(
+        metricsListQueryFromAttributes({
+          traceId: this.traceId,
+        }),
+        this.metricsIndexUrl,
       );
     },
   },
@@ -128,6 +139,15 @@ export default {
       this.selectedSpan = null;
       this.isDrawerOpen = false;
     },
+    buildUrlWithQuery(queryParams, url) {
+      return setUrlParams(
+        queryParams,
+        getNormalizedURL(url),
+        true, // clearParams
+        true, // railsArraySyntax
+        true, // decodeParams
+      );
+    },
   },
   SPANS_LIMIT,
 };
@@ -145,7 +165,8 @@ export default {
           :trace="trace"
           :incomplete="spanTrees.incomplete"
           :total-errors="spanTrees.totalErrors"
-          :logs-link="logsLink"
+          :view-logs-url="viewLogsUrl"
+          :view-metrics-url="viewMetricsUrl"
           :create-issue-url="createIssueUrl"
           class="gl-mb-6"
         />
