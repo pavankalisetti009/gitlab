@@ -30136,9 +30136,7 @@ CREATE UNIQUE INDEX index_status_page_published_incidents_on_issue_id ON status_
 
 CREATE INDEX index_status_page_settings_on_project_id ON status_page_settings USING btree (project_id);
 
-CREATE INDEX index_subscription_add_on_purchases_on_namespace_id ON subscription_add_on_purchases USING btree (namespace_id);
-
-CREATE INDEX index_subscription_add_on_purchases_on_subscription_add_on_id ON subscription_add_on_purchases USING btree (subscription_add_on_id);
+CREATE INDEX index_subscription_add_on_purchases_on_namespace_id_add_on_id ON subscription_add_on_purchases USING btree (namespace_id, subscription_add_on_id);
 
 CREATE UNIQUE INDEX index_subscription_add_ons_on_name ON subscription_add_ons USING btree (name);
 
