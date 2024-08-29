@@ -25466,10 +25466,10 @@ msgstr ""
 msgid "GoogleCloud|Generated service account is linked to the selected branch or tag"
 msgstr ""
 
-msgid "GoogleCloud|GitLab group ID"
+msgid "GoogleCloud|GitLab group ID %{groupId}"
 msgstr ""
 
-msgid "GoogleCloud|GitLab project ID"
+msgid "GoogleCloud|GitLab project ID %{projectId}"
 msgstr ""
 
 msgid "GoogleCloud|Google Artifact Management"
