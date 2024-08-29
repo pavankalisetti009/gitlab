@@ -470,12 +470,53 @@ RSpec.describe SearchHelper, feature_category: :global_search do
   end
 
   describe '#should_show_zoekt_results?' do
-    it 'returns false for any scope and search type' do
-      expect(helper.should_show_zoekt_results?(:any_scope, :any_type)).to be false
+    context 'with the blobs scope and zoekt search type' do
+      subject(:should_show_zoekt_results?) { helper.should_show_zoekt_results?('blobs', 'zoekt') }
+
+      context 'when the group is present' do
+        it 'when the group is present returns true' do
+          @group = create(:group)
+          expect(should_show_zoekt_results?).to be true
+        end
+      end
+
+      context 'when the project is present' do
+        let_it_be(:project) { create(:project) }
+
+        before do
+          @project = project
+          allow(project).to receive(:default_branch).and_return('main')
+        end
+
+        context 'when the repository ref is not defined' do
+          it 'returns true' do
+            expect(should_show_zoekt_results?).to be true
+          end
+        end
+
+        context 'when the repository ref is different' do
+          it 'returns false' do
+            allow(helper).to receive(:params).and_return({ project_id: :any_type, repository_ref: 'other-branch' })
+
+            expect(should_show_zoekt_results?).to be false
+          end
+        end
+      end
+
+      context 'when the FF is false' do
+        it 'returns false' do
+          stub_feature_flags(zoekt_multimatch_frontend: false)
+
+          expect(should_show_zoekt_results?).to be false
+        end
+      end
     end
 
-    it 'returns true for blobs scope and zoekt search type' do
-      expect(helper.should_show_zoekt_results?('blobs', 'zoekt')).to be true
+    context 'with any other scope or search type' do
+      it 'returns false' do
+        expect(helper.should_show_zoekt_results?('blobs', :any_type)).to be false
+        expect(helper.should_show_zoekt_results?(:any_type, 'zoekt')).to be false
+      end
     end
   end
 end

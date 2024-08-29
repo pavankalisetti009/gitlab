@@ -118,7 +118,10 @@ module EE
 
     override :should_show_zoekt_results?
     def should_show_zoekt_results?(scope, search_type)
-      (scope == 'blobs' && search_type == 'zoekt' && ::Feature.enabled?(:zoekt_multimatch_frontend, current_user)) || super
+      return false if ::Feature.disabled?(:zoekt_multimatch_frontend, current_user)
+      return false if scope != 'blobs' || search_type != 'zoekt'
+
+      @group.present? || (@project.present? && @project.default_branch == repository_ref(@project)) || super
     end
 
     private
