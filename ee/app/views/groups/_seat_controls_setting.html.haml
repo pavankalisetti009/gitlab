@@ -5,7 +5,7 @@
     = _("Seat controls")
   - if ::Feature.enabled?(:block_seat_overages, group)
     %div
-      = f.gitlab_ui_radio_component :seat_control, :block_overages, _("Restricted access"),
+      = f.gitlab_ui_radio_component :seat_control, :block_overages, render('groups/restricted_access_label'),
         help_text: _("Invitations above seat count are blocked"),
         radio_options: { disabled: group.shared_externally? }
   %div
