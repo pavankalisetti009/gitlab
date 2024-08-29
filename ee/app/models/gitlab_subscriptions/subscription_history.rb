@@ -15,8 +15,6 @@ module GitlabSubscriptions
 
     validates :gitlab_subscription_id, presence: true
 
-    scope :desc, -> { order(created_at: :desc) }
-
     PREFIXED_ATTRIBUTES = %w[
       id
       created_at
