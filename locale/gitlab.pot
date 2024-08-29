@@ -9644,6 +9644,9 @@ msgstr ""
 msgid "BranchRules|Status checks created"
 msgstr ""
 
+msgid "BranchRules|Status checks updated"
+msgstr ""
+
 msgid "BranchRules|Target branch"
 msgstr ""
 
@@ -52274,10 +52277,16 @@ msgstr ""
 msgid "StatusChecks|Invoke an external API as part of the pipeline process."
 msgstr ""
 
+msgid "StatusChecks|No changes were made to the status check."
+msgstr ""
+
 msgid "StatusChecks|Service name"
 msgstr ""
 
 msgid "StatusChecks|Unable to create status check. Please try again."
+msgstr ""
+
+msgid "StatusChecks|Unable to update status check. Please try again."
 msgstr ""
 
 msgid "StatusCheck|%{failed} failed"

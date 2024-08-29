@@ -58,6 +58,7 @@ describe('Status checks in branch rules enterprise edition', () => {
       expect(wrapper.emitted('save-status-check-change')).toEqual([
         [
           {
+            id: statusChecksRulesMock[0].id,
             name: statusChecksRulesMock[0].name,
             externalUrl: statusChecksRulesMock[0].externalUrl,
           },
@@ -110,6 +111,7 @@ describe('Status checks in branch rules enterprise edition', () => {
       expect(wrapper.emitted('save-status-check-change')).toEqual([
         [
           {
+            id: statusChecksRulesMock[0].id,
             name: statusChecksRulesMock[0].name,
             externalUrl: statusChecksRulesMock[0].externalUrl,
           },
@@ -131,6 +133,7 @@ describe('Status checks in branch rules enterprise edition', () => {
       expect(wrapper.emitted('save-status-check-change')).toEqual([
         [
           {
+            id: statusChecksRulesMock[0].id,
             name: statusChecksRulesMock[0].name,
             externalUrl: statusChecksRulesMock[0].externalUrl,
           },

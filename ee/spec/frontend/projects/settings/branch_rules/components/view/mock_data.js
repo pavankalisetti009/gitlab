@@ -416,6 +416,15 @@ export const statusCheckCreateSuccessResponse = {
   },
 };
 
+export const statusCheckUpdateSuccessResponse = {
+  data: {
+    branchRuleExternalStatusCheckUpdate: {
+      externalStatusCheck: statusChecksRulesMock[0],
+      errors: [],
+    },
+  },
+};
+
 export const statusCheckCreateNameTakenResponse = {
   data: {
     branchRuleExternalStatusCheckCreate: {

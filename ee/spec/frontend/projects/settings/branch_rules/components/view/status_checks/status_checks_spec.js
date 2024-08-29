@@ -2,12 +2,14 @@ import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import createStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_create.mutation.graphql';
+import updateStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_update.mutation.graphql';
 import { createAlert } from '~/alert';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   statusCheckCreateSuccessResponse,
+  statusCheckUpdateSuccessResponse,
   statusCheckCreateNameTakenResponse,
   statusChecksRulesMock,
 } from '../mock_data';
@@ -19,8 +21,11 @@ describe('Status checks in branch rules enterprise edition', () => {
   let wrapper;
   let fakeApollo;
 
-  const createComponent = (propsData = {}, createStatusCheckHandler) => {
-    fakeApollo = createMockApollo([[createStatusCheckMutation, createStatusCheckHandler]]);
+  const createComponent = (propsData = {}, createStatusCheckHandler, updateStatusCheckHandler) => {
+    fakeApollo = createMockApollo([
+      [createStatusCheckMutation, createStatusCheckHandler],
+      [updateStatusCheckMutation, updateStatusCheckHandler],
+    ]);
 
     wrapper = shallowMountExtended(StatusChecks, {
       apolloProvider: fakeApollo,
@@ -28,6 +33,11 @@ describe('Status checks in branch rules enterprise edition', () => {
         branchRuleId: 'gid://gitlab/Projects/BranchRule/1',
         projectPath: 'gid://gitlab/Project/1',
         ...propsData,
+      },
+      mocks: {
+        $toast: {
+          show: jest.fn(),
+        },
       },
     });
   };
@@ -66,6 +76,41 @@ describe('Status checks in branch rules enterprise edition', () => {
       'create',
     );
     expect(createStatusCheckHandlerSuccess).toHaveBeenCalled();
+    expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
+  });
+
+  it('should close drawer and show a toast when no changes are made', () => {
+    const updateStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckUpdateSuccessResponse);
+    createComponent({}, () => {}, updateStatusCheckHandlerSuccess);
+    expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
+    findStatusChecksTable().vm.$emit('open-status-check-drawer', statusChecksRulesMock[0]);
+    findStatusChecksDrawer().vm.$emit(
+      'save-status-check-change',
+      { ...statusChecksRulesMock[0] },
+      'update',
+    );
+    expect(updateStatusCheckHandlerSuccess).not.toHaveBeenCalled();
+    expect(wrapper.vm.$toast.show).toHaveBeenCalledWith(
+      'No changes were made to the status check.',
+    );
+    expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
+  });
+
+  it('should update status check successfully', () => {
+    const updateStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckUpdateSuccessResponse);
+    createComponent({}, () => {}, updateStatusCheckHandlerSuccess);
+    expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
+    findStatusChecksTable().vm.$emit('open-status-check-drawer', statusChecksRulesMock[0]);
+    findStatusChecksDrawer().vm.$emit(
+      'save-status-check-change',
+      { ...statusChecksRulesMock[0], name: 'new name' },
+      'update',
+    );
+    expect(updateStatusCheckHandlerSuccess).toHaveBeenCalled();
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
   });
 

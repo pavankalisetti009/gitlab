@@ -4,14 +4,18 @@ import { createAlert } from '~/alert';
 import { s__ } from '~/locale';
 import branchRulesQuery from 'ee_else_ce/projects/settings/branch_rules/queries/branch_rules_details.query.graphql';
 import createStatusCheckMutation from '../../../mutations/external_status_check_create.mutation.graphql';
+import updateStatusCheckMutation from '../../../mutations/external_status_check_update.mutation.graphql';
 import StatusChecksTable from './status_checks_table.vue';
 import StatusChecksDrawer from './status_checks_drawer.vue';
 
 export default {
   name: 'StatusChecks',
   i18n: {
-    statusChecksSuccessMessage: s__('BranchRules|Status checks created'),
+    statusChecksCreateSuccessMessage: s__('BranchRules|Status checks created'),
+    statusChecksUpdateSuccessMessage: s__('BranchRules|Status checks updated'),
     createStatusCheckError: s__('StatusChecks|Unable to create status check. Please try again.'),
+    updateStatusCheckError: s__('StatusChecks|Unable to update status check. Please try again.'),
+    noChangesToast: s__('StatusChecks|No changes were made to the status check.'),
   },
   components: {
     StatusChecksTable,
@@ -48,26 +52,27 @@ export default {
     closeStatusCheckDrawer() {
       this.isStatusChecksDrawerOpen = false;
       this.selectedStatusCheck = null;
+      this.serverValidationErrors = [];
     },
     saveStatusCheckChange(statusCheck, type) {
       if (type === 'create') {
         this.createStatusCheck({
           statusCheck,
-          toastMessage: this.$options.i18n.statusChecksSuccessMessage,
         });
       } else {
-        // TODO - edit status check mutation
+        this.updateStatusCheck({
+          statusCheck,
+        });
       }
     },
-    createStatusCheck({ statusCheck: { name, externalUrl }, toastMessage = '' }) {
+    createStatusCheck({ statusCheck }) {
       this.isStatusChecksLoading = true;
       this.$apollo
         .mutate({
           mutation: createStatusCheckMutation,
           variables: {
             branchRuleId: this.branchRuleId,
-            name,
-            externalUrl,
+            ...statusCheck,
           },
           update: (
             store,
@@ -109,7 +114,7 @@ export default {
               return;
             }
             this.closeStatusCheckDrawer();
-            this.$toast.show(toastMessage);
+            this.$toast.show(this.$options.i18n.statusChecksCreateSuccessMessage);
           },
         )
         .catch(() => {
@@ -118,6 +123,50 @@ export default {
         .finally(() => {
           this.isStatusChecksLoading = false;
         });
+    },
+    updateStatusCheck({ statusCheck }) {
+      const hasChanges = this.checkForChanges(this.selectedStatusCheck, statusCheck);
+      if (!hasChanges) {
+        this.closeStatusCheckDrawer();
+        this.$toast.show(this.$options.i18n.noChangesToast);
+        return;
+      }
+
+      this.isStatusChecksLoading = true;
+      this.$apollo
+        .mutate({
+          mutation: updateStatusCheckMutation,
+          variables: {
+            branchRuleId: this.branchRuleId,
+            ...statusCheck,
+          },
+        })
+        .then(
+          ({
+            data: {
+              branchRuleExternalStatusCheckUpdate: { errors },
+            },
+          }) => {
+            if (errors.length) {
+              this.serverValidationErrors = errors;
+              return;
+            }
+            this.closeStatusCheckDrawer();
+            this.$toast.show(this.$options.i18n.statusChecksUpdateSuccessMessage);
+          },
+        )
+        .catch(() => {
+          createAlert({ message: this.$options.i18n.updateStatusCheckError });
+        })
+        .finally(() => {
+          this.isStatusChecksLoading = false;
+        });
+    },
+    checkForChanges(originalStatusCheck, updatedStatusCheck) {
+      const fieldsToCompare = ['name', 'externalUrl'];
+      return fieldsToCompare.some(
+        (field) => originalStatusCheck[field] !== updatedStatusCheck[field],
+      );
     },
   },
 };
