@@ -334,16 +334,13 @@ module EE
       rule { (admin | reporter | auditor) & dora4_analytics_available }
         .enable :read_dora4_analytics
 
-      condition(:assigned_to_duo_enterprise) do
+      condition(:ai_analytics_available) do
         next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
 
-        namespace =
-          ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) ? @subject.root_ancestor : nil
-
-        @user.assigned_to_duo_enterprise?(namespace)
+        @user.assigned_to_duo_enterprise?(@subject)
       end
 
-      rule { (admin | reporter) & assigned_to_duo_enterprise }.enable :read_ai_analytics
+      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { reporter & group_repository_analytics_available }
         .enable :read_group_repository_analytics
