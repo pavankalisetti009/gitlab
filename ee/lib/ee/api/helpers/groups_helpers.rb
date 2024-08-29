@@ -44,6 +44,9 @@ module EE
             optional :ip_restriction_ranges,
               type: String,
               desc: 'List of IP addresses which need to be restricted for group'
+            optional :allowed_email_domains_list,
+              type: String,
+              desc: 'List of allowed email domains for group'
             optional :service_access_tokens_expiration_enforced,
               type: ::Grape::API::Boolean,
               desc: "To enforce token expiration for Service accounts users for group"

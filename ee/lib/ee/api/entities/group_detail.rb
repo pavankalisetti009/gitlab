@@ -17,6 +17,9 @@ module EE
           expose :ip_restriction_ranges,
             if: ->(group, options) { group.licensed_feature_available?(:group_ip_restriction) }
 
+          expose :allowed_email_domains_list,
+            if: ->(group, options) { group.licensed_feature_available?(:group_allowed_email_domains) }
+
           unique_project_download_limit_enabled = ->(group, options) do
             options[:current_user]&.can?(:admin_group, group) &&
               group.namespace_settings.present? &&

@@ -451,6 +451,44 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       end
     end
 
+    context 'when allowed_email_domains_list is specified' do
+      let(:params) { { allowed_email_domains_list: "example.com,example.org" } }
+
+      context "when feature is available" do
+        before do
+          stub_licensed_features(group_allowed_email_domains: true)
+        end
+
+        it 'updates email domain allowlist for the group' do
+          expect { subject }.to change { group.reload.allowed_email_domains_list }
+          .to("example.com,example.org")
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['allowed_email_domains_list']).to eq("example.com,example.org")
+        end
+
+        context 'when user is a maintainer' do
+          let_it_be(:user) { create(:user) }
+
+          before do
+            group.add_maintainer(user)
+          end
+
+          it 'does not update the email domain allow list for the group' do
+            expect { subject }.not_to change { group.reload.allowed_email_domains_list }
+            expect(response).to have_gitlab_http_status(:forbidden)
+            expect(json_response['allowed_email_domains_list']).to be_nil
+          end
+        end
+      end
+
+      context "when feature is not available" do
+        it 'does not update the email domain allowlist for the group' do
+          expect { subject }.not_to change { group.reload.allowed_email_domains_list }
+          expect(json_response).not_to have_key 'allowed_email_domains_list'
+        end
+      end
+    end
+
     context 'when ip_restriction_ranges is specified' do
       let(:params) { { ip_restriction_ranges: "192.168.0.0/24,10.0.0.0/8" } }
 
