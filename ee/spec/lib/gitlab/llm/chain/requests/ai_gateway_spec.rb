@@ -8,6 +8,10 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
   subject(:instance) { described_class.new(user, tracking_context: tracking_context) }
 
+  before do
+    Feature.disable(:ai_merge_request_reader_for_chat)
+  end
+
   describe 'initializer' do
     it 'initializes the AI Gateway client' do
       expect(instance.ai_client.class).to eq(::Gitlab::Llm::AiGateway::Client)
@@ -244,6 +248,18 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
 
       it_behaves_like 'performing request to the AI Gateway'
+
+      context 'when `ai_merge_request_reader_for_chat` feature flag is enabled' do
+        before do
+          stub_feature_flags(ai_merge_request_reader_for_chat: true)
+        end
+
+        let(:body) do
+          super().merge(unavailable_resources: %w[Pipelines Vulnerabilities])
+        end
+
+        it_behaves_like 'performing request to the AI Gateway'
+      end
     end
 
     context 'when request is sent to chat tools implemented via agents' do
