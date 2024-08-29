@@ -47,14 +47,19 @@ describe('~/deployments/components/show_deployment.vue', () => {
         protectedEnvironmentsAvailable: true,
         protectedEnvironmentsSettingsPath: PROTECTED_ENVIRONMENTS_SETTINGS_PATH,
       },
+      stubs: {
+        ApprovalsEmptyState,
+        DeploymentApprovals,
+        DeploymentTimeline,
+      },
     });
     return waitForPromises();
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
     deploymentQueryResponse.mockResolvedValue(mockDeploymentFixture);
     environmentQueryResponse.mockResolvedValue(mockEnvironmentFixture);
-    return createComponent();
+    await createComponent();
   });
 
   it('shows the deployment approval table', () => {

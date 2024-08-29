@@ -24,6 +24,9 @@ describe('Issue Popover', () => {
         iid: '1',
         cachedTitle: 'Cached title',
       },
+      stubs: {
+        IssueWeight,
+      },
     });
   };
 
