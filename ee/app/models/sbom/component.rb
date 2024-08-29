@@ -20,5 +20,9 @@ module Sbom
     scope :by_unique_attributes, ->(name, purl_type, component_type, organization_id) do
       where(name: name, purl_type: purl_type, component_type: component_type, organization_id: organization_id)
     end
+
+    scope :by_name, ->(name) do
+      where(Sbom::Component.arel_table[:name].matches("%#{name}%"))
+    end
   end
 end
