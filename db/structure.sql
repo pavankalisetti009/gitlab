@@ -33792,9 +33792,6 @@ ALTER TABLE ONLY audit_events_streaming_group_namespace_filters
 ALTER TABLE ONLY compliance_requirements
     ADD CONSTRAINT fk_8f5fb77fc7 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY vulnerability_exports
-    ADD CONSTRAINT fk_90e75ccdf8 FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY todos
     ADD CONSTRAINT fk_91d1f47b13 FOREIGN KEY (note_id) REFERENCES notes(id) ON DELETE CASCADE;
 
@@ -34124,9 +34121,6 @@ ALTER TABLE ONLY issues
 
 ALTER TABLE ONLY user_group_callouts
     ADD CONSTRAINT fk_c366e12ec3 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_exports
-    ADD CONSTRAINT fk_c3d3cb5d0f FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY timelogs
     ADD CONSTRAINT fk_c49c83dd77 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
@@ -34664,9 +34658,6 @@ ALTER TABLE ONLY issue_email_participants
 
 ALTER TABLE ONLY merge_request_context_commits
     ADD CONSTRAINT fk_rails_0fe0039f60 FOREIGN KEY (merge_request_id) REFERENCES merge_requests(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_exports
-    ADD CONSTRAINT fk_rails_1019162882 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY prometheus_alert_events
     ADD CONSTRAINT fk_rails_106f901176 FOREIGN KEY (prometheus_alert_id) REFERENCES prometheus_alerts(id) ON DELETE CASCADE;
@@ -35708,9 +35699,6 @@ ALTER TABLE ONLY pages_deployments
 
 ALTER TABLE ONLY dast_pre_scan_verification_steps
     ADD CONSTRAINT fk_rails_9990fc2adf FOREIGN KEY (dast_pre_scan_verification_id) REFERENCES dast_pre_scan_verifications(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_exports
-    ADD CONSTRAINT fk_rails_9aff2c3b45 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE ONLY users_ops_dashboard_projects
     ADD CONSTRAINT fk_rails_9b4ebf005b FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
