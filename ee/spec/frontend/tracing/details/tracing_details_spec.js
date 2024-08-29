@@ -10,6 +10,9 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { mapTraceToSpanTrees } from 'ee/tracing/trace_utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { stubComponent } from 'helpers/stub_component';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -32,6 +35,7 @@ describe('TracingDetails', () => {
 
   const findTraceDetails = () => wrapper.findComponentByTestId('trace-details');
   const findTraceChart = () => wrapper.findComponent(TracingChart);
+  const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
 
   const findDrawer = () => wrapper.findComponent(TracingDrawer);
   const isDrawerOpen = () => findDrawer().props('open');
@@ -53,6 +57,11 @@ describe('TracingDetails', () => {
       },
       stubs: {
         GlSprintf,
+        RelatedIssuesProvider: stubComponent(RelatedIssuesProvider, {
+          template: `<div>
+            <slot :issues="[]" :loading="false" :error="null" />
+          </div>`,
+        }),
       },
     });
     await waitForPromises();
@@ -118,6 +127,17 @@ describe('TracingDetails', () => {
     );
     expect(header.props('createIssueUrl')).toBe(createIssueUrl);
     expect(header.props('totalErrors')).toBe(mockTree.totalErrors);
+  });
+
+  it('renders the related issues', () => {
+    expect(findRelatedIssues().props()).toStrictEqual({
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+      helpPath: helpPagePath('/operations/tracing', {
+        anchor: 'create-an-issue-for-a-trace',
+      }),
+    });
   });
 
   describe('details drawer', () => {
