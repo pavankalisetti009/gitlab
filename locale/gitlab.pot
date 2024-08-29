@@ -60058,6 +60058,9 @@ msgstr ""
 msgid "Vulnerability|Identifiers"
 msgstr ""
 
+msgid "Vulnerability|Image and tag"
+msgstr ""
+
 msgid "Vulnerability|Image:"
 msgstr ""
 
