@@ -125,28 +125,10 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
             expect(project_2_participant.reload.is_removed).to eq(true)
           end
 
-          context 'when reset_seat_banner_callouts is enabled for the group' do
-            before do
-              stub_feature_flags(reset_seat_banner_callouts: group)
-            end
+          it 'calls the reset callout service for the namespace' do
+            expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
 
-            it 'calls the reset callout service for the namespace' do
-              expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
-
-              destroy_service.execute(member)
-            end
-          end
-
-          context 'when reset_seat_banner_callouts is disabled for the group' do
-            before do
-              stub_feature_flags(reset_seat_banner_callouts: false)
-            end
-
-            it 'does not call the reset callout service for the namespace' do
-              expect(::Groups::ResetSeatCalloutsWorker).not_to receive(:perform_async).with(group)
-
-              destroy_service.execute(member)
-            end
+            destroy_service.execute(member)
           end
         end
 
@@ -162,28 +144,10 @@ RSpec.describe Members::DestroyService, feature_category: :groups_and_projects d
             expect(project_2_participant.reload.is_removed).to eq(false)
           end
 
-          context 'when reset_seat_banner_callouts is enabled for the group' do
-            before do
-              stub_feature_flags(reset_seat_banner_callouts: group)
-            end
+          it 'calls the reset callout service for the namespace' do
+            expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
 
-            it 'calls the reset callout service for the namespace' do
-              expect(::Groups::ResetSeatCalloutsWorker).to receive(:perform_async).with(group)
-
-              destroy_service.execute(project_member)
-            end
-          end
-
-          context 'when reset_seat_banner_callouts is disabled for the group' do
-            before do
-              stub_feature_flags(reset_seat_banner_callouts: false)
-            end
-
-            it 'does not call the reset callout service for the namespace' do
-              expect(::Groups::ResetSeatCalloutsWorker).not_to receive(:perform_async).with(group)
-
-              destroy_service.execute(project_member)
-            end
+            destroy_service.execute(project_member)
           end
         end
       end
