@@ -333,8 +333,8 @@ RSpec.describe Audit::ProjectChangesAuditor, feature_category: :audit_events do
 
       context 'when auditable boolean column is changed' do
         columns = %w[resolve_outdated_diff_discussions printing_merge_request_link_enabled
-                     remove_source_branch_after_merge only_allow_merge_if_pipeline_succeeds
-                     only_allow_merge_if_all_discussions_are_resolved]
+          remove_source_branch_after_merge only_allow_merge_if_pipeline_succeeds
+          only_allow_merge_if_all_discussions_are_resolved]
         columns.each do |column|
           context "with #{column}" do
             where(:prev_value, :new_value) do
