@@ -1,4 +1,4 @@
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlAvatar } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import ProjectView from 'ee/usage_quotas/pages/components/project.vue';
 import UserDate from '~/vue_shared/components/user_date.vue';
@@ -40,6 +40,7 @@ describe('ProjectView', () => {
   const findAllPathPrefixes = () => wrapper.findAllByTestId('path-prefix');
   const findAllUrls = () => wrapper.findAllByTestId('url');
   const findAllCiBuilds = () => wrapper.findAllByTestId('ci-build');
+  const findAvatar = () => wrapper.findComponent(GlAvatar);
 
   beforeEach(() => {
     wrapper = mountExtended(ProjectView, {
@@ -51,8 +52,9 @@ describe('ProjectView', () => {
 
   it('renders the project name and avatar', () => {
     const projectName = findProjectName();
+    const avatar = findAvatar();
     expect(projectName.text()).toContain('Test Project');
-    expect(projectName.find('img').attributes('src')).toBe('http://example.com/avatar.png');
+    expect(avatar.props('src')).toBe('http://example.com/avatar.png');
     expect(projectName.find('a').attributes('href')).toBe('/group/test-project/pages');
   });
 
