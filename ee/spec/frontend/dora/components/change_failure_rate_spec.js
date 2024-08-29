@@ -14,14 +14,6 @@ import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 jest.mock('~/alert');
 
-const makeMockCiCdAnalyticsCharts = ({ selectedChart = 0 } = {}) => ({
-  render() {
-    return this.$scopedSlots.metrics({
-      selectedChart,
-    });
-  },
-});
-
 describe('change_failure_rate_charts.vue', () => {
   useFixturesFakeDate();
 
@@ -46,7 +38,16 @@ describe('change_failure_rate_charts.vue', () => {
   };
 
   const createComponent = (mountOptions = defaultMountOptions) => {
-    wrapper = extendedWrapper(shallowMount(ChangeFailureRateCharts, mountOptions));
+    wrapper = extendedWrapper(
+      shallowMount(ChangeFailureRateCharts, {
+        stubs: {
+          CiCdAnalyticsCharts: {
+            template: `<div><slot name="metrics" :selectedChart="1"></slot></div>`,
+          },
+        },
+        ...mountOptions,
+      }),
+    );
   };
 
   const setUpMockChangeFailureRate = ({ start_date, data }) => {
@@ -111,11 +112,6 @@ describe('change_failure_rate_charts.vue', () => {
       beforeEach(() => {
         createComponent({
           ...defaultMountOptions,
-          stubs: {
-            CiCdAnalyticsCharts: makeMockCiCdAnalyticsCharts({
-              selectedChart: 1,
-            }),
-          },
         });
       });
 
