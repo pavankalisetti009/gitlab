@@ -3697,7 +3697,7 @@ msgstr ""
 msgid "AdminArea|Manage applications for your instance that can use GitLab as an %{docs_link_start}OAuth provider%{docs_link_end}."
 msgstr ""
 
-msgid "AdminArea|Manage applications for your instance that can use GitLab as an OAuth provider, start by creating a new one above."
+msgid "AdminArea|Manage applications for your instance that can use GitLab as an OAuth provider."
 msgstr ""
 
 msgid "AdminArea|Minimal access"
