@@ -52,6 +52,9 @@ module EE
             params.delete(:ip_restriction_ranges) unless
               group.licensed_feature_available?(:group_ip_restriction)
 
+            params.delete(:allowed_email_domains_list) unless
+              group.licensed_feature_available?(:group_allowed_email_domains)
+
             params.delete(:prevent_forking_outside_group) unless
               can?(current_user, :change_prevent_group_forking, group)
 
