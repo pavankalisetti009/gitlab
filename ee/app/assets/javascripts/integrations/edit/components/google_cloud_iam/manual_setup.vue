@@ -69,6 +69,7 @@ export default {
       modal-id="google-cloud-iam-non-admin-instructions"
       :title="s__('GoogleCloud|If you cannot manage workload identity federation in Google Cloud')"
       :action-cancel="$options.modalActions.cancel"
+      no-enforce-focus
     >
       <p class="gl-mb-4">
         <gl-sprintf

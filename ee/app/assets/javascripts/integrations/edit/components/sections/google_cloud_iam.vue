@@ -3,8 +3,7 @@
 import { mapGetters } from 'vuex';
 import isEmpty from 'lodash/isEmpty';
 import Connection from '~/integrations/edit/components/sections/connection.vue';
-import { s__ } from '~/locale';
-import { STATE_FORM, STATE_MANUAL } from '../google_cloud_iam/constants';
+import { s__, sprintf } from '~/locale';
 import GcIamForm from '../google_cloud_iam/form.vue';
 import ManualSetup from '../google_cloud_iam/manual_setup.vue';
 import SetupScript from '../google_cloud_iam/setup_script.vue';
@@ -45,43 +44,32 @@ export default {
     integrationLevel() {
       return this.propsSource.integrationLevel;
     },
-    suggestedPoolId() {
-      const prefix = `gitlab-${this.propsSource.integrationLevel}`;
-
-      if (this.propsSource.integrationLevel === 'project')
-        return `${prefix}-${this.propsSource.projectId}`;
-
-      if (this.propsSource.integrationLevel === 'group')
-        return `${prefix}-${this.propsSource.groupId}`;
-
-      // should not be possible; this integration is not instance-level
-      return prefix;
+    projectId() {
+      return this.propsSource.projectId;
     },
-    projectOrGroupIDPrefix() {
-      return this.integrationLevel === 'project'
-        ? s__('GoogleCloud|GitLab project ID')
-        : s__('GoogleCloud|GitLab group ID');
+    groupId() {
+      return this.propsSource.groupId;
+    },
+    suggestedPoolId() {
+      const prefix = `gitlab-${this.integrationLevel}`;
+
+      if (this.integrationLevel === 'project') return `${prefix}-${this.projectId}`;
+
+      return `${prefix}-${this.groupId}`;
     },
     suggestedDisplayName() {
-      const prefix = `GitLab ${this.propsSource.integrationLevel} ID`;
+      if (this.integrationLevel === 'project')
+        return sprintf(s__('GoogleCloud|GitLab project ID %{projectId}'), {
+          projectId: this.projectId,
+        });
 
-      if (this.propsSource.integrationLevel === 'project')
-        return `${prefix} ${this.propsSource.projectId}`;
-
-      if (this.propsSource.integrationLevel === 'group')
-        return `${prefix} ${this.propsSource.groupId}`;
-
-      // should not be possible; this integration is not instance-level
-      return prefix;
-    },
-    isEditable() {
-      return [STATE_FORM, STATE_MANUAL].includes(this.show);
+      return sprintf(s__('GoogleCloud|GitLab group ID %{groupId}'), { groupId: this.groupId });
     },
   },
   watch: {
-    'this.propsSource.fields': {
+    dynamicFields: {
       handler() {
-        this.propsSource.fields.forEach(({ name, value }) => this.updateValue(name, value));
+        this.dynamicFields.forEach(({ name, value }) => this.updateValue(name, value));
       },
       immediate: true,
     },
