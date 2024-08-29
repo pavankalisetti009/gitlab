@@ -109,7 +109,11 @@ module QA
       end
 
       it 'displays security reports in the project security dashboard',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037' do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037',
+        quarantine: {
+          type: :flaky,
+          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/480927"
+        } do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
