@@ -85,9 +85,7 @@ module Search
 
           tasks.where(id: orphaned_task_ids).update_all(state: :orphaned) if orphaned_task_ids.any?
 
-          if Feature.enabled?(:zoekt_tasks_processing_state, Feature.current_request)
-            tasks.where.not(state: :orphaned).update_all(state: :processing)
-          end
+          tasks.where.not(state: :orphaned).update_all(state: :processing)
 
           break if count >= limit
         end
