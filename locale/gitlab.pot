@@ -10220,9 +10220,6 @@ msgstr ""
 msgid "Burnup chart could not be generated due to too many events"
 msgstr ""
 
-msgid "Business metrics (Custom)"
-msgstr ""
-
 msgid "Busy"
 msgstr ""
 
@@ -12336,9 +12333,6 @@ msgid "CloudSeed|Vision AI"
 msgstr ""
 
 msgid "Cluster"
-msgstr ""
-
-msgid "Cluster Health"
 msgstr ""
 
 msgid "Cluster cache cleared."
@@ -16577,9 +16571,6 @@ msgid "Custom emoji will be available to use in every project in the group."
 msgstr ""
 
 msgid "Custom hostname (for private commit emails)"
-msgstr ""
-
-msgid "Custom metrics"
 msgstr ""
 
 msgid "Custom notification events"
@@ -45730,24 +45721,6 @@ msgstr ""
 msgid "Response initiated"
 msgstr ""
 
-msgid "Response metrics (AWS ELB)"
-msgstr ""
-
-msgid "Response metrics (Custom)"
-msgstr ""
-
-msgid "Response metrics (HA Proxy)"
-msgstr ""
-
-msgid "Response metrics (NGINX Ingress VTS)"
-msgstr ""
-
-msgid "Response metrics (NGINX Ingress)"
-msgstr ""
-
-msgid "Response metrics (NGINX)"
-msgstr ""
-
 msgid "Response text"
 msgstr ""
 
@@ -53241,12 +53214,6 @@ msgid "System hooks are triggered on sets of events like creating a project or a
 msgstr ""
 
 msgid "System information"
-msgstr ""
-
-msgid "System metrics (Custom)"
-msgstr ""
-
-msgid "System metrics (Kubernetes)"
 msgstr ""
 
 msgid "System output"
