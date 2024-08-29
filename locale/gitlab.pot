@@ -56980,7 +56980,7 @@ msgstr[1] ""
 msgid "Trials|Your 30-day trial has ended"
 msgstr ""
 
-msgid "Trials|Your trial ends on %{boldStart}%{trialEndDate}%{boldEnd}. We hope you’re enjoying the features of GitLab %{planName}. To keep those features after your trial ends, you’ll need to buy a subscription. (You can also choose GitLab Premium if it meets your needs.)"
+msgid "Trials|Your trial ends on %{strongStart}%{trialEndDate}%{strongEnd}. We hope you’re enjoying the features of GitLab %{planName}. To keep those features after your trial ends, you’ll need to buy a subscription. (You can also choose GitLab Premium if it meets your needs.)"
 msgstr ""
 
 msgid "Trial|Activate my trial"
