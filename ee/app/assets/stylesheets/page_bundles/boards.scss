@@ -86,6 +86,7 @@ $epic-icons-spacing: 40px;
 .board-epic-lane-shadow.show {
   box-shadow: 0 10px 2px -6px rgba($black, 0.1);
 
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-dark & {
     box-shadow: none;
   }
@@ -97,6 +98,7 @@ $epic-icons-spacing: 40px;
   background-color: $white;
   z-index: 2;
 
+  // stylelint-disable-next-line gitlab/no-gl-class
   .gl-dark & {
     background-color: var(--gray-10);
   }
