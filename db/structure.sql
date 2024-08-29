@@ -6022,6 +6022,7 @@ CREATE TABLE application_settings (
     max_number_of_vulnerabilities_per_project integer,
     cluster_agents jsonb DEFAULT '{}'::jsonb NOT NULL,
     observability_backend_ssl_verification_enabled boolean DEFAULT true NOT NULL,
+    pages jsonb DEFAULT '{}'::jsonb NOT NULL,
     CONSTRAINT app_settings_container_reg_cleanup_tags_max_list_size_positive CHECK ((container_registry_cleanup_tags_service_max_list_size >= 0)),
     CONSTRAINT app_settings_dep_proxy_ttl_policies_worker_capacity_positive CHECK ((dependency_proxy_ttl_group_policy_worker_capacity >= 0)),
     CONSTRAINT app_settings_ext_pipeline_validation_service_url_text_limit CHECK ((char_length(external_pipeline_validation_service_url) <= 255)),
@@ -15228,6 +15229,7 @@ CREATE TABLE pages_deployments (
     build_ref text,
     deleted_at timestamp with time zone,
     upload_ready boolean DEFAULT false,
+    expires_at timestamp with time zone,
     CONSTRAINT check_4d04b8dc9a CHECK ((char_length(path_prefix) <= 128)),
     CONSTRAINT check_5f9132a958 CHECK ((size IS NOT NULL)),
     CONSTRAINT check_7e938c810a CHECK ((char_length(root_directory) <= 255)),
@@ -29302,6 +29304,8 @@ CREATE INDEX index_pages_deployment_states_pending_verification ON pages_deploym
 CREATE INDEX index_pages_deployments_on_ci_build_id ON pages_deployments USING btree (ci_build_id);
 
 CREATE INDEX index_pages_deployments_on_deleted_at ON pages_deployments USING btree (deleted_at) WHERE (deleted_at IS NOT NULL);
+
+CREATE INDEX index_pages_deployments_on_expires_at ON pages_deployments USING btree (expires_at, id) WHERE (expires_at IS NOT NULL);
 
 CREATE INDEX index_pages_deployments_on_file_store_and_id ON pages_deployments USING btree (file_store, id);
 

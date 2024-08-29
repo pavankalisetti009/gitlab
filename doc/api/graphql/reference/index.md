@@ -28318,6 +28318,7 @@ Represents a pages deployment.
 | <a id="pagesdeploymentcibuildid"></a>`ciBuildId` | [`ID`](#id) | ID of the CI build that created the deployment. |
 | <a id="pagesdeploymentcreatedat"></a>`createdAt` | [`ISO8601DateTime!`](#iso8601datetime) | Time the deployment was created. |
 | <a id="pagesdeploymentdeletedat"></a>`deletedAt` | [`ISO8601DateTime`](#iso8601datetime) | Time the deployment was deleted. |
+| <a id="pagesdeploymentexpiresat"></a>`expiresAt` | [`ISO8601DateTime`](#iso8601datetime) | Time the deployment will expire. |
 | <a id="pagesdeploymentfilecount"></a>`fileCount` | [`Int`](#int) | Number of files that were published with the deployment. |
 | <a id="pagesdeploymentid"></a>`id` | [`ID!`](#id) | ID of the Pages Deployment. |
 | <a id="pagesdeploymentpathprefix"></a>`pathPrefix` | [`String`](#string) | URL path Prefix that points to the deployment. |

@@ -7,13 +7,19 @@ module EE
 
       override :pages_deployment_attributes
       def pages_deployment_attributes(file, build)
-        super.merge(path_prefix: path_prefix)
+        super.merge({
+          path_prefix: path_prefix,
+          expires_at: expires_at
+        })
       end
 
       private
 
-      def path_prefix
-        ::Gitlab::Utils.slugify(build.pages&.fetch(:path_prefix, ''))
+      def expires_at
+        return unless ::Gitlab::CurrentSettings.pages_extra_deployments_default_expiry_seconds&.nonzero?
+        return unless extra_deployment?
+
+        ::Gitlab::CurrentSettings.pages_extra_deployments_default_expiry_seconds.seconds.from_now
       end
     end
   end
