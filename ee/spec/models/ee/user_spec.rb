@@ -2144,6 +2144,52 @@ RSpec.describe User, feature_category: :system_access do
     end
   end
 
+  describe '#assigned_to_duo_enterprise?' do
+    let_it_be(:user) { create(:user) }
+
+    subject { user.assigned_to_duo_enterprise?(namespace) }
+
+    context 'on SaaS', :saas do
+      let_it_be(:namespace) { create(:group) }
+
+      it { is_expected.to eq(false) }
+
+      context 'when user is assigned to a duo enterprise seat on namespace' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace) }
+
+        before do
+          create(
+            :gitlab_subscription_user_add_on_assignment,
+            user: user,
+            add_on_purchase: subscription_purchase
+          )
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
+
+    context 'on self-managed' do
+      let_it_be(:namespace) { nil }
+
+      it { is_expected.to eq(false) }
+
+      context 'when user is assigned to a duo enterprise seat on instance' do
+        let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+        before do
+          create(
+            :gitlab_subscription_user_add_on_assignment,
+            user: user,
+            add_on_purchase: subscription_purchase
+          )
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
+  end
+
   describe '#manageable_namespaces_eligible_for_trial', :saas do
     let_it_be(:user) { create :user }
     let_it_be(:non_trialed_group_z) { create :group_with_plan, name: 'Zeta', plan: :free_plan }

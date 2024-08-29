@@ -1595,14 +1595,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   end
 
   describe ':read_ai_analytics' do
-    let(:current_user) { reporter }
+    let(:project) { private_project_in_group }
+    let(:guest) { inherited_guest }
+    let(:reporter) { inherited_reporter }
 
-    it { is_expected.to be_allowed(:read_ai_analytics) }
+    context 'when on SAAS', :saas do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
 
-    context 'when user is a guest' do
-      let(:current_user) { guest }
+      it_behaves_like 'permission to :read_ai_analytics'
+    end
 
-      it { is_expected.not_to be_allowed(:read_ai_analytics) }
+    context 'when on self-managed' do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+      it_behaves_like 'permission to :read_ai_analytics'
     end
   end
 

@@ -65,10 +65,39 @@ RSpec.describe Resolvers::ProductAnalytics::DashboardsResolver, feature_category
       context 'when clickhouse is configured' do
         before do
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
+          stub_feature_flags(ai_impact_only_on_duo_enterprise: false)
         end
 
         it 'contains the AI impact dashboard' do
           expect(result.map(&:slug)).to include(ProductAnalytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
+        end
+
+        context 'when ai_impact_only_on_duo_enterprise is enabled' do
+          before do
+            stub_feature_flags(ai_impact_only_on_duo_enterprise: true)
+          end
+
+          it 'does not contain AI impact dashboard' do
+            expect(result.map(&:slug)).not_to include(ProductAnalytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
+          end
+
+          context 'when user is assigned to duo enteprise seat' do
+            let_it_be(:subscription_purchase) do
+              create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed)
+            end
+
+            let_it_be(:seat_assignment) do
+              create(
+                :gitlab_subscription_user_add_on_assignment,
+                user: user,
+                add_on_purchase: subscription_purchase
+              )
+            end
+
+            it 'contains AI impact dashboard' do
+              expect(result.map(&:slug)).to include(ProductAnalytics::Dashboard::AI_IMPACT_DASHBOARD_NAME)
+            end
+          end
         end
       end
 
