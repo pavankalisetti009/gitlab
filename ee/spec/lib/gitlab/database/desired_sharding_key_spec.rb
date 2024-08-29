@@ -101,6 +101,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
             parent = details['backfill_via']['parent']
             foreign_key = parent['foreign_key']
             parent_table = parent['table']
+            parent_table_primary_key = parent['table_primary_key'] || 'id'
             parent_sharding_key = parent['sharding_key']
 
             connection.execute("ALTER TABLE #{table} ADD COLUMN IF NOT EXISTS #{sharding_key} bigint")
@@ -111,7 +112,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
               EXPLAIN UPDATE #{table}
               SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
                 FROM #{parent_table}
-              WHERE #{table}.#{foreign_key} = #{parent_table}.id
+              WHERE #{table}.#{foreign_key} = #{parent_table}.#{parent_table_primary_key}
               SQL
             end
           end
