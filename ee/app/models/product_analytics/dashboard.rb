@@ -125,8 +125,8 @@ module ProductAnalytics
       )
     end
 
-    def self.ai_impact_dashboard(container, config_project)
-      return unless container.ai_impact_dashboard_available?
+    def self.ai_impact_dashboard(container, config_project, user)
+      return unless container.ai_impact_dashboard_available_for?(user)
 
       config = load_yaml_dashboard_config('dashboard', 'ee/lib/gitlab/analytics/ai_impact_dashboard')
 
@@ -144,7 +144,7 @@ module ProductAnalytics
 
       builtin << product_analytics_dashboards(container, config_project, user)
       builtin << value_stream_dashboard(container, config_project)
-      builtin << ai_impact_dashboard(container, config_project)
+      builtin << ai_impact_dashboard(container, config_project, user)
 
       builtin.flatten
     end

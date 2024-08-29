@@ -58,6 +58,10 @@ RSpec.describe 'Query.project(id).dashboards.panels(id).visualization', feature_
 
       before do
         allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
+        allow(Ability).to receive(:allowed?).and_call_original
+        allow(Ability).to receive(:allowed?)
+                      .with(user, :read_ai_analytics, anything)
+                      .and_return(true)
       end
 
       where(:node_idx, :panel_type, :panel_title) do

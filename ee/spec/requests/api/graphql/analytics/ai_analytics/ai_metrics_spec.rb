@@ -43,6 +43,11 @@ RSpec.describe 'aiMetrics', :freeze_time, feature_category: :value_stream_manage
         allow(instance).to receive(:execute).and_return(ServiceResponse.success(payload: service_payload))
       end
 
+      allow(Ability).to receive(:allowed?).and_call_original
+      allow(Ability).to receive(:allowed?)
+        .with(current_user, :read_ai_analytics, anything)
+        .and_return(true)
+
       post_graphql(query, current_user: current_user)
     end
 

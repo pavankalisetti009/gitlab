@@ -501,6 +501,14 @@ module EE
         namespace.root_ancestor.billed_user_ids[:user_ids].include?(self.id)
     end
 
+    def assigned_to_duo_enterprise?(namespace)
+      GitlabSubscriptions::AddOnPurchase
+        .for_duo_enterprise
+        .active
+        .by_namespace(namespace)
+        .assigned_to_user(self).exists?
+    end
+
     def group_sso?(group)
       return false unless group
 

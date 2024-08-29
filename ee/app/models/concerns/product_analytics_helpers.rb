@@ -47,8 +47,10 @@ module ProductAnalyticsHelpers
     licensed_feature_available?(licensed_feature) && project_value_streams_dashboards_enabled?
   end
 
-  def ai_impact_dashboard_available?
-    Gitlab::ClickHouse.globally_enabled_for_analytics?
+  def ai_impact_dashboard_available_for?(user)
+    return false unless Gitlab::ClickHouse.globally_enabled_for_analytics?
+
+    Ability.allowed?(user, :read_ai_analytics, self)
   end
 
   def product_analytics_dashboards(user)
