@@ -211,7 +211,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                   labels: [filter_label],
                   milestone: milestone,
                   created_at: current_time).tap do |mr|
-                  mr.metrics.update!(merged_at: current_time + 2.hours)
+                  mr.metrics.update!(merged_at: current_time + 3.hours)
                 end
               end
 
@@ -261,6 +261,43 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                 perform_request
 
                 expect(record_count).to eq(3)
+              end
+
+              context 'when requesting averageDurations series' do
+                let(:query) do
+                  <<~QUERY
+                    query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!) {
+                      #{resource_type}(fullPath: $fullPath) {
+                        valueStreams(id: $valueStreamId) {
+                          nodes {
+                            stages(id: $stageId) {
+                              metrics(timeframe: { start: $from, end: $to }) {
+                                series {
+                                  averageDurations {
+                                    date
+                                    value
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  QUERY
+                end
+
+                it 'returns the correct duration data' do
+                  perform_request
+
+                  duration_item = graphql_data_at(resource_type.to_sym, :value_streams, :nodes, :stages, :metrics,
+                    :series, :averageDurations, 0)
+
+                  expect(duration_item).to eq({
+                    'date' => current_time.to_date.to_s,
+                    'value' => (7200 + 7200 + 10800) / 3 # durations: 2 hours, 2 hours, 3 hours
+                  })
+                end
               end
 
               context 'when filtering for assignee' do
