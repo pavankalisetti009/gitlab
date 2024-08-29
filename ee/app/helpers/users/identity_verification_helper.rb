@@ -112,3 +112,5 @@ module Users
     end
   end
 end
+
+Users::IdentityVerificationHelper.prepend_mod
