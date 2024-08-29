@@ -3,6 +3,7 @@ import {
   getDismissalNoteEventText,
   getCreatedIssueForVulnerability,
 } from 'ee/vue_shared/security_reports/components/helpers';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 describe('getHttpString', () => {
   it.each([null, undefined, false])('returns empty string for "%s"', (type) => {
@@ -30,7 +31,7 @@ describe('getHttpString', () => {
   it('returns the correct format for response data', () => {
     const response = {
       body: 'response body',
-      statusCode: '200',
+      statusCode: `${HTTP_STATUS_OK}`,
       reasonPhrase: 'response reasonPhrase',
       headers: [
         { name: 'response headers name - 1', value: 'response headers value - 1' },

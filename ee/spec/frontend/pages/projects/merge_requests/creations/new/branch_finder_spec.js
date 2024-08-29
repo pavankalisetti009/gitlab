@@ -2,13 +2,14 @@ import MockAdapter from 'axios-mock-adapter';
 import { setHTMLFixture, resetHTMLFixture } from 'helpers/fixtures';
 import axios from '~/lib/utils/axios_utils';
 import { findTargetBranch } from 'ee/pages/projects/merge_requests/creations/new/branch_finder';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 let mock;
 
 describe('Merge request find target branch', () => {
   beforeEach(() => {
     mock = new MockAdapter(axios);
-    mock.onGet('/target_branch').reply(200, { target_branch: 'main' });
+    mock.onGet('/target_branch').reply(HTTP_STATUS_OK, { target_branch: 'main' });
   });
 
   afterEach(() => {
