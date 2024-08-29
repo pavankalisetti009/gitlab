@@ -28,7 +28,6 @@ module EE
           code_suggestions_x_ray
           identity_verification
           gitlab_duo_saas_only
-          beta_rollout_pre_receive_secret_detection
           pipl_compliance
           ci_runners_allowed_plans
         ].freeze
