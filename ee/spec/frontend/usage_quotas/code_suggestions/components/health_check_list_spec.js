@@ -1,4 +1,4 @@
-import { GlCollapse, GlIcon, GlLoadingIcon, GlSkeletonLoader } from '@gitlab/ui';
+import { GlCollapse, GlLoadingIcon, GlSkeletonLoader } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 
@@ -6,6 +6,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
+import HealthCheckListCategory from 'ee/usage_quotas/code_suggestions/components/health_check_list_category.vue';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { probesByCategory } from 'ee/usage_quotas/code_suggestions/utils';
 
@@ -71,13 +72,8 @@ describe('HealthCheckList', () => {
   const findHealthCheckFooterText = () => wrapper.findByTestId('health-check-footer-text');
   const findHealthCheckProbesLoader = () => wrapper.findComponent(GlSkeletonLoader);
   const findHealthCheckProbes = () => wrapper.findByTestId('health-check-probes');
-  const findAllHealthCheckProbes = () => wrapper.findAllByTestId('health-check-probe');
   const findAllHealthCheckProbeCategories = () =>
-    wrapper.findAllByTestId('health-check-probe-category');
-  const findAllHealthCheckProbeCategoryTitles = () =>
-    wrapper.findAllByTestId('health-check-probe-category-title');
-  const findAllHealthCheckProbeCategoryDescriptions = () =>
-    wrapper.findAllByTestId('health-check-probe-category-description');
+    wrapper.findAllComponents(HealthCheckListCategory);
 
   const createComponent = ({ response = success } = {}) => {
     healthStatusReq = jest.fn().mockResolvedValue(response);
@@ -264,67 +260,10 @@ describe('HealthCheckList', () => {
       await waitForPromises();
     });
 
-    it('renders category title for each health check category', () => {
-      expect(findAllHealthCheckProbeCategoryTitles().wrappers.map((w) => w.text())).toStrictEqual(
-        categories.map((category) => category.title),
-      );
-    });
-
-    it('renders category description for each health check category', () => {
+    it('renders each health check category', () => {
       expect(
-        findAllHealthCheckProbeCategoryDescriptions().wrappers.map((w) => w.text()),
-      ).toStrictEqual(categories.map((category) => category.description));
-    });
-
-    it('renders probes correctly under each health check category', () => {
-      const probes = findAllHealthCheckProbeCategories().wrappers.map((w) =>
-        w.findAll(`[data-testid="health-check-probe"]`).wrappers.map((p) => p.text()),
-      );
-      const expectedProbes = categories.map((c) => c.probes.map((p) => p.message));
-
-      expect(probes).toStrictEqual(expectedProbes);
-    });
-  });
-
-  describe('health check probes', () => {
-    describe.each`
-      description                | response
-      ${'success state'}         | ${success}
-      ${'partial failure state'} | ${partialFailure}
-      ${'total failure state'}   | ${totalFailure}
-    `('$description', ({ response }) => {
-      let probeResults = [];
-
-      beforeEach(async () => {
-        createComponent({ response });
-        findHealthCheckExpandButton().vm.$emit('click');
-        await waitForPromises();
-
-        probeResults = response.data.cloudConnectorStatus.probeResults;
-      });
-
-      it('renders each probe item icon correctly', () => {
-        expect(
-          findAllHealthCheckProbes().wrappers.map((w) => w.findComponent(GlIcon).props('name')),
-        ).toStrictEqual(probeResults.map((p) => (p.success ? 'check-circle' : 'error')));
-      });
-
-      it('renders each probe item css correctly', () => {
-        const BASE_CSS = 'gl-my-3 gl-rounded-small gl-px-3 gl-py-2';
-        expect(findAllHealthCheckProbes().wrappers.map((w) => w.classes().join(' '))).toStrictEqual(
-          probeResults.map((p) =>
-            p.success
-              ? `${BASE_CSS} gl-text-green-900 gl-bg-green-50`
-              : `${BASE_CSS} gl-text-red-900 gl-bg-red-50`,
-          ),
-        );
-      });
-
-      it('renders each probe item message correctly', () => {
-        expect(findAllHealthCheckProbes().wrappers.map((w) => w.text())).toStrictEqual(
-          probeResults.map((p) => p.message),
-        );
-      });
+        findAllHealthCheckProbeCategories().wrappers.map((w) => w.props('category')),
+      ).toStrictEqual(categories);
     });
   });
 
