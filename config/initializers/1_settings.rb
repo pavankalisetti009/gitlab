@@ -723,6 +723,9 @@ Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker'] ||= {}
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['cron'] ||= '*/4 * * * *'
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['args'] ||= [1]
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['job_class'] = 'Ci::ClickHouse::FinishedPipelinesSyncCronWorker'
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker'] ||= {}
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker']['cron'] ||= '*/10 * * * *'
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker']['job_class'] ||= 'Pages::DeactivateExpiredDeploymentsCronWorker'
 
 Gitlab.ee do
   Settings.cron_jobs['analytics_devops_adoption_create_all_snapshots_worker'] ||= {}
