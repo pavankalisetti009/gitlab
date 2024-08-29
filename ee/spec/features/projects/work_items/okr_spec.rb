@@ -166,15 +166,15 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
 
       it 'toggles widget body', :aggregate_failures do
         within_testid('work-item-tree') do
-          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="widget-body"]')
+          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
 
           click_button 'Collapse'
 
-          expect(page).not_to have_selector('[data-testid="work-item-tree"] [data-testid="widget-body"]')
+          expect(page).not_to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
 
           click_button 'Expand'
 
-          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="widget-body"]')
+          expect(page).to have_selector('[data-testid="work-item-tree"] [data-testid="crud-body"]')
         end
       end
 
