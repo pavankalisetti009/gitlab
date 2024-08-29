@@ -20482,6 +20482,38 @@ CREATE TABLE workspaces (
     CONSTRAINT check_ffa8cad434 CHECK ((char_length(url_prefix) <= 256))
 );
 
+CREATE TABLE workspaces_agent_configs (
+    id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    cluster_agent_id bigint NOT NULL,
+    workspaces_quota bigint DEFAULT '-1'::integer NOT NULL,
+    workspaces_per_user_quota bigint DEFAULT '-1'::integer NOT NULL,
+    project_id bigint NOT NULL,
+    default_max_hours_before_termination smallint DEFAULT 24 NOT NULL,
+    max_hours_before_termination_limit smallint DEFAULT 120 NOT NULL,
+    enabled boolean NOT NULL,
+    network_policy_enabled boolean DEFAULT true NOT NULL,
+    dns_zone text NOT NULL,
+    gitlab_workspaces_proxy_namespace text DEFAULT 'gitlab-workspaces'::text NOT NULL,
+    network_policy_egress jsonb DEFAULT '[{"allow": "0.0.0.0/0", "except": ["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]}]'::jsonb NOT NULL,
+    default_resources_per_workspace_container jsonb DEFAULT '{}'::jsonb NOT NULL,
+    max_resources_per_workspace jsonb DEFAULT '{}'::jsonb NOT NULL,
+    CONSTRAINT check_58759a890a CHECK ((char_length(dns_zone) <= 256)),
+    CONSTRAINT check_dca877fba1 CHECK ((default_max_hours_before_termination <= 8760)),
+    CONSTRAINT check_eab6e375ad CHECK ((max_hours_before_termination_limit <= 8760)),
+    CONSTRAINT check_ee2464835c CHECK ((char_length(gitlab_workspaces_proxy_namespace) <= 63))
+);
+
+CREATE SEQUENCE workspaces_agent_configs_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE workspaces_agent_configs_id_seq OWNED BY workspaces_agent_configs.id;
+
 CREATE SEQUENCE workspaces_id_seq
     START WITH 1
     INCREMENT BY 1
@@ -22339,6 +22371,8 @@ ALTER TABLE ONLY work_item_widget_definitions ALTER COLUMN id SET DEFAULT nextva
 ALTER TABLE ONLY workspace_variables ALTER COLUMN id SET DEFAULT nextval('workspace_variables_id_seq'::regclass);
 
 ALTER TABLE ONLY workspaces ALTER COLUMN id SET DEFAULT nextval('workspaces_id_seq'::regclass);
+
+ALTER TABLE ONLY workspaces_agent_configs ALTER COLUMN id SET DEFAULT nextval('workspaces_agent_configs_id_seq'::regclass);
 
 ALTER TABLE ONLY x509_certificates ALTER COLUMN id SET DEFAULT nextval('x509_certificates_id_seq'::regclass);
 
@@ -25135,6 +25169,9 @@ ALTER TABLE ONLY work_item_widget_definitions
 
 ALTER TABLE ONLY workspace_variables
     ADD CONSTRAINT workspace_variables_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY workspaces_agent_configs
+    ADD CONSTRAINT workspaces_agent_configs_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY workspaces
     ADD CONSTRAINT workspaces_pkey PRIMARY KEY (id);
@@ -30704,6 +30741,10 @@ CREATE INDEX index_workspace_variables_on_project_id ON workspace_variables USIN
 
 CREATE INDEX index_workspace_variables_on_workspace_id ON workspace_variables USING btree (workspace_id);
 
+CREATE INDEX index_workspaces_agent_configs_on_project_id ON workspaces_agent_configs USING btree (project_id);
+
+CREATE UNIQUE INDEX index_workspaces_agent_configs_on_unique_cluster_agent_id ON workspaces_agent_configs USING btree (cluster_agent_id);
+
 CREATE INDEX index_workspaces_on_cluster_agent_id ON workspaces USING btree (cluster_agent_id);
 
 CREATE UNIQUE INDEX index_workspaces_on_name ON workspaces USING btree (name);
@@ -33727,6 +33768,9 @@ ALTER TABLE ONLY todos
 ALTER TABLE ONLY packages_debian_group_architectures
     ADD CONSTRAINT fk_92714bcab1 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
+ALTER TABLE ONLY workspaces_agent_configs
+    ADD CONSTRAINT fk_94660551c8 FOREIGN KEY (cluster_agent_id) REFERENCES cluster_agents(id) ON DELETE CASCADE;
+
 ALTER TABLE ONLY dast_site_profiles_builds
     ADD CONSTRAINT fk_94e80df60e FOREIGN KEY (dast_site_profile_id) REFERENCES dast_site_profiles(id) ON DELETE CASCADE;
 
@@ -34365,6 +34409,9 @@ ALTER TABLE ONLY epic_user_mentions
 
 ALTER TABLE ONLY observability_metrics_issues_connections
     ADD CONSTRAINT fk_f218d84a14 FOREIGN KEY (namespace_id) REFERENCES namespaces(id) ON DELETE CASCADE;
+
+ALTER TABLE ONLY workspaces_agent_configs
+    ADD CONSTRAINT fk_f25d0fbfae FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
 
 ALTER TABLE p_ci_pipeline_variables
     ADD CONSTRAINT fk_f29c5f4380_p FOREIGN KEY (partition_id, pipeline_id) REFERENCES ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;

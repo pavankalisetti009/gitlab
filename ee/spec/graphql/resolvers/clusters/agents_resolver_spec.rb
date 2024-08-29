@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Resolvers::Clusters::AgentsResolver do
+RSpec.describe Resolvers::Clusters::AgentsResolver, feature_category: :environment_management do
   include GraphqlHelpers
 
   specify do
@@ -65,33 +65,58 @@ RSpec.describe Resolvers::Clusters::AgentsResolver do
         end
       end
 
-      context 'when has_remote_development_agent_config argument is provided' do
-        let(:params) do
-          { has_remote_development_agent_config: has_remote_development_agent_config }
-        end
-
-        let_it_be(:agent_with_remote_development_agent_config) do
-          create(:ee_cluster_agent, :with_remote_development_agent_config,
+      context 'for agents with and without workspaces agent config' do
+        let_it_be(:agent_with_workspaces_agent_config) do
+          create(:ee_cluster_agent, :with_existing_workspaces_agent_config,
             project: project)
         end
 
-        let_it_be(:agent_without_remote_development_agent_config) do
+        let_it_be(:agent_without_workspaces_agent_config) do
           create(:ee_cluster_agent, project: project)
         end
 
-        context 'when has_remote_development_agent_config is set to true' do
-          let(:has_remote_development_agent_config) { true }
+        # TODO: clusterAgent.hasRemoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+        context 'when has_remote_development_agent_config argument is provided' do
+          let(:params) do
+            { has_remote_development_agent_config: has_remote_development_agent_config }
+          end
 
-          it 'returns only agents with remote_development_agent_config' do
-            expect(subject).to contain_exactly(agent_with_remote_development_agent_config)
+          context 'when has_remote_development_agent_config is set to true' do
+            let(:has_remote_development_agent_config) { true }
+
+            it 'returns only agents with remote_development_agent_config' do
+              expect(subject).to contain_exactly(agent_with_workspaces_agent_config)
+            end
+          end
+
+          context 'when has_remote_development_agent_config is set to false' do
+            let(:has_remote_development_agent_config) { false }
+
+            it 'returns only agents without remote_development_agent_config' do
+              expect(subject).to contain_exactly(agent_without_workspaces_agent_config)
+            end
           end
         end
 
-        context 'when has_remote_development_agent_config is set to false' do
-          let(:has_remote_development_agent_config) { false }
+        context 'when has_workspaces_agent_config argument is provided' do
+          let(:params) do
+            { has_workspaces_agent_config: has_workspaces_agent_config }
+          end
 
-          it 'returns only agents without remote_development_agent_config' do
-            expect(subject).to contain_exactly(agent_without_remote_development_agent_config)
+          context 'when has_workspaces_agent_config is set to true' do
+            let(:has_workspaces_agent_config) { true }
+
+            it 'returns only agents with workspaces_agent_config' do
+              expect(subject).to contain_exactly(agent_with_workspaces_agent_config)
+            end
+          end
+
+          context 'when has_workspaces_agent_config is set to false' do
+            let(:has_workspaces_agent_config) { false }
+
+            it 'returns only agents without workspaces_agent_config' do
+              expect(subject).to contain_exactly(agent_without_workspaces_agent_config)
+            end
           end
         end
       end
@@ -103,17 +128,17 @@ RSpec.describe Resolvers::Clusters::AgentsResolver do
         let_it_be(:agent_without_enabled_config) { create(:ee_cluster_agent, project: project) }
 
         let_it_be(:config_for_enabled_agent) do
-          create(:remote_development_agent_config, agent: agent_with_enabled_config, enabled: true)
+          create(:workspaces_agent_config, agent: agent_with_enabled_config, enabled: true)
         end
 
         let_it_be(:config_for_disabled_agent) do
-          create(:remote_development_agent_config, agent: agent_without_enabled_config, enabled: false)
+          create(:workspaces_agent_config, agent: agent_without_enabled_config, enabled: false)
         end
 
-        context 'when has_remote_development_agent_config is set to true' do
+        context 'when has_workspaces_agent_config is set to true' do
           let(:has_remote_development_enabled) { true }
 
-          it 'returns only agents with remote_development_agent_config' do
+          it 'returns only agents with workspaces_agent_config' do
             expect(subject).to contain_exactly(agent_with_enabled_config)
           end
         end

@@ -83,11 +83,10 @@ describe('workspaces/common/components/get_project_details_query', () => {
 
   const transformGroupClusterAgentGraphQLResultToClusterAgents = (clusterAgentsGraphQLResult) =>
     clusterAgentsGraphQLResult.data.group.clusterAgents.nodes.map(
-      ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+      ({ id, name, project, workspacesAgentConfig }) => ({
         text: `${project.nameWithNamespace} / ${name}`,
         value: id,
-        defaultMaxHoursBeforeTermination:
-          remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+        defaultMaxHoursBeforeTermination: workspacesAgentConfig.defaultMaxHoursBeforeTermination,
       }),
     );
 
@@ -95,11 +94,10 @@ describe('workspaces/common/components/get_project_details_query', () => {
     clusterAgentsGraphQLResult,
   ) =>
     clusterAgentsGraphQLResult.data.namespace.remoteDevelopmentClusterAgents.nodes.map(
-      ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+      ({ id, name, project, workspacesAgentConfig }) => ({
         text: `${project.nameWithNamespace} / ${name}`,
         value: id,
-        defaultMaxHoursBeforeTermination:
-          remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+        defaultMaxHoursBeforeTermination: workspacesAgentConfig.defaultMaxHoursBeforeTermination,
       }),
     );
 

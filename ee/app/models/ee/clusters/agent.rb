@@ -13,8 +13,14 @@ module EE
           foreign_key: 'cluster_agent_id',
           inverse_of: :agent
 
+        # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
         has_one :remote_development_agent_config,
           class_name: 'RemoteDevelopment::RemoteDevelopmentAgentConfig',
+          inverse_of: :agent,
+          foreign_key: :cluster_agent_id
+
+        has_one :workspaces_agent_config,
+          class_name: 'RemoteDevelopment::WorkspacesAgentConfig',
           inverse_of: :agent,
           foreign_key: :cluster_agent_id
 
@@ -24,12 +30,12 @@ module EE
           foreign_key: 'cluster_agent_id'
 
         scope :for_projects, ->(projects) { where(project: projects) }
-        scope :with_remote_development_agent_config, -> { joins(:remote_development_agent_config) }
-        scope :without_remote_development_agent_config, -> do
-          includes(:remote_development_agent_config).where(remote_development_agent_config: { cluster_agent_id: nil })
+        scope :with_workspaces_agent_config, -> { joins(:workspaces_agent_config) }
+        scope :without_workspaces_agent_config, -> do
+          includes(:workspaces_agent_config).where(workspaces_agent_config: { cluster_agent_id: nil })
         end
         scope :with_remote_development_enabled, -> do
-          with_remote_development_agent_config.where(remote_development_agent_config: { enabled: true })
+          with_workspaces_agent_config.where(workspaces_agent_config: { enabled: true })
         end
       end
     end

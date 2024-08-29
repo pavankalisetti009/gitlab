@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_development do
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let_it_be(:project) { create(:project, :in_group) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
 
@@ -18,7 +18,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
   describe 'associations' do
     context "for has_one" do
-      it { is_expected.to have_one(:remote_development_agent_config) }
+      it { is_expected.to have_one(:workspaces_agent_config) }
     end
 
     context "for has_many" do
@@ -44,10 +44,10 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
         expect(workspace.project).to eq(project)
         expect(workspace.agent).to eq(agent)
         expect(workspace.personal_access_token).to eq(personal_access_token)
-        expect(workspace.remote_development_agent_config).to eq(agent.remote_development_agent_config)
-        expect(agent.remote_development_agent_config.workspaces.first).to eq(workspace)
+        expect(workspace.workspaces_agent_config).to eq(agent.workspaces_agent_config)
+        expect(agent.workspaces_agent_config.workspaces.first).to eq(workspace)
         expect(workspace.url_prefix).to eq("60001-#{workspace.name}")
-        expect(workspace.dns_zone).to eq(agent.remote_development_agent_config.dns_zone)
+        expect(workspace.dns_zone).to eq(agent.workspaces_agent_config.dns_zone)
         # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
         expect(workspace.url_query_string).to eq("folder=dir%2Ffile")
       end
@@ -58,7 +58,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
     subject(:workspace) { build(:workspace) }
 
     it 'returns calculated url' do
-      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent.remote_development_agent_config.dns_zone}?folder=dir%2Ffile")
+      expect(workspace.url).to eq("https://60001-#{workspace.name}.#{agent.workspaces_agent_config.dns_zone}?folder=dir%2Ffile")
     end
   end
 
@@ -131,7 +131,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
       end
     end
 
-    context 'on remote_development_agent_config' do
+    context 'on workspaces_agent_config' do
       context 'when no config is present' do
         let(:agent_with_no_remote_development_config) { create(:cluster_agent) }
 
@@ -139,13 +139,13 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
           build(:workspace, user: user, agent: agent_with_no_remote_development_config, project: project)
         end
 
-        it 'validates presence of agent.remote_development_agent_config' do
+        it 'validates presence of agent.workspaces_agent_config' do
           # sanity check of fixture
-          expect(agent_with_no_remote_development_config.remote_development_agent_config).not_to be_present
+          expect(agent_with_no_remote_development_config.workspaces_agent_config).not_to be_present
 
           expect(invalid_workspace).not_to be_valid
           expect(invalid_workspace.errors[:agent])
-            .to include('for Workspace must have an associated RemoteDevelopmentAgentConfig')
+            .to include('for Workspace must have an associated WorkspacesAgentConfig')
         end
 
         it "is only validated on create" do
@@ -162,20 +162,20 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context 'when agent is enabled' do
           before do
-            agent.remote_development_agent_config.enabled = true
+            agent.workspaces_agent_config.enabled = true
           end
 
-          it 'validates presence of agent.remote_development_agent_config' do
+          it 'validates presence of agent.workspaces_agent_config' do
             expect(workspace).to be_valid
           end
         end
 
         context 'when agent is disabled' do
           before do
-            agent.remote_development_agent_config.enabled = false
+            agent.workspaces_agent_config.enabled = false
           end
 
-          it 'validates agent.remote_development_agent_config is enabled' do
+          it 'validates agent.workspaces_agent_config is enabled' do
             expect(workspace).not_to be_valid
             expect(workspace.errors[:agent])
               .to include("must have the 'enabled' flag set to true")
@@ -200,10 +200,10 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
           workspace.dns_zone = 'zone1'
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-          agent.remote_development_agent_config.dns_zone = 'zone1'
+          agent.workspaces_agent_config.dns_zone = 'zone1'
         end
 
-        it 'validates presence of agent.remote_development_agent_config' do
+        it 'validates presence of agent.workspaces_agent_config' do
           expect(workspace).to be_valid
         end
       end
@@ -213,7 +213,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
           workspace.dns_zone = 'zone1'
           # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-          agent.remote_development_agent_config.dns_zone = 'zone2'
+          agent.workspaces_agent_config.dns_zone = 'zone2'
         end
 
         context "when workspace is in desired_state Terminated" do
@@ -221,7 +221,7 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
             workspace.desired_state = ::RemoteDevelopment::WorkspaceOperations::States::TERMINATED
           end
 
-          it 'does not validate dns_zone matches agent.remote_development_agent_config.dns_zone' do
+          it 'does not validate dns_zone matches agent.workspaces_agent_config.dns_zone' do
             expect(workspace).to be_valid
           end
         end
@@ -231,10 +231,10 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
             workspace.desired_state = ::RemoteDevelopment::WorkspaceOperations::States::RUNNING
           end
 
-          it 'validates dns_zone matches agent.remote_development_agent_config.dns_zone' do
+          it 'validates dns_zone matches agent.workspaces_agent_config.dns_zone' do
             expect(workspace).not_to be_valid
             expect(workspace.errors[:dns_zone])
-              .to include("for Workspace must match the dns_zone of the associated RemoteDevelopmentAgentConfig")
+              .to include("for Workspace must match the dns_zone of the associated WorkspacesAgentConfig")
           end
         end
       end
@@ -258,8 +258,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
       let_it_be(:user1) { create(:user) }
       let_it_be(:user2) { create(:user) }
       let_it_be(:user3) { create(:user) }
-      let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
-      let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+      let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
+      let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
       let_it_be(:workspace1) do
         create(:workspace, user: user1, agent: agent1,
           desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
@@ -294,8 +294,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
     end
 
     describe "#workspaces_count_for_current_agent" do
-      let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
-      let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+      let_it_be(:agent1, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
+      let_it_be(:agent2, reload: true) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
       let_it_be(:workspace1) do
         create(:workspace, agent: agent1, desired_state: ::RemoteDevelopment::WorkspaceOperations::States::RUNNING)
       end
@@ -326,18 +326,18 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
     describe "#exceeds_workspaces_per_user_quota?" do
       let(:workspace) { create(:workspace) }
 
-      context "when remote_development_agent_config is nil" do
+      context "when workspaces_agent_config is nil" do
         it "returns false" do
-          workspace.remote_development_agent_config = nil
+          workspace.workspaces_agent_config = nil
           expect(workspace.exceeds_workspaces_per_user_quota?).to be nil
         end
       end
 
-      context "when remote_development_agent_config is present" do
+      context "when workspaces_agent_config is present" do
         context "when workspaces_per_user_quota is 0" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_per_user_quota: 0))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_per_user_quota: 0))
           end
 
           it "returns true" do
@@ -347,8 +347,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspaces_per_user_quota is -1" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_per_user_quota: -1))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_per_user_quota: -1))
           end
 
           it "returns false" do
@@ -358,8 +358,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspaces_per_user_quota is greater than 0" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_per_user_quota: 2))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_per_user_quota: 2))
           end
 
           it "returns true if the workspaces count for current user and agent is greater than or equal to the quota" do
@@ -378,18 +378,18 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
     describe "#exceeds_workspaces_quota?" do
       let(:workspace) { create(:workspace) }
 
-      context "when remote_development_agent_config is nil" do
+      context "when workspaces_agent_config is nil" do
         it "returns false" do
-          workspace.remote_development_agent_config = nil
+          workspace.workspaces_agent_config = nil
           expect(workspace.exceeds_workspaces_quota?).to be nil
         end
       end
 
-      context "when remote_development_agent_config is present" do
+      context "when workspaces_agent_config is present" do
         context "when workspaces_quota is 0" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_quota: 0))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_quota: 0))
           end
 
           it "returns true" do
@@ -399,8 +399,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspaces_quota is -1" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_quota: -1))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_quota: -1))
           end
 
           it "returns false" do
@@ -410,8 +410,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
 
         context "when workspaces_quota is greater than 0" do
           before do
-            allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-              RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_quota: 2))
+            allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+              RemoteDevelopment::WorkspacesAgentConfig, workspaces_quota: 2))
           end
 
           it "returns true if the workspaces count for the current agent is greater than or equal to the quota" do
@@ -447,8 +447,8 @@ RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_developme
       end
 
       it 'adds base error when per user quota exceeded' do
-        allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-          ::RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_per_user_quota: 5))
+        allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+          ::RemoteDevelopment::WorkspacesAgentConfig, workspaces_per_user_quota: 5))
         allow(workspace).to receive(:workspaces_count_for_current_user_and_agent).and_return(6)
         allow(workspace).to receive(:exceeds_workspaces_per_user_quota?).and_return(true)
         workspace.validate
@@ -458,8 +458,8 @@ existing workspaces for the given agent with a per user quota of \"5\" workspace
       end
 
       it 'adds base error when total quota exceeded' do
-        allow(workspace).to receive(:remote_development_agent_config).and_return(instance_double(
-          ::RemoteDevelopment::RemoteDevelopmentAgentConfig, workspaces_quota: 3))
+        allow(workspace).to receive(:workspaces_agent_config).and_return(instance_double(
+          ::RemoteDevelopment::WorkspacesAgentConfig, workspaces_quota: 3))
         allow(workspace).to receive(:workspaces_count_for_current_agent).and_return(3)
         allow(workspace).to receive(:exceeds_workspaces_quota?).and_return(true)
         workspace.validate

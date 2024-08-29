@@ -17,7 +17,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   end
 
   let_it_be(:agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
   end
 
   let_it_be(:agent_token) { create(:cluster_agent_token, agent: agent, created_by_user: user) }

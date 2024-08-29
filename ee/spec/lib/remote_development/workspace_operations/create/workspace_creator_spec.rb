@@ -9,7 +9,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project, reload: true) { create(:project, :in_group, :repository) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
   let(:random_string) { 'abcdef' }
   let(:devfile_path) { '.devfile.yaml' }
@@ -68,7 +68,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceCreato
     it 'creates the workspace with the right url components' do
       expect(result).to be_ok_result do |message|
         message => { workspace: RemoteDevelopment::Workspace => workspace }
-        expected_url = "https://60001-#{workspace.name}.#{agent.remote_development_agent_config.dns_zone}" \
+        expected_url = "https://60001-#{workspace.name}.#{agent.workspaces_agent_config.dns_zone}" \
           "?folder=%2Fprojects%2F#{project.path}"
         expect(workspace.url).to eq(expected_url)
       end

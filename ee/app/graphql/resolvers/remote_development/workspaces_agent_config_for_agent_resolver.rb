@@ -2,27 +2,27 @@
 
 module Resolvers
   module RemoteDevelopment
-    class AgentConfigForAgentResolver < ::Resolvers::BaseResolver
+    class WorkspacesAgentConfigForAgentResolver < ::Resolvers::BaseResolver
       include Gitlab::Graphql::Authorize::AuthorizeResource
       include LooksAhead
 
-      type Types::RemoteDevelopment::RemoteDevelopmentAgentConfigType, null: true
+      type Types::RemoteDevelopment::WorkspacesAgentConfigType, null: true
 
       alias_method :agent, :object
 
       #
-      # Resolve the remote development agent config for the given agent.
+      # Resolve the workspaces agent config for the given agent.
       #
       # @param [Hash] **_args The arguments passed to the resolver, and do not in use here
       #
-      # @return [RemoteDevelopmentAgentConfig] The remote development agent config for the given agent
+      # @return [WorkspacesAgentConfig] The workspaces agent config for the given agent
       #
       def resolve_with_lookahead(**_args)
         unless License.feature_available?(:remote_development)
           raise_resource_not_available_error! "'remote_development' licensed feature is not available"
         end
 
-        raise Gitlab::Access::AccessDeniedError unless can_read_remote_development_agent_config?
+        raise Gitlab::Access::AccessDeniedError unless can_read_workspaces_agent_config?
 
         BatchLoader::GraphQL.for(agent.id).batch do |agent_ids, loader|
           agent_configs = ::RemoteDevelopment::AgentConfigsFinder.execute(
@@ -37,7 +37,7 @@ module Resolvers
 
       private
 
-      def can_read_remote_development_agent_config?
+      def can_read_workspaces_agent_config?
         # noinspection RubyNilAnalysis - This is because the superclass #current_user uses #[], which can return nil
         current_user.can?(:read_cluster_agent, agent)
       end

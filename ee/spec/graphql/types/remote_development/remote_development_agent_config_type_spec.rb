@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 
+# TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
 RSpec.describe GitlabSchema.types['RemoteDevelopmentAgentConfig'], feature_category: :remote_development do
   let(:fields) do
     %i[
@@ -15,7 +16,7 @@ RSpec.describe GitlabSchema.types['RemoteDevelopmentAgentConfig'], feature_categ
 
   specify { expect(described_class).to have_graphql_fields(fields) }
 
-  specify { expect(described_class).to require_graphql_authorizations(:read_remote_development_agent_config) }
+  specify { expect(described_class).to require_graphql_authorizations(:read_workspaces_agent_config) }
 
   describe 'remote_development_agent_config' do
     let_it_be(:group) { create(:group) }

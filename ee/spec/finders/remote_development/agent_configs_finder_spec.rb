@@ -15,11 +15,11 @@ RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :remote_
   end
 
   let_it_be(:agent_config_a) do
-    create(:remote_development_agent_config, agent: agent_a)
+    create(:workspaces_agent_config, agent: agent_a)
   end
 
   let_it_be(:agent_config_b) do
-    create(:remote_development_agent_config, agent: agent_b)
+    create(:workspaces_agent_config, agent: agent_b)
   end
 
   subject(:collection_proxy) do

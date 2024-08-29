@@ -9,7 +9,7 @@ query getGroupClusterAgents($groupPath: ID!) {
           id
           nameWithNamespace
         }
-        remoteDevelopmentAgentConfig {
+        workspacesAgentConfig {
           id
           defaultMaxHoursBeforeTermination
         }

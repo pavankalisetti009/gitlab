@@ -1,5 +1,5 @@
 {
-  "description": "Network Policy Egress rules for Remote Development Agent Configs",
+  "description": "Network Policy Egress rules for Workspaces Agent Configs",
   "type": "array",
   "items": {
     "type": "object",
