@@ -9,6 +9,8 @@ import { metricsListQueryFromAttributes } from 'ee/metrics/list/filters';
 
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
 import { validatedDateRangeQuery } from '~/observability/utils';
+import RelatedIssues from '~/observability/components/observability_related_issues.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { mapTraceToSpanTrees, SPANS_LIMIT } from '../trace_utils';
 import { VIEW_TRACING_DETAILS_PAGE } from '../events';
 import TracingChart from './tracing_chart.vue';
@@ -31,6 +33,7 @@ export default {
     GlAlert,
     GlSprintf,
     RelatedIssuesProvider,
+    RelatedIssues,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -150,12 +153,15 @@ export default {
     },
   },
   SPANS_LIMIT,
+  relatedIssuesHelpPath: helpPagePath('/operations/tracing', {
+    anchor: 'create-an-issue-for-a-trace',
+  }),
 };
 </script>
 
 <template>
   <related-issues-provider v-if="traceId" :trace-id="traceId" :project-full-path="projectFullPath">
-    <template #default>
+    <template #default="{ issues, loading: fetchingIssues, error }">
       <div v-if="loading" class="gl-py-5">
         <gl-loading-icon size="lg" />
       </div>
@@ -186,6 +192,13 @@ export default {
         />
 
         <tracing-drawer :span="selectedSpan" :open="isDrawerOpen" @close="closeDrawer" />
+
+        <related-issues
+          :issues="issues"
+          :fetching-issues="fetchingIssues"
+          :error="error"
+          :help-path="$options.relatedIssuesHelpPath"
+        />
       </div>
     </template>
   </related-issues-provider>
