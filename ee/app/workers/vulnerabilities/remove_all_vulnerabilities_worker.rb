@@ -47,6 +47,7 @@ module Vulnerabilities
           vulnerability_occurrence_pipelines
           vulnerability_historical_statistics
           vulnerability_reads
+          vulnerability_merge_request_links
         ],
         url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474140'
       ) do
@@ -62,6 +63,7 @@ module Vulnerabilities
               vulnerability_occurrences
               vulnerability_reads
               vulnerability_scanners
+              vulnerability_merge_request_links
             ], url: 'https://gitlab.com/groups/gitlab-org/-/epics/14116#identified-cross-joins'
           ) do
             Vulnerability.transaction do

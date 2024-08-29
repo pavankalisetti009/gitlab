@@ -8,10 +8,20 @@ module Vulnerabilities
 
         @error_message = nil
 
-        merge_request = ApplicationRecord.transaction do
-          vulnerability = find_or_create_vulnerability
-          create_merge_request(vulnerability).tap do |merge_request|
-            create_vulnerability_merge_request_link(merge_request, vulnerability)
+        merge_request = nil
+        Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+          %w[
+            internal_ids
+            merge_requests
+            merge_request_user_mentions
+            vulnerability_merge_request_links
+          ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480003'
+        ) do
+          merge_request = ApplicationRecord.transaction do
+            vulnerability = find_or_create_vulnerability
+            create_merge_request(vulnerability).tap do |merge_request|
+              create_vulnerability_merge_request_link(merge_request, vulnerability)
+            end
           end
         end
 

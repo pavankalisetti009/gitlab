@@ -59,16 +59,19 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
           'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
         'vulnerability_finding_evidences' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_finding_links' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_finding_signatures' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_flags' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
+        },
+        'vulnerability_merge_request_links' => {
+          'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'dast_site_validations' => {
           'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985'
@@ -79,7 +82,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         'sbom_occurrences_vulnerabilities' => {
           'sbom_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
-        'dast_site_profiles_builds' => { 'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706' }
+        'dast_site_profiles_builds' => {
+          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706'
+        }
       }
     end
 
