@@ -83,8 +83,10 @@ RSpec.describe 'view usage quotas', feature_category: :consumables_cost_manageme
 
       it 'returns csv with expected data' do
         expect(response.body).to eq(
-          "History entry date,Start date,End date,Seats purchased,Seats in use,Max seats used,Change Type\n" \
-            "#{subscription_history.created_at},#{subscription_history.start_date},#{subscription_history.end_date}," \
+          "History entry date,Subscription updated at,Start date,End date," \
+            "Seats purchased,Seats in use,Max seats used,Change Type\n" \
+            "#{subscription_history.created_at},#{subscription_history.gitlab_subscription_updated_at}," \
+            "#{subscription_history.start_date},#{subscription_history.end_date}," \
             "#{subscription_history.seats},#{subscription_history.seats_in_use}," \
             "#{subscription_history.max_seats_used},#{subscription_history.change_type}\n"
         )
