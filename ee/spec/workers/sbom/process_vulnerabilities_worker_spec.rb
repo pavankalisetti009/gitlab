@@ -4,7 +4,8 @@ require "spec_helper"
 
 RSpec.describe Sbom::ProcessVulnerabilitiesWorker, feature_category: :software_composition_analysis do
   describe "#handle_event" do
-    let(:id) { 1 }
+    let_it_be(:pipeline) { create(:ci_pipeline) }
+    let(:id) { pipeline.id }
     let(:args) { { pipeline_id: id } }
     let(:sbom_ingest_event) { Sbom::SbomIngestedEvent.new(data: args) }
 

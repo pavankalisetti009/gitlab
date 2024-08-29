@@ -92,7 +92,6 @@ module Sbom
     end
 
     scope :unarchived, -> { where(archived: false) }
-    scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
     scope :by_project_ids, ->(project_ids) do
       where(project_id: project_ids)
         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')

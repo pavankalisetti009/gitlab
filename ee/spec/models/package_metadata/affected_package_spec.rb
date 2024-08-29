@@ -137,6 +137,22 @@ RSpec.describe PackageMetadata::AffectedPackage, type: :model, feature_category:
     it 'does not return unrelated occurrences' do
       expect(described_class.for_occurrences(occurrences)).not_to include(unrelated_affected_package)
     end
+
+    context 'with sbom pipeline components' do
+      let(:sbom_components) do
+        occurrences.map do |occurrence|
+          build(:ci_reports_sbom_component, purl_type: occurrence.purl_type, name: occurrence.component_name)
+        end
+      end
+
+      it 'returns only related occurrences' do
+        expect(described_class.for_occurrences(sbom_components)).to eq(affected_packages)
+      end
+
+      it 'does not return unrelated occurrences' do
+        expect(described_class.for_occurrences(sbom_components)).not_to include(unrelated_affected_package)
+      end
+    end
   end
 
   describe '#solution_text' do
