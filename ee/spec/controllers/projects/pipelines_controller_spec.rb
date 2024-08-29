@@ -212,4 +212,65 @@ RSpec.describe Projects::PipelinesController do
       end
     end
   end
+
+  describe 'GET license_count', :use_clean_rails_memory_store_caching, feature_category: :software_composition_analysis do
+    let(:license_count_request) { get :license_count, format: :json, params: { namespace_id: project.namespace, project_id: project, id: pipeline } }
+    let!(:software_license_policy) { create(:software_license_policy, software_license: mit, project: project) }
+    let(:cache_key) { ['license_count', project.cache_key_with_version, pipeline.cache_key_with_version] }
+
+    context 'with a cyclonedx report' do
+      let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
+      let_it_be(:report) { create(:ee_ci_job_artifact, :cyclonedx, job: build) }
+
+      context 'with feature enabled' do
+        before do
+          stub_licensed_features(license_scanning: true)
+          create(:pm_package, name: "esutils", purl_type: "npm",
+            other_licenses: [{ license_names: ["BSD-2-Clause"], versions: ["2.0.3"] }])
+          create(:pm_package, name: "github.com/astaxie/beego", purl_type: "golang",
+            other_licenses: [{ license_names: ["Apache-2.0"], versions: ["v1.10.0"] }])
+          create(:pm_package, name: "nokogiri", purl_type: "gem",
+            other_licenses: [{ license_names: ["MIT"], versions: ["1.8.0"] }])
+        end
+
+        it 'populates and returns the license count from the cache' do
+          # Perform the request to populate the cache
+          license_count_request
+          expect(response).to have_gitlab_http_status(:ok)
+
+          # Check that the cache has been populated
+          scanner = ::Gitlab::LicenseScanning.scanner_for_pipeline(project, pipeline)
+          expect(Rails.cache.read(cache_key)).to eq(scanner.report.licenses.count)
+
+          # Perform the request again to test cache hit
+          license_count_request
+
+          expect(response).to have_gitlab_http_status(:ok)
+          payload = Gitlab::Json.parse(response.body)
+          expect(payload['license_count']).to eq(scanner.report.licenses.count)
+        end
+      end
+
+      context 'with feature disabled' do
+        before do
+          license_count_request
+        end
+
+        it 'returns a 404 status' do
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
+
+    context 'without a cyclonedx report' do
+      before do
+        stub_licensed_features(license_scanning: true)
+        license_count_request
+      end
+
+      it 'returns a 404 status when no license data is present' do
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
 end

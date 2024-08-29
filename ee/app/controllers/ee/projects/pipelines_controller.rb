@@ -9,18 +9,18 @@ module EE
       prepended do
         include GovernUsageProjectTracking
 
-        before_action :authorize_read_licenses!, only: [:licenses]
+        before_action :authorize_read_licenses!, only: [:licenses, :license_count]
         before_action do
           push_frontend_feature_flag(:pipeline_security_dashboard_graphql, project, type: :development)
           push_frontend_feature_flag(:dora_charts_forecast, project.namespace)
           push_frontend_feature_flag(:use_holt_winters_forecast_for_deployment_frequency, project)
         end
 
-        feature_category :software_composition_analysis, [:licenses]
+        feature_category :software_composition_analysis, [:licenses, :license_count]
         feature_category :vulnerability_management, [:security]
         feature_category :code_quality, [:codequality_report]
 
-        urgency :low, [:codequality_report, :licenses, :security]
+        urgency :low, [:codequality_report, :licenses, :security, :license_count]
         track_govern_activity 'pipeline_security', :security,
           conditions: -> { pipeline.expose_security_dashboard? }
       end
@@ -47,6 +47,18 @@ module EE
             )
           end
         end
+      end
+
+      def license_count
+        scanner = ::Gitlab::LicenseScanning.scanner_for_pipeline(project, pipeline)
+        return access_to_licenses_denied! unless scanner.has_data?
+
+        count = Rails.cache.fetch(['license_count', project.cache_key_with_version, pipeline.cache_key_with_version],
+          expires_in: 7.days) do
+          scanner.report.licenses.count
+        end
+
+        render status: :ok, json: { license_count: count }
       end
 
       def codequality_report
