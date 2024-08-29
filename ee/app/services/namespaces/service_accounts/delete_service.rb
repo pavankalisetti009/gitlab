@@ -45,7 +45,7 @@ module Namespaces
       end
 
       def success
-        ServiceResponse.success(message: "User succesfully deleted")
+        ServiceResponse.success(message: "User successfully deleted")
       end
     end
   end
