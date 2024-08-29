@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 module Vulnerabilities
-  class MergeRequestLink < ApplicationRecord
+  class MergeRequestLink < Gitlab::Database::SecApplicationRecord
     include EachBatch
 
     self.table_name = 'vulnerability_merge_request_links'
