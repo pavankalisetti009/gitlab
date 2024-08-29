@@ -24,7 +24,7 @@ module Search
       DOT_COM_ROLLOUT_TARGET_BYTES = 300.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
       DOT_COM_ROLLOUT_SEARCH_LIMIT = 500
-      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 24.hours
+      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 3.hours
 
       attr_reader :task
 
