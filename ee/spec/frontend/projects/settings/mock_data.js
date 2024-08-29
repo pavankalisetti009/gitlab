@@ -23,6 +23,25 @@ export const accessLevelsMockResponse = {
       node: {
         __typename: 'PushAccessLevel',
         accessLevel: 40,
+        accessLevelDescription: 'Key name',
+        group: null,
+        user: null,
+        deployKey: {
+          id: '14',
+          title: 'Key name',
+          user: {
+            name: 'Jenny Smith',
+            __typename: 'AccessLevelUser',
+          },
+          __typename: 'AccessLevelDeployKey',
+        },
+      },
+    },
+    {
+      __typename: 'PushAccessLevelEdge',
+      node: {
+        __typename: 'PushAccessLevel',
+        accessLevel: 40,
         accessLevelDescription: 'Maintainers',
         group: null,
         user: null,
@@ -32,7 +51,7 @@ export const accessLevelsMockResponse = {
 };
 
 export const accessLevelsMockResult = {
-  total: 2,
+  total: 3,
   users: [
     {
       src: 'test.com/user.png',
@@ -45,4 +64,15 @@ export const accessLevelsMockResult = {
   ],
   groups: [],
   roles: [40],
+  deployKeys: [
+    {
+      __typename: 'AccessLevelDeployKey',
+      id: '14',
+      title: 'Key name',
+      user: {
+        name: 'Jenny Smith',
+        __typename: 'AccessLevelUser',
+      },
+    },
+  ],
 };

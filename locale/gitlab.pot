@@ -9527,6 +9527,9 @@ msgstr ""
 msgid "BranchRules|Delete rule"
 msgstr ""
 
+msgid "BranchRules|Deploy keys"
+msgstr ""
+
 msgid "BranchRules|Developers and Maintainers"
 msgstr ""
 

@@ -1,38 +1,12 @@
-import {
-  getAccessLevels,
-  generateRefDestinationPath,
-  getAccessLevelInputFromEdges,
-} from '~/projects/settings/utils';
-import setWindowLocation from 'helpers/set_window_location_helper';
+import { getAccessLevels, getAccessLevelInputFromEdges } from 'ee/projects/settings/utils';
 import { accessLevelsMockResponse, accessLevelsMockResult } from './mock_data';
 
-describe('Utils', () => {
+describe('EE Utils', () => {
   describe('getAccessLevels', () => {
     it('takes accessLevels response data and returns accessLevels object', () => {
-      const pushAccessLevels = getAccessLevels(accessLevelsMockResponse);
-      expect(pushAccessLevels).toEqual(accessLevelsMockResult);
+      const mergeAccessLevels = getAccessLevels(accessLevelsMockResponse);
+      expect(mergeAccessLevels).toEqual(accessLevelsMockResult);
     });
-  });
-
-  describe('generateRefDestinationPath', () => {
-    const projectRootPath = 'http://test.host/root/Project1';
-    const settingsCi = '-/settings/ci_cd';
-
-    it.each`
-      currentPath                           | selectedRef             | result
-      ${`${projectRootPath}`}               | ${undefined}            | ${`${projectRootPath}`}
-      ${`${projectRootPath}`}               | ${'test'}               | ${`${projectRootPath}`}
-      ${`${projectRootPath}/${settingsCi}`} | ${'test'}               | ${`${projectRootPath}/${settingsCi}?ref=test`}
-      ${`${projectRootPath}/${settingsCi}`} | ${'branch-hyphen'}      | ${`${projectRootPath}/${settingsCi}?ref=branch-hyphen`}
-      ${`${projectRootPath}/${settingsCi}`} | ${'test/branch'}        | ${`${projectRootPath}/${settingsCi}?ref=test%2Fbranch`}
-      ${`${projectRootPath}/${settingsCi}`} | ${'test/branch-hyphen'} | ${`${projectRootPath}/${settingsCi}?ref=test%2Fbranch-hyphen`}
-    `(
-      'generates the correct destination path for the `$selectedRef` ref and current url $currentPath by outputting $result',
-      ({ currentPath, selectedRef, result }) => {
-        setWindowLocation(currentPath);
-        expect(generateRefDestinationPath(selectedRef)).toBe(result);
-      },
-    );
   });
 
   describe('getAccessLevelInputFromEdges', () => {
@@ -48,6 +22,13 @@ describe('Utils', () => {
       const result = getAccessLevelInputFromEdges(edges);
 
       expect(result).toEqual([{ accessLevel: 30 }]);
+    });
+
+    it('returns an array with deployKeys when node has deployKeys', () => {
+      const edges = [{ node: { deployKey: { id: 14 } } }];
+      const result = getAccessLevelInputFromEdges(edges);
+
+      expect(result).toEqual([{ deployKeyId: 14 }]);
     });
 
     it('returns an array with groupId when node has group.id', () => {

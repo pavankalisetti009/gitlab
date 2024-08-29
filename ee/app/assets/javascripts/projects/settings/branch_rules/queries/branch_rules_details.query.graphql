@@ -52,6 +52,13 @@ query getBranchRulesDetailsEE($projectPath: ID!) {
                   webUrl
                   username
                 }
+                deployKey {
+                  id
+                  title
+                  user {
+                    name
+                  }
+                }
               }
             }
           }
