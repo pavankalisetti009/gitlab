@@ -32,10 +32,16 @@ module Resolvers
         required: false,
         description: 'Filter dependencies by component names.'
 
+      argument :component_ids, [Types::GlobalIDType[::Sbom::Component]],
+        required: false,
+        description: 'Filter dependencies by component IDs.'
+
       argument :source_types, [Types::Sbom::SourceTypeEnum],
         required: false,
         default_value: ::Sbom::Source::DEFAULT_SOURCES.keys.map(&:to_s) + ['nil_source'],
         description: 'Filter dependencies by source type.'
+
+      validates mutually_exclusive: [:component_names, :component_ids]
 
       alias_method :project, :object
 

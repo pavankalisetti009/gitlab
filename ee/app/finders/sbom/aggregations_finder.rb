@@ -87,6 +87,7 @@ module Sbom
         .unarchived
 
       relation = filter_by_licences(relation)
+      relation = filter_by_component_ids(relation)
 
       relation
         .order(inner_order)
@@ -98,6 +99,13 @@ module Sbom
       return relation unless params[:licenses].present?
 
       relation.by_primary_license(params[:licenses])
+    end
+
+    def filter_by_component_ids(relation)
+      return relation if Feature.disabled?(:group_level_dependencies_filtering_by_component, namespace)
+      return relation unless params[:component_ids].present?
+
+      relation.filter_by_component_ids(params[:component_ids])
     end
 
     def inner_order

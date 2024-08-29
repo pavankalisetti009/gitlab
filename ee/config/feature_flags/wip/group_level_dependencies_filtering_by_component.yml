@@ -1,9 +1,9 @@
 ---
 name: group_level_dependencies_filtering_by_component
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/442406
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/148257
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/454305
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/161932
 rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/454589
-milestone: '16.11'
+milestone: '16.4'
 group: group::threat insights
 type: wip
 default_enabled: false

@@ -35,6 +35,7 @@ module Sbom
       filter_by_source_types
       filter_by_package_managers
       filter_by_component_names
+      filter_by_component_ids
       filter_by_licences
       filter_by_visibility
       sort
@@ -62,6 +63,12 @@ module Sbom
       return if params[:component_names].blank?
 
       @collection = @collection.filter_by_component_names(params[:component_names])
+    end
+
+    def filter_by_component_ids
+      return if params[:component_ids].blank?
+
+      @collection = @collection.filter_by_component_ids(params[:component_ids])
     end
 
     def filter_by_licences

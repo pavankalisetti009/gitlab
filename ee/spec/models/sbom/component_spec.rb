@@ -57,6 +57,26 @@ RSpec.describe Sbom::Component, type: :model, feature_category: :dependency_mana
     end
   end
 
+  describe '.by_name' do
+    let_it_be(:component_1) do
+      create(:sbom_component, name: 'activesupport')
+    end
+
+    let_it_be(:component_2) do
+      create(:sbom_component, name: 'activestorage')
+    end
+
+    let_it_be(:non_matching_component) do
+      create(:sbom_component, name: 'log4j')
+    end
+
+    subject(:results) { described_class.by_name('actives') }
+
+    it 'returns only the matching components' do
+      expect(results).to match_array([component_1, component_2])
+    end
+  end
+
   context 'with loose foreign key on sbom_components.organization_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:organization) }

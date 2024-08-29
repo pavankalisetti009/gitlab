@@ -170,6 +170,20 @@ RSpec.describe Sbom::DependenciesFinder, feature_category: :dependency_managemen
         end
       end
 
+      context 'when filtered by component IDs' do
+        let_it_be(:params) do
+          {
+            component_ids: [occurrence_1.component_id]
+          }
+        end
+
+        it 'returns only records corresponding to the filter' do
+          component_ids = dependencies.map(&:component_id)
+
+          expect(component_ids).to eq([occurrence_1.component_id])
+        end
+      end
+
       context 'when filtered by license' do
         let_it_be(:params) do
           {

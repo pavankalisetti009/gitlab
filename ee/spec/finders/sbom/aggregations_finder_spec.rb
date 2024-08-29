@@ -191,6 +191,34 @@ RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_managemen
       end
     end
 
+    describe 'filtering by component IDs' do
+      let_it_be(:component_1) { create(:sbom_component) }
+      let_it_be(:component_2) { create(:sbom_component) }
+      let_it_be(:occurrence_1) do
+        create(:sbom_occurrence, component_id: component_1.id, project: target_projects.first)
+      end
+
+      let_it_be(:occurrence_2) { create(:sbom_occurrence, component_id: component_2.id, project: target_projects.last) }
+
+      let(:params) { { component_ids: [component_1.id, component_2.id] } }
+
+      context 'when feature flag is enabled' do
+        it 'returns only matching Sbom::Occurrences' do
+          expect(execute.to_a).to match_array([occurrence_1, occurrence_2])
+        end
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(group_level_dependencies_filtering_by_component: false)
+        end
+
+        it 'returns the original relation' do
+          expect(execute.to_a).to match_array(target_occurrences + [occurrence_1, occurrence_2])
+        end
+      end
+    end
+
     describe 'filtering by license' do
       using RSpec::Parameterized::TableSyntax
 
