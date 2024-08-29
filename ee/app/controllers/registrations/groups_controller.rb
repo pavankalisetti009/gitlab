@@ -24,7 +24,6 @@ module Registrations
     def new
       @group = Group.new(visibility_level: Gitlab::CurrentSettings.default_group_visibility)
       @project = Project.new(namespace: @group)
-      @template_name = ''
       @initialize_with_readme = true
 
       experiment(:project_templates_during_registration, user: current_user)
@@ -34,23 +33,18 @@ module Registrations
     end
 
     def create
-      service_class = if import?
-                        Registrations::ImportNamespaceCreateService
-                      else
-                        Registrations::StandardNamespaceCreateService
-                      end
-
-      params[:group].with_defaults!(organization_id: Current.organization_id)
-
-      result = service_class.new(current_user, params).execute
+      result = service_instance.execute
 
       if result.success?
         actions_after_success(result.payload)
       else
         @group = result.payload[:group]
         @project = result.payload[:project]
-        @template_name = params.dig(:project, :template_name)
-        @initialize_with_readme = params.dig(:project, :initialize_with_readme)
+
+        unless import? # imports do not have project params
+          @template_name = project_params[:template_name]
+          @initialize_with_readme = project_params[:initialize_with_readme]
+        end
 
         render :new
       end
@@ -58,11 +52,21 @@ module Registrations
 
     private
 
+    def service_instance
+      if import?
+        Registrations::ImportNamespaceCreateService
+          .new(current_user, glm_params: glm_params, group_params: group_params)
+      else
+        Registrations::StandardNamespaceCreateService
+          .new(current_user, glm_params: glm_params, group_params: group_params, project_params: project_params)
+      end
+    end
+
     def actions_after_success(payload)
       ::Onboarding::FinishService.new(current_user).execute
 
       if import?
-        import_url = URI.join(root_url, params[:import_url], "?namespace_id=#{payload[:group].id}").to_s
+        import_url = URI.join(root_url, general_params[:import_url], "?namespace_id=#{payload[:group].id}").to_s
         redirect_to import_url
       else
         track_project_registration_submission(payload[:project])
@@ -78,7 +82,7 @@ module Registrations
     end
 
     def import?
-      params[:import_url].present?
+      general_params[:import_url].present?
     end
 
     def track_event(action)
@@ -96,7 +100,7 @@ module Registrations
         onboarding_status.tracking_label
       )
 
-      template_name = params.dig(:project, :template_name)
+      template_name = project_params[:template_name]
       return if template_name.blank?
 
       experiment_project_templates_during_registration(
@@ -116,8 +120,37 @@ module Registrations
     end
 
     def onboarding_status
-      ::Onboarding::Status.new(params, session, current_user)
+      ::Onboarding::Status.new({}, session, current_user)
     end
     strong_memoize_attr :onboarding_status
+
+    def group_params
+      params.require(:group).permit(
+        :id,
+        :name,
+        :path,
+        :visibility_level,
+        :organization_id
+      ).with_defaults(organization_id: Current.organization_id)
+    end
+
+    def project_params
+      params.require(:project).permit(
+        :initialize_with_readme,
+        :name,
+        :namespace_id,
+        :path,
+        :template_name,
+        :visibility_level
+      )
+    end
+
+    def general_params
+      params.permit(:import_url).merge(glm_params)
+    end
+
+    def glm_params
+      params.permit(:glm_source, :glm_content)
+    end
   end
 end

@@ -2,6 +2,12 @@
 
 module Registrations
   class StandardNamespaceCreateService < BaseNamespaceCreateService
+    def initialize(user, glm_params:, group_params:, project_params:)
+      super(user, glm_params: glm_params, group_params: group_params)
+
+      @project_params = project_params.dup
+    end
+
     def execute
       if new_group?
         create_with_new_group_flow
@@ -14,12 +20,14 @@ module Registrations
 
     private
 
+    attr_reader :project_params
+
     def new_group?
       !existing_group_id
     end
 
     def existing_group_id
-      params.dig(:group, :id)
+      group_params[:id]
     end
 
     def create_with_new_group_flow
@@ -30,36 +38,14 @@ module Registrations
         after_successful_group_creation(group_track_action: 'create_group')
         create_project_flow
       else
-        @project = Project.new(project_params)
+        @project = Project.new(project_params.except(:initialize_with_readme))
 
         ServiceResponse.error(message: 'Group failed to be created', payload: { group: group, project: project })
       end
     end
 
     def create_project_params
-      extra = if params.dig(:project, :template_name).present?
-                :template_name
-              else
-                :initialize_with_readme
-              end
-
-      project_params(extra)
-    end
-
-    def project_params(*extra)
-      params
-        .require(:project)
-        .permit(project_params_attributes + extra)
-        .merge(namespace_id: group.id, organization_id: group.organization_id)
-    end
-
-    def project_params_attributes
-      [
-        :namespace_id,
-        :name,
-        :path,
-        :visibility_level
-      ]
+      project_params.merge(namespace_id: group.id, organization_id: group.organization_id)
     end
 
     def create_project_flow
