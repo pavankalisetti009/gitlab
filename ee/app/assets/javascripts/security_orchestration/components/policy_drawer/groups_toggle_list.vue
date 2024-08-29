@@ -1,7 +1,7 @@
 <script>
-import { GlAccordion, GlAccordionItem } from '@gitlab/ui';
-import { uniqueId } from 'lodash';
+import { GlAccordion, GlAccordionItem, GlLink } from '@gitlab/ui';
 import { s__, n__, sprintf } from '~/locale';
+import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_security_policy_schema_ext';
 
 export default {
   i18n: {
@@ -14,6 +14,7 @@ export default {
   components: {
     GlAccordion,
     GlAccordionItem,
+    GlLink,
   },
   props: {
     inlineList: {
@@ -30,6 +31,11 @@ export default {
       type: Array,
       required: false,
       default: () => [],
+    },
+    isLink: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
   },
   computed: {
@@ -75,16 +81,10 @@ export default {
         groups: groupsMessage,
       });
     },
-    groupsNames() {
-      return this.groups.map(({ name }) => name);
-    },
-    projectNames() {
-      return this.projects.map(({ name }) => name);
-    },
   },
   methods: {
-    uniqueId(name) {
-      return uniqueId(name);
+    getSecurityPolicyListUrl(source, namespaceType = 'group') {
+      return getSecurityPolicyListUrl({ namespacePath: source?.fullPath || '', namespaceType });
     },
   },
 };
@@ -103,8 +103,13 @@ export default {
       <gl-accordion :header-level="3" :class="{ 'gl-mb-2': hasProjects }">
         <gl-accordion-item :title="$options.i18n.groupsHeader" data-testid="groups-list">
           <ul>
-            <li v-for="name of groupsNames" :key="uniqueId(name)" data-testid="group-item">
-              {{ name }}
+            <li v-for="group of groups" :key="group.fullPath" data-testid="group-item">
+              <template v-if="isLink">
+                <gl-link :href="getSecurityPolicyListUrl(group)" target="_blank">{{
+                  group.name
+                }}</gl-link>
+              </template>
+              <span v-else>{{ group.name }}</span>
             </li>
           </ul>
         </gl-accordion-item>
@@ -113,8 +118,13 @@ export default {
       <gl-accordion v-if="hasProjects" :header-level="3">
         <gl-accordion-item :title="$options.i18n.projectsHeader" data-testid="projects-list">
           <ul>
-            <li v-for="name of projectNames" :key="uniqueId(name)" data-testid="project-item">
-              {{ name }}
+            <li v-for="project of projects" :key="project.fullPath" data-testid="project-item">
+              <template v-if="isLink">
+                <gl-link :href="getSecurityPolicyListUrl(project, 'project')" target="_blank">{{
+                  project.name
+                }}</gl-link>
+              </template>
+              <span v-else>{{ project.name }}</span>
             </li>
           </ul>
         </gl-accordion-item>
