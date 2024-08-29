@@ -169,11 +169,17 @@ module Gitlab
               additional_context: options[:additional_context]
             }.compact
 
-            {
+            response = {
               prompt: prompt,
               options: option_params,
               model_metadata: options[:model_metadata]
-            }.compact
+            }
+
+            if Feature.enabled?(:ai_merge_request_reader_for_chat, user)
+              response[:unavailable_resources] = %w[Pipelines Vulnerabilities]
+            end
+
+            response.compact
           end
 
           def payload_params(options)
