@@ -3,11 +3,11 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Ai::DuoUserFeedback, :clean_gitlab_redis_chat, feature_category: :ai_abstraction_layer do
+  include GraphqlHelpers
   let_it_be(:user) { create(:user) }
   let_it_be(:agent_version) { create(:ai_agent_version) }
-  let(:context) { { current_user: user } }
 
-  subject(:mutation) { described_class.new(object: nil, context: context, field: nil) }
+  subject(:mutation) { described_class.new(object: nil, context: query_context(user: user), field: nil) }
 
   describe '#resolve' do
     let(:chat_storage) { Gitlab::Llm::ChatStorage.new(user, agent_version.id) }
@@ -24,7 +24,7 @@ RSpec.describe Mutations::Ai::DuoUserFeedback, :clean_gitlab_redis_chat, feature
     end
 
     context 'without a user' do
-      let(:context) { { current_user: nil } }
+      let(:mutation) { described_class.new(object: nil, context: query_context(user: nil), field: nil) }
 
       it 'raises a ResourceNotAvailable error' do
         expect { resolve }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)

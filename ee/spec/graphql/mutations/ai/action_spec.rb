@@ -3,16 +3,19 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::Ai::Action, feature_category: :ai_abstraction_layer do
+  include GraphqlHelpers
   let_it_be(:user) { create(:user) }
   let_it_be(:resource, reload: true) { create(:issue) }
   let(:resource_id) { resource.to_gid.to_s }
   let(:request_id) { 'uuid' }
   let(:headers) { { "Referer" => "foobar", "User-Agent" => "user-agent" } }
   let(:request) { instance_double(ActionDispatch::Request, headers: headers) }
-  let(:context) { { current_user: user, request: request } }
   let(:expected_options) { { user_agent: "user-agent" } }
+  let(:current_user) { user }
 
-  subject(:mutation) { described_class.new(object: nil, context: context, field: nil) }
+  subject(:mutation) do
+    described_class.new(object: nil, context: query_context(user: user, request: request), field: nil)
+  end
 
   describe '#ready?' do
     let(:arguments) do
