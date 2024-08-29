@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe DependencyManagement::AggregationsFinder, feature_category: :dependency_management do
+RSpec.describe Sbom::AggregationsFinder, feature_category: :dependency_management do
   let_it_be(:target_group) { create(:group) }
   let(:params) { {} }
   let_it_be(:subgroup) { create(:group, parent: target_group) }
