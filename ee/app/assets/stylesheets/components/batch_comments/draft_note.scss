@@ -18,9 +18,10 @@
 }
 
 
-// Draft notes on diffs on overview tab
+// Draft notes on diffs on both tabs; draft notes on regular replies on overview tab
 
-.diff-content {
+.diff-content,
+.card {
   .draft-note .timeline-content {
     margin-left: 0;
     border-top-left-radius: 0;
