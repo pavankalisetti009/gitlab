@@ -1,3 +1,4 @@
+import { GlLink } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 
@@ -29,6 +30,7 @@ describe('GroupsToggleList', () => {
   const findProjectListHeader = () => wrapper.findByTestId('projects-list-header');
   const findAllGroupItems = () => wrapper.findAllByTestId('group-item');
   const findAllProjectItems = () => wrapper.findAllByTestId('project-item');
+  const findAllLinks = () => wrapper.findAllComponents(GlLink);
 
   describe('default rendering', () => {
     beforeEach(() => {
@@ -93,6 +95,35 @@ describe('GroupsToggleList', () => {
       });
 
       expect(findGroupListInlineHeader().text()).toBe('All projects in linked groups');
+    });
+  });
+
+  describe('links', () => {
+    it('renders lists with links', () => {
+      createComponent({
+        propsData: {
+          projects: mockedProjects,
+          isLink: true,
+        },
+      });
+
+      expect(findGroupsList().findAllComponents(GlLink).at(0).props('href')).toBe(
+        mockedGroups[0].full_path,
+      );
+
+      expect(findGroupsList().findAllComponents(GlLink).at(1).props('href')).toBe(
+        mockedGroups[1].full_path,
+      );
+
+      expect(findProjectsList().findAllComponents(GlLink).at(0).props('href')).toBe(
+        mockedProjects[0].full_path,
+      );
+
+      expect(findProjectsList().findAllComponents(GlLink).at(1).props('href')).toBe(
+        mockedProjects[1].full_path,
+      );
+
+      expect(findAllLinks()).toHaveLength(mockedGroups.length + mockedProjects.length);
     });
   });
 });

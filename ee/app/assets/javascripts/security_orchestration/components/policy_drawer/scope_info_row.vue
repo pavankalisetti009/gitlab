@@ -134,7 +134,11 @@ export default {
           />
         </template>
         <template v-else-if="policyScopeHasGroups">
-          <groups-toggle-list :groups="policyScopeGroups" :projects="policyExcludingProjects" />
+          <groups-toggle-list
+            is-link
+            :groups="policyScopeGroups"
+            :projects="policyExcludingProjects"
+          />
         </template>
         <template v-else-if="policyHasProjects">
           <projects-toggle-list

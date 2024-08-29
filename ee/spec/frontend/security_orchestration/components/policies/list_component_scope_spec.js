@@ -212,6 +212,7 @@ describe('ListComponentScope', () => {
       expect(findGroupsToggleList().props('groups')).toEqual(items);
       expect(findGroupsToggleList().props('projects')).toEqual([]);
       expect(findGroupsToggleList().props('inlineList')).toBe(true);
+      expect(findGroupsToggleList().props('isLink')).toBe(false);
     });
 
     it('renders group scope when groups and project exceptions are provided', () => {

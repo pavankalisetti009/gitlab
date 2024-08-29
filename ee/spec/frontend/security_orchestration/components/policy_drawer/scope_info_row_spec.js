@@ -163,6 +163,7 @@ describe('ScopeInfoRow', () => {
         });
 
         expect(findGroupsToggleList().exists()).toBe(true);
+        expect(findGroupsToggleList().props('isLink')).toBe(true);
         expect(findGroupsToggleList().props('groups')).toEqual(items);
         expect(findGroupsToggleList().props('projects')).toEqual([]);
       });
