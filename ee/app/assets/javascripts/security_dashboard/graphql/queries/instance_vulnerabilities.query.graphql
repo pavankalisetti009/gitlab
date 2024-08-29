@@ -20,6 +20,7 @@ query instanceVulnerabilities(
   $hasRemediations: Boolean
   $vetEnabled: Boolean = false
   $clusterAgentId: [ClustersAgentID!]
+  $owaspTopTen: [VulnerabilityOwaspTop10!]
 ) {
   vulnerabilities(
     before: $before
@@ -39,6 +40,7 @@ query instanceVulnerabilities(
     hasMergeRequest: $hasMergeRequest
     hasRemediations: $hasRemediations
     clusterAgentId: $clusterAgentId
+    owaspTopTen: $owaspTopTen
   ) {
     nodes {
       ...VulnerabilityFragment
