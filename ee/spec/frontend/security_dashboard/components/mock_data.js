@@ -111,6 +111,73 @@ export const clusterImageScanningVulnerability = {
   },
 };
 
+export const containerScanningForRegistryVulnerability = {
+  id: 'id_0',
+  detectedAt: '2020-07-29T15:36:54Z',
+  mergeRequest: {
+    id: 'mr-1',
+    webUrl: 'www.testmr.com/1',
+    state: 'status_warning',
+    iid: 1,
+  },
+  identifiers: [
+    {
+      externalType: 'cve',
+      name: 'CVE-2018-1234',
+    },
+    {
+      externalType: 'gemnasium',
+      name: 'Gemnasium-2018-1234',
+    },
+  ],
+  dismissalReason: 'USED_IN_TESTS',
+  title: 'Vulnerability 0',
+  severity: 'critical',
+  state: 'DISMISSED',
+  reportType: 'SAST',
+  resolvedOnDefaultBranch: false,
+  location: {
+    image:
+      'registry.gitlab.com/groulot/container-scanning-test/main:5f21de6956aee99ddb68ae49498662d9872f50ff',
+  },
+  project: {
+    id: 'project-1',
+    nameWithNamespace: 'Administrator / Security reports',
+  },
+  scanner: {
+    id: 'scanner-1',
+    vendor: 'GitLab',
+  },
+  issueLinks: {
+    nodes: [
+      {
+        id: 'issue-1',
+        issue: {
+          id: 'issue-1',
+          iid: 15,
+          webUrl: 'url',
+          webPath: 'path',
+          title: 'title',
+          state: 'state',
+          resolvedOnDefaultBranch: true,
+        },
+      },
+    ],
+  },
+  externalIssueLinks: {
+    nodes: [
+      {
+        id: 'issue-1',
+        issue: { iid: 15, externalTracker: 'jira', resolvedOnDefaultBranch: true },
+      },
+    ],
+  },
+  vulnerabilityPath: 'path',
+  userNotesCount: 1,
+  hasRemediations: true,
+  __typename: 'Vulnerability',
+};
+
 export const generateVulnerabilities = () => [
   {
     id: 'id_0',
