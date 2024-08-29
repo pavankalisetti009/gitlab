@@ -9,6 +9,7 @@ describe('DetailsIndex', () => {
     traceId: 'test-trace-id',
     tracingIndexUrl: 'https://example.com/tracing/index',
     logsIndexUrl: 'https://example.com/logs/index',
+    metricsIndexUrl: 'https://example.com/metrics/index',
     createIssueUrl: 'https://example.com/issues/new',
     projectFullPath: 'foo/bar',
     apiConfig: {
@@ -38,6 +39,7 @@ describe('DetailsIndex', () => {
     expect(detailsCmp.props('traceId')).toBe(props.traceId);
     expect(detailsCmp.props('tracingIndexUrl')).toBe(props.tracingIndexUrl);
     expect(detailsCmp.props('logsIndexUrl')).toBe(props.logsIndexUrl);
+    expect(detailsCmp.props('metricsIndexUrl')).toBe(props.metricsIndexUrl);
     expect(detailsCmp.props('createIssueUrl')).toBe(props.createIssueUrl);
     expect(detailsCmp.props('projectFullPath')).toBe(props.projectFullPath);
   });

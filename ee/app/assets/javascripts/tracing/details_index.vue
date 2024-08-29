@@ -19,6 +19,10 @@ export default {
       required: true,
       type: String,
     },
+    metricsIndexUrl: {
+      required: true,
+      type: String,
+    },
     apiConfig: {
       type: Object,
       required: true,
@@ -45,6 +49,7 @@ export default {
     :trace-id="traceId"
     :tracing-index-url="tracingIndexUrl"
     :logs-index-url="logsIndexUrl"
+    :metrics-index-url="metricsIndexUrl"
     :project-full-path="projectFullPath"
     :observability-client="observabilityClient"
     :create-issue-url="createIssueUrl"
