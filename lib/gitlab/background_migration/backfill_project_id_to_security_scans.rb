@@ -12,6 +12,7 @@ module Gitlab
 
       class Build < ::Ci::ApplicationRecord
         self.table_name = 'p_ci_builds'
+        self.inheritance_column = :_type_disabled
       end
 
       def perform

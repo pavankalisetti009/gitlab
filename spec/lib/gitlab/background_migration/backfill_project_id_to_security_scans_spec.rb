@@ -88,6 +88,6 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToSecurityScans, fe
       name: "project-#{name}",
       path: "project-#{name}"
     )
-    ci_builds.create!(project_id: project.id, partition_id: 100)
+    ci_builds.create!(project_id: project.id, partition_id: 100, type: 'Ci::Build')
   end
 end
