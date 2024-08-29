@@ -2386,7 +2386,6 @@ RSpec.describe Security::OrchestrationPolicyConfiguration, feature_category: :se
   end
 
   describe '#active_pipeline_execution_policies' do
-    let(:pipeline_execution_yaml) { build(:orchestration_policy_yaml, pipeline_execution_policy: [build(:pipeline_execution_policy)]) }
     let(:policy_yaml) { fixture_file('security_orchestration.yml', dir: 'ee') }
 
     subject(:active_pipeline_execution_policies) { security_orchestration_policy_configuration.active_pipeline_execution_policies }
