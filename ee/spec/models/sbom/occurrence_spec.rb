@@ -759,23 +759,6 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
-  describe '.by_pipeline_ids' do
-    let_it_be(:pipeline) { create(:ci_pipeline) }
-    let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, pipeline: pipeline) }
-
-    it 'returns related occurrences' do
-      expect(described_class.by_pipeline_ids(pipeline.id)).to eq(occurrences)
-    end
-
-    context 'with unrelated occurrence' do
-      let_it_be(:unrelated_occurrence) { create(:sbom_occurrence) }
-
-      it 'does not return unrelated occurrences' do
-        expect(described_class.by_pipeline_ids(pipeline.id)).not_to include(unrelated_occurrence)
-      end
-    end
-  end
-
   context 'with loose foreign key on sbom_occurrences.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:project) }
