@@ -151,3 +151,81 @@ export const INCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS = {
   PIPELINE_EXECUTION: replaceProjectKey(EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS.PIPELINE_EXECUTION),
   APPROVAL_POLICY: replaceProjectKey(EXCLUDING_PROJECTS_PROJECTS_LEVEL_MOCKS.APPROVAL_POLICY),
 };
+
+const removeExcludingProjects = (value) =>
+  value.replace(
+    'projects:\n    excluding:\n      - id: 1\n      - id: 2',
+    'projects:\n    excluding: []',
+  );
+
+export const INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS = {
+  SCAN_EXECUTION: `type: scan_execution_policy
+name: ''
+description: ''
+enabled: true
+policy_scope:
+  groups:
+    including:
+      - id: 1
+      - id: 2
+  projects:
+    excluding:
+      - id: 1
+      - id: 2
+rules:
+  - type: pipeline
+    branches:
+      - '*'
+actions:
+  - scan: secret_detection
+`,
+  PIPELINE_EXECUTION: `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_ci
+content:
+  include:
+    - project: ''
+policy_scope:
+  groups:
+    including:
+      - id: 1
+      - id: 2
+  projects:
+    excluding:
+      - id: 1
+      - id: 2
+`,
+  APPROVAL_POLICY: `type: approval_policy
+name: ''
+description: ''
+enabled: true
+policy_scope:
+  groups:
+    including:
+      - id: 1
+      - id: 2
+  projects:
+    excluding:
+      - id: 1
+      - id: 2
+rules:
+  - type: ''
+actions:
+  - type: require_approval
+    approvals_required: 1
+  - type: send_bot_message
+    enabled: true
+`
+    .concat(SETTINGS)
+    .concat(FALLBACK),
+};
+
+export const INCLUDING_GROUPS_MOCKS = {
+  SCAN_EXECUTION: removeExcludingProjects(INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS.SCAN_EXECUTION),
+  PIPELINE_EXECUTION: removeExcludingProjects(
+    INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS.PIPELINE_EXECUTION,
+  ),
+  APPROVAL_POLICY: removeExcludingProjects(INCLUDING_GROUPS_WITH_EXCEPTIONS_MOCKS.APPROVAL_POLICY),
+};
