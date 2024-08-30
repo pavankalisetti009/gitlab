@@ -8,32 +8,37 @@ module QA
     # See https://docs.gitlab.com/ee/development/code_suggestions/#code-suggestions-development-setup
     # https://docs.gitlab.com/ee/api/code_suggestions.html
     describe 'Code Suggestions' do
-      shared_examples 'code suggestions API' do |testcase|
-        let(:expected_response_data) do
-          {
-            id: 'id',
-            model: {
-              engine: anything,
-              name: anything,
-              lang: 'ruby',
-              tokens_consumption_metadata: anything
-            },
-            object: 'text_completion',
-            created: anything
-          }
-        end
+      let(:expected_response_data) do
+        {
+          id: 'id',
+          model: {
+            engine: anything,
+            name: anything,
+            lang: 'ruby',
+            tokens_consumption_metadata: anything
+          },
+          object: 'text_completion',
+          created: anything
+        }
+      end
 
+      let(:token) { Resource::PersonalAccessToken.fabricate!.token }
+
+      shared_examples 'code suggestions API' do |testcase|
         it 'returns a suggestion', testcase: testcase do
           response = get_suggestion(prompt_data)
 
           expect_status_code(200, response)
+          verify_suggestion(response, expected_response_data)
+        end
+      end
 
-          actual_response_data = parse_body(response)
-          expect(actual_response_data).to match(a_hash_including(expected_response_data))
+      shared_examples 'direct code completion' do |testcase|
+        it 'returns a completion directly from AI gateway', testcase: testcase do
+          response = get_direct_completion(prompt_data)
 
-          suggestion = actual_response_data.dig(:choices, 0, :text)
-          expect(suggestion).not_to be_nil, "The suggestion should not be nil, got: #{actual_response_data}"
-          expect(suggestion.length).to be > 0, 'The suggestion should not be blank'
+          expect_status_code(200, response)
+          verify_suggestion(response, expected_response_data)
         end
       end
 
@@ -98,6 +103,7 @@ module QA
         context 'on SaaS', :smoke, :external_ai_provider,
           only: { pipeline: %w[staging-canary staging canary production] } do
           it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436992'
+          it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480822'
         end
 
         context 'on Self-managed', :orchestrated do
@@ -105,6 +111,7 @@ module QA
             context 'with a Duo Pro add-on' do
               context 'when seat is assigned', :ai_gateway do
                 it_behaves_like 'code suggestions API', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/436993'
+                it_behaves_like 'direct code completion', 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/480823'
               end
             end
           end
@@ -177,15 +184,40 @@ module QA
       end
 
       def get_suggestion(prompt_data)
-        token = Resource::PersonalAccessToken.fabricate!.token
+        generate_code_completions(url: "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
+          token: token, prompt_data: prompt_data)
+      end
 
+      def get_direct_completion(prompt_data)
+        direct_access = fetch_direct_connection_details(token)
+
+        generate_code_completions(url: "#{direct_access[:base_url]}/v2/code/completions", token: direct_access[:token],
+          headers: direct_access[:headers], prompt_data: prompt_data)
+      end
+
+      # https://docs.gitlab.com/ee/api/code_suggestions.html#fetch-direct-connection-information
+      def fetch_direct_connection_details(token)
+        response = Support::API.post("#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/direct_access", nil,
+          headers: { Authorization: "Bearer #{token}", 'Content-Type': 'application/json' })
+        expect(response.code).to eq(Support::API::HTTP_STATUS_CREATED)
+
+        direct_connection_details = parse_body(response)
+
+        expect(direct_connection_details[:base_url]).not_to be_empty
+        expect(direct_connection_details[:token]).not_to be_empty
+        expect(direct_connection_details[:headers]).not_to be_empty
+
+        direct_connection_details
+      end
+
+      def generate_code_completions(url:, token:, prompt_data:, headers: {})
         response = Support::API.post(
-          "#{Runtime::Scenario.gitlab_address}/api/v4/code_suggestions/completions",
+          url,
           JSON.dump(prompt_data),
           headers: {
             Authorization: "Bearer #{token}",
             'Content-Type': 'application/json'
-          }
+          }.merge(headers)
         )
 
         QA::Runtime::Logger.debug("Code Suggestion response: #{response}")
@@ -194,8 +226,17 @@ module QA
 
       def expect_status_code(expected_code, response)
         expect(response).not_to be_nil
-        expect(response.code).to be(expected_code),
+        expect(response.code).to eq(expected_code),
           "Expected (#{expected_code}), request returned (#{response.code}): `#{response}`"
+      end
+
+      def verify_suggestion(response, expected_response_data)
+        actual_response_data = parse_body(response)
+        expect(actual_response_data).to match(a_hash_including(expected_response_data))
+
+        suggestion = actual_response_data.dig(:choices, 0, :text)
+        expect(suggestion).not_to be_nil, "The suggestion should not be nil, got: #{actual_response_data}"
+        expect(suggestion.length).to be > 0, 'The suggestion should not be blank'
       end
     end
   end
