@@ -41,6 +41,7 @@ bundle install
 
 echo "Update complete! You can now:"
 echo ""
-echo "1. Inspect the differences via 'git diff'".
-echo "2. Run tests locally by running 'redis-server' and 'bundle exec rake test'."
-echo "3. Update NOTICE.txt to refelct the current date."
+echo "1. Inspect 'git status' to see if any files have been added. Be sure to commit them."
+echo "2. Inspect the changes via 'git diff'".
+echo "3. Run tests locally by running 'redis-server' and 'bundle exec rake test'."
+echo "4. Update NOTICE.txt to reflect the current date."
