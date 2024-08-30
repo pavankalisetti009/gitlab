@@ -1478,6 +1478,18 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
         _, explanations = service.explain(content, issue)
         expect(explanations).to eq(['Sets weight to 4.'])
       end
+
+      context 'for a work item type that does not support weight' do
+        let_it_be(:target) { create(:work_item, :epic, :group_level, namespace: group) }
+
+        it_behaves_like 'quick action is unavailable', :weight
+
+        it '/weight explain message is not available' do
+          _, explanations = service.explain(content, target)
+
+          expect(explanations).to be_empty
+        end
+      end
     end
 
     describe 'blocking issues commands' do

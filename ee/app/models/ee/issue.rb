@@ -211,7 +211,9 @@ module EE
 
     override :supports_weight?
     def supports_weight?
-      !work_item_type&.incident?
+      return false if work_item_type&.incident? || work_item_type&.epic?
+
+      true
     end
 
     override :weight_available?
