@@ -1,0 +1,63 @@
+# frozen_string_literal: true
+
+module Sbom
+  module Ingestion
+    module ExecutionStrategy
+      class Default
+        include Gitlab::Utils::StrongMemoize
+
+        attr_reader :reports, :project, :pipeline
+
+        def initialize(reports, project, pipeline)
+          @reports = reports
+          @project = project
+          @pipeline = pipeline
+        end
+
+        def execute
+          ingest_reports
+
+          set_latest_ingested_sbom_pipeline_id
+
+          delete_not_present_occurrences
+
+          publish_ingested_sbom_event
+        end
+
+        private
+
+        attr_reader :ingested_ids
+
+        def ingest_reports
+          @ingested_ids = reports.flat_map { |report| ingest_report(report) }
+        end
+
+        def ingest_report(sbom_report)
+          IngestReportService.execute(pipeline, sbom_report, vulnerabilities_info)
+        end
+
+        def set_latest_ingested_sbom_pipeline_id
+          project.set_latest_ingested_sbom_pipeline_id(pipeline.id)
+        end
+
+        def delete_not_present_occurrences
+          DeleteNotPresentOccurrencesService.execute(pipeline, ingested_ids)
+        end
+
+        def publish_ingested_sbom_event
+          return unless ingested_ids.present? && Feature.enabled?(:dependency_scanning_using_sbom_reports, project)
+
+          Gitlab::EventStore.publish(
+            Sbom::SbomIngestedEvent.new(data: { pipeline_id: pipeline.id })
+          )
+        end
+
+        def vulnerabilities_info
+          return {} if ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
+
+          @vulnerabilities_info ||= Sbom::Ingestion::Vulnerabilities.new(pipeline)
+        end
+      end
+    end
+  end
+end
