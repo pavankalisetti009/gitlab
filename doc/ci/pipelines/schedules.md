@@ -105,3 +105,26 @@ Such cases can be:
 
 - A `short` ref is provided (e.g. `main`) but **both** a branch and a tag exist with the provided `short` ref name
 - A `short` ref is provided, but **neither** a branch or tag with the provided `short` ref name exist
+
+### View and optimize pipeline schedules
+
+To prevent [excessive load](pipeline_efficiency.md) caused by too many pipelines starting simultaneously, you can review and optimize your pipeline schedules.
+
+To get an overview of all existing schedules and identify opportunities to distribute them more evenly:
+
+1. Run this command to extract and format schedule data:
+   ```shell
+   outfile=/tmp/gitlab_ci_schedules.tsv
+   sudo gitlab-psql --command "
+    COPY (SELECT
+        ci_pipeline_schedules.cron,
+        projects.path   AS project,
+        users.email
+    FROM ci_pipeline_schedules
+    JOIN projects ON projects.id = ci_pipeline_schedules.project_id
+    JOIN users    ON users.id    = ci_pipeline_schedules.owner_id
+    ) TO '$outfile' CSV HEADER DELIMITER E'\t' ;"
+   sort  "$outfile" | uniq -c | sort -n
+   ```
+1. Review the output to identify popular `cron` patterns. For example, you might see many schedules set to run at the start of each hour (`0 * * * *`).
+1. Adjust the schedules to create a staggered [`cron` pattern](../../topics/cron/index.md#cron-syntax), especially for large repositories. For example, instead of multiple schedules running at the start of each hour, distribute them throughout the hour (`5 * * * *`, `15 * * * *`, `25 * * * *`).
