@@ -138,12 +138,10 @@ describe('HelpCenter component', () => {
       });
     });
 
-    describe('If Terms of Service and Data Privacy is set', () => {
-      beforeEach(() => {
-        createWrapper({ ...sidebarData, terms: '/-/users/terms' });
-      });
-
+    describe('if Terms of Service and Data Privacy is set', () => {
       it('shows link to Terms of Service and Data Privacy', () => {
+        createWrapper({ ...sidebarData, terms: '/-/users/terms' });
+
         expect(findDropdownGroup(0).props('group').items).toEqual([
           ...DEFAULT_HELP_ITEMS,
           expect.objectContaining({
@@ -153,6 +151,15 @@ describe('HelpCenter component', () => {
               ...trackingAttrs('terms'),
             },
           }),
+        ]);
+      });
+
+      it('does not show link to Terms of Service and Data Privacy on SaaS even if it is set', () => {
+        createWrapper({ ...sidebarData, terms: '/-/users/terms' }, { isSaas: true });
+
+        expect(findDropdownGroup(0).props('group').items).toEqual([
+          ...DEFAULT_HELP_ITEMS,
+          PRIVACY_HELP_ITEM,
         ]);
       });
     });
