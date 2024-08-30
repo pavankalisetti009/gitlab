@@ -37470,7 +37470,7 @@ msgstr ""
 msgid "Only SSH"
 msgstr ""
 
-msgid "Only accessible by %{membersPageLinkStart}project members%{membersPageLinkEnd}. Membership must be explicitly granted to each user."
+msgid "Only accessible by %{membersPageLinkStart}project members%{membersPageLinkEnd}. Membership must be explicitly granted."
 msgstr ""
 
 msgid "Only active projects show up in the search and on the dashboard."
