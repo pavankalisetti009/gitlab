@@ -1,0 +1,19 @@
+---
+description: Tracks pageviews for the group duo pro usage page
+internal_events: true
+action: view_group_duo_pro_usage_pageload
+identifiers:
+  - user
+  - namespace
+product_group: activation
+milestone: '17.4'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163528
+distributions:
+- ee
+tiers:
+- free
+- premium
+- ultimate
+additional_properties:
+  label:
+    description: "[duo_pro_add_on_tab_active_trial | duo_pro_add_on_tab]"

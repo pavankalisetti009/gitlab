@@ -145,10 +145,10 @@ describe('CodeSuggestionsInfoCard', () => {
         expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro');
       });
 
-      it('tracks the pageview correctly', () => {
+      it('tracks the page view correctly', () => {
         expect(Tracking.event).toHaveBeenCalledWith(
           'groups:usage_quotas:index',
-          'pageview',
+          'view_group_duo_pro_usage_pageload',
           expect.objectContaining({
             label: 'duo_pro_add_on_tab',
           }),
@@ -260,10 +260,10 @@ describe('CodeSuggestionsInfoCard', () => {
         expect(findCodeSuggestionsSubscriptionInfo().text()).toContain(outputEndDate);
       });
 
-      it('tracks the pageview correctly', () => {
+      it('tracks the page view correctly', () => {
         expect(Tracking.event).toHaveBeenCalledWith(
           'groups:usage_quotas:index',
-          'pageview',
+          'view_group_duo_pro_usage_pageload',
           expect.objectContaining({
             label: 'duo_pro_add_on_tab_active_trial',
           }),
@@ -287,7 +287,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
           expect(Tracking.event).toHaveBeenCalledWith(
             'groups:usage_quotas:index',
-            'click_button',
+            'click_purchase_seats_button_group_duo_pro_usage_page',
             expect.objectContaining({
               label: 'duo_pro_purchase_seats',
             }),
@@ -301,7 +301,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
           expect(Tracking.event).toHaveBeenCalledWith(
             'groups:usage_quotas:index',
-            'click_link',
+            'click_marketing_link_group_duo_pro_usage_page',
             expect.objectContaining({
               label: 'duo_pro_marketing_page',
             }),
@@ -364,7 +364,7 @@ describe('CodeSuggestionsInfoCard', () => {
         findAddSeatsButton().vm.$emit('click');
         expect(Tracking.event).toHaveBeenCalledWith(
           undefined,
-          'click_button',
+          'click_add_seats_button_group_duo_pro_usage_page',
           expect.objectContaining({
             property: 'usage_quotas_page',
             label,
