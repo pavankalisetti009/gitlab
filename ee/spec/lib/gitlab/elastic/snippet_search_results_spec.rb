@@ -63,8 +63,8 @@ RSpec.describe Gitlab::Elastic::SnippetSearchResults, :elastic_clean, :clean_git
 
   describe '#highlight_map' do
     it 'returns the expected highlight map' do
-      expect(results).to receive(:snippet_titles).and_return([{ _source: { id: 1 }, highlight: 'test <span class="gl-text-gray-900 gl-font-weight-bold">highlight</span>' }])
-      expect(results.highlight_map('snippet_titles')).to eq({ 1 => 'test <span class="gl-text-gray-900 gl-font-weight-bold">highlight</span>' })
+      expect(results).to receive(:snippet_titles).and_return([{ _source: { id: 1 }, highlight: 'test <span class="gl-text-gray-900 gl-font-bold">highlight</span>' }])
+      expect(results.highlight_map('snippet_titles')).to eq({ 1 => 'test <span class="gl-text-gray-900 gl-font-bold">highlight</span>' })
     end
   end
 
