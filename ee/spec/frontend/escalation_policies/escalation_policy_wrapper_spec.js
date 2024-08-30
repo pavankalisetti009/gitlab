@@ -109,7 +109,7 @@ describe('Escalation Policies Wrapper', () => {
   });
 
   describe('Escalation policy created alert', () => {
-    it('should display alert when when policy created', async () => {
+    it('should display alert when policy created', async () => {
       mountComponent({
         loading: false,
         escalationPolicies: mockEscalationPolicies.map(parsePolicy),

@@ -59,7 +59,7 @@ describe('MetricsFilteredSearch', () => {
     });
   });
 
-  it('renders the filtered search component with with initial tokens', () => {
+  it('renders the filtered search component with initial tokens', () => {
     const filters = [mockFilter];
 
     mount({ attributeFilters: filters });

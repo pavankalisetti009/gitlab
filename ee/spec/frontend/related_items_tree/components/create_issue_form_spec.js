@@ -311,7 +311,7 @@ describe('CreateIssueForm', () => {
       expect(wrapper.findAllComponents(GlDropdownItem)).toHaveLength(1);
     });
 
-    it('renders Projects dropdown contents containing string string "No matches found" when searchKey provided does not match any project', async () => {
+    it('renders Projects dropdown contents containing string "No matches found" when searchKey provided does not match any project', async () => {
       const searchKey = "this-project-shouldn't exist";
       const filteredMockProjects = mockProjects.filter((project) => project.name === searchKey);
 

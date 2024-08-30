@@ -41,7 +41,7 @@ describe('GroupDependenciesFilteredSearch', () => {
   describe('when sub-group limit-count is not reached', () => {
     beforeEach(createComponent);
 
-    it('does not not set the filtered-search to be view-only', () => {
+    it('does not set the filtered-search to be view-only', () => {
       expect(findFilteredSearch().props('viewOnly')).toBe(false);
     });
 
