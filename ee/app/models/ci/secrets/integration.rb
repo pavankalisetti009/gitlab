@@ -4,8 +4,9 @@ module Ci
   module Secrets
     class Integration
       PROVIDERS = [
-        :gcp_secret_manager,
         :azure_key_vault,
+        :akeyless,
+        :gcp_secret_manager,
         :hashicorp_vault
       ].freeze
 
@@ -45,6 +46,10 @@ module Ci
 
       def hashicorp_vault?
         variable_value('VAULT_SERVER_URL').present?
+      end
+
+      def akeyless?
+        variable_value('AKEYLESS_ACCESS_ID').present?
       end
     end
   end

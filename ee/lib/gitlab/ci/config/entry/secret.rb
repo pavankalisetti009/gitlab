@@ -11,8 +11,8 @@ module Gitlab
           include ::Gitlab::Config::Entry::Configurable
           include ::Gitlab::Config::Entry::Attributable
 
-          ALLOWED_KEYS = %i[vault file azure_key_vault gcp_secret_manager token].freeze
-          SUPPORTED_PROVIDERS = %i[vault azure_key_vault gcp_secret_manager].freeze
+          ALLOWED_KEYS = %i[vault file azure_key_vault gcp_secret_manager akeyless token].freeze
+          SUPPORTED_PROVIDERS = %i[vault azure_key_vault gcp_secret_manager akeyless].freeze
 
           attributes ALLOWED_KEYS
 
@@ -20,6 +20,7 @@ module Gitlab
           entry :file, ::Gitlab::Config::Entry::Boolean, description: 'Should the created variable be of file type'
           entry :azure_key_vault, Entry::AzureKeyVault::Secret, description: 'Azure Key Vault configuration'
           entry :gcp_secret_manager, Entry::GcpSecretManager::Secret, description: 'GCP Secrets Manager configuration'
+          entry :akeyless, Entry::Akeyless::Secret, description: 'Akeyless Key Vault configuration'
 
           validations do
             validates :config, allowed_keys: ALLOWED_KEYS, only_one_of_keys: SUPPORTED_PROVIDERS
@@ -35,6 +36,7 @@ module Gitlab
               vault: vault_value,
               gcp_secret_manager: gcp_secret_manager_value,
               azure_key_vault: azure_key_vault_value,
+              akeyless: akeyless_value,
               file: file_value,
               token: token
             }.compact

@@ -850,7 +850,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
 
       it 'does not track unused providers' do
-        unused_providers = Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [provider]
+        unused_providers = (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]) - [provider]
         unused_providers.each do |unused_provider|
           expect(::Gitlab::UsageDataCounters::HLLRedisCounter).not_to receive(:track_event).with("i_ci_secrets_management_#{unused_provider}_build_created")
         end
@@ -868,7 +868,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
         stub_licensed_features(ci_secrets_management: false)
       end
 
-      Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
+      (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
         context "when using #{provider}" do
           let(:valid_secret) { valid_secret_configs.fetch(provider) }
           let(:ci_build) { build(:ci_build, secrets: valid_secret, ci_stage: stage) }
@@ -884,7 +884,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       end
 
       context 'when there are secrets defined' do
-        Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
+        (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
           context "when using #{provider}" do
             let(:valid_secret) { valid_secret_configs.fetch(provider) }
 
@@ -912,7 +912,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
           let(:ci_build) { build(:ci_build, secrets: valid_secret, user: user, ci_stage: stage) }
 
           it 'tracks RedisHLL event with user_id on all providers' do
-            Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
+            (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
               expect(::Gitlab::UsageDataCounters::HLLRedisCounter).to receive(:track_event)
                 .with("i_ci_secrets_management_#{provider}_build_created", values: user.id)
             end
@@ -923,7 +923,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
           it 'tracks Snowplow event with RedisHLL context on all providers' do
             ci_build.save!
 
-            Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
+            (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
               params = {
                 category: described_class.to_s,
                 action: "create_secrets_#{provider}",
@@ -995,7 +995,7 @@ RSpec.describe Ci::Build, :saas, feature_category: :continuous_integration do
       let(:ci_build) { build(:ci_build, user: user, ci_stage: stage) }
 
       context 'on create' do
-        Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS.each do |provider|
+        (Gitlab::Ci::Config::Entry::Secret::SUPPORTED_PROVIDERS - [:akeyless]).each do |provider|
           it_behaves_like 'not tracking usage for provider', provider: provider
         end
       end

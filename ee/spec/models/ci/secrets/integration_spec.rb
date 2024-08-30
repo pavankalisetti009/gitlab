@@ -57,5 +57,15 @@ RSpec.describe Ci::Secrets::Integration, feature_category: :secrets_management d
 
       it { is_expected.to eq(true) }
     end
+
+    context 'with akeyless provider' do
+      context 'when the AKEYLESS_ACCESS_ID is set' do
+        before do
+          project.variables.create!(key: 'AKEYLESS_ACCESS_ID', value: 'id')
+        end
+
+        it { is_expected.to eq(true) }
+      end
+    end
   end
 end
