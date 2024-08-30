@@ -12,28 +12,6 @@
   }
 }
 
-.tab-pane-labels {
-  .dropdown-page-one .dropdown-content {
-    height: 140px;
-  }
-
-  .dropdown-page-two {
-    margin-top: 10px;
-
-    .dropdown-content {
-      max-height: initial;
-      height: 205px;
-    }
-  }
-}
-
-.tab-pane-assignees {
-  .dropdown-content {
-    height: 225px;
-    max-height: 252px;
-  }
-}
-
 .board-title-text {
   margin: calc(-1 * $gl-padding-4);
   margin-right: $gl-padding-4;
