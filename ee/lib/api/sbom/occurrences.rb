@@ -21,6 +21,9 @@ module API
             ::Sbom::OccurrencesVulnerability
               .for_occurrence_ids(params[:id])
               .select(:vulnerability_id).limit(LIMIT).ordered_by_vulnerability).with_findings
+              .allow_cross_joins_across_databases(
+                url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474109'
+              )
         end
         strong_memoize_attr :vulnerabilities
       end

@@ -83,7 +83,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
           'dast_scanner_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/479866'
         },
         'sbom_occurrences_vulnerabilities' => {
-          'sbom_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
         'dast_site_profiles_builds' => {
           'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706'
