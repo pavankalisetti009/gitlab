@@ -52810,6 +52810,9 @@ msgstr ""
 msgid "Subscription History"
 msgstr ""
 
+msgid "Subscription can be synchronized."
+msgstr ""
+
 msgid "Subscription deletion failed."
 msgstr ""
 
