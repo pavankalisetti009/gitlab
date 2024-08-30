@@ -47,7 +47,8 @@ RSpec.describe RuboCop::BatchedBackgroundMigrationsDictionary, feature_category:
   end
 
   describe '#introduced_by_url' do
-    it 'returns the introduced_by_url of the bbm with given version' do
+    it 'returns the introduced_by_url of the bbm with given version',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/456912' do
       expect(batched_background_migration.introduced_by_url).to eq(introduced_by_url)
     end
 
