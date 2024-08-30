@@ -26,7 +26,10 @@ describe('MergeTrainPositionIndicator', () => {
 
   it('should show message when position is higher than 1', () => {
     createComponent({
-      mergeTrainIndex: 3,
+      mergeTrainCar: {
+        id: 'gid://gitlab/MergeTrains::Car/1',
+        index: 3,
+      },
       mergeTrainsCount: 5,
     });
 
@@ -37,7 +40,10 @@ describe('MergeTrainPositionIndicator', () => {
   });
 
   it('should show message when the position is 1', () => {
-    createComponent({ mergeTrainIndex: 0, mergeTrainsCount: 0 }, true);
+    createComponent(
+      { mergeTrainCar: { id: 'gid://gitlab/MergeTrains::Car/1', index: 0 }, mergeTrainsCount: 0 },
+      true,
+    );
 
     expect(trimText(wrapper.text())).toBe(
       'A new merge train has started and this merge request is the first of the queue. View merge train details.',
@@ -48,7 +54,7 @@ describe('MergeTrainPositionIndicator', () => {
   it('should not render when merge request is not in train', () => {
     createComponent(
       {
-        mergeTrainIndex: null,
+        mergeTrainCar: null,
         mergeTrainsCount: 1,
       },
       true,
