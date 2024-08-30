@@ -30,15 +30,34 @@ RSpec.describe Arkose::RecordUserDataService, feature_category: :instance_resili
       expect(user.custom_attributes.find_by(key: 'arkose_custom_score').value).to eq('0')
     end
 
-    it 'executes abuse trust score workers' do
-      expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
-        user.id, :arkose_global_score, 0.0
-      )
-      expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
-        user.id, :arkose_custom_score, 0.0
-      )
+    context 'when the rename_abuse_workers feature is enabled' do
+      it 'executes abuse trust score workers' do
+        expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
+          user.id, :arkose_global_score, 0.0
+        )
+        expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
+          user.id, :arkose_custom_score, 0.0
+        )
 
-      service.execute
+        service.execute
+      end
+    end
+
+    context 'when the rename_abuse_workers feature is not enabled' do
+      before do
+        stub_feature_flags(rename_abuse_workers: false)
+      end
+
+      it 'executes abuse trust score workers' do
+        expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
+          user.id, :arkose_global_score, 0.0
+        )
+        expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.ordered.with(
+          user.id, :arkose_custom_score, 0.0
+        )
+
+        service.execute
+      end
     end
 
     it 'logs user risk band assignment event' do

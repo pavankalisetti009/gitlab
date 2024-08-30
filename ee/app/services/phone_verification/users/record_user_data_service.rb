@@ -31,7 +31,8 @@ module PhoneVerification
       end
 
       def store_risk_score(risk_score)
-        Abuse::TrustScoreWorker.perform_async(user.id, :telesign, risk_score.to_f)
+        base_class = Feature.enabled?(:rename_abuse_workers, user, type: :worker) ? AntiAbuse : Abuse
+        base_class::TrustScoreWorker.perform_async(user.id, :telesign, risk_score.to_f)
       end
 
       def assume_high_risk?

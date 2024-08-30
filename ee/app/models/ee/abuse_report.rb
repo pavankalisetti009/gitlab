@@ -32,8 +32,10 @@ module EE
     private
 
     def run_abuse_report_worker
+      base_class = ::Feature.enabled?(:rename_abuse_workers, user, type: :worker) ? AntiAbuse : Abuse
+
       run_after_commit_or_now do
-        Abuse::NewAbuseReportWorker.perform_async(id)
+        base_class::NewAbuseReportWorker.perform_async(id)
       end
     end
   end

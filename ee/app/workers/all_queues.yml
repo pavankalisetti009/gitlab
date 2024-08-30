@@ -1029,6 +1029,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: anti_abuse_new_abuse_report
+  :worker_name: AntiAbuse::NewAbuseReportWorker
+  :feature_category: :instance_resiliency
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: app_sec_container_scanning_scan_image
   :worker_name: AppSec::ContainerScanning::ScanImageWorker
   :feature_category: :software_composition_analysis
