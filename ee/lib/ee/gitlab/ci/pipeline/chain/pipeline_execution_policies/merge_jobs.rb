@@ -23,8 +23,12 @@ module EE
 
                 clear_project_pipeline
                 merge_policy_jobs
-                track_pipeline_execution_policy_usage
-              rescue ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::DuplicateJobNameError => e
+                track_internal_event(
+                  'enforce_pipeline_execution_policy_in_project',
+                  namespace: project.namespace,
+                  project: project
+                )
+              rescue ::Gitlab::Ci::Pipeline::JobsInjector::DuplicateJobNameError => e
                 error("Pipeline execution policy error: #{e.message}", failure_reason: :config_error)
               end
 
@@ -49,21 +53,26 @@ module EE
               end
 
               def merge_policy_jobs
-                ::Gitlab::Ci::Pipeline::PipelineExecutionPolicies::JobsMerger
-                  .new(pipeline: pipeline,
-                    pipeline_execution_policies: command.pipeline_execution_policies,
-                    # `yaml_processor_result` contains the declared project stages, even if they are unused.
-                    declared_stages: command.yaml_processor_result.stages
-                  )
-                  .execute
-              end
+                command.pipeline_execution_policies.each do |policy|
+                  # Return `nil` is equivalent to "never" otherwise provide the new name.
+                  on_conflict = ->(job_name) { job_name + policy.suffix if policy.suffix_on_conflict? }
 
-              def track_pipeline_execution_policy_usage
-                track_internal_event(
-                  'enforce_pipeline_execution_policy_in_project',
-                  namespace: project.group,
-                  project: project
-                )
+                  # Instantiate JobsInjector per policy pipeline to keep conflict-based job renaming isolated
+                  job_injector = ::Gitlab::Ci::Pipeline::JobsInjector.new(
+                    pipeline: pipeline,
+                    declared_stages: command.yaml_processor_result.stages,
+                    on_conflict: on_conflict)
+                  policy.pipeline.stages.each do |stage|
+                    job_injector.inject_jobs(jobs: stage.statuses, stage: stage) do |job|
+                      job.set_execution_policy_job!
+
+                      track_internal_event(
+                        'execute_job_pipeline_execution_policy',
+                        project: project,
+                        namespace: project.namespace)
+                    end
+                  end
+                end
               end
             end
           end

@@ -6,8 +6,6 @@ module Gitlab
       class ProjectPipelineExecutionPolicies
         POLICY_LIMIT_PER_PIPELINE = 5
 
-        ExecutionPolicyConfig = Struct.new(:content, :strategy)
-
         def initialize(project)
           @project = project
         end
@@ -25,8 +23,17 @@ module Gitlab
           applicable_execution_policies_by_hierarchy
             .first(POLICY_LIMIT_PER_PIPELINE)
             .reverse # reverse the order to apply the policy highest in the hierarchy as last
-            .map do |policy|
-              ExecutionPolicyConfig.new(policy[:content].to_yaml, policy[:pipeline_config_strategy].to_sym)
+            .map do |(policy, policy_project_id, index)|
+              ::Gitlab::Security::Orchestration::ExecutionPolicyConfig.new(
+                policy[:content].to_yaml,
+                policy[:pipeline_config_strategy].to_sym,
+                (policy[:suffix] || ::Security::PipelineExecutionPolicy::DEFAULT_SUFFIX_STRATEGY).to_sym,
+                ::Security::PipelineExecutionPolicy.build_policy_suffix(
+                  policy_project_id: policy_project_id,
+                  policy: policy,
+                  policy_index: index
+                )
+              )
             end
         end
 
@@ -35,9 +42,13 @@ module Gitlab
         def applicable_execution_policies_by_hierarchy
           policy_scope_checker = ::Security::SecurityOrchestrationPolicies::PolicyScopeChecker.new(project: @project)
 
-          configs_ordered_by_hierarchy
-            .flat_map(&:active_pipeline_execution_policies)
-            .select { |policy| policy_scope_checker.policy_applicable?(policy) }
+          configs_ordered_by_hierarchy.flat_map do |config|
+            config.active_pipeline_execution_policies.filter_map.with_index do |policy, index|
+              next unless policy_scope_checker.policy_applicable?(policy)
+
+              [policy, config.security_policy_management_project_id, index]
+            end
+          end
         end
 
         # Returns an array of configs for the project, ordered by hierarchy.

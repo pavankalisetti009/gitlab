@@ -54,9 +54,7 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       it { is_expected.to eq(false) }
 
       context 'and overriding pipeline_execution_policies' do
-        let(:pipeline_execution_policies) do
-          build_list(:ci_pipeline_execution_policy, 2, strategy: :override_project_ci)
-        end
+        let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2, :override_project_ci) }
 
         it { is_expected.to eq(true) }
       end

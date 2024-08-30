@@ -166,7 +166,8 @@ FactoryBot.define do
   end
 
   factory :pipeline_execution_policy,
-    class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata) do
+    class: Struct.new(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
+      :suffix) do
     skip_create
 
     initialize_with do
@@ -177,8 +178,9 @@ FactoryBot.define do
       content = attributes[:content]
       policy_scope = attributes[:policy_scope]
       metadata = attributes[:metadata]
+      suffix = attributes[:suffix]
 
-      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata).to_h
+      new(name, description, enabled, pipeline_config_strategy, content, policy_scope, metadata, suffix).to_h
     end
 
     sequence(:name) { |n| "test-pipeline-execution-policy-#{n}" }
@@ -188,9 +190,18 @@ FactoryBot.define do
     pipeline_config_strategy { 'inject_ci' }
     policy_scope { {} }
     metadata { {} }
+    suffix { nil }
 
     trait :override_project_ci do
       pipeline_config_strategy { 'override_project_ci' }
+    end
+
+    trait :suffix_on_conflict do
+      suffix { 'on_conflict' }
+    end
+
+    trait :suffix_never do
+      suffix { 'never' }
     end
 
     trait :with_policy_scope do

@@ -23,18 +23,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfi
   let(:step) { described_class.new(pipeline, command) }
 
   let(:namespace_content) { { job: { script: 'namespace script' } }.to_yaml }
-  let(:namespace_config) do
-    Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies::ExecutionPolicyConfig.new(
-      namespace_content, :inject_ci
-    )
-  end
+  let(:namespace_config) { build(:execution_policy_config, content: namespace_content, suffix: ':policy-123456-0') }
 
   let(:project_content) { { job: { script: 'project script' } }.to_yaml }
-  let(:project_config) do
-    Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies::ExecutionPolicyConfig.new(
-      project_content, :inject_ci
-    )
-  end
+  let(:project_config) { build(:execution_policy_config, :suffix_never, content: project_content) }
 
   let(:policy_configs) { [project_config, namespace_config] }
 
@@ -98,20 +90,21 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::FindConfi
 
     context 'when a policy has strategy "override_project_ci"' do
       let(:namespace_config) do
-        Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies::ExecutionPolicyConfig.new(
-          { job: { script: 'namespace script' } }.to_yaml,
-          :override_project_ci
-        )
+        build(:execution_policy_config, :override_project_ci, content: namespace_content, suffix: ':policy-123456-0')
       end
 
-      it 'sets pipeline_execution_policies with the correct strategy', :aggregate_failures do
+      it 'passes configs to pipeline_execution_policies', :aggregate_failures do
         step.perform!
 
         project_pipeline = command.pipeline_execution_policies.first
         expect(project_pipeline.strategy).to eq(:inject_ci)
+        expect(project_pipeline.suffix_strategy).to eq(:never)
+        expect(project_pipeline.suffix).to be_nil
 
         namespace_pipeline = command.pipeline_execution_policies.second
         expect(namespace_pipeline.strategy).to eq(:override_project_ci)
+        expect(namespace_pipeline.suffix_strategy).to eq(:on_conflict)
+        expect(namespace_pipeline.suffix).to eq(':policy-123456-0')
       end
     end
 

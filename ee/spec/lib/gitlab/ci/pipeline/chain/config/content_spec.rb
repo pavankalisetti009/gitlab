@@ -155,7 +155,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       let_it_be(:project) { create(:project) }
 
       let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
-      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2, strategy: :override_project_ci) }
+      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2, :override_project_ci) }
 
       let(:project_content) do
         <<~EOY
