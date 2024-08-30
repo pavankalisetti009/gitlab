@@ -15,6 +15,8 @@ module EE
       scope :in_shared_group, ->(shared_groups) { where(shared_group: shared_groups) }
       scope :not_in_shared_with_group, ->(shared_with_groups) { where.not(shared_with_group: shared_with_groups) }
 
+      scope :with_custom_role, -> { where.not(member_role_id: nil) }
+
       validate :group_with_allowed_email_domains
     end
 

@@ -212,7 +212,10 @@ module EE
             invited_group_to_project_memberships = group.billed_invited_group_to_project_members(exclude_guests: exclude_guests).with_user(user.id)
             invited_group_to_group_memberships = group.billed_shared_group_members(exclude_guests: exclude_guests).with_user(user.id)
 
-            invited_memberships = invited_group_to_group_memberships.or(invited_group_to_project_memberships)
+            invited_memberships = ::GroupMember.from_union([
+              invited_group_to_group_memberships,
+              invited_group_to_project_memberships
+            ])
 
             present paginate(invited_memberships), with: ::EE::API::Entities::BillableMembership
           end
