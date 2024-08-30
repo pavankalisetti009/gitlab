@@ -35,6 +35,7 @@ describe Sidekiq::Web do
   before do
     @config = reset!
     app.middlewares.clear
+    app.use Rack::Session::Cookie, secrets: "35c5108120cb479eecb4e947e423cad6da6f38327cf0ebb323e30816d74fa01f"
   end
 
   it "passes on unexpected methods" do
@@ -69,8 +70,9 @@ describe Sidekiq::Web do
     policies = last_response.headers["Content-Security-Policy"].split("; ")
     assert_includes(policies, "connect-src 'self' https: http: wss: ws:")
     assert_includes(policies, "style-src 'self' https: http: 'unsafe-inline'")
-    assert_includes(policies, "script-src 'self' https: http:")
+    assert_includes(policies, "script-src 'self' 'nonce-#{last_request.env[:csp_nonce]}'")
     assert_includes(policies, "object-src 'none'")
+    assert_operator(24, :>=, last_request.env[:csp_nonce].length)
   end
 
   it "provides a cheap HEAD response" do
@@ -148,9 +150,12 @@ describe Sidekiq::Web do
   end
 
   it "can display queues" do
-    assert Sidekiq::Client.push("queue" => :foo, "class" => WebJob, "args" => [1, 3])
+    Time.stub(:now, Time.now) do
+      assert Sidekiq::Client.push("queue" => :foo, "class" => WebJob, "args" => [1, 3])
 
-    get "/queues"
+      get "/queues"
+    end
+
     assert_equal 200, last_response.status
     assert_match(/foo/, last_response.body)
     refute_match(/HardJob/, last_response.body)
@@ -211,7 +216,7 @@ describe Sidekiq::Web do
     assert_equal 302, last_response.status
 
     @config.redis do |conn|
-      refute conn.smembers("queues").include?("foo")
+      refute_includes conn.smembers("queues"), "foo"
       refute(conn.exists("queue:foo") > 0)
     end
   end
@@ -302,7 +307,7 @@ describe Sidekiq::Web do
     assert_equal 302, last_response.status
 
     @config.redis do |conn|
-      refute conn.lrange("queue:foo", 0, -1).include?("{\"foo\":\"bar\"}")
+      refute_includes conn.lrange("queue:foo", 0, -1), "{\"foo\":\"bar\"}"
     end
   end
 
@@ -554,11 +559,11 @@ describe Sidekiq::Web do
     assert_equal 200, last_response.status
     assert_match(/FailJob/, last_response.body)
 
-    assert last_response.body.include?("fail message: &lt;a&gt;hello&lt;/a&gt;")
-    assert !last_response.body.include?("fail message: <a>hello</a>")
+    assert_includes last_response.body, "fail message: &lt;a&gt;hello&lt;/a&gt;"
+    refute_includes last_response.body, "fail message: <a>hello</a>"
 
-    assert last_response.body.include?("args\">&quot;&lt;a&gt;hello&lt;/a&gt;&quot;<")
-    assert !last_response.body.include?("args\"><a>hello</a><")
+    assert_includes last_response.body, "args\">&quot;&lt;a&gt;hello&lt;/a&gt;&quot;<"
+    refute_includes last_response.body, "args\"><a>hello</a><"
 
     # on /workers page
     @config.redis do |conn|
@@ -575,8 +580,8 @@ describe Sidekiq::Web do
     assert_equal 200, last_response.status
     assert_match(/FailJob/, last_response.body)
     assert_match(/frumduz/, last_response.body)
-    assert last_response.body.include?("&lt;a&gt;hello&lt;/a&gt;")
-    assert !last_response.body.include?("<a>hello</a>")
+    assert_includes last_response.body, "&lt;a&gt;hello&lt;/a&gt;"
+    refute_includes last_response.body, "<a>hello</a>"
 
     # on /queues page
     params = add_xss_retry # sorry, don't know how to easily make this show up on queues page otherwise.
@@ -585,8 +590,8 @@ describe Sidekiq::Web do
 
     get "/queues/foo"
     assert_equal 200, last_response.status
-    assert last_response.body.include?("&lt;a&gt;hello&lt;/a&gt;")
-    assert !last_response.body.include?("<a>hello</a>")
+    assert_includes last_response.body, "&lt;a&gt;hello&lt;/a&gt;"
+    refute_includes last_response.body, "<a>hello</a>"
   end
 
   it "can show user defined tab" do
@@ -607,10 +612,13 @@ describe Sidekiq::Web do
     session_data = {"rack.session" => {}}
     headers = {"HTTP_REFERER" => "http://example.org/path", "HTTP_BASE_URL" => "http://example.org/"}
 
+    post "/change_locale", {"locale" => "none"}, session_data.merge(headers)
+    assert_nil last_request.env["rack.session"][:locale]
+    assert_equal 302, last_response.status
+    assert_equal "http://example.org/path", last_response.location
+
     post "/change_locale", {"locale" => "es"}, session_data.merge(headers)
-
     assert_equal "es", last_request.env["rack.session"][:locale]
-
     assert_equal 302, last_response.status
     assert_equal "http://example.org/path", last_response.location
   end

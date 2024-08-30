@@ -24,7 +24,7 @@ if ENV["COVERAGE"]
   end
 end
 
-ENV["REDIS_URL"] ||= "redis://localhost/15"
+ENV["REDIS_URL"] ||= "redis://localhost:6379/0"
 NULL_LOGGER = Logger.new(IO::NULL)
 
 def reset!
@@ -34,7 +34,7 @@ def reset!
     existing_pool&.shutdown(&:close)
   end
 
-  RedisClient.new(url: ENV["REDIS_URL"]).call("flushall")
+  RedisClient.new(url: ENV["REDIS_URL"]).call("flushdb")
   cfg = Sidekiq::Config.new
   cfg[:backtrace_cleaner] = Sidekiq::Config::DEFAULTS[:backtrace_cleaner]
   cfg.logger = NULL_LOGGER
@@ -67,3 +67,10 @@ Signal.trap("TTIN") do
     end
   end
 end
+
+require "active_job"
+
+# need to force this since we aren't booting a Rails app
+ActiveJob::Base.queue_adapter = :sidekiq
+ActiveJob::Base.logger = nil
+ActiveJob::Base.send(:include, ::Sidekiq::Job::Options) unless ActiveJob::Base.respond_to?(:sidekiq_options)

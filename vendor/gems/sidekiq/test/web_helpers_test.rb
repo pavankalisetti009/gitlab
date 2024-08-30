@@ -30,6 +30,10 @@ class Helpers
     {}
   end
 
+  def session
+    {}
+  end
+
   def path_info
     @thehash[:path_info]
   end
@@ -38,6 +42,16 @@ end
 describe "Web helpers" do
   before do
     Sidekiq.redis { |c| c.flushdb }
+  end
+
+  it "tests script_tag" do
+    obj = Helpers.new
+    assert_equal '<script type="text/javascript" src="/sidekiq.js"></script>', obj.script_tag("sidekiq.js")
+  end
+
+  it "tests style_tag" do
+    obj = Helpers.new
+    assert_equal '<link type="text/css" media="screen" rel="stylesheet" href="/sidekiq.css" />', obj.style_tag("sidekiq.css")
   end
 
   it "tests locale determination" do
@@ -96,15 +110,23 @@ describe "Web helpers" do
     assert_equal "en", obj.locale
   end
 
-  it "tests user selected locale" do
+  it "handles invalid locales" do
     obj = Helpers.new("HTTP_ACCEPT_LANGUAGE" => "*")
+    obj.instance_eval do
+      def session
+        {locale: "xx"}
+      end
+    end
+    assert_equal "en", obj.locale
+  end
 
+  it "uses the user selected locale" do
+    obj = Helpers.new("HTTP_ACCEPT_LANGUAGE" => "*")
     obj.instance_eval do
       def session
         {locale: "es"}
       end
     end
-
     assert_equal "es", obj.locale
   end
 
@@ -112,7 +134,7 @@ describe "Web helpers" do
     obj = Helpers.new
     expected = %w[
       ar cs da de el en es fa fr gd he hi it ja
-      ko lt nb nl pl pt pt-br ru sv ta uk ur
+      ko lt nb nl pl pt pt-br ru sv ta tr uk ur
       vi zh-cn zh-tw
     ]
     assert_equal expected, obj.available_locales.sort

@@ -72,6 +72,14 @@ h1, h2, h3 {
   line-height: 45px;
 }
 
+.progress {
+  margin-bottom: 0;
+}
+
+.w-50 {
+  width: 50%;
+}
+
 .header-container, .header-container .page-title-container {
   display: flex;
   justify-content: space-between;
@@ -626,8 +634,12 @@ div.interval-slider input {
 .container {
   padding: 0;
 }
+.navbar-fixed-bottom {
+  position: relative;
+  top: auto;
+}
 @media (max-width: 767px) {
-  .navbar-fixed-top, .navbar-fixed-bottom {
+  .navbar-fixed-top {
     position: relative;
     top: auto;
   }

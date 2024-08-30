@@ -1,11 +1,12 @@
 PATH
   remote: .
   specs:
-    sidekiq (7.2.4)
+    sidekiq (7.3.1)
       concurrent-ruby (< 2)
       connection_pool (>= 2.3.0)
+      logger
       rack (>= 2.2.4)
-      redis-client (>= 0.19.0)
+      redis-client (>= 0.22.2)
 
 GEM
   remote: https://rubygems.org/

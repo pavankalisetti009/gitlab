@@ -6,8 +6,51 @@ require "yaml"
 require "cgi"
 
 module Sidekiq
-  # This is not a public API
+  # These methods are available to pages within the Web UI and UI extensions.
+  # They are not public APIs for applications to use.
   module WebHelpers
+    def style_tag(location, **kwargs)
+      global = location.match?(/:\/\//)
+      location = root_path + location if !global && !location.start_with?(root_path)
+      attrs = {
+        type: "text/css",
+        media: "screen",
+        rel: "stylesheet",
+        nonce: csp_nonce,
+        href: location
+      }
+      html_tag(:link, attrs.merge(kwargs))
+    end
+
+    def script_tag(location, **kwargs)
+      global = location.match?(/:\/\//)
+      location = root_path + location if !global && !location.start_with?(root_path)
+      attrs = {
+        type: "text/javascript",
+        nonce: csp_nonce,
+        src: location
+      }
+      html_tag(:script, attrs.merge(kwargs)) {}
+    end
+
+    # NB: keys and values are not escaped; do not allow user input
+    # in the attributes
+    private def html_tag(tagname, attrs)
+      s = +"<#{tagname}"
+      attrs.each_pair do |k, v|
+        next unless v
+        s << " #{k}=\"#{v}\""
+      end
+      if block_given?
+        s << ">"
+        yield s
+        s << "</#{tagname}>"
+      else
+        s << " />"
+      end
+      s
+    end
+
     def strings(lang)
       @strings ||= {}
 
@@ -46,7 +89,7 @@ module Sidekiq
     end
 
     def available_locales
-      @available_locales ||= locale_files.map { |path| File.basename(path, ".yml") }.uniq
+      @available_locales ||= Set.new(locale_files.map { |path| File.basename(path, ".yml") })
     end
 
     def find_locale_files(lang)
@@ -122,10 +165,9 @@ module Sidekiq
     # Inspiration taken from https://github.com/iain/http_accept_language/blob/master/lib/http_accept_language/parser.rb
     def locale
       # session[:locale] is set via the locale selector from the footer
-      # defined?(session) && session are used to avoid exceptions when running tests
-      return session[:locale] if defined?(session) && session&.[](:locale)
-
-      @locale ||= begin
+      @locale ||= if (l = session&.fetch(:locale, nil)) && available_locales.include?(l)
+        l
+      else
         matched_locale = user_preferred_languages.map { |preferred|
           preferred_language = preferred.split("-", 2).first
 
@@ -267,6 +309,10 @@ module Sidekiq
       "<input type='hidden' name='authenticity_token' value='#{env[:csrf_token]}'/>"
     end
 
+    def csp_nonce
+      env[:csp_nonce]
+    end
+
     def to_display(arg)
       arg.inspect
     rescue
@@ -310,7 +356,7 @@ module Sidekiq
     end
 
     def h(text)
-      ::Rack::Utils.escape_html(text)
+      ::Rack::Utils.escape_html(text.to_s)
     rescue ArgumentError => e
       raise unless e.message.eql?("invalid byte sequence in UTF-8")
       text.encode!("UTF-16", "UTF-8", invalid: :replace, replace: "").encode!("UTF-8", "UTF-16")

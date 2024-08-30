@@ -36,7 +36,7 @@ module Sidekiq
       @job = nil
       @thread = nil
       @reloader = Sidekiq.default_configuration[:reloader]
-      @job_logger = (capsule.config[:job_logger] || Sidekiq::JobLogger).new(logger)
+      @job_logger = (capsule.config[:job_logger] || Sidekiq::JobLogger).new(capsule.config)
       @retrier = Sidekiq::JobRetry.new(capsule)
     end
 
@@ -56,6 +56,10 @@ module Sidekiq
       # timeout passes.
       @thread.raise ::Sidekiq::Shutdown
       @thread.value if wait
+    end
+
+    def stopping?
+      @done
     end
 
     def start
@@ -136,6 +140,7 @@ module Sidekiq
                 klass = Object.const_get(job_hash["class"])
                 inst = klass.new
                 inst.jid = job_hash["jid"]
+                inst._context = self
                 @retrier.local(inst, jobstr, queue) do
                   yield inst
                 end
@@ -185,6 +190,11 @@ module Sidekiq
           # Had to force kill this job because it didn't finish
           # within the timeout.  Don't acknowledge the work since
           # we didn't properly finish it.
+        rescue Sidekiq::JobRetry::Skip => s
+          # Skip means we handled this error elsewhere. We don't
+          # need to log or report the error.
+          ack = true
+          raise s
         rescue Sidekiq::JobRetry::Handled => h
           # this is the common case: job raised error and Sidekiq::JobRetry::Handled
           # signals that we created a retry successfully.  We can acknowledge the job.

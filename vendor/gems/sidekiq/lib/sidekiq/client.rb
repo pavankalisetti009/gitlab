@@ -248,9 +248,12 @@ module Sidekiq
     def atomic_push(conn, payloads)
       if payloads.first.key?("at")
         conn.zadd("schedule", payloads.flat_map { |hash|
-          at = hash.delete("at").to_s
+          at = hash["at"].to_s
           # ActiveJob sets this but the job has not been enqueued yet
           hash.delete("enqueued_at")
+          # TODO: Use hash.except("at") when support for Ruby 2.7 is dropped
+          hash = hash.dup
+          hash.delete("at")
           [at, Sidekiq.dump_json(hash)]
         })
       else

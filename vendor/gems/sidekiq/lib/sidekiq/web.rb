@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "erb"
+require "securerandom"
 
 require "sidekiq"
 require "sidekiq/api"
@@ -39,11 +40,13 @@ module Sidekiq
       CONTENT_SECURITY_POLICY = "Content-Security-Policy"
       LOCATION = "Location"
       X_CASCADE = "X-Cascade"
+      X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options"
     else
       CONTENT_LANGUAGE = "content-language"
       CONTENT_SECURITY_POLICY = "content-security-policy"
       LOCATION = "location"
       X_CASCADE = "x-cascade"
+      X_CONTENT_TYPE_OPTIONS = "x-content-type-options"
     end
 
     class << self
@@ -114,6 +117,7 @@ module Sidekiq
     end
 
     def call(env)
+      env[:csp_nonce] = SecureRandom.base64(16)
       app.call(env)
     end
 
@@ -138,7 +142,50 @@ module Sidekiq
       send(:"#{attribute}=", value)
     end
 
-    def self.register(extension)
+    # Register a class as a Sidekiq Web UI extension. The class should
+    # provide one or more tabs which map to an index route. Options:
+    #
+    # @param extension [Class] Class which contains the HTTP actions, required
+    # @param name [String] the name of the extension, used to namespace assets
+    # @param tab [String | Array] labels(s) of the UI tabs
+    # @param index [String | Array] index route(s) for each tab
+    # @param root_dir [String] directory location to find assets, locales and views, typically `web/` within the gemfile
+    # @param asset_paths [Array] one or more directories under {root}/assets/{name} to be publicly served, e.g. ["js", "css", "img"]
+    # @param cache_for [Integer] amount of time to cache assets, default one day
+    #
+    # TODO name, tab and index will be mandatory in 8.0
+    #
+    # Web extensions will have a root `web/` directory with `locales/`, `assets/`
+    # and `views/` subdirectories.
+    def self.register(extension, name: nil, tab: nil, index: nil, root_dir: nil, cache_for: 86400, asset_paths: nil)
+      tab = Array(tab)
+      index = Array(index)
+      tab.zip(index).each do |tab, index|
+        tabs[tab] = index
+      end
+      if root_dir
+        locdir = File.join(root_dir, "locales")
+        locales << locdir if File.directory?(locdir)
+
+        if asset_paths && name
+          # if you have {root}/assets/{name}/js/scripts.js
+          # and {root}/assets/{name}/css/styles.css
+          # you would pass in:
+          #   asset_paths: ["js", "css"]
+          # See script_tag and style_tag in web/helpers.rb
+          assdir = File.join(root_dir, "assets")
+          assurls = Array(asset_paths).map { |x| "/#{name}/#{x}" }
+          assetprops = {
+            urls: assurls,
+            root: assdir,
+            cascade: true
+          }
+          assetprops[:header_rules] = [[:all, {Rack::CACHE_CONTROL => "private, max-age=#{cache_for.to_i}"}]] if cache_for
+          middlewares << [[Rack::Static, assetprops], nil]
+        end
+      end
+
+      yield self if block_given?
       extension.registered(WebApplication)
     end
 

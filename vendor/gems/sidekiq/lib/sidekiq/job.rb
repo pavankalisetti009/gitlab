@@ -69,7 +69,11 @@ module Sidekiq
         # In practice, any option is allowed.  This is the main mechanism to configure the
         # options for a specific job.
         def sidekiq_options(opts = {})
-          opts = opts.transform_keys(&:to_s) # stringify
+          # stringify 2 levels of keys
+          opts = opts.to_h do |k, v|
+            [k.to_s, (Hash === v) ? v.transform_keys(&:to_s) : v]
+          end
+
           self.sidekiq_options_hash = get_sidekiq_options.merge(opts)
         end
 
@@ -155,6 +159,9 @@ module Sidekiq
 
     attr_accessor :jid
 
+    # This attribute is implementation-specific and not a public API
+    attr_accessor :_context
+
     def self.included(base)
       raise ArgumentError, "Sidekiq::Job cannot be included in an ActiveJob: #{base.name}" if base.ancestors.any? { |c| c.name == "ActiveJob::Base" }
 
@@ -164,6 +171,10 @@ module Sidekiq
 
     def logger
       Sidekiq.logger
+    end
+
+    def interrupted?
+      @_context&.stopping?
     end
 
     # This helper class encapsulates the set options for `set`, e.g.
@@ -366,7 +377,7 @@ module Sidekiq
 
       def build_client # :nodoc:
         pool = Thread.current[:sidekiq_redis_pool] || get_sidekiq_options["pool"] || Sidekiq.default_configuration.redis_pool
-        client_class = get_sidekiq_options["client_class"] || Sidekiq::Client
+        client_class = Thread.current[:sidekiq_client_class] || get_sidekiq_options["client_class"] || Sidekiq::Client
         client_class.new(pool: pool)
       end
     end

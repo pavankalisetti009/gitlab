@@ -14,6 +14,13 @@ module Myapp
   end
 end
 
+class CurrentAttributesJob
+  include Sidekiq::Job
+
+  def perform
+  end
+end
+
 describe "Current attributes" do
   before do
     @config = reset!
@@ -91,6 +98,27 @@ describe "Current attributes" do
           assert_equal 17, job_hash["cattr_1"][:other_id]
         end
       end
+    end
+  end
+
+  it "persists after perform_inline" do
+    Sidekiq::CurrentAttributes.persist("Myapp::Current", @config)
+    with_context("Myapp::Current", :user_id, 16) do
+      assert_equal 16, Myapp::Current.user_id
+      CurrentAttributesJob.perform_inline
+      assert_equal 16, Myapp::Current.user_id
+    end
+  end
+
+  it "ignores non-existent attributes" do
+    cm = Sidekiq::CurrentAttributes::Load.new({
+      "cattr" => "Myapp::Current"
+    })
+
+    job = {"cattr" => {"user_id" => 123, "non_existent" => 456}}
+    assert_nil Myapp::Current.user_id
+    cm.call(nil, job, nil) do
+      assert_equal 123, Myapp::Current.user_id
     end
   end
 

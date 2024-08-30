@@ -2,6 +2,49 @@
 
 [Sidekiq Changes](https://github.com/sidekiq/sidekiq/blob/main/Changes.md) | [Sidekiq Pro Changes](https://github.com/sidekiq/sidekiq/blob/main/Pro-Changes.md) | [Sidekiq Enterprise Changes](https://github.com/sidekiq/sidekiq/blob/main/Ent-Changes.md)
 
+7.3.1
+----------
+
+- Don't count job interruptions as failures in metrics [#6386]
+- Add frozen string literal to a number of .rb files.
+- Fix frozen string error with style_tag and script_tag [#6371]
+- Fix an error on Ruby 2.7 because of usage of `Hash#except` [#6376]
+
+7.3.0
+----------
+
+- **NEW FEATURE** Add `Sidekiq::IterableJob`, iteration support for long-running jobs. [#6286, fatkodima]
+  Iterable jobs are interruptible and can restart quickly if
+  running during a deploy. You must ensure that `each_iteration`
+  doesn't take more than Sidekiq's `-t` timeout (default: 25 seconds). Iterable jobs must not implement `perform`.
+```ruby
+class ProcessArrayJob
+  include Sidekiq::IterableJob
+  def build_enumerator(*args, **kwargs)
+    array_enumerator(args, **kwargs)
+  end
+  def each_iteration(arg)
+    puts arg
+  end
+end
+ProcessArrayJob.perform_async(1, 2, 3)
+```
+See the [Iteration](//github.com/sidekiq/sidekiq/wiki/Iteration) wiki page and the RDoc in `Sidekiq::IterableJob`.
+This feature should be considered BETA until the next minor release.
+- **SECURITY** The Web UI no longer allows extensions to use `<script>`.
+  Adjust CSP to disallow inline scripts within the Web UI. Please see
+  `examples/webui-ext` for how to register Web UI extensions and use
+  dynamic CSS and JS. This will make Sidekiq immune to XSS attacks. [#6270]
+- Add config option, `:skip_default_job_logging` to disable Sidekiq's default
+  start/finish job logging. [#6200]
+- Allow `Sidekiq::Limiter.redis` to use Redis Cluster [#6288]
+- Retain CurrentAttributeѕ after inline execution [#6307]
+- Ignore non-existent CurrentAttributes attributes when restoring [#6341]
+- Raise default Redis {read,write,connect} timeouts from 1 to 3 seconds
+  to minimize ReadTimeoutErrors [#6162]
+- Add `logger` as a dependency since it will become bundled in Ruby 3.5 [#6320]
+- Ignore unsupported locales in the Web UI [#6313]
+
 7.2.4
 ----------
 

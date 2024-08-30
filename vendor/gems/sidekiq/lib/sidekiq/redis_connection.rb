@@ -8,16 +8,27 @@ module Sidekiq
   module RedisConnection
     class << self
       def create(options = {})
-        symbolized_options = options.transform_keys(&:to_sym)
+        symbolized_options = deep_symbolize_keys(options)
         symbolized_options[:url] ||= determine_redis_provider
 
         logger = symbolized_options.delete(:logger)
         logger&.info { "Sidekiq #{Sidekiq::VERSION} connecting to Redis with options #{scrub(symbolized_options)}" }
 
         raise "Sidekiq 7+ does not support Redis protocol 2" if symbolized_options[:protocol] == 2
+
+        safe = !!symbolized_options.delete(:cluster_safe)
+        raise ":nodes not allowed, Sidekiq is not safe to run on Redis Cluster" if !safe && symbolized_options.key?(:nodes)
+
         size = symbolized_options.delete(:size) || 5
         pool_timeout = symbolized_options.delete(:pool_timeout) || 1
         pool_name = symbolized_options.delete(:pool_name)
+
+        # Default timeout in redis-client is 1 second, which can be too aggressive
+        # if the Sidekiq process is CPU-bound. With 10-15 threads and a thread quantum of 100ms,
+        # it can be easy to get the occasional ReadTimeoutError. You can still provide
+        # a smaller timeout explicitly:
+        #     config.redis = { url: "...", timeout: 1 }
+        symbolized_options[:timeout] ||= 3
 
         redis_config = Sidekiq::RedisClientAdapter.new(symbolized_options)
         ConnectionPool.new(timeout: pool_timeout, size: size, name: pool_name) do
@@ -26,6 +37,19 @@ module Sidekiq
       end
 
       private
+
+      def deep_symbolize_keys(object)
+        case object
+        when Hash
+          object.each_with_object({}) do |(key, value), result|
+            result[key.to_sym] = deep_symbolize_keys(value)
+          end
+        when Array
+          object.map { |e| deep_symbolize_keys(e) }
+        else
+          object
+        end
+      end
 
       def scrub(options)
         redacted = "REDACTED"
@@ -42,7 +66,14 @@ module Sidekiq
         scrubbed_options[:password] = redacted if scrubbed_options[:password]
         scrubbed_options[:sentinel_password] = redacted if scrubbed_options[:sentinel_password]
         scrubbed_options[:sentinels]&.each do |sentinel|
-          sentinel[:password] = redacted if sentinel[:password]
+          if sentinel.is_a?(String)
+            if (uri = URI(sentinel)) && uri.password
+              uri.password = redacted
+              sentinel.replace(uri.to_s)
+            end
+          elsif sentinel[:password]
+            sentinel[:password] = redacted
+          end
         end
         scrubbed_options
       end
