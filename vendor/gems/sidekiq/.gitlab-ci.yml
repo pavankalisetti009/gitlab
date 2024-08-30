@@ -1,7 +1,7 @@
 include:
   - local: gems/gem.gitlab-ci.yml
     inputs:
-      gem_name: "sidekiq-7.2.4"
+      gem_name: "sidekiq"
       gem_path_prefix: "vendor/gems/"
 
 rspec:
