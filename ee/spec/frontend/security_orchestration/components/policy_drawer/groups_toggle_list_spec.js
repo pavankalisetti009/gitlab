@@ -67,7 +67,7 @@ describe('GroupsToggleList', () => {
       });
 
       expect(findAllGroupItems()).toHaveLength(2);
-      expect(findGroupListHeader().text()).toBe('All projects in 2 groups with exceptions:');
+      expect(findGroupListHeader().text()).toBe('All projects in 2 groups, with exclusions:');
       expect(findAllProjectItems()).toHaveLength(2);
     });
   });

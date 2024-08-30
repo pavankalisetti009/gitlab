@@ -8,7 +8,7 @@ export default {
     groupsHeader: s__('SecurityOrchestration|Linked groups'),
     groupsInlineListHeader: s__('SecurityOrchestration|All projects in linked groups'),
     groupsInlineListSubHeader: s__('SecurityOrchestration|(%{groups})'),
-    projectsHeader: s__('SecurityOrchestration|Exception projects'),
+    projectsHeader: s__('SecurityOrchestration|Excluded projects'),
   },
   name: 'GroupsToggleList',
   components: {
@@ -57,8 +57,8 @@ export default {
     groupsHeader() {
       const template = this.hasProjects
         ? n__(
-            'All projects in %{groupsLength} group with exceptions:',
-            'All projects in %{groupsLength} groups with exceptions:',
+            'All projects in %{groupsLength} group, with exclusions:',
+            'All projects in %{groupsLength} groups, with exclusions:',
             this.groupsLength,
           )
         : n__(

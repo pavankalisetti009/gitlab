@@ -5533,8 +5533,8 @@ msgstr ""
 msgid "All projects"
 msgstr ""
 
-msgid "All projects in %{groupsLength} group with exceptions:"
-msgid_plural "All projects in %{groupsLength} groups with exceptions:"
+msgid "All projects in %{groupsLength} group, with exclusions:"
+msgid_plural "All projects in %{groupsLength} groups, with exclusions:"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -48723,10 +48723,10 @@ msgstr ""
 msgid "SecurityOrchestration|Exception branches"
 msgstr ""
 
-msgid "SecurityOrchestration|Exception projects"
+msgid "SecurityOrchestration|Exceptions"
 msgstr ""
 
-msgid "SecurityOrchestration|Exceptions"
+msgid "SecurityOrchestration|Excluded projects"
 msgstr ""
 
 msgid "SecurityOrchestration|Failed to fetch the scope information. Please refresh the page to try again."
