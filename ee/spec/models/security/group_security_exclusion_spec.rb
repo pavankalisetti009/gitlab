@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::GroupSecurityIgnorelistEntry, feature_category: :secret_detection, type: :model do
+RSpec.describe Security::GroupSecurityExclusion, feature_category: :secret_detection, type: :model do
   describe 'associations' do
     it { is_expected.to belong_to(:group) }
   end
@@ -19,10 +19,10 @@ RSpec.describe Security::GroupSecurityIgnorelistEntry, feature_category: :secret
     it { is_expected.to define_enum_for(:type).with_values([:path, :regex_pattern, :raw_value, :rule]) }
   end
 
-  context 'with loose foreign key on group_security_ignorelist_entries.group_id' do
+  context 'with loose foreign key on group_security_exclusions.group_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:group) }
-      let_it_be(:model) { create(:group_security_ignorelist_entry, group: parent) }
+      let_it_be(:model) { create(:group_security_exclusion, group: parent) }
     end
   end
 end

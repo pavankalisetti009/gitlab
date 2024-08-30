@@ -11519,7 +11519,7 @@ CREATE SEQUENCE group_saved_replies_id_seq
 
 ALTER SEQUENCE group_saved_replies_id_seq OWNED BY group_saved_replies.id;
 
-CREATE TABLE group_security_ignorelist_entries (
+CREATE TABLE group_security_exclusions (
     id bigint NOT NULL,
     group_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -11529,18 +11529,18 @@ CREATE TABLE group_security_ignorelist_entries (
     active boolean DEFAULT true NOT NULL,
     description text,
     value text NOT NULL,
-    CONSTRAINT check_0add0c010a CHECK ((char_length(value) <= 255)),
-    CONSTRAINT check_efc4fb2e08 CHECK ((char_length(description) <= 255))
+    CONSTRAINT check_12e9b59302 CHECK ((char_length(description) <= 255)),
+    CONSTRAINT check_45d9a8e422 CHECK ((char_length(value) <= 255))
 );
 
-CREATE SEQUENCE group_security_ignorelist_entries_id_seq
+CREATE SEQUENCE group_security_exclusions_id_seq
     START WITH 1
     INCREMENT BY 1
     NO MINVALUE
     NO MAXVALUE
     CACHE 1;
 
-ALTER SEQUENCE group_security_ignorelist_entries_id_seq OWNED BY group_security_ignorelist_entries.id;
+ALTER SEQUENCE group_security_exclusions_id_seq OWNED BY group_security_exclusions.id;
 
 CREATE TABLE group_ssh_certificates (
     id bigint NOT NULL,
@@ -21723,7 +21723,7 @@ ALTER TABLE ONLY group_repository_storage_moves ALTER COLUMN id SET DEFAULT next
 
 ALTER TABLE ONLY group_saved_replies ALTER COLUMN id SET DEFAULT nextval('group_saved_replies_id_seq'::regclass);
 
-ALTER TABLE ONLY group_security_ignorelist_entries ALTER COLUMN id SET DEFAULT nextval('group_security_ignorelist_entries_id_seq'::regclass);
+ALTER TABLE ONLY group_security_exclusions ALTER COLUMN id SET DEFAULT nextval('group_security_exclusions_id_seq'::regclass);
 
 ALTER TABLE ONLY group_ssh_certificates ALTER COLUMN id SET DEFAULT nextval('group_ssh_certificates_id_seq'::regclass);
 
@@ -23954,8 +23954,8 @@ ALTER TABLE ONLY group_repository_storage_moves
 ALTER TABLE ONLY group_saved_replies
     ADD CONSTRAINT group_saved_replies_pkey PRIMARY KEY (id);
 
-ALTER TABLE ONLY group_security_ignorelist_entries
-    ADD CONSTRAINT group_security_ignorelist_entries_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY group_security_exclusions
+    ADD CONSTRAINT group_security_exclusions_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY group_ssh_certificates
     ADD CONSTRAINT group_ssh_certificates_pkey PRIMARY KEY (id);
@@ -28416,7 +28416,7 @@ CREATE INDEX index_group_repository_storage_moves_on_group_id ON group_repositor
 
 CREATE INDEX index_group_saved_replies_on_group_id ON group_saved_replies USING btree (group_id);
 
-CREATE INDEX index_group_security_ignorelist_entries_on_group_id ON group_security_ignorelist_entries USING btree (group_id);
+CREATE INDEX index_group_security_exclusions_on_group_id ON group_security_exclusions USING btree (group_id);
 
 CREATE UNIQUE INDEX index_group_ssh_certificates_on_fingerprint ON group_ssh_certificates USING btree (fingerprint);
 

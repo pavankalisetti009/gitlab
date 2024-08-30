@@ -243,7 +243,7 @@ external_pull_requests:
   - table: projects
     column: project_id
     on_delete: async_delete
-group_security_ignorelist_entries:
+group_security_exclusions:
   - table: namespaces
     column: group_id
     on_delete: async_delete

@@ -1,10 +1,10 @@
 ---
-table_name: group_security_ignorelist_entries
+table_name: group_security_exclusions
 classes:
-- Security::GroupSecurityIgnorelistEntry
+- Security::GroupSecurityExclusion
 feature_categories:
 - secret_detection
-description: Store entries of group-level ignorelists for security scanners
+description: Store group-level exclusions to exclude from security analyzers scanning
 introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163733
 milestone: '17.4'
 gitlab_schema: gitlab_sec
