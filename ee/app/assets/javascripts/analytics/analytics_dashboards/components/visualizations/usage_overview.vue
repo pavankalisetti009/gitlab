@@ -53,8 +53,8 @@ export default {
   mounted() {
     const { recordedAt } = this;
     const { tooltip, lastUpdated } = this.$options.i18n;
-    const text = `${tooltip}${recordedAt ? sprintf(lastUpdated, { recordedAt }) : ''}`;
-    this.$emit('showTooltip', text);
+    const tooltipText = `${tooltip}${recordedAt ? sprintf(lastUpdated, { recordedAt }) : ''}`;
+    this.$emit('showTooltip', { description: tooltipText });
 
     if (!this.overviewCountsAggregationEnabled) {
       const { description, descriptionLink, backgroundAggregationNoData } = this.$options.i18n;

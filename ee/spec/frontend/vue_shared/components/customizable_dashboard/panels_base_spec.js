@@ -5,6 +5,8 @@ import {
   GlLoadingIcon,
   GlPopover,
   GlIcon,
+  GlLink,
+  GlSprintf,
 } from '@gitlab/ui';
 import { shallowMountExtended, mountExtended } from 'helpers/vue_test_utils_helper';
 import PanelsBase from 'ee/vue_shared/components/customizable_dashboard/panels_base.vue';
@@ -22,6 +24,7 @@ describe('PanelsBase', () => {
         ...props,
       },
       slots,
+      stubs: { GlSprintf },
     });
   };
 
@@ -31,6 +34,7 @@ describe('PanelsBase', () => {
   const findPanelTitleTooltipIcon = () => wrapper.findByTestId('panel-title-tooltip-icon');
   const findPanelTitleAlertIcon = () => wrapper.findByTestId('panel-title-alert-icon');
   const findPanelTitlePopover = () => wrapper.findByTestId('panel-title-popover');
+  const findPanelTitlePopoverLink = () => findPanelTitlePopover().findComponent(GlLink);
   const findPanelAlertPopover = () => wrapper.findComponent(GlPopover);
   const findPanelActionsDropdown = () => wrapper.findComponent(GlDisclosureDropdown);
   const findDropdownItemByText = (text) =>
@@ -147,18 +151,60 @@ describe('PanelsBase', () => {
   });
 
   describe('when there is a title with a tooltip', () => {
-    beforeEach(() => {
-      createWrapper({
-        props: {
-          title: 'Panel Title',
-          tooltip: 'Tooltip text',
-        },
+    describe('with description and link', () => {
+      beforeEach(() => {
+        createWrapper({
+          props: {
+            title: 'Panel Title',
+            tooltip: {
+              description: 'This is just information, %{linkStart}learn more%{linkEnd}',
+              descriptionLink: '/foo',
+            },
+          },
+        });
+      });
+
+      it('renders the panel title tooltip icon with special content', () => {
+        expect(findPanelTitleTooltipIcon().exists()).toBe(true);
+        expect(findPanelTitlePopover().text()).toBe('This is just information, learn more');
+        expect(findPanelTitlePopoverLink().attributes('href')).toBe('/foo');
       });
     });
 
-    it('renders the panel title tooltip icon', () => {
-      expect(findPanelTitleTooltipIcon().exists()).toBe(true);
-      expect(findPanelTitlePopover().text()).toContain('Tooltip text');
+    describe('without description link', () => {
+      beforeEach(() => {
+        createWrapper({
+          props: {
+            title: 'Panel Title',
+            tooltip: {
+              description: 'This is just information.',
+            },
+          },
+        });
+      });
+
+      it('renders the panel title tooltip icon with description only', () => {
+        expect(findPanelTitleTooltipIcon().exists()).toBe(true);
+        expect(findPanelTitlePopoverLink().exists()).toBe(false);
+        expect(findPanelTitlePopover().text()).toBe('This is just information.');
+      });
+    });
+
+    describe('without description', () => {
+      beforeEach(() => {
+        createWrapper({
+          props: {
+            title: 'Panel Title',
+            tooltip: {
+              descriptionLink: '/foo',
+            },
+          },
+        });
+      });
+
+      it('does not render the panel title tooltip icon', () => {
+        expect(findPanelTitleTooltipIcon().exists()).toBe(false);
+      });
     });
   });
 

@@ -1,5 +1,12 @@
 <script>
-import { GlDisclosureDropdown, GlIcon, GlLoadingIcon, GlPopover } from '@gitlab/ui';
+import {
+  GlDisclosureDropdown,
+  GlIcon,
+  GlLoadingIcon,
+  GlPopover,
+  GlSprintf,
+  GlLink,
+} from '@gitlab/ui';
 import { alertVariantIconMap } from '@gitlab/ui/src/utils/constants';
 import uniqueId from 'lodash/uniqueId';
 import { isObject } from 'lodash';
@@ -15,6 +22,8 @@ export default {
     GlIcon,
     GlPopover,
     TooltipOnTruncate,
+    GlSprintf,
+    GlLink,
   },
   props: {
     title: {
@@ -23,9 +32,9 @@ export default {
       default: '',
     },
     tooltip: {
-      type: String,
+      type: Object,
       required: false,
-      default: '',
+      default: () => ({}),
     },
     loading: {
       type: Boolean,
@@ -68,6 +77,7 @@ export default {
   data() {
     return {
       popoverId: uniqueId('panel-alert-popover-'),
+      titleTooltipId: uniqueId('title-tooltip-id-'),
       dropdownOpen: false,
     };
   },
@@ -127,18 +137,28 @@ export default {
             data-testid="panel-title-alert-icon"
           />
           <strong class="gl-text-gray-700">{{ title }}</strong>
-          <template v-if="tooltip">
+          <template v-if="tooltip && tooltip.description">
             <gl-icon
-              ref="titleTooltip"
+              :id="titleTooltipId"
               data-testid="panel-title-tooltip-icon"
               name="information-o"
+              variant="info"
             />
             <gl-popover
               data-testid="panel-title-popover"
               boundary="viewport"
-              :target="() => $refs.titleTooltip.$el"
+              :target="titleTooltipId"
             >
-              {{ tooltip }}
+              <gl-sprintf v-if="tooltip.descriptionLink" :message="tooltip.description">
+                <template #link="{ content }">
+                  <gl-link :href="tooltip.descriptionLink" class="gl-text-sm">{{
+                    content
+                  }}</gl-link>
+                </template>
+              </gl-sprintf>
+              <template v-else>
+                {{ tooltip.description }}
+              </template>
             </gl-popover>
           </template>
         </tooltip-on-truncate>
