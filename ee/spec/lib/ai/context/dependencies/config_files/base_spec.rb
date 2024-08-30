@@ -40,8 +40,9 @@ RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :
     let(:config_file_content) do
       Gitlab::Json.dump({
         'parent_node' => { 'child_node' => [
-          { name: 'lib1' },
-          { name: 'lib2', version: '2.1.0' }
+          { name: ' lib1 ' },
+          { name: 'lib2', version: '2.1.0 ' },
+          { name: '' }
         ] }
       })
     end

@@ -46,6 +46,7 @@ module Ai
             return error('file empty') if content.blank?
 
             @libs = extract_libs
+            sanitize_libs!
 
             # Default error message if there are no other errors
             error('format not recognized or dependencies not present') if libs.blank? && errors.empty?
@@ -82,6 +83,16 @@ module Ai
           # To record an error, either use error() directly or raise ParsingError
           def extract_libs
             raise NotImplementedError
+          end
+
+          def sanitize_libs!
+            @libs = Array.wrap(libs).filter_map do |lib|
+              next if lib.name.blank?
+
+              lib.name = lib.name.strip
+              lib.version = lib.version&.strip
+              lib
+            end
           end
 
           def formatted_libs
