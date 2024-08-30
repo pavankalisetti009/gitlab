@@ -155,7 +155,7 @@ Before releasing a known required stop, complete these steps. If the required st
 is identified after release, the following steps must still be completed:
 
 1. In the same MR, update the [upgrade paths](../update/index.md#upgrade-paths) documentation to include the new
-   required stop, and the [`upgrade_path.yml`](https://gitlab.com/gitlab-org/gitlab/-/blob/master/upgrade_path.yml).
+   required stop, and the [`upgrade_path.yml`](https://gitlab.com/gitlab-org/gitlab/-/blob/master/config/upgrade_path.yml).
    The `upgrade_path.yml` is the single source of truth (SSoT) for all our required stops.
 1. Communicate the changes with the customer Support and Release management teams.
 1. If the required stops is database related, file an issue with the Database group to
