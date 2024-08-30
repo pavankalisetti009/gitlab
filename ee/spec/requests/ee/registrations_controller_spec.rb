@@ -380,9 +380,7 @@ RSpec.describe RegistrationsController, type: :request, feature_category: :syste
 
           expect(::Gitlab::AppLogger).to have_received(:info).with({
             message: 'Sign-up blocked',
-            reason: 'Banned user email reuse',
-            new_email: tumbled_email,
-            matched_email: normalized_email
+            reason: 'Banned user email reuse'
           })
         end
 
