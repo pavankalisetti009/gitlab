@@ -801,7 +801,7 @@ You can find a full history of changes [on the GitLab project](https://gitlab.co
 
 - [2023-12-12](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/139557): Updated notes on Load Balancers to be more reflective that any reputable offering is expected to work.
 - [2023-11-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133457): Expanded details on what each Reference Architecture is designed for, the testing methodology used and added details on how to scale environments.
-- [2023-11-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/134518): Added expanded notes on disk types, object storage and monitoring.
+- [2023-11-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/134632): Added expanded notes on disk types, object storage and monitoring.
 - [2023-10-25](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/134518): Adjusted Sidekiq configuration example to use Linux Package role.
 - [2023-10-15](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133835): Adjusted the Sidekiq recommendations to include a separate node for 2k and tweaks to instance type and counts for 3k and 5k.
 - [2023-10-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132270): Added more expanded notes throughout to warn about the use of Large Monorepos and their impacts for increased awareness.
@@ -812,18 +812,6 @@ You can find a full history of changes [on the GitLab project](https://gitlab.co
 - [2023-08-30](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/130470): Expanded section on Geo under the Decision Tree.
 - [2023-08-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/128529): Switch config example to use the Sidekiq role for Linux package.
 - [2023-08-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/128374): Fixed an AWS Machine type typo for the 50k architecture.
-- [2023-11-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133457): Expand details on what each Reference Architecture is designed for, the testing methodology used and added details on how to scale environments.
-- [2023-11-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/134518): Add expanded notes on disk types, object storage and monitoring.
-- [2023-10-25](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/134518): Adjust Sidekiq configuration example to use Linux Package role.
-- [2023-10-15](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133835): Adjust the Sidekiq recommendations to include a separate node for 2k and tweaks to instance type and counts for 3k and 5k.
-- [2023-10-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132270): Add more expanded notes throughout to warn about the use of Large Monorepos and their impacts for increased awareness.
-- [2023-10-04](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/133258): Update name of Task Runner pod to its new name of Toolbox.
-- [2023-10-02](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132961): Expand guidance on using an external service for Redis further, in particular for separated Cache and Persistent services with 10k and up.
-- [2023-09-21](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132289): Expand details on the challenges of running Gitaly in Kubernetes.
-- [2023-09-20](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/132275): Remove references to Grafana after deprecation and removal.
-- [2023-08-30](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/130470): Expand section on Geo under the Decision Tree.
-- [2023-08-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/128529): Switch configuration example to use the Sidekiq role for Linux package.
-- [2023-08-03](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/128374): Fix an AWS Machine type typo for the 50k architecture.
 - [2023-06-30](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/125017): Update PostgreSQL configuration examples to remove a now unneeded setting to instead use the Linux package default.
 - [2023-06-30](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/125017): Add explicit example on main page that reflects Google Memorystore is recommended.
 - [2023-06-11](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/122063): Fix IP examples for the 3k and 5k architectures.
