@@ -60,7 +60,7 @@ RSpec.describe 'GitLab.com Google Analytics DataLayer', :saas, :js, feature_cate
 
       fill_in 'new_group_name', with: group.name
       find('#trial_entity_company').click
-      click_button 'Start your free trial'
+      click_button 'Activate my trial'
 
       data_layer = execute_script('return window.dataLayer')
       last_event_in_data_layer = data_layer[-1]

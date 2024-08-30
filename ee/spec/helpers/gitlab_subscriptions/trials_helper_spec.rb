@@ -4,6 +4,7 @@ require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition do
   using RSpec::Parameterized::TableSyntax
+  include Devise::Test::ControllerHelpers
 
   describe '#create_lead_form_data' do
     let(:user) { build_stubbed(:user, user_detail: build_stubbed(:user_detail, organization: '_org_')) }
@@ -381,12 +382,27 @@ RSpec.describe GitlabSubscriptions::TrialsHelper, feature_category: :acquisition
     subject { helper.trial_selection_intro_text }
 
     where(:have_group_namespace, :text) do
-      true  | 'You can apply your trial to a new group or an existing group.'
+      true  | 'You can apply your Ultimate and GitLab Duo Enterprise trial to a group.'
       false | 'Create a new group to start your GitLab Ultimate trial.'
     end
 
     with_them do
       it { is_expected.to eq(text) }
+    end
+
+    context 'with the duo_enterprise_trials feature flag off' do
+      before do
+        stub_feature_flags(duo_enterprise_trials: false)
+      end
+
+      where(:have_group_namespace, :text) do
+        true  | 'You can apply your trial to a new group or an existing group.'
+        false | 'Create a new group to start your GitLab Ultimate trial.'
+      end
+
+      with_them do
+        it { is_expected.to eq(text) }
+      end
     end
   end
 
