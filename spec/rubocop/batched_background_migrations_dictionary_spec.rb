@@ -57,7 +57,8 @@ RSpec.describe RuboCop::BatchedBackgroundMigrationsDictionary, feature_category:
   end
 
   describe '#finalize_after' do
-    it 'returns the finalize_after timestamp of the bbm with given version' do
+    it 'returns the finalize_after timestamp of the bbm with given version',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/456914' do
       expect(batched_background_migration.finalize_after).to eq(finalize_after)
     end
 
