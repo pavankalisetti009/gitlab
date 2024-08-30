@@ -7,19 +7,21 @@
  * @param {() => any} fn Function that returns the object to use for localStorage
  */
 const useLocalStorage = (fn) => {
-  const origLocalStorage = window.localStorage;
-  let currentLocalStorage = origLocalStorage;
-
-  Object.defineProperty(window, 'localStorage', {
-    get: () => currentLocalStorage,
-  });
+  let originalDescriptor;
 
   beforeEach(() => {
-    currentLocalStorage = fn();
+    originalDescriptor = Object.getOwnPropertyDescriptor(window, 'localStorage');
+
+    const mock = fn();
+
+    Object.defineProperty(window, 'localStorage', {
+      ...originalDescriptor,
+      get: () => mock,
+    });
   });
 
   afterEach(() => {
-    currentLocalStorage = origLocalStorage;
+    Object.defineProperty(window, 'localStorage', originalDescriptor);
   });
 };
 
