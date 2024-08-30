@@ -9,6 +9,7 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import EEWorkItemsListApp from 'ee/work_items/pages/work_items_list_app.vue';
 import { CREATED_DESC } from '~/issues/list/constants';
 import getWorkItemsQuery from '~/work_items/graphql/list/get_work_items.query.graphql';
+import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from 'ee/work_items/graphql/list/work_item_parent.query.graphql';
 import { groupWorkItemsQueryResponse } from 'jest/work_items/mock_data';
 import { describeSkipVue3, SkipReason } from 'helpers/vue3_conditional';
@@ -56,12 +57,16 @@ describeSkipVue3(skipReason, () => {
     hasEpicsFeature = true,
     showNewIssueLink = true,
     canBulkEditEpics = true,
+    bulkUpdateMutationEnabled = true,
   } = {}) => {
     wrapper = shallowMountExtended(EEWorkItemsListApp, {
       provide: {
         hasEpicsFeature,
         showNewIssueLink,
         canBulkEditEpics,
+        glFeatures: {
+          bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
+        },
         ...baseProvide,
       },
     });
@@ -69,33 +74,27 @@ describeSkipVue3(skipReason, () => {
 
   const getWorkitemsQueryHandler = jest.fn().mockResolvedValue(groupWorkItemsQueryResponse);
   const workItemParentQueryHandler = jest.fn().mockResolvedValue(workItemParentResponse);
-
   const workItemBulkUpdateHandler = jest.fn();
-  const resolvers = {
-    Mutation: {
-      localWorkItemBulkUpdate(_, { input }) {
-        workItemBulkUpdateHandler(input);
-      },
-    },
-  };
 
   const deepMountComponent = async ({
     hasEpicsFeature = true,
     showNewIssueLink = true,
     canBulkEditEpics = true,
+    bulkUpdateMutationEnabled = true,
   } = {}) => {
     wrapper = mountExtended(EEWorkItemsListApp, {
-      apolloProvider: createMockApollo(
-        [
-          [getWorkItemsQuery, getWorkitemsQueryHandler],
-          [workItemParent, workItemParentQueryHandler],
-        ],
-        resolvers,
-      ),
+      apolloProvider: createMockApollo([
+        [getWorkItemsQuery, getWorkitemsQueryHandler],
+        [workItemParent, workItemParentQueryHandler],
+        [workItemBulkUpdateMutation, workItemBulkUpdateHandler],
+      ]),
       provide: {
         hasEpicsFeature,
         showNewIssueLink,
         canBulkEditEpics,
+        glFeatures: {
+          bulkUpdateWorkItemsMutation: bulkUpdateMutationEnabled,
+        },
         ...baseProvide,
         ...extendedProvide,
       },
@@ -186,6 +185,17 @@ describeSkipVue3(skipReason, () => {
       expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
     });
 
+    it('does not show bulk edit toggle by if the gql mutation is disabled', () => {
+      mountComponent({
+        hasEpicsFeature: true,
+        canBulkEditEpics: true,
+        bulkUpdateMutationEnabled: false,
+      });
+
+      expect(findBulkEditStartButton().exists()).toBe(false);
+      expect(findWorkItemsListApp().props('showBulkEditSidebar')).toBe(false);
+    });
+
     it('shows the bulk edit toggle when the work item type is epic and the correct features are enabled', () => {
       mountComponent({ hasEpicsFeature: true, canBulkEditEpics: true });
 
@@ -214,11 +224,17 @@ describeSkipVue3(skipReason, () => {
       await waitForPromises();
 
       expect(workItemBulkUpdateHandler).toHaveBeenCalledWith({
-        parentId: workItemParentResponse.data.namespace.id,
-        ids: issuableGids,
-        labelsWidget: {
-          addLabelIds: ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'],
-          removeLabelIds: ['gid://gitlab/Label/4', 'gid://gitlab/Label/5', 'gid://gitlab/Label/6'],
+        input: {
+          parentId: workItemParentResponse.data.namespace.id,
+          ids: issuableGids,
+          labelsWidget: {
+            addLabelIds: ['gid://gitlab/Label/1', 'gid://gitlab/Label/2', 'gid://gitlab/Label/3'],
+            removeLabelIds: [
+              'gid://gitlab/Label/4',
+              'gid://gitlab/Label/5',
+              'gid://gitlab/Label/6',
+            ],
+          },
         },
       });
     });
