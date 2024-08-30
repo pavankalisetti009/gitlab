@@ -198,7 +198,7 @@ export default {
   },
   mounted() {
     this.trackEvent(
-      'pageview',
+      'view_group_duo_pro_usage_pageload',
       {
         label: this.pageViewLabel,
       },
@@ -207,7 +207,7 @@ export default {
   },
   methods: {
     handleAddDuoProClick() {
-      this.trackEvent('click_button', {
+      this.trackEvent('click_add_seats_button_group_duo_pro_usage_page', {
         label: `add_duo_pro_${this.trackingPreffix}`,
         property: 'usage_quotas_page',
       });
@@ -223,7 +223,7 @@ export default {
     },
     handlePurchaseSeats() {
       this.trackEvent(
-        'click_button',
+        'click_purchase_seats_button_group_duo_pro_usage_page',
         {
           label: `duo_pro_purchase_seats`,
         },
@@ -234,7 +234,7 @@ export default {
     },
     handleCodeSuggestionsLink() {
       this.trackEvent(
-        'click_link',
+        'click_marketing_link_group_duo_pro_usage_page',
         {
           label: `duo_pro_marketing_page`,
         },
