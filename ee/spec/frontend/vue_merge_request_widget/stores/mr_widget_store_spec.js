@@ -50,29 +50,25 @@ describe('MergeRequestStore', () => {
   describe('setGraphqlData', () => {
     const { mergeRequest } = getStateQueryResponse.data.project;
 
-    it('sets mergeTrainsCount and mergeTrainIndex', () => {
+    it('sets mergeTrainsCount', () => {
       store.setGraphqlData({
         mergeRequest: {
           ...mergeRequest,
           mergeTrainsCount: 2,
-          mergeTrainIndex: 1,
         },
       });
 
       expect(store.mergeTrainsCount).toBe(2);
-      expect(store.mergeTrainIndex).toBe(1);
     });
   });
 
   describe('setGraphqlSubscriptionData', () => {
-    it('sets mergeTrainsCount and mergeTrainIndex', () => {
+    it('sets mergeTrainsCount', () => {
       store.setGraphqlSubscriptionData({
         mergeTrainsCount: 2,
-        mergeTrainIndex: 1,
       });
 
       expect(store.mergeTrainsCount).toBe(2);
-      expect(store.mergeTrainIndex).toBe(1);
     });
   });
 

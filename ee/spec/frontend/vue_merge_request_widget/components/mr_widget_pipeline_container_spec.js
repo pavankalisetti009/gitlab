@@ -29,10 +29,12 @@ describe('MrWidgetPipelineContainer', () => {
     it('should render merge train indicator', async () => {
       const expectedProps = {
         mergeRequestState: STATUS_OPEN,
-        mergeTrainIndex: 0,
         mergeTrainsCount: 1,
         mergeTrainsPath: '/train/1',
-        mergeTrainCar: null,
+        mergeTrainCar: {
+          id: 'gid://gitlab/MergeTrains::Car/1',
+          index: 0,
+        },
       };
       createComponent({
         store: expectedProps,
