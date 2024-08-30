@@ -1703,6 +1703,210 @@ RSpec.describe Group, feature_category: :groups_and_projects do
         expect(group.billed_shared_group_members.map(&:user)).to exclude(banned_user)
       end
     end
+
+    context 'with member roles' do
+      let_it_be(:group) { create(:group) }
+      let_it_be(:invited_group) { create(:group) }
+
+      let_it_be(:guest_elevated) { create(:member_role, :guest, :read_vulnerability) }
+      let_it_be(:guest_basic) { create(:member_role, :guest, :read_code) }
+      let_it_be(:developer_lead) { create(:member_role, :developer, :admin_vulnerability) }
+
+      let_it_be(:member_a) { create(:group_member, :guest, source: invited_group) }
+      let_it_be(:member_b) { create(:group_member, :guest, source: invited_group, member_role: guest_elevated) }
+      let_it_be(:member_c) { create(:group_member, :guest, source: invited_group, member_role: guest_basic) }
+      let_it_be(:member_d) { create(:group_member, :developer, source: invited_group) }
+      let_it_be(:member_e) { create(:group_member, :developer, source: invited_group, member_role: developer_lead) }
+
+      let_it_be(:invited_access_level) { :guest }
+      let_it_be(:invited_member_role) { nil }
+
+      before do
+        create(
+          :group_group_link,
+          invited_access_level,
+          shared_with_group: invited_group,
+          shared_group: group,
+          member_role: invited_member_role
+        )
+      end
+
+      shared_examples 'returns all members of the invited group' do
+        it do
+          expect(group.billed_shared_group_members)
+            .to match_array([member_a, member_b, member_c, member_d, member_e])
+        end
+      end
+
+      shared_examples 'returns empty array' do
+        it do
+          expect(group.billed_shared_group_members(exclude_guests: true)).to match_array([])
+        end
+      end
+
+      shared_examples 'returns elevated guests from invited group' do
+        it do
+          expect(group.billed_shared_group_members(exclude_guests: true)).to match_array([member_b])
+        end
+      end
+
+      shared_examples 'returns non-guests and elevated guests from invited group' do
+        it do
+          expect(group.billed_shared_group_members(exclude_guests: true)).to match_array([member_b, member_d, member_e])
+        end
+      end
+
+      shared_examples 'returns non-guests from invited group' do
+        it do
+          expect(group.billed_shared_group_members(exclude_guests: true)).to match_array([member_d, member_e])
+        end
+      end
+
+      context 'when group link is assigned a guest role' do
+        let(:invited_access_level) { :guest }
+        let(:invited_member_role) { nil }
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is enabled' do
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns empty array'
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+          end
+
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns empty array'
+          end
+        end
+      end
+
+      context 'when group link is assigned a guest member role that does not occupy a seat' do
+        let(:invited_access_level) { :guest }
+        let(:invited_member_role) { guest_basic }
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is enabled' do
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns elevated guests from invited group'
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+          end
+
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns empty array'
+          end
+        end
+      end
+
+      context 'when group link is assigned a guest member role that occupies a seat' do
+        let(:invited_access_level) { :guest }
+        let(:invited_member_role) { guest_elevated }
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is enabled' do
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns elevated guests from invited group'
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+          end
+
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns empty array'
+          end
+        end
+      end
+
+      context 'when group link is assigned a non-guest role' do
+        let(:invited_access_level) { :developer }
+        let(:invited_member_role) { nil }
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is enabled' do
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns non-guests and elevated guests from invited group'
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+          end
+
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns non-guests from invited group'
+          end
+        end
+      end
+
+      context 'when group link is assigned a non-guest custom role' do
+        let(:invited_access_level) { :developer }
+        let(:invited_member_role) { developer_lead }
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is enabled' do
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns non-guests and elevated guests from invited group'
+          end
+        end
+
+        context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+          before do
+            stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+          end
+
+          context 'with guests' do
+            it_behaves_like 'returns all members of the invited group'
+          end
+
+          context 'without guests' do
+            it_behaves_like 'returns non-guests from invited group'
+          end
+        end
+      end
+    end
   end
 
   describe '#billed_invited_group_to_project_users' do
