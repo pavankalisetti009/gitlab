@@ -9,7 +9,6 @@ module Security
 
     before_action do
       push_frontend_feature_flag(:vulnerability_report_owasp_2021, current_user)
-      push_frontend_feature_flag(:vulnerability_owasp_top_10_group, current_user)
       push_frontend_feature_flag(:owasp_top_10_null_filtering, current_user)
     end
 
