@@ -15,6 +15,7 @@ import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/c
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
 import { useFakeDate } from 'helpers/fake_date';
+import CodeSuggestionsUsageLoader from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_loader.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -117,6 +118,7 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsTitleTierBadge = () => wrapper.findComponent(GlBadge);
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
+  const findCodeSuggestionsUsageLoader = () => wrapper.findComponent(CodeSuggestionsUsageLoader);
   const findSelfManagedAddOnEligibleUserList = () =>
     wrapper.findComponent(SelfManagedAddOnEligibleUserList);
   const findErrorAlert = () => wrapper.findByTestId('add-on-purchase-fetch-error');
@@ -132,6 +134,7 @@ describe('GitLab Duo Usage', () => {
     addOnPurchasesHandler,
     currentLicenseHandler,
     provideProps,
+    waitForApi = true,
   } = {}) => {
     wrapper = shallowMountExtended(CodeSuggestionsUsage, {
       provide: {
@@ -145,8 +148,28 @@ describe('GitLab Duo Usage', () => {
       }),
     });
 
-    return waitForPromises();
+    return waitForApi ? waitForPromises() : null;
   };
+
+  describe('loading', () => {
+    beforeEach(() => {
+      createComponent({ waitForApi: false });
+    });
+
+    it('renders code suggestions usage loader', () => {
+      expect(findCodeSuggestionsUsageLoader().exists()).toBe(true);
+    });
+
+    it('does not render any other usage components', () => {
+      expect(findCodeSuggestionsIntro().exists()).toBe(false);
+      expect(findCodeSuggestionsInfo().exists()).toBe(false);
+      expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+      expect(findCodeSuggestionsTitle().exists()).toBe(false);
+      expect(findHealthCheckList().exists()).toBe(false);
+      expect(findSelfManagedAddOnEligibleUserList().exists()).toBe(false);
+      expect(findErrorAlert().exists()).toBe(false);
+    });
+  });
 
   describe('Cloud Connector health status check', () => {
     it.each`

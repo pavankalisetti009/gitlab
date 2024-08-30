@@ -1,4 +1,4 @@
-import { GlCollapse, GlLoadingIcon, GlSkeletonLoader } from '@gitlab/ui';
+import { GlCollapse, GlLoadingIcon } from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 
@@ -7,6 +7,7 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import HealthCheckListCategory from 'ee/usage_quotas/code_suggestions/components/health_check_list_category.vue';
+import HealthCheckListLoader from 'ee/usage_quotas/code_suggestions/components/health_check_list_loader.vue';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { probesByCategory } from 'ee/usage_quotas/code_suggestions/utils';
 
@@ -70,8 +71,8 @@ describe('HealthCheckList', () => {
   const findHealthCheckExpandText = () => wrapper.findByTestId('health-check-expand-text');
   const findHealthCheckFooterLoader = () => wrapper.findComponent(GlLoadingIcon);
   const findHealthCheckFooterText = () => wrapper.findByTestId('health-check-footer-text');
-  const findHealthCheckProbesLoader = () => wrapper.findComponent(GlSkeletonLoader);
-  const findHealthCheckProbes = () => wrapper.findByTestId('health-check-probes');
+  const findHealthCheckListLoader = () => wrapper.findComponent(HealthCheckListLoader);
+  const findHealthCheckResults = () => wrapper.findByTestId('health-check-results');
   const findAllHealthCheckProbeCategories = () =>
     wrapper.findAllComponents(HealthCheckListCategory);
 
@@ -198,9 +199,9 @@ describe('HealthCheckList', () => {
         expect(findHealthCheckExpandText().text()).toBe('Tests are running');
       });
 
-      it('renders health check probe loader', () => {
-        expect(findHealthCheckProbesLoader().exists()).toBe(true);
-        expect(findHealthCheckProbes().exists()).toBe(false);
+      it('renders health check list loader', () => {
+        expect(findHealthCheckListLoader().exists()).toBe(true);
+        expect(findHealthCheckResults().exists()).toBe(false);
       });
 
       it('render the footer as a loading icon', () => {
@@ -238,9 +239,9 @@ describe('HealthCheckList', () => {
         expect(findRunHealthCheckButton().props('loading')).toBe(false);
       });
 
-      it('renders health check probes', () => {
-        expect(findHealthCheckProbesLoader().exists()).toBe(false);
-        expect(findHealthCheckProbes().exists()).toBe(true);
+      it('renders health check results', () => {
+        expect(findHealthCheckListLoader().exists()).toBe(false);
+        expect(findHealthCheckResults().exists()).toBe(true);
       });
 
       it(`render the footer as a ${footerText}`, () => {
