@@ -18,13 +18,13 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
     using RSpec::Parameterized::TableSyntax
 
     let(:proxy_response) do
-      [{ _source: { id: 1 }, highlight: 'test <span class="gl-font-weight-bold">highlight</span>' }]
+      [{ _source: { id: 1 }, highlight: 'test <span class="gl-font-bold">highlight</span>' }]
     end
 
     let(:es_empty_response) { ::Search::EmptySearchResults.new }
     let(:es_client_response) { instance_double(::Search::Elastic::ResponseMapper, highlight_map: map) }
     let(:results) { described_class.new(user, query, limit_project_ids) }
-    let(:map) { { 1 => 'test <span class="gl-font-weight-bold">highlight</span>' } }
+    let(:map) { { 1 => 'test <span class="gl-font-bold">highlight</span>' } }
 
     where(:scope, :results_method, :results_response, :expected) do
       'projects'        | :projects       | ref(:proxy_response)      | ref(:map)
