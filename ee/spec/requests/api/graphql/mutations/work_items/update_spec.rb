@@ -299,24 +299,11 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
           it_behaves_like 'update work item weight widget'
         end
 
-        context 'when the work item has synced epic' do
+        context 'when the work item type is Epic and has a synced epic' do
           let_it_be(:work_item) { synced_epic.work_item }
 
-          it 'updates the weight widget' do
-            expect do
-              post_graphql_mutation(mutation, current_user: current_user)
-              work_item.reload
-            end.to change(work_item, :weight).to(new_weight)
-          end
-
-          context 'when work_item_epics feature flag is disabled' do
-            before do
-              stub_feature_flags(work_item_epics: false)
-            end
-
-            it_behaves_like 'work item is not updated' do
-              let(:work_item_change) { -> { work_item.weight } }
-            end
+          it_behaves_like 'work item is not updated' do
+            let(:work_item_change) { -> { work_item.weight } }
           end
         end
       end
