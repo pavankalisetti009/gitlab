@@ -447,7 +447,7 @@ Returns [`EpicList`](#epiclist).
 
 ### `Query.explainVulnerabilityPrompt`
 
-GitLab Duo Vulnerability explanation prompt for a specified vulnerability.
+GitLab Duo Vulnerability Explanation prompt for a specified vulnerability.
 
 DETAILS:
 **Introduced** in GitLab 16.2.

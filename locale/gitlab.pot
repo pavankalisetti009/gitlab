@@ -59692,10 +59692,10 @@ msgstr ""
 msgid "Vulnerability"
 msgstr ""
 
-msgid "Vulnerability Report"
+msgid "Vulnerability Explanation currently only supports vulnerabilities reported by SAST."
 msgstr ""
 
-msgid "Vulnerability explanation currently only supports vulnerabilities reported by SAST."
+msgid "Vulnerability Report"
 msgstr ""
 
 msgid "Vulnerability remediated. Review before resolving."
