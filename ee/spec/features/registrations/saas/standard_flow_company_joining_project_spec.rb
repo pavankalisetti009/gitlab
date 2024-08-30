@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Standard flow for user picking company and joining a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Standard flow for user picking company and joining a project', :js, :saas_registration, :with_current_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', -> { regular_sign_up }],

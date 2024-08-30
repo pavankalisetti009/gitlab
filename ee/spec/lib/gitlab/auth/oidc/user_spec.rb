@@ -3,7 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Gitlab::Auth::Oidc::User, feature_category: :system_access do
-  let(:oidc_user) { described_class.new(auth_hash) }
+  let_it_be(:organization) { create(:organization) }
+  let(:oidc_user) { described_class.new(auth_hash, organization_id: organization.id) }
   let(:gl_user) { oidc_user.gl_user }
 
   let(:user_groups) { nil }

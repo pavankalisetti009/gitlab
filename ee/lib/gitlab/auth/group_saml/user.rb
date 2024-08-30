@@ -11,7 +11,8 @@ module Gitlab
         attr_reader :auth_hash
 
         override :initialize
-        def initialize(auth_hash)
+        def initialize(auth_hash, user_params = {})
+          @user_params = user_params
           @auth_hash = AuthHash.new(auth_hash)
         end
 

@@ -9,7 +9,7 @@ module EE
     module Auth
       module Ldap
         module User
-          def initialize(auth_hash)
+          def initialize(auth_hash, user_params = {})
             super
 
             set_external_with_external_groups
