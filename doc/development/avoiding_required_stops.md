@@ -143,7 +143,7 @@ and [GitLab chart upgrade notes](https://docs.gitlab.com/charts/installation/upg
 ### Planning the required stop milestone
 
 We can't add required stops to every milestone, as this hurts our user experience
-while upgrading GitLab. The Distribution group is responsible for helping planing and defining
+while upgrading GitLab. The Distribution group is responsible for helping planning and defining
 when required stops are introduced.
 
 From GitLab 17.5, we will introduce required stops in the X.2, X.5, X.8, and X.11 minor milestones. If you introduce code changes or features that require an upgrade stop, you
