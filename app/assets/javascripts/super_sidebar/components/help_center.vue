@@ -120,13 +120,14 @@ export default {
                 ...this.trackingAttrs('privacy'),
               },
             },
-            this.sidebarData.terms && {
-              text: this.$options.i18n.terms,
-              href: this.sidebarData.terms,
-              extraAttrs: {
-                ...this.trackingAttrs('terms'),
+            this.sidebarData.terms &&
+              !this.isSaas && {
+                text: this.$options.i18n.terms,
+                href: this.sidebarData.terms,
+                extraAttrs: {
+                  ...this.trackingAttrs('terms'),
+                },
               },
-            },
           ].filter(Boolean),
         },
         helpActions: {
