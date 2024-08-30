@@ -17,9 +17,7 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
   describe 'fetching notes for incidents' do
     let_it_be(:issuable) { create(:incident, project: project) }
 
-    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446093' do
-      it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 7
-    end
+    it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 7
   end
 
   describe 'fetching notes for epics' do
@@ -38,9 +36,7 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
       expect(epic_discussions.count).to eq(work_item_discussions.count)
     end
 
-    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446093' do
-      it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 5
-    end
+    it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 5
 
     describe 'fetching notes for epic work item' do
       let_it_be(:epic) { create(:epic, group: group) }
