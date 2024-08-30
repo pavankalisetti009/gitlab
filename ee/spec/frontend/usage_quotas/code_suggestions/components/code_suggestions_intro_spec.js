@@ -237,6 +237,10 @@ describe('Code Suggestions Intro', () => {
       expect(purchaseSeatsBtn().exists()).toBe(false);
     });
 
+    it('does not render the hand raise lead', () => {
+      expect(handRaiseLeadButton().exists()).toBe(false);
+    });
+
     it('does not render the activation success notification', () => {
       expect(findSubscriptionActivationSuccessAlert().exists()).toBe(false);
     });

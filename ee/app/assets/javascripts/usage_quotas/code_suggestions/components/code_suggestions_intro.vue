@@ -244,9 +244,8 @@ export default {
           {{ $options.i18n.purchaseSeats }}
         </gl-button>
 
-        <!-- Hidden because of https://gitlab.com/gitlab-org/gitlab/-/issues/473266 -->
         <hand-raise-lead-button
-          hidden
+          v-if="isSaaS"
           :button-attributes="handRaiseLeadData.buttonAttributes"
           :glm-content="handRaiseLeadData.glmContent"
           :product-interaction="handRaiseLeadData.productInteraction"
