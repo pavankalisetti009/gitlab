@@ -10,28 +10,35 @@ DETAILS:
 **Tier:** Free
 **Offering:** GitLab.com
 
-A five-user limit applies to newly created top-level namespaces with
-private visibility on GitLab.com. For existing namespaces created before December 28, 2022, the limit was applied on June 13, 2023.
+You can add up to five users to newly created top-level namespaces with
+private visibility on GitLab.com.
 
-When the five-user limit is applied, top-level private namespaces
-exceeding the user limit are placed in a read-only state. These
-namespaces cannot write new data to repositories, Git Large File
-Storage (LFS), packages, or registries. For the full list of restricted
-actions, see [Read-only namespaces](read_only_namespaces.md).
+If the namespace was created before December 28, 2022, this user limit was
+applied on June 13, 2023.
 
-In the Free tier of GitLab.com, user limits do not apply to users in:
+Top-level private namespaces with more than five users are placed in a read-only
+state. These namespaces cannot write new data to any of the following:
 
-- Public top-level groups
-- Paid tiers
-- [Community programs](https://about.gitlab.com/community/):
-  - GitLab for Open Source
-  - GitLab for Education
-  - GitLab for Startups
+- Repositories
+- Git Large File Storage (LFS)
+- Packages
+- Registries.
 
-[Self-managed subscriptions](../subscriptions/self_managed/index.md) do not have user limits on the Free tier. You can also [talk to an expert](https://page.gitlab.com/usage_limits_help.html) for more information about your options.
+For the full list of restricted actions, see [read-only namespaces](read_only_namespaces.md).
 
-NOTE:
-Personal namespaces are public by default and are excluded from the user limit.
+User limits do not apply to users in the Free tier of:
+
+- GitLab.com, for:
+  - Public top-level groups
+  - Personal namespaces, because they are public by default
+  - Paid tiers
+  - The following [community programs](https://about.gitlab.com/community/):
+    - GitLab for Open Source
+    - GitLab for Education
+    - GitLab for Startups
+- [Self-managed subscriptions](../subscriptions/self_managed/index.md)
+
+For more information, you can [talk to an expert](https://page.gitlab.com/usage_limits_help.html).
 
 ## Determining namespace user counts
 
