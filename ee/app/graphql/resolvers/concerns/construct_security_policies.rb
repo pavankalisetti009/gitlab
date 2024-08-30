@@ -16,8 +16,8 @@ module ConstructSecurityPolicies
         enabled: policy[:enabled],
         policy_scope: policy_scope(policy[:policy_scope]),
         yaml: YAML.dump(
-          policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata)
-                .deep_stringify_keys
+          policy.slice(:name, :description, :enabled, :pipeline_config_strategy, :content, :policy_scope, :metadata,
+            :suffix).deep_stringify_keys
         ),
         updated_at: policy[:config].policy_last_updated_at,
         source: {

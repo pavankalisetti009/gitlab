@@ -53,7 +53,10 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
 
     it 'includes configs of policies ordered by hierarchy' do
       # We use `eq` because we want to verify the order
-      expect(configs).to eq(build_execution_policy_configs([policy, namespace_policy]))
+      expect(configs).to eq([
+        build_execution_policy_config(policy: policy, suffix: "#{policies_repository.id}-0"),
+        build_execution_policy_config(policy: namespace_policy, suffix: "#{namespace_policies_repository.id}-0")
+      ])
     end
 
     describe 'limits' do
@@ -64,7 +67,13 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
 
       it 'includes configs for up to 5 policies, giving precedence to groups higher in the hierarchy' do
         expect(configs.size).to eq(5)
-        expect(configs).to eq(build_execution_policy_configs([*namespace_policies, *project_policies.first(2)].reverse))
+        expect(configs).to eq([
+          build_execution_policy_config(policy: project_policies[1], suffix: "#{policies_repository.id}-1"),
+          build_execution_policy_config(policy: project_policies[0], suffix: "#{policies_repository.id}-0"),
+          build_execution_policy_config(policy: namespace_policies[2], suffix: "#{namespace_policies_repository.id}-2"),
+          build_execution_policy_config(policy: namespace_policies[1], suffix: "#{namespace_policies_repository.id}-1"),
+          build_execution_policy_config(policy: namespace_policies[0], suffix: "#{namespace_policies_repository.id}-0")
+        ])
       end
     end
 
@@ -74,7 +83,7 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
       end
 
       it 'excludes the namespace policy from the configs' do
-        expect(configs).to eq(build_execution_policy_configs([policy]))
+        expect(configs).to eq([build_execution_policy_config(policy: policy, suffix: "#{policies_repository.id}-0")])
       end
     end
 
@@ -87,7 +96,7 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
       end
 
       it 'only includes project policy config' do
-        expect(configs).to eq(build_execution_policy_configs([policy]))
+        expect(configs).to eq([build_execution_policy_config(policy: policy, suffix: "#{policies_repository.id}-0")])
       end
     end
 
@@ -102,12 +111,7 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
 
   private
 
-  def build_execution_policy_configs(policies)
-    policies.map do |policy|
-      ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies::ExecutionPolicyConfig.new(
-        policy[:content].to_yaml,
-        :inject_ci
-      )
-    end
+  def build_execution_policy_config(policy:, suffix:)
+    build(:execution_policy_config, content: policy[:content].to_yaml, suffix: ":policy-#{suffix}")
   end
 end

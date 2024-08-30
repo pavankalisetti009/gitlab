@@ -187,22 +187,140 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
   end
 
   context 'when policy and project job names are not unique' do
+    let(:namespace_policy_content) { { policy_job: { stage: 'build', script: 'namespace script' } } }
     let(:project_ci_yaml) do
       <<~YAML
-        namespace_policy_job:
+        policy_job:
           stage: test
           script:
             - echo 'duplicate'
       YAML
     end
 
-    it 'responds with error', :aggregate_failures do
-      expect(execute).to be_error
-      expect(execute.payload).to be_persisted
-      expect(execute.payload.errors.full_messages)
-        .to contain_exactly(
-          'Pipeline execution policy error: job names must be unique (namespace_policy_job)'
-        )
+    shared_examples_for 'duplicate job pipeline error' do |job_name|
+      it 'responds with error', :aggregate_failures do
+        expect(execute).to be_error
+        expect(execute.payload.errors.full_messages)
+          .to contain_exactly(
+            "Pipeline execution policy error: job names must be unique (#{job_name})"
+          )
+      end
+    end
+
+    shared_examples_for 'suffixed job added into pipeline' do
+      it 'keeps both project job and the policy job, adding suffix for the conflicting job name', :aggregate_failures do
+        expect(execute).to be_success
+        expect(execute.payload).to be_persisted
+
+        stages = execute.payload.stages
+        expect(stages.find_by(name: 'build').builds.map(&:name))
+          .to contain_exactly("policy_job:policy-#{namespace_policies_project.id}-0")
+        expect(stages.find_by(name: 'test').builds.map(&:name))
+          .to contain_exactly('policy_job', 'project_policy_job')
+      end
+    end
+
+    context 'when policy uses "suffix: on_conflict"' do
+      it_behaves_like 'suffixed job added into pipeline'
+
+      context 'when policy has suffix option set explicitly to `on_conflict`' do
+        let(:namespace_policy) do
+          build(:pipeline_execution_policy, :suffix_on_conflict,
+            content: { include: [{
+              project: compliance_project.full_path,
+              file: namespace_policy_file,
+              ref: compliance_project.default_branch_or_main
+            }] })
+        end
+
+        it_behaves_like 'suffixed job added into pipeline'
+      end
+
+      context 'when multiple policies in one policy project use the same job name' do
+        let(:other_namespace_policy) do
+          build(:pipeline_execution_policy,
+            content: { include: [{
+              project: compliance_project.full_path,
+              file: namespace_policy_file,
+              ref: compliance_project.default_branch_or_main
+            }] })
+        end
+
+        let(:namespace_policy_yaml) do
+          build(:orchestration_policy_yaml, pipeline_execution_policy: [namespace_policy, other_namespace_policy])
+        end
+
+        it 'keeps all jobs, adding suffix for the conflicting job name', :aggregate_failures do
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+
+          stages = execute.payload.stages
+          expect(stages.find_by(name: 'build').builds.map(&:name))
+            .to contain_exactly(
+              "policy_job:policy-#{namespace_policies_project.id}-0",
+              "policy_job:policy-#{namespace_policies_project.id}-1"
+            )
+          expect(stages.find_by(name: 'test').builds.map(&:name))
+            .to contain_exactly('policy_job', 'project_policy_job')
+        end
+      end
+
+      context 'when policy job uses "needs"' do
+        let(:namespace_policy_content) do
+          {
+            policy_job: { stage: 'build', script: 'namespace script' },
+            namespace_policy_job_with_needs: {
+              stage: 'test', script: 'namespace script', needs: ['policy_job']
+            }
+          }
+        end
+
+        let(:project_policy_content) do
+          {
+            policy_job: { stage: 'build', script: 'project script' },
+            project_policy_job_with_needs: { script: 'project script', needs: ['policy_job'] }
+          }
+        end
+
+        it 'updates needs with suffixes per pipeline for the conflicting jobs', :aggregate_failures do
+          expect(execute).to be_success
+          expect(execute.payload).to be_persisted
+
+          stages = execute.payload.stages
+          test_stage = stages.find_by(name: 'test')
+          namespace_policy_job_with_needs = test_stage.builds.find_by(name: 'namespace_policy_job_with_needs')
+          expect(namespace_policy_job_with_needs.needs.map(&:name))
+            .to contain_exactly("policy_job:policy-#{namespace_policies_project.id}-0")
+
+          project_policy_job_with_needs = test_stage.builds.find_by(name: 'project_policy_job_with_needs')
+          expect(project_policy_job_with_needs.needs.map(&:name))
+            .to contain_exactly("policy_job:policy-#{project_policies_project.id}-0")
+
+          project_job = test_stage.builds.find_by(name: 'policy_job')
+          expect(project_job.needs).to be_empty
+        end
+      end
+    end
+
+    context 'when policy uses "suffix: never"' do
+      let(:namespace_policy) do
+        build(:pipeline_execution_policy, :suffix_never,
+          content: { include: [{
+            project: compliance_project.full_path,
+            file: namespace_policy_file,
+            ref: compliance_project.default_branch_or_main
+          }] })
+      end
+
+      it_behaves_like 'duplicate job pipeline error', 'policy_job'
+    end
+
+    context 'when feature flag "pipeline_execution_policies_suffix" is disabled' do
+      before do
+        stub_feature_flags(pipeline_execution_policy_suffix: false)
+      end
+
+      it_behaves_like 'duplicate job pipeline error', 'policy_job'
     end
   end
 

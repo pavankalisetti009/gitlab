@@ -37,7 +37,7 @@ module EE
 
                   if response.success?
                     command.pipeline_execution_policies << ::Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy.new(
-                      pipeline, config.strategy
+                      pipeline, config
                     )
                   elsif pipeline.filtered_as_empty?
                     # no-op: we ignore empty pipelines
