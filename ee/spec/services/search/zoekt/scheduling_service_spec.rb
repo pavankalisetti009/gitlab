@@ -59,9 +59,9 @@ RSpec.describe ::Search::Zoekt::SchedulingService, :clean_gitlab_redis_shared_st
     end
   end
 
-  describe '#reallocation' do
+  describe '#eviction' do
     let(:logger) { instance_double(::Search::Zoekt::Logger) }
-    let(:task) { :reallocation }
+    let(:task) { :eviction }
 
     before do
       allow(Search::Zoekt::Logger).to receive(:build).and_return(logger)
