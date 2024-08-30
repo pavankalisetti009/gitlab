@@ -28,6 +28,7 @@ class Groups::EpicsController < Groups::ApplicationController
   before_action only: :index do
     push_frontend_feature_flag(:work_item_epics_list, @group)
     push_frontend_feature_flag(:issues_list_drawer, @group)
+    push_frontend_feature_flag(:bulk_update_work_items_mutation, @group)
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
   end
 
