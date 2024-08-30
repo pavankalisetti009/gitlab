@@ -129,6 +129,7 @@ export default {
     >
       <template #actions>
         <reports-export
+          class="gl-mb-3 gl-mr-2"
           :project-frameworks-csv-export-path="projectFrameworksCsvExportPath"
           :merge-commits-csv-export-path="mergeCommitsCsvExportPath"
           :violations-csv-export-path="violationsCsvExportPath"
@@ -146,7 +147,7 @@ export default {
         </gl-tooltip>
         <span ref="newFrameworkButton">
           <gl-button
-            class="gl-ml-2"
+            class="gl-mb-3"
             variant="confirm"
             category="secondary"
             :disabled="!isTopLevelGroup"

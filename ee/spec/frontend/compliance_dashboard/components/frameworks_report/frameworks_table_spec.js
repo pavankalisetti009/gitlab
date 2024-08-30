@@ -1,4 +1,13 @@
-import { GlLoadingIcon, GlSearchBoxByClick, GlTable, GlLink, GlModal, GlAlert } from '@gitlab/ui';
+import {
+  GlLoadingIcon,
+  GlSearchBoxByClick,
+  GlTable,
+  GlLink,
+  GlModal,
+  GlAlert,
+  GlDisclosureDropdown,
+  GlDisclosureDropdownItem,
+} from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
@@ -10,12 +19,17 @@ import FrameworksTable from 'ee/compliance_dashboard/components/frameworks_repor
 import FrameworkInfoDrawer from 'ee/compliance_dashboard/components/frameworks_report/framework_info_drawer.vue';
 import { ROUTE_EDIT_FRAMEWORK } from 'ee/compliance_dashboard/constants';
 import { DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import DeleteModal from 'ee/compliance_dashboard/components/frameworks_report/edit_framework/components/delete_modal.vue';
+import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 
 Vue.use(VueApollo);
 
 describe('FrameworksTable component', () => {
   let wrapper;
   let $router;
+  const $toast = {
+    show: jest.fn(),
+  };
 
   const GROUP_PATH = 'group';
   const SUBGROUP_PATH = `${GROUP_PATH}/subgroup`;
@@ -27,7 +41,8 @@ describe('FrameworksTable component', () => {
   const frameworks = frameworksResponse.data.namespace.complianceFrameworks.nodes;
   const projects = frameworks[0].projects.nodes;
   const rowCheckIndex = 0;
-  const GlModalStub = stubComponent(GlModal, { methods: { show: jest.fn(), hide: jest.fn() } });
+  const modalStub = { show: jest.fn(), hide: jest.fn() };
+  const GlModalStub = stubComponent(GlModal, { methods: modalStub });
 
   const findTable = () => wrapper.findComponent(GlTable);
   const findTableHeaders = () => findTable().findAll('th > div > span');
@@ -39,6 +54,13 @@ describe('FrameworksTable component', () => {
   const findFrameworkInfoSidebar = () => wrapper.findComponent(FrameworkInfoDrawer);
   const findSearchBox = () => wrapper.findComponent(GlSearchBoxByClick);
   const findNoFrameworksAlert = () => wrapper.findComponent(GlAlert);
+  const findActionsDropdowns = () => wrapper.findAllComponents(GlDisclosureDropdown);
+  const findActionsDropdownItems = () =>
+    findActionsDropdowns().at(0).findAllComponents(GlDisclosureDropdownItem);
+  const findEditAction = () => wrapper.findByTestId('edit-action');
+  const findDeleteAction = () => wrapper.findByTestId('delete-action');
+  const findCopyIdAction = () => wrapper.findByTestId('copy-id-action');
+  const findDeleteModal = () => wrapper.findComponent(DeleteModal);
 
   const toggleSidebar = async () => {
     findTableRow(rowCheckIndex).trigger('click');
@@ -64,12 +86,16 @@ describe('FrameworksTable component', () => {
         isLoading: true,
         ...props,
       },
+      directives: {
+        GlTooltip: createMockDirective('gl-tooltip'),
+      },
       provide: {
         groupSecurityPoliciesPath: '/example-group-security-policies-path',
       },
       mocks: {
         $route: { query: currentQueryParams },
         $router,
+        $toast,
       },
       stubs: {
         EditForm: true,
@@ -101,7 +127,12 @@ describe('FrameworksTable component', () => {
       wrapper = createComponent({ isLoading: false });
       const headerTexts = findTableHeaders().wrappers.map((h) => h.text());
 
-      expect(headerTexts).toStrictEqual(['Frameworks', 'Associated projects', 'Policies']);
+      expect(headerTexts).toStrictEqual([
+        'Frameworks',
+        'Associated projects',
+        'Policies',
+        'Action',
+      ]);
     });
 
     it('emits search event when underlying search box is submitted', () => {
@@ -265,6 +296,73 @@ describe('FrameworksTable component', () => {
     });
   });
 
+  describe('actions dropdown', () => {
+    beforeEach(() => {
+      wrapper = createComponent({
+        frameworks,
+        isLoading: false,
+      });
+    });
+
+    it('renders dropdown with actions for each framework', () => {
+      expect(findActionsDropdowns()).toHaveLength(frameworks.length);
+      expect(findActionsDropdowns().at(0).props('icon')).toBe('ellipsis_v');
+      expect(findActionsDropdowns().at(0).props('toggleText')).toBe('Actions for Some framework 1');
+    });
+
+    it('dropdown has three actions', () => {
+      expect(findActionsDropdownItems()).toHaveLength(3);
+    });
+
+    describe('edit action', () => {
+      it('has correct text', () => {
+        expect(findEditAction().text()).toBe('Edit');
+      });
+
+      it('redirects to edit framework page on action', () => {
+        findEditAction().vm.$emit('action');
+        expect($router.push).toHaveBeenCalledWith({
+          name: ROUTE_EDIT_FRAMEWORK,
+          params: { id: getIdFromGraphQLId(frameworks[rowCheckIndex].id) },
+        });
+      });
+    });
+
+    describe('delete action', () => {
+      it('renders expected text', () => {
+        expect(findDeleteAction().text()).toBe('Delete');
+      });
+
+      it('shows delete modal on action', () => {
+        findDeleteAction().vm.$emit('action');
+        expect(modalStub.show).toHaveBeenCalled();
+        findDeleteModal().vm.$emit('delete');
+        expect(wrapper.emitted('delete-framework')).toEqual([[frameworks[rowCheckIndex].id]]);
+      });
+    });
+
+    describe('copy id action', () => {
+      it('has expected text', () => {
+        expect(findCopyIdAction().text()).toBe('Copy ID: 1');
+      });
+
+      it('renders help text', () => {
+        const tooltip = getBinding(findCopyIdAction().element, 'gl-tooltip');
+        expect(tooltip).toBeDefined();
+        expect(findCopyIdAction().attributes('title')).toBe(
+          'Use the compliance framework ID in configuration or API requests.',
+        );
+      });
+
+      it('copies id to clipboard on action', () => {
+        jest.spyOn(navigator.clipboard, 'writeText');
+        findCopyIdAction().vm.$emit('action');
+        expect(navigator.clipboard.writeText).toHaveBeenCalledWith(1);
+        expect($toast.show).toHaveBeenCalledWith('Framework ID copied to clipboard.');
+      });
+    });
+  });
+
   describe('when opened in a subgroup', () => {
     const subgroupFrameworksResponse = createComplianceFrameworksReportResponse({
       count: 2,
@@ -285,14 +383,17 @@ describe('FrameworksTable component', () => {
 
     it('does not include projects not from a subgroup', () => {
       const [, associatedProjects] = findTableRowData(0).wrappers.map((d) => d.text());
-
       expect(associatedProjects).not.toContain(projects[0].name);
     });
 
     it('include projects from a subgroup', () => {
       const [, associatedProjects] = findTableRowData(0).wrappers.map((d) => d.text());
-
       expect(associatedProjects).toContain(projects[1].name);
+    });
+
+    it('renders only copy id action in action dropdown', () => {
+      expect(findActionsDropdownItems()).toHaveLength(1);
+      expect(findActionsDropdownItems().at(0).text()).toBe('Copy ID: 1');
     });
   });
 });

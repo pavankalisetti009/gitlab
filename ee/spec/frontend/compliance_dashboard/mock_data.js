@@ -362,3 +362,12 @@ export const createComplianceFrameworksReportProjectsResponse = ({ count = 1 } =
     },
   };
 };
+
+export const createDeleteFrameworkResponse = (errors = []) => ({
+  data: {
+    destroyComplianceFramework: {
+      errors,
+      __typename: 'DestroyComplianceFrameworkPayload',
+    },
+  },
+});

@@ -3059,6 +3059,9 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
+msgid "Actions for"
+msgstr ""
+
 msgid "Activate Service Desk"
 msgstr ""
 
@@ -13856,6 +13859,9 @@ msgstr ""
 msgid "ComplianceFrameworksReport|Policies"
 msgstr ""
 
+msgid "ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests."
+msgstr ""
+
 msgid "ComplianceFrameworksReport|Use the compliance framework ID in configuration or API requests. %{linkStart}Learn more.%{linkEnd}"
 msgstr ""
 
@@ -14306,6 +14312,9 @@ msgid "ComplianceViolations|Your Compliance Violations CSV export for the group 
 msgstr ""
 
 msgid "ComplianceViolations|Your Compliance Violations CSV export for the group %{group_link} has been attached to this email."
+msgstr ""
+
+msgid "Compliance|Framework deleted successfully"
 msgstr ""
 
 msgid "Component"
