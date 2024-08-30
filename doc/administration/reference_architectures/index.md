@@ -68,15 +68,22 @@ As a general guide, **the more performant and/or resilient you want your environ
 
 This section explains the things to consider when picking a Reference Architecture to start with.
 
-### Expected Load
+### Expected load (RPS / user count)
 
 The first thing to check is what the expected peak load is your environment would be expected to serve.
 
 Each architecture is described in terms of peak Requests per Second (RPS) or user count load. As detailed under the "Testing Methodology" section on each page, each architecture is tested
 against its listed RPS for each endpoint type (API, Web, Git), which is the typical peak load of the given user count, both manual and automated.
 
-It's strongly recommended finding out what peak RPS your environment will be expected to handle across endpoint types, through existing metrics (such as [Prometheus](../monitoring/prometheus/index.md#sample-prometheus-queries))
-or estimates, and to select the corresponding architecture as this is the most objective.
+It's strongly recommended finding out what peak RPS your environment will be expected to handle across endpoint types through existing metrics and to select the corresponding architecture as this is the most objective method to determine expected load.
+
+Finding out the RPS can depend greatly on the specific environment setup and monitoring stack. Some potential options include:
+
+- Through [GitLab Prometheus](../monitoring/prometheus/index.md#sample-prometheus-queries) with queries such as `sum(irate(gitlab_transaction_duration_seconds_count{controller!~'HealthController|MetricsController|'}[1m])) by (controller, action)`.
+- Through other monitoring solutions.
+- Through Load Balancer statistics.
+
+Contact our [Support team](https://about.gitlab.com/support/) for further guidance if required.
 
 #### If in doubt, pick the closest user count and scale accordingly
 
@@ -776,6 +783,8 @@ You can find a full history of changes [on the GitLab project](https://gitlab.co
 
 **2024:**
 
+- [2024-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164181): Updated Expected Load section with some more examples on how to calculate RPS.
+- [2024-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163478): Updated Redis configuration on 40 RPS / 2k User page to have correct Redis configuration.
 - [2024-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163506): Updated Sidekiq configuration for Prometheus in Monitoring node on 2k.
 - [2024-08](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/162144): Added Next Steps breadcrumb section to the pages to help discoverability of additional features.
 - [2024-05](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/153716): Updated the 60 RPS / 3k User and 100 RPS / 5k User pages to have latest Redis guidance on co-locating Redis Sentinel with Redis itself.
