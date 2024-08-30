@@ -31,6 +31,17 @@ module Features
       expect(page).to have_content('This trial is for')
     end
 
+    def expect_to_be_on_duo_pro_namespace_selection_with_errors
+      expect_to_be_on_duo_pro_namespace_selection
+      expect(page).to have_content('could not be created because our system did not respond successfully')
+      expect(page).to have_content('Please try again or reach out to GitLab Support.')
+      expect(page).to have_link('GitLab Support', href: 'https://support.gitlab.com/hc/en-us')
+    end
+
+    def expect_to_be_on_duo_pro_namespace_selection
+      expect(page).to have_content('This subscription is for')
+    end
+
     def expect_to_be_on_namespace_selection
       expect(page).to have_content('This trial is for')
       expect(page).to have_content('Who will be using GitLab?')

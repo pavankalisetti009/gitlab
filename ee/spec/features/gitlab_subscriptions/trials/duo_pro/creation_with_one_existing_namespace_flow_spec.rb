@@ -71,7 +71,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with one eligible nam
       # trial failure
       submit_duo_pro_trial_company_form(with_trial: true, trial_result: trial_failure)
 
-      expect_to_be_on_namespace_selection_with_errors
+      expect_to_be_on_duo_pro_namespace_selection_with_errors
 
       # success
       fill_in_trial_selection_form(group_select: false)
