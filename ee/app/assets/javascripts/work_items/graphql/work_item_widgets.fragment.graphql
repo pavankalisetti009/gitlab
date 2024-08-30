@@ -53,6 +53,7 @@ fragment WorkItemWidgets on WorkItemWidget {
   ... on WorkItemWidgetWeight {
     weight
     rolledUpWeight
+    rolledUpCompletedWeight
     widgetDefinition {
       editable
       rollUp
