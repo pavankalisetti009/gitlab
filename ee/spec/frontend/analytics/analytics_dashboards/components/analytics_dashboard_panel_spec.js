@@ -73,7 +73,7 @@ describe('AnalyticsDashboardPanel', () => {
     it('renders the panel base component', () => {
       expect(findPanelsBase().props()).toMatchObject({
         title: mockPanel.title,
-        tooltip: '',
+        tooltip: null,
         loading: true,
         showAlertState: false,
         alertPopoverTitle: '',
@@ -199,7 +199,7 @@ describe('AnalyticsDashboardPanel', () => {
       });
 
       describe('and the visualization emits showTooltip', () => {
-        const tooltip = 'This is a tooltip';
+        const tooltip = { description: 'This is a tooltip' };
 
         beforeEach(() => {
           findVisualization().vm.$emit('showTooltip', tooltip);

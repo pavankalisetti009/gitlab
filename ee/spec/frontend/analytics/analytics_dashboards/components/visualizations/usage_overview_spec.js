@@ -97,9 +97,10 @@ describe('Usage Overview Visualization', () => {
 
       it('emits `showTooltip` with the latest metric.recordedAt as the last updated time', () => {
         expect(wrapper.emitted('showTooltip')).toHaveLength(1);
-        expect(wrapper.emitted('showTooltip')[0][0]).toEqual(
-          'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly. Last updated: 2023-11-27 11:59 PM',
-        );
+        expect(wrapper.emitted('showTooltip')[0][0]).toEqual({
+          description:
+            'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly. Last updated: 2023-11-27 11:59 PM',
+        });
       });
     });
   });
@@ -129,9 +130,10 @@ describe('Usage Overview Visualization', () => {
 
     it('emits `showTooltip` without the last updated time', () => {
       expect(wrapper.emitted('showTooltip')).toHaveLength(1);
-      expect(wrapper.emitted('showTooltip')[0][0]).toEqual(
-        'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
-      );
+      expect(wrapper.emitted('showTooltip')[0][0]).toEqual({
+        description:
+          'Statistics on namespace usage. Usage data is a cumulative count, and updated monthly.',
+      });
     });
   });
 

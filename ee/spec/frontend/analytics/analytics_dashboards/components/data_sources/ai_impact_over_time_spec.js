@@ -59,25 +59,29 @@ describe('AI Impact Over Time Data Source', () => {
     });
 
     describe('setVisualizationOverrides callback', () => {
-      let mockSetVisualizationOverrides;
+      describe.each(Object.values(AI_METRICS))('for %s metric', (metric) => {
+        let mockSetVisualizationOverrides;
 
-      beforeEach(async () => {
-        mockSetVisualizationOverrides = jest.fn();
+        describe.each`
+          description                    | response
+          ${'with valid response'}       | ${mockAiMetricsResponseData}
+          ${'with null values response'} | ${mockAiMetricsNullResponseData}
+          ${'with zeroes response'}      | ${mockAiMetricsZeroResponseData}
+        `('$description', ({ response }) => {
+          beforeEach(async () => {
+            mockSetVisualizationOverrides = jest.fn();
 
-        mockResolvedQuery();
-        res = await fetch({
-          namespace,
-          query,
-          setVisualizationOverrides: mockSetVisualizationOverrides,
-        });
-      });
+            mockResolvedQuery(response);
+            res = await fetch({
+              namespace,
+              query: { ...defaultParams.query, metric },
+              setVisualizationOverrides: mockSetVisualizationOverrides,
+            });
+          });
 
-      it('will call the setVisualizationOverrides callback', () => {
-        expect(mockSetVisualizationOverrides).toHaveBeenCalledWith({
-          visualizationOptionOverrides: {
-            title: 'Last 30 days',
-            titleIcon: 'clock',
-          },
+          it('will call the setVisualizationOverrides callback with the correct settings', () => {
+            expect(mockSetVisualizationOverrides.mock.calls).toMatchSnapshot();
+          });
         });
       });
     });

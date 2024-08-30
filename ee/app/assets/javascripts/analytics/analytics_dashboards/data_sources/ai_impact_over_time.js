@@ -1,6 +1,9 @@
-import { __, sprintf } from '~/locale';
+import { __, s__, sprintf } from '~/locale';
 import AiMetricsQuery from 'ee/analytics/dashboards/ai_impact/graphql/ai_metrics.query.graphql';
-import { AI_IMPACT_OVER_TIME_METRICS } from 'ee/analytics/dashboards/ai_impact/constants';
+import {
+  AI_IMPACT_OVER_TIME_METRICS,
+  AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS,
+} from 'ee/analytics/dashboards/ai_impact/constants';
 import { calculateRate } from 'ee/analytics/dashboards/ai_impact/utils';
 import {
   extractQueryResponseFromNamespace,
@@ -17,39 +20,63 @@ import { defaultClient } from '../graphql/client';
 
 const DATE_RANGE_TITLES = { [LAST_30_DAYS]: sprintf(__('Last %{days} days'), { days: 30 }) };
 
-const extractMetricRateValue = ({ metric, rawQueryResult: result }) => {
+const extractMetricData = ({ metric, rawQueryResult: result }) => {
   const resp = extractQueryResponseFromNamespace({
     result,
     resultKey: 'aiMetrics',
   });
 
+  const tooltip = AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS[metric];
+  const { description: tooltipDescription } = tooltip || {};
+
   switch (metric) {
     case AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE: {
       const { codeSuggestionsContributorsCount, codeContributorsCount } = resp;
-      return calculateRate({
-        numerator: codeSuggestionsContributorsCount,
-        denominator: codeContributorsCount,
-      });
+      return {
+        rate: calculateRate({
+          numerator: codeSuggestionsContributorsCount,
+          denominator: codeContributorsCount,
+        }),
+        tooltip,
+      };
     }
 
     case AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE: {
       const { codeSuggestionsAcceptedCount, codeSuggestionsShownCount } = resp;
-      return calculateRate({
-        numerator: codeSuggestionsAcceptedCount,
-        denominator: codeSuggestionsShownCount,
-      });
+      return {
+        rate: calculateRate({
+          numerator: codeSuggestionsAcceptedCount,
+          denominator: codeSuggestionsShownCount,
+        }),
+        tooltip: {
+          ...tooltip,
+          description: sprintf(tooltipDescription, {
+            codeSuggestionsAcceptedCount,
+            codeSuggestionsShownCount,
+          }),
+        },
+      };
     }
 
     case AI_METRICS.DUO_PRO_USAGE_RATE: {
       const { duoChatContributorsCount, duoProAssignedUsersCount } = resp;
-      return calculateRate({
-        numerator: duoChatContributorsCount,
-        denominator: duoProAssignedUsersCount,
-      });
+      return {
+        rate: calculateRate({
+          numerator: duoChatContributorsCount,
+          denominator: duoProAssignedUsersCount,
+        }),
+        tooltip: {
+          ...tooltip,
+          description: sprintf(tooltipDescription, {
+            duoChatContributorsCount,
+            duoProAssignedUsersCount,
+          }),
+        },
+      };
     }
 
     default:
-      return null;
+      return { rate: null, tooltip: null };
   }
 };
 
@@ -63,14 +90,21 @@ const fetchAiImpactQuery = async ({ metric, namespace, startDate, endDate }) => 
     },
   });
 
-  const rate = extractMetricRateValue({ metric, rawQueryResult });
+  const { rate, tooltip } = extractMetricData({ metric, rawQueryResult });
 
-  if (rate === null) return '-';
+  if (rate === null)
+    return {
+      rate: '-',
+      tooltip: { description: s__('AiImpactAnalytics|No usage data for the selected time range.') },
+    };
 
   const { units } = AI_IMPACT_OVER_TIME_METRICS[metric];
 
-  // scaledValueForDisplay expects a value between 0 -> 1
-  return scaledValueForDisplay(rate / 100, units);
+  return {
+    // scaledValueForDisplay expects a value between 0 -> 1
+    rate: scaledValueForDisplay(rate / 100, units),
+    tooltip,
+  };
 };
 
 export default async function fetch({
@@ -88,20 +122,23 @@ export default async function fetch({
     ? DORA_METRIC_QUERY_RANGES[dateRangeKey]
     : DORA_METRIC_QUERY_RANGES[LAST_180_DAYS];
 
-  const visualizationOptionOverrides = DATE_RANGE_TITLES[dateRangeKey]
-    ? {
-        titleIcon: 'clock',
-        title: DATE_RANGE_TITLES[dateRangeKey],
-      }
-    : {};
-
-  setVisualizationOverrides({ visualizationOptionOverrides });
-
-  return fetchAiImpactQuery({
+  const { rate, tooltip } = await fetchAiImpactQuery({
     startDate,
     endDate: startOfTomorrow,
     metric,
     namespace,
     ...overridesRest,
   });
+
+  const visualizationOptionOverrides = {
+    ...(DATE_RANGE_TITLES[dateRangeKey] && {
+      titleIcon: 'clock',
+      title: DATE_RANGE_TITLES[dateRangeKey],
+    }),
+    tooltip,
+  };
+
+  setVisualizationOverrides({ visualizationOptionOverrides });
+
+  return rate;
 }

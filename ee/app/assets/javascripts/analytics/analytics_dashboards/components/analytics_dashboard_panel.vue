@@ -85,7 +85,7 @@ export default {
       data: null,
       loading: false,
       loadingDelayed: false,
-      tooltip: '',
+      tooltip: null,
       dropdownItems: [
         {
           text: __('Delete'),
