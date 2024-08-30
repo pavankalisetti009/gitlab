@@ -23,6 +23,17 @@ content:
     - project: ''
 `;
 
+export const DEFAULT_PIPELINE_EXECUTION_POLICY_WITH_SUFFIX = `type: pipeline_execution_policy
+name: ''
+description: ''
+enabled: true
+pipeline_config_strategy: inject_ci
+suffix: on_conflict
+content:
+  include:
+    - project: ''
+`;
+
 export const CONDITIONS_LABEL = s__('ScanExecutionPolicy|Conditions');
 
 export const INJECT = 'inject_ci';
