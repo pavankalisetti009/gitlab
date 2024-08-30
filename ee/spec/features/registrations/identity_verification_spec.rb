@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Identity Verification', :js, feature_category: :instance_resiliency do
+RSpec.describe 'Identity Verification', :js, :with_current_organization, feature_category: :instance_resiliency do
   include IdentityVerificationHelpers
 
   before do

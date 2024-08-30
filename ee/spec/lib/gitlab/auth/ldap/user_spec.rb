@@ -5,7 +5,8 @@ require 'spec_helper'
 RSpec.describe Gitlab::Auth::Ldap::User do
   include LdapHelpers
 
-  let(:ldap_user) { described_class.new(auth_hash) }
+  let_it_be(:organization) { create(:organization) }
+  let(:ldap_user) { described_class.new(auth_hash, organization_id: organization.id) }
   let(:gl_user) { ldap_user.gl_user }
   let(:info) do
     {
@@ -23,10 +24,6 @@ RSpec.describe Gitlab::Auth::Ldap::User do
   let(:group_member_dns) { [auth_hash.uid] }
   let(:external_groups) { [] }
   let!(:fake_proxy) { fake_ldap_sync_proxy(auth_hash.provider) }
-
-  around do |example|
-    Namespace.with_disabled_organization_validation { example.run }
-  end
 
   before do
     allow(fake_proxy).to receive(:dns_for_group_cn).with(group_cn).and_return(group_member_dns)

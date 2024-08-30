@@ -19,7 +19,7 @@ RSpec.describe Ldap::OmniauthCallbacksController, feature_category: :system_acce
     expect(flash[:notice]).to eq nil
   end
 
-  context 'for sign up', :aggregate_failures do
+  context 'for sign up', :with_current_organization, :aggregate_failures do
     let(:user) { build_stubbed(:user) }
 
     before do

@@ -9,7 +9,7 @@ module Gitlab
   module Auth
     module Oidc
       class User < OAuth::User
-        def initialize(auth_hash)
+        def initialize(auth_hash, user_params = {})
           provider_name = auth_hash.provider
           @oidc_config = Config.options_for(provider_name)
 

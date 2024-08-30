@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Standard flow for user picking just me and importing a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Standard flow for user picking just me and importing a project', :js, :saas_registration, :with_default_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', -> { regular_sign_up }],
