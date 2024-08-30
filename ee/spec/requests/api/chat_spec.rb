@@ -17,6 +17,7 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
   let_it_be(:project) { create(:project, :repository,  group: group) }
   let_it_be(:issue) { create(:issue, project: project) }
   let_it_be(:merge_request) { create(:merge_request, source_project: project) }
+  let_it_be(:commit) { project.commit }
 
   let(:current_user) { nil }
   let(:headers) { {} }
@@ -245,6 +246,22 @@ RSpec.describe API::Chat, :saas, feature_category: :duo_chat do
 
         context 'with group' do
           let(:resource) { group }
+
+          it 'sends resource to the chat' do
+            expect(chat_message).to receive(:save!)
+            expect(Gitlab::Llm::ChatMessage).to receive(:new).with(chat_message_params).and_return(chat_message)
+            expect(Llm::Internal::CompletionService).to receive(:new).with(chat_message, options).and_return(chat)
+            expect(chat).to receive(:execute)
+
+            post_api
+          end
+        end
+
+        context 'with a commit' do
+          let!(:resource) { commit }
+          let(:params) do
+            { content: content, resource_type: "commit", resource_id: resource.id, project_id: resource.project.id }
+          end
 
           it 'sends resource to the chat' do
             expect(chat_message).to receive(:save!)
