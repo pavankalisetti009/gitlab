@@ -11,6 +11,7 @@ import {
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import GuestOverageConfirmation from 'ee/members/components/table/drawer/guest_overage_confirmation.vue';
 import waitForPromises from 'helpers/wait_for_promises';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 import { updateableCustomRoleMember, ldapMember, ldapOverriddenMember } from '../../../mock_data';
 
 jest.mock('~/sentry/sentry_browser_wrapper');
@@ -227,7 +228,7 @@ describe('Role updater EE', () => {
       const member = cloneDeep(ldapOverriddenMember);
 
       beforeEach(() => {
-        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(200);
+        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(HTTP_STATUS_OK);
         return createWrapperAndConfirmOverage({ member, role: ldapRole });
       });
 
@@ -255,7 +256,7 @@ describe('Role updater EE', () => {
       const member = cloneDeep(ldapMember);
 
       beforeEach(() => {
-        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(200);
+        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(HTTP_STATUS_OK);
         callRoleUpdateApi.mockResolvedValue({});
         return createWrapperAndConfirmOverage({ member });
       });
