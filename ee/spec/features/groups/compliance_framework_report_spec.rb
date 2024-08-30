@@ -194,7 +194,7 @@ RSpec.describe 'Groups > Compliance framework', :js, feature_category: :complian
 
   def delete_compliance_framework(framework_name, group)
     visit group_security_compliance_dashboard_path(group, vueroute: :frameworks)
-    find('td', text: framework_name).click
+    find('.gl-label-text', text: framework_name).click
     click_button('Edit framework')
     wait_for_requests
     click_button('Delete framework')
