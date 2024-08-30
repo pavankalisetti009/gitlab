@@ -28,7 +28,7 @@ const useLocalStorage = (fn) => {
 /**
  * Create an object with the localStorage interface but `jest.fn()` implementations.
  */
-export const createLocalStorageSpy = () => {
+const createLocalStorageSpy = () => {
   let storage = {};
 
   return {
