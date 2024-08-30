@@ -132,7 +132,7 @@ describe('EE - ApiFuzzingConfigurationForm', () => {
       expect(findAuthenticationNotice().exists()).toBe(true);
     });
 
-    it('sees the the proper notice as a maintainer', async () => {
+    it('sees the proper notice as a maintainer', async () => {
       createWrapper();
       await findEnableAuthenticationCheckbox().setChecked(true);
 
@@ -141,7 +141,7 @@ describe('EE - ApiFuzzingConfigurationForm', () => {
       );
     });
 
-    it('sees the the proper notice as a developer', async () => {
+    it('sees the proper notice as a developer', async () => {
       createWrapper({
         provide: {
           canSetProjectCiVariables: false,

@@ -157,7 +157,7 @@ describe('Value Stream Analytics actions', () => {
       state = { ...state, namespace, createdAfter, createdBefore };
     });
 
-    it(`dispatches actions for required value stream analytics analytics data`, () => {
+    it(`dispatches actions for required value stream analytics data`, () => {
       return testAction(
         actions.fetchCycleAnalyticsData,
         state,

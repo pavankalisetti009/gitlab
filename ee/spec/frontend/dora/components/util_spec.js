@@ -204,7 +204,7 @@ describe('ee/dora/components/util.js', () => {
       });
     });
 
-    it('returns the data data series to be displayed in charts', () => {
+    it('returns the data series to be displayed in charts', () => {
       expect(res).toEqual(forecastResponse);
     });
 
