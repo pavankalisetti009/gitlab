@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Security
-  class ProjectSecurityIgnorelistEntry < Gitlab::Database::SecApplicationRecord
+  class ProjectSecurityExclusion < Gitlab::Database::SecApplicationRecord
     self.inheritance_column = :_type_disabled
 
     belongs_to :project

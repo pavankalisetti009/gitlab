@@ -892,7 +892,7 @@ project:
 - observability_metrics
 - observability_traces
 - observability_logs
-- security_ignorelist_entries
+- security_exclusions
 award_emoji:
 - awardable
 - user
