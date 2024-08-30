@@ -13,11 +13,6 @@ module TrialRegistrationsHelper
       title: 'Goldman Sachs'
     },
     {
-      path: 'marketing/cncf.svg',
-      alt: 'Cloud Native Computing Foundation',
-      title: 'Cloud Native Computing Foundation'
-    },
-    {
       path: 'illustrations/third-party-logos/siemens.svg',
       alt: 'Siemens',
       title: 'Siemens'
