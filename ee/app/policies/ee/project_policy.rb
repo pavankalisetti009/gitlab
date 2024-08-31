@@ -675,16 +675,13 @@ module EE
       rule { (admin | reporter) & project_merge_request_analytics_available }
         .enable :read_project_merge_request_analytics
 
-      condition(:assigned_to_duo_enterprise) do
-        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_namespace)
+      condition(:ai_analytics_available) do
+        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
 
-        namespace =
-          ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) ? @subject.root_namespace : nil
-
-        @user.assigned_to_duo_enterprise?(namespace)
+        @user.assigned_to_duo_enterprise?(@subject)
       end
 
-      rule { (admin | reporter) & assigned_to_duo_enterprise }.enable :read_ai_analytics
+      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 

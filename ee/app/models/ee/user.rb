@@ -501,7 +501,9 @@ module EE
         namespace.root_ancestor.billed_user_ids[:user_ids].include?(self.id)
     end
 
-    def assigned_to_duo_enterprise?(namespace)
+    def assigned_to_duo_enterprise?(container)
+      namespace = ::Gitlab::Saas.feature_available?(:gitlab_duo_saas_only) ? container.root_ancestor : nil
+
       GitlabSubscriptions::AddOnPurchase
         .for_duo_enterprise
         .active
