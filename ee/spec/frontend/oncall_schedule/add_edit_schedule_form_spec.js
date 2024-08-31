@@ -78,7 +78,8 @@ describe('AddEditScheduleForm', () => {
 
   describe('setTimezone', () => {
     beforeEach(() => {
-      wrapper.vm.setTimezone(mockTimezones[0]);
+      createComponent();
+      findTimezoneDropdown().vm.$emit('input', mockTimezones[0]);
     });
 
     it('emits custom event upon timezone selection', () => {
