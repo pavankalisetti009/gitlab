@@ -52220,6 +52220,9 @@ msgstr ""
 msgid "Select an option"
 msgstr ""
 
+msgid "Select artifacts"
+msgstr ""
+
 msgid "Select assignee"
 msgstr ""
 
