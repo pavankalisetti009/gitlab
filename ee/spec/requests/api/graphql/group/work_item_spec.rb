@@ -33,6 +33,11 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
     )
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    stub_licensed_features(epics: true)
+  end
+
   context 'when the user cannot read the work item' do
     let(:current_user) { user }
     let(:query_work_item) { confidential_work_item }
@@ -56,9 +61,21 @@ RSpec.describe 'getting a single work item associated with a group', feature_cat
       )
     end
 
+    context 'without group level work item license' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'returns nil' do
+        post_graphql(query, current_user: current_user)
+
+        expect(work_item_data).to be_blank
+      end
+    end
+
     context 'when the namespace_level_work_items feature flag is disabled' do
       before do
-        stub_feature_flags(namespace_level_work_items: false)
+        stub_feature_flags(work_item_epics: false, namespace_level_work_items: false)
       end
 
       it 'does not return the work item' do

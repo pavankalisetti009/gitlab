@@ -17,6 +17,11 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
   let(:mutation_response) { graphql_mutation_response(:work_item_update) }
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    stub_licensed_features(epics: true)
+  end
+
   shared_examples 'work item is not updated' do
     it 'ignores the update' do
       work_item.reload
@@ -25,6 +30,43 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
         post_graphql_mutation(mutation, current_user: current_user)
         work_item.reload
       end.not_to change(&work_item_change)
+    end
+  end
+
+  context 'with group level work item' do
+    let_it_be(:work_item) { synced_epic.work_item }
+
+    let(:current_user) { reporter }
+    let(:input) { { 'title' => 'updated title' } }
+    let(:fields) do
+      <<~FIELDS
+        workItem {
+          title
+        }
+        errors
+      FIELDS
+    end
+
+    context 'with group level work items license' do
+      it "updates the work item's iteration" do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+
+          work_item.reload
+        end.to change(work_item, :title).to('updated title')
+
+        expect(response).to have_gitlab_http_status(:success)
+      end
+    end
+
+    context 'without group level work items license' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it_behaves_like 'work item is not updated' do
+        let(:work_item_change) { -> { work_item.title } }
+      end
     end
   end
 
@@ -117,7 +159,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(iterations: false)
+        stub_licensed_features(epics: true, iterations: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -127,7 +169,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when iterations feature is licensed' do
       before do
-        stub_licensed_features(iterations: true)
+        stub_licensed_features(epics: true, iterations: true)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -216,7 +258,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(issue_weights: false)
+        stub_licensed_features(epics: true, issue_weights: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -226,7 +268,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when issuable weights is licensed' do
       before do
-        stub_licensed_features(issue_weights: true)
+        stub_licensed_features(epics: true, issue_weights: true)
       end
 
       context 'when user has permissions to admin a work item' do
@@ -352,7 +394,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(okrs: false)
+        stub_licensed_features(epics: true, okrs: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -363,7 +405,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when okrs is licensed' do
       before do
-        stub_licensed_features(okrs: true)
+        stub_licensed_features(epics: true, okrs: true)
       end
 
       context 'when user has permissions to admin a work item' do
@@ -447,7 +489,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(epic_colors: false)
+        stub_licensed_features(epics: true, epic_colors: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -458,7 +500,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when epic_colors is licensed' do
       before do
-        stub_licensed_features(epic_colors: true)
+        stub_licensed_features(epics: true, epic_colors: true)
       end
 
       context 'when the user has permission to admin a work item' do
@@ -747,7 +789,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(requirements: false)
+        stub_licensed_features(epics: true, requirements: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -757,7 +799,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when requirements is licensed' do
       before do
-        stub_licensed_features(requirements: true)
+        stub_licensed_features(epics: true, requirements: true)
       end
 
       context 'when user has permissions to admin a work item' do
@@ -850,7 +892,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
       let(:current_user) { reporter }
 
       before do
-        stub_licensed_features(issuable_health_status: false)
+        stub_licensed_features(epics: true, issuable_health_status: false)
       end
 
       it_behaves_like 'work item is not updated' do
@@ -860,7 +902,7 @@ RSpec.describe 'Update a work item', feature_category: :team_planning do
 
     context 'when issuable_health_status is licensed' do
       before do
-        stub_licensed_features(issuable_health_status: true)
+        stub_licensed_features(epics: true, issuable_health_status: true)
       end
 
       it_behaves_like 'work item is not updated' do
