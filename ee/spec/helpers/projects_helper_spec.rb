@@ -23,6 +23,24 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
     end
   end
 
+  describe '#show_no_ssh_key_message?' do
+    let_it_be(:group) do
+      created_group = create(:group)
+      created_group.enforce_ssh_certificates = true
+      created_group.save!
+
+      created_group
+    end
+
+    let_it_be(:project) { create(:project, group: group) }
+
+    context 'when ssh certificates are enforced' do
+      it 'returns false' do
+        expect(helper.show_no_ssh_key_message?(project)).to be_falsey
+      end
+    end
+  end
+
   describe '#can_admin_project_member?' do
     let_it_be(:user) { create(:user) }
     let_it_be(:group) { create(:group) }
