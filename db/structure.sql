@@ -7944,6 +7944,7 @@ CREATE TABLE ci_deleted_objects (
     pick_up_at timestamp with time zone DEFAULT now() NOT NULL,
     store_dir text NOT NULL,
     file text NOT NULL,
+    project_id bigint,
     CONSTRAINT check_5e151d6912 CHECK ((char_length(store_dir) <= 1024))
 );
 
@@ -23301,6 +23302,9 @@ ALTER TABLE ci_job_variables
 ALTER TABLE ci_runners
     ADD CONSTRAINT check_91230910ec CHECK ((char_length((name)::text) <= 256)) NOT VALID;
 
+ALTER TABLE ci_deleted_objects
+    ADD CONSTRAINT check_98f90d6c53 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
 ALTER TABLE sprints
     ADD CONSTRAINT check_ccd8a1eae0 CHECK ((start_date IS NOT NULL)) NOT VALID;
 
@@ -27340,6 +27344,8 @@ CREATE INDEX index_ci_daily_build_group_report_results_on_last_pipeline_id ON ci
 CREATE INDEX index_ci_daily_build_group_report_results_on_project_and_date ON ci_daily_build_group_report_results USING btree (project_id, date DESC) WHERE ((default_branch = true) AND ((data -> 'coverage'::text) IS NOT NULL));
 
 CREATE INDEX index_ci_deleted_objects_on_pick_up_at ON ci_deleted_objects USING btree (pick_up_at);
+
+CREATE INDEX index_ci_deleted_objects_on_project_id ON ci_deleted_objects USING btree (project_id);
 
 CREATE INDEX index_ci_finished_build_ch_sync_events_for_partitioned_query ON ONLY p_ci_finished_build_ch_sync_events USING btree (((build_id % (100)::bigint)), build_id) WHERE (processed = false);
 
