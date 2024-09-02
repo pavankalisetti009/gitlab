@@ -51,15 +51,6 @@ module Mutations
           cluster_agent = authorized_find!(id: args[:cluster_agent_id])
 
           url_cfg_params = args
-
-          url_cfg_params[:ca_cert] = Base64.decode64(url_cfg_params[:ca_cert]) if url_cfg_params[:ca_cert]
-          if url_cfg_params[:client_cert]
-            url_cfg_params[:client_cert] =
-              Base64.decode64(url_cfg_params[:client_cert])
-          end
-
-          url_cfg_params[:client_key] = Base64.decode64(url_cfg_params[:client_key]) if url_cfg_params[:client_key]
-
           result = ::Clusters::Agents::CreateUrlConfigurationService.new(
             agent: cluster_agent,
             current_user: current_user,

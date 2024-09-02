@@ -86,10 +86,10 @@ module API
             end
             params do
               requires :url, type: String, desc: 'The url where the receptive agent is listening'
-              optional :client_cert, type: String, desc: 'The base64-encoded client certificate in PEM format for mTLS'
-              optional :client_key, type: String, desc: 'The base64-encoded client key in PEM format for mTLS'
+              optional :client_cert, type: String, desc: 'The client certificate in PEM format for mTLS'
+              optional :client_key, type: String, desc: 'The client key in PEM format for mTLS'
               optional :ca_cert, type: String,
-                desc: 'The base64-encoded ca certificate in PEM format for TLS validation'
+                desc: 'The CA certificate in PEM format for TLS validation'
               optional :tls_host, type: String, desc: 'The host name for TLS validation'
             end
             post do
@@ -100,15 +100,6 @@ module API
               not_found! unless agent
 
               url_cfg_params = declared_params(include_missing: false)
-
-              url_cfg_params[:ca_cert] = Base64.decode64(url_cfg_params[:ca_cert]) if url_cfg_params[:ca_cert]
-              if url_cfg_params[:client_cert]
-                url_cfg_params[:client_cert] =
-                  Base64.decode64(url_cfg_params[:client_cert])
-              end
-
-              url_cfg_params[:client_key] = Base64.decode64(url_cfg_params[:client_key]) if url_cfg_params[:client_key]
-
               result = ::Clusters::Agents::CreateUrlConfigurationService.new(
                 agent: agent,
                 current_user: current_user,

@@ -30,10 +30,9 @@ RSpec.describe API::Entities::Clusters::AgentUrlConfiguration, feature_category:
         agent_id: url_configuration.agent.id,
         url: url_configuration.url,
         ca_cert: url_configuration.ca_cert,
-        tls_host: url_configuration.tls_host
+        tls_host: url_configuration.tls_host,
+        client_cert: url_configuration.client_cert
       )
-
-      expect(Base64.decode64(entity[:client_cert])).to eq(url_configuration.client_cert)
     end
   end
 end
