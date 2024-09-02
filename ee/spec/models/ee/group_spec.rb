@@ -3951,19 +3951,9 @@ RSpec.describe Group, feature_category: :groups_and_projects do
       end
     end
 
-    context 'when the feature flag is disabled for a specific group' do
-      before do
-        stub_feature_flags(auto_assign_gitlab_duo_pro_seats: false, thing: root_group)
-      end
-
-      it 'returns false' do
-        expect(root_group.enable_auto_assign_gitlab_duo_pro_seats?).to be_falsey
-      end
-    end
-
     context 'when the feature flag is enabled for a specific group' do
       before do
-        stub_feature_flags(auto_assign_gitlab_duo_pro_seats: true, thing: root_group)
+        stub_feature_flags(auto_assign_gitlab_duo_pro_seats: root_group)
       end
 
       it 'returns true when namespace_settings.enable_auto_assign_gitlab_duo_pro_seats is enabled' do
