@@ -16,20 +16,16 @@ module GitlabSubscriptions
             @restrictions = restrictions
           end
 
-          def seat_count
-            return 0 unless restrictions
+          def quantity
+            return 0 unless add_ons_in_license
 
-            add_on_info = restrictions.deep_symbolize_keys.dig(:add_on_products, name_in_license)
-            return 0 if add_on_info.blank?
-
-            add_on_info.sum { |info| info[:quantity].to_i }
+            add_ons_in_license.sum { |info| info[:quantity].to_i }
           end
-          strong_memoize_attr :seat_count
+          strong_memoize_attr :quantity
 
           def active?
-            seat_count > 0
+            quantity > 0
           end
-          strong_memoize_attr :active?
 
           def add_on
             GitlabSubscriptions::AddOn.find_or_create_by_name(name)
@@ -46,6 +42,13 @@ module GitlabSubscriptions
           def name_in_license
             name
           end
+
+          def add_ons_in_license
+            return [] unless restrictions
+
+            restrictions.deep_symbolize_keys.dig(:add_on_products, name_in_license)
+          end
+          strong_memoize_attr :add_ons_in_license
         end
       end
     end
