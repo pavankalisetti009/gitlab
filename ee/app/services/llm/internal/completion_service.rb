@@ -33,7 +33,7 @@ module Llm
         end
       rescue StandardError => e
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(
-          e, { user_id: prompt_message.user&.id, resource: prompt_message.resource.to_gid }
+          e, { user_id: prompt_message.user&.id, resource: prompt_message.resource&.to_gid }
         )
         nil
       end
