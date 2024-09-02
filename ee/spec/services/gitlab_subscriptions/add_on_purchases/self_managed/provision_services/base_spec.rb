@@ -3,16 +3,18 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServices::Base,
-  :aggregate_failures, feature_category: :plan_provisioning do
+  feature_category: :plan_provisioning do
   describe '#execute' do
     context 'without quantity implemented' do
+      subject(:klass) { described_class }
+
       let!(:current_license) { create_current_license(cloud_licensing_enabled: true) }
 
-      it { expect { described_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
+      it_behaves_like 'raise error for not implemented missing'
     end
 
     context 'without add_on_purchase implemented' do
-      let!(:current_license) { create_current_license(cloud_licensing_enabled: true) }
+      subject(:klass) { provision_service_class }
 
       let(:provision_service_class) do
         Class.new(described_class) do
@@ -22,10 +24,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         end
       end
 
-      it { expect { provision_service_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
+      it_behaves_like 'raise error for not implemented missing'
     end
 
     context 'without add_on implemented' do
+      subject(:klass) { provision_service_class }
+
       let_it_be(:add_on_purchase) { create(:gitlab_subscription_add_on_purchase) }
       let_it_be(:current_license) { create_current_license(cloud_licensing_enabled: true) }
 
@@ -43,10 +47,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         end
       end
 
-      it { expect { provision_service_class.new.execute }.to raise_error described_class::MethodNotImplementedError }
+      it_behaves_like 'raise error for not implemented missing'
     end
 
-    context 'with implemented class' do
+    context 'with implemented class', :aggregate_failures do
       subject(:result) { provision_services_base_class.new.execute }
 
       let_it_be(:add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
@@ -91,7 +95,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         it_behaves_like 'provision service expires add-on purchase'
       end
 
-      context 'when current license is not a cloud license' do
+      context 'when current license is not an online cloud license' do
         let!(:current_license) do
           create_current_license(
             cloud_licensing_enabled: true,
@@ -166,7 +170,25 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         end
       end
 
-      it_behaves_like 'provision service creates add-on purchase'
+      it 'creates a new add-on purchase' do
+        expect(GitlabSubscriptions::AddOnPurchases::CreateService).to receive(:new).with(
+          namespace,
+          add_on,
+          {
+            add_on_purchase: nil,
+            quantity: quantity,
+            expires_on: current_license.block_changes_at,
+            purchase_xid: subscription_name
+          }
+        ).and_call_original
+
+        expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
+
+        expect(result[:status]).to eq(:success)
+        expect(result[:add_on_purchase]).to have_attributes(
+          expires_on: current_license.block_changes_at
+        )
+      end
     end
   end
 end

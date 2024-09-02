@@ -11,55 +11,13 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     let(:restrictions) do
       {
         add_on_products: {
-          "duo_pro" => [{ "quantity" => 1 }, { "quantity" => 2 }]
+          "duo_pro" => [{ "quantity" => 1 }]
         }
       }
     end
 
-    describe "#seat_count" do
-      it { expect(add_on_license.seat_count).to eq 3 }
-
-      context "with mixed hash key types" do
-        let(:restrictions) do
-          {
-            add_on_products: {
-              "duo_pro" => [{ quantity: 1 }, { "quantity" => 2 }]
-            }
-          }
-        end
-
-        it { expect(add_on_license.seat_count).to eq 3 }
-      end
-
-      context "with empty restrictions hash" do
-        let(:restrictions) { {} }
-
-        it { expect(add_on_license.seat_count).to eq 0 }
-      end
-
-      context "with empty duo pro info" do
-        let(:restrictions) do
-          {
-            add_on_products: {
-              "duo_enterprise" => [{ "quantity" => 2 }]
-            }
-          }
-        end
-
-        it { expect(add_on_license.seat_count).to eq 0 }
-      end
-
-      context "with an empty quantity key in the duo pro info" do
-        let(:restrictions) do
-          {
-            add_on_products: {
-              "duo_pro" => [{ "started_on" => '2024-08-01' }]
-            }
-          }
-        end
-
-        it { expect(add_on_license.seat_count).to eq 0 }
-      end
+    describe "#quantity" do
+      include_examples "license add-on attributes", add_on_name: "duo_pro"
     end
 
     describe "#add_on" do

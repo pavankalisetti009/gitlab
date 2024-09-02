@@ -25,32 +25,26 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     let(:restrictions) do
       {
         add_on_products: {
-          "duo_pro" => [{ "quantity" => seat_count }]
+          "duo_pro" => [{ "quantity" => quantity }]
         }
       }
     end
 
-    let(:seat_count) { 1 }
+    let(:quantity) { 1 }
 
-    describe "#seat_count" do
-      it { expect { add_on_license_base.seat_count }.to raise_error described_class::MethodNotImplementedError }
+    describe "#quantity" do
+      it { expect { add_on_license_base.quantity }.to raise_error described_class::MethodNotImplementedError }
 
-      it { expect(add_on_license.seat_count).to eq 1 }
-
-      context "without restrictions" do
-        let(:restrictions) { nil }
-
-        it { expect(add_on_license.seat_count).to eq 0 }
-      end
+      include_examples "license add-on attributes", add_on_name: "duo_pro"
     end
 
     describe "#active?" do
-      it { expect { add_on_license_base.seat_count }.to raise_error described_class::MethodNotImplementedError }
+      it { expect { add_on_license_base.active? }.to raise_error described_class::MethodNotImplementedError }
 
       it { expect(add_on_license).to be_active }
 
-      context "with seat count zero" do
-        let(:seat_count) { 0 }
+      context "with quantity zero" do
+        let(:quantity) { 0 }
 
         it { expect(add_on_license).not_to be_active }
       end

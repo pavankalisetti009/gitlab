@@ -5,6 +5,7 @@ module GitlabSubscriptions
     module SelfManaged
       module ProvisionServices
         class Base
+          extend ::Gitlab::Utils::Override
           include ::Gitlab::Utils::StrongMemoize
 
           AddOnPurchaseSyncError = Class.new(StandardError)
@@ -25,7 +26,7 @@ module GitlabSubscriptions
           private
 
           def license_has_add_on?
-            current_license&.online_cloud_license? && quantity > 0
+            !!current_license&.online_cloud_license? && quantity.to_i > 0
           end
 
           def current_license
@@ -54,12 +55,10 @@ module GitlabSubscriptions
           def add_on_purchase
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :add_on_purchase
 
           def add_on
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :add_on_purchase
 
           def namespace
             nil # self-managed is unrelated to namespaces
@@ -91,7 +90,6 @@ module GitlabSubscriptions
           def quantity
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :quantity
         end
       end
     end
