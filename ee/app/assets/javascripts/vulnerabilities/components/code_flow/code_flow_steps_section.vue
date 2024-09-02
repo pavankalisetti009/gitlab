@@ -256,7 +256,7 @@ export default {
             <gl-link
               v-for="(vulnerabilityItem, i) in vulnerabilityFlow"
               :key="i"
-              class="align-content-center gl-flex gl-justify-between gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2"
+              class="align-content-center gl-flex gl-justify-between !gl-rounded-base gl-pb-2 gl-pl-2 gl-pr-2 gl-pt-2 !gl-text-inherit !gl-no-underline"
               :class="{
                 'gl-rounded-base gl-bg-blue-50':
                   selectedStepNumber === vulnerabilityItem.stepNumber,
@@ -311,12 +311,3 @@ export default {
     </div>
   </div>
 </template>
-
-<style>
-.gl-link,
-&:hover {
-  text-decoration: none !important;
-  color: inherit !important;
-  border-radius: 0.25rem !important;
-}
-</style>
