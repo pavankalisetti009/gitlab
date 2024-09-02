@@ -46,7 +46,8 @@ RSpec.describe EE::WorkItemsHelper, feature_category: :team_planning do
             group_issues_path: issues_group_path(project),
             labels_fetch_path: group_labels_path(
               project, format: :json, only_group_labels: true, include_ancestor_groups: true
-            )
+            ),
+            epics_list_path: group_epics_path(project)
           })
       end
     end

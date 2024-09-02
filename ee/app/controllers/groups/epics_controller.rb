@@ -23,10 +23,10 @@ class Groups::EpicsController < Groups::ApplicationController
     push_frontend_feature_flag(:notifications_todos_buttons, current_user)
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
     push_force_frontend_feature_flag(:glql_integration, @group&.glql_integration_feature_flag_enabled?)
+    push_frontend_feature_flag(:work_item_epics_list, @group)
   end
 
   before_action only: :index do
-    push_frontend_feature_flag(:work_item_epics_list, @group)
     push_frontend_feature_flag(:issues_list_drawer, @group)
     push_frontend_feature_flag(:bulk_update_work_items_mutation, @group)
     push_force_frontend_feature_flag(:namespace_level_work_items, epic_work_items_enabled?)
