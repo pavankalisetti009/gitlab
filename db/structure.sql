@@ -35517,9 +35517,6 @@ ALTER TABLE ONLY cluster_enabled_grants
 ALTER TABLE ONLY virtual_registries_packages_maven_registry_upstreams
     ADD CONSTRAINT fk_rails_838d054752 FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY dast_site_profiles
-    ADD CONSTRAINT fk_rails_83e309d69e FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY dependency_list_export_parts
     ADD CONSTRAINT fk_rails_83f26c0e6f FOREIGN KEY (dependency_list_export_id) REFERENCES dependency_list_exports(id) ON DELETE CASCADE;
 

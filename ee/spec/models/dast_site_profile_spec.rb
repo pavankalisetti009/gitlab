@@ -656,4 +656,11 @@ RSpec.describe DastSiteProfile, :dynamic_analysis,
       end
     end
   end
+
+  context 'with loose foreign key on dast_site_profiles.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dast_site_profile, project: parent) }
+    end
+  end
 end
