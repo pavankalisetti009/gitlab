@@ -18,7 +18,8 @@ module EE
         can_bulk_edit_epics: can?(current_user, :bulk_admin_epic, resource_parent).to_s,
         group_issues_path: issues_group_path(resource_parent),
         labels_fetch_path: group_labels_path(
-          resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true)
+          resource_parent, format: :json, only_group_labels: true, include_ancestor_groups: true),
+        epics_list_path: group_epics_path(resource_parent)
       )
     end
 
