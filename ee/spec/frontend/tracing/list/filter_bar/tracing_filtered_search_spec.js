@@ -11,6 +11,7 @@ import { createMockClient } from 'helpers/mock_observability_client';
 import { filterObjToFilterToken, PERIOD_FILTER_OPTIONS } from 'ee/tracing/list/filter_bar/filters';
 import DateRangeFilter from '~/observability/components/date_range_filter.vue';
 import { useFakeDate } from 'helpers/fake_date';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 
 describe('TracingListFilteredSearch', () => {
   let wrapper;
@@ -182,7 +183,7 @@ describe('TracingListFilteredSearch', () => {
 
     it('configure the trace-id token', () => {
       const tokens = getTokens();
-      expect(tokens.find((t) => t.type === 'trace-id').token).toBe(TracingBaseSearchToken);
+      expect(tokens.find((t) => t.type === 'trace-id').token).toBe(BaseToken);
     });
 
     it('configure the status token', () => {
