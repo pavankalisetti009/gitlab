@@ -23,9 +23,19 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     end
 
     let(:restrictions) do
+      start_date = Date.current
+
       {
         add_on_products: {
-          "duo_pro" => [{ "quantity" => quantity }]
+          "duo_pro" => [
+            {
+              "quantity" => quantity,
+              "started_on" => start_date.to_s,
+              "expires_on" => (start_date + 1.year).to_s,
+              "purchase_xid" => "C-0000001",
+              "trial" => false
+            }
+          ]
         }
       }
     end

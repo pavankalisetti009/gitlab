@@ -5,12 +5,21 @@
 #
 # Requires the add-on name to be passed in as a String, example: "duo_pro"
 RSpec.shared_examples "license add-on attributes" do |add_on_name:|
-  subject(:add_on_quantity) { add_on_license.quantity }
-
+  let_it_be(:today) { Date.current }
+  let(:start_date) { today }
+  let(:end_date) { start_date + 1.year }
   let(:quantity) { 10 }
   let(:add_on_products) do
     {
-      add_on_name => [{ "quantity" => quantity }]
+      add_on_name => [
+        {
+          "quantity" => quantity,
+          "started_on" => start_date.to_s,
+          "expires_on" => end_date.to_s,
+          "purchase_xid" => "C-0000001",
+          "trial" => false
+        }
+      ]
     }
   end
 
@@ -18,54 +27,139 @@ RSpec.shared_examples "license add-on attributes" do |add_on_name:|
     { add_on_products: add_on_products }
   end
 
-  it { is_expected.to eq(10) }
+  it "sets the correct values" do
+    expect(add_on_license).to have_attributes(
+      quantity: 10
+    )
+  end
 
   context "without restrictions" do
     let(:restrictions) { nil }
 
-    it { is_expected.to eq(0) }
+    it "does not set any attributes" do
+      expect(add_on_license).to have_attributes(
+        quantity: 0
+      )
+    end
   end
 
   context "without the add-on info" do
     let(:add_on_products) do
       {
-        "add_on" => [{ "quantity" => quantity }]
+        "add_on" => [
+          {
+            "quantity" => quantity,
+            "started_on" => start_date.to_s,
+            "expires_on" => end_date.to_s,
+            "purchase_xid" => "C-0000002",
+            "trial" => false
+          }
+        ]
       }
     end
 
-    it { is_expected.to eq(0) }
+    it "does not set any attributes" do
+      expect(add_on_license).to have_attributes(
+        quantity: 0
+      )
+    end
   end
 
   context "with mixed hash key types" do
     let(:add_on_products) do
       {
-        add_on_name => [{ quantity: quantity }]
+        add_on_name => [
+          {
+            quantity: quantity,
+            "started_on" => start_date.to_s,
+            expires_on: end_date.to_s,
+            "purchase_xid" => "C-0000003",
+            trial: false
+          }
+        ]
       }
     end
 
-    it { is_expected.to eq(10) }
+    it "sets the correct values" do
+      expect(add_on_license).to have_attributes(
+        quantity: 10
+      )
+    end
   end
 
   context "without a quantity" do
     let(:add_on_products) do
       {
-        add_on_name => [{ 'another_key' => 1 }]
-      }
-    end
-
-    it { is_expected.to eq(0) }
-  end
-
-  context "with multiple purchases" do
-    let(:add_on_products) do
-      {
         add_on_name => [
-          { "quantity" => quantity * 2 },
-          { "quantity" => quantity }
+          {
+            "started_on" => start_date.to_s,
+            "expires_on" => end_date.to_s,
+            "purchase_xid" => "C-0000004",
+            "trial" => false
+          }
         ]
       }
     end
 
-    it { is_expected.to eq(30) }
+    it "sets the correct values" do
+      expect(add_on_license).to have_attributes(
+        quantity: 0
+      )
+    end
+  end
+
+  context "with an invalid key" do
+    let(:add_on_products) do
+      {
+        add_on_name => [
+          {
+            "quantity" => quantity,
+            "started_on" => start_date.to_s,
+            "expires_on" => end_date.to_s,
+            "purchase_xid" => "C-0000004",
+            "trial" => false,
+            "invalid_key" => 'invalid'
+          }
+        ]
+      }
+    end
+
+    it "sets the correct values" do
+      expect(add_on_license).to have_attributes(
+        quantity: 10
+      )
+    end
+  end
+
+  context "with multiple purchases" do
+    let(:add_on_products) do
+      past_start_date = start_date - 1.month
+      new_end_date = past_start_date + 1.year
+
+      {
+        add_on_name => [
+          {
+            "quantity" => quantity * 2,
+            "started_on" => past_start_date.to_s,
+            "expires_on" => new_end_date.to_s,
+            "purchase_xid" => "C-0000011",
+            "trial" => false
+          },
+          {
+            "quantity" => quantity,
+            "started_on" => start_date.to_s,
+            "expires_on" => new_end_date.to_s,
+            "purchase_xid" => "C-0000012",
+            "trial" => false
+          }
+        ]
+      }
+    end
+
+    it "sets the consolidated values" do
+      expect(add_on_license).to have_attributes(
+        quantity: 30
+      )
+    end
   end
 end
