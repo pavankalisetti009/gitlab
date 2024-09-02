@@ -1,5 +1,5 @@
 import { __, s__ } from '~/locale';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export const subscriptionMainTitle = s__('SuperSonics|Instance subscription');
 export const subscriptionActivationNotificationText = s__(

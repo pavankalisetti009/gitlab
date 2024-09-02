@@ -2,7 +2,8 @@
 import { GlAlert, GlLink, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { PROMO_URL, DOCS_URL_IN_EE_DIR } from 'jh_else_ce/lib/utils/url_utility';
+import { DOCS_URL_IN_EE_DIR } from '~/constants';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   CONNECTIVITY_ERROR,
   howToActivateSubscription,
@@ -61,7 +62,7 @@ export const i18n = Object.freeze({
 });
 
 export const links = Object.freeze({
-  purchaseSubscriptionLink: `${PROMO_URL}/pricing/`,
+  purchaseSubscriptionPath: '/pricing',
   supportLink,
   licenseSupportLink:
     'https://support.gitlab.com/hc/en-us/requests/new?ticket_form_id=360000071293',
@@ -80,6 +81,7 @@ export default {
     GlAlert,
     GlLink,
     GlSprintf,
+    PromoPageLink,
   },
   props: {
     error: {
@@ -242,12 +244,13 @@ export default {
     >
       <gl-sprintf :message="$options.i18n.SUBSCRIPTION_NOT_FOUND_ERROR_MESSAGE">
         <template #purchaseSubscriptionLink="{ content }">
-          <gl-link
-            :href="$options.links.purchaseSubscriptionLink"
+          <promo-page-link
+            :path="$options.links.purchaseSubscriptionPath"
             target="_blank"
             class="!gl-no-underline"
-            >{{ content }}</gl-link
-          > </template
+          >
+            {{ content }}
+          </promo-page-link> </template
         ><template #supportLink="{ content }">
           <gl-link :href="$options.links.supportLink" target="_blank" class="!gl-no-underline"
             >{{ content }}
@@ -264,12 +267,12 @@ export default {
     >
       <gl-sprintf :message="$options.i18n.EXPIRED_LICENSE_ERROR_MESSAGE">
         <template #purchaseSubscriptionLink="{ content }">
-          <gl-link
-            :href="$options.links.purchaseSubscriptionLink"
+          <promo-page-link
+            :path="$options.links.purchaseSubscriptionPath"
             target="_blank"
             class="!gl-no-underline"
             >{{ content }}
-          </gl-link> </template
+          </promo-page-link> </template
         ><template #supportLink="{ content }">
           <gl-link :href="$options.links.supportLink" target="_blank" class="!gl-no-underline"
             >{{ content }}

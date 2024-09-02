@@ -1,8 +1,8 @@
 <script>
-import { GlAlert, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlAlert, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import AccountVerificationModal from './account_verification_modal.vue';
 
 const i18n = {
@@ -19,7 +19,7 @@ const i18n = {
     %{strongStart}GitLab will not charge your card, it will only be used for validation.%{strongEnd} %{linkStart}Learn more%{linkEnd}.`),
     primaryButtonText: s__('Billings|Validate account'),
   },
-  pipelineVerificationLink: `${PROMO_URL}/blog/2021/05/17/prevent-crypto-mining-abuse/`,
+  pipelineVerificationPath: `/blog/2021/05/17/prevent-crypto-mining-abuse/`,
 };
 
 export default {
@@ -27,8 +27,8 @@ export default {
   components: {
     GlAlert,
     GlSprintf,
-    GlLink,
     AccountVerificationModal,
+    PromoPageLink,
   },
   mixins: [Tracking.mixin()],
   props: {
@@ -106,7 +106,9 @@ export default {
           <strong>{{ content }}</strong>
         </template>
         <template #link="{ content }">
-          <gl-link :href="$options.i18n.pipelineVerificationLink">{{ content }}</gl-link>
+          <promo-page-link :path="$options.i18n.pipelineVerificationPath">{{
+            content
+          }}</promo-page-link>
         </template>
       </gl-sprintf>
     </gl-alert>

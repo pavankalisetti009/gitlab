@@ -1,8 +1,8 @@
 <script>
-import { GlLink, GlIcon, GlTooltipDirective, GlSprintf } from '@gitlab/ui';
+import { GlIcon, GlTooltipDirective, GlSprintf } from '@gitlab/ui';
 import formattingMixins from 'ee/subscriptions/new/formatting_mixins';
 import { formatNumber } from '~/locale';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   I18N_SUMMARY_DATES,
   I18N_SUMMARY_QUANTITY,
@@ -15,7 +15,7 @@ import {
 
 export default {
   components: {
-    GlLink,
+    PromoPageLink,
     GlSprintf,
     GlIcon,
   },
@@ -101,7 +101,7 @@ export default {
     total: I18N_SUMMARY_TOTAL,
     tooltipNote: I18N_STORAGE_TOOLTIP_NOTE,
   },
-  vatHelpUrl: `${PROMO_URL}/handbook/tax/#indirect-taxes-management`,
+  vatHelpPath: `/handbook/tax/#indirect-taxes-management`,
 };
 </script>
 <template>
@@ -149,12 +149,12 @@ export default {
         <div data-testid="vat-info-line">
           <gl-sprintf :message="taxLine">
             <template #link="{ content }">
-              <gl-link
+              <promo-page-link
                 class="gl-text-gray-500 gl-underline"
-                :href="$options.vatHelpUrl"
+                :path="$options.vatHelpPath"
                 target="_blank"
                 data-testid="vat-help-link"
-                >{{ content }}</gl-link
+                >{{ content }}</promo-page-link
               >
             </template>
           </gl-sprintf>

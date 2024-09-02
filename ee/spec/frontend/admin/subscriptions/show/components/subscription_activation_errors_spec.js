@@ -5,6 +5,7 @@ import SubscriptionActivationErrors, {
   i18n,
   links,
 } from 'ee/admin/subscriptions/show/components/subscription_activation_errors.vue';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   CONNECTIVITY_ERROR,
   EXPIRED_LICENSE_SERVER_ERROR,
@@ -14,7 +15,7 @@ import {
   SUBSCRIPTION_INSUFFICIENT_TRUE_UP_SERVER_ERROR_REGEX,
 } from 'ee/admin/subscriptions/show/constants';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 const GENERAL_ERROR_MESSAGE = 'A fake error';
 
@@ -46,7 +47,7 @@ describe('SubscriptionActivationErrors', () => {
         propsData: {
           ...props,
         },
-        stubs: { GlSprintf },
+        stubs: { GlSprintf, PromoPageLink },
       }),
     );
   };
@@ -99,14 +100,14 @@ describe('SubscriptionActivationErrors', () => {
         error: SUBSCRIPTION_NOT_FOUND_SERVER_ERROR,
         title: i18n.SUBSCRIPTION_NOT_FOUND_ERROR_TITLE,
         text: i18n.SUBSCRIPTION_NOT_FOUND_ERROR_MESSAGE,
-        helpLinks: [links.purchaseSubscriptionLink, links.supportLink],
+        helpLinks: [links.purchaseSubscriptionPath, links.supportLink],
         testId: testIds.SUBSCRIPTION_NOT_FOUND_ERROR_ALERT,
       },
       {
         error: EXPIRED_LICENSE_SERVER_ERROR,
         title: i18n.EXPIRED_LICENSE_ERROR_TITLE,
         text: i18n.EXPIRED_LICENSE_ERROR_MESSAGE,
-        helpLinks: [links.purchaseSubscriptionLink, links.supportLink],
+        helpLinks: [links.purchaseSubscriptionPath, links.supportLink],
         testId: testIds.EXPIRED_ERROR_ALERT,
       },
       {
@@ -134,7 +135,7 @@ describe('SubscriptionActivationErrors', () => {
         expect(alert.props('title')).toBe(title);
         expect(alert.text()).toMatchInterpolatedText(text);
         helpLinks.forEach((link, index) => {
-          expect(alert.findAllComponents(GlLink).at(index).attributes('href')).toBe(link);
+          expect(alert.findAllComponents(GlLink).at(index).attributes('href')).toContain(link);
         });
       });
 
