@@ -5,14 +5,9 @@ module EE
     module GlobalService
       extend ::Gitlab::Utils::Override
       include ::Gitlab::Utils::StrongMemoize
-      include ::Search::Elasticsearchable
-      include ::Search::ZoektSearchable
+      include ::Search::AdvancedAndZoektSearchable
 
-      override :execute
-      def execute
-        return zoekt_search_results if use_zoekt?
-        return super unless use_elasticsearch?
-
+      def elasticsearch_results
         ::Gitlab::Elastic::SearchResults.new(
           current_user,
           params[:search],

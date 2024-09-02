@@ -21,11 +21,7 @@ module EE
 
     override :search_type
     def search_type
-      return params[:search_type] if params[:search_type]
-      return 'zoekt' if scope == 'blobs' && use_zoekt?
-      return 'advanced' if use_elasticsearch?
-
-      super
+      search_service.search_type
     end
 
     # rubocop: disable CodeReuse/ActiveRecord

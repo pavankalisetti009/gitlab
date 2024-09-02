@@ -155,7 +155,8 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
         scope: 'blobs',
         use_elasticsearch?: true,
         use_zoekt?: true,
-        elasticsearchable_scope: project
+        elasticsearchable_scope: project,
+        search_type: 'zoekt'
       )
     end
 
