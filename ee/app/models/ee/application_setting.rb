@@ -318,7 +318,7 @@ module EE
       return true unless elasticsearch_limit_indexing?
 
       ::Gitlab::Elastic::ElasticsearchEnabledCache.fetch(:namespace, namespace.id) do
-        elasticsearch_limited_namespaces.exists?(namespace.id)
+        ElasticsearchIndexedNamespace.where(namespace_id: namespace.traversal_ids).exists?
       end
     end
 
