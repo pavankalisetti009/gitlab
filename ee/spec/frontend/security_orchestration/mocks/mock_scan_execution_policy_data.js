@@ -17,10 +17,25 @@ export const mockUnsupportedAttributeScanExecutionPolicy = {
   },
 };
 
-export const mockDastScanExecutionManifest = `type: scan_execution_policy
+const defaultMockScanExecutionManifest = `type: scan_execution_policy
 name: Scheduled Dast/SAST scan
 description: This policy enforces pipeline configuration to have a job with DAST scan
-enabled: false
+enabled: false`;
+
+export const mockScheduleScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
+rules:
+  - type: schedule
+    cadence: '* * * * *'
+    branches:
+      - main
+  - type: pipeline
+    branches:
+      - main
+actions:
+  - scan: secret_detection
+`);
+
+export const mockDastScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
 rules:
   - type: pipeline
     branches:
@@ -29,7 +44,7 @@ actions:
   - scan: dast
     site_profile: required_site_profile
     scanner_profile: required_scanner_profile
-`;
+`);
 
 export const mockDastScanExecutionObject = {
   type: 'scan_execution_policy',
@@ -99,15 +114,15 @@ export const mockProjectScanExecutionPolicy = {
   },
 };
 
+export const mockScheduledProjectScanExecutionPolicy = {
+  ...mockProjectScanExecutionPolicy,
+  yaml: mockScheduleScanExecutionManifest,
+};
+
 export const mockGroupScanExecutionPolicy = {
-  __typename: 'ScanExecutionPolicy',
+  ...mockProjectScanExecutionPolicy,
   name: `${mockDastScanExecutionObject.name}-group`,
-  updatedAt: new Date('2021-06-07T00:00:00.000Z'),
-  yaml: mockDastScanExecutionManifest,
-  editPath: '/policies/policy-name/edit?type="scan_execution_policy"',
   enabled: false,
-  ...POLICY_SCOPE_MOCK,
-  deprecatedProperties: [],
   source: {
     __typename: 'GroupSecurityPolicySource',
     inherited: true,
@@ -123,6 +138,11 @@ export const mockGroupScanExecutionPolicy = {
 export const mockScanExecutionPoliciesResponse = [
   mockProjectScanExecutionPolicy,
   mockGroupScanExecutionPolicy,
+];
+
+export const mockScheduleScanExecutionPoliciesResponse = [
+  mockScheduledProjectScanExecutionPolicy,
+  ...mockScanExecutionPoliciesResponse,
 ];
 
 export const mockSecretDetectionScanExecutionManifest = `---
