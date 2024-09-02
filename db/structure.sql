@@ -2743,7 +2743,8 @@ CREATE TABLE p_ci_finished_build_ch_sync_events (
     build_id bigint NOT NULL,
     partition bigint DEFAULT 1 NOT NULL,
     build_finished_at timestamp without time zone NOT NULL,
-    processed boolean DEFAULT false NOT NULL
+    processed boolean DEFAULT false NOT NULL,
+    project_id bigint DEFAULT '-1'::integer NOT NULL
 )
 PARTITION BY LIST (partition);
 
@@ -29279,6 +29280,8 @@ CREATE INDEX index_p_ci_builds_execution_configs_on_pipeline_id ON ONLY p_ci_bui
 CREATE INDEX index_p_ci_builds_execution_configs_on_project_id ON ONLY p_ci_builds_execution_configs USING btree (project_id);
 
 CREATE INDEX index_p_ci_finished_build_ch_sync_events_finished_at ON ONLY p_ci_finished_build_ch_sync_events USING btree (partition, build_finished_at);
+
+CREATE INDEX index_p_ci_finished_build_ch_sync_events_on_project_id ON ONLY p_ci_finished_build_ch_sync_events USING btree (project_id);
 
 CREATE UNIQUE INDEX index_p_ci_job_annotations_on_partition_id_job_id_name ON ONLY p_ci_job_annotations USING btree (partition_id, job_id, name);
 

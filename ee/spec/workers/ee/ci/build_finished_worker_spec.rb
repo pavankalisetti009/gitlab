@@ -172,7 +172,8 @@ RSpec.describe Ci::BuildFinishedWorker, feature_category: :continuous_integratio
     it 'saves job on Ci::FinishedBuildChSyncEvent by default' do
       expect { perform }.to change { Ci::FinishedBuildChSyncEvent.all }
         .from([])
-        .to([an_object_having_attributes(build_id: build.id, build_finished_at: build.finished_at)])
+        .to([an_object_having_attributes(
+          build_id: build.id, build_finished_at: build.finished_at, project_id: build.project.id)])
     end
 
     it 'ignores duplicate calls for same build' do
@@ -182,7 +183,8 @@ RSpec.describe Ci::BuildFinishedWorker, feature_category: :continuous_integratio
       perform
 
       expect(Ci::FinishedBuildChSyncEvent.all).to contain_exactly(
-        an_object_having_attributes(build_id: build.id, build_finished_at: build.finished_at, processed: true)
+        an_object_having_attributes(
+          build_id: build.id, build_finished_at: build.finished_at, project_id: build.project.id, processed: true)
       )
     end
 
