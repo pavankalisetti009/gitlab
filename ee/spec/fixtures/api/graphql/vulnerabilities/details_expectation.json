@@ -92,6 +92,51 @@
     "value": "Here\nis\ncode"
   },
   {
+    "__typename": "VulnerabilityDetailCodeFlows",
+    "type": "VulnerabilityDetailCodeFlows",
+    "name": "Code Flows",
+    "items": [
+      [
+        {
+          "type": "VulnerabilityDetailCodeFlowNode",
+          "nodeType": "SOURCE",
+          "fileLocation": {
+            "description": null,
+            "fieldName": null,
+            "fileName": "app/app.py",
+            "lineEnd": 8,
+            "lineStart": 8,
+            "name": null
+          }
+        },
+        {
+          "type": "VulnerabilityDetailCodeFlowNode",
+          "nodeType": "PROPAGATION",
+          "fileLocation": {
+            "description": null,
+            "fieldName": null,
+            "fileName": "app/app.py",
+            "lineEnd": 8,
+            "lineStart": 8,
+            "name": null
+          }
+        },
+        {
+          "type": "VulnerabilityDetailCodeFlowNode",
+          "nodeType": "SINK",
+          "fileLocation": {
+            "description": null,
+            "fieldName": null,
+            "fileName": "app/utils.py",
+            "lineEnd": 5,
+            "lineStart": 5,
+            "name": null
+          }
+        }
+      ]
+    ]
+  },
+  {
     "__typename": "VulnerabilityDetailNamedList",
     "name": "A Named List",
     "fieldName": "named_list",
