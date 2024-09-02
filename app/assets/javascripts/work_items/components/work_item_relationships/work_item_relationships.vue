@@ -205,7 +205,7 @@ export default {
     :anchor-id="widgetName"
     :title="$options.i18n.title"
     :count="linkedWorkItemsCount"
-    icon="issues"
+    icon="link"
     :is-loading="isLoading"
     is-collapsible
     data-testid="work-item-relationships"
@@ -215,7 +215,6 @@ export default {
         v-if="canAdminWorkItemLink"
         data-testid="link-item-add-button"
         size="small"
-        class="gl-mr-3"
         @click="showLinkItemForm"
       >
         <slot name="add-button-text">{{ $options.i18n.addLinkedWorkItemButtonLabel }}</slot>
