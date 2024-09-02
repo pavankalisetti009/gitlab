@@ -33,10 +33,11 @@ module API
                 end
                 get 'tasks' do
                   node = ::Search::Zoekt::Node.find_or_initialize_by_task_request(params)
+                  new_node = node.new_record?
 
                   # We don't want to register (save) the node if the feature flag is disabled
                   if Feature.disabled?(:zoekt_internal_api_register_nodes, type: :ops) || node.save
-                    { id: node.id }.tap do |resp|
+                    { id: node.id, truncate: new_node }.tap do |resp|
                       if Feature.enabled?(:zoekt_send_tasks)
                         resp[:tasks] = ::Search::Zoekt::TaskPresenterService.execute(node)
                         resp[:pull_frequency] = TASK_PULL_FREQUENCY if Feature.enabled?(:zoekt_reduced_pull_frequency)
