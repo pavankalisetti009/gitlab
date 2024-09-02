@@ -206,7 +206,7 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
 
       context 'when the feature flag is disabled' do
         before do
-          stub_feature_flags(auto_assign_gitlab_duo_pro_seats: false, thing: group)
+          stub_feature_flags(auto_assign_gitlab_duo_pro_seats: false)
         end
 
         it 'does not assign a duo pro seat to the new member' do
