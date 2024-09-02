@@ -55,7 +55,7 @@ export default {
     {
       key: 'rule_name',
       thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-60p',
-      class: '!gl-px-0 !gl-py-4',
+      class: '!gl-px-0 !gl-pr-4 !gl-py-4 gl-break-words',
     },
     {
       key: 'rule_approvals',
@@ -75,7 +75,7 @@ export default {
 
 <template>
   <div class="gl-mb-2">
-    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0">
+    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0 gl-table-fixed">
       <template #head(rule_name)>{{ group.label }}</template>
       <template #head(rule_approvals)>{{ __('Approvals') }}</template>
 
