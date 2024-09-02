@@ -46,8 +46,6 @@ fragment WorkItemNote on Note {
     id
     descriptionVersion {
       id
-      description
-      diff
       diffPath
       deletePath
       canDelete
