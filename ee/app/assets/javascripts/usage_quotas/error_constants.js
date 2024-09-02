@@ -1,5 +1,5 @@
 import { s__ } from '~/locale';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { convertObjectPropsToLowerCase } from '~/lib/utils/common_utils';
 
 const supportLink = `${PROMO_URL}/support/`;

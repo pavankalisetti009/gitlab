@@ -1,6 +1,7 @@
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
-import { PROMO_URL, DOMAIN } from 'jh_else_ce/lib/utils/url_utility';
+import { DOMAIN } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export const GENERAL_ERROR_MESSAGE = s__(
   'PurchaseStep|An error occurred in the purchase step. If the problem persists please contact support at https://support.gitlab.com.',

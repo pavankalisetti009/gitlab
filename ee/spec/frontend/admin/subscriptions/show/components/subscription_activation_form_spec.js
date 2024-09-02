@@ -1,4 +1,4 @@
-import { GlForm, GlFormCheckbox, GlFormInput, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlForm, GlFormCheckbox, GlFormInput, GlSprintf } from '@gitlab/ui';
 import { mount, shallowMount } from '@vue/test-utils';
 import Vue from 'vue';
 import VueApollo from 'vue-apollo';
@@ -17,6 +17,7 @@ import { stubComponent } from 'helpers/stub_component';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { preventDefault, stopPropagation } from 'ee_jest/admin/test_helpers';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   activateLicenseMutationResponse,
   fakeActivationCodeTrimmed,
@@ -39,7 +40,7 @@ describe('SubscriptionActivationForm', () => {
   const findActivationCodeFormGroup = () => wrapper.findByTestId('form-group-activation-code');
   const findActivationCodeInput = () => wrapper.findComponent(GlFormInput);
   const findActivateSubscriptionForm = () => wrapper.findComponent(GlForm);
-  const findTermLink = () => findAgreementCheckboxFormGroup().findComponent(GlLink);
+  const findTermLink = () => findAgreementCheckboxFormGroup().findComponent(PromoPageLink);
 
   const GlFormInputStub = stubComponent(GlFormInput, {
     template: `<input />`,
@@ -94,7 +95,7 @@ describe('SubscriptionActivationForm', () => {
 
     it('verify terms link url', () => {
       const link = findTermLink();
-      expect(link.attributes('href')).toMatch(/https:\/\/about.gitlab.(com|cn)\/terms\//);
+      expect(link.props('path')).toBe('/terms/');
     });
   });
 

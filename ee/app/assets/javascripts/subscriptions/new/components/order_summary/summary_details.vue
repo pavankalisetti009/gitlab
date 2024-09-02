@@ -4,7 +4,7 @@ import { GlAlert, GlLink, GlSprintf, GlLoadingIcon } from '@gitlab/ui';
 import { mapState, mapGetters } from 'vuex';
 import { s__ } from '~/locale';
 import Tracking from '~/tracking';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import { PROMO_CODE_OFFER_TEXT, PROMO_CODE_TERMS_LINK } from 'ee/subscriptions/new/constants';
 import formattingMixins from '../../formatting_mixins';
 
@@ -14,6 +14,7 @@ export default {
     GlLink,
     GlSprintf,
     GlLoadingIcon,
+    PromoPageLink,
   },
   mixins: [formattingMixins, Tracking.mixin()],
   PROMO_CODE_OFFER_TEXT,
@@ -50,7 +51,7 @@ export default {
     taxNote: s__('Checkout|(may be %{linkStart}charged upon purchase%{linkEnd})'),
     total: s__('Checkout|Total'),
   },
-  taxHelpUrl: `${PROMO_URL}/handbook/tax/#indirect-taxes-management`,
+  taxHelpPath: `/handbook/tax/#indirect-taxes-management`,
 };
 </script>
 <template>
@@ -111,13 +112,13 @@ export default {
         <div data-testid="tax-info-line">
           <gl-sprintf :message="taxLine">
             <template #link="{ content }">
-              <gl-link
+              <promo-page-link
                 class="gl-text-gray-500 gl-underline"
-                :href="$options.taxHelpUrl"
+                :path="$options.taxHelpPath"
                 target="_blank"
                 data-testid="tax-help-link"
                 @click="track('click_button', { label: 'tax_link' })"
-                >{{ content }}</gl-link
+                >{{ content }}</promo-page-link
               >
             </template>
           </gl-sprintf>

@@ -1,9 +1,9 @@
-import { GlCard, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlCard, GlSprintf } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
 import SubscriptionDetailsUserInfo from 'ee/admin/subscriptions/show/components/subscription_details_user_info.vue';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import { license } from '../mock_data';
 
 describe('Subscription Details User Info', () => {
@@ -130,8 +130,8 @@ describe('Subscription Details User Info', () => {
     it('has a link', () => {
       createComponent({ stubGlSprintf: true });
 
-      expect(findUsersOverLicenseCard().findComponent(GlLink).attributes('href')).toBe(
-        `${PROMO_URL}/pricing/licensing-faq/#what-does-users-over-license-mean`,
+      expect(findUsersOverLicenseCard().findComponent(PromoPageLink).attributes('path')).toBe(
+        '/pricing/licensing-faq/#what-does-users-over-license-mean',
       );
     });
   });

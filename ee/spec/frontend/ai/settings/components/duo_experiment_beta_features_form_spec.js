@@ -1,11 +1,11 @@
 import { shallowMount } from '@vue/test-utils';
 import { GlLink, GlSprintf, GlFormGroup, GlFormCheckbox, GlPopover } from '@gitlab/ui';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import DuoExperimentBetaFeaturesForm from 'ee/ai/settings/components/duo_experiment_beta_features_form.vue';
 
 const MOCK_DATA = {
   experimentBetaHelpPath: '/help/policy/experiment-beta-support',
-  testingAgreementUrl: `${PROMO_URL}/handbook/legal/testing-agreement/`,
+  testingAgreementPath: `/handbook/legal/testing-agreement/`,
 };
 
 describe('DuoExperimentBetaFeaturesForm', () => {
@@ -77,9 +77,10 @@ describe('DuoExperimentBetaFeaturesForm', () => {
     });
 
     it('renders correct links', () => {
-      const links = wrapper.findAllComponents(GlLink);
-      expect(links.at(0).attributes('href')).toBe(MOCK_DATA.experimentBetaHelpPath);
-      expect(links.at(1).attributes('href')).toBe(MOCK_DATA.testingAgreementUrl);
+      const experimentBetaHelpLink = wrapper.findComponent(GlLink);
+      const testingAgreementLink = wrapper.findComponent(PromoPageLink);
+      expect(experimentBetaHelpLink.attributes('href')).toBe(MOCK_DATA.experimentBetaHelpPath);
+      expect(testingAgreementLink.props('path')).toBe(MOCK_DATA.testingAgreementPath);
     });
   });
 

@@ -2,7 +2,6 @@ import { GlSprintf, GlIcon } from '@gitlab/ui';
 import SummaryDetails from 'ee/subscriptions/buy_addons_shared/components/order_summary/summary_details.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { useFakeDate } from 'helpers/fake_date';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 describe('SummaryDetails', () => {
   useFakeDate(2021, 0, 16);
@@ -50,9 +49,7 @@ describe('SummaryDetails', () => {
     });
 
     it('displays a help link', () => {
-      expect(findVatHelpLink().attributes('href')).toBe(
-        `${PROMO_URL}/handbook/tax/#indirect-taxes-management`,
-      );
+      expect(findVatHelpLink().props('path')).toBe('/handbook/tax/#indirect-taxes-management');
     });
 
     it('displays an info text', () => {
@@ -137,9 +134,7 @@ describe('SummaryDetails', () => {
     });
 
     it('displays a help link', () => {
-      expect(findVatHelpLink().attributes('href')).toBe(
-        `${PROMO_URL}/handbook/tax/#indirect-taxes-management`,
-      );
+      expect(findVatHelpLink().props('path')).toBe('/handbook/tax/#indirect-taxes-management');
     });
 
     it('displays an info text', () => {

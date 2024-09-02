@@ -1,4 +1,4 @@
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { __, s__ } from '~/locale';
 
 export const DUO_PRO = 'pro';

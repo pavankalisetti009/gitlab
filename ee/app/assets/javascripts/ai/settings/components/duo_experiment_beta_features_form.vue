@@ -2,7 +2,7 @@
 import { GlLink, GlSprintf, GlFormGroup, GlFormCheckbox, GlPopover } from '@gitlab/ui';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {
   name: 'DuoExperimentBetaFeaturesForm',
@@ -26,6 +26,7 @@ export default {
     GlFormGroup,
     GlFormCheckbox,
     GlPopover,
+    PromoPageLink,
   },
   inject: ['areExperimentSettingsAllowed'],
   props: {
@@ -49,7 +50,7 @@ export default {
     },
   },
   experimentBetaHelpPath: helpPagePath('policy/experiment-beta-support'),
-  testingAgreementUrl: `${PROMO_URL}/handbook/legal/testing-agreement/`,
+  testingAgreementPath: `/handbook/legal/testing-agreement/`,
 };
 </script>
 <template>
@@ -73,13 +74,13 @@ export default {
         <template #help>
           <gl-sprintf :message="$options.i18n.checkboxHelpText">
             <template #link="{ content }">
-              <gl-link
-                :href="$options.testingAgreementUrl"
+              <promo-page-link
+                :path="$options.testingAgreementPath"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {{ content }}
-              </gl-link>
+              </promo-page-link>
             </template>
           </gl-sprintf>
         </template>
