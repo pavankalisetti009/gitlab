@@ -5,7 +5,6 @@ import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import { setUrlFragment } from '~/lib/utils/url_utility';
 import { __, s__ } from '~/locale';
 import { isGroup, isProject } from 'ee/security_orchestration/components/utils';
-
 import {
   ADD_ACTION_LABEL,
   BRANCHES_KEY,
@@ -28,7 +27,6 @@ import ActionSection from './action/action_section.vue';
 import RuleSection from './rule/rule_section.vue';
 import FallbackSection from './fallback_section.vue';
 import { CLOSED } from './constants';
-
 import {
   ACTION_LISTBOX_ITEMS,
   buildAction,
@@ -110,15 +108,26 @@ export default {
       type: Object,
       required: true,
     },
+    errorSources: {
+      type: Array,
+      required: true,
+    },
     existingPolicy: {
       type: Object,
       required: false,
       default: null,
     },
+    isCreating: {
+      type: Boolean,
+      required: true,
+    },
+    isDeleting: {
+      type: Boolean,
+      required: true,
+    },
     isEditing: {
       type: Boolean,
-      required: false,
-      default: false,
+      required: true,
     },
   },
   data() {
@@ -133,7 +142,7 @@ export default {
 
     return {
       errors: { action: [] },
-      errorSources: [],
+      errorSourcesOld: [],
       invalidBranches: [],
       isCreatingMR: false,
       isRemovingPolicy: false,
@@ -151,6 +160,18 @@ export default {
     };
   },
   computed: {
+    actionError() {
+      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
+        const actionErrors = this.errorSources.filter(([primaryKey]) => primaryKey === 'action');
+        if (actionErrors.length) {
+          // Refactor action error messages to be consistent with the other `errorSources`
+          // as part of https://gitlab.com/gitlab-org/gitlab/-/issues/486021
+          return { action: actionErrors[0][3] };
+        }
+      }
+
+      return this.errors;
+    },
     actionsForRuleMode() {
       const actions = this.policy.actions || [];
       // If the yaml does not have a bot message action, then the bot message will be created as if
@@ -169,8 +190,19 @@ export default {
       const usedActionTypes = this.actionsForRuleMode.map((action) => action.type);
       return ACTION_LISTBOX_ITEMS.filter((item) => !usedActionTypes.includes(item.value));
     },
+    errorSourcesTemp() {
+      return this.glFeatures.securityPoliciesProjectBackgroundWorker
+        ? this.errorSources
+        : this.errorSourcesOld;
+    },
     fallbackBehaviorSetting() {
       return this.policy.fallback_behavior?.fail || CLOSED;
+    },
+    isCreatingMRTemp() {
+      return this.isCreatingMR || this.isCreating;
+    },
+    isRemovingPolicyTemp() {
+      return this.isRemovingPolicy || this.isDeleting;
     },
     isProject() {
       return isProject(this.namespaceType);
@@ -342,7 +374,7 @@ export default {
       }
 
       // Process error to pass to specific component
-      this.errorSources = parseError(error);
+      this.errorSourcesOld = parseError(error);
     },
     handleParsingError() {
       this.hasParsingError = true;
@@ -356,6 +388,15 @@ export default {
     },
     async handleModifyPolicy(act) {
       this.policyModificationAction = act || this.policyActionName;
+
+      if (this.glFeatures.securityPoliciesProjectBackgroundWorker) {
+        this.$emit('save', {
+          action: this.policyModificationAction,
+          policy: this.yamlEditorValue,
+          isActiveRuleMode: this.isActiveRuleMode,
+        });
+        return;
+      }
 
       this.$emit('error', '');
       this.setLoadingFlag(true);
@@ -443,8 +484,8 @@ export default {
     :custom-save-button-text="$options.i18n.createMergeRequest"
     :has-parsing-error="hasParsingError"
     :is-editing="isEditing"
-    :is-removing-policy="isRemovingPolicy"
-    :is-updating-policy="isCreatingMR"
+    :is-removing-policy="isRemovingPolicyTemp"
+    :is-updating-policy="isCreatingMRTemp"
     :parsing-error="$options.i18n.PARSING_ERROR_MESSAGE"
     :policy="policy"
     :yaml-editor-value="yamlEditorValue"
@@ -470,7 +511,7 @@ export default {
           :key="rule.id"
           :data-testid="`rule-${index}`"
           class="gl-mb-4"
-          :error-sources="errorSources"
+          :error-sources="errorSourcesTemp"
           :index="index"
           :init-rule="rule"
           @changed="updateRule(index, $event)"
@@ -504,7 +545,7 @@ export default {
           class="gl-mb-4"
           :action-index="index"
           :init-action="action"
-          :errors="errors.action"
+          :errors="actionError.action"
           :existing-approvers="existingApprovers"
           @error="handleParsingError"
           @updateApprovers="updatePolicyApprovers"

@@ -56,6 +56,8 @@ describe('EditorComponent', () => {
     wrapper = shallowMountExtended(EditorComponent, {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        isCreating: false,
+        isDeleting: false,
         isEditing: false,
         ...propsData,
       },
@@ -69,14 +71,14 @@ describe('EditorComponent', () => {
     });
   };
 
-  const factoryWithExistingPolicy = ({ policy = {}, glFeatures = {} } = {}) => {
+  const factoryWithExistingPolicy = ({ policy = {}, provide = {} } = {}) => {
     return factory({
       propsData: {
         assignedPolicyProject: ASSIGNED_POLICY_PROJECT,
         existingPolicy: { ...mockWithoutRefPipelineExecutionObject, ...policy },
         isEditing: true,
       },
-      glFeatures,
+      provide,
     });
   };
 
@@ -190,7 +192,21 @@ describe('EditorComponent', () => {
     });
   });
 
-  describe('saving a policy', () => {
+  describe('modifying a policy w/ securityPoliciesProjectBackgroundWorker true', () => {
+    it.each`
+      status                           | action                             | event              | factoryFn                    | yamlEditorValue
+      ${'creating a new policy'}       | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}
+      ${'updating an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+      ${'deleting an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockWithoutRefPipelineExecutionManifest}
+    `('emits "save" when $status', async ({ action, event, factoryFn, yamlEditorValue }) => {
+      factoryFn({ provide: { glFeatures: { securityPoliciesProjectBackgroundWorker: true } } });
+      findPolicyEditorLayout().vm.$emit(event);
+      await waitForPromises();
+      expect(wrapper.emitted('save')).toEqual([[{ action, policy: yamlEditorValue }]]);
+    });
+  });
+
+  describe('saving a policy w/ securityPoliciesProjectBackgroundWorker false', () => {
     it.each`
       status                            | action                             | event              | factoryFn                    | yamlEditorValue                            | currentlyAssignedPolicyProject
       ${'to save a new policy'}         | ${SECURITY_POLICY_ACTIONS.APPEND}  | ${'save-policy'}   | ${factory}                   | ${DEFAULT_PIPELINE_EXECUTION_POLICY}       | ${NEW_POLICY_PROJECT}

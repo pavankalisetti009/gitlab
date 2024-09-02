@@ -12,6 +12,7 @@ module Projects
 
       before_action do
         push_frontend_feature_flag(:vulnerability_management_policy_type, project)
+        push_frontend_feature_flag(:security_policies_project_background_worker, project)
       end
 
       feature_category :security_policy_management
