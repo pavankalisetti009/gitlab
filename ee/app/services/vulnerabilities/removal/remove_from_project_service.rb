@@ -15,7 +15,6 @@ module Vulnerabilities
           Tasks::DeleteFindingFlags,
           Tasks::DeleteFindingIdentifiers,
           Tasks::DeleteFindingLinks,
-          Tasks::DeleteFindingPipelines,
           Tasks::DeleteFindingRemediations,
           Tasks::DeleteFindingSignatures
         ].freeze
