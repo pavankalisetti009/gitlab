@@ -67,10 +67,10 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
     end
 
     context 'when a finished build has been deleted' do
+      let!(:deleted_build) { create(:ci_build, :success, finished_at: Time.current).tap(&:destroy!) }
+
       it 'marks the sync event as processed' do
-        sync_event = Ci::FinishedBuildChSyncEvent
-          .new(build_id: non_existing_record_id, build_finished_at: Time.current)
-          .tap(&:save!)
+        sync_event = create_ci_build_sync_event(deleted_build)
 
         expect { execute }
           .to change { ci_finished_builds_row_count }.by(3)
@@ -241,9 +241,7 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
   end
 
   def create_sync_events(*builds)
-    builds.each do |build|
-      Ci::FinishedBuildChSyncEvent.new(build_id: build.id, build_finished_at: build.finished_at).save!
-    end
+    builds.each { |build| create_ci_build_sync_event(build) }
   end
 
   def ci_finished_builds_row_count
@@ -290,5 +288,14 @@ RSpec.describe ClickHouse::DataIngestion::CiFinishedBuildsSyncService,
     end
 
     contain_exactly(*expected_builds)
+  end
+
+  def build_ci_build_sync_event(build)
+    Ci::FinishedBuildChSyncEvent.new(
+      build_id: build.id, project_id: build.project_id, build_finished_at: build.finished_at)
+  end
+
+  def create_ci_build_sync_event(build)
+    build_ci_build_sync_event(build).tap(&:save!)
   end
 end
