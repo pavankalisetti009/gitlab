@@ -17,20 +17,25 @@ module AppSec
         def execute(name:, target_url:, **params)
           return ServiceResponse.error(message: _('Insufficient permissions')) unless allowed?
 
-          ApplicationRecord.transaction do
-            @dast_site = ::AppSec::Dast::Sites::FindOrCreateService.new(project, current_user).execute!(url: target_url)
-            params.merge!(project: project, dast_site: dast_site, name: name).compact!
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
+            .allow_cross_database_modification_within_transaction(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014') do
+            ApplicationRecord.transaction do
+              @dast_site = ::AppSec::Dast::Sites::FindOrCreateService.new(project,
+                current_user).execute!(url: target_url)
+              params.merge!(project: project, dast_site: dast_site, name: name).compact!
 
-            @dast_site_validation = find_existing_dast_site_validation
-            associate_dast_site_validation! if dast_site_validation
+              @dast_site_validation = find_existing_dast_site_validation
+              associate_dast_site_validation! if dast_site_validation
 
-            @dast_site_profile = DastSiteProfile.create!(params.except(:request_headers, :auth_password))
-            create_secret_variable!(::Dast::SiteProfileSecretVariable::PASSWORD, params[:auth_password])
-            create_secret_variable!(::Dast::SiteProfileSecretVariable::REQUEST_HEADERS, params[:request_headers])
+              @dast_site_profile = DastSiteProfile.create!(params.except(:request_headers, :auth_password))
+              create_secret_variable!(::Dast::SiteProfileSecretVariable::PASSWORD, params[:auth_password])
+              create_secret_variable!(::Dast::SiteProfileSecretVariable::REQUEST_HEADERS, params[:request_headers])
 
-            create_audit_event
+              create_audit_event
 
-            ServiceResponse.success(payload: dast_site_profile)
+              ServiceResponse.success(payload: dast_site_profile)
+            end
           end
         rescue Rollback => e
           ServiceResponse.error(message: e.errors)

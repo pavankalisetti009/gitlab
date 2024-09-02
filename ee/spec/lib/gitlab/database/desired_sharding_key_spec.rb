@@ -87,6 +87,9 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         },
         'dast_site_profiles_builds' => {
           'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706'
+        },
+        'dast_site_profile_secret_variables' => {
+          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014'
         }
       }
     end
