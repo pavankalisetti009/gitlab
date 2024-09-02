@@ -33,13 +33,15 @@ In the Free tier of GitLab.com, user limits do not apply to users in:
 NOTE:
 Personal namespaces are public by default and are excluded from the user limit.
 
-## Determining namespace user counts
+## Determine namespace user counts
 
-Every unique user of a top-level namespace with private visibility counts towards the five-user limit. This includes every user of a group, subgroup, and project within a namespace.
+Every unique user of a top-level namespace with private visibility counts towards
+the five-user limit. This includes every user of a group, subgroup, and project
+within a namespace.
 
-For example:
+For example, there are two groups, `example-1` and `example-2`.
 
-The group `example-1` has:
+The `example-1` group has:
 
 - One group owner, `A`.
 - One subgroup called `subgroup-1` with one member, `B`.
@@ -47,9 +49,10 @@ The group `example-1` has:
 - One project in `subgroup-1` called `project-1` with two members, `C` and `D`.
   - `project-1` inherits `A` and `B` as members from `subgroup-1`.
 
-The namespace `example-1` has four unique members: `A`, `B`, `C`, and `D`. Because `example-1` has only four unique members, it is not impacted by the five-user limit.
+The namespace `example-1` has four unique members: `A`, `B`, `C`, and `D`, so
+does not exceed the five-user limit.
 
-The group `example-2` has:
+The `example-2` group has:
 
 - One group owner, `A`.
 - One subgroup called `subgroup-2` with one member, `B`.
@@ -59,7 +62,8 @@ The group `example-2` has:
 - One project in `subgroup-2` called `project-2b` with two members, `E` and `F`.
   - `project-2b` inherits `A` and `B` as members from `subgroup-2`.
 
-The namespace `example-2` has six unique members: `A`, `B`, `C`, `D`, `E`, and `F`. Because `example-2` has six unique users, it is impacted by the five-user limit.
+The namespace `example-2` has six unique members: `A`, `B`, `C`, `D`, `E`, and `F`,
+so it exceeds the five-user limit.
 
 ## Manage members in your group namespace
 
