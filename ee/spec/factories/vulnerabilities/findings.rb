@@ -508,6 +508,44 @@ FactoryBot.define do
             type: 'text',
             name: 'Text with more info',
             value: 'More info about this vulnerability'
+          },
+          code_flows: {
+            name: 'Code Flows',
+            type: 'code-flows',
+            items: [
+              [
+                {
+                  file_location: {
+                    file_name: "app/app.py",
+                    line_end: 8,
+                    line_start: 8,
+                    type: "file-location"
+                  },
+                  node_type: "source",
+                  type: "code-flow-node"
+                },
+                {
+                  file_location: {
+                    file_name: "app/app.py",
+                    line_end: 8,
+                    line_start: 8,
+                    type: "file-location"
+                  },
+                  node_type: "propagation",
+                  type: "code-flow-node"
+                },
+                {
+                  file_location: {
+                    file_name: "app/utils.py",
+                    line_end: 5,
+                    line_start: 5,
+                    type: "file-location"
+                  },
+                  node_type: "sink",
+                  type: "code-flow-node"
+                }
+              ]
+            ]
           }
         }
       end
