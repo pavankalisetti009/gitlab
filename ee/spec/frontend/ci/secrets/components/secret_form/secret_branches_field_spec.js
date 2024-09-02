@@ -1,6 +1,6 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
-import { GlCollapsibleListbox, GlSprintf } from '@gitlab/ui';
+import { GlCollapsibleListbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
@@ -26,7 +26,7 @@ describe('SecretFormWrapper component', () => {
 
   const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findCreateWildcardButton = () => wrapper.findByTestId('create-wildcard-button');
-  const findMaxBranchesNote = () => wrapper.findComponent(GlSprintf);
+  const findSearchQueryNote = () => wrapper.findByTestId('search-query-note');
 
   const createComponent = async ({
     isLoading = false,
@@ -75,9 +75,9 @@ describe('SecretFormWrapper component', () => {
       expect(findDropdown().props('loading')).toBe(false);
     });
 
-    it('renders max branches note', () => {
-      expect(findMaxBranchesNote().attributes('message')).toBe(
-        'Maximum of %{limit} branches listed. For more branches, enter a search query.',
+    it('renders search query note', () => {
+      expect(findSearchQueryNote().text()).toBe(
+        'Enter a search query to find more branches, or use * to create a wildcard.',
       );
     });
 
@@ -116,23 +116,38 @@ describe('SecretFormWrapper component', () => {
     });
   });
 
-  describe('when searching for a branch', () => {
-    beforeEach(async () => {
-      createComponent();
+  describe('when search results are empty', () => {
+    describe('with wildcard character', () => {
+      beforeEach(async () => {
+        createComponent();
 
-      findDropdown().vm.$emit('search', 'stable');
-      await nextTick();
+        findDropdown().vm.$emit('search', 'stable/*');
+        await nextTick();
+      });
+
+      it('renders create wildcard button if branch list does not contain search term', () => {
+        expect(findCreateWildcardButton().exists()).toBe(true);
+        expect(findCreateWildcardButton().text()).toBe('Create wildcard: stable/*');
+      });
+
+      it('sets new wildcard branch as the selected branch when button is clicked', () => {
+        findCreateWildcardButton().vm.$emit('click', 'stable/*');
+
+        expect(wrapper.emitted('select-branch')).toStrictEqual([['stable/*']]);
+      });
     });
 
-    it('renders create wildcard button if branch list does not contain search term', () => {
-      expect(findCreateWildcardButton().exists()).toBe(true);
-      expect(findCreateWildcardButton().text()).toBe('Create wildcard: stable');
-    });
+    describe('without wildcard character', () => {
+      beforeEach(async () => {
+        createComponent();
 
-    it('sets new wildcard branch as the selected branch when button is clicked', () => {
-      findCreateWildcardButton().vm.$emit('click', 'stable');
+        findDropdown().vm.$emit('search', 'stable/');
+        await nextTick();
+      });
 
-      expect(wrapper.emitted('select-branch')).toEqual([['stable']]);
+      it('does not render create wildcard button', () => {
+        expect(findCreateWildcardButton().exists()).toBe(false);
+      });
     });
   });
 
