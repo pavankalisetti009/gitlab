@@ -740,22 +740,6 @@ RSpec.describe GroupsHelper, feature_category: :source_code_management do
     end
   end
 
-  describe '#show_prevent_inviting_groups_outside_hierarchy_setting?', :saas do
-    let_it_be(:group) { create(:group_with_plan, plan: :premium_plan) }
-
-    context 'when block seat overages is enabled' do
-      before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-        stub_feature_flags(block_seat_overages: group)
-        group.namespace_settings.update!(seat_control: :block_overages)
-      end
-
-      it 'returns false' do
-        expect(helper.show_prevent_inviting_groups_outside_hierarchy_setting?(group)).to eq(false)
-      end
-    end
-  end
-
   describe '#pages_deployments_app_data' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
