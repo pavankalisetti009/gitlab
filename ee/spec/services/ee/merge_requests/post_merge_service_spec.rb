@@ -14,6 +14,28 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
   subject { service.execute(merge_request) }
 
   describe '#execute' do
+    context 'merged event' do
+      context 'when ff_compliance_audit_mr_merge is enabled' do
+        it 'publishes to the MergedEvent' do
+          expect(::Gitlab::EventStore).to receive(:publish)
+          expect(MergeRequests::MergedEvent).to receive(:new)
+
+          subject
+        end
+      end
+
+      context 'when ff_compliance_audit_mr_merge is disabled' do
+        it 'does not publish to the MergedEvent' do
+          stub_feature_flags ff_compliance_audit_mr_merge: false
+
+          expect(::Gitlab::EventStore).not_to receive(:publish)
+          expect(MergeRequests::MergedEvent).not_to receive(:new)
+
+          subject
+        end
+      end
+    end
+
     context 'finalize approvals' do
       let(:finalize_service) { double(:finalize_service) }
 
@@ -234,8 +256,8 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
           })
         end
 
-        it 'does sends any additional unblocked events' do
-          expect(::Gitlab::EventStore).to receive(:publish).twice
+        it 'does send any additional unblocked events' do
+          expect(::Gitlab::EventStore).to receive(:publish).exactly(3).times
 
           subject
         end
@@ -243,12 +265,17 @@ RSpec.describe MergeRequests::PostMergeService, feature_category: :code_review_w
     end
 
     context 'when merge_when_checks_pass is disabled' do
+      let(:merge_request) { create :merge_request }
+
       before do
         stub_feature_flags(merge_when_checks_pass: false)
       end
 
-      it 'does sends an unblocked events' do
+      it 'does not send any unblocked events' do
         expect(::Gitlab::EventStore).not_to receive(:publish)
+          .with(::MergeRequests::UnblockedStateEvent.new(data: {
+            current_user_id: current_user.id, merge_request_id: merge_request.id
+          }))
 
         subject
       end

@@ -17,7 +17,7 @@ module EE
         #
         # Only EE subscriptions should be declared in this module.
         override :configure!
-        def configure!(store)
+        def configure!(store) # rubocop:disable Metrics/AbcSize -- This is basically a configuration file
           super(store)
 
           ###
@@ -81,8 +81,8 @@ module EE
           subscribe_to_work_item_events(store)
           subscribe_to_milestone_events(store)
           subscribe_to_zoekt_events(store)
-
           subscribe_to_users_activity_events(store)
+          subscribe_to_merge_events(store)
         end
 
         def register_security_policy_subscribers(store)
@@ -202,6 +202,16 @@ module EE
                 !GitlabSubscriptions::Members::ActivityService.lease_taken?(
                   namespace_id, event.data[:user_id]
                 )
+            }
+        end
+
+        def subscribe_to_merge_events(store)
+          store.subscribe ::MergeRequests::ProcessMergeAuditEventWorker,
+            to: ::MergeRequests::MergedEvent,
+            if: ->(event) {
+              mr = ::MergeRequest.find_by_id(event.data[:merge_request_id])
+              actor = ::Project.actor_from_id(mr&.project)
+              ::Feature.enabled? :ff_compliance_audit_mr_merge, actor
             }
         end
       end
