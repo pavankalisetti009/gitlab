@@ -43,6 +43,7 @@ RSpec.shared_examples 'provision service expires add-on purchase' do
         :gitlab_subscription_add_on_purchase,
         namespace: namespace,
         add_on: add_on,
+        started_at: Date.current,
         expires_on: expires_on
       )
     end

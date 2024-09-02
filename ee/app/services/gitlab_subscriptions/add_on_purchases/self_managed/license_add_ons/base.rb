@@ -17,9 +17,7 @@ module GitlabSubscriptions
           end
 
           def quantity
-            return 0 unless add_ons_in_license
-
-            add_ons_in_license.sum { |info| info[:quantity].to_i }
+            add_ons_info.sum(&:quantity)
           end
           strong_memoize_attr :quantity
 
@@ -42,6 +40,17 @@ module GitlabSubscriptions
           def name_in_license
             name
           end
+
+          def add_ons_info
+            return [] unless add_ons_in_license
+
+            add_ons_in_license.map do |info_hash|
+              attributes = info_hash.slice(:quantity, :started_on, :expires_on, :purchase_xid, :trial)
+
+              Info.new(**attributes)
+            end
+          end
+          strong_memoize_attr :add_ons_info
 
           def add_ons_in_license
             return [] unless restrictions

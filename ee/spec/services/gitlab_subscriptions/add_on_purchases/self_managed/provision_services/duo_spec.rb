@@ -16,11 +16,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     let(:quantity_duo_enterprise) { 0 }
     let(:namespace) { nil }
 
+    let(:started_at) { Date.current }
     let!(:current_license) do
       create_current_license(
         cloud_licensing_enabled: true,
         restrictions: {
-          add_on_products: add_on_products,
+          add_on_products: add_on_products(started_at: started_at),
           subscription_name: 'A-S00000001'
         }
       )
@@ -179,12 +180,20 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
   private
 
-  def add_on_products
+  def add_on_products(started_at:)
     [:duo_pro, :duo_enterprise].each_with_object({}) do |add_on_name, products|
       quantity = send(:"quantity_#{add_on_name}")
       next products if quantity <= 0
 
-      products[add_on_name] = [{ "quantity" => quantity }]
+      products[add_on_name] = [
+        {
+          "quantity" => quantity,
+          "started_on" => started_at.to_s,
+          "expires_on" => (started_at + 1.year).to_s,
+          "purchase_xid" => "#{add_on_name}_purchase",
+          "trial" => false
+        }
+      ]
     end
   end
 end
