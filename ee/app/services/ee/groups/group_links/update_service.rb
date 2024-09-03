@@ -18,7 +18,9 @@ module EE
 
         override :remove_unallowed_params
         def remove_unallowed_params
-          group_link_params.delete(:member_role_id) unless custom_role_for_group_link_enabled?(group_link.shared_group)
+          if group_link_params[:member_role_id] && !custom_role_for_group_link_enabled?(group_link.shared_group)
+            group_link_params.delete(:member_role_id)
+          end
 
           super
         end

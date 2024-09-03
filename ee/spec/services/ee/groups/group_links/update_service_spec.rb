@@ -7,7 +7,8 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
   let_it_be(:shared_with_group) { create(:group, :private) }
   let_it_be(:user) { create(:user, developer_of: group) }
 
-  let(:link) { create(:group_group_link, shared_group: group, shared_with_group: shared_with_group) }
+  let_it_be_with_reload(:link) { create(:group_group_link, shared_group: group, shared_with_group: shared_with_group) }
+
   let(:expiry_date) { 1.month.from_now.to_date }
   let(:group_link_params) { { group_access: Gitlab::Access::GUEST, expires_at: expiry_date } }
 
@@ -41,6 +42,8 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
 
   context 'when assigning a member role to group link' do
     let_it_be(:member_role) { create(:member_role, namespace: group) }
+
+    let_it_be(:link_with_member_role) { create(:group_group_link, shared_group: group, member_role_id: member_role.id) }
 
     let(:group_link_params) { { member_role_id: member_role.id } }
 
@@ -101,6 +104,16 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
 
         it 'does not assign member role to group link' do
           expect(update_service.member_role_id).to be_nil
+        end
+
+        context 'when un-assigning a member role to group link' do
+          let(:link) { link_with_member_role }
+          let(:group_link_params) { { group_access: Gitlab::Access::GUEST, member_role_id: nil } }
+
+          it 'un-assigns member role to group link' do
+            expect(update_service.member_role_id).to be_nil
+            expect(update_service.group_access).to eq(Gitlab::Access::GUEST)
+          end
         end
       end
     end
