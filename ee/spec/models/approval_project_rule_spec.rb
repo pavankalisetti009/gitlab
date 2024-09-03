@@ -466,7 +466,7 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
       end
 
       with_them do
-        subject(:rules) { create_list(:approval_project_rule, rules_count, report_type, :requires_approval, project: project, orchestration_policy_idx: 1, scanners: [:sast], severity_levels: [:high], vulnerability_states: [:confirmed], vulnerabilities_allowed: 2, security_orchestration_policy_configuration: security_orchestration_policy_configuration) }
+        subject(:rules) { create_list(:approval_project_rule, rules_count, report_type, :requires_approval, project: project, orchestration_policy_idx: 1, scanners: [:sast], severity_levels: [:high], vulnerability_states: [:confirmed], vulnerabilities_allowed: 2, security_orchestration_policy_configuration: security_orchestration_policy_configuration, approvals_required: 2) }
 
         it 'creates merge_request approval rules with correct attributes', :aggregate_failures do
           result = rules.map { |rule| rule.apply_report_approver_rules_to(merge_request) }
@@ -485,7 +485,36 @@ RSpec.describe ApprovalProjectRule, feature_category: :compliance_management do
             expect(result_rule.severity_levels).to contain_exactly('high')
             expect(result_rule.vulnerability_states).to contain_exactly('confirmed')
             expect(result_rule.vulnerabilities_allowed).to be 2
+            expect(result_rule.approvals_required).to be 2
             expect(result_rule.security_orchestration_policy_configuration.id).to be security_orchestration_policy_configuration.id
+          end
+        end
+
+        context 'when a block is given' do
+          it 'creates merge_request approval rules with correct attributes', :aggregate_failures do
+            result = rules.map do |rule|
+              rule.apply_report_approver_rules_to(merge_request) do |rule_attributes|
+                rule_attributes[:approvals_required] = 0
+              end
+            end
+
+            expect(merge_request.reload.approval_rules).to match_array(result)
+            expect(rules.count).to eq rules_count
+
+            result.each do |result_rule|
+              expect(result_rule.users).to match_array([user])
+              expect(result_rule.groups).to match_array([group])
+              expect(result_rule.name).to include(default_name)
+              expect(result_rule).to be_report_approver
+              expect(result_rule.report_type).to eq(report_type.to_s)
+              expect(result_rule.orchestration_policy_idx).to be 1
+              expect(result_rule.scanners).to contain_exactly('sast')
+              expect(result_rule.severity_levels).to contain_exactly('high')
+              expect(result_rule.vulnerability_states).to contain_exactly('confirmed')
+              expect(result_rule.vulnerabilities_allowed).to be 2
+              expect(result_rule.approvals_required).to be 0
+              expect(result_rule.security_orchestration_policy_configuration.id).to be security_orchestration_policy_configuration.id
+            end
           end
         end
       end
