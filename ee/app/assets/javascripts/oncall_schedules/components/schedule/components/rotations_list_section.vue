@@ -101,6 +101,7 @@ export default {
         :style="timelineStyles"
       >
         <current-day-indicator
+          data-testid="current-day-indicator"
           :preset-type="presetType"
           :timeframe-item="timeframe[0]"
           :timeline-width="2"
@@ -150,6 +151,7 @@ export default {
           data-testid="timeline-cell"
         >
           <current-day-indicator
+            data-testid="current-day-indicator-with-rotations"
             :preset-type="presetType"
             :timeframe-item="timeframe[0]"
             :timeline-width="2"
