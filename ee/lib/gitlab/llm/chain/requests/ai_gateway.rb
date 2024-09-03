@@ -39,7 +39,7 @@ module Gitlab
 
             response = ai_client.stream(
               endpoint: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
-              body: body(v2_chat_schema, prompt, options)
+              body: body(v2_chat_schema, prompt, options, unit_primitive: unit_primitive)
             ) do |data|
               yield data if block_given?
             end
@@ -93,11 +93,11 @@ module Gitlab
             end
           end
 
-          def body(v2_chat_schema, prompt, options)
+          def body(v2_chat_schema, prompt, options, unit_primitive: nil)
             if v2_chat_schema
               request_body_chat_2(prompt: prompt[:prompt], options: options)
             elsif options[:use_ai_gateway_agent_prompt]
-              request_body_agent(inputs: options[:inputs])
+              request_body_agent(inputs: options[:inputs], unit_primitive: unit_primitive)
             else
               request_body(prompt: prompt[:prompt], options: options)
             end
@@ -119,14 +119,16 @@ module Gitlab
             }
           end
 
-          def request_body_agent(inputs:)
+          def request_body_agent(inputs:, unit_primitive: nil)
             params = {
               stream: true,
               inputs: inputs
             }
 
-            if chat_feature_setting&.self_hosted?
-              self_hosted_model = chat_feature_setting.self_hosted_model
+            feature_setting = chat_feature_setting(unit_primitive: unit_primitive)
+
+            if feature_setting&.self_hosted?
+              self_hosted_model = feature_setting.self_hosted_model
 
               params[:model_metadata] = {
                 provider: self_hosted_model.provider,
@@ -140,21 +142,10 @@ module Gitlab
           end
 
           def model_params(options)
-            if chat_feature_setting&.self_hosted?
-              self_hosted_model = chat_feature_setting.self_hosted_model
-
-              {
-                provider: :litellm,
-                model: self_hosted_model.model,
-                model_endpoint: self_hosted_model.endpoint,
-                model_api_key: self_hosted_model.api_token
-              }
-            else
-              {
-                provider: provider(options),
-                model: model(options)
-              }
-            end
+            {
+              provider: provider(options),
+              model: model(options)
+            }
           end
 
           def request_body_chat_2(prompt:, options: {})
@@ -201,8 +192,18 @@ module Gitlab
             TRACKING_CLASS_NAMES.fetch(provider)
           end
 
-          def chat_feature_setting
-            ::Ai::FeatureSetting.find_by_feature(:duo_chat)
+          def chat_feature_setting(unit_primitive: nil)
+            unless Feature.enabled?(:ai_duo_chat_sub_features_settings) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+              return ::Ai::FeatureSetting.find_by_feature(:duo_chat)
+            end
+
+            feature_name = unit_primitive ? :"duo_chat_#{unit_primitive}" : :duo_chat
+            feature_setting = ::Ai::FeatureSetting.find_by_feature(feature_name)
+
+            # fallback to duo_chat if sub feature setting is not found
+            feature_setting ||= ::Ai::FeatureSetting.find_by_feature(:duo_chat)
+
+            feature_setting
           end
 
           def processed_service_name(service_name)

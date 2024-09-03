@@ -4,6 +4,27 @@ module Ai
   class FeatureSetting < ApplicationRecord
     self.table_name = "ai_feature_settings"
 
+    STABLE_FEATURES = {
+      code_generations: 0,
+      code_completions: 1,
+      duo_chat: 2
+    }.freeze
+
+    FLAGGED_FEATURES = {
+      duo_chat_issue_reader: 3,
+      duo_chat_gitlab_documentation: 4,
+      duo_chat_epic_reader: 5,
+      duo_chat_ci_editor_assistant: 6,
+      duo_chat_explain_code: 7,
+      duo_chat_write_tests: 8,
+      duo_chat_refactor_code: 9,
+      duo_chat_fix_code: 10,
+      duo_chat_explain_vulnerability: 11,
+      duo_chat_troubleshoot_job: 12,
+      duo_chat_summarize_comments: 13,
+      duo_chat_merge_request_reader: 14
+    }.freeze
+
     belongs_to :self_hosted_model, foreign_key: :ai_self_hosted_model_id, inverse_of: :feature_settings
 
     validates :self_hosted_model, presence: true, if: :self_hosted?
@@ -16,11 +37,7 @@ module Ai
       self_hosted: 2
     }, _default: :vendored
 
-    enum feature: {
-      code_generations: 0,
-      code_completions: 1,
-      duo_chat: 2
-    }
+    enum feature: STABLE_FEATURES.merge(FLAGGED_FEATURES)
 
     def self.code_suggestions_self_hosted?
       exists?(feature: [:code_generations, :code_completions], provider: :self_hosted)
@@ -32,6 +49,14 @@ module Ai
         vendored: s_('AdminAiPoweredFeatures|AI vendor'),
         self_hosted: s_('AdminAiPoweredFeatures|Self-hosted model')
       }.with_indifferent_access.freeze
+    end
+
+    def self.allowed_features
+      allowed_features = STABLE_FEATURES
+
+      allowed_features = allowed_features.merge(FLAGGED_FEATURES) if Feature.enabled?(:ai_duo_chat_sub_features_settings) # rubocop:disable Gitlab/FeatureFlagWithoutActor -- The feature flag is global
+
+      allowed_features.stringify_keys
     end
 
     def provider_title
