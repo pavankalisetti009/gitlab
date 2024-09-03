@@ -207,6 +207,8 @@ module EE
       has_many :observability_metrics, class_name: 'Observability::MetricsIssuesConnection'
       has_many :observability_traces, class_name: 'Observability::TracesIssuesConnection'
 
+      has_many :security_exclusions, class_name: 'Security::ProjectSecurityExclusion'
+
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
       elastic_index_dependant_association :work_items, on_change: :archived

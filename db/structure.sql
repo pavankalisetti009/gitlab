@@ -16597,6 +16597,29 @@ CREATE SEQUENCE project_secrets_managers_id_seq
 
 ALTER SEQUENCE project_secrets_managers_id_seq OWNED BY project_secrets_managers.id;
 
+CREATE TABLE project_security_exclusions (
+    id bigint NOT NULL,
+    project_id bigint NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    scanner smallint NOT NULL,
+    type smallint NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    description text,
+    value text NOT NULL,
+    CONSTRAINT check_3c70ee8804 CHECK ((char_length(description) <= 255)),
+    CONSTRAINT check_3e918b71ed CHECK ((char_length(value) <= 255))
+);
+
+CREATE SEQUENCE project_security_exclusions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+ALTER SEQUENCE project_security_exclusions_id_seq OWNED BY project_security_exclusions.id;
+
 CREATE TABLE project_security_settings (
     project_id bigint NOT NULL,
     created_at timestamp with time zone NOT NULL,
@@ -22077,6 +22100,8 @@ ALTER TABLE ONLY project_saved_replies ALTER COLUMN id SET DEFAULT nextval('proj
 
 ALTER TABLE ONLY project_secrets_managers ALTER COLUMN id SET DEFAULT nextval('project_secrets_managers_id_seq'::regclass);
 
+ALTER TABLE ONLY project_security_exclusions ALTER COLUMN id SET DEFAULT nextval('project_security_exclusions_id_seq'::regclass);
+
 ALTER TABLE ONLY project_security_settings ALTER COLUMN project_id SET DEFAULT nextval('project_security_settings_project_id_seq'::regclass);
 
 ALTER TABLE ONLY project_states ALTER COLUMN id SET DEFAULT nextval('project_states_id_seq'::regclass);
@@ -24644,6 +24669,9 @@ ALTER TABLE ONLY project_saved_replies
 
 ALTER TABLE ONLY project_secrets_managers
     ADD CONSTRAINT project_secrets_managers_pkey PRIMARY KEY (id);
+
+ALTER TABLE ONLY project_security_exclusions
+    ADD CONSTRAINT project_security_exclusions_pkey PRIMARY KEY (id);
 
 ALTER TABLE ONLY project_security_settings
     ADD CONSTRAINT project_security_settings_pkey PRIMARY KEY (project_id);
@@ -29627,6 +29655,8 @@ CREATE INDEX index_project_repository_storage_moves_on_project_id ON project_rep
 CREATE INDEX index_project_saved_replies_on_project_id ON project_saved_replies USING btree (project_id);
 
 CREATE UNIQUE INDEX index_project_secrets_managers_on_project_id ON project_secrets_managers USING btree (project_id);
+
+CREATE INDEX index_project_security_exclusions_on_project_id ON project_security_exclusions USING btree (project_id);
 
 CREATE INDEX index_project_settings_on_legacy_os_license_project_id ON project_settings USING btree (project_id) WHERE (legacy_open_source_license_available = true);
 
