@@ -1,5 +1,5 @@
 import { shallowMount } from '@vue/test-utils';
-import { GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlEmptyState, GlSprintf, GlLink, GlButton } from '@gitlab/ui';
 import EmptyState from 'ee/security_configuration/secret_detection/components/empty_state.vue';
 
 describe('EmptyState', () => {
@@ -15,6 +15,7 @@ describe('EmptyState', () => {
 
   const findComponent = () => wrapper.findComponent(GlEmptyState);
   const findLink = () => wrapper.findComponent(GlLink);
+  const findActionButton = () => wrapper.findComponent(GlButton);
 
   beforeEach(() => {
     createComponent();
@@ -28,14 +29,20 @@ describe('EmptyState', () => {
     expect(findComponent().props('title')).toBe('No exclusions yet');
   });
 
-  it('renders the correct primary button text', () => {
-    expect(findComponent().props('primaryButtonText')).toBe('Add exclusion');
-  });
-
   it('renders the documentation link in the description', () => {
     expect(findLink().exists()).toBe(true);
     expect(findLink().attributes('href')).toBe(
       '/help/user/application_security/secret_detection/index',
     );
+  });
+
+  it('renders the primary action button', () => {
+    expect(findActionButton().exists()).toBe(true);
+    expect(findActionButton().text()).toBe('Add exclusion');
+  });
+
+  it('emits primaryAction when the primary button is clicked', async () => {
+    await findActionButton().vm.$emit('click');
+    expect(wrapper.emitted('primaryAction')).toHaveLength(1);
   });
 });

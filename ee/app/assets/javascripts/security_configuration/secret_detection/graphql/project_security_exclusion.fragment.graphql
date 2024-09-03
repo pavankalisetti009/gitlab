@@ -1,8 +1,8 @@
 fragment ProjectSecurityExclusionFragment on ProjectSecurityExclusion {
   id
-  scanner
   type
-  active
-  description
   value
+  description
+  scanner
+  active
 }

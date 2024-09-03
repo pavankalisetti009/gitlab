@@ -1,5 +1,5 @@
 <script>
-import { GlEmptyState, GlSprintf, GlLink } from '@gitlab/ui';
+import { GlEmptyState, GlSprintf, GlLink, GlButton } from '@gitlab/ui';
 import emptyStateSvgPath from '@gitlab/svgs/dist/illustrations/empty-state/empty-secure-md.svg?url';
 import { s__ } from '~/locale';
 import { helpPagePath } from '~/helpers/help_page_helper';
@@ -9,6 +9,12 @@ export default {
     GlEmptyState,
     GlSprintf,
     GlLink,
+    GlButton,
+  },
+  methods: {
+    handlePrimaryButtonAction() {
+      this.$emit('primaryAction');
+    },
   },
   emptyStateSvgPath,
   learnMoreLink: helpPagePath('user/application_security/secret_detection/index'),
@@ -23,12 +29,7 @@ export default {
 </script>
 
 <template>
-  <gl-empty-state
-    :title="$options.i18n.emptyStateTitle"
-    :svg-path="$options.emptyStateSvgPath"
-    :primary-button-text="$options.i18n.primaryButtonText"
-    primary-button-link="#"
-  >
+  <gl-empty-state :title="$options.i18n.emptyStateTitle" :svg-path="$options.emptyStateSvgPath">
     <template #description>
       <span class="gl-text-lg gl-leading-24">
         <gl-sprintf :message="$options.i18n.emptyStateDescription">
@@ -37,6 +38,12 @@ export default {
           </template>
         </gl-sprintf>
       </span>
+    </template>
+
+    <template #actions>
+      <gl-button variant="confirm" class="gl-mt-3" @click="handlePrimaryButtonAction">
+        {{ $options.i18n.primaryButtonText }}
+      </gl-button>
     </template>
   </gl-empty-state>
 </template>
