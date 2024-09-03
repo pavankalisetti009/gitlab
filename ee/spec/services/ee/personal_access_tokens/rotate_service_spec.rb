@@ -13,15 +13,15 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
     let_it_be(:service_account) { create(:user, :service_account) }
     let_it_be(:service_token, reload: true) { create(:personal_access_token, user: service_account) }
 
-    context 'when expires_at is nil' do
+    context 'when expires_at is nil', time_travel_to: '2024-08-24' do
       let(:params) { { expires_at: nil } }
 
       subject(:response) { described_class.new(service_account, service_token, nil, params).execute }
 
       where(:require_token_expiry, :require_token_expiry_for_service_accounts, :expires_at) do
-        true | true | described_class::EXPIRATION_PERIOD.from_now.to_date
+        true | true | Date.new(2024, 8, 31) # 1 week from now
         true | false | nil
-        false | true | described_class::EXPIRATION_PERIOD.from_now.to_date
+        false | true | Date.new(2024, 8, 31) # 1 week from now
         false | false | nil
       end
 
@@ -33,7 +33,7 @@ RSpec.describe PersonalAccessTokens::RotateService, feature_category: :system_ac
             service_access_tokens_expiration_enforced: require_token_expiry_for_service_accounts)
         end
 
-        it "rotates user's own token", :freeze_time do
+        it "rotates user's own token" do
           expect(response).to be_success
 
           new_token = response.payload[:personal_access_token]
