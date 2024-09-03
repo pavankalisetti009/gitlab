@@ -871,7 +871,7 @@ table.code {
   ul.notes {
     li.toggle-replies-widget,
     .discussion-reply-holder {
-      margin-left: 2.5rem;
+      margin-left: $note-spacing-left;
 
       &[aria-expanded="false"] {
         @apply gl-border-b;
