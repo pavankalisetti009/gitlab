@@ -26759,6 +26759,8 @@ CREATE INDEX idx_streaming_headers_on_external_audit_event_destination_id ON aud
 
 CREATE INDEX idx_streaming_instance_namespace_filters_on_namespace_id ON audit_events_streaming_instance_namespace_filters USING btree (namespace_id);
 
+CREATE INDEX idx_subscription_add_on_purchases_on_started_on_and_expires_on ON subscription_add_on_purchases USING btree (started_at, expires_on);
+
 CREATE INDEX idx_test_reports_on_issue_id_created_at_and_id ON requirements_management_test_reports USING btree (issue_id, created_at, id);
 
 CREATE UNIQUE INDEX idx_uniq_analytics_dashboards_pointers_on_project_id ON analytics_dashboards_pointers USING btree (project_id);

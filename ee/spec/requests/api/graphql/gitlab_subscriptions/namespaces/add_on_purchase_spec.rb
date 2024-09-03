@@ -105,11 +105,19 @@ RSpec.describe 'Query.namespace.addOnPurchase', feature_category: :seat_cost_man
     it_behaves_like 'empty response'
   end
 
+  context 'when add_on_purchase is future dated' do
+    before do
+      add_on_purchase.update!(started_at: 1.day.from_now)
+    end
+
+    it_behaves_like 'empty response'
+  end
+
   context 'when expires_on date is today' do
     before do
       add_on_purchase.update!(expires_on: Date.current)
     end
 
-    it_behaves_like 'success response'
+    it_behaves_like 'empty response'
   end
 end
