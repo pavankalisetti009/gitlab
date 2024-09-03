@@ -2442,6 +2442,15 @@
   :weight: 1
   :idempotent: true
   :tags: []
+- :name: users_experimental_communication_opt_in
+  :worker_name: Users::ExperimentalCommunicationOptInWorker
+  :feature_category: :integrations
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: vulnerabilities_mark_dropped_as_resolved
   :worker_name: Vulnerabilities::MarkDroppedAsResolvedWorker
   :feature_category: :static_application_security_testing

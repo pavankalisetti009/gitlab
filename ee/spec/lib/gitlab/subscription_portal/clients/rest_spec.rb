@@ -182,6 +182,17 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
 
+  describe '#opt_in_lead' do
+    subject do
+      client.opt_in_lead({})
+    end
+
+    it_behaves_like 'when response is successful'
+    it_behaves_like 'when response code is 422'
+    it_behaves_like 'when response code is 500'
+    it_behaves_like 'when http call raises an exception'
+  end
+
   describe '#create_subscription' do
     let(:headers) do
       {
