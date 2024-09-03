@@ -21,10 +21,11 @@ module EE
         use_clickhouse_for_analytics: [:boolean, { default: false }]
 
       jsonb_accessor :zoekt_settings,
-        zoekt_auto_index_root_namespace: [:boolean, { default: false }],
         zoekt_indexing_enabled: [:boolean, { default: false }],
         zoekt_indexing_paused: [:boolean, { default: false }],
-        zoekt_search_enabled: [:boolean, { default: false }]
+        zoekt_search_enabled: [:boolean, { default: false }],
+        zoekt_auto_index_root_namespace: [:boolean, { default: false }],
+        zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }]
 
       jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
 
@@ -200,6 +201,7 @@ module EE
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
+      validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
 
       validates :security_policy_scheduled_scans_max_concurrency,
         presence: true,

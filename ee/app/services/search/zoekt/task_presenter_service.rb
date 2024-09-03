@@ -3,9 +3,6 @@
 module Search
   module Zoekt
     class TaskPresenterService
-      DEFAULT_LIMIT = 20
-      MAX_LIMIT = 200
-
       attr_reader :node, :concurrency_limit
 
       def self.execute(...)
@@ -14,7 +11,7 @@ module Search
 
       def initialize(node)
         @node = node
-        @concurrency_limit = get_concurrency_limit(node: node)
+        @concurrency_limit = node.concurrency_limit
       end
 
       def execute
@@ -25,17 +22,6 @@ module Search
             payload << TaskSerializerService.execute(task)
           end
         end
-      end
-
-      private
-
-      def get_concurrency_limit(node:)
-        # concurrency override is going to become a setting https://gitlab.com/gitlab-org/gitlab/-/issues/478595
-        concurrency = node.metadata['concurrency_override'] || node.metadata['concurrency']
-
-        return DEFAULT_LIMIT if concurrency.to_i == 0
-
-        concurrency.clamp(0, MAX_LIMIT)
       end
     end
   end

@@ -13,8 +13,11 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
     end
 
     it 'contains zoekt parameters' do
-      expect(visible_attributes).to include(*%i[zoekt_auto_index_root_namespace zoekt_indexing_enabled zoekt_indexing_paused
-        zoekt_search_enabled])
+      expected_fields = %i[
+        zoekt_auto_index_root_namespace zoekt_indexing_enabled
+        zoekt_indexing_paused zoekt_search_enabled zoekt_cpu_to_tasks_ratio
+      ]
+      expect(visible_attributes).to include(*expected_fields)
     end
 
     context 'when identity verification is enabled' do
@@ -210,6 +213,23 @@ RSpec.describe EE::ApplicationSettingsHelper, feature_category: :shared do
         expect(result[1]).to have_checked_field('Enable indexing for exact code search', with: 1)
         expect(result[2]).not_to have_checked_field('Pause indexing for exact code search', with: 1)
         expect(result[3]).to have_checked_field('Enable exact code search', with: 1)
+      end
+    end
+  end
+
+  describe '#zoekt_settings_inputs', feature_category: :global_search do
+    let_it_be(:application_setting) { build(:application_setting) }
+
+    before do
+      application_setting.zoekt_cpu_to_tasks_ratio = 1.5
+      helper.instance_variable_set(:@application_setting, application_setting)
+    end
+
+    it 'returns correct inputs' do
+      helper.gitlab_ui_form_for(application_setting, url: advanced_search_admin_application_settings_path) do |form|
+        result = helper.zoekt_settings_inputs(form)
+        expect(result[0]).to have_selector('label', text: 'Indexing CPU to tasks multiplier')
+        expect(result[1]).to have_selector('input[type="number"][name="application_setting[zoekt_cpu_to_tasks_ratio]"][value="1.5"]')
       end
     end
   end

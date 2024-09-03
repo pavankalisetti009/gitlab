@@ -76,6 +76,7 @@ module EE
         :lock_duo_features_enabled,
         :duo_availability,
         :zoekt_auto_index_root_namespace,
+        :zoekt_cpu_to_tasks_ratio,
         :zoekt_indexing_enabled,
         :zoekt_indexing_paused,
         :zoekt_search_enabled,
@@ -264,6 +265,21 @@ module EE
           checkbox_options: { checked: @application_setting.zoekt_search_enabled, multiple: false }
         )
       ]
+    end
+
+    def zoekt_settings_inputs(form)
+      [
+        [
+          form.label(:zoekt_cpu_to_tasks_ratio, _('Indexing CPU to tasks multiplier'),
+            class: 'label-bold'),
+          form.number_field(
+            :zoekt_cpu_to_tasks_ratio,
+            step: 0.1,
+            value: @application_setting.zoekt_cpu_to_tasks_ratio,
+            class: 'form-control gl-form-input'
+          )
+        ]
+      ].flatten
     end
 
     private
