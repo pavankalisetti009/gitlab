@@ -91,20 +91,23 @@ RSpec.shared_examples 'provision service updates the existing add-on purchase' d
         {
           add_on_purchase: add_on_purchase,
           quantity: quantity,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: subscription_name
+          started_on: starts_at,
+          expires_on: starts_at + 1.year,
+          purchase_xid: purchase_xid,
+          trial: false
         }
       ).and_call_original
 
     expect { result }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
-    expect(current_license.block_changes_at).to eq(current_license.expires_at + 14.days)
     expect(result[:status]).to eq(:success)
     expect(result[:add_on_purchase]).to have_attributes(
       id: add_on_purchase.id,
+      started_at: starts_at,
+      expires_on: starts_at + 1.year,
       quantity: quantity,
-      expires_on: current_license.block_changes_at,
-      purchase_xid: subscription_name
+      purchase_xid: purchase_xid,
+      trial: false
     )
   end
 end

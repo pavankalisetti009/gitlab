@@ -22,9 +22,9 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
       end
     end
 
+    let(:start_date) { Date.current }
+    let(:trial) { false }
     let(:restrictions) do
-      start_date = Date.current
-
       {
         add_on_products: {
           "duo_pro" => [
@@ -33,7 +33,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
               "started_on" => start_date.to_s,
               "expires_on" => (start_date + 1.year).to_s,
               "purchase_xid" => "C-0000001",
-              "trial" => false
+              "trial" => trial
             }
           ]
         }
@@ -63,7 +63,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
     describe "#add_on" do
       it { expect { add_on_license_base.add_on }.to raise_error described_class::MethodNotImplementedError }
 
-      it { expect(add_on_license.add_on).to eq add_on }
+      it { expect(add_on_license.add_on).to eq(add_on) }
 
       context "without existing add-on" do
         let(:add_on) { nil }
@@ -72,6 +72,64 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
           expect { add_on_license.add_on }.to change { GitlabSubscriptions::AddOn.count }.from(0).to(1)
           expect(GitlabSubscriptions::AddOn.first).to be_code_suggestions
         end
+      end
+    end
+
+    describe "#starts_at" do
+      it { expect { add_on_license_base.starts_at }.to raise_error described_class::MethodNotImplementedError }
+
+      it { expect(add_on_license.starts_at).to eq(start_date) }
+
+      context 'without add-on info' do
+        let(:restrictions) do
+          { add_on_products: {} }
+        end
+
+        it { expect(add_on_license.starts_at).to be_nil }
+      end
+    end
+
+    describe "#expires_on" do
+      it { expect { add_on_license_base.expires_on }.to raise_error described_class::MethodNotImplementedError }
+
+      it { expect(add_on_license.expires_on).to eq(start_date + 1.year) }
+
+      context 'without add-on info' do
+        let(:restrictions) do
+          { add_on_products: {} }
+        end
+
+        it { expect(add_on_license.expires_on).to be_nil }
+      end
+    end
+
+    describe "#purchase_xid" do
+      it { expect { add_on_license_base.purchase_xid }.to raise_error described_class::MethodNotImplementedError }
+
+      it { expect(add_on_license.purchase_xid).to eq("C-0000001") }
+
+      context 'without add-on info' do
+        let(:restrictions) do
+          { add_on_products: {} }
+        end
+
+        it { expect(add_on_license.purchase_xid).to be_nil }
+      end
+    end
+
+    describe "#trial?" do
+      let(:trial) { true }
+
+      it { expect { add_on_license_base.trial? }.to raise_error described_class::MethodNotImplementedError }
+
+      it { expect(add_on_license).to be_trial }
+
+      context 'without add-on info' do
+        let(:restrictions) do
+          { add_on_products: {} }
+        end
+
+        it { expect(add_on_license).not_to be_trial }
       end
     end
   end

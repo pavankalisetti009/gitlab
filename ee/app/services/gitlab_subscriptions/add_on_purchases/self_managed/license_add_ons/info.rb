@@ -17,6 +17,14 @@ module GitlabSubscriptions
             @trial = trial
           end
 
+          def active?
+            return false if started_on.blank? || expires_on.blank?
+
+            today = Date.current
+
+            started_on <= today && today < expires_on
+          end
+
           private
 
           def convert_date(date)
