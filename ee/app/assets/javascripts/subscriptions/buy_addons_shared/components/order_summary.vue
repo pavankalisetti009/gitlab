@@ -38,6 +38,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     state: {
       query: stateQuery,
       manual: true,
@@ -48,6 +49,7 @@ export default {
         this.selectedNamespaceId = data.selectedNamespaceId;
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     orderPreview: {
       client: CUSTOMERSDOT_CLIENT,
       query: orderPreviewQuery,

@@ -42,6 +42,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     topProjects: {
       query: RunnerUsageByProjectQuery,
       variables() {
@@ -54,6 +55,7 @@ export default {
         return [{ project: null, ciMinutesUsed: null }];
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     topRunners: {
       query: RunnerUsageQuery,
       variables() {

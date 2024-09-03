@@ -128,6 +128,7 @@ export default {
   unassignSeatsBulkAction: UNASSIGN_SEATS_BULK_ACTION,
   avatarSize: 32,
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     subscriptionPermissions: {
       query: getSubscriptionPermissionsData,
       client: 'customersDotClient',

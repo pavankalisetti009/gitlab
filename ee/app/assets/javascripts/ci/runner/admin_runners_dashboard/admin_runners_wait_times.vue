@@ -14,6 +14,7 @@ export default {
     RunnerWaitTimes,
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimes: {
       query: runnerWaitTimesQuery,
       update({ runners }) {
@@ -23,6 +24,7 @@ export default {
         this.handlerError(error);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     waitTimeHistory: {
       query: runnerWaitTimeHistoryQuery,
       skip() {

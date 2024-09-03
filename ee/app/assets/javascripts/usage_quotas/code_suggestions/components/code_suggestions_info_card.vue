@@ -156,6 +156,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     subscription: {
       query: getGitlabSubscriptionQuery,
       variables() {
@@ -170,6 +171,7 @@ export default {
         Sentry.captureException(error);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     subscriptionPermissions: {
       query: getSubscriptionPermissionsData,
       client: 'customersDotClient',

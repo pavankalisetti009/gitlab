@@ -12,6 +12,7 @@ import aiCommitMessageMutation from '../queries/ai_commit_message.mutation.graph
 export default {
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       testFile: {
         query: aiResponseSubscription,
         variables() {

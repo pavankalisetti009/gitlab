@@ -21,6 +21,7 @@ export default {
   inject: ['projectId', 'sourceBranch', 'targetBranch'],
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         variables() {

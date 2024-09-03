@@ -13,6 +13,7 @@ export default {
   },
   inject: ['config'],
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     containerScanningData: {
       query: getProjectContainerScanning,
       variables() {

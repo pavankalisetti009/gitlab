@@ -49,6 +49,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     groupDoraPerformanceScoreCounts: {
       query: groupDoraPerformanceScoreCountsQuery,
       variables() {

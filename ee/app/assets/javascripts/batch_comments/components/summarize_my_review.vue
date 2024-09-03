@@ -12,6 +12,7 @@ import aiSummarizeReviewMutation from '../graphql/summarize_review.mutation.grap
 export default {
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       summarizeReview: {
         query: aiResponseSubscription,
         variables() {

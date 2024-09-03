@@ -42,6 +42,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     group: {
       query: getGroupTestCoverage,
       variables() {
