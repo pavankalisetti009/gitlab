@@ -25,7 +25,7 @@ module Gitlab
         end
 
         def clean_prefix(text)
-          text&.lstrip&.delete_prefix(': ')&.delete_prefix('Answer: ')
+          text&.lstrip&.delete_prefix(': ')&.delete_prefix('Answer: ')&.delete_prefix('Final Answer: ')
         end
       end
     end
