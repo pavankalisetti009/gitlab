@@ -5,8 +5,6 @@ module Search
     SCOPES_ADVANCED_SEARCH_ALWAYS_ENABLED = %w[users].freeze
 
     def use_elasticsearch?
-      return false if params[:basic_search]
-
       ::Gitlab::CurrentSettings.search_using_elasticsearch?(scope: elasticsearchable_scope)
     end
 

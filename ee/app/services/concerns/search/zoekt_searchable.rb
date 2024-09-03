@@ -5,7 +5,7 @@ module Search
     def use_zoekt?
       # TODO: rename to search_code_with_zoekt?
       # https://gitlab.com/gitlab-org/gitlab/-/issues/421619
-      return false if params[:basic_search] || skip_api?
+      return false if skip_api?
       return false unless ::Search::Zoekt.enabled_for_user?(current_user) && zoekt_searchable_scope?
       return false if Feature.enabled?(:disable_zoekt_search_for_saas, root_ancestor)
 

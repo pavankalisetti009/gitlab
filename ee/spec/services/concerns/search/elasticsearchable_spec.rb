@@ -33,14 +33,6 @@ RSpec.describe Search::Elasticsearchable, feature_category: :global_search do
         allow(Gitlab::CurrentSettings).to receive(:search_using_elasticsearch?).and_return(true)
       end
 
-      context 'when basic_search param is passed in' do
-        let(:params) { { basic_search: true } }
-
-        it 'is false' do
-          expect(class_instance).not_to be_use_elasticsearch
-        end
-      end
-
       context 'when scope is epics' do
         let(:params) { { scope: 'epics' } }
 
