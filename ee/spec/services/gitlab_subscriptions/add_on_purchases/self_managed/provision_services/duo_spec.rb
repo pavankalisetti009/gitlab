@@ -46,6 +46,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
     context 'with Duo Pro' do
       let(:quantity_duo_pro) { 1 }
 
+      context 'with a trial' do
+        let!(:current_license) do
+          create_current_license(
+            cloud_licensing_enabled: true,
+            restrictions: {
+              add_on_products: add_on_products(started_at: started_at, trial: true),
+              subscription_name: 'A-S00000001'
+            }
+          )
+        end
+
+        it 'creates a new Duo Pro add-on purchase' do
+          expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
+
+          expect(GitlabSubscriptions::AddOnPurchase.count).to eq(1)
+          expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
+            subscription_add_on_id: add_on_duo_pro.id,
+            quantity: quantity_duo_pro,
+            started_at: started_at,
+            expires_on: started_at + 1.year,
+            purchase_xid: 'duo_pro_purchase',
+            trial: true
+          )
+        end
+      end
+
       it 'creates a new Duo Pro add-on purchase' do
         expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
 
@@ -53,8 +79,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_pro.id,
           quantity: quantity_duo_pro,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_pro_purchase',
+          trial: false
         )
       end
     end
@@ -71,6 +99,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
       let(:quantity_duo_pro) { 2 }
 
+      context 'with a trial' do
+        let!(:current_license) do
+          create_current_license(
+            cloud_licensing_enabled: true,
+            restrictions: {
+              add_on_products: add_on_products(started_at: started_at, trial: true),
+              subscription_name: 'A-S00000001'
+            }
+          )
+        end
+
+        it 'updates quantity of existing add-on purchase' do
+          expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
+
+          expect(GitlabSubscriptions::AddOnPurchase.count).to eq(1)
+          expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
+            subscription_add_on_id: add_on_duo_pro.id,
+            quantity: quantity_duo_pro,
+            started_at: started_at,
+            expires_on: started_at + 1.year,
+            purchase_xid: 'duo_pro_purchase',
+            trial: true
+          )
+        end
+      end
+
       it 'updates quantity of existing add-on purchase' do
         expect { provision_service.execute }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(0)
 
@@ -78,8 +132,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_pro.id,
           quantity: quantity_duo_pro,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_pro_purchase',
+          trial: false
         )
       end
     end
@@ -104,8 +160,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_enterprise.id,
           quantity: quantity_duo_enterprise,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_enterprise_purchase',
+          trial: false
         )
       end
     end
@@ -120,8 +178,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_enterprise.id,
           quantity: quantity_duo_enterprise,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_enterprise_purchase',
+          trial: false
         )
       end
     end
@@ -145,8 +205,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_enterprise.id,
           quantity: quantity_duo_enterprise,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_enterprise_purchase',
+          trial: false
         )
       end
     end
@@ -171,8 +233,10 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
         expect(GitlabSubscriptions::AddOnPurchase.first).to have_attributes(
           subscription_add_on_id: add_on_duo_pro.id,
           quantity: quantity_duo_pro,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: 'A-S00000001'
+          started_at: started_at,
+          expires_on: started_at + 1.year,
+          purchase_xid: 'duo_pro_purchase',
+          trial: false
         )
       end
     end
@@ -180,7 +244,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
 
   private
 
-  def add_on_products(started_at:)
+  def add_on_products(started_at:, trial: false)
     [:duo_pro, :duo_enterprise].each_with_object({}) do |add_on_name, products|
       quantity = send(:"quantity_#{add_on_name}")
       next products if quantity <= 0
@@ -191,7 +255,7 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::ProvisionServic
           "started_on" => started_at.to_s,
           "expires_on" => (started_at + 1.year).to_s,
           "purchase_xid" => "#{add_on_name}_purchase",
-          "trial" => false
+          "trial" => trial
         }
       ]
     end

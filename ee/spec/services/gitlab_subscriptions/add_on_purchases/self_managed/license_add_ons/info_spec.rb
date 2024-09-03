@@ -105,4 +105,56 @@ RSpec.describe GitlabSubscriptions::AddOnPurchases::SelfManaged::LicenseAddOns::
       end
     end
   end
+
+  describe '#active?' do
+    subject(:active?) { described_class.new(**attributes).active? }
+
+    let(:attributes) do
+      {
+        quantity: quantity,
+        started_on: started_on,
+        expires_on: expires_on,
+        purchase_xid: purchase_xid,
+        trial: trial
+      }
+    end
+
+    context 'when started_on is blank' do
+      let(:started_on) { nil }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when expires_on is blank' do
+      let(:expires_on) { nil }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when started_on is today' do
+      let(:started_on) { Date.current }
+
+      it { is_expected.to be(true) }
+    end
+
+    context 'when started_on is in the future' do
+      let(:started_on) { Date.current + 1.day }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when expires_on is in the past' do
+      let(:expires_on) { Date.current - 1.day }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when expires_on is today' do
+      let(:expires_on) { Date.current }
+
+      it { is_expected.to be(false) }
+    end
+
+    it { is_expected.to be(true) }
+  end
 end

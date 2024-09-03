@@ -30,6 +30,26 @@ module GitlabSubscriptions
           end
           strong_memoize_attr :add_on
 
+          def starts_at
+            add_ons_info.filter_map(&:started_on).min
+          end
+          strong_memoize_attr :starts_at
+
+          def expires_on
+            add_ons_info.filter_map(&:expires_on).max
+          end
+          strong_memoize_attr :expires_on
+
+          def purchase_xid
+            add_ons_info.filter_map(&:purchase_xid).first
+          end
+          strong_memoize_attr :purchase_xid
+
+          def trial?
+            add_ons_info.map(&:trial).uniq == [true]
+          end
+          strong_memoize_attr :trial?
+
           private
 
           def name
@@ -48,7 +68,7 @@ module GitlabSubscriptions
               attributes = info_hash.slice(:quantity, :started_on, :expires_on, :purchase_xid, :trial)
 
               Info.new(**attributes)
-            end
+            end.filter(&:active?)
           end
           strong_memoize_attr :add_ons_info
 
