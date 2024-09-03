@@ -40,7 +40,7 @@ export default ({ queryAlias, startDate = null, endDate = null, isProject = fals
   );
 
   return gql`
-    query get${queryAlias}($fullPath: ID!, $assigneeUsernames: [String!], $authorUsername: String, $milestoneTitle: String, $labelNames: [String!], $epicId: ID, $iterationId: ID, $myReactionEmoji: String, $weight: Int, $not: NegatedValueStreamAnalyticsIssueFilterInput) {
+    query get${queryAlias}($fullPath: ID!, $assigneeUsernames: [String!], $authorUsername: String, $milestoneTitle: String, $labelNames: [String!], $epicId: ID, $iterationId: ID, $myReactionEmoji: String, $weight: Int, $not: NegatedValueStreamAnalyticsIssuableFilterInput) {
       namespace: ${isProject ? 'project' : 'group'}(fullPath: $fullPath) {
         id
         ${queryAlias}: flowMetrics {
