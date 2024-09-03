@@ -34288,6 +34288,7 @@ Represents the location of a vulnerability found by a container security scan.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="vulnerabilitylocationcontainerscanningcontainerrepositoryurl"></a>`containerRepositoryUrl` | [`String`](#string) | URL of scanned image. |
 | <a id="vulnerabilitylocationcontainerscanningdependency"></a>`dependency` | [`VulnerableDependency`](#vulnerabledependency) | Dependency containing the vulnerability. |
 | <a id="vulnerabilitylocationcontainerscanningimage"></a>`image` | [`String`](#string) | Name of the vulnerable container image. |
 | <a id="vulnerabilitylocationcontainerscanningoperatingsystem"></a>`operatingSystem` | [`String`](#string) | Operating system that runs on the vulnerable container image. |
