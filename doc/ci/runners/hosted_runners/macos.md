@@ -130,21 +130,21 @@ To [configure caching](../../../ci/caching/index.md) for your project:
 
 1. Add the `cache` configuration to your `.gitlab-ci.yml` file:
 
-    ```yaml
-    cache:
-      key:
-        files:
-         - Podfile.lock
-    paths:
-      - Pods
-    ```
+   ```yaml
+   cache:
+     key:
+       files:
+        - Podfile.lock
+   paths:
+     - Pods
+   ```
 
 1. Add the [`cocoapods-check`](https://guides.cocoapods.org/plugins/optimising-ci-times.html) plugin to your project.
 1. Update the job script to check for installed dependencies before it calls `pod install`:
 
-    ```shell
-    bundle exec pod check || bundle exec pod install
-    ```
+   ```shell
+   bundle exec pod check || bundle exec pod install
+   ```
 
 **Include pods in source control**
 
