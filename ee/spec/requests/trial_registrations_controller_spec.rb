@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboarding do
+RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, feature_category: :onboarding do
   include FullNameHelper
 
   describe 'GET new' do

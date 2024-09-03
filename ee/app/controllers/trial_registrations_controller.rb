@@ -59,7 +59,9 @@ class TrialRegistrationsController < RegistrationsController
 
   override :resource
   def resource
-    @resource ||= Users::AuthorizedBuildService.new(current_user, sign_up_params).execute
+    @resource ||= Users::AuthorizedBuildService.new(
+      current_user, sign_up_params.merge(organization_id: Current.organization_id)
+    ).execute
   end
 
   override :preregistration_tracking_label

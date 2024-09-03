@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Sign up with trial from external site without confirmation', :saas, :js,
+RSpec.describe 'Sign up with trial from external site without confirmation', :saas, :js, :with_default_organization,
   feature_category: :onboarding do
   include SaasRegistrationHelpers
 

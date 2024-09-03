@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Signup on EE', :js, feature_category: :user_profile do
+RSpec.describe 'Signup on EE', :with_current_organization, :js, feature_category: :user_profile do
   let(:new_user) { build_stubbed(:user) }
 
   before do

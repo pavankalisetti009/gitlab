@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Start trial from external site without confirmation', :saas, :js, feature_category: :onboarding do
+RSpec.describe 'Start trial from external site without confirmation', :with_default_organization, :saas, :js, feature_category: :onboarding do
   include SaasRegistrationHelpers
 
   let_it_be(:glm_params) do

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RegistrationsController, feature_category: :system_access do
+RSpec.describe RegistrationsController, :with_current_organization, feature_category: :system_access do
   let(:member) { nil }
 
   shared_examples 'an unrestricted IP address' do
