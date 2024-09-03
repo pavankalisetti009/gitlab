@@ -25,7 +25,11 @@ module GitlabSubscriptions
       presence: true,
       length: { maximum: 255 }
 
-    scope :active, -> { where('expires_on >= ?', Date.current) }
+    scope :active, -> {
+      today = Date.current
+
+      where('started_at IS NULL OR started_at <= ?', today).where('? < expires_on', today)
+    }
     scope :ready_for_cleanup, -> { where('expires_on < ?', CLEANUP_DELAY_PERIOD.ago.to_date) }
     scope :trial, -> { where(trial: true) }
     scope :by_add_on_name, ->(name) { joins(:add_on).where(add_on: { name: name }) }
@@ -77,11 +81,13 @@ module GitlabSubscriptions
     end
 
     def active?
-      expires_on >= Date.current
+      today = Date.current
+
+      (started_at.nil? || started_at <= today) && today < expires_on
     end
 
     def expired?
-      !active?
+      expires_on <= Date.current
     end
 
     def delete_ineligible_user_assignments_in_batches!(batch_size: 50)
