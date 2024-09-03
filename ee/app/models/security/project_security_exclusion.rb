@@ -11,5 +11,6 @@ module Security
 
     validates :scanner, :type, :value, :project, presence: true
     validates :active, inclusion: { in: [true, false] }
+    validates :value, :description, length: { maximum: 255 }
   end
 end

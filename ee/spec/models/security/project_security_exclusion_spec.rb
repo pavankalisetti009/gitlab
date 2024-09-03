@@ -10,8 +10,10 @@ RSpec.describe Security::ProjectSecurityExclusion, feature_category: :secret_det
   describe 'validations' do
     it { is_expected.to validate_presence_of(:scanner) }
     it { is_expected.to validate_presence_of(:type) }
-    it { is_expected.to validate_presence_of(:value) }
     it { is_expected.to allow_value(true, false).for(:active) }
+    it { is_expected.to validate_presence_of(:value) }
+    it { is_expected.to validate_length_of(:value).is_at_most(255) }
+    it { is_expected.to validate_length_of(:description).is_at_most(255) }
   end
 
   describe 'enums' do

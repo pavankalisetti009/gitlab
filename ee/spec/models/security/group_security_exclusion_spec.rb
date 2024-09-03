@@ -11,6 +11,8 @@ RSpec.describe Security::GroupSecurityExclusion, feature_category: :secret_detec
     it { is_expected.to validate_presence_of(:scanner) }
     it { is_expected.to validate_presence_of(:type) }
     it { is_expected.to validate_presence_of(:value) }
+    it { is_expected.to validate_length_of(:value).is_at_most(255) }
+    it { is_expected.to validate_length_of(:description).is_at_most(255) }
     it { is_expected.to allow_value(true, false).for(:active) }
   end
 
