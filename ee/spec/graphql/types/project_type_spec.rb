@@ -416,6 +416,49 @@ RSpec.describe GitlabSchema.types['Project'] do
     end
   end
 
+  describe 'security_policy_project_linked_groups', feature_category: :security_policy_management do
+    let(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: namespace, security_policy_management_project: security_policy_management_project) }
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{security_policy_management_project.full_path}") {
+            securityPolicyProjectLinkedGroups {
+              nodes {
+                name
+                fullPath
+              }
+            }
+          }
+        }
+      )
+    end
+
+    let(:policy_yaml) { Gitlab::Config::Loader::Yaml.new(fixture_file('security_orchestration.yml', dir: 'ee')).load! }
+
+    subject { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    before do
+      allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |policy|
+        allow(policy).to receive(:policy_configuration_valid?).and_return(true)
+        allow(policy).to receive(:policy_hash).and_return(policy_yaml)
+        allow(policy).to receive(:policy_last_updated_at).and_return(Time.now)
+      end
+
+      stub_licensed_features(security_orchestration_policies: true)
+      policy_configuration.security_policy_management_project.add_maintainer(user)
+      namespace.add_developer(user)
+    end
+
+    it 'returns the associated security policy project' do
+      result = subject.dig('data', 'project', 'securityPolicyProjectLinkedGroups', 'nodes', 0)
+
+      expect(result).to eq(
+        'name' => namespace.name,
+        'fullPath' => namespace.full_path
+      )
+    end
+  end
+
   describe 'dora field' do
     subject { described_class.fields['dora'] }
 

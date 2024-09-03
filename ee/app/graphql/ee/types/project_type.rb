@@ -215,7 +215,13 @@ module EE
         field :security_policy_project_linked_namespaces,
           ::Types::NamespaceType.connection_type,
           null: true,
-          description: 'Namespaces linked to the project, when used as Security Policy Project.'
+          description: 'Namespaces linked to the project, when used as Security Policy Project.',
+          deprecated: { reason: :renamed, replacement: 'security_policy_project_linked_groups', milestone: '17.4' }
+
+        field :security_policy_project_linked_groups,
+          ::Types::GroupType.connection_type,
+          null: true,
+          description: 'Groups linked to the project, when used as Security Policy Project.'
 
         field :security_policy_project_suggestions,
           ::Types::ProjectType.connection_type,

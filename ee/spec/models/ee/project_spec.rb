@@ -60,6 +60,7 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:security_policy_management_project_linked_configurations).class_name('Security::OrchestrationPolicyConfiguration') }
     it { is_expected.to have_many(:security_policy_project_linked_projects).through(:security_policy_management_project_linked_configurations) }
     it { is_expected.to have_many(:security_policy_project_linked_namespaces).through(:security_policy_management_project_linked_configurations) }
+    it { is_expected.to have_many(:security_policy_project_linked_groups).through(:security_policy_management_project_linked_configurations) }
 
     it { is_expected.to have_many(:observability_logs).class_name('Observability::LogsIssuesConnection') }
 
