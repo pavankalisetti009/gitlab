@@ -57,6 +57,7 @@ describe('ee/protected_environments/create_protected_environment.vue', () => {
       deploy_access_levels: {
         roles: [],
       },
+      abilities: { adminProject: true },
     };
     mockAxios = new MockAdapter(axios);
   });

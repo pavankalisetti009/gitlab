@@ -15,6 +15,10 @@ module EE
 
         params_hash
       end
+
+      def authorize_admin_protected_refs!
+        authorize_admin_protected_branch!
+      end
     end
   end
 end

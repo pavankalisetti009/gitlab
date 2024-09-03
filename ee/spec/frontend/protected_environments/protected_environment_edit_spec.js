@@ -27,6 +27,7 @@ describe('Protected Environment Edit', () => {
       deploy_access_levels: {
         roles: [],
       },
+      abilities: { adminProject: true },
     };
     mockAxios = new MockAdapter(axios);
   });

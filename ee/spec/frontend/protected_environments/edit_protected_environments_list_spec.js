@@ -135,7 +135,10 @@ describe('ee/protected_environments/edit_protected_environments_list.vue', () =>
   describe('on the project level', () => {
     beforeEach(() => {
       mock = new MockAdapter(axios);
-      window.gon = { api_version: 'v4' };
+      window.gon = {
+        api_version: 'v4',
+        abilities: { adminProject: true },
+      };
       mock
         .onGet('/api/v4/projects/8/protected_environments/')
         .reply(HTTP_STATUS_OK, DEFAULT_ENVIRONMENTS);

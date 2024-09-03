@@ -43752,6 +43752,9 @@ msgstr ""
 msgid "ProtectedBranch|Protect a branch"
 msgstr ""
 
+msgid "ProtectedBranch|Protected branch was sucessfully created"
+msgstr ""
+
 msgid "ProtectedBranch|Protected branches"
 msgstr ""
 
