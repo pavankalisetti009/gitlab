@@ -4,6 +4,8 @@ module EE
   module BaseDiscussionEntity
     extend ::Gitlab::Utils::Override
 
+    private
+
     override :truncated_discussion_path_for
     def truncated_discussion_path_for(discussion)
       noteable = discussion.noteable
@@ -11,8 +13,6 @@ module EE
 
       super
     end
-
-    private
 
     def epic_noteable?(noteable)
       noteable.try(:work_item_type) == ::WorkItems::Type.default_by_type(:epic)

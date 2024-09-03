@@ -85,7 +85,7 @@ RSpec.describe EpicPolicy, feature_category: :portfolio_management do
         :set_epic_metadata, :set_confidentiality,
         :admin_epic_relation, :read_epic_relation,
         :admin_epic_tree_relation, :read_epic_link_relation,
-        :create_epic_tree_relation
+        :create_epic_tree_relation, :resolve_note
       )
     end
   end

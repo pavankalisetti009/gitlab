@@ -131,7 +131,12 @@ class Groups::EpicsController < Groups::ApplicationController
   end
 
   def discussion_serializer
-    DiscussionSerializer.new(project: nil, noteable: issuable, current_user: current_user, note_entity: EpicNoteEntity)
+    Epics::DiscussionSerializer.new(
+      project: nil,
+      noteable: issuable,
+      current_user: current_user,
+      note_entity: EpicNoteEntity
+    )
   end
 
   def update_service
