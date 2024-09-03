@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RegistrationsController, type: :request, feature_category: :system_access do
+RSpec.describe RegistrationsController, :with_current_organization, type: :request, feature_category: :system_access do
   include SessionHelpers
 
   let_it_be(:user_attrs) do

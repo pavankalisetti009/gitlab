@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group or Project invitations', :js, feature_category: :onboarding do
+RSpec.describe 'Group or Project invitations', :with_current_organization, :js, feature_category: :onboarding do
   let(:group) { create(:group, name: 'Owned') }
   let(:project) { create(:project, :repository, namespace: group) }
   let(:group_invite) { create(:group_member, :invited, group: group) }
