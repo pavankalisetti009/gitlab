@@ -29,6 +29,7 @@ RSpec.describe 'Database schema', feature_category: :database do
     p_ci_build_trace_metadata: [%w[partition_id build_id], %w[partition_id trace_artifact_id]], # the index on build_id is enough
     p_ci_builds: [%w[partition_id stage_id], %w[partition_id execution_config_id], %w[auto_canceled_by_partition_id auto_canceled_by_id], %w[upstream_pipeline_partition_id upstream_pipeline_id], %w[partition_id commit_id]], # https://gitlab.com/gitlab-org/gitlab/-/merge_requests/142804#note_1745483081
     p_ci_builds_execution_configs: [%w[partition_id pipeline_id]], # the index on pipeline_id is enough
+    p_ci_pipelines: [%w[auto_canceled_by_partition_id auto_canceled_by_id]], # index on auto_canceled_by_id is sufficient
     p_ci_pipeline_variables: [%w[partition_id pipeline_id]], # index on pipeline_id is sufficient
     p_ci_stages: [%w[partition_id pipeline_id]], # the index on pipeline_id is sufficient
     # `search_index_id index_type` is the composite foreign key configured for `search_namespace_index_assignments`,
