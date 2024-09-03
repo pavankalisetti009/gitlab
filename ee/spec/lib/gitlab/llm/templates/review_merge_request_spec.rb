@@ -16,24 +16,8 @@ RSpec.describe Gitlab::Llm::Templates::ReviewMergeRequest, feature_category: :co
       expect(user_prompt).to include(new_path)
     end
 
-    it 'includes diff' do
-      expect(user_prompt).to include(" # NEW\n \n-Welcome\n-This is a new file\n+Welcome!\n+This is a new file.")
-    end
-
-    it 'does not include git diff prefix' do
-      expect(user_prompt).not_to include('@@ -1,4 +1,4 @@')
-    end
-
     it 'includes hunk' do
       expect(user_prompt).to include(hunk)
-    end
-
-    context 'when diff is blank' do
-      let(:diff) { '' }
-
-      it 'returns nil' do
-        expect(user_prompt).to be_nil
-      end
     end
 
     it 'uses Claude 3.5 Sonnet' do

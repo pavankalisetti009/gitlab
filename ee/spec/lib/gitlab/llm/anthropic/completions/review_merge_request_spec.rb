@@ -273,6 +273,20 @@ RSpec.describe Gitlab::Llm::Anthropic::Completions::ReviewMergeRequest, feature_
       end
     end
 
+    context 'when the AI response is <no_issues_found/>' do
+      let(:review_response) { { content: [{ text: ' <no_issues_found/> ' }] } }
+
+      it 'does not call DraftNote#new' do
+        expect(DraftNote).not_to receive(:new)
+
+        completion.execute
+      end
+
+      it 'does not raise an error' do
+        expect { completion.execute }.not_to raise_error
+      end
+    end
+
     context 'when the chat client returns an unsuccessful response' do
       let(:review_response) { { error: { message: 'Error' } } }
 
