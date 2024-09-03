@@ -24870,6 +24870,9 @@ msgstr ""
 msgid "GlobalSearch|Fetching aggregations error."
 msgstr ""
 
+msgid "GlobalSearch|File name match only"
+msgstr ""
+
 msgid "GlobalSearch|Files"
 msgstr ""
 
