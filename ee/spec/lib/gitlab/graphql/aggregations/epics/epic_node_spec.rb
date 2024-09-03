@@ -198,7 +198,10 @@ RSpec.describe Gitlab::Graphql::Aggregations::Epics::EpicNode, feature_category:
 
     where(:parent_start_date, :parent_end_date, :child_start_date, :child_end_date, :result) do
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | true   # Child within parent range
+      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2024, 6, 30)  | true   # Child starts within parent and ends after parent ends
+      Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2022, 6, 1) | Date.new(2023, 6, 30)  | true   # Child starts before parent starts and ends within parent
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | Date.new(2024, 1, 1) | Date.new(2024, 12, 31) | false  # Non-overlapping date ranges
+      Date.new(2023, 6, 1) | Date.new(2023, 8, 31)  | Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | true   # Overlapping date ranges
       nil                  | Date.new(2023, 12, 31) | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | false  # Parent start date missing
       Date.new(2023, 1, 1) | nil                    | Date.new(2023, 6, 1) | Date.new(2023, 6, 30)  | false  # Parent end date missing
       Date.new(2023, 1, 1) | Date.new(2023, 12, 31) | nil                  | Date.new(2023, 6, 30)  | false  # Child start date missing
