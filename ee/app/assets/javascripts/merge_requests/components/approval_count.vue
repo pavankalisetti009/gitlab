@@ -1,7 +1,7 @@
 <script>
 import { GlBadge, GlTooltipDirective } from '@gitlab/ui';
 import { __, sprintf } from '~/locale';
-import ApprovalsCountCe from '~/merge_request_dashboard/components/approval_count.vue';
+import ApprovalsCountCe from '~/merge_requests/components/approval_count.vue';
 
 export default {
   components: {
@@ -16,9 +16,25 @@ export default {
       type: Object,
       required: true,
     },
+    fullText: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   computed: {
     approvalText() {
+      if (this.fullText) {
+        if (this.mergeRequest.approved) {
+          return __('Approved');
+        }
+
+        return sprintf(__('%{approvals_given} of %{required} Approvals'), {
+          approvals_given: this.mergeRequest.approvalsRequired - this.mergeRequest.approvalsLeft,
+          required: this.mergeRequest.approvalsRequired,
+        });
+      }
+
       return `${this.mergeRequest.approvalsRequired - this.mergeRequest.approvalsLeft}/${
         this.mergeRequest.approvalsRequired
       }`;
@@ -52,5 +68,5 @@ export default {
   >
     {{ approvalText }}
   </gl-badge>
-  <approvals-count-ce v-else :merge-request="mergeRequest" />
+  <approvals-count-ce v-else :merge-request="mergeRequest" :full-text="fullText" />
 </template>
