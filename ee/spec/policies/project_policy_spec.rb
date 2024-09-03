@@ -3017,6 +3017,16 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it_behaves_like 'custom roles abilities'
     end
+
+    context 'for a member role with `admin_protected_branch` true' do
+      let(:member_role_abilities) { { admin_protected_branch: true } }
+      let(:allowed_abilities) do
+        [:admin_protected_branch, :read_protected_branch, :create_protected_branch,
+         :update_protected_branch, :destroy_protected_branch]
+      end
+
+      it_behaves_like 'custom roles abilities'
+    end
   end
 
   describe 'permissions for suggested reviewers bot', :saas do

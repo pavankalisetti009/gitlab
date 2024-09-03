@@ -768,6 +768,14 @@ module EE
         enable :destroy_deploy_token
       end
 
+      rule { custom_role_enables_admin_protected_branch }.policy do
+        enable :read_protected_branch
+        enable :create_protected_branch
+        enable :update_protected_branch
+        enable :destroy_protected_branch
+        enable :admin_protected_branch
+      end
+
       rule { can?(:create_issue) & okrs_enabled }.policy do
         enable :create_objective
         enable :create_key_result

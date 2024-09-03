@@ -114,6 +114,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
     where(:ability, :menu_item) do
       :admin_cicd_variables          | 'CI/CD'
       :admin_push_rules              | 'Repository'
+      :admin_protected_branch        | 'Repository'
       :admin_runners                 | 'CI/CD'
       :manage_deploy_tokens          | 'Repository'
       :manage_merge_request_settings | 'Merge requests'
