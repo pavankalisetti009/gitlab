@@ -7,6 +7,7 @@ module Gitlab
         class ReviewMergeRequest < Gitlab::Llm::Completions::Base
           DRAFT_NOTES_COUNT_LIMIT = 50
           OUTPUT_TOKEN_LIMIT = 8000
+          EMPTY_RESPONSE_TAG = '<no_issues_found/>'
 
           def execute
             create_progress_note
@@ -74,8 +75,14 @@ module Gitlab
             @draft_notes_params.size == DRAFT_NOTES_COUNT_LIMIT
           end
 
+          def note_not_required?(response_modifier)
+            response_modifier.errors.any? ||
+              response_modifier.response_body.blank? ||
+              response_modifier.response_body.strip == EMPTY_RESPONSE_TAG
+          end
+
           def build_draft_note_params(response_modifier, diff_file, hunk, diff_refs)
-            return if response_modifier.errors.any? || response_modifier.response_body.blank?
+            return if note_not_required?(response_modifier)
 
             # We only need `old_line` if the hunk is all removal as we need to
             # create the note on the old line.

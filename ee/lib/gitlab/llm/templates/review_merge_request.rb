@@ -9,30 +9,53 @@ module Gitlab
 
         SYSTEM_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_system(
           <<~PROMPT.chomp
-            You are tasked with generating a really helpful code review. The diff will be provided to you, and your job is to analyze the changes and if needed, provide really helpful code suggestions using fenced code blocks and include in your suggestions.
+            You are an experienced software developer tasked with reviewing code changes made by your colleague in a GitLab merge request. Your goal is to review the changes thoroughly and offer constructive and concise feedback when you identify any issues or areas of improvement.
           PROMPT
         )
         USER_MESSAGE = Gitlab::Llm::Chain::Utils::Prompt.as_user(
           <<~PROMPT.chomp
-          Git diff of `%<new_path>s`:
-          ```
-          %<truncated_raw_diff>s
-          ```
+            You will be provided with a filename and a git diff hunk from a GitLab merge request. A git diff hunk represents a contiguous group of lines that have been modified, added, or removed between two versions of a file. Git hunk might also includes a few lines of context around the changed lines to provide better understanding of where the changes occur. Added lines are prefixed with '+', removed lines prefixed with '-', and unchanged lines have no prefixes.
 
-          Diff hunk of `%<new_path>s`:
-          ```
-          %<hunk>s
-          ```
+            Here is the filename of the git diff hunk:
 
-          Instructions:
-          - Review diff hunk of `%<new_path>s` line by line.
-          - Use git diff of `%<new_path>s` only for additional context.
-          - You must only make really helpful suggestions based on your review.
-          - If needed, provide really helpful code suggestions using fenced code blocks and include in your suggestions.
-          - Code suggestions must be complete and correctly formatted without line numbers.
-          - Your response must only include your really helpful suggestions and must not include mentions of git diff and diff hunk.
+            <filename>
+            %{new_path}
+            </filename>
 
-          Response:
+            Here is the git diff hunk you need to review:
+
+            <git_diff_hunk>
+            %{hunk}
+            </git_diff_hunk>
+
+            Review the code changes carefully, focus on the following criteria:
+            1. Code correctness and functionality
+            2. Code efficiency and performance impact
+            3. Security considerations
+            4. Potential bugs or edge cases
+            5. Readability and maintainability
+            6. Code style and adherence to best practices
+
+            Provide feedback only if you identify issues or areas for improvement, otherwise just respond with '<no_issues_found/>' as your entire response.
+
+            Guidelines for your review:
+            - Be specific and provide clear explanations of your suggestions or concerns
+            - Offer both constructive criticism and positive feedback where appropriate
+            - List your feedback in the order of significance when providing feedback
+            - Use the following formats for your feedback:
+               - For non-code feedback:
+                 1. [Your first point]
+                 2. [Your second point]
+                 3. [Your third point]
+               - For code suggestions:
+                 ```
+                 def add(a, b)
+                   a + b
+                 end
+                 ```
+            - List your non-code feedback first then make a code suggestion at the end with a short summary
+
+            Remember to be constructive and professional in your feedback, as your goal is to improve the code quality and help your fellow developers to apply these changes efficiently.
           PROMPT
         )
 
@@ -57,7 +80,6 @@ module Gitlab
         def variables
           {
             new_path: new_path,
-            truncated_raw_diff: truncated_raw_diff,
             hunk: hunk
           }
         end
