@@ -570,6 +570,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:security_policies_report_security_policies_metrics
+  :worker_name: Security::Policies::ReportSecurityPoliciesMetricsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:security_scans_purge
   :worker_name: Security::Scans::PurgeWorker
   :feature_category: :vulnerability_management
