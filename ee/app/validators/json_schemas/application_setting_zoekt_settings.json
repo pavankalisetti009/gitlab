@@ -19,6 +19,10 @@
     "zoekt_search_enabled": {
       "type": "boolean",
       "description": "If zoekt search is enabled for the instance"
+    },
+    "zoekt_cpu_to_tasks_ratio": {
+      "type": "number",
+      "description": "The ratio between number of concurrent tasks and number of CPUs"
     }
   }
 }
