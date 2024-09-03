@@ -58748,9 +58748,6 @@ msgstr ""
 msgid "UserMapping|Reassignment approved"
 msgstr ""
 
-msgid "UserMapping|Reassignment cancelled"
-msgstr ""
-
 msgid "UserMapping|Reassignment details:"
 msgstr ""
 
@@ -58761,6 +58758,9 @@ msgid "UserMapping|Reassignment has not started."
 msgstr ""
 
 msgid "UserMapping|Reassignment in progress."
+msgstr ""
+
+msgid "UserMapping|Reassignment not available"
 msgstr ""
 
 msgid "UserMapping|Reassignment rejected"
@@ -58808,12 +58808,6 @@ msgstr ""
 msgid "UserMapping|The invitation could not be declined."
 msgstr ""
 
-msgid "UserMapping|The invitation is no longer valid."
-msgstr ""
-
-msgid "UserMapping|The reassignment has been cancelled by the group owner."
-msgstr ""
-
 msgid "UserMapping|There was a problem cancelling placeholder user reassignment."
 msgstr ""
 
@@ -58845,6 +58839,9 @@ msgid "UserMapping|You have approved the reassignment of contributions from %{st
 msgstr ""
 
 msgid "UserMapping|You have rejected the reassignment of contributions from %{strong_open}%{source_user_name} (@%{source_username})%{strong_close} on %{strong_open}%{source_hostname}%{strong_close} to yourself on the group %{strong_open}%{destination_group}%{strong_close}."
+msgstr ""
+
+msgid "UserMapping|You might have already accepted or rejected the reassignment, or it might have been canceled by the group owner."
 msgstr ""
 
 msgid "UserProfile|%{count} %{file}"
