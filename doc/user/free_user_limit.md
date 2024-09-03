@@ -85,11 +85,9 @@ Prerequisites:
 1. On the left sidebar, select **Search or go to** and find your group.
 1. Select **Settings > Usage Quotas**.
 1. To view all members, select the **Seats** tab.
-1. To remove a member, select **Remove user**.
 
-If you need more time to manage your members, or to try GitLab features
-with a team of more than five members, you can [start a trial](https://gitlab.com/-/trial_registrations/new?glm_source=docs.gitlab.com?&glm_content=free-user-limit-faq/ee/user/free_user_limit.html).
-A trial lasts for 30 days and includes an unlimited number of members.
+On this page, you can view and manage all members in your namespace. For example,
+to remove a member, select **Remove user**.
 
 ## Include a group in an organization's subscription
 
