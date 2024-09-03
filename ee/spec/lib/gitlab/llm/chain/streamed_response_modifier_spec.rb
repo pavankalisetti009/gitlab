@@ -54,6 +54,12 @@ RSpec.describe Gitlab::Llm::Chain::StreamedResponseModifier, feature_category: :
         it { is_expected.to eq "Hello " }
       end
 
+      context 'when cleaning `Final Answer: ` from the first chunk' do
+        let(:content) { "Final Answer: Hello" }
+
+        it { is_expected.to eq "Hello" }
+      end
+
       context 'when it is not the first chunk' do
         let(:chunk_id) { { chunk_id: 2 } }
         let(:content) { " Answer: Hello " }
