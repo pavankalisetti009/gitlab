@@ -34655,6 +34655,17 @@ Represents work item counts for the work item type.
 | <a id="workitemtypecountsbystatecountsbystate"></a>`countsByState` | [`WorkItemStateCountsType!`](#workitemstatecountstype) | Total number of work items for the represented states. |
 | <a id="workitemtypecountsbystateworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Work item type. |
 
+### `WorkItemTypeDepthLimitReachedByType`
+
+Represents Depth limit reached for the allowed work item type.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemtypedepthlimitreachedbytypedepthlimitreached"></a>`depthLimitReached` | [`Boolean!`](#boolean) | Indicates if maximum allowed depth has been reached for the descendant type. |
+| <a id="workitemtypedepthlimitreachedbytypeworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Work item type. |
+
 ### `WorkItemWidgetAssignees`
 
 Represents an assignees widget.
@@ -34875,6 +34886,7 @@ Represents a hierarchy widget.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgethierarchyancestors"></a>`ancestors` | [`WorkItemConnection`](#workitemconnection) | Ancestors (parents) of the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgethierarchychildren"></a>`children` | [`WorkItemConnection`](#workitemconnection) | Child work items. (see [Connections](#connections)) |
+| <a id="workitemwidgethierarchydepthlimitreachedbytype"></a>`depthLimitReachedByType` **{warning-solid}** | [`[WorkItemTypeDepthLimitReachedByType!]!`](#workitemtypedepthlimitreachedbytype) | **Introduced** in GitLab 17.4. **Status**: Experiment. Depth limit reached by allowed work item type. |
 | <a id="workitemwidgethierarchyhaschildren"></a>`hasChildren` | [`Boolean!`](#boolean) | Indicates if the work item has children. |
 | <a id="workitemwidgethierarchyhasparent"></a>`hasParent` | [`Boolean!`](#boolean) | Indicates if the work item has a parent. |
 | <a id="workitemwidgethierarchyparent"></a>`parent` | [`WorkItem`](#workitem) | Parent work item. |
