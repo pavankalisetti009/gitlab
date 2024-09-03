@@ -5,6 +5,7 @@ import { GlDrawer } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import DrawerRuleCreate from 'ee/approvals/components/rule_drawer/create_rule.vue';
 import { stubComponent } from 'helpers/stub_component';
@@ -27,6 +28,8 @@ describe('Approvals DrawerRuleCreate', () => {
   const findSaveChangeButton = () => wrapper.findByTestId('save-approval-rule-button');
   const findCancelButton = () => wrapper.findByTestId('cancel-button');
   const findHeader = () => wrapper.find('h2');
+
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = () => {
     submitMock = jest.fn();
@@ -105,6 +108,15 @@ describe('Approvals DrawerRuleCreate', () => {
         await waitForPromises();
 
         expect(findSaveChangeButton().props('loading')).toBe(false);
+      });
+
+      it('emits a tracking event', async () => {
+        findDrawer().vm.$emit('ok', new Event('ok'));
+        await nextTick();
+        const { trackEventSpy } = bindInternalEventDocument(findSaveChangeButton().element);
+        expect(trackEventSpy).toHaveBeenCalledWith('change_merge_request_approvals', {
+          label: 'repository_settings',
+        });
       });
     });
   });

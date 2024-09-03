@@ -2,9 +2,15 @@
 // eslint-disable-next-line no-restricted-imports
 import { mapState } from 'vuex';
 import { GlDrawer, GlButton } from '@gitlab/ui';
+import { InternalEvents } from '~/tracking';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
 import { __ } from '~/locale';
+import {
+  BRANCH_RULE_DETAILS_LABEL,
+  REPOSITORY_SETTINGS_LABEL,
+  CHANGED_MERGE_REQUEST_APPROVALS,
+} from 'ee_else_ce/projects/settings/branch_rules/tracking/constants';
 import RuleForm from '../rules/rule_form.vue';
 
 const I18N = {
@@ -57,6 +63,10 @@ export default {
   },
   methods: {
     async submit() {
+      InternalEvents.trackEvent(CHANGED_MERGE_REQUEST_APPROVALS, {
+        label: this.isBranchRulesEdit ? BRANCH_RULE_DETAILS_LABEL : REPOSITORY_SETTINGS_LABEL,
+      });
+
       this.isLoading = true;
       await this.$refs.form.submit();
       this.isLoading = false;
