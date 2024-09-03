@@ -26855,6 +26855,10 @@ CREATE UNIQUE INDEX index_activity_pub_releases_sub_on_project_id_inbox_url ON a
 
 CREATE UNIQUE INDEX index_activity_pub_releases_sub_on_project_id_sub_url ON activity_pub_releases_subscriptions USING btree (project_id, lower(subscriber_url));
 
+CREATE UNIQUE INDEX index_add_on_purchases_on_add_on_id_and_namespace_id_not_null ON subscription_add_on_purchases USING btree (subscription_add_on_id, namespace_id) WHERE (namespace_id IS NOT NULL);
+
+CREATE UNIQUE INDEX index_add_on_purchases_on_add_on_id_and_namespace_id_null ON subscription_add_on_purchases USING btree (subscription_add_on_id) WHERE (namespace_id IS NULL);
+
 CREATE INDEX index_add_on_purchases_on_organization_id ON subscription_add_on_purchases USING btree (organization_id);
 
 CREATE INDEX index_agent_activity_events_on_agent_id_and_recorded_at_and_id ON agent_activity_events USING btree (agent_id, recorded_at, id);
