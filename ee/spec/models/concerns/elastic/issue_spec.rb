@@ -100,6 +100,14 @@ RSpec.describe Issue, :elastic_delete_by_query, feature_category: :global_search
       })
     end
 
+    it 'returns empty hash if project is nil' do
+      issue.project = nil
+
+      expect(issue.__elasticsearch__.as_indexed_json).to eq({})
+
+      issue.project = project
+    end
+
     it 'returns json with all needed elements' do
       expect(issue.__elasticsearch__.as_indexed_json).to eq(expected_hash)
     end

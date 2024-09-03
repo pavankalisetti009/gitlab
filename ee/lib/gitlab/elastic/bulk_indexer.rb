@@ -96,6 +96,8 @@ module Gitlab
       end
 
       def submit(ref, ops)
+        return ZERO_BYTES_PROCESSED if ops.blank?
+
         jsons = ops.map(&:to_json)
 
         calculate_bytesize(jsons).tap do |bytesize|
@@ -171,15 +173,11 @@ module Gitlab
       end
 
       def index_operation(ref)
-        [{ index: build_op(ref) }, ref.as_indexed_json]
+        build_indexing_operation(ref, :index)
       end
 
       def upsert_operation(ref)
-        index_json = ref.as_indexed_json
-
-        track_routing_missing_error(ref) if ref.routing && !index_json.with_indifferent_access.key?('routing')
-
-        [{ update: build_op(ref) }, { doc: index_json, doc_as_upsert: true }]
+        build_indexing_operation(ref, :upsert)
       end
 
       def delete_operation(ref, index_name: nil)
@@ -219,6 +217,25 @@ module Gitlab
       def track_routing_missing_error(ref)
         message = 'Routing field must be present when using upsert for reference with routing'
         Gitlab::ErrorTracking.track_and_raise_for_dev_exception(RoutingMissingError.new(message), ref: ref.serialize)
+      end
+
+      def build_indexing_operation(ref, operation)
+        index_json = ref.as_indexed_json
+
+        if index_json.blank?
+          message = 'Reference as_indexed_json is blank, removing from the queue'
+          logger.warn(message: message, ref: ref.serialize)
+
+          return []
+        end
+
+        case operation
+        when :index
+          [{ index: build_op(ref) }, index_json]
+        when :upsert
+          track_routing_missing_error(ref) if ref.routing && !index_json.with_indifferent_access.key?('routing')
+          [{ update: build_op(ref) }, { doc: index_json, doc_as_upsert: true }]
+        end
       end
     end
   end
