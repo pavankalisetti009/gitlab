@@ -34,13 +34,12 @@ describe('ProjectToken', () => {
     return waitForPromises();
   };
 
-  const createComponent = ({ config = {}, props = {}, handler = noProjectsHandler } = {}) => {
+  const createComponent = ({ props = {}, handler = noProjectsHandler } = {}) => {
     wrapper = shallowMount(ProjectToken, {
       propsData: {
         active: false,
         config: {
           ...defaultConfig,
-          ...config,
         },
         value,
         ...props,
@@ -66,9 +65,7 @@ describe('ProjectToken', () => {
 
   describe('when fetching the projects', () => {
     beforeEach(async () => {
-      createComponent({
-        config: { fetchProjects: loadingHandler },
-      });
+      createComponent({ handler: loadingHandler });
       await triggerFetchProjects(search);
       return nextTick();
     });
@@ -80,7 +77,7 @@ describe('ProjectToken', () => {
     describe('when the request is successful', () => {
       describe('with no projects', () => {
         beforeEach(() => {
-          createComponent({ config: { fetchProjects: noProjectsHandler } });
+          createComponent({ handler: noProjectsHandler });
           return triggerFetchProjects(search);
         });
 
@@ -106,7 +103,7 @@ describe('ProjectToken', () => {
         } = mockProjects;
 
         beforeEach(() => {
-          createComponent({ config: { fetchProjects: projectsHandler } });
+          createComponent({ handler: projectsHandler });
           return triggerFetchProjects();
         });
 
@@ -118,7 +115,7 @@ describe('ProjectToken', () => {
         });
 
         it('passes the correct props', () => {
-          expect(findBaseToken().props('suggestions')).toBe(nodes);
+          expect(findBaseToken().props('suggestions')).toEqual(nodes);
         });
 
         it('finds the correct value from the activeToken', () => {
@@ -131,7 +128,7 @@ describe('ProjectToken', () => {
 
     describe('when the request fails', () => {
       beforeEach(() => {
-        createComponent({ config: { fetchProjects: errorProjectsHandler } });
+        createComponent({ handler: errorProjectsHandler });
         return triggerFetchProjects();
       });
 

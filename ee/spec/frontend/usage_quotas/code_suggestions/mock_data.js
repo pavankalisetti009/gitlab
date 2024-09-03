@@ -297,6 +297,7 @@ export const mockNoProjects = {
 export const mockProjects = {
   data: {
     group: {
+      id: 'gid://gitlab/Group/13',
       projects: {
         nodes: [
           {
