@@ -657,17 +657,17 @@ The path syntax is the same as [`git submodule`](https://git-scm.com/docs/git-su
 
 - To sync and update specific paths:
 
-   ```yaml
-   variables:
-      GIT_SUBMODULE_PATHS: submoduleA submoduleB
-   ```
+  ```yaml
+  variables:
+     GIT_SUBMODULE_PATHS: submoduleA submoduleB
+  ```
 
 - To exclude specific paths:
 
-   ```yaml
-   variables:
-      GIT_SUBMODULE_PATHS: :(exclude)submoduleA :(exclude)submoduleB
-   ```
+  ```yaml
+  variables:
+     GIT_SUBMODULE_PATHS: :(exclude)submoduleA :(exclude)submoduleB
+  ```
 
 WARNING:
 Git ignores nested paths. To ignore a nested submodule, exclude
