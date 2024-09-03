@@ -13,7 +13,7 @@ module Admin
       def index
         feature_settings_by_name = ::Ai::FeatureSetting.all.index_by(&:feature)
 
-        @feature_settings = ::Ai::FeatureSetting.features.keys.map do |feature|
+        @feature_settings = ::Ai::FeatureSetting.allowed_features.keys.map do |feature|
           feature_settings_by_name[feature] || ::Ai::FeatureSetting.new(feature: feature)
         end
       end
