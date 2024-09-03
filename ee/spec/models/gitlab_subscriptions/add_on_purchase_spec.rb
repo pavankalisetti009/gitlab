@@ -402,28 +402,79 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
     end
 
     describe '.requiring_assigned_users_refresh' do
-      let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
-      let_it_be(:add_on_purchase_refreshed_nil) { create(:gitlab_subscription_add_on_purchase, add_on: add_on) }
-      let_it_be(:add_on_purchase_fresh) do
-        create(:gitlab_subscription_add_on_purchase, add_on: add_on, last_assigned_users_refreshed_at: 1.hour.ago)
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+      let_it_be(:duo_pro_add_on_purchase_fresh) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_pro_add_on,
+          last_assigned_users_refreshed_at: 1.hour.ago
+        )
       end
 
-      let_it_be(:add_on_purchase_stale) do
-        create(:gitlab_subscription_add_on_purchase, add_on: add_on, last_assigned_users_refreshed_at: 21.hours.ago)
+      let_it_be(:duo_enterprise_add_on_purchase_fresh) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_enterprise_add_on,
+          last_assigned_users_refreshed_at: 1.hour.ago
+        )
+      end
+
+      let_it_be(:duo_pro_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on)
+      end
+
+      let_it_be(:duo_enterprise_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on)
+      end
+
+      let_it_be(:product_analytics_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+      end
+
+      let_it_be(:duo_pro_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_pro_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
+      end
+
+      let_it_be(:duo_enterprise_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_enterprise_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
+      end
+
+      let_it_be(:product_analytics_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: product_analytics_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
       end
 
       it 'returns correct add_on_purchases' do
+        query_limit = 5
         result = [
-          add_on_purchase_refreshed_nil,
-          add_on_purchase_stale
+          duo_pro_add_on_purchase_refreshed_nil,
+          duo_enterprise_add_on_purchase_refreshed_nil,
+          duo_pro_add_on_purchase_stale,
+          duo_enterprise_add_on_purchase_stale
         ]
 
-        expect(described_class.requiring_assigned_users_refresh(3))
+        expect(described_class.requiring_assigned_users_refresh(query_limit))
           .to match_array(result)
       end
 
       it 'accepts limit param' do
-        expect(described_class.requiring_assigned_users_refresh(1).size).to eq 1
+        query_limit = 1
+
+        expect(described_class.requiring_assigned_users_refresh(query_limit).size).to eq 1
       end
     end
 

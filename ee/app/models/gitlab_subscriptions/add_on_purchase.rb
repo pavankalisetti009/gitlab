@@ -43,7 +43,7 @@ module GitlabSubscriptions
       # Fetches add_on_purchases whose assigned_users have not been refreshed in last 8 hours.
       # Used primarily by BulkRefreshUserAssignmentsWorker, which is scheduled every 4 hours
       # by ScheduleBulkRefreshUserAssignmentsWorker.
-      for_gitlab_duo_pro
+      for_duo_pro_or_duo_enterprise
         .where("last_assigned_users_refreshed_at < ? OR last_assigned_users_refreshed_at is NULL", 8.hours.ago)
         .limit(limit)
     end
