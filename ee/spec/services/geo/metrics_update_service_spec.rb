@@ -17,7 +17,6 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
     {
       status_message: nil,
       db_replication_lag_seconds: 0,
-      projects_count: 10,
       project_repositories_count: 10,
       last_event_id: 2,
       last_event_date: event_date,
@@ -37,7 +36,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
   let(:primary_data) do
     {
       status_message: nil,
-      projects_count: 10,
+      project_repositories_count: 10,
       last_event_id: 2,
       last_event_date: event_date,
       event_log_max_id: 555
@@ -75,7 +74,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
       end
 
       it 'updates the cache' do
-        status = GeoNodeStatus.from_json(primary_data.as_json)
+        status = GeoNodeStatus.new(primary_data)
         allow(GeoNodeStatus).to receive(:current_node_status).and_return(status)
 
         expect(status).to receive(:update_cache!)
@@ -84,10 +83,10 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
       end
 
       it 'updates metrics for all sites' do
-        allow(GeoNodeStatus).to receive(:current_node_status).and_return(GeoNodeStatus.from_json(primary_data.as_json))
+        allow(GeoNodeStatus).to receive(:current_node_status).and_return(GeoNodeStatus.new(primary_data))
 
-        secondary.update!(status: GeoNodeStatus.from_json(data.as_json))
-        another_secondary.update!(status: GeoNodeStatus.from_json(data.as_json))
+        secondary.update!(status: GeoNodeStatus.new(data))
+        another_secondary.update!(status: GeoNodeStatus.new(data))
 
         subject.execute
 
@@ -104,7 +103,7 @@ RSpec.describe Geo::MetricsUpdateService, :geo, :prometheus, feature_category: :
     context 'when node is a secondary' do
       before do
         stub_current_geo_node(secondary)
-        @status = GeoNodeStatus.new(data.as_json)
+        @status = GeoNodeStatus.new(data)
         allow(GeoNodeStatus).to receive(:current_node_status).and_return(@status)
       end
 
