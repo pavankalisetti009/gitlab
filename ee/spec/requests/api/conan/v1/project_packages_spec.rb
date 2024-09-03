@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe API::ConanProjectPackages, feature_category: :package_registry do
+RSpec.describe API::Conan::V1::ProjectPackages, feature_category: :package_registry do
   include HttpBasicAuthHelpers
 
   let_it_be(:user) { create(:user) }
@@ -15,8 +15,13 @@ RSpec.describe API::ConanProjectPackages, feature_category: :package_registry do
 
   let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
 
-  describe 'GET /api/v4/projects/:id/packages/conan/v1/files/:package_name/package_version/:package_username/:package_channel/:recipe_revision/package/:conan_package_reference/:package_revision/:file_name' do # rubocop:disable Layout/LineLength
-    let(:url) { "/projects/#{project.id}/packages/conan/v1/files/#{package.conan_recipe_path}/#{metadata.recipe_revision}/package/#{metadata.conan_package_reference}/#{metadata.package_revision}/#{package_file.file_name}" } # rubocop:disable Layout/LineLength
+  describe "GET /api/v4/projects/:id/packages/conan/v1/files/:package_name/package_version/:package_username" \
+    "/:package_channel/:recipe_revision/package/:conan_package_reference/:package_revision/:file_name" do
+    let(:url) do
+      "/projects/#{project.id}/packages/conan/v1/files/#{package.conan_recipe_path}" \
+        "/#{metadata.recipe_revision}/package/#{metadata.conan_package_reference}/#{metadata.package_revision}" \
+        "/#{package_file.file_name}"
+    end
 
     subject { get api(url), headers: headers }
 
