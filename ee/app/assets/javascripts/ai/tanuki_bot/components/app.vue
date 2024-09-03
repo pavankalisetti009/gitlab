@@ -66,6 +66,7 @@ export default {
   },
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         variables() {
@@ -91,6 +92,7 @@ export default {
           return !this.duoChatGlobalState.isShown;
         },
       },
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponseStream: {
         query: aiResponseStreamSubscription,
         variables() {
@@ -129,6 +131,7 @@ export default {
         },
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     aiMessages: {
       query: getAiMessages,
       result({ data }) {

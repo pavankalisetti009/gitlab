@@ -109,6 +109,7 @@ export default {
   },
   apollo: {
     // Gets the project data for the project IDs in the querystring and adds them to projectNames.
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     projectsById: {
       query() {
         return QUERIES[this.dashboardType];

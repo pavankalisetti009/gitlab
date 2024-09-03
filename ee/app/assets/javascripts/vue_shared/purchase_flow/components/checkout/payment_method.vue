@@ -15,10 +15,12 @@ export default {
     Zuora,
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     paymentMethod: {
       query: stateQuery,
       update: (data) => data.paymentMethod,
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     selectedNamespace: {
       query: stateQuery,
       update: ({ eligibleNamespaces, selectedNamespaceId }) => {

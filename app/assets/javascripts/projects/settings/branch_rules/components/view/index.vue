@@ -83,6 +83,7 @@ export default {
     showCodeOwners: { default: false },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     project: {
       query: branchRulesQuery,
       variables() {

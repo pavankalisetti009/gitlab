@@ -178,6 +178,7 @@ export default {
   },
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         skip: true, // We manually start and stop the subscription.

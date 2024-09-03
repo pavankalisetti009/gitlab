@@ -65,9 +65,11 @@ export default {
         return pageInfo || {};
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     currentPage: {
       query: currentPageQuery,
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     currentScope: {
       query: currentScopeQuery,
     },

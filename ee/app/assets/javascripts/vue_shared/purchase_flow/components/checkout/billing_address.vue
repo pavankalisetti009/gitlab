@@ -53,12 +53,14 @@ export default {
         this.handleError(error);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     customer: {
       query: stateQuery,
     },
     countries: {
       query: countriesQuery,
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     states: {
       query: statesQuery,
       skip() {

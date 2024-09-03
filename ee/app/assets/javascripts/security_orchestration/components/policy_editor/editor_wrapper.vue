@@ -11,6 +11,7 @@ import VulnerabilityManagementPolicyEditor from './vulnerability_management/edit
 export default {
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       newlyCreatedPolicyProject: {
         query() {
           return getSecurityPolicyProjectSub;
