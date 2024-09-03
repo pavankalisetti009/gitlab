@@ -29973,6 +29973,9 @@ msgstr ""
 msgid "Iteration|cannot be more than 500 years in the future"
 msgstr ""
 
+msgid "JWT must be less than 10KB"
+msgstr ""
+
 msgid "Jan"
 msgstr ""
 
@@ -64638,6 +64641,9 @@ msgid "mrWidget|Your merge request is almost ready!"
 msgstr ""
 
 msgid "mrWidget|Your password"
+msgstr ""
+
+msgid "must be 254 characters or less."
 msgstr ""
 
 msgid "must be a boolean value"
