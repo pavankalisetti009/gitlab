@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module EE
+  # rubocop: disable Gitlab/BoundedContexts -- overriding existing file
   module Noteable
     extend ActiveSupport::Concern
     extend ::Gitlab::Utils::Override
@@ -10,6 +11,10 @@ module EE
       # https://gitlab.com/gitlab-org/gitlab-foss/issues/50911
       def replyable_types
         super + %w[Epic Vulnerability]
+      end
+
+      def resolvable_types
+        super + %w[Epic]
       end
     end
 
@@ -34,4 +39,5 @@ module EE
       relations
     end
   end
+  # rubocop: enable Gitlab/BoundedContexts
 end

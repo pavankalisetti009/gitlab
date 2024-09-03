@@ -8,4 +8,14 @@ class EpicNoteEntity < NoteEntity
   expose :path, if: ->(note, _) { note.id } do |note|
     group_epic_note_path(note.noteable.namespace, note.noteable, note)
   end
+
+  private
+
+  def resolved?
+    false
+  end
+
+  def resolvable?
+    false
+  end
 end

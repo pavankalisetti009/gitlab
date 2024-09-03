@@ -16,6 +16,14 @@ RSpec.describe EpicNoteEntity do
 
   it_behaves_like 'note entity'
 
+  it 'always returns resolved? as false' do
+    expect(subject[:resolved]).to eq(false)
+  end
+
+  it 'always returns resolvable? as false' do
+    expect(subject[:resolvable]).to eq(false)
+  end
+
   it 'exposes epic-specific elements' do
     expect(subject).to include(:toggle_award_path, :path)
   end
