@@ -129,11 +129,19 @@ Users that are not part of the top-level namespace require additional seats to r
 
 ## Increase the five-user limit
 
-On the Free tier on GitLab.com, you cannot increase the limit of five users on top-level groups with private visibility.
+On the Free subscription tier on GitLab.com, you cannot increase the limit of five users on
+top-level groups with private visibility.
 
-For larger teams, you should upgrade to the Premium or Ultimate tier, which
-has no user limits and offers more features to increase team productivity. To experience the
-value of Paid features and unlimited users, you should start a [free trial](https://gitlab.com/-/trial_registrations/new?glm_source=docs.gitlab.com/ee/user/free_user_limit.html) for GitLab Ultimate.
+For larger teams, you should upgrade to the paid Premium or Ultimate tiers. These tiers
+do not limit users and have more features to increase team productivity. For more
+information, see:
+
+- [Upgrade your subscription tier on GitLab self-managed](../subscriptions/self_managed/index.md#upgrade-your-subscription-tier).
+- [Upgrade your subscription tier on GitLab.com](../subscriptions/gitlab_com/index.md#upgrade-your-gitlabcom-subscription-tier).
+
+To try the paid tiers before deciding to upgrade, start a
+[free trial](https://gitlab.com/-/trial_registrations/new?glm_source=docs.gitlab.com/ee/user/free_user_limit.html)
+for GitLab Ultimate.
 
 ## Manage members in personal projects outside a group namespace
 
