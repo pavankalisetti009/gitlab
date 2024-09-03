@@ -374,7 +374,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
           expect(payload[:metadata]['meta.search.type']).to eq(search_type)
         end
 
-        get :show, params: { search: 'hello world', basic_search: true }
+        get :show, params: { search: 'hello world', search_type: search_type }
       end
     end
   end

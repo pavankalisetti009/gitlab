@@ -142,14 +142,12 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   context 'when searching with Zoekt', :zoekt_settings_enabled do
     let(:service) do
-      described_class.new(user, group, search: 'foobar', scope: scope,
-        basic_search: basic_search, page: page, source: source)
+      described_class.new(user, group, search: 'foobar', scope: scope, page: page, source: source)
     end
 
     let(:source) { nil }
     let(:use_zoekt) { true }
     let(:scope) { 'blobs' }
-    let(:basic_search) { nil }
     let(:page) { nil }
     let(:zoekt_nodes) { create_list(:zoekt_node, 2) }
     let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
@@ -183,6 +181,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
         it 'returns a Search::Zoekt::SearchResults' do
           expect(service.use_zoekt?).to eq(true)
+          expect(service.search_type).to eq('zoekt')
           expect(service.zoekt_searchable_scope).to eq(group)
           expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
         end
@@ -219,11 +218,13 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'when basic_search is requested' do
-      let(:basic_search) { true }
+    context 'when basic search is requested' do
+      let(:service) do
+        described_class.new(user, group, search: 'foobar', scope: scope, page: page, source: source, search_type: 'basic')
+      end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.search_type).to eq('basic')
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end

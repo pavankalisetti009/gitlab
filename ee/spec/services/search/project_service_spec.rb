@@ -97,7 +97,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
         project,
         search: 'foobar',
         scope: scope,
-        basic_search: basic_search,
         advanced_search: advanced_search,
         source: source
       )
@@ -106,7 +105,6 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
     let(:search_code_with_zoekt) { true }
     let(:user_preference_enabled_zoekt) { true }
     let(:scope) { 'blobs' }
-    let(:basic_search) { nil }
     let(:advanced_search) { nil }
     let(:zoekt_nodes) { create_list(:zoekt_node, 2) }
     let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
@@ -126,6 +124,7 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
 
     it 'searches with Zoekt' do
       expect(service.use_zoekt?).to eq(true)
+      expect(service.search_type).to eq('zoekt')
       expect(service.zoekt_searchable_scope).to eq(project)
       expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
     end
@@ -173,11 +172,21 @@ RSpec.describe Search::ProjectService, feature_category: :global_search do
       end
     end
 
-    context 'when basic_search is requested' do
-      let(:basic_search) { true }
+    context 'when basic search is requested' do
+      let(:service) do
+        described_class.new(
+          (anonymous_user ? nil : user),
+          project,
+          search: 'foobar',
+          scope: scope,
+          advanced_search: advanced_search,
+          search_type: 'basic',
+          source: source
+        )
+      end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.search_type).to eq('basic')
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end

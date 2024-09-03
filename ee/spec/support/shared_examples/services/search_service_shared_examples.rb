@@ -34,17 +34,6 @@ RSpec.shared_examples 'EE search service shared examples' do |normal_results, el
 
       expect(service.use_elasticsearch?).to eq(:value)
     end
-
-    context 'when requesting basic_search' do
-      let(:params) { { search: '*', basic_search: 'true' } }
-
-      it 'returns false' do
-        expect(Gitlab::CurrentSettings)
-          .not_to receive(:search_using_elasticsearch?)
-
-        expect(service.use_elasticsearch?).to eq(false)
-      end
-    end
   end
 
   describe '#execute' do
