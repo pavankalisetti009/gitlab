@@ -20,11 +20,11 @@ module Gitlab
           @logger = Gitlab::Llm::Logger.build
         end
 
-        def complete(endpoint:, body:, timeout: DEFAULT_TIMEOUT)
+        def complete(url:, body:, timeout: DEFAULT_TIMEOUT)
           return unless enabled?
 
           response = retry_with_exponential_backoff do
-            perform_completion_request(endpoint: endpoint, body: body, timeout: timeout, stream: false)
+            perform_completion_request(url: url, body: body, timeout: timeout, stream: false)
           end
 
           logger.info_or_debug(user, message: "Received response from AI Gateway", response: response.parsed_response)
@@ -32,13 +32,13 @@ module Gitlab
           response
         end
 
-        def stream(endpoint:, body:, timeout: DEFAULT_TIMEOUT)
+        def stream(url:, body:, timeout: DEFAULT_TIMEOUT)
           return unless enabled?
 
           response_body = ""
 
           response = perform_completion_request(
-            endpoint: endpoint, body: body, timeout: timeout, stream: true
+            url: url, body: body, timeout: timeout, stream: true
           ) do |chunk|
             response_body += chunk
 
@@ -65,12 +65,12 @@ module Gitlab
 
         attr_reader :user, :service, :access_token, :logger, :tracking_context
 
-        def perform_completion_request(endpoint:, body:, timeout:, stream:)
-          logger.info_or_debug(user, message: "Performing request to AI Gateway", body: body, timeout: timeout,
-            stream: stream)
+        def perform_completion_request(url:, body:, timeout:, stream:)
+          logger.info_or_debug(user, message: "Performing request to AI Gateway",
+            url: url, body: body, timeout: timeout, stream: stream)
 
           Gitlab::HTTP.post(
-            "#{Gitlab::AiGateway.url}#{endpoint}",
+            url,
             headers: Gitlab::AiGateway.headers(user: user, service: service),
             body: body.to_json,
             timeout: timeout,

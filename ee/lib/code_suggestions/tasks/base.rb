@@ -11,8 +11,8 @@ module CodeSuggestions
         @unsafe_passthrough_params = unsafe_passthrough_params
       end
 
-      def self.base_url
-        Gitlab::AiGateway.url
+      def base_url
+        feature_setting&.base_url || Gitlab::AiGateway.url
       end
 
       def self_hosted?
@@ -28,7 +28,7 @@ module CodeSuggestions
       end
 
       def endpoint
-        "#{self.class.base_url}/v2/code/#{endpoint_name}"
+        "#{base_url}/v2/code/#{endpoint_name}"
       end
 
       def body

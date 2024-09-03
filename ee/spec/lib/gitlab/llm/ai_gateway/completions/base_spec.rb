@@ -30,7 +30,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
 
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new)
         .with(user, service_name: ai_action.to_sym, tracking_context: tracking_context).and_return(client)
-      allow(client).to receive(:complete).with(endpoint: "/v1/prompts/#{ai_action}", body: { 'inputs' => inputs })
+      allow(client).to receive(:complete).with(url: "#{Gitlab::AiGateway.url}/v1/prompts/#{ai_action}",
+        body: { 'inputs' => inputs })
         .and_return(response)
       allow(Gitlab::Llm::AiGateway::ResponseModifiers::Base).to receive(:new).with(response)
         .and_return(response_modifier)

@@ -7,7 +7,11 @@ module Gitlab
     FEATURE_FLAG_CACHE_KEY = "gitlab_ai_gateway_feature_flags"
 
     def self.url
-      ENV['AI_GATEWAY_URL'] || "#{::CloudConnector::Config.base_url}/ai"
+      ENV['AI_GATEWAY_URL'] || cloud_connector_url
+    end
+
+    def self.cloud_connector_url
+      "#{::CloudConnector::Config.base_url}/ai"
     end
 
     def self.access_token_url
