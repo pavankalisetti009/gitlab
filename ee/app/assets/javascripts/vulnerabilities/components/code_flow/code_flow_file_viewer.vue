@@ -86,7 +86,15 @@ export default {
       const plugins = [(result) => markMultipleLines(result, this.linesToMarker)];
       highlightContent(language, rawTextBlob, plugins)
         .then((res) => {
-          this.highlightedContent = res;
+          // res is undefined when the file language is not recognized.
+          // we need to mark the step in the viewer even if the language is not recognized.
+          if (!res) {
+            const markResult = { value: rawTextBlob };
+            markMultipleLines(markResult, this.linesToMarker);
+            this.highlightedContent = markResult.value;
+          } else {
+            this.highlightedContent = res;
+          }
           this.$emit('codeFlowFileLoaded');
         })
         .catch((error) => {
