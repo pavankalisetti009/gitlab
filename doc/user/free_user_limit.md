@@ -91,39 +91,50 @@ to remove a member, select **Remove user**.
 
 ## Include a group in an organization's subscription
 
-If there are multiple groups in your organization, they might have a
-combination of Paid and Free subscriptions. When a group
-with a Free subscription exceeds the user limit, their namespace becomes [read-only](../user/read_only_namespaces.md).
+If you have multiple groups in your organization, they might have a
+combination of paid (Premium or Ultimate tier) and Free tier subscriptions.
+When a group with a Free tier subscription exceeds the user limit, their
+namespace becomes [read-only](../user/read_only_namespaces.md).
 
-To avoid user limits on groups with Free subscriptions, you can
-include them in your organization's subscription. To check if a group is included in the subscription,
-[view the group's subscription details](../subscriptions/gitlab_com/index.md#view-your-gitlabcom-subscription).
-If the group is on the Free tier, it is not included in your organization's subscription.
+To remove user limits on groups with Free tier subscriptions, include those groups
+in your organization's subscription:
 
-To include the group in your Paid subscription, [transfer the group](../user/group/manage.md#transfer-a-group) to your organization's
-top-level namespace.
+1. To check if a group is included in the subscription,
+   [view that group's subscription details](../subscriptions/gitlab_com/index.md#view-your-gitlabcom-subscription).
 
-NOTE:
-If you previously purchased a subscription and the 5-user limit was applied to a group,
-ensure that [your subscription is linked](../subscriptions/gitlab_com/index.md#change-the-linked-group)
-to the correct top-level namespace, or that it has been
-linked to your Customers Portal account.
+   If the group has a Free tier subscription, it is not included in your organization's
+   subscription.
 
-### Impact on seat count by transferred groups
+1. To include a group in your paid Premium or Ultimate tier subscription,
+   [transfer that group](../user/group/manage.md#transfer-a-group) to your
+   organization's top-level namespace.
 
-When you transfer a group, there might be an increase in your seat count,
-which could incur additional costs for your subscription.
+If the five-user limit has been applied to your group even though you have
+a paid subscription in the Premium or Ultimate tier, make sure that
+[your subscription is linked](../subscriptions/gitlab_com/index.md#change-the-linked-group)
+to either of the following:
 
-For example, a company has Group A and Group B:
+- The correct top-level namespace.
+- Your [Customers Portal](../subscriptions/customers_portal.md) account.
 
-- Group A is on a Paid tier and has five users.
-- Group B is on the Free tier and has eight users, four of which are members of Group A.
-- Group B is placed in a read-only state when it exceeds the user limit.
-- Group B is transferred to the company's subscription to remove the read-only state.
-- The company incurs an additional cost of four seats for the
+### Impact of transferred groups on subscription costs
+
+When you transfer a group to your organization's subscription, this might
+increase your seat count. This could incur additional costs for your subscription.
+
+For example, your company has Group A and Group B:
+
+- Group A has a paid Premium or Ultimate tier subscription and has five users.
+- Group B has a Free tier subscription and has eight users, four of which are
+  members of Group A.
+- Group B is a read-only state because it exceeds the five-user limit.
+- You transfer Group B to your company's subscription to remove the read-only state.
+- Your company incurs an additional cost of four seats for the
   four members of Group B that are not members of Group A.
 
-Users that are not part of the top-level namespace require additional seats to remain active. For more information, see [Add seats to your subscription](../subscriptions/gitlab_com/index.md#add-seats-to-your-subscription).
+Users that are not part of the top-level namespace require additional seats to
+remain active. For more information, see
+[add seats to your subscription](../subscriptions/gitlab_com/index.md#add-seats-to-your-subscription).
 
 ## Increase the five-user limit
 
