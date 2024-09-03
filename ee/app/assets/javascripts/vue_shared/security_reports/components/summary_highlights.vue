@@ -9,7 +9,7 @@ import {
   UNKNOWN,
   SEVERITY_COUNT_LIMIT,
 } from 'ee/vulnerabilities/constants';
-import { s__ } from '~/locale';
+import { s__, sprintf } from '~/locale';
 import { SEVERITY_CLASS_NAME_MAP } from './constants';
 
 export default {
@@ -77,7 +77,9 @@ export default {
   methods: {
     formattedCounts(count) {
       if (this.capped) {
-        return count > SEVERITY_COUNT_LIMIT ? `${SEVERITY_COUNT_LIMIT}+` : count;
+        return count > SEVERITY_COUNT_LIMIT
+          ? sprintf(s__('SecurityReports|%{count}+'), { count: SEVERITY_COUNT_LIMIT })
+          : count;
       }
 
       return count;

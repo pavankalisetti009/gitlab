@@ -49582,6 +49582,9 @@ msgstr ""
 msgid "SecurityReports|%{count} Selected"
 msgstr ""
 
+msgid "SecurityReports|%{count}+"
+msgstr ""
+
 msgid "SecurityReports|%{count}+ projects"
 msgstr ""
 
