@@ -3095,9 +3095,6 @@ msgstr ""
 msgid "Active project access tokens"
 msgstr ""
 
-msgid "Active tab: %{tab}"
-msgstr ""
-
 msgid "Activity"
 msgstr ""
 
@@ -5808,6 +5805,9 @@ msgid "An error occurred fetching the project authors."
 msgstr ""
 
 msgid "An error occurred fetching the public deploy keys. Please try again."
+msgstr ""
+
+msgid "An error occurred loading the projects. Please refresh the page to try again."
 msgstr ""
 
 msgid "An error occurred previewing the blob"
