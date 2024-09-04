@@ -32,6 +32,18 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(described_class.online).to contain_exactly(node, online_node)
       end
     end
+
+    describe '.by_name' do
+      let_it_be(:node1) { create(:zoekt_node, metadata: { name: 'node1' }) }
+      let_it_be(:node2) { create(:zoekt_node, metadata: { name: 'node2' }) }
+      let_it_be(:node3) { create(:zoekt_node, metadata: { name: 'node3' }) }
+
+      it 'returns nodes filtered by name' do
+        expect(described_class.by_name('node1')).to contain_exactly(node1)
+        expect(described_class.by_name('node1', 'node2')).to contain_exactly(node1, node2)
+        expect(described_class.by_name('non_existent')).to be_empty
+      end
+    end
   end
 
   describe 'validations' do
