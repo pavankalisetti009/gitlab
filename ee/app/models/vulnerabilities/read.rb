@@ -47,6 +47,10 @@ module Vulnerabilities
     scope :by_uuid, ->(uuids) { where(uuid: uuids) }
     scope :by_vulnerabilities, ->(vulnerabilities) { where(vulnerability: vulnerabilities) }
 
+    class << self
+      alias_method :by_vulnerability, :by_vulnerabilities
+    end
+
     scope :order_severity_asc, -> { reorder(severity: :asc, vulnerability_id: :desc) }
     scope :order_severity_desc, -> { reorder(severity: :desc, vulnerability_id: :desc) }
     scope :order_detected_at_asc, -> { reorder(vulnerability_id: :asc) }

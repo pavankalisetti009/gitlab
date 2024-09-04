@@ -18,6 +18,7 @@ module Vulnerabilities
     end
 
     scope :by_signature_sha, ->(shas) { where(signature_sha: shas) }
+    scope :by_finding_id, ->(finding_ids) { where(finding: finding_ids) }
     scope :eager_load_comparison_entities, -> { includes(finding: [:scanner, :primary_identifier]) }
 
     def signature_hex

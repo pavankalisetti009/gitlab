@@ -15,4 +15,14 @@ RSpec.describe Vulnerabilities::FindingIdentifier, feature_category: :vulnerabil
     it { is_expected.to validate_presence_of(:identifier) }
     it { is_expected.to validate_uniqueness_of(:identifier_id).scoped_to(:occurrence_id) }
   end
+
+  describe '.by_finding_id' do
+    let!(:finding) { create(:vulnerabilities_finding) }
+    let!(:finding_identifier) { create(:vulnerabilities_finding_identifier, finding: finding) }
+    let!(:another_finding_identifier) { create(:vulnerabilities_finding_identifier) }
+
+    subject { described_class.by_finding_id(finding.id) }
+
+    it { is_expected.to contain_exactly(finding_identifier) }
+  end
 end

@@ -12,4 +12,14 @@ RSpec.describe Vulnerabilities::Finding::Evidence, feature_category: :vulnerabil
       let_it_be(:model) { create(:vulnerabilties_finding_evidence, project_id: parent.id) }
     end
   end
+
+  describe '.by_finding_id' do
+    let!(:finding) { create(:vulnerabilities_finding) }
+    let!(:evidence) { create(:vulnerabilties_finding_evidence, finding: finding) }
+    let!(:another_evidence) { create(:vulnerabilties_finding_evidence) }
+
+    subject { described_class.by_finding_id(finding.id) }
+
+    it { is_expected.to contain_exactly(evidence) }
+  end
 end

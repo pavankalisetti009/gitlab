@@ -33,6 +33,16 @@ RSpec.describe Vulnerabilities::FindingSignature, feature_category: :vulnerabili
     it { is_expected.to eq([expected_signature]) }
   end
 
+  describe '.by_finding_id' do
+    let!(:finding) { create(:vulnerabilities_finding) }
+    let!(:finding_signature) { create(:vulnerabilities_finding_signature, finding: finding) }
+    let!(:another_finding_signature) { create(:vulnerabilities_finding_signature) }
+
+    subject { described_class.by_finding_id(finding.id) }
+
+    it { is_expected.to contain_exactly(finding_signature) }
+  end
+
   describe '#eql?' do
     context 'when the other is also a FindingSignature' do
       context 'when algorithm_type and signature_sha are the same' do

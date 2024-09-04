@@ -30,4 +30,14 @@ RSpec.describe Vulnerabilities::Flag, feature_category: :vulnerability_managemen
       let_it_be(:model) { create(:vulnerabilities_flag, project_id: parent.id) }
     end
   end
+
+  describe '.by_finding_id' do
+    let!(:finding) { create(:vulnerabilities_finding) }
+    let!(:vulnerability_flag) { create(:vulnerabilities_flag, finding: finding) }
+    let!(:another_vulnerability_flag) { create(:vulnerabilities_flag) }
+
+    subject { described_class.by_finding_id(finding.id) }
+
+    it { is_expected.to contain_exactly(vulnerability_flag) }
+  end
 end

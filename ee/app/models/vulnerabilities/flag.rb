@@ -14,6 +14,8 @@ module Vulnerabilities
       false_positive: 0
     }
 
+    scope :by_finding_id, ->(finding_ids) { where(finding: finding_ids) }
+
     def initialize(attributes)
       attributes = attributes.to_h if attributes.respond_to?(:to_h)
       super(attributes)
