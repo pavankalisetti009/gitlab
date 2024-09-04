@@ -124,7 +124,7 @@ RSpec.describe 'Pipeline', :js, feature_category: :continuous_integration do
           )
         end
 
-        it 'prompts the user to verify their account' do
+        it 'prompts the user to verify their account', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/467777' do
           subject
 
           expect(page).to have_content('Before you can run pipelines, we need to verify your account.')
