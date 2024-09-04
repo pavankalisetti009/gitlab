@@ -25,20 +25,17 @@ module EE
     end
 
     # rubocop: disable CodeReuse/ActiveRecord
-    # rubocop: disable Gitlab/ModuleWithInstanceVariables
     override :projects
     def projects
-      strong_memoize(:projects) do
-        next unless params[:project_ids].present? && params[:project_ids].is_a?(String)
-        next unless ::Feature.enabled?(:advanced_search_multi_project_select, current_user)
+      return unless params[:project_ids].present? && params[:project_ids].is_a?(String)
+      return unless ::Feature.enabled?(:advanced_search_multi_project_select, current_user)
 
-        project_ids = params[:project_ids].split(',')
-        the_projects = ::Project.where(id: project_ids)
-        allowed_projects = the_projects.find_all { |p| can?(current_user, :read_project, p) }
-        allowed_projects.presence
-      end
+      project_ids = params[:project_ids].split(',')
+      the_projects = ::Project.where(id: project_ids)
+      allowed_projects = the_projects.find_all { |p| can?(current_user, :read_project, p) }
+      allowed_projects.presence
     end
-    # rubocop: enable Gitlab/ModuleWithInstanceVariables
+    strong_memoize_attr :projects
     # rubocop: enable CodeReuse/ActiveRecord
 
     def use_zoekt?
