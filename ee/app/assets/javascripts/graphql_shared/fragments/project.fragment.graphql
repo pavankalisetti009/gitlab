@@ -1,4 +1,4 @@
-#import "~/organizations/shared/graphql/fragments/base_project.fragment.graphql"
+#import "~/graphql_shared/fragments/base_project.fragment.graphql"
 
 fragment Project on Project {
   ...BaseProject
