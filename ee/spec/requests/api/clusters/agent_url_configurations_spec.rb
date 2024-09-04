@@ -12,7 +12,23 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
     project.add_maintainer(user)
   end
 
+  before do
+    stub_licensed_features(cluster_receptive_agents: true)
+  end
+
   describe 'GET /projects/:id/cluster_agents/:agent_id/url_configurations' do
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns not found' do
+        get api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations", user)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
     context 'when receptive agents are enabled' do
       before do
         stub_application_setting(receptive_cluster_agents_enabled: true)
@@ -73,6 +89,18 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
 
   describe 'GET /projects/:id/cluster_agents/:agent_id/url_configurations/:url_configuration_id' do
     let_it_be(:url_configuration) { create(:cluster_agent_url_configuration, :public_key_auth, agent: agent) }
+
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns not found' do
+        get api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations/#{url_configuration.id}", user)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
 
     context 'when receptive agents are enabled' do
       before do
@@ -144,6 +172,20 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
   end
 
   describe 'POST /projects/:id/cluster_agents/:agent_id/url_configurations' do
+    context 'when receptive agents feature is disabled because of the tier' do
+      let_it_be(:params) { { url: 'grpcs://localhost:4242' } }
+
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns not found' do
+        post(api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations", user), params: params)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
     context 'when receptive agents are enabled' do
       before do
         stub_application_setting(receptive_cluster_agents_enabled: true)
@@ -304,6 +346,19 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
   describe 'DELETE /projects/:id/cluster_agents/:agent_id/url_configurations/:url_configuration_id' do
     let_it_be(:url_configuration) { create(:cluster_agent_url_configuration, :public_key_auth, agent: agent) }
 
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns not found' do
+        delete api("/projects/#{project.id}/cluster_agents/#{agent.id}/url_configurations/#{url_configuration.id}",
+          user)
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+
     context 'when receptive agents are enabled' do
       before do
         stub_application_setting(receptive_cluster_agents_enabled: true)
@@ -355,8 +410,6 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
     end
 
     context 'when receptive agents are disabled' do
-      let_it_be(:params) { { url: 'grpcs://localhost:4242' } }
-
       before do
         stub_application_setting(receptive_cluster_agents_enabled: false)
       end

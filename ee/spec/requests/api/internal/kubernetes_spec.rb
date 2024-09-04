@@ -450,4 +450,56 @@ RSpec.describe API::Internal::Kubernetes, feature_category: :deployment_manageme
       end
     end
   end
+
+  describe 'GET /internal/kubernetes/receptive_agents' do
+    let_it_be(:project) { create(:project) }
+    let_it_be(:receptive_agent1) do
+      agent = create(:cluster_agent, project: project, is_receptive: true)
+      create(:cluster_agent_url_configuration, :certificate_auth, agent: agent)
+
+      agent
+    end
+
+    let_it_be(:receptive_agent2) do
+      agent = create(:cluster_agent, project: project, is_receptive: true)
+      create(:cluster_agent_url_configuration, :public_key_auth, agent: agent)
+
+      agent
+    end
+
+    before do
+      stub_licensed_features(cluster_receptive_agents: true)
+    end
+
+    def send_request(headers: {})
+      get api('/internal/kubernetes/receptive_agents'), headers: headers.reverse_merge(jwt_auth_headers)
+    end
+
+    include_examples 'authorization'
+
+    it 'returns all receptive agents' do
+      send_request
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response).to include('agents')
+      agents = json_response['agents']
+      expect(agents.count).to eq(2)
+      expect(agents).to contain_exactly(
+        hash_including('id' => receptive_agent1.id),
+        hash_including('id' => receptive_agent2.id)
+      )
+    end
+
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns not found' do
+        send_request
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
+  end
 end

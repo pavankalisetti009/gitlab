@@ -96,6 +96,22 @@ RSpec.describe Admin::ApplicationSettingsController do
       it_behaves_like 'settings for licensed features'
     end
 
+    context 'boolean attributes' do
+      shared_examples_for 'updates boolean attribute' do |attribute|
+        specify do
+          existing_value = ApplicationSetting.current.public_send(attribute)
+          new_value = !existing_value
+
+          put :update, params: { application_setting: { attribute => new_value } }
+
+          expect(response).to redirect_to(general_admin_application_settings_path)
+          expect(ApplicationSetting.current.public_send(attribute)).to eq(new_value)
+        end
+      end
+
+      it_behaves_like 'updates boolean attribute', :receptive_cluster_agents_enabled
+    end
+
     context 'default project deletion protection' do
       let(:settings) { { default_project_deletion_protection: true } }
       let(:feature) { :default_project_deletion_protection }

@@ -462,6 +462,10 @@ curl --request DELETE --header "Private-Token: <your_access_token>" "https://git
 
 ## Receptive agents
 
+DETAILS:
+**Tier:** Ultimate
+**Offering:** Self-managed, GitLab Dedicated
+
 > - [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/12180) in GitLab 17.4.
 
 You must enable the `Receptive Agents` feature in the application settings.

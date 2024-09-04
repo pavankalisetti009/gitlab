@@ -16,23 +16,38 @@ RSpec.describe API::Settings, 'EE Settings', :aggregate_failures, feature_catego
 
   it_behaves_like 'GET request permissions for admin mode'
 
+  describe 'GET /application/settings' do
+    it "returns application settings" do
+      get api(path, admin, admin_mode: true)
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response).to be_an Hash
+      expect(json_response['receptive_cluster_agents_enabled']).to eq(false)
+    end
+  end
+
   describe "PUT /application/settings" do
     it_behaves_like 'PUT request permissions for admin mode' do
       let(:params) { { file_template_project_id: project.id } }
     end
 
     it 'sets EE specific settings' do
-      stub_licensed_features(custom_file_templates: true)
+      stub_licensed_features(
+        custom_file_templates: true,
+        cluster_receptive_agents: true
+      )
 
       put api(path, admin, admin_mode: true),
         params: {
           file_template_project_id: project.id,
-          package_metadata_purl_types: [1]
+          package_metadata_purl_types: [1],
+          receptive_cluster_agents_enabled: true
         }
 
       expect(response).to have_gitlab_http_status(:ok)
       expect(json_response['file_template_project_id']).to eq(project.id)
       expect(json_response['package_metadata_purl_types']).to eq([1])
+      expect(json_response['receptive_cluster_agents_enabled']).to be(true)
     end
 
     context 'service access tokens expiration enforced setting' do

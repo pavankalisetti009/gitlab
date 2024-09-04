@@ -13,6 +13,8 @@ module EE
         mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
+        mount_mutation ::Mutations::Clusters::AgentUrlConfigurations::Create
+        mount_mutation ::Mutations::Clusters::AgentUrlConfigurations::Delete
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Destroy
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Update
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create

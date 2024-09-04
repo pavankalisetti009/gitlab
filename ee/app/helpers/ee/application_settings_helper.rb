@@ -50,6 +50,7 @@ module EE
         :lock_memberships_to_saml,
         :max_personal_access_token_lifetime,
         :max_ssh_key_lifetime,
+        :receptive_cluster_agents_enabled,
         :repository_size_limit,
         :search_max_shard_size_gb,
         :search_max_docs_denominator,

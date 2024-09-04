@@ -1,3 +1,5 @@
+- return unless License.feature_available?(:cluster_receptive_agents)
+
 - expanded = integration_expanded?('cluster_agents_')
 
 = render ::Layouts::SettingsBlockComponent.new(s_('ClusterAgents|GitLab Agent for Kubernetes'), id: 'js-cluster-agent-settings', expanded: expanded) do |c|

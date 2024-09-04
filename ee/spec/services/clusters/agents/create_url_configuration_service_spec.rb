@@ -13,6 +13,10 @@ RSpec.describe Clusters::Agents::CreateUrlConfigurationService, feature_category
 
     subject(:service) { described_class.new(agent: agent, current_user: user, params: params) }
 
+    before do
+      stub_licensed_features(cluster_receptive_agents: true)
+    end
+
     context 'when receptive agents are enabled' do
       before do
         stub_application_setting(receptive_cluster_agents_enabled: true)
@@ -106,6 +110,19 @@ RSpec.describe Clusters::Agents::CreateUrlConfigurationService, feature_category
           expect(response.status).to eq(:error)
           expect(response.message).to eq('URL configuration already exists for this agent')
         end
+      end
+    end
+
+    context 'when receptive agents feature is disabled because of the tier' do
+      before do
+        stub_licensed_features(cluster_receptive_agents: false)
+      end
+
+      it 'returns an error' do
+        response = service.execute
+
+        expect(response.status).to eq(:error)
+        expect(response.message).to eq('Receptive agents are unavailable for this GitLab instance')
       end
     end
 
