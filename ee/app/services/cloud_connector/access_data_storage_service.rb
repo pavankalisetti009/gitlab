@@ -11,7 +11,7 @@ module CloudConnector
     def execute
       record = CloudConnector::Access.last || CloudConnector::Access.new
 
-      if record.update(data: data)
+      if record.update(data: data, updated_at: Time.current)
         ServiceResponse.success
       else
         error_message = record.errors.full_messages.join(", ")

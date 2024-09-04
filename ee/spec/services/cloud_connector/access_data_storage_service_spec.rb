@@ -42,7 +42,7 @@ RSpec.describe CloudConnector::AccessDataStorageService, feature_category: :clou
         CloudConnector::Access.delete_all
       end
 
-      context 'when the valid data JSON is provided' do
+      context 'when the valid data JSON is provided', :freeze_time do
         let(:data) { service_data }
 
         it 'creates a new record' do
@@ -50,6 +50,7 @@ RSpec.describe CloudConnector::AccessDataStorageService, feature_category: :clou
 
           record = CloudConnector::Access.last
           expect(record.data).to eq(data)
+          expect(record.updated_at).to eq(Time.current)
         end
 
         it { is_expected.to be_success }
@@ -80,6 +81,10 @@ RSpec.describe CloudConnector::AccessDataStorageService, feature_category: :clou
 
         it 'updates the existing record' do
           expect { service }.to change { CloudConnector::Access.last.data }
+        end
+
+        it 'updates the updated_at field' do
+          expect { service }.to change { CloudConnector::Access.last.updated_at }
         end
 
         include_examples 'does not create a new record'
