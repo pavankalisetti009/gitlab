@@ -64466,6 +64466,18 @@ msgstr ""
 msgid "key result"
 msgstr ""
 
+msgid "key: %{key} is reserved for internal usage"
+msgstr ""
+
+msgid "key: %{key} must be a string"
+msgstr ""
+
+msgid "key: %{key} must have name component with 63 characters or less, and start/end with an alphanumeric character"
+msgstr ""
+
+msgid "key: %{key} must have prefix component with 253 characters or less, and have a valid DNS subdomain as a prefix"
+msgstr ""
+
 msgid "kuromoji custom analyzer"
 msgstr ""
 
@@ -64917,6 +64929,9 @@ msgstr ""
 msgid "must be a root namespace"
 msgstr ""
 
+msgid "must be a string"
+msgstr ""
+
 msgid "must be a valid IPv4 or IPv6 address"
 msgstr ""
 
@@ -64945,6 +64960,9 @@ msgid "must be an array of hash containing 'allow' attribute of type string"
 msgstr ""
 
 msgid "must be an email you have verified"
+msgstr ""
+
+msgid "must be an hash"
 msgstr ""
 
 msgid "must be associated with a Group or a Project"
@@ -65576,6 +65594,12 @@ msgid "value for '%{storage}' must be an integer"
 msgstr ""
 
 msgid "value for '%{storage}' must be between 0 and 100"
+msgstr ""
+
+msgid "value: %{value} must be 63 characters or less, and start/end with an alphanumeric character"
+msgstr ""
+
+msgid "value: %{value} must be a string"
 msgstr ""
 
 msgid "verify ownership"
