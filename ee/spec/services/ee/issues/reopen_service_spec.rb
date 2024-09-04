@@ -4,6 +4,11 @@ require 'spec_helper'
 
 RSpec.describe Issues::ReopenService, feature_category: :team_planning do
   describe '#execute' do
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      stub_licensed_features(epics: true)
+    end
+
     context 'when project bot it logs audit events' do
       let(:service) { described_class.new(container: project, current_user: project_bot) }
       let_it_be(:project_bot) { create(:user, :project_bot, email: "bot@example.com") }

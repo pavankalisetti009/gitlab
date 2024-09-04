@@ -119,21 +119,20 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
         new_parent.synced_epic.update!(parent: parent.synced_epic, relative_position: 50)
         new_sibling1.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 10)
         new_sibling2.synced_epic.update!(parent: new_parent.synced_epic, relative_position: 20)
-        stub_licensed_features(subepics: true)
       end
 
       subject(:move_child) { described_class.new(new_parent, user, params).execute }
     end
 
     before do
-      stub_feature_flags(work_item_epics: true)
+      stub_feature_flags(enforce_check_group_level_work_items_license: true, work_item_epics: true)
     end
 
     context 'when adjacent_work_item parent link is missing' do
       let(:synced_moving_object) { nil }
 
       before do
-        stub_licensed_features(subepics: true)
+        stub_licensed_features(subepics: true, epics: true)
         create(:parent_link, work_item: work_item, work_item_parent: parent)
       end
 
@@ -171,7 +170,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
       context 'when subepics feature is not available' do
         before do
-          stub_licensed_features(subepics: false)
+          stub_licensed_features(epics: true, subepics: false)
         end
 
         it 'returns an error' do
@@ -184,7 +183,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
 
       context 'when subepics feature is available' do
         before do
-          stub_licensed_features(subepics: true)
+          stub_licensed_features(epics: true, subepics: true)
         end
 
         context 'when synced epics for the work items exist' do
@@ -194,10 +193,35 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
             work_item.synced_epic.update!(parent: parent.synced_epic, relative_position: 40)
           end
 
+          context 'without group level work items license' do
+            before do
+              stub_licensed_features(epics: false, subepics: true)
+            end
+
+            it 'does not change the relative position of the synced epic' do
+              expect(execute).to eq(
+                {
+                  status: :error,
+                  message: "No matching work item found. Make sure that you are adding a valid work item ID.",
+                  http_status: 404
+                }
+              )
+            end
+          end
+        end
+
+        context 'when synced_work_item param is set' do
+          let(:synced_moving_object) { nil }
+          let(:params) { base_params.merge(adjacent_work_item: adjacent_work_item, synced_work_item: true) }
+
           it_behaves_like 'reorders the hierarchy'
 
           context 'when changing parent and reordering' do
             include_context 'with new parent that has children'
+
+            before do
+              work_item.synced_epic&.update!(parent: parent.synced_epic)
+            end
 
             it 'updates work item parent and legacy epic parent' do
               expect { move_child }.to change { work_item.reload.work_item_parent }.from(parent).to(new_parent)
@@ -259,6 +283,7 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
       end
 
       before do
+        stub_licensed_features(epics: true, subepics: true)
         top_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 20)
         last_adjacent.synced_epic.update!(parent: parent.synced_epic, relative_position: 30)
       end
@@ -274,6 +299,22 @@ RSpec.describe WorkItems::ParentLinks::ReorderService, feature_category: :portfo
                                                                                .to(new_parent.synced_epic)
 
           expect(new_parent.work_item_children_by_relative_position).to eq([new_sibling1, work_item, new_sibling2])
+        end
+
+        context 'without group level work items license' do
+          before do
+            stub_licensed_features(epics: false)
+          end
+
+          it 'does not change the relative position of the synced epic' do
+            expect(execute).to eq(
+              {
+                status: :error,
+                message: "No matching work item found. Make sure that you are adding a valid work item ID.",
+                http_status: 404
+              }
+            )
+          end
         end
       end
 

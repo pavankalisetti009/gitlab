@@ -28,7 +28,43 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
     graphql_query_for('workItem', { 'id' => global_id }, work_item_fields)
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    stub_licensed_features(epics: true)
+  end
+
   context 'when the user can read the work item' do
+    context 'when work item is created at the group level' do
+      let_it_be(:group_work_item) { create(:work_item, :group_level, namespace: group) }
+      let(:global_id) { group_work_item.to_gid.to_s }
+
+      it 'always returns false in the archived field' do
+        post_graphql(query, current_user: current_user)
+
+        expect(work_item_data).to include(
+          'id' => group_work_item.to_gid.to_s,
+          'iid' => group_work_item.iid.to_s,
+          'archived' => false
+        )
+      end
+
+      context 'without group level work item license' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'returns nil' do
+          post_graphql(query, current_user: current_user)
+
+          expect(work_item_data).to be_blank
+          expect(graphql_errors.first["message"]).to eq(
+            "The resource that you are attempting to access does not exist or you don't have " \
+              "permission to perform this action"
+          )
+        end
+      end
+    end
+
     context 'when querying widgets' do
       describe 'iteration widget' do
         let(:work_item_fields) do
@@ -521,6 +557,60 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
           post_graphql(query, current_user: current_user)
 
           expect_graphql_errors_to_be_empty
+        end
+
+        context 'when work item is associated with a group' do
+          let_it_be(:group_work_item) { create(:work_item, :group_level, namespace: group) }
+          let_it_be(:group_work_item_note) { create(:note, noteable: group_work_item, author: developer, project: nil) }
+
+          let(:global_id) { group_work_item.to_gid.to_s }
+          let(:work_item_fields) do
+            <<~GRAPHQL
+              id
+              widgets {
+                type
+                ... on WorkItemWidgetNotes {
+                  discussions(filter: ONLY_COMMENTS, first: 10) {
+                    nodes {
+                      id
+                      notes {
+                        nodes {
+                          id
+                          body
+                          maxAccessLevelOfAuthor
+                          authorIsContributor
+                          awardEmoji {
+                            nodes {
+                              name
+                              user {
+                                name
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            GRAPHQL
+          end
+
+          before_all do
+            create(:award_emoji, awardable: group_work_item_note, name: 'rocket', user: developer)
+          end
+
+          it 'returns notes for the group work item' do
+            post_graphql(query, current_user: current_user)
+
+            all_widgets = graphql_dig_at(work_item_data, :widgets)
+            notes_widget = all_widgets.find { |x| x['type'] == 'NOTES' }
+            notes = graphql_dig_at(notes_widget['discussions'], :nodes).flat_map { |d| d['notes']['nodes'] }
+
+            expect(notes).to contain_exactly(
+              hash_including('body' => group_work_item_note.note)
+            )
+          end
         end
 
         context 'when fetching description version diffs' do
@@ -1062,7 +1152,7 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
 
         context 'when work item epics available ' do
           before do
-            stub_licensed_features(epic_colors: true)
+            stub_licensed_features(epics: true, epic_colors: true)
           end
 
           it 'returns widget information' do
