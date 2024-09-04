@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environment_management do
+RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environment_management do # rubocop:disable RSpec/DuplicateSpecLocation -- EE spec
   it 'includes the ee specific fields' do
     expect(described_class).to have_graphql_fields(
       :vulnerability_images,
