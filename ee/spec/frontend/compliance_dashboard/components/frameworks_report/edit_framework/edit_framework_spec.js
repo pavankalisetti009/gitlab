@@ -16,7 +16,10 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import { stubComponent } from 'helpers/stub_component';
 import waitForPromises from 'helpers/wait_for_promises';
 
-import { createComplianceFrameworksReportResponse } from '../../../mock_data';
+import {
+  createComplianceFrameworksReportResponse,
+  createComplianceFrameworkMutationResponse,
+} from '../../../mock_data';
 
 Vue.use(VueApollo);
 
@@ -40,6 +43,7 @@ describe('Edit Framework Form', () => {
 
   const showDeleteModal = jest.fn();
   const routerBack = jest.fn();
+  const routerPush = jest.fn();
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
   const findError = () => wrapper.findComponent(GlAlert);
@@ -72,6 +76,7 @@ describe('Edit Framework Form', () => {
         },
         $router: {
           back: routerBack,
+          push: routerPush,
         },
       },
     });
@@ -168,13 +173,20 @@ describe('Edit Framework Form', () => {
   });
 
   it.each`
-    routeParams    | mutation
-    ${{}}          | ${createComplianceFrameworkMutation}
-    ${{ id: '1' }} | ${updateComplianceFrameworkMutation}
-  `('invokes correct mutation', async ({ routeParams, mutation }) => {
+    routeParams    | mutation                             | successHandler
+    ${{}}          | ${createComplianceFrameworkMutation} | ${routerPush}
+    ${{ id: '1' }} | ${updateComplianceFrameworkMutation} | ${routerBack}
+  `('invokes correct mutation', async ({ routeParams, mutation, successHandler }) => {
+    const mockResponse = (mutationType, namespace) =>
+      jest
+        .fn()
+        .mockResolvedValue(createComplianceFrameworkMutationResponse(mutationType, namespace));
     const stubHandlers = [
-      [createComplianceFrameworkMutation, jest.fn()],
-      [updateComplianceFrameworkMutation, jest.fn()],
+      [createComplianceFrameworkMutation, mockResponse('createComplianceFramework', 'framework')],
+      [
+        updateComplianceFrameworkMutation,
+        mockResponse('updateComplianceFramework', 'complianceFramework'),
+      ],
     ];
 
     wrapper = createComponent(mountExtended, {
@@ -188,8 +200,9 @@ describe('Edit Framework Form', () => {
 
     const form = wrapper.find('form');
     await form.trigger('submit');
-
+    await waitForPromises();
     expect(stubHandlers.find((handler) => handler[0] === mutation)[1]).toHaveBeenCalled();
+    expect(successHandler).toHaveBeenCalled();
   });
 
   describe('Delete button', () => {

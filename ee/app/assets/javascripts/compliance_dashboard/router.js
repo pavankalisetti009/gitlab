@@ -9,6 +9,7 @@ import {
   ROUTE_VIOLATIONS,
   ROUTE_NEW_FRAMEWORK,
   ROUTE_EDIT_FRAMEWORK,
+  ROUTE_NEW_FRAMEWORK_SUCCESS,
 } from './constants';
 
 import MainLayout from './components/main_layout.vue';
@@ -18,6 +19,7 @@ import FrameworksReport from './components/frameworks_report/report.vue';
 import EditFramework from './components/frameworks_report/edit_framework/edit_framework.vue';
 import ProjectsReport from './components/projects_report/report.vue';
 import StandardsReport from './components/standards_adherence_report/report.vue';
+import NewFrameworkSuccess from './components/frameworks_report/edit_framework/new_framework_success.vue';
 
 export function createRouter(basePath, props) {
   const {
@@ -86,6 +88,11 @@ export function createRouter(basePath, props) {
       path: '/frameworks/new',
       name: ROUTE_NEW_FRAMEWORK,
       component: EditFramework,
+    },
+    {
+      path: '/frameworks/new/:id',
+      name: ROUTE_NEW_FRAMEWORK_SUCCESS,
+      component: NewFrameworkSuccess,
     },
     {
       path: '/frameworks/:id',

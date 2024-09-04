@@ -35611,6 +35611,60 @@ msgstr ""
 msgid "New! Suggest changes directly"
 msgstr ""
 
+msgid "NewFramework|All todos done."
+msgstr ""
+
+msgid "NewFramework|Apply to projects"
+msgstr ""
+
+msgid "NewFramework|Back to compliance center"
+msgstr ""
+
+msgid "NewFramework|Compliance framework created!"
+msgstr ""
+
+msgid "NewFramework|Feedback?"
+msgstr ""
+
+msgid "NewFramework|Go to the %{linkStart}compliance center%{linkEnd} to apply this framework to projects."
+msgstr ""
+
+msgid "NewFramework|Go to the %{linkStart}policy management page%{linkEnd} to scope a policy for this framework."
+msgstr ""
+
+msgid "NewFramework|Have questions or thoughts on the new improvements we made? %{linkStart}Please provide feedback on your experience%{linkEnd}."
+msgstr ""
+
+msgid "NewFramework|How do I apply the framework to projects?"
+msgstr ""
+
+msgid "NewFramework|How to scope policies?"
+msgstr ""
+
+msgid "NewFramework|New improvements to creating compliance framework."
+msgstr ""
+
+msgid "NewFramework|Policies scoped to a framework serve as solutions to specific compliance requirements and are applied to projects."
+msgstr ""
+
+msgid "NewFramework|Projects that have this framework applied are automatically checked against requirements and have policies enforced."
+msgstr ""
+
+msgid "NewFramework|Scope policies"
+msgstr ""
+
+msgid "NewFramework|Suggested next steps"
+msgstr ""
+
+msgid "NewFramework|Use the compliance framework to scope policies and include projects to make sure they are compliant."
+msgstr ""
+
+msgid "NewFramework|Why apply the framework to projects?"
+msgstr ""
+
+msgid "NewFramework|Why scope policies?"
+msgstr ""
+
 msgid "Newest first"
 msgstr ""
 
