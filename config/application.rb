@@ -242,6 +242,7 @@ module Gitlab
       redirect
       question
       SAMLResponse
+      selectedText
     ]
 
     # This config option can be removed after Rails 7.1 by https://gitlab.com/gitlab-org/gitlab/-/issues/416270
