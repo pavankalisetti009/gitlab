@@ -312,6 +312,11 @@ module EE
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the group.'
 
+        field :dependencies, ::Types::Sbom::DependencyType.connection_type,
+          null: true,
+          resolver: ::Resolvers::Sbom::DependenciesResolver,
+          description: 'Software dependencies used by projects under this group.'
+
         def billable_members_count(requested_hosted_plan: nil)
           object.billable_members_count(requested_hosted_plan)
         end

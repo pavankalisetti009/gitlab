@@ -43,10 +43,12 @@ module Resolvers
 
       validates mutually_exclusive: [:component_names, :component_ids]
 
-      alias_method :project, :object
+      alias_method :project_or_namespace, :object
 
       def resolve_with_lookahead(**args)
-        return ::Sbom::Occurrence.none unless project
+        return ::Sbom::Occurrence.none unless project_or_namespace
+
+        args[:component_ids] = resolve_gids(args[:component_ids], ::Sbom::Component) if args[:component_ids]
 
         list = dependencies(args)
 
@@ -64,8 +66,14 @@ module Resolvers
 
       private
 
+      def resolve_gids(gids, gid_class)
+        gids.map do |gid|
+          Types::GlobalIDType[gid_class].coerce_isolated_input(gid).model_id
+        end
+      end
+
       def dependencies(params)
-        apply_lookahead(::Sbom::DependenciesFinder.new(project, params: mapped_params(params)).execute)
+        apply_lookahead(::Sbom::DependenciesFinder.new(project_or_namespace, params: mapped_params(params)).execute)
       end
 
       def mapped_params(params)

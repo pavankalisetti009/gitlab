@@ -121,15 +121,27 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
           context 'with existing dependencies' do
             let_it_be(:project) { create(:project, group: group) }
+            let_it_be(:component_1) { create(:sbom_component, name: 'a') }
+            let_it_be(:component_2) { create(:sbom_component, name: 'b') }
             let_it_be(:sbom_occurrence_npm) do
-              component = create(:sbom_component, name: 'a')
-              create(:sbom_occurrence, :mit, :npm, highest_severity: 'low', component: component, project: project)
+              create(
+                :sbom_occurrence,
+                :mit,
+                :npm,
+                highest_severity: 'low',
+                component: component_1,
+                project: project
+              )
             end
 
             let_it_be(:sbom_occurrence_bundler) do
-              component = create(:sbom_component, name: 'b')
-              create(:sbom_occurrence, :apache_2, :bundler, highest_severity: 'high', component: component,
-                project: project)
+              create(
+                :sbom_occurrence,
+                :apache_2, :bundler,
+                highest_severity: 'high',
+                component: component_2,
+                project: project
+              )
             end
 
             let_it_be(:archived_occurrence) do
@@ -188,6 +200,22 @@ RSpec.describe Groups::DependenciesController, feature_category: :dependency_man
 
               expect(response.headers).to include('X-Per-Page', 'X-Page', 'X-Next-Page', 'X-Prev-Page')
               expect(response.headers['X-Page-Type']).to eq('cursor')
+            end
+
+            context 'when filtering with component_id' do
+              let(:params) do
+                {
+                  component_ids: [component_1.id]
+                }
+              end
+
+              it 'returns matching Sbom::Occurrence records' do
+                subject
+
+                dependency_name = json_response.dig("dependencies", 0, "name")
+
+                expect(dependency_name).to eq(sbom_occurrence_npm.component_name)
+              end
             end
 
             context 'when paginating over licenses' do
