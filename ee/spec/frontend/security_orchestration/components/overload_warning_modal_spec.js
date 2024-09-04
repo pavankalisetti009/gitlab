@@ -1,6 +1,6 @@
 import { GlModal } from '@gitlab/ui';
 import { shallowMount } from '@vue/test-utils';
-import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
+import OverloadWarningModal from 'ee/security_orchestration/components/overload_warning_modal.vue';
 
 describe('OverloadWarningModal', () => {
   let wrapper;

@@ -22,6 +22,13 @@ name: Scheduled Dast/SAST scan
 description: This policy enforces pipeline configuration to have a job with DAST scan
 enabled: false`;
 
+export const defaultMockScanExecutionObject = {
+  type: 'scan_execution_policy',
+  name: 'Scheduled Dast/SAST scan',
+  description: 'This policy enforces pipeline configuration to have a job with DAST scan',
+  enabled: false,
+};
+
 export const mockScheduleScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
 rules:
   - type: schedule
@@ -35,6 +42,20 @@ actions:
   - scan: secret_detection
 `);
 
+export const mockScheduleScanExecutionObject = {
+  ...defaultMockScanExecutionObject,
+  rules: [
+    { type: 'schedule', cadence: '* * * * *', branches: ['main'], id: ruleId },
+    { type: 'pipeline', branches: ['main'], id: ruleId },
+  ],
+  actions: [
+    {
+      scan: 'secret_detection',
+      id: actionId,
+    },
+  ],
+};
+
 export const mockDastScanExecutionManifest = defaultMockScanExecutionManifest.concat(`
 rules:
   - type: pipeline
@@ -47,10 +68,7 @@ actions:
 `);
 
 export const mockDastScanExecutionObject = {
-  type: 'scan_execution_policy',
-  name: 'Scheduled Dast/SAST scan',
-  description: 'This policy enforces pipeline configuration to have a job with DAST scan',
-  enabled: false,
+  ...mockScheduleScanExecutionObject,
   rules: [{ type: 'pipeline', branches: ['main'], id: ruleId }],
   actions: [
     {
