@@ -42,6 +42,12 @@ module Ai
       })
     end
 
+    def store_to_pg
+      return false unless valid?
+
+      Ai::UsageEventWriteBuffer.add(self.class.name, attributes.compact)
+    end
+
     private
 
     def populate_organization_id

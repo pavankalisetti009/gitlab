@@ -13,6 +13,7 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
     before do
       allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(true)
+      stub_feature_flags(code_suggestions_usage_events_in_pg: true)
     end
 
     context 'for unknown event' do
@@ -34,8 +35,10 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
           allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
         end
 
-        it 'does not create new events' do
-          expect(model_class).not_to receive(:new)
+        it 'does not store new event to clickhouse' do
+          expect_next_instance_of(model_class, expected_event_hash) do |instance|
+            expect(instance).not_to receive(:store_to_clickhouse)
+          end
 
           track_event
         end
@@ -50,12 +53,42 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
       end
     end
 
-    it_behaves_like 'common event tracking for', Ai::CodeSuggestionEvent do
+    context 'for code suggestion event' do
       let(:event_name) { 'code_suggestion_shown_in_ide' }
+      let(:expected_event_hash) do
+        {
+          user: current_user,
+          event: event_name
+        }
+      end
+
+      include_examples 'common event tracking for', Ai::CodeSuggestionEvent
+
+      context 'with clickhouse not available' do
+        before do
+          allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(false)
+        end
+
+        it 'stores event to postgres' do
+          expect_next_instance_of(Ai::CodeSuggestionEvent, expected_event_hash) do |instance|
+            expect(instance).to receive(:store_to_pg).once
+          end
+
+          track_event
+        end
+      end
     end
 
-    it_behaves_like 'common event tracking for', Ai::DuoChatEvent do
+    context 'for chat event' do
       let(:event_name) { 'request_duo_chat_response' }
+      let(:expected_event_hash) do
+        {
+          user: current_user,
+          event: event_name
+        }
+      end
+
+      include_examples 'common event tracking for', Ai::DuoChatEvent
     end
   end
 end

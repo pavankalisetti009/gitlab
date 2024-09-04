@@ -4,6 +4,7 @@ module ClickHouse
   class DumpWriteBufferWorker
     include ApplicationWorker
     include ClickHouseWorker
+    include LoopWithRuntimeLimit
 
     idempotent!
     queue_namespace :click_house_buffer_sync
@@ -34,27 +35,6 @@ module ClickHouse
     end
 
     private
-
-    def loop_with_runtime_limit(limit)
-      status = :processed
-      total_inserted_rows = 0
-
-      runtime_limiter = Gitlab::Metrics::RuntimeLimiter.new(limit)
-
-      loop do
-        if runtime_limiter.over_time?
-          status = :over_time
-          break
-        end
-
-        inserted_rows = yield
-        total_inserted_rows += inserted_rows
-
-        break if inserted_rows == 0
-      end
-
-      [status, total_inserted_rows]
-    end
 
     def enabled?
       Gitlab::ClickHouse.globally_enabled_for_analytics?
