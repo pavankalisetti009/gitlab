@@ -13,6 +13,7 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { useFakeDate } from 'helpers/fake_date';
 import { mockMetrics } from './mock_data';
 
 jest.mock('~/alert');
@@ -278,6 +279,34 @@ describe('MetricsComponent', () => {
         metricId: 'unknown-metric',
       });
       expect(visitUrlMock).not.toHaveBeenCalled();
+    });
+
+    describe('when the selected metric has timestamp_of_datapoint_with_traceId', () => {
+      useFakeDate('2024-08-29 11:00:00');
+
+      beforeEach(async () => {
+        const mockTimestampOfDatapointNano = Date.now() * 1e6;
+        observabilityClientMock.fetchMetrics.mockResolvedValue({
+          metrics: [
+            {
+              ...mockMetrics[0],
+              timestamp_of_datapoint_with_traceId: mockTimestampOfDatapointNano,
+            },
+          ],
+          all_available_attributes: mockAvailableAttributes,
+        });
+
+        await mountComponent();
+
+        findMetricsTable().vm.$emit('metric-clicked', { metricId: mockMetrics[0].name });
+      });
+
+      it('redirects to the details url and sets the date range interval to be 1min around the datapoint', () => {
+        expect(visitUrlMock).toHaveBeenCalledWith(
+          `http://test.host/projectX/-/metrics/${mockMetricSelected.name}?type=${mockMetricSelected.type}&date_range=custom&date_start=2024-08-29T10%3A59%3A00.000Z&date_end=2024-08-29T11%3A01%3A00.000Z`,
+          false,
+        );
+      });
     });
   });
 });

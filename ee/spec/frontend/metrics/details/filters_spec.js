@@ -1,4 +1,8 @@
-import { filterObjToQuery, queryToFilterObj } from 'ee/metrics/details/filters';
+import {
+  filterObjToQuery,
+  queryToFilterObj,
+  metricsDetailsQueryFromAttributes,
+} from 'ee/metrics/details/filters';
 
 describe('filterObjToQuery', () => {
   const query =
@@ -97,5 +101,46 @@ describe('filterObjToQuery', () => {
         groupBy: {},
       });
     });
+  });
+});
+
+describe('metricsDetailsQueryFromAttributes', () => {
+  it('returns the metrics details query params from the given attributes', () => {
+    expect(
+      metricsDetailsQueryFromAttributes({
+        dateRange: {
+          startDate: new Date('2024-08-29 11:00:00'),
+          endDate: new Date('2024-08-29 12:00:00'),
+        },
+      }),
+    ).toEqual({
+      date_end: '2024-08-29T12:00:00.000Z',
+      date_range: 'custom',
+      date_start: '2024-08-29T11:00:00.000Z',
+    });
+  });
+
+  it('returns an empty obj if the end date is missing', () => {
+    expect(
+      metricsDetailsQueryFromAttributes({
+        dateRange: {
+          startDate: new Date('2024-08-29 11:00:00'),
+        },
+      }),
+    ).toEqual({});
+  });
+
+  it('returns an empty obj if the start date is missing', () => {
+    expect(
+      metricsDetailsQueryFromAttributes({
+        dateRange: {
+          endDate: new Date('2024-08-29 11:00:00'),
+        },
+      }),
+    ).toEqual({});
+  });
+
+  it('returns an empty obj if the dateRange is missing', () => {
+    expect(metricsDetailsQueryFromAttributes({})).toEqual({});
   });
 });
