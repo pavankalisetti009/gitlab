@@ -68,7 +68,7 @@ describe('SecretFormWrapper component', () => {
 
   describe('when query is successful', () => {
     beforeEach(async () => {
-      await createComponent({ stubs: { GlSprintf } });
+      await createComponent();
     });
 
     it('does not show loading icon', () => {
@@ -76,8 +76,8 @@ describe('SecretFormWrapper component', () => {
     });
 
     it('renders max branches note', () => {
-      expect(findMaxBranchesNote().text()).toContain(
-        'Maximum of 100 branches listed. For more branches, enter a search query.',
+      expect(findMaxBranchesNote().attributes('message')).toBe(
+        'Maximum of %{limit} branches listed. For more branches, enter a search query.',
       );
     });
 
