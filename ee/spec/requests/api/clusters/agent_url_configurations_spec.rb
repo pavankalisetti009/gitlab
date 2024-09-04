@@ -207,17 +207,14 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
       end
 
       context 'when providing client cert and key' do
-        let_it_be(:client_cert) do
-          File.read(Rails.root.join('spec/fixtures/clusters/sample_cert.pem'))
-        end
-
+        let_it_be(:client_cert) { File.read(Rails.root.join('spec/fixtures/clusters/sample_cert.pem')) }
         let_it_be(:client_key) { File.read(Rails.root.join('spec/fixtures/clusters/sample_key.key')) }
 
         let_it_be(:params) do
           {
             url: 'grpcs://localhost:4242',
-            client_cert: Base64.encode64(client_cert),
-            client_key: Base64.encode64(client_key)
+            client_cert: client_cert,
+            client_key: client_key
           }
         end
 
@@ -229,7 +226,7 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
           expect(json_response['agent_id']).to eq(agent.id)
           expect(json_response['url']).to eq(params[:url])
           expect(json_response['public_key']).to be_nil
-          expect(Base64.decode64(json_response['client_cert'])).to eq(client_cert)
+          expect(json_response['client_cert']).to eq(client_cert)
         end
       end
 
@@ -239,7 +236,7 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
         let_it_be(:params) do
           {
             url: 'grpcs://localhost:4242',
-            ca_cert: Base64.encode64(ca_cert)
+            ca_cert: ca_cert
           }
         end
 
@@ -250,7 +247,7 @@ RSpec.describe API::Clusters::AgentUrlConfigurations, feature_category: :deploym
           expect(response).to match_response_schema('public_api/v4/agent_url_configuration')
           expect(json_response['agent_id']).to eq(agent.id)
           expect(json_response['url']).to eq(params[:url])
-          expect(Base64.decode64(json_response['ca_cert'])).to eq(ca_cert)
+          expect(json_response['ca_cert']).to eq(ca_cert)
         end
       end
 

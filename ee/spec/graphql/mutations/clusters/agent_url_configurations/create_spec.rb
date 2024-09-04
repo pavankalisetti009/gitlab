@@ -54,8 +54,8 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Create, feature_cate
             mutation.resolve(
               cluster_agent_id: cluster_agent.to_global_id,
               url: url,
-              client_cert: Base64.encode64(client_cert),
-              client_key: Base64.encode64(client_key)
+              client_cert: client_cert,
+              client_key: client_key
             )
           end
 
@@ -75,7 +75,7 @@ RSpec.describe Mutations::Clusters::AgentUrlConfigurations::Create, feature_cate
             mutation.resolve(
               cluster_agent_id: cluster_agent.to_global_id,
               url: url,
-              ca_cert: Base64.encode64(ca_cert),
+              ca_cert: ca_cert,
               tls_host: tls_host
             )
           end
