@@ -142,10 +142,21 @@ module Gitlab
           end
 
           def model_params(options)
-            {
-              provider: provider(options),
-              model: model(options)
-            }
+            if chat_feature_setting&.self_hosted?
+              self_hosted_model = chat_feature_setting.self_hosted_model
+
+              {
+                provider: :litellm,
+                model: self_hosted_model.model,
+                model_endpoint: self_hosted_model.endpoint,
+                model_api_key: self_hosted_model.api_token
+              }
+            else
+              {
+                provider: provider(options),
+                model: model(options)
+              }
+            end
           end
 
           def request_body_chat_2(prompt:, options: {})
