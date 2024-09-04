@@ -15,12 +15,24 @@ RSpec.describe Security::Ingestion::Tasks::IngestFindingIdentifiers, feature_cat
     subject(:ingest_finding_identifiers) { service_object.execute }
 
     before do
-      finding_1.identifiers << identifier
+      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+        %w[vulnerability_occurrence_identifiers], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480333'
+      ) do
+        ::Gitlab::Database.allow_cross_joins_across_databases(
+          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480333'
+        ) do
+          finding_1.identifiers << identifier
+        end
+      end
     end
 
     it 'associates findings with the identifiers' do
       expect { ingest_finding_identifiers }.to change { Vulnerabilities::FindingIdentifier.count }.by(1)
-                                           .and change { finding_2.reload.identifiers }.from([]).to([identifier])
+                                           .and change {
+                                                  finding_2.reload.identifiers.allow_cross_joins_across_databases(
+                                                    url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480333'
+                                                  )
+                                                }.from([]).to([identifier])
     end
 
     it_behaves_like 'bulk insertable task'

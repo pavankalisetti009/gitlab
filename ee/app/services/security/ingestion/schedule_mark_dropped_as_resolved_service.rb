@@ -97,6 +97,9 @@ module Security
           .resolved_on_default_branch
           .for_projects(project_id)
           .order_detected_at_desc
+          .allow_cross_joins_across_databases(
+            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/481468'
+          )
       end
 
       def primary_identifier_types

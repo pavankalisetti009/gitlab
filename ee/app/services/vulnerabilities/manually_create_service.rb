@@ -36,6 +36,7 @@ module Vulnerabilities
           vulnerability_occurrence_identifiers
           vulnerability_reads
           vulnerability_scanners
+          vulnerability_identifiers
         ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/476175'
       ) do
         response = Vulnerability.transaction do
