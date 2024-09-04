@@ -20,7 +20,7 @@ module EE
                                    .merge(event: event_name)
                                    .slice(*matched_model.attribute_names)
 
-          matched_model.new(attributes).store
+          matched_model.new(attributes).store_to_clickhouse
         end
       end
     end

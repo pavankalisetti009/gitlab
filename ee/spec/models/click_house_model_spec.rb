@@ -4,8 +4,10 @@ require 'spec_helper'
 
 RSpec.describe ClickHouseModel, feature_category: :value_stream_management do
   let(:model_class) do
-    Class.new(described_class) do
-      self.table_name = 'test_table'
+    Class.new do
+      include ClickHouseModel
+
+      self.clickhouse_table_name = 'test_table'
 
       def to_clickhouse_csv_row
         { foo: 'bar' }
@@ -21,13 +23,13 @@ RSpec.describe ClickHouseModel, feature_category: :value_stream_management do
     end
   end
 
-  describe '#store' do
+  describe '#store_to_clickhouse' do
     subject(:model) { model_class.new }
 
     it 'saves serialized record to clickhouse buffer' do
       expect(::ClickHouse::WriteBuffer).to receive(:add).with('test_table', { foo: 'bar' })
 
-      model.store
+      model.store_to_clickhouse
     end
   end
 
