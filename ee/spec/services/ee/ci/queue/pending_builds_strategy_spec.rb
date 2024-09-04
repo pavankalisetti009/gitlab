@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::Queue::PendingBuildsStrategy, feature_category: :continuous_integration do
+RSpec.describe Ci::Queue::PendingBuildsStrategy, :freeze_time, feature_category: :continuous_integration do
   let(:runner) { create(:ci_runner, :instance, :online) }
   let(:relation) { Ci::PendingBuild.all }
   let(:pending_build) { create(:ci_pending_build) }

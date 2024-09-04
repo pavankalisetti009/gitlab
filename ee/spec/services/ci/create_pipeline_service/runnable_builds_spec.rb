@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::CreatePipelineService, :sidekiq_inline, feature_category: :fleet_visibility do
+RSpec.describe Ci::CreatePipelineService, :sidekiq_inline, :freeze_time, feature_category: :fleet_visibility do
   let_it_be(:namespace) { create(:namespace, :with_used_build_minutes_limit) }
   let_it_be(:project) { create(:project, :repository, namespace: namespace) }
   let_it_be(:user) { project.first_owner }
@@ -45,9 +45,7 @@ RSpec.describe Ci::CreatePipelineService, :sidekiq_inline, feature_category: :fl
   end
 
   context 'with private runners' do
-    let_it_be(:private_runner) do
-      create(:ci_runner, :project, :online, projects: [project])
-    end
+    let_it_be(:private_runner) { create(:ci_runner, :project, :online, projects: [project]) }
 
     it 'does not drop the builds', :aggregate_failures do
       pipeline = create_pipeline

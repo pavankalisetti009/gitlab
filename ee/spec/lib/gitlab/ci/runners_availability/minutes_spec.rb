@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::RunnersAvailability::Minutes, feature_category: :continuous_integration do
+RSpec.describe Gitlab::Ci::RunnersAvailability::Minutes, :freeze_time, feature_category: :continuous_integration do
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:instance_runner) { create(:ci_runner, :instance, :online) }
@@ -38,9 +38,7 @@ RSpec.describe Gitlab::Ci::RunnersAvailability::Minutes, feature_category: :cont
 
   describe 'database queries' do
     let_it_be(:project) { create(:project) }
-    let_it_be(:private_runner) do
-      create(:ci_runner, :project, :online, projects: [project])
-    end
+    let_it_be(:private_runner) { create(:ci_runner, :project, :online, projects: [project]) }
 
     it 'caches records loaded from database' do
       ActiveRecord::QueryRecorder.new(skip_cached: false) do

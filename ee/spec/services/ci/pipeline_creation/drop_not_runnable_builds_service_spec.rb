@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_category: :continuous_integration do
+RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, :freeze_time, feature_category: :continuous_integration do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, group: group) }
 
@@ -39,17 +39,13 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
       end
 
       context 'with project runners' do
-        let!(:project_runner) do
-          create(:ci_runner, :online, runner_type: :project_type, projects: [project])
-        end
+        let!(:project_runner) { create(:ci_runner, :project, :online, projects: [project]) }
 
         it_behaves_like 'jobs allowed to run'
       end
 
       context 'with group runners' do
-        let!(:group_runner) do
-          create(:ci_runner, :online, runner_type: :group_type, groups: [group])
-        end
+        let!(:group_runner) { create(:ci_runner, :group, :online, groups: [group]) }
 
         it_behaves_like 'jobs allowed to run'
       end
@@ -66,8 +62,8 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
     shared_examples 'quota exceeded' do
       let_it_be(:instance_runner) do
         create(:ci_runner,
+          :instance,
           :online,
-          runner_type: :instance_type,
           public_projects_minutes_cost_factor: 1,
           private_projects_minutes_cost_factor: 1)
       end
@@ -95,10 +91,7 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
       let_it_be(:ultimate_plan) { create(:ultimate_plan) }
 
       let!(:instance_runner) do
-        create(:ci_runner,
-          :online,
-          runner_type: :instance_type,
-          allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
+        create(:ci_runner, :instance, :online, allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
       end
 
       it 'drops the job with no_matching_runner reason' do
@@ -120,8 +113,8 @@ RSpec.describe Ci::PipelineCreation::DropNotRunnableBuildsService, feature_categ
 
       let!(:instance_runner) do
         create(:ci_runner,
+          :instance,
           :online,
-          runner_type: :instance_type,
           public_projects_minutes_cost_factor: 1,
           private_projects_minutes_cost_factor: 1,
           allowed_plan_ids: [premium_plan.id, ultimate_plan.id])
