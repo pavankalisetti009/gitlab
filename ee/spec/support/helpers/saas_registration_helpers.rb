@@ -252,7 +252,7 @@ module SaasRegistrationHelpers
   end
 
   def expect_to_be_on_trial_user_registration
-    expect(page).to have_content('Free 30-day trial')
+    expect(page).to have_content('Free 60-day trial')
   end
 
   def expect_to_be_on_user_sign_in
