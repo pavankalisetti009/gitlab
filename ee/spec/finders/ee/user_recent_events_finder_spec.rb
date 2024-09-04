@@ -5,8 +5,8 @@ require 'spec_helper'
 RSpec.describe UserRecentEventsFinder do
   describe '#execute' do
     let_it_be(:current_user) { create(:user) }
-    let_it_be(:user1) { create(:user) }
-    let_it_be(:user2) { create(:user) }
+    let_it_be(:user1) { create(:user, :with_namespace) }
+    let_it_be(:user2) { create(:user, :with_namespace) }
     let_it_be(:epic) { create(:epic) }
     let_it_be(:issue) { create(:issue) }
     let_it_be(:private_epic) { create(:epic, group: create(:group, :private)) }
