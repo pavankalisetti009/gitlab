@@ -30,7 +30,6 @@ module Ai
           application_id: oauth_application.id,
           expires_in: 2.hours,
           resource_owner_id: current_user.id,
-          token: Doorkeeper::OAuth::Helpers::UniqueToken.generate,
           scopes: oauth_application.scopes.to_s
         )
       end
