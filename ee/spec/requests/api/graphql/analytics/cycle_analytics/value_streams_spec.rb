@@ -263,7 +263,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                 expect(record_count).to eq(3)
               end
 
-              context 'when requesting averageDurations series' do
+              context 'when requesting averageDurations series', :freeze_time do
                 let(:query) do
                   <<~QUERY
                     query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!) {
