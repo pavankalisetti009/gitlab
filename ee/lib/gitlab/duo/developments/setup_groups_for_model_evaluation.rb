@@ -115,7 +115,8 @@ module Gitlab
             name: params[:name],
             path: params[:name],
             file: File.new(params[:file]),
-            parent_id: main_group.id
+            parent_id: main_group.id,
+            organization_id: main_group.organization_id
           }
 
           response = Gitlab::HTTP.post(url, headers: headers, body: body)
