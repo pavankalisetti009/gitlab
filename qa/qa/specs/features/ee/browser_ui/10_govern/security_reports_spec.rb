@@ -109,11 +109,7 @@ module QA
       end
 
       it 'displays security reports in the project security dashboard',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037',
-        quarantine: {
-          type: :flaky,
-          issue: "https://gitlab.com/gitlab-org/gitlab/-/issues/480927"
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/348037' do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
@@ -261,7 +257,11 @@ module QA
       end
 
       def filter_report_and_perform(page:, filter_report:)
-        page.filter_report_type(filter_report)
+        Support::Retrier.retry_on_exception(sleep_interval: 1,
+          reload_page: page, message: 'Tool Dropdown selection') do
+          page.filter_report_type(filter_report)
+        end
+
         yield
 
         if page.has_element?("filtered-search-term", wait: 1)
