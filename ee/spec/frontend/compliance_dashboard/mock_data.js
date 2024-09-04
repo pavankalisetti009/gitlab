@@ -173,7 +173,23 @@ export const complianceFramework = {
   color: '#009966',
   description: 'General Data Protection Regulation',
   name: 'GDPR',
+  pipelineConfigurationFullPath: null,
+  __typename: 'ComplianceFramework',
 };
+
+export const createComplianceFrameworkMutationResponse = (
+  mutationType = 'createComplianceFramework',
+  frameworkNamespace = 'framework',
+) => ({
+  data: {
+    [mutationType]: {
+      [frameworkNamespace]: complianceFramework,
+      errors: [],
+      clientMutationId: null,
+      __typename: 'CreateComplianceFrameworkPayload',
+    },
+  },
+});
 
 const createProject = ({ id, groupPath } = {}) => ({
   id: `gid://gitlab/Project/${id}`,

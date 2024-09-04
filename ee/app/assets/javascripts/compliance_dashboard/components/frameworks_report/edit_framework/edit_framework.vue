@@ -8,6 +8,9 @@ import {
   getSubmissionParams,
   initialiseFormData,
 } from 'ee/groups/settings/compliance_frameworks/utils';
+import { getIdFromGraphQLId } from '~/graphql_shared/utils';
+import { ROUTE_NEW_FRAMEWORK_SUCCESS } from '../../../constants';
+
 import { convertFrameworkIdToGraphQl } from '../../../utils';
 
 import createComplianceFrameworkMutation from '../../../graphql/mutations/create_compliance_framework.mutation.graphql';
@@ -145,7 +148,7 @@ export default {
       Sentry.captureException(error);
     },
 
-    onCancel() {
+    navigateBack() {
       this.$router.back();
     },
 
@@ -172,18 +175,28 @@ export default {
               params,
             },
           },
-          ...this.refetchConfig,
         });
 
         const [error] = data?.createComplianceFramework?.errors || [];
-
+        const id = getIdFromGraphQLId(data?.createComplianceFramework?.framework?.id);
         if (error) {
           this.setError(new Error(error), error);
         } else {
-          this.$router.back();
+          this.handleMutationSuccess(id);
         }
       } catch (e) {
         this.setError(e, SAVE_ERROR);
+      }
+    },
+
+    handleMutationSuccess(id) {
+      if (this.isNewFramework) {
+        this.$router.push({
+          name: ROUTE_NEW_FRAMEWORK_SUCCESS,
+          params: { id },
+        });
+      } else {
+        this.navigateBack();
       }
     },
 
@@ -213,7 +226,6 @@ export default {
         this.setError(new Error(error), error, 'isDeleting');
       }
     },
-
     onDelete() {
       this.$refs.deleteModal.show();
     },
@@ -258,7 +270,7 @@ export default {
           >
             {{ saveButtonText }}
           </gl-button>
-          <gl-button data-testid="cancel-btn" @click="onCancel">{{ __('Cancel') }}</gl-button>
+          <gl-button data-testid="cancel-btn" @click="navigateBack">{{ __('Cancel') }}</gl-button>
           <template v-if="graphqlId">
             <gl-tooltip
               v-if="deleteBtnDisabled"

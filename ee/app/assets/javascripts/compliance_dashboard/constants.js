@@ -41,6 +41,7 @@ export const ROUTE_VIOLATIONS = 'violations';
 export const ROUTE_PROJECTS = 'projects';
 export const ROUTE_FRAMEWORKS = 'frameworks';
 export const ROUTE_NEW_FRAMEWORK = 'new_framework';
+export const ROUTE_NEW_FRAMEWORK_SUCCESS = 'new_framework/:id';
 export const ROUTE_EDIT_FRAMEWORK = 'frameworks/:id';
 export const FRAMEWORKS_LABEL_BACKGROUND = '#737278';
 
@@ -74,3 +75,5 @@ export const i18n = {
 export const POLICY_SCOPES_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/application_security/policies/scan_execution_policies.html#scope-security-policies-to-projects`;
 
 export const CREATE_FRAMEWORKS_DOCS_URL = `${DOCS_URL_IN_EE_DIR}/user/group/compliance_frameworks.html#prerequisites`;
+
+export const FEEDBACK_ISSUE_URL = 'https://gitlab.com/gitlab-org/gitlab/-/issues/481586';
