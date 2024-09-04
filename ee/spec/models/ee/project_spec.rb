@@ -1820,16 +1820,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#any_online_runners?' do
+  describe '#any_online_runners?', :freeze_time do
     let!(:shared_runner) { create(:ci_runner, :instance, :online) }
 
     it { expect(project.any_online_runners?).to be_truthy }
 
     context 'with used compute minutes' do
       let(:namespace) { create(:namespace, :with_used_build_minutes_limit) }
-      let(:project) do
-        create(:project, namespace: namespace, shared_runners_enabled: true)
-      end
+      let(:project) { create(:project, namespace: namespace, shared_runners_enabled: true) }
 
       it 'does not have any online runners' do
         expect(project.any_online_runners?).to be_falsey

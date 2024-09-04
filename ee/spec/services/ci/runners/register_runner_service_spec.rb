@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', feature_category: :fleet_visibility do
+RSpec.describe ::Ci::Runners::RegisterRunnerService, '#execute', :freeze_time, feature_category: :fleet_visibility do
   let(:registration_token) { 'abcdefg123456' }
   let(:token) {}
   let(:audit_service) { instance_double(::AuditEvents::RegisterRunnerAuditEventService) }

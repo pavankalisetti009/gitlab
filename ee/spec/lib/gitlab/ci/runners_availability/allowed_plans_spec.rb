@@ -13,7 +13,7 @@ RSpec.describe Gitlab::Ci::RunnersAvailability::AllowedPlans, :saas, feature_cat
   let(:build) { build_stubbed(:ci_build, project: project) }
   let(:allowed_plans_checker) { described_class.new(project, project.all_runners.active.online.runner_matchers) }
 
-  describe '#available?', :saas do
+  describe '#available?', :saas, :freeze_time do
     context 'when runners are available' do
       where(:shared_runners_enabled, :plan_name, :instance_runner_restricts_plan,
         :private_runner_available, :expected_result) do
@@ -72,7 +72,7 @@ RSpec.describe Gitlab::Ci::RunnersAvailability::AllowedPlans, :saas, feature_cat
     end
   end
 
-  describe 'database queries', :request_store do
+  describe 'database queries', :request_store, :freeze_time do
     let_it_be(:private_runner) do
       create(:ci_runner, :project, :online, projects: [project])
     end

@@ -30,7 +30,7 @@ RSpec.describe Gitlab::Ci::RunnersAvailabilityChecker, :request_store, :saas,
     end
   end
 
-  describe '#check' do
+  describe '#check', :freeze_time do
     let_it_be(:ultimate_plan) { create(:ultimate_plan) }
 
     let(:pipeline) { create(:ci_pipeline, project: project) }
