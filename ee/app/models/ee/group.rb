@@ -89,6 +89,8 @@ module EE
 
       has_many :saved_replies, class_name: 'Groups::SavedReply'
 
+      has_many :security_exclusions, class_name: 'Security::GroupSecurityExclusion'
+
       delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
       delegate :repository_read_only,
