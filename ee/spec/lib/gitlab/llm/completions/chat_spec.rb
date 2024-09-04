@@ -28,7 +28,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
   let(:additional_context) do
     [
-      { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+      { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
     ]
   end
 
