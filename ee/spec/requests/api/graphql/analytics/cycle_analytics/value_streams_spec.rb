@@ -461,7 +461,9 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:start_label) { create(:label, project: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:label, project: resource, title: 'End Label') }
 
-    it_behaves_like 'value streams query'
+    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482804' do
+      it_behaves_like 'value streams query'
+    end
 
     context 'when using aggregated metrics' do
       before do
@@ -527,7 +529,9 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:start_label) { create(:group_label, group: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:group_label, group: resource, title: 'End Label') }
 
-    it_behaves_like 'value streams query'
+    context 'when qurantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482805' do
+      it_behaves_like 'value streams query'
+    end
 
     context 'when using aggregated metrics' do
       let_it_be_with_refind(:resource) { create(:group) }
