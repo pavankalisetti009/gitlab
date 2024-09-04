@@ -86,9 +86,6 @@ describe('WorkItemChildrenWrapper', () => {
 
     wrapper = shallowMountExtended(WorkItemChildrenWrapper, {
       apolloProvider: mockApollo,
-      provide: {
-        isGroup: false,
-      },
       propsData: {
         fullPath: 'test/project',
         workItemType,

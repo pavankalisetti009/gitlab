@@ -44,7 +44,6 @@ describe('WorkItemDrawer', () => {
         reportAbusePath: '',
         groupPath: '',
         hasSubepicsFeature: false,
-        isGroup: false,
       },
       apolloProvider: createMockApollo([[deleteWorkItemMutation, deleteWorkItemMutationHandler]]),
     });
