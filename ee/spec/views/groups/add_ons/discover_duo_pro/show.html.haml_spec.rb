@@ -47,15 +47,15 @@ RSpec.describe "groups/add_ons/discover_duo_pro/show", :aggregate_failures, feat
       end
 
       it 'displays the correct card titles and content' do
-        expect(rendered).to have_content(s_("DuoProDiscover|Test generation"))
+        expect(rendered).to have_content(s_("DuoProDiscover|Test Generation"))
         expect(rendered).to have_content(s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."))
 
-        expect(rendered).to have_content(s_("DuoProDiscover|Code explanation"))
+        expect(rendered).to have_content(s_("DuoProDiscover|Code Explanation"))
         expect(rendered).to have_content(
           s_("DuoProDiscover|Helps you understand code by explaining it in natural language.")
         )
 
-        expect(rendered).to have_content(s_("DuoProDiscover|Code refactoring"))
+        expect(rendered).to have_content(s_("DuoProDiscover|Code Refactoring"))
         expect(rendered).to have_content(s_("DuoProDiscover|Work to improve existing code quality."))
 
         expect(rendered).to have_content(s_("DuoProDiscover|Chat from any location"))
