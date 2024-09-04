@@ -65,7 +65,7 @@ module Groups
       def duo_pro_whats_new_card_collection(namespace)
         [
           {
-            header: s_("DuoProDiscover|Test generation"),
+            header: s_("DuoProDiscover|Test Generation"),
             body: s_("DuoProDiscover|Automates repetitive tasks and helps catch bugs early."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
@@ -75,7 +75,7 @@ module Groups
             )
           },
           {
-            header: s_("DuoProDiscover|Code explanation"),
+            header: s_("DuoProDiscover|Code Explanation"),
             body: s_("DuoProDiscover|Helps you understand code by explaining it in natural language."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
@@ -86,7 +86,7 @@ module Groups
             )
           },
           {
-            header: s_("DuoProDiscover|Code refactoring"),
+            header: s_("DuoProDiscover|Code Refactoring"),
             body: s_("DuoProDiscover|Work to improve existing code quality."),
             footer: render_footer_link(
               link_text: s_("DuoProDiscover|Read documentation"),
