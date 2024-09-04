@@ -544,7 +544,6 @@ Layout/LineLength:
     - 'app/services/repository_archive_clean_up_service.rb'
     - 'app/services/resource_access_tokens/create_service.rb'
     - 'app/services/resource_access_tokens/revoke_service.rb'
-    - 'app/services/search_service.rb'
     - 'app/services/security/ci_configuration/container_scanning_create_service.rb'
     - 'app/services/security/ci_configuration/dependency_scanning_create_service.rb'
     - 'app/services/security/ci_configuration/sast_create_service.rb'
