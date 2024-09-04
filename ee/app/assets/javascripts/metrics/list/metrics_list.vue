@@ -18,6 +18,7 @@ import { logError } from '~/lib/logger';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { InternalEvents } from '~/tracking';
+import { metricsDetailsQueryFromAttributes } from 'ee/metrics/details/filters';
 import { VIEW_METRICS_PAGE } from '../events';
 import {
   queryToFilterObj,
@@ -129,19 +130,32 @@ export default {
     },
     onMetricClicked({ metricId, clickEvent = {} }) {
       const external = isMetaClick(clickEvent);
-      const metricType = this.metrics.find((m) => m.name === metricId)?.type;
-      if (!metricType) {
-        logError(
-          new Error(`onMetricClicked() - Could not find metric type for metric ${metricId}`),
-        );
+      const metric = this.metrics.find((m) => m.name === metricId);
+      if (!metric) {
+        logError(new Error(`onMetricClicked() - Could not find ${metricId}`));
         return;
       }
+      const { type: metricType, timestamp_of_datapoint_with_traceId: traceIdTimestampNano } =
+        metric;
+
+      const traceIdTimestampMs = traceIdTimestampNano / 1e6;
+      const traceIdTimestampIntervalDeltaMs = 60 * 1000; // 1min
+
+      const query = traceIdTimestampNano
+        ? metricsDetailsQueryFromAttributes({
+            dateRange: {
+              startDate: new Date(traceIdTimestampMs - traceIdTimestampIntervalDeltaMs),
+              endDate: new Date(traceIdTimestampMs + traceIdTimestampIntervalDeltaMs),
+            },
+          })
+        : {};
+
       const url = joinPaths(
         window.location.origin,
         window.location.pathname,
         encodeURIComponent(metricId),
       );
-      const fullUrl = setUrlParams({ type: encodeURIComponent(metricType) }, url);
+      const fullUrl = setUrlParams({ type: encodeURIComponent(metricType), ...query }, url);
       visitUrl(sanitize(fullUrl), external);
     },
     onFilter(filterTokens) {
