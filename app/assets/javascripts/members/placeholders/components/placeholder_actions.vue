@@ -253,7 +253,7 @@ export default {
               id: this.sourceUser.id,
               ...(hasSelectedUser ? { userId: this.selectedUser.id } : {}),
             },
-            // importSourceUsersQuery used in app.vue
+            // importSourceUsersQuery used in placeholders_table.vue
             refetchQueries: [hasSelectedUser ? {} : importSourceUsersQuery],
           })
           .then(({ data }) => {
