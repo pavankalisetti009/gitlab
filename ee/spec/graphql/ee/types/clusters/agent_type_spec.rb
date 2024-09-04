@@ -2,14 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environment_management do # rubocop:disable RSpec/DuplicateSpecLocation -- EE spec
+RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment_management do
   it 'includes the ee specific fields' do
     expect(described_class).to have_graphql_fields(
       :vulnerability_images,
       :workspaces,
       # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
       :remote_development_agent_config,
-      :workspaces_agent_config
+      :workspaces_agent_config,
+      :is_receptive,
+      :url_configurations
     ).at_least
   end
 
