@@ -1,5 +1,6 @@
 <script>
 import { GlIcon, GlTooltip, GlTooltipDirective } from '@gitlab/ui';
+import { __ } from '~/locale';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemLinkChildMetadata from '~/work_items/components/shared/work_item_link_child_metadata.vue';
 import {
@@ -8,6 +9,7 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_START_AND_DUE_DATE,
+  WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
 import { formatDate, humanTimeframe } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
@@ -39,6 +41,15 @@ export default {
       required: false,
       default: () => ({}),
     },
+    showWeight: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    workItemType: {
+      type: String,
+      required: true,
+    },
   },
   computed: {
     progress() {
@@ -68,6 +79,9 @@ export default {
     workItemWeight() {
       return this.isWeightRollup ? this.rolledUpWeight : this.weight;
     },
+    shouldShowWeight() {
+      return this.showWeight && Boolean(this.workItemWeight);
+    },
     iteration() {
       return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
     },
@@ -92,6 +106,9 @@ export default {
     workItemTimeframe() {
       return humanTimeframe(this.startDate, this.dueDate);
     },
+    weightTooltip() {
+      return this.workItemType === WORK_ITEM_TYPE_VALUE_EPIC ? __('Issue weight') : __('Weight');
+    },
   },
   methods: {
     getTimestamp(rawTimestamp) {
@@ -112,7 +129,7 @@ export default {
   >
     <template #left-metadata>
       <div
-        v-if="workItemWeight"
+        v-if="shouldShowWeight"
         ref="weightData"
         data-testid="item-weight"
         class="gl-flex gl-min-w-7 gl-cursor-help gl-items-center gl-gap-2"
@@ -120,8 +137,8 @@ export default {
         <gl-icon name="weight" />
         <span data-testid="weight-value" class="gl-text-sm">{{ workItemWeight }}</span>
         <gl-tooltip :target="() => $refs.weightData">
-          <span class="gl-font-bold">
-            {{ __('Weight') }}
+          <span data-testid="weight-tooltip" class="gl-font-bold">
+            {{ weightTooltip }}
           </span>
         </gl-tooltip>
       </div>
