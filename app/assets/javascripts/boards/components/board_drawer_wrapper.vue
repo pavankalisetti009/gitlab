@@ -142,7 +142,6 @@ export default {
       onAttributeUpdated: this.onAttributeUpdated,
       onIssuableDeleted: this.refetchActiveIssuableLists,
       onStateUpdated: this.onStateUpdated,
-      modalWorkItemFullPath: this.modalWorkItemFullPath,
     });
   },
 };
