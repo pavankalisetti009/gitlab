@@ -2,15 +2,18 @@ import { GlButton } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import DuoProTrialStatusWidget from 'ee/contextual_sidebar/components/duo_pro_trial_status_widget.vue';
 import { WIDGET_CONTAINER_ID } from 'ee/contextual_sidebar/components/constants';
+import { mockTracking, unmockTracking } from 'helpers/tracking_helper';
 
 describe('DuoProTrialStatusWidget component', () => {
   let wrapper;
+  let trackingSpy;
 
   const trialDaysUsed = 10;
   const trialDuration = 60;
 
   const findRootElement = () => wrapper.findByTestId('duo-pro-trial-widget-root-element');
-  const findGlButton = () => wrapper.findComponent(GlButton);
+  const findDismissBtn = () => wrapper.findByTestId('dismiss-btn');
+  const findLearnAboutFeaturesBtn = () => wrapper.findByTestId('learn-about-features-btn');
 
   const createComponent = (providers = {}) => {
     return shallowMountExtended(DuoProTrialStatusWidget, {
@@ -21,8 +24,10 @@ describe('DuoProTrialStatusWidget component', () => {
         groupId: 1,
         featureId: 'expired_duo_pro_trial_widget',
         dismissEndpoint: 'some/dismiss/endpoint',
+        learnAboutButtonUrl: 'learn-path',
         ...providers,
       },
+      stubs: { GlButton },
     });
   };
 
@@ -62,7 +67,7 @@ describe('DuoProTrialStatusWidget component', () => {
     it('does not render the dismiss button', () => {
       wrapper = createComponent();
 
-      expect(findGlButton().exists()).toBe(false);
+      expect(findDismissBtn().exists()).toBe(false);
     });
 
     describe('dismissible class', () => {
@@ -103,7 +108,12 @@ describe('DuoProTrialStatusWidget component', () => {
 
     describe('when an expired trial', () => {
       beforeEach(() => {
+        trackingSpy = mockTracking(undefined, wrapper.element, jest.spyOn);
         wrapper = createComponent({ percentageComplete: 110 });
+      });
+
+      afterEach(() => {
+        unmockTracking();
       });
 
       it('shows correct title and body', () => {
@@ -113,7 +123,19 @@ describe('DuoProTrialStatusWidget component', () => {
       });
 
       it('renders the dismiss button', () => {
-        expect(findGlButton().exists()).toBe(true);
+        expect(findDismissBtn().exists()).toBe(true);
+      });
+
+      it('tracks clicking learn about features link', async () => {
+        const category = 'duo_pro_expired_trial';
+        const action = 'click_link';
+
+        await findLearnAboutFeaturesBtn().trigger('click');
+
+        expect(trackingSpy).toHaveBeenCalledWith(category, action, {
+          category,
+          label: 'learn_about_features',
+        });
       });
     });
   });
