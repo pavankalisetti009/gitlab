@@ -117,4 +117,9 @@ RSpec.describe ProjectSetting, feature_category: :groups_and_projects do
   describe '#duo_features_enabled' do
     it_behaves_like 'a cascading project setting boolean attribute', settings_attribute_name: :duo_features_enabled
   end
+
+  describe '#spp_repository_pipeline_access' do
+    it_behaves_like 'a cascading project setting boolean attribute',
+      settings_attribute_name: :spp_repository_pipeline_access
+  end
 end

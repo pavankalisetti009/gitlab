@@ -6067,6 +6067,8 @@ CREATE TABLE application_settings (
     observability_backend_ssl_verification_enabled boolean DEFAULT true NOT NULL,
     pages jsonb DEFAULT '{}'::jsonb NOT NULL,
     security_policies jsonb DEFAULT '{}'::jsonb NOT NULL,
+    spp_repository_pipeline_access boolean DEFAULT false NOT NULL,
+    lock_spp_repository_pipeline_access boolean DEFAULT false NOT NULL,
     CONSTRAINT app_settings_container_reg_cleanup_tags_max_list_size_positive CHECK ((container_registry_cleanup_tags_service_max_list_size >= 0)),
     CONSTRAINT app_settings_dep_proxy_ttl_policies_worker_capacity_positive CHECK ((dependency_proxy_ttl_group_policy_worker_capacity >= 0)),
     CONSTRAINT app_settings_ext_pipeline_validation_service_url_text_limit CHECK ((char_length(external_pipeline_validation_service_url) <= 255)),
@@ -13858,6 +13860,8 @@ CREATE TABLE namespace_settings (
     seat_control smallint DEFAULT 0 NOT NULL,
     last_dormant_member_review_at timestamp with time zone,
     enterprise_users_extensions_marketplace_opt_in_status smallint DEFAULT 0 NOT NULL,
+    spp_repository_pipeline_access boolean,
+    lock_spp_repository_pipeline_access boolean DEFAULT false NOT NULL,
     CONSTRAINT check_0ba93c78c7 CHECK ((char_length(default_branch_name) <= 255)),
     CONSTRAINT namespace_settings_unique_project_download_limit_alertlist_size CHECK ((cardinality(unique_project_download_limit_alertlist) <= 100)),
     CONSTRAINT namespace_settings_unique_project_download_limit_allowlist_size CHECK ((cardinality(unique_project_download_limit_allowlist) <= 100))
