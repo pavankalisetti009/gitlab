@@ -54,9 +54,7 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
       it 'returns null' do
         security_finding = subject.dig('data', 'project', 'pipeline', 'securityReportFinding')
 
-        expect(pipeline.security_findings.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478420'
-        ).count).to be_zero
+        expect(pipeline.security_findings.count).to be_zero
         expect(security_finding).to be_nil
       end
     end
@@ -76,9 +74,7 @@ RSpec.describe GitlabSchema.types['Pipeline'], feature_category: :vulnerability_
         it 'returns null' do
           security_finding = subject.dig('data', 'project', 'pipeline', 'securityReportFinding')
 
-          expect(pipeline.security_findings.allow_cross_joins_across_databases(
-            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478420'
-          )).not_to be_empty
+          expect(pipeline.security_findings).not_to be_empty
           expect(security_finding).to be_nil
         end
       end
