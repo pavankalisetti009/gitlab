@@ -106,7 +106,8 @@ RSpec.describe Gitlab::Duo::Developments::SetupGroupsForModelEvaluation, :saas, 
       describe '#create_subgroup' do
         it 'creates a subgroup' do
           file = Rails.root.join("tmp/duo_chat_samples/gitlab_com/01_group.tar.gz")
-          body = { name: 'gitlab-com', path: 'gitlab-com', parent_id: group.id, file: file_double }
+          body = { name: 'gitlab-com', path: 'gitlab-com',
+                   parent_id: group.id, file: file_double, organization_id: group.organization_id }
 
           expect(File).to receive(:new).with(file).and_return(file_double)
           expect(setup_evaluation).to receive(:token_value).and_return('token-string-1')
