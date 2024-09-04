@@ -55,7 +55,7 @@ export default {
       <div class="mr-md-2 gl-flex">
         <gl-avatar :src="mergeRequest.author_avatar_url" :size="16" />
       </div>
-      <div class="flex-column flex-grow overflow-auto gl-mr-1 gl-flex">
+      <div class="flex-column overflow-auto gl-mr-1 gl-flex gl-grow">
         <h5 class="item-title my-0 str-truncated gl-block gl-max-w-34">
           <gl-link :href="mergeRequest.merge_request_url" target="_blank">{{
             mergeRequest.title

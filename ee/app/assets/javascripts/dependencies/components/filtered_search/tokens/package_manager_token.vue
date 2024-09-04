@@ -150,7 +150,7 @@ export default {
           :key="packageManager.name"
           :value="packageManager"
         >
-          <div class="flex items-center">
+          <div class="items-center gl-flex">
             <gl-icon
               v-if="config.multiSelect"
               name="check"
