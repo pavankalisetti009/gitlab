@@ -8,7 +8,7 @@ RSpec.describe GitlabSchema.types['AiAdditionalContextInput'], feature_category:
   it { expect(described_class.graphql_name).to eq('AiAdditionalContextInput') }
 
   it 'has the expected fields' do
-    expected_fields = %w[type name content]
+    expected_fields = %w[id category content metadata]
 
     expect(described_class.arguments.keys).to match_array(expected_fields)
   end

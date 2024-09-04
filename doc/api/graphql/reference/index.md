@@ -35347,14 +35347,14 @@ Action to subscribe to.
 | ----- | ----------- |
 | <a id="aiactionchat"></a>`CHAT` | Chat action. |
 
-### `AiAdditionalContextType`
+### `AiAdditionalContextCategory`
 
-The type of additional context.
+The category of the additional context.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="aiadditionalcontexttypefile"></a>`FILE` | File content type. |
-| <a id="aiadditionalcontexttypesnippet"></a>`SNIPPET` | Snippet content type. |
+| <a id="aiadditionalcontextcategoryfile"></a>`FILE` | File content category. |
+| <a id="aiadditionalcontextcategorysnippet"></a>`SNIPPET` | Snippet content category. |
 
 ### `AiMessageRole`
 
@@ -40692,9 +40692,10 @@ see the associated mutation type above.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aiadditionalcontextinputcategory"></a>`category` | [`AiAdditionalContextCategory!`](#aiadditionalcontextcategory) | Category of the additional context. |
 | <a id="aiadditionalcontextinputcontent"></a>`content` | [`String!`](#string) | Content of the additional context. |
-| <a id="aiadditionalcontextinputname"></a>`name` | [`String!`](#string) | Name of the additional context. |
-| <a id="aiadditionalcontextinputtype"></a>`type` | [`AiAdditionalContextType!`](#aiadditionalcontexttype) | Type of the additional context. |
+| <a id="aiadditionalcontextinputid"></a>`id` | [`String!`](#string) | ID of the additional context. |
+| <a id="aiadditionalcontextinputmetadata"></a>`metadata` | [`JSON`](#json) | Metadata of the additional context. |
 
 ### `AiChatInput`
 
