@@ -3,6 +3,7 @@ import { GlCard, GlBadge, GlButton } from '@gitlab/ui';
 import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { s__, __ } from '~/locale';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import { formatTraceDuration } from '../trace_utils';
 import { createIssueUrlWithTraceDetails } from './utils';
 
@@ -23,6 +24,7 @@ export default {
     GlBadge,
     PageHeading,
     GlButton,
+    RelatedIssuesBadge,
   },
   i18n: {
     inProgress: s__('Tracing|In progress'),
@@ -54,6 +56,23 @@ export default {
     totalErrors: {
       required: true,
       type: Number,
+    },
+    issues: {
+      required: true,
+      type: Array,
+    },
+    fetchingIssues: {
+      type: Boolean,
+      required: true,
+    },
+    error: {
+      type: String,
+      required: false,
+      default: null,
+    },
+    relatedIssuesId: {
+      required: true,
+      type: String,
     },
   },
   computed: {
@@ -91,6 +110,12 @@ export default {
           }}</gl-badge>
         </template>
         <template #actions>
+          <related-issues-badge
+            :issues-total="issues.length"
+            :loading="fetchingIssues"
+            :error="error"
+            :anchor-id="`#${relatedIssuesId}`"
+          />
           <gl-button :title="$options.i18n.logsButtonTitle" :href="viewLogsUrl">{{
             $options.i18n.logsButtonTitle
           }}</gl-button>
