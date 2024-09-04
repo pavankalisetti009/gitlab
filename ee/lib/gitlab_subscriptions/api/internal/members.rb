@@ -20,7 +20,7 @@ module GitlabSubscriptions
                 success Entities::Internal::Member
               end
               get ":id/owners" do
-                owners = GroupMembersFinder.new(namespace, params: { access_levels: ::Gitlab::Access::OWNER })
+                owners = GroupMembersFinder.new(@namespace, params: { access_levels: ::Gitlab::Access::OWNER })
                   .execute(include_relations: [:direct])
                   .preload_users
 
