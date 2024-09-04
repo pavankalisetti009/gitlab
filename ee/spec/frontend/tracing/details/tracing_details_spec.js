@@ -20,6 +20,9 @@ jest.mock('~/lib/utils/url_utility', () => ({
   visitUrl: jest.fn(),
 }));
 jest.mock('ee/tracing/trace_utils');
+jest.mock('lodash/uniqueId', () => {
+  return jest.fn((input) => `${input}1`);
+});
 
 describe('TracingDetails', () => {
   let wrapper;
@@ -106,10 +109,12 @@ describe('TracingDetails', () => {
 
   it('renders the related-issue-provider', () => {
     const relatedIssuesProvider = wrapper.findComponent(RelatedIssuesProvider);
+
     expect(relatedIssuesProvider.props()).toEqual({
       projectFullPath,
       traceId: testTraceId,
     });
+    expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });
 
   it('renders the chart component', () => {
@@ -121,15 +126,21 @@ describe('TracingDetails', () => {
 
   it('renders the header', () => {
     const header = findTraceDetails().findComponent(TracingHeader);
+    const { incomplete, totalErrors } = mockTree;
+
     expect(header.exists()).toBe(true);
-    expect(header.props('incomplete')).toBe(mockTree.incomplete);
-    expect(header.props('trace')).toEqual(mockTrace);
-    expect(header.props('viewLogsUrl')).toBe(
-      `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
-    );
-    expect(header.props('viewMetricsUrl')).toBe(`${metricsIndexUrl}?traceId[]=test-trace-id`);
-    expect(header.props('createIssueUrl')).toBe(createIssueUrl);
-    expect(header.props('totalErrors')).toBe(mockTree.totalErrors);
+    expect(header.props()).toStrictEqual({
+      incomplete,
+      trace: mockTrace,
+      viewLogsUrl: `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
+      viewMetricsUrl: `${metricsIndexUrl}?traceId[]=test-trace-id`,
+      createIssueUrl,
+      totalErrors,
+      relatedIssuesId: 'related-issues-1',
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+    });
   });
 
   it('renders the related issues', () => {

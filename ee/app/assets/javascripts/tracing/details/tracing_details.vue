@@ -1,12 +1,12 @@
 <script>
 import { GlLoadingIcon, GlAlert, GlSprintf } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
 import { visitUrl, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
 import { logsQueryFromAttributes } from 'ee/logs/list/filter_bar/filters';
 import { metricsListQueryFromAttributes } from 'ee/metrics/list/filters';
-
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
 import { validatedDateRangeQuery } from '~/observability/utils';
 import RelatedIssues from '~/observability/components/observability_related_issues.vue';
@@ -156,6 +156,7 @@ export default {
   relatedIssuesHelpPath: helpPagePath('/operations/tracing', {
     anchor: 'create-an-issue-for-a-trace',
   }),
+  relatedIssuesId: uniqueId('related-issues-'),
 };
 </script>
 
@@ -174,6 +175,10 @@ export default {
           :view-logs-url="viewLogsUrl"
           :view-metrics-url="viewMetricsUrl"
           :create-issue-url="createIssueUrl"
+          :related-issues-id="$options.relatedIssuesId"
+          :issues="issues"
+          :fetching-issues="fetchingIssues"
+          :error="error"
           class="gl-mb-6"
         />
 
@@ -194,6 +199,7 @@ export default {
         <tracing-drawer :span="selectedSpan" :open="isDrawerOpen" @close="closeDrawer" />
 
         <related-issues
+          :id="$options.relatedIssuesId"
           :issues="issues"
           :fetching-issues="fetchingIssues"
           :error="error"
