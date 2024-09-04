@@ -99,16 +99,10 @@ module EE
 
         def subscribe_to_external_issue_links_events(store)
           store.subscribe ::VulnerabilityExternalIssueLinks::UpdateVulnerabilityRead,
-            to: ::Vulnerabilities::LinkToExternalIssueTrackerCreated,
-            if: ->(event) {
-                  ::Feature.enabled?(:handle_vulnerability_external_issue_link_via_events, event.project)
-                }
+            to: ::Vulnerabilities::LinkToExternalIssueTrackerCreated
 
           store.subscribe ::VulnerabilityExternalIssueLinks::UpdateVulnerabilityRead,
-            to: ::Vulnerabilities::LinkToExternalIssueTrackerRemoved,
-            if: ->(event) {
-                  ::Feature.enabled?(:handle_vulnerability_external_issue_link_via_events, event.project)
-                }
+            to: ::Vulnerabilities::LinkToExternalIssueTrackerRemoved
         end
 
         def subscribe_to_work_item_events(store)
