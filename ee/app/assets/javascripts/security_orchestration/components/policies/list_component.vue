@@ -177,8 +177,6 @@ export default {
       return [
         {
           key: 'status',
-          label: '',
-          thClass: 'gl-w-3',
           tdAttr: { 'data-testid': 'policy-status-cell' },
         },
         {
@@ -402,8 +400,12 @@ export default {
       selected-variant="primary"
       @row-selected="presentPolicyDrawer"
     >
+      <template #head(status)>
+        <span class="gl-block md:!gl-hidden">{{ s__('SecurityOrchestration|Status') }}</span>
+      </template>
+
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType } }">
-        <div class="gl-flex gl-gap-4">
+        <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
             class="gl-text-gray-200"
