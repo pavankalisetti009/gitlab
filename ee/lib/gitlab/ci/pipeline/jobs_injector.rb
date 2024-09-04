@@ -21,15 +21,15 @@ module Gitlab
         end
 
         def inject_jobs(jobs:, stage:)
-          jobs.each do |job|
-            stage = ensure_stage_exists(stage)
-            next unless stage
+          target_stage = ensure_stage_exists(stage)
+          return unless target_stage
 
+          jobs.each do |job|
             # We need to assign the new stage_idx for the jobs
             # because the source stages could have had different positions
-            job.assign_attributes(pipeline: pipeline, stage_idx: stage.position)
+            job.assign_attributes(pipeline: pipeline, stage_idx: target_stage.position)
             add_suffix(job: job)
-            add_job(stage: stage, job: job)
+            add_job(stage: target_stage, job: job)
 
             yield(job) if block_given?
           end
