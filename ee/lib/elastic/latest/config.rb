@@ -20,7 +20,9 @@ module Elastic
             # Elasticsearch will error it is fine to use the number of bytes as
             # the upper limit since you cannot fit more characters than bytes
             # in a file.
-            max_analyzed_offset: Elastic::AsJSON.new { Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes }
+            max_analyzed_offset: Elastic::AsJSON.new do
+                                   Gitlab::CurrentSettings.elasticsearch_indexed_file_size_limit_kb.kilobytes
+                                 end
           },
           codec: 'best_compression',
           analysis: {
@@ -29,7 +31,6 @@ module Elastic
                 tokenizer: 'standard',
                 filter: %w[word_delimiter_graph_filter asciifolding lowercase stemmer flatten_graph remove_duplicates]
               },
-
               default: {
                 tokenizer: 'standard',
                 filter: %w[lowercase stemmer]
