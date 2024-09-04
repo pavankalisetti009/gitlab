@@ -62,6 +62,20 @@ RSpec.describe Gitlab::Ci::Pipeline::JobsInjector, feature_category: :security_p
         it 'does not change the pipeline stages' do
           expect { inject }.not_to change { pipeline.stages.size }
         end
+
+        context 'with multiple jobs' do
+          let(:job_to_inject_2) do
+            build(:ci_build, name: 'build-job-2', stage_idx: 3, stage: stage_to_inject)
+          end
+
+          let(:jobs_to_inject) { [job_to_inject, job_to_inject_2] }
+
+          it 'does not change the pipeline stages' do
+            expect { inject }.not_to change { pipeline.stages.size }
+            expect(pipeline.stages.map(&:name)).to contain_exactly('test')
+            expect(pipeline_stage.statuses.map(&:name)).to contain_exactly 'test-job'
+          end
+        end
       end
     end
 
