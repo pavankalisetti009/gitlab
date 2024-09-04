@@ -1,13 +1,13 @@
 import {
   renderDeleteSuccessToast as renderDeleteSuccessToastCE,
   deleteParams as deleteParamsCE,
-} from '~/organizations/shared/utils';
+} from '~/vue_shared/components/resource_lists/utils';
 import toast from '~/vue_shared/plugins/global_toast';
 import { sprintf, __ } from '~/locale';
 
 // Exports override for EE
 // eslint-disable-next-line import/export
-export * from '~/organizations/shared/utils';
+export * from '~/vue_shared/components/resource_lists/utils';
 
 // Exports override for EE
 // eslint-disable-next-line import/export

@@ -43484,6 +43484,9 @@ msgstr ""
 msgid "ProjectsNew|Your project will be created at:"
 msgstr ""
 
+msgid "Projects|An error occurred deleting the project. Please refresh the page to try again."
+msgstr ""
+
 msgid "Project|already in use"
 msgstr ""
 

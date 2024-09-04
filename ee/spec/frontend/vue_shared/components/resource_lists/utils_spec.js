@@ -1,14 +1,17 @@
 import {
   renderDeleteSuccessToast as renderDeleteSuccessToastCE,
   deleteParams as deleteParamsCE,
-} from '~/organizations/shared/utils';
-import { deleteParams, renderDeleteSuccessToast } from 'ee/organizations/shared/utils';
+} from '~/vue_shared/components/resource_lists/utils';
+import {
+  deleteParams,
+  renderDeleteSuccessToast,
+} from 'ee/vue_shared/components/resource_lists/utils';
 import toast from '~/vue_shared/plugins/global_toast';
 
 const MOCK_CE_PARAMS = { ceParam: true };
 
-jest.mock('~/organizations/shared/utils', () => ({
-  ...jest.requireActual('~/organizations/shared/utils'),
+jest.mock('~/vue_shared/components/resource_lists/utils', () => ({
+  ...jest.requireActual('~/vue_shared/components/resource_lists/utils'),
   renderDeleteSuccessToast: jest.fn(),
   deleteParams: jest.fn(() => MOCK_CE_PARAMS),
 }));
