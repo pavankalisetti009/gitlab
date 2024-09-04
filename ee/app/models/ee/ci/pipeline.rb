@@ -16,9 +16,7 @@ module EE
         # Subscriptions to this pipeline
         has_many :downstream_bridges, class_name: '::Ci::Bridge', foreign_key: :upstream_pipeline_id
         has_many :security_scans, class_name: 'Security::Scan', inverse_of: :pipeline
-        has_many :security_findings, -> {
-          allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478406')
-        }, class_name: 'Security::Finding', through: :security_scans, source: :findings
+        has_many :security_findings, class_name: 'Security::Finding', through: :security_scans, source: :findings
 
         has_one :dast_profiles_pipeline, class_name: 'Dast::ProfilesPipeline', foreign_key: :ci_pipeline_id
         has_one :dast_profile, class_name: 'Dast::Profile', through: :dast_profiles_pipeline, disable_joins: true
@@ -239,15 +237,11 @@ module EE
       end
 
       def has_security_findings?
-        security_findings.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478406'
-        ).exists?
+        security_findings.exists?
       end
 
       def has_security_findings_in_self_and_descendants?
-        Security::Finding.by_project_id_and_pipeline_ids(project_id, self_and_project_descendants.pluck(:id)).allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478406'
-        ).exists?
+        Security::Finding.by_project_id_and_pipeline_ids(project_id, self_and_project_descendants.pluck(:id)).exists?
       end
 
       def triggered_for_ondemand_dast_scan?

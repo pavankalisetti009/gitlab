@@ -24,18 +24,13 @@ module Security
     end
 
     def available?
-      pipeline.security_findings.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478405'
-      ).exists?
+      pipeline.security_findings.exists?
     end
 
     private
 
     def security_findings
-      super.with_feedbacks
-           .with_vulnerability.allow_cross_joins_across_databases(
-             url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478405'
-           )
+      super.with_feedbacks.with_vulnerability
     end
   end
 end
