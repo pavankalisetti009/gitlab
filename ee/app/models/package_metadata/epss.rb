@@ -13,5 +13,7 @@ module PackageMetadata
 
     validates :cve, presence: true, format: { with: CVE_REGEX }
     validates :score, presence: true
+
+    scope :by_cves, ->(cves) { where(cve: cves) }
   end
 end

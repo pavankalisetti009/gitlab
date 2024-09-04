@@ -1,0 +1,9 @@
+---
+name: epss_querying
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/470835
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/162435
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/481431
+milestone: '17.4'
+group: group::composition analysis
+type: beta
+default_enabled: false
