@@ -162,6 +162,55 @@ RSpec.describe GitlabSchema.types['Project'] do
     it { is_expected.to have_graphql_type(Types::Ci::CodeCoverageSummaryType) }
   end
 
+  describe 'merge_requests field' do
+    subject { described_class.fields['mergeRequests'] }
+
+    it { is_expected.to have_graphql_type(Types::MergeRequestType.connection_type) }
+    it { is_expected.to have_graphql_resolver(Resolvers::ProjectMergeRequestsResolver) }
+
+    it do
+      is_expected.to include_graphql_arguments(
+        :iids,
+        :source_branches,
+        :target_branches,
+        :state,
+        :draft,
+        :approved,
+        :labels,
+        :label_name,
+        :before,
+        :after,
+        :first,
+        :last,
+        :merged_after,
+        :merged_before,
+        :created_after,
+        :created_before,
+        :deployed_after,
+        :deployed_before,
+        :deployment_id,
+        :updated_after,
+        :updated_before,
+        :author_username,
+        :approved_by,
+        :my_reaction_emoji,
+        :merged_by,
+        :release_tag,
+        :assignee_username,
+        :assignee_wildcard_id,
+        :reviewer_username,
+        :reviewer_wildcard_id,
+        :review_state,
+        :review_states,
+        :milestone_title,
+        :milestone_wildcard_id,
+        :not,
+        :sort,
+        :approver
+      )
+    end
+  end
+
   describe 'compliance_frameworks' do
     it 'queries in batches', :request_store, :use_clean_rails_memory_store_caching do
       projects = create_list(:project, 2, :with_compliance_framework)
