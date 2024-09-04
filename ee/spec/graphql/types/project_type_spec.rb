@@ -14,7 +14,7 @@ RSpec.describe GitlabSchema.types['Project'] do
   let_it_be(:security_policy_management_project) { create(:project) }
 
   before do
-    stub_licensed_features(security_dashboard: true)
+    stub_licensed_features(security_dashboard: true, dependency_scanning: true)
 
     project.add_developer(user)
   end
@@ -33,7 +33,7 @@ RSpec.describe GitlabSchema.types['Project'] do
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics saved_reply merge_trains
       pending_member_approvals observability_logs_links observability_metrics_links
-      observability_traces_links
+      observability_traces_links dependencies
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -118,6 +118,38 @@ RSpec.describe GitlabSchema.types['Project'] do
     it 'returns a list of analyzers which were run in the last pipeline for the project' do
       query_result = subject.dig('data', 'project', 'securityScanners', 'pipelineRun')
       expect(query_result).to match_array(%w[DAST SAST])
+    end
+  end
+
+  describe 'dependencies' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, developers: user) }
+    let_it_be(:sbom_occurrence_1) { create(:sbom_occurrence, project: project) }
+    let_it_be(:sbom_occurrence_2) { create(:sbom_occurrence, project: project) }
+    let_it_be(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            name
+            dependencies {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      )
+    end
+
+    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    it "returns all dependencies for all projects under given group" do
+      dependencies = query_result.dig(*%w[data project dependencies nodes])
+
+      expect(dependencies.count).to be(2)
+      expect(dependencies.first['name']).to eq(sbom_occurrence_1.component_name)
+      expect(dependencies.last['name']).to eq(sbom_occurrence_2.component_name)
     end
   end
 

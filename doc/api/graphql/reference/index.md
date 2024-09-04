@@ -23286,6 +23286,26 @@ Returns [`GroupDataTransfer`](#groupdatatransfer).
 | <a id="groupdatatransferfrom"></a>`from` | [`Date`](#date) | Retain egress data for one year. Data for the current month will increase dynamically as egress occurs. |
 | <a id="groupdatatransferto"></a>`to` | [`Date`](#date) | End date for the data. |
 
+##### `Group.dependencies`
+
+Software dependencies used by projects under this group.
+
+Returns [`DependencyConnection`](#dependencyconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupdependenciescomponentids"></a>`componentIds` | [`[SbomComponentID!]`](#sbomcomponentid) | Filter dependencies by component IDs. |
+| <a id="groupdependenciescomponentnames"></a>`componentNames` | [`[String!]`](#string) | Filter dependencies by component names. |
+| <a id="groupdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="groupdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
+| <a id="groupdependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
+
 ##### `Group.descendantGroups`
 
 List of descendant groups of this group.

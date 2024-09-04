@@ -108,7 +108,8 @@ module Groups
                           component_names: [],
                           licenses: [],
                           package_managers: [],
-                          project_ids: []
+                          project_ids: [],
+                          component_ids: []
                         )
                       else
                         params.permit(:cursor, :page, :per_page, :sort, :sort_by)
