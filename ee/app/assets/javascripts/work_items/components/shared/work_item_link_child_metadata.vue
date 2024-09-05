@@ -50,6 +50,11 @@ export default {
       type: String,
       required: true,
     },
+    isChildItemOpen: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     progress() {
@@ -202,7 +207,7 @@ export default {
       </div>
     </template>
     <template #right-metadata>
-      <issue-health-status v-if="healthStatus" :health-status="healthStatus" />
+      <issue-health-status v-if="healthStatus && isChildItemOpen" :health-status="healthStatus" />
     </template>
   </work-item-link-child-metadata>
 </template>
