@@ -11,6 +11,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { DEFAULT_PER_PAGE } from '~/api';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import UserDate from '~/vue_shared/components/user_date.vue';
+import * as PromotionRequestListInvalidationService from 'ee/members/promotion_requests/services/promotion_request_list_invalidation_service';
 import {
   groupDefaultProvide,
   groupPendingMemberApprovalsQueryMockData,
@@ -21,6 +22,7 @@ import {
 Vue.use(VueApollo);
 
 jest.mock('~/sentry/sentry_browser_wrapper');
+jest.mock('ee/members/promotion_requests/services/promotion_request_list_invalidation_service');
 
 describe('PromotionRequestsApp', () => {
   /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
@@ -50,6 +52,28 @@ describe('PromotionRequestsApp', () => {
 
   beforeEach(() => {
     pendingMemberApprovalsQueryHandler.mockReset();
+  });
+
+  describe('mounted', () => {
+    jest.spyOn(PromotionRequestListInvalidationService, 'subscribe');
+
+    it('will subscribe to the invalidation service', async () => {
+      await createComponent({ provide: groupDefaultProvide });
+      expect(PromotionRequestListInvalidationService.subscribe).toHaveBeenCalledTimes(1);
+    });
+
+    it('will invalidate the pagination and refetch the store', async () => {
+      pendingMemberApprovalsQueryHandler.mockResolvedValue(
+        groupPendingMemberApprovalsQueryMockData,
+      );
+
+      await createComponent({ provide: groupDefaultProvide });
+      await waitForPromises();
+
+      expect(pendingMemberApprovalsQueryHandler).toHaveBeenCalledTimes(1);
+      PromotionRequestListInvalidationService.subscribe.mock.calls[0][0]();
+      expect(pendingMemberApprovalsQueryHandler).toHaveBeenCalledTimes(2);
+    });
   });
 
   describe.each([
