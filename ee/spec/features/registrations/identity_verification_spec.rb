@@ -481,7 +481,6 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
 
   def sign_up(flow: :standard, **opts)
     invite = flow == :invite
-    trial = flow == :trial
     saml = flow == :saml
 
     if saml
@@ -496,9 +495,7 @@ RSpec.describe 'Identity Verification', :js, :with_current_organization, feature
 
       click_button Gitlab::Auth::OAuth::Provider.label_for(provider)
     else
-      submit_button_text = trial ? 'Continue' : 'Register'
-
-      fill_in_sign_up_form(new_user, submit_button_text, invite: invite) do
+      fill_in_sign_up_form(new_user, invite: invite) do
         solve_arkose_verify_challenge(**opts[:arkose]) unless opts[:arkose][:disable]
       end
     end

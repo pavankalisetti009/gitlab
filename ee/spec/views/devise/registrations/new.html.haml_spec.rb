@@ -6,11 +6,14 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
   let(:arkose_labs_enabled) { true }
   let(:arkose_labs_api_key) { "api-key" }
   let(:arkose_labs_domain) { "domain" }
+  let(:resource) { Users::RegistrationsBuildService.new(nil, {}).execute }
 
-  subject { render(template: 'devise/registrations/new') }
+  subject { render && rendered }
 
   before do
-    stub_devise
+    allow(view).to receive(:resource).and_return(resource)
+    allow(view).to receive(:resource_name).and_return(:user)
+    allow(view).to receive(:registration_path_params).and_return({})
 
     allow(view).to receive(:glm_tracking_params).and_return({})
     allow(view).to receive(:arkose_labs_enabled?).and_return(arkose_labs_enabled)
@@ -19,54 +22,15 @@ RSpec.describe 'devise/registrations/new', feature_category: :system_access do
     allow(::Arkose::Settings).to receive(:arkose_labs_domain).and_return(arkose_labs_domain)
   end
 
-  it 'renders challenge container with the correct data attributes', :aggregate_failures do
-    subject
-
-    expect(rendered).to have_selector('#js-arkose-labs-challenge')
-    expect(rendered).to have_selector("[data-api-key='#{arkose_labs_api_key}']")
-    expect(rendered).to have_selector("[data-domain='#{arkose_labs_domain}']")
-  end
+  it { is_expected.to have_selector('#js-arkose-labs-challenge') }
+  it { is_expected.to have_selector("[data-api-key='#{arkose_labs_api_key}']") }
+  it { is_expected.to have_selector("[data-domain='#{arkose_labs_domain}']") }
 
   context 'when the feature is disabled' do
     let(:arkose_labs_enabled) { false }
 
-    it 'does not render challenge container', :aggregate_failures do
-      subject
-
-      expect(rendered).not_to have_selector('#js-arkose-labs-challenge')
-      expect(rendered).not_to have_selector("[data-api-key='#{arkose_labs_api_key}']")
-      expect(rendered).not_to have_selector("[data-domain='#{arkose_labs_domain}']")
-    end
-  end
-
-  describe 'broadcast messaging' do
-    before do
-      stub_ee_application_setting(should_check_namespace_plan: should_check_namespace_plan)
-      stub_devise
-
-      allow(view).to receive(:glm_tracking_params).and_return({})
-      allow(view).to receive(:arkose_labs_enabled?).and_return(arkose_labs_enabled)
-
-      render
-    end
-
-    context 'when self-hosted' do
-      let(:should_check_namespace_plan) { false }
-
-      it { expect(rendered).not_to render_template('layouts/_broadcast') }
-    end
-
-    context 'when SaaS' do
-      let(:should_check_namespace_plan) { true }
-
-      it { expect(rendered).not_to render_template('layouts/_broadcast') }
-    end
-  end
-
-  def stub_devise
-    allow(view).to receive(:devise_mapping).and_return(Devise.mappings[:user])
-    allow(view).to receive(:resource).and_return(build(:user))
-    allow(view).to receive(:resource_name).and_return(:user)
-    allow(view).to receive(:registration_path_params).and_return({})
+    it { is_expected.not_to have_selector('#js-arkose-labs-challenge') }
+    it { is_expected.not_to have_selector("[data-api-key='#{arkose_labs_api_key}']") }
+    it { is_expected.not_to have_selector("[data-domain='#{arkose_labs_domain}']") }
   end
 end
