@@ -44,11 +44,6 @@ module Elastic
         indexes :routing, type: :keyword
 
         indexes :schema_version, type: :short
-
-        if Gitlab::Elastic::Helper.default.vectors_supported?(:elasticsearch)
-          indexes :embedding, type: 'dense_vector', dims: 768, similarity: 'dot_product', index: true
-          indexes :embedding_version, type: :short
-        end
       end
     end
   end
