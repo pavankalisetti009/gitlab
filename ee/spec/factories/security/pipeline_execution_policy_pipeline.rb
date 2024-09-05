@@ -2,20 +2,23 @@
 
 FactoryBot.define do
   factory(
-    :ci_pipeline_execution_policy,
-    class: '::Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy'
+    :pipeline_execution_policy_pipeline,
+    class: '::Security::PipelineExecutionPolicy::Pipeline'
   ) do
     pipeline factory: :ci_empty_pipeline
-    config factory: :execution_policy_config
+    config factory: :pipeline_execution_policy_config
 
     skip_create
+    initialize_with do
+      new(**attributes)
+    end
 
     trait :override_project_ci do
-      config factory: [:execution_policy_config, :override_project_ci]
+      config factory: [:pipeline_execution_policy_config, :override_project_ci]
     end
 
     trait :suffix_never do
-      config factory: [:execution_policy_config, :suffix_never]
+      config factory: [:pipeline_execution_policy_config, :suffix_never]
     end
 
     transient do

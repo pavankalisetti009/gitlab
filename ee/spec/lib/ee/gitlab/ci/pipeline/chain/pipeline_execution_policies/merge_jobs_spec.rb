@@ -10,10 +10,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
   let_it_be(:user) { create(:user, developer_of: project) }
   let(:pipeline) { build(:ci_pipeline, project: project, ref: 'master', user: user) }
 
-  let(:pipeline_execution_policies) do
+  let(:execution_policy_pipelines) do
     [
-      build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'build' => ['docker'] })),
-      build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
+      build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'build' => ['docker'] })),
+      build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
     ]
   end
 
@@ -22,7 +22,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       project: project,
       current_user: user,
       origin_ref: pipeline.ref,
-      pipeline_execution_policies: pipeline_execution_policies
+      execution_policy_pipelines: execution_policy_pipelines
     )
   end
 
@@ -113,11 +113,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
 
       context 'when two policy pipelines have the same job names' do
-        let(:pipeline_execution_policies) do
+        let(:execution_policy_pipelines) do
           [
-            build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
+            build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
               job_script: non_conflicting_job_script),
-            build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
+            build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
               job_script: conflicting_job_script)
           ]
         end
@@ -125,12 +125,12 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         it_behaves_like 'merges both jobs using suffix for conflicts', 'rspec'
 
         context 'when jobs contain `needs`' do
-          let(:pipeline_execution_policies) do
+          let(:execution_policy_pipelines) do
             [
-              build(:ci_pipeline_execution_policy,
+              build(:pipeline_execution_policy_pipeline,
                 pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'], 'deploy' => ['check-needs-rspec'] }),
                 job_script: non_conflicting_job_script),
-              build(:ci_pipeline_execution_policy,
+              build(:pipeline_execution_policy_pipeline,
                 pipeline: build_mock_policy_pipeline(
                   { 'test' => %w[rspec jest], 'deploy' => %w[check-needs-rspec coverage-needs-jest] }
                 ),
@@ -139,11 +139,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
           end
 
           before do
-            policy1_stages = pipeline_execution_policies.first.pipeline.stages
+            policy1_stages = execution_policy_pipelines.first.pipeline.stages
             policy1_rspec = policy1_stages.first.statuses.find { |job| job.name == 'rspec' }
             build_job_needs(job: policy1_stages.last.statuses.first, needs: policy1_rspec)
 
-            policy2_stages = pipeline_execution_policies.last.pipeline.stages
+            policy2_stages = execution_policy_pipelines.last.pipeline.stages
             policy2_rspec = policy2_stages.first.statuses.find { |job| job.name == 'rspec' }
             policy2_jest = policy2_stages.first.statuses.find { |job| job.name == 'jest' }
             build_job_needs(job: policy2_stages.last.statuses.first, needs: policy2_rspec)
@@ -174,11 +174,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         end
 
         context 'when suffix is set to "never"' do
-          let(:pipeline_execution_policies) do
+          let(:execution_policy_pipelines) do
             [
-              build(:ci_pipeline_execution_policy, :suffix_never,
+              build(:pipeline_execution_policy_pipeline, :suffix_never,
                 pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] })),
-              build(:ci_pipeline_execution_policy, :suffix_never,
+              build(:pipeline_execution_policy_pipeline, :suffix_never,
                 pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
             ]
           end
@@ -188,11 +188,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
 
       context 'when project and policy pipelines have the same job names' do
-        let(:pipeline_execution_policies) do
+        let(:execution_policy_pipelines) do
           [
-            build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rake'] }),
+            build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'test' => ['rake'] }),
               job_script: conflicting_job_script),
-            build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
+            build(:pipeline_execution_policy_pipeline, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }),
               job_script: non_conflicting_job_script)
           ]
         end
@@ -209,11 +209,12 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
 
         context 'when suffix is set to "never"' do
           context 'when a policy with duplicate job uses "never" suffix' do
-            let(:pipeline_execution_policies) do
+            let(:execution_policy_pipelines) do
               [
-                build(:ci_pipeline_execution_policy, :suffix_never,
+                build(:pipeline_execution_policy_pipeline, :suffix_never,
                   pipeline: build_mock_policy_pipeline({ 'test' => ['rake'] })),
-                build(:ci_pipeline_execution_policy, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
+                build(:pipeline_execution_policy_pipeline,
+                  pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
               ]
             end
 
@@ -222,11 +223,11 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         end
 
         context 'when other policy uses "never" strategy' do
-          let(:pipeline_execution_policies) do
+          let(:execution_policy_pipelines) do
             [
-              build(:ci_pipeline_execution_policy,
+              build(:pipeline_execution_policy_pipeline,
                 pipeline: build_mock_policy_pipeline({ 'test' => ['rake'] }), job_script: conflicting_job_script),
-              build(:ci_pipeline_execution_policy, :suffix_never,
+              build(:pipeline_execution_policy_pipeline, :suffix_never,
                 pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }), job_script: non_conflicting_job_script)
             ]
           end
@@ -243,8 +244,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
             rake: { stage: 'test', script: 'rake' } }
         end
 
-        let(:pipeline_execution_policies) do
-          build_list(:ci_pipeline_execution_policy, 1, pipeline: build_mock_policy_pipeline({ 'custom' => ['docker'] }))
+        let(:execution_policy_pipelines) do
+          build_list(:pipeline_execution_policy_pipeline, 1,
+            pipeline: build_mock_policy_pipeline({ 'custom' => ['docker'] }))
         end
 
         it 'injects the policy job into the custom stage', :aggregate_failures do
@@ -266,8 +268,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         end
 
         context 'when the policy has multiple jobs' do
-          let(:pipeline_execution_policies) do
-            build_list(:ci_pipeline_execution_policy, 1,
+          let(:execution_policy_pipelines) do
+            build_list(:pipeline_execution_policy_pipeline, 1,
               pipeline: build_mock_policy_pipeline({ 'custom' => %w[docker rspec] }))
           end
 
@@ -282,8 +284,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
 
       context 'when custom policy stage is not defined in the main pipeline' do
-        let(:pipeline_execution_policies) do
-          build_list(:ci_pipeline_execution_policy, 1, pipeline: build_mock_policy_pipeline({ 'custom' => ['docker'] }))
+        let(:execution_policy_pipelines) do
+          build_list(:pipeline_execution_policy_pipeline, 1,
+            pipeline: build_mock_policy_pipeline({ 'custom' => ['docker'] }))
         end
 
         it 'ignores the stage' do
@@ -304,8 +307,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
           rake: { stage: 'test', script: 'rake' } }
       end
 
-      let(:pipeline_execution_policies) do
-        build_list(:ci_pipeline_execution_policy, 1, pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
+      let(:execution_policy_pipelines) do
+        build_list(:pipeline_execution_policy_pipeline, 1,
+          pipeline: build_mock_policy_pipeline({ 'test' => ['rspec'] }))
       end
 
       it 'reassigns the position and stage_idx for the jobs to match the main pipeline', :aggregate_failures do
@@ -324,8 +328,9 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
           package: { stage: 'deploy', script: 'package' } }
       end
 
-      let(:pipeline_execution_policies) do
-        build_list(:ci_pipeline_execution_policy, 1, pipeline: build_mock_policy_pipeline({ 'deploy' => ['docker'] }))
+      let(:execution_policy_pipelines) do
+        build_list(:pipeline_execution_policy_pipeline, 1,
+          pipeline: build_mock_policy_pipeline({ 'deploy' => ['docker'] }))
       end
 
       it 'reassigns the position and stage_idx for policy jobs based on the declared stages', :aggregate_failures do
@@ -369,10 +374,10 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
         { rake: { script: 'rake' } }
       end
 
-      let(:pipeline_execution_policies) do
+      let(:execution_policy_pipelines) do
         [
           build(
-            :ci_pipeline_execution_policy, :override_project_ci,
+            :pipeline_execution_policy_pipeline, :override_project_ci,
             pipeline: build_mock_policy_pipeline({ '.pipeline-policy-pre' => ['rspec'] })
           )
         ]
@@ -395,8 +400,8 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicies::MergeJobs
       end
     end
 
-    context 'when pipeline_execution_policies is not defined' do
-      let(:pipeline_execution_policies) { nil }
+    context 'when execution_policy_pipelines is not defined' do
+      let(:execution_policy_pipelines) { nil }
 
       it 'does not change pipeline stages' do
         expect { run_chain }.not_to change { pipeline.stages }

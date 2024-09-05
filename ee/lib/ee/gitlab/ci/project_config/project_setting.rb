@@ -9,7 +9,7 @@ module EE
 
           override :content
           def content
-            return if pipeline_policy_context&.has_overriding_pipeline_execution_policies?
+            return if pipeline_policy_context&.has_overriding_execution_policy_pipelines?
 
             super
           end

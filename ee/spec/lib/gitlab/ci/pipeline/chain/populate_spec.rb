@@ -24,15 +24,15 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::Populate, feature_category: :pipelin
     stub_ci_pipeline_yaml_file(YAML.dump(config))
   end
 
-  context 'when pipeline is empty and there are pipeline_execution_policies' do
-    let(:policy_pipeline) { build(:ci_pipeline_execution_policy) }
+  context 'when pipeline is empty and there are execution_policy_pipelines' do
+    let(:policy_pipeline) { build(:pipeline_execution_policy_pipeline) }
 
     let(:command) do
       Gitlab::Ci::Pipeline::Chain::Command.new(
         project: project,
         current_user: user,
         origin_ref: 'master',
-        pipeline_execution_policies: [policy_pipeline],
+        execution_policy_pipelines: [policy_pipeline],
         seeds_block: nil)
     end
 

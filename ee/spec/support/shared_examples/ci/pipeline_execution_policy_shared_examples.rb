@@ -9,11 +9,11 @@ RSpec.shared_context 'with pipeline policy context' do
     Gitlab::Ci::Pipeline::Chain::Command.new(
       project: project,
       execution_policy_dry_run: execution_policy_dry_run,
-      pipeline_execution_policies: pipeline_execution_policies
+      execution_policy_pipelines: execution_policy_pipelines
     )
   end
 
   let_it_be(:project) { create(:project, :repository) }
   let(:execution_policy_dry_run) { false }
-  let(:pipeline_execution_policies) { [] }
+  let(:execution_policy_pipelines) { [] }
 end

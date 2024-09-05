@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy, feature_category: :security_policy_management do
-  let(:config) { build(:execution_policy_config) }
-  let(:instance) { described_class.new(anything, config) }
+RSpec.describe Security::PipelineExecutionPolicy::Pipeline, feature_category: :security_policy_management do
+  let(:config) { build(:pipeline_execution_policy_config) }
+  let(:instance) { described_class.new(pipeline: build(:ci_empty_pipeline), config: config) }
 
   describe '#strategy_override_project_ci?' do
     subject { instance.strategy_override_project_ci? }
@@ -12,7 +12,7 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy, feature_cat
     it { is_expected.to be(false) }
 
     context 'when strategy is override_project_ci' do
-      let(:config) { build(:execution_policy_config, :override_project_ci) }
+      let(:config) { build(:pipeline_execution_policy_config, :override_project_ci) }
 
       it { is_expected.to be(true) }
     end
@@ -22,13 +22,13 @@ RSpec.describe Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy, feature_cat
     subject { instance.suffix_on_conflict? }
 
     context 'when suffix_strategy is `never`' do
-      let(:config) { build(:execution_policy_config, suffix_strategy: :never) }
+      let(:config) { build(:pipeline_execution_policy_config, :suffix_never) }
 
       it { is_expected.to be(false) }
     end
 
     context 'when suffix_strategy is `on_conflict`' do
-      let(:config) { build(:execution_policy_config, suffix_strategy: :on_conflict) }
+      let(:config) { build(:pipeline_execution_policy_config, :suffix_on_conflict) }
 
       it { is_expected.to be(true) }
     end
