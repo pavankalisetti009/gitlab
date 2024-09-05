@@ -239,8 +239,6 @@ export default {
     ref="workItemTree"
     :title="$options.WORK_ITEMS_TREE_TEXT.title"
     :anchor-id="widgetName"
-    :count="childrenIds.length"
-    icon="issue-type-task"
     :is-loading="isLoadingChildren && !fetchNextPageInProgress"
     is-collapsible
     data-testid="work-item-tree"
