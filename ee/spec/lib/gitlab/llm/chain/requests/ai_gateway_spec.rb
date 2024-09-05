@@ -179,6 +179,25 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
     end
 
+    context 'when user is using a Self-hosted model' do
+      let!(:ai_feature) { create(:ai_feature_setting, self_hosted_model: self_hosted_model, feature: :duo_chat) }
+      let!(:self_hosted_model) { create(:ai_self_hosted_model, api_token: 'test_token') }
+      let(:expected_model) { self_hosted_model.model.to_s }
+
+      let(:payload) do
+        {
+          content: user_prompt,
+          provider: :litellm,
+          model: expected_model,
+          model_endpoint: self_hosted_model.endpoint,
+          model_api_key: self_hosted_model.api_token,
+          params: params
+        }
+      end
+
+      it_behaves_like 'performing request to the AI Gateway'
+    end
+
     context 'when request is sent for a new ReAct Duo Chat prompt' do
       let(:endpoint) { described_class::CHAT_V2_ENDPOINT }
       let(:prompt) { { prompt: user_prompt, options: options } }
