@@ -4075,4 +4075,52 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       it { is_expected.to match_expected_result }
     end
   end
+
+  describe 'manage_project_security_exclusions' do
+    let(:policy) { :manage_project_security_exclusions }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | false
+      :maintainer | true
+      :auditor    | false
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
+
+  describe 'read_project_security_exclusions' do
+    let(:policy) { :read_project_security_exclusions }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | true
+      :maintainer | true
+      :auditor    | true
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
 end
