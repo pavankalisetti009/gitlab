@@ -4,7 +4,7 @@ module QA
   RSpec.describe 'Monitor' do
     describe(
       'Product Analytics',
-      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics-devkit" } },
+      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics" } },
       product_group: :product_analytics
     ) do
       let!(:sandbox_group) { create(:sandbox, path: "gitlab-qa-product-analytics") }
