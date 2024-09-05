@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'spec_helper'
+require File.expand_path('ee/elastic/migrate/20240410193847_add_embedding_to_issues.rb')
 
 RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: :global_search do
   let_it_be(:user) { create(:user) }
@@ -134,6 +135,8 @@ RSpec.describe 'Elastic Ingestion Pipeline', :sidekiq_inline, feature_category: 
       allow_next_instance_of(Search::Elastic::References::Embedding) do |ref|
         allow(ref).to receive(:as_indexed_json).and_return({ embedding_version: 0, routing: project_routing })
       end
+
+      AddEmbeddingToIssues.new(20240410193847).migrate
     end
 
     it 'adds embedding on create and keeps embedding when title is updated' do
