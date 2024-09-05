@@ -25,6 +25,7 @@ module Search
 
       attribute :metadata, :ind_jsonb # for indifferent access
 
+      scope :by_name, ->(*names) { where("metadata->>'name' IN (?)", names) }
       scope :online, -> { where(last_seen_at: 1.minute.ago..) }
 
       def self.find_or_initialize_by_task_request(params)
