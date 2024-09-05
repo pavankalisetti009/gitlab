@@ -1,6 +1,11 @@
-import { GlBadge } from '@gitlab/ui';
+import { GlBadge, GlIcon } from '@gitlab/ui';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
-import { healthStatusTextMap, healthStatusVariantMap } from 'ee/sidebar/constants';
+import {
+  healthStatusColorMap,
+  healthStatusIconMap,
+  healthStatusTextMap,
+  healthStatusVariantMap,
+} from 'ee/sidebar/constants';
 import { createMockDirective, getBinding } from 'helpers/vue_mock_directive';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import { mockIssue1 } from '../mock_data';
@@ -9,34 +14,73 @@ describe('IssueHealthStatus', () => {
   const { healthStatus } = mockIssue1;
   let wrapper;
 
-  const createComponent = () =>
+  const createComponent = ({ displayAsText = false } = {}) =>
     shallowMountExtended(IssueHealthStatus, {
       directives: {
         GlTooltip: createMockDirective('gl-tooltip'),
       },
       propsData: {
         healthStatus,
+        displayAsText,
       },
     });
 
-  const findHealthStatus = () => wrapper.findComponent(GlBadge);
+  const findBadge = () => wrapper.findComponent(GlBadge);
+  const findIcon = () => wrapper.findComponent(GlIcon);
+  const findStatusText = () => wrapper.findByTestId('status-text');
 
-  beforeEach(() => {
-    wrapper = createComponent();
+  describe('badge mode', () => {
+    beforeEach(() => {
+      wrapper = createComponent();
+    });
+
+    it('renders a badge', () => {
+      expect(findBadge().exists()).toBe(true);
+    });
+
+    it('renders health status text', () => {
+      const expectedValue = healthStatusTextMap[healthStatus];
+
+      expect(findBadge().text()).toBe(expectedValue);
+    });
+
+    it('applies correct health status class', () => {
+      expect(findBadge().attributes('variant')).toBe(healthStatusVariantMap[healthStatus]);
+    });
+
+    it('contains health status tooltip', () => {
+      expect(getBinding(findBadge().element, 'gl-tooltip')).not.toBeUndefined();
+      expect(findBadge().attributes('title')).toBe('Health status');
+    });
   });
 
-  it('renders health status text', () => {
-    const expectedValue = healthStatusTextMap[healthStatus];
+  describe('text mode', () => {
+    beforeEach(() => {
+      wrapper = createComponent({ displayAsText: true });
+    });
 
-    expect(findHealthStatus().text()).toBe(expectedValue);
-  });
+    it('renders text and an icon', () => {
+      expect(findIcon().exists()).toBe(true);
+      expect(findStatusText().exists()).toBe(true);
+    });
 
-  it('applies correct health status class', () => {
-    expect(findHealthStatus().attributes('variant')).toBe(healthStatusVariantMap[healthStatus]);
-  });
+    it('renders health status text', () => {
+      const expectedValue = healthStatusTextMap[healthStatus];
 
-  it('contains health status tooltip', () => {
-    expect(getBinding(findHealthStatus().element, 'gl-tooltip')).not.toBeUndefined();
-    expect(findHealthStatus().attributes('title')).toBe('Health status');
+      expect(findStatusText().text()).toBe(expectedValue);
+    });
+
+    it('renders correct icon', () => {
+      expect(findIcon().attributes('name')).toBe(healthStatusIconMap[healthStatus]);
+    });
+
+    it('applies correct color', () => {
+      expect(findStatusText().classes(healthStatusColorMap[healthStatus])).toBe(true);
+    });
+
+    it('contains health status tooltip', () => {
+      expect(getBinding(findStatusText().element, 'gl-tooltip')).not.toBeUndefined();
+      expect(findStatusText().attributes('title')).toBe('Health status');
+    });
   });
 });

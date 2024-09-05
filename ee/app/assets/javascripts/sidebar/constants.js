@@ -47,6 +47,18 @@ export const healthStatusVariantMap = {
   [HEALTH_STATUS_AT_RISK]: 'danger',
 };
 
+export const healthStatusIconMap = {
+  [HEALTH_STATUS_ON_TRACK]: 'status-health',
+  [HEALTH_STATUS_NEEDS_ATTENTION]: 'warning',
+  [HEALTH_STATUS_AT_RISK]: 'error',
+};
+
+export const healthStatusColorMap = {
+  [HEALTH_STATUS_ON_TRACK]: 'gl-text-green-500',
+  [HEALTH_STATUS_NEEDS_ATTENTION]: 'gl-text-orange-500',
+  [HEALTH_STATUS_AT_RISK]: 'gl-text-red-500',
+};
+
 export const healthStatusForRestApi = {
   NO_STATUS: '0',
   [HEALTH_STATUS_ON_TRACK]: 'on_track',
