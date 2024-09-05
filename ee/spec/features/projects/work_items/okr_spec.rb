@@ -11,10 +11,11 @@ RSpec.describe 'OKR', :js, feature_category: :portfolio_management do
   let(:user2) { create(:user, name: 'John') }
   let(:group) { create(:group, :public, organization: organization) }
   let(:project) { create(:project, :public, namespace: group) }
-  let(:objective) { create(:work_item, :objective, project: project) }
-  let!(:emoji_upvote) { create(:award_emoji, :upvote, awardable: objective, user: user2) }
-  let(:key_result) { create(:work_item, :key_result, project: project) }
   let(:label) { create(:label, project: project, title: "testing-label") }
+  let(:label2) { create(:label, project: project, title: "another-label") }
+  let(:objective) { create(:work_item, :objective, project: project, labels: [label]) }
+  let!(:emoji_upvote) { create(:award_emoji, :upvote, awardable: objective, user: user2) }
+  let(:key_result) { create(:work_item, :key_result, project: project, labels: [label]) }
 
   before do
     group.add_developer(user)
