@@ -11,6 +11,7 @@ module EE
         def project_update_params
           super
             .merge(status_page_setting_params)
+            .merge(observability_settings_params)
         end
 
         private
@@ -25,6 +26,14 @@ module EE
             attrs[:status_page_url].blank?
 
           { status_page_setting_attributes: attrs.merge(_destroy: destroy) }
+        end
+
+        def observability_settings_params
+          return {} unless params.key?(:observability_alerts_enabled)
+
+          {
+            observability_alerts_enabled: params[:observability_alerts_enabled]
+          }
         end
       end
     end
