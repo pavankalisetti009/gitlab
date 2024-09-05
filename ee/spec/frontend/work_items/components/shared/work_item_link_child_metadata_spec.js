@@ -15,6 +15,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
     metadataWidgets = workItemObjectiveMetadataWidgetsEE,
     showWeight = true,
     workItemType = 'Task',
+    isChildItemOpen = true,
   } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
       propsData: {
@@ -23,6 +24,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
         metadataWidgets,
         showWeight,
         workItemType,
+        isChildItemOpen,
       },
     });
   };
@@ -200,9 +202,15 @@ describe('WorkItemLinkChildMetadataEE', () => {
     });
   });
 
-  it('renders health status badge', () => {
+  it('renders health status badge when the work item is open', () => {
     const { healthStatus } = HEALTH_STATUS;
 
     expect(wrapper.findComponent(IssueHealthStatus).props('healthStatus')).toBe(healthStatus);
+  });
+
+  it('does not render health status badge when the work item is closed', () => {
+    createComponent({ isChildItemOpen: false });
+
+    expect(wrapper.findComponent(IssueHealthStatus).exists()).toBe(false);
   });
 });
