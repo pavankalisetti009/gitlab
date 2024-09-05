@@ -177,16 +177,24 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
     context 'issue' do
       let(:scope) { 'issues' }
-      let(:search) { issue.title }
 
-      let!(:issue) { create :issue, project: project }
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let!(:work_item) { create document_type, project: project }
+          let(:search) { work_item.title }
 
-      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_guest_feature_access
-      end
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+          end
 
-      with_them do
-        it_behaves_like 'search respects visibility'
+          where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+            permission_table_for_guest_feature_access
+          end
+
+          with_them do
+            it_behaves_like 'search respects visibility'
+          end
+        end
       end
     end
 

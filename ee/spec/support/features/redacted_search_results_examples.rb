@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.shared_examples 'a redacted search results page' do |include_anonymous: true|
+RSpec.shared_examples 'a redacted search results page' do |include_anonymous: true, document_type: :issue|
   let(:public_group) { create(:group, :public) }
   let(:public_restricted_project) { create(:project, :repository, :public, :wiki_repo, namespace: public_group, name: 'The Project searchabletext') }
   let(:issue_access_level) { ProjectFeature::PRIVATE }
@@ -12,9 +12,9 @@ RSpec.shared_examples 'a redacted search results page' do |include_anonymous: tr
     Sidekiq::Testing.inline! do
       # Create a public project that the user is not member of.
       # And add some content to it.
-      issue = create(:issue, project: public_restricted_project, title: 'The Issue searchabletext')
+      issue = create(document_type, project: public_restricted_project, title: 'The Issue searchabletext')
       create(:note, project: public_restricted_project, noteable: issue, note: 'A note on issue searchabletext')
-      confidential_issue = create(:issue, :confidential, project: public_restricted_project, title: 'The Confidential Issue searchabletext')
+      confidential_issue = create(document_type, :confidential, project: public_restricted_project, title: 'The Confidential Issue searchabletext')
       create(:note, project: public_restricted_project, noteable: confidential_issue, note: 'A note on confidential issue searchabletext')
       create(:milestone, project: public_restricted_project, title: 'The Milestone searchabletext')
       create(:note_on_commit, project: public_restricted_project, note: 'A note on commit searchabletext')
