@@ -38,12 +38,11 @@ export default {
     description: s__(
       `CodeSuggestions|%{linkStart}Code Suggestions%{linkEnd} uses generative AI to suggest code while you're developing.`,
     ),
-    title: s__('CodeSuggestions|%{title}'),
+    subscriptionTitle: s__('CodeSuggestions|Subscription'),
+    trialTitle: s__('CodeSuggestions|Trial'),
     addSeatsText,
-    subscriptionStartDate: __('Subscription start date'),
-    subscriptionEndDate: __('Subscription end date'),
-    trialStartDate: __('Trial start date'),
-    trialEndDate: __('Trial end date'),
+    startDateText: __('Start date:'),
+    endDateText: __('End date:'),
     notAvailable: __('Not available'),
     purchaseSeats: __('Purchase seats'),
     trial: s__('CodeSuggestions|trial'),
@@ -122,10 +121,10 @@ export default {
 
       return `${title} ${this.duoProActiveTrial ? this.$options.i18n.trial : ''}`;
     },
-    subscriptionStartDateText() {
+    titleText() {
       return this.duoProActiveTrial
-        ? this.$options.i18n.trialStartDate
-        : this.$options.i18n.subscriptionStartDate;
+        ? this.$options.i18n.trialTitle
+        : this.$options.i18n.subscriptionTitle;
     },
     subscriptionEndDateText() {
       return this.duoProActiveTrial
@@ -264,7 +263,7 @@ export default {
 };
 </script>
 <template>
-  <gl-card class="gl-p-3">
+  <gl-card>
     <gl-skeleton-loader v-if="isLoading" :height="64">
       <rect width="140" height="30" x="5" y="0" rx="4" />
       <rect width="240" height="10" x="5" y="40" rx="4" />
@@ -272,34 +271,32 @@ export default {
     </gl-skeleton-loader>
     <usage-statistics v-else>
       <template #description>
-        <h4 class="gl-m-0 gl-font-bold" data-testid="title">
-          {{ sprintf($options.i18n.title, { title: duoTitle }) }}
+        <h4 class="gl-mb-3 gl-mt-0 gl-font-bold" data-testid="title">
+          {{ sprintf(titleText) }}
         </h4>
       </template>
       <template #additional-info>
-        <p class="gl-mt-5" data-testid="description">
-          <gl-sprintf :message="$options.i18n.description">
-            <template #link="{ content }">
-              <gl-link
-                target="_blank"
-                data-testid="usage-quotas-gitlab-duo-tab-code-suggestions-link"
-                @click="handleCodeSuggestionsLink"
-                >{{ content }}</gl-link
-              >
-            </template>
-          </gl-sprintf>
-        </p>
         <div data-testid="subscription-info">
           <div class="gl-flex gl-gap-3">
-            <span class="gl-min-w-20 gl-basis-1/3 gl-font-bold">{{
-              subscriptionStartDateText
-            }}</span>
+            <span class="gl-font-bold">{{ $options.i18n.startDateText }}</span>
             <span>{{ startDate }}</span>
           </div>
           <div class="gl-mt-2 gl-flex gl-gap-3">
-            <span class="gl-min-w-20 gl-basis-1/3 gl-font-bold">{{ subscriptionEndDateText }}</span>
+            <span class="gl-font-bold">{{ $options.i18n.endDateText }}</span>
             <span>{{ endDate }}</span>
           </div>
+          <p class="gl-mb-0 gl-mt-4" data-testid="description">
+            <gl-sprintf :message="$options.i18n.description">
+              <template #link="{ content }">
+                <gl-link
+                  target="_blank"
+                  data-testid="usage-quotas-gitlab-duo-tab-code-suggestions-link"
+                  @click="handleCodeSuggestionsLink"
+                  >{{ content }}</gl-link
+                >
+              </template>
+            </gl-sprintf>
+          </p>
         </div>
       </template>
       <template #actions>

@@ -16,7 +16,7 @@ export default {
     codeSuggestionsLearnMoreLink,
   },
   i18n: {
-    codeSuggestionsAssignedInfoText: s__('CodeSuggestions|%{title} seats used'),
+    codeSuggestionsAssignedInfoText: s__('CodeSuggestions|Seats used'),
     codeSuggestionsIntroDescriptionText: s__(
       `CodeSuggestions|A user can be assigned a %{title} seat only once each billable month.`,
     ),
@@ -55,19 +55,19 @@ export default {
 };
 </script>
 <template>
-  <gl-card v-if="shouldShowUsageStatistics" class="gl-p-3">
+  <gl-card v-if="shouldShowUsageStatistics">
     <usage-statistics
       :percentage="percentage"
       :total-value="`${totalValue}`"
       :usage-value="`${usageValue}`"
     >
       <template #description>
-        <p class="gl-mb-0 gl-text-sm gl-font-bold" data-testid="code-suggestions-info">
+        <h4 class="gl-m-0" data-testid="code-suggestions-info">
           {{ sprintf($options.i18n.codeSuggestionsAssignedInfoText, { title: duoTitle }) }}
-        </p>
+        </h4>
       </template>
       <template #additional-info>
-        <p class="gl-mt-5 gl-text-sm" data-testid="code-suggestions-description">
+        <p class="gl-mb-0 gl-text-gray-500" data-testid="code-suggestions-description">
           {{ sprintf($options.i18n.codeSuggestionsIntroDescriptionText, { title: duoTitle }) }}
         </p>
       </template>

@@ -143,7 +143,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
       });
 
       it('tracks the page view correctly', () => {
@@ -166,7 +166,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Enterprise');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
       });
     });
 
@@ -250,7 +250,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro trial');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Trial');
       });
 
       it('renders the trial start date', () => {

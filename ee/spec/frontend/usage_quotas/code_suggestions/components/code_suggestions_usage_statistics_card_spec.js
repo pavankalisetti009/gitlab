@@ -42,7 +42,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
     });
 
     it('renders the info text', () => {
-      expect(findCodeSuggestionsInfo().text()).toBe('GitLab Duo Pro seats used');
+      expect(findCodeSuggestionsInfo().text()).toBe('Seats used');
     });
 
     it('passes the correct props to <usage-statistics>', () => {
@@ -66,7 +66,7 @@ describe('CodeSuggestionsUsageStatisticsCard', () => {
     });
 
     it('renders the info text', () => {
-      expect(findCodeSuggestionsInfo().text()).toBe('GitLab Duo Enterprise seats used');
+      expect(findCodeSuggestionsInfo().text()).toBe('Seats used');
     });
 
     it('passes the correct props to <usage-statistics>', () => {
