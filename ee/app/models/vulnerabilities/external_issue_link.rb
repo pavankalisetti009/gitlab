@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Vulnerabilities
-  class ExternalIssueLink < ApplicationRecord
+  class ExternalIssueLink < Gitlab::Database::SecApplicationRecord
     include EachBatch
 
     self.table_name = 'vulnerability_external_issue_links'

@@ -34041,9 +34041,6 @@ ALTER TABLE ONLY identities
 ALTER TABLE ONLY boards
     ADD CONSTRAINT fk_ab0a250ff6 FOREIGN KEY (iteration_cadence_id) REFERENCES iterations_cadences(id) ON DELETE CASCADE;
 
-ALTER TABLE ONLY vulnerability_external_issue_links
-    ADD CONSTRAINT fk_abd093bb21 FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE;
-
 ALTER TABLE ONLY audit_events_streaming_http_instance_namespace_filters
     ADD CONSTRAINT fk_abe44125bc FOREIGN KEY (audit_events_instance_external_audit_event_destination_id) REFERENCES audit_events_instance_external_audit_event_destinations(id) ON DELETE CASCADE;
 
@@ -36320,9 +36317,6 @@ ALTER TABLE ONLY incident_management_escalation_policies
 
 ALTER TABLE ONLY software_license_policies
     ADD CONSTRAINT fk_rails_e5b77d620e FOREIGN KEY (scan_result_policy_id) REFERENCES scan_result_policies(id) ON DELETE CASCADE;
-
-ALTER TABLE ONLY vulnerability_external_issue_links
-    ADD CONSTRAINT fk_rails_e5ba7f7b13 FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE SET NULL;
 
 ALTER TABLE ONLY approval_merge_request_rule_sources
     ADD CONSTRAINT fk_rails_e605a04f76 FOREIGN KEY (approval_merge_request_rule_id) REFERENCES approval_merge_request_rules(id) ON DELETE CASCADE;
