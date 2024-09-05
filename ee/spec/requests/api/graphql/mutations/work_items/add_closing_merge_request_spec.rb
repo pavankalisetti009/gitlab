@@ -45,19 +45,27 @@ RSpec.describe 'Add a closing merge request to a work item', feature_category: :
     { 'id' => work_item.to_gid.to_s, 'mergeRequestReference' => mr_reference, 'contextNamespacePath' => namespace_path }
   end
 
-  context 'when work item belongs to a project' do
-    let_it_be_with_refind(:work_item) { create(:work_item, project: project) }
+  context 'when work item belongs to a group' do
+    let_it_be_with_refind(:work_item) { create(:work_item, :group_level, namespace: group) }
 
-    it_behaves_like 'a mutation that adds closing merge request'
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    end
 
-    context 'when context path is not provided' do
-      let(:namespace_path) { nil }
-
-      it 'adds the closing merge request by falling back to the work item parent' do
-        expect do
-          post_graphql_mutation(mutation, current_user: current_user)
-        end.to change { MergeRequestsClosingIssues.count }.by(1)
+    context 'with group level work item license' do
+      before do
+        stub_licensed_features(epics: true)
       end
+
+      it_behaves_like 'a mutation that adds closing merge request'
+    end
+
+    context 'without group level work item license' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it_behaves_like 'a mutation that does not add closing merge request'
     end
   end
 end
