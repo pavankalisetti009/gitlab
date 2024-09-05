@@ -70,6 +70,8 @@ module EE
       has_many :project_templates, through: :projects, foreign_key: 'custom_project_templates_group_id'
 
       has_many :managed_users, class_name: 'User', foreign_key: 'managing_group_id', inverse_of: :managing_group
+      has_many :enterprise_user_details, class_name: 'UserDetail', foreign_key: 'enterprise_group_id', inverse_of: :enterprise_group
+      has_many :enterprise_users, through: :enterprise_user_details, source: :user
       has_many :provisioned_user_details, class_name: 'UserDetail', foreign_key: 'provisioned_by_group_id', inverse_of: :provisioned_by_group
       has_many :provisioned_users, through: :provisioned_user_details, source: :user
       has_one :group_merge_request_approval_setting, inverse_of: :group
