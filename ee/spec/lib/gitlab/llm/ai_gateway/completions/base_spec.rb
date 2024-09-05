@@ -8,7 +8,6 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
   let(:resource) { build(:issue) }
   let(:ai_action) { 'test_action' }
   let(:prompt_message) { build(:ai_message, ai_action: ai_action, user: user, resource: resource) }
-  let(:prompt_name) { 'test_prompt' }
   let(:inputs) { { prompt: "What's your name?" } }
   let(:response) { instance_double(HTTParty::Response, body: "I'm Duo!") }
   let(:response_modifier) { instance_double(Gitlab::Llm::AiGateway::ResponseModifiers::Base) }
@@ -22,18 +21,16 @@ RSpec.describe Gitlab::Llm::AiGateway::Completions::Base, feature_category: :ai_
   subject(:completion) { subclass.new(prompt_message, nil) }
 
   describe 'required methods' do
-    it { expect { completion.prompt_name }.to raise_error(NotImplementedError) }
     it { expect { completion.inputs }.to raise_error(NotImplementedError) }
   end
 
   describe '#execute' do
     before do
-      allow(completion).to receive(:prompt_name).and_return(prompt_name)
       allow(completion).to receive(:inputs).and_return(inputs)
 
       allow(Gitlab::Llm::AiGateway::Client).to receive(:new)
         .with(user, service_name: ai_action.to_sym, tracking_context: tracking_context).and_return(client)
-      allow(client).to receive(:complete).with(endpoint: "/v1/prompts/#{ai_action}/#{prompt_name}", body: inputs)
+      allow(client).to receive(:complete).with(endpoint: "/v1/prompts/#{ai_action}", body: { 'inputs' => inputs })
         .and_return(response)
       allow(Gitlab::Llm::AiGateway::ResponseModifiers::Base).to receive(:new).with(response)
         .and_return(response_modifier)
