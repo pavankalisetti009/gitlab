@@ -126,7 +126,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
   context 'when there are execution policy pipelines' do
     let_it_be(:project) { create(:project) }
     let(:ci_config_path) { nil }
-    let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+    let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
     let(:config_content_result) do
       <<~EOY
@@ -139,7 +139,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
     end
 
     before do
-      command.pipeline_execution_policies = pipeline_execution_policies
+      command.execution_policy_pipelines = execution_policy_pipelines
     end
 
     it 'forces the pipeline creation' do
@@ -155,7 +155,7 @@ RSpec.describe ::Gitlab::Ci::Pipeline::Chain::Config::Content, feature_category:
       let_it_be(:project) { create(:project) }
 
       let(:blob) { fake_blob(path: '.gitlab-ci.yml', data: project_content) }
-      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2, :override_project_ci) }
+      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
 
       let(:project_content) do
         <<~EOY

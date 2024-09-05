@@ -465,8 +465,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         it_behaves_like 'stages including policy reserved stages'
       end
 
-      context 'with pipeline_execution_policies' do
-        let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+      context 'with execution_policy_pipelines' do
+        let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
         it_behaves_like 'stages including policy reserved stages'
       end

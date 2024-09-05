@@ -19,7 +19,7 @@ module EE
               include ::Gitlab::InternalEventsTracking
 
               def perform!
-                return if command.execution_policy_mode? || command.pipeline_execution_policies.blank?
+                return if command.execution_policy_mode? || command.execution_policy_pipelines.blank?
 
                 clear_project_pipeline
                 merge_policy_jobs
@@ -45,7 +45,7 @@ module EE
                 # 2. any policy uses `override_project_ci` strategy.
                 # It means that we need to ignore the project CI configuration.
                 unless pipeline.pipeline_execution_policy_forced? ||
-                    command.pipeline_policy_context.has_overriding_pipeline_execution_policies?
+                    command.pipeline_policy_context.has_overriding_execution_policy_pipelines?
                   return
                 end
 
@@ -53,7 +53,7 @@ module EE
               end
 
               def merge_policy_jobs
-                command.pipeline_execution_policies.each do |policy|
+                command.execution_policy_pipelines.each do |policy|
                   # Return `nil` is equivalent to "never" otherwise provide the new name.
                   on_conflict = ->(job_name) { job_name + policy.suffix if policy.suffix_on_conflict? }
 

@@ -152,7 +152,7 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
               Gitlab::Ci::Pipeline::Chain::Command.new(
                 project: project,
                 execution_policy_dry_run: true,
-                pipeline_execution_policies: []
+                execution_policy_pipelines: []
               )
             end
 
@@ -219,8 +219,8 @@ RSpec.describe Gitlab::Ci::Config, feature_category: :pipeline_composition do
       it_behaves_like 'injects reserved policy stages'
     end
 
-    context 'when pipeline_execution_policies are present' do
-      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+    context 'when execution_policy_pipelines are present' do
+      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
       it_behaves_like 'injects reserved policy stages'
     end

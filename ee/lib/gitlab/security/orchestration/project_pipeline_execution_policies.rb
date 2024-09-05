@@ -24,16 +24,8 @@ module Gitlab
             .first(POLICY_LIMIT_PER_PIPELINE)
             .reverse # reverse the order to apply the policy highest in the hierarchy as last
             .map do |(policy, policy_project_id, index)|
-              ::Gitlab::Security::Orchestration::ExecutionPolicyConfig.new(
-                policy[:content].to_yaml,
-                policy[:pipeline_config_strategy].to_sym,
-                (policy[:suffix] || ::Security::PipelineExecutionPolicy::DEFAULT_SUFFIX_STRATEGY).to_sym,
-                ::Security::PipelineExecutionPolicy.build_policy_suffix(
-                  policy_project_id: policy_project_id,
-                  policy: policy,
-                  policy_index: index
-                )
-              )
+              ::Security::PipelineExecutionPolicy::Config.new(
+                policy: policy, policy_project_id: policy_project_id, policy_index: index)
             end
         end
 

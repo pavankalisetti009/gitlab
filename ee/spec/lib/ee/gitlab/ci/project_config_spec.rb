@@ -10,18 +10,18 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   let(:bridge) { nil }
   let(:triggered_for_branch) { true }
   let(:ref) { 'master' }
-  let(:has_pipeline_execution_policies) { false }
+  let(:has_execution_policy_pipelines) { false }
   let(:pipeline_policy_context) do
     Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
   end
 
   before do
     allow(pipeline_policy_context).to(
-      receive(:has_overriding_pipeline_execution_policies?).and_return(false)
+      receive(:has_overriding_execution_policy_pipelines?).and_return(false)
     )
 
     allow(pipeline_policy_context).to(
-      receive(:has_pipeline_execution_policies?).and_return(has_pipeline_execution_policies)
+      receive(:has_execution_policy_pipelines?).and_return(has_execution_policy_pipelines)
     )
   end
 
@@ -276,7 +276,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig, feature_category: :pipeline_compositio
   end
 
   context 'when config is PipelineExecutionPolicyForced' do
-    let(:has_pipeline_execution_policies) { true }
+    let(:has_execution_policy_pipelines) { true }
 
     shared_examples_for 'forces the pipeline creation by including dummy content' do
       let(:expected_content) { YAML.dump(Gitlab::Ci::ProjectConfig::PipelineExecutionPolicyForced::DUMMY_CONTENT) }

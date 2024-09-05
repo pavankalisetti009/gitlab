@@ -6,7 +6,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig::ProjectSetting, feature_category: :con
   let_it_be(:project) { create(:project, :custom_repo, files: { '.gitlab-ci.yml' => '# CI' }) }
 
   let(:sha) { project.repository.head_commit.sha }
-  let(:has_overriding_pipeline_execution_policies) { false }
+  let(:has_overriding_execution_policy_pipelines) { false }
 
   let(:pipeline_policy_context) do
     Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext.new(project: project)
@@ -30,7 +30,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig::ProjectSetting, feature_category: :con
 
   before do
     allow(pipeline_policy_context).to(
-      receive(:has_overriding_pipeline_execution_policies?).and_return(has_overriding_pipeline_execution_policies)
+      receive(:has_overriding_execution_policy_pipelines?).and_return(has_overriding_execution_policy_pipelines)
     )
   end
 
@@ -40,7 +40,7 @@ RSpec.describe Gitlab::Ci::ProjectConfig::ProjectSetting, feature_category: :con
     it { is_expected.to eq(config_content_result) }
 
     context 'when it has overriding pipeline execution policies' do
-      let(:has_overriding_pipeline_execution_policies) { true }
+      let(:has_overriding_execution_policy_pipelines) { true }
 
       it { is_expected.to be_nil }
     end

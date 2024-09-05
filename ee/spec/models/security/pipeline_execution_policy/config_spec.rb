@@ -2,11 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe Security::PipelineExecutionPolicy, feature_category: :security_policy_management do
-  describe '.build_policy_suffix' do
-    subject { described_class.build_policy_suffix(**params) }
+RSpec.describe Security::PipelineExecutionPolicy::Config, feature_category: :security_policy_management do
+  let(:config) { described_class.new(**params) }
+  let(:params) { { policy_project_id: 123, policy_index: 1, policy: policy } }
 
-    let(:params) { { policy_project_id: 123, policy_index: 1, policy: policy } }
+  describe '#suffix' do
+    subject { config.suffix }
 
     context 'when policy has suffix "on_conflict"' do
       let(:policy) { build(:pipeline_execution_policy, suffix: 'on_conflict') }
