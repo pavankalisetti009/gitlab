@@ -55,7 +55,8 @@ module EE::SecurityOrchestrationHelper
       max_pipeline_execution_policies_allowed: Security::PipelineExecutionPolicy::POLICY_LIMIT,
       max_active_vulnerability_management_policies_reached:
         max_active_vulnerability_management_policies_reached?(container).to_s,
-      max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT
+      max_vulnerability_management_policies_allowed: Security::VulnerabilityManagementPolicy::POLICY_LIMIT,
+      max_scan_execution_policy_actions: max_scan_execution_policy_actions
     }
 
     if container.is_a?(::Project)
@@ -128,5 +129,9 @@ module EE::SecurityOrchestrationHelper
       &.security_orchestration_policy_configuration
       &.active_scan_result_policies
       &.length || 0
+  end
+
+  def max_scan_execution_policy_actions
+    Gitlab::CurrentSettings.scan_execution_policies_action_limit
   end
 end
