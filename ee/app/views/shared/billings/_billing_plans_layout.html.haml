@@ -3,7 +3,7 @@
     - if namespace.avatar_url.present?
       = render Pajamas::AvatarComponent.new(namespace, alt: namespace.name, class: 'border rounded gl-mb-5 gl-mt-2', size: 96)
     - else
-      .gl-flex.gl-justify-center.home-panel-avatar.gl-mb-6.gl-mt-2{ class: '!gl-mx-auto' }
+      .avatar-container.rect-avatar.s96.home-panel-avatar.gl-mr-3.float-none.gl-mb-6.gl-mt-2{ class: '!gl-mx-auto' }
         = render Pajamas::AvatarComponent.new(namespace, alt: namespace.name, size: 96)
 
   %h4{ data: { testid: 'billing-plan-header-content' } }
