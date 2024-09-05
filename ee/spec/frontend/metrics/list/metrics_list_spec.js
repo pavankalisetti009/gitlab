@@ -145,17 +145,26 @@ describe('MetricsComponent', () => {
       );
     });
 
-    it('renders FilteredSeach with Attribute tokens', () => {
-      const tokens = findFilteredSearch()
+    it('renders FilteredSeach with Attribute token', () => {
+      const token = findFilteredSearch()
         .props('tokens')
         .find(({ type }) => type === 'attribute');
 
-      expect(tokens).toBeDefined();
-      expect(tokens.options).toEqual([
+      expect(token).toBeDefined();
+      expect(token.options).toEqual([
         { title: 'attr-1', value: 'attr-1' },
         { title: 'attr-2', value: 'attr-2' },
         { title: 'attr-3', value: 'attr-3' },
       ]);
+    });
+
+    it('renders FilteredSeach with TraceId token', () => {
+      const token = findFilteredSearch()
+        .props('tokens')
+        .find(({ type }) => type === 'trace-id');
+
+      expect(token).toBeDefined();
+      expect(token.unique).toBe(true);
     });
 
     it('renders UrlSync and sets query prop', () => {

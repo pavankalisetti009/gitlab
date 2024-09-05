@@ -99,6 +99,7 @@ export default {
           type: TRACE_ID_FILTER_TOKEN_TYPE,
           token: GlFilteredSearchToken,
           operators: OPERATORS_IS,
+          unique: true,
         },
       ];
     },
