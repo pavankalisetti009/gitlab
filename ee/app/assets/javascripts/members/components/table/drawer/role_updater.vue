@@ -3,12 +3,13 @@ import axios from 'axios';
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import { s__ } from '~/locale';
 import { I18N_ROLE_SAVE_SUCCESS, I18N_ROLE_SAVE_ERROR } from '~/members/constants';
+import { MEMBERS_TAB_TYPES } from 'ee/members/constants';
 import { callRoleUpdateApi, setMemberRole, ldapRole } from './utils';
 import GuestOverageConfirmation from './guest_overage_confirmation.vue';
 
 export default {
   components: { GuestOverageConfirmation },
-  inject: ['group'],
+  inject: ['group', 'project'],
   props: {
     member: {
       type: Object,
@@ -90,8 +91,8 @@ export default {
     async saveStandardRole() {
       const { member, role } = this;
       const { data } = await callRoleUpdateApi(member, role);
-      // EE has a flow where the role is not changed immediately, but goes through an approval process. In that case
-      // we need to restore the role back to what the member had initially.
+      // At this point the role has not been changed yet, but was enqueued for approval, in this
+      // case we restore the role to it's initial state in the UI.
       if (data?.enqueued) {
         this.emitReset();
         this.emitAlert({
@@ -106,6 +107,17 @@ export default {
         }
 
         this.emitAlert({ message: I18N_ROLE_SAVE_SUCCESS, variant: 'success' });
+      }
+
+      // In either case if a role was changed or enqueued for promotion — we need to update the
+      // Promotion requests tab data.
+      if (this.$store.hasModule(MEMBERS_TAB_TYPES.promotionRequest)) {
+        const { group, project } = this;
+        this.$store.dispatch(
+          `${MEMBERS_TAB_TYPES.promotionRequest}/invalidatePromotionRequestsData`,
+          { group, project },
+          { root: true },
+        );
       }
     },
     emitAlert(alert) {

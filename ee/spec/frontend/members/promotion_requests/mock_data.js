@@ -1,13 +1,7 @@
 import { CONTEXT_TYPE } from '~/members/constants';
 
 export const pagination = {
-  currentPage: 1,
-  perPage: 50,
   totalItems: 1,
-  paramName: 'promotion_requests_page',
-  params: {
-    page: null,
-  },
 };
 
 export const groupDefaultProvide = {
