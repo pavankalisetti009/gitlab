@@ -143,7 +143,17 @@ module Gitlab
           end
 
           def gitlab_config
-            @gitlab_config ||= Gitlab::Backup::Cli::GitlabConfig.new(gitlab_basepath.join('config/gitlab.yml'))
+            return @gitlab_config unless @gitlab_config.nil?
+
+            @gitlab_config ||= build_gitlab_config.then do |config|
+              raise ::Gitlab::Backup::Cli::Error, 'Failed to load GitLab configuration file' unless config.loaded?
+
+              config
+            end
+          end
+
+          def build_gitlab_config
+            Gitlab::Backup::Cli::GitlabConfig.new(gitlab_basepath.join('config/gitlab.yml'))
           end
         end
       end
