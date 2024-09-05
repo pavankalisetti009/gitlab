@@ -70,6 +70,8 @@ module Features
 
       merge_params = merge_params(policy_merge_request)
 
+      policy_merge_request.approval_state.expire_unapproved_key!
+
       policy_merge_request.merge_async(user.id, merge_params)
     end
 

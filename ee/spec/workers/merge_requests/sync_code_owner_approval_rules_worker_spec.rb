@@ -9,7 +9,7 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRulesWorker, feature_category
 
   describe "#perform" do
     it_behaves_like 'an idempotent worker' do
-      let(:job_args) { [merge_request.id] }
+      let(:job_args) { [merge_request.id, { expire_unapproved_key: true }] }
     end
 
     context "when merge request is not found" do
@@ -22,11 +22,15 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRulesWorker, feature_category
 
     context "when merge request is found" do
       it "attempts to sync code owner rules" do
-        expect_next_instance_of(::MergeRequests::SyncCodeOwnerApprovalRules) do |instance|
+        expect_next_instance_of(
+          ::MergeRequests::SyncCodeOwnerApprovalRules,
+          merge_request,
+          expire_unapproved_key: true
+        ) do |instance|
           expect(instance).to receive(:execute)
         end
 
-        subject.perform(merge_request.id)
+        subject.perform(merge_request.id, { 'expire_unapproved_key' => true })
       end
     end
   end

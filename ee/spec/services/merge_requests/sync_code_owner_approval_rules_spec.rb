@@ -14,6 +14,7 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
   let(:rb_entry) { build_entry('*.rb', rb_owners, rb_group_owners, 'codeowners', rb_approvals_required) }
   let(:doc_entry) { build_entry('doc/*', doc_owners, doc_group_owners, 'codeowners', doc_approvals_required) }
   let(:entries) { [rb_entry, doc_entry] }
+  let(:params) { {} }
 
   def build_entry(pattern, users, groups, section = Gitlab::CodeOwners::Section::DEFAULT, approvals_required = 0)
     text = (users + groups).map(&:to_reference).join(' ')
@@ -37,7 +38,7 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
     end
   end
 
-  subject(:service) { described_class.new(merge_request) }
+  subject(:service) { described_class.new(merge_request, **params) }
 
   describe '#execute' do
     before do
@@ -125,6 +126,38 @@ RSpec.describe MergeRequests::SyncCodeOwnerApprovalRules, feature_category: :cod
 
         expect(service.execute).to eq(nil)
       end
+    end
+  end
+
+  context 'when given param expire_unapproved_key is not present' do
+    it 'does not expire the unapproved key for the MR' do
+      merge_request.approval_state.temporarily_unapprove!
+      expect(merge_request.temporarily_unapproved?).to be_truthy
+
+      service.execute
+
+      expect(merge_request.temporarily_unapproved?).to be_truthy
+    end
+  end
+
+  context 'when given param expire_unapproved_key is true' do
+    let(:params) { { expire_unapproved_key: true } }
+
+    it 'expires the unapproved key for the MR' do
+      merge_request.approval_state.temporarily_unapprove!
+      expect(merge_request.temporarily_unapproved?).to be_truthy
+
+      service.execute
+
+      expect(merge_request.temporarily_unapproved?).to be_falsey
+    end
+
+    it_behaves_like 'triggers GraphQL subscription mergeRequestMergeStatusUpdated' do
+      let(:action) { service.execute }
+    end
+
+    it_behaves_like 'triggers GraphQL subscription mergeRequestApprovalStateUpdated' do
+      let(:action) { service.execute }
     end
   end
 end
