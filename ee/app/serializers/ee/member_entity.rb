@@ -5,9 +5,7 @@ module EE
     extend ActiveSupport::Concern
 
     prepended do
-      expose :using_license do |member|
-        can?(current_user, :read_billable_member, group) && member.user&.using_gitlab_com_seat?(group)
-      end
+      expose :using_license
 
       expose :group_sso?, as: :group_sso
 
@@ -37,6 +35,12 @@ module EE
 
     def group
       options[:group]
+    end
+
+    def using_license
+      return false if ::Feature.enabled?(:avoid_exposing_member_is_using_seat, group, type: :ops)
+
+      can?(current_user, :read_billable_member, group) && object.user&.using_gitlab_com_seat?(group)
     end
   end
 end
