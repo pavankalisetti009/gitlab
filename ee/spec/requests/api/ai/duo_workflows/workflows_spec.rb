@@ -31,6 +31,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
           expect(response).to have_gitlab_http_status(:created)
         end
       end
+
+      context 'with project path params' do
+        let(:params) { { project_id: project.full_path } }
+
+        it 'is successful' do
+          expect do
+            post api(path, user), params: params
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
     end
 
     context 'with a project where the user is not a developer' do
