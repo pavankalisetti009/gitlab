@@ -119,6 +119,8 @@ module Gitlab
             stream_response_handler = ::Gitlab::Llm::ResponseService.new(context, response_options)
           end
 
+          Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
+
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 
           execute_with_tool_chosen_by_ai(response_handler, stream_response_handler)

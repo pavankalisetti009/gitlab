@@ -285,6 +285,32 @@ client_subscription_id: 'someid' }
       it_behaves_like 'tool behind a feature flag'
     end
 
+    context 'with commit reader allowed' do
+      before do
+        stub_feature_flags(ai_commit_reader_for_chat: true)
+        allow(ai_request).to receive(:request)
+      end
+
+      let(:tools) do
+        [
+          ::Gitlab::Llm::Chain::Tools::IssueReader,
+          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
+          ::Gitlab::Llm::Chain::Tools::EpicReader,
+          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::CommitReader
+        ]
+      end
+
+      it_behaves_like 'tool behind a feature flag'
+
+      it 'pushes feature flag to AI Gateway' do
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+         .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
+
+        subject
+      end
+    end
+
     context 'when message is a slash command' do
       shared_examples_for 'slash command execution' do
         let(:executor) { instance_double(Gitlab::Llm::Chain::Tools::ExplainCode::Executor) }
