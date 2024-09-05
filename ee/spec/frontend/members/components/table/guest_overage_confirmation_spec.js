@@ -133,7 +133,7 @@ describe('Guest overage confirmation', () => {
             addUserEmails: [],
             fullPath: 'group-path',
             role: 'REPORTER',
-            memberRoleId: 103,
+            memberRoleId: 101,
             ...data,
           });
         },

@@ -181,21 +181,21 @@ describe('MaxRole', () => {
     it('renders static and custom roles', () => {
       createComponent();
 
-      expect(findListbox().props('items')[0].text).toBe('Standard roles');
+      expect(findListbox().props('items')[0].text).toBe('Default roles');
       expect(findListbox().props('items')[0].options).toHaveLength(6);
       expect(findListbox().props('items')[1].text).toBe('Custom roles');
-      expect(findListbox().props('items')[1].options).toHaveLength(3);
+      expect(findListbox().props('items')[1].options).toHaveLength(2);
     });
 
     it('calls `updateMemberRole` Vuex action', async () => {
       createComponent();
-      findListboxItemByText('custom role 3').trigger('click');
+      findListboxItemByText('custom role 2').trigger('click');
       await waitForPromises();
 
       expect(actions.updateMemberRole).toHaveBeenCalledWith(expect.any(Object), {
         memberId: member.id,
         accessLevel: 20,
-        memberRoleId: 103,
+        memberRoleId: 102,
       });
     });
   });
@@ -224,7 +224,7 @@ describe('MaxRole', () => {
     describe('when guestOverageConfirmAction returns false', () => {
       beforeEach(async () => {
         guestOverageConfirmAction.mockResolvedValueOnce(false);
-        findListboxItemByText('custom role 3').trigger('click');
+        findListboxItemByText('custom role 2').trigger('click');
         await waitForPromises();
       });
 
@@ -232,7 +232,7 @@ describe('MaxRole', () => {
         expect(guestOverageConfirmAction).toHaveBeenCalledWith({
           oldAccessLevel: 10,
           newRoleName: 'Reporter',
-          newMemberRoleId: 103,
+          newMemberRoleId: 102,
           group: { name: 'groupname', path: '/grouppath/' },
           memberId: 238,
           memberType: 'user',

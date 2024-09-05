@@ -73,7 +73,7 @@ describe('Role details tab', () => {
     });
   });
 
-  describe('for standard roles', () => {
+  describe('for default roles', () => {
     describe.each(BASE_ROLES)('$text', (role) => {
       beforeEach(() => createWrapper({ role }));
 

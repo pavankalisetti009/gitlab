@@ -39,7 +39,7 @@ export default {
 
     <template #cell(description)="{ item: { description } }">
       <template v-if="description">{{ description }}</template>
-      <span v-else class="gl-text-gray-400">{{ s__('MemberRole|No description') }}</span>
+      <span v-else class="gl-text-subtle">{{ s__('MemberRole|No description') }}</span>
     </template>
 
     <template #cell(baseRole)="{ item: { baseAccessLevel } }">

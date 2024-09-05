@@ -16,7 +16,7 @@ import {
 describe('Role details drawer', () => {
   const { permissions } = updateableCustomRoleMember.customRoles[1];
   const dropdownItems = roleDropdownItems(updateableCustomRoleMember);
-  const currentRole = dropdownItems.flatten[7];
+  const currentRole = dropdownItems.flatten[6];
   let wrapper;
 
   const createWrapper = ({ member = updateableCustomRoleMember } = {}) => {
@@ -78,7 +78,7 @@ describe('Role details drawer', () => {
       const noDescriptionSpan = wrapper.findByTestId('description-value').find('span');
 
       expect(noDescriptionSpan.text()).toBe('No description');
-      expect(noDescriptionSpan.classes('gl-text-gray-400')).toBe(true);
+      expect(noDescriptionSpan.classes('gl-text-subtle')).toBe(true);
     });
 
     it('shows the base role in the permissions section', () => {

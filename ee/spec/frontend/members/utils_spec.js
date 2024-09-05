@@ -104,7 +104,7 @@ describe('Members Utils', () => {
     describe('with custom roles', () => {
       it('returns properly flatten dropdowns', () => {
         const { flatten } = roleDropdownItems({ ...memberMock, customRoles });
-        expect(flatten).toHaveLength(3);
+        expect(flatten).toHaveLength(2);
 
         customRoles.forEach((role) => {
           expect(flatten).toContainEqual({
@@ -122,10 +122,10 @@ describe('Members Utils', () => {
         const { formatted } = roleDropdownItems({ ...memberMock, customRoles });
 
         expect(formatted).toHaveLength(2);
-        expect(formatted[0].text).toBe('Standard roles');
+        expect(formatted[0].text).toBe('Default roles');
         expect(formatted[0].options).toHaveLength(0);
         expect(formatted[1].text).toBe('Custom roles');
-        expect(formatted[1].options).toHaveLength(3);
+        expect(formatted[1].options).toHaveLength(2);
       });
     });
   });
