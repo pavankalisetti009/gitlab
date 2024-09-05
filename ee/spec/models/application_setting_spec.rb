@@ -29,6 +29,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.zoekt_indexing_enabled).to eq(false) }
     it { expect(setting.zoekt_indexing_paused).to eq(false) }
     it { expect(setting.zoekt_search_enabled).to eq(false) }
+    it { expect(setting.scan_execution_policies_action_limit).to be(10) }
   end
 
   describe 'validations' do
@@ -106,6 +107,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .only_integer
                          .is_greater_than_or_equal_to(0)
       end
+
+      it { expect(described_class).to validate_jsonb_schema(['application_setting_security_policies']) }
     end
 
     describe 'future_subscriptions', feature_category: :subscription_management do

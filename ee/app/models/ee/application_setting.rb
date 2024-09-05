@@ -170,6 +170,10 @@ module EE
           less_than_or_equal_to: ::Security::ScanResultPolicy::POLICIES_LIMIT
         }
 
+      validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
+
+      jsonb_accessor :security_policies, scan_execution_policies_action_limit: [:integer, { default: 10 }]
+
       validates :product_analytics_data_collector_host,
         length: { maximum: 255 },
         addressable_url: ::ApplicationSetting::ADDRESSABLE_URL_VALIDATION_OPTIONS.merge({ allow_localhost: true }),

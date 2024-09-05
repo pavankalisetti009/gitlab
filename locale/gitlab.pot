@@ -49099,6 +49099,9 @@ msgstr ""
 msgid "SecurityOrchestration|Policy editor"
 msgstr ""
 
+msgid "SecurityOrchestration|Policy exceeds the maximum of %{limit} actions"
+msgstr ""
+
 msgid "SecurityOrchestration|Policy is invalid"
 msgstr ""
 

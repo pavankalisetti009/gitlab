@@ -16,6 +16,7 @@ module Security
         return success if policy_disabled?
 
         return error_with_title(s_('SecurityOrchestration|Invalid policy type')) if invalid_policy_type?
+        return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled for non-existing branches (%{branches})') % { branches: missing_branch_names.join(', ') }, field: :branches) if missing_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|Branch types don\'t match any existing branches.'), field: :branches) if invalid_branch_types?
@@ -48,6 +49,20 @@ module Security
         return true if policy[:type].blank?
 
         Security::OrchestrationPolicyConfiguration::AVAILABLE_POLICY_TYPES.exclude?(policy_type)
+      end
+
+      def exceeds_action_limit?
+        return false unless scan_execution_policy?
+
+        limit_enforced = if project_container?
+                           Feature.enabled?(:scan_execution_policy_action_limit, container)
+                         else
+                           Feature.enabled?(:scan_execution_policy_action_limit_group, container)
+                         end
+
+        return false unless limit_enforced
+
+        (policy[:actions]&.count || 0) > scan_execution_policies_action_limit
       end
 
       def blank_name?
@@ -217,6 +232,11 @@ module Security
         policy[:actions]&.find { |action| action[:type] == Security::ScanResultPolicy::REQUIRE_APPROVAL }
       end
       strong_memoize_attr :approval_requiring_action
+
+      def scan_execution_policies_action_limit
+        Gitlab::CurrentSettings.scan_execution_policies_action_limit
+      end
+      strong_memoize_attr :scan_execution_policies_action_limit
 
       def invalid_cadence?
         return false unless scan_execution_policy?
