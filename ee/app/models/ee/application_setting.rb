@@ -537,6 +537,7 @@ module EE
       else
         self.duo_features_enabled = false
         self.lock_duo_features_enabled = true
+        self.instance_level_ai_beta_features_enabled = false
       end
     end
 
