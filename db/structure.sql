@@ -2559,7 +2559,8 @@ CREATE TABLE p_ci_pipeline_variables (
     partition_id bigint NOT NULL,
     raw boolean DEFAULT false NOT NULL,
     id bigint NOT NULL,
-    pipeline_id bigint NOT NULL
+    pipeline_id bigint NOT NULL,
+    project_id bigint
 )
 PARTITION BY LIST (partition_id);
 
@@ -8355,7 +8356,8 @@ CREATE TABLE ci_pipeline_variables (
     partition_id bigint NOT NULL,
     raw boolean DEFAULT false NOT NULL,
     id bigint NOT NULL,
-    pipeline_id bigint NOT NULL
+    pipeline_id bigint NOT NULL,
+    project_id bigint
 );
 
 CREATE SEQUENCE ci_pipeline_variables_id_seq
@@ -23326,6 +23328,9 @@ ALTER TABLE ci_runners
 
 ALTER TABLE ci_job_variables
     ADD CONSTRAINT check_567d1ccb72 CHECK ((project_id IS NOT NULL)) NOT VALID;
+
+ALTER TABLE ci_pipeline_variables
+    ADD CONSTRAINT check_6e932dbabf CHECK ((project_id IS NOT NULL)) NOT VALID;
 
 ALTER TABLE ci_runners
     ADD CONSTRAINT check_91230910ec CHECK ((char_length((name)::text) <= 256)) NOT VALID;

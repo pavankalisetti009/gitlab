@@ -99,6 +99,8 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         .each do |entry|
           entry.desired_sharding_key.each do |desired_column, details|
             table = entry.table_name
+            next if Gitlab::Database::PostgresPartition.partition_exists?(table)
+
             connection = Gitlab::Database.schemas_to_base_models[entry.gitlab_schema].first.connection
             sharding_key = desired_column
             parent = details['backfill_via']['parent']
