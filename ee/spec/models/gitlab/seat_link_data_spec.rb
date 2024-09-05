@@ -82,8 +82,6 @@ RSpec.describe Gitlab::SeatLinkData do
       stub_application_setting(uuid: instance_id)
     end
 
-    it { is_expected.to delegate_method(:to_json).to(:data) }
-
     it 'returns payload data as a JSON string' do
       expect(subject.to_json).to eq(
         {

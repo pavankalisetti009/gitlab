@@ -55,6 +55,12 @@ module Gitlab
             http_get("api/v1/oauth_app_id", admin_headers)
           end
 
+          def create_seat_link(seat_link)
+            raise TypeError unless seat_link.is_a?(Gitlab::SeatLinkData)
+
+            http_post("api/v1/seat_links", json_headers, seat_link)
+          end
+
           private
 
           def error_message

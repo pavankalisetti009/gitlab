@@ -6,8 +6,6 @@ module Gitlab
 
     attr_reader :timestamp, :key, :max_users, :billable_users_count, :refresh_token
 
-    delegate :to_json, to: :data
-
     # All fields can be passed to initializer to override defaults. In some cases, the defaults
     # are preferable, like for SyncSeatLinkWorker, to determine seat link data, and in others,
     # like for SyncSeatLinkRequestWorker, the params are passed because the values from when
@@ -34,11 +32,7 @@ module Gitlab
       !license.trial? && license.expires_at.present? # Skip sync if license has no expiration
     end
 
-    private
-
-    attr_reader :current_time
-
-    def data
+    def as_json(_options = {})
       {
         gitlab_version: Gitlab::VERSION,
         timestamp: timestamp.iso8601,
@@ -49,6 +43,10 @@ module Gitlab
         instance_id: Gitlab::CurrentSettings.uuid
       }
     end
+
+    private
+
+    attr_reader :current_time
 
     def license
       ::License.current

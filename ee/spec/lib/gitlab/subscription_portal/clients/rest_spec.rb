@@ -281,4 +281,31 @@ RSpec.describe Gitlab::SubscriptionPortal::Clients::Rest, feature_category: :sub
     it_behaves_like 'when http call raises an exception'
     it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
   end
+
+  describe '#create_seat_link' do
+    subject do
+      seat_link_data = Gitlab::SeatLinkData.new(
+        timestamp: Time.current,
+        key: 'license_key',
+        max_users: 5,
+        billable_users_count: 4)
+
+      client.create_seat_link(seat_link_data)
+    end
+
+    let(:http_method) { :post }
+    let(:headers) do
+      {
+        'Accept' => 'application/json',
+        'Content-Type' => 'application/json',
+        'User-Agent' => "GitLab/#{Gitlab::VERSION}"
+      }
+    end
+
+    it_behaves_like 'when response is successful'
+    it_behaves_like 'when response code is 422'
+    it_behaves_like 'when response code is 500'
+    it_behaves_like 'when http call raises an exception'
+    it_behaves_like 'a request that sends the GITLAB_QA_USER_AGENT value in the "User-Agent" header'
+  end
 end

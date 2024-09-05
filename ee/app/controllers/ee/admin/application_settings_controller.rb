@@ -203,7 +203,7 @@ module EE
 
         respond_to do |format|
           format.html do
-            seat_link_json = ::Gitlab::Json.pretty_generate(data)
+            seat_link_json = ::Gitlab::Json.pretty_generate(data.as_json)
 
             render html: ::Gitlab::Highlight.highlight('payload.json', seat_link_json, language: 'json')
           end
