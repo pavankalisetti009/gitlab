@@ -11935,10 +11935,10 @@ msgstr ""
 msgid "CiVariable|Define a CI/CD variable in the UI"
 msgstr ""
 
-msgid "CiVariable|GitLab CI/CD supports OpenID Connect (OIDC) to give your build and deployment jobs access to cloud credentials and services. %{linkStart}How do I configure OIDC for my cloud provider?%{linkEnd}"
+msgid "CiVariable|Enter a search query to find more environments, or use * to create a wildcard."
 msgstr ""
 
-msgid "CiVariable|Maximum of %{limit} environments listed. For more environments, enter a search query."
+msgid "CiVariable|GitLab CI/CD supports OpenID Connect (OIDC) to give your build and deployment jobs access to cloud credentials and services. %{linkStart}How do I configure OIDC for my cloud provider?%{linkEnd}"
 msgstr ""
 
 msgid "CiVariable|New environment"
@@ -20935,6 +20935,9 @@ msgid "Enter a number"
 msgstr ""
 
 msgid "Enter a number from 0 to 100."
+msgstr ""
+
+msgid "Enter a search query to find more branches, or use * to create a wildcard."
 msgstr ""
 
 msgid "Enter a valid URL"
@@ -32906,9 +32909,6 @@ msgid "Maximum number of value streams per namespace exceeded"
 msgstr ""
 
 msgid "Maximum number of variables loaded (2000)"
-msgstr ""
-
-msgid "Maximum of %{limit} branches listed. For more branches, enter a search query."
 msgstr ""
 
 msgid "Maximum of 255 characters"
