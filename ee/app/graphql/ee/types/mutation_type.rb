@@ -182,6 +182,7 @@ module EE
         mount_mutation ::Mutations::Groups::SavedReplies::Create, alpha: { milestone: '16.10' }
         mount_mutation ::Mutations::Groups::SavedReplies::Update, alpha: { milestone: '16.10' }
         mount_mutation ::Mutations::Groups::SavedReplies::Destroy, alpha: { milestone: '16.10' }
+        mount_mutation ::Mutations::Members::Groups::Export, alpha: { milestone: '17.4' }
         mount_mutation ::Mutations::Projects::SavedReplies::Create, alpha: { milestone: '16.11' }
         mount_mutation ::Mutations::Projects::SavedReplies::Update, alpha: { milestone: '16.11' }
         mount_mutation ::Mutations::Projects::SavedReplies::Destroy, alpha: { milestone: '16.11' }
