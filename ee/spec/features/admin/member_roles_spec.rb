@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
+  include ListboxHelpers
+
   let_it_be(:admin) { create(:admin) }
   let_it_be(:custom_role) { create(:member_role, :instance) }
 
@@ -21,7 +23,7 @@ RSpec.describe 'Instance-level Member Roles', feature_category: :permissions do
 
     fill_in 'Name', with: name
     fill_in 'Description', with: description
-    select access_level, from: 'Base role'
+    select_from_listbox access_level, from: 'Select a role'
 
     permissions.each do |permission|
       page.find('tr', text: permission).click

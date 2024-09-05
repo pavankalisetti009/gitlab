@@ -4,7 +4,7 @@ import {
   GlForm,
   GlFormGroup,
   GlFormInput,
-  GlFormSelect,
+  GlCollapsibleListbox,
   GlSprintf,
   GlLink,
   GlLoadingIcon,
@@ -33,9 +33,10 @@ export default {
     editRole: s__('MemberRole|Edit role'),
     saveRole: s__('MemberRole|Save role'),
     cancel: __('Cancel'),
+    baseRolePlaceholder: s__('MemberRole|Select a role'),
     baseRoleLabel: s__('MemberRole|Base role'),
     baseRoleHelpText: s__(
-      'MemberRole|Select a %{linkStart}pre-existing static role%{linkEnd} to predefine a set of permissions.',
+      'MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions.',
     ),
     nameLabel: s__('MemberRole|Name'),
     descriptionLabel: s__('MemberRole|Description'),
@@ -51,11 +52,11 @@ export default {
     GlForm,
     GlFormGroup,
     GlFormInput,
-    GlFormSelect,
     GlSprintf,
     GlLink,
     GlLoadingIcon,
     GlAlert,
+    GlCollapsibleListbox,
     PermissionsSelector,
   },
   props: {
@@ -135,7 +136,7 @@ export default {
       return !this.isDirty || this.memberRole.name.length > 0;
     },
     isDescriptionValid() {
-      return !this.isDirty || this.memberRole.description.length > 0;
+      return !this.isDirty || this.memberRole.description?.length > 0;
     },
     isBaseRoleValid() {
       return !this.isDirty || this.memberRole.baseAccessLevel !== null;
@@ -143,8 +144,16 @@ export default {
     isPermissionsValid() {
       return !this.isDirty || this.memberRole.permissions.length > 0;
     },
-    staticRolesHelpPagePath() {
+    defaultRolesHelpPagePath() {
       return helpPagePath('user/permissions', { anchor: 'roles' });
+    },
+    roleDropdownText() {
+      const { baseAccessLevel } = this.memberRole;
+      // Return the role name, or "Select a role" if we're creating a new role and a base role hasn't been
+      // selected yet.
+      return baseAccessLevel
+        ? BASE_ROLES.find(({ value }) => value === baseAccessLevel).text
+        : this.$options.i18n.baseRolePlaceholder;
     },
   },
   methods: {
@@ -269,26 +278,30 @@ export default {
     <gl-form-group
       :label="$options.i18n.baseRoleLabel"
       :invalid-feedback="$options.i18n.invalidFeedback"
+      :state="isBaseRoleValid"
       label-for="base-role-select"
       label-class="!gl-pb-1"
       class="gl-mb-6"
+      data-testid="base-role-form-group"
     >
       <template #label-description>
         <div class="gl-mb-3">
           <gl-sprintf :message="$options.i18n.baseRoleHelpText">
             <template #link="{ content }">
-              <gl-link :href="staticRolesHelpPagePath" target="_blank">{{ content }}</gl-link>
+              <gl-link :href="defaultRolesHelpPagePath" target="_blank">{{ content }}</gl-link>
             </template>
           </gl-sprintf>
         </div>
       </template>
-      <gl-form-select
-        id="base-role-select"
+      <gl-collapsible-listbox
         v-model="memberRole.baseAccessLevel"
-        width="md"
+        category="secondary"
+        :variant="isBaseRoleValid ? 'default' : 'danger'"
+        block
+        class="gl-w-30"
+        :items="$options.BASE_ROLES"
         :disabled="isEditing"
-        :options="$options.BASE_ROLES"
-        :state="isBaseRoleValid"
+        :toggle-text="roleDropdownText"
       />
     </gl-form-group>
 

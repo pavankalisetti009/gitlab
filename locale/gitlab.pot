@@ -33094,6 +33094,9 @@ msgstr ""
 msgid "MemberRole|Default"
 msgstr ""
 
+msgid "MemberRole|Default roles"
+msgstr ""
+
 msgid "MemberRole|Delete custom role?"
 msgstr ""
 
@@ -33187,13 +33190,13 @@ msgstr ""
 msgid "MemberRole|Save role"
 msgstr ""
 
-msgid "MemberRole|Select a %{linkStart}pre-existing static role%{linkEnd} to predefine a set of permissions."
+msgid "MemberRole|Select a %{linkStart} default role%{linkEnd} to predefine a set of permissions."
+msgstr ""
+
+msgid "MemberRole|Select a role"
 msgstr ""
 
 msgid "MemberRole|Select at least one permission."
-msgstr ""
-
-msgid "MemberRole|Standard roles"
 msgstr ""
 
 msgid "MemberRole|The Developer role strikes a balance between giving users the necessary access to contribute code while restricting sensitive administrative actions."

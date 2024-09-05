@@ -3,12 +3,9 @@ import { mountExtended } from 'helpers/vue_test_utils_helper';
 import { roleDropdownItems } from 'ee/members/utils';
 import RoleSelector from '~/members/components/role_selector.vue';
 import { visitUrl } from '~/lib/utils/url_utility';
-import { upgradedMember } from '../../mock_data';
+import { upgradedMember } from '../mock_data';
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn(),
-}));
+jest.mock('~/lib/utils/url_utility');
 
 describe('Role selector', () => {
   const dropdownItems = roleDropdownItems(upgradedMember);
@@ -41,12 +38,19 @@ describe('Role selector', () => {
       },
     );
 
-    it.each(dropdownItems.formatted[1].options)(
-      'shows the role description for custom role $text',
-      ({ value, description }) => {
-        expect(findRoleDescription(value).text()).toBe(description);
-      },
-    );
+    it('shows the role description for custom role', () => {
+      const description = findRoleDescription('role-custom-101');
+
+      expect(description.text()).toBe('custom role 1 description');
+      expect(description.find('span').classes('gl-text-gray-700')).toBe(true);
+    });
+
+    it(`shows 'No description' when custom role does not have description`, () => {
+      const description = findRoleDescription('role-custom-102');
+
+      expect(description.text()).toBe('No description');
+      expect(description.find('span').classes('gl-text-subtle')).toBe(true);
+    });
   });
 
   describe('manage roles link', () => {
