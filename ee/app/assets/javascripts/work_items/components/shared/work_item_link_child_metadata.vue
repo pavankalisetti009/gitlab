@@ -132,10 +132,10 @@ export default {
         v-if="shouldShowWeight"
         ref="weightData"
         data-testid="item-weight"
-        class="gl-flex gl-min-w-7 gl-cursor-help gl-items-center gl-gap-2"
+        class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="weight" />
-        <span data-testid="weight-value" class="gl-text-sm">{{ workItemWeight }}</span>
+        <span data-testid="weight-value">{{ workItemWeight }}</span>
         <gl-tooltip :target="() => $refs.weightData">
           <span data-testid="weight-tooltip" class="gl-font-bold">
             {{ weightTooltip }}
@@ -149,7 +149,7 @@ export default {
         class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="iteration" />
-        <span data-testid="iteration-value" class="gl-text-sm">{{ iterationPeriod }}</span>
+        <span data-testid="iteration-value">{{ iterationPeriod }}</span>
         <gl-tooltip :target="() => $refs.iterationData">
           <div data-testid="iteration-title" class="gl-font-bold">
             {{ __('Iteration') }}
@@ -172,7 +172,7 @@ export default {
         class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
       >
         <gl-icon name="calendar" />
-        <span data-testid="dates-value" class="gl-text-sm">{{ workItemTimeframe }}</span>
+        <span data-testid="dates-value">{{ workItemTimeframe }}</span>
         <gl-tooltip :target="() => $refs.datesData">
           <div class="gl-font-bold">
             {{ __('Dates') }}
@@ -186,7 +186,7 @@ export default {
         data-testid="item-progress"
       >
         <gl-icon name="progress" />
-        <span data-testid="progressValue" class="gl-text-sm">{{ progress }}%</span>
+        <span data-testid="progressValue">{{ progress }}%</span>
         <gl-tooltip :target="() => $refs.progressTooltip">
           <div data-testid="progressTitle" class="gl-font-bold">
             {{ __('Progress') }}
