@@ -404,17 +404,26 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
 
     context 'issue' do
-      let!(:issue) { create :issue, project: project }
-      let!(:issue2) { create :issue, project: project2, title: issue.title }
       let(:scope) { 'issues' }
-      let(:search) { issue.title }
 
-      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_guest_feature_access
-      end
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let!(:issue) { create(document_type, project: project) }
+          let!(:issue2) { create(document_type, project: project2, title: issue.title) }
+          let(:search) { issue.title }
 
-      with_them do
-        it_behaves_like 'search respects visibility'
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+          end
+
+          where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+            permission_table_for_guest_feature_access
+          end
+
+          with_them do
+            it_behaves_like 'search respects visibility'
+          end
+        end
       end
     end
 
@@ -548,25 +557,30 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   context 'sorting', :elastic do
     context 'issues' do
-      let(:scope) { 'issues' }
-      let_it_be(:project) { create(:project, :public, group: group) }
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let(:scope) { 'issues' }
+          let_it_be(:project) { create(:project, :public, group: group) }
 
-      let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
-      let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
-      let!(:very_old_result) { create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago) }
+          let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
+          let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
+          let!(:very_old_result) { create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago) }
 
-      let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
-      let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
-      let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
+          let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
+          let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
+          let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
 
-      let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
-      let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
+          let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
+          let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
 
-      before do
-        ensure_elasticsearch_index!
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+            ensure_elasticsearch_index!
+          end
+
+          include_examples 'search results sorted'
+        end
       end
-
-      include_examples 'search results sorted'
     end
 
     context 'merge requests' do

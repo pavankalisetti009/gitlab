@@ -95,6 +95,46 @@ module Search
           end
         end
 
+        def by_work_item_type_ids(query_hash:, options:)
+          work_item_type_ids = options[:work_item_type_ids]
+          not_work_item_type_ids = options[:not_work_item_type_ids]
+
+          return query_hash unless work_item_type_ids || not_work_item_type_ids
+
+          context.name(:filters) do
+            if work_item_type_ids
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must: {
+                      terms: {
+                        _name: context.name(:work_item_type_ids),
+                        work_item_type_id: work_item_type_ids
+                      }
+                    }
+                  }
+                }
+              end
+            end
+
+            if not_work_item_type_ids
+              add_filter(query_hash, :query, :bool, :filter) do
+                {
+                  bool: {
+                    must_not: {
+                      terms: {
+                        _name: context.name(:not_work_item_type_ids),
+                        work_item_type_id: not_work_item_type_ids
+                      }
+                    }
+                  }
+                }
+              end
+            end
+          end
+          query_hash
+        end
+
         def by_not_hidden(query_hash:, options:)
           user = options[:current_user]
           return query_hash if user&.can_admin_all_resources?
@@ -342,14 +382,7 @@ module Search
         # set of projects, taking user access rules into account.
         def project_ids_filter(query_hash, options)
           context.name(:project) do
-            project_query = project_ids_query(
-              options[:current_user],
-              options[:project_ids],
-              options[:public_and_internal_projects],
-              features: options[:features],
-              no_join_project: options[:no_join_project],
-              project_id_field: options[:project_id_field]
-            )
+            project_query = project_ids_query(options)
 
             add_filter(query_hash, :query, :bool, :filter) do
               # Some models have denormalized project permissions into the
@@ -380,9 +413,15 @@ module Search
         # If a project feature(s) is specified, it indicates interest in child
         # documents gated by that project feature - e.g., "issues". The feature's
         # visibility level must be taken into account.
-        def project_ids_query(
-          user, project_ids, public_and_internal_projects, features: nil,
-          no_join_project: false, project_id_field: nil)
+        def project_ids_query(options)
+          user = options[:current_user]
+          project_ids = options[:project_ids]
+          public_and_internal_projects = options[:public_and_internal_projects]
+          features = options[:features]
+          no_join_project = options[:no_join_project]
+          project_id_field = options[:project_id_field]
+          project_visibility_level_field = options.fetch(:project_visibility_level_field, :visibility_level)
+
           scoped_project_ids = scoped_project_ids(user, project_ids)
 
           # At least one condition must be present, so pick no projects for
@@ -393,7 +432,8 @@ module Search
             scoped_project_ids,
             user, no_join_project,
             features: features,
-            project_id_field: project_id_field
+            project_id_field: project_id_field,
+            project_visibility_level_field: project_visibility_level_field
           )
 
           if public_and_internal_projects
@@ -403,12 +443,16 @@ module Search
               #
               # Admins & auditors get access to internal projects even
               # if the feature is private.
-              conditions += pick_projects_by_visibility(Project::INTERNAL, user, features) if user && !user.external?
+              if user && !user.external?
+                conditions += pick_projects_by_visibility(Project::INTERNAL, user, features,
+                  project_visibility_level_field: project_visibility_level_field)
+              end
 
               # All users, including anonymous, can access public projects.
               # Admins & auditors get access to public projects where the feature is
               # private.
-              conditions += pick_projects_by_visibility(Project::PUBLIC, user, features)
+              conditions += pick_projects_by_visibility(Project::PUBLIC, user, features,
+                project_visibility_level_field: project_visibility_level_field)
             end
           end
 
@@ -422,7 +466,9 @@ module Search
         # Admins & auditors are given access to all private projects. Access to
         # internal or public projects where the project feature is private is not
         # granted here.
-        def pick_projects_by_membership(project_ids, user, no_join_project, features: nil, project_id_field: nil)
+        def pick_projects_by_membership(
+          project_ids, user, no_join_project, features: nil, project_id_field: nil,
+          project_visibility_level_field: :visibility_level)
           # This method is used to construct a query on the join as well as query
           # on top level doc. When querying top level doc the project's ID is
           # used from project_id_field with the default value of `project_id`
@@ -435,7 +481,8 @@ module Search
 
           if features.nil?
             if project_ids == :any
-              return [{ term: { visibility_level: { _name: context.name(:any), value: Project::PRIVATE } } }]
+              return [{ term: { project_visibility_level_field => { _name: context.name(:any),
+                                                                    value: Project::PRIVATE } } }]
             end
 
             return [{ terms: { _name: context.name(:membership, :id), id_field => project_ids } }]
@@ -444,7 +491,7 @@ module Search
           Array(features).map do |feature|
             condition =
               if project_ids == :any
-                { term: { visibility_level: { _name: context.name(:any), value: Project::PRIVATE } } }
+                { term: { project_visibility_level_field => { _name: context.name(:any), value: Project::PRIVATE } } }
               else
                 {
                   terms: {
@@ -473,9 +520,9 @@ module Search
         #
         # If a project feature is specified, access is only granted if the feature
         # is enabled or, for admins & auditors, private.
-        def pick_projects_by_visibility(visibility, user, features)
+        def pick_projects_by_visibility(visibility, user, features, project_visibility_level_field: :visibility_level)
           context.name(visibility) do
-            condition = { term: { visibility_level: { _name: context.name, value: visibility } } }
+            condition = { term: { project_visibility_level_field => { _name: context.name, value: visibility } } }
 
             limit_by_feature(condition, features, include_members_only: user&.can_read_all_resources?)
           end
