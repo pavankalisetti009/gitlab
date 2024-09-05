@@ -207,7 +207,11 @@ export default {
       </div>
     </template>
     <template #right-metadata>
-      <issue-health-status v-if="healthStatus && isChildItemOpen" :health-status="healthStatus" />
+      <issue-health-status
+        v-if="healthStatus && isChildItemOpen"
+        display-as-text
+        :health-status="healthStatus"
+      />
     </template>
   </work-item-link-child-metadata>
 </template>
