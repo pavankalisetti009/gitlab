@@ -12,6 +12,8 @@ RSpec.describe GitlabSchema.types['FeatureFlag'], feature_category: :feature_fla
       id
       name
       active
+      path
+      reference
     ]
 
     expect(described_class).to have_graphql_fields(*fields)
