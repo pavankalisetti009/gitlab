@@ -45,6 +45,14 @@ RSpec.describe Group, feature_category: :groups_and_projects do
     it { is_expected.to have_one(:value_stream_dashboard_aggregation).with_foreign_key(:namespace_id) }
     it { is_expected.to have_one(:index_status).class_name(Elastic::GroupIndexStatus).with_foreign_key(:namespace_id).dependent(:destroy) }
     it { is_expected.to have_many(:security_exclusions).class_name('Security::GroupSecurityExclusion') }
+    it { is_expected.to have_many(:enterprise_users).through(:enterprise_user_details).source(:user) }
+
+    it do
+      is_expected.to have_many(:enterprise_user_details)
+          .class_name('UserDetail')
+          .with_foreign_key(:enterprise_group_id)
+          .inverse_of(:enterprise_group)
+    end
 
     it do
       is_expected.to have_many(:ssh_certificates).class_name('Groups::SshCertificate')

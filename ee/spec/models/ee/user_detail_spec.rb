@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe UserDetail, feature_category: :system_access do
   it { is_expected.to belong_to(:provisioned_by_group) }
-  it { is_expected.to belong_to(:enterprise_group) }
+  it { is_expected.to belong_to(:enterprise_group).inverse_of(:enterprise_user_details) }
 
   describe 'validations' do
     context 'with support for hash with indifferent access - ind_jsonb' do

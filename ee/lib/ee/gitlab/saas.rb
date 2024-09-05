@@ -26,6 +26,7 @@ module EE
           overage_members_modal
           advanced_search
           code_suggestions_x_ray
+          group_credentials_inventory
           identity_verification
           gitlab_duo_saas_only
           pipl_compliance

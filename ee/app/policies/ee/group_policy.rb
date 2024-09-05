@@ -52,6 +52,11 @@ module EE
         @subject.feature_available?(:group_level_devops_adoption)
       end
 
+      condition(:group_credentials_inventory_available, scope: :subject) do
+        ::Gitlab::Saas.feature_available?(:group_credentials_inventory) &&
+          @subject.licensed_feature_available?(:credentials_inventory)
+      end
+
       condition(:group_devops_adoption_enabled, scope: :global) do
         ::License.feature_available?(:group_level_devops_adoption)
       end
@@ -642,9 +647,12 @@ module EE
       rule { admin | owner }.policy do
         enable :owner_access
         enable :read_billable_member
+        enable :admin_ci_minutes
+      end
+
+      rule { (admin | owner) & group_credentials_inventory_available }.policy do
         enable :read_group_credentials_inventory
         enable :admin_group_credentials_inventory
-        enable :admin_ci_minutes
       end
 
       rule { (admin | owner | auditor) & group_level_compliance_dashboard_enabled }.policy do
