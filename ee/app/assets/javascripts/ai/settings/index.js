@@ -33,11 +33,11 @@ export const initAiSettings = (id, component) => {
     el,
     provide: {
       cascadingSettingsData: cascadingSettingsDataParsed,
-      areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked) || false,
-      areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed) || true,
+      areDuoSettingsLocked: parseBoolean(areDuoSettingsLocked),
+      areExperimentSettingsAllowed: parseBoolean(areExperimentSettingsAllowed),
       duoAvailability,
-      experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled) || false,
-      disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod) || false,
+      experimentFeaturesEnabled: parseBoolean(experimentFeaturesEnabled),
+      disabledDirectConnectionMethod: parseBoolean(disabledDirectConnectionMethod),
     },
     render: (createElement) =>
       createElement(component, {
