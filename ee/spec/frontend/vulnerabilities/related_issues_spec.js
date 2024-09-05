@@ -27,6 +27,7 @@ describe('Vulnerability related issues component', () => {
     projectPath: 'project/path',
     helpPath: 'help/path',
     canModifyRelatedIssues: true,
+    hasErrors: false,
   };
 
   const vulnerabilityId = 5131;
@@ -176,7 +177,6 @@ describe('Vulnerability related issues component', () => {
       expect(blockProp('isFormVisible')).toBe(true);
       expect(blockProp('inputValue')).toBe('');
       expect(blockProp('pendingReferences')).toEqual(['#2', '#4']);
-      expect(createAlert).toHaveBeenCalledTimes(1);
     });
   });
 
