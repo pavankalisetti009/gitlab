@@ -22,6 +22,11 @@ module EE
         def features
           super << scan(:container_scanning_for_registry, configured: container_scanning_for_registry_enabled)
         end
+
+        override :secret_detection_configuration_path
+        def secret_detection_configuration_path
+          project_security_configuration_secret_detection_path(project)
+        end
       end
     end
   end
