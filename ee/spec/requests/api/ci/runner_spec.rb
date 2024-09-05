@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe API::Ci::Runner, feature_category: :runner do
   let_it_be_with_reload(:project) { create(:project, :repository, :in_group, :allow_runner_registration_token) }
 
-  let_it_be(:user) { create(:user, developer_of: project) }
+  let_it_be_with_reload(:user) { create(:user, developer_of: project) }
   let_it_be(:ref) { 'master' }
   let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
@@ -177,30 +177,36 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
     end
 
     describe 'GET api/v4/jobs/:id/artifacts' do
-      let_it_be(:job) { create(:ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project) }
+      let_it_be_with_reload(:job_with_artifacts) do
+        create(:ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project)
+      end
+
+      let(:job) { job_with_artifacts }
+      let(:token) { job.token }
 
       before_all do
-        create(:ci_job_artifact, :archive, job: job, project: project)
+        create(:ci_job_artifact, :archive, job: job_with_artifacts, project: project)
       end
 
       shared_examples 'successful artifact download' do
         before do
           project.group.root_ancestor.external_audit_event_destinations.create!(destination_url: 'http://example.com')
           stub_licensed_features(admin_audit_log: true, extended_audit_events: true, external_audit_events: true)
-          allow(::Gitlab::Audit::Auditor).to receive(:audit).and_call_original
-          allow(AuditEvents::AuditEventStreamingWorker).to receive(:perform_async).and_call_original
         end
 
-        it 'downloads artifacts' do
-          download_artifact
-
+        it 'downloads artifacts', :aggregate_failures do
           expect(::Gitlab::Audit::Auditor).to(
-            have_received(:audit).with(hash_including(name: 'job_artifact_downloaded'))
-          )
+            receive(:audit).with(hash_including(name: 'user_authenticated_using_job_token'))
+          ).and_call_original
+          expect(::Gitlab::Audit::Auditor).to(
+            receive(:audit).with(hash_including(name: 'job_artifact_downloaded'))
+          ).and_call_original
           expect(AuditEvents::AuditEventStreamingWorker).to(
-            have_received(:perform_async)
+            receive(:perform_async)
               .with('job_artifact_downloaded', nil, a_string_including("Downloaded artifact"))
-          )
+          ).and_call_original
+
+          download_artifact
 
           expect(response).to have_gitlab_http_status(:ok)
         end
@@ -214,6 +220,25 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         end
       end
 
+      context 'with missing artifacts file', :aggregate_failures do
+        let(:job_without_artifacts) do
+          create(:ci_build, :success, ref: ref, pipeline: pipeline, user: user, project: project)
+        end
+
+        it 'returns not_found and does not audit' do
+          expect(::Ci::ArtifactDownloadAuditor).not_to receive(:new)
+          expect(::Gitlab::Audit::Auditor).not_to receive(:audit)
+
+          # Use bearer to avoid HTTP 401 unauthorized response
+          pat = create :personal_access_token, user: user, scopes: %w[api]
+          bearer = { 'Authorization' => "Bearer #{pat.token}" }
+
+          get api("/jobs/#{job_without_artifacts.id}/artifacts"), headers: bearer
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
       context 'when a job has a cross-project dependency' do
         let_it_be(:downstream_project) { create(:project) }
         let_it_be_with_reload(:downstream_project_dev) { create(:user) }
@@ -224,7 +249,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
               {
                 project: project.full_path,
                 ref: ref,
-                job: job.name,
+                job: job_with_artifacts.name,
                 artifacts: true
               }
             ]
@@ -237,6 +262,7 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         end
 
         let(:token) { downstream_ci_build.token }
+        let(:job) { job_with_artifacts } # Use the job with artifacts for downloads
 
         before_all do
           downstream_project.add_developer(user)
@@ -314,10 +340,9 @@ RSpec.describe API::Ci::Runner, feature_category: :runner do
         end
       end
 
-      def download_artifact(params = {}, request_headers = headers)
-        params = params.merge(token: token)
+      def download_artifact(params: {}, request_headers: headers)
+        params[:token] = token unless params.key?(:token)
         job.reload
-
         get api("/jobs/#{job.id}/artifacts"), params: params, headers: request_headers
       end
     end
