@@ -67,20 +67,60 @@ module Security
     end
 
     def self.upsert_policy(policy_type, policies, policy_hash, policy_index, policy_configuration)
-      transaction do
-        policy = policies.find_or_initialize_by(policy_index: policy_index, type: policy_type)
-        policy.update!(attributes_from_policy_hash(policy_type, policy_hash, policy_configuration))
+      policy = policies.find_or_initialize_by(policy_index: policy_index, type: policy_type)
+      policy.update!(attributes_from_policy_hash(policy_type, policy_hash, policy_configuration))
 
-        Array.wrap(policy_hash[:rules]).map.with_index do |rule_hash, rule_index|
-          Security::PolicyRule.for_policy_type(policy_type)
-              .find_or_initialize_by(security_policy_id: policy.id, rule_index: rule_index)
-              .update!(rule_attributes_from_rule_hash(policy_type, rule_hash, policy_configuration))
-        end
+      Array.wrap(policy_hash[:rules]).map.with_index do |rule_hash, rule_index|
+        policy.upsert_rule(rule_index, rule_hash)
       end
+
+      policy
     end
 
     def self.delete_by_ids(ids)
       id_in(ids).delete_all
+    end
+
+    def upsert_rule(rule_index, rule_hash)
+      Security::PolicyRule
+        .for_policy_type(type.to_sym)
+        .find_or_initialize_by(security_policy_id: id, rule_index: rule_index)
+        .update!(
+          self.class.rule_attributes_from_rule_hash(type.to_sym, rule_hash, security_orchestration_policy_configuration)
+        )
+    end
+
+    def to_policy_hash
+      {
+        name: name,
+        description: description,
+        enabled: enabled,
+        policy_scope: scope
+      }.merge(content_by_type)
+    end
+
+    def content_by_type
+      content_hash = content.deep_symbolize_keys
+      content_rules = rules.map(&:typed_content).map(&:deep_symbolize_keys)
+
+      case type
+      when 'approval_policy'
+        content_hash.slice(:approval_settings, :actions).merge(rules: content_rules)
+      when 'scan_execution_policy'
+        content_hash.slice(:actions).merge(rules: content_rules)
+      when 'pipeline_execution_policy'
+        content_hash.slice(:pipeline_config_strategy, :content)
+      end
+    end
+
+    def rules
+      if type_approval_policy?
+        approval_policy_rules
+      elsif type_scan_execution_policy?
+        scan_execution_policy_rules
+      else
+        []
+      end
     end
   end
 end

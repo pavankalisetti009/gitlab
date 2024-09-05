@@ -74,7 +74,9 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
       let(:policy_configuration) { create(:security_orchestration_policy_configuration) }
       let(:policies) { policy_configuration.security_policies.where(type: policy_type) }
       let(:policy_index) { 0 }
-      let(:upserted_rules) { upserted_policy.association(assoc_name.to_s).load_target }
+      let(:upserted_rules) do
+        assoc_name ? upserted_policy.association(assoc_name.to_s).load_target : []
+      end
 
       subject(:upsert!) do
         described_class.upsert_policy(policy_type, policies, policy_hash, policy_index, policy_configuration)
@@ -86,7 +88,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         it 'creates a new policy' do
           expect { upsert! }.to change { policies.count }.by(1)
           expect(upserted_policy.name).to eq(policy_hash[:name])
-          expect(upserted_rules.count).to be(1)
+          expect(upserted_rules.count).to be(assoc_name ? 1 : 0)
         end
       end
 
@@ -104,7 +106,7 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
           expect { upsert! }.not_to change { policies.count }
           expect(upserted_policy).to eq(existing_policy)
           expect(upserted_policy.name).to eq(policy_hash[:name])
-          expect(upserted_rules.count).to be(1)
+          expect(upserted_rules.count).to be(assoc_name ? 1 : 0)
         end
       end
     end
@@ -120,6 +122,12 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
         let(:policy_hash) { build(:scan_execution_policy, name: "foobar") }
       end
     end
+
+    context "with pipeline execution policies" do
+      include_examples 'upserts policy', :pipeline_execution_policy, nil do
+        let(:policy_hash) { build(:pipeline_execution_policy, name: "foobar") }
+      end
+    end
   end
 
   describe '.delete_by_ids' do
@@ -129,6 +137,105 @@ RSpec.describe Security::Policy, feature_category: :security_policy_management d
 
     it 'deletes by ID' do
       expect { delete! }.to change { described_class.all }.to(contain_exactly(policies.last))
+    end
+  end
+
+  describe '#to_policy_hash' do
+    subject(:policy_hash) { policy.to_policy_hash }
+
+    context 'when policy is an approval policy' do
+      let_it_be(:policy) { create(:security_policy, :require_approval) }
+
+      let_it_be(:rule_content) do
+        {
+          type: 'scan_finding',
+          branches: [],
+          scanners: %w[container_scanning],
+          vulnerabilities_allowed: 0,
+          severity_levels: %w[critical],
+          vulnerability_states: %w[detected]
+        }
+      end
+
+      before do
+        create(:approval_policy_rule, :scan_finding, security_policy: policy, content: rule_content)
+      end
+
+      it 'returns the correct hash structure' do
+        expect(policy_hash).to eq(
+          name: policy.name,
+          description: policy.description,
+          enabled: true,
+          policy_scope: {},
+          actions: [{ approvals_required: 1, type: "require_approval", user_approvers: ["owner"] }],
+          rules: [rule_content]
+        )
+      end
+    end
+
+    context 'when policy is a scan execution policy' do
+      let_it_be(:policy) { create(:security_policy, :scan_execution_policy) }
+
+      before do
+        create(:scan_execution_policy_rule, :pipeline, security_policy: policy)
+      end
+
+      it 'returns the correct hash structure' do
+        expect(policy_hash).to eq(
+          name: policy.name,
+          description: policy.description,
+          enabled: true,
+          policy_scope: {},
+          actions: [{ scan: 'secret_detection' }],
+          rules: [{ type: 'pipeline', branches: [] }]
+        )
+      end
+    end
+
+    context 'when policy is a pipeline execution policy' do
+      let_it_be(:policy) { create(:security_policy, :pipeline_execution_policy) }
+
+      it 'returns the correct hash structure' do
+        expect(policy_hash).to eq(
+          name: policy.name,
+          description: policy.description,
+          enabled: true,
+          policy_scope: {},
+          pipeline_config_strategy: 'inject_ci',
+          content: { include: [{ file: "compliance-pipeline.yml", project: "compliance-project" }] }
+        )
+      end
+    end
+  end
+
+  describe '#rules' do
+    let_it_be(:approval_policy) { create(:security_policy, :require_approval) }
+    let_it_be(:scan_execution_policy) { create(:security_policy, :scan_execution_policy) }
+    let_it_be(:pipeline_execution_policy) { create(:security_policy, :pipeline_execution_policy) }
+
+    let_it_be(:approval_policy_rule) { create(:approval_policy_rule, security_policy: approval_policy) }
+    let_it_be(:scan_execution_policy_rule) do
+      create(:scan_execution_policy_rule, security_policy: scan_execution_policy)
+    end
+
+    subject(:rules) { policy.rules }
+
+    context 'when policy is an approval policy' do
+      let(:policy) { approval_policy }
+
+      it { is_expected.to contain_exactly(approval_policy_rule) }
+    end
+
+    context 'when policy is a scan execution policy' do
+      let(:policy) { scan_execution_policy }
+
+      it { is_expected.to contain_exactly(scan_execution_policy_rule) }
+    end
+
+    context 'when policy is a pipeline execution policy' do
+      let(:policy) { pipeline_execution_policy }
+
+      it { is_expected.to be_empty }
     end
   end
 end

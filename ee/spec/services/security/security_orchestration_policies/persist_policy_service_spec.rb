@@ -230,21 +230,27 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
 
         include_examples 'succeeds'
 
-        it 'deletes policies' do
+        it 'sets negative index for deleted policies' do
           expect do
             persist
-          end.to change { Security::Policy.count }.by(-1)
-                   .and change { Security::ApprovalPolicyRule.pluck(:type) }
-                          .from(contain_exactly("scan_finding", "license_finding"))
-                          .to(contain_exactly("license_finding"))
+          end.to change { Security::Policy.pluck(:policy_index) }.from(contain_exactly(0, 1)).to(contain_exactly(0, -2))
+                   .and not_change { Security::ApprovalPolicyRule.count }
         end
+      end
 
-        it 'deletes policy rules' do
+      context 'with updated policy name' do
+        let(:policy_before) { build(:scan_result_policy) }
+        let(:policy_after) { build(:scan_result_policy, name: "#{policy_before[:name]} updated") }
+
+        let(:pre_existing_policies) { [policy_before] }
+        let(:policies) { [policy_after] }
+
+        include_examples 'succeeds'
+
+        it 'creates new policy and sets negative index for old policy' do
           expect do
             persist
-          end.to change { Security::ApprovalPolicyRule.type_scan_finding.count }.by(-1)
-                   .and not_change { Security::ApprovalPolicyRule.type_license_finding.pluck(:id) }
-                          .and not_change { Security::ApprovalPolicyRule.type_any_merge_request.pluck(:id) }.from([])
+          end.to change { Security::Policy.pluck(:policy_index) }.from(contain_exactly(0)).to(contain_exactly(0, -1))
         end
       end
 
@@ -288,25 +294,18 @@ RSpec.describe Security::SecurityOrchestrationPolicies::PersistPolicyService, '#
         let(:protected_rule) { { type: 'any_merge_request', branch_type: 'protected', commits: 'any' } }
 
         let(:policy_before) { build(:scan_result_policy, rules: [default_rule, protected_rule]) }
-        let(:policy_after) { build(:scan_result_policy, rules: [protected_rule]) }
+        let(:policy_after) { build(:scan_result_policy, name: policy_before[:name], rules: [protected_rule]) }
 
         let(:pre_existing_policies) { [policy_before] }
         let(:policies) { [policy_after] }
 
         include_examples 'succeeds'
 
-        it 'deletes dangling policy rules' do
-          expect do
-            persist
-          end.to change {
+        it 'sets negative index for dangling policy rules' do
+          expect { persist }.to change {
             policy_configuration
-              .security_policies
-              .order(policy_index: :asc)
-              .flat_map(&:approval_policy_rules)
-              .flat_map { |rule| rule.content["branch_type"] }
-          }
-                   .from(%w[default protected])
-                   .to(%w[protected])
+              .security_policies.order(policy_index: :asc).flat_map(&:approval_policy_rules).flat_map(&:rule_index)
+          }.from(contain_exactly(0, 1)).to(contain_exactly(0, -2))
         end
       end
     end

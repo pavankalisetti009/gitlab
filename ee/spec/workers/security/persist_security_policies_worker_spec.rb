@@ -26,6 +26,16 @@ RSpec.describe Security::PersistSecurityPoliciesWorker, '#perform', feature_cate
     it_behaves_like 'an idempotent worker' do
       subject(:perform) { perform_multiple(policy_configuration.id) }
 
+      context 'when policy is empty' do
+        let(:scan_result_policies) { [] }
+        let(:scan_execution_policies) { [] }
+        let(:pipeline_execution_policies) { [] }
+
+        it 'does not persist policies' do
+          expect { perform }.not_to change { policy_configuration.security_policies.reload.count }
+        end
+      end
+
       describe 'cache eviction' do
         let(:config) { spy }
 
