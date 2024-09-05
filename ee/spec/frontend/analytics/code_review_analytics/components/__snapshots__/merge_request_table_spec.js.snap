@@ -98,7 +98,7 @@ exports[`MergeRequestTable component template matches the snapshot 1`] = `
       >
         <div>
           <div
-            class="align-items-end align-items-sm-start flex-column flex-grow gl-flex"
+            class="align-items-end align-items-sm-start flex-column gl-flex gl-grow"
           >
             <div
               class="gl-max-w-34 my-2 str-truncated"
