@@ -34452,6 +34452,9 @@ msgstr ""
 msgid "MlModelRegistry|CI Info"
 msgstr ""
 
+msgid "MlModelRegistry|Cancel upload"
+msgstr ""
+
 msgid "MlModelRegistry|Candidate not linked to a CI build"
 msgstr ""
 
@@ -34696,6 +34699,9 @@ msgid "MlModelRegistry|Uploaded files successfully"
 msgstr ""
 
 msgid "MlModelRegistry|Use versions to track performance, parameters, and metadata"
+msgstr ""
+
+msgid "MlModelRegistry|User canceled upload."
 msgstr ""
 
 msgid "MlModelRegistry|Using the MLflow client"
