@@ -48225,6 +48225,9 @@ msgstr ""
 msgid "Secret Detection"
 msgstr ""
 
+msgid "Secret Detection Configuration"
+msgstr ""
+
 msgid "Secret push protection"
 msgstr ""
 
@@ -48235,6 +48238,9 @@ msgid "Secret token"
 msgstr ""
 
 msgid "Secret token."
+msgstr ""
+
+msgid "SecretDetection|Configure Secret Detection"
 msgstr ""
 
 msgid "SecretDetection|Feature not available"
@@ -48551,6 +48557,9 @@ msgid "SecurityConfiguration|Runtime security metrics for application environmen
 msgstr ""
 
 msgid "SecurityConfiguration|SAST configuration"
+msgstr ""
+
+msgid "SecurityConfiguration|Secret detection configuration"
 msgstr ""
 
 msgid "SecurityConfiguration|Secure your project"
