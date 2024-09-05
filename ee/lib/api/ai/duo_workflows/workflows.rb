@@ -71,7 +71,8 @@ module API
           end
 
           params :workflow_params do
-            requires :project_id, type: Integer, desc: 'The ID of the workflow project', documentation: { example: '1' }
+            requires :project_id, type: String, desc: 'The ID or path of the workflow project',
+              documentation: { example: '1' }
             optional :start_workflow, type: Boolean, desc: 'Optional parameter to start workflow in a CI pipeline',
               documentation: { example: true }
             optional :goal, type: String, desc: 'Goal of the workflow',
