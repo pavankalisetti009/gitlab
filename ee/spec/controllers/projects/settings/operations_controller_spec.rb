@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Projects::Settings::OperationsController, feature_category: :incident_management do
+RSpec.describe Projects::Settings::OperationsController, feature_category: :shared do
   let_it_be_with_reload(:project) { create(:project) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
 
@@ -52,7 +52,7 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
     context 'with a license' do
       before do
-        stub_licensed_features(status_page: true, incident_sla: true)
+        stub_licensed_features(status_page: true, incident_sla: true, observability: true)
       end
 
       context 'with maintainer role' do
@@ -83,7 +83,7 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
     context 'without license' do
       before do
-        stub_licensed_features(status_page: false, incident_sla: false)
+        stub_licensed_features(status_page: false, incident_sla: false, observability: false)
       end
 
       it_behaves_like 'user with read access', :public
@@ -111,7 +111,7 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
     context 'with a license' do
       before do
-        stub_licensed_features(status_page: true)
+        stub_licensed_features(status_page: true, observability: true)
       end
 
       context 'with non maintainer roles' do
@@ -180,7 +180,7 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
         end
       end
 
-      context 'indident management settings' do
+      context 'incident management settings' do
         let(:project) { create(:project) }
 
         let(:params) { attributes_for(:project_incident_management_setting) }
@@ -249,6 +249,27 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
           it_behaves_like 'enabled sla settings'
         end
       end
+
+      context 'observability settings' do
+        let(:another_project) { build(:project) }
+        let(:params) { { observability_alerts_enabled: false } }
+
+        before do
+          another_project.add_maintainer(user)
+        end
+
+        context 'with default setting' do
+          it 'has observability alerts enabled' do
+            expect(another_project.observability_alerts_enabled).to be true
+          end
+
+          it 'can update alerts enabled' do
+            update_project(another_project, observability_params: params)
+
+            expect(another_project.observability_alerts_enabled).to be false
+          end
+        end
+      end
     end
 
     context 'without a license' do
@@ -256,7 +277,7 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
       before do
         project.add_maintainer(user)
-        stub_licensed_features(status_page: false, incident_sla: false)
+        stub_licensed_features(status_page: false, incident_sla: false, observability: false)
       end
 
       it_behaves_like 'user without write access', :public, :maintainer
@@ -282,11 +303,12 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
     private
 
-    def update_project(project, incident_management_params: nil, status_page_params: nil)
+    def update_project(project, incident_management_params: nil, status_page_params: nil, observability_params: nil)
       patch :update, params: project_params(
         project,
         status_page_params: status_page_params,
-        incident_management_params: incident_management_params
+        incident_management_params: incident_management_params,
+        observability_params: observability_params
       )
 
       project.reload
@@ -295,14 +317,20 @@ RSpec.describe Projects::Settings::OperationsController, feature_category: :inci
 
   private
 
-  def project_params(project, incident_management_params: nil, status_page_params: nil)
+  def project_params(project, incident_management_params: nil, status_page_params: nil, observability_params: nil)
+    project_attrs = {
+      status_page_setting_attributes: status_page_params,
+      incident_management_setting_attributes: incident_management_params
+    }
+
+    unless observability_params.nil?
+      project_attrs[:observability_alerts_enabled] = observability_params[:observability_alerts_enabled]
+    end
+
     {
       namespace_id: project.namespace,
       project_id: project,
-      project: {
-        status_page_setting_attributes: status_page_params,
-        incident_management_setting_attributes: incident_management_params
-      }
+      project: project_attrs
     }
   end
 

@@ -91,12 +91,23 @@ module EE
 
       override :monitor_settings
       def monitor_settings
-        return super unless project.licensed_feature_available?(:status_page)
+        settings = super
 
-        super.concat [
-          { text: s_("StatusPage|Status page"),
-            href: project_settings_operations_path(project, anchor: 'status-page') }
-        ]
+        if project.licensed_feature_available?(:observability)
+          settings.push({
+            text: s_('Observability|Tracing, Metrics & Logs'),
+            href: project_settings_operations_path(project, anchor: 'js-observability-settings')
+          })
+        end
+
+        if project.licensed_feature_available?(:status_page)
+          settings.push(
+            { text: s_("StatusPage|Status page"),
+              href: project_settings_operations_path(project, anchor: 'status-page') }
+          )
+        end
+
+        settings
       end
     end
   end

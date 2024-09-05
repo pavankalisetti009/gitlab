@@ -430,6 +430,10 @@ module EE
         delegate :require_reauthentication_to_approve=
       end
 
+      with_options to: :project_setting do
+        delegate :observability_alerts_enabled, :observability_alerts_enabled=
+      end
+
       delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :project_state)
 
       delegate :security_policy_management_project, to: :security_orchestration_policy_configuration, allow_nil: true
