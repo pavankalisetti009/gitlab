@@ -13,11 +13,11 @@ module MergeRequests
     deduplicate :until_executed
     idempotent!
 
-    def perform(merge_request_id)
+    def perform(merge_request_id, params = {})
       merge_request = MergeRequest.find_by_id(merge_request_id)
       return unless merge_request
 
-      ::MergeRequests::SyncCodeOwnerApprovalRules.new(merge_request).execute
+      ::MergeRequests::SyncCodeOwnerApprovalRules.new(merge_request, params.with_indifferent_access).execute
     end
   end
 end
