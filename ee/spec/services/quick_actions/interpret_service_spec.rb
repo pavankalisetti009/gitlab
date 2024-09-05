@@ -4,7 +4,7 @@ require 'spec_helper'
 
 RSpec.describe QuickActions::InterpretService, feature_category: :team_planning do
   let(:current_user) { create(:user) }
-  let(:developer) { create(:user) }
+  let_it_be(:developer) { create(:user) }
   let(:developer2) { create(:user) }
   let(:user) { create(:user) }
   let_it_be(:user2) { create(:user) }
@@ -848,6 +848,53 @@ RSpec.describe QuickActions::InterpretService, feature_category: :team_planning 
           _, updates = service.execute(content, epic)
 
           expect(updates).to be_empty
+        end
+      end
+    end
+
+    context '/label command' do
+      context 'when target is a group level work item' do
+        let(:current_user) { developer }
+        let_it_be(:new_group) { create(:group, developers: developer) }
+        let_it_be(:group_level_work_item) { create(:work_item, :group_level, namespace: new_group) }
+
+        let(:service) { described_class.new(container: group, current_user: current_user) }
+
+        before do
+          stub_feature_flags(enforce_check_group_level_work_items_license: true)
+        end
+
+        context 'with group level work items license' do
+          before do
+            stub_licensed_features(epics: true)
+          end
+
+          # This spec was introduced just to validate that the label finder scopes que query to a single group.
+          # The command checks that labels are available as part of the condition.
+          # Query was timing out in .com https://gitlab.com/gitlab-org/gitlab/-/issues/441123
+          it 'is not available when there are no labels associated with the group' do
+            expect(service.available_commands(group_level_work_item)).not_to include(a_hash_including(name: :label))
+          end
+
+          context 'when a label exists at the group level' do
+            before do
+              create(:group_label, group: group)
+            end
+
+            it 'is available' do
+              expect(service.available_commands(group_level_work_item)).to include(a_hash_including(name: :label))
+            end
+
+            context 'without group level work items license' do
+              before do
+                stub_licensed_features(epics: false)
+              end
+
+              it 'is not available' do
+                expect(service.available_commands(group_level_work_item)).not_to include(a_hash_including(name: :label))
+              end
+            end
+          end
         end
       end
     end
