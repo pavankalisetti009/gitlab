@@ -18,8 +18,8 @@ RSpec.shared_examples 'parsing a valid dependency config file' do
     config_file.parse!
 
     expect(config_file).to be_valid
-    expect(config_file.payload).to eq({
-      libs: expected_formatted_lib_names.map { |lib_name| { name: lib_name } },
+    expect(config_file.payload).to match({
+      libs: match_array(expected_formatted_lib_names.map { |lib_name| { name: lib_name } }),
       checksum: expected_checksum,
       fileName: blob.path,
       scannerVersion: described_class::SCANNER_VERSION
