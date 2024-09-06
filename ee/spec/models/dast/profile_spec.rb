@@ -158,4 +158,11 @@ RSpec.describe Dast::Profile, :dynamic_analysis,
       it { is_expected.to delegate_method(:secret_ci_variables).to(:dast_site_profile) }
     end
   end
+
+  context 'with loose foreign key on dast_profiles.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dast_profile, project: parent) }
+    end
+  end
 end
