@@ -270,6 +270,7 @@ client_subscription_id: 'someid' }
     context 'with merge request reader allowed' do
       before do
         stub_feature_flags(ai_merge_request_reader_for_chat: true)
+        allow(ai_request).to receive(:request)
       end
 
       let(:tools) do
@@ -283,6 +284,15 @@ client_subscription_id: 'someid' }
       end
 
       it_behaves_like 'tool behind a feature flag'
+
+      it 'pushes feature flag to AI Gateway' do
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+          .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+          .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
+
+        subject
+      end
     end
 
     context 'with commit reader allowed' do
@@ -305,7 +315,9 @@ client_subscription_id: 'someid' }
 
       it 'pushes feature flag to AI Gateway' do
         expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
-         .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
+          .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+         .with(:ai_merge_request_reader_for_chat, user).and_return(:ai_merge_request_reader_for_chat)
 
         subject
       end
