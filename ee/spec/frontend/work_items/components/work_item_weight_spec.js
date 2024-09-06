@@ -28,7 +28,6 @@ describe('WorkItemWeight component', () => {
   const findClearButton = () => wrapper.find('[data-testid="remove-weight"]');
 
   const createComponent = ({
-    isGroup = false,
     canUpdate = true,
     hasIssueWeightsFeature = true,
     isEditing = false,
@@ -47,7 +46,6 @@ describe('WorkItemWeight component', () => {
       },
       provide: {
         hasIssueWeightsFeature,
-        isGroup,
       },
     });
 

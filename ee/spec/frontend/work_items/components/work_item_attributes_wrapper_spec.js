@@ -64,7 +64,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     workItem = workItemQueryResponse.data.workItem,
     handler = successHandler,
     confidentialityMock = [updateWorkItemMutation, jest.fn()],
-    featureFlags = { workItemsBeta: true, workItemsRolledupDates: true },
+    featureFlags = { workItemsRolledupDates: true },
     hasSubepicsFeature = true,
     workItemParticipantsQueryHandler = workItemParticipantsQuerySuccessHandler,
   } = {}) => {
@@ -99,10 +99,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
         iterationWidgetPresent ? 'renders' : 'does not render'
       } iteration component`, async () => {
         const response = workItemResponseFactory({ iterationWidgetPresent });
-        createComponent({
-          workItem: response.data.workItem,
-          featureFlags: { workItemsBeta: false },
-        });
+        createComponent({ workItem: response.data.workItem });
         await waitForPromises();
 
         expect(findWorkItemIteration().exists()).toBe(exists);
@@ -110,7 +107,7 @@ describe('EE WorkItemAttributesWrapper component', () => {
     });
 
     it('emits an error event to the wrapper', async () => {
-      createComponent({ featureFlags: { workItemsBeta: false } });
+      createComponent();
       const updateError = 'Failed to update';
 
       findWorkItemIteration().vm.$emit('error', updateError);

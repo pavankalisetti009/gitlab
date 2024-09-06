@@ -68,9 +68,6 @@ describe('WorkItemRolledupDates component', () => {
         workItem: updateWorkItemMutationResponse.data.workItemUpdate.workItem,
         fullPath: 'gitlab-org/gitlab',
       },
-      provide: {
-        isGroup: false,
-      },
       stubs: {
         GlDatepicker: stubComponent(GlDatepicker, {
           methods: {
