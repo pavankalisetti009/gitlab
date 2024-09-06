@@ -21,11 +21,17 @@ describe('Edit Rule Drawer', () => {
   const findDeployKeysSelector = () => wrapper.findByTestId('deploy-keys-selector');
   const findSaveButton = () => wrapper.findByText('Save changes');
 
-  const createComponent = (props = allowedToMergeDrawerProps) => {
+  const createComponent = (
+    props = allowedToMergeDrawerProps,
+    showEnterpriseAccessLevels = true,
+  ) => {
     wrapper = shallowMountExtended(RuleDrawer, {
       components: { ItemsSelector },
       propsData: {
         ...props,
+      },
+      provide: {
+        showEnterpriseAccessLevels,
       },
     });
   };
@@ -99,5 +105,17 @@ describe('Edit Rule Drawer', () => {
     findUsersSelector().vm.$emit('change', ['some data']);
     await nextTick();
     expect(findSaveButton().attributes('disabled')).toBeUndefined();
+  });
+
+  describe('when enterprise access levels are not enabled', () => {
+    beforeEach(() => createComponent(allowedToMergeDrawerProps, false));
+
+    it('does not render Item Selector with users', () => {
+      expect(findUsersSelector().exists()).toBe(false);
+    });
+
+    it('does not render Item Selector with groups', () => {
+      expect(findGroupsSelector().exists()).toBe(false);
+    });
   });
 });
