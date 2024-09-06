@@ -16,7 +16,8 @@ module EE
       super.merge({
         requirementsAccessLevel: project.requirements_access_level,
         cveIdRequestEnabled: (project.public? && project.project_setting.cve_id_request_enabled?),
-        duoFeaturesEnabled: (project.project_setting.duo_features_enabled?)
+        duoFeaturesEnabled: (project.project_setting.duo_features_enabled?),
+        sppRepositoryPipelineAccess: (project.project_setting.spp_repository_pipeline_access)
       })
     end
 
@@ -32,7 +33,10 @@ module EE
         licensedAiFeaturesAvailable: project.licensed_ai_features_available?,
         duoFeaturesLocked: project.project_setting.duo_features_enabled_locked?,
         requestCveAvailable: ::Gitlab.com?,
-        cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request')
+        cveIdRequestHelpPath: help_page_path('user/application_security/cve_id_request'),
+        sppRepositoryPipelineAccessLocked: project.project_setting.spp_repository_pipeline_access_locked?,
+        policySettingsAvailable: project.licensed_feature_available?(:security_orchestration_policies) &&
+          ::Security::OrchestrationPolicyConfiguration.policy_management_project?(project)
       })
     end
 

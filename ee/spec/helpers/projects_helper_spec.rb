@@ -605,6 +605,10 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
   describe '#project_permissions_settings' do
     using RSpec::Parameterized::TableSyntax
 
+    before do
+      stub_application_setting(spp_repository_pipeline_access: false, lock_spp_repository_pipeline_access: false)
+    end
+
     let(:expected_settings) { { requirementsAccessLevel: 20, securityAndComplianceAccessLevel: 10, duoFeaturesEnabled: true } }
 
     subject { helper.project_permissions_settings(project) }
@@ -626,13 +630,28 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         end
       end
     end
+
+    describe 'sppRepositoryPipelineAccess' do
+      it { is_expected.to include(sppRepositoryPipelineAccess: false) }
+
+      context 'when the setting is enabled' do
+        before do
+          project.project_setting.update!(spp_repository_pipeline_access: true)
+        end
+
+        it { is_expected.to include(sppRepositoryPipelineAccess: true) }
+      end
+    end
   end
 
   describe '#project_permissions_panel_data' do
     using RSpec::Parameterized::TableSyntax
 
     let(:user) { instance_double(User, can_admin_all_resources?: false) }
-    let(:expected_data) { { requirementsAvailable: false, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false } }
+    let(:expected_data) do
+      { requirementsAvailable: false, licensedAiFeaturesAvailable: false, duoFeaturesLocked: false,
+        sppRepositoryPipelineAccessLocked: false, policySettingsAvailable: false }
+    end
 
     subject { helper.project_permissions_panel_data(project) }
 
@@ -653,6 +672,35 @@ RSpec.describe ProjectsHelper, feature_category: :shared do
         it 'sets requestCveAvailable to the correct value' do
           expect(subject[:requestCveAvailable]).to eq(is_gitlab_com)
         end
+      end
+    end
+
+    describe 'policy settings' do
+      describe 'policySettingsAvailable' do
+        where(:licensed_feature, :policy_project_exists, :result) do
+          true  | true  | true
+          true  | false | false
+          false | true  | false
+          false | false | false
+        end
+
+        with_them do
+          before do
+            stub_licensed_features(security_orchestration_policies: licensed_feature)
+            allow(::Security::OrchestrationPolicyConfiguration).to receive(:policy_management_project?)
+                                                                     .with(project).and_return(policy_project_exists)
+          end
+
+          it { is_expected.to include(policySettingsAvailable: result) }
+        end
+      end
+
+      context 'when sppRepositoryPipelineAccessLocked is locked' do
+        before do
+          stub_application_setting(lock_spp_repository_pipeline_access: true)
+        end
+
+        it { is_expected.to include(sppRepositoryPipelineAccessLocked: true) }
       end
     end
   end

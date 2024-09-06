@@ -109,6 +109,10 @@ module EE
         attributes << :only_allow_merge_if_all_status_checks_passed
       end
 
+      if project&.licensed_feature_available?(:security_orchestration_policies)
+        attributes << :spp_repository_pipeline_access
+      end
+
       super + attributes
     end
 
