@@ -374,7 +374,7 @@ module Gitlab
 
       def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         strong_memoize(memoize_key('issues', count_only: count_only)) do
-          if work_item_index_available_for_searching?(base_options[:current_user])
+          if work_item_index_available_for_searching?
             options = scope_options(:work_items)
               .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
             search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
@@ -390,9 +390,9 @@ module Gitlab
         end
       end
 
-      def work_item_index_available_for_searching?(user)
+      def work_item_index_available_for_searching?
         ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global Feature Flag
-          ::Feature.enabled?(:search_issues_uses_work_items_index, user) &&
+          ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
           ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
 
@@ -488,10 +488,15 @@ module Gitlab
       strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
-        options = base_options.merge(aggregation: true, klass: Issue)
+        if work_item_index_available_for_searching?
+          options = scope_options(:work_items).merge(aggregation: true)
+          search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
+        else
+          options = base_options.merge(aggregation: true, klass: Issue)
+          search_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
+        end
 
-        issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
-        results = ::Gitlab::Search::Client.execute_search(query: issue_query, options: options) do |response|
+        results = ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
           ::Search::Elastic::ResponseMapper.new(response, options)
         end
         ::Gitlab::Search::AggregationParser.call(results.aggregations)

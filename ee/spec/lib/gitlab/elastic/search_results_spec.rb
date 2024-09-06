@@ -123,6 +123,18 @@ RSpec.describe Gitlab::Elastic::SearchResults, feature_category: :global_search 
         it_behaves_like 'loads expected aggregations'
       end
     end
+
+    context 'when search_issues_uses_work_items_index is false' do
+      let(:scope) { 'issues' }
+      let(:expected_aggregation_name) { 'labels' }
+      let(:feature_flag) { false }
+
+      before do
+        stub_feature_flags(search_issues_uses_work_items_index: false)
+      end
+
+      it_behaves_like 'loads expected aggregations'
+    end
   end
 
   shared_examples_for 'a paginated object' do |object_type|
