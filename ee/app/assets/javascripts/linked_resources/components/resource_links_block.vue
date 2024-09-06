@@ -1,10 +1,10 @@
 <script>
-import { GlLink, GlIcon, GlButton, GlLoadingIcon, GlTooltipDirective, GlCard } from '@gitlab/ui';
 import { produce } from 'immer';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_ISSUE } from '~/graphql_shared/constants';
 import { createAlert } from '~/alert';
-import { __, sprintf } from '~/locale';
+import { sprintf } from '~/locale';
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { resourceLinksI18n } from '../constants';
 import { displayAndLogError, identifyLinkType } from './utils';
 import getIssuableResourceLinks from './graphql/queries/get_issuable_resource_links.query.graphql';
@@ -16,18 +16,11 @@ import ResourceLinksList from './resource_links_list.vue';
 export default {
   name: 'ResourceLinksBlock',
   components: {
-    GlLink,
-    GlButton,
-    GlIcon,
     AddIssuableResourceLinkForm,
     ResourceLinksList,
-    GlLoadingIcon,
-    GlCard,
+    CrudComponent,
   },
   i18n: resourceLinksI18n,
-  directives: {
-    GlTooltip: GlTooltipDirective,
-  },
   ariaControlsId: 'resource-links-card',
   props: {
     issuableId: {
@@ -47,8 +40,6 @@ export default {
   },
   data() {
     return {
-      isOpen: true,
-      isFormVisible: false,
       isSubmitting: false,
       resourceLinks: [],
     };
@@ -70,38 +61,19 @@ export default {
     },
   },
   computed: {
-    badgeLabel() {
-      return this.isFetching && this.resourceLinks.length === 0 ? '...' : this.resourceLinks.length;
+    resourceCount() {
+      return this.resourceLinks.length;
     },
     hasResourceLinks() {
-      return Boolean(this.resourceLinks.length);
+      return Boolean(this.resourceCount);
     },
     isFetching() {
-      return this.$apollo.queries.resourceLinks.loading;
-    },
-    toggleIcon() {
-      return this.isOpen ? 'chevron-lg-up' : 'chevron-lg-down';
-    },
-    toggleLabel() {
-      return this.isOpen ? __('Collapse') : __('Expand');
-    },
-    shouldShowHelpText() {
-      return !this.hasResourceLinks && !this.isFetching && !this.isFormVisible;
+      return Boolean(this.$apollo.queries.resourceLinks.loading);
     },
   },
   methods: {
-    handleToggle() {
-      this.isOpen = !this.isOpen;
-      if (!this.isOpen) {
-        this.isFormVisible = false;
-      }
-    },
-    async toggleResourceLinkForm() {
-      this.isFormVisible = !this.isFormVisible;
-      this.isOpen = true;
-    },
     hideResourceLinkForm() {
-      this.isFormVisible = false;
+      this.$refs.resourceLinksCrud.hideForm();
     },
     async onResourceLinkRemoveRequest(linkToRemove) {
       try {
@@ -219,82 +191,41 @@ export default {
 
 <template>
   <div id="resource-links">
-    <gl-card
-      :id="$options.ariaControlsId"
-      class="gl-new-card"
-      :class="{ 'is-collapsed': !isOpen }"
-      header-class="gl-new-card-header"
-      body-class="gl-new-card-body"
+    <crud-component
+      ref="resourceLinksCrud"
+      :anchor-id="$options.ariaControlsId"
+      class="gl-mt-5"
+      :title="$options.i18n.headerText"
+      icon="link"
+      :count="resourceCount"
+      :toggle-text="canAddResourceLinks ? __('Add') : null"
+      :toggle-aria-label="$options.i18n.addButtonText"
+      :is-loading="isFetching"
+      is-collapsible
     >
-      <template #header>
-        <div class="gl-new-card-title-wrapper">
-          <h3 class="gl-new-card-title">
-            <gl-link
-              id="user-content-resource-links"
-              class="anchor gl-absolute gl-no-underline"
-              href="#resource-links"
-              aria-hidden="true"
-            />
-            <slot name="header-text">{{ $options.i18n.headerText }}</slot>
-          </h3>
-          <div class="gl-new-card-count js-related-issues-header-issue-count">
-            <gl-icon name="link" class="gl-mr-2" />
-            {{ badgeLabel }}
-          </div>
-        </div>
+      <template #actions>
         <slot name="header-actions"></slot>
-        <gl-button
-          v-if="canAddResourceLinks"
-          size="small"
-          :aria-label="$options.i18n.addButtonText"
-          class="gl-ml-3"
-          data-testid="add-resource-links"
-          @click="toggleResourceLinkForm"
-        >
-          <slot name="add-button-text">{{ __('Add') }}</slot>
-        </gl-button>
-        <div class="gl-new-card-toggle">
-          <gl-button
-            category="tertiary"
-            size="small"
-            :icon="toggleIcon"
-            :aria-label="toggleLabel"
-            :aria-expanded="isOpen.toString()"
-            :aria-controls="$options.ariaControlsId"
-            data-testid="toggle-links"
-            @click="handleToggle"
-          />
-        </div>
       </template>
-      <div v-if="isOpen" class="linked-issues-card-body gl-new-card-content">
-        <div v-show="isFormVisible" class="gl-new-card-add-form">
-          <add-issuable-resource-link-form
-            ref="resourceLinkForm"
-            :is-submitting="isSubmitting"
-            @add-issuable-resource-link-form-cancel="hideResourceLinkForm"
-            @create-resource-link="onCreateResourceLink"
-          />
-        </div>
-        <div v-if="isFetching" class="gl-new-card-empty">
-          <gl-loading-icon
-            size="sm"
-            :label="$options.i18n.fetchingLinkedResourcesText"
-            class="gl-py-4"
-          />
-        </div>
-        <p v-if="shouldShowHelpText" class="gl-new-card-empty" data-testid="empty">
-          {{ $options.i18n.helpText }}
-        </p>
-        <template v-if="hasResourceLinks">
-          <resource-links-list
-            data-testid="resource-links-list"
-            :can-admin="canAddResourceLinks"
-            :resource-links="resourceLinks"
-            :is-form-visible="isFormVisible"
-            @resourceLinkRemoveRequest="onResourceLinkRemoveRequest"
-          />
-        </template>
-      </div>
-    </gl-card>
+
+      <template #form>
+        <add-issuable-resource-link-form
+          ref="resourceLinkForm"
+          :is-submitting="isSubmitting"
+          @add-issuable-resource-link-form-cancel="hideResourceLinkForm"
+          @create-resource-link="onCreateResourceLink"
+        />
+      </template>
+
+      <template v-if="!hasResourceLinks" #empty>
+        {{ $options.i18n.helpText }}
+      </template>
+
+      <resource-links-list
+        data-testid="resource-links-list"
+        :can-admin="canAddResourceLinks"
+        :resource-links="resourceLinks"
+        @resourceLinkRemoveRequest="onResourceLinkRemoveRequest"
+      />
+    </crud-component>
   </div>
 </template>
