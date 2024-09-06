@@ -28,17 +28,6 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
     context 'when an epic is created' do
       let(:epic) { build(:epic, group: group) }
 
-      context 'when elastic_index_work_items flag is disabled' do
-        before do
-          stub_feature_flags(elastic_index_work_items: false)
-        end
-
-        it 'tracks the epic' do
-          expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-          epic.save!
-        end
-      end
-
       context 'when create_work_items_index migration is not complete' do
         before do
           allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)
@@ -99,17 +88,6 @@ RSpec.describe 'Epic index', :elastic_helpers, feature_category: :global_search 
           expect(tracked_refs[1].identifier).to eq(epic.issue_id)
         end
         epic.destroy!
-      end
-
-      context 'when elastic_index_work_items flag is disabled' do
-        before do
-          stub_feature_flags(elastic_index_work_items: false)
-        end
-
-        it 'tracks the epic' do
-          expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-          epic.destroy!
-        end
       end
 
       context 'when create_work_items_index migration is not complete' do

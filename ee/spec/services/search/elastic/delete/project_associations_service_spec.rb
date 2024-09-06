@@ -88,25 +88,6 @@ RSpec.describe ::Search::Elastic::Delete::ProjectAssociationsService, :elastic_h
           expect(items_in_index(work_item_index)).to include(work_item.id)
         end
       end
-
-      context 'when elastic_index_work_items is disabled' do
-        before do
-          stub_feature_flags(elastic_index_work_items: false)
-        end
-
-        it 'does not remove work items' do
-          # items are present already
-          expect(items_in_index(work_item_index)).to include(work_item.id)
-          expect(items_in_index(work_item_index).count).to eq(1)
-
-          execute
-          es_helper.refresh_index(index_name: work_item_index)
-
-          # work items not removed
-          expect(items_in_index(work_item_index).count).to eq(1)
-          expect(items_in_index(work_item_index)).to include(work_item.id)
-        end
-      end
     end
   end
 end

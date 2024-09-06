@@ -301,16 +301,6 @@ RSpec.describe ::Search::Elastic::References::WorkItem, :elastic_helpers, featur
         expect(described_class.instantiate(work_item_ref.serialize)).to be_nil
       end
     end
-
-    context 'when ff is turned off' do
-      before do
-        stub_feature_flags(elastic_index_work_items: false)
-      end
-
-      it 'does not instantiate work item' do
-        expect(described_class.instantiate(work_item_ref.serialize)).to be_nil
-      end
-    end
   end
 
   describe '#serialize' do

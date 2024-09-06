@@ -1386,17 +1386,6 @@ RSpec.describe Epic, feature_category: :portfolio_management do
             .to receive(:elasticsearch_indexing?).and_return(true)
         end
 
-        context 'when elastic_index_work_items flag is disabled' do
-          before do
-            stub_feature_flags(elastic_index_work_items: false)
-          end
-
-          it 'tracks the epic' do
-            expect(::Elastic::ProcessBookkeepingService).to receive(:track!).with(epic).once
-            epic.update!(title: 'A new title')
-          end
-        end
-
         context 'when create_work_items_index migration is not complete' do
           before do
             allow(::Elastic::DataMigrationService).to receive(:migration_has_finished?)

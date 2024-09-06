@@ -43,27 +43,6 @@ RSpec.describe Search::ElasticGroupAssociationDeletionWorker, :elastic_helpers, 
         ensure_elasticsearch_index!
       end
 
-      context 'when elastic_index_work_items is disabled' do
-        before do
-          stub_feature_flags(elastic_index_work_items: false)
-        end
-
-        it 'does not remove work items' do
-          # items are present already
-          expect(items_in_index(work_item_index).count).to eq(2)
-          expect(items_in_index(work_item_index)).to include(group_work_item.id)
-          expect(items_in_index(work_item_index)).to include(sub_group_work_item.id)
-
-          described_class.new.perform(group.id, parent_group.id)
-          helper.refresh_index(index_name: work_item_index)
-
-          # work items not removed
-          expect(items_in_index(work_item_index).count).to eq(2)
-          expect(items_in_index(work_item_index)).to include(group_work_item.id)
-          expect(items_in_index(work_item_index)).to include(sub_group_work_item.id)
-        end
-      end
-
       context 'when migration is not complete' do
         before do
           set_elasticsearch_migration_to :create_work_items_index, including: false

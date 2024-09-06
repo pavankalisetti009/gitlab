@@ -73,9 +73,7 @@ module EE
 
     override :use_elasticsearch?
     def use_elasticsearch?
-      elasticsearch_available = ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- We do not need an actor here
-        ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
-      return super unless elasticsearch_available
+      return super unless ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
 
       namespace.use_elasticsearch?
     end

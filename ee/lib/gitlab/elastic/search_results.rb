@@ -391,8 +391,7 @@ module Gitlab
       end
 
       def work_item_index_available_for_searching?
-        ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global Feature Flag
-          ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
+        ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
           ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
 

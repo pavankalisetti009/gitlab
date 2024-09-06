@@ -122,27 +122,7 @@ RSpec.describe 'WorkItem Index', :elastic, :sidekiq_inline, feature_category: :g
     end
   end
 
-  context 'when feature flag is turned off work_items indexed in issues index' do
-    let(:index_name) { Issue.__elasticsearch__.index_name }
-    let(:tracked_refs_count) { 1 }
-
-    before do
-      stub_feature_flags(elastic_index_work_items: false)
-      stub_ee_application_setting(elasticsearch_indexing: true)
-    end
-
-    it_behaves_like 'work_items get tracked in Elasticsearch'
-
-    context 'when indexing is disabled' do
-      before do
-        stub_ee_application_setting(elasticsearch_indexing: false)
-      end
-
-      it_behaves_like 'work_items do not get tracked in Elasticsearch'
-    end
-  end
-
-  context 'when feature flag is turned on and migration is complete' do
+  context 'when migration is complete' do
     let(:index_name) { ::Search::Elastic::References::WorkItem.index }
     let(:tracked_refs_count) { 2 }
 
