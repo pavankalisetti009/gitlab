@@ -23,11 +23,22 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
         stub_feature_flags(work_item_epics_rollout: current_user, namespace_level_work_items: false)
       end
 
-      it 'renders show' do
-        show
+      context 'when work item does not exist' do
+        let(:iid) { non_existing_record_id }
 
-        expect(response).to have_gitlab_http_status(:ok)
-        expect(response.body).to have_pushed_frontend_feature_flags(namespaceLevelWorkItems: true)
+        it 'renders not found' do
+          show
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'when work item type is epic' do
+        it 'redirects to /epic/:iid' do
+          show
+
+          expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+        end
       end
 
       context 'when the new page gets requested' do
@@ -91,6 +102,16 @@ RSpec.describe 'Group Level Work Items', feature_category: :team_planning do
           show
 
           expect(response).to redirect_to(group_epic_path(group, work_item.iid))
+        end
+      end
+
+      context 'when work item does not exist' do
+        let(:iid) { non_existing_record_id }
+
+        it 'renders not found' do
+          show
+
+          expect(response).to have_gitlab_http_status(:not_found)
         end
       end
 

@@ -52,7 +52,8 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
           within_testid('breadcrumb-links') do
             expect(page).to have_link(group.name, href: group_path(group))
             expect(page).to have_link('Epics', href: group_epics_path(group))
-            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference, href: work_items_path)
+            expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference,
+              href: group_epic_path(group, work_item.iid))
           end
         end
       end
@@ -109,13 +110,10 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
         stub_licensed_features(epics: false)
       end
 
-      it 'shows the correct breadcrumbs' do
+      it 'shows renders 404' do
         visit work_items_path
-        expect(page).to have_content("Work item not found")
-        expect(page).to have_content(
-          "This work item is not available. It either doesn't exist or you don't " \
-            "have permission to view it"
-        )
+
+        expect(page).to have_content("Page not found")
       end
     end
   end
