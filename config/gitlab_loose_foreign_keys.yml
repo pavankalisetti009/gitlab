@@ -550,6 +550,10 @@ vulnerability_finding_signatures:
   - table: projects
     column: project_id
     on_delete: async_delete
+vulnerability_findings_remediations:
+  - table: projects
+    column: project_id
+    on_delete: async_delete
 vulnerability_flags:
   - table: projects
     column: project_id
