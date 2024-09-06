@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class ScannerProfilesBuild < ApplicationRecord
+  class ScannerProfilesBuild < ::Gitlab::Database::SecApplicationRecord
     include AppSec::Dast::Buildable
 
     self.table_name = 'dast_scanner_profiles_builds'

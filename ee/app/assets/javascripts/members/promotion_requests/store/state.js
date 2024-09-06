@@ -1,3 +1,5 @@
 export default ({ pagination }) => ({
-  pagination,
+  pagination: {
+    totalItems: pagination?.totalItems ?? 0,
+  },
 });

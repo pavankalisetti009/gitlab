@@ -1,0 +1,9 @@
+---
+name: temp_unapprove_mr_create
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/467953
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163175
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/480152
+milestone: '17.4'
+group: group::code review
+type: gitlab_com_derisk
+default_enabled: false

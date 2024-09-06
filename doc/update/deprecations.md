@@ -458,6 +458,58 @@ The project page will be removed entirely from the group settings in 18.0.
 
 <div class="deprecation breaking-change" data-milestone="18.0">
 
+### Public use of Secure container registries is deprecated
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.4</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/470641).
+
+</div>
+
+Container registries under `registry.gitlab.com/gitlab-org/security-products/`
+are no longer accessible in GitLab 18.0. [Since GitLab 14.8](https://docs.gitlab.com/ee/update/deprecations.html#secure-and-protect-analyzer-images-published-in-new-location)
+the correct location is under `registry.gitlab.com/security-products` (note the absence of
+`gitlab-org` in the address).
+
+This change improves the security of the release process for GitLab [vulnerability scanners](https://docs.gitlab.com/ee/user/application_security/#vulnerability-scanner-maintenance).
+
+Users are advised to use the equivalent registry under `registry.gitlab.com/security-products/`,
+which is the canonical location for GitLab security scanner images. The relevant GitLab CI
+templates already use this location, so no changes should be necessary for users that use the
+unmodified templates.
+
+Offline deployments should review the [specific scanner instructions](https://docs.gitlab.com/ee/user/application_security/offline_deployments/#specific-scanner-instructions)
+to ensure the correct locations are being used to mirror the required scanner images.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
+### Rate limits for common User, Project, and Group API endpoints
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.4</span>
+- Removal in GitLab <span class="milestone">18.0</span> ([breaking change](https://docs.gitlab.com/ee/update/terminology.html#breaking-change))
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/480914).
+
+</div>
+
+Rate limits will be enabled by default for commonly used [User](https://docs.gitlab.com/ee/administration/settings/user_and_ip_rate_limits.html),
+[Project](https://docs.gitlab.com/ee/administration/settings/rate_limit_on_projects_api.html), and [Group](https://docs.gitlab.com/ee/administration/settings/rate_limit_on_groups_api.html) endpoints.
+Enabling these rate limits by default can help improve overall system stability,
+by reducing the potential for heavy API usage to negatively impact the broader user experience. Requests made above the rate
+limit will return an [HTTP 429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) error code and [additional rate limit headers](https://docs.gitlab.com/ee/administration/settings/user_and_ip_rate_limits.html#response-headers).
+
+The default rate limits have been intentionally set fairly high to not disrupt most usage, based on the request rates we see on GitLab.com.
+Instance administrators can set higher or lower limits as needed in the Admin area, similarly to other rate limits already in place.
+
+</div>
+
+<div class="deprecation breaking-change" data-milestone="18.0">
+
 ### Registration tokens and server-side runner arguments in `POST /api/v4/runners` endpoint
 
 <div class="deprecation-notes">
@@ -912,6 +964,30 @@ Long term service and support (LTSS) for [Debian 10 ended in June 2024](https://
 
 Therefore, we will longer support the Debian 10 distribution for Linux package installs. Users should upgrade to
 Debian 11 or Debian 12 for continued support.
+
+</div>
+</div>
+
+<div class="milestone-wrapper" data-milestone="17.5">
+
+## GitLab 17.5
+
+<div class="deprecation " data-milestone="17.5">
+
+### Support for OpenSSL version 1
+
+<div class="deprecation-notes">
+
+- Announced in GitLab <span class="milestone">17.4</span>
+- Removal in GitLab <span class="milestone">17.5</span>
+- To discuss this change or learn more, see the [deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164512).
+
+</div>
+
+Long term support (LTS) for [OpenSSL version 1.1.1 ended in September 2023](https://endoflife.date/openssl).
+
+Therefore, we have deprecated support for incoming OpenSSL version 1 (TLS 1.0 or 1.1) connections to GitLab and will remove support in GitLab 17.5.
+External integrations such as LDAP servers and webhooks must use OpenSSL version 3 (TLS 1.2).
 
 </div>
 </div>

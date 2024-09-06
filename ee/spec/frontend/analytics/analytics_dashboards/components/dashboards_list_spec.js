@@ -476,7 +476,7 @@ describe('DashboardsList', () => {
       });
     });
 
-    describe('and the new dashboard is succesfully created', () => {
+    describe('and the new dashboard is successfully created', () => {
       beforeEach(async () => {
         await setupCloningWithSaveStatus(HTTP_STATUS_CREATED);
         return waitForPromises();
@@ -548,7 +548,7 @@ describe('DashboardsList', () => {
         expect(findListLoadingSkeletons()).toHaveLength(0);
       });
 
-      describe('and a second attempt to clone the dashboard is succesful', () => {
+      describe('and a second attempt to clone the dashboard is successful', () => {
         beforeEach(() => {
           saveCustomDashboard.mockResolvedValue({ status: HTTP_STATUS_CREATED });
           findListItems().at(0).vm.$emit('clone', dashboard.slug);

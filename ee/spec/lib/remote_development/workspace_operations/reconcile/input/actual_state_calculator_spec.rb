@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ActualStateCalculator, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   describe '.calculate_actual_state' do

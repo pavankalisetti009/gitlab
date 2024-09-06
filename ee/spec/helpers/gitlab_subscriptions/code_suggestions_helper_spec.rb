@@ -21,7 +21,7 @@ RSpec.describe GitlabSubscriptions::CodeSuggestionsHelper, feature_category: :se
 
           context 'when disabled for a specific namespace' do
             before do
-              stub_feature_flags(gitlab_com_duo_pro_bulk_user_assignment: false, thing: namespace)
+              stub_feature_flags(gitlab_com_duo_pro_bulk_user_assignment: false)
             end
 
             it 'returns false' do

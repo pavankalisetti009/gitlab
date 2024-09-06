@@ -147,6 +147,22 @@ RSpec.describe Gitlab::Elastic::BulkIndexer, :elastic, :clean_gitlab_redis_share
         expect(indexer.process(issue_as_ref)).to eq(bytesize)
       end
 
+      context 'when as_indexed_json is blank' do
+        before do
+          allow(issue_as_ref).to receive(:as_indexed_json).and_return({})
+          allow(issue_as_ref).to receive(:routing).and_return(nil)
+        end
+
+        it 'logs a warning' do
+          expect(es_client).not_to receive(:bulk)
+
+          message = 'Reference as_indexed_json is blank, removing from the queue'
+          expect(logger).to receive(:warn).with(message: message, ref: issue_as_ref.serialize)
+
+          indexer.process(issue_as_ref)
+        end
+      end
+
       context 'when routing is not set in as_indexed_json' do
         before do
           original_as_indexed_json = issue_as_ref.as_indexed_json

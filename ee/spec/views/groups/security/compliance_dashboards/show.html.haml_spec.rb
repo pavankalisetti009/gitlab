@@ -64,4 +64,42 @@ RSpec.describe "groups/security/compliance_dashboards/show", type: :view, featur
       expect(rendered).to have_selector("[data-frameworks-csv-export-path='#{frameworks_csv_export_path}']")
     end
   end
+
+  context 'for `enable_standards_adherence_dashboard_v2` selector' do
+    before do
+      Feature.disable(:enable_standards_adherence_dashboard_v2)
+    end
+
+    context 'when feature `enable_standards_adherence_dashboard_v2` is not enabled' do
+      it 'renders with the correct selector value' do
+        render
+
+        expect(rendered).to have_selector("[data-adherence-v2-enabled='false']")
+      end
+    end
+
+    context 'when feature `enable_standards_adherence_dashboard_v2` is enabled for a group' do
+      before do
+        Feature.enable(:enable_standards_adherence_dashboard_v2, group)
+      end
+
+      it 'renders with the correct selector value' do
+        render
+
+        expect(rendered).to have_selector("[data-adherence-v2-enabled='true']")
+      end
+    end
+
+    context 'when feature `enable_standards_adherence_dashboard_v2` is globally enabled' do
+      before do
+        Feature.enable(:enable_standards_adherence_dashboard_v2)
+      end
+
+      it 'renders with the correct selector value' do
+        render
+
+        expect(rendered).to have_selector("[data-adherence-v2-enabled='true']")
+      end
+    end
+  end
 end

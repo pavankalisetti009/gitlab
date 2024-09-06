@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::AgentConfigOperations::LicenseChecker, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::AgentConfigOperations::LicenseChecker, feature_category: :workspaces do
   include ResultMatchers
 
   let(:context) { instance_double(Hash) }

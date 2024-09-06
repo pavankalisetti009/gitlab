@@ -81,21 +81,5 @@ RSpec.describe GitlabSubscriptions::Trials::DuoProStatusWidgetPresenter, :saas, 
 
       it { is_expected.to be(true) }
     end
-
-    context 'when duo_pro_trial_expired_widget feature flag is disabled' do
-      before do
-        stub_feature_flags(duo_pro_trial_expired_widget: false)
-      end
-
-      it { is_expected.to be(true) }
-
-      context 'when the widget is expired' do
-        before do
-          add_on_purchase.expires_on = 5.days.ago
-        end
-
-        it { is_expected.to be(false) }
-      end
-    end
   end
 end

@@ -331,6 +331,46 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         })
       end
     end
+
+    context 'on akeyless' do
+      let(:secrets) do
+        {
+          DATABASE_PASSWORD: {
+            akeyless: {
+              name: 'key',
+              akeyless_access_key: 'access key'
+            }
+          }
+        }
+      end
+
+      let(:config) { { deploy_to_production: { stage: 'deploy', script: ['echo'], secrets: secrets } } }
+
+      it "returns secrets info" do
+        secrets = result.builds.first.fetch(:secrets)
+        expect(secrets).to eq({
+          DATABASE_PASSWORD: {
+            akeyless: {
+              name: 'key',
+              akeyless_access_key: 'access key',
+              akeyless_access_type: nil,
+              akeyless_api_url: nil,
+              akeyless_token: nil,
+              azure_object_id: nil,
+              cert_user_name: nil,
+              csr_data: nil,
+              data_key: nil,
+              gateway_ca_certificate: nil,
+              gcp_audience: nil,
+              k8s_auth_config_name: nil,
+              k8s_service_account_token: nil,
+              public_key_data: nil,
+              uid_token: nil
+            }
+          }
+        })
+      end
+    end
   end
 
   describe 'identity', feature_category: :secrets_management do
@@ -425,8 +465,8 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
         it_behaves_like 'stages including policy reserved stages'
       end
 
-      context 'with pipeline_execution_policies' do
-        let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+      context 'with execution_policy_pipelines' do
+        let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
         it_behaves_like 'stages including policy reserved stages'
       end

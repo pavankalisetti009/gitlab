@@ -1,6 +1,6 @@
 <script>
 import { GlLink, GlSprintf, GlIcon, GlTooltipDirective } from '@gitlab/ui';
-import ApprovalCount from 'ee_else_ce/merge_request_dashboard/components/approval_count.vue';
+import ApprovalCount from 'ee_else_ce/merge_requests/components/approval_count.vue';
 import { __, n__, sprintf } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
@@ -33,7 +33,7 @@ export default {
   },
   computed: {
     statsAriaLabel() {
-      const comments = n__('%d comment', '%d comments', this.mergeRequest.userDiscussionsCount);
+      const comments = n__('%d comment', '%d comments', this.mergeRequest.userNotesCount);
       const fileAdditions = n__(
         '%d file addition',
         '%d file additions',
@@ -109,7 +109,7 @@ export default {
       <div class="gl-flex gl-justify-end" :aria-label="statsAriaLabel">
         <div class="gl-whitespace-nowrap">
           <gl-icon name="comments" class="!gl-align-middle" />
-          {{ mergeRequest.userDiscussionsCount }}
+          {{ mergeRequest.userNotesCount }}
         </div>
         <div class="gl-ml-5 gl-whitespace-nowrap">
           <gl-icon name="doc-code" />

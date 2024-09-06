@@ -102,7 +102,11 @@ class ApprovalProjectRule < ApplicationRecord
   def apply_report_approver_rules_to(merge_request)
     ApplicationRecord.transaction do
       rule = merge_request_report_approver_rule(merge_request)
-      rule.update!(report_approver_attributes)
+      rule_attributes = report_approver_attributes
+
+      yield(rule_attributes) if block_given?
+
+      rule.update!(rule_attributes)
 
       next rule unless rule.scan_result_policy_id
 

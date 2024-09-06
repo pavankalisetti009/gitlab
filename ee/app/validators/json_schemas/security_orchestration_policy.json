@@ -284,6 +284,21 @@
               "override_project_ci"
             ]
           },
+          "suffix": {
+            "description": "Defines the method for policy job naming. `on_conflict` (default) applies a unique suffix when a job with the same name is detected in the pipeline. A job called `policy-job` will be added into the pipeline as `policy-job:policy-<security-policy-project-id>-<policy-index>`. `never` is a strict mode which results in a pipeline failure if job names are not unique.",
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "never",
+                  "on_conflict"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "policy_scope": {
             "$ref": "#/$defs/policy_scope"
           },

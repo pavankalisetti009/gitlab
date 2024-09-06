@@ -1,5 +1,5 @@
 import { s__ } from '~/locale';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export const ULTIMATE_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Start free GitLab Ultimate trial');
 export const GENERIC_TRIAL_FORM_SUBMIT_TEXT = s__('Trial|Continue');

@@ -23,6 +23,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     filterTargets: {
       query: getNamespaceFiltersQuery,
       variables() {

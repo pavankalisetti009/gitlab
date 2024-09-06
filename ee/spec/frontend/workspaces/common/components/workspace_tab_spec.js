@@ -1,14 +1,12 @@
-import { mount } from '@vue/test-utils';
 import VueApollo from 'vue-apollo';
 import Vue, { nextTick } from 'vue';
 import { GlSkeletonLoader, GlTab } from '@gitlab/ui';
-
 import WorkspaceTab from 'ee/workspaces/common/components/workspace_tab.vue';
 import WorkspaceTable from 'ee/workspaces/common/components/workspaces_list/workspaces_table.vue';
 import WorkspaceEmptyState from 'ee/workspaces/common/components/workspaces_list/empty_state.vue';
 import WorkspacesListPagination from 'ee/workspaces/common/components/workspaces_list/workspaces_list_pagination.vue';
 import { populateWorkspacesWithProjectDetails } from 'ee/workspaces/common/services/utils';
-import { extendedWrapper } from 'helpers/vue_test_utils_helper';
+import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   USER_WORKSPACES_LIST_QUERY_RESULT,
@@ -29,23 +27,21 @@ describe('workspaces/common/components/workspace_tab.vue', () => {
   const emptyStateSvgPath = '/placeholder.svg';
 
   const createWrapper = (props) => {
-    wrapper = extendedWrapper(
-      mount(WorkspaceTab, {
-        provide: {
-          emptyStateSvgPath,
+    wrapper = shallowMountExtended(WorkspaceTab, {
+      provide: {
+        emptyStateSvgPath,
+      },
+      propsData: {
+        tabName: 'terminated',
+        workspaces: MOCK_WORKSPACES,
+        loading: false,
+        pageInfo: {
+          hasNextPage: false,
+          hasPreviousPage: false,
         },
-        propsData: {
-          tabName: 'terminated',
-          workspaces: MOCK_WORKSPACES,
-          loading: false,
-          pageInfo: {
-            hasNextPage: false,
-            hasPreviousPage: false,
-          },
-          ...props,
-        },
-      }),
-    );
+        ...props,
+      },
+    });
   };
   const findTab = () => wrapper.findComponent(GlTab);
   const findTable = () => wrapper.findComponent(WorkspaceTable);

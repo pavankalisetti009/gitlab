@@ -66,7 +66,7 @@ export default {
       isFetching: false,
       isSubmitting: false,
       isFormVisible: false,
-      errorCreatingIssue: false,
+      errorMessage: null,
       inputValue: '',
     };
   },
@@ -93,12 +93,14 @@ export default {
       this.isFormVisible = !this.isFormVisible;
     },
     resetForm() {
+      this.errorMessage = null;
       this.isFormVisible = false;
       this.store.setPendingReferences([]);
       this.inputValue = '';
     },
     addRelatedIssue({ pendingReferences }) {
       this.processAllReferences(pendingReferences);
+      this.errorMessage = null;
       this.isSubmitting = true;
       const errors = [];
 
@@ -136,9 +138,7 @@ export default {
 
         if (hasErrors) {
           const messages = errors.map((error) => sprintf(RELATED_ISSUES_ERRORS.LINK_ERROR, error));
-          createAlert({
-            message: messages.join(' '),
-          });
+          this.errorMessage = messages.join(' ');
         }
       });
     },
@@ -234,6 +234,8 @@ export default {
       :issuable-type="$options.issuableType"
       :path-id-separator="$options.pathIdSeparator"
       :show-categorized-issues="false"
+      :has-error="Boolean(errorMessage)"
+      :item-add-failure-message="errorMessage"
       @toggleAddRelatedIssuesForm="toggleFormVisibility"
       @addIssuableFormInput="addPendingReferences"
       @addIssuableFormBlur="processAllReferences"
@@ -241,6 +243,8 @@ export default {
       @addIssuableFormCancel="resetForm"
       @pendingIssuableRemoveRequest="removePendingReference"
       @relatedIssueRemoveRequest="removeRelatedIssue"
+      @showForm="isFormVisible = true"
+      @hideForm="isFormVisible = false"
     >
       <template v-if="canCreateIssue" #header-actions>
         <gl-button

@@ -7,6 +7,7 @@ import {
   AI_METRICS,
 } from '~/analytics/shared/constants';
 
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { UNITS, TABLE_METRICS as VSD_TABLE_METRICS } from '../constants';
 
 export const SUPPORTED_FLOW_METRICS = [FLOW_METRICS.CYCLE_TIME, FLOW_METRICS.LEAD_TIME];
@@ -44,4 +45,31 @@ export const AI_IMPACT_TABLE_METRICS = {
     ...SUPPORTED_VULNERABILITY_METRICS,
   ]),
   ...pick(AI_IMPACT_OVER_TIME_METRICS, SUPPORTED_AI_METRICS),
+};
+
+export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
+  [AI_METRICS.CODE_SUGGESTIONS_USAGE_RATE]: {
+    description: s__(
+      'AiImpactAnalytics|Monthly user engagement with AI Code Suggestions. Percentage ratio calculated as monthly unique Code Suggestions users / total monthly unique code contributors in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+    ),
+    descriptionLink: helpPagePath('user/project/repository/code_suggestions/index', {
+      anchor: 'use-code-suggestions',
+    }),
+  },
+  [AI_METRICS.CODE_SUGGESTIONS_ACCEPTANCE_RATE]: {
+    description: s__(
+      'AiImpactAnalytics|%{codeSuggestionsAcceptedCount} out of %{codeSuggestionsShownCount} code suggestions were accepted in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+    ),
+    descriptionLink: helpPagePath('user/project/repository/code_suggestions/index', {
+      anchor: 'use-code-suggestions',
+    }),
+  },
+  [AI_METRICS.DUO_PRO_USAGE_RATE]: {
+    description: s__(
+      'AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoProAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+    ),
+    descriptionLink: helpPagePath('subscriptions/subscription-add-ons', {
+      anchor: 'purchase-gitlab-duo-seats',
+    }),
+  },
 };

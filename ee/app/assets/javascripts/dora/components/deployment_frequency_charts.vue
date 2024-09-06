@@ -15,7 +15,7 @@ import { SUMMARY_METRICS_REQUEST } from '~/analytics/cycle_analytics/constants';
 import CiCdAnalyticsCharts from '~/vue_shared/components/ci_cd_analytics/ci_cd_analytics_charts.vue';
 import { DEFAULT_SELECTED_CHART } from '~/vue_shared/components/ci_cd_analytics/constants';
 import glFeaturesFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { ERROR_FORECAST_FAILED, ERROR_FORECAST_UNAVAILABLE } from '../graphql/constants';
 import DoraChartHeader from './dora_chart_header.vue';
 import {

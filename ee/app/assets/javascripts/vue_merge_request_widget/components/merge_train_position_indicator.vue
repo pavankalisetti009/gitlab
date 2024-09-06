@@ -15,11 +15,6 @@ export default {
       required: false,
       default: null,
     },
-    mergeTrainIndex: {
-      type: Number,
-      required: false,
-      default: null,
-    },
     mergeTrainsCount: {
       type: Number,
       required: false,
@@ -39,6 +34,9 @@ export default {
   computed: {
     isMergeRequestOpen() {
       return this.mergeRequestState === STATUS_OPEN;
+    },
+    mergeTrainIndex() {
+      return this.mergeTrainCar?.index;
     },
     message() {
       if (this.mergeTrainIndex === 0) {

@@ -431,12 +431,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         }
       end
 
+      let(:error_message_default_unprotected) do
+        "This merge request approval policy targets the default branch, " \
+          "but the default branch is not protected in this project. " \
+          "To set up this policy, the default branch must be protected."
+      end
+
+      let(:error_message_non_existing) do
+        "Branch types don't match any existing branches."
+      end
+
       with_them do
         it { expect(result[:status]).to eq(status) }
 
         it 'returns a corresponding error message for error case' do
           if status == :error
-            expect(result[:details]).to eq(["Branch types don't match any existing branches."])
+            expect(result[:details]).to eq([expected_error_message])
           else
             expect(result[:details]).to be_nil
           end
@@ -578,6 +588,45 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       end
     end
 
+    shared_examples 'checks scan execution policy action limit' do
+      let(:limit) { Gitlab::CurrentSettings.scan_execution_policies_action_limit }
+      let(:action) { { scan: 'container_scanning' } }
+
+      context 'when below limit' do
+        before do
+          policy[:actions] = [action]
+        end
+
+        it { expect(result[:status]).to eq(:success) }
+      end
+
+      context 'when exceeding limit' do
+        before do
+          policy[:actions] = Array.new(limit + 1) { action }
+        end
+
+        it { expect(result[:status]).to eq(:error) }
+
+        it_behaves_like 'sets validation errors', message: "Policy exceeds the maximum of 10 actions"
+
+        context 'with approval policy' do
+          let(:policy_type) { 'approval_policy' }
+
+          it { expect(result[:status]).to eq(:success) }
+        end
+
+        context 'with feature disabled' do
+          before do
+            stub_feature_flags(
+              scan_execution_policy_action_limit: false,
+              scan_execution_policy_action_limit_group: false)
+          end
+
+          it { expect(result[:status]).to eq(:success) }
+        end
+      end
+    end
+
     shared_examples 'pipeline execution policy validation' do
       let(:policy_type) { 'pipeline_execution_policy' }
       let(:name) { 'New policy' }
@@ -597,6 +646,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if timezone is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
       it_behaves_like 'checks if cadence is valid'
+      it_behaves_like 'checks scan execution policy action limit'
     end
 
     context 'when project is provided' do
@@ -622,14 +672,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks policy type'
         it_behaves_like 'checks policy name'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :error
-            :scan_execution_policy | 'protected' | :error
-            :scan_execution_policy | 'default' | :error
-            :scan_result_policy | 'protected' | :error
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :error
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'default' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'default' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'default' | :error | ref(:error_message_non_existing)
           end
         end
 
@@ -651,6 +701,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if timezone is valid'
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
+        it_behaves_like 'checks scan execution policy action limit'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
           where(:policy_type, :branch_type, :status) do
             :scan_execution_policy | 'all' | :success
@@ -683,14 +734,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :success
-            :scan_execution_policy | 'protected' | :success
-            :scan_execution_policy | 'default' | :success
-            :scan_result_policy | 'protected' | :success
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :success
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :success | nil
+            :scan_execution_policy | 'protected' | :success | nil
+            :scan_execution_policy | 'default' | :success | nil
+            :scan_result_policy | 'protected' | :success | nil
+            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
+            :approval_policy | 'protected' | :success | nil
+            :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end
         end
 
@@ -707,14 +758,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks policy type'
         it_behaves_like 'checks policy name'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :success
-            :scan_execution_policy | 'protected' | :error
-            :scan_execution_policy | 'default' | :success
-            :scan_result_policy | 'protected' | :error
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :error
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :success | nil
+            :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'default' | :success | nil
+            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
+            :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end
 
           context 'with multiple rules' do
@@ -748,6 +799,7 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
       it_behaves_like 'checks if timezone is valid'
       it_behaves_like 'checks if cadence is valid'
       it_behaves_like 'checks if vulnerability_age is valid'
+      it_behaves_like 'checks scan execution policy action limit'
 
       it_behaves_like 'pipeline execution policy validation'
 

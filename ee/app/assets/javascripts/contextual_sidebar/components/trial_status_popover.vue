@@ -77,6 +77,11 @@ export default {
         planName: this.planName,
       });
     },
+    popoverContent() {
+      return sprintf(i18n.popoverContent, {
+        trialEndDate: this.formattedTrialEndDate,
+      });
+    },
     cssClasses() {
       const classList = ['gl-p-2'];
 
@@ -146,9 +151,9 @@ export default {
       </div>
     </template>
 
-    <gl-sprintf v-if="isTrialActive" :message="$options.i18n.popoverContent">
-      <template #bold="{ content }">
-        <b>{{ sprintf(content, { trialEndDate: formattedTrialEndDate }) }}</b>
+    <gl-sprintf v-if="isTrialActive" :message="popoverContent">
+      <template #strong="{ content }">
+        <strong>{{ content }}</strong>
       </template>
       <template #planName>{{ planNameWithoutTrial }}</template>
     </gl-sprintf>

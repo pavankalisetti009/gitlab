@@ -21,17 +21,6 @@ $subscriptions-full-width-lg: 541px;
     padding-top: 40px;
   }
 
-  .checkout-pane {
-    border-bottom: 1px solid $gray-100;
-    flex-grow: 1;
-    flex-shrink: 0;
-
-    @media(min-width: map-get($grid-breakpoints, lg)) {
-      border-bottom: 0;
-      border-right: 1px solid $border-color;
-    }
-  }
-
   .checkout-alert {
     width: 100%;
     max-width: $subscriptions-full-width-md;

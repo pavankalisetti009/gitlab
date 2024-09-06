@@ -3,7 +3,8 @@
 require 'spec_helper'
 require_relative './shared'
 
-RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILABLE)', feature_category: :remote_development do
+# TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILABLE) for deprecated remote_development_agent_config field', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 
@@ -11,7 +12,7 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILA
   let(:agent_config_id) { subject['id'] }
   let_it_be(:current_user) { user }
   let_it_be(:available_agent) do
-    create(:ee_cluster_agent, :in_group, :with_remote_development_agent_config).tap do |agent|
+    create(:ee_cluster_agent, :in_group, :with_existing_workspaces_agent_config).tap do |agent|
       agent.project.namespace.add_maintainer(user)
     end
   end

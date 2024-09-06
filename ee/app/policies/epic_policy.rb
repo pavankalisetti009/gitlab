@@ -46,10 +46,18 @@ class EpicPolicy < BasePolicy
   end
 
   condition(:relations_for_non_members_available, scope: :subject) do
-    ::Feature.enabled?(:epic_relations_for_non_members,  @subject.group)
+    ::Feature.enabled?(:epic_relations_for_non_members, @subject.group)
   end
 
   condition(:locked, scope: :subject, score: 0) { @subject.work_item.discussion_locked? }
+
+  condition(:can_resolve_discussion) do
+    can?(:resolve_note, @subject.work_item)
+  end
+
+  rule { can_resolve_discussion }.policy do
+    enable :resolve_note
+  end
 
   rule { can?(:read_epic) }.policy do
     enable :read_epic_iid

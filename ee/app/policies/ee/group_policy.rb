@@ -52,6 +52,11 @@ module EE
         @subject.feature_available?(:group_level_devops_adoption)
       end
 
+      condition(:group_credentials_inventory_available, scope: :subject) do
+        ::Gitlab::Saas.feature_available?(:group_credentials_inventory) &&
+          @subject.licensed_feature_available?(:credentials_inventory)
+      end
+
       condition(:group_devops_adoption_enabled, scope: :global) do
         ::License.feature_available?(:group_level_devops_adoption)
       end
@@ -334,7 +339,13 @@ module EE
       rule { (admin | reporter | auditor) & dora4_analytics_available }
         .enable :read_dora4_analytics
 
-      rule { admin | reporter }.enable :read_ai_analytics
+      condition(:ai_analytics_available) do
+        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
+
+        @user.assigned_to_duo_enterprise?(@subject)
+      end
+
+      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { reporter & group_repository_analytics_available }
         .enable :read_group_repository_analytics
@@ -636,9 +647,12 @@ module EE
       rule { admin | owner }.policy do
         enable :owner_access
         enable :read_billable_member
+        enable :admin_ci_minutes
+      end
+
+      rule { (admin | owner) & group_credentials_inventory_available }.policy do
         enable :read_group_credentials_inventory
         enable :admin_group_credentials_inventory
-        enable :admin_ci_minutes
       end
 
       rule { (admin | owner | auditor) & group_level_compliance_dashboard_enabled }.policy do

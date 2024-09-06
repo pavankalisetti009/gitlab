@@ -36,14 +36,15 @@ export default {
     defaultProjects() {
       return OPTIONS_NONE_ANY;
     },
-    fetchProjectsQuery() {
-      return this.config.fetchProjects ? this.config.fetchProjects : this.fetchProjectsBySearchTerm;
-    },
   },
   methods: {
-    fetchProjects(searchTerm) {
+    fetchProjects(search = '') {
       this.loading = true;
-      this.fetchProjectsQuery({ fullPath: this.config.fullPath, search: searchTerm })
+      return this.$apollo
+        .query({
+          query: getNamespaceProjects,
+          variables: { fullPath: this.config.fullPath, search },
+        })
         .then(({ data }) => {
           this.projects = data.group?.projects?.nodes || [];
         })
@@ -53,12 +54,6 @@ export default {
         .finally(() => {
           this.loading = false;
         });
-    },
-    fetchProjectsBySearchTerm({ fullPath, search }) {
-      return this.$apollo.query({
-        query: getNamespaceProjects,
-        variables: { fullPath, search },
-      });
     },
     getActiveProject(projects, data) {
       if (!data) {

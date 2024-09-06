@@ -7,6 +7,16 @@ module EE
         extend ActiveSupport::Concern
 
         prepended do
+          field :is_receptive,
+            GraphQL::Types::Boolean,
+            null: true,
+            description: 'Whether the cluster agent is receptive or not.'
+
+          field :url_configurations,
+            ::Types::Clusters::AgentUrlConfigurationType.connection_type,
+            null: true,
+            description: 'URL configurations for the cluster agent in case it is a receptive agent.'
+
           field :vulnerability_images,
             type: ::Types::Vulnerabilities::ContainerImageType.connection_type,
             null: true,
@@ -24,7 +34,19 @@ module EE
             extras: [:lookahead],
             null: true,
             description: 'Remote development agent config for the cluster agent.',
-            resolver: ::Resolvers::RemoteDevelopment::AgentConfigForAgentResolver
+            resolver: ::Resolvers::RemoteDevelopment::RemoteDevelopmentAgentConfigForAgentResolver,
+            deprecated: { reason: 'Use workspaces_agent_config field instead', milestone: '17.10' }
+
+          field :workspaces_agent_config,
+            ::Types::RemoteDevelopment::WorkspacesAgentConfigType,
+            extras: [:lookahead],
+            null: true,
+            description: 'Workspaces agent config for the cluster agent.',
+            resolver: ::Resolvers::RemoteDevelopment::WorkspacesAgentConfigForAgentResolver
+
+          def url_configurations
+            [object.agent_url_configuration]
+          end
         end
       end
     end

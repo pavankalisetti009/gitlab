@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- needed helpers for multiple cases
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integration", :freeze_time, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integration", :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   shared_examples 'max_hours_before_termination handling' do
@@ -27,11 +27,11 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integra
   end
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
-  let(:egress_ip_rules) { agent.remote_development_agent_config.network_policy_egress }
-  let(:max_resources_per_workspace) { agent.remote_development_agent_config.max_resources_per_workspace }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
+  let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
+  let(:max_resources_per_workspace) { agent.workspaces_agent_config.max_resources_per_workspace }
   let(:default_resources_per_workspace_container) do
-    agent.remote_development_agent_config.default_resources_per_workspace_container
+    agent.workspaces_agent_config.default_resources_per_workspace_container
   end
 
   let(:full_reconciliation_interval_seconds) { 3600 }

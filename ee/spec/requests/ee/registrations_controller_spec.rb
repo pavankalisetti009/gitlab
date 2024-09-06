@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RegistrationsController, type: :request, feature_category: :system_access do
+RSpec.describe RegistrationsController, :with_current_organization, type: :request, feature_category: :system_access do
   include SessionHelpers
 
   let_it_be(:user_attrs) do
@@ -380,9 +380,7 @@ RSpec.describe RegistrationsController, type: :request, feature_category: :syste
 
           expect(::Gitlab::AppLogger).to have_received(:info).with({
             message: 'Sign-up blocked',
-            reason: 'Banned user email reuse',
-            new_email: tumbled_email,
-            matched_email: normalized_email
+            reason: 'Banned user email reuse'
           })
         end
 

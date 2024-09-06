@@ -29,6 +29,8 @@ module EE
         allow_blank: true
       validates :cube_api_key, length: { maximum: 255 }, allow_blank: true
 
+      validates :observability_alerts_enabled, inclusion: { in: [true, false] }
+
       validate :all_or_none_product_analytics_attributes_set
 
       def all_or_none_product_analytics_attributes_set

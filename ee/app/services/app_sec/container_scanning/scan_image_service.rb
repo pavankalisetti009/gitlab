@@ -29,6 +29,8 @@ module AppSec
         result = service.execute(SOURCE, content: pipeline_config)
 
         track(user, project, result)
+
+        result
       end
 
       def pipeline_config
@@ -36,10 +38,14 @@ module AppSec
           include:
             - template: Security/Container-Scanning.gitlab-ci.yml
           container_scanning:
-            stage: test
             variables:
               REGISTRY_TRIGGERED: true
               CS_IMAGE: '#{image}'
+            artifacts:
+              reports:
+                container_scanning: []
+                cyclonedx: "**/gl-sbom-*.cdx.json"
+              paths: ["**/gl-sbom-*.cdx.json"]
         YAML
       end
 

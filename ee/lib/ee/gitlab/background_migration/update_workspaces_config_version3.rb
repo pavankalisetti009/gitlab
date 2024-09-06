@@ -18,7 +18,7 @@ module EE
             relation.where(config_version: VERSION_2)
                     .where.not(actual_state: STATE_TERMINATED)
           }
-          feature_category :remote_development
+          feature_category :workspaces
         end
 
         override :perform

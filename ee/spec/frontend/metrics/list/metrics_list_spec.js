@@ -13,6 +13,7 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
 import ObservabilityNoDataEmptyState from '~/observability/components/observability_no_data_empty_state.vue';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import { useFakeDate } from 'helpers/fake_date';
 import { mockMetrics } from './mock_data';
 
 jest.mock('~/alert');
@@ -70,12 +71,12 @@ describe('MetricsComponent', () => {
   });
 
   describe('initial metrics fetching', () => {
-    it('only renders the loading indicator while fetching metrics', () => {
+    it('renders the loading indicator and search bar while fetching metrics', () => {
       mountComponent();
 
       expect(findLoadingIcon().exists()).toBe(true);
+      expect(findFilteredSearch().exists()).toBe(true);
       expect(findInfiniteScrolling().exists()).toBe(false);
-      expect(findFilteredSearch().exists()).toBe(false);
       expect(findNoDataEmptyState().exists()).toBe(false);
 
       expect(observabilityClientMock.fetchMetrics).toHaveBeenCalledWith({
@@ -96,7 +97,7 @@ describe('MetricsComponent', () => {
         expect(findFilteredSearch().exists()).toBe(true);
       });
 
-      it('renders renders infinite scrolling list', () => {
+      it('renders infinite scrolling list', () => {
         expect(findInfiniteScrolling().exists()).toBe(true);
         expect(findInfiniteScrolling().props('fetchedItems')).toBe(mockResponse.metrics.length);
         expect(
@@ -130,7 +131,7 @@ describe('MetricsComponent', () => {
 
   describe('filtered search', () => {
     beforeEach(async () => {
-      setWindowLocation('?search=foo+bar&attribute[]=test.attr');
+      setWindowLocation('?search=foo+bar&attribute[]=test.attr&traceId[]=test-trace-id');
       await mountComponent();
     });
 
@@ -139,21 +140,31 @@ describe('MetricsComponent', () => {
         filterObjToFilterToken({
           search: [{ value: 'foo bar' }],
           attribute: [{ value: 'test.attr', operator: '=' }],
+          traceId: [{ value: 'test-trace-id', operator: '=' }],
         }),
       );
     });
 
-    it('renders FilteredSeach with Attribute tokens', () => {
-      const tokens = findFilteredSearch()
+    it('renders FilteredSeach with Attribute token', () => {
+      const token = findFilteredSearch()
         .props('tokens')
         .find(({ type }) => type === 'attribute');
 
-      expect(tokens).toBeDefined();
-      expect(tokens.options).toEqual([
+      expect(token).toBeDefined();
+      expect(token.options).toEqual([
         { title: 'attr-1', value: 'attr-1' },
         { title: 'attr-2', value: 'attr-2' },
         { title: 'attr-3', value: 'attr-3' },
       ]);
+    });
+
+    it('renders FilteredSeach with TraceId token', () => {
+      const token = findFilteredSearch()
+        .props('tokens')
+        .find(({ type }) => type === 'trace-id');
+
+      expect(token).toBeDefined();
+      expect(token.unique).toBe(true);
     });
 
     it('renders UrlSync and sets query prop', () => {
@@ -161,6 +172,8 @@ describe('MetricsComponent', () => {
         search: 'foo bar',
         attribute: ['test.attr'],
         'not[attribute]': null,
+        traceId: ['test-trace-id'],
+        'not[traceId]': null,
       });
     });
 
@@ -169,6 +182,7 @@ describe('MetricsComponent', () => {
         filters: {
           search: [{ value: 'foo bar' }],
           attribute: [{ value: 'test.attr', operator: '=' }],
+          traceId: [{ value: 'test-trace-id', operator: '=' }],
         },
         limit: 50,
       });
@@ -179,6 +193,7 @@ describe('MetricsComponent', () => {
         await setFilters({
           search: [{ value: 'search query' }],
           attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+          traceId: [{ value: 'updated-trace-id', operator: '=' }],
         });
       });
 
@@ -194,6 +209,8 @@ describe('MetricsComponent', () => {
           search: 'search query',
           attribute: ['updated.attr.filter'],
           'not[attribute]': null,
+          traceId: ['updated-trace-id'],
+          'not[traceId]': null,
         });
       });
 
@@ -202,6 +219,7 @@ describe('MetricsComponent', () => {
           filters: {
             search: [{ value: 'search query' }],
             attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+            traceId: [{ value: 'updated-trace-id', operator: '=' }],
           },
           limit: 50,
         });
@@ -212,6 +230,7 @@ describe('MetricsComponent', () => {
           filterObjToFilterToken({
             search: [{ value: 'search query' }],
             attribute: [{ value: 'updated.attr.filter', operator: '=' }],
+            traceId: [{ value: 'updated-trace-id', operator: '=' }],
           }),
         );
       });
@@ -269,6 +288,34 @@ describe('MetricsComponent', () => {
         metricId: 'unknown-metric',
       });
       expect(visitUrlMock).not.toHaveBeenCalled();
+    });
+
+    describe('when the selected metric has timestamp_of_datapoint_with_traceId', () => {
+      useFakeDate('2024-08-29 11:00:00');
+
+      beforeEach(async () => {
+        const mockTimestampOfDatapointNano = Date.now() * 1e6;
+        observabilityClientMock.fetchMetrics.mockResolvedValue({
+          metrics: [
+            {
+              ...mockMetrics[0],
+              timestamp_of_datapoint_with_traceId: mockTimestampOfDatapointNano,
+            },
+          ],
+          all_available_attributes: mockAvailableAttributes,
+        });
+
+        await mountComponent();
+
+        findMetricsTable().vm.$emit('metric-clicked', { metricId: mockMetrics[0].name });
+      });
+
+      it('redirects to the details url and sets the date range interval to be 1min around the datapoint', () => {
+        expect(visitUrlMock).toHaveBeenCalledWith(
+          `http://test.host/projectX/-/metrics/${mockMetricSelected.name}?type=${mockMetricSelected.type}&date_range=custom&date_start=2024-08-29T10%3A59%3A00.000Z&date_end=2024-08-29T11%3A01%3A00.000Z`,
+          false,
+        );
+      });
     });
   });
 });

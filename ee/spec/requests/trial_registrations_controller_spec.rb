@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboarding do
+RSpec.describe TrialRegistrationsController, :with_current_organization, :saas, feature_category: :onboarding do
   include FullNameHelper
 
   describe 'GET new' do
@@ -101,7 +101,7 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
 
       context 'with snowplow tracking', :snowplow do
         it 'tracks successful form submission' do
-          post_create
+          expect_successful_post_create
 
           expect_snowplow_event(
             category: described_class.name,
@@ -118,14 +118,13 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
             allow(User).to receive(:allow_unconfirmed_access_for).and_return 0
           end
 
-          context 'when email confirmation settings is set to `soft`',
-            quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/436592' do
+          context 'when email confirmation settings is set to `soft`' do
             before do
               stub_application_setting_enum('email_confirmation_setting', 'soft')
             end
 
             it 'does not track an almost there redirect' do
-              post_create
+              expect_successful_post_create
 
               expect_no_snowplow_event(
                 category: described_class.name,
@@ -141,7 +140,7 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
             end
 
             it 'tracks an almost there redirect' do
-              post_create
+              expect_successful_post_create
 
               expect_snowplow_event(
                 category: described_class.name,
@@ -155,7 +154,7 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
 
       context 'for derivation of name' do
         it 'sets name from first and last name' do
-          post_create
+          expect_successful_post_create
 
           created_user = User.find_by_email(user_params[:email])
           expect(created_user.name).to eq full_name(user_params[:first_name], user_params[:last_name])
@@ -168,7 +167,7 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
         end
 
         it 'marks the account as unconfirmed' do
-          post_create
+          expect_successful_post_create
 
           created_user = User.find_by_email(user_params[:email])
           expect(created_user).not_to be_confirmed
@@ -197,5 +196,9 @@ RSpec.describe TrialRegistrationsController, :saas, feature_category: :onboardin
         end
       end
     end
+  end
+
+  def expect_successful_post_create
+    expect { post_create }.to change { User.count }.by(1)
   end
 end

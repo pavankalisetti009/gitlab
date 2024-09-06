@@ -33,7 +33,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
 
       submit_duo_pro_trial_company_form
 
-      expect_to_be_on_namespace_selection
+      expect_to_be_on_duo_pro_namespace_selection
 
       fill_in_trial_selection_form
 
@@ -52,7 +52,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
 
         submit_duo_pro_trial_company_form
 
-        expect_to_be_on_namespace_selection
+        expect_to_be_on_duo_pro_namespace_selection
 
         fill_in_trial_selection_form(from: group.name)
 
@@ -80,7 +80,7 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
       # success
       submit_duo_pro_trial_company_form
 
-      expect_to_be_on_namespace_selection
+      expect_to_be_on_duo_pro_namespace_selection
 
       fill_in_trial_selection_form
 
@@ -101,14 +101,14 @@ RSpec.describe 'Duo Pro trial lead submission and creation with multiple eligibl
 
       submit_duo_pro_trial_company_form
 
-      expect_to_be_on_namespace_selection
+      expect_to_be_on_duo_pro_namespace_selection
 
       fill_in_trial_selection_form
 
       # trial failure
       submit_duo_pro_trial_selection_form(result: trial_failure)
 
-      expect_to_be_on_namespace_selection_with_errors
+      expect_to_be_on_duo_pro_namespace_selection_with_errors
 
       # success
       fill_in_trial_selection_form(from: group.name)

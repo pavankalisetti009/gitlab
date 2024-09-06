@@ -228,14 +228,10 @@ module Security
 
         finder_params[:related_pipeline_ids] = pipeline_ids if pipeline_ids.present?
 
-        ::Gitlab::Database.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478419'
-        ) do
-          Security::ScanResultPolicies::FindingsFinder
-            .new(project, pipeline, finder_params)
-            .execute
-            .distinct_uuids
-        end
+        Security::ScanResultPolicies::FindingsFinder
+          .new(project, pipeline, finder_params)
+          .execute
+          .distinct_uuids
       end
 
       def vulnerabilities_count_for_uuids(uuids, approval_rule)

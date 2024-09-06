@@ -1,17 +1,11 @@
 <script>
-import {
-  GlCard,
-  GlButton,
-  GlIcon,
-  GlLoadingIcon,
-  GlSkeletonLoader,
-  GlCollapse,
-  GlExperimentBadge,
-} from '@gitlab/ui';
+import { GlCard, GlButton, GlIcon, GlLoadingIcon, GlCollapse, GlExperimentBadge } from '@gitlab/ui';
 import { fetchPolicies } from '~/lib/graphql';
 import { __, s__ } from '~/locale';
 import getCloudConnectorHealthStatus from 'ee/usage_quotas/add_on/graphql/cloud_connector_health_check.query.graphql';
 import { probesByCategory } from '../utils';
+import HealthCheckListCategory from './health_check_list_category.vue';
+import HealthCheckListLoader from './health_check_list_loader.vue';
 
 export default {
   name: 'HealthCheckList',
@@ -20,9 +14,10 @@ export default {
     GlButton,
     GlIcon,
     GlLoadingIcon,
-    GlSkeletonLoader,
+    HealthCheckListLoader,
     GlCollapse,
     GlExperimentBadge,
+    HealthCheckListCategory,
   },
   data() {
     return {
@@ -83,14 +78,6 @@ export default {
     this.runHealthCheck();
   },
   methods: {
-    getCSSForProbe(probe) {
-      return probe.success ? 'gl-text-green-900 gl-bg-green-50' : 'gl-text-red-900 gl-bg-red-50';
-    },
-    getIconForProbe(probe) {
-      return probe.success
-        ? { name: 'check-circle', variant: 'success' }
-        : { name: 'error', variant: 'danger' };
-    },
     toggleExpanded() {
       this.expanded = !this.expanded;
     },
@@ -172,60 +159,13 @@ export default {
       </div>
       <gl-collapse :visible="expanded" class="border-gray-100 gl-border-t">
         <div class="gl-p-5">
-          <div v-if="isLoading">
-            <gl-skeleton-loader :width="1248" :height="360">
-              <rect x="8" y="0" width="300" height="40" rx="4" />
-
-              <rect x="8" y="56" width="20" height="20" rx="16" />
-              <rect x="40" y="58" width="300" height="16" rx="4" />
-              <rect x="350" y="58" width="300" height="16" rx="4" />
-              <rect x="8" y="94" width="20" height="20" rx="16" />
-              <rect x="40" y="96" width="200" height="16" rx="4" />
-
-              <rect x="8" y="140" width="350" height="40" rx="4" />
-
-              <rect x="8" y="196" width="20" height="20" rx="16" />
-              <rect x="40" y="198" width="450" height="16" rx="4" />
-              <rect x="8" y="234" width="20" height="20" rx="16" />
-              <rect x="40" y="236" width="360" height="16" rx="4" />
-
-              <rect x="8" y="280" width="200" height="40" rx="4" />
-
-              <rect x="8" y="336" width="20" height="20" rx="16" />
-              <rect x="40" y="338" width="260" height="16" rx="4" />
-            </gl-skeleton-loader>
-          </div>
-
-          <div v-else class="gl-font-monospace" data-testid="health-check-probes">
-            <article
+          <health-check-list-loader v-if="isLoading" />
+          <div v-else class="gl-font-monospace" data-testid="health-check-results">
+            <health-check-list-category
               v-for="category in probesByCategory"
               :key="category.title"
-              data-testid="health-check-probe-category"
-            >
-              <header
-                class="gl-mb-2 gl-font-bold gl-text-gray-700"
-                data-testid="health-check-probe-category-title"
-              >
-                {{ category.title }}
-              </header>
-              <p
-                class="gl-mb-0 gl-text-gray-700"
-                data-testid="health-check-probe-category-description"
-              >
-                {{ category.description }}
-              </p>
-
-              <div
-                v-for="(probe, index) in category.probes"
-                :key="index"
-                class="gl-my-3 gl-rounded-small gl-px-3 gl-py-2"
-                :class="getCSSForProbe(probe)"
-                data-testid="health-check-probe"
-              >
-                <gl-icon v-bind="getIconForProbe(probe)" />
-                {{ probe.message }}
-              </div>
-            </article>
+              :category="category"
+            />
           </div>
         </div>
       </gl-collapse>

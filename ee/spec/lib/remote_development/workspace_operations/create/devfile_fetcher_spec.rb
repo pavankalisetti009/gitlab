@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher, feature_category: :workspaces do
   include ResultMatchers
 
   include_context 'with remote development shared fixtures'
@@ -13,7 +13,7 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
 
   let_it_be(:user) { create(:user) }
   let_it_be(:project) { create(:project, :in_group, :repository) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let(:random_string) { 'abcdef' }
   let(:devfile_ref) { 'main' }
   let(:devfile_path) { '.devfile.yaml' }
@@ -60,12 +60,12 @@ RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::DevfileFetcher,
 
       it 'returns an err Result containing error details' do
         # sanity check on fixture
-        expect(agent.remote_development_agent_config).to be_nil
+        expect(agent.workspaces_agent_config).to be_nil
 
         expect(result).to be_err_result do |message|
           expect(message).to be_a(RemoteDevelopment::Messages::WorkspaceCreateParamsValidationFailed)
           message.content => { details: String => error_details }
-          expect(error_details).to eq("No RemoteDevelopmentAgentConfig found for agent '#{agent.name}'")
+          expect(error_details).to eq("No WorkspacesAgentConfig found for agent '#{agent.name}'")
         end
       end
     end

@@ -11,6 +11,62 @@ RSpec.describe Projects::ProtectedBranchesController, feature_category: :source_
     project.add_maintainer(user)
   end
 
+  context 'when using custom roles' do
+    let_it_be(:group) { create(:group) }
+    let_it_be(:project) { create(:project, :repository, group: group) }
+    let(:base_params) { project_params.merge(id: protected_branch.id) }
+
+    let_it_be(:protected_branch) { create(:protected_branch, project: project) }
+    let_it_be(:another_user) { create(:user) }
+
+    let(:maintainer_access_level) { [{ access_level: Gitlab::Access::MAINTAINER }] }
+    let(:access_level_params) do
+      { merge_access_levels_attributes: maintainer_access_level,
+        push_access_levels_attributes: maintainer_access_level }
+    end
+
+    let(:create_params) do
+      attributes_for(:protected_branch).merge(access_level_params)
+    end
+
+    let(:update_params) { { name: 'new_name' } }
+
+    before do
+      sign_in(another_user)
+    end
+
+    context 'when a user has custom roles with `admin_protected_branch` assigned' do
+      let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
+      let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: another_user, group: group) }
+
+      context 'when custom_roles feature is available' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        describe "POST #create" do
+          subject(:create_request) { post(:create, params: project_params.merge(protected_branch: create_params)) }
+
+          it 'creates a protected branch' do
+            expect { create_request }.to change { ProtectedBranch.count }.by(1)
+
+            expect(response).to have_gitlab_http_status(:found)
+          end
+        end
+
+        describe "PUT #update" do
+          subject(:update_request) { put(:update, params: base_params.merge(protected_branch: update_params)) }
+
+          it 'creates a protected branch' do
+            expect { update_request }.to change { protected_branch.reload.name }
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
+      end
+    end
+  end
+
   describe "POST #create" do
     shared_examples "protected branch with code owner approvals feature" do |boolean|
       it "sets code owner approvals to #{boolean} when protecting the branch" do

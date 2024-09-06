@@ -36,18 +36,6 @@ RSpec.describe Dependencies::ExportWorker, type: :worker, feature_category: :dep
 
         expect(Dependencies::Export::SegmentCreatorService).to have_received(:execute).with(dependency_list_export)
       end
-
-      context 'when the `use_segmented_dependency_list_export` FF is disabled' do
-        before do
-          stub_feature_flags(use_segmented_dependency_list_export: false)
-        end
-
-        it 'delegates the execution to `Dependencies::ExportService`' do
-          export
-
-          expect(Dependencies::ExportService).to have_received(:execute).with(dependency_list_export)
-        end
-      end
     end
   end
 

@@ -53,4 +53,18 @@ RSpec.describe Vulnerabilities::ExternalIssueLink, feature_category: :vulnerabil
       expect(described_class.created_for_vulnerability(external_links.first.vulnerability).take).to eq(external_links.first)
     end
   end
+
+  context 'with loose foreign key on vulnerabilities_external_issue_links.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:vulnerabilities_external_issue_link, project_id: parent.id) }
+    end
+  end
+
+  context 'with loose foreign key on vulnerabilities_external_issue_links.author_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:user) }
+      let_it_be(:model) { create(:vulnerabilities_external_issue_link, author_id: parent.id) }
+    end
+  end
 end

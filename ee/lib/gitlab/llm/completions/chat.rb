@@ -82,9 +82,7 @@ module Gitlab
 
           response_handler.execute(response: response_modifier)
 
-          # This is temporarily commented out due to the following production issue:
-          # https://gitlab.com/gitlab-com/gl-infra/production/-/issues/18191
-          # response_post_processing
+          response_post_processing
           response_modifier
         end
         traceable :execute, name: 'Run Duo Chat'
@@ -120,6 +118,8 @@ module Gitlab
           if response_options[:client_subscription_id]
             stream_response_handler = ::Gitlab::Llm::ResponseService.new(context, response_options)
           end
+
+          Gitlab::AiGateway.push_feature_flag(:ai_commit_reader_for_chat, user)
 
           return execute_with_slash_command_tool(stream_response_handler) if slash_command
 

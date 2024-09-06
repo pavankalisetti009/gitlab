@@ -180,6 +180,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     workItemTypes: {
       query: namespaceWorkItemTypesQuery,
       variables() {
@@ -483,7 +484,7 @@ export default {
           @action="handleDelete"
         >
           <template #list-item>
-            <span class="gl-font-bold gl-text-danger">{{ i18n.deleteWorkItem }}</span>
+            <span class="gl-text-danger">{{ i18n.deleteWorkItem }}</span>
           </template>
         </gl-disclosure-dropdown-item>
       </template>

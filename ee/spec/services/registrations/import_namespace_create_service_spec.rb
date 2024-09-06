@@ -7,9 +7,9 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
 
   describe '#execute' do
     let_it_be(:user, reload: true) { create(:user) }
-    let_it_be(:group) { create(:group) }
+    let_it_be(:group) { create(:group, owners: user) }
     let_it_be(:organization) { create(:organization) }
-    let(:extra_params) { {} }
+    let(:glm_params) { {} }
     let(:group_params) do
       {
         name: 'Group name',
@@ -19,16 +19,11 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
       }
     end
 
-    let(:params) do
-      ActionController::Parameters.new({ group: group_params, import_url: '_import_url_' }.merge(extra_params))
-    end
-
     before_all do
-      group.add_owner(user)
       organization.users << user
     end
 
-    subject(:execute) { described_class.new(user, params).execute }
+    subject(:execute) { described_class.new(user, glm_params: glm_params, group_params: group_params).execute }
 
     context 'when group can be created' do
       it 'creates a group' do
@@ -37,13 +32,9 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
         end.to change { Group.count }.by(1).and change { ::Onboarding::Progress.count }.by(1)
       end
 
-      it 'passes setup_for_company to the Groups::CreateService' do
-        added_params = { setup_for_company: nil }
-
-        expect(Groups::CreateService).to receive(:new)
-                                           .with(user, ActionController::Parameters
-                                                         .new(group_params.merge(added_params)).permit!)
-                                           .and_call_original
+      it 'passes group_params with setup_for_company to the Groups::CreateService' do
+        expect(Groups::CreateService)
+          .to receive(:new).with(user, group_params.merge(setup_for_company: user.setup_for_company)).and_call_original
 
         expect(execute).to be_success
       end
@@ -102,21 +93,19 @@ RSpec.describe Registrations::ImportNamespaceCreateService, :aggregate_failures,
     end
 
     context 'with applying for a trial' do
-      let(:extra_params) do
+      let(:glm_params) do
         { glm_source: 'about.gitlab.com', glm_content: 'content' }
       end
 
       let(:trial_user_information) do
-        ActionController::Parameters.new(
-          {
-            glm_source: 'about.gitlab.com',
-            glm_content: 'content',
-            namespace_id: group.id,
-            gitlab_com_trial: true,
-            sync_to_gl: true,
-            namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on)
-          }
-        )
+        {
+          glm_source: 'about.gitlab.com',
+          glm_content: 'content',
+          namespace_id: group.id,
+          gitlab_com_trial: true,
+          sync_to_gl: true,
+          namespace: group.slice(:id, :name, :path, :kind, :trial_ends_on)
+        }
       end
 
       before do

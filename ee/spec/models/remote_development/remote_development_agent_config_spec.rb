@@ -2,8 +2,12 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category: :remote_development do
-  let_it_be_with_reload(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+# TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category: :workspaces do
+  let_it_be_with_reload(:agent) do
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config)
+  end
+
   let(:default_default_resources_per_workspace_container) { {} }
   let(:default_max_resources_per_workspace) { {} }
   let(:default_network_policy_egress) do
@@ -22,7 +26,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category
   let(:default_max_hours_before_termination_default_value) { 24 }
   let(:max_hours_before_termination_limit_default_value) { 120 }
 
-  subject(:config) { agent.remote_development_agent_config }
+  subject(:config) { agent.workspaces_agent_config }
 
   describe 'associations' do
     it { is_expected.to belong_to(:agent) }
@@ -34,14 +38,14 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category
 
       it 'has correct associations from factory' do
         expect(config.reload.workspaces).to contain_exactly(workspace_1, workspace_2)
-        expect(workspace_1.remote_development_agent_config).to eq(config)
+        expect(workspace_1.remote_development_agent_config).to eq(agent.remote_development_agent_config)
       end
     end
   end
 
   describe 'validations' do
     context 'when config has an invalid dns_zone' do
-      subject(:config) { build(:remote_development_agent_config, dns_zone: "invalid dns zone") }
+      subject(:config) { build(:workspaces_agent_config, dns_zone: "invalid dns zone") }
 
       it 'prevents config from being created' do
         expect { config.save! }.to raise_error(
@@ -117,16 +121,16 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfig, feature_category
     it 'allows numerical values for max_hours_before_termination_limit greater or equal to' \
       'default_max_hours_before_termination and less than or equal to 8760' do
       is_expected.to validate_numericality_of(:max_hours_before_termination_limit)
-        .only_integer
-        .is_less_than_or_equal_to(8760)
-        .is_greater_than_or_equal_to(default_max_hours_before_termination_default_value)
+                       .only_integer
+                       .is_less_than_or_equal_to(8760)
+                       .is_greater_than_or_equal_to(default_max_hours_before_termination_default_value)
     end
 
     it 'allows numerical values for default_max_hours_before_termination greater or equal to 1' \
       'and less than or equal to max_hours_before_termination_limit' do
       is_expected.to validate_numericality_of(:default_max_hours_before_termination)
-        .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
-        .is_greater_than_or_equal_to(1)
+                       .only_integer.is_less_than_or_equal_to(max_hours_before_termination_limit_default_value)
+                       .is_greater_than_or_equal_to(1)
     end
   end
 end

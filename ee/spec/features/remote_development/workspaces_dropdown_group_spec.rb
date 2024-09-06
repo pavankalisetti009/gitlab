@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, feature_category: :remote_development do
+RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
   include_context 'file upload requests helpers'
 
@@ -17,7 +17,7 @@ RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, featur
   end
 
   let_it_be(:agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
   end
 
   let_it_be(:agent_token) { create(:cluster_agent_token, agent: agent, created_by_user: user) }

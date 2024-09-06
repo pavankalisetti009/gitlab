@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_migration!
 
-RSpec.describe QueueBackfillWorkspacePersonalAccessToken, feature_category: :remote_development do
+RSpec.describe QueueBackfillWorkspacePersonalAccessToken, feature_category: :workspaces do
   let!(:batched_migration) { described_class::MIGRATION }
 
   it 'schedules a new batched migration' do

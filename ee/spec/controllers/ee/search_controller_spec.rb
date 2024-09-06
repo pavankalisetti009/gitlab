@@ -318,11 +318,11 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
   end
 
   describe '#append_info_to_payload' do
-    let(:use_elasticsearch) { true }
+    let(:search_type) { 'advanced' }
 
     before do
       allow_next_instance_of(SearchService) do |service|
-        allow(service).to receive(:use_elasticsearch?).and_return use_elasticsearch
+        allow(service).to receive(:search_type).and_return search_type
       end
     end
 
@@ -357,7 +357,7 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
         expect(controller).to receive(:append_info_to_payload).and_wrap_original do |method, payload|
           method.call(payload)
 
-          expect(payload[:metadata]['meta.search.type']).to eq('advanced')
+          expect(payload[:metadata]['meta.search.type']).to eq(search_type)
         end
 
         get :show, params: { search: 'hello world' }
@@ -365,16 +365,16 @@ RSpec.describe SearchController, :elastic, feature_category: :global_search do
     end
 
     context 'when using basic search' do
-      let(:use_elasticsearch) { false }
+      let(:search_type) { 'basic' }
 
       it 'appends the type of search used as basic' do
         expect(controller).to receive(:append_info_to_payload).and_wrap_original do |method, payload|
           method.call(payload)
 
-          expect(payload[:metadata]['meta.search.type']).to eq('basic')
+          expect(payload[:metadata]['meta.search.type']).to eq(search_type)
         end
 
-        get :show, params: { search: 'hello world', basic_search: true }
+        get :show, params: { search: 'hello world', search_type: search_type }
       end
     end
   end

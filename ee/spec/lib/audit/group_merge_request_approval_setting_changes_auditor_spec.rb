@@ -27,12 +27,12 @@ RSpec.describe Audit::GroupMergeRequestApprovalSettingChangesAuditor, feature_ca
 
       expect(events.sort)
         .to match_array ["Changed prevent merge request approval from committers from false to true",
-                         "Changed prevent users from modifying MR approval rules in merge requests "\
-                           "from false to true",
-                         "Changed prevent merge request approval from authors from false to true",
-                         "Changed require new approvals when new commits are added to an MR from false to true",
-                         "Changed require user authentication for approvals from false to true",
-                         "Changed require user password for approvals from false to true"].sort
+          "Changed prevent users from modifying MR approval rules in merge requests "\
+            "from false to true",
+          "Changed prevent merge request approval from authors from false to true",
+          "Changed require new approvals when new commits are added to an MR from false to true",
+          "Changed require user authentication for approvals from false to true",
+          "Changed require user password for approvals from false to true"].sort
     end
   end
 

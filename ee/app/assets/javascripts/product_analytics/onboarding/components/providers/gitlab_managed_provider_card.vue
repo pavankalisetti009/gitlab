@@ -2,7 +2,7 @@
 import { GlButton, GlFormCheckbox, GlSprintf } from '@gitlab/ui';
 import CloudTanukiIllustrationPath from '@gitlab/svgs/dist/illustrations/cloud-tanuki-sm.svg';
 
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { s__ } from '~/locale';
 
 import ClearProjectSettingsModal from './clear_project_settings_modal.vue';

@@ -12,6 +12,10 @@ module EE
           before_action :ensure_security_dashboard_feature_enabled!, except: [:show]
           before_action :authorize_read_security_dashboard!, except: [:show]
 
+          before_action only: [:show] do
+            push_frontend_feature_flag(:secret_detection_project_level_exclusions, project)
+          end
+
           feature_category :static_application_security_testing, [:show]
 
           urgency :low, [:show]

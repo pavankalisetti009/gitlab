@@ -43,6 +43,11 @@ describe('IntegrationSectionGoogleCloudIAM', () => {
       createComponent();
 
       expect(findManualSetup().exists()).toBe(true);
+      expect(findSetupScript().props()).toMatchObject({
+        googleProjectId: '<your_google_cloud_project_id>',
+        identityPoolId: '<your_identity_pool_id>',
+        identityProviderId: '<your_identity_provider_id>',
+      });
     });
   });
 
@@ -118,21 +123,34 @@ describe('IntegrationSectionGoogleCloudIAM', () => {
     expect(findSetupScript().props('suggestedDisplayName')).toBe('GitLab group ID 111');
   });
 
-  it('updates SetupScript component when form fields updated', async () => {
-    createComponent({
-      fields: [
-        { name: 'workload_identity_federation_project_id', value: 'my-sample-project' },
-        { name: 'workload_identity_pool_id', value: 'abc123' },
-      ],
-    });
+  it.each`
+    field                                        | value                         | prop
+    ${'workload_identity_federation_project_id'} | ${'updated-project-id'}       | ${'googleProjectId'}
+    ${'workload_identity_pool_id'}               | ${'updated-pool-id'}          | ${'identityPoolId'}
+    ${'workload_identity_pool_provider_id'}      | ${'updated-pool-provider-id'} | ${'identityProviderId'}
+  `(
+    'updates $prop prop in SetupScript component when form field $field is updated',
+    async ({ field, value, prop }) => {
+      createComponent({
+        fields: [
+          { name: 'workload_identity_federation_project_id', value: 'my-sample-project' },
+          { name: 'workload_identity_pool_id', value: 'my-pool-id' },
+          { name: 'workload_identity_pool_provider_id', value: 'my-pool-provider-id' },
+        ],
+      });
 
-    expect(findSetupScript().props('googleProjectId')).toBe('my-sample-project');
+      expect(findSetupScript().props()).toMatchObject({
+        googleProjectId: 'my-sample-project',
+        identityPoolId: 'my-pool-id',
+        identityProviderId: 'my-pool-provider-id',
+      });
 
-    await findGcIamForm().vm.$emit('update', {
-      field: { name: 'workload_identity_federation_project_id' },
-      value: 'updated-project-id',
-    });
+      await findGcIamForm().vm.$emit('update', {
+        field: { name: field },
+        value,
+      });
 
-    expect(findSetupScript().props('googleProjectId')).toBe('updated-project-id');
-  });
+      expect(findSetupScript().props(prop)).toBe(value);
+    },
+  );
 });

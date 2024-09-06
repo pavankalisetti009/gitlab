@@ -108,6 +108,10 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
     end
 
     context 'with branch rules details for a custom rule' do
+      let!(:external_status_check) do
+        create(:external_status_check, project: project, protected_branches: [branch_rule])
+      end
+
       before do
         visit project_settings_repository_branch_rules_path(project, params: { branch: branch_rule.name })
         wait_for_requests
@@ -130,6 +134,44 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
           within_testid('crud-body') do
             expect(page).to have_content('QA')
             expect(page).to have_content('https://example.com')
+          end
+        end
+      end
+
+      it 'can update status check' do
+        within_testid('status-checks-table') do
+          click_button "Edit #{external_status_check.name}"
+        end
+
+        within_testid('status-checks-drawer') do
+          fill_in 'Service name', with: 'QA'
+          fill_in 'API to check', with: 'https://example2.com'
+          click_button('Save changes')
+        end
+
+        wait_for_requests
+
+        within_testid('status-checks-table') do
+          within_testid('crud-body') do
+            expect(page).to have_content('QA')
+            expect(page).to have_content('https://example2.com')
+          end
+        end
+      end
+
+      it 'can delete status check' do
+        within_testid('status-checks-table') do
+          click_button "Delete"
+        end
+
+        click_button "Delete status check"
+
+        wait_for_requests
+
+        within_testid('status-checks-table') do
+          within_testid('crud-body') do
+            expect(page).not_to have_content(external_status_check.name)
+            expect(page).not_to have_content(external_status_check.external_url)
           end
         end
       end

@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative '../shared'
 
-RSpec.describe 'Query.workspace(id: RemoteDevelopmentWorkspaceID!)', feature_category: :remote_development do
+RSpec.describe 'Query.workspace(id: RemoteDevelopmentWorkspaceID!)', feature_category: :workspaces do
   include GraphqlHelpers
 
   # NOTE: Even though this single-workspace spec only has one field scenario to test, we still use the same

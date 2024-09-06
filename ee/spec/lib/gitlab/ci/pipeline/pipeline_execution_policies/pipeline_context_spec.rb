@@ -25,13 +25,13 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#has_pipeline_execution_policies?' do
-    subject { context.has_pipeline_execution_policies? }
+  describe '#has_execution_policy_pipelines?' do
+    subject { context.has_execution_policy_pipelines? }
 
     it { is_expected.to eq(false) }
 
-    context 'with pipeline_execution_policies' do
-      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+    context 'with execution_policy_pipelines' do
+      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
       it { is_expected.to eq(true) }
     end
@@ -43,20 +43,18 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
     end
   end
 
-  describe '#has_overriding_pipeline_execution_policies?' do
-    subject { context.has_overriding_pipeline_execution_policies? }
+  describe '#has_overriding_execution_policy_pipelines?' do
+    subject { context.has_overriding_execution_policy_pipelines? }
 
     it { is_expected.to eq(false) }
 
-    context 'with pipeline_execution_policies' do
-      let(:pipeline_execution_policies) { build_list(:ci_pipeline_execution_policy, 2) }
+    context 'with execution_policy_pipelines' do
+      let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2) }
 
       it { is_expected.to eq(false) }
 
-      context 'and overriding pipeline_execution_policies' do
-        let(:pipeline_execution_policies) do
-          build_list(:ci_pipeline_execution_policy, 2, strategy: :override_project_ci)
-        end
+      context 'and overriding execution_policy_pipelines' do
+        let(:execution_policy_pipelines) { build_list(:pipeline_execution_policy_pipeline, 2, :override_project_ci) }
 
         it { is_expected.to eq(true) }
       end
@@ -74,8 +72,8 @@ RSpec.describe Gitlab::Ci::Pipeline::PipelineExecutionPolicies::PipelineContext,
       it { is_expected.to eq(true) }
     end
 
-    context 'with pipeline_execution_policies' do
-      let(:pipeline_execution_policies) { build_list(:ci_empty_pipeline, 2) }
+    context 'with execution_policy_pipelines' do
+      let(:execution_policy_pipelines) { build_list(:ci_empty_pipeline, 2) }
 
       it { is_expected.to eq(true) }
     end

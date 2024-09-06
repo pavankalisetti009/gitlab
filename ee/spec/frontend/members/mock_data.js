@@ -12,13 +12,6 @@ export const bannedMember = {
 
 export const customRoles = [
   {
-    baseAccessLevel: 20,
-    name: 'custom role 3',
-    memberRoleId: 103,
-    description: 'custom role 3 description',
-    permissions: [{ name: 'Permission 4', description: 'Permission description 4' }],
-  },
-  {
     baseAccessLevel: 10,
     name: 'custom role 1',
     description: 'custom role 1 description',
@@ -29,9 +22,9 @@ export const customRoles = [
     ],
   },
   {
-    baseAccessLevel: 10,
+    baseAccessLevel: 20,
     name: 'custom role 2',
-    description: 'custom role 2 description',
+    description: null,
     memberRoleId: 102,
     permissions: [
       { name: 'Permission 2', description: 'Permission description 2' },

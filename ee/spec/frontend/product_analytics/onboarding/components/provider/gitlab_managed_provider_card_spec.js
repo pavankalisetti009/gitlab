@@ -2,7 +2,7 @@ import { nextTick } from 'vue';
 
 import { GlSprintf } from '@gitlab/ui';
 
-import { PROMO_URL } from '~/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import waitForPromises from 'helpers/wait_for_promises';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 

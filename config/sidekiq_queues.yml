@@ -43,6 +43,12 @@
   - 1
 - - analytics_usage_trends_counter_job
   - 1
+- - anti_abuse_new_abuse_report
+  - 1
+- - anti_abuse_spam_abuse_events
+  - 1
+- - anti_abuse_trust_score
+  - 1
 - - anti_abuse_trust_score_cleanup
   - 1
 - - app_sec_container_scanning_scan_image
@@ -405,6 +411,10 @@
   - 1
 - - groups_update_two_factor_requirement_for_members
   - 1
+- - import_bulk_imports_source_users_attributes
+  - 1
+- - import_delete_placeholder_user
+  - 1
 - - import_issues_csv
   - 2
 - - import_load_placeholder_references
@@ -475,8 +485,6 @@
   - 2
 - - mailers
   - 2
-- - members_destroy
-  - 1
 - - members_destroyer_clean_up_group_protected_branch_rules
   - 1
 - - members_expiring_email_notification
@@ -830,6 +838,8 @@
 - - update_project_statistics
   - 1
 - - upload_checksum
+  - 1
+- - users_experimental_communication_opt_in
   - 1
 - - users_record_last_activity
   - 1

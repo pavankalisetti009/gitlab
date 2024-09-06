@@ -8,8 +8,16 @@ import CrudComponent from '~/vue_shared/components/crud_component.vue';
 
 import workItemLinkedItemsQuery from '../../graphql/work_item_linked_items.query.graphql';
 import removeLinkedItemsMutation from '../../graphql/remove_linked_items.mutation.graphql';
-import { findLinkedItemsWidget } from '../../utils';
-import { LINKED_CATEGORIES_MAP, LINKED_ITEMS_ANCHOR } from '../../constants';
+import {
+  findLinkedItemsWidget,
+  saveShowLabelsToLocalStorage,
+  getShowLabelsFromLocalStorage,
+} from '../../utils';
+import {
+  LINKED_CATEGORIES_MAP,
+  LINKED_ITEMS_ANCHOR,
+  WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
+} from '../../constants';
 
 import WorkItemMoreActions from '../shared/work_item_more_actions.vue';
 import WorkItemRelationshipList from './work_item_relationship_list.vue';
@@ -27,6 +35,11 @@ export default {
     WorkItemMoreActions,
   },
   props: {
+    isGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     workItemId: {
       type: String,
       required: false,
@@ -97,8 +110,10 @@ export default {
       linksIsBlockedBy: [],
       linksBlocks: [],
       widgetName: LINKED_ITEMS_ANCHOR,
+      defaultShowLabels: true,
       showLabels: true,
       linkedWorkItems: [],
+      showLabelsLocalStorageKey: WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY,
     };
   },
   computed: {
@@ -115,12 +130,22 @@ export default {
       return !this.error && this.linkedWorkItems.length === 0;
     },
   },
+  mounted() {
+    this.showLabels = getShowLabelsFromLocalStorage(
+      this.showLabelsLocalStorageKey,
+      this.defaultShowLabels,
+    );
+  },
   methods: {
     showLinkItemForm() {
       this.$refs.widget.showForm();
     },
     hideLinkItemForm() {
       this.$refs.widget.hideForm();
+    },
+    toggleShowLabels() {
+      this.showLabels = !this.showLabels;
+      saveShowLabelsToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
     },
     async removeLinkedItem(linkedItem) {
       try {
@@ -200,7 +225,7 @@ export default {
     :anchor-id="widgetName"
     :title="$options.i18n.title"
     :count="linkedWorkItemsCount"
-    icon="issues"
+    icon="link"
     :is-loading="isLoading"
     is-collapsible
     data-testid="work-item-relationships"
@@ -210,7 +235,6 @@ export default {
         v-if="canAdminWorkItemLink"
         data-testid="link-item-add-button"
         size="small"
-        class="gl-mr-3"
         @click="showLinkItemForm"
       >
         <slot name="add-button-text">{{ $options.i18n.addLinkedWorkItemButtonLabel }}</slot>
@@ -221,12 +245,13 @@ export default {
         :work-item-type="workItemType"
         :show-labels="showLabels"
         :show-view-roadmap-action="false"
-        @toggle-show-labels="showLabels = !showLabels"
+        @toggle-show-labels="toggleShowLabels"
       />
     </template>
 
     <template #form>
       <work-item-add-relationship-form
+        :is-group="isGroup"
         :work-item-id="workItemId"
         :work-item-iid="workItemIid"
         :work-item-full-path="workItemFullPath"
@@ -251,11 +276,6 @@ export default {
 
       <work-item-relationship-list
         v-if="linksBlocks.length"
-        class="gl-pb-3"
-        :class="{
-          'gl-mb-5 gl-border-b-1 gl-border-b-default gl-border-b-solid':
-            linksIsBlockedBy.length || linksRelatesTo.length,
-        }"
         :linked-items="linksBlocks"
         :heading="$options.i18n.blockingTitle"
         :can-update="canAdminWorkItemLink"
@@ -272,10 +292,6 @@ export default {
       />
       <work-item-relationship-list
         v-if="linksIsBlockedBy.length"
-        class="gl-pb-3"
-        :class="{
-          'gl-mb-5 gl-border-b-1 gl-border-b-default gl-border-b-solid': linksRelatesTo.length,
-        }"
         :linked-items="linksIsBlockedBy"
         :heading="$options.i18n.blockedByTitle"
         :can-update="canAdminWorkItemLink"
@@ -292,7 +308,6 @@ export default {
       />
       <work-item-relationship-list
         v-if="linksRelatesTo.length"
-        class="gl-pb-3"
         :linked-items="linksRelatesTo"
         :heading="$options.i18n.relatedToTitle"
         :can-update="canAdminWorkItemLink"

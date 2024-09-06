@@ -17,6 +17,7 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
     let(:current_user) { developer }
 
     before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
       stub_licensed_features(epics: true)
     end
 
@@ -215,35 +216,35 @@ RSpec.describe 'Create a work item', feature_category: :team_planning do
 
         let(:fields) do
           <<~FIELDS
-          workItem {
-            workItemType {
-              name
+            workItem {
+              workItemType {
+                name
+              }
+              widgets {
+                type
+                  ... on WorkItemWidgetRolledupDates {
+                    startDate
+                    startDateFixed
+                    startDateIsFixed
+                    startDateSourcingWorkItem {
+                      id
+                    }
+                    startDateSourcingMilestone {
+                      id
+                    }
+                    dueDate
+                    dueDateFixed
+                    dueDateIsFixed
+                    startDateSourcingWorkItem {
+                      id
+                    }
+                    dueDateSourcingMilestone {
+                      id
+                    }
+                  }
+              }
             }
-            widgets {
-              type
-                ... on WorkItemWidgetRolledupDates {
-                  startDate
-                  startDateFixed
-                  startDateIsFixed
-                  startDateSourcingWorkItem {
-                    id
-                  }
-                  startDateSourcingMilestone {
-                    id
-                  }
-                  dueDate
-                  dueDateFixed
-                  dueDateIsFixed
-                  startDateSourcingWorkItem {
-                    id
-                  }
-                  dueDateSourcingMilestone {
-                    id
-                  }
-                }
-            }
-          }
-          errors
+            errors
           FIELDS
         end
 

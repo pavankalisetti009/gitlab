@@ -24,6 +24,7 @@ module Sbom
     has_many :vulnerabilities, through: :occurrences_vulnerabilities
 
     enum highest_severity: ::Enums::Vulnerability.severity_levels
+    enum reachability: ::Enums::Sbom.reachability_types, _suffix: true
 
     validates :commit_sha, presence: true
     validates :uuid, presence: true, uniqueness: { case_sensitive: false }
@@ -92,7 +93,6 @@ module Sbom
     end
 
     scope :unarchived, -> { where(archived: false) }
-    scope :by_pipeline_ids, ->(pipeline_ids) { where(pipeline_id: pipeline_ids) }
     scope :by_project_ids, ->(project_ids) do
       where(project_id: project_ids)
         .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/472113')
@@ -115,6 +115,14 @@ module Sbom
 
     scope :filter_by_source_types, ->(source_types) do
       left_outer_joins(:source).where(sbom_sources: { source_type: source_types })
+    end
+
+    scope :filter_by_component_names, ->(component_names) do
+      where(component_name: component_names)
+    end
+
+    scope :filter_by_component_ids, ->(component_ids) do
+      where(component_id: component_ids)
     end
 
     scope :filter_by_search_with_component_and_group, ->(search, component_id, group) do

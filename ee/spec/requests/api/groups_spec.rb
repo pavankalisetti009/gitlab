@@ -451,6 +451,44 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       end
     end
 
+    context 'when allowed_email_domains_list is specified' do
+      let(:params) { { allowed_email_domains_list: "example.com,example.org" } }
+
+      context "when feature is available" do
+        before do
+          stub_licensed_features(group_allowed_email_domains: true)
+        end
+
+        it 'updates email domain allowlist for the group' do
+          expect { subject }.to change { group.reload.allowed_email_domains_list }
+          .to("example.com,example.org")
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(json_response['allowed_email_domains_list']).to eq("example.com,example.org")
+        end
+
+        context 'when user is a maintainer' do
+          let_it_be(:user) { create(:user) }
+
+          before do
+            group.add_maintainer(user)
+          end
+
+          it 'does not update the email domain allow list for the group' do
+            expect { subject }.not_to change { group.reload.allowed_email_domains_list }
+            expect(response).to have_gitlab_http_status(:forbidden)
+            expect(json_response['allowed_email_domains_list']).to be_nil
+          end
+        end
+      end
+
+      context "when feature is not available" do
+        it 'does not update the email domain allowlist for the group' do
+          expect { subject }.not_to change { group.reload.allowed_email_domains_list }
+          expect(json_response).not_to have_key 'allowed_email_domains_list'
+        end
+      end
+    end
+
     context 'when ip_restriction_ranges is specified' do
       let(:params) { { ip_restriction_ranges: "192.168.0.0/24,10.0.0.0/8" } }
 
@@ -1950,15 +1988,21 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
 
       let(:params) { { group_id: invited_group.id, group_access: Gitlab::Access::DEVELOPER, member_role_id: member_role.id } }
 
+      before do
+        allow_next_instance_of(::Groups::GroupLinks::CreateService) do |service|
+          allow(service).to receive(:custom_role_for_group_link_enabled?)
+            .with(group)
+            .and_return(custom_role_for_group_link_enabled)
+        end
+      end
+
       context 'when custom_roles feature is enabled' do
         before do
           stub_licensed_features(custom_roles: true)
         end
 
-        context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
-          before do
-            stub_feature_flags(assign_custom_roles_to_group_links: true)
-          end
+        context 'when `custom_role_for_group_link_enabled` is true' do
+          let(:custom_role_for_group_link_enabled) { true }
 
           it 'assigns member role to group link' do
             share
@@ -1968,10 +2012,8 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
           end
         end
 
-        context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-          before do
-            stub_feature_flags(assign_custom_roles_to_group_links: false)
-          end
+        context 'when `custom_role_for_group_link_enabled` is false' do
+          let(:custom_role_for_group_link_enabled) { false }
 
           it 'does not assign member role to group link' do
             share
@@ -1983,6 +2025,8 @@ RSpec.describe API::Groups, :aggregate_failures, feature_category: :groups_and_p
       end
 
       context 'when custom_roles feature is disabled' do
+        let(:custom_role_for_group_link_enabled) { false }
+
         before do
           stub_licensed_features(custom_roles: false)
         end

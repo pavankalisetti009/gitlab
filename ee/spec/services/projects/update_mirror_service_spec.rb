@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_management do
+  let(:lfs_enabled) { false }
   let(:project) do
     create(:project, :repository, :mirror, import_url: Project::UNKNOWN_IMPORT_URL, only_mirror_protected_branches: false)
   end
@@ -10,7 +11,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
   subject(:service) { described_class.new(project, project.first_owner) }
 
   before do
-    allow(project).to receive(:lfs_enabled?).and_return(false)
+    allow(project).to receive(:lfs_enabled?).and_return(lfs_enabled)
   end
 
   describe "#execute" do
@@ -43,8 +44,6 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
         expect(svc).to receive(:execute)
       end
 
-      expect(Gitlab::Metrics::Lfs).to receive_message_chain(:update_objects_error_rate, :increment).with(error: false, labels: {})
-
       service.execute
     end
 
@@ -58,8 +57,6 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
     it "returns success when updated succeeds" do
       stub_fetch_mirror(project)
-
-      expect(Gitlab::Metrics::Lfs).to receive_message_chain(:update_objects_error_rate, :increment).with(error: false, labels: {})
 
       result = service.execute
 
@@ -411,9 +408,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
 
     context 'updating LFS objects' do
       context 'when repository does not change' do
-        before do
-          allow(project).to receive(:lfs_enabled?).and_return(true)
-        end
+        let(:lfs_enabled) { true }
 
         it 'does not attempt to update LFS objects' do
           expect(Projects::LfsPointers::LfsImportService).not_to receive(:new)
@@ -427,21 +422,18 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
           stub_fetch_mirror(project)
         end
 
-        context 'when Lfs is disabled in the project' do
+        context 'when LFS is disabled in the project' do
           it 'does not update LFS objects' do
-            allow(project).to receive(:lfs_enabled?).and_return(false)
             expect(Projects::LfsPointers::LfsObjectDownloadListService).not_to receive(:new)
 
-            expect(Gitlab::Metrics::Lfs).to receive_message_chain(:update_objects_error_rate, :increment).with(error: false, labels: {})
+            expect(Gitlab::Metrics::Lfs).not_to receive(:update_objects_error_rate)
 
             service.execute
           end
         end
 
-        context 'when Lfs is enabled in the project' do
-          before do
-            allow(project).to receive(:lfs_enabled?).and_return(true)
-          end
+        context 'when LFS is enabled in the project' do
+          let(:lfs_enabled) { true }
 
           it 'updates LFS objects' do
             expect(Projects::LfsPointers::LfsImportService).to receive(:new).and_call_original
@@ -454,7 +446,7 @@ RSpec.describe Projects::UpdateMirrorService, feature_category: :source_code_man
             service.execute
           end
 
-          context 'when Lfs import fails' do
+          context 'when LFS import fails' do
             let(:error_message) { 'error_message' }
 
             before do

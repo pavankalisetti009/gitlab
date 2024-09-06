@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['WorkspaceVariableInput'], feature_category: :remote_development do
+RSpec.describe GitlabSchema.types['WorkspaceVariableInput'], feature_category: :workspaces do
   let(:arguments) do
     %i[
       key

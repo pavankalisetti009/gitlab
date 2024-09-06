@@ -5,11 +5,13 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 
 import { isLoggedIn } from '~/lib/utils/common_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import { ESC_KEY } from '~/lib/utils/keys';
 import { s__ } from '~/locale';
 import { defaultSortableOptions, DRAG_DELAY } from '~/sortable/constants';
+import { sortableStart, sortableEnd } from '~/sortable/utils';
 
 import { WORK_ITEM_TYPE_VALUE_OBJECTIVE, WORK_ITEM_TYPE_VALUE_EPIC } from '../../constants';
-import { findHierarchyWidgets, findHierarchyWidgetChildren } from '../../utils';
+import { findHierarchyWidgetChildren } from '../../utils';
 import {
   addHierarchyChild,
   removeHierarchyChild,
@@ -78,6 +80,16 @@ export default {
       type: Object,
       required: true,
     },
+    showTaskWeight: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    hasIndirectChildren: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   data() {
     return {
@@ -87,6 +99,7 @@ export default {
       currentClientY: 0,
       childrenWorkItems: [],
       toParent: {},
+      dragCancelled: false,
     };
   },
   computed: {
@@ -111,17 +124,15 @@ export default {
 
       return this.canReorder ? options : {};
     },
-    hasIndirectChildren() {
-      return this.children
-        .map((child) => findHierarchyWidgets(child.widgets) || {})
-        .some((hierarchy) => hierarchy.hasChildren);
-    },
     disableList() {
       return this.disableContent || this.updateInProgress;
     },
     apolloClient() {
       return this.$apollo.provider.clients.defaultClient;
     },
+  },
+  mounted() {
+    this.handleDocumentKeyup = this.handleKeyUp.bind(this);
   },
   methods: {
     async removeChild(child) {
@@ -279,8 +290,19 @@ export default {
         parentId: toParentId,
       };
     },
+    handleDragOnStart() {
+      sortableStart();
+      this.dragCancelled = false;
+      // Attach listener to detect `ESC` key press to cancel drag.
+      document.addEventListener('keyup', this.handleDocumentKeyup);
+    },
     async handleDragOnEnd(params) {
       clearTimeout(this.toggleTimer);
+      sortableEnd();
+      document.removeEventListener('keyup', this.handleDocumentKeyup);
+      // Drag was cancelled, prevent reordering.
+      if (this.dragCancelled) return;
+
       const { oldIndex, newIndex, from, to } = params;
       const fromParentId = from.dataset.parentId;
       const toParentId = to.dataset.parentId;
@@ -458,6 +480,16 @@ export default {
         },
       });
     },
+    handleKeyUp(e) {
+      if (e.code === ESC_KEY) {
+        this.dragCancelled = true;
+        // Sortable.js internally listens for `mouseup` event on document
+        // to register drop event, see https://github.com/SortableJS/Sortable/blob/master/src/Sortable.js#L625
+        // We need to manually trigger it to simulate cancel behaviour as VueDraggable doesn't
+        // natively support it, see https://github.com/SortableJS/Vue.Draggable/issues/968.
+        document.dispatchEvent(new Event('mouseup'));
+      }
+    },
   },
 };
 </script>
@@ -466,10 +498,14 @@ export default {
   <component
     :is="treeRootWrapper"
     v-bind="treeRootOptions"
-    class="content-list"
     data-testid="child-items-container"
-    :class="{ 'sortable-container gl-cursor-grab': canReorder, 'disabled-content': disableList }"
+    class="content-list"
+    :class="{
+      'sortable-container gl-cursor-grab': canReorder,
+      'disabled-content': disableList,
+    }"
     :move="onMove"
+    @start="handleDragOnStart"
     @end="handleDragOnEnd"
   >
     <work-item-link-child
@@ -483,9 +519,11 @@ export default {
       :has-indirect-children="hasIndirectChildren"
       :show-labels="showLabels"
       :work-item-full-path="fullPath"
+      :show-task-weight="showTaskWeight"
       :allowed-child-types="allowedChildTypes"
       :is-top-level="isTopLevel"
       :data-child-title="child.title"
+      class="!gl-border-x-0 !gl-border-b-1 !gl-border-t-0 !gl-border-solid !gl-border-gray-50 !gl-pb-2 last:!gl-border-b-0 last:!gl-pb-0"
       @mouseover="prefetchWorkItem(child)"
       @mouseout="clearPrefetching"
       @removeChild="removeChild"

@@ -27,6 +27,7 @@ module Users
     before_action :ensure_credit_card_challenge_completed!, only: [:verify_credit_card_captcha]
 
     feature_category :instance_resiliency
+    urgency :low, [:send_phone_verification_code]
 
     layout 'minimal'
 

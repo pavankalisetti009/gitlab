@@ -950,14 +950,6 @@ Feature.enabled?(:ci_live_trace) # => false
 Feature.enabled?(:ci_live_trace, gate) # => true
 ```
 
-You can also disable a feature flag for a specific actor:
-
-```ruby
-gate = stub_feature_flag_gate('CustomActor')
-
-stub_feature_flags(ci_live_trace: false, thing: gate)
-```
-
 ### Controlling feature flags engine in tests
 
 Our Flipper engine in the test environment works in a memory mode `Flipper::Adapters::Memory`.
@@ -990,7 +982,7 @@ This means that end-to-end tests will run with feature flags in the default stat
 code, or with the feature flag in its current state on the GitLab instance under test, unless the
 test is written to enable/disable a feature flag explicitly.
 
-When a feature flag is changed on Staging or on GitLab.com, a Slack message will be posted to the `#e2e-run-staging` or `#qa-production` channels to inform
+When a feature flag is changed on Staging or on GitLab.com, a Slack message will be posted to the `#e2e-run-staging` or `#e2e-run-production` channels to inform
 the pipeline triage DRI so that they can more easily determine if any failures are related to a feature flag change. However, if you are working on a change you can
 help to avoid unexpected failures by [confirming that the end-to-end tests pass with a feature flag enabled.](../testing_guide/end_to_end/feature_flags.md#confirming-that-end-to-end-tests-pass-with-a-feature-flag-enabled)
 

@@ -7,6 +7,7 @@ import DateRangeFilter from '~/observability/components/date_range_filter.vue';
 import { SORTING_OPTIONS } from '~/observability/constants';
 import { isTracingDateRangeOutOfBounds } from '~/observability/utils';
 import { nDaysBefore, getCurrentUtcDate } from '~/lib/utils/datetime_utility';
+import BaseToken from '~/vue_shared/components/filtered_search_bar/tokens/base_token.vue';
 import {
   SERVICE_NAME_FILTER_TOKEN_TYPE,
   OPERATION_FILTER_TOKEN_TYPE,
@@ -22,7 +23,7 @@ import {
 import ServiceToken from './service_search_token.vue';
 import OperationToken from './operation_search_token.vue';
 import AttributeSearchToken from './attribute_search_token.vue';
-import BaseSearchToken from './tracing_base_search_token.vue';
+import TracingBaseToken from './tracing_base_search_token.vue';
 
 export default {
   components: {
@@ -111,13 +112,14 @@ export default {
         {
           title: s__('Tracing|Trace ID'),
           type: TRACE_ID_FILTER_TOKEN_TYPE,
-          token: BaseSearchToken,
+          token: BaseToken,
           operators: OPERATORS_IS,
+          suggestionsDisabled: true,
         },
         {
           title: s__('Tracing|Duration (ms)'),
           type: DURATION_MS_FILTER_TOKEN_TYPE,
-          token: BaseSearchToken,
+          token: TracingBaseToken,
           operators: [
             { value: '>', description: s__('Tracing|longer than') },
             { value: '<', description: s__('Tracing|shorter than') },
@@ -132,7 +134,7 @@ export default {
         {
           title: s__('Tracing|Status'),
           type: STATUS_FILTER_TOKEN_TYPE,
-          token: BaseSearchToken,
+          token: TracingBaseToken,
           operators: OPERATORS_IS,
           options: [
             { value: 'ok', title: s__('Tracing|Ok') },

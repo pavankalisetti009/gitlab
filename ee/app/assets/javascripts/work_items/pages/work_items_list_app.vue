@@ -11,6 +11,7 @@ import WorkItemsListApp from '~/work_items/pages/work_items_list_app.vue';
 import CreateWorkItemModal from '~/work_items/components/create_work_item_modal.vue';
 import EpicsListBulkEditSidebar from 'ee/epics_list/components/epics_list_bulk_edit_sidebar.vue';
 import { isLabelsWidget } from '~/work_items/utils';
+import glFeatureFlagsMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import workItemBulkUpdateMutation from '~/work_items/graphql/work_item_bulk_update.mutation.graphql';
 import workItemParent from '../graphql/list/work_item_parent.query.graphql';
 
@@ -25,6 +26,7 @@ export default {
     WorkItemsListApp,
     EpicsListBulkEditSidebar,
   },
+  mixins: [glFeatureFlagsMixin()],
   inject: [
     'hasEpicsFeature',
     'showNewIssueLink',
@@ -41,6 +43,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     parentId: {
       query: workItemParent,
       variables() {
@@ -58,7 +61,8 @@ export default {
       return (
         this.hasEpicsFeature &&
         this.canBulkEditEpics &&
-        this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC
+        this.workItemType === WORK_ITEM_TYPE_ENUM_EPIC &&
+        this.glFeatures.bulkUpdateWorkItemsMutation
       );
     },
   },

@@ -62,7 +62,8 @@ module Subscriptions
         }.to_json,
         button_attributes: {
           category: 'secondary',
-          variant: 'confirm'
+          variant: 'confirm',
+          class: 'gl-w-full sm:gl-w-auto'
         }.to_json
       }
     end

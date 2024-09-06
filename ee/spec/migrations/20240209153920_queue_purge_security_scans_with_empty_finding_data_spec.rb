@@ -75,20 +75,16 @@ RSpec.describe QueuePurgeSecurityScansWithEmptyFindingData, feature_category: :v
           migration.before -> {
             expect(batched_migration).not_to have_scheduled_batched_migration
           }
-          ::Gitlab::Database.allow_cross_joins_across_databases(
-            url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478422'
-          ) do
-            migration.after -> {
-              expect(batched_migration).to have_scheduled_batched_migration(
-                gitlab_schema: :gitlab_sec,
-                table_name: :security_scans,
-                column_name: :id,
-                interval: described_class::DELAY_INTERVAL,
-                batch_size: described_class::BATCH_SIZE,
-                sub_batch_size: described_class::SUB_BATCH_SIZE
-              )
-            }
-          end
+          migration.after -> {
+            expect(batched_migration).to have_scheduled_batched_migration(
+              gitlab_schema: :gitlab_sec,
+              table_name: :security_scans,
+              column_name: :id,
+              interval: described_class::DELAY_INTERVAL,
+              batch_size: described_class::BATCH_SIZE,
+              sub_batch_size: described_class::SUB_BATCH_SIZE
+            )
+          }
         end
       end
     end
@@ -146,20 +142,16 @@ RSpec.describe QueuePurgeSecurityScansWithEmptyFindingData, feature_category: :v
               expect(batched_migration).not_to have_scheduled_batched_migration
             }
 
-            ::Gitlab::Database.allow_cross_joins_across_databases(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478422'
-            ) do
-              migration.after -> {
-                expect(batched_migration).to have_scheduled_batched_migration(
-                  gitlab_schema: :gitlab_sec,
-                  table_name: :security_scans,
-                  column_name: :id,
-                  interval: described_class::DELAY_INTERVAL,
-                  batch_size: described_class::BATCH_SIZE,
-                  sub_batch_size: described_class::SUB_BATCH_SIZE
-                )
-              }
-            end
+            migration.after -> {
+              expect(batched_migration).to have_scheduled_batched_migration(
+                gitlab_schema: :gitlab_sec,
+                table_name: :security_scans,
+                column_name: :id,
+                interval: described_class::DELAY_INTERVAL,
+                batch_size: described_class::BATCH_SIZE,
+                sub_batch_size: described_class::SUB_BATCH_SIZE
+              )
+            }
           end
         end
       end
@@ -203,20 +195,16 @@ RSpec.describe QueuePurgeSecurityScansWithEmptyFindingData, feature_category: :v
               expect(batched_migration).not_to have_scheduled_batched_migration
             }
 
-            ::Gitlab::Database.allow_cross_joins_across_databases(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478422'
-            ) do
-              migration.after -> {
-                expect(batched_migration).to have_scheduled_batched_migration(
-                  gitlab_schema: :gitlab_sec,
-                  table_name: :security_scans,
-                  column_name: :id,
-                  interval: described_class::DELAY_INTERVAL,
-                  batch_size: described_class::BATCH_SIZE,
-                  sub_batch_size: described_class::SUB_BATCH_SIZE
-                )
-              }
-            end
+            migration.after -> {
+              expect(batched_migration).to have_scheduled_batched_migration(
+                gitlab_schema: :gitlab_sec,
+                table_name: :security_scans,
+                column_name: :id,
+                interval: described_class::DELAY_INTERVAL,
+                batch_size: described_class::BATCH_SIZE,
+                sub_batch_size: described_class::SUB_BATCH_SIZE
+              )
+            }
           end
         end
       end

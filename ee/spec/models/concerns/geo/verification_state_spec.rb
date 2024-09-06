@@ -588,6 +588,26 @@ RSpec.describe Geo::VerificationState, feature_category: :geo_replication do
           expect(subject.verification_retry_count).to be 1
           expect(subject.verification_checksum).to be_nil
         end
+
+        it 'logs errors in geo.log' do
+          original_error = StandardError.new('foo')
+          allow(subject).to receive(:verification_failed!).and_raise(StandardError, 'bar')
+          subject.verification_started!
+
+          expect(Gitlab::Geo::Logger).to receive(:error).with(hash_including(
+            message: 'Error during verification',
+            error: 'foo',
+            id: subject.id
+          ))
+          expect(Gitlab::Geo::Logger).to receive(:error).with(hash_including(
+            message: 'Error when saving failed verification',
+            error: 'bar',
+            id: subject.id
+          ))
+          expect do
+            subject.verification_failed_with_message!('Error during verification', original_error)
+          end.to raise_error(StandardError, 'bar')
+        end
       end
 
       describe '#verification_started!' do

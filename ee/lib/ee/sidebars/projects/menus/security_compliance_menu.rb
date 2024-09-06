@@ -64,6 +64,7 @@ module EE
               projects/security/dast_scanner_profiles#new
               projects/security/dast_scanner_profiles#edit
               projects/security/corpus_management#show
+              projects/security/secret_detection_configuration#show
             ]
           end
 

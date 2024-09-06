@@ -5,6 +5,7 @@ module EE
     module GroupLinks
       module CreateService
         extend ::Gitlab::Utils::Override
+        include GroupLinksHelper
 
         override :valid_to_create?
         def valid_to_create?
@@ -22,7 +23,7 @@ module EE
 
         override :remove_unallowed_params
         def remove_unallowed_params
-          params.delete(:member_role_id) unless can_assign_custom_roles_to_group_links?
+          params.delete(:member_role_id) unless custom_role_for_group_link_enabled?(group)
 
           super
         end
@@ -43,11 +44,6 @@ module EE
 
         def member_role_too_high?
           group.assigning_role_too_high?(current_user, params[:shared_group_access])
-        end
-
-        def can_assign_custom_roles_to_group_links?
-          shared_with_group&.custom_roles_enabled? &&
-            ::Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
         end
       end
     end

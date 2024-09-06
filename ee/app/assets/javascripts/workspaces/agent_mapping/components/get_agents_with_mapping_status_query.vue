@@ -12,6 +12,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     getGroupClusterAgents: {
       query: getAgentsWithAuthorizationStatusQuery,
       variables() {

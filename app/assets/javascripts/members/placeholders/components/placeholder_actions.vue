@@ -55,6 +55,7 @@ export default {
   },
 
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     users: {
       query: searchUsersQuery,
       variables() {
@@ -253,7 +254,7 @@ export default {
               id: this.sourceUser.id,
               ...(hasSelectedUser ? { userId: this.selectedUser.id } : {}),
             },
-            // importSourceUsersQuery used in app.vue
+            // importSourceUsersQuery used in placeholders_table.vue
             refetchQueries: [hasSelectedUser ? {} : importSourceUsersQuery],
           })
           .then(({ data }) => {

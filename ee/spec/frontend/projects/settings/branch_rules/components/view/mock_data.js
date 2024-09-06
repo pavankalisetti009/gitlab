@@ -42,6 +42,16 @@ export const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
 
 const accessLevelsMock = [40];
 
+const deployKeysMock = [
+  {
+    id: '123123',
+    title: 'Deploy key 1',
+    user: {
+      name: 'User 1',
+    },
+  },
+];
+
 const approvalsRequired = 3;
 
 export const approvalRulesMock = [
@@ -119,6 +129,7 @@ const pushAccessLevelEdges = [
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
+      deployKey: null,
       ...userAccessLevel,
     },
   },
@@ -126,6 +137,7 @@ const pushAccessLevelEdges = [
     __typename: 'PushAccessLevelEdge',
     node: {
       __typename: 'PushAccessLevel',
+      deployKey: null,
       ...maintainersAccessLevel,
     },
   },
@@ -414,6 +426,23 @@ export const statusCheckCreateSuccessResponse = {
   },
 };
 
+export const statusCheckUpdateSuccessResponse = {
+  data: {
+    branchRuleExternalStatusCheckUpdate: {
+      externalStatusCheck: statusChecksRulesMock[0],
+      errors: [],
+    },
+  },
+};
+
+export const statusCheckDeleteSuccessResponse = {
+  data: {
+    branchRuleExternalStatusCheckDestroy: {
+      errors: [],
+    },
+  },
+};
+
 export const statusCheckCreateNameTakenResponse = {
   data: {
     branchRuleExternalStatusCheckCreate: {
@@ -424,7 +453,6 @@ export const statusCheckCreateNameTakenResponse = {
 };
 
 // Mocks for drawer component
-
 export const allowedToMergeDrawerProps = {
   groups: [],
   isLoading: false,
@@ -432,4 +460,14 @@ export const allowedToMergeDrawerProps = {
   title: 'Edit allowed to merge',
   roles: accessLevelsMock,
   users: [mergeAccessLevelEdges[0].node.user],
+};
+
+export const allowedToPushDrawerProps = {
+  groups: [],
+  isLoading: false,
+  isOpen: false,
+  title: 'Edit allowed to merge',
+  roles: accessLevelsMock,
+  users: [pushAccessLevelEdges[0].node.user],
+  deployKeys: deployKeysMock,
 };

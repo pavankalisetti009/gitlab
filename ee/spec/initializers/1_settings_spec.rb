@@ -2,7 +2,23 @@
 
 require 'spec_helper'
 
-RSpec.describe '1_settings' do
+RSpec.describe '1_settings', feature_category: :shared do
+  it 'settings do not change after reload' do
+    original_settings = Settings.to_h
+
+    load_settings
+
+    new_settings = Settings.to_h
+
+    # Gitlab::Pages::Settings is a SimpleDelegator, so each time the settings
+    # are reloaded a new SimpleDelegator wraps the original object. Convert
+    # the settings to a Hash to ensure the comparison works.
+    [new_settings, original_settings].each do |settings|
+      settings['pages'] = settings['pages'].to_h
+    end
+    expect(new_settings).to eq(original_settings)
+  end
+
   context 'cron jobs' do
     subject(:cron_jobs) { Settings.cron_jobs }
 
@@ -106,6 +122,9 @@ RSpec.describe '1_settings' do
   end
 
   def load_settings
+    # Avoid wrapping Gitlab::Pages::Settings again
+    Settings.pages = Settings.pages.__getobj__
+
     load Rails.root.join('config/initializers/1_settings.rb')
   end
 end

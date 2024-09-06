@@ -92,6 +92,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     plans: {
       client: CUSTOMERSDOT_CLIENT,
       query: plansQuery,
@@ -110,6 +111,7 @@ export default {
         Sentry.captureException(error);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     quantity: {
       query: stateQuery,
       update(data) {

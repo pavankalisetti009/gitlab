@@ -66,6 +66,9 @@ for an existing project to match new global push rules:
 
 Use these rules to validate users who make commits.
 
+NOTE:
+These push rules apply only to commits and not [tags](tags/index.md).
+
 - **Reject unverified users**: Users must have a [confirmed email address](../../../security/user_email_confirmation.md).
 - **Check whether the commit author is a GitLab user**: The commit author and committer must have an email address that's been verified by GitLab.
 - **Commit author's email**: Both the author's and committer's email addresses must match the regular expression.
@@ -320,7 +323,7 @@ read [issue #19185](https://gitlab.com/gitlab-org/gitlab/-/issues/19185).
 
 To update the push rules to be the same for all projects,
 you need to use [the rails console](../../../administration/operations/rails_console.md#starting-a-rails-console-session),
-or write a script to update each project using the [push rules API endpoint](../../../api/projects.md#push-rules).
+or write a script to update each project using the [push rules API endpoint](../../../api/project_push_rules.md).
 
 For example, to enable **Check whether the commit author is a GitLab user** and **Do not allow users to remove Git tags with `git push`** checkboxes,
 and create a filter for allowing commits from a specific email domain only through rails console:

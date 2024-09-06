@@ -198,9 +198,9 @@ module Ci
     # See https://gitlab.com/gitlab-org/gitlab/-/merge_requests/123131
     scope :with_runner_type, ->(runner_type) { joins(:runner).where(runner: { runner_type: runner_type }) }
 
-    scope :belonging_to_runner_manager, ->(runner_machine_id) {
+    scope :belonging_to_runner_manager, ->(runner_machine_id) do
       joins(:runner_manager_build).where(p_ci_runner_machine_builds: { runner_machine_id: runner_machine_id })
-    }
+    end
 
     scope :with_secure_reports_from_config_options, ->(job_types) do
       joins(:metadata).where("#{Ci::BuildMetadata.quoted_table_name}.config_options -> 'artifacts' -> 'reports' ?| array[:job_types]", job_types: job_types)
@@ -226,6 +226,10 @@ module Ci
       .or(with_job_artifacts.where(job_artifacts: { file_type: 'dotenv', accessibility: 'public' }))
       .or(with_job_artifacts.where(project_id: project_id, job_artifacts: { file_type: 'dotenv' })).distinct
     end
+
+    scope :with_pipeline_source_type, ->(pipeline_source_type) { joins(:pipeline).where(pipeline: { source: pipeline_source_type }) }
+    scope :created_after, ->(time) { where(arel_table[:created_at].gt(time)) }
+    scope :updated_after, ->(time) { where(arel_table[:updated_at].gt(time)) }
 
     add_authentication_token_field :token,
       encrypted: :required,

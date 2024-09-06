@@ -2,9 +2,9 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedUpdater, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedUpdater, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
   let_it_be(:workspace1) do
     create(

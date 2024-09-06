@@ -49,7 +49,7 @@ module EE
           null: true,
           calls_gitaly: true,
           alpha: { milestone: '16.2' },
-          description: "GitLab Duo Vulnerability explanation prompt for a specified vulnerability",
+          description: "GitLab Duo Vulnerability Explanation prompt for a specified vulnerability",
           resolver: ::Resolvers::Ai::ExplainVulnerabilityPromptResolver
         field :geo_node, ::Types::Geo::GeoNodeType,
           null: true,
@@ -219,6 +219,13 @@ module EE
           alpha: { milestone: '17.4' },
           description: 'Find a project secrets manager.',
           resolver: ::Resolvers::SecretsManagement::ProjectSecretsManagerResolver
+
+        field :components,
+          [::Types::Sbom::ComponentType],
+          null: true,
+          description: 'Find software dependencies by name.',
+          resolver: ::Resolvers::Sbom::ComponentResolver,
+          alpha: { milestone: '17.4' }
       end
 
       def vulnerability(id:)

@@ -11,7 +11,6 @@ module GitlabSubscriptions
 
       def eligible_for_widget?
         GitlabSubscriptions::Trials::DuoProStatus.new(add_on_purchase: duo_pro_trial_add_on_purchase).show? &&
-          active_or_feature_enabled? &&
           !user_dismissed_widget?
       end
 
@@ -58,11 +57,6 @@ module GitlabSubscriptions
 
       def user_dismissed_widget?
         user.dismissed_callout_for_group?(feature_name: EXPIRED_DUO_PRO_TRIAL_WIDGET, group: namespace)
-      end
-
-      def active_or_feature_enabled?
-        Date.current <= duo_pro_trial_add_on_purchase.expires_on ||
-          Feature.enabled?(:duo_pro_trial_expired_widget, user)
       end
     end
   end

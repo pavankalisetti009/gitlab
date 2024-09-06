@@ -54,7 +54,10 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find_by_testid('crud-count')).to have_content('1')
+
+          within_testid('related-issues-block') do
+            expect(find_by_testid('crud-count')).to have_content('1')
+          end
         end
       end
 
@@ -74,7 +77,10 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find_by_testid('crud-count')).to have_content('1')
+
+          within_testid('related-issues-block') do
+            expect(find_by_testid('crud-count')).to have_content('1')
+          end
         end
       end
 
@@ -94,7 +100,10 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items[0].text).to eq(issue_b.title)
-          expect(find_by_testid('crud-count')).to have_content('1')
+
+          within_testid('related-issues-block') do
+            expect(find_by_testid('crud-count')).to have_content('1')
+          end
         end
 
         context 'when clicking the top `Close issue` button in the issue header', :aggregate_failures do
@@ -169,7 +178,10 @@ RSpec.describe 'Related issues', :js, feature_category: :team_planning do
           items = all('.item-title a')
 
           expect(items.count).to eq(3)
-          expect(find_by_testid('crud-count')).to have_content('3')
+
+          within_testid('related-issues-block') do
+            expect(find_by_testid('crud-count')).to have_content('3')
+          end
         end
       end
     end

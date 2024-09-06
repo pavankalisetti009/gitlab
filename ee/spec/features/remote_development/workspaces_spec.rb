@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative "../../support/helpers/remote_development/integration_spec_helpers"
 
-RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :remote_development do
+RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :workspaces do
   include RemoteDevelopment::IntegrationSpecHelpers
 
   include_context 'with remote development shared fixtures'
@@ -19,7 +19,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
   end
 
   let_it_be(:agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
   end
 
   let_it_be(:agent_token) { create(:cluster_agent_token, agent: agent, created_by_user: user) }
@@ -63,7 +63,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       # this field should be auto-fill when selecting agent
       expect(page).to have_field(
         'Workspace automatically terminates after',
-        with: agent.remote_development_agent_config.default_max_hours_before_termination
+        with: agent.workspaces_agent_config.default_max_hours_before_termination
       )
       fill_in 'Workspace automatically terminates after', with: '20'
       click_button 'Add variable'
@@ -93,7 +93,7 @@ RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :re
       additional_args_for_expected_config_to_apply =
         build_additional_args_for_expected_config_to_apply(
           network_policy_enabled: true,
-          dns_zone: agent.remote_development_agent_config.dns_zone,
+          dns_zone: agent.workspaces_agent_config.dns_zone,
           namespace_path: group.path,
           project_name: project.path
         )

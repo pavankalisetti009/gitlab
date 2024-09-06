@@ -1,9 +1,0 @@
----
-name: reset_seat_banner_callouts
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/480846
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163774
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/480895
-milestone: '17.4'
-group: group::utilization
-type: gitlab_com_derisk
-default_enabled: false

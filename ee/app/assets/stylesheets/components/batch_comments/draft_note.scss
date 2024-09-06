@@ -1,68 +1,51 @@
-$draft-actions-left-margin: 40px + $gl-padding;
+// Draft notes base styles
 
-.draft-note-component {
-  margin: 0;
-
-  .referenced-commands.draft-note-commands {
-    color: var(--gl-text-color-subtle);
-    font-size: $label-font-size;
+.draft-note {
+  .note-header-info {
+    padding: $gl-spacing-scale-2 $gl-spacing-scale-3;
   }
 
-  .timeline-entry {
-    background-color: transparent;
-  }
-
-  .draft-note-actions {
-    margin: 0;
-  }
-}
-
-.diff-file:not(.discussion-wrapper) .note.draft-note {
-  margin: 0 -1px;
-  border-radius: 3px;
-
-  .timeline-entry-inner {
-    border: 1px solid $orange-400;
-  }
-
-  &.is-editing {
-    margin-bottom: 0;
-  }
-}
-
-.diff-file.discussion-wrapper .note.draft-note {
-  .timeline-entry-inner {
-    border-bottom-left-radius: $gl-border-radius-base;
-    border-bottom-right-radius: $gl-border-radius-base;
+  .timeline-content {
     background-color: $orange-50 !important;
+    padding: $gl-spacing-scale-2 $gl-spacing-scale-3;
+    margin-left: $gl-spacing-scale-8;
+    border-radius: $gl-border-radius-base;
   }
 }
 
-.discussion-body,
-.diff-file {
-  .notes_holder {
-    .notes-content {
-      .notes {
-        &.draft-notes {
-          &::before {
-            border: 0;
-          }
+.draft-note-referenced-commands p {
+  margin: 0;
+}
 
-          background-color: transparent;
-        }
-      }
+
+// Draft notes on diffs on both tabs; draft notes on regular replies on overview tab
+
+.diff-content,
+.card {
+  .draft-note .timeline-content {
+    margin-left: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+}
+
+
+// Draft notes on diffs on changes tab
+
+.files {
+  .draft-note {
+    margin: 0 -1px;
+
+    .timeline-entry-inner {
+      border: 1px solid $orange-400 !important;
+    }
+
+    .timeline-content {
+      border-radius: 0;
+    }
+
+    .timeline-avatar {
+      margin: $gl-spacing-scale-3 0 0 $gl-spacing-scale-5;
     }
   }
-}
-
-.diffs .draft-note-component .referenced-commands.draft-note-commands {
-  margin: 0;
-  border-radius: 0;
-}
-
-.referenced-commands.draft-note-commands {
-  color: var(--gl-text-color-subtle);
-  background-color: transparent;
-  border: 0;
-  padding: $gl-padding-8 0 0;
 }

@@ -145,5 +145,9 @@ export const POLICY_SCOPE_MOCK = {
       nodes: [],
       pageInfo: {},
     },
+    includingGroups: {
+      nodes: [],
+      pageInfo: {},
+    },
   },
 };

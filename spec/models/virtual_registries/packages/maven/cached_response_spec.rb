@@ -99,4 +99,42 @@ RSpec.describe VirtualRegistries::Packages::Maven::CachedResponse, type: :model,
       end
     end
   end
+
+  describe '.search_by_relative_path' do
+    let_it_be(:cached_response) { create(:virtual_registries_packages_maven_cached_response) }
+    let_it_be(:other_cached_response) do
+      create(:virtual_registries_packages_maven_cached_response, relative_path: 'other/path')
+    end
+
+    subject { described_class.search_by_relative_path(relative_path) }
+
+    context 'with a matching relative path' do
+      let(:relative_path) { cached_response.relative_path.slice(3, 8) }
+
+      it { is_expected.to contain_exactly(cached_response) }
+    end
+  end
+
+  describe '#filename' do
+    let(:cached_response) { build(:virtual_registries_packages_maven_cached_response) }
+
+    subject { cached_response.filename }
+
+    it { is_expected.to eq(File.basename(cached_response.relative_path)) }
+
+    context 'when relative_path is nil' do
+      before do
+        cached_response.relative_path = nil
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  context 'with loose foreign key on virtual_registries_packages_maven_cached_responses.upstream_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:virtual_registries_packages_maven_upstream) }
+      let_it_be(:model) { create(:virtual_registries_packages_maven_cached_response, upstream: parent) }
+    end
+  end
 end

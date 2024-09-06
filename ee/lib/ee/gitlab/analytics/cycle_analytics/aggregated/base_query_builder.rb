@@ -40,7 +40,7 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def filter_by_negated_author_username(query)
-    return query unless negated_issue_filter_present?(:author_username)
+    return query unless negated_filter_present?(:author_username)
 
     user = find_user(params[:not][:author_username])
     return query if user.blank?
@@ -49,7 +49,7 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def filter_by_negated_assignee_username(query)
-    return query unless negated_issue_filter_present?(:assignee_username)
+    return query unless negated_filter_present?(:assignee_username)
 
     Issuables::AssigneeFilter
       .new(params: { not: { assignee_username: params[:not][:assignee_username] } })
@@ -93,7 +93,7 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def filter_by_negated_label_name(query)
-    return query unless negated_issue_filter_present?(:label_name)
+    return query unless negated_filter_present?(:label_name)
 
     ::Gitlab::Analytics::CycleAnalytics::Aggregated::LabelFilter.new(
       stage: stage,
@@ -104,7 +104,7 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def filter_by_negated_milestone(query)
-    return query unless negated_issue_filter_present?(:milestone_title)
+    return query unless negated_filter_present?(:milestone_title)
 
     milestone = find_milestone(params[:not][:milestone_title])
     return query if milestone.nil?
@@ -113,24 +113,24 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def filter_by_my_reaction_emoji(query)
-    return query unless issue_filter_present?(:my_reaction_emoji)
+    return query unless params[:my_reaction_emoji]
 
     opts = {
       name: params[:my_reaction_emoji],
-      base_class_name: ::Issue.name,
-      awardable_id_column: stage_event_model.arel_table[:issue_id]
+      base_class_name: stage.subject_class,
+      awardable_id_column: stage_event_model.arel_table[stage_event_model.issuable_id_column]
     }
 
     query.awarded(params[:current_user], opts)
   end
 
   def filter_by_negated_my_reaction_emoji(query)
-    return query unless negated_issue_filter_present?(:my_reaction_emoji)
+    return query unless negated_filter_present?(:my_reaction_emoji)
 
     opts = {
       name: params[:not][:my_reaction_emoji],
-      base_class_name: ::Issue.name,
-      awardable_id_column: stage_event_model.arel_table[:issue_id]
+      base_class_name: stage.subject_class,
+      awardable_id_column: stage_event_model.arel_table[stage_event_model.issuable_id_column]
     }
 
     query.not_awarded(params[:current_user], opts)
@@ -141,7 +141,11 @@ module EE::Gitlab::Analytics::CycleAnalytics::Aggregated::BaseQueryBuilder
   end
 
   def negated_issue_filter_present?(filter_name)
-    !issue_filter_present?(filter_name) && params.dig(:not, filter_name)
+    stage.subject_class == ::Issue && params.dig(:not, filter_name)
+  end
+
+  def negated_filter_present?(filter_name)
+    params[filter_name].blank? && params.dig(:not, filter_name).present?
   end
 
   def in_optimization_array_scope

@@ -6,7 +6,7 @@ require_relative '../../../app/services/remote_development/service_response_fact
 require_relative '../../../app/services/remote_development/common_service'
 require_relative '../../../app/services/remote_development/logger'
 
-RSpec.describe ::RemoteDevelopment::CommonService, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::CommonService, feature_category: :workspaces do
   let(:domain_main_class) do
     Class.new do
       cattr_accessor :response_hash

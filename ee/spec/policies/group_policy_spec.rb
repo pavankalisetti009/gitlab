@@ -331,14 +331,16 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe ':read_ai_analytics' do
-    let(:current_user) { reporter }
+    context 'when on SAAS', :saas do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
 
-    it { is_expected.to be_allowed(:read_ai_analytics) }
+      it_behaves_like 'permission to :read_ai_analytics'
+    end
 
-    context 'when user is a guest' do
-      let(:current_user) { guest }
+    context 'when on self-managed' do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
 
-      it { is_expected.not_to be_allowed(:read_ai_analytics) }
+      it_behaves_like 'permission to :read_ai_analytics'
     end
   end
 
@@ -1445,66 +1447,47 @@ RSpec.describe GroupPolicy, feature_category: :groups_and_projects do
   end
 
   describe 'read_group_credentials_inventory' do
-    context 'with admin' do
-      let(:current_user) { admin }
+    using RSpec::Parameterized::TableSyntax
 
-      context 'when admin mode is enabled', :enable_admin_mode do
-        it { is_expected.to be_allowed(:read_group_credentials_inventory) }
+    let(:non_member) { create(:user) }
+    let_it_be(:read_policy) { :read_group_credentials_inventory }
+    let_it_be(:admin_policy) { :admin_group_credentials_inventory }
+
+    where(:user, :admin_mode?, :saas?, :licensed?, :allowed) do
+      ref(:admin)      | false | false | false | false
+      ref(:admin)      | true  | false | false | false
+      ref(:admin)      | true  | true  | false | false
+      ref(:admin)      | false | false | true  | false
+      ref(:admin)      | false | true  | true  | false
+      ref(:admin)      | true  | false | true  | false
+      ref(:admin)      | false | true  | false | false
+      ref(:admin)      | true  | true  | true  | true
+
+      ref(:owner)      | nil   | false | false | false
+      ref(:owner)      | nil   | true  | false | false
+      ref(:owner)      | nil   | false | true  | false
+      ref(:owner)      | nil   | true  | false | false
+      ref(:owner)      | nil   | true  | true  | true
+
+      ref(:maintainer) | nil   | true  | true  | false
+      ref(:developer)  | nil   | true  | true  | false
+      ref(:reporter)   | nil   | true  | true  | false
+      ref(:guest)      | nil   | true  | true  | false
+      ref(:non_member) | nil   | true  | true  | false
+      nil              | nil   | true  | true  | false
+    end
+
+    with_them do
+      let(:current_user) { user }
+
+      before do
+        stub_licensed_features(credentials_inventory: licensed?)
       end
 
-      context 'when admin mode is disabled' do
-        it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
+      context 'for user', saas: params[:saas?], enable_admin_mode: params[:admin_mode?] do
+        it { is_expected.to(allowed ? be_allowed(read_policy) : be_disallowed(read_policy)) }
+        it { is_expected.to(allowed ? be_allowed(admin_policy) : be_disallowed(admin_policy)) }
       end
-    end
-
-    context 'with owner' do
-      let(:current_user) { owner }
-
-      it { is_expected.to be_allowed(:read_group_credentials_inventory) }
-    end
-
-    context 'with maintainer' do
-      let(:current_user) { maintainer }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-    end
-
-    context 'with developer' do
-      let(:current_user) { developer }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-
-      context 'when security dashboard features is not available' do
-        before do
-          stub_licensed_features(security_dashboard: false)
-        end
-
-        it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-      end
-    end
-
-    context 'with reporter' do
-      let(:current_user) { reporter }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-    end
-
-    context 'with guest' do
-      let(:current_user) { guest }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-    end
-
-    context 'with non member' do
-      let(:current_user) { create(:user) }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
-    end
-
-    context 'with anonymous' do
-      let(:current_user) { nil }
-
-      it { is_expected.to be_disallowed(:read_group_credentials_inventory) }
     end
   end
 

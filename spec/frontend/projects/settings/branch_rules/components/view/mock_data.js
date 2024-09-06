@@ -40,6 +40,16 @@ export const usersMock = [
 
 const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
 
+export const deployKeysMock = [
+  {
+    id: '123123',
+    title: 'Deploy key 1',
+    user: {
+      name: 'User 1',
+    },
+  },
+];
+
 const accessLevelsMock = [30, 40];
 
 const approvalsRequired = 3;

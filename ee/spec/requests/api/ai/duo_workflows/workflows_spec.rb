@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow do
   include HttpBasicAuthHelpers
 
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, :repository) }
   let_it_be(:user) { create(:user, maintainer_of: project) }
   let(:workflow) { create(:duo_workflows_workflow, user: user, project: project) }
   let(:duo_workflow_service_url) { 'duo-workflow-service.example.com:50052' }
@@ -21,7 +21,6 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
           post api(path, user), params: params
           expect(response).to have_gitlab_http_status(:created)
         end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
-
         expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
       end
 
@@ -29,6 +28,18 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
         it 'is successful' do
           post api(path, oauth_access_token: oauth_token), params: params
 
+          expect(response).to have_gitlab_http_status(:created)
+        end
+      end
+
+      context 'with project path params' do
+        let(:params) { { project_id: project.full_path } }
+
+        it 'is successful' do
+          expect do
+            post api(path, user), params: params
+            expect(response).to have_gitlab_http_status(:created)
+          end.to change { Ai::DuoWorkflows::Workflow.count }.by(1)
           expect(response).to have_gitlab_http_status(:created)
         end
       end
@@ -53,6 +64,54 @@ RSpec.describe API::Ai::DuoWorkflows::Workflows, feature_category: :duo_workflow
         post api(path, user), params: params
 
         expect(response).to have_gitlab_http_status(:forbidden)
+      end
+    end
+
+    context 'when start_workflow is true' do
+      let(:params) do
+        {
+          project_id: project.id,
+          start_workflow: true,
+          goal: 'Print hello world'
+        }
+      end
+
+      before do
+        allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+          allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
+        end
+      end
+
+      it 'creates a pipeline to run the workflow' do
+        expect_next_instance_of(Ci::CreatePipelineService, project, user,
+          hash_including(ref: project.default_branch_or_main)
+        ) do |pipeline_service|
+          expect(pipeline_service).to receive(:execute).and_call_original
+        end
+
+        post api(path, user), params: params
+        expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+        expect(json_response['pipeline']).not_to be(nil)
+      end
+
+      context 'when ci pipeline could not be created' do
+        let(:pipeline) do
+          instance_double('Ci::Pipeline', created_successfully?: false, full_error_messages: 'full error messages')
+        end
+
+        let(:service_response) { ServiceResponse.error(message: 'Error in creating pipeline', payload: pipeline) }
+
+        before do
+          allow_next_instance_of(::Ci::CreatePipelineService) do |instance|
+            allow(instance).to receive(:execute).and_return(service_response)
+          end
+        end
+
+        it 'does not start a pipeline to execute workflow' do
+          post api(path, user), params: params
+          expect(json_response['id']).to eq(Ai::DuoWorkflows::Workflow.last.id)
+          expect(json_response['pipeline']).to be(nil)
+        end
       end
     end
   end
@@ -237,6 +296,57 @@ oauth_access_token: instance_double('Doorkeeper::AccessToken', plaintext_token: 
 
           expect(response).to have_gitlab_http_status(:created)
         end
+      end
+    end
+  end
+
+  describe 'POST /ai/duo_workflows/workflows/:id/start' do
+    let(:path) { "/ai/duo_workflows/workflows/#{workflow.id}/start" }
+    let(:params) do
+      {
+        workflow_id: workflow.id,
+        goal: 'Print hello world'
+      }
+    end
+
+    before do
+      allow_next_instance_of(::Ai::DuoWorkflow::DuoWorkflowService::Client) do |client|
+        allow(client).to receive(:generate_token).and_return({ status: "success", token: "an-encrypted-token" })
+      end
+    end
+
+    it 'starts a pipeline to execute the workflow' do
+      expect_next_instance_of(Ci::CreatePipelineService, project, user,
+        hash_including(ref: project.default_branch_or_main)
+      ) do |pipeline_service|
+        expect(pipeline_service).to receive(:execute).and_call_original
+      end
+
+      post api(path, user), params: params
+
+      expect(response).to have_gitlab_http_status(:ok)
+      expect(json_response['pipeline']).not_to be(nil)
+    end
+
+    context 'when it fails to create a CI pipeline' do
+      let(:pipeline) do
+        instance_double('Ci::Pipeline', created_successfully?: false, full_error_messages: 'validation failed')
+      end
+
+      let(:service_response) { ServiceResponse.error(message: 'Error in creating pipeline', payload: pipeline) }
+
+      before do
+        allow_next_instance_of(::Ci::CreatePipelineService) do |instance|
+          allow(instance).to receive(:execute).and_return(service_response)
+        end
+      end
+
+      it 'returns api error' do
+        post api(path, user), params: params
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response['pipeline']).to be(nil)
+        expect(json_response['message']).to eq('Pipeline creation failed')
       end
     end
   end

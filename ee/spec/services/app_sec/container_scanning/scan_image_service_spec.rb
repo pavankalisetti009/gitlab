@@ -84,6 +84,10 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
     end
 
     context 'when a valid project and user is present' do
+      let(:pipeline) { execute.payload }
+      let(:build) { pipeline.builds.find_by(name: :container_scanning) }
+      let(:metadata) { build.metadata }
+
       it 'creates a pipeline' do
         expect { execute }.to change { Ci::Pipeline.count }.by(1)
       end
@@ -105,6 +109,25 @@ RSpec.describe AppSec::ContainerScanning::ScanImageService, feature_category: :s
             property: 'success'
           }
         end
+      end
+
+      it 'sets correct artifacts configuration' do
+        expect(metadata[:config_options][:artifacts]).to eq({
+          paths: ["**/gl-sbom-*.cdx.json"],
+          access: "developer",
+          reports: {
+            cyclonedx: ["**/gl-sbom-*.cdx.json"],
+            container_scanning: []
+          }
+        })
+      end
+
+      it 'sets correct environment variables' do
+        expect(metadata[:config_variables]).to include(
+          { key: "GIT_STRATEGY", value: "none" },
+          { key: "REGISTRY_TRIGGERED", value: "true" },
+          { key: "CS_IMAGE", value: image }
+        )
       end
     end
 

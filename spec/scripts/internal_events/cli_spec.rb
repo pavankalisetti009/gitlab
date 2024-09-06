@@ -136,6 +136,20 @@ RSpec.describe Cli, feature_category: :service_ping do
         end
       end
     end
+
+    context 'with a valid event name' do
+      it 'continues to the next step' do
+        queue_cli_inputs([
+          "1\n", # Enum-select: New Event -- start tracking when an action or scenario occurs on gitlab instances
+          "Engineer uses Internal Event CLI to define a new event\n", # Submit description
+          "a_totally_fine_0123456789_name\n" # Submit action name
+        ])
+
+        with_cli_thread do
+          expect { prompt.output.string }.to eventually_include_cli_text('Step 3 / 7')
+        end
+      end
+    end
   end
 
   context 'when creating new metrics' do
@@ -475,7 +489,6 @@ RSpec.describe Cli, feature_category: :service_ping do
         track_internal_event(
           'internal_events_cli_used',
           project: project,
-          namespace: project.namespace,
           user: user
         )
 
@@ -490,9 +503,8 @@ RSpec.describe Cli, feature_category: :service_ping do
 
         it_behaves_like 'internal event tracking' do
           let(:event) { 'internal_events_cli_used' }
-          let(:project) { project }
-          let(:namespace) { project.namespace }
-          let(:user) { user }
+          let(:project) { create(:project) }
+          let(:user) { create(:user) }
         end
 
         --------------------------------------------------
@@ -765,7 +777,6 @@ RSpec.describe Cli, feature_category: :service_ping do
         track_internal_event(
           'internal_events_cli_used',
           project: project,
-          namespace: project.namespace,
           user: user
         )
 
@@ -828,7 +839,6 @@ RSpec.describe Cli, feature_category: :service_ping do
         track_internal_event(
           'internal_events_cli_used',
           project: project,
-          namespace: project.namespace,
           user: user,
           additional_properties: {
             label: 'string', # TODO
@@ -847,11 +857,14 @@ RSpec.describe Cli, feature_category: :service_ping do
 
         it_behaves_like 'internal event tracking' do
           let(:event) { 'internal_events_cli_used' }
-          let(:project) { project }
-          let(:namespace) { project.namespace }
-          let(:user) { user }
-          let(:label) { 'string' }
-          let(:value) { 72 }
+          let(:project) { create(:project) }
+          let(:user) { create(:user) }
+          let(:additional_properties) do
+            {
+              label: 'string',
+              value: 72
+            }
+          end
         end
 
         --------------------------------------------------

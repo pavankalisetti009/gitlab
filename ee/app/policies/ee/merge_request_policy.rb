@@ -20,8 +20,7 @@ module EE
       end
 
       condition(:external_status_checks_enabled) do
-        @subject.target_project&.licensed_feature_available?(:external_status_checks) &&
-          can?(:developer_access, @subject.target_project)
+        @subject.target_project&.licensed_feature_available?(:external_status_checks)
       end
 
       condition(:read_only, scope: :subject) { read_only? }
@@ -44,6 +43,14 @@ module EE
 
       condition(:role_enables_admin_merge_request) do
         ::Authz::CustomAbility.allowed?(@user, :admin_merge_request, subject&.project)
+      end
+
+      condition(:target_project_developer) do
+        can?(:developer_access, @subject.target_project)
+      end
+
+      condition(:target_project_reporter) do
+        can?(:reporter_access, @subject.target_project)
       end
 
       with_scope :subject
@@ -69,7 +76,11 @@ module EE
         enable :approve_merge_request
       end
 
-      rule { external_status_checks_enabled }.policy do
+      rule { external_status_checks_enabled & target_project_reporter }.policy do
+        enable :read_external_status_check_response
+      end
+
+      rule { external_status_checks_enabled & target_project_developer }.policy do
         enable :provide_status_check_response
         enable :retry_failed_status_checks
       end

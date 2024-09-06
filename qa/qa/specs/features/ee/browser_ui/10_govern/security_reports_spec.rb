@@ -191,11 +191,7 @@ module QA
       end
 
       it 'displays false positives for the vulnerabilities',
-        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350412',
-        quarantine: {
-          type: :stale,
-          issue: 'https://gitlab.com/gitlab-org/gitlab/-/issues/461959'
-        } do
+        testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/350412' do
         push_security_reports
         project.visit!
         wait_for_pipeline_success
@@ -205,7 +201,7 @@ module QA
         EE::Page::Project::Secure::SecurityDashboard.perform(&:wait_for_vuln_report_to_load)
 
         EE::Page::Project::Secure::Show.perform do |security_dashboard|
-          security_dashboard.filter_report_type("SAST") do
+          security_dashboard.filter_report_type("Brakeman") do
             expect(security_dashboard).to have_vulnerability sast_scan_fp_example_vuln
           end
         end
@@ -261,7 +257,11 @@ module QA
       end
 
       def filter_report_and_perform(page:, filter_report:)
-        page.filter_report_type(filter_report)
+        Support::Retrier.retry_on_exception(sleep_interval: 1,
+          reload_page: page, message: 'Tool Dropdown selection') do
+          page.filter_report_type(filter_report)
+        end
+
         yield
 
         if page.has_element?("filtered-search-term", wait: 1)

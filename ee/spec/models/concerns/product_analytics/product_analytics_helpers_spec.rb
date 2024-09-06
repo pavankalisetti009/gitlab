@@ -110,8 +110,8 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics_dat
     end
   end
 
-  describe '#ai_impact_dashboard_available?' do
-    subject { group.ai_impact_dashboard_available? }
+  describe '#ai_impact_dashboard_available_for?' do
+    subject { group.ai_impact_dashboard_available_for?(user) }
 
     where(:enabled, :outcome) do
       false | false
@@ -120,6 +120,9 @@ RSpec.describe ProductAnalyticsHelpers, feature_category: :product_analytics_dat
 
     with_them do
       before do
+        allow(Ability).to receive(:allowed?)
+                      .with(user, :read_ai_analytics, anything)
+                      .and_return(true)
         allow(Gitlab::ClickHouse).to receive(:globally_enabled_for_analytics?).and_return(enabled)
       end
 

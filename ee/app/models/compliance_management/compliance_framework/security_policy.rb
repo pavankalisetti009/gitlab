@@ -15,6 +15,15 @@ module ComplianceManagement
       scope :for_framework, ->(framework) { where(framework: framework) }
       scope :for_policy_configuration, ->(policy_configuration) { where(policy_configuration: policy_configuration) }
 
+      has_many :security_policy_requirements,
+        class_name: 'ComplianceManagement::ComplianceFramework::SecurityPolicyRequirement',
+        foreign_key: :compliance_framework_security_policy_id,
+        inverse_of: :compliance_framework_security_policy
+
+      has_many :compliance_requirements,
+        through: :security_policy_requirements,
+        inverse_of: :compliance_framework_security_policies
+
       class << self
         def delete_for_policy_configuration(policy_configuration)
           for_policy_configuration(policy_configuration).each_batch(order_hint: :updated_at) do |batch|

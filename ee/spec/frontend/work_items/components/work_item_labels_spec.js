@@ -17,7 +17,6 @@ describe('WorkItemLabels component', () => {
 
   const createComponent = ({
     canUpdate = true,
-    isGroup = false,
     workItemQueryHandler = jest.fn().mockResolvedValue(workItemByIidResponseFactory()),
     workItemIid = '1',
     fullPath = 'test-project-path',
@@ -27,7 +26,6 @@ describe('WorkItemLabels component', () => {
       apolloProvider: createMockApollo([[workItemByIidQuery, workItemQueryHandler]]),
       provide: {
         canAdminLabel: true,
-        isGroup,
         issuesListPath,
         labelsManagePath: 'test-project-path/labels',
       },

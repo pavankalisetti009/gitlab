@@ -9,9 +9,13 @@ module AppSec
 
           return error(_('Invalid tags')) unless valid_tags?
 
-          ApplicationRecord.transaction do
-            @dast_profile = create_profile
-            @schedule = create_schedule(@dast_profile) if params.dig(:dast_profile_schedule, :active)
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
+            .allow_cross_database_modification_within_transaction(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/483010') do
+            ApplicationRecord.transaction do
+              @dast_profile = create_profile
+              @schedule = create_schedule(@dast_profile) if params.dig(:dast_profile_schedule, :active)
+            end
           end
 
           create_audit_event(@dast_profile, @schedule)

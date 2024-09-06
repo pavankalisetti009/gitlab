@@ -62,7 +62,7 @@ end
 RSpec.shared_context 'with agent_ids argument' do
   include_context 'with unauthorized workspace created'
 
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let_it_be(:workspace, reload: true) { create(:workspace, agent: agent, name: 'matching-workspace') }
 
   include_context 'with non_matching_workspace associated with other agent created'
@@ -204,7 +204,7 @@ end
 
 RSpec.shared_context 'with non_matching_workspace associated with other agent created' do
   # create workspace associated with different agent but owned by same user, to ensure isn't returned by the query
-  let_it_be(:other_agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:other_agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let_it_be(:non_matching_workspace, reload: true) do
     create(:workspace, agent: other_agent, user: workspace.user, name: 'non-matching-workspace')
   end

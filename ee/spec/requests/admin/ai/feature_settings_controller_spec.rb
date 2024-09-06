@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature_category: :custom_models do
+RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature_category: :"self-hosted_models" do
   let(:admin) { create(:admin) }
 
   before do
@@ -50,6 +50,14 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
   end
 
   describe 'GET #index' do
+    it 'returns `flagged_features` if ai_duo_chat_sub_features_settings is enabled' do
+      # it expect to go through the ::Ai::FeatureSetting.flagged_features method
+      # So it only shows the stable features
+      expect(::Ai::FeatureSetting).to receive(:allowed_features).and_call_original
+
+      get admin_ai_feature_settings_path
+    end
+
     it 'returns a list of AI powered features' do
       create(:ai_feature_setting)
 

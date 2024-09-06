@@ -27,6 +27,10 @@ module Gitlab
             http_post("trials/create_iterable", admin_headers, params)
           end
 
+          def opt_in_lead(params)
+            http_post("api/leads/opt_in", admin_headers, params)
+          end
+
           def create_customer(params)
             http_post("api/customers", admin_headers, params)
           end
@@ -49,6 +53,12 @@ module Gitlab
 
           def customers_oauth_app_uid
             http_get("api/v1/oauth_app_id", admin_headers)
+          end
+
+          def create_seat_link(seat_link)
+            raise TypeError unless seat_link.is_a?(Gitlab::SeatLinkData)
+
+            http_post("api/v1/seat_links", json_headers, seat_link)
           end
 
           private

@@ -570,6 +570,15 @@
   :weight: 1
   :idempotent: false
   :tags: []
+- :name: cronjob:security_policies_report_security_policies_metrics
+  :worker_name: Security::Policies::ReportSecurityPoliciesMetricsWorker
+  :feature_category: :security_policy_management
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
 - :name: cronjob:security_scans_purge
   :worker_name: Security::Scans::PurgeWorker
   :feature_category: :vulnerability_management
@@ -1023,6 +1032,15 @@
 - :name: analytics_devops_adoption_create_snapshot
   :worker_name: Analytics::DevopsAdoption::CreateSnapshotWorker
   :feature_category: :devops_reports
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: anti_abuse_new_abuse_report
+  :worker_name: AntiAbuse::NewAbuseReportWorker
+  :feature_category: :instance_resiliency
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -1680,15 +1698,6 @@
 - :name: llm_namespace_access_cache_reset
   :worker_name: Llm::NamespaceAccessCacheResetWorker
   :feature_category: :ai_abstraction_layer
-  :has_external_dependencies: false
-  :urgency: :low
-  :resource_boundary: :unknown
-  :weight: 1
-  :idempotent: true
-  :tags: []
-- :name: members_destroy
-  :worker_name: Members::DestroyWorker
-  :feature_category: :user_management
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown
@@ -2427,6 +2436,15 @@
 - :name: system_access_saml_microsoft_group_sync
   :worker_name: SystemAccess::SamlMicrosoftGroupSyncWorker
   :feature_category: :system_access
+  :has_external_dependencies: false
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+- :name: users_experimental_communication_opt_in
+  :worker_name: Users::ExperimentalCommunicationOptInWorker
+  :feature_category: :integrations
   :has_external_dependencies: false
   :urgency: :low
   :resource_boundary: :unknown

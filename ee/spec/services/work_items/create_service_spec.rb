@@ -80,6 +80,72 @@ RSpec.describe WorkItems::CreateService, feature_category: :team_planning do
           end
         end
       end
+
+      context 'when applying quick actions' do
+        let(:current_user) { reporter }
+        let(:work_item) { service_result[:work_item] }
+        let(:feature_hash) { { issue_weights: true } }
+
+        context 'with /weight action' do
+          let(:opts) do
+            {
+              title: 'My work item',
+              work_item_type: work_item_type,
+              description: '/weight 2'
+            }
+          end
+
+          before do
+            stub_licensed_features(**feature_hash)
+          end
+
+          context 'when work item type does not support weight' do
+            context 'with Epic type' do
+              let_it_be(:work_item_type) { create(:work_item_type, :epic, namespace: group) }
+
+              let(:feature_hash) { { issue_weights: true, epics: true } }
+
+              before do
+                skip 'these examples only apply to a group container' unless container.is_a?(Group)
+              end
+
+              it 'saves the work item without applying the quick action' do
+                expect(service_result).to be_success
+                expect(work_item).to be_persisted
+                expect(work_item.weight).to be_nil
+              end
+            end
+
+            context 'with Incident type' do
+              let_it_be(:work_item_type) { create(:work_item_type, :incident, namespace: group) }
+
+              before do
+                skip "these examples don't apply to a group container" if container.is_a?(Group)
+              end
+
+              it 'saves the work item without applying the quick action' do
+                expect(service_result).to be_success
+                expect(work_item).to be_persisted
+                expect(work_item.weight).to be_nil
+              end
+            end
+          end
+
+          context 'when work item type supports weight' do
+            let(:work_item_type) { WorkItems::Type.default_by_type(:issue) }
+
+            before do
+              skip "these examples don't apply to a group container" if container.is_a?(Group)
+            end
+
+            it 'saves the work item and applies the quick action' do
+              expect(service_result).to be_success
+              expect(work_item).to be_persisted
+              expect(work_item.weight).to eq(2)
+            end
+          end
+        end
+      end
     end
   end
 

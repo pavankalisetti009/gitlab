@@ -36,6 +36,7 @@ export default {
   },
   inject: ['projectPath', 'userId'],
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     agentWithVersion: {
       query: getLatestAiAgentVersion,
       variables() {
@@ -50,6 +51,7 @@ export default {
       },
     },
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         variables() {

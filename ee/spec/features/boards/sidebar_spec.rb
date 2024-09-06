@@ -35,6 +35,8 @@ RSpec.describe 'Issue Boards', :js, feature_category: :portfolio_management do
 
     project.add_maintainer(user)
     project.team.add_developer(user2)
+
+    page.driver.browser.manage.window.resize_to(1920, 1080)
   end
 
   context 'when drawer is disabled' do

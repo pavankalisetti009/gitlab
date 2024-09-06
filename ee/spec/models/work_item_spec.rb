@@ -610,6 +610,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     let_it_be(:oldest_item) { create(:work_item, :epic, namespace: namespace) }
     let_it_be(:middle_item) { create(:work_item, :issue, project: reusable_project) }
     let_it_be(:newest_item) { create(:work_item, :issue, project: reusable_project) }
+    let_it_be(:closed_item) { create(:work_item, :issue, :closed, project: reusable_project) }
 
     let_it_be_with_reload(:link_to_oldest_item) do
       create(:parent_link, work_item_parent: parent_item, work_item: oldest_item)
@@ -623,6 +624,10 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       create(:parent_link, work_item_parent: parent_item, work_item: newest_item)
     end
 
+    let_it_be_with_reload(:link_to_closed_tiem) do
+      create(:parent_link, work_item_parent: parent_item, work_item: closed_item, relative_position: 1)
+    end
+
     context 'when subepics are not available' do
       before do
         stub_licensed_features(subepics: false)
@@ -632,16 +637,16 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
         using RSpec::Parameterized::TableSyntax
 
         where(:oldest_item_position, :middle_item_position, :newest_item_position, :expected_order) do
-          nil | nil | nil | lazy { [middle_item, newest_item] }
-          nil | nil | 1   | lazy { [newest_item, middle_item] }
-          nil | 1   | 2   | lazy { [middle_item, newest_item] }
-          2   | 3   | 1   | lazy { [newest_item, middle_item] }
-          1   | 2   | 3   | lazy { [middle_item, newest_item] }
-          1   | 3   | 2   | lazy { [newest_item, middle_item] }
-          2   | 1   | 3   | lazy { [middle_item, newest_item] }
-          3   | 1   | 2   | lazy { [middle_item, newest_item] }
-          3   | 2   | 1   | lazy { [newest_item, middle_item] }
-          1   | 2   | 1   | lazy { [newest_item, middle_item] }
+          nil | nil | nil | lazy { [middle_item, newest_item, closed_item] }
+          nil | nil | 2   | lazy { [newest_item, middle_item, closed_item] }
+          nil | 2   | 3   | lazy { [middle_item, newest_item, closed_item] }
+          3   | 4   | 2   | lazy { [newest_item, middle_item, closed_item] }
+          2   | 3   | 4   | lazy { [middle_item, newest_item, closed_item] }
+          2   | 4   | 3   | lazy { [newest_item, middle_item, closed_item] }
+          3   | 2   | 4   | lazy { [middle_item, newest_item, closed_item] }
+          4   | 2   | 3   | lazy { [middle_item, newest_item, closed_item] }
+          4   | 3   | 2   | lazy { [newest_item, middle_item, closed_item] }
+          2   | 3   | 2   | lazy { [newest_item, middle_item, closed_item] }
         end
 
         with_them do
@@ -664,7 +669,7 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
       # Skipped order related specs since they are tested in work_item_spec file in CE
       it 'return child epics as well in the children' do
         expect(parent_item.reload.work_item_children_by_relative_position).to eq([oldest_item, middle_item,
-          newest_item])
+          newest_item, closed_item])
       end
     end
   end

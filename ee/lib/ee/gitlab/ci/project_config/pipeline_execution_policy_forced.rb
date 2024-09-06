@@ -26,7 +26,7 @@ module EE
 
           override :content
           def content
-            return unless pipeline_policy_context&.has_pipeline_execution_policies?
+            return unless pipeline_policy_context&.has_execution_policy_pipelines?
 
             # Create a dummy job to ensure that project pipeline gets created.
             # Pipeline execution policy jobs will be merged onto the project pipeline.

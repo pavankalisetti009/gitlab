@@ -342,6 +342,22 @@ DETAILS:
 
 Returns [`CloudConnectorStatus`](#cloudconnectorstatus).
 
+### `Query.components`
+
+Find software dependencies by name.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`[Component!]`](#component).
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="querycomponentsname"></a>`name` | [`String`](#string) | Entire name or part of the name. |
+
 ### `Query.containerRepository`
 
 Find a container repository.
@@ -447,7 +463,7 @@ Returns [`EpicList`](#epiclist).
 
 ### `Query.explainVulnerabilityPrompt`
 
-GitLab Duo Vulnerability explanation prompt for a specified vulnerability.
+GitLab Duo Vulnerability Explanation prompt for a specified vulnerability.
 
 DETAILS:
 **Introduced** in GitLab 16.2.
@@ -466,8 +482,8 @@ Returns [`ExplainVulnerabilityPrompt`](#explainvulnerabilityprompt).
 Check if a feature flag is enabled.
 
 DETAILS:
-**Introduced** in GitLab 17.1.
-**Status**: Experiment.
+**Deprecated** in GitLab 17.4.
+Replaced with metadata.featureFlags.
 
 Returns [`Boolean!`](#boolean).
 
@@ -5411,6 +5427,29 @@ Input type: `GroupMemberBulkUpdateInput`
 | <a id="mutationgroupmemberbulkupdateerrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
 | <a id="mutationgroupmemberbulkupdategroupmembers"></a>`groupMembers` | [`[GroupMember!]`](#groupmember) | Group members after mutation. |
 
+### `Mutation.groupMembersExport`
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Input type: `GroupMembersExportInput`
+
+#### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupmembersexportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupmembersexportgroupid"></a>`groupId` | [`GroupID!`](#groupid) | Global ID of the group. |
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="mutationgroupmembersexportclientmutationid"></a>`clientMutationId` | [`String`](#string) | A unique identifier for the client performing the mutation. |
+| <a id="mutationgroupmembersexporterrors"></a>`errors` | [`[String!]!`](#string) | Errors encountered during execution of the mutation. |
+| <a id="mutationgroupmembersexportmessage"></a>`message` | [`String`](#string) | Export request result message. |
+
 ### `Mutation.groupSavedReplyCreate`
 
 DETAILS:
@@ -10014,6 +10053,7 @@ Input type: `UserPreferencesUpdateInput`
 | <a id="mutationuserpreferencesupdateorganizationgroupsprojectsdisplay"></a>`organizationGroupsProjectsDisplay` **{warning-solid}** | [`OrganizationGroupProjectDisplay`](#organizationgroupprojectdisplay) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.2. |
 | <a id="mutationuserpreferencesupdateorganizationgroupsprojectssort"></a>`organizationGroupsProjectsSort` **{warning-solid}** | [`OrganizationGroupProjectSort`](#organizationgroupprojectsort) | **Deprecated:** **Status**: Experiment. Introduced in GitLab 17.2. |
 | <a id="mutationuserpreferencesupdateusewebideextensionmarketplace"></a>`useWebIdeExtensionMarketplace` | [`Boolean`](#boolean) | Whether Web IDE Extension Marketplace is enabled for the user. |
+| <a id="mutationuserpreferencesupdateuseworkitemsview"></a>`useWorkItemsView` | [`Boolean`](#boolean) | Use work item view instead of legacy issue view. |
 | <a id="mutationuserpreferencesupdatevisibilitypipelineidtype"></a>`visibilityPipelineIdType` | [`VisibilityPipelineIdType`](#visibilitypipelineidtype) | Determines whether the pipeline list shows ID or IID. |
 
 #### Fields
@@ -14560,6 +14600,30 @@ The edge type for [`Note`](#note).
 | <a id="noteedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="noteedgenode"></a>`node` | [`Note`](#note) | The item at the end of the edge. |
 
+#### `ObservabilityLogConnection`
+
+The connection type for [`ObservabilityLog`](#observabilitylog).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitylogconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="observabilitylogconnectionedges"></a>`edges` | [`[ObservabilityLogEdge]`](#observabilitylogedge) | A list of edges. |
+| <a id="observabilitylogconnectionnodes"></a>`nodes` | [`[ObservabilityLog]`](#observabilitylog) | A list of nodes. |
+| <a id="observabilitylogconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `ObservabilityLogEdge`
+
+The edge type for [`ObservabilityLog`](#observabilitylog).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitylogedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="observabilitylogedgenode"></a>`node` | [`ObservabilityLog`](#observabilitylog) | The item at the end of the edge. |
+
 #### `ObservabilityMetricConnection`
 
 The connection type for [`ObservabilityMetric`](#observabilitymetric).
@@ -14583,6 +14647,30 @@ The edge type for [`ObservabilityMetric`](#observabilitymetric).
 | ---- | ---- | ----------- |
 | <a id="observabilitymetricedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
 | <a id="observabilitymetricedgenode"></a>`node` | [`ObservabilityMetric`](#observabilitymetric) | The item at the end of the edge. |
+
+#### `ObservabilityTraceConnection`
+
+The connection type for [`ObservabilityTrace`](#observabilitytrace).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitytraceconnectioncount"></a>`count` | [`Int!`](#int) | Total count of collection. |
+| <a id="observabilitytraceconnectionedges"></a>`edges` | [`[ObservabilityTraceEdge]`](#observabilitytraceedge) | A list of edges. |
+| <a id="observabilitytraceconnectionnodes"></a>`nodes` | [`[ObservabilityTrace]`](#observabilitytrace) | A list of nodes. |
+| <a id="observabilitytraceconnectionpageinfo"></a>`pageInfo` | [`PageInfo!`](#pageinfo) | Information to aid in pagination. |
+
+#### `ObservabilityTraceEdge`
+
+The edge type for [`ObservabilityTrace`](#observabilitytrace).
+
+##### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitytraceedgecursor"></a>`cursor` | [`String!`](#string) | A cursor for use in pagination. |
+| <a id="observabilitytraceedgenode"></a>`node` | [`ObservabilityTrace`](#observabilitytrace) | The item at the end of the edge. |
 
 #### `OncallParticipantTypeConnection`
 
@@ -16847,6 +16935,7 @@ A user with add-on data.
 | <a id="addonuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="addonusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="addonuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="addonuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="addonuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="addonuserwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="addonuserweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -16889,6 +16978,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="addonuserassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="addonuserassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="addonuserassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="addonuserassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="addonuserassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="addonuserassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -16937,6 +17027,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="addonuserauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="addonuserauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="addonuserauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="addonuserauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="addonuserauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="addonuserauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -17039,6 +17130,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="addonuserreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="addonuserreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="addonuserreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="addonuserreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="addonuserreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="addonuserreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -17718,6 +17810,7 @@ Core representation of a GitLab user.
 | <a id="autocompleteduserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="autocompletedusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="autocompleteduseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="autocompleteduseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="autocompleteduserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="autocompleteduserwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="autocompleteduserweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -17740,6 +17833,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="autocompleteduserassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="autocompleteduserassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="autocompleteduserassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="autocompleteduserassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="autocompleteduserassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="autocompleteduserassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -17788,6 +17882,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="autocompleteduserauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="autocompleteduserauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="autocompleteduserauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="autocompleteduserauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="autocompleteduserauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="autocompleteduserauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -17902,6 +17997,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="autocompleteduserreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="autocompleteduserreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="autocompleteduserreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="autocompleteduserreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="autocompleteduserreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="autocompleteduserreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -18949,6 +19045,15 @@ CI/CD variables given to a manual job.
 | <a id="ciminutesprojectmonthlyusageproject"></a>`project` | [`Project`](#project) | Project having the recorded usage. |
 | <a id="ciminutesprojectmonthlyusagesharedrunnersduration"></a>`sharedRunnersDuration` | [`Int`](#int) | Total duration (in seconds) of shared runners use by the project for the month. |
 
+### `CiPipelineCreationType`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="cipipelinecreationtypepipelineid"></a>`pipelineId` **{warning-solid}** | [`ID`](#id) | **Introduced** in GitLab 17.4. **Status**: Experiment. ID of the created pipeline. |
+| <a id="cipipelinecreationtypestatus"></a>`status` **{warning-solid}** | [`CiPipelineCreationStatus`](#cipipelinecreationstatus) | **Introduced** in GitLab 17.4. **Status**: Experiment. Pipeline creation status. |
+
 ### `CiProjectVariable`
 
 CI/CD variables for a project.
@@ -19252,13 +19357,14 @@ GitLab CI/CD configuration template.
 | <a id="clusteragentisreceptive"></a>`isReceptive` | [`Boolean`](#boolean) | Whether the cluster agent is receptive or not. |
 | <a id="clusteragentname"></a>`name` | [`String`](#string) | Name of the cluster agent. |
 | <a id="clusteragentproject"></a>`project` | [`Project`](#project) | Project the cluster agent is associated with. |
-| <a id="clusteragentremotedevelopmentagentconfig"></a>`remoteDevelopmentAgentConfig` | [`RemoteDevelopmentAgentConfig`](#remotedevelopmentagentconfig) | Remote development agent config for the cluster agent. |
+| <a id="clusteragentremotedevelopmentagentconfig"></a>`remoteDevelopmentAgentConfig` **{warning-solid}** | [`RemoteDevelopmentAgentConfig`](#remotedevelopmentagentconfig) | **Deprecated** in GitLab 17.10. Use workspaces_agent_config field instead. |
 | <a id="clusteragenttokens"></a>`tokens` | [`ClusterAgentTokenConnection`](#clusteragenttokenconnection) | Tokens associated with the cluster agent. (see [Connections](#connections)) |
 | <a id="clusteragentupdatedat"></a>`updatedAt` | [`Time`](#time) | Timestamp the cluster agent was updated. |
 | <a id="clusteragenturlconfigurations"></a>`urlConfigurations` | [`ClusterAgentUrlConfigurationConnection`](#clusteragenturlconfigurationconnection) | URL configurations for the cluster agent in case it is a receptive agent. (see [Connections](#connections)) |
 | <a id="clusteragentuseraccessauthorizations"></a>`userAccessAuthorizations` | [`ClusterAgentAuthorizationUserAccess`](#clusteragentauthorizationuseraccess) | User access config for the cluster agent. |
 | <a id="clusteragentvulnerabilityimages"></a>`vulnerabilityImages` | [`VulnerabilityContainerImageConnection`](#vulnerabilitycontainerimageconnection) | Container images reported on the agent vulnerabilities. (see [Connections](#connections)) |
 | <a id="clusteragentwebpath"></a>`webPath` | [`String`](#string) | Web path of the cluster agent. |
+| <a id="clusteragentworkspacesagentconfig"></a>`workspacesAgentConfig` | [`WorkspacesAgentConfig`](#workspacesagentconfig) | Workspaces agent config for the cluster agent. |
 
 #### Fields with arguments
 
@@ -19671,6 +19777,17 @@ Compliance violation associated with a merged merge request.
 | <a id="complianceviolationseveritylevel"></a>`severityLevel` | [`ComplianceViolationSeverity!`](#complianceviolationseverity) | Severity of the compliance violation. |
 | <a id="complianceviolationviolatinguser"></a>`violatingUser` | [`UserCore!`](#usercore) | User suspected of causing the compliance violation. |
 
+### `Component`
+
+A software dependency used by a project.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="componentid"></a>`id` | [`SbomComponentID!`](#sbomcomponentid) | ID of the dependency. |
+| <a id="componentname"></a>`name` | [`String!`](#string) | Name of the dependency. |
+
 ### `ComposerMetadata`
 
 Composer metadata.
@@ -20024,6 +20141,7 @@ The currently authenticated GitLab user.
 | <a id="currentuserstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="currentusertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="currentuseruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="currentuseruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="currentuserusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="currentuserwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="currentuserweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -20046,6 +20164,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="currentuserassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="currentuserassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="currentuserassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="currentuserassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="currentuserassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="currentuserassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -20098,6 +20217,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="currentuserassigneeorreviewermergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="currentuserassigneeorreviewermergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="currentuserassigneeorreviewermergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="currentuserassigneeorreviewermergerequestsassignedreviewstates"></a>`assignedReviewStates` | [`[MergeRequestReviewState!]`](#mergerequestreviewstate) | Reviewer states for merge requests the current user is assigned to. |
 | <a id="currentuserassigneeorreviewermergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="currentuserassigneeorreviewermergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -20145,6 +20265,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="currentuserauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="currentuserauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="currentuserauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="currentuserauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="currentuserauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="currentuserauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -20247,6 +20368,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="currentuserreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="currentuserreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="currentuserreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="currentuserreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="currentuserreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="currentuserreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -22075,6 +22197,17 @@ Check permissions for the current user on an epic.
 | <a id="epicpermissionsreadepiciid"></a>`readEpicIid` | [`Boolean!`](#boolean) | If `true`, the user can perform `read_epic_iid` on this resource. |
 | <a id="epicpermissionsupdateepic"></a>`updateEpic` | [`Boolean!`](#boolean) | If `true`, the user can perform `update_epic` on this resource. |
 
+### `EpssType`
+
+Represents a CVE's EPSS score.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="epsstypecve"></a>`cve` | [`String!`](#string) | CVE identifier of relevant vulnerability. |
+| <a id="epsstypescore"></a>`score` | [`Float!`](#float) | EPSS score for the CVE. |
+
 ### `EscalationPolicyType`
 
 Represents an escalation policy.
@@ -22190,6 +22323,8 @@ Describes an external status check.
 | <a id="featureflagactive"></a>`active` | [`Boolean!`](#boolean) | Whether the feature flag is active. |
 | <a id="featureflagid"></a>`id` | [`OperationsFeatureFlagID!`](#operationsfeatureflagid) | Global ID of the feature flag. |
 | <a id="featureflagname"></a>`name` | [`String!`](#string) | Name of the feature flag. |
+| <a id="featureflagpath"></a>`path` | [`String!`](#string) | Path to feature flag. |
+| <a id="featureflagreference"></a>`reference` | [`String!`](#string) | Reference to feature flag. |
 
 ### `FileUpload`
 
@@ -22603,6 +22738,17 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="geonodeuploadregistriesreplicationstate"></a>`replicationState` | [`ReplicationStateEnum`](#replicationstateenum) | Filters registries by their replication state. |
 | <a id="geonodeuploadregistriesverificationstate"></a>`verificationState` | [`VerificationStateEnum`](#verificationstateenum) | Filters registries by their verification state. |
 
+### `GitlabInstanceFeatureFlag`
+
+A feature flag for the GitLab instance.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="gitlabinstancefeatureflagenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether the GitLab instance feature flag is enabled or not. |
+| <a id="gitlabinstancefeatureflagname"></a>`name` | [`String!`](#string) | Name of the GitLab instance feature flag. |
+
 ### `GitlabSubscriptionHistory`
 
 Describes the subscription history of a given namespace.
@@ -23009,9 +23155,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="groupclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated remote development agent config. |
+| <a id="groupclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` **{warning-solid}** | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.10. Use has_workspaces_agent_config filter instead. |
 | <a id="groupclusteragentshasremotedevelopmentenabled"></a>`hasRemoteDevelopmentEnabled` | [`Boolean`](#boolean) | Returns only cluster agents which have been enabled with the remote development feature. |
 | <a id="groupclusteragentshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only cluster agents which have vulnerabilities. |
+| <a id="groupclusteragentshasworkspacesagentconfig"></a>`hasWorkspacesAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated workspaces agent config. |
 
 ##### `Group.codeCoverageActivities`
 
@@ -23174,6 +23321,26 @@ Returns [`GroupDataTransfer`](#groupdatatransfer).
 | ---- | ---- | ----------- |
 | <a id="groupdatatransferfrom"></a>`from` | [`Date`](#date) | Retain egress data for one year. Data for the current month will increase dynamically as egress occurs. |
 | <a id="groupdatatransferto"></a>`to` | [`Date`](#date) | End date for the data. |
+
+##### `Group.dependencies`
+
+Software dependencies used by projects under this group.
+
+Returns [`DependencyConnection`](#dependencyconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="groupdependenciescomponentids"></a>`componentIds` | [`[SbomComponentID!]`](#sbomcomponentid) | Filter dependencies by component IDs. |
+| <a id="groupdependenciescomponentnames"></a>`componentNames` | [`[String!]`](#string) | Filter dependencies by component names. |
+| <a id="groupdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
+| <a id="groupdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
+| <a id="groupdependenciessourcetypes"></a>`sourceTypes` | [`[SbomSourceType!]`](#sbomsourcetype) | Filter dependencies by source type. |
 
 ##### `Group.descendantGroups`
 
@@ -23499,8 +23666,9 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="grouplabelsincludeancestorgroups"></a>`includeAncestorGroups` | [`Boolean`](#boolean) | Include labels from ancestor groups. |
 | <a id="grouplabelsincludedescendantgroups"></a>`includeDescendantGroups` | [`Boolean`](#boolean) | Include labels from descendant groups. |
 | <a id="grouplabelsonlygrouplabels"></a>`onlyGroupLabels` | [`Boolean`](#boolean) | Include only group level labels. |
-| <a id="grouplabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. |
+| <a id="grouplabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. Ignored if using `title`. |
 | <a id="grouplabelssearchterm"></a>`searchTerm` | [`String`](#string) | Search term to find labels with. |
+| <a id="grouplabelstitle"></a>`title` | [`String`](#string) | Exact match on title. Cannot be used with `searchTerm`. `searchIn` will be ignored if `title` argument is provided. |
 
 ##### `Group.memberRoles`
 
@@ -23557,6 +23725,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="groupmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="groupmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="groupmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="groupmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="groupmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="groupmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -24310,7 +24479,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="groupvaluestreamanalyticsflowmetricscycletimelabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricscycletimemilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricscycletimemyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="groupvaluestreamanalyticsflowmetricscycletimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="groupvaluestreamanalyticsflowmetricscycletimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="groupvaluestreamanalyticsflowmetricscycletimeprojectids"></a>`projectIds` | [`[ID!]`](#id) | Project IDs within the group hierarchy. |
 | <a id="groupvaluestreamanalyticsflowmetricscycletimeto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="groupvaluestreamanalyticsflowmetricscycletimeweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
@@ -24347,7 +24516,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="groupvaluestreamanalyticsflowmetricsissuecountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="groupvaluestreamanalyticsflowmetricsissuecountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountprojectids"></a>`projectIds` | [`[ID!]`](#id) | Project IDs within the group hierarchy. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuecountweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
@@ -24370,7 +24539,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountprojectids"></a>`projectIds` | [`[ID!]`](#id) | Project IDs within the group hierarchy. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="groupvaluestreamanalyticsflowmetricsissuescompletedcountweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
@@ -24393,7 +24562,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimelabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimemilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimemyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="groupvaluestreamanalyticsflowmetricsleadtimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="groupvaluestreamanalyticsflowmetricsleadtimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimeprojectids"></a>`projectIds` | [`[ID!]`](#id) | Project IDs within the group hierarchy. |
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimeto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="groupvaluestreamanalyticsflowmetricsleadtimeweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
@@ -24684,9 +24853,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="instancesecuritydashboardclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated remote development agent config. |
+| <a id="instancesecuritydashboardclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` **{warning-solid}** | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.10. Use has_workspaces_agent_config filter instead. |
 | <a id="instancesecuritydashboardclusteragentshasremotedevelopmentenabled"></a>`hasRemoteDevelopmentEnabled` | [`Boolean`](#boolean) | Returns only cluster agents which have been enabled with the remote development feature. |
 | <a id="instancesecuritydashboardclusteragentshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only cluster agents which have vulnerabilities. |
+| <a id="instancesecuritydashboardclusteragentshasworkspacesagentconfig"></a>`hasWorkspacesAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated workspaces agent config. |
 
 ##### `InstanceSecurityDashboard.projects`
 
@@ -25348,6 +25518,7 @@ Defines which user roles, users, or groups can merge into a protected branch.
 | <a id="mergerequestavailableautomergestrategies"></a>`availableAutoMergeStrategies` | [`[String!]`](#string) | Array of available auto merge strategies. |
 | <a id="mergerequestawardemoji"></a>`awardEmoji` | [`AwardEmojiConnection`](#awardemojiconnection) | List of emoji reactions associated with the merge request. (see [Connections](#connections)) |
 | <a id="mergerequestblockingmergerequests"></a>`blockingMergeRequests` **{warning-solid}** | [`BlockingMergeRequests`](#blockingmergerequests) | **Introduced** in GitLab 16.5. **Status**: Experiment. Merge requests that block another merge request from merging. |
+| <a id="mergerequestclosedat"></a>`closedAt` | [`Time`](#time) | Timestamp of when the merge request was closed, null if not closed. |
 | <a id="mergerequestcodequalityreportscomparer"></a>`codequalityReportsComparer` | [`CodequalityReportsComparer`](#codequalityreportscomparer) | Code quality reports comparison reported on the merge request. |
 | <a id="mergerequestcommenters"></a>`commenters` | [`UserCoreConnection!`](#usercoreconnection) | All commenters on this noteable. (see [Connections](#connections)) |
 | <a id="mergerequestcommitcount"></a>`commitCount` | [`Int`](#int) | Number of commits in the merge request. |
@@ -25591,6 +25762,7 @@ A user assigned to a merge request.
 | <a id="mergerequestassigneestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestassigneetwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="mergerequestassigneeuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="mergerequestassigneeuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestassigneeusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="mergerequestassigneewebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="mergerequestassigneeweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -25613,6 +25785,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestassigneeassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestassigneeassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestassigneeassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestassigneeassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="mergerequestassigneeassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="mergerequestassigneeassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -25661,6 +25834,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestassigneeauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestassigneeauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestassigneeauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestassigneeauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestassigneeauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestassigneeauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -25763,6 +25937,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestassigneereviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestassigneereviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestassigneereviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -25970,6 +26145,7 @@ The author of the merge request.
 | <a id="mergerequestauthorstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestauthortwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="mergerequestauthoruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="mergerequestauthoruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestauthorusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="mergerequestauthorwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="mergerequestauthorweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -25992,6 +26168,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestauthorassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestauthorassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestauthorassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestauthorassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="mergerequestauthorassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="mergerequestauthorassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -26040,6 +26217,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestauthorauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestauthorauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestauthorauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestauthorauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestauthorauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestauthorauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -26142,6 +26320,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestauthorreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestauthorreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestauthorreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -26395,6 +26574,7 @@ A user participating in a merge request.
 | <a id="mergerequestparticipantstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestparticipanttwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="mergerequestparticipantuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="mergerequestparticipantuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestparticipantusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="mergerequestparticipantwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="mergerequestparticipantweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -26417,6 +26597,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestparticipantassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestparticipantassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestparticipantassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestparticipantassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="mergerequestparticipantassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="mergerequestparticipantassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -26465,6 +26646,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestparticipantauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestparticipantauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestparticipantauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestparticipantauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestparticipantauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestparticipantauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -26567,6 +26749,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestparticipantreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestparticipantreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -26793,6 +26976,7 @@ A user assigned to a merge request as a reviewer.
 | <a id="mergerequestreviewerstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="mergerequestreviewertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="mergerequestrevieweruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="mergerequestrevieweruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="mergerequestreviewerusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="mergerequestreviewerwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="mergerequestreviewerweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -26815,6 +26999,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestreviewerassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestreviewerassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestreviewerassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestreviewerassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="mergerequestreviewerassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="mergerequestreviewerassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -26863,6 +27048,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestreviewerauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestreviewerauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestreviewerauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestreviewerauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestreviewerauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestreviewerauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -26965,6 +27151,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="mergerequestreviewerreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="mergerequestreviewerreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -27193,6 +27380,24 @@ MergeTrainCar represents an attempt to merge a merge requestusing merge trains.
 | <a id="metadatakas"></a>`kas` | [`Kas!`](#kas) | Metadata about KAS. |
 | <a id="metadatarevision"></a>`revision` | [`String!`](#string) | Revision. |
 | <a id="metadataversion"></a>`version` | [`String!`](#string) | Version. |
+
+#### Fields with arguments
+
+##### `Metadata.featureFlags`
+
+Feature flags for the GitLab instance.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`[GitlabInstanceFeatureFlag!]!`](#gitlabinstancefeatureflag).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="metadatafeatureflagsnames"></a>`names` | [`[String!]!`](#string) | Names of the feature flags to lookup (maximum of 20). |
 
 ### `MetricImage`
 
@@ -27824,6 +28029,21 @@ Nuget metadata.
 | <a id="nugetmetadatalicenseurl"></a>`licenseUrl` | [`String`](#string) | License URL of the Nuget package. |
 | <a id="nugetmetadataprojecturl"></a>`projectUrl` | [`String`](#string) | Project URL of the Nuget package. |
 
+### `ObservabilityLog`
+
+ObservabilityLog represents a connection between an issue and a log entry.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitylogfingerprint"></a>`fingerprint` | [`String!`](#string) | Log fingerprint of the log. |
+| <a id="observabilitylogissue"></a>`issue` | [`Issue!`](#issue) | Issue associated with the log. |
+| <a id="observabilitylogservicename"></a>`serviceName` | [`String!`](#string) | Service name of the log. |
+| <a id="observabilitylogseveritynumber"></a>`severityNumber` | [`Int!`](#int) | Severity number of the log. |
+| <a id="observabilitylogtimestamp"></a>`timestamp` | [`ISO8601DateTime!`](#iso8601datetime) | Timestamp of the log. |
+| <a id="observabilitylogtraceidentifier"></a>`traceIdentifier` | [`String!`](#string) | Trace identifier of the log. |
+
 ### `ObservabilityMetric`
 
 ObservabilityMetric represents a connection between an issue and a metric.
@@ -27835,6 +28055,17 @@ ObservabilityMetric represents a connection between an issue and a metric.
 | <a id="observabilitymetricissue"></a>`issue` | [`Issue`](#issue) | Issues that the metric is attributed to. |
 | <a id="observabilitymetricname"></a>`name` | [`String!`](#string) | Name of the metric. |
 | <a id="observabilitymetrictype"></a>`type` | [`String!`](#string) | OpenTelemetry metric type of the metric. |
+
+### `ObservabilityTrace`
+
+ObservabilityTrace represents a connection between an issue and a trace.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="observabilitytraceissue"></a>`issue` | [`Issue!`](#issue) | Issue associated with the trace. |
+| <a id="observabilitytracetraceidentifier"></a>`traceIdentifier` | [`String!`](#string) | Identifier of the trace. |
 
 ### `OncallParticipantType`
 
@@ -28317,6 +28548,7 @@ Represents a pages deployment.
 | <a id="pagesdeploymentcibuildid"></a>`ciBuildId` | [`ID`](#id) | ID of the CI build that created the deployment. |
 | <a id="pagesdeploymentcreatedat"></a>`createdAt` | [`ISO8601DateTime!`](#iso8601datetime) | Time the deployment was created. |
 | <a id="pagesdeploymentdeletedat"></a>`deletedAt` | [`ISO8601DateTime`](#iso8601datetime) | Time the deployment was deleted. |
+| <a id="pagesdeploymentexpiresat"></a>`expiresAt` | [`ISO8601DateTime`](#iso8601datetime) | Time the deployment will expire. |
 | <a id="pagesdeploymentfilecount"></a>`fileCount` | [`Int`](#int) | Number of files that were published with the deployment. |
 | <a id="pagesdeploymentid"></a>`id` | [`ID!`](#id) | ID of the Pages Deployment. |
 | <a id="pagesdeploymentpathprefix"></a>`pathPrefix` | [`String`](#string) | URL path Prefix that points to the deployment. |
@@ -29048,7 +29280,8 @@ Project-level settings for product analytics provider.
 | <a id="projectsavedreplies"></a>`savedReplies` **{warning-solid}** | [`ProjectSavedReplyConnection`](#projectsavedreplyconnection) | **Introduced** in GitLab 16.11. **Status**: Experiment. Saved replies available to the project. Available only when feature flag `project_saved_replies_flag` is enabled. |
 | <a id="projectsecuritydashboardpath"></a>`securityDashboardPath` | [`String`](#string) | Path to project's security dashboard. |
 | <a id="projectsecuritypolicyproject"></a>`securityPolicyProject` | [`Project`](#project) | Security policy project assigned to the project, absent if assigned to a parent group. |
-| <a id="projectsecuritypolicyprojectlinkednamespaces"></a>`securityPolicyProjectLinkedNamespaces` | [`NamespaceConnection`](#namespaceconnection) | Namespaces linked to the project, when used as Security Policy Project. (see [Connections](#connections)) |
+| <a id="projectsecuritypolicyprojectlinkedgroups"></a>`securityPolicyProjectLinkedGroups` | [`GroupConnection`](#groupconnection) | Groups linked to the project, when used as Security Policy Project. (see [Connections](#connections)) |
+| <a id="projectsecuritypolicyprojectlinkednamespaces"></a>`securityPolicyProjectLinkedNamespaces` **{warning-solid}** | [`NamespaceConnection`](#namespaceconnection) | **Deprecated** in GitLab 17.4. This was renamed. Use: `security_policy_project_linked_groups`. |
 | <a id="projectsecuritypolicyprojectlinkedprojects"></a>`securityPolicyProjectLinkedProjects` | [`ProjectConnection`](#projectconnection) | Projects linked to the project, when used as Security Policy Project. (see [Connections](#connections)) |
 | <a id="projectsecurityscanners"></a>`securityScanners` | [`SecurityScanners`](#securityscanners) | Information about security analyzers used in the project. |
 | <a id="projectsentryerrors"></a>`sentryErrors` | [`SentryErrorCollection`](#sentryerrorcollection) | Paginated collection of Sentry errors on the project. |
@@ -29313,6 +29546,22 @@ Returns [`[CiConfigVariable!]`](#ciconfigvariable).
 | ---- | ---- | ----------- |
 | <a id="projectciconfigvariablesref"></a>`ref` | [`String!`](#string) | Ref. |
 
+##### `Project.ciPipelineCreation`
+
+Information about a pipeline creation.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`CiPipelineCreationType`](#cipipelinecreationtype).
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectcipipelinecreationid"></a>`id` | [`String!`](#string) | Unique ID associated with the pipeline creation. |
+
 ##### `Project.ciTemplate`
 
 Find a single CI/CD template by name.
@@ -29351,9 +29600,10 @@ Returns [`ClusterAgent`](#clusteragent).
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectclusteragenthasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated remote development agent config. |
+| <a id="projectclusteragenthasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` **{warning-solid}** | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.10. Use has_workspaces_agent_config filter instead. |
 | <a id="projectclusteragenthasremotedevelopmentenabled"></a>`hasRemoteDevelopmentEnabled` | [`Boolean`](#boolean) | Returns only cluster agents which have been enabled with the remote development feature. |
 | <a id="projectclusteragenthasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only cluster agents which have vulnerabilities. |
+| <a id="projectclusteragenthasworkspacesagentconfig"></a>`hasWorkspacesAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated workspaces agent config. |
 | <a id="projectclusteragentname"></a>`name` | [`String!`](#string) | Name of the cluster agent. |
 
 ##### `Project.clusterAgents`
@@ -29370,9 +29620,10 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="projectclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated remote development agent config. |
+| <a id="projectclusteragentshasremotedevelopmentagentconfig"></a>`hasRemoteDevelopmentAgentConfig` **{warning-solid}** | [`Boolean`](#boolean) | **Deprecated** in GitLab 17.10. Use has_workspaces_agent_config filter instead. |
 | <a id="projectclusteragentshasremotedevelopmentenabled"></a>`hasRemoteDevelopmentEnabled` | [`Boolean`](#boolean) | Returns only cluster agents which have been enabled with the remote development feature. |
 | <a id="projectclusteragentshasvulnerabilities"></a>`hasVulnerabilities` | [`Boolean`](#boolean) | Returns only cluster agents which have vulnerabilities. |
+| <a id="projectclusteragentshasworkspacesagentconfig"></a>`hasWorkspacesAgentConfig` | [`Boolean`](#boolean) | Returns only cluster agents which have an associated workspaces agent config. |
 
 ##### `Project.commitReferences`
 
@@ -29537,6 +29788,7 @@ four standard [pagination arguments](#pagination-arguments):
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="projectdependenciescomponentids"></a>`componentIds` | [`[SbomComponentID!]`](#sbomcomponentid) | Filter dependencies by component IDs. |
 | <a id="projectdependenciescomponentnames"></a>`componentNames` | [`[String!]`](#string) | Filter dependencies by component names. |
 | <a id="projectdependenciespackagemanagers"></a>`packageManagers` | [`[PackageManager!]`](#packagemanager) | Filter dependencies by package managers. |
 | <a id="projectdependenciessort"></a>`sort` | [`DependencySort`](#dependencysort) | Sort dependencies by given criteria. |
@@ -29990,8 +30242,9 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="projectlabelsincludeancestorgroups"></a>`includeAncestorGroups` | [`Boolean`](#boolean) | Include labels from ancestor groups. |
-| <a id="projectlabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. |
+| <a id="projectlabelssearchin"></a>`searchIn` | [`[LabelSearchFieldList!]!`](#labelsearchfieldlist) | Specify which fields to search in. Ignored if using `title`. |
 | <a id="projectlabelssearchterm"></a>`searchTerm` | [`String`](#string) | Search term to find labels with. |
+| <a id="projectlabelstitle"></a>`title` | [`String`](#string) | Exact match on title. Cannot be used with `searchTerm`. `searchIn` will be ignored if `title` argument is provided. |
 
 ##### `Project.memberRoles`
 
@@ -30043,6 +30296,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="projectmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="projectmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="projectmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="projectmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="projectmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="projectmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -30159,6 +30413,30 @@ four standard [pagination arguments](#pagination-arguments):
 | <a id="projectnestedenvironmentsstates"></a>`states` | [`[String!]`](#string) | States of environments that should be included in result. |
 | <a id="projectnestedenvironmentstype"></a>`type` | [`String`](#string) | Search query for environment type. |
 
+##### `Project.observabilityLogsLinks`
+
+Logs attached to the project.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`ObservabilityLogConnection`](#observabilitylogconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectobservabilitylogslinksfingerprint"></a>`fingerprint` | [`String`](#string) | Fingerprint of the log. |
+| <a id="projectobservabilitylogslinksservicename"></a>`serviceName` | [`String`](#string) | Service name of the log. |
+| <a id="projectobservabilitylogslinksseveritynumber"></a>`severityNumber` | [`Int`](#int) | Severity number of the log. |
+| <a id="projectobservabilitylogslinkstimestamp"></a>`timestamp` | [`ISO8601DateTime`](#iso8601datetime) | Log timestamp of the log. |
+| <a id="projectobservabilitylogslinkstraceidentifier"></a>`traceIdentifier` | [`String`](#string) | Trace id of the log. |
+
 ##### `Project.observabilityMetricsLinks`
 
 Metrics attached to the project.
@@ -30179,6 +30457,26 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="projectobservabilitymetricslinksname"></a>`name` | [`String`](#string) | Name of the metric. |
 | <a id="projectobservabilitymetricslinkstype"></a>`type` | [`OpenTelemetryMetricType`](#opentelemetrymetrictype) | Type of the metric. |
+
+##### `Project.observabilityTracesLinks`
+
+Traces attached to the project.
+
+DETAILS:
+**Introduced** in GitLab 17.4.
+**Status**: Experiment.
+
+Returns [`ObservabilityTraceConnection`](#observabilitytraceconnection).
+
+This field returns a [connection](#connections). It accepts the
+four standard [pagination arguments](#pagination-arguments):
+`before: String`, `after: String`, `first: Int`, and `last: Int`.
+
+###### Arguments
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="projectobservabilitytraceslinkstraceidentifier"></a>`traceIdentifier` | [`String`](#string) | Identifier of the trace. |
 
 ##### `Project.packages`
 
@@ -31121,7 +31419,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="projectvaluestreamanalyticsflowmetricscycletimelabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricscycletimemilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricscycletimemyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="projectvaluestreamanalyticsflowmetricscycletimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="projectvaluestreamanalyticsflowmetricscycletimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="projectvaluestreamanalyticsflowmetricscycletimeto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="projectvaluestreamanalyticsflowmetricscycletimeweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
 
@@ -31156,7 +31454,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="projectvaluestreamanalyticsflowmetricsissuecountlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuecountmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuecountmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="projectvaluestreamanalyticsflowmetricsissuecountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="projectvaluestreamanalyticsflowmetricsissuecountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuecountto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuecountweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
 
@@ -31178,7 +31476,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountnot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="projectvaluestreamanalyticsflowmetricsissuescompletedcountweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
 
@@ -31200,7 +31498,7 @@ Returns [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric).
 | <a id="projectvaluestreamanalyticsflowmetricsleadtimelabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsleadtimemilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue. |
 | <a id="projectvaluestreamanalyticsflowmetricsleadtimemyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="projectvaluestreamanalyticsflowmetricsleadtimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssueFilterInput`](#negatedvaluestreamanalyticsissuefilterinput) | Argument used for adding negated filters. |
+| <a id="projectvaluestreamanalyticsflowmetricsleadtimenot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="projectvaluestreamanalyticsflowmetricsleadtimeto"></a>`to` | [`Time!`](#time) | Timestamp marking the end date and time. |
 | <a id="projectvaluestreamanalyticsflowmetricsleadtimeweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. |
 
@@ -33081,6 +33379,7 @@ Core representation of a GitLab user.
 | <a id="usercorestatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usercoretwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="usercoreuserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="usercoreuserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="usercoreusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="usercorewebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="usercoreweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -33103,6 +33402,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="usercoreassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="usercoreassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="usercoreassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="usercoreassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="usercoreassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="usercoreassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -33151,6 +33451,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="usercoreauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="usercoreauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="usercoreauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="usercoreauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="usercoreauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="usercoreauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -33253,6 +33554,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="usercorereviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="usercorereviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="usercorereviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="usercorereviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="usercorereviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="usercorereviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -33454,6 +33756,7 @@ fields relate to interactions between the two entities.
 | <a id="userpreferencesorganizationgroupsprojectsdisplay"></a>`organizationGroupsProjectsDisplay` **{warning-solid}** | [`OrganizationGroupProjectDisplay!`](#organizationgroupprojectdisplay) | **Introduced** in GitLab 17.2. **Status**: Experiment. Default list view for organization groups and projects. |
 | <a id="userpreferencesorganizationgroupsprojectssort"></a>`organizationGroupsProjectsSort` **{warning-solid}** | [`OrganizationGroupProjectSort`](#organizationgroupprojectsort) | **Introduced** in GitLab 17.2. **Status**: Experiment. Sort order for organization groups and projects. |
 | <a id="userpreferencesusewebideextensionmarketplace"></a>`useWebIdeExtensionMarketplace` **{warning-solid}** | [`Boolean!`](#boolean) | **Deprecated** in GitLab 16.11. Use `extensions_marketplace_opt_in_status` instead. |
+| <a id="userpreferencesuseworkitemsview"></a>`useWorkItemsView` | [`Boolean`](#boolean) | Use work item view instead of legacy issue view. |
 | <a id="userpreferencesvisibilitypipelineidtype"></a>`visibilityPipelineIdType` | [`VisibilityPipelineIdType`](#visibilitypipelineidtype) | Determines whether the pipeline list shows ID or IID. |
 
 ### `UserStatus`
@@ -33510,6 +33813,19 @@ Returns [`[ValueStreamStage!]`](#valuestreamstage).
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="valuestreamanalyticsaggregationstatus"></a>`aggregationStatus` | [`AggregationStatus`](#aggregationstatus) | Shows information about background data collection and aggregation. |
+
+### `ValueStreamAnalyticsDateMetric`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="valuestreamanalyticsdatemetricdate"></a>`date` | [`Date`](#date) | Date for the metric. |
+| <a id="valuestreamanalyticsdatemetricidentifier"></a>`identifier` | [`String!`](#string) | Identifier for the metric. |
+| <a id="valuestreamanalyticsdatemetriclinks"></a>`links` | [`[ValueStreamMetricLinkType!]!`](#valuestreammetriclinktype) | Optional links for drilling down. |
+| <a id="valuestreamanalyticsdatemetrictitle"></a>`title` | [`String!`](#string) | Title for the metric. |
+| <a id="valuestreamanalyticsdatemetricunit"></a>`unit` | [`String`](#string) | Unit of measurement. |
+| <a id="valuestreamanalyticsdatemetricvalue"></a>`value` | [`Float`](#float) | Value for the metric. |
 
 ### `ValueStreamAnalyticsMetric`
 
@@ -33577,9 +33893,14 @@ Returns [`ValueStreamStageMetrics!`](#valuestreamstagemetrics).
 | ---- | ---- | ----------- |
 | <a id="valuestreamstagemetricsassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Usernames of users assigned to the issue or the merge request. |
 | <a id="valuestreamstagemetricsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author of the issue or the merge request. |
+| <a id="valuestreamstagemetricsepicid"></a>`epicId` | [`ID`](#id) | ID of an epic associated with the issues. Using the filter is not supported for stages based on merge requests. |
+| <a id="valuestreamstagemetricsiterationid"></a>`iterationId` | [`ID`](#id) | ID of an iteration associated with the issues. Using the filter is not supported for stages based on merge requests. |
 | <a id="valuestreamstagemetricslabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels applied to the issue or the merge request. |
 | <a id="valuestreamstagemetricsmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone applied to the issue or the merge request. |
+| <a id="valuestreamstagemetricsmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
+| <a id="valuestreamstagemetricsnot"></a>`not` | [`NegatedValueStreamAnalyticsIssuableFilterInput`](#negatedvaluestreamanalyticsissuablefilterinput) | Argument used for adding negated filters. |
 | <a id="valuestreamstagemetricstimeframe"></a>`timeframe` | [`Timeframe!`](#timeframe) | Aggregation timeframe. Filters the issue or the merge request creation time for FOSS projects, and the end event timestamp for licensed projects or groups. |
+| <a id="valuestreamstagemetricsweight"></a>`weight` | [`Int`](#int) | Weight applied to the issue. Using the filter is not supported for stages based on merge requests. |
 
 ### `ValueStreamStageItems`
 
@@ -33601,6 +33922,7 @@ Returns [`ValueStreamStageMetrics!`](#valuestreamstagemetrics).
 | <a id="valuestreamstagemetricsaverage"></a>`average` | [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric) | Average duration in seconds. |
 | <a id="valuestreamstagemetricscount"></a>`count` | [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric) | Limited item count. The backend counts maximum 1000 items, for free projects, and maximum 10,000 items for licensed projects or licensed groups. |
 | <a id="valuestreamstagemetricsmedian"></a>`median` | [`ValueStreamAnalyticsMetric`](#valuestreamanalyticsmetric) | Median duration in seconds. |
+| <a id="valuestreamstagemetricsseries"></a>`series` **{warning-solid}** | [`ValueStreamStageSeries!`](#valuestreamstageseries) | **Introduced** in GitLab 17.4. **Status**: Experiment. Data series in the value stream stage. |
 
 #### Fields with arguments
 
@@ -33623,6 +33945,14 @@ four standard [pagination arguments](#pagination-arguments):
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | <a id="valuestreamstagemetricsitemssort"></a>`sort` | [`ValueStreamStageItemSort`](#valuestreamstageitemsort) | Sort stage items by criteria. |
+
+### `ValueStreamStageSeries`
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="valuestreamstageseriesaveragedurations"></a>`averageDurations` | [`[ValueStreamAnalyticsDateMetric!]`](#valuestreamanalyticsdatemetric) | Average duration for each day within the given date range. |
 
 ### `VulnerabilitiesCountByDay`
 
@@ -33661,6 +33991,7 @@ Represents a vulnerability.
 | <a id="vulnerabilitydismissalreason"></a>`dismissalReason` | [`VulnerabilityDismissalReason`](#vulnerabilitydismissalreason) | Reason for dismissal. Returns `null` for states other than `dismissed`. |
 | <a id="vulnerabilitydismissedat"></a>`dismissedAt` | [`Time`](#time) | Timestamp of when the vulnerability state was changed to dismissed. |
 | <a id="vulnerabilitydismissedby"></a>`dismissedBy` | [`UserCore`](#usercore) | User that dismissed the vulnerability. |
+| <a id="vulnerabilityepss"></a>`epss` | [`EpssType`](#epsstype) | EPSS score for CVE vulnerabilities. |
 | <a id="vulnerabilityexternalissuelinks"></a>`externalIssueLinks` | [`VulnerabilityExternalIssueLinkConnection!`](#vulnerabilityexternalissuelinkconnection) | List of external issue links related to the vulnerability. (see [Connections](#connections)) |
 | <a id="vulnerabilityfalsepositive"></a>`falsePositive` | [`Boolean`](#boolean) | Indicates whether the vulnerability is a false positive. |
 | <a id="vulnerabilityhasremediations"></a>`hasRemediations` | [`Boolean`](#boolean) | Indicates whether there is a remediation available for this vulnerability. |
@@ -33772,6 +34103,33 @@ Represents the vulnerability details code field.
 | <a id="vulnerabilitydetailcodelang"></a>`lang` | [`String`](#string) | Language of the code. |
 | <a id="vulnerabilitydetailcodename"></a>`name` | [`String`](#string) | Name of the field. |
 | <a id="vulnerabilitydetailcodevalue"></a>`value` | [`String!`](#string) | Source code. |
+
+### `VulnerabilityDetailCodeFlowNode`
+
+Represents the vulnerability details code flow node item.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitydetailcodeflownodedescription"></a>`description` | [`String`](#string) | Description of the field. |
+| <a id="vulnerabilitydetailcodeflownodefieldname"></a>`fieldName` | [`String`](#string) | Name of the field. |
+| <a id="vulnerabilitydetailcodeflownodefilelocation"></a>`fileLocation` | [`VulnerabilityDetailFileLocation!`](#vulnerabilitydetailfilelocation) | Location of the file. |
+| <a id="vulnerabilitydetailcodeflownodename"></a>`name` | [`String`](#string) | Name of the field. |
+| <a id="vulnerabilitydetailcodeflownodenodetype"></a>`nodeType` | [`CodeFlowNodeType!`](#codeflownodetype) | Node Type. |
+
+### `VulnerabilityDetailCodeFlows`
+
+Represents the vulnerability details code flows item.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="vulnerabilitydetailcodeflowsdescription"></a>`description` | [`String`](#string) | Description of the field. |
+| <a id="vulnerabilitydetailcodeflowsfieldname"></a>`fieldName` | [`String`](#string) | Name of the field. |
+| <a id="vulnerabilitydetailcodeflowsitems"></a>`items` | [`[[VulnerabilityDetailCodeFlowNode!]!]!`](#vulnerabilitydetailcodeflownode) | List of flows represented by list of CodeFlowNodeItem. |
+| <a id="vulnerabilitydetailcodeflowsname"></a>`name` | [`String`](#string) | Name of the field. |
 
 ### `VulnerabilityDetailCommit`
 
@@ -34055,6 +34413,7 @@ Represents the location of a vulnerability found by a container security scan.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="vulnerabilitylocationcontainerscanningcontainerrepositoryurl"></a>`containerRepositoryUrl` | [`String`](#string) | URL of scanned image. |
 | <a id="vulnerabilitylocationcontainerscanningdependency"></a>`dependency` | [`VulnerableDependency`](#vulnerabledependency) | Dependency containing the vulnerability. |
 | <a id="vulnerabilitylocationcontainerscanningimage"></a>`image` | [`String`](#string) | Name of the vulnerable container image. |
 | <a id="vulnerabilitylocationcontainerscanningoperatingsystem"></a>`operatingSystem` | [`String`](#string) | Operating system that runs on the vulnerable container image. |
@@ -34420,6 +34779,17 @@ Represents work item counts for the work item type.
 | <a id="workitemtypecountsbystatecountsbystate"></a>`countsByState` | [`WorkItemStateCountsType!`](#workitemstatecountstype) | Total number of work items for the represented states. |
 | <a id="workitemtypecountsbystateworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Work item type. |
 
+### `WorkItemTypeDepthLimitReachedByType`
+
+Represents Depth limit reached for the allowed work item type.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemtypedepthlimitreachedbytypedepthlimitreached"></a>`depthLimitReached` | [`Boolean!`](#boolean) | Indicates if maximum allowed depth has been reached for the descendant type. |
+| <a id="workitemtypedepthlimitreachedbytypeworkitemtype"></a>`workItemType` | [`WorkItemType!`](#workitemtype) | Work item type. |
+
 ### `WorkItemWidgetAssignees`
 
 Represents an assignees widget.
@@ -34606,6 +34976,17 @@ Represents a development widget.
 | <a id="workitemwidgetdevelopmenttype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
 | <a id="workitemwidgetdevelopmentwillautoclosebymergerequest"></a>`willAutoCloseByMergeRequest` | [`Boolean!`](#boolean) | Whether the work item will automatically be closed when a closing merge request is merged. |
 
+### `WorkItemWidgetEmailParticipants`
+
+Represents email participants widget.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workitemwidgetemailparticipantsemailparticipants"></a>`emailParticipants` | [`[String!]`](#string) | Collection of email participants associated with the work item. |
+| <a id="workitemwidgetemailparticipantstype"></a>`type` | [`WorkItemWidgetType`](#workitemwidgettype) | Widget type. |
+
 ### `WorkItemWidgetHealthStatus`
 
 Represents a health status widget.
@@ -34640,6 +35021,7 @@ Represents a hierarchy widget.
 | ---- | ---- | ----------- |
 | <a id="workitemwidgethierarchyancestors"></a>`ancestors` | [`WorkItemConnection`](#workitemconnection) | Ancestors (parents) of the work item. (see [Connections](#connections)) |
 | <a id="workitemwidgethierarchychildren"></a>`children` | [`WorkItemConnection`](#workitemconnection) | Child work items. (see [Connections](#connections)) |
+| <a id="workitemwidgethierarchydepthlimitreachedbytype"></a>`depthLimitReachedByType` **{warning-solid}** | [`[WorkItemTypeDepthLimitReachedByType!]!`](#workitemtypedepthlimitreachedbytype) | **Introduced** in GitLab 17.4. **Status**: Experiment. Depth limit reached by allowed work item type. |
 | <a id="workitemwidgethierarchyhaschildren"></a>`hasChildren` | [`Boolean!`](#boolean) | Indicates if the work item has children. |
 | <a id="workitemwidgethierarchyhasparent"></a>`hasParent` | [`Boolean!`](#boolean) | Indicates if the work item has a parent. |
 | <a id="workitemwidgethierarchyparent"></a>`parent` | [`WorkItem`](#workitem) | Parent work item. |
@@ -34903,6 +35285,28 @@ Represents a remote development workspace.
 | <a id="workspaceurl"></a>`url` | [`String!`](#string) | URL of the workspace. |
 | <a id="workspaceuser"></a>`user` | [`UserCore!`](#usercore) | Owner of the workspace. |
 
+### `WorkspacesAgentConfig`
+
+Represents a workspaces agent config.
+
+#### Fields
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+| <a id="workspacesagentconfigclusteragent"></a>`clusterAgent` | [`ClusterAgent!`](#clusteragent) | Cluster agent that the workspaces agent config belongs to. |
+| <a id="workspacesagentconfigcreatedat"></a>`createdAt` | [`Time!`](#time) | Timestamp of when the workspaces agent config was created. |
+| <a id="workspacesagentconfigdefaultmaxhoursbeforetermination"></a>`defaultMaxHoursBeforeTermination` | [`Int!`](#int) | Default max hours before worksapce termination of the workspaces agent config. |
+| <a id="workspacesagentconfigdnszone"></a>`dnsZone` | [`String!`](#string) | DNS zone where workspaces are available. |
+| <a id="workspacesagentconfigenabled"></a>`enabled` | [`Boolean!`](#boolean) | Indicates whether remote development is enabled for the GitLab agent. |
+| <a id="workspacesagentconfiggitlabworkspacesproxynamespace"></a>`gitlabWorkspacesProxyNamespace` | [`String!`](#string) | Namespace where gitlab-workspaces-proxy is installed. |
+| <a id="workspacesagentconfigid"></a>`id` | [`RemoteDevelopmentWorkspacesAgentConfigID!`](#remotedevelopmentworkspacesagentconfigid) | Global ID of the workspaces agent config. |
+| <a id="workspacesagentconfigmaxhoursbeforeterminationlimit"></a>`maxHoursBeforeTerminationLimit` | [`Int!`](#int) | Max hours before worksapce termination limit of the workspaces agent config. |
+| <a id="workspacesagentconfignetworkpolicyenabled"></a>`networkPolicyEnabled` | [`Boolean!`](#boolean) | Whether the network policy of the workspaces agent config is enabled. |
+| <a id="workspacesagentconfigprojectid"></a>`projectId` | [`ID`](#id) | ID of the project that the workspaces agent config belongs to. |
+| <a id="workspacesagentconfigupdatedat"></a>`updatedAt` | [`Time!`](#time) | Timestamp of the last update to any mutable workspaces agent config property. |
+| <a id="workspacesagentconfigworkspacesperuserquota"></a>`workspacesPerUserQuota` | [`Int!`](#int) | Maximum number of workspaces per user. |
+| <a id="workspacesagentconfigworkspacesquota"></a>`workspacesQuota` | [`Int!`](#int) | Maximum number of workspaces for the GitLab agent. |
+
 ### `X509Certificate`
 
 Represents an X.509 certificate.
@@ -35008,14 +35412,14 @@ Action to subscribe to.
 | ----- | ----------- |
 | <a id="aiactionchat"></a>`CHAT` | Chat action. |
 
-### `AiAdditionalContextType`
+### `AiAdditionalContextCategory`
 
-The type of additional context.
+The category of the additional context.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="aiadditionalcontexttypefile"></a>`FILE` | File content type. |
-| <a id="aiadditionalcontexttypesnippet"></a>`SNIPPET` | Snippet content type. |
+| <a id="aiadditionalcontextcategoryfile"></a>`FILE` | File content category. |
+| <a id="aiadditionalcontextcategorysnippet"></a>`SNIPPET` | Snippet content category. |
 
 ### `AiMessageRole`
 
@@ -35381,6 +35785,14 @@ Direction of access.
 | <a id="cijobtokenscopedirectioninbound"></a>`INBOUND` | Target projects in the inbound allowlist can access the scope project through their job tokens. |
 | <a id="cijobtokenscopedirectionoutbound"></a>`OUTBOUND` | Job token scope project can access target project in the outbound allowlist. |
 
+### `CiPipelineCreationStatus`
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="cipipelinecreationstatuscreating"></a>`CREATING` | Pipeline is creating. |
+| <a id="cipipelinecreationstatusfailed"></a>`FAILED` | Pipeline has failed. |
+| <a id="cipipelinecreationstatussucceeded"></a>`SUCCEEDED` | Pipeline has succeeded. |
+
 ### `CiRunnerAccessLevel`
 
 | Value | Description |
@@ -35438,11 +35850,9 @@ Values for sorting runners.
 
 | Value | Description |
 | ----- | ----------- |
-| <a id="cirunnerstatusactive"></a>`ACTIVE` **{warning-solid}** | **Deprecated** in GitLab 14.6. This was renamed. Use: [`CiRunner.paused`](#cirunnerpaused). |
 | <a id="cirunnerstatusnever_contacted"></a>`NEVER_CONTACTED` | Runner that has never contacted the instance. |
 | <a id="cirunnerstatusoffline"></a>`OFFLINE` | Runner that has not contacted this instance within the last 2 hours. Will be considered `STALE` if offline for more than 7 days. |
 | <a id="cirunnerstatusonline"></a>`ONLINE` | Runner that contacted this instance within the last 2 hours. |
-| <a id="cirunnerstatuspaused"></a>`PAUSED` **{warning-solid}** | **Deprecated** in GitLab 14.6. This was renamed. Use: [`CiRunner.paused`](#cirunnerpaused). |
 | <a id="cirunnerstatusstale"></a>`STALE` | Runner that has not contacted this instance within the last 7 days. |
 
 ### `CiRunnerType`
@@ -35477,6 +35887,16 @@ Values for sorting variables.
 | ----- | ----------- |
 | <a id="civariabletypeenv_var"></a>`ENV_VAR` | Env var type. |
 | <a id="civariabletypefile"></a>`FILE` | File type. |
+
+### `CodeFlowNodeType`
+
+The code flow node type.
+
+| Value | Description |
+| ----- | ----------- |
+| <a id="codeflownodetypepropagation"></a>`PROPAGATION` | Propagation node. |
+| <a id="codeflownodetypesink"></a>`SINK` | Sink node. |
+| <a id="codeflownodetypesource"></a>`SOURCE` | Source node. |
 
 ### `CodeQualityDegradationSeverity`
 
@@ -36628,6 +37048,7 @@ Member role permission.
 | <a id="memberrolepermissionadmin_group_member"></a>`ADMIN_GROUP_MEMBER` | Add or remove users in a group, and assign roles to users. When assigning a role, users with this custom permission must select a role that has the same or fewer permissions as the default role used as the base for their custom role. |
 | <a id="memberrolepermissionadmin_integrations"></a>`ADMIN_INTEGRATIONS` | Create, read, update, and delete integrations with external applications. |
 | <a id="memberrolepermissionadmin_merge_request"></a>`ADMIN_MERGE_REQUEST` | Allows approval of merge requests. |
+| <a id="memberrolepermissionadmin_protected_branch"></a>`ADMIN_PROTECTED_BRANCH` | Create, read, update, and delete protected branches for a project. |
 | <a id="memberrolepermissionadmin_push_rules"></a>`ADMIN_PUSH_RULES` | Configure push rules for repositories at the group or project level. |
 | <a id="memberrolepermissionadmin_runners"></a>`ADMIN_RUNNERS` | Create, view, edit, and delete group or project Runners. Includes configuring Runner settings. |
 | <a id="memberrolepermissionadmin_terraform_state"></a>`ADMIN_TERRAFORM_STATE` | Execute terraform commands, lock/unlock terraform state files, and remove file versions. |
@@ -37790,6 +38211,7 @@ Name of the feature that the callout is for.
 | ----- | ----------- |
 | <a id="usercalloutfeaturenameenumactive_user_count_threshold"></a>`ACTIVE_USER_COUNT_THRESHOLD` | Callout feature name for active_user_count_threshold. |
 | <a id="usercalloutfeaturenameenumbranch_rules_info_callout"></a>`BRANCH_RULES_INFO_CALLOUT` | Callout feature name for branch_rules_info_callout. |
+| <a id="usercalloutfeaturenameenumbranch_rules_tip_callout"></a>`BRANCH_RULES_TIP_CALLOUT` | Callout feature name for branch_rules_tip_callout. |
 | <a id="usercalloutfeaturenameenumbuy_pipeline_minutes_notification_dot"></a>`BUY_PIPELINE_MINUTES_NOTIFICATION_DOT` | Callout feature name for buy_pipeline_minutes_notification_dot. |
 | <a id="usercalloutfeaturenameenumcanary_deployment"></a>`CANARY_DEPLOYMENT` | Callout feature name for canary_deployment. |
 | <a id="usercalloutfeaturenameenumci_deprecation_warning_for_types_keyword"></a>`CI_DEPRECATION_WARNING_FOR_TYPES_KEYWORD` | Callout feature name for ci_deprecation_warning_for_types_keyword. |
@@ -37812,6 +38234,7 @@ Name of the feature that the callout is for.
 | <a id="usercalloutfeaturenameenumnamespace_storage_pre_enforcement_banner"></a>`NAMESPACE_STORAGE_PRE_ENFORCEMENT_BANNER` | Callout feature name for namespace_storage_pre_enforcement_banner. |
 | <a id="usercalloutfeaturenameenumnew_top_level_group_alert"></a>`NEW_TOP_LEVEL_GROUP_ALERT` | Callout feature name for new_top_level_group_alert. |
 | <a id="usercalloutfeaturenameenumnew_user_signups_cap_reached"></a>`NEW_USER_SIGNUPS_CAP_REACHED` | Callout feature name for new_user_signups_cap_reached. |
+| <a id="usercalloutfeaturenameenumopenssl_callout"></a>`OPENSSL_CALLOUT` | Callout feature name for openssl_callout. |
 | <a id="usercalloutfeaturenameenumperiod_in_terraform_state_name_alert"></a>`PERIOD_IN_TERRAFORM_STATE_NAME_ALERT` | Callout feature name for period_in_terraform_state_name_alert. |
 | <a id="usercalloutfeaturenameenumpersonal_access_token_expiry"></a>`PERSONAL_ACCESS_TOKEN_EXPIRY` | Callout feature name for personal_access_token_expiry. |
 | <a id="usercalloutfeaturenameenumpersonal_project_limitations_banner"></a>`PERSONAL_PROJECT_LIMITATIONS_BANNER` | Callout feature name for personal_project_limitations_banner. |
@@ -38220,6 +38643,7 @@ Type of a work item widget.
 | <a id="workitemwidgettypedescription"></a>`DESCRIPTION` | Description widget. |
 | <a id="workitemwidgettypedesigns"></a>`DESIGNS` | Designs widget. |
 | <a id="workitemwidgettypedevelopment"></a>`DEVELOPMENT` | Development widget. |
+| <a id="workitemwidgettypeemail_participants"></a>`EMAIL_PARTICIPANTS` | Email Participants widget. |
 | <a id="workitemwidgettypehealth_status"></a>`HEALTH_STATUS` | Health Status widget. |
 | <a id="workitemwidgettypehierarchy"></a>`HIERARCHY` | Hierarchy widget. |
 | <a id="workitemwidgettypeiteration"></a>`ITERATION` | Iteration widget. |
@@ -39166,6 +39590,18 @@ A `RemoteDevelopmentWorkspaceID` is a global ID. It is encoded as a string.
 
 An example `RemoteDevelopmentWorkspaceID` is: `"gid://gitlab/RemoteDevelopment::Workspace/1"`.
 
+### `RemoteDevelopmentWorkspacesAgentConfigID`
+
+A `RemoteDevelopmentWorkspacesAgentConfigID` is a global ID. It is encoded as a string.
+
+An example `RemoteDevelopmentWorkspacesAgentConfigID` is: `"gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/1"`.
+
+### `SbomComponentID`
+
+A `SbomComponentID` is a global ID. It is encoded as a string.
+
+An example `SbomComponentID` is: `"gid://gitlab/Sbom::Component/1"`.
+
 ### `SecurityTrainingProviderID`
 
 A `SecurityTrainingProviderID` is a global ID. It is encoded as a string.
@@ -39424,6 +39860,7 @@ One of:
 - [`VulnerabilityDetailBase`](#vulnerabilitydetailbase)
 - [`VulnerabilityDetailBoolean`](#vulnerabilitydetailboolean)
 - [`VulnerabilityDetailCode`](#vulnerabilitydetailcode)
+- [`VulnerabilityDetailCodeFlows`](#vulnerabilitydetailcodeflows)
 - [`VulnerabilityDetailCommit`](#vulnerabilitydetailcommit)
 - [`VulnerabilityDetailDiff`](#vulnerabilitydetaildiff)
 - [`VulnerabilityDetailFileLocation`](#vulnerabilitydetailfilelocation)
@@ -39935,6 +40372,7 @@ Implementations:
 | <a id="userstatus"></a>`status` | [`UserStatus`](#userstatus) | User status. |
 | <a id="usertwitter"></a>`twitter` | [`String`](#string) | X (formerly Twitter) username of the user. |
 | <a id="useruserpermissions"></a>`userPermissions` | [`UserPermissions!`](#userpermissions) | Permissions for the current user on the resource. |
+| <a id="useruserpreferences"></a>`userPreferences` | [`UserPreferences`](#userpreferences) | Preferences for the user. |
 | <a id="userusername"></a>`username` | [`String!`](#string) | Username of the user. Unique within this instance of GitLab. |
 | <a id="userwebpath"></a>`webPath` | [`String!`](#string) | Web path of the user. |
 | <a id="userweburl"></a>`webUrl` | [`String!`](#string) | Web URL of the user. |
@@ -39957,6 +40395,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="userassignedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="userassignedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="userassignedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="userassignedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
 | <a id="userassignedmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
 | <a id="userassignedmergerequestscreatedbefore"></a>`createdBefore` | [`Time`](#time) | Merge requests created before the timestamp. |
@@ -40005,6 +40444,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="userauthoredmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="userauthoredmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="userauthoredmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="userauthoredmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="userauthoredmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="userauthoredmergerequestscreatedafter"></a>`createdAfter` | [`Time`](#time) | Merge requests created after the timestamp. |
@@ -40107,6 +40547,7 @@ four standard [pagination arguments](#pagination-arguments):
 | ---- | ---- | ----------- |
 | <a id="userreviewrequestedmergerequestsapproved"></a>`approved` | [`Boolean`](#boolean) | Limit results to approved merge requests. Available only when the feature flag `mr_approved_filter` is enabled. |
 | <a id="userreviewrequestedmergerequestsapprovedby"></a>`approvedBy` | [`[String!]`](#string) | Usernames of the approvers. |
+| <a id="userreviewrequestedmergerequestsapprover"></a>`approver` | [`[String!]`](#string) | Usernames of possible approvers. |
 | <a id="userreviewrequestedmergerequestsassigneeusername"></a>`assigneeUsername` | [`String`](#string) | Username of the assignee. |
 | <a id="userreviewrequestedmergerequestsassigneewildcardid"></a>`assigneeWildcardId` | [`AssigneeWildcardId`](#assigneewildcardid) | Filter by assignee presence. Incompatible with assigneeUsernames and assigneeUsername. |
 | <a id="userreviewrequestedmergerequestsauthorusername"></a>`authorUsername` | [`String`](#string) | Username of the author. |
@@ -40263,6 +40704,7 @@ Implementations:
 - [`WorkItemWidgetDescription`](#workitemwidgetdescription)
 - [`WorkItemWidgetDesigns`](#workitemwidgetdesigns)
 - [`WorkItemWidgetDevelopment`](#workitemwidgetdevelopment)
+- [`WorkItemWidgetEmailParticipants`](#workitemwidgetemailparticipants)
 - [`WorkItemWidgetHealthStatus`](#workitemwidgethealthstatus)
 - [`WorkItemWidgetHierarchy`](#workitemwidgethierarchy)
 - [`WorkItemWidgetIteration`](#workitemwidgetiteration)
@@ -40318,9 +40760,10 @@ see the associated mutation type above.
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| <a id="aiadditionalcontextinputcategory"></a>`category` | [`AiAdditionalContextCategory!`](#aiadditionalcontextcategory) | Category of the additional context. |
 | <a id="aiadditionalcontextinputcontent"></a>`content` | [`String!`](#string) | Content of the additional context. |
-| <a id="aiadditionalcontextinputname"></a>`name` | [`String!`](#string) | Name of the additional context. |
-| <a id="aiadditionalcontextinputtype"></a>`type` | [`AiAdditionalContextType!`](#aiadditionalcontexttype) | Type of the additional context. |
+| <a id="aiadditionalcontextinputid"></a>`id` | [`String!`](#string) | ID of the additional context. |
+| <a id="aiadditionalcontextinputmetadata"></a>`metadata` | [`JSON`](#json) | Metadata of the additional context. |
 
 ### `AiChatInput`
 
@@ -40817,20 +41260,20 @@ A year and month input for querying product analytics usage data.
 | <a id="negatedissuefilterinputtypes"></a>`types` | [`[IssueType!]`](#issuetype) | Filters out issues by the given issue types. |
 | <a id="negatedissuefilterinputweight"></a>`weight` | [`String`](#string) | Weight not applied to the issue. |
 
-### `NegatedValueStreamAnalyticsIssueFilterInput`
+### `NegatedValueStreamAnalyticsIssuableFilterInput`
 
 #### Arguments
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
-| <a id="negatedvaluestreamanalyticsissuefilterinputassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Usernames of users not assigned to the issue. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputauthorusername"></a>`authorUsername` | [`String`](#string) | Username of a user who didn't author the issue. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputepicid"></a>`epicId` | [`ID`](#id) | ID of an epic not associated with the issues. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputiterationid"></a>`iterationId` | [`ID`](#id) | List of iteration Global IDs not applied to the issue. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels not applied to this issue. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone not applied to this issue. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
-| <a id="negatedvaluestreamanalyticsissuefilterinputweight"></a>`weight` | [`Int`](#int) | Weight not applied to the issue. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputassigneeusernames"></a>`assigneeUsernames` | [`[String!]`](#string) | Usernames of users not assigned to the issue or merge request. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputauthorusername"></a>`authorUsername` | [`String`](#string) | Username of a user who didn't author the issue or merge request. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputepicid"></a>`epicId` | [`ID`](#id) | ID of an epic not associated with the issues. Using the filter is not supported for stages based on merge requests. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputiterationid"></a>`iterationId` | [`ID`](#id) | List of iteration Global IDs not applied to the issue. Using the filter is not supported for stages based on merge requests. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputlabelnames"></a>`labelNames` | [`[String!]`](#string) | Labels not applied to the issue or merge request. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputmilestonetitle"></a>`milestoneTitle` | [`String`](#string) | Milestone not applied to the issue or merge request. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputmyreactionemoji"></a>`myReactionEmoji` | [`String`](#string) | Filter by reaction emoji applied by the current user. |
+| <a id="negatedvaluestreamanalyticsissuablefilterinputweight"></a>`weight` | [`Int`](#int) | Weight not applied to the issue. Using the filter is not supported for stages based on merge requests. |
 
 ### `NegatedWorkItemFilterInput`
 

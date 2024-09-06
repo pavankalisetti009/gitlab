@@ -4,7 +4,8 @@ import Vue, { nextTick } from 'vue';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import Tracking from '~/tracking';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { visitUrl, PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
+import { visitUrl } from 'jh_else_ce/lib/utils/url_utility';
 import CodeSuggestionsInfoCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_info_card.vue';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
 import { createMockClient } from 'helpers/mock_apollo_helper';
@@ -142,13 +143,13 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
       });
 
-      it('tracks the pageview correctly', () => {
+      it('tracks the page view correctly', () => {
         expect(Tracking.event).toHaveBeenCalledWith(
           'groups:usage_quotas:index',
-          'pageview',
+          'view_group_duo_pro_usage_pageload',
           expect.objectContaining({
             label: 'duo_pro_add_on_tab',
           }),
@@ -165,7 +166,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Enterprise');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Subscription');
       });
     });
 
@@ -249,7 +250,7 @@ describe('CodeSuggestionsInfoCard', () => {
       });
 
       it('renders the title text', () => {
-        expect(findCodeSuggestionsInfoTitle().text()).toBe('GitLab Duo Pro trial');
+        expect(findCodeSuggestionsInfoTitle().text()).toBe('Trial');
       });
 
       it('renders the trial start date', () => {
@@ -260,10 +261,10 @@ describe('CodeSuggestionsInfoCard', () => {
         expect(findCodeSuggestionsSubscriptionInfo().text()).toContain(outputEndDate);
       });
 
-      it('tracks the pageview correctly', () => {
+      it('tracks the page view correctly', () => {
         expect(Tracking.event).toHaveBeenCalledWith(
           'groups:usage_quotas:index',
-          'pageview',
+          'view_group_duo_pro_usage_pageload',
           expect.objectContaining({
             label: 'duo_pro_add_on_tab_active_trial',
           }),
@@ -287,7 +288,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
           expect(Tracking.event).toHaveBeenCalledWith(
             'groups:usage_quotas:index',
-            'click_button',
+            'click_purchase_seats_button_group_duo_pro_usage_page',
             expect.objectContaining({
               label: 'duo_pro_purchase_seats',
             }),
@@ -301,7 +302,7 @@ describe('CodeSuggestionsInfoCard', () => {
 
           expect(Tracking.event).toHaveBeenCalledWith(
             'groups:usage_quotas:index',
-            'click_link',
+            'click_marketing_link_group_duo_pro_usage_page',
             expect.objectContaining({
               label: 'duo_pro_marketing_page',
             }),
@@ -364,7 +365,7 @@ describe('CodeSuggestionsInfoCard', () => {
         findAddSeatsButton().vm.$emit('click');
         expect(Tracking.event).toHaveBeenCalledWith(
           undefined,
-          'click_button',
+          'click_add_seats_button_group_duo_pro_usage_page',
           expect.objectContaining({
             property: 'usage_quotas_page',
             label,

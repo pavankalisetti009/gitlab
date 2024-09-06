@@ -206,6 +206,23 @@ RSpec.describe Llm::Internal::CompletionService, :saas, feature_category: :ai_ab
           execute
         end.to raise_error(StandardError, 'service failure')
       end
+
+      context 'when resource is nil' do
+        let_it_be(:resource) { nil }
+
+        it 'updates error rate' do
+          expect(Gitlab::Metrics::Sli::ErrorRate[:llm_completion])
+            .to receive(:increment)
+              .with(labels: {
+                feature_category: :ai_abstraction_layer,
+                service_class: 'Gitlab::Llm::Completions::SummarizeAllOpenNotes'
+              }, error: true)
+
+          expect do
+            execute
+          end.to raise_error(StandardError, 'service failure')
+        end
+      end
     end
 
     context 'when user can not read the resource' do

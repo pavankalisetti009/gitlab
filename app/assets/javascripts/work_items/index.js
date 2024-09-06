@@ -11,6 +11,7 @@ import { injectVueAppBreadcrumbs } from '~/lib/utils/breadcrumbs';
 import { apolloProvider } from '~/graphql_shared/issuable_client';
 import App from './components/app.vue';
 import WorkItemBreadcrumb from './components/work_item_breadcrumb.vue';
+import activeDiscussionQuery from './components/design_management/graphql/client/active_design_discussion.query.graphql';
 import { createRouter } from './router';
 
 Vue.use(VueApollo);
@@ -63,7 +64,19 @@ export const initWorkItemsRoot = ({ workItemType, workspaceType } = {}) => {
   if (isGroup)
     injectVueAppBreadcrumbs(router, WorkItemBreadcrumb, apolloProvider, {
       workItemType: listWorkItemType,
+      epicsListPath,
     });
+
+  apolloProvider.clients.defaultClient.cache.writeQuery({
+    query: activeDiscussionQuery,
+    data: {
+      activeDesignDiscussion: {
+        __typename: 'ActiveDesignDiscussion',
+        id: null,
+        source: null,
+      },
+    },
+  });
 
   return new Vue({
     el,

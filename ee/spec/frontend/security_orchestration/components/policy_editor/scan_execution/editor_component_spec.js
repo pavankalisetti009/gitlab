@@ -32,14 +32,8 @@ import {
   mockDastScanExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_scan_execution_policy_data';
 
-import {
-  modifyPolicy,
-  redirectToMergeRequest,
-} from 'ee/security_orchestration/components/policy_editor/utils';
-import {
-  EDITOR_MODE_YAML,
-  SECURITY_POLICY_ACTIONS,
-} from 'ee/security_orchestration/components/policy_editor/constants';
+import { goToPolicyMR } from 'ee/security_orchestration/components/policy_editor/utils';
+import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 import {
   DEFAULT_SCANNER,
   SCAN_EXECUTION_PIPELINE_RULE,
@@ -49,6 +43,7 @@ import {
   DAST_SCANNERS_PARSING_ERROR,
 } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
 import { RULE_KEY_MAP } from 'ee/security_orchestration/components/policy_editor/scan_execution/lib/rules';
+import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
 
@@ -58,8 +53,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
     branch: 'main',
     fullPath: 'path/to/new-project',
   }),
-  modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
-  redirectToMergeRequest: jest.fn(),
+  goToPolicyMR: jest.fn().mockResolvedValue(),
 }));
 
 describe('EditorComponent', () => {
@@ -96,6 +90,7 @@ describe('EditorComponent', () => {
       apolloProvider: createMockApolloProvider(handler),
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        isEditing: false,
         ...propsData,
       },
       provide: {
@@ -169,13 +164,13 @@ describe('EditorComponent', () => {
       ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}            | ${ASSIGNED_POLICY_PROJECT}
       ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDastScanExecutionManifest}            | ${ASSIGNED_POLICY_PROJECT}
     `(
-      'navigates to the new merge request when "modifyPolicy" is emitted $status',
+      'navigates to the new merge request when "goToPolicyMR" is emitted $status',
       async ({ action, event, factoryFn, yamlEditorValue, currentlyAssignedPolicyProject }) => {
         factoryFn();
         findPolicyEditorLayout().vm.$emit(event);
         await waitForPromises();
-        expect(modifyPolicy).toHaveBeenCalledTimes(1);
-        expect(modifyPolicy).toHaveBeenCalledWith({
+        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        expect(goToPolicyMR).toHaveBeenCalledWith({
           action,
           assignedPolicyProject: currentlyAssignedPolicyProject,
           name:
@@ -185,12 +180,70 @@ describe('EditorComponent', () => {
           namespacePath: defaultProjectPath,
           yamlEditorValue,
         });
-        expect(redirectToMergeRequest).toHaveBeenCalledWith({
-          mergeRequestId: '2',
-          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
-        });
       },
     );
+
+    describe('error handling', () => {
+      const createError = (cause) => ({ message: 'There was an error', cause });
+      const approverCause = { field: 'approvers_ids' };
+      const branchesCause = { field: 'branches' };
+      const unknownCause = { field: 'unknown' };
+
+      describe('when in rule mode', () => {
+        it('passes errors with the cause of `approvers_ids` to the action section', async () => {
+          const error = createError([approverCause]);
+          goToPolicyMR.mockRejectedValue(error);
+          factoryWithExistingPolicy();
+          await findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
+        });
+
+        it('emits error with the cause of `branches`', async () => {
+          const error = createError([branchesCause]);
+          goToPolicyMR.mockRejectedValue(error);
+          factoryWithExistingPolicy();
+          await findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
+        });
+
+        it('emits error with an unknown cause', async () => {
+          const error = createError([unknownCause]);
+          goToPolicyMR.mockRejectedValue(error);
+          factoryWithExistingPolicy();
+          await findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
+        });
+
+        it('handles mixed errors', async () => {
+          const error = createError([approverCause, branchesCause, unknownCause]);
+          goToPolicyMR.mockRejectedValue(error);
+          factoryWithExistingPolicy();
+          await findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toStrictEqual([[''], ['There was an error']]);
+        });
+      });
+
+      describe('when in yaml mode', () => {
+        it('emits errors', async () => {
+          const error = createError([approverCause, branchesCause, unknownCause]);
+          goToPolicyMR.mockRejectedValue(error);
+          factoryWithExistingPolicy();
+          goToYamlMode(findPolicyEditorLayout);
+          await findPolicyEditorLayout().vm.$emit('save-policy');
+          await waitForPromises();
+
+          expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
+        });
+      });
+    });
   });
 
   describe('when a user is not an owner of the project', () => {
@@ -426,7 +479,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(modifyPolicy).toHaveBeenCalled();
+          expect(goToPolicyMR).toHaveBeenCalled();
         });
 
         it('saves policy when performance threshold is not reached and schedule rule is selected', async () => {
@@ -436,7 +489,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(modifyPolicy).toHaveBeenCalled();
+          expect(goToPolicyMR).toHaveBeenCalled();
         });
       });
 
@@ -450,7 +503,7 @@ enabled: true`;
         await waitForPromises();
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
-        expect(modifyPolicy).toHaveBeenCalled();
+        expect(goToPolicyMR).toHaveBeenCalled();
       });
 
       describe('performance threshold reached', () => {
@@ -470,7 +523,7 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(modifyPolicy).toHaveBeenCalledTimes(0);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
         });
 
         it('dismisses the warning without saving the policy', async () => {
@@ -481,12 +534,12 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(modifyPolicy).toHaveBeenCalledTimes(0);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
 
           await findOverloadWarningModal().vm.$emit('cancel-submit');
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(modifyPolicy).toHaveBeenCalledTimes(0);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
         });
 
         it('dismisses the warning and save the policy', async () => {
@@ -497,25 +550,25 @@ enabled: true`;
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(modifyPolicy).toHaveBeenCalledTimes(0);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
 
           await findOverloadWarningModal().vm.$emit('confirm-submit');
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(false);
-          expect(modifyPolicy).toHaveBeenCalledTimes(1);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(1);
         });
 
         it('also shows warning modal in yaml mode', async () => {
           await selectScheduleRule();
           await waitForPromises();
 
-          await findPolicyEditorLayout().vm.$emit('update-editor-mode', EDITOR_MODE_YAML);
+          goToYamlMode(findPolicyEditorLayout);
           findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
 
           expect(findOverloadWarningModal().props('visible')).toBe(true);
-          expect(modifyPolicy).toHaveBeenCalledTimes(0);
+          expect(goToPolicyMR).toHaveBeenCalledTimes(0);
         });
       });
     });
@@ -540,7 +593,7 @@ enabled: true`;
         await waitForPromises();
 
         expect(findOverloadWarningModal().props('visible')).toBe(false);
-        expect(modifyPolicy).toHaveBeenCalledTimes(1);
+        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
       });
     });
   });

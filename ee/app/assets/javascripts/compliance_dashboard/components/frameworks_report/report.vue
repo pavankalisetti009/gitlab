@@ -4,7 +4,10 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { fetchPolicies } from '~/lib/graphql';
 import { s__ } from '~/locale';
 
+import { createAlert } from '~/alert';
+import deleteComplianceFrameworkMutation from '../../graphql/mutations/delete_compliance_framework.mutation.graphql';
 import complianceFrameworks from './graphql/compliance_frameworks_list.query.graphql';
+
 import FrameworksTable from './frameworks_table.vue';
 
 const FRAMEWORK_LIMIT = 20;
@@ -109,6 +112,31 @@ export default {
     handleOnDismissMaintenanceMode() {
       this.maintenanceModeDismissed = true;
     },
+    async deleteFramework(id) {
+      try {
+        const {
+          data: { destroyComplianceFramework },
+        } = await this.$apollo.mutate({
+          mutation: deleteComplianceFrameworkMutation,
+          variables: {
+            input: {
+              id,
+            },
+          },
+        });
+
+        const [error] = destroyComplianceFramework.errors;
+
+        if (error) {
+          throw error;
+        } else {
+          this.$apollo.queries.frameworks.refetch();
+          this.$toast.show(s__('Compliance|Framework deleted successfully'));
+        }
+      } catch (error) {
+        createAlert({ message: error, captureError: true, error });
+      }
+    },
   },
   i18n: {
     deprecationWarning: {
@@ -170,6 +198,7 @@ export default {
         :is-loading="isLoading"
         :frameworks="frameworks.nodes"
         @search="onSearch"
+        @delete-framework="deleteFramework"
       />
 
       <gl-keyset-pagination

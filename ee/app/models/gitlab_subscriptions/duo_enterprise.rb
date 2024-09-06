@@ -4,11 +4,6 @@ module GitlabSubscriptions
   module DuoEnterprise
     ELIGIBLE_PLANS = [::Plan::ULTIMATE, ::Plan::ULTIMATE_TRIAL].freeze
 
-    def self.any_add_on_purchase_for_namespace(namespace)
-      GitlabSubscriptions::NamespaceAddOnPurchasesFinder
-        .new(namespace, add_on: :duo_enterprise, only_active: false).execute.first
-    end
-
     def self.no_add_on_purchase_for_namespace?(namespace)
       GitlabSubscriptions::NamespaceAddOnPurchasesFinder
         .new(namespace, only_active: false, add_on: :duo_enterprise).execute.none?

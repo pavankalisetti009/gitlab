@@ -9,7 +9,7 @@ module Groups
         before_action :authorize_remote_development!
         before_action :check_agent_authorization_feature_flag!
 
-        feature_category :remote_development
+        feature_category :workspaces
         urgency :low
 
         def show; end

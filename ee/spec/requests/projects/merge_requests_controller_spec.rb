@@ -246,4 +246,20 @@ RSpec.describe Projects::MergeRequestsController, feature_category: :code_review
       end
     end
   end
+
+  describe 'GET #reports' do
+    before do
+      get reports_project_merge_request_path(project, merge_request)
+    end
+
+    context 'when feature flag is disabled' do
+      before_all do
+        stub_feature_flags(mr_reports_tab: false)
+      end
+
+      it { expect(response).to have_gitlab_http_status(:not_found) }
+    end
+
+    it { expect(response).to have_gitlab_http_status(:ok) }
+  end
 end

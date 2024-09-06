@@ -43,6 +43,45 @@ RSpec.describe GitlabSchema.types['Group'], feature_category: :groups_and_projec
   it { expect(described_class).to have_graphql_field(:is_adjourned_deletion_enabled) }
   it { expect(described_class).to have_graphql_field(:permanent_deletion_date) }
   it { expect(described_class).to have_graphql_field(:pending_member_approvals) }
+  it { expect(described_class).to have_graphql_field(:dependencies) }
+
+  describe 'dependencies' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:group) { create(:group, developers: user) }
+    let_it_be(:project_1) { create(:project, namespace: group) }
+    let_it_be(:sbom_occurrence_1) { create(:sbom_occurrence, project: project_1) }
+    let_it_be(:project_2) { create(:project, namespace: group) }
+    let_it_be(:sbom_occurrence_2) { create(:sbom_occurrence, project: project_2) }
+    let_it_be(:query) do
+      %(
+        query {
+          group(fullPath: "#{group.full_path}") {
+            name
+            dependencies {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      )
+    end
+
+    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    before do
+      stub_licensed_features(security_dashboard: true, dependency_scanning: true)
+    end
+
+    it "returns all dependencies for all projects under given group" do
+      dependencies = query_result.dig(*%w[data group dependencies nodes])
+
+      expect(dependencies.count).to be(2)
+      expect(dependencies.first['name']).to eq(sbom_occurrence_1.component_name)
+      expect(dependencies.last['name']).to eq(sbom_occurrence_2.component_name)
+    end
+  end
 
   describe 'vulnerabilities' do
     let_it_be(:group) { create(:group) }

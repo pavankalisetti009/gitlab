@@ -2,12 +2,16 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environment_management do
+RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :deployment_management do
   it 'includes the ee specific fields' do
     expect(described_class).to have_graphql_fields(
       :vulnerability_images,
       :workspaces,
-      :remote_development_agent_config
+      # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+      :remote_development_agent_config,
+      :workspaces_agent_config,
+      :is_receptive,
+      :url_configurations
     ).at_least
   end
 
@@ -64,13 +68,13 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environmen
     end
   end
 
-  describe 'remote_development_agent_config' do
+  describe 'workspaces_agent_config' do
     let_it_be(:group) { create(:group) }
     let_it_be(:project) { create(:project, group: group) }
     let_it_be(:user) { create(:user) }
     let_it_be(:cluster_agent) { create(:cluster_agent, project: project) }
-    let_it_be(:remote_development_agent_config) do
-      create(:remote_development_agent_config, cluster_agent_id: cluster_agent.id, project_id: project.id)
+    let_it_be(:workspaces_agent_config) do
+      create(:workspaces_agent_config, cluster_agent_id: cluster_agent.id, project_id: project.id)
     end
 
     let_it_be(:remote_development_namespace_cluster_agent_mapping) do
@@ -84,6 +88,9 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environmen
             remoteDevelopmentClusterAgents(filter: AVAILABLE) {
               nodes {
                 remoteDevelopmentAgentConfig {
+                  defaultMaxHoursBeforeTermination
+                }
+                workspacesAgentConfig {
                   defaultMaxHoursBeforeTermination
                 }
               }
@@ -101,19 +108,40 @@ RSpec.describe GitlabSchema.types['ClusterAgent'], feature_category: :environmen
       stub_licensed_features(remote_development: true)
     end
 
-    subject(:remote_development_agent_config_result) do
+    # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
+    describe "for remote_development_agent_config" do
+      subject(:remote_development_agent_config_result) do
+        result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
+        result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'remoteDevelopmentAgentConfig')
+      end
+
+      context 'when user is logged in' do
+        let(:current_user) { user }
+        let(:expected_default_max_hours_before_termination) do
+          workspaces_agent_config.default_max_hours_before_termination
+        end
+
+        it 'returns associated workspaces agent config' do
+          expect(remote_development_agent_config_result).to eq(
+            'defaultMaxHoursBeforeTermination' => expected_default_max_hours_before_termination
+          )
+        end
+      end
+    end
+
+    subject(:workspaces_agent_config_result) do
       result = GitlabSchema.execute(query, context: { current_user: current_user }).as_json
-      result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'remoteDevelopmentAgentConfig')
+      result.dig('data', 'namespace', 'remoteDevelopmentClusterAgents', 'nodes', 0, 'workspacesAgentConfig')
     end
 
     context 'when user is logged in' do
       let(:current_user) { user }
       let(:expected_default_max_hours_before_termination) do
-        remote_development_agent_config.default_max_hours_before_termination
+        workspaces_agent_config.default_max_hours_before_termination
       end
 
-      it 'returns associated remote development agent config' do
-        expect(remote_development_agent_config_result).to eq(
+      it 'returns associated workspaces agent config' do
+        expect(workspaces_agent_config_result).to eq(
           'defaultMaxHoursBeforeTermination' => expected_default_max_hours_before_termination
         )
       end

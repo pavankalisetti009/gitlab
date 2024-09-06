@@ -508,6 +508,44 @@ FactoryBot.define do
             type: 'text',
             name: 'Text with more info',
             value: 'More info about this vulnerability'
+          },
+          code_flows: {
+            name: 'Code Flows',
+            type: 'code-flows',
+            items: [
+              [
+                {
+                  file_location: {
+                    file_name: "app/app.py",
+                    line_end: 8,
+                    line_start: 8,
+                    type: "file-location"
+                  },
+                  node_type: "source",
+                  type: "code-flow-node"
+                },
+                {
+                  file_location: {
+                    file_name: "app/app.py",
+                    line_end: 8,
+                    line_start: 8,
+                    type: "file-location"
+                  },
+                  node_type: "propagation",
+                  type: "code-flow-node"
+                },
+                {
+                  file_location: {
+                    file_name: "app/utils.py",
+                    line_end: 5,
+                    line_start: 5,
+                    type: "file-location"
+                  },
+                  node_type: "sink",
+                  type: "code-flow-node"
+                }
+              ]
+            ]
           }
         }
       end
@@ -585,6 +623,7 @@ FactoryBot.define do
         image { "package-registry/package:tag" }
         package { "org.apache.logging.log4j:log4j-api" }
         version { "2.14.1" }
+        container_repository_url { 'gitlab.localdev:3000/project/container_registry/1' }
         operating_system { 'Unknown' }
       end
 
@@ -594,6 +633,7 @@ FactoryBot.define do
         finding.metadata_version = "2.1"
         finding.location = {
           image: evaluator.image,
+          container_repository_url: evaluator.container_repository_url,
           dependency: {
             package: {
               name: evaluator.package

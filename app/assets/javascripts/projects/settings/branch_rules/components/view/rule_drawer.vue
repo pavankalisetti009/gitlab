@@ -3,7 +3,11 @@ import { GlDrawer, GlButton, GlFormGroup, GlFormCheckbox } from '@gitlab/ui';
 import { __ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
-import { USERS_TYPE, GROUPS_TYPE } from '~/vue_shared/components/list_selector/constants';
+import {
+  USERS_TYPE,
+  GROUPS_TYPE,
+  DEPLOY_KEYS_TYPE,
+} from '~/vue_shared/components/list_selector/constants';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import {
   ACCESS_LEVEL_DEVELOPER_INTEGER,
@@ -23,6 +27,7 @@ export default {
   ACCESS_LEVEL_NO_ACCESS_INTEGER,
   USERS_TYPE,
   GROUPS_TYPE,
+  DEPLOY_KEYS_TYPE,
   i18n: {
     saveChanges: __('Save changes'),
     cancel: __('Cancel'),
@@ -55,6 +60,11 @@ export default {
       required: false,
       default: () => [],
     },
+    deployKeys: {
+      type: Array,
+      required: false,
+      default: () => [],
+    },
     title: {
       type: String,
       required: true,
@@ -73,6 +83,7 @@ export default {
     return {
       updatedGroups: this.groups,
       updatedUsers: this.users,
+      updatedDeployKeys: this.deployKeys,
       isAdminSelected: null,
       isMaintainersSelected: null,
       isDevelopersAndMaintainersSelected: null,
@@ -94,6 +105,7 @@ export default {
 
       this.updatedGroups = this.groups;
       this.updatedUsers = this.users;
+      this.updatedDeployKeys = this.deployKeys;
     },
   },
   methods: {
@@ -118,6 +130,7 @@ export default {
       const ruleEditRoles = [
         ...this.formatItemsData(this.updatedUsers, 'userId', 'User'), // eslint-disable-line @gitlab/require-i18n-strings
         ...this.formatItemsData(this.updatedGroups, 'groupId', 'Group'), // eslint-disable-line @gitlab/require-i18n-strings
+        ...this.formatItemsData(this.updatedDeployKeys, 'deployKeyId', 'DeployKey'),
       ];
       let ruleEditAccessLevels = [];
       if (this.isAdminSelected) {
@@ -192,6 +205,12 @@ export default {
           :items="formatItemsIds(groups)"
           data-testid="groups-selector"
           @change="handleRuleDataUpdate('updatedGroups', $event)"
+        />
+        <items-selector
+          :type="$options.DEPLOY_KEYS_TYPE"
+          :items="formatItemsIds(deployKeys)"
+          data-testid="deploy-keys-selector"
+          @change="handleRuleDataUpdate('updatedDeployKeys', $event)"
         />
         <div class="gl-mt-5 gl-flex gl-gap-3">
           <gl-button

@@ -39,7 +39,7 @@ import getAddOnEligibleUsers from 'ee/usage_quotas/add_on/graphql/saas_add_on_el
 import userAddOnAssignmentBulkCreateMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_bulk_create.mutation.graphql';
 import userAddOnAssignmentBulkRemoveMutation from 'ee/usage_quotas/add_on/graphql/user_add_on_assignment_bulk_remove.mutation.graphql';
 import { getSubscriptionPermissionsData } from 'ee/fulfillment/shared_queries/subscription_actions_reason.customer.query.graphql';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 Vue.use(VueApollo);
 

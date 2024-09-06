@@ -19,7 +19,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
   end
 
   describe '#variables' do
-    subject(:variables) { builder.variables(job.name, job.user) }
+    subject(:variables) { builder.variables(job.name) }
 
     context 'with security policies' do
       let_it_be(:namespace_policies_project) { create(:project, :repository) }
@@ -92,7 +92,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder::ScanExecutionPolicies, feature_ca
           end
 
           2.times do
-            expect(builder.variables(job.name, job.user)).to match_array([
+            expect(builder.variables(job.name)).to match_array([
               item(key: 'SECRET_DETECTION_HISTORIC_SCAN', value: 'true'),
               item(key: 'SECRET_DETECTION_EXCLUDED_PATHS', value: '')
             ])

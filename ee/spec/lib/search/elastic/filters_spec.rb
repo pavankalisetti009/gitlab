@@ -1174,6 +1174,48 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
         end
       end
 
+      context 'when features is nil' do
+        let(:features) { nil }
+
+        context 'when project_ids is :any' do
+          let(:project_ids) { :any }
+
+          it 'returns the expected query' do
+            expected_filter = [
+              { has_parent:
+                { _name: 'filters:project:parent', parent_type: 'project',
+                  query: { bool: { should: [
+                    { term: { visibility_level: { _name: 'filters:project:any', value: Project::PRIVATE } } }
+                  ] } } } }
+            ]
+
+            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+
+        context 'when project_ids is empty' do
+          let(:project_ids) { [] }
+
+          it 'returns the expected query' do
+            expected_filter = [
+              { has_parent:
+                { _name: 'filters:project:parent', parent_type: 'project',
+                  query: { bool: { should: [
+                    { terms: { _name: 'filters:project:membership:id', id: [] } }
+                  ] } } } }
+            ]
+
+            expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+            expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+            expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+          end
+        end
+      end
+
       context 'when public_and_internal_projects is true' do
         let(:public_and_internal_projects) { true }
 
@@ -1218,6 +1260,56 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
 
         context 'when no_join_project is true' do
           let(:no_join_project) { true }
+
+          context 'when project_visibility_level field is set' do
+            let(:options) { base_options.merge(project_visibility_level_field: :foo) }
+
+            it 'returns the expected query' do
+              expected_filter = [
+                { bool: {
+                  _name: 'filters:project',
+                  should: [
+                    { bool:
+                      { filter: [
+                        { terms: { _name: 'filters:project:membership:id', project_id: [] } },
+                        { terms: {
+                          _name: 'filters:project:issues:enabled_or_private', 'issues_access_level' => [
+                            ::ProjectFeature::ENABLED, ::ProjectFeature::PRIVATE
+                          ]
+                        } }
+                      ] } },
+                    { bool:
+                      { _name: 'filters:project:visibility:10:issues:access_level',
+                        filter: [
+                          { term: { foo: { _name: 'filters:project:visibility:10',
+                                           value: ::Gitlab::VisibilityLevel::INTERNAL } } },
+                          { term: {
+                            'issues_access_level' =>
+                              { _name: 'filters:project:visibility:10:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
+                          } }
+                        ] } },
+                    { bool:
+                      { _name: 'filters:project:visibility:20:issues:access_level',
+                        filter: [
+                          { term: { foo: { _name: 'filters:project:visibility:20',
+                                           value: ::Gitlab::VisibilityLevel::PUBLIC } } },
+                          { term: {
+                            'issues_access_level' =>
+                              { _name: 'filters:project:visibility:20:issues:access_level:enabled',
+                                value: ::ProjectFeature::ENABLED }
+                          } }
+                        ] } }
+                  ]
+                } }
+              ]
+
+              expect(by_authorization.dig(:query, :bool, :filter)).to eq(expected_filter)
+              expect(by_authorization.dig(:query, :bool, :must_not)).to be_empty
+              expect(by_authorization.dig(:query, :bool, :must)).to be_empty
+              expect(by_authorization.dig(:query, :bool, :should)).to be_empty
+            end
+          end
 
           it 'returns the expected query' do
             expected_filter = [
@@ -2253,6 +2345,72 @@ RSpec.describe ::Search::Elastic::Filters, feature_category: :global_search do
             end
           end
         end
+      end
+    end
+  end
+
+  describe '.by_work_item_type_ids' do
+    subject(:by_work_item_type_ids) { described_class.by_work_item_type_ids(query_hash: query_hash, options: options) }
+
+    context 'when options[:work_item_type_ids] and options[:not_work_item_type_ids] are empty' do
+      let(:options) { {} }
+
+      it_behaves_like 'does not modify the query_hash'
+    end
+
+    context 'when options[:work_item_type_ids] and options[:not_work_item_type_ids] are both provided' do
+      let(:options) { { work_item_type_ids: [1], not_work_item_type_ids: [2] } }
+
+      it 'adds the work_item_type_id filter to query_hash' do
+        expected_filter = [
+          { bool: {
+            must: {
+              terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
+            }
+          } },
+          { bool: { must_not: {
+            terms: { work_item_type_id: [2], _name: 'filters:not_work_item_type_ids' }
+          } } }
+        ]
+
+        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:work_item_type_ids] is provided' do
+      let(:options) { { work_item_type_ids: [1] } }
+
+      it 'adds the work_item_type_id filter to query_hash' do
+        expected_filter = [
+          { bool: { must: {
+            terms: { work_item_type_id: [1], _name: 'filters:work_item_type_ids' }
+          } } }
+        ]
+
+        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
+      end
+    end
+
+    context 'when options[:not_work_item_type_ids] is provided' do
+      let(:options) { { not_work_item_type_ids: [1] } }
+
+      it 'adds the work_item_type_id filter to query_hash' do
+        expected_filter = [
+          { bool: { must_not: {
+            terms: { work_item_type_id: [1], _name: 'filters:not_work_item_type_ids' }
+          } } }
+        ]
+
+        expect(by_work_item_type_ids.dig(:query, :bool, :filter)).to eq(expected_filter)
+        expect(by_work_item_type_ids.dig(:query, :bool, :must)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :must_not)).to be_empty
+        expect(by_work_item_type_ids.dig(:query, :bool, :should)).to be_empty
       end
     end
   end

@@ -12,7 +12,7 @@
 - @body_class = 'marketing-background-gradient'
 
 - content_for :omniauth_providers_top do
-  .gl-pt-5.gl-max-w-75
+  .gl-pt-5
     %label.gl-font-normal
       = _('Sign up for your free trial with:')
     .gl-flex.gl-gap-3
@@ -22,22 +22,30 @@
           provider: provider,
           tracking_label: preregistration_tracking_label
 
-  .gl-my-5.gl-font-bold.gl-max-w-75
+  .gl-my-5.gl-font-bold
     = _('Or create your own GitLab account')
 
 .row.marketing-styling
-  .col-md-8.gl-flex.gl-flex-col.gl-pl-120
-    %h1.gl-mt-0
-      - upper_tag = tag.span(class: 'gl-text-size-h2-xl')
-      - lower_tag = tag.span(class: 'gl-block')
-      = safe_format(s_('InProductMarketing|%{upper_start}Free 30-day trial%{upper_end} %{lower_start}GitLab Ultimate%{lower_end}'),
-        tag_pair(upper_tag, :upper_start, :upper_end),
-        tag_pair(lower_tag, :lower_start, :lower_end))
+  .col-md-8.gl-flex.gl-flex-col
+    - upper_tag = tag.span(class: 'gl-text-size-h2-xl')
+    - lower_tag = tag.span(class: 'gl-block gl-mt-3')
+    - if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
+      %h1.gl-mt-0.gl-max-w-75
+        - last_tag = tag.span(class: 'gl-heading-3 gl-font-normal')
+        = safe_format(s_('InProductMarketing|%{upper_start}Free 60-day trial%{upper_end} %{lower_start}GitLab Ultimate & GitLab Duo Enterprise%{lower_end} %{last_start}Sign up for a free trial of the most comprehensive AI-powered DevSecOps Platform%{last_end}'),
+          tag_pair(upper_tag, :upper_start, :upper_end),
+          tag_pair(lower_tag, :lower_start, :lower_end),
+          tag_pair(last_tag, :last_start, :last_end))
+    - else
+      %h1.gl-mt-0.gl-max-w-75
+        = safe_format(s_('InProductMarketing|%{upper_start}Free 30-day trial%{upper_end} %{lower_start}GitLab Ultimate%{lower_end}'),
+          tag_pair(upper_tag, :upper_start, :upper_end),
+          tag_pair(lower_tag, :lower_start, :lower_end))
 
-    .signup-box
+    .signup-box.gl-max-w-75
       = render 'signup_box', tracking_label: preregistration_tracking_label
 
-      .additional-links.gl-mt-6.gl-font-bold
+      .additional-links.gl-mt-6
         = render 'devise/shared/sign_in_link',
           wrapper_class: '',
           tracking_action: 'click_sign_in_from_registration_page',
@@ -51,11 +59,18 @@
 
   .col-md-4.lg:gl-flex.gl-flex-col.gl-mb-6.gl-items-center.gl-pr-8
     %div
-      - ultimate_trial_value_props = [s_('InProductMarketing|Accelerate your digital transformation'),
-      s_('InProductMarketing|Deliver software faster'),
-      s_('InProductMarketing|Ensure compliance'),
-      s_('InProductMarketing|Build in security'),
-      s_('InProductMarketing|Improve collaboration and visibility')]
+      - if Feature.enabled?(:duo_enterprise_trials_registration, Feature.current_request)
+        - ultimate_trial_value_props = [s_('InProductMarketing|One platform for Dev, Sec, and Ops teams'),
+        s_('InProductMarketing|End-to-end security and compliance'),
+        s_('InProductMarketing|Boost efficiency and collaboration'),
+        s_('InProductMarketing|Ship secure software faster'),
+        s_('InProductMarketing|GitLab Duo Enterprise: AI across the software development lifecycle')]
+      - else
+        - ultimate_trial_value_props = [s_('InProductMarketing|Accelerate your digital transformation'),
+        s_('InProductMarketing|Deliver software faster'),
+        s_('InProductMarketing|Ensure compliance'),
+        s_('InProductMarketing|Build in security'),
+        s_('InProductMarketing|Improve collaboration and visibility')]
 
       %h2.gl-text-size-h2-xl.gl-font-normal.gl-mb-6= s_('InProductMarketing|No credit card required.')
 

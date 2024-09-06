@@ -3,6 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe 'Member Roles', feature_category: :permissions do
+  include ListboxHelpers
+
   let_it_be(:group) { create(:group) }
   let_it_be(:custom_role) { create(:member_role, namespace: group) }
   let_it_be(:owner) { create(:user, owner_of: group) }
@@ -23,7 +25,7 @@ RSpec.describe 'Member Roles', feature_category: :permissions do
 
     fill_in 'Name', with: name
     fill_in 'Description', with: description
-    select access_level, from: 'Base role'
+    select_from_listbox access_level, from: 'Select a role'
 
     permissions.each do |permission|
       page.find('tr', text: permission).click

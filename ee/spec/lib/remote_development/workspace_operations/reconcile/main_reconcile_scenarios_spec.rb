@@ -7,13 +7,13 @@ require 'spec_helper'
 #       https://gitlab.com/gitlab-org/remote-development/gitlab-remote-development-docs/-/blob/main/doc/workspace-updates.md
 #       are not yet implemented - most or all are related to ERROR or FAILURE states, because the fixtures are not yet
 #       implemented.
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial Update Scenarios', feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, 'Partial Update Scenarios', feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:logger) { instance_double(::Logger) }
   let_it_be(:user) { create(:user) }
 
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
   before do
     allow(logger).to receive(:debug)

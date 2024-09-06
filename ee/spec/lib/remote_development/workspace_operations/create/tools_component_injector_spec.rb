@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInjector, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::ToolsComponentInjector, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:input_processed_devfile_name) { 'example.flattened-devfile.yaml' }

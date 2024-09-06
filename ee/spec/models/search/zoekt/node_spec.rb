@@ -32,6 +32,18 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         expect(described_class.online).to contain_exactly(node, online_node)
       end
     end
+
+    describe '.by_name' do
+      let_it_be(:node1) { create(:zoekt_node, metadata: { name: 'node1' }) }
+      let_it_be(:node2) { create(:zoekt_node, metadata: { name: 'node2' }) }
+      let_it_be(:node3) { create(:zoekt_node, metadata: { name: 'node3' }) }
+
+      it 'returns nodes filtered by name' do
+        expect(described_class.by_name('node1')).to contain_exactly(node1)
+        expect(described_class.by_name('node1', 'node2')).to contain_exactly(node1, node2)
+        expect(described_class.by_name('non_existent')).to be_empty
+      end
+    end
   end
 
   describe 'validations' do
@@ -118,14 +130,14 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
     end
   end
 
-  describe '.backoff' do
+  describe '#backoff' do
     it 'returns a NodeBackoff' do
       expect(::Search::Zoekt::NodeBackoff).to receive(:new).with(node).and_return(:backoff)
       expect(node.backoff).to eq(:backoff)
     end
   end
 
-  describe '.metadata_json' do
+  describe '#metadata_json' do
     it 'returns a json with metadata' do
       node.update!(metadata: { name: 'test_name', task_count: 100, concurrency: 10 })
       expected_json = {
@@ -135,7 +147,8 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'zoekt.used_bytes' => node.used_bytes,
         'zoekt.total_bytes' => node.total_bytes,
         'zoekt.task_count' => 100,
-        'zoekt.concurrency' => 10
+        'zoekt.concurrency' => 10,
+        'zoekt.concurrency_limit' => 10
       }
 
       expect(node.metadata_json).to eq(expected_json)
@@ -148,10 +161,52 @@ RSpec.describe ::Search::Zoekt::Node, feature_category: :global_search do
         'zoekt.node_id' => node.id,
         'zoekt.indexed_bytes' => 0,
         'zoekt.used_bytes' => node.used_bytes,
-        'zoekt.total_bytes' => node.total_bytes
+        'zoekt.total_bytes' => node.total_bytes,
+        'zoekt.concurrency_limit' => node.concurrency_limit
       }
 
       expect(node.metadata_json).to eq(expected_json)
+    end
+  end
+
+  describe '#concurrency_limit' do
+    subject(:concurrency_limit) { node.concurrency_limit }
+
+    context 'when node does not have task_count/concurrency set' do
+      it 'returns the default limit' do
+        expect(concurrency_limit).to eq(::Search::Zoekt::Node::DEFAULT_CONCURRENCY_LIMIT)
+      end
+    end
+
+    context 'when node has task_count/concurrency set' do
+      using RSpec::Parameterized::TableSyntax
+
+      where(:concurrency, :concurrency_override, :multiplier, :result) do
+        10  | nil | 1.0 | 10
+        10  | nil | 1.5 | 15
+        10  | nil | 2.0 | 20
+        10  | 0   | 3.5 | 35
+        3   | 0   | 2.5 | 8
+        3   | 0   | 2.4 | 7
+        1   | nil | 1.0 | 1
+        1   | nil | 2.0 | 2
+        10  | 20  | 1.5 | 20
+        200 | nil | 1.0 | ::Search::Zoekt::Node::MAX_CONCURRENCY_LIMIT
+        200 | nil | 1.5 | ::Search::Zoekt::Node::MAX_CONCURRENCY_LIMIT
+        0   | nil | 1.5 | ::Search::Zoekt::Node::DEFAULT_CONCURRENCY_LIMIT
+      end
+
+      with_them do
+        before do
+          stub_ee_application_setting(zoekt_cpu_to_tasks_ratio: multiplier)
+          node.metadata['concurrency'] = concurrency
+          node.metadata['concurrency_override'] = concurrency_override
+        end
+
+        it 'returns correct value' do
+          expect(concurrency_limit).to eq(result)
+        end
+      end
     end
   end
 end

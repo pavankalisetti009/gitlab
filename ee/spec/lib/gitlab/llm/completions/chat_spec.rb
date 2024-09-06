@@ -28,7 +28,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
   let(:additional_context) do
     [
-      { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+      { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
     ]
   end
 
@@ -84,7 +84,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
   subject { described_class.new(prompt_message, nil, **options).execute }
 
   shared_examples 'success' do
-    xit 'calls the SingleAction Agent with the right parameters', :snowplow do
+    it 'calls the SingleAction Agent with the right parameters', :snowplow do
       expected_params = [
         user_input: content,
         tools: match_array(tools),
@@ -131,7 +131,7 @@ RSpec.describe Gitlab::Llm::Completions::Chat, feature_category: :duo_chat do
 
       let(:stream_response_handler) { instance_double(Gitlab::Llm::ResponseService) }
 
-      xit 'correctly initializes response handlers' do
+      it 'correctly initializes response handlers' do
         expected_params = [
           user_input: content,
           tools: an_instance_of(Array),
@@ -170,7 +170,7 @@ client_subscription_id: 'someid' }
         )
       end
 
-      xit 'sends process_gitlab_duo_question snowplow event with value eql 0' do
+      it 'sends process_gitlab_duo_question snowplow event with value eql 0' do
         allow_next_instance_of(::Gitlab::Llm::Chain::Agents::SingleActionExecutor) do |instance|
           expect(instance).to receive(:execute).and_return(answer)
         end
@@ -283,6 +283,32 @@ client_subscription_id: 'someid' }
       end
 
       it_behaves_like 'tool behind a feature flag'
+    end
+
+    context 'with commit reader allowed' do
+      before do
+        stub_feature_flags(ai_commit_reader_for_chat: true)
+        allow(ai_request).to receive(:request)
+      end
+
+      let(:tools) do
+        [
+          ::Gitlab::Llm::Chain::Tools::IssueReader,
+          ::Gitlab::Llm::Chain::Tools::GitlabDocumentation,
+          ::Gitlab::Llm::Chain::Tools::EpicReader,
+          ::Gitlab::Llm::Chain::Tools::CiEditorAssistant,
+          ::Gitlab::Llm::Chain::Tools::CommitReader
+        ]
+      end
+
+      it_behaves_like 'tool behind a feature flag'
+
+      it 'pushes feature flag to AI Gateway' do
+        expect(::Gitlab::AiGateway).to receive(:push_feature_flag)
+         .with(:ai_commit_reader_for_chat, user).and_return(:ai_commit_reader_for_chat)
+
+        subject
+      end
     end
 
     context 'when message is a slash command' do
@@ -419,7 +445,7 @@ client_subscription_id: 'someid' }
         stub_feature_flags(v2_chat_agent_integration: false)
       end
 
-      xit 'calls the ZeroShot Agent with the right parameters', :snowplow do
+      it 'calls the ZeroShot Agent with the right parameters', :snowplow do
         expected_params = [
           user_input: content,
           tools: match_array(tools),

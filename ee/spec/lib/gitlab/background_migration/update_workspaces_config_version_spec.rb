@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, feature_category: :remote_development do
+RSpec.describe Gitlab::BackgroundMigration::UpdateWorkspacesConfigVersion, feature_category: :workspaces do
   describe "#perform" do
     let(:v1) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_1 }
     let(:v2) { RemoteDevelopment::WorkspaceOperations::ConfigVersion::VERSION_2 }

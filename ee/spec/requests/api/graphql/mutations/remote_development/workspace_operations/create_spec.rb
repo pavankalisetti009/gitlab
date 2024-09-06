@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Creating a workspace', feature_category: :remote_development do
+RSpec.describe 'Creating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }
@@ -24,7 +24,7 @@ RSpec.describe 'Creating a workspace', feature_category: :remote_development do
   end
 
   let_it_be(:agent, reload: true) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: agent_project)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: agent_project)
   end
 
   let_it_be(:agent_project_in_different_root_namespace, reload: true) do

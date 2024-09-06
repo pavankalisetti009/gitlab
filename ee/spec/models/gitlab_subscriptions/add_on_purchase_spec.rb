@@ -76,23 +76,23 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
 
       let_it_be(:expired_gitlab_duo_pro_purchase_as_owner) do
-        create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: gitlab_duo_pro_add_on)
+        create(:gitlab_subscription_add_on_purchase, :expired, add_on: gitlab_duo_pro_add_on)
       end
 
       let_it_be(:active_gitlab_duo_pro_purchase_as_guest) do
-        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on, started_at: Date.current)
       end
 
-      let_it_be(:active_gitlab_duo_pro_purchase_as_reporter) do
-        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+      let_it_be(:expired_gitlab_duo_pro_purchase_as_reporter) do
+        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on, expires_on: Date.current)
       end
 
       let_it_be(:active_gitlab_duo_pro_purchase_as_developer) do
         create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
       end
 
-      let_it_be(:active_gitlab_duo_pro_purchase_as_maintainer) do
-        create(:gitlab_subscription_add_on_purchase, add_on: gitlab_duo_pro_add_on)
+      let_it_be(:future_dated_gitlab_duo_pro_purchase_as_maintainer) do
+        create(:gitlab_subscription_add_on_purchase, :future_dated, add_on: gitlab_duo_pro_add_on)
       end
 
       let_it_be(:active_gitlab_duo_pro_purchase_unrelated) do
@@ -100,23 +100,23 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       end
 
       let_it_be(:expired_product_analytics_purchase_as_owner) do
-        create(:gitlab_subscription_add_on_purchase, expires_on: 1.day.ago, add_on: product_analytics_add_on)
+        create(:gitlab_subscription_add_on_purchase, :expired, add_on: product_analytics_add_on)
       end
 
       let_it_be(:active_product_analytics_purchase_as_guest) do
-        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on, started_at: Date.current)
       end
 
-      let_it_be(:active_product_analytics_purchase_as_reporter) do
-        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+      let_it_be(:expired_product_analytics_purchase_as_reporter) do
+        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on, expires_on: Date.current)
       end
 
       let_it_be(:active_product_analytics_purchase_as_developer) do
         create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
       end
 
-      let_it_be(:active_product_analytics_purchase_as_maintainer) do
-        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+      let_it_be(:future_dated_product_analytics_purchase_as_maintainer) do
+        create(:gitlab_subscription_add_on_purchase, :future_dated, add_on: product_analytics_add_on)
       end
 
       let_it_be(:active_product_analytics_purchase_unrelated) do
@@ -128,31 +128,32 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       before do
         expired_gitlab_duo_pro_purchase_as_owner.namespace.add_owner(user)
         active_gitlab_duo_pro_purchase_as_guest.namespace.add_guest(user)
-        active_gitlab_duo_pro_purchase_as_reporter.namespace.add_reporter(user)
+        expired_gitlab_duo_pro_purchase_as_reporter.namespace.add_reporter(user)
         active_gitlab_duo_pro_purchase_as_developer.namespace.add_developer(user)
-        active_gitlab_duo_pro_purchase_as_maintainer.namespace.add_maintainer(user)
+        future_dated_gitlab_duo_pro_purchase_as_maintainer.namespace.add_maintainer(user)
 
         expired_product_analytics_purchase_as_owner.namespace.add_owner(user)
         active_product_analytics_purchase_as_guest.namespace.add_guest(user)
-        active_product_analytics_purchase_as_reporter.namespace.add_reporter(user)
+        expired_product_analytics_purchase_as_reporter.namespace.add_reporter(user)
         active_product_analytics_purchase_as_developer.namespace.add_developer(user)
-        active_product_analytics_purchase_as_maintainer.namespace.add_maintainer(user)
+        future_dated_product_analytics_purchase_as_maintainer.namespace.add_maintainer(user)
       end
     end
 
     describe '.active' do
-      include_context 'with add-on purchases'
-
       subject(:active_purchases) { described_class.active }
+
+      include_context 'with add-on purchases'
 
       it 'returns all the purchases that are not expired' do
         expect(active_purchases).to match_array(
           [
-            active_gitlab_duo_pro_purchase_as_guest, active_gitlab_duo_pro_purchase_as_reporter,
-            active_gitlab_duo_pro_purchase_as_developer, active_gitlab_duo_pro_purchase_as_maintainer,
-            active_gitlab_duo_pro_purchase_unrelated, active_product_analytics_purchase_as_guest,
-            active_product_analytics_purchase_as_reporter, active_product_analytics_purchase_as_developer,
-            active_product_analytics_purchase_as_maintainer, active_product_analytics_purchase_unrelated
+            active_gitlab_duo_pro_purchase_as_guest,
+            active_gitlab_duo_pro_purchase_as_developer,
+            active_gitlab_duo_pro_purchase_unrelated,
+            active_product_analytics_purchase_as_guest,
+            active_product_analytics_purchase_as_developer,
+            active_product_analytics_purchase_unrelated
           ]
         )
       end
@@ -211,9 +212,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         it 'returns all the purchases related to gitlab_duo_pro' do
           expect(by_name_purchases).to match_array(
             [
-              expired_gitlab_duo_pro_purchase_as_owner, active_gitlab_duo_pro_purchase_as_guest,
-              active_gitlab_duo_pro_purchase_as_reporter, active_gitlab_duo_pro_purchase_as_developer,
-              active_gitlab_duo_pro_purchase_as_maintainer, active_gitlab_duo_pro_purchase_unrelated
+              expired_gitlab_duo_pro_purchase_as_owner,
+              active_gitlab_duo_pro_purchase_as_guest,
+              expired_gitlab_duo_pro_purchase_as_reporter,
+              active_gitlab_duo_pro_purchase_as_developer,
+              future_dated_gitlab_duo_pro_purchase_as_maintainer,
+              active_gitlab_duo_pro_purchase_unrelated
             ]
           )
         end
@@ -234,14 +238,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       include_context 'with add-on purchases'
 
       context 'when record with given namespace_id exists' do
-        let(:namespace_id) { active_gitlab_duo_pro_purchase_as_maintainer.namespace_id }
+        let(:namespace_id) { active_gitlab_duo_pro_purchase_as_developer.namespace_id }
 
-        it { is_expected.to contain_exactly(active_gitlab_duo_pro_purchase_as_maintainer) }
+        it { is_expected.to contain_exactly(active_gitlab_duo_pro_purchase_as_developer) }
 
         context 'when namespace record is passed' do
-          subject { described_class.by_namespace(active_gitlab_duo_pro_purchase_as_maintainer.namespace) }
+          subject { described_class.by_namespace(active_gitlab_duo_pro_purchase_as_developer.namespace) }
 
-          it { is_expected.to contain_exactly(active_gitlab_duo_pro_purchase_as_maintainer) }
+          it { is_expected.to contain_exactly(active_gitlab_duo_pro_purchase_as_developer) }
         end
       end
 
@@ -276,9 +280,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       it 'returns all the purchases related to gitlab duo' do
         expect(gitlab_duo_pro_purchases).to match_array(
           [
-            expired_gitlab_duo_pro_purchase_as_owner, active_gitlab_duo_pro_purchase_as_guest,
-            active_gitlab_duo_pro_purchase_as_reporter, active_gitlab_duo_pro_purchase_as_developer,
-            active_gitlab_duo_pro_purchase_as_maintainer, active_gitlab_duo_pro_purchase_unrelated
+            expired_gitlab_duo_pro_purchase_as_owner,
+            active_gitlab_duo_pro_purchase_as_guest,
+            expired_gitlab_duo_pro_purchase_as_reporter,
+            active_gitlab_duo_pro_purchase_as_developer,
+            future_dated_gitlab_duo_pro_purchase_as_maintainer,
+            active_gitlab_duo_pro_purchase_unrelated
           ]
         )
       end
@@ -292,9 +299,12 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       it 'returns all the purchases related to product_analytics' do
         expect(product_analytics_purchases).to match_array(
           [
-            expired_product_analytics_purchase_as_owner, active_product_analytics_purchase_as_guest,
-            active_product_analytics_purchase_as_reporter, active_product_analytics_purchase_as_developer,
-            active_product_analytics_purchase_as_maintainer, active_product_analytics_purchase_unrelated
+            expired_product_analytics_purchase_as_owner,
+            active_product_analytics_purchase_as_guest,
+            expired_product_analytics_purchase_as_reporter,
+            active_product_analytics_purchase_as_developer,
+            future_dated_product_analytics_purchase_as_maintainer,
+            active_product_analytics_purchase_unrelated
           ]
         )
       end
@@ -359,10 +369,14 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       it 'returns all the non-guest purchases related to the user top level namespaces' do
         expect(user_purchases).to match_array(
           [
-            expired_gitlab_duo_pro_purchase_as_owner, active_gitlab_duo_pro_purchase_as_reporter,
-            active_gitlab_duo_pro_purchase_as_developer, active_gitlab_duo_pro_purchase_as_maintainer,
-            expired_product_analytics_purchase_as_owner, active_product_analytics_purchase_as_reporter,
-            active_product_analytics_purchase_as_developer, active_product_analytics_purchase_as_maintainer
+            expired_gitlab_duo_pro_purchase_as_owner,
+            expired_gitlab_duo_pro_purchase_as_reporter,
+            active_gitlab_duo_pro_purchase_as_developer,
+            future_dated_gitlab_duo_pro_purchase_as_maintainer,
+            expired_product_analytics_purchase_as_owner,
+            expired_product_analytics_purchase_as_reporter,
+            active_product_analytics_purchase_as_developer,
+            future_dated_product_analytics_purchase_as_maintainer
           ]
         )
       end
@@ -383,6 +397,11 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
         create(
           :gitlab_subscription_user_add_on_assignment,
           user: user,
+          add_on_purchase: future_dated_gitlab_duo_pro_purchase_as_maintainer
+        )
+        create(
+          :gitlab_subscription_user_add_on_assignment,
+          user: user,
           add_on_purchase: expired_gitlab_duo_pro_purchase_as_owner
         )
       end
@@ -394,36 +413,87 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
       it 'returns all active purchases related to the user add-on assignments' do
         expect(user_purchases).to match_array(
           [
-            active_gitlab_duo_pro_purchase_as_developer,
-            active_gitlab_duo_pro_purchase_as_guest
+            active_gitlab_duo_pro_purchase_as_guest,
+            active_gitlab_duo_pro_purchase_as_developer
           ]
         )
       end
     end
 
     describe '.requiring_assigned_users_refresh' do
-      let_it_be(:add_on) { create(:gitlab_subscription_add_on) }
-      let_it_be(:add_on_purchase_refreshed_nil) { create(:gitlab_subscription_add_on_purchase, add_on: add_on) }
-      let_it_be(:add_on_purchase_fresh) do
-        create(:gitlab_subscription_add_on_purchase, add_on: add_on, last_assigned_users_refreshed_at: 1.hour.ago)
+      let_it_be(:duo_pro_add_on) { create(:gitlab_subscription_add_on, :code_suggestions) }
+      let_it_be(:duo_enterprise_add_on) { create(:gitlab_subscription_add_on, :duo_enterprise) }
+      let_it_be(:product_analytics_add_on) { create(:gitlab_subscription_add_on, :product_analytics) }
+
+      let_it_be(:duo_pro_add_on_purchase_fresh) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_pro_add_on,
+          last_assigned_users_refreshed_at: 1.hour.ago
+        )
       end
 
-      let_it_be(:add_on_purchase_stale) do
-        create(:gitlab_subscription_add_on_purchase, add_on: add_on, last_assigned_users_refreshed_at: 21.hours.ago)
+      let_it_be(:duo_enterprise_add_on_purchase_fresh) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_enterprise_add_on,
+          last_assigned_users_refreshed_at: 1.hour.ago
+        )
+      end
+
+      let_it_be(:duo_pro_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_pro_add_on)
+      end
+
+      let_it_be(:duo_enterprise_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: duo_enterprise_add_on)
+      end
+
+      let_it_be(:product_analytics_add_on_purchase_refreshed_nil) do
+        create(:gitlab_subscription_add_on_purchase, add_on: product_analytics_add_on)
+      end
+
+      let_it_be(:duo_pro_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_pro_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
+      end
+
+      let_it_be(:duo_enterprise_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: duo_enterprise_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
+      end
+
+      let_it_be(:product_analytics_add_on_purchase_stale) do
+        create(
+          :gitlab_subscription_add_on_purchase,
+          add_on: product_analytics_add_on,
+          last_assigned_users_refreshed_at: 21.hours.ago
+        )
       end
 
       it 'returns correct add_on_purchases' do
+        query_limit = 5
         result = [
-          add_on_purchase_refreshed_nil,
-          add_on_purchase_stale
+          duo_pro_add_on_purchase_refreshed_nil,
+          duo_enterprise_add_on_purchase_refreshed_nil,
+          duo_pro_add_on_purchase_stale,
+          duo_enterprise_add_on_purchase_stale
         ]
 
-        expect(described_class.requiring_assigned_users_refresh(3))
+        expect(described_class.requiring_assigned_users_refresh(query_limit))
           .to match_array(result)
       end
 
       it 'accepts limit param' do
-        expect(described_class.requiring_assigned_users_refresh(1).size).to eq 1
+        query_limit = 1
+
+        expect(described_class.requiring_assigned_users_refresh(query_limit).size).to eq 1
       end
     end
 
@@ -610,6 +680,18 @@ RSpec.describe GitlabSubscriptions::AddOnPurchase, feature_category: :plan_provi
 
     context 'when subscription has expired' do
       it { travel_to(add_on_purchase.expires_on + 1.day) { is_expected.to eq(false) } }
+    end
+
+    context 'when subscription has not started yet' do
+      context 'when started_at is nil' do
+        before do
+          add_on_purchase.update!(started_at: nil)
+        end
+
+        it { is_expected.to eq(true) }
+      end
+
+      it { travel_to(add_on_purchase.started_at - 1.day) { is_expected.to eq(false) } }
     end
   end
 

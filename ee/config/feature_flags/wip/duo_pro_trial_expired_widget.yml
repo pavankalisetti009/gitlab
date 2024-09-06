@@ -1,9 +1,0 @@
----
-name: duo_pro_trial_expired_widget
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/455881
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/155614
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/472167
-milestone: '17.3'
-group: group::acquisition
-type: wip
-default_enabled: false

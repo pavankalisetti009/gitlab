@@ -12,4 +12,7 @@
         .form-group
           - zoekt_settings_checkboxes(f).each do |checkbox|
             = checkbox
+        .form-group
+          - zoekt_settings_inputs(f).each do |input|
+            = input
       = f.submit _('Save changes'), pajamas_button: true

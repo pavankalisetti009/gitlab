@@ -10,6 +10,9 @@ import waitForPromises from 'helpers/wait_for_promises';
 import { createAlert } from '~/alert';
 import { mapTraceToSpanTrees } from 'ee/tracing/trace_utils';
 import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
+import RelatedIssue from '~/observability/components/observability_related_issues.vue';
+import { stubComponent } from 'helpers/stub_component';
+import { helpPagePath } from '~/helpers/help_page_helper';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -17,6 +20,9 @@ jest.mock('~/lib/utils/url_utility', () => ({
   visitUrl: jest.fn(),
 }));
 jest.mock('ee/tracing/trace_utils');
+jest.mock('lodash/uniqueId', () => {
+  return jest.fn((input) => `${input}1`);
+});
 
 describe('TracingDetails', () => {
   let wrapper;
@@ -24,6 +30,7 @@ describe('TracingDetails', () => {
 
   const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
   const logsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/logs';
+  const metricsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
   const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
   const testTraceId = 'test-trace-id';
   const projectFullPath = 'foo/bar';
@@ -32,6 +39,7 @@ describe('TracingDetails', () => {
 
   const findTraceDetails = () => wrapper.findComponentByTestId('trace-details');
   const findTraceChart = () => wrapper.findComponent(TracingChart);
+  const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
 
   const findDrawer = () => wrapper.findComponent(TracingDrawer);
   const isDrawerOpen = () => findDrawer().props('open');
@@ -41,6 +49,7 @@ describe('TracingDetails', () => {
     traceId: testTraceId,
     tracingIndexUrl,
     logsIndexUrl,
+    metricsIndexUrl,
     createIssueUrl,
     projectFullPath,
   };
@@ -53,6 +62,11 @@ describe('TracingDetails', () => {
       },
       stubs: {
         GlSprintf,
+        RelatedIssuesProvider: stubComponent(RelatedIssuesProvider, {
+          template: `<div>
+            <slot :issues="[]" :loading="false" :error="null" />
+          </div>`,
+        }),
       },
     });
     await waitForPromises();
@@ -95,10 +109,12 @@ describe('TracingDetails', () => {
 
   it('renders the related-issue-provider', () => {
     const relatedIssuesProvider = wrapper.findComponent(RelatedIssuesProvider);
+
     expect(relatedIssuesProvider.props()).toEqual({
       projectFullPath,
       traceId: testTraceId,
     });
+    expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });
 
   it('renders the chart component', () => {
@@ -110,14 +126,32 @@ describe('TracingDetails', () => {
 
   it('renders the header', () => {
     const header = findTraceDetails().findComponent(TracingHeader);
+    const { incomplete, totalErrors } = mockTree;
+
     expect(header.exists()).toBe(true);
-    expect(header.props('incomplete')).toBe(mockTree.incomplete);
-    expect(header.props('trace')).toEqual(mockTrace);
-    expect(header.props('logsLink')).toBe(
-      `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
-    );
-    expect(header.props('createIssueUrl')).toBe(createIssueUrl);
-    expect(header.props('totalErrors')).toBe(mockTree.totalErrors);
+    expect(header.props()).toStrictEqual({
+      incomplete,
+      trace: mockTrace,
+      viewLogsUrl: `${logsIndexUrl}?traceId[]=test-trace-id&search=&date_range=30d`,
+      viewMetricsUrl: `${metricsIndexUrl}?traceId[]=test-trace-id`,
+      createIssueUrl,
+      totalErrors,
+      relatedIssuesId: 'related-issues-1',
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+    });
+  });
+
+  it('renders the related issues', () => {
+    expect(findRelatedIssues().props()).toStrictEqual({
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+      helpPath: helpPagePath('/operations/tracing', {
+        anchor: 'create-an-issue-for-a-trace',
+      }),
+    });
   });
 
   describe('details drawer', () => {

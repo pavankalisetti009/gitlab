@@ -44,7 +44,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
     it { expect(setting.project_api_limit).to eq(400) }
     it { expect(setting.project_invited_groups_api_limit).to eq(60) }
     it { expect(setting.projects_api_limit).to eq(2000) }
-    it { expect(setting.receptive_cluster_agents_enabled).to eq(false) }
     it { expect(setting.user_contributed_projects_api_limit).to eq(100) }
     it { expect(setting.user_projects_api_limit).to eq(300) }
     it { expect(setting.user_starred_projects_api_limit).to eq(100) }
@@ -86,7 +85,6 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
 
     it { expect(described_class).to validate_jsonb_schema(['application_setting_rate_limits']) }
     it { expect(described_class).to validate_jsonb_schema(['application_setting_package_registry']) }
-    it { expect(described_class).to validate_jsonb_schema(['application_setting_cluster_agents']) }
     it { expect(described_class).to validate_jsonb_schema(['application_setting_service_ping_settings']) }
 
     it { is_expected.to allow_value(nil).for(:home_page_url) }
@@ -229,6 +227,7 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
           max_terraform_state_size_bytes
           members_delete_limit
           notes_create_limit
+          pages_extra_deployments_default_expiry_seconds
           package_registry_cleanup_policies_worker_capacity
           packages_cleanup_package_file_worker_capacity
           pipeline_limit_per_project_user_sha

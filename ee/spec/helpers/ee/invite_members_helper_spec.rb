@@ -220,4 +220,33 @@ RSpec.describe EE::InviteMembersHelper, feature_category: :onboarding do
       end
     end
   end
+
+  describe '#invite_group_dataset' do
+    let(:group) { build(:group) }
+
+    before do
+      allow(helper).to receive(:custom_role_for_group_link_enabled?).with(group)
+        .and_return(custom_role_for_group_link_enabled)
+    end
+
+    context 'when `custom_role_for_group_link_enabled` is false' do
+      let(:custom_role_for_group_link_enabled) { false }
+
+      it 'returns expected data' do
+        expect(helper.invite_group_dataset(group)).to eq({
+          custom_role_for_group_link_enabled: 'false'
+        })
+      end
+    end
+
+    context 'when `custom_role_for_group_link_enabled` is true' do
+      let(:custom_role_for_group_link_enabled) { true }
+
+      it 'returns expected data' do
+        expect(helper.invite_group_dataset(group)).to eq({
+          custom_role_for_group_link_enabled: 'true'
+        })
+      end
+    end
+  end
 end

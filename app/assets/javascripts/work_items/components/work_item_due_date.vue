@@ -208,7 +208,13 @@ export default {
       await this.$nextTick();
       this.$refs.startDatePicker.show();
     },
-    collapseWidget() {
+    collapseWidget(event = {}) {
+      // This prevents outside directive from treating
+      // a click on a select element within datepicker as an outside click,
+      // therefore allowing user to select a month and a year without
+      // triggering the mutation and immediately closing the dropdown
+      if (event.target?.classList.contains('pika-select', 'pika-select-month', 'pika-select-year'))
+        return;
       this.isEditing = false;
       this.updateDates();
     },
@@ -217,7 +223,7 @@ export default {
 </script>
 
 <template>
-  <section class="gl-pb-4" data-testid="work-item-start-due-dates">
+  <section data-testid="work-item-start-due-dates">
     <div class="gl-flex gl-items-center gl-gap-3">
       <h3 :class="{ 'gl-sr-only': isEditing }" class="gl-heading-5 !gl-mb-0">
         {{ $options.i18n.dates }}

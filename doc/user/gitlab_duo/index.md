@@ -21,6 +21,8 @@ GitLab is [transparent](https://handbook.gitlab.com/handbook/values/#transparenc
 As GitLab Duo features mature, the documentation will be updated to clearly state
 how and where you can access these features.
 
+**{play}** [View a walkthrough of GitLab Duo Enterprise features](https://gitlab.navattic.com/duo-enterprise).
+
 ## Generally available features
 
 ### GitLab Duo Chat
@@ -52,7 +54,7 @@ DETAILS:
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://youtu.be/ds7SG1wgcVM)
 - [View documentation](../project/repository/code_suggestions/index.md).
 
-### Code explanation
+### Code Explanation
 
 DETAILS:
 **Tier: GitLab.com and Self-managed:** For a limited time, Premium or Ultimate. In the future, Premium with GitLab Duo Pro or Ultimate with [GitLab Duo Pro or Enterprise](../../subscriptions/subscription-add-ons.md). **GitLab Dedicated:** GitLab Duo Pro or Enterprise.
@@ -65,7 +67,7 @@ DETAILS:
   - [A file](../../user/project/repository/code_explain.md).
   - [A merge request](../../user/project/merge_requests/changes.md#explain-code-in-a-merge-request).
 
-### Test generation
+### Test Generation
 
 DETAILS:
 **Tier: GitLab.com and Self-managed:** For a limited time, Premium or Ultimate. In the future, Premium with GitLab Duo Pro or Ultimate with [GitLab Duo Pro or Enterprise](../../subscriptions/subscription-add-ons.md). **GitLab Dedicated:** GitLab Duo Pro or Enterprise.
@@ -86,7 +88,7 @@ DETAILS:
 - LLM: Anthropic [Claude 3 Haiku](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-haiku)
 - [View documentation](../../editor_extensions/gitlab_cli/index.md#gitlab-duo-for-the-cli).
 
-### Merge commit message generation
+### Merge Commit Message Generation
 
 DETAILS:
 **Tier: GitLab.com and Self-managed:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md). **GitLab Dedicated:** GitLab Duo Enterprise.
@@ -96,7 +98,7 @@ DETAILS:
 - LLM: Anthropic [Claude 3.5 Sonnet](https://console.cloud.google.com/vertex-ai/publishers/anthropic/model-garden/claude-3-5-sonnet)
 - [View documentation](../project/merge_requests/duo_in_merge_requests.md#generate-a-merge-commit-message).
 
-### Root cause analysis
+### Root Cause Analysis
 
 DETAILS:
 **Tier: GitLab.com and Self-managed:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md). **GitLab Dedicated:** GitLab Duo Enterprise.
@@ -110,7 +112,7 @@ DETAILS:
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=MLjhVbMjFAY&list=PLFGfElNsQthZGazU1ZdfDpegu0HflunXW)
 - [View documentation](../gitlab_duo_chat/examples.md#troubleshoot-failed-cicd-jobs-with-root-cause-analysis).
 
-### Vulnerability explanation
+### Vulnerability Explanation
 
 DETAILS:
 **Tier: GitLab.com and Self-managed:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md). **GitLab Dedicated:** GitLab Duo Enterprise.
@@ -121,7 +123,7 @@ DETAILS:
 - <i class="fa fa-youtube-play youtube" aria-hidden="true"></i> [Watch overview](https://www.youtube.com/watch?v=MMVFvGrmMzw&list=PLFGfElNsQthZGazU1ZdfDpegu0HflunXW)
 - [View documentation](../application_security/vulnerabilities/index.md#explaining-a-vulnerability).
 
-### AI Impact dashboard
+### AI Impact Dashboard
 
 DETAILS:
 **Tier:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md).
@@ -135,7 +137,7 @@ DETAILS:
 
 ## Beta features
 
-### Merge request summary
+### Merge Request Summary
 
 DETAILS:
 **Tier:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md).
@@ -173,7 +175,7 @@ DETAILS:
 
 ## Experimental features
 
-### Issue description generation
+### Issue Description Generation
 
 DETAILS:
 **Tier:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md).
@@ -182,9 +184,9 @@ DETAILS:
 
 - Helps populate an issue more quickly by generating a more in-depth description, based on a short summary you provide.
 - LLM: Anthropic [Claude Instant 1.2](https://docs.anthropic.com/en/docs/about-claude/models#legacy-models)
-- [View documentation](experiments.md#summarize-an-issue-with-issue-description-generation).
+- [View documentation](experiments.md#populate-an-issue-with-issue-description-generation).
 
-### Code review summary
+### Code Review Summary
 
 DETAILS:
 **Tier:** For a limited time, Ultimate. In the future, Ultimate with [GitLab Duo Enterprise](../../subscriptions/subscription-add-ons.md).

@@ -27,6 +27,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     duration: {
       query: runnersJobsQueueDurationQuery,
       update(data) {

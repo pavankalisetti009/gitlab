@@ -30,15 +30,14 @@ module EE
                 return if pipeline.dangling?
                 return if pipeline_execution_policy_configs.empty?
 
-                command.pipeline_execution_policies = []
+                command.execution_policy_pipelines = []
                 pipeline_execution_policy_configs.each do |config|
                   response = create_pipeline(config.content)
                   pipeline = response.payload
 
                   if response.success?
-                    command.pipeline_execution_policies << ::Gitlab::Ci::Pipeline::Chain::PipelineExecutionPolicy.new(
-                      pipeline, config.strategy
-                    )
+                    command.execution_policy_pipelines << ::Security::PipelineExecutionPolicy::Pipeline.new(
+                      pipeline: pipeline, config: config)
                   elsif pipeline.filtered_as_empty?
                     # no-op: we ignore empty pipelines
                   else

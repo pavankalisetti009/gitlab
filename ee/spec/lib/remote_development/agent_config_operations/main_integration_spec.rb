@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", feature_category: :workspaces do
   let(:enabled) { true }
   let(:dns_zone) { 'my-awesome-domain.me' }
 
@@ -25,14 +25,14 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
     allow(License).to receive(:feature_available?).with(:remote_development).and_return(true)
   end
 
-  context "when a remote_development_agent_config record does not already exist" do
+  context "when a workspaces_agent_config record does not already exist" do
     let_it_be(:agent) { create(:cluster_agent) }
 
     context 'when config passed is empty' do
       let(:config) { {} }
 
       it 'does not create a config record' do
-        expect { response }.to not_change { RemoteDevelopment::RemoteDevelopmentAgentConfig.count }
+        expect { response }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
 
         expect(response).to eq({
           status: :success,
@@ -41,13 +41,13 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       end
     end
 
-    context 'when config passed results in updates to the remote_development_agent_config record' do
+    context 'when config passed results in updates to the workspaces_agent_config record' do
       it 'creates a config record' do
-        expect { response }.to change { RemoteDevelopment::RemoteDevelopmentAgentConfig.count }.by(1)
+        expect { response }.to change { RemoteDevelopment::WorkspacesAgentConfig.count }.by(1)
 
         expect(response).to eq({
           status: :success,
-          payload: { remote_development_agent_config: agent.reload.remote_development_agent_config }
+          payload: { workspaces_agent_config: agent.reload.workspaces_agent_config }
         })
       end
     end
@@ -56,7 +56,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       let(:dns_zone) { "invalid dns zone" }
 
       it 'does not create the record and returns error' do
-        expect { response }.to not_change { RemoteDevelopment::RemoteDevelopmentAgentConfig.count }
+        expect { response }.to not_change { RemoteDevelopment::WorkspacesAgentConfig.count }
 
         expect(response).to eq({
           status: :error,
@@ -64,20 +64,20 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
           reason: :bad_request
         })
 
-        config_instance = agent.reload.remote_development_agent_config
+        config_instance = agent.reload.workspaces_agent_config
         expect(config_instance).to be_nil
       end
     end
   end
 
-  context "when a remote_development_agent_config record already exists" do
-    let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  context "when a workspaces_agent_config record already exists" do
+    let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
     context 'when config passed is empty' do
       let(:config) { {} }
 
       it 'does not create a config record' do
-        expect { response }.to not_change { agent.reload.remote_development_agent_config.attributes }
+        expect { response }.to not_change { agent.reload.workspaces_agent_config.attributes }
 
         expect(response).to eq({
           status: :success,
@@ -86,14 +86,14 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       end
     end
 
-    context 'when config passed results in updates to the remote_development_agent_config record' do
+    context 'when config passed results in updates to the workspaces_agent_config record' do
       it 'updates the config record' do
         expect(response).to eq({
           status: :success,
-          payload: { remote_development_agent_config: agent.reload.remote_development_agent_config }
+          payload: { workspaces_agent_config: agent.reload.workspaces_agent_config }
         })
 
-        expect(agent.reload.remote_development_agent_config.dns_zone).to eq(dns_zone)
+        expect(agent.reload.workspaces_agent_config.dns_zone).to eq(dns_zone)
       end
     end
 
@@ -101,7 +101,7 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       let(:dns_zone) { "invalid dns zone" }
 
       it 'does not update the record and returns error' do
-        expect { response }.to not_change { agent.reload.remote_development_agent_config.attributes }
+        expect { response }.to not_change { agent.reload.workspaces_agent_config.attributes }
 
         expect(response).to eq({
           status: :error,
@@ -135,9 +135,9 @@ RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", 
       context 'when associated workspaces cannot be updated' do
         before do
           # rubocop:disable RSpec/AnyInstanceOf -- allow_next_instance_of does not work here
-          allow_any_instance_of(RemoteDevelopment::RemoteDevelopmentAgentConfig)
+          allow_any_instance_of(RemoteDevelopment::WorkspacesAgentConfig)
             .to receive_message_chain(:workspaces, :desired_state_not_terminated, :touch_all)
-          allow_any_instance_of(RemoteDevelopment::RemoteDevelopmentAgentConfig)
+          allow_any_instance_of(RemoteDevelopment::WorkspacesAgentConfig)
             .to receive_message_chain(:workspaces, :desired_state_not_terminated, :update_all)
               .and_raise(ActiveRecord::ActiveRecordError, "SOME ERROR")
           # rubocop:enable RSpec/AnyInstanceOf -- allow_next_instance_of does not work here

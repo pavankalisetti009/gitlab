@@ -18,6 +18,7 @@ import markdownEditorEventHub from '~/vue_shared/components/markdown/eventhub';
 import { mockTracking } from 'helpers/tracking_helper';
 
 jest.mock('~/lib/utils/url_utility', () => ({
+  ...jest.requireActual('~/lib/utils/url_utility'),
   visitUrl: jest.fn(),
 }));
 jest.mock('~/autosave');

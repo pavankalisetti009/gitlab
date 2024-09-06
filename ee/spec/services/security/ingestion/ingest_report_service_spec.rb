@@ -13,7 +13,7 @@ RSpec.describe Security::Ingestion::IngestReportService, feature_category: :vuln
     before do
       create_list(:security_finding, 2, scan: security_scan, deduplicated: true)
 
-      stub_const("#{described_class}::BATCH_SIZE", 1)
+      stub_const("Security::IngestionConstants::COMPONENTS_BATCH_SIZE", 1)
 
       allow(Security::Ingestion::FindingMapCollection).to receive(:new).with(security_scan.pipeline, security_scan).and_return([:foo, :bar])
       allow(Security::Ingestion::IngestReportSliceService).to receive(:execute).with(security_scan.pipeline, [:foo]).and_return([1])

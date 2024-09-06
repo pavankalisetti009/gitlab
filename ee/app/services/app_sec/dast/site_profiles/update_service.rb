@@ -21,29 +21,33 @@ module AppSec
 
           return ServiceResponse.error(message: _('Cannot modify %{profile_name} referenced in security policy') % { profile_name: dast_site_profile.name }) if referenced_in_security_policy?
 
-          ApplicationRecord.transaction do
-            auditor = AppSec::Dast::SiteProfiles::Audit::UpdateService.new(project, current_user, {
-              dast_site_profile: dast_site_profile,
-              new_params: params.dup,
-              old_params: dast_site_profile.attributes.symbolize_keys.merge(
-                target_url: dast_site_profile.dast_site.url
-              )
-            })
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
+            .allow_cross_database_modification_within_transaction(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014') do
+            ApplicationRecord.transaction do
+              auditor = AppSec::Dast::SiteProfiles::Audit::UpdateService.new(project, current_user, {
+                dast_site_profile: dast_site_profile,
+                new_params: params.dup,
+                old_params: dast_site_profile.attributes.symbolize_keys.merge(
+                  target_url: dast_site_profile.dast_site.url
+                )
+              })
 
-            remove_secret_variables! if should_remove_secret_variables?(params)
+              remove_secret_variables! if should_remove_secret_variables?(params)
 
-            if target_url = params.delete(:target_url)
-              params[:dast_site] = AppSec::Dast::Sites::FindOrCreateService.new(project, current_user).execute!(url: target_url)
+              if target_url = params.delete(:target_url)
+                params[:dast_site] = AppSec::Dast::Sites::FindOrCreateService.new(project, current_user).execute!(url: target_url)
+              end
+
+              handle_secret_variable!(params, :request_headers, ::Dast::SiteProfileSecretVariable::REQUEST_HEADERS)
+              handle_secret_variable!(params, :auth_password, ::Dast::SiteProfileSecretVariable::PASSWORD)
+
+              params.compact!
+              dast_site_profile.update!(params)
+              auditor.execute
+
+              ServiceResponse.success(payload: dast_site_profile)
             end
-
-            handle_secret_variable!(params, :request_headers, ::Dast::SiteProfileSecretVariable::REQUEST_HEADERS)
-            handle_secret_variable!(params, :auth_password, ::Dast::SiteProfileSecretVariable::PASSWORD)
-
-            params.compact!
-            dast_site_profile.update!(params)
-            auditor.execute
-
-            ServiceResponse.success(payload: dast_site_profile)
           end
         rescue Rollback => e
           ServiceResponse.error(message: e.errors)

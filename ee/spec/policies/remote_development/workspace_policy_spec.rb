@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspacePolicy, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspacePolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
 
   let_it_be(:agent_project_creator, refind: true) { create(:user) }
   let_it_be(:agent_project, refind: true) { create(:project, creator: agent_project_creator) }
   let_it_be(:agent, refind: true) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: agent_project)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: agent_project)
   end
 
   let_it_be(:workspace_project_creator, refind: true) { create(:user) }

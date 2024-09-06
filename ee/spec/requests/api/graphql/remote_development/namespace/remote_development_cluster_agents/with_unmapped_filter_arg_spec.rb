@@ -4,20 +4,20 @@ require 'spec_helper'
 require_relative './shared'
 
 RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: UNMAPPED)',
-  feature_category: :remote_development do
+  feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 
   let_it_be(:user) { create(:user) }
   let_it_be(:current_user) { user }
   let_it_be(:mapped_agent) do
-    create(:ee_cluster_agent, :in_group, :with_remote_development_agent_config).tap do |agent|
+    create(:ee_cluster_agent, :in_group, :with_existing_workspaces_agent_config).tap do |agent|
       agent.project.namespace.add_maintainer(user)
     end
   end
 
   let_it_be(:unmapped_agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: mapped_agent.project)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: mapped_agent.project)
   end
 
   let_it_be(:namespace) { mapped_agent.project.namespace }

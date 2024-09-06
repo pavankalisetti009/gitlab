@@ -52,10 +52,10 @@ export const generateBadges = ({ member, isCurrentUser, canManageMembers }) => [
  *   @param {Array<{baseAccessLevel: number, name: string, memberRoleId: number}>} member.customRoles
  */
 export const roleDropdownItems = ({ validRoles, customRoles }) => {
-  const standardDropdown = CERoleDropdownItems({ validRoles });
+  const defaultRoleItems = CERoleDropdownItems({ validRoles });
 
   if (!customRoles?.length) {
-    return standardDropdown;
+    return defaultRoleItems;
   }
 
   const customRoleItems = customRoles.map(({ baseAccessLevel, name, ...role }) => ({
@@ -66,9 +66,9 @@ export const roleDropdownItems = ({ validRoles, customRoles }) => {
   }));
 
   return {
-    flatten: [...standardDropdown.flatten, ...customRoleItems],
+    flatten: [...defaultRoleItems.flatten, ...customRoleItems],
     formatted: [
-      { text: s__('MemberRole|Standard roles'), options: standardDropdown.flatten },
+      { text: s__('MemberRole|Default roles'), options: defaultRoleItems.flatten },
       { text: s__('MemberRole|Custom roles'), options: customRoleItems },
     ],
   };

@@ -79,7 +79,7 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
     end
   end
 
-  describe '#execute' do
+  describe '#execute', :freeze_time do
     let(:new_build) { service.execute(build)[:job] }
 
     context 'when the CI quota is exceeded' do
@@ -99,9 +99,7 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
         end
 
         context 'with private runners' do
-          let_it_be(:private_runner) do
-            create(:ci_runner, :project, :online, projects: [project])
-          end
+          let_it_be(:private_runner) { create(:ci_runner, :project, :online, projects: [project]) }
 
           it { expect(new_build).not_to be_failed }
         end
@@ -127,9 +125,7 @@ RSpec.describe Ci::RetryJobService, feature_category: :continuous_integration do
         end
 
         context 'with private runners' do
-          let_it_be(:private_runner) do
-            create(:ci_runner, :project, :online, projects: [project])
-          end
+          let_it_be(:private_runner) { create(:ci_runner, :project, :online, projects: [project]) }
 
           it { expect(new_build).not_to be_failed }
         end

@@ -61,6 +61,8 @@ module Preloaders
     end
 
     def union_query
+      union_queries = []
+
       permission_condition = permissions.map do |permission|
         "member_roles.permissions @> ('{\"#{permission}\":true}')::jsonb"
       end.join(' OR ')
@@ -74,27 +76,37 @@ module Preloaders
         .where(permission_condition)
 
       group_member = member
-        .left_outer_joins(:member_role)
-        .where("members.source_type = 'Namespace' AND members.source_id IN (SELECT UNNEST(namespace_ids) as ids)")
+        .joins(:member_role)
+        .where(source_type: 'Namespace')
+        .where('members.source_id IN (SELECT UNNEST(namespace_ids) as ids)')
         .to_sql
 
-      if Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
-        group_link_member = member
-          .joins('LEFT OUTER JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
-          .joins('LEFT OUTER JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
-          .where("group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)")
-          .where(
-            "(members.access_level > group_group_links.group_access) OR " \
-              "(members.access_level = group_group_links.group_access AND members.member_role_id IS NOT NULL)"
-          )
+      if custom_role_for_group_link_enabled?
+        group_link_join = member
+          .joins('JOIN group_group_links ON members.source_id = group_group_links.shared_with_group_id')
+          .where('group_group_links.shared_group_id IN (SELECT UNNEST(namespace_ids) as ids)')
+
+        invited_member_role = group_link_join
+          .joins('JOIN member_roles ON member_roles.id = group_group_links.member_role_id')
+          .where('access_level > group_access')
           .to_sql
+
+        # when both roles are custom roles with the same base access level,
+        # choose the source role as the max role
+        source_member_role = group_link_join
+          .joins('JOIN member_roles ON member_roles.id = members.member_role_id')
+          .where('access_level = group_access')
+          .where.not('group_group_links.member_role_id' => nil)
+          .to_sql
+
+        union_queries.push(invited_member_role, source_member_role)
       end
 
       reset_default = "SELECT #{permissions_as_false}"
 
-      union_queries = [group_member, group_link_member, reset_default]
+      union_queries.push(group_member, reset_default)
 
-      union_queries.compact.join(" UNION ALL ")
+      union_queries.join(" UNION ALL ")
     end
 
     def resource_key
@@ -107,6 +119,14 @@ module Preloaders
         .filter { |permission| ::MemberRole.permission_enabled?(permission, user) }
     end
     strong_memoize_attr :permissions
+
+    def custom_role_for_group_link_enabled?
+      if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+        groups.any? { |group| ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, group.root_ancestor) }
+      else
+        ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
+      end
+    end
 
     attr_reader :groups, :user
   end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feature_category: :custom_models do
+RSpec.describe Admin::Ai::TermsAndConditionsController, :enable_admin_mode, feature_category: :"self-hosted_models" do
   let(:admin) { create(:admin) }
   let(:duo_features_enabled) { true }
 

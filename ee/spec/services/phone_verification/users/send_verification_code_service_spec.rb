@@ -422,12 +422,6 @@ RSpec.describe PhoneVerification::Users::SendVerificationCodeService, feature_ca
         expect(record.telesign_reference_xid).to eq(telesign_reference_xid)
       end
 
-      it 'executes the abuse trust score worker' do
-        expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, instance_of(Float))
-
-        service.execute
-      end
-
       it 'updates sms_send_count and sms_sent_at', :freeze_time do
         service.execute
         record = user.phone_number_validation

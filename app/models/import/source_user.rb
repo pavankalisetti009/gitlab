@@ -21,7 +21,9 @@ module Import
 
     validates :namespace_id, :import_type, :source_hostname, :source_user_identifier, :status, presence: true
     validates :placeholder_user_id, presence: true, unless: :completed?
-    validates :reassign_to_user_id, presence: true, if: -> { reassignment_in_progress? || completed? }
+    validates :reassign_to_user_id, presence: true, if: -> {
+                                                          awaiting_approval? || reassignment_in_progress? || completed?
+                                                        }
     validates :reassign_to_user_id, absence: true, if: -> { pending_reassignment? || keep_as_placeholder? }
     validates :reassign_to_user_id, uniqueness: {
       scope: [:namespace_id, :source_hostname, :import_type],
@@ -32,6 +34,8 @@ module Import
     }
 
     scope :for_namespace, ->(namespace_id) { where(namespace_id: namespace_id) }
+    scope :by_source_hostname, ->(source_hostname) { where(source_hostname: source_hostname) }
+    scope :by_import_type, ->(import_type) { where(import_type: import_type) }
     scope :by_statuses, ->(statuses) { where(status: statuses) }
     scope :awaiting_reassignment, -> { where(status: [0, 1, 2, 3, 4]) }
     scope :reassigned, -> { where(status: [5, 6]) }
@@ -111,6 +115,15 @@ module Import
       def namespace_placeholder_user_count(namespace, limit:)
         for_namespace(namespace).distinct.limit(limit).count(:placeholder_user_id) -
           (namespace.namespace_import_user.present? ? 1 : 0)
+      end
+
+      def source_users_with_missing_information(namespace:, source_hostname:, import_type:)
+        for_namespace(namespace)
+          .by_source_hostname(source_hostname)
+          .by_import_type(import_type)
+          .and(
+            where(source_name: nil).or(where(source_username: nil))
+          )
       end
     end
 

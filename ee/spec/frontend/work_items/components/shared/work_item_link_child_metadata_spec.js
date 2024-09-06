@@ -11,12 +11,20 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
   let wrapper;
 
-  const createComponent = ({ metadataWidgets = workItemObjectiveMetadataWidgetsEE } = {}) => {
+  const createComponent = ({
+    metadataWidgets = workItemObjectiveMetadataWidgetsEE,
+    showWeight = true,
+    workItemType = 'Task',
+    isChildItemOpen = true,
+  } = {}) => {
     wrapper = shallowMountExtended(WorkItemLinkChildMetadata, {
       propsData: {
         iid: '1',
         reference: 'test-project-path#1',
         metadataWidgets,
+        showWeight,
+        workItemType,
+        isChildItemOpen,
       },
     });
   };
@@ -24,6 +32,10 @@ describe('WorkItemLinkChildMetadataEE', () => {
   beforeEach(() => {
     createComponent();
   });
+
+  const findWeight = () => wrapper.findByTestId('item-weight');
+  const findWeightValue = () => wrapper.findByTestId('weight-value');
+  const findWeightTooltip = () => wrapper.findByTestId('weight-tooltip');
 
   describe('progress', () => {
     it('renders item progress icon and percentage completion', () => {
@@ -65,7 +77,7 @@ describe('WorkItemLinkChildMetadataEE', () => {
 
       expect(weightEl.exists()).toBe(true);
       expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
-      expect(wrapper.findByTestId('weight-value').text().trim()).toBe(`${WEIGHT.weight}`);
+      expect(findWeightValue().text().trim()).toBe(`${WEIGHT.weight}`);
     });
 
     it('renders rollup weight with icon and value when widget has rollUp weight', () => {
@@ -86,13 +98,31 @@ describe('WorkItemLinkChildMetadataEE', () => {
         },
       });
 
-      const weightEl = wrapper.findByTestId('item-weight');
+      expect(findWeight().exists()).toBe(true);
+      expect(findWeight().findComponent(GlIcon).props('name')).toBe('weight');
+      expect(findWeightValue().text().trim()).toBe(`${rolledUpWeightWidget.rolledUpWeight}`);
+    });
 
-      expect(weightEl.exists()).toBe(true);
-      expect(weightEl.findComponent(GlIcon).props('name')).toBe('weight');
-      expect(wrapper.findByTestId('weight-value').text().trim()).toBe(
-        `${rolledUpWeightWidget.rolledUpWeight}`,
-      );
+    it('does not render item weight on `showWeight` is false', () => {
+      createComponent({
+        showWeight: false,
+      });
+
+      expect(findWeight().exists()).toBe(false);
+    });
+
+    it('renders tooltip', () => {
+      createComponent();
+
+      expect(findWeightTooltip().text()).toBe('Weight');
+    });
+
+    it('shows `Issue weight` in the tooltip when the parent is an Epic', () => {
+      createComponent({
+        workItemType: 'Epic',
+      });
+
+      expect(findWeightTooltip().text()).toBe('Issue weight');
     });
   });
 
@@ -172,9 +202,15 @@ describe('WorkItemLinkChildMetadataEE', () => {
     });
   });
 
-  it('renders health status badge', () => {
+  it('renders health status badge when the work item is open', () => {
     const { healthStatus } = HEALTH_STATUS;
 
     expect(wrapper.findComponent(IssueHealthStatus).props('healthStatus')).toBe(healthStatus);
+  });
+
+  it('does not render health status badge when the work item is closed', () => {
+    createComponent({ isChildItemOpen: false });
+
+    expect(wrapper.findComponent(IssueHealthStatus).exists()).toBe(false);
   });
 });

@@ -711,7 +711,7 @@ describe('AnalyticsDashboard', () => {
         return waitForPromises();
       });
 
-      it('creates a new dashboard and and disables the filter syncing', () => {
+      it('creates a new dashboard and disables the filter syncing', () => {
         expect(findDashboard().props()).toMatchObject({
           initialDashboard: {
             ...NEW_DASHBOARD,

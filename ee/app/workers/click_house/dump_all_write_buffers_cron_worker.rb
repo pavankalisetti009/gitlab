@@ -9,16 +9,17 @@ module ClickHouse
     data_consistency :delayed
     feature_category :database
 
+    TABLES = [
+      Ai::CodeSuggestionEvent,
+      Ai::DuoChatEvent
+    ].map(&:clickhouse_table_name).freeze
+
     def perform
       return unless enabled?
 
-      buffered_tables.each do |table_name|
+      TABLES.each do |table_name|
         DumpWriteBufferWorker.perform_async(table_name)
       end
-    end
-
-    def buffered_tables
-      @buffered_tables ||= ClickHouseModel.descendants.map(&:table_name)
     end
 
     private

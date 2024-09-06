@@ -113,6 +113,8 @@ module MergeRequestsHelper
             method(:pipelines_project_merge_request_path)
           when :diffs
             method(:diffs_project_merge_request_path)
+          when :reports
+            method(:reports_project_merge_request_path)
           else
             raise "Cannot create tab #{tab}."
           end
@@ -264,6 +266,33 @@ module MergeRequestsHelper
     { identity_verification_required: 'false' }
   end
 
+  def merge_request_dashboard_enabled?(current_user)
+    current_user.merge_request_dashboard_enabled? && !current_page?(merge_requests_search_dashboard_path)
+  end
+
+  def sticky_header_data(project, merge_request)
+    data = {
+      iid: merge_request.iid,
+      projectPath: project.full_path,
+      sourceProjectPath: merge_request.source_project_path,
+      title: markdown_field(merge_request, :title),
+      isFluidLayout: fluid_layout.to_s,
+      blocksMerge: project.only_allow_merge_if_all_discussions_are_resolved?.to_s,
+      imported: merge_request.imported?.to_s,
+      tabs: [
+        ['show', _('Overview'), project_merge_request_path(project, merge_request), merge_request.related_notes.user.count],
+        ['commits', _('Commits'), commits_project_merge_request_path(project, merge_request), @commits_count],
+        ['diffs', _('Changes'), diffs_project_merge_request_path(project, merge_request), @diffs_count]
+      ]
+    }
+
+    if project.builds_enabled?
+      data[:tabs].insert(2, ['pipelines', _('Pipelines'), pipelines_project_merge_request_path(project, merge_request), @number_of_pipelines])
+    end
+
+    data
+  end
+
   private
 
   def review_requested_merge_requests_count
@@ -317,29 +346,6 @@ module MergeRequestsHelper
     _('%{author} requested to merge %{source_branch} %{copy_button} into %{target_branch} %{created_at}').html_safe % { author: link_to_author.html_safe, source_branch: merge_request_source_branch(merge_request).html_safe, copy_button: copy_button.html_safe, target_branch: target_branch.html_safe, created_at: time_ago_with_tooltip(merge_request.created_at, html_class: 'gl-inline-block').html_safe }
   end
 
-  def sticky_header_data(project, merge_request)
-    data = {
-      iid: merge_request.iid,
-      projectPath: project.full_path,
-      sourceProjectPath: merge_request.source_project_path,
-      title: markdown_field(merge_request, :title),
-      isFluidLayout: fluid_layout.to_s,
-      blocksMerge: project.only_allow_merge_if_all_discussions_are_resolved?.to_s,
-      imported: merge_request.imported?.to_s,
-      tabs: [
-        ['show', _('Overview'), project_merge_request_path(project, merge_request), merge_request.related_notes.user.count],
-        ['commits', _('Commits'), commits_project_merge_request_path(project, merge_request), @commits_count],
-        ['diffs', _('Changes'), diffs_project_merge_request_path(project, merge_request), @diffs_count]
-      ]
-    }
-
-    if project.builds_enabled?
-      data[:tabs].insert(2, ['pipelines', _('Pipelines'), pipelines_project_merge_request_path(project, merge_request), @number_of_pipelines])
-    end
-
-    data
-  end
-
   def hidden_merge_request_icon(merge_request)
     return unless merge_request.hidden?
 
@@ -354,12 +360,9 @@ module MergeRequestsHelper
     { new_comment_template_paths: new_comment_template_paths(@project.group, @project).to_json }
   end
 
-  def merge_request_dashboard_enabled?(current_user)
-    current_user.merge_request_dashboard_enabled?
-  end
-
-  def merge_request_dashboard_data
+  def merge_request_dashboard_data(current_user)
     {
+      switch_dashboard_path: merge_request_dashboard_enabled?(current_user) ? merge_requests_search_dashboard_path : merge_requests_dashboard_path,
       lists: [
         {
           title: _('Returned to you'),
@@ -414,6 +417,18 @@ module MergeRequestsHelper
         }
       ]
     }
+  end
+
+  def diffs_stream_url(merge_request, offset, diff_view)
+    return if offset > merge_request.diffs_for_streaming.diff_files.count
+
+    diffs_stream_namespace_project_merge_request_path(
+      id: merge_request.iid,
+      project_id: merge_request.project.to_param,
+      namespace_id: merge_request.project.namespace.to_param,
+      offset: offset,
+      view: diff_view
+    )
   end
 end
 

@@ -1,6 +1,6 @@
 <script>
 import { GlButton, GlTooltipDirective } from '@gitlab/ui';
-import { s__, __ } from '~/locale';
+import { s__, __, sprintf } from '~/locale';
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 
 export default {
@@ -11,6 +11,7 @@ export default {
     statusChecksEmptyState: s__('BranchRules|No status checks have been added.'),
     editButton: __('Edit'),
     deleteButton: __('Delete'),
+    deleteStatusCheckLabel: s__('BranchRules|Delete %{statusCheckName}'),
   },
   components: {
     CrudComponent,
@@ -19,11 +20,19 @@ export default {
   directives: {
     GlTooltip: GlTooltipDirective,
   },
+
   props: {
     statusChecks: {
       type: Array,
       required: false,
       default: () => [],
+    },
+  },
+  methods: {
+    getDeleteAriaLabel(name) {
+      return sprintf(this.$options.i18n.deleteStatusCheckLabel, {
+        statusCheckName: name,
+      });
     },
   },
 };
@@ -49,9 +58,9 @@ export default {
       :key="statusCheck.id"
       class="gl-mb-4 gl-flex gl-items-center gl-gap-5 gl-border-t-1 gl-border-gray-100"
     >
-      <div class="gl-flex-1">
-        <p class="gl-my-0">{{ statusCheck.name }}</p>
-        <p class="gl-my-0 gl-text-secondary">{{ statusCheck.externalUrl }}</p>
+      <div class="gl-min-w-0 gl-flex-1">
+        <p class="gl-my-0 gl-truncate">{{ statusCheck.name }}</p>
+        <p class="gl-my-0 gl-truncate gl-text-secondary">{{ statusCheck.externalUrl }}</p>
       </div>
       <div class="gl-flex gl-gap-2">
         <gl-button
@@ -68,8 +77,9 @@ export default {
           category="tertiary"
           icon="remove"
           data-testid="delete-btn"
-          :title="`${$options.i18n.deleteButton} ${statusCheck.name}`"
-          :aria-label="`${$options.i18n.deleteButton} ${statusCheck.name}`"
+          :title="$options.i18n.deleteButton"
+          :aria-label="getDeleteAriaLabel(statusCheck.name)"
+          @click="$emit('open-status-check-delete-modal', statusCheck)"
         />
       </div>
     </div>

@@ -101,7 +101,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     end
 
     it "#pause" do
-      runner = create(:ci_runner, :project, active: true, projects: [project])
+      runner = create(:ci_runner, :project, projects: [project])
 
       post pause_project_runner_path(project, runner)
 
@@ -340,7 +340,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     include GraphqlHelpers
 
     let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
-    let_it_be(:runner) { create(:ci_runner, :project, active: true, projects: [project]) }
+    let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
     it "updates a runner" do
       post_graphql_mutation(graphql_mutation(:runner_update, {
@@ -363,7 +363,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     include GraphqlHelpers
 
     let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
-    let_it_be(:runner) { create(:ci_runner, :project, active: true, projects: [project]) }
+    let_it_be(:runner) { create(:ci_runner, :project, projects: [project]) }
 
     it "deletes a runner" do
       post_graphql_mutation(graphql_mutation(:runner_delete, {
@@ -382,7 +382,7 @@ RSpec.describe "User with admin_runners custom role", feature_category: :runner 
     include GraphqlHelpers
 
     let_it_be(:membership) { create(:project_member, :guest, member_role: role, user: user, source: project) }
-    let_it_be(:runners) { create_list(:ci_runner, 2, :project, active: true, projects: [project]) }
+    let_it_be(:runners) { create_list(:ci_runner, 2, :project, projects: [project]) }
 
     it "deletes the runners" do
       post_graphql_mutation(graphql_mutation(:bulk_runner_delete, {

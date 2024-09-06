@@ -10,6 +10,9 @@ RSpec.describe ComplianceManagement::ComplianceFramework::SecurityPolicy, featur
       expect(subject).to belong_to(:framework)
       expect(subject).to belong_to(:policy_configuration)
     end
+
+    it { is_expected.to have_many(:security_policy_requirements) }
+    it { is_expected.to have_many(:compliance_requirements).through(:security_policy_requirements) }
   end
 
   describe 'validations' do

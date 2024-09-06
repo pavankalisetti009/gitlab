@@ -5,6 +5,7 @@ module EE
     module GroupLinks
       module UpdateService
         extend ::Gitlab::Utils::Override
+        include GroupLinksHelper
 
         override :execute
         def execute(group_link_params)
@@ -17,7 +18,9 @@ module EE
 
         override :remove_unallowed_params
         def remove_unallowed_params
-          group_link_params.delete(:member_role_id) unless can_assign_custom_roles_to_group_links?
+          if group_link_params[:member_role_id] && !custom_role_for_group_link_enabled?(group_link.shared_group)
+            group_link_params.delete(:member_role_id)
+          end
 
           super
         end
@@ -74,11 +77,6 @@ module EE
             from: change.first.to_s,
             to: change.last.to_s
           }
-        end
-
-        def can_assign_custom_roles_to_group_links?
-          group_link.shared_group.custom_roles_enabled? &&
-            ::Feature.enabled?(:assign_custom_roles_to_group_links, :instance)
         end
       end
     end

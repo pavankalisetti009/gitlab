@@ -1,9 +1,8 @@
 <script>
 import {
+  GlAlert,
   GlDisclosureDropdown,
   GlDisclosureDropdownItem,
-  GlIcon,
-  GlLoadingIcon,
   GlTooltipDirective,
 } from '@gitlab/ui';
 import { isEmpty } from 'lodash';
@@ -13,7 +12,7 @@ import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_ISSUE, TYPENAME_WORK_ITEM } from '~/graphql_shared/constants';
 import getIssueDetailsQuery from 'ee_else_ce/work_items/graphql/get_issue_details.query.graphql';
 import { getParameterByName, setUrlParams, updateHistory } from '~/lib/utils/url_utility';
-
+import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import {
   FORM_TYPES,
   WIDGET_ICONS,
@@ -21,12 +20,16 @@ import {
   TASKS_ANCHOR,
   DEFAULT_PAGE_SIZE_CHILD_ITEMS,
   DETAIL_VIEW_QUERY_PARAM_NAME,
+  WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
 } from '../../constants';
-import { findHierarchyWidgets } from '../../utils';
+import {
+  findHierarchyWidgets,
+  saveShowLabelsToLocalStorage,
+  getShowLabelsFromLocalStorage,
+} from '../../utils';
 import { removeHierarchyChild } from '../../graphql/cache_utils';
 import getWorkItemTreeQuery from '../../graphql/work_item_tree.query.graphql';
 import WorkItemChildrenLoadMore from '../shared/work_item_children_load_more.vue';
-import WidgetWrapper from '../widget_wrapper.vue';
 import WorkItemMoreActions from '../shared/work_item_more_actions.vue';
 import WorkItemDetailModal from '../work_item_detail_modal.vue';
 import WorkItemAbuseModal from '../work_item_abuse_modal.vue';
@@ -35,11 +38,10 @@ import WorkItemChildrenWrapper from './work_item_children_wrapper.vue';
 
 export default {
   components: {
+    GlAlert,
     GlDisclosureDropdown,
     GlDisclosureDropdownItem,
-    GlIcon,
-    GlLoadingIcon,
-    WidgetWrapper,
+    CrudComponent,
     WorkItemLinksForm,
     WorkItemDetailModal,
     WorkItemAbuseModal,
@@ -93,6 +95,9 @@ export default {
           return;
         }
         this.updateQueryParam();
+        if (this.hasNextPage && this.children.length === 0) {
+          this.fetchNextPage();
+        }
       },
     },
     parentIssue: {
@@ -107,7 +112,6 @@ export default {
   },
   data() {
     return {
-      isShownAddForm: false,
       activeChild: {},
       error: undefined,
       parentIssue: null,
@@ -117,9 +121,11 @@ export default {
       reportedUserId: 0,
       reportedUrl: '',
       widgetName: TASKS_ANCHOR,
+      defaultShowLabels: true,
       showLabels: true,
       fetchNextPageInProgress: false,
       disableContent: false,
+      showLabelsLocalStorageKey: WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY,
     };
   },
   computed: {
@@ -179,17 +185,22 @@ export default {
       return this.workItem?.workItemType?.name || '';
     },
   },
+  mounted() {
+    this.showLabels = getShowLabelsFromLocalStorage(
+      this.showLabelsLocalStorageKey,
+      this.defaultShowLabels,
+    );
+  },
   methods: {
     showAddForm(formType) {
-      this.$refs.wrapper.show();
-      this.isShownAddForm = true;
+      this.$refs.workItemsLinks.showForm();
       this.formType = formType;
       this.$nextTick(() => {
         this.$refs.wiLinksForm.$refs.wiTitleInput?.$el.focus();
       });
     },
     hideAddForm() {
-      this.isShownAddForm = false;
+      this.$refs.workItemsLinks.hideForm();
     },
     openChild({ event, child }) {
       event.preventDefault();
@@ -224,6 +235,11 @@ export default {
     openReportAbuseModal(reply) {
       this.toggleReportAbuseModal(true, reply);
     },
+    toggleShowLabels() {
+      this.showLabels = !this.showLabels;
+      saveShowLabelsToLocalStorage(this.showLabelsLocalStorageKey, this.showLabels);
+    },
+    setShowLabelsFromLocalStorage() {},
     async fetchNextPage() {
       if (this.hasNextPage && !this.fetchNextPageInProgress) {
         this.fetchNextPageInProgress = true;
@@ -264,28 +280,23 @@ export default {
 </script>
 
 <template>
-  <widget-wrapper
-    ref="wrapper"
-    :error="error"
-    :widget-name="widgetName"
+  <crud-component
+    ref="workItemsLinks"
+    :anchor-id="widgetName"
+    :title="$options.i18n.title"
+    :icon="$options.WIDGET_TYPE_TASK_ICON"
+    :count="childrenCountLabel"
+    :is-loading="isLoading && !fetchNextPageInProgress"
+    is-collapsible
     data-testid="work-item-links"
-    @dismissAlert="error = undefined"
   >
-    <template #header>{{ $options.i18n.title }}</template>
-    <template #header-suffix>
-      <span class="gl-new-card-count" data-testid="children-count">
-        <gl-icon :name="$options.WIDGET_TYPE_TASK_ICON" class="gl-mr-2" />
-        {{ childrenCountLabel }}
-      </span>
-    </template>
-    <template #header-right>
+    <template #actions>
       <gl-disclosure-dropdown
         v-if="canUpdate && canAddTask"
         placement="bottom-end"
         size="small"
         :toggle-text="$options.i18n.addChildButtonLabel"
         data-testid="toggle-form"
-        class="gl-mr-3"
       >
         <gl-disclosure-dropdown-item
           data-testid="toggle-create-form"
@@ -310,75 +321,75 @@ export default {
         :work-item-type="workItemType"
         :show-labels="showLabels"
         :show-view-roadmap-action="false"
-        @toggle-show-labels="showLabels = !showLabels"
+        @toggle-show-labels="toggleShowLabels"
       />
     </template>
-    <template #body>
-      <div class="gl-new-card-content gl-px-0">
-        <gl-loading-icon
-          v-if="isLoading && !fetchNextPageInProgress"
-          color="dark"
-          class="gl-my-2"
-        />
-        <template v-else>
-          <div v-if="isChildrenEmpty && !isShownAddForm && !error" data-testid="links-empty">
-            <p class="gl-new-card-empty">
-              {{ $options.i18n.emptyStateMessage }}
-            </p>
-          </div>
-          <work-item-links-form
-            v-if="isShownAddForm"
-            ref="wiLinksForm"
-            data-testid="add-links-form"
-            :full-path="fullPath"
-            :full-name="workItem.namespace.fullName"
-            :issuable-gid="issuableGid"
-            :work-item-iid="iid"
-            :children-ids="childrenIds"
-            :parent-confidential="confidential"
-            :parent-iteration="issuableIteration"
-            :parent-milestone="issuableMilestone"
-            :form-type="formType"
-            :parent-work-item-type="workItemType"
-            @update-in-progress="disableContent = $event"
-            @cancel="hideAddForm"
-          />
-          <work-item-children-wrapper
-            :children="children"
-            :parent="workItem"
-            :can-update="canUpdate"
-            :full-path="fullPath"
-            :work-item-id="issuableGid"
-            :work-item-iid="iid"
-            :show-labels="showLabels"
-            :disable-content="disableContent"
-            @error="error = $event"
-            @show-modal="openChild"
-          />
-          <work-item-children-load-more
-            v-if="hasNextPage"
-            data-testid="work-item-load-more"
-            :fetch-next-page-in-progress="fetchNextPageInProgress"
-            @fetch-next-page="fetchNextPage"
-          />
-          <work-item-detail-modal
-            ref="modal"
-            :work-item-id="activeChild.id"
-            :work-item-iid="activeChild.iid"
-            :work-item-full-path="activeChildNamespaceFullPath"
-            @close="closeModal"
-            @workItemDeleted="handleWorkItemDeleted(activeChild)"
-            @openReportAbuse="openReportAbuseModal"
-          />
-          <work-item-abuse-modal
-            v-if="isReportModalOpen && reportAbusePath"
-            :show-modal="isReportModalOpen"
-            :reported-user-id="reportedUserId"
-            :reported-from-url="reportedUrl"
-            @close-modal="toggleReportAbuseModal(false)"
-          />
-        </template>
-      </div>
+
+    <template v-if="isChildrenEmpty && !error" #empty>
+      {{ $options.i18n.emptyStateMessage }}
     </template>
-  </widget-wrapper>
+
+    <template #form>
+      <work-item-links-form
+        ref="wiLinksForm"
+        data-testid="add-links-form"
+        :full-path="fullPath"
+        :full-name="workItem.namespace.fullName"
+        :is-group="false"
+        :issuable-gid="issuableGid"
+        :work-item-iid="iid"
+        :children-ids="childrenIds"
+        :parent-confidential="confidential"
+        :parent-iteration="issuableIteration"
+        :parent-milestone="issuableMilestone"
+        :form-type="formType"
+        :parent-work-item-type="workItemType"
+        @update-in-progress="disableContent = $event"
+        @cancel="hideAddForm"
+      />
+    </template>
+
+    <template #default>
+      <gl-alert v-if="error" variant="danger" @dismiss="error = undefined">
+        {{ error }}
+      </gl-alert>
+      <div class="!gl-px-3 gl-pb-3 gl-pt-2">
+        <work-item-children-wrapper
+          :children="children"
+          :parent="workItem"
+          :can-update="canUpdate"
+          :full-path="fullPath"
+          :work-item-id="issuableGid"
+          :work-item-iid="iid"
+          :show-labels="showLabels"
+          :disable-content="disableContent"
+          :has-indirect-children="false"
+          @error="error = $event"
+          @show-modal="openChild"
+        />
+        <work-item-children-load-more
+          v-if="hasNextPage"
+          data-testid="work-item-load-more"
+          :fetch-next-page-in-progress="fetchNextPageInProgress"
+          @fetch-next-page="fetchNextPage"
+        />
+      </div>
+      <work-item-detail-modal
+        ref="modal"
+        :work-item-id="activeChild.id"
+        :work-item-iid="activeChild.iid"
+        :work-item-full-path="activeChildNamespaceFullPath"
+        @close="closeModal"
+        @workItemDeleted="handleWorkItemDeleted(activeChild)"
+        @openReportAbuse="openReportAbuseModal"
+      />
+      <work-item-abuse-modal
+        v-if="isReportModalOpen && reportAbusePath"
+        :show-modal="isReportModalOpen"
+        :reported-user-id="reportedUserId"
+        :reported-from-url="reportedUrl"
+        @close-modal="toggleReportAbuseModal(false)"
+      />
+    </template>
+  </crud-component>
 </template>

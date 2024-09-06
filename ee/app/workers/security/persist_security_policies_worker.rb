@@ -24,6 +24,8 @@ module Security
     private
 
     def persist_policy(configuration, policies, policy_type)
+      return if policies.blank?
+
       Security::SecurityOrchestrationPolicies::PersistPolicyService
         .new(policy_configuration: configuration, policies: policies, policy_type: policy_type)
         .execute

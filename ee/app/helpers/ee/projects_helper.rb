@@ -20,6 +20,11 @@ module EE
       })
     end
 
+    override :show_no_ssh_key_message?
+    def show_no_ssh_key_message?(project)
+      !project.root_ancestor.enforce_ssh_certificates? && super
+    end
+
     override :project_permissions_panel_data
     def project_permissions_panel_data(project)
       super.merge({

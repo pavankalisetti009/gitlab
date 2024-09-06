@@ -1,9 +1,0 @@
----
-name: assign_custom_roles_to_group_links
-feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/443369
-introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/157256
-rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/471999
-milestone: '17.3'
-group: group::authorization
-type: beta
-default_enabled: false

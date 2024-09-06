@@ -7,7 +7,8 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
   let_it_be(:shared_with_group) { create(:group, :private) }
   let_it_be(:user) { create(:user, developer_of: group) }
 
-  let(:link) { create(:group_group_link, shared_group: group, shared_with_group: shared_with_group) }
+  let_it_be_with_reload(:link) { create(:group_group_link, shared_group: group, shared_with_group: shared_with_group) }
+
   let(:expiry_date) { 1.month.from_now.to_date }
   let(:group_link_params) { { group_access: Gitlab::Access::GUEST, expires_at: expiry_date } }
 
@@ -29,7 +30,9 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
     }
   end
 
-  subject(:update_service) { described_class.new(link, user).execute(group_link_params) }
+  let(:service) { described_class.new(link, user) }
+
+  subject(:update_service) { service.execute(group_link_params) }
 
   it 'sends an audit event' do
     expect(::Gitlab::Audit::Auditor).to receive(:audit).with(hash_including(audit_context)).once
@@ -40,17 +43,23 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
   context 'when assigning a member role to group link' do
     let_it_be(:member_role) { create(:member_role, namespace: group) }
 
+    let_it_be(:link_with_member_role) { create(:group_group_link, shared_group: group, member_role_id: member_role.id) }
+
     let(:group_link_params) { { member_role_id: member_role.id } }
+
+    before do
+      allow(service).to receive(:custom_role_for_group_link_enabled?)
+        .with(group)
+        .and_return(custom_role_for_group_link_enabled)
+    end
 
     context 'when custom_roles feature is enabled' do
       before do
         stub_licensed_features(custom_roles: true)
       end
 
-      context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
-        before do
-          stub_feature_flags(assign_custom_roles_to_group_links: true)
-        end
+      context 'when `custom_role_for_group_link_enabled` is true' do
+        let(:custom_role_for_group_link_enabled) { true }
 
         it 'assigns member role to group link' do
           expect(update_service.member_role_id).to eq(member_role.id)
@@ -90,18 +99,28 @@ RSpec.describe Groups::GroupLinks::UpdateService, '#execute', feature_category: 
         end
       end
 
-      context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-        before do
-          stub_feature_flags(assign_custom_roles_to_group_links: false)
-        end
+      context 'when `custom_role_for_group_link_enabled` is false' do
+        let(:custom_role_for_group_link_enabled) { false }
 
         it 'does not assign member role to group link' do
           expect(update_service.member_role_id).to be_nil
+        end
+
+        context 'when un-assigning a member role to group link' do
+          let(:link) { link_with_member_role }
+          let(:group_link_params) { { group_access: Gitlab::Access::GUEST, member_role_id: nil } }
+
+          it 'un-assigns member role to group link' do
+            expect(update_service.member_role_id).to be_nil
+            expect(update_service.group_access).to eq(Gitlab::Access::GUEST)
+          end
         end
       end
     end
 
     context 'when custom_roles feature is disabled' do
+      let(:custom_role_for_group_link_enabled) { false }
+
       before do
         stub_licensed_features(custom_roles: false)
       end

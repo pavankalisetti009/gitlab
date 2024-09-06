@@ -698,9 +698,6 @@ Settings.cron_jobs['object_storage_delete_stale_direct_uploads_worker']['job_cla
 Settings.cron_jobs['service_desk_custom_email_verification_cleanup'] ||= {}
 Settings.cron_jobs['service_desk_custom_email_verification_cleanup']['cron'] ||= '*/2 * * * *'
 Settings.cron_jobs['service_desk_custom_email_verification_cleanup']['job_class'] = 'ServiceDesk::CustomEmailVerificationCleanupWorker'
-Settings.cron_jobs['ensure_merge_requests_prepared_worker'] ||= {}
-Settings.cron_jobs['ensure_merge_requests_prepared_worker']['cron'] ||= '*/30 * * * *'
-Settings.cron_jobs['ensure_merge_requests_prepared_worker']['job_class'] ||= 'MergeRequests::EnsurePreparedWorker'
 Settings.cron_jobs['deactivated_pages_deployments_delete_cron_worker'] ||= {}
 Settings.cron_jobs['deactivated_pages_deployments_delete_cron_worker']['cron'] ||= '*/10 * * * *'
 Settings.cron_jobs['deactivated_pages_deployments_delete_cron_worker']['job_class'] ||= 'Pages::DeactivatedDeploymentsDeleteCronWorker'
@@ -723,6 +720,9 @@ Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker'] ||= {}
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['cron'] ||= '*/4 * * * *'
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['args'] ||= [1]
 Settings.cron_jobs['ci_click_house_finished_pipelines_sync_worker']['job_class'] = 'Ci::ClickHouse::FinishedPipelinesSyncCronWorker'
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker'] ||= {}
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker']['cron'] ||= '*/10 * * * *'
+Settings.cron_jobs['deactivate_expired_deployments_cron_worker']['job_class'] ||= 'Pages::DeactivateExpiredDeploymentsCronWorker'
 
 Gitlab.ee do
   Settings.cron_jobs['analytics_devops_adoption_create_all_snapshots_worker'] ||= {}
@@ -930,6 +930,9 @@ Gitlab.ee do
   Settings.cron_jobs['observability_alert_query_worker'] ||= {}
   Settings.cron_jobs['observability_alert_query_worker']['cron'] ||= '* * * * *'
   Settings.cron_jobs['observability_alert_query_worker']['job_class'] = 'Observability::AlertQueryWorker'
+  Settings.cron_jobs['report_security_policies_metrics_worker.rb'] ||= {}
+  Settings.cron_jobs['report_security_policies_metrics_worker.rb']['cron'] ||= '*/1 * * * *'
+  Settings.cron_jobs['report_security_policies_metrics_worker.rb']['job_class'] = 'Security::Policies::ReportSecurityPoliciesMetricsWorker'
 
   Gitlab.com do
     Settings.cron_jobs['disable_legacy_open_source_license_for_inactive_projects'] ||= {}
@@ -1163,7 +1166,7 @@ Settings['extra'] ||= {}
 Settings.extra['matomo_site_id'] ||= Settings.extra['piwik_site_id'] if Settings.extra['piwik_site_id'].present?
 Settings.extra['matomo_url'] ||= Settings.extra['piwik_url'] if Settings.extra['piwik_url'].present?
 Settings.extra['matomo_disable_cookies'] = false if Settings.extra['matomo_disable_cookies'].nil?
-Settings.extra['maximum_text_highlight_size_kilobytes'] = Settings.extra.fetch('maximum_text_highlight_size_kilobytes', 512).kilobytes
+Settings.extra['maximum_text_highlight_size_kilobytes'] = Settings.extra.fetch('maximum_text_highlight_size_kilobytes', 512)
 
 #
 # Rack::Attack settings

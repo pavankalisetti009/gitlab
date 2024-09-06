@@ -58,7 +58,20 @@ module EE
       end
 
       def akeyless_server(secret)
-        # TODO in https://gitlab.com/gitlab-org/gitlab/-/merge_requests/147283
+        @akeyless_server ||= {
+          'access_id' => variable_value('AKEYLESS_ACCESS_ID'),
+          'access_key' => secret.dig('akeyless', 'akeyless_access_key'),
+          'akeyless_api_url' => secret.dig('akeyless', 'akeyless_api_url') || "https://api.akeyless.io",
+          'akeyless_access_type' => secret.dig('akeyless', 'akeyless_access_type') || "jwt",
+          'akeyless_token' => secret.dig('akeyless', 'akeyless_token') || "",
+          'uid_token' => secret.dig('akeyless', 'uid_token') || "",
+          'gcp_audience' => secret.dig('akeyless', 'gcp_audience') || "",
+          'azure_object_id' => secret.dig('akeyless', 'azure_object_id') || "",
+          'k8s_service_account_token' => secret.dig('akeyless', 'k8s_service_account_token') || "",
+          'k8s_auth_config_name' => secret.dig('akeyless', 'k8s_auth_config_name') || "",
+          'gateway_ca_certificate' => secret.dig('akeyless', 'gateway_ca_certificate') || "",
+          'jwt' => secret['token']
+        }
       end
 
       def azure_key_vault_server(secret)

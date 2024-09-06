@@ -198,5 +198,39 @@ RSpec.describe Projects::Settings::RepositoryController, feature_category: :sour
           .to contain_exactly(protected_branch_from_deletion)
       end
     end
+
+    context 'when accessing through custom ability' do
+      let_it_be(:another_user) { create(:user) }
+      let_it_be(:role) { create(:member_role, :guest, namespace: group, admin_protected_branch: true) }
+      let_it_be(:membership) { create(:group_member, :guest, member_role: role, user: another_user, group: group) }
+
+      before do
+        sign_in(another_user)
+      end
+
+      context 'with custom_roles feature enabled' do
+        before do
+          stub_licensed_features(custom_roles: true)
+        end
+
+        it 'allows access' do
+          get :show, params: { namespace_id: group, project_id: project }
+
+          expect(response).to have_gitlab_http_status(:ok)
+        end
+      end
+
+      context 'with custom_roles feature disabled' do
+        before do
+          stub_licensed_features(custom_roles: false)
+        end
+
+        it 'does not allow access' do
+          get :show, params: { namespace_id: group, project_id: project }
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+    end
   end
 end

@@ -76,6 +76,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     rawGroupPolicies: {
       query: complianceFrameworkPoliciesQuery,
       variables() {

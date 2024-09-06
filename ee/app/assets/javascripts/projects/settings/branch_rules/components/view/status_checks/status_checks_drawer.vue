@@ -42,6 +42,11 @@ export default {
     getDrawerHeaderHeight() {
       return getContentWrapperHeight();
     },
+    drawerTitle() {
+      return this.selectedStatusCheck
+        ? this.$options.i18n.editStatusCheck
+        : this.$options.i18n.addStatusCheck;
+    },
   },
   methods: {
     emitSaveEvent(statusCheck) {
@@ -63,7 +68,9 @@ export default {
     @close="$emit('close-status-check-drawer')"
   >
     <template #title>
-      <h2 class="gl-my-0 gl-text-size-h2">{{ $options.i18n.addStatusCheck }}</h2>
+      <h2 class="gl-my-0 gl-text-size-h2">
+        {{ drawerTitle }}
+      </h2>
     </template>
 
     <template #default>

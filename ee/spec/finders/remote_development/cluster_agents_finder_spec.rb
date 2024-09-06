@@ -2,12 +2,12 @@
 
 require "spec_helper"
 
-RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :workspaces do
   let_it_be(:developer) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:user) { developer }
   let_it_be(:root_agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, name: "agent-1-root-mapped")
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, name: "agent-1-root-mapped")
   end
 
   let_it_be(:root_agent_with_remote_dev_disabled) do
@@ -17,18 +17,18 @@ RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :remote
   let_it_be(:unmapped_root_agent) do
     create(
       :ee_cluster_agent,
-      :with_remote_development_agent_config,
+      :with_existing_workspaces_agent_config,
       project: root_agent.project,
       name: "agent-3-root-unmapped"
     )
   end
 
   let_it_be(:nested_agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, name: "agent-4-nested")
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, name: "agent-4-nested")
   end
 
   let_it_be(:migrated_nested_agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, name: "agent-5-nested-migrated")
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, name: "agent-5-nested-migrated")
   end
 
   let_it_be_with_reload(:root_namespace) do

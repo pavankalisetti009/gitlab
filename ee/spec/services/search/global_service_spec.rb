@@ -19,6 +19,42 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
     let(:service) { described_class.new(user, params) }
   end
 
+  describe '#search_type' do
+    let(:search_service) { described_class.new(user, scope: scope) }
+
+    subject(:search_type) { search_service.search_type }
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
+      true   | true  | 'blobs'  | 'zoekt'
+      false  | true  | 'blobs'  | 'advanced'
+      false  | false | 'blobs'  | 'basic'
+      true   | true  | 'issues' | 'advanced'
+      true   | false | 'issues' | 'basic'
+    end
+
+    with_them do
+      before do
+        allow(search_service).to receive(:scope).and_return(scope)
+        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
+        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+      end
+
+      it { is_expected.to eq(expected_type) }
+
+      %w[basic advanced zoekt].each do |search_type|
+        context "with search_type param #{search_type}" do
+          let(:search_service) do
+            described_class.new(user, { scope: scope, search_type: search_type })
+          end
+
+          it { is_expected.to eq(search_type) }
+        end
+      end
+    end
+  end
+
   context 'has_parent usage', :elastic do
     shared_examples 'search does not use has_parent' do |scope|
       let(:results) { described_class.new(nil, search: '*').execute.objects(scope) }
@@ -141,16 +177,24 @@ RSpec.describe Search::GlobalService, feature_category: :global_search do
 
     context 'issue' do
       let(:scope) { 'issues' }
-      let(:search) { issue.title }
 
-      let!(:issue) { create :issue, project: project }
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let!(:work_item) { create document_type, project: project }
+          let(:search) { work_item.title }
 
-      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_guest_feature_access
-      end
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+          end
 
-      with_them do
-        it_behaves_like 'search respects visibility'
+          where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+            permission_table_for_guest_feature_access
+          end
+
+          with_them do
+            it_behaves_like 'search respects visibility'
+          end
+        end
       end
     end
 

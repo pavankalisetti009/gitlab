@@ -63,7 +63,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
           [{ organization: nil, group: group, project: project, pipeline: nil }, false],
           [{ organization: nil, group: group, project: nil, pipeline: pipeline }, false],
           [{ organization: nil, group: group, project: nil, pipeline: nil }, true],
-          [{ organization: nil, group: nil, project: project, pipeline: pipeline }, false],
+          [{ organization: nil, group: nil, project: project, pipeline: pipeline }, true],
           [{ organization: nil, group: nil, project: project, pipeline: nil }, true],
           [{ organization: nil, group: nil, project: nil, pipeline: pipeline }, true],
           [{ organization: nil, group: nil, project: nil, pipeline: nil }, false]
@@ -71,7 +71,7 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
       end
 
       with_them do
-        let(:export) { build(:dependency_list_export, args) }
+        let(:export) { build(:dependency_list_export, **args) }
 
         if params[:valid]
           it { is_expected.not_to include(expected_error) }
@@ -177,11 +177,20 @@ RSpec.describe Dependencies::DependencyListExport, feature_category: :dependency
     let(:export) { build(:dependency_list_export) }
     let(:organization) { build_stubbed(:organization) }
 
-    it 'sets the correct association' do
-      expect { export.exportable = project }.to change { export.project }.to(project)
-      expect { export.exportable = group }.to change { export.group }.to(group)
+    after do
+      export.project = nil
+      export.group = nil
+      export.project = nil
+      export.pipeline = nil
+    end
+
+    specify { expect { export.exportable = project }.to change { export.project }.to(project) }
+    specify { expect { export.exportable = group }.to change { export.group }.to(group) }
+    specify { expect { export.exportable = organization }.to change { export.organization }.to(organization) }
+
+    it 'sets pipelines and project when given a pipeline' do
       expect { export.exportable = pipeline }.to change { export.pipeline }.to(pipeline)
-      expect { export.exportable = organization }.to change { export.organization }.to(organization)
+        .and change { export.project }.to(pipeline.project)
     end
 
     it 'raises when exportable is an unknown type' do

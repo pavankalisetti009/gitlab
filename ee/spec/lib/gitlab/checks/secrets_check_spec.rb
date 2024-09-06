@@ -68,40 +68,9 @@ RSpec.describe Gitlab::Checks::SecretsCheck, feature_category: :secret_detection
           end
         end
 
-        context 'when instance is GitLab.com' do
+        context 'when instance is not dedicated' do
           before do
             Gitlab::CurrentSettings.update!(gitlab_dedicated_instance: false)
-            stub_saas_features(beta_rollout_pre_receive_secret_detection: true)
-          end
-
-          context 'when license is not ultimate' do
-            it_behaves_like 'skips the push check'
-          end
-
-          context 'when license is ultimate' do
-            before do
-              stub_licensed_features(pre_receive_secret_detection: true)
-            end
-
-            # We do not need to duplicate the other tests that are also running
-            # for Dedicated instances When we consolidate and no longer have to check
-            # instance type, we should use the full suite of specs we're running for Dedicated.
-            it_behaves_like 'scan detected secrets'
-
-            context 'when feature flag is disabled' do
-              before do
-                stub_feature_flags(pre_receive_secret_detection_push_check: false)
-              end
-
-              it_behaves_like 'skips the push check'
-            end
-          end
-        end
-
-        context 'when instance is not dedicated or GitLab.com' do
-          before do
-            Gitlab::CurrentSettings.update!(gitlab_dedicated_instance: false)
-            stub_saas_features(beta_rollout_pre_receive_secret_detection: false)
           end
 
           context 'when license is not ultimate' do

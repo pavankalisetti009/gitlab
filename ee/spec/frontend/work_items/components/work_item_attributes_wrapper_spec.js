@@ -82,12 +82,9 @@ describe('EE WorkItemAttributesWrapper component', () => {
       provide: {
         hasIssueWeightsFeature: true,
         hasIterationsFeature: true,
-        hasOkrsFeature: true,
         hasSubepicsFeature,
         hasIssuableHealthStatusFeature: true,
-        projectNamespace: 'namespace',
         glFeatures: featureFlags,
-        isGroup: false,
       },
     });
   };

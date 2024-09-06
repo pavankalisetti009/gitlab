@@ -14,6 +14,7 @@ export default {
     GlSkeletonLoader,
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     group: {
       skip() {
         return !this.cadenceId;

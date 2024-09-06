@@ -110,12 +110,36 @@ date set at one year from the date of upgrade.
 Before this automatic expiry date is applied, you should do the following to minimize disruption:
 
 1. [Identify any access tokens without an expiration date](../../security/tokens/token_troubleshooting.md#find-tokens-with-no-expiration-date).
-1. [Give those tokens an expiration date](../../security/tokens/index.md#extend-token-lifetime).
+1. [Give those tokens an expiration date](../../security/tokens/token_troubleshooting.md#extend-token-lifetime).
 
 For more information, see the:
 
 - [Deprecations and removals documentation](../../update/deprecations.md#non-expiring-access-tokens).
 - [Deprecation issue](https://gitlab.com/gitlab-org/gitlab/-/issues/369122).
+
+## 17.4.0
+
+- Starting with GitLab 17.4, new GitLab installations have a different database schema regarding ID columns.
+  - All previous integer (32 bits) ID columns (for example columns like `id`, `%_id`, `%_ids`) are now created as `bigint` (64 bits).
+  - Existing installations will migrate from 32 bit to 64 bit integers in later releases when database migrations ship to perform this change.
+  - If you are building a new GitLab environment to test upgrades, install GitLab 17.3 or earlier to get
+    the same integer types as your existing environments. You can then upgrade to later releases to run the same
+    database migrations as your existing environments. This isn't necessary if you're restoring from backup into the
+    new environment as the database restore removes the existing database schema definition and uses the definition
+    that's stored as part of the backup.
+
+## Issues to be aware of when upgrading from 17.1 and earlier
+
+- If the customer is using GitLab Duo and upgrading to GitLab 17.2.3 or earlier, they must do both of the following:
+  - Resynchronize their license.
+  - Restart the server after the upgrade.
+- If the customer is using GitLab Duo and upgrading to GitLab 17.2.4 or later, they must do either of the following:
+  - Resynchronize their license.
+  - Wait until the next scheduled license synchronization, which happens every 24 hours.
+
+After the customer has upgraded to GitLab 17.2.4 or later, these steps are not required for future upgrades.
+
+For more information, see [issue 480328](https://gitlab.com/gitlab-org/gitlab/-/issues/480328).
 
 ## Issues to be aware of when upgrading from 17.3
 
@@ -125,7 +149,7 @@ For more information, see the:
 
   ```shell
   main: == [advisory_lock_connection] object_id: 127900, pg_backend_pid: 76263
-  main: == 20240812040748 AddUniqueConstraintToRemoteDevelopmentAgentConfigs: migrating 
+  main: == 20240812040748 AddUniqueConstraintToRemoteDevelopmentAgentConfigs: migrating
   main: -- transaction_open?(nil)
   main:    -> 0.0000s
   main: -- view_exists?(:postgres_partitions)
@@ -166,6 +190,10 @@ For more information, see the:
    agent_configs_to_remove.delete_all
    ```
 
+## 17.5.0
+
+- OpenSSL version 3 (TLS 1.2) is required for all incoming connections to GitLab, such as from LDAP servers and webhooks.
+
 ## 17.3.0
 
 - Git 2.45.0 and later is required by Gitaly. For installations from source, you should use the [Git version provided by Gitaly](../../install/installation.md#git).
@@ -205,6 +233,19 @@ For more information, see the:
 
   1. Upgrade to GitLab 17.2.1 or higher.
 
+### Geo installations
+
+- In GitLab 16.11 through GitLab 17.2, a missing PostgreSQL index can cause high CPU usage, slow job artifact verification progress, and slow or timed out Geo metrics status updates. The index was added in GitLab 17.3. To manually add the index, see [Geo Troubleshooting - High CPU usage on primary during job artifact verification](../../administration/geo/replication/troubleshooting/common.md#high-cpu-usage-on-primary-during-object-verification).
+
+  **Affected releases**:
+
+  | Affected minor releases | Affected patch releases | Fixed in |
+  | ----------------------- | ----------------------- | -------- |
+  | 16.11                   |  All                    | None     |
+  | 17.0                    |  All                    | None     |
+  | 17.1                    |  All                    | None     |
+  | 17.2                    |  All                    | None     |
+
 ## 17.1.0
 
 - Bitbucket identities with untrusted `extern_uid` are deleted.
@@ -217,3 +258,31 @@ For more information, see the:
   in a failure when running the migrations.
   This is due to a bug.
   [Issue 468875](https://gitlab.com/gitlab-org/gitlab/-/issues/468875) has been fixed with GitLab 17.1.2.
+
+### Geo installations
+
+- In GitLab 16.11 through GitLab 17.2, a missing PostgreSQL index can cause high CPU usage, slow job artifact verification progress, and slow or timed out Geo metrics status updates. The index was added in GitLab 17.3. To manually add the index, see [Geo Troubleshooting - High CPU usage on primary during job artifact verification](../../administration/geo/replication/troubleshooting/common.md#high-cpu-usage-on-primary-during-object-verification).
+
+  **Affected releases**:
+
+  | Affected minor releases | Affected patch releases | Fixed in |
+  | ----------------------- | ----------------------- | -------- |
+  | 16.11                   |  All                    | None     |
+  | 17.0                    |  All                    | None     |
+  | 17.1                    |  All                    | None     |
+  | 17.2                    |  All                    | None     |
+
+## 17.0.0
+
+### Geo installations
+
+- In GitLab 16.11 through GitLab 17.2, a missing PostgreSQL index can cause high CPU usage, slow job artifact verification progress, and slow or timed out Geo metrics status updates. The index was added in GitLab 17.3. To manually add the index, see [Geo Troubleshooting - High CPU usage on primary during job artifact verification](../../administration/geo/replication/troubleshooting/common.md#high-cpu-usage-on-primary-during-object-verification).
+
+  **Affected releases**:
+
+  | Affected minor releases | Affected patch releases | Fixed in |
+  | ----------------------- | ----------------------- | -------- |
+  | 16.11                   |  All                    | None     |
+  | 17.0                    |  All                    | None     |
+  | 17.1                    |  All                    | None     |
+  | 17.2                    |  All                    | None     |

@@ -107,7 +107,10 @@ RSpec.describe 'Query.vulnerabilities.issueLinks', feature_category: :vulnerabil
       # 29) Loading the user
       # 30) Loading the organization
       # 31) Loading the organization for access token (only inside specs)
-      expect { query_issue_links }.not_to exceed_query_limit(31)
+      # 32) Loading the organization_details for avatar_url
+      # 33/34) Likely transitional in nature during decomposition. Investigate when all tables are transitioned
+      # https://gitlab.com/gitlab-org/gitlab/-/issues/480882
+      expect { query_issue_links }.not_to exceed_query_limit(34)
     end
   end
 

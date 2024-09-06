@@ -15,7 +15,7 @@ RSpec.describe 'gitlab_subscriptions/trials/duo_pro/_select_namespace_form.html.
     render 'gitlab_subscriptions/trials/duo_pro/select_namespace_form'
 
     expect(rendered).to have_content(s_('DuoProTrial|Apply your GitLab Duo Pro trial to an existing group'))
-    expect(rendered).to have_content(_('Who will be using GitLab?'))
+    expect(rendered).to have_content(_('This subscription is for'))
     expect(rendered).to have_content(_('My company or team'))
     expect(rendered).to have_content(_('Just me'))
 

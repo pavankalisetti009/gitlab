@@ -12,6 +12,14 @@ module GitlabSubscriptions
 
           private
 
+          override :add_on
+          override :quantity
+          override :starts_at
+          override :expires_on
+          override :purchase_xid
+          delegate :add_on, :quantity, :starts_at, :expires_on, :purchase_xid, to: :license_add_on, allow_nil: true
+
+          override :add_on_purchase
           def add_on_purchase
             GitlabSubscriptions::AddOnPurchase.find_by_namespace_and_add_on(
               namespace,
@@ -20,12 +28,9 @@ module GitlabSubscriptions
           end
           strong_memoize_attr :add_on_purchase
 
-          def add_on
-            license_add_on&.add_on
-          end
-
-          def quantity
-            license_add_on&.seat_count.to_i
+          override :trial?
+          def trial?
+            !!license_add_on&.trial?
           end
 
           def license_add_ons
@@ -36,6 +41,7 @@ module GitlabSubscriptions
           def license_add_on
             license_add_ons.find(&:active?)
           end
+          strong_memoize_attr :license_add_on
         end
       end
     end

@@ -33,7 +33,8 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
         allow_multi_rule: 'false',
         can_edit: 'false',
         project_id: project.id,
-        rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id))
+        rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
+        can_admin_protected_branches: 'false'
       })
     end
 

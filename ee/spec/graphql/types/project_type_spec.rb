@@ -14,7 +14,7 @@ RSpec.describe GitlabSchema.types['Project'] do
   let_it_be(:security_policy_management_project) { create(:project) }
 
   before do
-    stub_licensed_features(security_dashboard: true)
+    stub_licensed_features(security_dashboard: true, dependency_scanning: true)
 
     project.add_developer(user)
   end
@@ -32,7 +32,8 @@ RSpec.describe GitlabSchema.types['Project'] do
       ci_subscriptions_projects ci_subscribed_projects ai_agents ai_agent duo_features_enabled
       runner_cloud_provisioning google_cloud_artifact_registry_repository marked_for_deletion_on
       is_adjourned_deletion_enabled permanent_deletion_date ai_metrics saved_reply merge_trains
-      pending_member_approvals observability_metrics_links
+      pending_member_approvals observability_logs_links observability_metrics_links
+      observability_traces_links dependencies
     ]
 
     expect(described_class).to include_graphql_fields(*expected_fields)
@@ -120,6 +121,38 @@ RSpec.describe GitlabSchema.types['Project'] do
     end
   end
 
+  describe 'dependencies' do
+    let_it_be(:user) { create(:user) }
+    let_it_be(:project) { create(:project, developers: user) }
+    let_it_be(:sbom_occurrence_1) { create(:sbom_occurrence, project: project) }
+    let_it_be(:sbom_occurrence_2) { create(:sbom_occurrence, project: project) }
+    let_it_be(:query) do
+      %(
+        query {
+          project(fullPath: "#{project.full_path}") {
+            name
+            dependencies {
+              nodes {
+                id
+                name
+              }
+            }
+          }
+        }
+      )
+    end
+
+    subject(:query_result) { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    it "returns all dependencies for all projects under given group" do
+      dependencies = query_result.dig(*%w[data project dependencies nodes])
+
+      expect(dependencies.count).to be(2)
+      expect(dependencies.first['name']).to eq(sbom_occurrence_1.component_name)
+      expect(dependencies.last['name']).to eq(sbom_occurrence_2.component_name)
+    end
+  end
+
   describe 'vulnerabilities' do
     let_it_be(:project) { create(:project) }
     let_it_be(:user) { create(:user) }
@@ -159,6 +192,55 @@ RSpec.describe GitlabSchema.types['Project'] do
     subject { described_class.fields['codeCoverageSummary'] }
 
     it { is_expected.to have_graphql_type(Types::Ci::CodeCoverageSummaryType) }
+  end
+
+  describe 'merge_requests field' do
+    subject { described_class.fields['mergeRequests'] }
+
+    it { is_expected.to have_graphql_type(Types::MergeRequestType.connection_type) }
+    it { is_expected.to have_graphql_resolver(Resolvers::ProjectMergeRequestsResolver) }
+
+    it do
+      is_expected.to include_graphql_arguments(
+        :iids,
+        :source_branches,
+        :target_branches,
+        :state,
+        :draft,
+        :approved,
+        :labels,
+        :label_name,
+        :before,
+        :after,
+        :first,
+        :last,
+        :merged_after,
+        :merged_before,
+        :created_after,
+        :created_before,
+        :deployed_after,
+        :deployed_before,
+        :deployment_id,
+        :updated_after,
+        :updated_before,
+        :author_username,
+        :approved_by,
+        :my_reaction_emoji,
+        :merged_by,
+        :release_tag,
+        :assignee_username,
+        :assignee_wildcard_id,
+        :reviewer_username,
+        :reviewer_wildcard_id,
+        :review_state,
+        :review_states,
+        :milestone_title,
+        :milestone_wildcard_id,
+        :not,
+        :sort,
+        :approver
+      )
+    end
   end
 
   describe 'compliance_frameworks' do
@@ -407,6 +489,49 @@ RSpec.describe GitlabSchema.types['Project'] do
 
     it 'returns the associated security policy project' do
       result = subject.dig('data', 'project', 'securityPolicyProjectLinkedNamespaces', 'nodes', 0)
+
+      expect(result).to eq(
+        'name' => namespace.name,
+        'fullPath' => namespace.full_path
+      )
+    end
+  end
+
+  describe 'security_policy_project_linked_groups', feature_category: :security_policy_management do
+    let(:policy_configuration) { create(:security_orchestration_policy_configuration, :namespace, namespace: namespace, security_policy_management_project: security_policy_management_project) }
+    let(:query) do
+      %(
+        query {
+          project(fullPath: "#{security_policy_management_project.full_path}") {
+            securityPolicyProjectLinkedGroups {
+              nodes {
+                name
+                fullPath
+              }
+            }
+          }
+        }
+      )
+    end
+
+    let(:policy_yaml) { Gitlab::Config::Loader::Yaml.new(fixture_file('security_orchestration.yml', dir: 'ee')).load! }
+
+    subject { GitlabSchema.execute(query, context: { current_user: user }).as_json }
+
+    before do
+      allow_next_found_instance_of(Security::OrchestrationPolicyConfiguration) do |policy|
+        allow(policy).to receive(:policy_configuration_valid?).and_return(true)
+        allow(policy).to receive(:policy_hash).and_return(policy_yaml)
+        allow(policy).to receive(:policy_last_updated_at).and_return(Time.now)
+      end
+
+      stub_licensed_features(security_orchestration_policies: true)
+      policy_configuration.security_policy_management_project.add_maintainer(user)
+      namespace.add_developer(user)
+    end
+
+    it 'returns the associated security policy project' do
+      result = subject.dig('data', 'project', 'securityPolicyProjectLinkedGroups', 'nodes', 0)
 
       expect(result).to eq(
         'name' => namespace.name,

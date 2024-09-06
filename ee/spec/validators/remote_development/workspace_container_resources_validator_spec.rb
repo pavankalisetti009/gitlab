@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceContainerResourcesValidator, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceContainerResourcesValidator, feature_category: :workspaces do
   let(:model) do
     Class.new do
       include ActiveModel::Model

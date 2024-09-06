@@ -37,6 +37,7 @@ module Ai
           end
 
           def initialize(blob)
+            @blob = blob
             @content = blob.data
             @path = blob.path
             @errors = []
@@ -46,11 +47,14 @@ module Ai
             return error('file empty') if content.blank?
 
             @libs = extract_libs
+            sanitize_libs!
 
             # Default error message if there are no other errors
             error('format not recognized or dependencies not present') if libs.blank? && errors.empty?
           rescue ParsingError => e
             error(e)
+          ensure
+            track_error unless valid?
           end
 
           # This hash matches the current XrayReport payload schema
@@ -77,11 +81,21 @@ module Ai
 
           private
 
-          attr_reader :content, :path, :libs, :errors
+          attr_reader :blob, :content, :path, :libs, :errors
 
           # To record an error, either use error() directly or raise ParsingError
           def extract_libs
             raise NotImplementedError
+          end
+
+          def sanitize_libs!
+            @libs = Array.wrap(libs).filter_map do |lib|
+              next if lib.name.blank?
+
+              lib.name = lib.name.strip
+              lib.version = lib.version&.strip
+              lib
+            end
           end
 
           def formatted_libs
@@ -108,6 +122,18 @@ module Ai
             obj.dig(*keys)
           rescue NoMethodError, TypeError
             raise ParsingError, 'encountered invalid node'
+          end
+
+          def track_error
+            message = "#{self.class.name.demodulize} parsing error(s): #{errors.join(', ')}. If this error " \
+              "occurs in multiple projects, we may need to update the parsing logic in `#{self.class.name}`."
+
+            Gitlab::ErrorTracking.track_exception(
+              ParsingError.new(message),
+              class: self.class.name,
+              file_path: path,
+              project_id: blob.project.id
+            )
           end
         end
       end

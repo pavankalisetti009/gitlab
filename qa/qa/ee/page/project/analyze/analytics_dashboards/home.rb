@@ -53,8 +53,12 @@ module QA
                 click_link(name)
               end
 
-              def list_item_has_errors_badge?(list_item_index:, wait: 1)
-                within_element_by_index('dashboard-list-item', list_item_index) do
+              def has_dashboard_item?(name)
+                has_element?('dashboard-router-link', text: name, wait: 10)
+              end
+
+              def list_item_has_errors_badge?(name:, wait: 1)
+                within_element('dashboard-list-item', text: name) do
                   has_element?('dashboard-errors-badge', wait: wait)
                 end
               end

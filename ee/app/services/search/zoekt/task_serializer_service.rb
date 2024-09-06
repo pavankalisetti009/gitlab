@@ -3,7 +3,7 @@
 module Search
   module Zoekt
     class TaskSerializerService
-      INDEXING_TIMEOUT_S = 30.minutes.to_i
+      INDEXING_TIMEOUT_S = 1.hour.to_i
 
       attr_reader :task
 

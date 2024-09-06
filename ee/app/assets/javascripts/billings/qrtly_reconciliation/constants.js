@@ -1,6 +1,6 @@
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { s__, __ } from '~/locale';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 const qrtlyReconciliationHelpPageUrl = helpPagePath('subscriptions/quarterly_reconciliation');
 

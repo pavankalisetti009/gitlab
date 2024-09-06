@@ -138,37 +138,45 @@ RSpec.describe SearchService, feature_category: :global_search do
   describe '#search_type' do
     let_it_be(:user) { create(:user) }
     let_it_be(:project) { create(:project, :public) }
-    let(:search_service) { described_class.new(user, { scope: scope, project_id: project.id }) }
+    let_it_be(:group) { create(:group, :public) }
+    let(:scope) { 'notes' }
+    let(:expected_search_type) { 'advanced' }
 
-    subject(:search_type) { search_service.search_type }
+    subject(:search_type) { service.search_type }
 
-    using RSpec::Parameterized::TableSyntax
+    context 'for project search' do
+      let(:service) { described_class.new(user, { scope: scope, project_id: project.id }) }
 
-    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
-      true   | true  | 'blobs'  | 'zoekt'
-      false  | true  | 'blobs'  | 'advanced'
-      false  | false | 'blobs'  | 'basic'
-      true   | true  | 'issues' | 'advanced'
-      true   | false | 'issues' | 'basic'
+      it 'delegates to ProjectService.search_type' do
+        expect_next_instance_of(::Search::ProjectService) do |project_service|
+          expect(project_service).to receive(:search_type).and_return(expected_search_type)
+        end
+
+        expect(search_type).to eq(expected_search_type)
+      end
     end
 
-    with_them do
-      before do
-        allow(search_service).to receive(:scope).and_return(scope)
-        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
-        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
-      end
+    context 'for group search' do
+      let(:service) { described_class.new(user, { scope: scope, group_id: group.id }) }
 
-      it { is_expected.to eq(expected_type) }
-
-      %w[basic advanced zoekt].each do |search_type|
-        context "with search_type param #{search_type}" do
-          let(:search_service) do
-            described_class.new(user, { scope: scope, project_id: project.id, search_type: search_type })
-          end
-
-          it { is_expected.to eq(search_type) }
+      it 'delegates to GroupService.search_type' do
+        expect_next_instance_of(::Search::GroupService) do |group_service|
+          expect(group_service).to receive(:search_type).and_return(expected_search_type)
         end
+
+        expect(search_type).to eq(expected_search_type)
+      end
+    end
+
+    context 'for global search' do
+      let(:service) { described_class.new(user, { scope: scope }) }
+
+      it 'delegates to GlobalService.search_type' do
+        expect_next_instance_of(::Search::GlobalService) do |global_service|
+          expect(global_service).to receive(:search_type).and_return(expected_search_type)
+        end
+
+        expect(search_type).to eq(expected_search_type)
       end
     end
   end

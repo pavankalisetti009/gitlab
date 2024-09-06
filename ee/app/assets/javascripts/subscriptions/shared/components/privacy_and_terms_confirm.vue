@@ -1,7 +1,7 @@
 <script>
-import { GlFormCheckbox, GlLink, GlSprintf } from '@gitlab/ui';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { GlFormCheckbox, GlSprintf } from '@gitlab/ui';
 import { s__ } from '~/locale';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {
   name: 'PrivacyAndTermsConfirm',
@@ -11,10 +11,10 @@ export default {
     ),
   },
   helpLinks: {
-    privacyLink: `${PROMO_URL}/privacy`,
-    termsLink: `${PROMO_URL}/terms#subscription`,
+    privacyPath: '/privacy',
+    termsPath: '/terms#subscription',
   },
-  components: { GlFormCheckbox, GlLink, GlSprintf },
+  components: { GlFormCheckbox, PromoPageLink, GlSprintf },
   props: {
     value: {
       type: Boolean,
@@ -33,17 +33,20 @@ export default {
   <gl-form-checkbox :checked="value" @input="toogleAccepted">
     <gl-sprintf :message="$options.i18n.label">
       <template #privacyLink="{ content }">
-        <gl-link
-          :href="$options.helpLinks.privacyLink"
+        <promo-page-link
+          :path="$options.helpLinks.privacyPath"
           target="_blank"
           data-testid="privacy-link"
-          >{{ content }}</gl-link
+          >{{ content }}</promo-page-link
         >
       </template>
       <template #termsLink="{ content }">
-        <gl-link :href="$options.helpLinks.termsLink" target="_blank" data-testid="terms-link">{{
-          content
-        }}</gl-link>
+        <promo-page-link
+          :path="$options.helpLinks.termsPath"
+          target="_blank"
+          data-testid="terms-link"
+          >{{ content }}</promo-page-link
+        >
       </template>
     </gl-sprintf>
   </gl-form-checkbox>

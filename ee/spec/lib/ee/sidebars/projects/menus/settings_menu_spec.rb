@@ -78,22 +78,6 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
         end
       end
     end
-
-    describe 'Access tokens' do
-      let(:item_id) { :access_tokens }
-
-      describe 'when the user is not an admin but has manage_resource_access_tokens custom permission' do
-        before do
-          allow(Ability).to receive(:allowed?).and_call_original
-          allow(Ability).to receive(:allowed?).with(user, :admin_project, project).and_return(false)
-          allow(Ability).to receive(:allowed?).with(user, :manage_resource_access_tokens, project).and_return(true)
-        end
-
-        it 'includes access token menu item' do
-          expect(subject.title).to eql('Access tokens')
-        end
-      end
-    end
   end
 
   describe 'Custom Roles' do
@@ -114,6 +98,7 @@ RSpec.describe Sidebars::Projects::Menus::SettingsMenu, feature_category: :navig
     where(:ability, :menu_item) do
       :admin_cicd_variables          | 'CI/CD'
       :admin_push_rules              | 'Repository'
+      :admin_protected_branch        | 'Repository'
       :admin_runners                 | 'CI/CD'
       :manage_deploy_tokens          | 'Repository'
       :manage_merge_request_settings | 'Merge requests'

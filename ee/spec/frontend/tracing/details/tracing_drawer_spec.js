@@ -3,6 +3,7 @@ import { nextTick } from 'vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import TracingDrawer from 'ee/tracing/details/tracing_drawer.vue';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
 
 jest.mock('~/lib/utils/dom_utils');
 
@@ -16,7 +17,7 @@ describe('TracingDrawer', () => {
     operation: 'test-operation',
     emptyVal: '',
     span_attributes: {
-      'http.status_code': '200',
+      'http.status_code': `${HTTP_STATUS_OK}`,
       'http.method': 'GET',
       'http.empty': '',
     },
@@ -88,7 +89,7 @@ describe('TracingDrawer', () => {
       'Attributes',
       [
         { name: 'http.method', value: 'GET' },
-        { name: 'http.status_code', value: '200' },
+        { name: 'http.status_code', value: `${HTTP_STATUS_OK}` },
       ],
     ],
     [

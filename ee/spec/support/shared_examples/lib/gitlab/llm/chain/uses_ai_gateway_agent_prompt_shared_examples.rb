@@ -11,9 +11,15 @@
 # - unit_primitive
 RSpec.shared_examples 'uses ai gateway agent prompt' do
   let(:inputs) { tool.send(:prompt_options) }
+  let(:default_unit_primitive) { nil }
 
   before do
     allow(tool).to receive(:provider_prompt_class).and_return(prompt_class)
+
+    allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
+      service_name: unit_primitive.to_sym,
+      tracking_context: { request_id: nil, action: unit_primitive }
+    }).and_return(ai_request_double)
   end
 
   it 'executes a request with correct params' do
@@ -37,7 +43,7 @@ RSpec.shared_examples 'uses ai gateway agent prompt' do
     it 'executes a request with correct params' do
       expect(ai_request_double).to receive(:request).with(
         tool.prompt,
-        unit_primitive: nil
+        unit_primitive: default_unit_primitive
       )
 
       tool.execute

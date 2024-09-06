@@ -11,11 +11,8 @@ DETAILS:
 **Offering:** GitLab.com, Self-managed, GitLab Dedicated
 
 > - [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/219230) to display invited group members on the Members tab of the Members page in GitLab 16.10 [with a flag](../../../administration/feature_flags.md) named `webui_members_inherited_users`. Disabled by default.
-> - Feature flag `webui_members_inherited_users` [enabled on GitLab.com and self-managed](https://gitlab.com/gitlab-org/gitlab/-/issues/219230) in GitLab 17.0.
-
-FLAG:
-On self-managed GitLab, by default this feature is available. To hide the feature per user, an administrator can [disable the feature flag](../../../administration/feature_flags.md) named `webui_members_inherited_users`.
-On GitLab.com and GitLab Dedicated, this feature is available.
+> - Feature flag `webui_members_inherited_users` was [enabled on GitLab.com and self-managed](https://gitlab.com/gitlab-org/gitlab/-/issues/219230) in GitLab 17.0.
+> - Feature flag `webui_members_inherited_users` [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163627) in GitLab 17.4. Members of invited groups displayed by default.
 
 You can share by invitation:
 
@@ -67,10 +64,10 @@ Each member's access is based on the:
 - Role they're assigned in the group.
 - Maximum role you choose when you invite the group.
 
-If a group member has a role in the group with fewer permissions than the maximum project role,
+If a group member has a role for the group with fewer permissions than the maximum project role,
 the member keeps the permissions of their group role.
 For example, if you add a member with the Guest role to a project with a maximum role of Maintainer,
-the member has only the permissions of the Guest role in the project.
+the member has only the permissions of the Guest role for the project.
 
 In addition:
 
@@ -208,7 +205,7 @@ This behavior is intended to help group Owners to better manage the memberships 
 
 ### Examples
 
-`User A` is a direct member of `Group 1` and has the Maintainer role in the group.
+`User A` is a direct member of `Group 1` and has the Maintainer role for the group.
 `Group 2` invites `Group 1` with the Developer role.
 `User A` has the Developer role in `Group 2`.
 

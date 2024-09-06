@@ -26,7 +26,7 @@ module PackageMetadata
 
     def self.occurrence_cte(occurrences)
       occurrence_data = occurrences.map do |occ|
-        [::Enums::Sbom.purl_types[occ.purl_type], occ.component_name]
+        [::Enums::Sbom.purl_types[occ.purl_type], occ.name]
       end
 
       Arel::Nodes::As.new(

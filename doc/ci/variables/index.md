@@ -492,6 +492,8 @@ variables:
   SA_PASSWORD_YAML_FILE: $SA_PASSWORD_UI
 ```
 
+The re-assigned variable cannot have the same name as the original variable. Otherwise it does not get expanded.
+
 ### Pass an environment variable to another job
 
 You can create a new environment variable in a job, and pass it to another job
@@ -564,7 +566,7 @@ test-job1:
   script:
     - echo "$BUILD_VERSION"  # Output is: 'v1.0.0'
   dependencies:
-    - build
+    - build-job1
 
 test-job2:
   stage: test
@@ -791,7 +793,7 @@ To change the setting, use [the projects API](../../api/projects.md#edit-project
 to modify `ci_pipeline_variables_minimum_override_role` to one of:
 
 - `owner`: Only users with the Owner role can override variables. You must have the Owner
-  role in the project to change the setting to this value.
+  role for the project to change the setting to this value.
 - `maintainer`: Only users with at least the Maintainer role can override variables.
   Default when not specified.
 - `developer`: Only users with at least the Developer role can override variables.

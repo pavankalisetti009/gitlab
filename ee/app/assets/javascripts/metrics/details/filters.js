@@ -10,8 +10,13 @@ import {
   DATE_RANGE_QUERY_KEY,
   DATE_RANGE_START_QUERY_KEY,
   DATE_RANGE_END_QUERY_KEY,
+  CUSTOM_DATE_RANGE_OPTION,
 } from '~/observability/constants';
-import { dateFilterObjToQuery, queryToDateFilterObj } from '~/observability/utils';
+import {
+  dateFilterObjToQuery,
+  queryToDateFilterObj,
+  validatedDateRangeQuery,
+} from '~/observability/utils';
 import { queryToObject } from '~/lib/utils/url_utility';
 
 const customOperators = [
@@ -75,4 +80,11 @@ export function queryToFilterObj(queryString) {
     },
     dateRange: queryToDateFilterObj(queryObj),
   };
+}
+
+export function metricsDetailsQueryFromAttributes({ dateRange: { startDate, endDate } = {} }) {
+  if (!startDate || !endDate) return {};
+  return filterObjToQuery({
+    dateRange: validatedDateRangeQuery(CUSTOM_DATE_RANGE_OPTION, startDate, endDate),
+  });
 }

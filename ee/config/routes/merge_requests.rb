@@ -20,6 +20,10 @@ resources :merge_requests, only: [], constraints: { id: /\d+/ } do
     get :saml_approval, action: :create, controller: 'merge_requests/saml_approvals'
 
     post :rebase
+
+    scope action: :show do
+      get :reports, to: 'merge_requests#reports', defaults: { tab: 'reports' }
+    end
   end
 
   resources :approvers, only: :destroy

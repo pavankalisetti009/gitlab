@@ -7,6 +7,7 @@ query getMergeRequests(
   $fullPath: ID!
   $sort: MergeRequestSort
   $state: MergeRequestState
+  $approvedBy: [String!]
   $assigneeUsernames: String
   $assigneeWildcardId: AssigneeWildcardId
   $reviewerUsername: String
@@ -15,6 +16,7 @@ query getMergeRequests(
   $draft: Boolean
   $labelName: [String!]
   $releaseTag: String
+  $mergeUser: String
   $milestoneTitle: String
   $milestoneWildcardId: MilestoneWildcardId
   $myReactionEmoji: String
@@ -31,6 +33,7 @@ query getMergeRequests(
     mergeRequests(
       sort: $sort
       state: $state
+      approvedBy: $approvedBy
       assigneeUsername: $assigneeUsernames
       assigneeWildcardId: $assigneeWildcardId
       reviewerUsername: $reviewerUsername
@@ -39,6 +42,7 @@ query getMergeRequests(
       draft: $draft
       labelName: $labelName
       releaseTag: $releaseTag
+      mergedBy: $mergeUser
       milestoneTitle: $milestoneTitle
       milestoneWildcardId: $milestoneWildcardId
       myReactionEmoji: $myReactionEmoji

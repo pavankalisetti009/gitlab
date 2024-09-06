@@ -24,6 +24,7 @@ describe('Reviewer drawer approval rules component', () => {
         projectPath: 'gitlab-org/gitlab',
         issuableId: 1,
         issuableIid: 1,
+        directlyInviteMembers: false,
       },
       propsData: {
         reviewers: [],

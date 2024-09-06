@@ -371,8 +371,8 @@ export const GET_GROUP_CLUSTER_AGENTS_QUERY_RESULT_ROOTGROUP_ONE_AGENT = {
               id: 'gid://gitlab/Project/101',
               nameWithNamespace: 'GitLab Org / GitLab',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/999',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
               defaultMaxHoursBeforeTermination: 99,
               maxHoursBeforeTerminationLimit: 999,
             },
@@ -409,8 +409,8 @@ export const GET_GROUP_CLUSTER_AGENTS_QUERY_RESULT_SUBGROUP_ONE_AGENT = {
               id: 'gid://gitlab/Project/102',
               nameWithNamespace: 'GitLab Org / Subgroup / GitLab',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/999',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
               defaultMaxHoursBeforeTermination: 99,
               maxHoursBeforeTerminationLimit: 999,
             },
@@ -464,8 +464,8 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
               id: 'gid://gitlab/Project/101',
               nameWithNamespace: 'GitLab Org / GitLab Agent One',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/999',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
               defaultMaxHoursBeforeTermination: 99,
               maxHoursBeforeTerminationLimit: 999,
             },
@@ -477,8 +477,8 @@ export const GET_REMOTE_DEVELOPMENT_CLUSTER_AGENTS_QUERY_RESULT_TWO_AGENTS = {
               id: 'gid://gitlab/Project/102',
               nameWithNamespace: 'GitLab Org / GitLab Agent Two',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/998',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/998',
               defaultMaxHoursBeforeTermination: 98,
               maxHoursBeforeTerminationLimit: 998,
             },
@@ -502,8 +502,8 @@ export const GET_AGENTS_WITH_MAPPING_STATUS_QUERY_RESULT = {
               id: 'gid://gitlab/Project/101',
               nameWithNamespace: 'GitLab Org / GitLab Agent One',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/999',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
               defaultMaxHoursBeforeTermination: 99,
               maxHoursBeforeTerminationLimit: 999,
             },
@@ -519,8 +519,8 @@ export const GET_AGENTS_WITH_MAPPING_STATUS_QUERY_RESULT = {
               id: 'gid://gitlab/Project/102',
               nameWithNamespace: 'GitLab Org / GitLab Agent Two',
             },
-            remoteDevelopmentAgentConfig: {
-              id: 'gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/999',
+            workspacesAgentConfig: {
+              id: 'gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/999',
               defaultMaxHoursBeforeTermination: 99,
               maxHoursBeforeTerminationLimit: 999,
             },

@@ -6,16 +6,18 @@ RSpec.describe "Add linked items to a work item", feature_category: :portfolio_m
   include GraphqlHelpers
   using RSpec::Parameterized::TableSyntax
 
+  let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :private) }
-  let_it_be(:reporter) { create(:user, reporter_of: project) }
+  let_it_be(:reporter) { create(:user, reporter_of: [project, group]) }
   let_it_be(:work_item) { create(:work_item, :issue, project: project) }
   let_it_be(:work_item2) { create(:work_item, project: project) }
 
   let(:current_user) { reporter }
   let(:mutation_response) { graphql_mutation_response(:work_item_add_linked_items) }
   let(:mutation) { graphql_mutation(:workItemAddLinkedItems, input, fields) }
+  let(:ids_to_link) { [work_item2.to_global_id.to_s] }
   let(:input) do
-    { 'id' => work_item.to_global_id.to_s, 'workItemsIds' => [work_item2.to_global_id.to_s], 'linkType' => link_type }
+    { 'id' => work_item.to_global_id.to_s, 'workItemsIds' => ids_to_link, 'linkType' => link_type }
   end
 
   let(:fields) do
@@ -40,6 +42,49 @@ RSpec.describe "Add linked items to a work item", feature_category: :portfolio_m
       errors
       message
     FIELDS
+  end
+
+  context 'when work item is created at the group level', :aggregate_failures do
+    let(:related1) { create(:work_item, project: project) }
+    let(:related2) { create(:work_item, project: project) }
+    let(:work_item) { create(:work_item, :group_level, namespace: group) }
+    let(:ids_to_link) { [related1.to_global_id.to_s, related2.to_global_id.to_s] }
+    let(:link_type) { 'RELATED' }
+
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+    end
+
+    context 'with a group level work items license' do
+      before do
+        stub_licensed_features(epics: true)
+      end
+
+      it 'links the work item' do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to change { WorkItems::RelatedWorkItemLink.count }.by(2)
+
+        expect(mutation_response['message']).to eq("Successfully linked ID(s): #{related1.id} and #{related2.id}.")
+      end
+    end
+
+    context 'without a group level work items license' do
+      before do
+        stub_licensed_features(epics: false)
+      end
+
+      it 'links the work item' do
+        expect do
+          post_graphql_mutation(mutation, current_user: current_user)
+        end.to change { WorkItems::RelatedWorkItemLink.count }.by(0)
+
+        expect(graphql_errors.first['message']).to eq(
+          "The resource that you are attempting to access does not exist or you don't have " \
+            "permission to perform this action"
+        )
+      end
+    end
   end
 
   where(:link_type, :expected) do

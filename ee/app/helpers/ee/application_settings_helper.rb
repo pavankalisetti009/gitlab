@@ -50,6 +50,7 @@ module EE
         :lock_memberships_to_saml,
         :max_personal_access_token_lifetime,
         :max_ssh_key_lifetime,
+        :receptive_cluster_agents_enabled,
         :repository_size_limit,
         :search_max_shard_size_gb,
         :search_max_docs_denominator,
@@ -76,10 +77,12 @@ module EE
         :lock_duo_features_enabled,
         :duo_availability,
         :zoekt_auto_index_root_namespace,
+        :zoekt_cpu_to_tasks_ratio,
         :zoekt_indexing_enabled,
         :zoekt_indexing_paused,
         :zoekt_search_enabled,
-        :duo_workflow_oauth_application_id
+        :duo_workflow_oauth_application_id,
+        :scan_execution_policies_action_limit
       ].tap do |settings|
         settings.concat(identity_verification_attributes)
       end
@@ -264,6 +267,21 @@ module EE
           checkbox_options: { checked: @application_setting.zoekt_search_enabled, multiple: false }
         )
       ]
+    end
+
+    def zoekt_settings_inputs(form)
+      [
+        [
+          form.label(:zoekt_cpu_to_tasks_ratio, _('Indexing CPU to tasks multiplier'),
+            class: 'label-bold'),
+          form.number_field(
+            :zoekt_cpu_to_tasks_ratio,
+            step: 0.1,
+            value: @application_setting.zoekt_cpu_to_tasks_ratio,
+            class: 'form-control gl-form-input'
+          )
+        ]
+      ].flatten
     end
 
     private

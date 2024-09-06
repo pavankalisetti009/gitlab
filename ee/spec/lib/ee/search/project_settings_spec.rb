@@ -12,7 +12,8 @@ RSpec.describe "Search results for project settings", :js, feature_category: :gl
       protected_environments: true,
       auto_rollback: true,
       ci_project_subscriptions: true,
-      status_page: true
+      status_page: true,
+      observability: true
     )
   end
 

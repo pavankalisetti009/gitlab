@@ -2,6 +2,8 @@
 import { GlButton, GlSprintf, GlTableLite } from '@gitlab/ui';
 import { sprintf, __ } from '~/locale';
 import ReviewerDropdown from '~/merge_requests/components/reviewers/reviewer_dropdown.vue';
+import EmptyRuleApprovers from 'ee/approvals/components/rules/empty_rule_approvers.vue';
+import { RULE_TYPE_ANY_APPROVER } from 'ee/approvals/constants';
 
 export default {
   components: {
@@ -9,6 +11,7 @@ export default {
     GlSprintf,
     GlTableLite,
     ReviewerDropdown,
+    EmptyRuleApprovers,
   },
   props: {
     group: {
@@ -52,7 +55,7 @@ export default {
     {
       key: 'rule_name',
       thClass: '!gl-text-secondary !gl-text-sm !gl-font-semibold !gl-border-t-0 w-60p',
-      class: '!gl-px-0 !gl-py-4',
+      class: '!gl-px-0 !gl-pr-4 !gl-py-4 gl-break-words',
     },
     {
       key: 'rule_approvals',
@@ -66,16 +69,26 @@ export default {
       class: '!gl-px-0 !gl-py-4',
     },
   ],
+  ANY_APPROVER: RULE_TYPE_ANY_APPROVER.toUpperCase(),
 };
 </script>
 
 <template>
   <div class="gl-mb-2">
-    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0">
+    <gl-table-lite :items="filteredRules" :fields="$options.fields" class="!gl-mb-0 gl-table-fixed">
       <template #head(rule_name)>{{ group.label }}</template>
       <template #head(rule_approvals)>{{ __('Approvals') }}</template>
 
-      <template #cell(rule_name)="{ item }">{{ item.name }}</template>
+      <template #cell(rule_name)="{ item }">
+        <empty-rule-approvers
+          v-if="item.type === $options.ANY_APPROVER"
+          popover-id="sidebar-pop-approver"
+          popover-container-id="sidebar-popover-container"
+        />
+        <template v-else>
+          {{ item.name }}
+        </template>
+      </template>
       <template #cell(rule_approvals)="{ item }">{{ getApprovalsLeftText(item) }}</template>
       <template #cell(dropdown)="{ item }">
         <div class="gl-flex gl-justify-end">

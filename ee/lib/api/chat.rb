@@ -8,7 +8,7 @@ module API
 
     allow_access_with_scope :ai_features
 
-    AVAILABLE_RESOURCES = %w[issue epic group project merge_request].freeze
+    AVAILABLE_RESOURCES = %w[issue epic group project merge_request commit].freeze
 
     before do
       authenticate!
@@ -24,9 +24,15 @@ module API
 
       def find_resource(parameters)
         return current_user unless parameters[:resource_type] && parameters[:resource_id]
+        return commit_object(parameters) if parameters[:resource_type] == 'commit'
 
         object = parameters[:resource_type].camelize.safe_constantize
         object.find(parameters[:resource_id])
+      end
+
+      def commit_object(parameters)
+        project = ::Project.find(parameters[:project_id])
+        project.commit_by(oid: parameters[:resource_id])
       end
     end
 
@@ -35,11 +41,36 @@ module API
         params do
           requires :content, type: String, limit: 1000, desc: 'Prompt from user'
           optional :resource_type, type: String, limit: 100, values: AVAILABLE_RESOURCES, desc: 'Resource type'
-          optional :resource_id, type: Integer, desc: 'ID of resource.'
+          optional :resource_id, types: [String, Integer],
+            desc: 'ID of resource. Can be a resource ID (integer) or a commit hash (string).'
           optional :referer_url, type: String, limit: 1000, desc: 'Referer URL'
           optional :client_subscription_id, type: String, limit: 500, desc: 'Client Subscription ID'
           optional :with_clean_history, type: Boolean,
             desc: 'Indicates if we need to reset the history before and after the request'
+          optional :project_id, type: Integer,
+            desc: 'Project ID. Required if resource_type is a commit.'
+          optional :current_file, type: Hash do
+            optional :file_name, type: String, limit: 1000, desc: 'The name of the current file'
+            optional :content_above_cursor, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE, desc: 'The content above cursor'
+            optional :content_below_cursor, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE, desc: 'The content below cursor'
+            optional :selected_text, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTENT_SIZE,
+              desc: 'The content currently selected by the user'
+          end
+          optional :additional_context, type: Array, allow_blank: true,
+            desc: 'List of additional context to be passed for the chat' do
+            requires :type, type: String,
+              values: ::CodeSuggestions::Prompts::CodeGeneration::AnthropicMessages::CONTENT_TYPES.values,
+              desc: 'Type of the additional context.'
+            requires :name, type: String,
+              limit: ::API::CodeSuggestions::MAX_CONTEXT_NAME_SIZE, allow_blank: false,
+              desc: 'Name of the additional context.'
+            requires :content, type: String,
+              limit: ::API::CodeSuggestions::MAX_BODY_SIZE, allow_blank: false,
+              desc: 'Content of the additional context.'
+          end
         end
         post do
           safe_params = declared_params(include_missing: false)

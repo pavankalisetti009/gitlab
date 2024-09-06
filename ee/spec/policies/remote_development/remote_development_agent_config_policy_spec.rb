@@ -2,14 +2,14 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigPolicy, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigPolicy, feature_category: :workspaces do
   let_it_be(:agent_project_creator, refind: true) { create(:user) }
   let_it_be(:agent_project, refind: true) { create(:project, creator: agent_project_creator) }
   let_it_be(:agent, refind: true) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: agent_project)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: agent_project)
   end
 
-  let_it_be(:agent_config) { agent.remote_development_agent_config }
+  let_it_be(:agent_config) { agent.workspaces_agent_config }
 
   subject(:policy_instance) { described_class.new(user, agent_config) }
 
@@ -23,7 +23,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigPolicy, feature_ca
     end
 
     it 'allows reading the corrosponding agent config' do
-      expect(policy_instance).to be_allowed(:read_remote_development_agent_config)
+      expect(policy_instance).to be_allowed(:read_workspaces_agent_config)
     end
   end
 
@@ -37,7 +37,7 @@ RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigPolicy, feature_ca
     end
 
     it 'disallows reading the corrosponding agent config' do
-      expect(policy_instance).to be_disallowed(:read_remote_development_agent_config)
+      expect(policy_instance).to be_disallowed(:read_workspaces_agent_config)
     end
   end
 end

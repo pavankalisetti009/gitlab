@@ -227,9 +227,9 @@ export const FORM_TYPES = {
   },
 };
 
-export const DEFAULT_PAGE_SIZE_NOTES = 30;
+export const DEFAULT_PAGE_SIZE_NOTES = 20; // Set to 20 to not exceed query complexity
 export const DEFAULT_PAGE_SIZE_EMOJIS = 100;
-export const DEFAULT_PAGE_SIZE_CHILD_ITEMS = 20;
+export const DEFAULT_PAGE_SIZE_CHILD_ITEMS = 50;
 
 export const WORK_ITEM_NOTES_SORT_ORDER_KEY = 'sort_direction_work_item';
 
@@ -277,7 +277,7 @@ export const TODO_PENDING_STATE = 'pending';
 export const EMOJI_THUMBSUP = 'thumbsup';
 export const EMOJI_THUMBSDOWN = 'thumbsdown';
 
-export const WORK_ITEM_TO_ISSUE_MAP = {
+export const WORK_ITEM_TO_ISSUABLE_MAP = {
   [WIDGET_TYPE_ASSIGNEES]: 'assignees',
   [WIDGET_TYPE_LABELS]: 'labels',
   [WIDGET_TYPE_MILESTONE]: 'milestone',
@@ -287,6 +287,7 @@ export const WORK_ITEM_TO_ISSUE_MAP = {
   [WIDGET_TYPE_HEALTH_STATUS]: 'healthStatus',
   [WIDGET_TYPE_AWARD_EMOJI]: 'awardEmoji',
   [WIDGET_TYPE_TIME_TRACKING]: 'timeEstimate',
+  [WIDGET_TYPE_COLOR]: 'color',
 };
 
 export const LINKED_CATEGORIES_MAP = {
@@ -361,3 +362,7 @@ export const ROUTES = {
   new: 'new',
   design: 'design',
 };
+
+export const WORKITEM_LINKS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemLinks.showLabels';
+export const WORKITEM_TREE_SHOWLABELS_LOCALSTORAGEKEY = 'workItemTree.showLabels';
+export const WORKITEM_RELATIONSHIPS_SHOWLABELS_LOCALSTORAGEKEY = 'workItemRelationships.showLabels';

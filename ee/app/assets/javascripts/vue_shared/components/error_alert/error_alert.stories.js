@@ -1,4 +1,4 @@
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 import { convertObjectPropsToLowerCase } from '~/lib/utils/common_utils';
 import ErrorAlert from './error_alert.vue';
 

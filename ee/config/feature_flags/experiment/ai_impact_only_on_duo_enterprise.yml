@@ -1,0 +1,9 @@
+---
+name: ai_impact_only_on_duo_enterprise
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/475244
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163036
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/480752
+milestone: '17.4'
+group: group::optimize
+type: experiment
+default_enabled: false

@@ -1,5 +1,5 @@
 <script>
-import { GlCollapsibleListbox, GlDropdownItem, GlDropdownDivider, GlSprintf } from '@gitlab/ui';
+import { GlCollapsibleListbox, GlDropdownItem, GlDropdownDivider } from '@gitlab/ui';
 import { debounce, uniq } from 'lodash';
 import { createAlert } from '~/alert';
 import { __, sprintf } from '~/locale';
@@ -12,7 +12,6 @@ export default {
     GlCollapsibleListbox,
     GlDropdownItem,
     GlDropdownDivider,
-    GlSprintf,
   },
   props: {
     fullPath: {
@@ -70,7 +69,7 @@ export default {
       return this.$apollo.queries.branches?.loading;
     },
     showCreateWildcardButton() {
-      return this.searchTerm && !this.branches.includes(this.searchTerm);
+      return this.searchTerm?.includes('*') && !this.branches.includes(this.searchTerm);
     },
     toggleText() {
       return this.selectedBranch.length > 0
@@ -89,7 +88,9 @@ export default {
   },
   BRANCH_QUERY_LIMIT,
   i18n: {
-    maxSearch: __('Maximum of %{limit} branches listed. For more branches, enter a search query.'),
+    searchQueryNote: __(
+      'Enter a search query to find more branches, or use * to create a wildcard.',
+    ),
   },
 };
 </script>
@@ -107,10 +108,8 @@ export default {
   >
     <template #footer>
       <gl-dropdown-divider v-if="!isLoading" />
-      <gl-dropdown-item class="gl-list-none" disabled>
-        <gl-sprintf :message="$options.i18n.maxSearch">
-          <template #limit>{{ $options.BRANCH_QUERY_LIMIT }}</template>
-        </gl-sprintf>
+      <gl-dropdown-item class="gl-list-none" disabled data-testid="search-query-note">
+        {{ $options.i18n.searchQueryNote }}
       </gl-dropdown-item>
       <gl-dropdown-item
         v-if="showCreateWildcardButton"

@@ -4,7 +4,7 @@ require 'spec_helper'
 require_relative './shared'
 
 RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILABLE)',
-  feature_category: :remote_development do
+  feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 
@@ -14,7 +14,7 @@ RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILA
   # to be able to receive the agent when calling the API i.e. the user has Developer access
   # to the agent project ONLY (and not a group-level access)
   let_it_be(:agent) do
-    create(:ee_cluster_agent, :in_group, :with_remote_development_agent_config).tap do |agent|
+    create(:ee_cluster_agent, :in_group, :with_existing_workspaces_agent_config).tap do |agent|
       agent.project.add_developer(user)
     end
   end

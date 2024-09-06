@@ -7,6 +7,7 @@ module MergeRequests
     def initialize(merge_request, params = {})
       @merge_request = merge_request
       @previous_diff = params[:previous_diff]
+      @expire_unapproved_key = params[:expire_unapproved_key].presence
     end
 
     def execute
@@ -33,11 +34,13 @@ module MergeRequests
         end
 
       delete_outdated_code_owner_rules(matched_rule_ids)
+
+      expire_unapproved_key! if expire_unapproved_key
     end
 
     private
 
-    attr_reader :merge_request, :previous_diff
+    attr_reader :merge_request, :previous_diff, :expire_unapproved_key
 
     def create_rule(entry)
       ApprovalMergeRequestRule.find_or_create_code_owner_rule(merge_request, entry)
@@ -64,6 +67,12 @@ module MergeRequests
         project_id: merge_request.project_id
       )
       nil
+    end
+
+    def expire_unapproved_key!
+      merge_request.approval_state.expire_unapproved_key!
+      GraphqlTriggers.merge_request_merge_status_updated(merge_request)
+      GraphqlTriggers.merge_request_approval_state_updated(merge_request)
     end
   end
 end

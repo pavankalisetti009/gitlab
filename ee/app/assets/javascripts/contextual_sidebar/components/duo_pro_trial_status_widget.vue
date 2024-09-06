@@ -2,6 +2,7 @@
 import { GlProgressBar, GlButton } from '@gitlab/ui';
 import GITLAB_LOGO_URL from '@gitlab/svgs/dist/illustrations/gitlab_logo.svg';
 import { sprintf } from '~/locale';
+import Tracking from '~/tracking';
 import {
   DISMISS,
   DUO_PRO_TRIAL_WIDGET_TITLE,
@@ -17,6 +18,7 @@ export default {
     GlProgressBar,
     GlButton,
   },
+  mixins: [Tracking.mixin({ category: 'duo_pro_expired_trial' })],
   inject: {
     trialDaysUsed: {},
     trialDuration: {},
@@ -24,6 +26,7 @@ export default {
     groupId: {},
     featureId: {},
     dismissEndpoint: {},
+    learnAboutButtonUrl: {},
   },
   dismiss: DISMISS,
   widgetBodyExpiredTrial: DUO_PRO_TRIAL_EXPIRED_WIDGET_BODY,
@@ -55,6 +58,11 @@ export default {
         daysUsed: this.trialDaysUsed,
         duration: this.trialDuration,
       });
+    },
+  },
+  methods: {
+    onLearnAboutFeaturesClick() {
+      this.track('click_link', { label: 'learn_about_features' });
     },
   },
 };
@@ -98,7 +106,17 @@ export default {
           </div>
           <div class="gl-mt-3">
             {{ $options.widgetBodyExpiredTrial }}
-            {{ $options.learnAboutButtonTitle }}
+            <gl-button
+              :href="learnAboutButtonUrl"
+              class="gl-mb-1 !gl-text-default gl-underline"
+              variant="link"
+              size="small"
+              data-testid="learn-about-features-btn"
+              :title="$options.learnAboutButtonTitle"
+              @click.stop="onLearnAboutFeaturesClick()"
+            >
+              {{ $options.learnAboutButtonTitle }}
+            </gl-button>
           </div>
         </div>
       </div>
@@ -110,6 +128,7 @@ export default {
       size="small"
       icon="close"
       category="tertiary"
+      data-testid="dismiss-btn"
       :aria-label="$options.dismiss"
     />
   </div>

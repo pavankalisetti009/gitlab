@@ -1022,6 +1022,7 @@ An input of `v1.A.B` does not match the regular expression and fails validation.
   not `number` or `boolean`.
 - Do not enclose the regular expression with the `/` character. For example, use `regex.*`,
   not `/regex.*/`.
+- `inputs:regex` uses [RE2](https://github.com/google/re2/wiki/Syntax) to parse regular expressions.
 
 ##### `spec:inputs:type`
 
@@ -3460,7 +3461,7 @@ as an artifact and published with GitLab Pages.
 
 DETAILS:
 **Tier:** Premium, Ultimate
-**Offering:** Self-managed
+**Offering:** GitLab.com, Self-managed, GitLab Dedicated
 **Status:** Experiment
 
 > - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/129534) in GitLab 16.7 as an [experiment](../../policy/experiment-beta-support.md) [with a flag](../../user/feature_flags.md) named `pages_multiple_versions_setting`, disabled by default.
@@ -3491,6 +3492,50 @@ pages:
 ```
 
 In this example, a different pages deployment is created for each branch.
+
+### `pages:pages.expire_in`
+
+DETAILS:
+**Tier:** Premium, Ultimate
+**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/456478) in GitLab 17.4
+
+Use `expire_in` to specify how long a deployment should be available before
+it expires. After the deployment is expired, it's deactivated by a cron
+job running every 10 minutes.
+
+Extra deployments expire by default. To prevent them from expiring, set the
+value to `never`.
+
+**Keyword type**: Job keyword. You can use it only as part of a `pages` job.
+
+**Possible inputs**: The expiry time. If no unit is provided, the time is in seconds.
+Valid values include:
+
+- `'42'`
+- `42 seconds`
+- `3 mins 4 sec`
+- `2 hrs 20 min`
+- `2h20min`
+- `6 mos 1 day`
+- `47 yrs 6 mos and 4d`
+- `3 weeks and 2 days`
+- `never`
+
+**Example of `pages:pages.expire_in`**:
+
+```yaml
+pages:
+  stage: deploy
+  script:
+    - echo "Pages accessible through ${CI_PAGES_URL}"
+  pages:
+    expire_in: 1 week
+  artifacts:
+    paths:
+      - public
+```
 
 ### `parallel`
 
@@ -4353,6 +4398,8 @@ In this example:
   running the pipeline when using:
   - [Nested includes](includes.md#use-nested-includes).
   - [Compliance pipelines](../../user/group/compliance_pipelines.md).
+- `rules:exists` cannot search for the presence of [artifacts](../jobs/job_artifacts.md),
+  because `rules` evaluation happens before jobs run and artifacts are fetched.
 
 ##### `rules:exists:paths`
 

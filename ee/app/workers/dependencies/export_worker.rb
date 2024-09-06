@@ -32,8 +32,7 @@ module Dependencies
     private
 
     def use_segmented_export?(export)
-      export.exportable.is_a?(Group) &&
-        Feature.enabled?(:use_segmented_dependency_list_export, export.exportable)
+      export.exportable.is_a?(Group)
     end
   end
 end

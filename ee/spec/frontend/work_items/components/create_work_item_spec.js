@@ -39,7 +39,6 @@ describe('Create work item component', () => {
 
   const createComponent = ({
     props = {},
-    isGroup = false,
     mutationHandler = createWorkItemSuccessHandler,
     workItemTypeName = WORK_ITEM_TYPE_ENUM_EPIC,
   } = {}) => {
@@ -66,7 +65,6 @@ describe('Create work item component', () => {
       },
       provide: {
         fullPath: 'full-path',
-        isGroup,
         hasIssuableHealthStatusFeature: false,
       },
     });

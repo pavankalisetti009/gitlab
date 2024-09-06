@@ -43,7 +43,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
 
   where(:member, :expected_result) do
     ref(:kate)  | [:admin_cicd_variables]
-    ref(:joe)   | [:admin_cicd_variables]
+    ref(:joe)   | [:manage_merge_request_settings]
     ref(:mark)  | [:admin_cicd_variables]
     ref(:jake)  | []
     ref(:mary)  | []
@@ -55,19 +55,55 @@ RSpec.shared_examples 'returns expected member role abilities' do
   with_them do
     let(:user) { member.user }
 
-    context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
-      it 'returns expected result' do
-        expect(result[source.id]).to match_array(expected_result)
+    context 'when on SaaS', :saas do
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` for group is enabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: [group])
+        end
+
+        it 'returns expected result' do
+          expect(result[source.id]).to match_array(expected_result)
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` for another group is enabled' do
+        let(:another_group) { build(:group) }
+
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: [another_group])
+        end
+
+        it 'returns empty array' do
+          expect(result[source.id]).to match_array([])
+        end
+      end
+
+      context 'when feature-flag `assign_custom_roles_to_group_links_saas` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_saas: false)
+        end
+
+        it 'returns empty array' do
+          expect(result[source.id]).to match_array([])
+        end
       end
     end
 
-    context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-      before do
-        stub_feature_flags(assign_custom_roles_to_group_links: false)
+    context 'when on self-managed' do
+      context 'when feature-flag `assign_custom_roles_to_group_links_sm` is enabled' do
+        it 'returns expected result' do
+          expect(result[source.id]).to match_array(expected_result)
+        end
       end
 
-      it 'returns empty array' do
-        expect(result[source.id]).to match_array([])
+      context 'when feature-flag `assign_custom_roles_to_group_links_sm` is disabled' do
+        before do
+          stub_feature_flags(assign_custom_roles_to_group_links_sm: false)
+        end
+
+        it 'returns empty array' do
+          expect(result[source.id]).to match_array([])
+        end
       end
     end
   end

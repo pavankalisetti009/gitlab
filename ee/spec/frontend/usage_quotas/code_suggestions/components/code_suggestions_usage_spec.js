@@ -6,6 +6,7 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { sprintf } from '~/locale';
 import addOnPurchaseQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchase.query.graphql';
 import addOnPurchasesQuery from 'ee/usage_quotas/add_on/graphql/get_add_on_purchases.query.graphql';
+import getCurrentLicense from 'ee/admin/subscriptions/show/graphql/queries/get_current_license.query.graphql';
 import CodeSuggestionsIntro from 'ee/usage_quotas/code_suggestions/components/code_suggestions_intro.vue';
 import CodeSuggestionsInfo from 'ee/usage_quotas/code_suggestions/components/code_suggestions_info_card.vue';
 import CodeSuggestionsStatisticsCard from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_statistics_card.vue';
@@ -13,6 +14,8 @@ import SaasAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/componen
 import SelfManagedAddOnEligibleUserList from 'ee/usage_quotas/code_suggestions/components/self_managed_add_on_eligible_user_list.vue';
 import HealthCheckList from 'ee/usage_quotas/code_suggestions/components/health_check_list.vue';
 import CodeSuggestionsUsage from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage.vue';
+import { useFakeDate } from 'helpers/fake_date';
+import CodeSuggestionsUsageLoader from 'ee/usage_quotas/code_suggestions/components/code_suggestions_usage_loader.vue';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
@@ -23,6 +26,12 @@ import {
   ADD_ON_ERROR_DICTIONARY,
   ADD_ON_PURCHASE_FETCH_ERROR_CODE,
 } from 'ee/usage_quotas/error_constants';
+
+import {
+  subscriptionActivationFutureDatedNotificationTitle,
+  SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT,
+} from 'ee/admin/subscriptions/show/constants';
+
 import {
   noAssignedDuoProAddonData,
   deprecatedNoAssignedDuoProAddonData,
@@ -33,6 +42,7 @@ import {
   deprecatedNoPurchasedAddonData,
   purchasedAddonFuzzyData,
   deprecatedPurchasedAddonFuzzyData,
+  currentLicenseData,
 } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -47,6 +57,9 @@ jest.mock('ee/usage_quotas/code_suggestions/components/health_check_list.vue', (
 }));
 
 describe('GitLab Duo Usage', () => {
+  // Aug 1, 2024
+  useFakeDate(2024, 8, 1);
+
   let wrapper;
 
   const error = new Error('Something went wrong');
@@ -79,16 +92,21 @@ describe('GitLab Duo Usage', () => {
     .fn()
     .mockResolvedValue(deprecatedPurchasedAddonFuzzyData);
 
+  const currentLicenseDataHandler = jest.fn().mockResolvedValue(currentLicenseData);
+
   const purchasedAddonErrorHandler = jest.fn().mockRejectedValue(error);
   const deprecatedPurchasedAddonErrorHandler = jest.fn().mockRejectedValue(error);
+  const currentLicenseErrorHandler = jest.fn().mockRejectedValue(error);
 
   const createMockApolloProvider = ({
     addOnPurchaseHandler = deprecatedNoPurchasedAddonDataHandler,
     addOnPurchasesHandler = noPurchasedAddonDataHandler,
+    currentLicenseHandler = currentLicenseDataHandler,
   }) => {
     return createMockApollo([
       [addOnPurchaseQuery, addOnPurchaseHandler],
       [addOnPurchasesQuery, addOnPurchasesHandler],
+      [getCurrentLicense, currentLicenseHandler],
     ]);
   };
 
@@ -100,21 +118,58 @@ describe('GitLab Duo Usage', () => {
   const findCodeSuggestionsTitleTierBadge = () => wrapper.findComponent(GlBadge);
   const findSaasAddOnEligibleUserList = () => wrapper.findComponent(SaasAddOnEligibleUserList);
   const findHealthCheckList = () => wrapper.findComponent(HealthCheckList);
+  const findCodeSuggestionsUsageLoader = () => wrapper.findComponent(CodeSuggestionsUsageLoader);
   const findSelfManagedAddOnEligibleUserList = () =>
     wrapper.findComponent(SelfManagedAddOnEligibleUserList);
   const findErrorAlert = () => wrapper.findByTestId('add-on-purchase-fetch-error');
 
-  const createComponent = ({ addOnPurchaseHandler, addOnPurchasesHandler, provideProps } = {}) => {
+  const findSubscriptionActivationSuccessAlert = () =>
+    wrapper.findByTestId('subscription-activation-success-alert');
+
+  const findSubscriptionFetchErrorAlert = () =>
+    wrapper.findByTestId('subscription-fetch-error-alert');
+
+  const createComponent = ({
+    addOnPurchaseHandler,
+    addOnPurchasesHandler,
+    currentLicenseHandler,
+    provideProps,
+    waitForApi = true,
+  } = {}) => {
     wrapper = shallowMountExtended(CodeSuggestionsUsage, {
       provide: {
         isSaaS: true,
         ...provideProps,
       },
-      apolloProvider: createMockApolloProvider({ addOnPurchaseHandler, addOnPurchasesHandler }),
+      apolloProvider: createMockApolloProvider({
+        addOnPurchaseHandler,
+        addOnPurchasesHandler,
+        currentLicenseHandler,
+      }),
     });
 
-    return waitForPromises();
+    return waitForApi ? waitForPromises() : null;
   };
+
+  describe('loading', () => {
+    beforeEach(() => {
+      createComponent({ waitForApi: false });
+    });
+
+    it('renders code suggestions usage loader', () => {
+      expect(findCodeSuggestionsUsageLoader().exists()).toBe(true);
+    });
+
+    it('does not render any other usage components', () => {
+      expect(findCodeSuggestionsIntro().exists()).toBe(false);
+      expect(findCodeSuggestionsInfo().exists()).toBe(false);
+      expect(findCodeSuggestionsStatistics().exists()).toBe(false);
+      expect(findCodeSuggestionsTitle().exists()).toBe(false);
+      expect(findHealthCheckList().exists()).toBe(false);
+      expect(findSelfManagedAddOnEligibleUserList().exists()).toBe(false);
+      expect(findErrorAlert().exists()).toBe(false);
+    });
+  });
 
   describe('Cloud Connector health status check', () => {
     it.each`
@@ -560,6 +615,69 @@ describe('GitLab Duo Usage', () => {
         expect(findErrorAlert().props('errorDictionary')).toMatchObject(ADD_ON_ERROR_DICTIONARY);
         const caughtError = findErrorAlert().props('error');
         expect(caughtError.cause).toBe(ADD_ON_PURCHASE_FETCH_ERROR_CODE);
+      });
+    });
+  });
+
+  describe('Subscription Activation Form', () => {
+    describe('activating the license', () => {
+      beforeEach(async () => {
+        createComponent({ currentLicenseHandler: currentLicenseDataHandler });
+
+        await waitForPromises();
+      });
+
+      it('passes the correct data to the code suggestions intro', () => {
+        expect(findCodeSuggestionsIntro().props()).toMatchObject({
+          subscription: currentLicenseData.data.currentLicense,
+        });
+      });
+
+      it('shows the activation success notification', async () => {
+        findCodeSuggestionsIntro().vm.$emit(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT, {
+          startsAt: '2024-08-01',
+        });
+
+        await waitForPromises();
+
+        expect(findSubscriptionActivationSuccessAlert().props('title')).toBe(
+          'Your subscription was successfully activated.',
+        );
+      });
+
+      it('shows the future dated activation success notification', async () => {
+        findCodeSuggestionsIntro().vm.$emit(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT, {
+          startsAt: '2025-08-01',
+        });
+
+        await waitForPromises();
+
+        expect(findSubscriptionActivationSuccessAlert().props('title')).toBe(
+          subscriptionActivationFutureDatedNotificationTitle,
+        );
+      });
+
+      it('calls refetch to update component', async () => {
+        findCodeSuggestionsIntro().vm.$emit(SUBSCRIPTION_ACTIVATION_SUCCESS_EVENT, {
+          startsAt: '2025-08-01',
+        });
+
+        await waitForPromises();
+
+        expect(noPurchasedAddonDataHandler).toHaveBeenCalledTimes(2);
+        expect(currentLicenseDataHandler).toHaveBeenCalledTimes(2);
+      });
+    });
+
+    describe('when fetch subscription with error', () => {
+      beforeEach(async () => {
+        createComponent({ currentLicenseHandler: currentLicenseErrorHandler });
+
+        await waitForPromises();
+      });
+
+      it('shows an error alert with cause', () => {
+        expect(findSubscriptionFetchErrorAlert().props('title')).toBe('Subscription unavailable');
       });
     });
   });

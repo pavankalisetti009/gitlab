@@ -353,6 +353,7 @@ module EE
         enable :read_product_analytics
         enable :create_workspace
         enable :enable_continuous_vulnerability_scans
+        enable :read_project_security_exclusions
       end
 
       rule { can?(:reporter_access) & iterations_available }.policy do
@@ -501,6 +502,8 @@ module EE
         enable :admin_push_rules
         enable :manage_deploy_tokens
         enable :read_runner_usage
+        enable :manage_project_security_exclusions
+        enable :read_project_security_exclusions
       end
 
       rule { ~runner_performance_insights_available }.prevent :read_runner_usage
@@ -528,6 +531,7 @@ module EE
         enable :read_on_demand_dast_scan
 
         enable :read_project_runners
+        enable :read_project_security_exclusions
       end
 
       rule { auditor & ~guest & private_project }.policy do
@@ -675,7 +679,13 @@ module EE
       rule { (admin | reporter) & project_merge_request_analytics_available }
         .enable :read_project_merge_request_analytics
 
-      rule { admin | reporter }.enable :read_ai_analytics
+      condition(:ai_analytics_available) do
+        next true unless ::Feature.enabled?(:ai_impact_only_on_duo_enterprise, @subject.root_ancestor)
+
+        @user.assigned_to_duo_enterprise?(@subject)
+      end
+
+      rule { (admin | reporter) & ai_analytics_available }.enable :read_ai_analytics
 
       rule { combined_project_analytics_dashboards_enabled }.enable :read_combined_project_analytics_dashboards
 
@@ -766,6 +776,14 @@ module EE
         enable :read_deploy_token
         enable :create_deploy_token
         enable :destroy_deploy_token
+      end
+
+      rule { custom_role_enables_admin_protected_branch }.policy do
+        enable :read_protected_branch
+        enable :create_protected_branch
+        enable :update_protected_branch
+        enable :destroy_protected_branch
+        enable :admin_protected_branch
       end
 
       rule { can?(:create_issue) & okrs_enabled }.policy do

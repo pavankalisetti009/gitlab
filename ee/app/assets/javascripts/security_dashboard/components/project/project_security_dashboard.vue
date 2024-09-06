@@ -41,6 +41,7 @@ export default {
   },
   apollo: {
     // up-do-date count of vulnerabilities by severity, used to show the most recent data point
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     todaysVulnerabilitiesCount: {
       query: severitiesCountQuery,
       variables() {

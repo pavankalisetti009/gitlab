@@ -18,10 +18,7 @@ Each member gets a role, which determines what they can do in the project.
 
 > - [Changed](https://gitlab.com/gitlab-org/gitlab/-/issues/219230) to display invited group members on the Members tab of the Members page in GitLab 16.10 [with a flag](../../../administration/feature_flags.md) named `webui_members_inherited_users`. Disabled by default.
 > - Feature flag `webui_members_inherited_users` was [enabled on GitLab.com and self-managed](https://gitlab.com/gitlab-org/gitlab/-/issues/219230) in GitLab 17.0.
-
-FLAG:
-On self-managed GitLab, by default this feature is available. To hide the feature per user, an administrator can [disable the feature flag](../../../administration/feature_flags.md) named `webui_members_inherited_users`.
-On GitLab.com and GitLab Dedicated, this feature is available.
+> - Feature flag `webui_members_inherited_users` [removed](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163627) in GitLab 17.4. Members of invited groups displayed by default.
 
 Users can become members of a group or project directly or indirectly.
 Indirect membership can be inherited, shared, or inherited shared.
@@ -148,10 +145,10 @@ Prerequisites:
 
 - You must have the Maintainer or Owner role.
 
-If the importing member's role in the target project is:
+If the importing member's role for the target project is:
 
-- Maintainer, then members with the Owner role in the source project are imported with the Maintainer role.
-- Owner, then members with the Owner role in the source project are imported with the Owner role.
+- Maintainer, then members with the Owner role for the source project are imported with the Maintainer role.
+- Owner, then members with the Owner role for the source project are imported with the Owner role.
 
 To import a project's members:
 

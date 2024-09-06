@@ -96,7 +96,7 @@ RSpec.describe "User with read_runners custom role", feature_category: :runner d
     end
 
     it "#pause" do
-      runner = create(:ci_runner, :project, active: true, projects: [project])
+      runner = create(:ci_runner, :project, projects: [project])
 
       post pause_project_runner_path(project, runner)
 

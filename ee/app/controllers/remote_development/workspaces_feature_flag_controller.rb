@@ -7,7 +7,7 @@ module RemoteDevelopment
     #   Issue: https://gitlab.com/gitlab-org/gitlab/-/issues/461163
     skip_before_action :authenticate_user!
 
-    feature_category :remote_development
+    feature_category :workspaces
     urgency :low
 
     ALLOWED_FLAGS = [

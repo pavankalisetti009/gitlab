@@ -103,6 +103,42 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     end
   end
 
+  describe 'scopes' do
+    let_it_be(:old_project) { create(:project) }
+    let_it_be(:new_project) { create(:project) }
+    let_it_be(:old_build) { create(:ci_build, created_at: 1.week.ago, updated_at: 1.week.ago, project: old_project) }
+    let_it_be(:new_build) { create(:ci_build, created_at: 1.minute.ago, updated_at: 1.minute.ago, project: new_project) }
+
+    describe 'created_after' do
+      subject { described_class.created_after(1.day.ago) }
+
+      it 'returns the builds created after the given time' do
+        is_expected.to contain_exactly(new_build, build)
+      end
+    end
+
+    describe 'updated_after' do
+      subject { described_class.updated_after(1.day.ago) }
+
+      it 'returns the builds updated after the given time' do
+        is_expected.to contain_exactly(new_build, build)
+      end
+    end
+
+    describe 'with_pipeline_source_type' do
+      let_it_be(:pipeline) { create(:ci_pipeline, source: :security_orchestration_policy) }
+      let_it_be(:build) { create(:ci_build, pipeline: pipeline) }
+      let_it_be(:push_pipeline) { create(:ci_pipeline, source: :push) }
+      let_it_be(:push_build) { create(:ci_build, pipeline: push_pipeline) }
+
+      subject { described_class.with_pipeline_source_type('security_orchestration_policy') }
+
+      it 'returns the builds updated after the given time' do
+        is_expected.to contain_exactly(build)
+      end
+    end
+  end
+
   describe 'callbacks' do
     context 'when running after_create callback' do
       it 'executes hooks' do
@@ -887,7 +923,7 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
     end
   end
 
-  describe '#any_runners_online?' do
+  describe '#any_runners_online?', :freeze_time do
     subject { build.any_runners_online? }
 
     context 'when no runners' do
@@ -896,32 +932,39 @@ RSpec.describe Ci::Build, feature_category: :continuous_integration, factory_def
 
     context 'when there is a runner' do
       before do
-        create(:ci_runner, *runner_traits, :project, projects: [build.project])
+        create(:ci_runner, *Array.wrap(runner_traits), :project, projects: [build.project])
       end
 
       context 'that is online' do
-        let(:runner_traits) { [:online] }
+        let(:runner_traits) { :online }
 
         it { is_expected.to be_truthy }
+
+        context 'and almost offline' do
+          let(:runner_traits) { :almost_offline }
+
+          it { is_expected.to be_truthy }
+        end
       end
 
-      context 'that is inactive' do
-        let(:runner_traits) { [:online, :inactive] }
+      context 'that is paused' do
+        let(:runner_traits) { [:online, :paused] }
 
         it { is_expected.to be_falsey }
       end
 
       context 'that is offline' do
-        let(:runner_traits) { [:offline] }
+        let(:runner_traits) { :offline }
 
         it { is_expected.to be_falsey }
       end
 
       context 'that cannot handle build' do
-        let(:runner_traits) { [:online] }
+        let(:runner_traits) { :online }
 
         before do
-          expect_any_instance_of(Gitlab::Ci::Matching::RunnerMatcher).to receive(:matches?).with(build.build_matcher).and_return(false)
+          expect_any_instance_of(Gitlab::Ci::Matching::RunnerMatcher).to receive(:matches?).with(build.build_matcher)
+            .and_return(false)
         end
 
         it { is_expected.to be_falsey }

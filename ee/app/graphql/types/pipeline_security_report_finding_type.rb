@@ -235,15 +235,19 @@ module Types
     end
 
     def merge_request_via_links(uuids, loader)
-      ::Vulnerabilities::MergeRequestLink
-        .by_finding_uuids(uuids)
-        .with_vulnerability_findings
-        .with_merge_request
-        .each do |link|
-          link.vulnerability.findings.each do |finding|
-            loader.call(finding.uuid, link.merge_request)
+      ::Gitlab::Database.allow_cross_joins_across_databases(
+        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480552'
+      ) do
+        ::Vulnerabilities::MergeRequestLink
+          .by_finding_uuids(uuids)
+          .with_vulnerability_findings
+          .with_merge_request
+          .each do |link|
+            link.vulnerability.findings.each do |finding|
+              loader.call(finding.uuid, link.merge_request)
+            end
           end
-        end
+      end
     end
   end
 end

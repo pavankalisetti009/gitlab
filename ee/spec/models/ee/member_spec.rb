@@ -859,7 +859,7 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
 
     where(:invited_group, :member, :expected_access_level, :expected_member_role) do
       ref(:sre_group) | ref(:kate)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
-      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
+      ref(:sre_group) | ref(:joe)   | Gitlab::Access::DEVELOPER | ref(:developer_lead)
       ref(:sre_group) | ref(:mark)  | Gitlab::Access::DEVELOPER | ref(:platform_engineer)
       ref(:sre_group) | ref(:jake)  | Gitlab::Access::DEVELOPER | nil
       ref(:sre_group) | ref(:mary)  | Gitlab::Access::GUEST | nil
@@ -869,11 +869,11 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
     end
 
     with_them do
-      context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
+      context 'when `custom_role_for_group_link_enabled` is true' do
         it 'returns minimum access level and expected member role' do
           members = invited_group
                       .members
-                      .with_group_group_sharing_access(shared_group)
+                      .with_group_group_sharing_access(shared_group, true)
                       .id_in(member.id)
                       .to_a
 
@@ -883,15 +883,11 @@ RSpec.describe Member, type: :model, feature_category: :groups_and_projects do
         end
       end
 
-      context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-        before do
-          stub_feature_flags(assign_custom_roles_to_group_links: false)
-        end
-
+      context 'when `custom_role_for_group_link_enabled` is false' do
         it 'returns  minimum access level and ignores member role of the group link' do
           members = invited_group
                       .members
-                      .with_group_group_sharing_access(shared_group)
+                      .with_group_group_sharing_access(shared_group, false)
                       .id_in(member.id)
                       .to_a
 

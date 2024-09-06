@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspacesFeatureFlagController, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspacesFeatureFlagController, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let_it_be(:namespace) { create(:group, :nested) }
   let(:flag) { "the_flag" }

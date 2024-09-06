@@ -116,6 +116,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     workItem: {
       query: workItemByIidQuery,
       variables() {
@@ -510,6 +511,7 @@ export default {
                 class="js-assignee gl-mb-5"
                 :can-update="canUpdate"
                 :full-path="fullPath"
+                :is-group="isGroup"
                 :work-item-id="workItemId"
                 :assignees="workItemAssignees.assignees.nodes"
                 :participants="workItemParticipantNodes"
@@ -525,6 +527,7 @@ export default {
                 class="js-labels gl-mb-5"
                 :can-update="canUpdate"
                 :full-path="fullPath"
+                :is-group="isGroup"
                 :work-item-id="workItemId"
                 :work-item-iid="workItemIid"
                 :work-item-type="selectedWorkItemTypeName"

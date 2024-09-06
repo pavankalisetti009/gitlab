@@ -48,8 +48,9 @@ export default {
     },
   },
   data() {
-    const { name = '', externalUrl = '' } = this.selectedStatusCheck || {};
+    const { name = '', externalUrl = '', id = null } = this.selectedStatusCheck || {};
     return {
+      id,
       name,
       externalUrl,
       showValidation: false,
@@ -97,8 +98,8 @@ export default {
       this.showValidation = true;
 
       if (this.isValid) {
-        const { name, externalUrl } = this;
-        this.$emit('save-status-check-change', { name, externalUrl });
+        const { name, externalUrl, id } = this;
+        this.$emit('save-status-check-change', { name, externalUrl, id });
       }
     },
   },

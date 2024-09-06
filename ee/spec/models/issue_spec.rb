@@ -601,6 +601,12 @@ RSpec.describe Issue, feature_category: :team_planning do
 
           it { is_expected.to be_falsey }
         end
+
+        context 'when issue is of type epic' do
+          let(:issue) { build_stubbed(:issue, :group_level, :epic) }
+
+          it { is_expected.to be_falsey }
+        end
       end
 
       context 'when weights feature is not available' do

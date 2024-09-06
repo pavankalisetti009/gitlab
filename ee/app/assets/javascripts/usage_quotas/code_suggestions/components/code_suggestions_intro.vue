@@ -6,8 +6,12 @@ import {
   GlButton,
   GlIntersectionObserver,
   GlAlert,
+  GlModalDirective,
 } from '@gitlab/ui';
+
 import emptyStateSvgUrl from '@gitlab/svgs/dist/illustrations/tanuki-ai-sm.svg?url';
+import emptyGeoSvgUrl from '@gitlab/svgs/dist/illustrations/empty-state/empty-geo-md.svg?url';
+import { uniqueId } from 'lodash';
 import { __, s__ } from '~/locale';
 import SafeHtml from '~/vue_shared/directives/safe_html';
 import {
@@ -16,6 +20,8 @@ import {
 } from 'ee/usage_quotas/code_suggestions/constants';
 import HandRaiseLeadButton from 'ee/hand_raise_leads/hand_raise_lead/components/hand_raise_lead_button.vue';
 import apolloProvider from 'ee/subscriptions/buy_addons_shared/graphql';
+import SubscriptionActivationModal from 'ee/admin/subscriptions/show/components/subscription_activation_modal.vue';
+import { addActivationCode, subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
 import Tracking, { InternalEvents } from '~/tracking';
 
 export default {
@@ -24,11 +30,15 @@ export default {
     codeSuggestionsLearnMoreLink,
   },
   i18n: {
+    addActivationCode,
     purchaseSeats: __('Purchase seats'),
     buySubscription: __('Buy subscription'),
     trial: __('Start a trial'),
     description: s__(
-      `CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code.`,
+      'CodeSuggestions|Enhance your coding experience with intelligent recommendations. %{linkStart}GitLab Duo%{linkEnd} offers features that use generative AI to suggest code.',
+    ),
+    descriptionLegacySubscription: s__(
+      'CodeSuggestions|%{linkStart}GitLab Duo%{linkEnd} is only available to instances with a synchronized subscription. Add an activation code to synchronize your subscription.',
     ),
     postTrialForFreeNamespaceDescription: s__(
       "CodeSuggestions|Before you can buy GitLab Duo seats, you'll need a Premium or Ultimate subscription.",
@@ -38,8 +48,10 @@ export default {
       "CodeSuggestions|To buy GitLab Duo seats and regain access, you'll need a Premium or Ultimate subscription.",
     ),
     title: s__('CodeSuggestions|Introducing GitLab Duo'),
+    titleLegacySubscription: s__('CodeSuggestions|Subscription not synchronized'),
   },
   directives: {
+    GlModalDirective,
     SafeHtml,
   },
   components: {
@@ -50,9 +62,11 @@ export default {
     GlButton,
     GlIntersectionObserver,
     GlAlert,
+    SubscriptionActivationModal,
   },
   mixins: [Tracking.mixin(), InternalEvents.mixin()],
   inject: {
+    isSaaS: { default: true },
     duoProTrialHref: { default: null },
     addDuoProHref: { default: null },
     handRaiseLeadData: { default: {} },
@@ -61,17 +75,53 @@ export default {
     buySubscriptionPath: { default: null },
     isStandalonePage: { default: false },
   },
+  props: {
+    subscription: {
+      type: Object,
+      required: true,
+    },
+  },
   data() {
     return {
       isAlertDismissed: false,
+      activationModalVisible: false,
     };
   },
   computed: {
+    hasSubscription() {
+      return Boolean(Object.keys(this.subscription).length);
+    },
     purchaseSeatsBtnCategory() {
       return this.duoProTrialHref ? 'secondary' : 'primary';
     },
     showPostTrialForFreeNamespace() {
-      return this.isFreeNamespace && !this.duoProActiveTrialEndDate;
+      return (
+        this.isFreeNamespace &&
+        !this.duoProActiveTrialEndDate &&
+        !this.isSelfManagedLegacySubscription
+      );
+    },
+    isSelfManagedLegacySubscription() {
+      return (
+        !this.isSaaS &&
+        this.hasSubscription &&
+        this.subscription.type === subscriptionTypes.LEGACY_LICENSE
+      );
+    },
+    emptyState() {
+      if (this.isSelfManagedLegacySubscription) {
+        return {
+          svgPath: emptyGeoSvgUrl,
+          title: this.$options.i18n.titleLegacySubscription,
+          description: this.$options.i18n.descriptionLegacySubscription,
+        };
+      }
+
+      return {
+        svgPath: emptyStateSvgUrl,
+        title: this.$options.i18n.title,
+        description: this.$options.i18n.description,
+      };
     },
   },
   mounted() {
@@ -99,11 +149,20 @@ export default {
     },
   },
   apolloProvider,
-  emptyStateSvgUrl,
+  activateSubscriptionModal: {
+    id: uniqueId('subscription-activation-modal-'),
+  },
 };
 </script>
 <template>
   <gl-intersection-observer @appear="trackPageView">
+    <subscription-activation-modal
+      v-if="isSelfManagedLegacySubscription"
+      v-model="activationModalVisible"
+      :modal-id="$options.activateSubscriptionModal.id"
+      v-on="$listeners"
+    />
+
     <gl-alert
       v-if="showPostTrialForFreeNamespace && !isAlertDismissed"
       class="gl-mb-9"
@@ -115,16 +174,17 @@ export default {
     >
       {{ $options.i18n.postTrialAlertBody }}
     </gl-alert>
-    <gl-empty-state :svg-path="$options.emptyStateSvgUrl" :svg-height="72">
+
+    <gl-empty-state :svg-path="emptyState.svgPath" :svg-height="72">
       <template #title>
-        <h1 class="h4 gl-text-size-h-display gl-leading-36">{{ $options.i18n.title }}</h1>
+        <h1 class="h4 gl-text-size-h-display gl-leading-36">{{ emptyState.title }}</h1>
       </template>
       <template #description>
         <p v-if="showPostTrialForFreeNamespace" class="gl-max-w-48">
           {{ $options.i18n.postTrialForFreeNamespaceDescription }}
         </p>
 
-        <gl-sprintf v-else :message="$options.i18n.description">
+        <gl-sprintf v-else :message="emptyState.description">
           <template #link="{ content }">
             <gl-link
               :href="$options.helpLinks.codeSuggestionsLearnMoreLink"
@@ -132,9 +192,8 @@ export default {
               class="gl-underline"
               data-testid="duo-pro-learn-more-link"
               @click="trackLearnMoreClick"
+              >{{ content }}</gl-link
             >
-              {{ content }}
-            </gl-link>
           </template>
         </gl-sprintf>
       </template>
@@ -150,8 +209,20 @@ export default {
         >
           {{ $options.i18n.trial }}
         </gl-button>
+
         <gl-button
-          v-if="showPostTrialForFreeNamespace"
+          v-if="isSelfManagedLegacySubscription"
+          v-gl-modal-directive="$options.activateSubscriptionModal.id"
+          variant="confirm"
+          category="primary"
+          class="gl-mt-3 gl-w-full sm:gl-ml-3 sm:gl-mt-0 sm:gl-w-auto"
+          data-testid="code-suggestions-activate-subscription-action"
+        >
+          {{ $options.i18n.addActivationCode }}
+        </gl-button>
+
+        <gl-button
+          v-else-if="showPostTrialForFreeNamespace"
           :href="buySubscriptionPath"
           variant="confirm"
           class="gl-w-full sm:gl-w-auto"
@@ -160,6 +231,7 @@ export default {
         >
           {{ $options.i18n.buySubscription }}
         </gl-button>
+
         <gl-button
           v-else
           :href="addDuoProHref"
@@ -171,7 +243,9 @@ export default {
         >
           {{ $options.i18n.purchaseSeats }}
         </gl-button>
+
         <hand-raise-lead-button
+          v-if="isSaaS"
           :button-attributes="handRaiseLeadData.buttonAttributes"
           :glm-content="handRaiseLeadData.glmContent"
           :product-interaction="handRaiseLeadData.productInteraction"

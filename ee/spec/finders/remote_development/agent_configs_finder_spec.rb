@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :workspaces do
   let_it_be(:current_user) { create(:user) }
 
   let_it_be(:cluster_admin_user) { create(:user) }
@@ -15,11 +15,11 @@ RSpec.describe RemoteDevelopment::AgentConfigsFinder, feature_category: :remote_
   end
 
   let_it_be(:agent_config_a) do
-    create(:remote_development_agent_config, agent: agent_a)
+    create(:workspaces_agent_config, agent: agent_a)
   end
 
   let_it_be(:agent_config_b) do
-    create(:remote_development_agent_config, agent: agent_b)
+    create(:workspaces_agent_config, agent: agent_b)
   end
 
   subject(:collection_proxy) do

@@ -187,6 +187,7 @@ module GitlabSubscriptions
       api_fuzzing
       auto_rollback
       breach_and_attack_simulation
+      cluster_receptive_agents
       cluster_image_scanning
       external_status_checks
       combined_project_analytics_dashboards
@@ -264,6 +265,7 @@ module GitlabSubscriptions
       unique_project_download_limit
       vulnerability_finding_signatures
       container_scanning_for_registry
+      project_security_exclusions
     ].freeze
 
     STARTER_FEATURES_WITH_USAGE_PING = %i[

@@ -132,7 +132,7 @@ RSpec.describe Sidebars::Groups::Menus::SecurityComplianceMenu, feature_category
       end
     end
 
-    describe 'Credentials' do
+    describe 'Credentials', :saas do
       let(:item_id) { :credentials }
 
       context 'when credentials_inventory feature is enabled' do

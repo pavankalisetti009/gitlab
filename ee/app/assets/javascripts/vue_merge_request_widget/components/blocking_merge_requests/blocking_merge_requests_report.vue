@@ -16,6 +16,7 @@ export default {
   name: 'BlockingMergeRequestsReport',
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       state: {
         query: getStateSubscription,
         skip() {

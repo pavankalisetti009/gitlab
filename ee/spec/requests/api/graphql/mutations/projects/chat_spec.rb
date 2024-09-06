@@ -109,13 +109,13 @@ RSpec.describe 'AiAction for chat', :saas, feature_category: :shared do
   context 'when additional_context is present' do
     let(:additional_context) do
       [
-        { type: 'SNIPPET', name: 'hello world', content: 'puts "Hello, world"' }
+        { category: 'SNIPPET', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
       ]
     end
 
     let(:expected_additional_context) do
       [
-        { type: 'snippet', name: 'hello world', content: 'puts "Hello, world"' }
+        { category: 'snippet', id: 'hello world', content: 'puts "Hello, world"', metadata: {} }
       ]
     end
 

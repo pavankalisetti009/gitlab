@@ -467,6 +467,7 @@ control over how the Pages daemon runs and serves content in your environment.
 | `rate_limit_tls_source_ip_burst`        | Rate limit per source IP maximum TLS connections burst allowed per second.                                                                                                                                                                                                                                 |
 | `rate_limit_tls_domain`                 | Rate limit per domain in number of TLS connections per second. Set to `0` to disable this feature.                                                                                                                                                                                                         |
 | `rate_limit_tls_domain_burst`           | Rate limit per domain maximum TLS connections burst allowed per second.                                                                                                                                                                                                                                    |
+| `rate_limit_subnets_allow_list`         | Allow list with the IP ranges (subnets) that should bypass all rate limits. For example, `['1.2.3.4/24', '2001:db8::1/32']`. [Introduced](https://gitlab.com/groups/gitlab-org/-/epics/14653) in GitLab 17.3. |
 | `server_read_timeout`                   | Maximum duration to read the request headers and body. For no timeout, set to `0` or a negative value. Default: `5s`                                                                                                                                                                                       |
 | `server_read_header_timeout`            | Maximum duration to read the request headers. For no timeout, set to `0` or a negative value. Default: `1s`                                                                                                                                                                                                |
 | `server_write_timeout`                  | Maximum duration to write all files in the response. Larger files require more time. For no timeout, set to `0` or a negative value. Default: `0`                                                                                                                                                          |
@@ -948,6 +949,25 @@ To set the maximum number of GitLab Pages custom domains for a project:
 1. Select **Settings > Preferences**.
 1. Expand **Pages**.
 1. Enter a value for **Maximum number of custom domains per project**. Use `0` for unlimited domains.
+1. Select **Save changes**.
+
+## Configure the default expiry for extra deployments
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/issues/456477) in GitLab 17.4.
+
+Prerequisites:
+
+- You must have administrator access to the instance.
+
+To configure the default duration for the instance after which
+[extra deployments](../../user/project/pages/index.md#create-multiple-deployments)
+are deleted:
+
+1. On the left sidebar, at the bottom, select **Admin**.
+1. Select **Settings > Preferences**.
+1. Expand **Pages**.
+1. Enter a value for **Default expiration for extra deployments in seconds**.
+   Use `0` if extra deployments should not expire by default.
 1. Select **Save changes**.
 
 ## Set maximum number of files per GitLab Pages website

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group Workspaces Settings', :js, feature_category: :remote_development do
+RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces do
   include WaitForRequests
 
   let_it_be(:user) { create(:user) }
@@ -12,7 +12,7 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :remote_devel
   end
 
   let_it_be(:agent) do
-    create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+    create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
   end
 
   before_all do
@@ -51,7 +51,7 @@ RSpec.describe 'Group Workspaces Settings', :js, feature_category: :remote_devel
 
     context 'when there are mapped and unmapped agents' do
       let_it_be(:agent_two) do
-        create(:ee_cluster_agent, :with_remote_development_agent_config, project: project, created_by_user: user)
+        create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project, created_by_user: user)
       end
 
       let_it_be(:cluster_agent_mapping) do

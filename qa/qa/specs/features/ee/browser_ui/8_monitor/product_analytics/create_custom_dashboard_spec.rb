@@ -4,7 +4,7 @@ module QA
   RSpec.describe 'Monitor' do
     describe(
       'Product Analytics',
-      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics-devkit" } },
+      only: { condition: -> { ENV["CI_PROJECT_PATH_SLUG"].include? "product-analytics" } },
       product_group: :product_analytics
     ) do
       let!(:sandbox_group) { create(:sandbox, path: "gitlab-qa-product-analytics") }
@@ -53,9 +53,9 @@ module QA
         Page::Project::Menu.perform(&:go_to_analytics_dashboards)
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Home.perform do |analytics_dashboards|
-          expect(analytics_dashboards.dashboards_list[2].text).to eq(custom_dashboard_title)
+          expect(analytics_dashboards.has_dashboard_item?(custom_dashboard_title)).to be(true)
 
-          analytics_dashboards.dashboards_list[2].click
+          analytics_dashboards.click_dashboard_list_item(custom_dashboard_title)
         end
 
         EE::Page::Project::Analyze::AnalyticsDashboards::Dashboard.perform do |dashboard|

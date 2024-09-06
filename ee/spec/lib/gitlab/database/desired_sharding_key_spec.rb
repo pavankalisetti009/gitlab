@@ -55,20 +55,26 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
   context 'for tables that already have a backfilled, non-nullable sharding key on their parent' do
     let(:known_cross_joins) do
       {
+        'vulnerability_occurrence_identifiers' => {
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+        },
         'vulnerability_occurrence_pipelines' => {
           'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
         'vulnerability_finding_evidences' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_finding_links' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_finding_signatures' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'vulnerability_flags' => {
-          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerability_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
+        },
+        'vulnerability_merge_request_links' => {
+          'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480344'
         },
         'dast_site_validations' => {
           'dast_site_tokens' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/474985'
@@ -77,9 +83,17 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
           'dast_scanner_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/479866'
         },
         'sbom_occurrences_vulnerabilities' => {
-          'sbom_occurrences' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
+          'vulnerabilities' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/475058'
         },
-        'dast_site_profiles_builds' => { 'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706' }
+        'dast_site_profiles_builds' => {
+          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/477706'
+        },
+        'dast_site_profile_secret_variables' => {
+          'dast_site_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/480014'
+        },
+        'dast_pre_scan_verifications' => {
+          'dast_profiles' => 'https://gitlab.com/gitlab-org/gitlab/-/issues/481764'
+        }
       }
     end
 
@@ -88,11 +102,14 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
         .each do |entry|
           entry.desired_sharding_key.each do |desired_column, details|
             table = entry.table_name
+            next if Gitlab::Database::PostgresPartition.partition_exists?(table)
+
             connection = Gitlab::Database.schemas_to_base_models[entry.gitlab_schema].first.connection
             sharding_key = desired_column
             parent = details['backfill_via']['parent']
             foreign_key = parent['foreign_key']
             parent_table = parent['table']
+            parent_table_primary_key = parent['table_primary_key'] || 'id'
             parent_sharding_key = parent['sharding_key']
 
             connection.execute("ALTER TABLE #{table} ADD COLUMN IF NOT EXISTS #{sharding_key} bigint")
@@ -103,7 +120,7 @@ RSpec.describe 'new tables missing sharding_key', feature_category: :cell do
               EXPLAIN UPDATE #{table}
               SET #{sharding_key} = #{parent_table}.#{parent_sharding_key}
                 FROM #{parent_table}
-              WHERE #{table}.#{foreign_key} = #{parent_table}.id
+              WHERE #{table}.#{foreign_key} = #{parent_table}.#{parent_table_primary_key}
               SQL
             end
           end

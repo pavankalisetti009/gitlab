@@ -124,16 +124,16 @@ correctly reach to AI Gateway:
 1. Login to Rails console with `gdk rails console`.
 1. Talk to a model:
 
-  ```ruby
-  # Talk to Anthropic model
-  Gitlab::Llm::Anthropic::Client.new(User.first, unit_primitive: 'duo_chat').complete(prompt: "\n\nHuman: Hi, How are you?\n\nAssistant:")
+   ```ruby
+   # Talk to Anthropic model
+   Gitlab::Llm::Anthropic::Client.new(User.first, unit_primitive: 'duo_chat').complete(prompt: "\n\nHuman: Hi, How are you?\n\nAssistant:")
 
-  # Talk to Vertex AI model
-  Gitlab::Llm::VertexAi::Client.new(User.first, unit_primitive: 'documentation_search').text_embeddings(content: "How can I create an issue?")
+   # Talk to Vertex AI model
+   Gitlab::Llm::VertexAi::Client.new(User.first, unit_primitive: 'documentation_search').text_embeddings(content: "How can I create an issue?")
 
-  # Test `/v1/chat/agent` endpoint
-  Gitlab::Llm::Chain::Requests::AiGateway.new(User.first).request(prompt: [{role: "user", content: "Hi, how are you?"}])
-  ```
+   # Test `/v1/chat/agent` endpoint
+   Gitlab::Llm::Chain::Requests::AiGateway.new(User.first).request(prompt: [{role: "user", content: "Hi, how are you?"}])
+   ```
 
 NOTE:
 See [this doc](../cloud_connector/index.md) for registering unit primitives in Cloud Connector.
@@ -221,6 +221,38 @@ Apply the following feature flags to any AI feature work:
 
 See the [feature flag tracker epic](https://gitlab.com/groups/gitlab-org/-/epics/10524) for the list of all feature flags and how to use them.
 
+### Push feature flags to AI Gateway
+
+You can push [feature flags](../feature_flags/index.md) to AI Gateway. This is helpful to gradually rollout user-facing changes even if the feature resides in AI Gateway.
+See the following example:
+
+```ruby
+# Push a feature flag state to AI Gateway.
+Gitlab::AiGateway.push_feature_flag(:new_prompt_template, user)
+```
+
+Later, you can use the feature flag state in AI Gateway in the following way:
+
+```python
+from ai_gateway.feature_flags import is_feature_enabled
+
+# Check if the feature flag "new_prompt_template" is enabled.
+if is_feature_enabled('new_prompt_template'):
+  # Build a prompt from the new prompt template
+else:
+  # Build a prompt from the old prompt template
+```
+
+**IMPORTANT:** At the [cleaning up](../feature_flags/controls.md#cleaning-up) step, remove the feature flag in AI Gateway repository **before** removing the flag in GitLab-Rails repository.
+If you clean up the flag in GitLab-Rails repository at first, the feature flag in AI Gateway will be disabled immediately as it's the default state, hence you might encounter a surprising behavior.
+
+**IMPORTANT:** Cleaning up the feature flag in AI Gateway will immediately distribute the change to all GitLab instances, including GitLab.com, Self-managed GitLab, and Dedicated.
+
+Technical details: When `push_feature_flag` runs on an enabled feature flag, the name of flag is cached in the current context,
+which is later attached to `x-gitlab-enabled-feature-flags` HTTP header when GitLab-Sidekiq/Rails requests to AI Gateway.
+
+As a simialr concept, we also have [`push_frontend_feature_flag`](../feature_flags/index.md) to push feature flags to frontend.
+
 ### GraphQL API
 
 To connect to the AI provider API using the Abstraction Layer, use an extendable
@@ -303,7 +335,7 @@ subscription aiCompletionResponse(
 }
 ```
 
-The [subscription for chat](duo_chat.md#graphql-subscription) behaves differently.
+The [subscription for Chat](duo_chat.md#graphql-subscription) behaves differently.
 
 To not have many concurrent subscriptions, you should also only subscribe to the subscription once the mutation is sent by using [`skip()`](https://apollo.vuejs.org/guide-option/subscriptions.html#skipping-the-subscription).
 
@@ -517,40 +549,16 @@ For a complete example of the changes needed to migrate an AI action, see the fo
 
 We recommend to use [policies](../policies.md) to deal with authorization for a feature. Currently we need to make sure to cover the following checks:
 
-1. For GitLab Duo Chat feature, `ai_duo_chat_switch` is enabled.
-1. For other general AI features, `ai_global_switch` is enabled.
-1. Feature specific feature flag is enabled.
-1. The namespace has the required license for the feature.
-1. User is a member of the group/project.
-1. `experiment_features_enabled` settings are set on the `Namespace`.
+Some basic authorization is included in the Abstraction Layer classes that are base classes for more specialized classes.
 
-For our example, we need to implement the `allowed?(:rewrite_description)` call. As an example, you can look at the [Issue Policy for the summarize comments feature](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/app/policies/ee/issue_policy.rb). In our example case, we want to implement the feature for Issues as well:
+What needs to be included in the code:
 
-```ruby
-# ee/app/policies/ee/issue_policy.rb
-
-module EE
-  module IssuePolicy
-    extend ActiveSupport::Concern
-    prepended do
-      with_scope :global
-      condition(:ai_available) do
-        ::Feature.enabled?(:ai_global_switch, type: :ops)
-      end
-
-      with_scope :subject
-      condition(:rewrite_description_enabled) do
-        ::Feature.enabled?(:rewrite_description, subject_container) &&
-          subject_container.licensed_feature_available?(:rewrite_description)
-      end
-
-      rule do
-        ai_available & rewrite_description_enabled & is_project_member
-      end.enable :rewrite_description
-    end
-  end
-end
-```
+1. Check for feature flag compatibility: `Gitlab::Llm::Utils::FlagChecker.flag_enabled_for_feature?(ai_action)` - included in the `Llm::BaseService` class.
+1. Check if resource is authorized: `Gitlab::Llm::Utils::Authorizer.resource(resource: resource, user: user).allowed?` - also included in the `Llm::BaseService` class.
+1. Both of those checks are included in the `::Gitlab::Llm::FeatureAuthorizer.new(container: subject_container, feature_name: action_name).allowed?`
+1. Access to AI features depend on several factors, such as: their maturity, if they are enabled on self-managed, if they are bundled within an add-on etc.
+   - [Example](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/app/policies/ee/global_policy.rb#L222-222) of policy not connected to the particular resource.
+   - [Example](https://gitlab.com/gitlab-org/gitlab/-/blob/master/ee/app/policies/ee/issue_policy.rb#L25-25) of policy connected to the particular resource.
 
 NOTE:
 For more information, see [the GitLab AI Gateway documentation](https://gitlab.com/gitlab-org/gitlab-development-kit/-/blob/main/doc/howto/gitlab_ai_gateway.md#optional-enable-authentication-and-authorization-in-ai-gateway) about authentication and authorization in AI Gateway.
@@ -740,6 +748,9 @@ Gitlab::Llm::Logger.build.info_or_debug(user, message:"User prompt processed: #{
 # Logging application error information
 Gitlab::Llm::Logger.build.error(user, message: "System application error: #{sanitized_error_message}")
 ```
+
+**Important**: Please familiarize yourself with our [Data Retention Policy](../../user/gitlab_duo/data_usage.md#data-retention) and remember
+to make sure we are not logging user input and LLM-generated output.
 
 ## Security
 

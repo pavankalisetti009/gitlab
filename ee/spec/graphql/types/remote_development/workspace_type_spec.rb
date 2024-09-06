@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['Workspace'], feature_category: :remote_development do
+RSpec.describe GitlabSchema.types['Workspace'], feature_category: :workspaces do
   let(:fields) do
     %i[
       id cluster_agent project_id user name namespace max_hours_before_termination

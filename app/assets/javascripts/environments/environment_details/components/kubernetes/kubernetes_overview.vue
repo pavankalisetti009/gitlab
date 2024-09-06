@@ -91,6 +91,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     fluxKustomization: {
       query: fluxKustomizationQuery,
       variables() {
@@ -108,6 +109,7 @@ export default {
         this.fluxApiError = err.message;
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     fluxHelmRelease: {
       query: fluxHelmReleaseQueryStatus,
       variables() {
@@ -186,6 +188,7 @@ export default {
     transformFluxResourceData(item) {
       return {
         name: item.metadata.name,
+        namespace: item.metadata.namespace,
         status: fluxSyncStatus(item.status.conditions).status,
         labels: item.metadata.labels,
         annotations: item.metadata.annotations,
@@ -352,6 +355,7 @@ export default {
         <workload-details
           v-if="hasSelectedItem"
           :item="selectedItem"
+          :configuration="k8sAccessConfiguration"
           @delete-pod="onDeletePod"
           @flux-reconcile="onFluxReconcile"
         />

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Trial flow for user picking company and importing a project', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Trial flow for user picking company and importing a project', :js, :saas_registration, :with_default_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular trial sign up', -> { trial_registration_sign_up }],

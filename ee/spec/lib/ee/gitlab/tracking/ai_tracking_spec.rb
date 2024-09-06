@@ -43,24 +43,14 @@ RSpec.describe Gitlab::Tracking::AiTracking, feature_category: :value_stream_man
 
       it 'stores new event' do
         expect_next_instance_of(model_class, expected_event_hash) do |instance|
-          expect(instance).to receive(:store).once
+          expect(instance).to receive(:store_to_clickhouse).once
         end
 
         track_event
       end
-
-      context 'when extra arguments are present in the context' do
-        let(:event_context) { super().merge({ extra1: 'bar', extra2: 'baz' }) }
-
-        it 'ignores extra arguments' do
-          expect(model_class).to receive(:new).with(expected_event_hash).once.and_call_original
-
-          track_event
-        end
-      end
     end
 
-    it_behaves_like 'common event tracking for', Ai::CodeSuggestionsUsage do
+    it_behaves_like 'common event tracking for', Ai::CodeSuggestionEvent do
       let(:event_name) { 'code_suggestion_shown_in_ide' }
     end
 

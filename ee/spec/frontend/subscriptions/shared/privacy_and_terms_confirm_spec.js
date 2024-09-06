@@ -1,7 +1,6 @@
 import { GlFormCheckbox, GlSprintf } from '@gitlab/ui';
 import PrivacyPolicyAndTermsConfirm from 'ee/subscriptions/shared/components/privacy_and_terms_confirm.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
 
 describe('PrivacyAndTermsConfirm', () => {
   let wrapper;
@@ -35,11 +34,11 @@ describe('PrivacyAndTermsConfirm', () => {
     });
 
     it('displays the accept policy link', () => {
-      expect(findPrivacyLink().attributes('href')).toBe(`${PROMO_URL}/privacy`);
+      expect(findPrivacyLink().props('path')).toBe('/privacy');
     });
 
     it('displays the accept terms link', () => {
-      expect(findTermsLink().attributes('href')).toBe(`${PROMO_URL}/terms#subscription`);
+      expect(findTermsLink().props('path')).toBe('/terms#subscription');
     });
 
     describe('with accepted set to `true`', () => {

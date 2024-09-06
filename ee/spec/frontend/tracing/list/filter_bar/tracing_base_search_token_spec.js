@@ -43,7 +43,7 @@ describe('AttributeSearchToken', () => {
     expect(findBaseToken().props('viewOnly')).toBe(true);
   });
 
-  it('sets the token to view-only if the service service token are not set', () => {
+  it('sets the token to view-only if the service token are not set', () => {
     mount({ ...defaultProps, currentValue: [{ type: SERVICE_NAME_FILTER_TOKEN_TYPE }] });
     expect(findBaseToken().props('viewOnly')).toBe(true);
   });
@@ -53,7 +53,7 @@ describe('AttributeSearchToken', () => {
     expect(findBaseToken().text()).toContain('You must select a Service and Operation first.');
   });
 
-  it('does not set the token to view-only if the service service and operation tokens are set', () => {
+  it('does not set the token to view-only if the service and operation tokens are set', () => {
     mount({
       ...defaultProps,
       currentValue: [
@@ -75,7 +75,7 @@ describe('AttributeSearchToken', () => {
     expect(findBaseToken().text()).not.toContain('You must select a Service and Operation first.');
   });
 
-  it('filters operators, if there are multiple and service service and operation tokens are set', () => {
+  it('filters operators, if there are multiple and service and operation tokens are set', () => {
     mount({
       ...defaultProps,
       config: {
@@ -90,7 +90,7 @@ describe('AttributeSearchToken', () => {
     });
   });
 
-  it('does not filter operators, if there are multiple and service service and operation tokens are set', () => {
+  it('does not filter operators, if there are multiple and service and operation tokens are set', () => {
     mount({
       ...defaultProps,
       config: {

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'SaaS registration from an invite', :js, :saas_registration, :sidekiq_inline, feature_category: :onboarding do
+RSpec.describe 'SaaS registration from an invite', :with_current_organization, :js, :saas_registration, :sidekiq_inline, feature_category: :onboarding do
   it 'registers the user and sends them to the group page' do
     group = create(:group, name: 'Test Group', organization: create(:organization))
 

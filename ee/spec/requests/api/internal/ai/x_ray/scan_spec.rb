@@ -47,7 +47,8 @@ RSpec.describe API::Internal::Ai::XRay::Scan, feature_category: :code_suggestion
         "X-Gitlab-Version" => [Gitlab.version_info.to_s],
         "X-Request-ID" => [an_instance_of(String)],
         "X-Gitlab-Rails-Send-Start" => [an_instance_of(String)],
-        "X-Gitlab-Duo-Seat-Count" => [duo_seat_count]
+        "X-Gitlab-Duo-Seat-Count" => [duo_seat_count],
+        "x-gitlab-enabled-feature-flags" => [""]
       }
     end
 

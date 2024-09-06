@@ -48,13 +48,13 @@ RSpec.describe Clusters::AgentsFinder do
       end
     end
 
-    context 'filtering by has_remote_development_agent_config' do
-      let(:params) { { has_remote_development_agent_config: has_remote_development_agent_config } }
-      let_it_be(:agent_with_remote_development_agent_config) do
-        create(:ee_cluster_agent, :with_remote_development_agent_config, project: project)
+    context 'filtering by has_workspaces_agent_config' do
+      let(:params) { { has_workspaces_agent_config: has_workspaces_agent_config } }
+      let_it_be(:agent_with_workspaces_agent_config) do
+        create(:ee_cluster_agent, :with_existing_workspaces_agent_config, project: project)
       end
 
-      let_it_be(:agent_without_remote_development_agent_config) do
+      let_it_be(:agent_without_workspaces_agent_config) do
         create(:ee_cluster_agent, project: project)
       end
 
@@ -65,22 +65,22 @@ RSpec.describe Clusters::AgentsFinder do
 
         it do
           is_expected.to contain_exactly(
-            agent_without_remote_development_agent_config,
-            agent_with_remote_development_agent_config
+            agent_without_workspaces_agent_config,
+            agent_with_workspaces_agent_config
           )
         end
       end
 
-      context 'when has_remote_development_agent_config is set to true' do
-        let(:has_remote_development_agent_config) { true }
+      context 'when has_workspaces_agent_config is set to true' do
+        let(:has_workspaces_agent_config) { true }
 
-        it { is_expected.to contain_exactly(agent_with_remote_development_agent_config) }
+        it { is_expected.to contain_exactly(agent_with_workspaces_agent_config) }
       end
 
-      context 'when has_remote_development_agent_config is set to false' do
-        let(:has_remote_development_agent_config) { false }
+      context 'when has_workspaces_agent_config is set to false' do
+        let(:has_workspaces_agent_config) { false }
 
-        it { is_expected.to contain_exactly(agent_without_remote_development_agent_config) }
+        it { is_expected.to contain_exactly(agent_without_workspaces_agent_config) }
       end
     end
 
@@ -91,11 +91,11 @@ RSpec.describe Clusters::AgentsFinder do
       let_it_be(:agent_without_enabled_config) { create(:ee_cluster_agent, project: project) }
 
       let_it_be(:config_for_enabled_agent) do
-        create(:remote_development_agent_config, agent: agent_with_enabled_config, enabled: true)
+        create(:workspaces_agent_config, agent: agent_with_enabled_config, enabled: true)
       end
 
       let_it_be(:config_for_disabled_agent) do
-        create(:remote_development_agent_config, agent: agent_without_enabled_config, enabled: false)
+        create(:workspaces_agent_config, agent: agent_without_enabled_config, enabled: false)
       end
 
       subject { described_class.new(project, user, params: params).execute }

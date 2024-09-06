@@ -1,23 +1,27 @@
-import { GlBadge, GlButton } from '@gitlab/ui';
+import { GlBadge } from '@gitlab/ui';
 import TracingHeader from 'ee/tracing/details/tracing_header.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import { createMockTrace } from '../mock_data';
 
 describe('TracingHeader', () => {
   let wrapper;
 
   const defaultTrace = createMockTrace();
-  const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
 
   const createComponent = (trace = defaultTrace, incomplete = false) => {
     wrapper = shallowMountExtended(TracingHeader, {
       propsData: {
         trace,
         incomplete,
-        logsLink: 'testLogsLink',
-        createIssueUrl,
+        viewLogsUrl: 'testViewLogsUrl',
+        viewMetricsUrl: 'testViewMetricsUrl',
+        createIssueUrl: 'testCreateIssueUrl',
         totalErrors: 2,
+        issues: [],
+        fetchingIssues: false,
+        relatedIssuesId: 'related-issues-1',
       },
     });
   };
@@ -26,6 +30,7 @@ describe('TracingHeader', () => {
   });
 
   const findHeading = () => wrapper.findComponent(PageHeading);
+  const findRelatedIssuesBadge = () => wrapper.findComponent(RelatedIssuesBadge);
 
   it('renders the correct title', () => {
     expect(findHeading().text()).toContain('Service : Operation');
@@ -49,14 +54,28 @@ describe('TracingHeader', () => {
     expect(findHeading().text()).toContain('In progress');
   });
 
-  it('renders the correct logs link', () => {
-    const button = findHeading().findAllComponents(GlButton).at(1);
-    expect(button.text()).toBe('View Logs');
-    expect(button.attributes('href')).toBe('testLogsLink');
+  it('renders the relate issues badge', () => {
+    expect(findRelatedIssuesBadge().props()).toStrictEqual({
+      issuesTotal: 0,
+      loading: false,
+      error: null,
+      anchorId: 'related-issues-1',
+      parentScrollingId: null,
+    });
   });
 
-  it('renders the create issue link', () => {
-    const button = findHeading().findAllComponents(GlButton).at(0);
+  it('renders the view logs button', () => {
+    const button = wrapper.findByText('View logs');
+    expect(button.attributes('href')).toBe('testViewLogsUrl');
+  });
+
+  it('renders the view metrics button', () => {
+    const button = wrapper.findByText('View metrics');
+    expect(button.attributes('href')).toBe('testViewMetricsUrl');
+  });
+
+  it('renders the create issue button', () => {
+    const button = wrapper.findByText('Create issue');
     expect(button.text()).toBe('Create issue');
     const traceDetails = {
       fullUrl: 'http://test.host/',
@@ -68,7 +87,7 @@ describe('TracingHeader', () => {
       totalErrors: 2,
     };
     expect(button.attributes('href')).toBe(
-      `${createIssueUrl}?observability_trace_details=${encodeURIComponent(
+      `testCreateIssueUrl?observability_trace_details=${encodeURIComponent(
         JSON.stringify(traceDetails),
       )}&${encodeURIComponent('issue[confidential]')}=true`,
     );

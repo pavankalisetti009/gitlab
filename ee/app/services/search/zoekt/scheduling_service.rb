@@ -7,7 +7,7 @@ module Search
 
       TASKS = %i[
         dot_com_rollout
-        reallocation
+        eviction
         remove_expired_subscriptions
         node_assignment
         mark_indices_as_ready
@@ -24,7 +24,7 @@ module Search
       DOT_COM_ROLLOUT_TARGET_BYTES = 300.gigabytes
       DOT_COM_ROLLOUT_LIMIT = 2000
       DOT_COM_ROLLOUT_SEARCH_LIMIT = 500
-      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 24.hours
+      DOT_COM_ROLLOUT_ENABLE_SEARCH_AFTER = 3.hours
 
       attr_reader :task
 
@@ -68,18 +68,18 @@ module Search
         logger.info(build_structured_payload(**payload.merge(task: task)))
       end
 
-      # An initial implementation of reallocation logic. For now, it's a .com-only task
-      def reallocation
+      # An initial implementation of eviction logic. For now, it's a .com-only task
+      def eviction
         return false unless ::Gitlab::Saas.feature_available?(:exact_code_search)
         return false if Feature.disabled?(:zoekt_reallocation_task)
 
-        execute_every 5.minutes, cache_key: :reallocation do
+        execute_every 5.minutes, cache_key: :eviction do
           nodes = ::Search::Zoekt::Node.online.find_each.to_a
           over_watermark_nodes = nodes.select { |n| (n.used_bytes / n.total_bytes.to_f) >= WATERMARK_LIMIT_HIGH }
 
           break if over_watermark_nodes.empty?
 
-          info(:reallocation, message: 'Detected nodes over watermark',
+          info(:eviction, message: 'Detected nodes over watermark',
             watermark_limit_high: WATERMARK_LIMIT_HIGH,
             count: over_watermark_nodes.count)
 
@@ -117,7 +117,7 @@ module Search
       def unassign_namespaces_from_node(node, namespaces_to_move, node_original_used_bytes, total_repository_size)
         return if namespaces_to_move.empty?
 
-        info(:reallocation, message: 'Unassigning namespaces from node',
+        info(:eviction, message: 'Unassigning namespaces from node',
           watermark_limit_high: WATERMARK_LIMIT_HIGH,
           count: namespaces_to_move.count,
           node_used_bytes: node_original_used_bytes,

@@ -4,11 +4,15 @@ import {
   SCOPE_TITLE,
 } from 'ee/security_orchestration/components/policy_drawer/constants';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
+import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import {
   policyScopeHasComplianceFrameworks,
   policyScopeHasExcludingProjects,
   policyScopeHasIncludingProjects,
+  policyScopeHasGroups,
   policyScopeProjects,
+  policyScopeGroups,
+  policyExcludingProjects,
   policyScopeComplianceFrameworks,
   isGroup,
   isProject,
@@ -17,6 +21,7 @@ import getSppLinkedProjectsNamespaces from 'ee/security_orchestration/graphql/qu
 import LoaderWithMessage from '../loader_with_message.vue';
 import ComplianceFrameworksToggleList from './compliance_frameworks_toggle_list.vue';
 import ProjectsToggleList from './projects_toggle_list.vue';
+import GroupsToggleList from './groups_toggle_list.vue';
 import InfoRow from './info_row.vue';
 
 export default {
@@ -26,12 +31,14 @@ export default {
     InfoRow,
     LoaderWithMessage,
     ProjectsToggleList,
+    GroupsToggleList,
     ScopeDefaultLabel,
   },
   i18n: {
     scopeTitle: SCOPE_TITLE,
     defaultProjectText: DEFAULT_PROJECT_TEXT,
   },
+  mixins: [glFeatureFlagMixin()],
   inject: ['namespaceType', 'namespacePath'],
   apollo: {
     linkedSppItems: {
@@ -79,14 +86,23 @@ export default {
     policyScopeHasIncludingProjects() {
       return policyScopeHasIncludingProjects(this.policyScope);
     },
+    policyScopeHasGroups() {
+      return policyScopeHasGroups(this.policyScope) && this.glFeatures.policyGroupScope;
+    },
     policyScopeHasExcludingProjects() {
       return policyScopeHasExcludingProjects(this.policyScope);
     },
     policyHasProjects() {
       return this.policyScopeHasIncludingProjects || this.policyScopeHasExcludingProjects;
     },
+    policyScopeGroups() {
+      return policyScopeGroups(this.policyScope);
+    },
     policyScopeProjects() {
       return policyScopeProjects(this.policyScope);
+    },
+    policyExcludingProjects() {
+      return policyExcludingProjects(this.policyScope);
     },
     policyScopeComplianceFrameworks() {
       return policyScopeComplianceFrameworks(this.policyScope);
@@ -115,6 +131,13 @@ export default {
         <template v-if="policyScopeHasComplianceFrameworks">
           <compliance-frameworks-toggle-list
             :compliance-frameworks="policyScopeComplianceFrameworks"
+          />
+        </template>
+        <template v-else-if="policyScopeHasGroups">
+          <groups-toggle-list
+            is-link
+            :groups="policyScopeGroups"
+            :projects="policyExcludingProjects"
           />
         </template>
         <template v-else-if="policyHasProjects">

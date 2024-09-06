@@ -2,6 +2,7 @@ import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ListComponentScope from 'ee/security_orchestration/components/policies/list_component_scope.vue';
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import ProjectsToggleList from 'ee/security_orchestration/components/policy_drawer/projects_toggle_list.vue';
+import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 
@@ -21,6 +22,7 @@ describe('ListComponentScope', () => {
   const findComplianceFrameworksToggleList = () =>
     wrapper.findComponent(ComplianceFrameworksToggleList);
   const findScopeDefaultLabel = () => wrapper.findComponent(ScopeDefaultLabel);
+  const findGroupsToggleList = () => wrapper.findComponent(GroupsToggleList);
   const findProjectsToggleList = () => wrapper.findComponent(ProjectsToggleList);
   const findDefaultText = () => wrapper.findByTestId('default-text');
 
@@ -170,6 +172,94 @@ describe('ListComponentScope', () => {
 
       expect(findScopeDefaultLabel().exists()).toBe(false);
       expect(findDefaultText().exists()).toBe(true);
+    });
+  });
+
+  describe('group scope', () => {
+    const items = [{ id: 1 }, { id: 2 }];
+
+    it('does not render group scope when ff is off', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(false);
+    });
+
+    it('renders group scope when groups are provided', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          glFeatures: {
+            policyGroupScope: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(true);
+      expect(findGroupsToggleList().props('groups')).toEqual(items);
+      expect(findGroupsToggleList().props('projects')).toEqual([]);
+      expect(findGroupsToggleList().props('inlineList')).toBe(true);
+      expect(findGroupsToggleList().props('isLink')).toBe(false);
+    });
+
+    it('renders group scope when groups and project exceptions are provided', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: items,
+            },
+            excludingProjects: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          glFeatures: {
+            policyGroupScope: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(true);
+      expect(findGroupsToggleList().props('groups')).toEqual(items);
+      expect(findGroupsToggleList().props('projects')).toEqual(items);
+    });
+
+    it('does not render group scope when groups are empty and project exceptions are provided', () => {
+      createComponent({
+        propsData: {
+          policyScope: {
+            includingGroups: {
+              nodes: [],
+            },
+            excludingProjects: {
+              nodes: items,
+            },
+          },
+        },
+        provide: {
+          glFeatures: {
+            policyGroupScope: true,
+          },
+        },
+      });
+
+      expect(findGroupsToggleList().exists()).toBe(false);
+      expect(findProjectsToggleList().props('projects')).toEqual(items);
     });
   });
 

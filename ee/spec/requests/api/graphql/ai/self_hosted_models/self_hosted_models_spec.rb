@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'List of self-hosted LLM servers.', feature_category: :custom_models do
+RSpec.describe 'List of self-hosted LLM servers.', feature_category: :"self-hosted_models" do
   include GraphqlHelpers
 
   let_it_be(:current_user) { create(:admin) }

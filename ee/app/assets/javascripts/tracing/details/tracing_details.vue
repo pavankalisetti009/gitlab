@@ -1,12 +1,16 @@
 <script>
 import { GlLoadingIcon, GlAlert, GlSprintf } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import { s__ } from '~/locale';
 import { createAlert } from '~/alert';
 import { InternalEvents } from '~/tracking';
 import { visitUrl, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
 import { logsQueryFromAttributes } from 'ee/logs/list/filter_bar/filters';
+import { metricsListQueryFromAttributes } from 'ee/metrics/list/filters';
 import { TIME_RANGE_OPTIONS_VALUES } from '~/observability/constants';
 import { validatedDateRangeQuery } from '~/observability/utils';
+import RelatedIssues from '~/observability/components/observability_related_issues.vue';
+import { helpPagePath } from '~/helpers/help_page_helper';
 import { mapTraceToSpanTrees, SPANS_LIMIT } from '../trace_utils';
 import { VIEW_TRACING_DETAILS_PAGE } from '../events';
 import TracingChart from './tracing_chart.vue';
@@ -29,6 +33,7 @@ export default {
     GlAlert,
     GlSprintf,
     RelatedIssuesProvider,
+    RelatedIssues,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -45,6 +50,10 @@ export default {
       type: String,
     },
     logsIndexUrl: {
+      required: true,
+      type: String,
+    },
+    metricsIndexUrl: {
       required: true,
       type: String,
     },
@@ -68,16 +77,21 @@ export default {
     };
   },
   computed: {
-    logsLink() {
-      return setUrlParams(
+    viewLogsUrl() {
+      return this.buildUrlWithQuery(
         logsQueryFromAttributes({
           traceId: this.traceId,
           dateRange: validatedDateRangeQuery(TIME_RANGE_OPTIONS_VALUES.ONE_MONTH),
         }),
-        getNormalizedURL(this.logsIndexUrl),
-        true, // clearParams
-        true, // railsArraySyntax
-        true, // decodeParams
+        this.logsIndexUrl,
+      );
+    },
+    viewMetricsUrl() {
+      return this.buildUrlWithQuery(
+        metricsListQueryFromAttributes({
+          traceId: this.traceId,
+        }),
+        this.metricsIndexUrl,
       );
     },
   },
@@ -128,14 +142,27 @@ export default {
       this.selectedSpan = null;
       this.isDrawerOpen = false;
     },
+    buildUrlWithQuery(queryParams, url) {
+      return setUrlParams(
+        queryParams,
+        getNormalizedURL(url),
+        true, // clearParams
+        true, // railsArraySyntax
+        true, // decodeParams
+      );
+    },
   },
   SPANS_LIMIT,
+  relatedIssuesHelpPath: helpPagePath('/operations/tracing', {
+    anchor: 'create-an-issue-for-a-trace',
+  }),
+  relatedIssuesId: uniqueId('related-issues-'),
 };
 </script>
 
 <template>
   <related-issues-provider v-if="traceId" :trace-id="traceId" :project-full-path="projectFullPath">
-    <template #default>
+    <template #default="{ issues, loading: fetchingIssues, error }">
       <div v-if="loading" class="gl-py-5">
         <gl-loading-icon size="lg" />
       </div>
@@ -145,8 +172,13 @@ export default {
           :trace="trace"
           :incomplete="spanTrees.incomplete"
           :total-errors="spanTrees.totalErrors"
-          :logs-link="logsLink"
+          :view-logs-url="viewLogsUrl"
+          :view-metrics-url="viewMetricsUrl"
           :create-issue-url="createIssueUrl"
+          :related-issues-id="$options.relatedIssuesId"
+          :issues="issues"
+          :fetching-issues="fetchingIssues"
+          :error="error"
           class="gl-mb-6"
         />
 
@@ -165,6 +197,14 @@ export default {
         />
 
         <tracing-drawer :span="selectedSpan" :open="isDrawerOpen" @close="closeDrawer" />
+
+        <related-issues
+          :id="$options.relatedIssuesId"
+          :issues="issues"
+          :fetching-issues="fetchingIssues"
+          :error="error"
+          :help-path="$options.relatedIssuesHelpPath"
+        />
       </div>
     </template>
   </related-issues-provider>

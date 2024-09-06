@@ -73,19 +73,6 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
         expect(user_prompt).to include(note.note)
       end
 
-      it 'sets the correct unit primitive' do
-        allow(Gitlab::Llm::Chain::Requests::AiGateway).to receive(:new).with(user, {
-          service_name: :summarize_comments,
-          tracking_context: {
-            request_id: nil,
-            action: 'summarize_comments'
-          }
-        }).and_return(ai_request_double)
-        expect(ai_request_double).to receive(:request).with(tool.prompt, unit_primitive: 'summarize_comments')
-
-        tool.execute
-      end
-
       context 'when issue does not contain any notes' do
         let_it_be(:issue1) { create(:issue, project: project) }
         let(:resource) { issue1 }
@@ -128,6 +115,12 @@ RSpec.describe Gitlab::Llm::Chain::Tools::SummarizeComments::Executor, feature_c
           expect(answer.content).to eq("I'm sorry, I can't generate a response. Please try again.")
           expect(answer.error_code).to eq("M4000")
         end
+      end
+
+      it_behaves_like 'uses ai gateway agent prompt' do
+        let(:prompt_class) { Gitlab::Llm::Chain::Tools::SummarizeComments::Prompts::Anthropic }
+        let(:unit_primitive) { 'summarize_comments' }
+        let(:default_unit_primitive) { unit_primitive }
       end
     end
 

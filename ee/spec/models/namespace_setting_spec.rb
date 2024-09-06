@@ -333,6 +333,14 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
         expect(setting.duo_availability).to eq(expectation)
       end
     end
+
+    context 'when value is "never_on"' do
+      it 'sets experiment_features_enabled to false' do
+        setting.duo_availability = "never_on"
+
+        expect(setting.experiment_features_enabled).to be false
+      end
+    end
   end
 
   describe '#duo_availability=' do
@@ -485,38 +493,26 @@ RSpec.describe NamespaceSetting, feature_category: :groups_and_projects, type: :
   end
 
   describe '#prevent_sharing_groups_outside_hierarchy' do
-    context 'when block seat overages is enabled for the group', :saas do
-      let_it_be_with_reload(:group) { create(:group_with_plan, plan: :premium_plan, name: "Root") }
-      let(:settings) { group.namespace_settings }
+    let_it_be_with_refind(:group) { create(:group) }
+    let(:settings) { group.namespace_settings }
 
+    it 'becomes enabled when block seat overages becomes enabled', :saas do
+      expect(settings.prevent_sharing_groups_outside_hierarchy).to eq(false)
+
+      settings.update!(seat_control: :block_overages)
+
+      expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to eq(true)
+    end
+
+    context 'when block seat overages is already enabled for the group', :saas do
       before do
-        stub_saas_features(gitlab_com_subscriptions: true)
-        stub_feature_flags(block_seat_overages: group)
         group.namespace_settings.update!(seat_control: :block_overages)
       end
 
-      it 'returns true even if the database value is false' do
-        settings.update_columns(prevent_sharing_groups_outside_hierarchy: false)
-
-        expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to eq(true)
-      end
-
-      it 'returns true for a subgroup even if the database value is false' do
-        subgroup = create(:group, parent: group, name: "Subgroup")
-        group.namespace_settings.update_columns(prevent_sharing_groups_outside_hierarchy: false)
-        subgroup.namespace_settings.update_columns(prevent_sharing_groups_outside_hierarchy: false)
-
-        expect(subgroup.namespace_settings.reload.prevent_sharing_groups_outside_hierarchy).to eq(true)
-      end
-
-      it 'will not set the database value to false' do
-        settings.update_columns(prevent_sharing_groups_outside_hierarchy: true)
-
-        expect(settings.reload.read_attribute(:prevent_sharing_groups_outside_hierarchy)).to eq(true)
-
+      it 'cannot be disabled' do
         settings.update!(prevent_sharing_groups_outside_hierarchy: false)
 
-        expect(settings.reload.read_attribute(:prevent_sharing_groups_outside_hierarchy)).to eq(true)
+        expect(settings.reload.prevent_sharing_groups_outside_hierarchy).to eq(true)
       end
     end
   end

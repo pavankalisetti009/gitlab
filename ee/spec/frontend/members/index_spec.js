@@ -4,10 +4,9 @@ import { dataAttribute } from 'ee_jest/members/mock_data';
 import { initMembersApp } from '~/members/index';
 import { parseDataAttributes } from '~/members/utils';
 
-jest.mock('ee/members/promotion_requests/store');
-promotionRequestsTabStore.mockImplementation(
-  jest.requireActual('ee/members/promotion_requests/store').default,
-);
+jest.mock('ee/members/promotion_requests/store', () => {
+  return jest.fn().mockReturnValue({});
+});
 
 describe('initMembersApp', () => {
   /** @type {HTMLDivElement} */

@@ -53,8 +53,8 @@ export default {
   mounted() {
     const { recordedAt } = this;
     const { tooltip, lastUpdated } = this.$options.i18n;
-    const text = `${tooltip}${recordedAt ? sprintf(lastUpdated, { recordedAt }) : ''}`;
-    this.$emit('showTooltip', text);
+    const tooltipText = `${tooltip}${recordedAt ? sprintf(lastUpdated, { recordedAt }) : ''}`;
+    this.$emit('showTooltip', { description: tooltipText });
 
     if (!this.overviewCountsAggregationEnabled) {
       const { description, descriptionLink, backgroundAggregationNoData } = this.$options.i18n;
@@ -85,7 +85,7 @@ export default {
 };
 </script>
 <template>
-  <div class="gl-font-size-sm gl-flex gl-flex-row md:gl-flex-col">
+  <div class="gl-font-size-sm gl-flex gl-flex-row">
     <div
       v-if="data.namespace"
       data-testid="usage-overview-namespace"

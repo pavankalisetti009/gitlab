@@ -61,23 +61,17 @@ module Security
 
     scope :by_uuid, ->(uuids) { where(uuid: uuids) }
     scope :by_build_ids, ->(build_ids) {
-                           joins(:scan).allow_cross_joins_across_databases(
-                             url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478408'
-                           ).merge(Security::Scan.by_build_ids(build_ids))
+                           joins(:scan).merge(Security::Scan.by_build_ids(build_ids))
                          }
     scope :by_severity_levels, ->(severity_levels) { where(severity: severity_levels) }
     scope :by_report_types, ->(report_types) {
-                              joins(:scan).allow_cross_joins_across_databases(
-                                url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478408'
-                              ).merge(Scan.by_scan_types(report_types))
+                              joins(:scan).merge(Scan.by_scan_types(report_types))
                             }
     scope :by_scan, ->(scans) { where(scan: scans) }
     scope :by_scanners, ->(scanners) { where(scanner: scanners) }
     scope :by_partition_number, ->(partition_number) { where(partition_number: partition_number) }
     scope :by_project_id_and_pipeline_ids, ->(project_id, pipeline_ids) do
-      joins(:scan).allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478408'
-      ).merge(Security::Scan.succeeded.by_project(project_id).by_pipeline_ids(pipeline_ids))
+      joins(:scan).merge(Security::Scan.succeeded.by_project(project_id).by_pipeline_ids(pipeline_ids))
     end
     scope :by_state, ->(states) do
       states = Array(states).map(&:to_s)
@@ -161,9 +155,7 @@ module Security
 
     class << self
       def count_by_scan_type
-        grouped_by_scan_type.allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478408'
-        ).count
+        grouped_by_scan_type.count
       end
 
       def latest_by_uuid(uuid)

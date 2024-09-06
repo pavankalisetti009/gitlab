@@ -43,8 +43,9 @@ export default {
 
 <template>
   <div>
-    <section class="gl-mb-3 gl-flex gl-justify-between">
+    <section class="gl-flex gl-justify-between">
       <section>
+        <slot name="description"></slot>
         <p v-if="usageValue" class="gl-mb-3 gl-text-size-h-display gl-font-bold">
           <span data-testid="usage-value">{{ usageValue }}</span>
           <span v-if="usageUnit" data-testid="usage-unit" class="gl-text-lg">{{ usageUnit }}</span>
@@ -56,13 +57,12 @@ export default {
             }}</span>
           </span>
         </p>
-        <slot name="description"></slot>
       </section>
       <div class="gl-align-self-top">
         <slot name="actions"></slot>
       </div>
     </section>
-    <gl-progress-bar v-if="shouldShowProgressBar" class="gl-mt-5" :value="percentage" />
+    <gl-progress-bar v-if="shouldShowProgressBar" class="gl-mb-3 gl-h-3" :value="percentage" />
     <slot name="additional-info"></slot>
   </div>
 </template>

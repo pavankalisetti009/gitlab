@@ -66,7 +66,6 @@ export default class MergeRequestStore extends CEMergeRequestStore {
     const { mergeRequest } = project;
 
     this.mergeTrainsCount = mergeRequest.mergeTrainsCount;
-    this.mergeTrainIndex = mergeRequest.mergeTrainIndex;
     this.mergeTrainCar = mergeRequest.mergeTrainCar;
   }
 
@@ -74,7 +73,6 @@ export default class MergeRequestStore extends CEMergeRequestStore {
     super.setGraphqlSubscriptionData(data);
 
     this.mergeTrainsCount = data.mergeTrainsCount;
-    this.mergeTrainIndex = data.mergeTrainIndex;
     this.mergeTrainCar = data.mergeTrainCar;
   }
 

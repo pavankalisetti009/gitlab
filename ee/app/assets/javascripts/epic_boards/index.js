@@ -5,7 +5,6 @@ import { fullEpicBoardId } from 'ee_component/boards/boards_util';
 
 import BoardApp from '~/boards/components/board_app.vue';
 
-import '~/boards/filters/due_date_filters';
 import {
   navigationType,
   isLoggedIn,
@@ -55,7 +54,16 @@ const apolloProvider = new VueApollo({
 });
 
 function mountBoardApp(el) {
-  const { boardId, groupId, fullPath, rootPath } = el.dataset;
+  const {
+    boardId,
+    groupId,
+    fullPath,
+    rootPath,
+    wiReportAbusePath,
+    wiGroupPath,
+    wiCanAdminLabel,
+    wiIssuesListPath,
+  } = el.dataset;
 
   const rawFilterParams = queryToObject(window.location.search, { gatherArrays: true });
 
@@ -117,6 +125,13 @@ function mountBoardApp(el) {
       swimlanesFeatureAvailable: false,
       multipleIssueBoardsAvailable: true,
       scopedIssueBoardFeatureEnabled: true,
+      reportAbusePath: wiReportAbusePath,
+      groupPath: wiGroupPath,
+      hasSubepicsFeature: parseBoolean(el.dataset.subEpicsFeatureAvailable),
+      isGroup: true,
+      canAdminLabel: parseBoolean(wiCanAdminLabel),
+      hasIssuableHealthStatusFeature: parseBoolean(el.dataset.healthStatusFeatureAvailable),
+      issuesListPath: wiIssuesListPath,
     },
     render: (createComponent) => createComponent(BoardApp),
   });

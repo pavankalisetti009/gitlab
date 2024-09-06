@@ -7,6 +7,19 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
 
   let_it_be(:project) { create(:project) }
   let_it_be(:user) { create(:user, security_dashboard_projects: [project]) }
+  let_it_be(:details_file_location) do
+    <<~FILE_LOACTION
+      ... on VulnerabilityDetailFileLocation {
+        description
+        fieldName
+        fileName
+        lineEnd
+        lineStart
+        name
+      }
+    FILE_LOACTION
+  end
+
   let_it_be(:all_field_types_for_query) do
     <<~FIELD_TYPES
       ... on VulnerabilityDetailBoolean {
@@ -32,14 +45,6 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
         before
         description
         fieldName
-        name
-      }
-      ... on VulnerabilityDetailFileLocation {
-        description
-        fieldName
-        fileName
-        lineEnd
-        lineStart
         name
       }
       ... on VulnerabilityDetailInt {
@@ -74,6 +79,7 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
         name
         text
       }
+      #{details_file_location}
     FIELD_TYPES
   end
 
@@ -122,6 +128,21 @@ RSpec.describe 'Query.vulnerabilities.details', feature_category: :vulnerability
             }
           }
           name
+        }
+        ... on VulnerabilityDetailCodeFlows {
+          type: __typename
+          name
+          items {
+            ... {
+              ... on VulnerabilityDetailCodeFlowNode {
+                type: __typename
+                nodeType
+                fileLocation {
+                  #{details_file_location}
+                }
+              }
+            }
+          }
         }
       }
     QUERY

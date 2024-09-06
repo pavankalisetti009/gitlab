@@ -319,6 +319,8 @@ module Gitlab
         case scope
         when :projects, :notes, :commits
           base_options.merge(filters.slice(:include_archived))
+        when :work_items
+          work_item_scope_options
         when :merge_requests
           base_options.merge(merge_request_scope_options)
         when :issues
@@ -342,6 +344,18 @@ module Gitlab
         end
       end
 
+      def work_item_scope_options
+        base_options.merge(
+          {
+            routing_disabled: true,
+            klass: Issue, # For rendering the UI
+            index_name: ::Search::Elastic::References::WorkItem.index,
+            not_work_item_type_ids: [::WorkItems::Type.find_by_name(::WorkItems::Type::TYPE_NAMES[:epic]).id]
+          },
+          filters.slice(:order_by, :sort, :confidential, :state, :labels, :label_name, :include_archived)
+        )
+      end
+
       def scope_results(scope, klass, count_only:)
         options = scope_options(scope).merge(count_only: count_only)
 
@@ -360,14 +374,26 @@ module Gitlab
 
       def issues(page: 1, per_page: DEFAULT_PER_PAGE, count_only: false, preload_method: nil)
         strong_memoize(memoize_key('issues', count_only: count_only)) do
-          options = scope_options(:issues)
-            .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+          if work_item_index_available_for_searching?
+            options = scope_options(:work_items)
+              .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+            search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
+          else
+            options = scope_options(:issues)
+              .merge(count_only: count_only, per_page: per_page, page: page, preload_method: preload_method)
+            search_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
+          end
 
-          issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
-          ::Gitlab::Search::Client.execute_search(query: issue_query, options: options) do |response|
+          ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
             ::Search::Elastic::ResponseMapper.new(response, options)
           end
         end
+      end
+
+      def work_item_index_available_for_searching?
+        ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- Global Feature Flag
+          ::Feature.enabled?(:search_issues_uses_work_items_index, current_user) &&
+          ::Elastic::DataMigrationService.migration_has_finished?(:backfill_work_items)
       end
 
       def milestones(count_only: false)
@@ -462,10 +488,15 @@ module Gitlab
       strong_memoize_attr :blob_aggregations
 
       def issue_aggregations
-        options = base_options.merge(aggregation: true, klass: Issue)
+        if work_item_index_available_for_searching?
+          options = scope_options(:work_items).merge(aggregation: true)
+          search_query = ::Search::Elastic::WorkItemQueryBuilder.build(query: query, options: options)
+        else
+          options = base_options.merge(aggregation: true, klass: Issue)
+          search_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
+        end
 
-        issue_query = ::Search::Elastic::IssueQueryBuilder.build(query: query, options: options)
-        results = ::Gitlab::Search::Client.execute_search(query: issue_query, options: options) do |response|
+        results = ::Gitlab::Search::Client.execute_search(query: search_query, options: options) do |response|
           ::Search::Elastic::ResponseMapper.new(response, options)
         end
         ::Gitlab::Search::AggregationParser.call(results.aggregations)

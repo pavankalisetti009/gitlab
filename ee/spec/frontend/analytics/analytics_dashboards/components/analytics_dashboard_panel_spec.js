@@ -2,6 +2,7 @@ import { GlButton, GlLink, GlSprintf } from '@gitlab/ui';
 import { nextTick } from 'vue';
 import { VARIANT_DANGER, VARIANT_WARNING, VARIANT_INFO } from '~/alert';
 import * as Sentry from '~/sentry/sentry_browser_wrapper';
+import { HTTP_STATUS_BAD_REQUEST } from '~/lib/utils/http_status';
 import LineChart from 'ee/analytics/analytics_dashboards/components/visualizations/line_chart.vue';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import dataSources from 'ee/analytics/analytics_dashboards/data_sources';
@@ -73,7 +74,7 @@ describe('AnalyticsDashboardPanel', () => {
     it('renders the panel base component', () => {
       expect(findPanelsBase().props()).toMatchObject({
         title: mockPanel.title,
-        tooltip: '',
+        tooltip: null,
         loading: true,
         showAlertState: false,
         alertPopoverTitle: '',
@@ -199,7 +200,7 @@ describe('AnalyticsDashboardPanel', () => {
       });
 
       describe('and the visualization emits showTooltip', () => {
-        const tooltip = 'This is a tooltip';
+        const tooltip = { description: 'This is a tooltip' };
 
         beforeEach(() => {
           findVisualization().vm.$emit('showTooltip', tooltip);
@@ -446,7 +447,7 @@ describe('AnalyticsDashboardPanel', () => {
 
     describe('and there is a "Bad Request" data source error', () => {
       const mockBadRequestError = new Error('Bad Request');
-      mockBadRequestError.status = 400;
+      mockBadRequestError.status = HTTP_STATUS_BAD_REQUEST;
       mockBadRequestError.response = {
         message: 'Some specific CubeJS error',
       };

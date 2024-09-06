@@ -1,15 +1,7 @@
 <script>
-import {
-  GlButton,
-  GlForm,
-  GlFormCheckbox,
-  GlFormGroup,
-  GlFormInput,
-  GlLink,
-  GlSprintf,
-} from '@gitlab/ui';
+import { GlButton, GlForm, GlFormCheckbox, GlFormGroup, GlFormInput, GlSprintf } from '@gitlab/ui';
 import validation from '~/vue_shared/directives/validation';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 import {
   activateLabel,
   INVALID_CODE_ERROR,
@@ -41,7 +33,7 @@ export default {
     GlFormInput,
     GlFormCheckbox,
     GlSprintf,
-    GlLink,
+    PromoPageLink,
   },
   i18n: {
     acceptTerms: subscriptionActivationForm.acceptTerms,
@@ -82,7 +74,6 @@ export default {
     return {
       form,
       isLoading: false,
-      termsLink: `${PROMO_URL}/terms/`,
     };
   },
   computed: {
@@ -182,7 +173,9 @@ export default {
         <span :class="checkboxLabelClass">
           <gl-sprintf :message="$options.i18n.acceptTerms">
             <template #link="{ content }">
-              <gl-link :href="termsLink" target="_blank">{{ content }}</gl-link>
+              <promo-page-link path="/terms/" target="_blank">
+                {{ content }}
+              </promo-page-link>
             </template>
           </gl-sprintf>
         </span>

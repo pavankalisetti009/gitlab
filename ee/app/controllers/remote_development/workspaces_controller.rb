@@ -4,7 +4,7 @@ module RemoteDevelopment
   class WorkspacesController < ApplicationController
     before_action :authorize_remote_development!, only: [:index]
 
-    feature_category :remote_development
+    feature_category :workspaces
     urgency :low
 
     def index; end

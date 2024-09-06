@@ -30,9 +30,9 @@ We aim to employ the Chat for all use cases and workflows that can benefit from 
 - Among the latter are tasks where the **AI may not get it right the first time but** where **users can easily course correct** by telling the AI more precisely what they need. For instance, "Explain this code" is a common question that most of the time would result in a satisfying answer, but sometimes the user may have additional questions.
 - **Tasks that benefit from the history of a conversation**, so neither the user nor the AI need to repeat themselves.
 
-The chat aims to be context aware and ultimately have access to all the resources in GitLab that the user has access to. Initially, this context was limited to the content of individual issues and epics, as well as GitLab documentation. Since then additional contexts have been added, such as code selection and code files. Currently, work is underway contributing vulnerability context and pipeline job context, so that users can ask questions about these contexts.
+Chat aims to be context aware and ultimately have access to all the resources in GitLab that the user has access to. Initially, this context was limited to the content of individual issues and epics, as well as GitLab documentation. Since then additional contexts have been added, such as code selection and code files. Currently, work is underway contributing vulnerability context and pipeline job context, so that users can ask questions about these contexts.
 
-To scale the context awareness and hence to scale creation, ideation, and learning use cases across the entire DevSecOps domain, the Duo Chat team welcomes contributions to the chat platform from other GitLab teams and the wider community. They are the experts for the use cases and workflows to accelerate.
+To scale the context awareness and hence to scale creation, ideation, and learning use cases across the entire DevSecOps domain, the Duo Chat team welcomes contributions to the Chat platform from other GitLab teams and the wider community. They are the experts for the use cases and workflows to accelerate.
 
 ### Which use cases are better implemented as stand-alone AI features?
 
@@ -51,7 +51,7 @@ message writing workflow.
 
 Using Chat for commit message writing would probably take longer than writing the message oneself. The user would have to switch to the Chat window, type the request and then copy the result into the commit message field.
 
-That said, it does not mean that Chat can't write commit messages, nor that it would be prevented from doing so. If Chat has the commit context (which may be added at some point for reasons other than commit message writing), the user can certainly ask to do anything with this commit content, including writing a commit message. But users are certainly unlikely to do that with Chat as they would only loose time. Note: the resulting commit messages may be different if created from chat with a prompt written by the user vs. a static prompt behind a purpose-built commit message creation.
+That said, it does not mean that Chat can't write commit messages, nor that it would be prevented from doing so. If Chat has the commit context (which may be added at some point for reasons other than commit message writing), the user can certainly ask to do anything with this commit content, including writing a commit message. But users are certainly unlikely to do that with Chat as they would only loose time. Note: the resulting commit messages may be different if created from Chat with a prompt written by the user vs. a static prompt behind a purpose-built commit message creation.
 
 ## Set up GitLab Duo Chat
 
@@ -81,7 +81,7 @@ you find a solution.
 | There is no Chat button in the GitLab UI.                             | Make sure your user is a part of a group with Premium or Ultimate license and enabled Chat.                                                                                                                                                                                              |
 | Chat replies with "Forbidden by auth provider" error.                 | Backend can't access LLMs. Make sure your [AI Gateway](index.md#required-install-ai-gateway) is set up correctly.                                                                                                                                                                                      |
 | Requests take too long to appear in UI                               | Consider restarting Sidekiq by running `gdk restart rails-background-jobs`. If that doesn't work, try `gdk kill` and then `gdk start`. Alternatively, you can bypass Sidekiq entirely. To do that temporary alter `Llm::CompletionWorker.perform_async` statements with `Llm::CompletionWorker.perform_inline` |
-| There is no chat button in GitLab UI when GDK is running on non-SaaS mode | You do not have cloud connector access token record or seat assigned. To create cloud connector access record, in rails console put following code: `CloudConnector::Access.new(data: { available_services: [{ name: "duo_chat", serviceStartTime: ":date_in_the_future" }] }).save`. |
+| There is no Chat button in GitLab UI when GDK is running on non-SaaS mode | You do not have cloud connector access token record or seat assigned. To create cloud connector access record, in rails console put following code: `CloudConnector::Access.new(data: { available_services: [{ name: "duo_chat", serviceStartTime: ":date_in_the_future" }] }).save`. |
 
 Please, see also the section on [error codes](#interpreting-gitlab-duo-chat-error-codes) where you can read about codes
 that Chat sends to assist troubleshooting.
@@ -174,10 +174,10 @@ please contact Duo Chat team if you want to add a new tool. We're working on lon
 
 1. Create a new class for a tool in `ai_gateway/chat/tools/gitlab.py`. This class should include next properties:
 
-    - `name` of the tool
-    - GitLab `resource` that tool works with
-    - `description` of what the tool does
-    - `example` of question and desired answer
+   - `name` of the tool
+   - GitLab `resource` that tool works with
+   - `description` of what the tool does
+   - `example` of question and desired answer
 
 1. Add tool to `__all__` list of tools in `ai_gateway/chat/tools/gitlab.py`.
 
@@ -254,19 +254,19 @@ It's not available in Production environment.
 1. Create [an API key](https://docs.smith.langchain.com/#create-an-api-key) (be careful where you create API key - they can be created in personal namespace or in GL namespace).
 1. Set the following environment variables in GDK. You can define it in `env.runit` or directly `export` in the terminal.
 
-    ```shell
-    export LANGCHAIN_TRACING_V2=true
-    export LANGCHAIN_API_KEY='<your-api-key>'
-    export LANGCHAIN_PROJECT='<your-project-name>'
-    export LANGCHAIN_ENDPOINT='https://api.smith.langchain.com'
-    export GITLAB_RAILS_RACK_TIMEOUT=180 # Extending puma timeout for using LangSmith with Prompt Library as the evaluation tool.
-    ```
+   ```shell
+   export LANGCHAIN_TRACING_V2=true
+   export LANGCHAIN_API_KEY='<your-api-key>'
+   export LANGCHAIN_PROJECT='<your-project-name>'
+   export LANGCHAIN_ENDPOINT='https://api.smith.langchain.com'
+   export GITLAB_RAILS_RACK_TIMEOUT=180 # Extending puma timeout for using LangSmith with Prompt Library as the evaluation tool.
+   ```
 
-  Project name is the existing project in LangSmith or new one. It's enough to put new name in the environment variable -
-project will be created during request.
+   Project name is the existing project in LangSmith or new one. It's enough to put new name in the environment variable -
+   project will be created during request.
 
 1. Restart GDK.
-1. Ask any question to chat.
+1. Ask any question to Chat.
 1. Observe project in the LangSmith [page](https://smith.langchain.com/) > Projects > \[Project name\]. 'Runs' tab should contain
    your last requests.
 
@@ -404,7 +404,7 @@ in the project [`GitLab-org/ai-powered/ai-framework/qa-evaluation`](https://gitl
 
 In MRs, the end-to-end tests exercise the Duo Chat functionality of self-managed instances by using an instance of the GitLab Linux package
 integrated with the `latest` version of AI Gateway. The instance of AI Gateway is configured to return [mock responses](https://gitlab.com/gitlab-org/modelops/applied-ml/code-suggestions/ai-assist#mocking-ai-model-responses).
-To view the results of these tests, open the `e2e:package-and-test-ee` child pipeline and view the `ai-gateway` job.
+To view the results of these tests, open the `e2e:test-on-omnibus-ee` child pipeline and view the `ai-gateway` job.
 
 The `ai-gateway` job activates a cloud license and then assigns a Duo Pro seat to a test user, before the tests are run.
 
@@ -535,7 +535,7 @@ and, as an Admin, easily create licensed groups for testing.
 Duo Chat end-to-end tests run continuously against [Staging](https://staging.gitlab.com/users/sign_in) and [Production](https://gitlab.com/) GitLab environments.
 
 These tests run in scheduled pipelines and ensure the end-to-end user experiences are functioning correctly.
-Results can be viewed in the `#e2e-run-staging` and `#qa-production` Slack channels. The pipelines can be found below, access can be requested in `#test-platform`:
+Results can be viewed in the `#e2e-run-staging` and `#e2e-run-production` Slack channels. The pipelines can be found below, access can be requested in `#test-platform`:
 
 - [Staging-canary pipelines](https://ops.gitlab.net/gitlab-org/quality/staging-canary/-/pipelines)
 - [Staging pipelines](https://ops.gitlab.net/gitlab-org/quality/staging/-/pipelines)

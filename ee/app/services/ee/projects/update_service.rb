@@ -7,6 +7,7 @@ module EE
 
       DEFAULT_BRANCH_CHANGE_AUDIT_TYPE = 'project_default_branch_updated'
       DEFAULT_BRANCH_CHANGE_AUDIT_MESSAGE = "Default branch changed from %s to %s"
+      PROJECT_TOPIC_CHANGE_AUDIT_TYPE = 'project_topics_updated'
 
       PULL_MIRROR_ATTRIBUTES = %i[
         mirror
@@ -139,6 +140,30 @@ module EE
         ::Gitlab::Audit::Auditor.audit(audit_context)
 
         ::Security::ScanResultPolicies::SyncProjectWorker.perform_async(project.id)
+      end
+
+      override :audit_topic_change
+      def audit_topic_change(from:)
+        # reload project topics without affecting shared project variable, as that leads to unwanted side effects
+        # when publishing events
+        to = ::Project.find(project.id).topic_list
+        topics_changed = from != to
+
+        return unless topics_changed
+
+        ::Gitlab::Audit::Auditor.audit(
+          name: PROJECT_TOPIC_CHANGE_AUDIT_TYPE,
+          author: current_user,
+          scope: project,
+          target: project,
+          message: "topics changed to: '#{to.join(',')}'",
+          target_details: project.full_path,
+          additional_details: {
+            event_name: PROJECT_TOPIC_CHANGE_AUDIT_TYPE,
+            from: from,
+            to: to
+          }
+        )
       end
 
       def default_branch_update_blocked_by_security_policy?

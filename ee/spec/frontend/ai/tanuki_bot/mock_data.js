@@ -1,5 +1,5 @@
 import { MESSAGE_TYPES, SOURCE_TYPES } from 'ee/ai/tanuki_bot/constants';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export const MOCK_SLASH_COMMANDS = [
   {

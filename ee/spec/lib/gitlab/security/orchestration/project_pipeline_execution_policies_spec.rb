@@ -52,8 +52,12 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
     subject(:configs) { described_class.new(project).configs }
 
     it 'includes configs of policies ordered by hierarchy' do
-      # We use `eq` because we want to verify the order
-      expect(configs).to eq(build_execution_policy_configs([policy, namespace_policy]))
+      # We use `match` instead of `match_array` because we want to verify the order
+      expect(configs).to match([
+        have_attributes(content: policy[:content].to_yaml, policy_index: 0, policy_project_id: policies_repository.id),
+        have_attributes(content: namespace_policy[:content].to_yaml, policy_index: 0,
+          policy_project_id: namespace_policies_repository.id)
+      ])
     end
 
     describe 'limits' do
@@ -64,7 +68,18 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
 
       it 'includes configs for up to 5 policies, giving precedence to groups higher in the hierarchy' do
         expect(configs.size).to eq(5)
-        expect(configs).to eq(build_execution_policy_configs([*namespace_policies, *project_policies.first(2)].reverse))
+        expect(configs).to match([
+          have_attributes(content: project_policies[1][:content].to_yaml, policy_index: 1,
+            policy_project_id: policies_repository.id),
+          have_attributes(content: project_policies[0][:content].to_yaml, policy_index: 0,
+            policy_project_id: policies_repository.id),
+          have_attributes(content: namespace_policies[2][:content].to_yaml, policy_index: 2,
+            policy_project_id: namespace_policies_repository.id),
+          have_attributes(content: namespace_policies[1][:content].to_yaml, policy_index: 1,
+            policy_project_id: namespace_policies_repository.id),
+          have_attributes(content: namespace_policies[0][:content].to_yaml, policy_index: 0,
+            policy_project_id: namespace_policies_repository.id)
+        ])
       end
     end
 
@@ -74,7 +89,9 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
       end
 
       it 'excludes the namespace policy from the configs' do
-        expect(configs).to eq(build_execution_policy_configs([policy]))
+        expect(configs).to match([
+          have_attributes(content: policy[:content].to_yaml, policy_index: 0, policy_project_id: policies_repository.id)
+        ])
       end
     end
 
@@ -87,7 +104,9 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
       end
 
       it 'only includes project policy config' do
-        expect(configs).to eq(build_execution_policy_configs([policy]))
+        expect(configs).to match([
+          have_attributes(content: policy[:content].to_yaml, policy_index: 0, policy_project_id: policies_repository.id)
+        ])
       end
     end
 
@@ -97,17 +116,6 @@ RSpec.describe Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies
       it 'returns empty array' do
         expect(configs).to be_empty
       end
-    end
-  end
-
-  private
-
-  def build_execution_policy_configs(policies)
-    policies.map do |policy|
-      ::Gitlab::Security::Orchestration::ProjectPipelineExecutionPolicies::ExecutionPolicyConfig.new(
-        policy[:content].to_yaml,
-        :inject_ci
-      )
     end
   end
 end

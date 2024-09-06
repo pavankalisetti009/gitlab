@@ -25,7 +25,8 @@ module Search
       enum state: {
         pending: 0,
         initializing: 1,
-        ready: 10
+        ready: 10,
+        failed: 255
       }
 
       scope :non_ready, -> { where.not(state: :ready) }
@@ -39,6 +40,7 @@ module Search
         find_or_initialize_by(project_identifier: project_id, project: project, zoekt_index: zoekt_index).tap do |item|
           item.save! if item.new_record?
           break if item.tasks.pending.exists?(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type)
+          break if item.failed? && task_type != :delete_repo
 
           item.tasks.create!(zoekt_node_id: zoekt_index.zoekt_node_id, task_type: task_type, perform_at: perform_at)
         end

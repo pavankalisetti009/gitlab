@@ -21,15 +21,20 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
   describe 'default values' do
     subject(:setting) { described_class.new }
 
+    it { expect(setting.receptive_cluster_agents_enabled).to eq(false) }
     it { expect(setting.security_approval_policies_limit).to eq(5) }
     it { expect(setting.use_clickhouse_for_analytics).to eq(false) }
     it { expect(setting.zoekt_auto_index_root_namespace).to eq(false) }
+    it { expect(setting.zoekt_cpu_to_tasks_ratio).to eq(1.0) }
     it { expect(setting.zoekt_indexing_enabled).to eq(false) }
     it { expect(setting.zoekt_indexing_paused).to eq(false) }
     it { expect(setting.zoekt_search_enabled).to eq(false) }
+    it { expect(setting.scan_execution_policies_action_limit).to be(10) }
   end
 
   describe 'validations' do
+    it { expect(described_class).to validate_jsonb_schema(['application_setting_cluster_agents']) }
+
     describe 'mirror', feature_category: :source_code_management do
       it { is_expected.to validate_numericality_of(:mirror_max_delay).only_integer }
       it { is_expected.not_to allow_value(nil).for(:mirror_max_delay) }
@@ -102,6 +107,8 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
                          .only_integer
                          .is_greater_than_or_equal_to(0)
       end
+
+      it { expect(described_class).to validate_jsonb_schema(['application_setting_security_policies']) }
     end
 
     describe 'future_subscriptions', feature_category: :subscription_management do
@@ -196,6 +203,14 @@ RSpec.describe ApplicationSetting, feature_category: :shared, type: :model do
         it 'returns the expected response' do
           expect(setting.duo_features_enabled).to be duo_features_enabled_expectation
           expect(setting.lock_duo_features_enabled).to be lock_duo_features_enabled_expectation
+        end
+      end
+
+      context 'when value is "never_on"' do
+        it 'disables instance level AI and beta features' do
+          setting.duo_availability = "never_on"
+
+          expect(setting.instance_level_ai_beta_features_enabled).to be false
         end
       end
     end

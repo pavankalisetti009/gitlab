@@ -242,6 +242,7 @@ module Gitlab
       redirect
       question
       SAMLResponse
+      selectedText
     ]
 
     # This config option can be removed after Rails 7.1 by https://gitlab.com/gitlab-org/gitlab/-/issues/416270
@@ -289,7 +290,6 @@ module Gitlab
     config.assets.precompile << "mailers/notify.css"
     config.assets.precompile << "mailers/notify_enhanced.css"
     config.assets.precompile << "page_bundles/_mixins_and_variables_and_functions.css"
-    config.assets.precompile << "page_bundles/admin/application_settings_metrics_and_profiling.css"
     config.assets.precompile << "page_bundles/admin/elasticsearch_form.css"
     config.assets.precompile << "page_bundles/admin/geo_sites.css"
     config.assets.precompile << "page_bundles/admin/geo_replicable.css"
@@ -328,7 +328,6 @@ module Gitlab
     config.assets.precompile << "page_bundles/issues_list.css"
     config.assets.precompile << "page_bundles/issues_show.css"
     config.assets.precompile << "page_bundles/jira_connect.css"
-    config.assets.precompile << "page_bundles/learn_gitlab.css"
     config.assets.precompile << "page_bundles/log_viewer.css"
     config.assets.precompile << "page_bundles/login.css"
     config.assets.precompile << "page_bundles/members.css"
@@ -340,6 +339,7 @@ module Gitlab
     config.assets.precompile << "page_bundles/milestone.css"
     config.assets.precompile << "page_bundles/ml_experiment_tracking.css"
     config.assets.precompile << "page_bundles/new_namespace.css"
+    config.assets.precompile << "page_bundles/notes_shared.css"
     config.assets.precompile << "page_bundles/notifications.css"
     config.assets.precompile << "page_bundles/oncall_schedules.css"
     config.assets.precompile << "page_bundles/operations.css"
@@ -452,7 +452,7 @@ module Gitlab
 
     # Allow access to GitLab API from other domains
     config.middleware.insert_before Warden::Manager, Rack::Cors do
-      headers_to_expose = %w[Link X-Total X-Total-Pages X-Per-Page X-Page X-Next-Page X-Prev-Page X-Gitlab-Blob-Id X-Gitlab-Commit-Id X-Gitlab-Content-Sha256 X-Gitlab-Encoding X-Gitlab-File-Name X-Gitlab-File-Path X-Gitlab-Last-Commit-Id X-Gitlab-Ref X-Gitlab-Size X-Request-Id]
+      headers_to_expose = %w[Link X-Total X-Total-Pages X-Per-Page X-Page X-Next-Page X-Prev-Page X-Gitlab-Blob-Id X-Gitlab-Commit-Id X-Gitlab-Content-Sha256 X-Gitlab-Encoding X-Gitlab-File-Name X-Gitlab-File-Path X-Gitlab-Last-Commit-Id X-Gitlab-Ref X-Gitlab-Size X-Request-Id ETag]
 
       allow do
         origins Gitlab.config.gitlab.url

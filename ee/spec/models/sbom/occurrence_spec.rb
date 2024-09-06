@@ -298,6 +298,15 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
     end
   end
 
+  describe '.filter_by_component_ids' do
+    let_it_be(:occurrence_1) { create(:sbom_occurrence) }
+    let_it_be(:occurrence_2) { create(:sbom_occurrence) }
+
+    it 'returns records filtered by component IDs' do
+      expect(described_class.filter_by_component_ids([occurrence_1.component_id])).to eq([occurrence_1])
+    end
+  end
+
   describe '.filter_by_source_types' do
     let_it_be(:container_scanning_occurrence) { create(:sbom_occurrence, :os_occurrence) }
     let_it_be(:dependency_scanning_occurrence) { create(:sbom_occurrence) }
@@ -755,23 +764,6 @@ RSpec.describe Sbom::Occurrence, type: :model, feature_category: :dependency_man
             }
           )
         end
-      end
-    end
-  end
-
-  describe '.by_pipeline_ids' do
-    let_it_be(:pipeline) { create(:ci_pipeline) }
-    let_it_be(:occurrences) { create_list(:sbom_occurrence, 2, pipeline: pipeline) }
-
-    it 'returns related occurrences' do
-      expect(described_class.by_pipeline_ids(pipeline.id)).to eq(occurrences)
-    end
-
-    context 'with unrelated occurrence' do
-      let_it_be(:unrelated_occurrence) { create(:sbom_occurrence) }
-
-      it 'does not return unrelated occurrences' do
-        expect(described_class.by_pipeline_ids(pipeline.id)).not_to include(unrelated_occurrence)
       end
     end
   end

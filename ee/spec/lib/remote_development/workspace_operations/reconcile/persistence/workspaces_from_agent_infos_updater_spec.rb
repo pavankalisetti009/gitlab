@@ -2,11 +2,11 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesFromAgentInfosUpdater, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesFromAgentInfosUpdater, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let_it_be(:user) { create(:user) }
-  let_it_be(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+  let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 
   let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
   let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STARTING }

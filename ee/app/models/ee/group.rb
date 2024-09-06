@@ -70,6 +70,8 @@ module EE
       has_many :project_templates, through: :projects, foreign_key: 'custom_project_templates_group_id'
 
       has_many :managed_users, class_name: 'User', foreign_key: 'managing_group_id', inverse_of: :managing_group
+      has_many :enterprise_user_details, class_name: 'UserDetail', foreign_key: 'enterprise_group_id', inverse_of: :enterprise_group
+      has_many :enterprise_users, through: :enterprise_user_details, source: :user
       has_many :provisioned_user_details, class_name: 'UserDetail', foreign_key: 'provisioned_by_group_id', inverse_of: :provisioned_by_group
       has_many :provisioned_users, through: :provisioned_user_details, source: :user
       has_one :group_merge_request_approval_setting, inverse_of: :group
@@ -88,6 +90,8 @@ module EE
       has_many :approval_rules, class_name: 'ApprovalRules::ApprovalGroupRule', inverse_of: :group
 
       has_many :saved_replies, class_name: 'Groups::SavedReply'
+
+      has_many :security_exclusions, class_name: 'Security::GroupSecurityExclusion'
 
       delegate :deleting_user, :marked_for_deletion_on, to: :deletion_schedule, allow_nil: true
 
@@ -141,6 +145,12 @@ module EE
         joins(:shared_group_links)
           .where(group_group_links: { shared_group_id: group.self_and_descendants })
           .merge(guests_scope)
+      end
+
+      scope :invited_groups_with_guest_member_role, ->(group) do
+        joins(:shared_group_links)
+          .where(group_group_links: { shared_group_id: group.self_and_descendants })
+          .merge(::GroupGroupLink.guests.with_custom_role)
       end
 
       scope :invited_groups_in_projects_for_hierarchy, ->(group, exclude_guests = false) do
@@ -921,7 +931,28 @@ module EE
 
     def billed_shared_group_members(exclude_guests: false)
       groups = self.class.invited_groups_in_groups_for_hierarchy(self, exclude_guests)
-      invited_or_shared_group_members(groups, exclude_guests: exclude_guests).not_banned_in(root_ancestor)
+
+      # gets all billable members from group-invites with access_level > GUEST
+      members = invited_or_shared_group_members(groups, exclude_guests: exclude_guests)
+
+      # gets all billable members from group-invites with access_level = GUEST + custom_role
+      members_with_custom_role = billed_shared_guest_group_members_with_custom_role(exclude_guests: exclude_guests)
+
+      # merge both and return
+      # see acceptance criteria - https://gitlab.com/gitlab-org/gitlab/-/issues/443369#note_2045035173
+      ::GroupMember.from_union([members, members_with_custom_role]).not_banned_in(root_ancestor)
+    end
+
+    def billed_shared_guest_group_members_with_custom_role(exclude_guests: false)
+      return ::GroupMember.none unless exclude_guests
+      return ::GroupMember.none unless ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, self)
+
+      # invited groups that have access_level = GUEST + custom_role
+      groups = self.class.invited_groups_with_guest_member_role(self)
+
+      # get all members from those invited groups that have
+      # access_level = GUEST + custom_role (that has occupies_seat = TRUE)
+      members_with_elevating_guest_member_role(groups)
     end
 
     # Members belonging to Groups invited to collaborate with Projects
@@ -1107,11 +1138,23 @@ module EE
     end
 
     def invited_or_shared_group_members(groups, exclude_guests: false)
-      guests_scope = exclude_guests ? ::GroupMember.non_guests : ::GroupMember.all
+      non_guests_scope = if ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, self)
+                           ::GroupMember.with_elevated_guests
+                         else
+                           ::GroupMember.non_guests
+                         end
+
+      guests_scope = exclude_guests ? non_guests_scope : ::GroupMember.all
 
       ::GroupMember.active_without_invites_and_requests
-                   .with_source_id(groups.self_and_ancestors)
-                   .merge(guests_scope)
+        .with_source_id(groups.self_and_ancestors)
+        .merge(guests_scope)
+    end
+
+    def members_with_elevating_guest_member_role(groups)
+      ::GroupMember.active_without_invites_and_requests
+        .with_source_id(groups.self_and_ancestors)
+        .merge(::GroupMember.elevated_guests)
     end
 
     def users_without_bots(members, merge_condition: ::User.all)

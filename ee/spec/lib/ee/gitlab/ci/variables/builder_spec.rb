@@ -161,7 +161,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       it 'calls policies builder' do
         expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
           expect(policies_builder).to receive(:variables)
-                                        .with(job.name, job.user)
+                                        .with(job.name)
                                         .and_return(policies_variables)
         end
         expect(scoped_variables.to_hash).to include('SECRET_DETECTION_HISTORIC_SCAN' => 'true', 'OTHER' => 'some value')
@@ -273,7 +273,7 @@ RSpec.describe Gitlab::Ci::Variables::Builder, feature_category: :secrets_manage
       it 'calls policies builder' do
         expect_next_instance_of(EE::Gitlab::Ci::Variables::Builder::ScanExecutionPolicies) do |policies_builder|
           expect(policies_builder).to receive(:variables)
-                                        .with(job.name, job.user)
+                                        .with(job.name)
                                         .and_return(policies_variables)
         end
         expect(scoped_variables_for_pipeline_seed.to_hash).to include(

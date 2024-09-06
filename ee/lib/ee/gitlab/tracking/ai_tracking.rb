@@ -6,7 +6,8 @@ module EE
       module AiTracking
         extend ::Gitlab::Utils::Override
 
-        POSSIBLE_MODELS = [Ai::CodeSuggestionsUsage, Ai::DuoChatEvent].freeze
+        POSSIBLE_MODELS = [Ai::CodeSuggestionEvent, Ai::DuoChatEvent].freeze
+        REQUIRED_ATTRIBUTES = %w[user timestamp event].freeze
 
         override :track_event
         def track_event(event_name, context_hash = {})
@@ -16,11 +17,9 @@ module EE
 
           return unless matched_model
 
-          attributes = context_hash.with_indifferent_access
-                                   .merge(event: event_name)
-                                   .slice(*matched_model.attribute_names)
+          event = matched_model.new(context_hash.with_indifferent_access.merge(event: event_name))
 
-          matched_model.new(attributes).store
+          event.store_to_clickhouse
         end
       end
     end

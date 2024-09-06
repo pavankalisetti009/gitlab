@@ -4,8 +4,7 @@ module EE
   module Search
     module ProjectService
       extend ::Gitlab::Utils::Override
-      include ::Search::Elasticsearchable
-      include ::Search::ZoektSearchable
+      include ::Search::AdvancedAndZoektSearchable
 
       SCOPES_THAT_SUPPORT_BRANCHES = %w[wiki_blobs commits blobs].freeze
 
@@ -14,11 +13,12 @@ module EE
         super.merge(include_archived: true, include_forked: true)
       end
 
-      override :execute
-      def execute
-        return zoekt_search_results if use_zoekt? && use_default_branch?
-        return super unless use_elasticsearch? && use_default_branch?
+      override :search_type
+      def search_type
+        use_default_branch? ? super : 'basic'
+      end
 
+      def elasticsearch_results
         search = params[:search]
         order_by = params[:order_by]
         sort = params[:sort]

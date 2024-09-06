@@ -1,21 +1,18 @@
 # frozen_string_literal: true
 
-class ClickHouseModel
-  include ActiveModel::Model
-  include ActiveModel::Attributes
+module ClickHouseModel
+  extend ActiveSupport::Concern
 
-  class << self
-    attr_accessor :table_name
-
-    def related_event?(event_name)
-      const_defined?(:EVENTS) && event_name.in?(const_get(:EVENTS, false))
+  included do
+    class << self
+      attr_accessor :clickhouse_table_name
     end
   end
 
-  def store
+  def store_to_clickhouse
     return false unless valid?
 
-    ::ClickHouse::WriteBuffer.add(self.class.table_name, to_clickhouse_csv_row)
+    ::ClickHouse::WriteBuffer.add(self.class.clickhouse_table_name, to_clickhouse_csv_row)
   end
 
   def to_clickhouse_csv_row

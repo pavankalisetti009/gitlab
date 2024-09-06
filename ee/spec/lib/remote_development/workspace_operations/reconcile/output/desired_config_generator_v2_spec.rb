@@ -2,13 +2,13 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2, :freeze_time, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGeneratorV2, :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   describe '#generate_desired_config' do
     let(:logger) { instance_double(Logger) }
     let(:user) { create(:user) }
-    let(:agent) { create(:ee_cluster_agent, :with_remote_development_agent_config) }
+    let(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
     let(:desired_state) { RemoteDevelopment::WorkspaceOperations::States::RUNNING }
     let(:actual_state) { RemoteDevelopment::WorkspaceOperations::States::STOPPED }
     let(:started) { true }
@@ -16,7 +16,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     let(:deployment_resource_version_from_agent) { workspace.deployment_resource_version }
     let(:network_policy_enabled) { true }
     let(:gitlab_workspaces_proxy_namespace) { 'gitlab-workspaces' }
-    let(:egress_ip_rules) { agent.remote_development_agent_config.network_policy_egress }
+    let(:egress_ip_rules) { agent.workspaces_agent_config.network_policy_egress }
 
     let(:workspace) do
       create(
@@ -46,7 +46,7 @@ RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::Desire
     end
 
     before do
-      allow(agent.remote_development_agent_config)
+      allow(agent.workspaces_agent_config)
         .to receive(:network_policy_enabled).and_return(network_policy_enabled)
     end
 

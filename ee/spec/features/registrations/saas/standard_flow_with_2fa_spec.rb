@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'SaaS registration from an invite', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'SaaS registration from an invite', :with_current_organization, :js, :saas_registration, feature_category: :onboarding do
   context 'when user has not completed welcome step before being added to group', :sidekiq_inline do
     it 'registers the user, completes 2fa and sends them to the profile account page' do
       group = create(:group, name: 'Test Group', require_two_factor_authentication: true)

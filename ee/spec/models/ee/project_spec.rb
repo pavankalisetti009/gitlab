@@ -56,9 +56,13 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     it { is_expected.to have_many(:merge_train_cars).class_name('MergeTrains::Car') }
     it { is_expected.to have_many(:xray_reports).class_name('Projects::XrayReport') }
     it { is_expected.to have_many(:observability_metrics).class_name('Observability::MetricsIssuesConnection') }
+    it { is_expected.to have_many(:observability_traces).class_name('Observability::TracesIssuesConnection') }
     it { is_expected.to have_many(:security_policy_management_project_linked_configurations).class_name('Security::OrchestrationPolicyConfiguration') }
     it { is_expected.to have_many(:security_policy_project_linked_projects).through(:security_policy_management_project_linked_configurations) }
     it { is_expected.to have_many(:security_policy_project_linked_namespaces).through(:security_policy_management_project_linked_configurations) }
+    it { is_expected.to have_many(:security_policy_project_linked_groups).through(:security_policy_management_project_linked_configurations) }
+
+    it { is_expected.to have_many(:observability_logs).class_name('Observability::LogsIssuesConnection') }
 
     it { is_expected.to have_many(:security_policy_project_links) }
     it { is_expected.to have_many(:security_policies).through(:security_policy_project_links) }
@@ -92,6 +96,8 @@ RSpec.describe Project, feature_category: :groups_and_projects do
 
     it { is_expected.to have_many(:software_licenses) }
     it { is_expected.to have_many(:custom_software_licenses) }
+
+    it { is_expected.to have_many(:security_exclusions).class_name('Security::ProjectSecurityExclusion') }
 
     include_examples 'ci_cd_settings delegation' do
       let(:attributes_with_prefix) do
@@ -1817,16 +1823,14 @@ RSpec.describe Project, feature_category: :groups_and_projects do
     end
   end
 
-  describe '#any_online_runners?' do
+  describe '#any_online_runners?', :freeze_time do
     let!(:shared_runner) { create(:ci_runner, :instance, :online) }
 
     it { expect(project.any_online_runners?).to be_truthy }
 
     context 'with used compute minutes' do
       let(:namespace) { create(:namespace, :with_used_build_minutes_limit) }
-      let(:project) do
-        create(:project, namespace: namespace, shared_runners_enabled: true)
-      end
+      let(:project) { create(:project, namespace: namespace, shared_runners_enabled: true) }
 
       it 'does not have any online runners' do
         expect(project.any_online_runners?).to be_falsey

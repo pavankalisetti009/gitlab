@@ -45,7 +45,7 @@ export const POPOVER = {
     close: s__('Modal|Close'),
     compareAllButtonTitle: s__('Trials|Compare all plans'),
     popoverContent: s__(`Trials|Your trial ends on
-      %{boldStart}%{trialEndDate}%{boldEnd}. We hope you’re enjoying the
+      %{strongStart}%{trialEndDate}%{strongEnd}. We hope you’re enjoying the
       features of GitLab %{planName}. To keep those features after your trial
       ends, you’ll need to buy a subscription. (You can also choose GitLab
       Premium if it meets your needs.)`),

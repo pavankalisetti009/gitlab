@@ -16,28 +16,26 @@ class SyncSeatLinkRequestWorker
   idempotent!
   worker_has_external_dependencies!
 
-  URI_PATH = '/api/v1/seat_links'
-
   RequestError = Class.new(StandardError)
 
   def perform(timestamp, license_key, max_historical_user_count, billable_users_count, refresh_token = false)
-    response = Gitlab::HTTP.post(
-      URI_PATH,
-      base_uri: ::Gitlab::Routing.url_helpers.subscription_portal_url,
-      headers: request_headers,
-      body: request_body(timestamp, license_key, max_historical_user_count, billable_users_count)
-    )
+    seat_link_data = Gitlab::SeatLinkData.new(
+      timestamp: DateTime.parse(timestamp),
+      key: license_key,
+      max_users: max_historical_user_count,
+      billable_users_count: billable_users_count,
+      refresh_token: refresh_token)
+    response = Gitlab::SubscriptionPortal::Client.create_seat_link(seat_link_data)
 
-    if response.success?
-      reset_license!(response['license']) if response['license']
+    raise RequestError, response['data']['errors'] unless response['success']
 
-      save_future_subscriptions(response)
-      update_add_on_purchases
-      update_reconciliation!(response)
-      ::CloudConnector::SyncServiceTokenWorker.perform_async if refresh_token
-    else
-      raise RequestError, request_error_message(response)
-    end
+    response_data = response['data']
+    reset_license!(response_data['license']) if response_data['license']
+
+    save_future_subscriptions(response_data)
+    update_add_on_purchases
+    update_reconciliation!(response_data)
+    ::CloudConnector::SyncServiceTokenWorker.perform_async if seat_link_data.refresh_token
   end
 
   private
@@ -52,23 +50,6 @@ class SyncSeatLinkRequestWorker
     end
   rescue StandardError => e
     Gitlab::ErrorTracking.track_and_raise_for_dev_exception(e)
-  end
-
-  def request_body(timestamp, license_key, max_historical_user_count, billable_users_count)
-    Gitlab::SeatLinkData.new(
-      timestamp: Time.zone.parse(timestamp),
-      key: license_key,
-      max_users: max_historical_user_count,
-      billable_users_count: billable_users_count
-    ).to_json
-  end
-
-  def request_headers
-    { 'Content-Type' => 'application/json' }
-  end
-
-  def request_error_message(response)
-    "Seat Link request failed! Code:#{response.code} Body:#{response.body}"
   end
 
   def update_add_on_purchases

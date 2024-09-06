@@ -17,18 +17,6 @@ describe('DoraPerformersScore Visualization', () => {
 
   const namespace = 'some/fake/path';
 
-  const mockNamespaceProvider = (args = {}) => ({
-    render() {
-      return this.$scopedSlots.default({
-        group: mockGroup,
-        project: null,
-        isProject: false,
-        isNamespaceLoading: false,
-        ...args,
-      });
-    },
-  });
-
   const createWrapper = ({ props = {}, group = null, project = null, stubs } = {}) => {
     mockGroupOrProjectRequestHandler = jest.fn().mockReturnValueOnce({ data: { group, project } });
 
@@ -55,7 +43,6 @@ describe('DoraPerformersScore Visualization', () => {
     it('displays a loading state', () => {
       createWrapper({
         group: mockGroup,
-        stubs: { GroupOrProjectProvider: mockNamespaceProvider({ isNamespaceLoading: true }) },
       });
 
       expect(findLoadingIcon().exists()).toBe(true);

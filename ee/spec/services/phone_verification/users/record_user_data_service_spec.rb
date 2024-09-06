@@ -35,10 +35,25 @@ RSpec.describe PhoneVerification::Users::RecordUserDataService, feature_category
       expect(phone_verification_record).not_to be_persisted
     end
 
-    it 'executes the abuse trust score worker' do
-      expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, low_risk_score.to_f)
+    context 'when the rename_abuse_workers feature is enabled' do
+      it 'executes the abuse trust score worker' do
+        expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign,
+          low_risk_score.to_f)
 
-      service.execute
+        service.execute
+      end
+
+      context 'when the rename_abuse_workers feature is not enabled' do
+        before do
+          stub_feature_flags(rename_abuse_workers: false)
+        end
+
+        it 'executes the abuse trust score worker' do
+          expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, low_risk_score.to_f)
+
+          service.execute
+        end
+      end
     end
 
     context 'when the risk score is 0' do
@@ -48,10 +63,24 @@ RSpec.describe PhoneVerification::Users::RecordUserDataService, feature_category
         expect { service.execute }.to change { phone_verification_record.risk_score }.from(0).to(1)
       end
 
-      it 'executes the abuse trust score worker with a risk score of 1.0' do
-        expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, 1.0)
+      context 'when the rename_abuse_workers feature is enabled' do
+        it 'executes the abuse trust score worker with a risk score of 1.0' do
+          expect(AntiAbuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, 1.0)
 
-        service.execute
+          service.execute
+        end
+      end
+
+      context 'when the rename_abuse_workers feature is not enabled' do
+        before do
+          stub_feature_flags(rename_abuse_workers: false)
+        end
+
+        it 'executes the abuse trust score worker with a risk score of 1.0' do
+          expect(Abuse::TrustScoreWorker).to receive(:perform_async).once.with(user.id, :telesign, 1.0)
+
+          service.execute
+        end
       end
     end
 

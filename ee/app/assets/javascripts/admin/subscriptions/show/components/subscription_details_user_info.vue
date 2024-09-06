@@ -1,16 +1,16 @@
 <script>
-import { GlCard, GlLink, GlSprintf } from '@gitlab/ui';
+import { GlCard, GlSprintf } from '@gitlab/ui';
 import { n__, __ } from '~/locale';
 import HelpPageLink from '~/vue_shared/components/help_page_link/help_page_link.vue';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import PromoPageLink from '~/vue_shared/components/promo_page_link/promo_page_link.vue';
 
 export default {
   name: 'SubscriptionDetailsUserInfo',
   components: {
     GlCard,
-    GlLink,
     GlSprintf,
     HelpPageLink,
+    PromoPageLink,
   },
   props: {
     subscription: {
@@ -57,7 +57,7 @@ export default {
       return __('Users in subscription');
     },
   },
-  trueUpURL: `${PROMO_URL}/pricing/licensing-faq/#what-does-users-over-license-mean`,
+  trueUpPath: '/pricing/licensing-faq/#what-does-users-over-license-mean',
 };
 </script>
 
@@ -127,7 +127,9 @@ export default {
       <div>
         <gl-sprintf :message="usersOverSubscriptionText">
           <template #trueUpLink="{ content }">
-            <gl-link :href="$options.trueUpURL">{{ content }}</gl-link>
+            <promo-page-link :path="$options.trueUpPath">
+              {{ content }}
+            </promo-page-link>
           </template>
         </gl-sprintf>
       </div>

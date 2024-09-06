@@ -122,7 +122,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_ci_component_publishing_policies_allowed: 5,
           max_ci_component_publishing_policies_reached: 'false',
           max_vulnerability_management_policies_allowed: 5,
-          max_active_vulnerability_management_policies_reached: 'false'
+          max_active_vulnerability_management_policies_reached: 'false',
+          max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit
         }
       end
 
@@ -212,7 +213,8 @@ RSpec.describe EE::SecurityOrchestrationHelper, feature_category: :security_poli
           max_ci_component_publishing_policies_allowed: 5,
           max_ci_component_publishing_policies_reached: 'false',
           max_vulnerability_management_policies_allowed: 5,
-          max_active_vulnerability_management_policies_reached: 'false'
+          max_active_vulnerability_management_policies_reached: 'false',
+          max_scan_execution_policy_actions: Gitlab::CurrentSettings.scan_execution_policies_action_limit
         }
       end
 

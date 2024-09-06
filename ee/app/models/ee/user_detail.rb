@@ -6,7 +6,7 @@ module EE
 
     prepended do
       belongs_to :provisioned_by_group, class_name: 'Group', optional: true, inverse_of: :provisioned_user_details
-      belongs_to :enterprise_group, class_name: 'Group', optional: true
+      belongs_to :enterprise_group, class_name: 'Group', optional: true, inverse_of: :enterprise_user_details
 
       scope :with_enterprise_group, -> { where.not(enterprise_group_id: nil) }
 

@@ -9,6 +9,9 @@ import {
   policyScopeProjectLength,
   policyScopeComplianceFrameworks,
   policyScopeProjects,
+  policyScopeGroups,
+  policyScopeHasGroups,
+  policyExcludingProjects,
   isProject,
   isGroup,
   isScanningReport,
@@ -130,6 +133,21 @@ describe(policyScopeHasComplianceFrameworks, () => {
   });
 });
 
+describe(policyScopeHasGroups, () => {
+  it.each`
+    input                                                     | output
+    ${undefined}                                              | ${false}
+    ${{}}                                                     | ${false}
+    ${null}                                                   | ${false}
+    ${{ includingGroups: { nodes: [] } }}                     | ${false}
+    ${{ includingGroups: { nodes: [{}] } }}                   | ${true}
+    ${{ includingGroups: { nodes: [undefined] } }}            | ${false}
+    ${{ includingGroups: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${true}
+  `('returns `$output` when passed `$input`', ({ input, output }) => {
+    expect(policyScopeHasGroups(input)).toBe(output);
+  });
+});
+
 describe(policyScopeProjectLength, () => {
   it.each`
     input                                                       | output
@@ -170,6 +188,33 @@ describe(policyScopeProjects, () => {
     ${{ includingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${{ pageInfo: {}, projects: [{ id: 1 }, { id: 2 }] }}
   `('returns `$output` when passed `$input`', ({ input, output }) => {
     expect(policyScopeProjects(input)).toEqual(output);
+  });
+});
+
+describe(policyScopeGroups, () => {
+  it.each`
+    input                                                     | output
+    ${undefined}                                              | ${[]}
+    ${{}}                                                     | ${[]}
+    ${null}                                                   | ${[]}
+    ${{ excludingGroups: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${[]}
+    ${{ includingGroups: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${[{ id: 1 }, { id: 2 }]}
+  `('returns `$output` when passed `$input`', ({ input, output }) => {
+    expect(policyScopeGroups(input)).toEqual(output);
+  });
+});
+
+describe(policyExcludingProjects, () => {
+  it.each`
+    input                                                       | output
+    ${undefined}                                                | ${[]}
+    ${{}}                                                       | ${[]}
+    ${null}                                                     | ${[]}
+    ${{ excludingProjects: { nodes: [undefined] } }}            | ${[]}
+    ${{ excludingProjects: { nodes: [{}] } }}                   | ${[{}]}
+    ${{ excludingProjects: { nodes: [{ id: 1 }, { id: 2 }] } }} | ${[{ id: 1 }, { id: 2 }]}
+  `('returns `$output` when passed `$input`', ({ input, output }) => {
+    expect(policyExcludingProjects(input)).toEqual(output);
   });
 });
 

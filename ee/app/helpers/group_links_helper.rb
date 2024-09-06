@@ -19,4 +19,15 @@ module GroupLinksHelper
       group_link.human_access
     end
   end
+
+  def custom_role_for_group_link_enabled?(group)
+    return false unless group
+    return false unless group.custom_roles_enabled?
+
+    if ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+      return ::Feature.enabled?(:assign_custom_roles_to_group_links_saas, group.root_ancestor)
+    end
+
+    ::Feature.enabled?(:assign_custom_roles_to_group_links_sm, :instance)
+  end
 end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceVariable, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceVariable, feature_category: :workspaces do
   let(:key) { 'key_1' }
   let(:current_value) { 'value_1' }
   let(:value) { current_value }

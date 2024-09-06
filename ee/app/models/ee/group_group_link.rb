@@ -7,6 +7,7 @@ module EE
 
     prepended do
       include ::MemberRoles::MemberRoleRelation
+      include GroupLinksHelper
 
       base_access_level_attr :group_access
       alias_attribute :group, :shared_group
@@ -14,12 +15,14 @@ module EE
       scope :in_shared_group, ->(shared_groups) { where(shared_group: shared_groups) }
       scope :not_in_shared_with_group, ->(shared_with_groups) { where.not(shared_with_group: shared_with_groups) }
 
+      scope :with_custom_role, -> { where.not(member_role_id: nil) }
+
       validate :group_with_allowed_email_domains
     end
 
     override :human_access
     def human_access
-      return member_role.name if member_role
+      return member_role.name if custom_role_for_group_link_enabled?(group) && member_role
 
       super
     end

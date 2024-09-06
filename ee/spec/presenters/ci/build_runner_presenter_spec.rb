@@ -353,6 +353,16 @@ RSpec.describe Ci::BuildRunnerPresenter, feature_category: :secrets_management d
 
           it { expect(akeyless_server).to be_nil }
         end
+
+        context 'AKEYLESS_ACCESS_ID CI variable is present' do
+          before do
+            create(:ci_variable, project: ci_build.project, key: 'AKEYLESS_ACCESS_ID', value: 'test')
+          end
+
+          it 'returns the ACCESS_ID' do
+            expect(akeyless_server.fetch('access_id')).to eq('test')
+          end
+        end
       end
     end
   end

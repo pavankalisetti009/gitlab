@@ -21,6 +21,7 @@ fragment PolicyScope on PolicyScope {
     nodes {
       id
       name
+      fullPath
     }
     pageInfo {
       ...PageInfo
@@ -30,6 +31,17 @@ fragment PolicyScope on PolicyScope {
     nodes {
       id
       name
+      fullPath
+    }
+    pageInfo {
+      ...PageInfo
+    }
+  }
+  includingGroups {
+    nodes {
+      id
+      name
+      fullPath
     }
     pageInfo {
       ...PageInfo

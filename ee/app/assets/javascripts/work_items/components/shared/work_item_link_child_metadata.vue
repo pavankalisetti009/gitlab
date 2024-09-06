@@ -1,5 +1,6 @@
 <script>
 import { GlIcon, GlTooltip, GlTooltipDirective } from '@gitlab/ui';
+import { __ } from '~/locale';
 import IssueHealthStatus from 'ee/related_items_tree/components/issue_health_status.vue';
 import WorkItemLinkChildMetadata from '~/work_items/components/shared/work_item_link_child_metadata.vue';
 import {
@@ -8,6 +9,7 @@ import {
   WIDGET_TYPE_WEIGHT,
   WIDGET_TYPE_ITERATION,
   WIDGET_TYPE_START_AND_DUE_DATE,
+  WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
 import { formatDate, humanTimeframe } from '~/lib/utils/datetime_utility';
 import timeagoMixin from '~/vue_shared/mixins/timeago';
@@ -39,6 +41,20 @@ export default {
       required: false,
       default: () => ({}),
     },
+    showWeight: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
+    workItemType: {
+      type: String,
+      required: true,
+    },
+    isChildItemOpen: {
+      type: Boolean,
+      required: false,
+      default: true,
+    },
   },
   computed: {
     progress() {
@@ -68,6 +84,9 @@ export default {
     workItemWeight() {
       return this.isWeightRollup ? this.rolledUpWeight : this.weight;
     },
+    shouldShowWeight() {
+      return this.showWeight && Boolean(this.workItemWeight);
+    },
     iteration() {
       return this.metadataWidgets[WIDGET_TYPE_ITERATION]?.iteration;
     },
@@ -92,6 +111,9 @@ export default {
     workItemTimeframe() {
       return humanTimeframe(this.startDate, this.dueDate);
     },
+    weightTooltip() {
+      return this.workItemType === WORK_ITEM_TYPE_VALUE_EPIC ? __('Issue weight') : __('Weight');
+    },
   },
   methods: {
     getTimestamp(rawTimestamp) {
@@ -112,16 +134,16 @@ export default {
   >
     <template #left-metadata>
       <div
-        v-if="workItemWeight"
+        v-if="shouldShowWeight"
         ref="weightData"
         data-testid="item-weight"
-        class="gl-flex gl-min-w-7 gl-cursor-help gl-items-center gl-gap-2"
+        class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="weight" />
-        <span data-testid="weight-value" class="gl-text-sm">{{ workItemWeight }}</span>
+        <span data-testid="weight-value">{{ workItemWeight }}</span>
         <gl-tooltip :target="() => $refs.weightData">
-          <span class="gl-font-bold">
-            {{ __('Weight') }}
+          <span data-testid="weight-tooltip" class="gl-font-bold">
+            {{ weightTooltip }}
           </span>
         </gl-tooltip>
       </div>
@@ -132,7 +154,7 @@ export default {
         class="gl-flex gl-cursor-help gl-items-center gl-gap-2"
       >
         <gl-icon name="iteration" />
-        <span data-testid="iteration-value" class="gl-text-sm">{{ iterationPeriod }}</span>
+        <span data-testid="iteration-value">{{ iterationPeriod }}</span>
         <gl-tooltip :target="() => $refs.iterationData">
           <div data-testid="iteration-title" class="gl-font-bold">
             {{ __('Iteration') }}
@@ -155,7 +177,7 @@ export default {
         class="gl-flex gl-min-w-10 gl-max-w-26 gl-cursor-help gl-flex-wrap gl-gap-2"
       >
         <gl-icon name="calendar" />
-        <span data-testid="dates-value" class="gl-text-sm">{{ workItemTimeframe }}</span>
+        <span data-testid="dates-value">{{ workItemTimeframe }}</span>
         <gl-tooltip :target="() => $refs.datesData">
           <div class="gl-font-bold">
             {{ __('Dates') }}
@@ -169,7 +191,7 @@ export default {
         data-testid="item-progress"
       >
         <gl-icon name="progress" />
-        <span data-testid="progressValue" class="gl-text-sm">{{ progress }}%</span>
+        <span data-testid="progressValue">{{ progress }}%</span>
         <gl-tooltip :target="() => $refs.progressTooltip">
           <div data-testid="progressTitle" class="gl-font-bold">
             {{ __('Progress') }}
@@ -185,7 +207,11 @@ export default {
       </div>
     </template>
     <template #right-metadata>
-      <issue-health-status v-if="healthStatus" :health-status="healthStatus" />
+      <issue-health-status
+        v-if="healthStatus && isChildItemOpen"
+        display-as-text
+        :health-status="healthStatus"
+      />
     </template>
   </work-item-link-child-metadata>
 </template>

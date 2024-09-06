@@ -25,15 +25,19 @@ RSpec.describe GroupLink::GroupGroupLinkEntity, feature_category: :system_access
   subject(:as_json) { entity.as_json }
 
   context 'when fetching member roles' do
+    before do
+      allow(entity).to receive(:custom_role_for_group_link_enabled?)
+        .with(shared_group)
+        .and_return(custom_role_for_group_link_enabled)
+    end
+
     context 'when custom roles feature is available' do
       before do
         stub_licensed_features(custom_roles: true)
       end
 
-      context 'when feature-flag `assign_custom_roles_to_group_links` is enabled' do
-        before do
-          stub_feature_flags(assign_custom_roles_to_group_links: true)
-        end
+      context 'when `custom_role_for_group_link_enabled` is true' do
+        let(:custom_role_for_group_link_enabled) { true }
 
         it 'exposes `custom_roles`' do
           expect(as_json[:custom_roles]).to eq([
@@ -49,10 +53,8 @@ RSpec.describe GroupLink::GroupGroupLinkEntity, feature_category: :system_access
         end
       end
 
-      context 'when feature-flag `assign_custom_roles_to_group_links` is disabled' do
-        before do
-          stub_feature_flags(assign_custom_roles_to_group_links: false)
-        end
+      context 'when `custom_role_for_group_link_enabled` is false' do
+        let(:custom_role_for_group_link_enabled) { false }
 
         it 'does not expose `custom_roles`' do
           expect(as_json[:custom_roles]).to be_empty
@@ -65,6 +67,8 @@ RSpec.describe GroupLink::GroupGroupLinkEntity, feature_category: :system_access
     end
 
     context 'when custom roles feature is not available' do
+      let(:custom_role_for_group_link_enabled) { false }
+
       before do
         stub_licensed_features(custom_roles: false)
       end

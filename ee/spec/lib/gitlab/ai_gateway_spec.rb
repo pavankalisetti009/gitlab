@@ -26,6 +26,26 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     end
   end
 
+  describe '.push_feature_flag', :request_store do
+    before do
+      allow(::Feature).to receive(:enabled?).and_return(true)
+    end
+
+    it 'push feature flag' do
+      described_class.push_feature_flag("feature_a")
+      described_class.push_feature_flag("feature_b")
+      described_class.push_feature_flag("feature_c")
+
+      expect(described_class.enabled_feature_flags).to match_array(%w[feature_a feature_b feature_c])
+    end
+  end
+
+  describe '.enabled_feature_flags', :request_store do
+    it 'returns empty' do
+      expect(described_class.enabled_feature_flags).to eq([])
+    end
+  end
+
   describe '.headers' do
     let(:user) { build(:user, id: 1) }
     let(:token) { 'instance token' }
@@ -46,7 +66,8 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
         'X-Gitlab-Instance-Id' => an_instance_of(String),
         'X-Gitlab-Realm' => Gitlab::CloudConnector::GITLAB_REALM_SELF_MANAGED,
         'X-Gitlab-Version' => Gitlab.version_info.to_s,
-        'X-Gitlab-Duo-Seat-Count' => "0"
+        'X-Gitlab-Duo-Seat-Count' => "0",
+        'x-gitlab-enabled-feature-flags' => an_instance_of(String)
       }
     end
 
@@ -82,6 +103,18 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
       it 'includes langsmith header' do
         expect(headers).to include(
           'langsmith-trace' => '20240808T090953171943Z18dfa1db-1dfc-4a48-aaf8-a139960955ce'
+        )
+      end
+    end
+
+    context 'when feature flag is pushed' do
+      before do
+        allow(described_class).to receive(:enabled_feature_flags).and_return(%w[feature_a feature_b])
+      end
+
+      it 'includes feature flag header' do
+        expect(headers).to include(
+          'x-gitlab-enabled-feature-flags' => 'feature_a,feature_b'
         )
       end
     end

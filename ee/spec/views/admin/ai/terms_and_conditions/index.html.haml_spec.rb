@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'admin/ai/terms_and_conditions/index.html.haml', feature_category: :custom_models do
+RSpec.describe 'admin/ai/terms_and_conditions/index.html.haml', feature_category: :"self-hosted_models" do
   subject { render && rendered }
 
   it do

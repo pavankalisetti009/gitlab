@@ -13,18 +13,7 @@ DETAILS:
 
 When working with GitLab Duo Code Suggestions, you might encounter the following issues.
 
-## Verify Code Suggestions status in Admin area
-
-Prerequisites:
-
-- You must be an administrator of the instance.
-
-You can verify that Code Suggestions is set up correctly on the server. Because you are checking this on the server side and not for a specific user, it does not guarantee that Code Suggestions will work for a specific user on client side.
-
-1. On the left sidebar, at the bottom, select **Admin**.
-1. Select **GitLab Duo Pro**.
-
-A flash message with Code Suggestions check status is displayed at the top of the page.
+You can run a [health check](../../../gitlab_duo/turn_on_off.md) to test if your instance meets the requirements to run Code Suggestions.
 
 ## Suggestions are not displayed
 
@@ -41,7 +30,7 @@ If you are a self-managed user, ensure that Code Suggestions for the [GitLab Web
 
 1. On the left sidebar, select **Extensions > GitLab Workflow**.
 1. Select **Settings** (**{settings}**), and then select **Extension Settings**.
-1. In **GitLab > AI Assisted Code Suggestions**, select the **GitLab Duo Code Suggestions**
+1. In **GitLab > Duo Code Suggestions**, select the **GitLab Duo Code Suggestions**
    checkbox.
 
 ### View Code Suggestions logs
@@ -49,15 +38,10 @@ If you are a self-managed user, ensure that Code Suggestions for the [GitLab Web
 If the settings are enabled, but suggestions are still not displayed, try the following steps:
 
 1. In the GitLab Workflow **Extension Settings**, enable **GitLab: Debug**.
-1. Open the extension log in **View > Output** and change the dropdown list to **GitLab Workflow** as the log filter. The command palette command is `GitLab: Show Extension Logs`.
-1. Disable and re-enable the **Enable code completion** checkbox.
-1. Verify that the debug log contains similar output:
-
-```shell
-2023-07-14T17:29:00:763 [debug]: Disabling code completion
-2023-07-14T17:29:01:802 [debug]: Enabling code completion
-2023-07-14T17:29:01:802 [debug]: AI Assist: Using server: https://cloud.gitlab.com/ai/v2/code/completions
-```
+1. On the top menu, select **View > Output** to open the bottom panel, then either:
+   - In the command palette, select `GitLab: Show Extension Logs`.
+   - In the bottom panel, on the right, select the dropdown list to filter the logs. Select **GitLab Workflow**.
+1. In the GitLab Workflow **Extension Settings**, clear and re-select the **GitLab Duo Code Suggestions** checkbox.
 
 To enable debug logging for the Language Server (LS), enable **GitLab › Ls: Debug**.
 

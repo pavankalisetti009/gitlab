@@ -167,6 +167,7 @@ module EE
       has_many :security_policy_management_project_linked_configurations, class_name: 'Security::OrchestrationPolicyConfiguration', foreign_key: :security_policy_management_project_id, inverse_of: :security_policy_management_project
       has_many :security_policy_project_linked_projects, through: :security_policy_management_project_linked_configurations, source: :project
       has_many :security_policy_project_linked_namespaces, through: :security_policy_management_project_linked_configurations, source: :namespace
+      has_many :security_policy_project_linked_groups, through: :security_policy_management_project_linked_configurations, source: :namespace
 
       has_many :security_scans, class_name: 'Security::Scan', inverse_of: :project
       has_many :security_trainings, class_name: 'Security::Training', inverse_of: :project
@@ -202,7 +203,11 @@ module EE
 
       has_many :saved_replies, class_name: 'Projects::SavedReply'
 
+      has_many :observability_logs, class_name: 'Observability::LogsIssuesConnection'
       has_many :observability_metrics, class_name: 'Observability::MetricsIssuesConnection'
+      has_many :observability_traces, class_name: 'Observability::TracesIssuesConnection'
+
+      has_many :security_exclusions, class_name: 'Security::ProjectSecurityExclusion'
 
       elastic_index_dependant_association :issues, on_change: :visibility_level
       elastic_index_dependant_association :issues, on_change: :archived
@@ -423,6 +428,10 @@ module EE
         to: :project_setting
       with_options prefix: :delegated, to: :project_setting do
         delegate :require_reauthentication_to_approve=
+      end
+
+      with_options to: :project_setting do
+        delegate :observability_alerts_enabled, :observability_alerts_enabled=
       end
 
       delegate(*::Geo::VerificationState::VERIFICATION_METHODS, to: :project_state)

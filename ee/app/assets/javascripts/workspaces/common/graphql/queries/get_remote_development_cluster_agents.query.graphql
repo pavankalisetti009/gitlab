@@ -9,7 +9,7 @@ query getRemoteDevelopmentClusterAgents($namespace: ID!) {
           id
           nameWithNamespace
         }
-        remoteDevelopmentAgentConfig {
+        workspacesAgentConfig {
           id
           defaultMaxHoursBeforeTermination
         }

@@ -56,16 +56,11 @@ module EE
 
     def banned_user_email_reuse_check
       return unless ::Feature.enabled?(:block_banned_user_normalized_email_reuse, ::Feature.current_request)
-
-      normalized_email = ::Gitlab::Utils::Email.normalize_email(sign_up_params[:email])
-      return unless normalized_email
-      return unless ::Users::BannedUser.by_canonical_email(normalized_email).exists?
+      return unless ::Users::BannedUser.by_detumbled_email(sign_up_params[:email]).exists?
 
       ::Gitlab::AppLogger.info({
         message: 'Sign-up blocked',
-        reason: 'Banned user email reuse',
-        new_email: sign_up_params[:email],
-        matched_email: normalized_email
+        reason: 'Banned user email reuse'
       })
 
       flash[:alert] = _('Unable to complete your request. Please enter a different email address and try again.')

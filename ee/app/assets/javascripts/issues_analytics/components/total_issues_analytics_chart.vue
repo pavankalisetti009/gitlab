@@ -57,6 +57,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     issuesOpenedCounts: {
       query() {
         return this.getIssuesAnalyticsCountsQuery(ISSUES_OPENED_COUNT_ALIAS);
@@ -79,6 +80,7 @@ export default {
         this.handleQueryError(e);
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     issuesClosedCounts: {
       query() {
         return this.getIssuesAnalyticsCountsQuery(ISSUES_COMPLETED_COUNT_ALIAS);

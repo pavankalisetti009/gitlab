@@ -37,29 +37,6 @@ RSpec.describe Projects::MirrorsController, feature_category: :source_code_manag
       expect(project.reload.import_url).to eq 'https://example.com'
     end
 
-    context 'when "use_pull_mirror_update_service" is disabled' do
-      before do
-        stub_feature_flags(use_pull_mirror_update_service: false)
-      end
-
-      it 'updates a pull mirror configuration' do
-        patch project_mirror_path(project),
-          params: {
-            project: {
-              mirror: '1',
-              import_url: 'https://example.com',
-              mirror_trigger_builds: '0'
-            }
-          }
-
-        expect(response).to have_gitlab_http_status(:found)
-        expect(response).to redirect_to(project_settings_repository_path(project, anchor: 'js-push-remote-settings'))
-        expect(flash[:notice]).to include("Mirroring settings were successfully updated")
-
-        expect(project.reload.import_url).to eq 'https://example.com'
-      end
-    end
-
     it 'complains about passing an empty URL' do
       patch project_mirror_path(project),
         params: {

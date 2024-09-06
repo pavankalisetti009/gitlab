@@ -3,6 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Mutations::IncidentManagement::OncallRotation::Destroy do
+  include GraphqlHelpers
   let_it_be(:current_user) { create(:user) }
   let_it_be_with_refind(:project) { create(:project) }
   let_it_be(:schedule) { create(:incident_management_oncall_schedule, project: project) }
@@ -17,7 +18,7 @@ RSpec.describe Mutations::IncidentManagement::OncallRotation::Destroy do
   end
 
   describe '#resolve' do
-    subject(:resolve) { mutation_for(project, current_user).resolve(**args) }
+    subject(:resolve) { mutation_for(project).resolve(**args) }
 
     context 'user has access to project' do
       before do
@@ -91,7 +92,7 @@ RSpec.describe Mutations::IncidentManagement::OncallRotation::Destroy do
 
   private
 
-  def mutation_for(project, user)
-    described_class.new(object: project, context: { current_user: user }, field: nil)
+  def mutation_for(project)
+    described_class.new(object: project, context: query_context, field: nil)
   end
 end

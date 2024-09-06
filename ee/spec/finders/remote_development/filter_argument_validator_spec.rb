@@ -3,7 +3,7 @@
 require "fast_spec_helper"
 require_relative "../../../app/finders/remote_development/filter_argument_validator"
 
-RSpec.describe RemoteDevelopment::FilterArgumentValidator, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::FilterArgumentValidator, feature_category: :workspaces do
   let(:filter_arguments) do
     {
       ids: [1, 2],

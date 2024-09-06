@@ -10,6 +10,10 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
   let_it_be(:group) { create(:group) }
   let_it_be_with_reload(:registry) { create(:virtual_registries_packages_maven_registry, group: group) }
   let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream, registry: registry) }
+  let_it_be_with_reload(:cached_response) do
+    create(:virtual_registries_packages_maven_cached_response, upstream: upstream)
+  end
+
   let_it_be(:project) { create(:project, namespace: group) }
   let_it_be(:user) { create(:user, owner_of: project) }
   let_it_be(:job) { create(:ci_build, :running, user: user, project: project) }
@@ -40,6 +44,26 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
     let(:headers) { {} }
 
     it_behaves_like 'returning response status', :unauthorized
+  end
+
+  shared_examples 'authenticated endpoint' do |success_shared_example_name:|
+    %i[personal_access_token deploy_token job_token].each do |token_type|
+      context "with a #{token_type}" do
+        let_it_be(:user) { deploy_token } if token_type == :deploy_token
+
+        context 'when sent by headers' do
+          let(:headers) { super().merge(token_header(token_type)) }
+
+          it_behaves_like success_shared_example_name
+        end
+
+        context 'when sent by basic auth' do
+          let(:headers) { super().merge(token_basic_auth(token_type)) }
+
+          it_behaves_like success_shared_example_name
+        end
+      end
+    end
   end
 
   before do
@@ -967,13 +991,222 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
     end
   end
 
+  describe 'GET /api/v4/virtual_registries/packages/maven/registries/:id/upstreams/:upstream_id/cached_responses' do
+    let(:upstream_id) { upstream.id }
+    let(:url) do
+      "/virtual_registries/packages/maven/registries/#{registry.id}/upstreams/#{upstream_id}/cached_responses"
+    end
+
+    subject(:api_request) { get api(url), headers: headers }
+
+    shared_examples 'successful response' do
+      it 'returns a successful response' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(Gitlab::Json.parse(response.body)).to contain_exactly(
+          cached_response
+            .as_json
+            .merge('cached_response_id' => Base64.urlsafe_encode64(cached_response.relative_path))
+            .except('id', 'object_storage_key', 'file_store')
+        )
+      end
+    end
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'disabled feature flag'
+    it_behaves_like 'disabled dependency proxy'
+    it_behaves_like 'not authenticated user'
+
+    context 'with invalid upstream' do
+      where(:upstream_id, :status) do
+        non_existing_record_id | :not_found
+        'foo'                  | :bad_request
+        ''                     | :bad_request
+      end
+
+      with_them do
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'with a non-member user' do
+      let_it_be(:user) { create(:user) }
+
+      where(:group_access_level, :status) do
+        'PUBLIC'   | :forbidden
+        'INTERNAL' | :forbidden
+        'PRIVATE'  | :forbidden
+      end
+
+      with_them do
+        before do
+          group.update!(visibility_level: Gitlab::VisibilityLevel.const_get(group_access_level, false))
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'for authentication' do
+      where(:token, :sent_as, :status) do
+        :personal_access_token | :header     | :ok
+        :personal_access_token | :basic_auth | :ok
+        :deploy_token          | :header     | :ok
+        :deploy_token          | :basic_auth | :ok
+        :job_token             | :header     | :ok
+        :job_token             | :basic_auth | :ok
+      end
+
+      with_them do
+        let(:headers) do
+          case sent_as
+          when :header
+            token_header(token)
+          when :basic_auth
+            token_basic_auth(token)
+          end
+        end
+
+        it_behaves_like 'returning response status', params[:status]
+      end
+    end
+
+    context 'for search param' do
+      let(:url) { "#{super()}?search=#{search}" }
+      let(:valid_search) { cached_response.relative_path.slice(0, 5) }
+
+      where(:search, :status) do
+        ref(:valid_search) | :ok
+        'foo'              | :empty
+        ''                 | :ok
+        nil                | :ok
+      end
+
+      with_them do
+        if params[:status] == :ok
+          it_behaves_like 'successful response'
+        else
+          it 'returns an empty array' do
+            api_request
+
+            expect(json_response).to eq([])
+          end
+        end
+      end
+    end
+  end
+
+  describe 'DELETE /api/v4/virtual_registries/packages/maven/registries/:id/upstreams/' \
+    ':upstream_id/cached_responses/:cached_response_id' do
+    let(:cached_response_id) { Base64.urlsafe_encode64(cached_response.relative_path) }
+    let(:url) do
+      "/virtual_registries/packages/maven/registries/#{registry.id}/upstreams/#{upstream.id}/" \
+        "cached_responses/#{cached_response_id}"
+    end
+
+    subject(:api_request) { delete api(url), headers: headers }
+
+    shared_examples 'successful response' do
+      it 'returns a successful response' do
+        expect { api_request }.to change { upstream.cached_responses.count }.by(-1)
+        expect(response).to have_gitlab_http_status(:no_content)
+      end
+    end
+
+    it { is_expected.to have_request_urgency(:low) }
+
+    it_behaves_like 'disabled feature flag'
+    it_behaves_like 'disabled dependency proxy'
+    it_behaves_like 'not authenticated user'
+
+    context 'for different user roles' do
+      where(:user_role, :status) do
+        :owner      | :no_content
+        :maintainer | :no_content
+        :developer  | :forbidden
+        :reporter   | :forbidden
+        :guest      | :forbidden
+      end
+
+      with_them do
+        before do
+          group.send(:"add_#{user_role}", user)
+        end
+
+        if params[:status] == :no_content
+          it_behaves_like 'successful response'
+        else
+          it_behaves_like 'returning response status', params[:status]
+        end
+      end
+    end
+
+    context 'for authentication' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      where(:token, :sent_as, :status) do
+        :personal_access_token | :header     | :no_content
+        :personal_access_token | :basic_auth | :no_content
+        :deploy_token          | :header     | :forbidden
+        :deploy_token          | :basic_auth | :forbidden
+        :job_token             | :header     | :no_content
+        :job_token             | :basic_auth | :no_content
+      end
+
+      with_them do
+        let(:headers) do
+          case sent_as
+          when :header
+            token_header(token)
+          when :basic_auth
+            token_basic_auth(token)
+          end
+        end
+
+        if params[:status] == :no_content
+          it_behaves_like 'successful response'
+        else
+          it_behaves_like 'returning response status', params[:status]
+        end
+      end
+    end
+
+    context 'when error occurs' do
+      before_all do
+        group.add_maintainer(user)
+      end
+
+      before do
+        allow_next_found_instance_of(cached_response.class) do |instance|
+          allow(instance).to receive(:save).and_return(false)
+
+          errors = ActiveModel::Errors.new(instance).tap { |e| e.add(:cached_response, 'error message') }
+          allow(instance).to receive(:errors).and_return(errors)
+        end
+      end
+
+      it 'returns an error' do
+        api_request
+
+        expect(response).to have_gitlab_http_status(:bad_request)
+        expect(json_response).to eq({ 'message' => { 'cached_response' => ['error message'] } })
+      end
+    end
+  end
+
   describe 'GET /api/v4/virtual_registries/packages/maven/:id/*path' do
     let(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
     let(:url) { "/virtual_registries/packages/maven/#{registry.id}/#{path}" }
     let(:service_response) do
       ServiceResponse.success(
-        payload: { action: :workhorse_send_url,
-                   action_params: { url: upstream.url_for(path), headers: upstream.headers } }
+        payload: {
+          action: :workhorse_upload_url,
+          action_params: { url: upstream.url_for(path), upstream: upstream }
+        }
       )
     end
 
@@ -992,12 +1225,12 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
       get api(url), headers: headers
     end
 
-    shared_examples 'returning the workhorse send_url response' do
+    shared_examples 'returning the workhorse send_dependency response' do
       it 'returns a workhorse send_url response' do
         request
 
         expect(response).to have_gitlab_http_status(:ok)
-        expect(response.headers[Gitlab::Workhorse::SEND_DATA_HEADER]).to start_with('send-url:')
+        expect(response.headers[Gitlab::Workhorse::SEND_DATA_HEADER]).to start_with('send-dependency:')
         expect(response.headers['Content-Type']).to eq('application/octet-stream')
         expect(response.headers['Content-Length'].to_i).to eq(0)
         expect(response.body).to eq('')
@@ -1012,74 +1245,24 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
           [value]
         end
 
-        expect(send_data_type).to eq('send-url')
-        expect(send_data['URL']).to be_present
-        expect(send_data['AllowRedirects']).to be_truthy
-        expect(send_data['DialTimeout']).to eq('10s')
-        expect(send_data['ResponseHeaderTimeout']).to eq('10s')
-        expect(send_data['ErrorResponseStatus']).to eq(502)
-        expect(send_data['TimeoutResponseStatus']).to eq(504)
-        expect(send_data['Header']).to eq(expected_headers)
+        expected_upload_config = {
+          'Headers' => { described_class::UPSTREAM_GID_HEADER => [upstream.to_global_id.to_s] }
+        }
+
+        expect(send_data_type).to eq('send-dependency')
+        expect(send_data['Url']).to be_present
+        expect(send_data['Headers']).to eq(expected_headers)
         expect(send_data['ResponseHeaders']).to eq(expected_resp_headers)
+        expect(send_data['UploadConfig']).to eq(expected_upload_config)
       end
     end
 
-    context 'for authentication' do
-      context 'with a personal access token' do
-        let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
-
-        context 'when sent by headers' do
-          let(:headers) { { 'Private-Token' => personal_access_token.token } }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
-
-        context 'when sent by basic auth' do
-          let(:headers) { basic_auth_header(user.username, personal_access_token.token) }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
+    it_behaves_like 'authenticated endpoint',
+      success_shared_example_name: 'returning the workhorse send_dependency response' do
+        let(:headers) { {} }
       end
-
-      context 'with a deploy token' do
-        let_it_be(:deploy_token) do
-          create(:deploy_token, :group, groups: [registry.group], read_virtual_registry: true)
-        end
-
-        let_it_be(:user) { deploy_token }
-
-        context 'when sent by headers' do
-          let(:headers) { { 'Deploy-Token' => deploy_token.token } }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
-
-        context 'when sent by basic auth' do
-          let(:headers) { basic_auth_header(deploy_token.username, deploy_token.token) }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
-      end
-
-      context 'with ci job token' do
-        let_it_be(:job) { create(:ci_build, user: user, status: :running, project: project) }
-
-        context 'when sent by headers' do
-          let(:headers) { { 'Job-Token' => job.token } }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
-
-        context 'when sent by basic auth' do
-          let(:headers) { basic_auth_header(::Gitlab::Auth::CI_JOB_USER, job.token) }
-
-          it_behaves_like 'returning the workhorse send_url response'
-        end
-      end
-    end
 
     context 'with a valid user' do
-      let_it_be(:personal_access_token) { create(:personal_access_token, user: user) }
       let(:headers) { { 'Private-Token' => personal_access_token.token } }
 
       context 'with service response errors' do
@@ -1105,8 +1288,6 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
         end
       end
 
-      it_behaves_like 'disabled feature flag'
-
       context 'with a web browser' do
         described_class::MAJOR_BROWSERS.each do |browser|
           context "when accessing with a #{browser} browser" do
@@ -1126,9 +1307,134 @@ RSpec.describe API::VirtualRegistries::Packages::Maven, feature_category: :virtu
         end
       end
 
+      context 'for a invalid registry id' do
+        let(:url) { "/virtual_registries/packages/maven/#{non_existing_record_id}/#{path}" }
+
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      it_behaves_like 'disabled feature flag'
       it_behaves_like 'disabled dependency proxy'
-      it_behaves_like 'not authenticated user'
     end
+
+    it_behaves_like 'not authenticated user'
+  end
+
+  describe 'POST /api/v4/virtual_registries/packages/maven/:id/*path/upload/authorize' do
+    include_context 'workhorse headers'
+
+    let(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
+    let(:url) { "/virtual_registries/packages/maven/#{registry.id}/#{path}/upload/authorize" }
+
+    subject(:request) do
+      post api(url), headers: headers
+    end
+
+    shared_examples 'returning the workhorse authorization response' do
+      it 'authorizes the upload' do
+        request
+
+        expect(response).to have_gitlab_http_status(:ok)
+        expect(response.media_type).to eq(Gitlab::Workhorse::INTERNAL_API_CONTENT_TYPE)
+        expect(json_response['TempPath']).not_to be_nil
+      end
+    end
+
+    it_behaves_like 'authenticated endpoint',
+      success_shared_example_name: 'returning the workhorse authorization response' do
+        let(:headers) { workhorse_headers }
+      end
+
+    context 'with a valid user' do
+      let(:headers) { workhorse_headers.merge(token_header(:personal_access_token)) }
+
+      context 'with no workhorse headers' do
+        let(:headers) { token_header(:personal_access_token) }
+
+        it_behaves_like 'returning response status', :forbidden
+      end
+
+      context 'with no permissions on registry' do
+        let_it_be(:user) { create(:user) }
+
+        it_behaves_like 'returning response status', :forbidden
+      end
+
+      it_behaves_like 'disabled feature flag'
+      it_behaves_like 'disabled dependency proxy'
+    end
+
+    it_behaves_like 'not authenticated user'
+  end
+
+  describe 'POST /api/v4/virtual_registries/packages/maven/:id/*path/upload' do
+    include_context 'workhorse headers'
+
+    let(:path) { 'com/test/package/1.2.3/package-1.2.3.pom' }
+    let(:url) { "/virtual_registries/packages/maven/#{registry.id}/#{path}/upload" }
+    let(:file_upload) { fixture_file_upload('spec/fixtures/packages/maven/my-app-1.0-20180724.124855-1.pom') }
+    let(:gid_header) { { described_class::UPSTREAM_GID_HEADER => upstream.to_global_id.to_s } }
+    let(:headers) { workhorse_headers.merge(gid_header) }
+
+    subject(:request) do
+      workhorse_finalize(
+        api(url),
+        file_key: :file,
+        headers: headers,
+        params: { file: file_upload },
+        send_rewritten_field: true
+      )
+    end
+
+    shared_examples 'returning successful response' do
+      it 'accepts the upload', :freeze_time do
+        expect { request }.to change { upstream.cached_responses.count }.by(1)
+
+        expect(response).to have_gitlab_http_status(:created)
+        expect(upstream.cached_responses.last).to have_attributes(
+          relative_path: "/#{path}",
+          downloads_count: 1,
+          upstream_etag: nil,
+          upstream_checked_at: Time.zone.now,
+          downloaded_at: Time.zone.now
+        )
+      end
+    end
+
+    it_behaves_like 'authenticated endpoint', success_shared_example_name: 'returning successful response'
+
+    context 'with a valid user' do
+      let(:headers) { super().merge(token_header(:personal_access_token)) }
+
+      context 'with no workhorse headers' do
+        let(:headers) { token_header(:personal_access_token).merge(gid_header) }
+
+        it_behaves_like 'returning response status', :forbidden
+      end
+
+      context 'with no permissions on registry' do
+        let_it_be(:user) { create(:user) }
+
+        it_behaves_like 'returning response status', :forbidden
+      end
+
+      context 'with an invalid upstream gid' do
+        let_it_be(:upstream) { build(:virtual_registries_packages_maven_upstream, id: non_existing_record_id) }
+
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      context 'with an incoherent upstream gid' do
+        let_it_be(:upstream) { create(:virtual_registries_packages_maven_upstream) }
+
+        it_behaves_like 'returning response status', :not_found
+      end
+
+      it_behaves_like 'disabled feature flag'
+      it_behaves_like 'disabled dependency proxy'
+    end
+
+    it_behaves_like 'not authenticated user'
   end
 
   def token_header(token)

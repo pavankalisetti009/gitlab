@@ -15,13 +15,13 @@ module Ci
     ignore_columns :partition, remove_never: true
 
     partitioned_by :partition, strategy: :sliding_list,
-      next_partition_if: ->(active_partition) do
-        next_partition_if(active_partition)
-      end,
-      detach_partition_if: ->(partition) do
-        detach_partition?(partition)
-      end
+      next_partition_if: ->(active_partition) { any_older_partitions_exist?(active_partition, PARTITION_DURATION) },
+      detach_partition_if: ->(partition) { detach_partition?(partition) }
 
+    belongs_to :build, # rubocop: disable Rails/InverseOf -- this relation is not present on build
+      class_name: 'Ci::Build'
+
+    validates :project_id, presence: true, on: :create
     validates :build_id, presence: true
     validates :build_finished_at, presence: true
 
@@ -30,24 +30,31 @@ module Ci
     scope :pending, -> { where(processed: false) }
     scope :for_partition, ->(partition) { where(partition: partition) }
 
-    def self.next_partition_if(active_partition)
-      oldest_record_in_partition = FinishedBuildChSyncEvent.for_partition(active_partition.value)
-        .order(:build_finished_at).first
-
-      oldest_record_in_partition.present? &&
-        oldest_record_in_partition.build_finished_at < PARTITION_DURATION.ago
+    def self.upsert_from_build(build)
+      upsert({ build_id: build.id, project_id: build.project_id, build_finished_at: build.finished_at },
+        unique_by: [:build_id, :partition])
     end
 
     def self.detach_partition?(partition)
-      # if there are no pending events
-      return true unless FinishedBuildChSyncEvent.pending.for_partition(partition.value).exists?
+      # detach partition if there are no pending events in partition
+      return true unless pending.for_partition(partition.value).exists?
 
-      # if partition only has the very old data
-      newest_record_in_partition = FinishedBuildChSyncEvent.for_partition(partition.value)
-        .order(:build_finished_at).last
+      # or if there are pending events, they are outside the cleanup threshold
+      return true unless any_newer_partitions_exist?(partition, PARTITION_CLEANUP_THRESHOLD)
 
-      newest_record_in_partition.present? &&
-        newest_record_in_partition.build_finished_at < PARTITION_CLEANUP_THRESHOLD.ago
+      false
+    end
+
+    def self.any_older_partitions_exist?(partition, duration)
+      for_partition(partition.value)
+        .where(arel_table[:build_finished_at].lteq(duration.ago))
+        .exists?
+    end
+
+    def self.any_newer_partitions_exist?(partition, duration)
+      for_partition(partition.value)
+        .where(arel_table[:build_finished_at].gt(duration.ago))
+        .exists?
     end
   end
 end

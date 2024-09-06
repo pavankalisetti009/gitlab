@@ -29,6 +29,9 @@ mutation editBrachRuleEE($input: BranchRuleUpdateInput!) {
             group {
               id
             }
+            deployKey {
+              id
+            }
           }
         }
       }

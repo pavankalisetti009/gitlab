@@ -1,6 +1,7 @@
 <script>
 import { GlLoadingIcon, GlEmptyState, GlSprintf, GlButton } from '@gitlab/ui';
 import EMPTY_CHART_SVG from '@gitlab/svgs/dist/illustrations/chart-empty-state.svg?url';
+import { uniqueId } from 'lodash';
 import { s__, __ } from '~/locale';
 import { createAlert } from '~/alert';
 import { visitUrl } from '~/lib/utils/url_utility';
@@ -13,6 +14,7 @@ import UrlSync from '~/vue_shared/components/url_sync.vue';
 import { TIME_RANGE_OPTIONS } from '~/observability/constants';
 import { InternalEvents } from '~/tracking';
 import PageHeading from '~/vue_shared/components/page_heading.vue';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
 import { ingestedAtTimeAgo } from '../utils';
@@ -49,6 +51,7 @@ export default {
     GlButton,
     RelatedIssuesProvider,
     RelatedIssue,
+    RelatedIssuesBadge,
   },
   mixins: [InternalEvents.mixin()],
   props: {
@@ -234,6 +237,7 @@ export default {
   relatedIssuesHelpPath: helpPagePath('/operations/metrics', {
     anchor: 'create-an-issue-for-a-metric',
   }),
+  relatedIssuesId: uniqueId('related-issues-'),
 };
 </script>
 
@@ -254,6 +258,12 @@ export default {
         <header>
           <page-heading :heading="header.title">
             <template #actions>
+              <related-issues-badge
+                :issues-total="issues.length"
+                :loading="fetchingIssues"
+                :error="error"
+                :anchor-id="$options.relatedIssuesId"
+              />
               <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
                 {{ $options.i18n.createIssueTitle }}
               </gl-button>
@@ -315,6 +325,7 @@ export default {
           </gl-empty-state>
 
           <related-issue
+            :id="$options.relatedIssuesId"
             :issues="issues"
             :fetching-issues="fetchingIssues"
             :error="error"

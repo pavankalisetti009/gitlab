@@ -36,11 +36,16 @@ export default {
     WorkItemProjectsListbox,
   },
   mixins: [glFeatureFlagsMixin()],
-  inject: ['hasIterationsFeature', 'isGroup'],
+  inject: ['hasIterationsFeature'],
   props: {
     fullPath: {
       type: String,
       required: true,
+    },
+    isGroup: {
+      type: Boolean,
+      required: false,
+      default: false,
     },
     issuableGid: {
       type: String,
@@ -395,11 +400,7 @@ export default {
 </script>
 
 <template>
-  <gl-form
-    class="gl-new-card-add-form"
-    data-testid="add-item-form"
-    @submit.prevent="addOrCreateMethod"
-  >
+  <gl-form data-testid="add-item-form" @submit.prevent="addOrCreateMethod">
     <template v-if="isCreateForm">
       <div class="gl-flex gl-gap-x-3">
         <gl-form-group
@@ -454,6 +455,7 @@ export default {
       <work-item-token-input
         v-model="workItemsToAdd"
         :is-create-form="isCreateForm"
+        :is-group="isGroup"
         :parent-work-item-id="issuableGid"
         :children-type="childrenType"
         :children-ids="childrenIds"
@@ -462,12 +464,12 @@ export default {
       />
       <div
         v-if="showWorkItemsToAddInvalidMessage"
-        class="gl-text-red-500"
+        class="gl-text-danger"
         data-testid="work-items-invalid"
       >
         {{ workItemsToAddInvalidMessage }}
       </div>
-      <div v-if="error" class="gl-mt-3 gl-text-red-500" data-testid="work-items-error">
+      <div v-if="error" class="gl-mt-3 gl-text-danger" data-testid="work-items-error">
         {{ error }}
       </div>
       <div
@@ -478,20 +480,21 @@ export default {
         {{ $options.i18n.maxItemsErrorMessage }}
       </div>
     </div>
-    <gl-button
-      category="primary"
-      variant="confirm"
-      size="small"
-      type="submit"
-      :disabled="!canSubmitForm"
-      :loading="submitInProgress"
-      data-testid="add-child-button"
-      class="gl-mr-2"
-    >
-      {{ addOrCreateButtonLabel }}
-    </gl-button>
-    <gl-button category="secondary" size="small" @click="closeForm">
-      {{ s__('WorkItem|Cancel') }}
-    </gl-button>
+    <div class="gl-flex gl-gap-3">
+      <gl-button
+        category="primary"
+        variant="confirm"
+        size="small"
+        type="submit"
+        :disabled="!canSubmitForm"
+        :loading="submitInProgress"
+        data-testid="add-child-button"
+      >
+        {{ addOrCreateButtonLabel }}
+      </gl-button>
+      <gl-button category="secondary" size="small" @click="closeForm">
+        {{ s__('WorkItem|Cancel') }}
+      </gl-button>
+    </div>
   </gl-form>
 </template>

@@ -3,7 +3,7 @@
 require "fast_spec_helper"
 
 RSpec.describe RemoteDevelopment::Settings::SettingsInitializer,
-  feature_category: :remote_development do
+  feature_category: :workspaces do
   let(:all_possible_requested_setting_names) { RemoteDevelopment::Settings::DefaultSettings.default_settings.keys }
   let(:requested_setting_names) { all_possible_requested_setting_names }
   let(:context) do

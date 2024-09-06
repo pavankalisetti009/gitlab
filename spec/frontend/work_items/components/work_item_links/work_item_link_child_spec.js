@@ -16,11 +16,13 @@ import {
   WORK_ITEM_TYPE_VALUE_OBJECTIVE,
   WORK_ITEM_TYPE_VALUE_TASK,
   DEFAULT_PAGE_SIZE_CHILD_ITEMS,
+  WORK_ITEM_TYPE_VALUE_EPIC,
 } from '~/work_items/constants';
 
 import {
   workItemTask,
   workItemObjectiveWithChild,
+  workItemEpic,
   workItemHierarchyTreeResponse,
   workItemHierarchyPaginatedTreeResponse,
   workItemHierarchyTreeFailureResponse,
@@ -44,6 +46,8 @@ describe('WorkItemLinkChild', () => {
     );
   const getChildrenNodes = () => getWidgetHierarchy().children.nodes;
   const findFirstItem = () => getChildrenNodes()[0];
+  const findWorkItemLinkChildContentsContainer = () =>
+    wrapper.findByTestId('child-contents-container');
 
   const mockToggleHierarchyTreeChildResolver = jest.fn();
   const getWorkItemTreeQueryHandler = jest.fn().mockResolvedValue(workItemHierarchyTreeResponse);
@@ -55,6 +59,7 @@ describe('WorkItemLinkChild', () => {
     workItemType = WORK_ITEM_TYPE_VALUE_OBJECTIVE,
     workItemTreeQueryHandler = getWorkItemTreeQueryHandler,
     isExpanded = false,
+    showTaskWeight = false,
   } = {}) => {
     const mockApollo = createMockApollo([[getWorkItemTreeQuery, workItemTreeQueryHandler]], {
       Mutation: {
@@ -79,6 +84,7 @@ describe('WorkItemLinkChild', () => {
         childItem,
         workItemType,
         workItemFullPath,
+        showTaskWeight,
       },
       stubs: {
         WorkItemChildrenWrapper,
@@ -101,6 +107,13 @@ describe('WorkItemLinkChild', () => {
       expect(mockToggleHierarchyTreeChildResolver).toHaveBeenCalled();
       expect(getWorkItemTreeQueryHandler).toHaveBeenCalled();
     });
+
+    it('does not render border on `WorkItemLinkChildContents` container', async () => {
+      createComponent();
+      await findExpandButton().vm.$emit('click');
+
+      expect(findWorkItemLinkChildContentsContainer().classes()).not.toContain('!gl-border-b-1');
+    });
   });
 
   describe('child is already expanded', () => {
@@ -120,6 +133,18 @@ describe('WorkItemLinkChild', () => {
 
       expect(getWorkItemTreeQueryHandler).toHaveBeenCalledTimes(1); // ensure children were fetched only once.
       expect(findTreeChildren().exists()).toBe(true);
+    });
+
+    it('renders border on `WorkItemLinkChildContents` container', () => {
+      expect(findWorkItemLinkChildContentsContainer().classes()).toEqual([
+        'gl-w-full',
+        '!gl-border-x-0',
+        '!gl-border-b-1',
+        '!gl-border-t-0',
+        '!gl-border-solid',
+        '!gl-border-gray-50',
+        '!gl-pb-2',
+      ]);
     });
   });
 
@@ -180,13 +205,36 @@ describe('WorkItemLinkChild', () => {
 
     describe('renders WorkItemLinkChildContents', () => {
       it('with default props', () => {
+        createComponent();
+
         expect(findWorkItemLinkChildContents().props()).toEqual({
           childItem: workItemObjectiveWithChild,
           canUpdate: true,
           showLabels: true,
           workItemFullPath,
+          showWeight: true,
         });
       });
+
+      it.each`
+        workItemType                      | childItem                     | showTaskWeight | showWeight
+        ${WORK_ITEM_TYPE_VALUE_TASK}      | ${workItemTask}               | ${false}       | ${false}
+        ${WORK_ITEM_TYPE_VALUE_TASK}      | ${workItemTask}               | ${true}        | ${true}
+        ${WORK_ITEM_TYPE_VALUE_OBJECTIVE} | ${workItemObjectiveWithChild} | ${false}       | ${true}
+        ${WORK_ITEM_TYPE_VALUE_OBJECTIVE} | ${workItemObjectiveWithChild} | ${true}        | ${true}
+        ${WORK_ITEM_TYPE_VALUE_OBJECTIVE} | ${workItemObjectiveWithChild} | ${false}       | ${true}
+        ${WORK_ITEM_TYPE_VALUE_EPIC}      | ${workItemEpic}               | ${true}        | ${true}
+      `(
+        'passes `showWeight` as $showWeight when the type is $workItemType and `showTaskWeight` is $showWeight',
+        ({ childItem, showWeight }) => {
+          createComponent({
+            childItem,
+            showTaskWeight: showWeight,
+          });
+
+          expect(findWorkItemLinkChildContents().props('showWeight')).toEqual(showWeight);
+        },
+      );
     });
 
     describe('pagination', () => {

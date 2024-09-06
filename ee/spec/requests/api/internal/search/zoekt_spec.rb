@@ -51,13 +51,14 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to eq(
-              { 'id' => nil, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+              { 'id' => nil, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+                'truncate' => true }
             )
           end
         end
 
         context 'when node exists' do
-          let(:node) { build(:zoekt_node, id: 123) }
+          let(:node) { create(:zoekt_node, id: 123) }
 
           it 'does not save node when node does not exist' do
             expect(node).not_to receive(:save)
@@ -66,7 +67,8 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(response).to have_gitlab_http_status(:ok)
             expect(json_response).to eq(
-              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+              { 'id' => node.id, 'tasks' => [], 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+                'truncate' => false }
             )
           end
         end
@@ -89,7 +91,8 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
           expect(response).to have_gitlab_http_status(:ok)
           expect(json_response).to eq(
-            { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => described_class::TASK_PULL_FREQUENCY }
+            { 'id' => node.id, 'tasks' => tasks, 'pull_frequency' => described_class::TASK_PULL_FREQUENCY,
+              'truncate' => true }
           )
         end
 
@@ -107,7 +110,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks })
+            expect(json_response).to eq({ 'id' => node.id, 'tasks' => tasks, 'truncate' => true })
           end
         end
 
@@ -125,7 +128,7 @@ RSpec.describe API::Internal::Search::Zoekt, feature_category: :global_search do
 
             expect(::Search::Zoekt::TaskPresenterService).not_to receive(:execute)
             expect(response).to have_gitlab_http_status(:ok)
-            expect(json_response).to eq({ 'id' => node.id })
+            expect(json_response).to eq({ 'id' => node.id, 'truncate' => true })
           end
         end
       end

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Main, "Integration", feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Main, "Integration", feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let_it_be(:current_user) { user }
   let_it_be(:workspace, refind: true) do

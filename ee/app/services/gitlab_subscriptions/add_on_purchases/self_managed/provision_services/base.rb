@@ -5,6 +5,7 @@ module GitlabSubscriptions
     module SelfManaged
       module ProvisionServices
         class Base
+          extend ::Gitlab::Utils::Override
           include ::Gitlab::Utils::StrongMemoize
 
           AddOnPurchaseSyncError = Class.new(StandardError)
@@ -25,7 +26,7 @@ module GitlabSubscriptions
           private
 
           def license_has_add_on?
-            current_license&.online_cloud_license? && quantity > 0
+            !!current_license&.online_cloud_license? && quantity.to_i > 0
           end
 
           def current_license
@@ -54,12 +55,10 @@ module GitlabSubscriptions
           def add_on_purchase
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :add_on_purchase
 
           def add_on
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :add_on_purchase
 
           def namespace
             nil # self-managed is unrelated to namespaces
@@ -68,9 +67,11 @@ module GitlabSubscriptions
           def attributes
             {
               add_on_purchase: add_on_purchase,
+              started_on: starts_at,
               expires_on: expires_on,
               purchase_xid: purchase_xid,
-              quantity: quantity
+              quantity: quantity,
+              trial: trial?
             }
           end
 
@@ -80,18 +81,30 @@ module GitlabSubscriptions
             GitlabSubscriptions::AddOnPurchases::SelfManaged::ExpireService.new(add_on_purchase).execute
           end
 
-          def purchase_xid
-            license_restrictions&.dig(:subscription_name)
-          end
-
-          def expires_on
-            current_license&.block_changes_at || current_license&.expires_at
-          end
-
           def quantity
             raise MethodNotImplementedError
           end
-          strong_memoize_attr :quantity
+
+          # The naming of this attribute is different in multiple places:
+          # It's called `started_on` within the license's add-ons (original name) but `started_at` in the GitLab
+          # code (due to feedback in a database review). It also uses past tense but we're going to offer support
+          # for future dated add-ons. Since this method is the provisioning method, it uses `starts_at` (present
+          # tense) to try to indicate a possible future start.
+          def starts_at
+            raise MethodNotImplementedError
+          end
+
+          def expires_on
+            raise MethodNotImplementedError
+          end
+
+          def purchase_xid
+            raise MethodNotImplementedError
+          end
+
+          def trial?
+            raise MethodNotImplementedError
+          end
         end
       end
     end

@@ -19,6 +19,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     projectDetails: {
       query: getProjectDetailsQuery,
       variables() {
@@ -114,11 +115,11 @@ export default {
         return {
           clusterAgents:
             data.namespace?.remoteDevelopmentClusterAgents?.nodes.map(
-              ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+              ({ id, name, project, workspacesAgentConfig }) => ({
                 value: id,
                 text: `${project.nameWithNamespace} / ${name}`,
                 defaultMaxHoursBeforeTermination:
-                  remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+                  workspacesAgentConfig.defaultMaxHoursBeforeTermination,
               }),
             ) || [],
         };
@@ -164,11 +165,11 @@ export default {
         return {
           result:
             data.group?.clusterAgents?.nodes.map(
-              ({ id, name, project, remoteDevelopmentAgentConfig }) => ({
+              ({ id, name, project, workspacesAgentConfig }) => ({
                 value: id,
                 text: `${project.nameWithNamespace} / ${name}`,
                 defaultMaxHoursBeforeTermination:
-                  remoteDevelopmentAgentConfig.defaultMaxHoursBeforeTermination,
+                  workspacesAgentConfig.defaultMaxHoursBeforeTermination,
               }),
             ) || [],
         };

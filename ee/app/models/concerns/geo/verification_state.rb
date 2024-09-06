@@ -360,6 +360,10 @@ module Geo
 
       self.verification_checksum = nil
       self.verification_failed!
+    rescue StandardError => e
+      log_error('Error when saving failed verification', e, { id: id })
+
+      raise e
     end
 
     private

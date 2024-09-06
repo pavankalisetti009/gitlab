@@ -6,14 +6,20 @@ import * as Sentry from '~/sentry/sentry_browser_wrapper';
 import { extendedWrapper } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { createComplianceFrameworksReportResponse } from 'ee_jest/compliance_dashboard/mock_data';
+import {
+  createComplianceFrameworksReportResponse,
+  createDeleteFrameworkResponse,
+} from 'ee_jest/compliance_dashboard/mock_data';
 
 import ComplianceFrameworksReport from 'ee/compliance_dashboard/components/frameworks_report/report.vue';
 import complianceFrameworks from 'ee/compliance_dashboard/components/frameworks_report/graphql/compliance_frameworks_list.query.graphql';
+import deleteComplianceFrameworkMutation from 'ee/compliance_dashboard/graphql/mutations/delete_compliance_framework.mutation.graphql';
+import { createAlert } from '~/alert';
 
 import { ROUTE_FRAMEWORKS } from 'ee/compliance_dashboard/constants';
 
 Vue.use(VueApollo);
+jest.mock('~/alert');
 
 describe('ComplianceFrameworksReport component', () => {
   let wrapper;
@@ -26,6 +32,10 @@ describe('ComplianceFrameworksReport component', () => {
   const mockGraphQlLoading = jest.fn().mockResolvedValue(new Promise(() => {}));
   const mockFrameworksGraphQlSuccess = jest.fn().mockResolvedValue(frameworksResponse);
   const mockGraphQlError = jest.fn().mockRejectedValue(sentryError);
+  const mockDeleteFrameworkSuccess = jest.fn().mockResolvedValue(createDeleteFrameworkResponse());
+  const mockDeleteFrameworkError = jest
+    .fn()
+    .mockResolvedValue(createDeleteFrameworkResponse(['Could not delete framework']));
 
   const findQueryError = () => wrapper.findComponentByTestId('query-error-alert');
   const findMaintenanceAlert = () => wrapper.findComponentByTestId('maintenance-mode-alert');
@@ -46,8 +56,11 @@ describe('ComplianceFrameworksReport component', () => {
     groupSecurityPoliciesPath: '/group-security-policies-example-path',
   };
 
-  function createMockApolloProvider(complianceFrameworksResolverMock) {
-    return createMockApollo([[complianceFrameworks, complianceFrameworksResolverMock]]);
+  function createMockApolloProvider(complianceFrameworksResolverMock, deleteFrameworkResolverMock) {
+    return createMockApollo([
+      [complianceFrameworks, complianceFrameworksResolverMock],
+      [deleteComplianceFrameworkMutation, deleteFrameworkResolverMock],
+    ]);
   }
 
   // eslint-disable-next-line max-params
@@ -57,6 +70,7 @@ describe('ComplianceFrameworksReport component', () => {
     complianceFrameworksResolverMock = mockGraphQlLoading,
     queryParams = {},
     provide = {},
+    deleteFrameworkResolverMock = mockDeleteFrameworkSuccess,
   ) {
     const currentQueryParams = { ...queryParams };
     $router = {
@@ -65,7 +79,10 @@ describe('ComplianceFrameworksReport component', () => {
       }),
     };
 
-    apolloProvider = createMockApolloProvider(complianceFrameworksResolverMock);
+    apolloProvider = createMockApolloProvider(
+      complianceFrameworksResolverMock,
+      deleteFrameworkResolverMock,
+    );
 
     wrapper = extendedWrapper(
       mountFn(ComplianceFrameworksReport, {
@@ -276,6 +293,49 @@ describe('ComplianceFrameworksReport component', () => {
         name: 'Some framework 1',
         pipelineConfigurationFullPath: null,
       });
+    });
+  });
+
+  describe('deleting frameworks', () => {
+    beforeEach(async () => {
+      createComponent(mount, { props: {} }, mockFrameworksGraphQlSuccess);
+      await waitForPromises();
+    });
+
+    it('calls delete framework mutation on delete framework event with expected id and refetches data', async () => {
+      findFrameworksTable().vm.$emit(
+        'delete-framework',
+        'gid://gitlab/ComplianceManagement::Framework/1',
+      );
+      await waitForPromises();
+      expect(mockDeleteFrameworkSuccess).toHaveBeenCalledWith({
+        input: {
+          id: 'gid://gitlab/ComplianceManagement::Framework/1',
+        },
+      });
+      expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledTimes(2);
+    });
+
+    it('shows alert in case of error and does not call refetch', async () => {
+      createComponent(
+        mount,
+        { props: {} },
+        mockFrameworksGraphQlSuccess,
+        {},
+        {},
+        mockDeleteFrameworkError,
+      );
+      findFrameworksTable().vm.$emit(
+        'delete-framework',
+        'gid://gitlab/ComplianceManagement::Framework/1',
+      );
+      await waitForPromises();
+      expect(createAlert).toHaveBeenCalledWith({
+        captureError: true,
+        error: 'Could not delete framework',
+        message: 'Could not delete framework',
+      });
+      expect(mockFrameworksGraphQlSuccess).toHaveBeenCalledTimes(2);
     });
   });
 });

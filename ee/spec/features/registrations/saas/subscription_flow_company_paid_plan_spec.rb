@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Subscription flow for user picking company for paid plan', :js, :saas_registration, feature_category: :onboarding do
+RSpec.describe 'Subscription flow for user picking company for paid plan', :js, :saas_registration, :with_default_organization, feature_category: :onboarding do
   where(:case_name, :sign_up_method) do
     [
       ['with regular sign up', -> { subscription_regular_sign_up }],

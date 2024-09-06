@@ -52,6 +52,17 @@ module EE
       }
     end
 
+    override :sticky_header_data
+    def sticky_header_data(project, merge_request)
+      data = super
+
+      if ::Feature.enabled?(:mr_reports_tab, current_user, type: :wip)
+        data[:tabs].insert(data[:tabs].size - 1, ['reports', _('Reports'), reports_project_merge_request_path(project, merge_request), 0])
+      end
+
+      data
+    end
+
     private
 
     def show_iv_alert_for_mr?(merge_request)

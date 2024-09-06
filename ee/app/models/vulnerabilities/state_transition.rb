@@ -4,14 +4,14 @@ module Vulnerabilities
   class StateTransition < ApplicationRecord
     include EachBatch
     include BulkInsertSafe
+    include IgnorableColumns
 
     self.table_name = 'vulnerability_state_transitions'
 
+    ignore_column :state_changed_at_pipeline_id, remove_with: '17.6', remove_after: '2024-11-21'
+
     belongs_to :author, class_name: 'User', inverse_of: :vulnerability_state_transitions
     belongs_to :vulnerability, class_name: 'Vulnerability', inverse_of: :state_transitions
-    belongs_to :pipeline, class_name: 'Ci::Pipeline',
-      foreign_key: :state_changed_at_pipeline_id,
-      inverse_of: :vulnerability_state_transitions
     validates :comment, length: { maximum: 50_000 }
     validates :vulnerability_id, :from_state, :to_state, presence: true
     validate :to_state_and_from_state_differ

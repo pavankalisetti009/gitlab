@@ -30,13 +30,18 @@ module EE
           permitted_params = super
 
           if has_status_page_license?
-            permitted_params.merge!(status_page_setting_params)
+            permitted_params.push(status_page_setting_params)
           end
 
           if sla_feature_available?
-            incident_params = Array(permitted_params[:incident_management_setting_attributes])
-            permitted_params[:incident_management_setting_attributes] = incident_params.push(*sla_timer_params)
+            incident_params_hash = permitted_params.find { |item| item.is_a?(Hash) && item.key?(:incident_management_setting_attributes) }
+            if incident_params_hash
+              incident_params = incident_params_hash[:incident_management_setting_attributes]
+              incident_params.push(*sla_timer_params)
+            end
           end
+
+          permitted_params.push(:observability_alerts_enabled) if can?(current_user, :read_observability, project)
 
           permitted_params
         end

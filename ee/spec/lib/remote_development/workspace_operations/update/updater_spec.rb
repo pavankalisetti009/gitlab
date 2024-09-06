@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Update::Updater, feature_category: :workspaces do
   include ResultMatchers
 
   subject(:result) do

@@ -1,3 +1,5 @@
+import { subscriptionTypes } from 'ee/admin/subscriptions/show/constants';
+
 import {
   ADD_ON_CODE_SUGGESTIONS,
   ADD_ON_DUO_ENTERPRISE,
@@ -106,6 +108,29 @@ export const deprecatedPurchasedAddonFuzzyData = {
       assignedQuantity: 0,
       purchasedQuantity: null,
       __typename: 'AddOnPurchase',
+    },
+  },
+};
+
+export const currentLicenseData = {
+  data: {
+    currentLicense: {
+      id: 'gid://gitlab/License/3',
+      type: subscriptionTypes.LEGACY_LICENSE,
+      activatedAt: '2021-03-01',
+      billableUsersCount: '8',
+      expiresAt: '2025-08-01',
+      company: 'ACME Corp',
+      email: 'user@acmecorp.com',
+      lastSync: '2021-03-01T00:00:00.000',
+      maximumUserCount: '8',
+      name: 'Jane Doe',
+      plan: 'ultimate',
+      startsAt: '2021-03-01',
+      usersInLicenseCount: '10',
+      usersOverLicenseCount: '0',
+      trial: false,
+      __typename: 'CurrentLicense',
     },
   },
 };
@@ -297,6 +322,7 @@ export const mockNoProjects = {
 export const mockProjects = {
   data: {
     group: {
+      id: 'gid://gitlab/Group/13',
       projects: {
         nodes: [
           {

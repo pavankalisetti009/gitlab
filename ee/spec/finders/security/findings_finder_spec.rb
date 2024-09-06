@@ -10,12 +10,7 @@ RSpec.describe Security::FindingsFinder, feature_category: :vulnerability_manage
 
       describe '#findings' do
         context 'when the `security_findings` records have `overridden_uuid`s' do
-          let(:security_findings) do
-            Security::Finding.by_build_ids(build_1).allow_cross_joins_across_databases(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478420'
-            )
-          end
-
+          let(:security_findings) { Security::Finding.by_build_ids(build_1) }
           let(:security_finding_uuids) { Security::Finding.pluck(:uuid) }
           let(:nondeduplicated_security_finding_uuid) { Security::Finding.second[:uuid] }
           let(:expected_uuids) do

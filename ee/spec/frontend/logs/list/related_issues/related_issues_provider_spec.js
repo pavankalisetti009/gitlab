@@ -5,8 +5,11 @@ import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import RelatedIssuesProvider from 'ee/logs/list/related_issues/related_issues_provider.vue';
 import relatedIssuesQuery from 'ee/logs/list/related_issues/graphql/get_logs_related_issues.query.graphql';
+import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
+import { createRelatedIssuesQueryMockResult } from 'jest/observability/mock_data';
 import { mockLogs } from '../../mock_data';
-import { mockQueryResult } from './mock_data';
+
+jest.mock('~/observability/utils');
 
 Vue.use(VueApollo);
 
@@ -19,6 +22,8 @@ describe('RelatedIssuesProvider component', () => {
   const defaultProps = { projectFullPath: 'foo/bar', log: mockLog };
 
   let wrapper;
+
+  const mockQueryResult = createRelatedIssuesQueryMockResult('observabilityLogsLinks');
 
   function createComponent({ props = defaultProps, slots, queryMock } = {}) {
     relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockQueryResult);
@@ -36,6 +41,16 @@ describe('RelatedIssuesProvider component', () => {
       },
     });
   }
+
+  const mockIssues = [
+    {
+      id: 'mock-issue',
+    },
+  ];
+
+  beforeEach(() => {
+    parseGraphQLIssueLinksToRelatedIssues.mockReturnValue(mockIssues);
+  });
 
   describe('rendered output', () => {
     it('renders correctly with default slot', () => {
@@ -77,10 +92,8 @@ describe('RelatedIssuesProvider component', () => {
       });
     });
 
-    it('calls the default slots with issues', () => {
-      expect(defaultSlotSpy).toHaveBeenCalledWith(
-        expect.objectContaining({ issues: mockQueryResult.data.project.issues.nodes }),
-      );
+    it('calls the default slots with parsed issue objects', () => {
+      expect(defaultSlotSpy).toHaveBeenCalledWith(expect.objectContaining({ issues: mockIssues }));
     });
 
     it('calls the default slots with loading = false', () => {

@@ -140,7 +140,7 @@ module GraphqlHelpers
     arg_style: :internal_prepared, # Args are in internal format, but should use more rigorous processing
     query: nil                     # Query to evaluate the field
   )
-    field = to_base_field(field, object_type)
+    field = to_base_field(field, object_type).ensure_loaded
     ctx[:current_user] = current_user unless current_user == :not_given
     query ||= GraphQL::Query.new(schema, context: ctx.to_h)
     extras[:lookahead] = negative_lookahead if extras[:lookahead] == :not_given && field.extras.include?(:lookahead)
@@ -169,9 +169,9 @@ module GraphqlHelpers
   end
 
   # create a valid query context object
-  def query_context(user: current_user)
+  def query_context(user: current_user, request: {})
     query = GraphQL::Query.new(empty_schema, document: nil, context: {}, variables: {})
-    GraphQL::Query::Context.new(query: query, values: { current_user: user })
+    GraphQL::Query::Context.new(query: query, values: { current_user: user, request: request })
   end
 
   # rubocop:enable Metrics/ParameterLists

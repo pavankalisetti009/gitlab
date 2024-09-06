@@ -9,14 +9,10 @@ import EditorLayout from 'ee/security_orchestration/components/policy_editor/edi
 import { DEFAULT_PIPELINE_EXECUTION_POLICY } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/constants';
 import { fromYaml } from 'ee/security_orchestration/components/policy_editor/pipeline_execution/utils';
 import {
-  modifyPolicy,
   doesFileExist,
-  redirectToMergeRequest,
+  goToPolicyMR,
 } from 'ee/security_orchestration/components/policy_editor/utils';
-import {
-  EDITOR_MODE_YAML,
-  SECURITY_POLICY_ACTIONS,
-} from 'ee/security_orchestration/components/policy_editor/constants';
+import { SECURITY_POLICY_ACTIONS } from 'ee/security_orchestration/components/policy_editor/constants';
 
 import {
   ASSIGNED_POLICY_PROJECT,
@@ -27,6 +23,7 @@ import {
   mockWithoutRefPipelineExecutionManifest,
   mockWithoutRefPipelineExecutionObject,
 } from 'ee_jest/security_orchestration/mocks/mock_pipeline_execution_policy_data';
+import { goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
   ...jest.requireActual('ee/security_orchestration/components/policy_editor/utils'),
@@ -34,7 +31,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
     branch: 'main',
     fullPath: 'path/to/new-project',
   }),
-  modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
+  goToPolicyMR: jest.fn().mockResolvedValue(),
   doesFileExist: jest.fn().mockResolvedValue({
     data: {
       project: {
@@ -46,7 +43,6 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
       },
     },
   }),
-  redirectToMergeRequest: jest.fn(),
 }));
 
 describe('EditorComponent', () => {
@@ -59,6 +55,7 @@ describe('EditorComponent', () => {
     wrapper = shallowMountExtended(EditorComponent, {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        isEditing: false,
         ...propsData,
       },
       provide: {
@@ -86,9 +83,6 @@ describe('EditorComponent', () => {
   const findPolicyEditorLayout = () => wrapper.findComponent(EditorLayout);
   const findActionSection = () => wrapper.findComponent(ActionSection);
   const findRuleSection = () => wrapper.findComponent(RuleSection);
-
-  const changesToYamlMode = () =>
-    findPolicyEditorLayout().vm.$emit('update-editor-mode', EDITOR_MODE_YAML);
 
   describe('rule mode', () => {
     it('renders the editor', () => {
@@ -164,8 +158,8 @@ describe('EditorComponent', () => {
         factoryFn();
         findPolicyEditorLayout().vm.$emit(event);
         await waitForPromises();
-        expect(modifyPolicy).toHaveBeenCalledTimes(1);
-        expect(modifyPolicy).toHaveBeenCalledWith({
+        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        expect(goToPolicyMR).toHaveBeenCalledWith({
           action,
           assignedPolicyProject: currentlyAssignedPolicyProject,
           name:
@@ -175,10 +169,6 @@ describe('EditorComponent', () => {
           namespacePath: defaultProjectPath,
           yamlEditorValue,
         });
-        expect(redirectToMergeRequest).toHaveBeenCalledWith({
-          mergeRequestId: '2',
-          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
-        });
       },
     );
 
@@ -186,7 +176,7 @@ describe('EditorComponent', () => {
       describe('when in rule mode', () => {
         it('clears the error message before making the network request', () => {
           const error = { message: 'There was a graphql error', cause: '' };
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           findPolicyEditorLayout().vm.$emit('save-policy');
           expect(wrapper.emitted('error')).toStrictEqual([['']]);
@@ -194,7 +184,7 @@ describe('EditorComponent', () => {
 
         it('passes graphql errors', async () => {
           const error = { message: 'There was a graphql error', cause: '' };
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -206,7 +196,7 @@ describe('EditorComponent', () => {
 
         it('passes non-graphql errors', async () => {
           const error = { message: 'There was an error', cause: '' };
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -215,7 +205,7 @@ describe('EditorComponent', () => {
 
         it('sets the loading flag on error', async () => {
           const error = { message: 'There was an error', cause: '' };
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           expect(findPolicyEditorLayout().props('isUpdatingPolicy')).toBe(false);
           await findPolicyEditorLayout().vm.$emit('save-policy');
@@ -228,9 +218,9 @@ describe('EditorComponent', () => {
       describe('when in yaml mode', () => {
         it('emits errors', async () => {
           const error = { message: 'There was an error', cause: '' };
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
-          changesToYamlMode();
+          goToYamlMode(findPolicyEditorLayout);
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
           expect(wrapper.emitted('error')).toStrictEqual([[''], [error.message]]);
@@ -267,7 +257,7 @@ describe('EditorComponent', () => {
       });
 
       it('calls validation when switched to yaml mode', async () => {
-        await changesToYamlMode();
+        await goToYamlMode(findPolicyEditorLayout);
 
         expect(doesFileExist).toHaveBeenCalledTimes(0);
 

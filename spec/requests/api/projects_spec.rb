@@ -893,6 +893,23 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
     end
 
     context 'sorting' do
+      context 'by star_count' do
+        let_it_be(:project_most_stars) { create(:project, :public, star_count: 100) }
+        let_it_be(:project_no_stars) { create(:project, :public, star_count: 0) }
+        let_it_be(:project_few_stars) { create(:project, :public, star_count: 10) }
+
+        it 'with order_by=star_count, returns list of projects sorted by star_count descending' do
+          get api(path), params: { order_by: 'star_count' }
+
+          expected_order = [project_most_stars, project_few_stars, project_no_stars, public_project]
+
+          expect(response).to have_gitlab_http_status(:ok)
+          expect(response).to include_pagination_headers
+          expect(json_response).to be_an Array
+          expect(json_response.map { |x| x['id'] }).to eq(expected_order.map(&:id))
+        end
+      end
+
       context 'by project statistics' do
         %w[repository_size storage_size wiki_size packages_size].each do |order_by|
           context "sorting by #{order_by}" do
@@ -1323,6 +1340,7 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
           has_external_issue_tracker has_external_wiki issues_enabled merge_requests_enabled wiki_enabled storage_version
           container_registry_access_level releases_access_level environments_access_level feature_flags_access_level
           infrastructure_access_level monitor_access_level model_experiments_access_level model_registry_access_level
+          namespace
         ].include?(k)
 
         expect(json_response[k.to_s]).to eq(v)
@@ -1346,6 +1364,16 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       expect(project.project_feature.merge_requests_access_level).to eq(ProjectFeature::DISABLED)
       expect(project.project_feature.issues_access_level).to eq(ProjectFeature::DISABLED)
       expect(project.project_feature.snippets_access_level).to eq(ProjectFeature::DISABLED)
+
+      # Check namespace attributes
+      expect(project.namespace.id).to eq(user.namespace.id)
+      expect(project.namespace.name).to eq(user.namespace.name)
+      expect(project.namespace.path).to eq(user.namespace.path)
+      expect(project.namespace.kind).to eq(user.namespace.kind)
+      expect(project.namespace.full_path).to eq(user.namespace.full_path)
+      expect(project.namespace.parent_id).to be_nil
+      expect(project.namespace.avatar_url).to eq(user.namespace.avatar_url)
+      expect(project.namespace.web_url).to eq(user.namespace.web_url)
     end
 
     it 'assigns container_registry_enabled to project' do
@@ -2114,10 +2142,14 @@ RSpec.describe API::Projects, :aggregate_failures, feature_category: :groups_and
       expect(response).to have_gitlab_http_status(:created)
 
       project.each_pair do |k, v|
-        next if %i[has_external_issue_tracker has_external_wiki path storage_version].include?(k)
+        next if %i[has_external_issue_tracker has_external_wiki path storage_version namespace].include?(k)
 
         expect(json_response[k.to_s]).to eq(v)
       end
+
+      # Check namespace
+      created_project = Project.find_by_path(project[:path])
+      expect(created_project.namespace.id).to eq(user.namespace.id)
     end
 
     it 'sets a project as public' do

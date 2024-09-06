@@ -32,15 +32,23 @@ module Resolvers
         required: false,
         description: 'Filter dependencies by component names.'
 
+      argument :component_ids, [Types::GlobalIDType[::Sbom::Component]],
+        required: false,
+        description: 'Filter dependencies by component IDs.'
+
       argument :source_types, [Types::Sbom::SourceTypeEnum],
         required: false,
         default_value: ::Sbom::Source::DEFAULT_SOURCES.keys.map(&:to_s) + ['nil_source'],
         description: 'Filter dependencies by source type.'
 
-      alias_method :project, :object
+      validates mutually_exclusive: [:component_names, :component_ids]
+
+      alias_method :project_or_namespace, :object
 
       def resolve_with_lookahead(**args)
-        return ::Sbom::Occurrence.none unless project
+        return ::Sbom::Occurrence.none unless project_or_namespace
+
+        args[:component_ids] = resolve_gids(args[:component_ids], ::Sbom::Component) if args[:component_ids]
 
         list = dependencies(args)
 
@@ -58,8 +66,14 @@ module Resolvers
 
       private
 
+      def resolve_gids(gids, gid_class)
+        gids.map do |gid|
+          Types::GlobalIDType[gid_class].coerce_isolated_input(gid).model_id
+        end
+      end
+
       def dependencies(params)
-        apply_lookahead(::Sbom::DependenciesFinder.new(project, params: mapped_params(params)).execute)
+        apply_lookahead(::Sbom::DependenciesFinder.new(project_or_namespace, params: mapped_params(params)).execute)
       end
 
       def mapped_params(params)

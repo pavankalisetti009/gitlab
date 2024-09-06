@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, feature_category: :custom_models do
+RSpec.describe CodeSuggestions::Prompts::CodeGeneration::MistralMessages, feature_category: :"self-hosted_models" do
   let_it_be(:feature_setting) { create(:ai_feature_setting, provider: :self_hosted) }
 
   let(:prompt_version) { 3 }

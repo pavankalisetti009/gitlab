@@ -12,6 +12,7 @@ FactoryBot.define do
     trial { false }
 
     trait :active do
+      started_at { 1.day.ago.to_date }
       expires_on { 1.year.from_now.to_date }
     end
 
@@ -26,12 +27,18 @@ FactoryBot.define do
     end
 
     trait :expired do
-      expires_on { 2.days.ago }
+      started_at { 5.days.ago.to_date }
+      expires_on { 1.day.ago.to_date }
     end
 
     trait :expired_trial do
       trial
       expired
+    end
+
+    trait :future_dated do
+      started_at { 1.month.from_now.to_date }
+      expires_on { 1.year.from_now.to_date }
     end
 
     trait :gitlab_duo_pro do

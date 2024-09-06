@@ -17,9 +17,7 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
   describe 'fetching notes for incidents' do
     let_it_be(:issuable) { create(:incident, project: project) }
 
-    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446093' do
-      it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 7
-    end
+    it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 7
   end
 
   describe 'fetching notes for epics' do
@@ -38,9 +36,7 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
       expect(epic_discussions.count).to eq(work_item_discussions.count)
     end
 
-    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/446093' do
-      it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 5
-    end
+    it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 5
 
     describe 'fetching notes for epic work item' do
       let_it_be(:epic) { create(:epic, group: group) }
@@ -141,14 +137,34 @@ RSpec.describe Issuable::DiscussionsListService, feature_category: :team_plannin
   end
 
   describe 'fetching notes for issue' do
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      stub_licensed_features(epics: true)
+    end
+
+    context 'when issue exists at the group level' do
+      let_it_be(:issuable) { create(:issue, :group_level, namespace: group) }
+
+      context 'with epics license enabled' do
+        it_behaves_like 'listing issuable discussions', user_role: :guest, internal_discussions: 1, total_discussions: 7
+      end
+
+      context 'with epics license disabled' do
+        before do
+          stub_licensed_features(epics: false)
+          group.add_developer(current_user)
+        end
+
+        it 'does not return any notes' do
+          expect(discussions_service.execute).to be_empty
+        end
+      end
+    end
+
     context 'when fetching system notes with references' do
       let_it_be(:public_group) { create(:group, :public) }
       let_it_be(:public_project) { create(:project, :public, group: public_group) }
       let_it_be(:issue) { create(:issue, project: public_project) }
-
-      before do
-        stub_licensed_features(epics: true)
-      end
 
       context 'with epic in private group' do
         let_it_be(:epic) { create(:epic, group: group) }

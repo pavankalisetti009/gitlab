@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Map a cluster agent to a group', feature_category: :remote_development do
+RSpec.describe 'Map a cluster agent to a group', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 

@@ -215,7 +215,13 @@ module EE
         field :security_policy_project_linked_namespaces,
           ::Types::NamespaceType.connection_type,
           null: true,
-          description: 'Namespaces linked to the project, when used as Security Policy Project.'
+          description: 'Namespaces linked to the project, when used as Security Policy Project.',
+          deprecated: { reason: :renamed, replacement: 'security_policy_project_linked_groups', milestone: '17.4' }
+
+        field :security_policy_project_linked_groups,
+          ::Types::GroupType.connection_type,
+          null: true,
+          description: 'Groups linked to the project, when used as Security Policy Project.'
 
         field :security_policy_project_suggestions,
           ::Types::ProjectType.connection_type,
@@ -311,6 +317,7 @@ module EE
           description: 'Software dependencies used by the project.',
           alpha: { milestone: '15.9' },
           resolver: ::Resolvers::Sbom::DependenciesResolver
+
         field :merge_requests_disable_committers_approval, GraphQL::Types::Boolean,
           null: false,
           description: 'Indicates that committers of the given merge request cannot approve.'
@@ -438,12 +445,26 @@ module EE
           resolver: ::Resolvers::GitlabSubscriptions::MemberManagement::MemberApprovalResolver,
           description: 'Pending member promotions of the project.'
 
+        field :observability_logs_links,
+          ::Types::Observability::LogType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Logs attached to the project.',
+          resolver: ::Resolvers::Observability::LogsResolver
+
         field :observability_metrics_links,
           ::Types::Observability::MetricType.connection_type,
           null: true,
           alpha: { milestone: '17.4' },
           description: 'Metrics attached to the project.',
           resolver: ::Resolvers::Observability::MetricsResolver
+
+        field :observability_traces_links,
+          ::Types::Observability::TraceType.connection_type,
+          null: true,
+          alpha: { milestone: '17.4' },
+          description: 'Traces attached to the project.',
+          resolver: ::Resolvers::Observability::TracesResolver
       end
 
       def tracking_key

@@ -762,7 +762,6 @@ project:
 - wiki_repository_state
 - source_pipelines
 - sourced_pipelines
-- prometheus_metrics
 - vulnerabilities
 - vulnerability_exports
 - vulnerability_findings
@@ -883,6 +882,7 @@ project:
 - security_policy_management_project_linked_configurations
 - security_policy_project_linked_projects
 - security_policy_project_linked_namespaces
+- security_policy_project_linked_groups
 - relation_import_trackers
 - saved_replies
 - security_policy_project_links
@@ -891,13 +891,14 @@ project:
 - approval_policy_rules
 - secrets_manager
 - observability_metrics
+- observability_traces
+- observability_logs
+- security_exclusions
 award_emoji:
 - awardable
 - user
 priorities:
 - label
-prometheus_metrics:
-- project
 timelogs:
 - issue
 - merge_request

@@ -21,10 +21,11 @@ module EE
         use_clickhouse_for_analytics: [:boolean, { default: false }]
 
       jsonb_accessor :zoekt_settings,
-        zoekt_auto_index_root_namespace: [:boolean, { default: false }],
         zoekt_indexing_enabled: [:boolean, { default: false }],
         zoekt_indexing_paused: [:boolean, { default: false }],
-        zoekt_search_enabled: [:boolean, { default: false }]
+        zoekt_search_enabled: [:boolean, { default: false }],
+        zoekt_auto_index_root_namespace: [:boolean, { default: false }],
+        zoekt_cpu_to_tasks_ratio: [:float, { default: 1.0 }]
 
       jsonb_accessor :code_creation, disabled_direct_code_suggestions: [:boolean, { default: false }]
 
@@ -33,6 +34,11 @@ module EE
       validates :duo_workflow, json_schema: { filename: "application_setting_duo_workflow" }
 
       validates :clickhouse, json_schema: { filename: "application_setting_clickhouse" }
+
+      jsonb_accessor :cluster_agents,
+        receptive_cluster_agents_enabled: [:boolean, { default: false }]
+
+      validates :cluster_agents, json_schema: { filename: 'application_setting_cluster_agents' }
 
       validates :shared_runners_minutes,
         numericality: { greater_than_or_equal_to: 0 }
@@ -164,6 +170,10 @@ module EE
           less_than_or_equal_to: ::Security::ScanResultPolicy::POLICIES_LIMIT
         }
 
+      validates :security_policies, json_schema: { filename: "application_setting_security_policies" }
+
+      jsonb_accessor :security_policies, scan_execution_policies_action_limit: [:integer, { default: 10 }]
+
       validates :product_analytics_data_collector_host,
         length: { maximum: 255 },
         addressable_url: ::ApplicationSetting::ADDRESSABLE_URL_VALIDATION_OPTIONS.merge({ allow_localhost: true }),
@@ -200,6 +210,7 @@ module EE
         inclusion: { in: [true, false], message: N_('must be a boolean value') }
 
       validates :zoekt_settings, json_schema: { filename: 'application_setting_zoekt_settings' }
+      validates :zoekt_cpu_to_tasks_ratio, numericality: { greater_than: 0.0 }
 
       validates :security_policy_scheduled_scans_max_concurrency,
         presence: true,
@@ -318,7 +329,7 @@ module EE
       return true unless elasticsearch_limit_indexing?
 
       ::Gitlab::Elastic::ElasticsearchEnabledCache.fetch(:namespace, namespace.id) do
-        elasticsearch_limited_namespaces.exists?(namespace.id)
+        ElasticsearchIndexedNamespace.where(namespace_id: namespace.traversal_ids).exists?
       end
     end
 
@@ -530,6 +541,7 @@ module EE
       else
         self.duo_features_enabled = false
         self.lock_duo_features_enabled = true
+        self.instance_level_ai_beta_features_enabled = false
       end
     end
 

@@ -8,6 +8,10 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
   subject(:instance) { described_class.new(user, tracking_context: tracking_context) }
 
+  before do
+    Feature.disable(:ai_merge_request_reader_for_chat)
+  end
+
   describe 'initializer' do
     it 'initializes the AI Gateway client' do
       expect(instance.ai_client.class).to eq(::Gitlab::Llm::AiGateway::Client)
@@ -143,7 +147,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
     end
 
-    context 'when unit primitive is passed' do
+    context 'when unit primitive is passed with no corresponding feature setting' do
       let(:endpoint) { "#{described_class::BASE_ENDPOINT}/test" }
 
       subject(:request) { instance.request(prompt, unit_primitive: :test) }
@@ -244,13 +248,22 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       end
 
       it_behaves_like 'performing request to the AI Gateway'
+
+      context 'when `ai_merge_request_reader_for_chat` feature flag is enabled' do
+        before do
+          stub_feature_flags(ai_merge_request_reader_for_chat: true)
+        end
+
+        let(:body) do
+          super().merge(unavailable_resources: %w[Pipelines Vulnerabilities])
+        end
+
+        it_behaves_like 'performing request to the AI Gateway'
+      end
     end
 
     context 'when request is sent to chat tools implemented via agents' do
       let_it_be(:feature_setting) { create(:ai_feature_setting, feature: :duo_chat, provider: :self_hosted) }
-      let(:model_metadata) do
-        { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
-      end
 
       let(:options) do
         {
@@ -267,14 +280,61 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
         }
       end
 
-      let(:unit_primitive) { :test }
-      let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
       let(:prompt) { { prompt: user_prompt, options: options } }
       let(:inputs) { { field: :test_field } }
 
-      subject(:request) { instance.request(prompt, unit_primitive: :test) }
+      let(:model_metadata) do
+        { api_key: "token", endpoint: "http://localhost:11434/v1", name: "mistral", provider: :openai }
+      end
 
-      it_behaves_like 'performing request to the AI Gateway'
+      context 'with no unit primitive corresponding a feature setting' do
+        let(:unit_primitive) { :test }
+        let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
+
+        subject(:request) { instance.request(prompt, unit_primitive: unit_primitive) }
+
+        it_behaves_like 'performing request to the AI Gateway'
+      end
+
+      context 'with a unit primitive corresponding a feature setting' do
+        let_it_be(:model_api_key) { 'explain_code_token_model' }
+        let_it_be(:model_endpoint) { 'http://example.explain_code.dev' }
+        let_it_be(:self_hosted_model) do
+          create(:ai_self_hosted_model, name: 'explain_code', endpoint: model_endpoint, api_token: model_api_key)
+        end
+
+        let_it_be(:sub_feature_setting) do
+          create(
+            :ai_feature_setting,
+            feature: :duo_chat_explain_code,
+            provider: :self_hosted,
+            self_hosted_model: self_hosted_model
+          )
+        end
+
+        let(:unit_primitive) { :explain_code }
+
+        let(:endpoint) { "#{described_class::BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}" }
+
+        subject(:request) { instance.request(prompt, unit_primitive: unit_primitive) }
+
+        context 'when ai_duo_chat_sub_features_settings feature is disabled' do
+          before do
+            stub_feature_flags(ai_duo_chat_sub_features_settings: false)
+          end
+
+          # it fallsback to the chat feature settings
+          it_behaves_like 'performing request to the AI Gateway'
+        end
+
+        context 'when ai_duo_chat_sub_features_settings feature is enabled' do
+          let(:model_metadata) do
+            { api_key: model_api_key, endpoint: model_endpoint, name: "mistral", provider: :openai }
+          end
+
+          it_behaves_like 'performing request to the AI Gateway'
+        end
+      end
     end
 
     context 'when request is sent for a new ReAct Duo Chat prompt without optional params' do

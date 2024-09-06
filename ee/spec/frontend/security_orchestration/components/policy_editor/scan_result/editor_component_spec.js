@@ -54,19 +54,17 @@ import {
 } from 'ee/security_orchestration/components/policy_editor/scan_result/lib/settings';
 
 import {
-  modifyPolicy,
-  redirectToMergeRequest,
+  goToPolicyMR,
   removeIdsFromPolicy,
 } from 'ee/security_orchestration/components/policy_editor/utils';
 import {
   SECURITY_POLICY_ACTIONS,
-  EDITOR_MODE_RULE,
-  EDITOR_MODE_YAML,
   PARSING_ERROR_MESSAGE,
 } from 'ee/security_orchestration/components/policy_editor/constants';
 import DimDisableContainer from 'ee/security_orchestration/components/policy_editor/dim_disable_container.vue';
 import ActionSection from 'ee/security_orchestration/components/policy_editor/scan_result/action/action_section.vue';
 import RuleSection from 'ee/security_orchestration/components/policy_editor/scan_result/rule/rule_section.vue';
+import { goToRuleMode, goToYamlMode } from '../policy_editor_helper';
 
 jest.mock('lodash/uniqueId');
 
@@ -81,8 +79,7 @@ jest.mock('ee/security_orchestration/components/policy_editor/utils', () => ({
     branch: 'main',
     fullPath: 'path/to/new-project',
   }),
-  modifyPolicy: jest.fn().mockResolvedValue({ id: '2' }),
-  redirectToMergeRequest: jest.fn(),
+  goToPolicyMR: jest.fn().mockResolvedValue(),
 }));
 
 describe('EditorComponent', () => {
@@ -100,6 +97,7 @@ describe('EditorComponent', () => {
     wrapper = shallowMountExtended(EditorComponent, {
       propsData: {
         assignedPolicyProject: DEFAULT_ASSIGNED_POLICY_PROJECT,
+        isEditing: false,
         ...propsData,
       },
       provide: {
@@ -150,12 +148,6 @@ describe('EditorComponent', () => {
   const findSettingsSection = () => wrapper.findComponent(SettingsSection);
   const findEmptyActionsAlert = () => wrapper.findByTestId('empty-actions-alert');
   const findScanFilterSelector = () => wrapper.findComponent(ScanFilterSelector);
-
-  const changesToRuleMode = () =>
-    findPolicyEditorLayout().vm.$emit('update-editor-mode', EDITOR_MODE_RULE);
-
-  const changesToYamlMode = () =>
-    findPolicyEditorLayout().vm.$emit('update-editor-mode', EDITOR_MODE_YAML);
 
   const verifiesParsingError = () => {
     expect(findPolicyEditorLayout().props('hasParsingError')).toBe(true);
@@ -492,13 +484,13 @@ describe('EditorComponent', () => {
       ${'to update an existing policy'} | ${SECURITY_POLICY_ACTIONS.REPLACE} | ${'save-policy'}   | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest} | ${ASSIGNED_POLICY_PROJECT}
       ${'to delete an existing policy'} | ${SECURITY_POLICY_ACTIONS.REMOVE}  | ${'remove-policy'} | ${factoryWithExistingPolicy} | ${mockDefaultBranchesScanResultManifest} | ${ASSIGNED_POLICY_PROJECT}
     `(
-      'navigates to the new merge request when "modifyPolicy" is emitted $status',
+      'navigates to the new merge request when "goToPolicyMR" is emitted $status',
       async ({ action, event, factoryFn, yamlEditorValue, currentlyAssignedPolicyProject }) => {
         factoryFn();
         findPolicyEditorLayout().vm.$emit(event);
         await waitForPromises();
-        expect(modifyPolicy).toHaveBeenCalledTimes(1);
-        expect(modifyPolicy).toHaveBeenCalledWith({
+        expect(goToPolicyMR).toHaveBeenCalledTimes(1);
+        expect(goToPolicyMR).toHaveBeenCalledWith({
           action,
           assignedPolicyProject: currentlyAssignedPolicyProject,
           name:
@@ -507,10 +499,6 @@ describe('EditorComponent', () => {
               : mockDefaultBranchesScanResultObject.name,
           namespacePath: defaultProjectPath,
           yamlEditorValue,
-        });
-        expect(redirectToMergeRequest).toHaveBeenCalledWith({
-          mergeRequestId: '2',
-          assignedPolicyProjectFullPath: currentlyAssignedPolicyProject.fullPath,
         });
       },
     );
@@ -524,7 +512,7 @@ describe('EditorComponent', () => {
       describe('when in rule mode', () => {
         it('passes errors with the cause of `approvers_ids` to the action section', async () => {
           const error = createError([approverCause]);
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -535,7 +523,7 @@ describe('EditorComponent', () => {
 
         it('emits error with the cause of `branches`', async () => {
           const error = createError([branchesCause]);
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -546,7 +534,7 @@ describe('EditorComponent', () => {
 
         it('emits error with an unknown cause', async () => {
           const error = createError([unknownCause]);
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -557,7 +545,7 @@ describe('EditorComponent', () => {
 
         it('handles mixed errors', async () => {
           const error = createError([approverCause, branchesCause, unknownCause]);
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
@@ -570,9 +558,9 @@ describe('EditorComponent', () => {
       describe('when in yaml mode', () => {
         it('emits errors', async () => {
           const error = createError([approverCause, branchesCause, unknownCause]);
-          modifyPolicy.mockRejectedValue(error);
+          goToPolicyMR.mockRejectedValue(error);
           factory();
-          changesToYamlMode();
+          goToYamlMode(findPolicyEditorLayout);
           await findPolicyEditorLayout().vm.$emit('save-policy');
           await waitForPromises();
 
@@ -595,28 +583,28 @@ describe('EditorComponent', () => {
     it('creates an error when policy scanners are invalid', async () => {
       factoryWithExistingPolicy({ policy: { rules: [{ scanners: ['cluster_image_scanning'] }] } });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
     it('creates an error when policy severity_levels are invalid', async () => {
       factoryWithExistingPolicy({ policy: { rules: [{ severity_levels: ['non-existent'] }] } });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
     it('creates an error when vulnerabilities_allowed are invalid', async () => {
       factoryWithExistingPolicy({ policy: { rules: [{ vulnerabilities_allowed: 'invalid' }] } });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
     it('creates an error when vulnerability_states are invalid', async () => {
       factoryWithExistingPolicy({ policy: { rules: [{ vulnerability_states: ['invalid'] }] } });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
@@ -625,7 +613,7 @@ describe('EditorComponent', () => {
         policy: { rules: [{ vulnerability_age: { operator: 'invalid' } }] },
       });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
@@ -634,7 +622,7 @@ describe('EditorComponent', () => {
         policy: { rules: [{ vulnerability_attributes: [{ invalid: true }] }] },
       });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       verifiesParsingError();
     });
 
@@ -669,7 +657,7 @@ describe('EditorComponent', () => {
             },
           });
 
-          await changesToRuleMode();
+          await goToRuleMode(findPolicyEditorLayout);
           expect(findPolicyEditorLayout().props('hasParsingError')).toBe(output);
         },
       );
@@ -689,7 +677,7 @@ describe('EditorComponent', () => {
 
         factoryWithExistingPolicy({ policy: { rules: [rule] } });
 
-        await changesToRuleMode();
+        await goToRuleMode(findPolicyEditorLayout);
         await waitForPromises();
         const errors = wrapper.emitted('error');
 
@@ -700,7 +688,7 @@ describe('EditorComponent', () => {
     it('does not query protected branches when namespaceType is other than project', async () => {
       factoryWithExistingPolicy({ provide: { namespaceType: NAMESPACE_TYPES.GROUP } });
 
-      await changesToRuleMode();
+      await goToRuleMode(findPolicyEditorLayout);
       await waitForPromises();
 
       expect(getInvalidBranches).not.toHaveBeenCalled();

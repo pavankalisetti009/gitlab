@@ -1,5 +1,5 @@
 import { s__ } from '~/locale';
-import { PROMO_URL } from 'jh_else_ce/lib/utils/url_utility';
+import { PROMO_URL } from '~/constants';
 
 export const TAX_RATE = 0;
 export const NEW_GROUP = 'new_group';

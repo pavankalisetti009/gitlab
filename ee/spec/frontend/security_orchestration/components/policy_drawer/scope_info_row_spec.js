@@ -6,6 +6,7 @@ import ScopeInfoRow from 'ee/security_orchestration/components/policy_drawer/sco
 import ComplianceFrameworksToggleList from 'ee/security_orchestration/components/policy_drawer/compliance_frameworks_toggle_list.vue';
 import LoaderWithMessage from 'ee/security_orchestration/components/loader_with_message.vue';
 import ProjectsToggleList from 'ee/security_orchestration/components/policy_drawer/projects_toggle_list.vue';
+import GroupsToggleList from 'ee/security_orchestration/components/policy_drawer/groups_toggle_list.vue';
 import ScopeDefaultLabel from 'ee/security_orchestration/components/scope_default_label.vue';
 import { NAMESPACE_TYPES } from 'ee/security_orchestration/constants';
 import createMockApollo from 'helpers/mock_apollo_helper';
@@ -44,6 +45,7 @@ describe('ScopeInfoRow', () => {
 
   const findComplianceFrameworksToggleList = () =>
     wrapper.findComponent(ComplianceFrameworksToggleList);
+  const findGroupsToggleList = () => wrapper.findComponent(GroupsToggleList);
   const findProjectsToggleList = () => wrapper.findComponent(ProjectsToggleList);
   const findDefaultScopeLabel = () => wrapper.findComponent(ScopeDefaultLabel);
   const findPolicyScopeSection = () => wrapper.findByTestId('policy-scope');
@@ -125,6 +127,93 @@ describe('ScopeInfoRow', () => {
 
       expect(findDefaultScopeLabel().exists()).toBe(true);
       expect(findDefaultScopeLabel().text()).toBe(expectedText);
+    });
+
+    describe('group scope', () => {
+      const items = [{ id: 1 }, { id: 2 }];
+
+      it('does not render group scope when ff is off', () => {
+        createComponent({
+          propsData: {
+            policyScope: {
+              includingGroups: {
+                nodes: items,
+              },
+            },
+          },
+        });
+
+        expect(findGroupsToggleList().exists()).toBe(false);
+      });
+
+      it('renders group scope when groups are provided', () => {
+        createComponent({
+          propsData: {
+            policyScope: {
+              includingGroups: {
+                nodes: items,
+              },
+            },
+          },
+          provide: {
+            glFeatures: {
+              policyGroupScope: true,
+            },
+          },
+        });
+
+        expect(findGroupsToggleList().exists()).toBe(true);
+        expect(findGroupsToggleList().props('isLink')).toBe(true);
+        expect(findGroupsToggleList().props('groups')).toEqual(items);
+        expect(findGroupsToggleList().props('projects')).toEqual([]);
+      });
+
+      it('renders group scope when groups and project exceptions are provided', () => {
+        createComponent({
+          propsData: {
+            policyScope: {
+              includingGroups: {
+                nodes: items,
+              },
+              excludingProjects: {
+                nodes: items,
+              },
+            },
+          },
+          provide: {
+            glFeatures: {
+              policyGroupScope: true,
+            },
+          },
+        });
+
+        expect(findGroupsToggleList().exists()).toBe(true);
+        expect(findGroupsToggleList().props('groups')).toEqual(items);
+        expect(findGroupsToggleList().props('projects')).toEqual(items);
+      });
+
+      it('does not render group scope when groups are empty and project exceptions are provided', () => {
+        createComponent({
+          propsData: {
+            policyScope: {
+              includingGroups: {
+                nodes: [],
+              },
+              excludingProjects: {
+                nodes: items,
+              },
+            },
+          },
+          provide: {
+            glFeatures: {
+              policyGroupScope: true,
+            },
+          },
+        });
+
+        expect(findGroupsToggleList().exists()).toBe(false);
+        expect(findProjectsToggleList().props('projects')).toEqual(items);
+      });
     });
   });
 

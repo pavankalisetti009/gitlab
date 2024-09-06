@@ -237,7 +237,7 @@ The following languages and dependency managers are supported by Dependency Scan
       <td>N</td>
     </tr>
     <tr>
-      <td>Cocoapods</td>
+      <td>Cocoapods<sup><b><a href="#notes-regarding-supported-languages-and-package-managers-9">9</a></b></sup></td>
       <td>All versions</td>
       <td><a href="https://cocoapods.org/">CocoaPods</a></td>
       <td><code>Podfile.lock</code></td>
@@ -296,6 +296,12 @@ The following languages and dependency managers are supported by Dependency Scan
     <a id="notes-regarding-supported-languages-and-package-managers-8"></a>
     <p>
       Excludes both <code>pip</code> and <code>setuptools</code> from the report as they are required by the installer.
+    </p>
+  </li>
+  <li>
+    <a id="notes-regarding-supported-languages-and-package-managers-9"></a>
+    <p>
+      Only SBOM, without advisories. See <a href="https://gitlab.com/gitlab-org/gitlab/-/issues/468764">spike on CocoaPods advisories research</a>.
     </p>
   </li>
 </ol>
@@ -658,12 +664,12 @@ The following analyzers are executed, each of which have different behavior when
 
 - [Gemnasium](https://gitlab.com/gitlab-org/security-products/analyzers/gemnasium)
 
-   Supports multiple lockfiles
+  Supports multiple lockfiles
 
 - [Retire.js](https://retirejs.github.io/retire.js/)
 
-   Does not support multiple lockfiles. When multiple lockfiles exist, `Retire.js`
-   analyzes the first lockfile discovered while traversing the directory tree in alphabetical order.
+  Does not support multiple lockfiles. When multiple lockfiles exist, `Retire.js`
+  analyzes the first lockfile discovered while traversing the directory tree in alphabetical order.
 
 The `gemnasium` analyzer scans supports JavaScript projects for vendored libraries
 (that is, those checked into the project but not managed by the package manager).
@@ -1168,11 +1174,11 @@ variables:
 
 Maven does not read the `HTTP(S)_PROXY` environment variables.
 
-To make the Maven dependency scanner use a proxy, you can specify the options using the `MAVEN_CLI_OPTS` CI/CD variable:
+To make the Maven dependency scanner use a proxy, you can configure it using a `settings.xml` file (see [Maven documentation](https://maven.apache.org/guides/mini/guide-proxies.html)) and instruct Maven to use this configuration by using the `MAVEN_CLI_OPTS` CI/CD variable:
 
 ```yaml
 variables:
-  MAVEN_CLI_OPTS: "-DproxySet=true -Dhttps.proxyHost=squid-proxy -Dhttps.proxyPort=3128 -Dhttp.proxyHost=squid-proxy -Dhttp.proxyPort=3218"
+  MAVEN_CLI_OPTS: "--settings mysettings.xml"
 ```
 
 ## Specific settings for languages and package managers

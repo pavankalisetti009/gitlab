@@ -20,6 +20,7 @@ export default {
     CorpusUploadButton,
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     states: {
       query: getCorpusesQuery,
       variables() {

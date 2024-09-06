@@ -59,7 +59,7 @@ gem 'responders', '~> 3.0' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'sprockets', '~> 3.7.0' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'sprockets-rails', '~>  3.5.1' # rubocop:todo Gemfile/MissingFeatureCategory
 
-gem 'view_component', '~> 3.13.0' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'view_component', '~> 3.14.0' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # Supported DBs
 gem 'pg', '~> 1.5.6', feature_category: :database
@@ -155,7 +155,7 @@ gem 'grape-path-helpers', '~> 2.0.1', feature_category: :api
 gem 'rack-cors', '~> 2.0.1', require: 'rack/cors' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # GraphQL API
-gem 'graphql', '~> 2.3.5', feature_category: :api
+gem 'graphql', '~> 2.3.14', feature_category: :api
 gem 'graphql-docs', '~> 5.0.0', group: [:development, :test], feature_category: :api
 gem 'graphiql-rails', '~> 1.10', feature_category: :api
 gem 'apollo_upload_server', '~> 2.1.6', feature_category: :api
@@ -187,7 +187,7 @@ gem 'carrierwave', '~> 1.3' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'mini_magick', '~> 4.12' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # for backups
-gem 'fog-aws', '~> 3.18' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'fog-aws', '~> 3.24', feature_category: :shared
 # Locked until fog-google resolves https://github.com/fog/fog-google/issues/421.
 # Also see config/initializers/fog_core_patch.rb.
 gem 'fog-core', '= 2.1.0' # rubocop:todo Gemfile/MissingFeatureCategory
@@ -231,9 +231,9 @@ gem 'seed-fu', '~> 2.3.7' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'elasticsearch-model', '~> 7.2', feature_category: :global_search
 gem 'elasticsearch-rails', '~> 7.2', require: 'elasticsearch/rails/instrumentation', feature_category: :global_search
 gem 'elasticsearch-api', '7.17.11', feature_category: :global_search
-gem 'aws-sdk-core', '~> 3.201.0' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'aws-sdk-core', '~> 3.202.0' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'aws-sdk-cloudformation', '~> 1' # rubocop:todo Gemfile/MissingFeatureCategory
-gem 'aws-sdk-s3', '~> 1.157.0' # rubocop:todo Gemfile/MissingFeatureCategory
+gem 'aws-sdk-s3', '~> 1.159.0' # rubocop:todo Gemfile/MissingFeatureCategory
 gem 'faraday-typhoeus', '~> 1.1', feature_category: :global_search
 gem 'faraday_middleware-aws-sigv4', '~> 1.0.1', feature_category: :global_search
 # Used with Elasticsearch to support http keep-alive connections
@@ -463,7 +463,7 @@ end
 gem 'warning', '~> 1.3.0' # rubocop:todo Gemfile/MissingFeatureCategory
 
 group :development do
-  gem 'lefthook', '~> 1.6.8', require: false, feature_category: :tooling
+  gem 'lefthook', '~> 1.7.0', require: false, feature_category: :tooling
   gem 'rubocop', feature_category: :tooling
   gem 'solargraph', '~> 0.47.2', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 
@@ -570,9 +570,9 @@ group :test do
   gem 'rspec-parameterized', '~> 1.0', '>= 1.0.2', require: false, feature_category: :tooling
   gem 'os', '~> 1.1', '>= 1.1.4', feature_category: :tooling
 
-  gem 'capybara', '~> 3.40' # rubocop:todo Gemfile/MissingFeatureCategory
-  gem 'capybara-screenshot', '~> 1.0.26' # rubocop:todo Gemfile/MissingFeatureCategory
-  gem 'selenium-webdriver', '~> 4.21', '>= 4.21.1' # rubocop:todo Gemfile/MissingFeatureCategory
+  gem 'capybara', '~> 3.40', feature_category: :test_platform
+  gem 'capybara-screenshot', '~> 1.0.26', feature_category: :test_platform
+  gem 'selenium-webdriver', '~> 4.21', '>= 4.21.1', feature_category: :test_platform
 
   gem 'graphlyte', '~> 1.0.0' # rubocop:todo Gemfile/MissingFeatureCategory
 
@@ -589,7 +589,7 @@ group :test do
   # Moved in `test` because https://gitlab.com/gitlab-org/gitlab/-/issues/217527
   gem 'derailed_benchmarks', require: false # rubocop:todo Gemfile/MissingFeatureCategory
 
-  gem 'gitlab_quality-test_tooling', '~> 1.35.0', require: false, feature_category: :tooling
+  gem 'gitlab_quality-test_tooling', '~> 1.38.0', require: false, feature_category: :tooling
 end
 
 gem 'octokit', '~> 9.0', feature_category: :importers
@@ -712,7 +712,7 @@ gem 'cvss-suite', '~> 3.0.1', require: 'cvss_suite' # rubocop:todo Gemfile/Missi
 gem 'arr-pm', '~> 0.0.12' # rubocop:todo Gemfile/MissingFeatureCategory
 
 # Remote Development
-gem 'devfile', '~> 0.0.26.pre.alpha1', feature_category: :remote_development
+gem 'devfile', '~> 0.0.26.pre.alpha1', feature_category: :workspaces
 
 # Apple plist parsing
 gem 'CFPropertyList', '~> 3.0.0' # rubocop:todo Gemfile/MissingFeatureCategory

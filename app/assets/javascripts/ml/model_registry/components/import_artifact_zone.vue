@@ -1,6 +1,7 @@
 <script>
 import {
   GlAlert,
+  GlButton,
   GlFormGroup,
   GlFormInput,
   GlFormInputGroup,
@@ -8,17 +9,18 @@ import {
   GlProgressBar,
   GlTooltip,
 } from '@gitlab/ui';
+import axios from '~/lib/utils/axios_utils';
 import { numberToHumanSize } from '~/lib/utils/number_utils';
 import { joinPaths } from '~/lib/utils/url_utility';
 import { s__ } from '~/locale';
 import UploadDropzone from '~/vue_shared/components/upload_dropzone/upload_dropzone.vue';
 import { uploadModel } from '../services/upload_model';
-import { emptyArtifactFile } from '../constants';
 
 export default {
   name: 'ImportArtifactZone',
   components: {
     GlAlert,
+    GlButton,
     GlIcon,
     GlTooltip,
     GlFormGroup,
@@ -42,19 +44,15 @@ export default {
       required: false,
       default: true,
     },
-    value: {
-      type: Object,
-      required: false,
-      default: () => emptyArtifactFile,
-    },
   },
   data() {
     return {
-      file: this.value.file,
-      subfolder: this.value.subfolder,
+      file: null,
+      subfolder: '',
       alert: null,
       progressLoaded: null,
       progressTotal: null,
+      axiosSource: null,
     };
   },
   computed: {
@@ -87,15 +85,17 @@ export default {
       this.progressTotal = progressEvent.total;
       this.progressLoaded = progressEvent.loaded;
     },
-    submitRequest(importPath) {
+    uploadArtifact(importPath) {
       this.progressLoaded = 0;
       this.progressTotal = this.file.size;
+      this.axiosSource = axios.CancelToken.source();
       uploadModel({
         importPath,
         file: this.file,
         subfolder: this.subfolder,
         maxAllowedFileSize: this.maxAllowedFileSize,
         onUploadProgress: this.onUploadProgress,
+        cancelToken: this.axiosSource.token,
       })
         .then(() => {
           this.resetFile();
@@ -107,32 +107,35 @@ export default {
           this.alert = { message: error, variant: 'danger' };
         });
     },
-    emitInput(value) {
-      this.$emit('input', { ...value });
-    },
     changeSubfolder(subfolder) {
       this.subfolder = subfolder;
-      this.emitInput({ file: this.file, subfolder });
     },
-    uploadFile(file) {
+    changeFile(file) {
       this.file = file;
-      this.emitInput({ file, subfolder: this.subfolder });
 
       if (this.submitOnSelect && this.path) {
-        this.submitRequest(this.path);
+        this.uploadArtifact(this.path);
       }
     },
     hideAlert() {
       this.alert = null;
     },
+    cancelUpload() {
+      if (this.axiosSource) {
+        this.axiosSource.cancel(this.$options.i18n.cancelMessage);
+        this.axiosSource = null;
+      }
+      this.discardFile();
+    },
     discardFile() {
       this.file = null;
       this.subfolder = '';
-      this.emitInput(emptyArtifactFile);
     },
   },
   i18n: {
     dropToStartMessage: s__('MlModelRegistry|Drop to start upload'),
+    cancelMessage: s__('MlModelRegistry|User canceled upload.'),
+    cancelButtonText: s__('MlModelRegistry|Cancel upload'),
     uploadSingleMessage: s__(
       'MlModelRegistry|Drop or %{linkStart}select%{linkEnd} artifact to attach',
     ),
@@ -188,19 +191,27 @@ export default {
       :upload-single-message="$options.i18n.uploadSingleMessage"
       :drop-to-start-message="$options.i18n.dropToStartMessage"
       :is-file-valid="() => true"
-      @change="uploadFile"
+      @change="changeFile"
     >
-      <gl-alert v-if="file" variant="success" :dismissible="!loading" @dismiss="discardFile">
+      <div v-if="file" class="upload-dropzone-border p-3">
         <gl-progress-bar v-if="progressLoaded" :value="progressPercentage" />
         <div v-if="progressLoaded" data-testid="formatted-progress">
           {{ formattedProgressLoaded }}
         </div>
         <div v-else data-testid="formatted-file-size">{{ formattedFileSize }}</div>
         <div data-testid="file-name">{{ fileFullpath }}</div>
-      </gl-alert>
-      <gl-alert v-if="alert" :variant="alert.variant" :dismissible="true" @dismiss="hideAlert">
-        {{ alert.message }}
-      </gl-alert>
+        <gl-button
+          data-testid="cancel-upload-button"
+          category="secondary"
+          class="mt-3"
+          variant="danger"
+          @click="cancelUpload"
+          >{{ $options.i18n.cancelButtonText }}</gl-button
+        >
+      </div>
     </upload-dropzone>
+    <gl-alert v-if="alert" :variant="alert.variant" @dismiss="hideAlert">
+      {{ alert.message }}
+    </gl-alert>
   </div>
 </template>

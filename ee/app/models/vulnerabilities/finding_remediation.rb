@@ -2,7 +2,7 @@
 
 # This is a join model between the `Finding` and `Remediation` models.
 module Vulnerabilities
-  class FindingRemediation < ApplicationRecord
+  class FindingRemediation < Gitlab::Database::SecApplicationRecord
     include EachBatch
 
     self.table_name = 'vulnerability_findings_remediations'

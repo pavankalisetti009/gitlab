@@ -16,11 +16,15 @@ import { getSecurityPolicyListUrl } from '~/editor/extensions/source_editor_secu
 import TimeAgoTooltip from '~/vue_shared/components/time_ago_tooltip.vue';
 import { DATE_ONLY_FORMAT } from '~/lib/utils/datetime_utility';
 import { setUrlParams, updateHistory } from '~/lib/utils/url_utility';
+import getGroupProjectsCount from 'ee/security_orchestration/graphql/queries/get_group_project_count.query.graphql';
+import { PROJECTS_COUNT_PERFORMANCE_LIMIT } from 'ee/security_orchestration/components/policy_editor/scan_execution/constants';
+import OverloadWarningModal from 'ee/security_orchestration/components/policy_editor/scan_execution/overload_warning_modal.vue';
 import { getPolicyType } from '../../utils';
 import { isPolicyInherited, policyHasNamespace, isGroup } from '../utils';
 import DrawerWrapper from '../policy_drawer/drawer_wrapper.vue';
 import { SECURITY_POLICY_ACTIONS } from '../policy_editor/constants';
 import { goToPolicyMR } from '../policy_editor/utils';
+import { hasScheduledRule } from './utils';
 import {
   POLICY_SOURCE_OPTIONS,
   POLICY_TYPE_FILTER_OPTIONS,
@@ -39,6 +43,25 @@ const getPoliciesWithType = (policies, policyType) =>
   }));
 
 export default {
+  apollo: {
+    projectsCount: {
+      query: getGroupProjectsCount,
+      variables() {
+        return {
+          fullPath: this.namespacePath,
+        };
+      },
+      update(data) {
+        return data.group?.projects?.count || 0;
+      },
+      skip() {
+        return !isGroup(this.namespaceType);
+      },
+      error() {
+        this.projectsCount = 0;
+      },
+    },
+  },
   components: {
     BreakingChangesIcon,
     GlButtonGroup,
@@ -54,6 +77,7 @@ export default {
     SourceFilter,
     TypeFilter,
     DrawerWrapper,
+    OverloadWarningModal,
     TimeAgoTooltip,
   },
   directives: {
@@ -99,8 +123,12 @@ export default {
   data() {
     return {
       alert: null,
+      dismissPerformanceWarningModal: false,
       isProcessingAction: false,
+      policyToDelete: null,
+      projectsCount: 0,
       selectedPolicy: null,
+      showPerformanceWarningModal: false,
     };
   },
   computed: {
@@ -121,6 +149,9 @@ export default {
       );
 
       return policies.flat();
+    },
+    projectsPerformanceLimitReached() {
+      return this.projectsCount > PROJECTS_COUNT_PERFORMANCE_LIMIT;
     },
     hasSelectedPolicy() {
       return Boolean(this.selectedPolicy);
@@ -146,8 +177,6 @@ export default {
       return [
         {
           key: 'status',
-          label: '',
-          thClass: 'gl-w-3',
           tdAttr: { 'data-testid': 'policy-status-cell' },
         },
         {
@@ -198,17 +227,28 @@ export default {
     getPolicyActionOptions(policy) {
       return [
         { text: __('Edit'), href: policy.editPath },
-        ...(this.isGroup
-          ? []
-          : [
-              {
-                text: __('Delete'),
-                action: () => this.handleDelete(policy),
-              },
-            ]),
+        {
+          text: __('Delete'),
+          action: () => this.handleDelete(policy),
+        },
       ];
     },
+    cancelPolicySubmit() {
+      this.policyToDelete = null;
+      this.showPerformanceWarningModal = false;
+    },
+    confirmPolicySubmit() {
+      this.showPerformanceWarningModal = false;
+      this.dismissPerformanceWarningModal = true;
+      this.handleDelete(this.policyToDelete);
+    },
     async handleDelete(policy) {
+      if (this.hasPerformanceRisk(policy) && !this.dismissPerformanceWarningModal) {
+        this.policyToDelete = policy;
+        this.showPerformanceWarningModal = true;
+        return;
+      }
+
       const action = SECURITY_POLICY_ACTIONS.REMOVE;
       if (this.alert) this.alert.dismiss();
       this.isProcessingAction = true;
@@ -228,6 +268,9 @@ export default {
         this.alert = createAlert({ message: e.message });
         this.isProcessingAction = false;
       }
+    },
+    hasPerformanceRisk(policy) {
+      return this.isGroup && this.projectsPerformanceLimitReached && hasScheduledRule(policy);
     },
     showBreakingChangesIcon(policyType, deprecatedProperties) {
       return (
@@ -357,8 +400,12 @@ export default {
       selected-variant="primary"
       @row-selected="presentPolicyDrawer"
     >
+      <template #head(status)>
+        <span class="gl-block md:!gl-hidden">{{ s__('SecurityOrchestration|Status') }}</span>
+      </template>
+
       <template #cell(status)="{ item: { enabled, name, deprecatedProperties, policyType } }">
-        <div class="gl-flex gl-gap-4">
+        <div class="gl-flex gl-justify-end gl-gap-4 md:gl-justify-start">
           <gl-icon
             v-gl-tooltip-directive.left="tooltipContent(enabled)"
             class="gl-text-gray-200"
@@ -448,6 +495,12 @@ export default {
         />
       </template>
     </gl-table>
+
+    <overload-warning-modal
+      :visible="showPerformanceWarningModal"
+      @cancel-submit="cancelPolicySubmit"
+      @confirm-submit="confirmPolicySubmit"
+    />
 
     <drawer-wrapper
       :open="hasSelectedPolicy"

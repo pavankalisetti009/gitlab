@@ -175,6 +175,56 @@ The project maintainer can disable this feature on:
 1. Deselect the **Use unique domain** checkbox.
 1. Select **Save changes**.
 
+## Expiring deployments
+
+DETAILS:
+**Tier:** Premium, Ultimate
+**Offering:** GitLab.com, Self-managed, GitLab Dedicated
+
+> - [Introduced](https://gitlab.com/gitlab-org/gitlab/-/merge_requests/162826) in GitLab 17.4.
+
+You can configure your Pages deployments to be automatically deleted after
+a period of time has passed by specifying a duration at `pages.expire_in`:
+
+```yaml
+pages:
+  stage: deploy
+  script:
+    - ...
+  pages:
+    expire_in: 1 week
+  artifacts:
+    paths:
+      - public
+```
+
+By default, [extra deployments](#create-multiple-deployments) expire automatically after 24 hours.
+To disable this behavior, set `pages.expire_in` to `never`.
+
+Expired deployments are stopped by a cron job that runs every 10 minutes.
+Stopped deployments are subsequently deleted by another cron job that also
+runs every 10 minutes. To recover it, follow the steps described in
+[Recover a stopped deployment](#recover-a-stopped-deployment).
+
+A stopped or deleted deployment is no longer available on the web. Users will
+see a 404 Not found error page at its URL, until another deployment is created
+with the same URL configuration.
+
+### Recover a stopped deployment
+
+Prerequisites:
+
+- You must have at least the Maintainer role for the project.
+
+To recover a stopped deployment that has not yet been deleted:
+
+1. On the left sidebar, select **Search or go to** and find your project.
+1. Select **Deploy > Pages**.
+1. Near **Deployments** turn on the **Include stopped deployments** toggle.
+   If your deployment has not been deleted yet, it should be included in the
+   list.
+1. Expand the deployment you want to recover and select **Restore**.
+
 ## Create multiple deployments
 
 DETAILS:
@@ -231,6 +281,25 @@ The number of extra deployments is limited by the root-level namespace. For spec
 - GitLab.com, see [Other limits](../../gitlab_com/index.md#other-limits).
 - Self-managed GitLab instances, see
   [Number of extra Pages deployments when using multiple deployments](../../../administration/instance_limits.md#number-of-extra-pages-deployments-when-using-multiple-deployments).
+
+To immediately reduce the number of active deployments in your namespace,
+delete some deployments. For more information, see
+[Delete a deployment](#delete-a-deployment).
+
+To configure an expiry time to automatically
+delete older deployments, see
+[Expiring deployments](#expiring-deployments).
+
+### Expiration
+
+By default, extra deployments expire after 24 hours, after which they are deleted.
+If you're using a self-hosted instance, your instance admin can
+[configure a different default duration](../../../administration/pages/index.md#configure-the-default-expiry-for-extra-deployments).
+
+To customize the expiry time, [configure `pages.expire_in`](#expiring-deployments).
+
+To prevent deployments from automatically expiring, set `pages.expire_in` to
+`never`.
 
 ### Path clash
 
@@ -316,7 +385,21 @@ listed on the project environment list.
 
 You can also [group similar environments](../../../ci/environments/index.md#group-similar-environments) together.
 
-### Deployments deletion
+### Delete a Deployment
+
+To delete a deployment:
+
+1. On the left sidebar, select **Search or go to** and find your project.
+1. Select **Deploy > Pages**.
+1. Under **Deployments**, select any area on the deployment you wish to delete.
+   The deployment details expand.
+1. Select **Delete**.
+
+When you select **Delete**, your deployment is stopped immediately.
+Stopped deployments are deleted by a cron job running every 10 minutes.
+
+To restore a stopped deployment that has not been deleted yet, see
+[Recover a stopped deployment](#recover-a-stopped-deployment).
 
 #### Auto-clean
 

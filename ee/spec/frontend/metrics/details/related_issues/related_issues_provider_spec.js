@@ -6,7 +6,7 @@ import waitForPromises from 'helpers/wait_for_promises';
 import RelatedIssuesProvider from 'ee/metrics/details/related_issues/related_issues_provider.vue';
 import relatedIssuesQuery from 'ee/metrics/details/related_issues/graphql/get_metrics_related_issues.query.graphql';
 import { parseGraphQLIssueLinksToRelatedIssues } from '~/observability/utils';
-import { mockQueryResult } from './mock_data';
+import { createRelatedIssuesQueryMockResult } from 'jest/observability/mock_data';
 
 jest.mock('~/observability/utils');
 
@@ -19,6 +19,8 @@ describe('RelatedIssuesProvider component', () => {
   const defaultProps = { projectFullPath: 'foo/bar', metricName: 'aMetric', metricType: 'Sum' };
 
   let wrapper;
+
+  const mockQueryResult = createRelatedIssuesQueryMockResult('observabilityMetricsLinks');
 
   function createComponent({ props = defaultProps, slots, queryMock } = {}) {
     relatedIssuesQueryMock = queryMock ?? jest.fn().mockResolvedValue(mockQueryResult);

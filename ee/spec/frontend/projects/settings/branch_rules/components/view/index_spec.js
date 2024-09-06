@@ -11,15 +11,19 @@ import branchRulesQuery from 'ee/projects/settings/branch_rules/queries/branch_r
 import CrudComponent from '~/vue_shared/components/crud_component.vue';
 import { createStoreOptions } from 'ee/approvals/stores';
 import projectSettingsModule from 'ee/approvals/stores/modules/project_settings';
+import ProtectionToggle from '~/projects/settings/branch_rules/components/view/protection_toggle.vue';
 import deleteBranchRuleMutation from '~/projects/settings/branch_rules/mutations/branch_rule_delete.mutation.graphql';
+import editBranchRuleMutation from 'ee_else_ce/projects/settings/branch_rules/mutations/edit_branch_rule.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
+import { useMockInternalEventsTracking } from 'helpers/tracking_internal_events_helper';
 import {
   deleteBranchRuleMockResponse,
   branchProtectionsMockResponse,
   statusChecksRulesMock,
   protectionPropsMock,
+  editBranchRuleMockResponse,
 } from './mock_data';
 
 jest.mock('~/lib/utils/url_utility', () => ({
@@ -45,12 +49,16 @@ describe('View branch rules in enterprise edition', () => {
     jest.fn().mockResolvedValue(response);
   const deleteBranchRuleMockRequestHandler = (response = deleteBranchRuleMockResponse) =>
     jest.fn().mockResolvedValue(response);
+  const editBranchRuleSuccessHandler = (response = editBranchRuleMockResponse) =>
+    jest.fn().mockResolvedValue(response);
+  const { bindInternalEventDocument } = useMockInternalEventsTracking();
 
   const createComponent = async (
     glFeatures = { editBranchRules: true },
     { showApprovers, showStatusChecks, showCodeOwners } = {},
     mockResponse,
     mutationMockResponse,
+    editMutationMockResponse,
     // eslint-disable-next-line max-params
   ) => {
     axiosMock = new MockAdapter(axios);
@@ -61,6 +69,7 @@ describe('View branch rules in enterprise edition', () => {
     fakeApollo = createMockApollo([
       [branchRulesQuery, branchProtectionsMockRequestHandler(mockResponse)],
       [deleteBranchRuleMutation, deleteBranchRuleMockRequestHandler(mutationMockResponse)],
+      [editBranchRuleMutation, editBranchRuleSuccessHandler(editMutationMockResponse)],
     ]);
 
     wrapper = shallowMountExtended(RuleView, {
@@ -78,6 +87,7 @@ describe('View branch rules in enterprise edition', () => {
       },
       stubs: {
         CrudComponent,
+        ProtectionToggle,
       },
     });
 
@@ -134,6 +144,18 @@ describe('View branch rules in enterprise edition', () => {
         expect(findCodeOwnersToggle().props('description')).toEqual(description);
       },
     );
+
+    it('emits a tracking event, when Code Owner Approval toggle is switched', async () => {
+      await createComponent({ editBranchRules: true }, { showCodeOwners: true });
+      const { trackEventSpy } = bindInternalEventDocument(wrapper.element);
+
+      findCodeOwnersToggle().vm.$emit('toggle', false);
+      await waitForPromises();
+
+      expect(trackEventSpy).toHaveBeenCalledWith('change_require_codeowner_approval', {
+        label: 'branch_rule_details',
+      });
+    });
   });
 
   it('does not render approvals and status checks sections by default', () => {

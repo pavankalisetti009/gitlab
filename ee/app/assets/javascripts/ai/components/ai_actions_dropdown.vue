@@ -68,6 +68,7 @@ export default {
   },
   apollo: {
     $subscribe: {
+      // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
       aiCompletionResponse: {
         query: aiResponseSubscription,
         // Apollo wants to write the subscription result to the cache, but we have none because we also

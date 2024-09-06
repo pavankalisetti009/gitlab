@@ -46,7 +46,7 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
       %i[
         download_code download_wiki_code read_project read_issue_board read_issue_board_list
         read_project_for_iids read_issue_iid read_merge_request_iid read_wiki
-        read_issue read_label read_planning_hierarchy read_issue_link read_milestone
+        read_issue read_label read_issue_link read_milestone
         read_snippet read_project_member read_note read_cycle_analytics
         read_pipeline read_build read_commit_status read_container_image
         read_environment read_deployment read_merge_request read_pages
@@ -1595,14 +1595,20 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
   end
 
   describe ':read_ai_analytics' do
-    let(:current_user) { reporter }
+    let(:project) { private_project_in_group }
+    let(:guest) { inherited_guest }
+    let(:reporter) { inherited_reporter }
 
-    it { is_expected.to be_allowed(:read_ai_analytics) }
+    context 'when on SAAS', :saas do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: group) }
 
-    context 'when user is a guest' do
-      let(:current_user) { guest }
+      it_behaves_like 'permission to :read_ai_analytics'
+    end
 
-      it { is_expected.not_to be_allowed(:read_ai_analytics) }
+    context 'when on self-managed' do
+      let(:subscription_purchase) { create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :self_managed) }
+
+      it_behaves_like 'permission to :read_ai_analytics'
     end
   end
 
@@ -3017,6 +3023,16 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
       it_behaves_like 'custom roles abilities'
     end
+
+    context 'for a member role with `admin_protected_branch` true' do
+      let(:member_role_abilities) { { admin_protected_branch: true } }
+      let(:allowed_abilities) do
+        [:admin_protected_branch, :read_protected_branch, :create_protected_branch,
+         :update_protected_branch, :destroy_protected_branch]
+      end
+
+      it_behaves_like 'custom roles abilities'
+    end
   end
 
   describe 'permissions for suggested reviewers bot', :saas do
@@ -4057,6 +4073,54 @@ RSpec.describe ProjectPolicy, feature_category: :system_access do
 
     with_them do
       it { is_expected.to match_expected_result }
+    end
+  end
+
+  describe 'manage_project_security_exclusions' do
+    let(:policy) { :manage_project_security_exclusions }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | false
+      :maintainer | true
+      :auditor    | false
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
+    end
+  end
+
+  describe 'read_project_security_exclusions' do
+    let(:policy) { :read_project_security_exclusions }
+
+    where(:role, :allowed) do
+      :guest      | false
+      :reporter   | false
+      :developer  | true
+      :maintainer | true
+      :auditor    | true
+      :owner      | true
+      :admin      | true
+    end
+
+    with_them do
+      let(:current_user) { public_send(role) }
+
+      before do
+        enable_admin_mode!(current_user) if role == :admin
+      end
+
+      it { is_expected.to(allowed ? be_allowed(policy) : be_disallowed(policy)) }
     end
   end
 end

@@ -218,12 +218,6 @@ html.group-epics-roadmap-html {
       height: 100%;
     }
   }
-
-  &.newly-added-epic {
-    .epic-details-cell {
-      animation: colorTransitionDetailsCell 3s;
-    }
-  }
 }
 
 .epic-details-cell,

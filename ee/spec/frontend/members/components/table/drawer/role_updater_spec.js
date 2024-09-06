@@ -1,6 +1,9 @@
 import MockAxiosAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 import { cloneDeep } from 'lodash';
+import Vue from 'vue';
+// eslint-disable-next-line no-restricted-imports
+import Vuex from 'vuex';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RoleUpdater from 'ee/members/components/table/drawer/role_updater.vue';
 import {
@@ -11,25 +14,45 @@ import {
 import { captureException } from '~/sentry/sentry_browser_wrapper';
 import GuestOverageConfirmation from 'ee/members/components/table/drawer/guest_overage_confirmation.vue';
 import waitForPromises from 'helpers/wait_for_promises';
+import { HTTP_STATUS_OK } from '~/lib/utils/http_status';
+import { MEMBERS_TAB_TYPES } from 'ee_else_ce/members/constants';
 import { updateableCustomRoleMember, ldapMember, ldapOverriddenMember } from '../../../mock_data';
+
+Vue.use(Vuex);
 
 jest.mock('~/sentry/sentry_browser_wrapper');
 jest.mock('ee/members/components/table/drawer/utils');
 
 describe('Role updater EE', () => {
+  /** @type {import('helpers/vue_test_utils_helper').ExtendedWrapper} */
   let wrapper;
   const mockAxios = new MockAxiosAdapter(axios);
   const newRole = { accessLevel: 10, memberRoleId: 101 };
+
+  const invalidatePromotionRequestsData = jest.fn();
 
   const createWrapper = ({
     member = updateableCustomRoleMember,
     role = newRole,
     slotContent = '',
   } = {}) => {
+    const store = new Vuex.Store({
+      modules: {
+        [MEMBERS_TAB_TYPES.promotionRequest]: {
+          namespaced: true,
+          state: { pagination: { totalItems: 0 } },
+          actions: {
+            invalidatePromotionRequestsData,
+          },
+        },
+      },
+    });
+
     wrapper = shallowMountExtended(RoleUpdater, {
       propsData: { member, role },
-      provide: { group: { path: 'group/path' } },
+      provide: { group: { path: 'group/path' }, project: {} },
       slots: { default: slotContent },
+      store,
     });
   };
 
@@ -73,13 +96,21 @@ describe('Role updater EE', () => {
 
   describe('when save is finished', () => {
     beforeEach(() => {
-      callRoleUpdateApi.mockResolvedValue();
+      callRoleUpdateApi.mockResolvedValue({ data: null });
       return createWrapperAndConfirmOverage();
     });
 
     it('emits busy = false event', () => {
       expect(wrapper.emitted('busy')).toHaveLength(2);
       expect(wrapper.emitted('busy')[1][0]).toBe(false);
+    });
+
+    it('dispatches a promotion requests invalidation action', async () => {
+      await waitForPromises();
+      expect(invalidatePromotionRequestsData).toHaveBeenCalledWith(expect.anything(), {
+        group: { path: 'group/path' },
+        project: {},
+      });
     });
   });
 
@@ -227,7 +258,7 @@ describe('Role updater EE', () => {
       const member = cloneDeep(ldapOverriddenMember);
 
       beforeEach(() => {
-        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(200);
+        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(HTTP_STATUS_OK);
         return createWrapperAndConfirmOverage({ member, role: ldapRole });
       });
 
@@ -255,7 +286,7 @@ describe('Role updater EE', () => {
       const member = cloneDeep(ldapMember);
 
       beforeEach(() => {
-        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(200);
+        mockAxios.onPatch(ldapMember.ldapOverridePath).replyOnce(HTTP_STATUS_OK);
         callRoleUpdateApi.mockResolvedValue({});
         return createWrapperAndConfirmOverage({ member });
       });

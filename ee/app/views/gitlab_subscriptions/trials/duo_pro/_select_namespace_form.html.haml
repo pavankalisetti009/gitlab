@@ -19,7 +19,7 @@
         .js-namespace-selector{ data: duo_trial_namespace_selector_data(@eligible_namespaces, local_assigns[:namespace_create_errors]) }
         - if should_ask_company_question?
           .form-group
-            = f.label :trial_entity, _('Who will be using GitLab?')
+            = f.label :trial_entity, _('This subscription is for')
             %div
               .form-check-inline
                 = f.gitlab_ui_radio_component :trial_entity, 'company', _('My company or team'),

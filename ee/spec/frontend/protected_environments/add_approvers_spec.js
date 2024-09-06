@@ -74,6 +74,7 @@ describe('ee/protected_environments/add_approvers.vue', () => {
       deploy_access_levels: {
         roles: [],
       },
+      abilities: { adminProject: true },
     };
     mockAxios = new MockAdapter(axios);
   });

@@ -37,7 +37,7 @@ class Projects::MergeRequestsController < Projects::MergeRequests::ApplicationCo
     push_frontend_feature_flag(:mr_approved_filter, type: :ops)
   end
 
-  before_action only: [:show, :diffs, :rapid_diffs] do
+  before_action only: [:show, :diffs, :rapid_diffs, :reports] do
     push_frontend_feature_flag(:core_security_mr_widget_counts, project)
     push_frontend_feature_flag(:mr_experience_survey, project)
     push_frontend_feature_flag(:ci_job_failures_in_mr, project)
@@ -108,6 +108,10 @@ class Projects::MergeRequestsController < Projects::MergeRequests::ApplicationCo
 
   def rapid_diffs
     return render_404 unless ::Feature.enabled?(:rapid_diffs, current_user, type: :wip)
+
+    streaming_offset = 5
+    @stream_url = diffs_stream_url(@merge_request, streaming_offset, diff_view)
+    @diffs_slice = @merge_request.first_diffs_slice(streaming_offset)
 
     show_merge_request
   end
@@ -472,6 +476,7 @@ class Projects::MergeRequestsController < Projects::MergeRequests::ApplicationCo
   def get_diffs_count
     return @merge_request.context_commits_diff.raw_diffs.size if show_only_context_commits?
     return @merge_request.merge_request_diffs.find_by_id(params[:diff_id])&.size if params[:diff_id]
+    return @merge_request.merge_head_diff.size if @merge_request.diffable_merge_ref? && params[:start_sha].blank?
 
     @merge_request.diff_size
   end

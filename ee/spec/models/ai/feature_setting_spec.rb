@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FeatureSetting, feature_category: :custom_models do
+RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   subject { build(:ai_feature_setting) }
 
   it { is_expected.to belong_to(:self_hosted_model) }
@@ -45,6 +45,31 @@ RSpec.describe Ai::FeatureSetting, feature_category: :custom_models do
         create(:ai_feature_setting, feature: feature, provider: provider)
 
         expect(described_class.code_suggestions_self_hosted?).to eq(code_suggestions_self_hosted)
+      end
+    end
+  end
+
+  describe '.feature_flagged_features' do
+    let_it_be(:stable_features) { Ai::FeatureSetting::STABLE_FEATURES.dup.stringify_keys }
+    let_it_be(:feature_flagged_features) { Ai::FeatureSetting::FLAGGED_FEATURES.dup.stringify_keys }
+
+    context 'when ai_duo_chat_sub_features_settings FF is disabled' do
+      before do
+        stub_feature_flags(ai_duo_chat_sub_features_settings: false)
+      end
+
+      it 'returns only stable features' do
+        expect(described_class.allowed_features).to eq(stable_features)
+      end
+
+      it 'does not include flagged features' do
+        expect(described_class.allowed_features.keys).not_to include(*feature_flagged_features.keys)
+      end
+    end
+
+    context 'when ai_duo_chat_sub_features_settings feature is enabled' do
+      it 'returns both stable and flagged features' do
+        expect(described_class.allowed_features).to eq(stable_features.merge(feature_flagged_features))
       end
     end
   end

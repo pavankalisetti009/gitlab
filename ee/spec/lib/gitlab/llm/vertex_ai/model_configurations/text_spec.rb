@@ -30,7 +30,8 @@ RSpec.describe Gitlab::Llm::VertexAi::ModelConfigurations::Text, feature_categor
   end
 
   describe '#url' do
-    it 'returns correct url replacing default value' do
+    it 'returns correct url replacing default value',
+      quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/480562' do
       expect(subject.url).to eq(
         'https://cloud.gitlab.com/ai/v1/proxy/vertex-ai/v1/projects/PROJECT/locations/LOCATION/publishers/google/models/text-bison:predict'
       )

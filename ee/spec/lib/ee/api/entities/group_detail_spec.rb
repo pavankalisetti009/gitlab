@@ -109,6 +109,36 @@ RSpec.describe API::Entities::GroupDetail do
     end
   end
 
+  describe 'allowed_email_domains_list' do
+    let_it_be(:owner) { create(:user) }
+    let_it_be(:guest) { create(:user) }
+    let_it_be(:group) do
+      create(:group, owners: owner, guests: guest) do |group|
+        update_group_attrs(group, owner, { allowed_email_domains_list: "example.com,example.org" })
+      end
+    end
+
+    let(:user) { guest }
+
+    subject { described_class.new(group, current_user: user).as_json }
+
+    context 'when allowed_email_domains feature is not enabled' do
+      it 'does not expose allowed_email_domains_list attr' do
+        expect(subject.keys).not_to include(:allowed_email_domains_list)
+      end
+    end
+
+    context 'when allowed_email_domains feature is enabled' do
+      before do
+        stub_licensed_features(group_allowed_email_domains: true)
+      end
+
+      it 'exposes the allowed_email_domains_list attr' do
+        expect(subject[:allowed_email_domains_list]).to eq("example.com,example.org")
+      end
+    end
+  end
+
   describe 'ip_restriction_ranges attribute' do
     let_it_be(:group) { create(:group) }
     let_it_be(:user) { create(:user) }
@@ -116,7 +146,7 @@ RSpec.describe API::Entities::GroupDetail do
     subject { described_class.new(group, current_user: user).as_json }
 
     before do
-      update_group_ip_restriction(group, user, { ip_restriction_ranges: "192.168.0.0/24,10.0.0.0/8" })
+      update_group_attrs(group, user, { ip_restriction_ranges: "192.168.0.0/24,10.0.0.0/8" })
     end
 
     context 'when ip_restriction feature is enabled' do
@@ -153,7 +183,7 @@ RSpec.describe API::Entities::GroupDetail do
     end
   end
 
-  def update_group_ip_restriction(group, user, params)
+  def update_group_attrs(group, user, params)
     ::Groups::UpdateService.new(group, user, params).execute
   end
 end

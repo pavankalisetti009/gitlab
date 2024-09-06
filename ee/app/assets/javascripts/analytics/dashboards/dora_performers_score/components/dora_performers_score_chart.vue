@@ -49,6 +49,7 @@ export default {
     };
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     groupDoraPerformanceScoreCounts: {
       query: groupDoraPerformanceScoreCountsQuery,
       variables() {
@@ -247,8 +248,9 @@ export default {
       :x-axis-type="$options.xAxisType"
       :x-axis-title="$options.xAxisTitle"
       :y-axis-title="$options.yAxisTitle"
+      :include-legend-avg-max="false"
       :format-tooltip-text="formatTooltipText"
-      height="380"
+      :height="380"
       responsive
       @created="onChartCreated"
     >

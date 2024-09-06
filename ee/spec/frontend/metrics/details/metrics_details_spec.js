@@ -19,10 +19,14 @@ import PageHeading from '~/vue_shared/components/page_heading.vue';
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { stubComponent } from 'helpers/stub_component';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 
 jest.mock('~/alert');
 jest.mock('~/lib/utils/axios_utils');
 jest.mock('ee/metrics/utils');
+jest.mock('lodash/uniqueId', () => {
+  return jest.fn((input) => `${input}1`);
+});
 
 describe('MetricsDetails', () => {
   let wrapper;
@@ -44,6 +48,7 @@ describe('MetricsDetails', () => {
   const findFilteredSearch = () => findMetricDetails().findComponent(FilteredSearch);
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
   const findRelatedIssuesProvider = () => wrapper.findComponent(RelatedIssuesProvider);
+  const findRelatedIssuesBadge = () => wrapper.findComponent(RelatedIssuesBadge);
 
   const setFilters = async (attributes, dateRange, groupBy) => {
     findFilteredSearch().vm.$emit('submit', {
@@ -107,174 +112,137 @@ describe('MetricsDetails', () => {
     expect(trackEventSpy).toHaveBeenCalledWith('view_metrics_details_page', {}, undefined);
   });
 
-  {
-    const mockMetricData = [
-      {
-        name: 'container_cpu_usage_seconds_total',
-        type: 'Gauge',
-        unit: 'gb',
-        attributes: {
-          beta_kubernetes_io_arch: 'amd64',
-          beta_kubernetes_io_instance_type: 'n1-standard-4',
-          beta_kubernetes_io_os: 'linux',
-          env: 'production',
-        },
-        values: [
-          [1700118610000, 0.25595267476015443],
-          [1700118660000, 0.1881374588830907],
-          [1700118720000, 0.28915416028993485],
-        ],
+  const mockMetricData = [
+    {
+      name: 'container_cpu_usage_seconds_total',
+      type: 'Gauge',
+      unit: 'gb',
+      attributes: {
+        beta_kubernetes_io_arch: 'amd64',
+        beta_kubernetes_io_instance_type: 'n1-standard-4',
+        beta_kubernetes_io_os: 'linux',
+        env: 'production',
       },
-    ];
+      values: [
+        [1700118610000, 0.25595267476015443],
+        [1700118660000, 0.1881374588830907],
+        [1700118720000, 0.28915416028993485],
+      ],
+    },
+  ];
 
-    const mockSearchMetadata = {
-      name: 'cpu_seconds_total',
-      type: 'sum',
-      description: 'System disk operations',
-      last_ingested_at: 1705374438711900000,
-      attribute_keys: ['host.name', 'host.dc', 'host.type'],
-      supported_aggregations: ['1m', '1h'],
-      supported_functions: ['min', 'max', 'avg', 'sum', 'count'],
-      default_group_by_attributes: ['host.name'],
-      default_group_by_function: ['avg'],
-    };
+  const mockSearchMetadata = {
+    name: 'cpu_seconds_total',
+    type: 'sum',
+    description: 'System disk operations',
+    last_ingested_at: 1705374438711900000,
+    attribute_keys: ['host.name', 'host.dc', 'host.type'],
+    supported_aggregations: ['1m', '1h'],
+    supported_functions: ['min', 'max', 'avg', 'sum', 'count'],
+    default_group_by_attributes: ['host.name'],
+    default_group_by_function: ['avg'],
+  };
 
+  beforeEach(async () => {
+    observabilityClientMock.fetchMetric.mockResolvedValue(mockMetricData);
+    observabilityClientMock.fetchMetricSearchMetadata.mockResolvedValue(mockSearchMetadata);
+
+    await mountComponent();
+  });
+
+  it('renders the related-issue-provider', () => {
+    expect(findRelatedIssuesProvider().props()).toEqual({
+      metricName: defaultProps.metricId,
+      metricType: defaultProps.metricType,
+      projectFullPath: defaultProps.projectFullPath,
+    });
+  });
+
+  it('renders the loading indicator while fetching data', () => {
+    mountComponent();
+
+    expect(findLoadingIcon().exists()).toBe(true);
+    expect(findMetricDetails().exists()).toBe(false);
+  });
+
+  it('fetches data', () => {
+    expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(
+      metricId,
+      metricType,
+      expect.any(Object),
+    );
+    expect(observabilityClientMock.fetchMetricSearchMetadata).toHaveBeenCalledWith(
+      metricId,
+      metricType,
+    );
+  });
+
+  describe('when metric type is an histogram', () => {
     beforeEach(async () => {
-      observabilityClientMock.fetchMetric.mockResolvedValue(mockMetricData);
-      observabilityClientMock.fetchMetricSearchMetadata.mockResolvedValue(mockSearchMetadata);
+      observabilityClientMock.fetchMetric.mockClear();
 
+      await mountComponent({ metricType: 'histogram' });
+    });
+
+    it('fetches data with heatmap visual', () => {
+      expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, 'histogram', {
+        abortController: expect.any(AbortController),
+        filters: expect.any(Object),
+        visual: 'heatmap',
+      });
+    });
+
+    it('renders the heatmap chart', () => {
+      expect(findMetricDetails().findComponent(MetricsLineChart).exists()).toBe(false);
+      expect(findMetricDetails().findComponent(MetricsHeatmap).exists()).toBe(true);
+    });
+  });
+
+  it('renders the metrics details', () => {
+    expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
+      abortController: expect.any(AbortController),
+      filters: expect.any(Object),
+    });
+    expect(findLoadingIcon().exists()).toBe(false);
+    expect(findMetricDetails().exists()).toBe(true);
+  });
+
+  describe('filtered search', () => {
+    beforeEach(async () => {
+      setWindowLocation(
+        '?type=Sum&foo.bar[]=eq-val' +
+          '&not%5Bfoo.bar%5D[]=not-eq-val' +
+          '&like%5Bfoo.baz%5D[]=like-val' +
+          '&not_like%5Bfoo.baz%5D[]=not-like-val' +
+          '&group_by_fn=avg' +
+          '&group_by_attrs[]=foo' +
+          '&group_by_attrs[]=bar' +
+          '&date_range=custom' +
+          '&date_start=2020-01-01T00%3A00%3A00.000Z' +
+          '&date_end=2020-01-02T00%3A00%3A00.000Z',
+      );
+      observabilityClientMock.fetchMetric.mockClear();
+      observabilityClientMock.fetchMetricSearchMetadata.mockClear();
       await mountComponent();
     });
 
-    it('renders the related-issue-provider', () => {
-      expect(findRelatedIssuesProvider().props()).toEqual({
-        metricName: defaultProps.metricId,
-        metricType: defaultProps.metricType,
-        projectFullPath: defaultProps.projectFullPath,
-      });
+    it('renders the FilteredSearch component', () => {
+      const filteredSearch = findFilteredSearch();
+      expect(filteredSearch.exists()).toBe(true);
+      expect(filteredSearch.props('searchMetadata')).toBe(mockSearchMetadata);
     });
 
-    it('renders the loading indicator while fetching data', () => {
-      mountComponent();
-
-      expect(findLoadingIcon().exists()).toBe(true);
-      expect(findMetricDetails().exists()).toBe(false);
+    it('does not render the filtered search component if fetching metadata fails', async () => {
+      observabilityClientMock.fetchMetricSearchMetadata.mockRejectedValueOnce('error');
+      await mountComponent();
+      expect(findFilteredSearch().exists()).toBe(false);
     });
 
-    it('fetches data', () => {
-      expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(
-        metricId,
-        metricType,
-        expect.any(Object),
-      );
-      expect(observabilityClientMock.fetchMetricSearchMetadata).toHaveBeenCalledWith(
-        metricId,
-        metricType,
-      );
-    });
-
-    describe('when metric type is an histogram', () => {
-      beforeEach(async () => {
-        observabilityClientMock.fetchMetric.mockClear();
-
-        await mountComponent({ metricType: 'histogram' });
-      });
-
-      it('fetches data with heatmap visual', () => {
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, 'histogram', {
-          abortController: expect.any(AbortController),
-          filters: expect.any(Object),
-          visual: 'heatmap',
-        });
-      });
-
-      it('renders the heatmap chart', () => {
-        expect(findMetricDetails().findComponent(MetricsLineChart).exists()).toBe(false);
-        expect(findMetricDetails().findComponent(MetricsHeatmap).exists()).toBe(true);
-      });
-    });
-
-    it('renders the metrics details', () => {
+    it('fetches metrics with filters', () => {
       expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
         abortController: expect.any(AbortController),
-        filters: expect.any(Object),
-      });
-      expect(findLoadingIcon().exists()).toBe(false);
-      expect(findMetricDetails().exists()).toBe(true);
-    });
-
-    describe('filtered search', () => {
-      beforeEach(async () => {
-        setWindowLocation(
-          '?type=Sum&foo.bar[]=eq-val' +
-            '&not%5Bfoo.bar%5D[]=not-eq-val' +
-            '&like%5Bfoo.baz%5D[]=like-val' +
-            '&not_like%5Bfoo.baz%5D[]=not-like-val' +
-            '&group_by_fn=avg' +
-            '&group_by_attrs[]=foo' +
-            '&group_by_attrs[]=bar' +
-            '&date_range=custom' +
-            '&date_start=2020-01-01T00%3A00%3A00.000Z' +
-            '&date_end=2020-01-02T00%3A00%3A00.000Z',
-        );
-        observabilityClientMock.fetchMetric.mockClear();
-        observabilityClientMock.fetchMetricSearchMetadata.mockClear();
-        await mountComponent();
-      });
-
-      it('renders the FilteredSearch component', () => {
-        const filteredSearch = findFilteredSearch();
-        expect(filteredSearch.exists()).toBe(true);
-        expect(filteredSearch.props('searchMetadata')).toBe(mockSearchMetadata);
-      });
-
-      it('does not render the filtered search component if fetching metadata fails', async () => {
-        observabilityClientMock.fetchMetricSearchMetadata.mockRejectedValueOnce('error');
-        await mountComponent();
-        expect(findFilteredSearch().exists()).toBe(false);
-      });
-
-      it('fetches metrics with filters', () => {
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
-          abortController: expect.any(AbortController),
-          filters: {
-            attributes: {
-              'foo.bar': [
-                { operator: '=', value: 'eq-val' },
-                { operator: '!=', value: 'not-eq-val' },
-              ],
-              'foo.baz': [
-                { operator: '=~', value: 'like-val' },
-                { operator: '!~', value: 'not-like-val' },
-              ],
-            },
-            groupBy: {
-              func: 'avg',
-              attributes: ['foo', 'bar'],
-            },
-            dateRange: {
-              value: 'custom',
-              startDate: new Date('2020-01-01'),
-              endDate: new Date('2020-01-02'),
-            },
-          },
-        });
-      });
-
-      it('initialises filtered-search props with values from query', () => {
-        expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
-          endDate: new Date('2020-01-02T00:00:00.000Z'),
-          startDate: new Date('2020-01-01T00:00:00.000Z'),
-          value: 'custom',
-        });
-
-        expect(findFilteredSearch().props('groupByFilter')).toEqual({
-          attributes: ['foo', 'bar'],
-          func: 'avg',
-        });
-
-        expect(findFilteredSearch().props('attributeFilters')).toEqual(
-          prepareTokens({
+        filters: {
+          attributes: {
             'foo.bar': [
               { operator: '=', value: 'eq-val' },
               { operator: '!=', value: 'not-eq-val' },
@@ -283,309 +251,351 @@ describe('MetricsDetails', () => {
               { operator: '=~', value: 'like-val' },
               { operator: '!~', value: 'not-like-val' },
             ],
-          }),
-        );
-      });
-
-      it('renders UrlSync and sets query prop', () => {
-        expect(findUrlSync().props('query')).toEqual({
-          'foo.bar': ['eq-val'],
-          'not[foo.bar]': ['not-eq-val'],
-          'like[foo.bar]': null,
-          'not_like[foo.bar]': null,
-          'foo.baz': null,
-          'not[foo.baz]': null,
-          'like[foo.baz]': ['like-val'],
-          'not_like[foo.baz]': ['not-like-val'],
-          group_by_fn: 'avg',
-          group_by_attrs: ['foo', 'bar'],
-          date_range: 'custom',
-          date_end: '2020-01-02T00:00:00.000Z',
-          date_start: '2020-01-01T00:00:00.000Z',
-        });
-      });
-
-      it('sets the default date range if not specified', async () => {
-        setWindowLocation('?type=Sum');
-
-        await mountComponent();
-
-        expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
-          value: '1h',
-        });
-        expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
-          abortController: expect.any(AbortController),
-          filters: {
-            attributes: {},
-            groupBy: {},
-            dateRange: {
-              value: '1h',
-            },
           },
-        });
-        expect(findUrlSync().props('query')).toEqual({
-          date_range: '1h',
-        });
+          groupBy: {
+            func: 'avg',
+            attributes: ['foo', 'bar'],
+          },
+          dateRange: {
+            value: 'custom',
+            startDate: new Date('2020-01-01'),
+            endDate: new Date('2020-01-02'),
+          },
+        },
+      });
+    });
+
+    it('initialises filtered-search props with values from query', () => {
+      expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
+        endDate: new Date('2020-01-02T00:00:00.000Z'),
+        startDate: new Date('2020-01-01T00:00:00.000Z'),
+        value: 'custom',
       });
 
-      describe('on search cancel', () => {
-        let abortSpy;
-        beforeEach(() => {
-          abortSpy = jest.spyOn(AbortController.prototype, 'abort');
-        });
-        it('does not abort the api call when canceled if a search was not initiated', () => {
-          findFilteredSearch().vm.$emit('cancel');
-
-          expect(abortSpy).not.toHaveBeenCalled();
-        });
-
-        it('aborts the api call when canceled if a search was initiated', () => {
-          findFilteredSearch().vm.$emit('submit', {
-            attributes: [],
-          });
-
-          expect(abortSpy).not.toHaveBeenCalled();
-
-          findFilteredSearch().vm.$emit('cancel');
-
-          expect(abortSpy).toHaveBeenCalled();
-        });
-
-        describe('when cancelled', () => {
-          beforeEach(async () => {
-            axios.isCancel = jest.fn().mockReturnValueOnce(true);
-            observabilityClientMock.fetchMetric.mockRejectedValueOnce('cancelled');
-            findFilteredSearch().vm.$emit('submit', {
-              attributes: [],
-            });
-            await waitForPromises();
-          });
-
-          it('renders a toast and message', () => {
-            expect(showToast).toHaveBeenCalledWith('Metrics search has been cancelled.', {
-              variant: 'danger',
-            });
-          });
-
-          it('sets cancelled prop on the chart component', () => {
-            expect(findChart().props('cancelled')).toBe(true);
-          });
-
-          it('reset cancelled prop after issuing a new search', async () => {
-            observabilityClientMock.fetchMetric.mockResolvedValue(mockMetricData);
-            findFilteredSearch().vm.$emit('submit', {
-              attributes: [],
-            });
-            await waitForPromises();
-
-            expect(findChart().props('cancelled')).toBe(false);
-          });
-        });
+      expect(findFilteredSearch().props('groupByFilter')).toEqual({
+        attributes: ['foo', 'bar'],
+        func: 'avg',
       });
 
-      describe('while searching', () => {
-        beforeEach(() => {
-          observabilityClientMock.fetchMetric.mockReturnValue(new Promise(() => {}));
+      expect(findFilteredSearch().props('attributeFilters')).toEqual(
+        prepareTokens({
+          'foo.bar': [
+            { operator: '=', value: 'eq-val' },
+            { operator: '!=', value: 'not-eq-val' },
+          ],
+          'foo.baz': [
+            { operator: '=~', value: 'like-val' },
+            { operator: '!~', value: 'not-like-val' },
+          ],
+        }),
+      );
+    });
 
-          findFilteredSearch().vm.$emit('submit', {
-            attributes: [],
-          });
-        });
+    it('renders UrlSync and sets query prop', () => {
+      expect(findUrlSync().props('query')).toEqual({
+        'foo.bar': ['eq-val'],
+        'not[foo.bar]': ['not-eq-val'],
+        'like[foo.bar]': null,
+        'not_like[foo.bar]': null,
+        'foo.baz': null,
+        'not[foo.baz]': null,
+        'like[foo.baz]': ['like-val'],
+        'not_like[foo.baz]': ['not-like-val'],
+        group_by_fn: 'avg',
+        group_by_attrs: ['foo', 'bar'],
+        date_range: 'custom',
+        date_end: '2020-01-02T00:00:00.000Z',
+        date_start: '2020-01-01T00:00:00.000Z',
+      });
+    });
 
-        it('does not show the loading icon', () => {
-          expect(findLoadingIcon().exists()).toBe(false);
-        });
+    it('sets the default date range if not specified', async () => {
+      setWindowLocation('?type=Sum');
 
-        it('sets the loading prop on the filtered-search component', () => {
-          expect(findFilteredSearch().props('loading')).toBe(true);
-        });
+      await mountComponent();
 
-        it('sets the loading prop on the chart component', () => {
-          expect(findChart().props('loading')).toBe(true);
-        });
+      expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
+        value: '1h',
+      });
+      expect(observabilityClientMock.fetchMetric).toHaveBeenCalledWith(metricId, metricType, {
+        abortController: expect.any(AbortController),
+        filters: {
+          attributes: {},
+          groupBy: {},
+          dateRange: {
+            value: '1h',
+          },
+        },
+      });
+      expect(findUrlSync().props('query')).toEqual({
+        date_range: '1h',
+      });
+    });
+
+    describe('on search cancel', () => {
+      let abortSpy;
+      beforeEach(() => {
+        abortSpy = jest.spyOn(AbortController.prototype, 'abort');
+      });
+      it('does not abort the api call when canceled if a search was not initiated', () => {
+        findFilteredSearch().vm.$emit('cancel');
+
+        expect(abortSpy).not.toHaveBeenCalled();
       });
 
-      it('renders the loading indicator while fetching new data with currently empty data', async () => {
-        observabilityClientMock.fetchMetric.mockResolvedValue([]);
-        await mountComponent();
-
-        await findFilteredSearch().vm.$emit('submit', {
+      it('aborts the api call when canceled if a search was initiated', () => {
+        findFilteredSearch().vm.$emit('submit', {
           attributes: [],
         });
 
-        expect(findLoadingIcon().exists()).toBe(true);
+        expect(abortSpy).not.toHaveBeenCalled();
+
+        findFilteredSearch().vm.$emit('cancel');
+
+        expect(abortSpy).toHaveBeenCalled();
       });
 
-      describe('on search submit', () => {
-        const updatedMetricData = [
-          {
-            name: 'container_cpu_usage_seconds_total',
-            type: 'Gauge',
-            unit: 'gb',
-            attributes: {
-              beta_kubernetes_io_arch: 'amd64',
-            },
-            values: [[1700118610000, 0.25595267476015443]],
-          },
-        ];
+      describe('when cancelled', () => {
         beforeEach(async () => {
-          observabilityClientMock.fetchMetric.mockResolvedValue(updatedMetricData);
-          await setFilters(
-            {
+          axios.isCancel = jest.fn().mockReturnValueOnce(true);
+          observabilityClientMock.fetchMetric.mockRejectedValueOnce('cancelled');
+          findFilteredSearch().vm.$emit('submit', {
+            attributes: [],
+          });
+          await waitForPromises();
+        });
+
+        it('renders a toast and message', () => {
+          expect(showToast).toHaveBeenCalledWith('Metrics search has been cancelled.', {
+            variant: 'danger',
+          });
+        });
+
+        it('sets cancelled prop on the chart component', () => {
+          expect(findChart().props('cancelled')).toBe(true);
+        });
+
+        it('reset cancelled prop after issuing a new search', async () => {
+          observabilityClientMock.fetchMetric.mockResolvedValue(mockMetricData);
+          findFilteredSearch().vm.$emit('submit', {
+            attributes: [],
+          });
+          await waitForPromises();
+
+          expect(findChart().props('cancelled')).toBe(false);
+        });
+      });
+    });
+
+    describe('while searching', () => {
+      beforeEach(() => {
+        observabilityClientMock.fetchMetric.mockReturnValue(new Promise(() => {}));
+
+        findFilteredSearch().vm.$emit('submit', {
+          attributes: [],
+        });
+      });
+
+      it('does not show the loading icon', () => {
+        expect(findLoadingIcon().exists()).toBe(false);
+      });
+
+      it('sets the loading prop on the filtered-search component', () => {
+        expect(findFilteredSearch().props('loading')).toBe(true);
+      });
+
+      it('sets the loading prop on the chart component', () => {
+        expect(findChart().props('loading')).toBe(true);
+      });
+    });
+
+    it('renders the loading indicator while fetching new data with currently empty data', async () => {
+      observabilityClientMock.fetchMetric.mockResolvedValue([]);
+      await mountComponent();
+
+      await findFilteredSearch().vm.$emit('submit', {
+        attributes: [],
+      });
+
+      expect(findLoadingIcon().exists()).toBe(true);
+    });
+
+    describe('on search submit', () => {
+      const updatedMetricData = [
+        {
+          name: 'container_cpu_usage_seconds_total',
+          type: 'Gauge',
+          unit: 'gb',
+          attributes: {
+            beta_kubernetes_io_arch: 'amd64',
+          },
+          values: [[1700118610000, 0.25595267476015443]],
+        },
+      ];
+      beforeEach(async () => {
+        observabilityClientMock.fetchMetric.mockResolvedValue(updatedMetricData);
+        await setFilters(
+          {
+            'key.one': [{ operator: '=', value: 'test' }],
+          },
+          {
+            endDate: new Date('2020-07-06T00:00:00.000Z'),
+            startDarte: new Date('2020-07-05T23:00:00.000Z'),
+            value: '30d',
+          },
+          {
+            func: 'sum',
+            attributes: ['attr_1', 'attr_2'],
+          },
+        );
+      });
+
+      it('fetches traces with updated filters', () => {
+        expect(observabilityClientMock.fetchMetric).toHaveBeenLastCalledWith(metricId, metricType, {
+          abortController: expect.any(AbortController),
+          filters: {
+            attributes: {
               'key.one': [{ operator: '=', value: 'test' }],
             },
-            {
+            dateRange: {
               endDate: new Date('2020-07-06T00:00:00.000Z'),
               startDarte: new Date('2020-07-05T23:00:00.000Z'),
               value: '30d',
             },
-            {
+            groupBy: {
               func: 'sum',
               attributes: ['attr_1', 'attr_2'],
             },
-          );
-        });
-
-        it('fetches traces with updated filters', () => {
-          expect(observabilityClientMock.fetchMetric).toHaveBeenLastCalledWith(
-            metricId,
-            metricType,
-            {
-              abortController: expect.any(AbortController),
-              filters: {
-                attributes: {
-                  'key.one': [{ operator: '=', value: 'test' }],
-                },
-                dateRange: {
-                  endDate: new Date('2020-07-06T00:00:00.000Z'),
-                  startDarte: new Date('2020-07-05T23:00:00.000Z'),
-                  value: '30d',
-                },
-                groupBy: {
-                  func: 'sum',
-                  attributes: ['attr_1', 'attr_2'],
-                },
-              },
-            },
-          );
-        });
-
-        it('updates the query on search submit', () => {
-          expect(findUrlSync().props('query')).toEqual({
-            'key.one': ['test'],
-            'not[key.one]': null,
-            'like[key.one]': null,
-            'not_like[key.one]': null,
-            group_by_fn: 'sum',
-            group_by_attrs: ['attr_1', 'attr_2'],
-            date_range: '30d',
-          });
-        });
-
-        it('updates FilteredSearch props', () => {
-          expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
-            endDate: new Date('2020-07-06T00:00:00.000Z'),
-            startDarte: new Date('2020-07-05T23:00:00.000Z'),
-            value: '30d',
-          });
-          expect(findFilteredSearch().props('attributeFilters')).toEqual(
-            prepareTokens({
-              'key.one': [{ operator: '=', value: 'test' }],
-            }),
-          );
-          expect(findFilteredSearch().props('groupByFilter')).toEqual({
-            func: 'sum',
-            attributes: ['attr_1', 'attr_2'],
-          });
-        });
-
-        it('updates the details chart data', () => {
-          expect(findChart().props('metricData')).toEqual(updatedMetricData);
+          },
         });
       });
+
+      it('updates the query on search submit', () => {
+        expect(findUrlSync().props('query')).toEqual({
+          'key.one': ['test'],
+          'not[key.one]': null,
+          'like[key.one]': null,
+          'not_like[key.one]': null,
+          group_by_fn: 'sum',
+          group_by_attrs: ['attr_1', 'attr_2'],
+          date_range: '30d',
+        });
+      });
+
+      it('updates FilteredSearch props', () => {
+        expect(findFilteredSearch().props('dateRangeFilter')).toEqual({
+          endDate: new Date('2020-07-06T00:00:00.000Z'),
+          startDarte: new Date('2020-07-05T23:00:00.000Z'),
+          value: '30d',
+        });
+        expect(findFilteredSearch().props('attributeFilters')).toEqual(
+          prepareTokens({
+            'key.one': [{ operator: '=', value: 'test' }],
+          }),
+        );
+        expect(findFilteredSearch().props('groupByFilter')).toEqual({
+          func: 'sum',
+          attributes: ['attr_1', 'attr_2'],
+        });
+      });
+
+      it('updates the details chart data', () => {
+        expect(findChart().props('metricData')).toEqual(updatedMetricData);
+      });
+    });
+  });
+
+  it('renders the details chart', () => {
+    const chart = findChart();
+    expect(chart.exists()).toBe(true);
+    expect(chart.props('metricData')).toEqual(mockMetricData);
+    expect(chart.props('cancelled')).toBe(false);
+    expect(chart.props('loading')).toBe(false);
+  });
+
+  it('renders a line chart by default', () => {
+    expect(findMetricDetails().findComponent(MetricsLineChart).exists()).toBe(true);
+    expect(findMetricDetails().findComponent(MetricsHeatmap).exists()).toBe(false);
+  });
+
+  it('renders the details header', () => {
+    expect(findHeader().exists()).toBe(true);
+    expect(findHeader().props('heading')).toBe(metricId);
+    expect(findHeader().text()).toContain(`Type:\u00a0${metricType}`);
+    expect(findHeader().text()).toContain('System disk operations');
+    expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
+    expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
+  });
+
+  it('renders the create issue button', () => {
+    const button = findHeader().findComponent(GlButton);
+    expect(button.text()).toBe('Create issue');
+    const metricsDetails = {
+      fullUrl:
+        'http://test.host/?type=Sum&date_range=custom&date_start=2020-07-05T23%3A00%3A00.000Z&date_end=2020-07-06T00%3A00%3A00.000Z',
+      name: 'test.metric',
+      type: 'Sum',
+      timeframe: ['Sun, 05 Jul 2020 23:00:00 GMT', 'Mon, 06 Jul 2020 00:00:00 GMT'],
+    };
+    expect(button.attributes('href')).toBe(
+      `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
+        JSON.stringify(metricsDetails),
+      )}&${encodeURIComponent('issue[confidential]')}=true`,
+    );
+  });
+
+  it('renders the relate issues badge', () => {
+    expect(findRelatedIssuesBadge().props()).toStrictEqual({
+      issuesTotal: 0,
+      loading: false,
+      error: null,
+      anchorId: 'related-issues-1',
+      parentScrollingId: null,
+    });
+  });
+
+  it('renders the related issues', () => {
+    expect(findRelatedIssues().props()).toStrictEqual({
+      issues: [],
+      fetchingIssues: false,
+      error: null,
+      helpPath: helpPagePath('/operations/metrics', {
+        anchor: 'create-an-issue-for-a-metric',
+      }),
+    });
+    expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
+  });
+
+  describe('with no data', () => {
+    beforeEach(async () => {
+      observabilityClientMock.fetchMetric.mockResolvedValue([]);
+
+      await mountComponent();
     });
 
-    it('renders the details chart', () => {
-      const chart = findChart();
-      expect(chart.exists()).toBe(true);
-      expect(chart.props('metricData')).toEqual(mockMetricData);
-      expect(chart.props('cancelled')).toBe(false);
-      expect(chart.props('loading')).toBe(false);
-    });
-
-    it('renders a line chart by default', () => {
-      expect(findMetricDetails().findComponent(MetricsLineChart).exists()).toBe(true);
-      expect(findMetricDetails().findComponent(MetricsHeatmap).exists()).toBe(false);
-    });
-
-    it('renders the details header', () => {
+    it('renders the header', () => {
       expect(findHeader().exists()).toBe(true);
       expect(findHeader().props('heading')).toBe(metricId);
       expect(findHeader().text()).toContain(`Type:\u00a0${metricType}`);
       expect(findHeader().text()).toContain('System disk operations');
       expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
-      expect(ingestedAtTimeAgo).toHaveBeenCalledWith(mockSearchMetadata.last_ingested_at);
     });
 
-    it('renders the create issue button', () => {
-      const button = findHeader().findComponent(GlButton);
-      expect(button.text()).toBe('Create issue');
-      const metricsDetails = {
-        fullUrl:
-          'http://test.host/?type=Sum&date_range=custom&date_start=2020-07-05T23%3A00%3A00.000Z&date_end=2020-07-06T00%3A00%3A00.000Z',
-        name: 'test.metric',
-        type: 'Sum',
-        timeframe: ['Sun, 05 Jul 2020 23:00:00 GMT', 'Mon, 06 Jul 2020 00:00:00 GMT'],
-      };
-      expect(button.attributes('href')).toBe(
-        `${createIssueUrl}?observability_metric_details=${encodeURIComponent(
-          JSON.stringify(metricsDetails),
-        )}&${encodeURIComponent('issue[confidential]')}=true`,
+    it('renders the empty state, with description for selected time range', () => {
+      expect(findEmptyState().exists()).toBe(true);
+      expect(findEmptyState().text()).toMatchInterpolatedText(
+        'No data found for the selected time range (last 1 hour) Last ingested: 3 days ago',
       );
     });
 
-    it('renders the related issues', () => {
-      expect(findRelatedIssues().props()).toStrictEqual({
-        issues: [],
-        fetchingIssues: false,
-        error: null,
-        helpPath: helpPagePath('/operations/metrics', {
-          anchor: 'create-an-issue-for-a-metric',
-        }),
-      });
+    it('renders the empty state, with no description for the selected time range', async () => {
+      await setFilters({}, { value: 'custom' });
+      expect(findEmptyState().exists()).toBe(true);
+      expect(findEmptyState().text()).toMatchInterpolatedText(
+        'No data found for the selected time range Last ingested: 3 days ago',
+      );
     });
-
-    describe('with no data', () => {
-      beforeEach(async () => {
-        observabilityClientMock.fetchMetric.mockResolvedValue([]);
-
-        await mountComponent();
-      });
-
-      it('renders the header', () => {
-        expect(findHeader().exists()).toBe(true);
-        expect(findHeader().props('heading')).toBe(metricId);
-        expect(findHeader().text()).toContain(`Type:\u00a0${metricType}`);
-        expect(findHeader().text()).toContain('System disk operations');
-        expect(findHeader().text()).toContain('Last ingested:\u00a03 days ago');
-      });
-
-      it('renders the empty state, with description for selected time range', () => {
-        expect(findEmptyState().exists()).toBe(true);
-        expect(findEmptyState().text()).toMatchInterpolatedText(
-          'No data found for the selected time range (last 1 hour) Last ingested: 3 days ago',
-        );
-      });
-
-      it('renders the empty state, with no description for the selected time range', async () => {
-        await setFilters({}, { value: 'custom' });
-        expect(findEmptyState().exists()).toBe(true);
-        expect(findEmptyState().text()).toMatchInterpolatedText(
-          'No data found for the selected time range Last ingested: 3 days ago',
-        );
-      });
-    });
-  }
+  });
 
   describe('error handling', () => {
     beforeEach(() => {

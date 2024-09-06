@@ -53,6 +53,19 @@ module EE
           end
 
           namespace 'internal' do
+            namespace 'kubernetes/receptive_agents' do
+              desc 'GET receptive agents' do
+                detail 'Retrieve agents to maintain a connection with'
+              end
+              get '/', feature_category: :deployment_management, urgency: :low do
+                not_found! unless ::License.feature_available?(:cluster_receptive_agents)
+
+                present ::Clusters::Agents::UrlConfiguration.active,
+                  with: ::API::Entities::Clusters::ReceptiveAgent,
+                  root: :agents
+              end
+            end
+
             namespace 'kubernetes' do
               before { check_agent_token }
 
@@ -62,7 +75,7 @@ module EE
                 end
 
                 route_setting :authentication, cluster_agent_token_allowed: true
-                post '/reconcile', urgency: :low, feature_category: :remote_development do
+                post '/reconcile', urgency: :low, feature_category: :workspaces do
                   unless ::License.feature_available?(:remote_development)
                     forbidden!('"remote_development" licensed feature is not available')
                   end

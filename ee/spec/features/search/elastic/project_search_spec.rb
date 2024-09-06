@@ -155,7 +155,8 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
         scope: 'blobs',
         use_elasticsearch?: true,
         use_zoekt?: true,
-        elasticsearchable_scope: project
+        elasticsearchable_scope: project,
+        search_type: 'zoekt'
       )
     end
 
@@ -196,7 +197,15 @@ RSpec.describe 'Project elastic search', :js, :elastic, :disable_rate_limiter, f
 end
 
 RSpec.describe 'Project elastic search redactions', feature_category: :global_search do
-  it_behaves_like 'a redacted search results page' do
-    let(:search_path) { project_path(public_restricted_project) }
+  [:work_item, :issue].each do |document_type|
+    context "when we have document_type as #{document_type}" do
+      before do
+        stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+      end
+
+      it_behaves_like 'a redacted search results page', document_type: document_type do
+        let(:search_path) { project_path(public_restricted_project) }
+      end
+    end
   end
 end

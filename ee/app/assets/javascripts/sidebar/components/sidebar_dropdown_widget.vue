@@ -82,6 +82,7 @@ export default {
     },
   },
   apollo: {
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     issuable: {
       query() {
         const { current } = this.issuableAttributeQuery;
@@ -109,6 +110,7 @@ export default {
         });
       },
     },
+    // eslint-disable-next-line @gitlab/vue-no-undef-apollo-properties
     workItem: {
       query() {
         return issuableAttributesQueries[IssuableAttributeType.Parent].current[this.issuableType]

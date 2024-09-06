@@ -3,8 +3,8 @@
 require 'spec_helper'
 
 RSpec.describe Security::Orchestration::CreateBotService, feature_category: :security_policy_management do
-  let_it_be(:group) { create(:group) }
   let_it_be(:organization) { create(:organization) }
+  let_it_be(:group) { create(:group, organization: organization) }
   let_it_be(:project) { create(:project, group: group, organization: organization) }
   let_it_be(:user) { create(:user) }
   let!(:security_orchestration_policy_configuration) do

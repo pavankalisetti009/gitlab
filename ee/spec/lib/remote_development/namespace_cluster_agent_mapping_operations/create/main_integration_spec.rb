@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create::Main, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create::Main, feature_category: :workspaces do
   let_it_be(:creator) { create(:user) }
   # NOTE: reload is necessary to calculate traversal IDs
   let_it_be_with_reload(:cluster_agent) do

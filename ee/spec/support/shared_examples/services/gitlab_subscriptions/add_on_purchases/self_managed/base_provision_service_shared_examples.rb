@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+RSpec.shared_examples 'raise error for not implemented missing' do
+  it { expect { klass.new.execute }.to raise_error described_class::MethodNotImplementedError }
+end
+
 RSpec.shared_examples 'call runner to handle the provision of add-ons' do
   it 'calls the runner to handle the provision of add-ons' do
     expect_next_instance_of(
@@ -39,6 +43,7 @@ RSpec.shared_examples 'provision service expires add-on purchase' do
         :gitlab_subscription_add_on_purchase,
         namespace: namespace,
         add_on: add_on,
+        started_at: Date.current,
         expires_on: expires_on
       )
     end
@@ -86,44 +91,23 @@ RSpec.shared_examples 'provision service updates the existing add-on purchase' d
         {
           add_on_purchase: add_on_purchase,
           quantity: quantity,
-          expires_on: current_license.block_changes_at,
-          purchase_xid: subscription_name
+          started_on: starts_at,
+          expires_on: starts_at + 1.year,
+          purchase_xid: purchase_xid,
+          trial: false
         }
       ).and_call_original
 
     expect { result }.not_to change { GitlabSubscriptions::AddOnPurchase.count }
 
-    expect(current_license.block_changes_at).to eq(current_license.expires_at + 14.days)
     expect(result[:status]).to eq(:success)
     expect(result[:add_on_purchase]).to have_attributes(
       id: add_on_purchase.id,
-      expires_on: current_license.block_changes_at,
+      started_at: starts_at,
+      expires_on: starts_at + 1.year,
       quantity: quantity,
-      purchase_xid: subscription_name
-    )
-  end
-end
-
-RSpec.shared_examples 'provision service creates add-on purchase' do
-  it 'creates a new add-on purchase' do
-    expect(GitlabSubscriptions::AddOnPurchases::CreateService).to receive(:new).with(
-      namespace,
-      add_on,
-      {
-        add_on_purchase: nil,
-        quantity: quantity,
-        expires_on: current_license.expires_at + 14.days,
-        purchase_xid: subscription_name
-      }
-    ).and_call_original
-
-    expect { result }.to change { GitlabSubscriptions::AddOnPurchase.count }.by(1)
-
-    expect(result[:status]).to eq(:success)
-    expect(result[:add_on_purchase]).to have_attributes(
-      expires_on: current_license.expires_at + 14.days,
-      quantity: quantity,
-      purchase_xid: subscription_name
+      purchase_xid: purchase_xid,
+      trial: false
     )
   end
 end

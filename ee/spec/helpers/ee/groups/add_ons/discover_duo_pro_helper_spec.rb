@@ -60,9 +60,9 @@ RSpec.describe Groups::AddOns::DiscoverDuoProHelper, feature_category: :onboardi
 
         headers = card_collection.pluck(:header)
         expect(headers).to contain_exactly(
-          s_("DuoProDiscover|Test generation"),
-          s_("DuoProDiscover|Code explanation"),
-          s_("DuoProDiscover|Code refactoring"),
+          s_("DuoProDiscover|Test Generation"),
+          s_("DuoProDiscover|Code Explanation"),
+          s_("DuoProDiscover|Code Refactoring"),
           s_("DuoProDiscover|Chat from any location")
         )
 

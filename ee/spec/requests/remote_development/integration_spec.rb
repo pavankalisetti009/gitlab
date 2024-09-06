@@ -4,7 +4,7 @@ require "spec_helper"
 require_relative "../../support/helpers/remote_development/integration_spec_helpers"
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- this is an integration test, it has a lot of fixtures, but only one example, so we don't need let_it_be
-RSpec.describe "Full workspaces integration request spec", :freeze_time, feature_category: :remote_development do
+RSpec.describe "Full workspaces integration request spec", :freeze_time, feature_category: :workspaces do
   include GraphqlHelpers
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"
@@ -20,7 +20,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
             remoteDevelopmentClusterAgents(filter: AVAILABLE) {
               nodes {
                 id
-                remoteDevelopmentAgentConfig {
+                workspacesAgentConfig {
                   id
                   projectId
                   enabled
@@ -49,7 +49,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
 
   let(:expected_agent_config) do
     {
-      "id" => "gid://gitlab/RemoteDevelopment::RemoteDevelopmentAgentConfig/#{remote_development_agent_config.id}",
+      "id" => "gid://gitlab/RemoteDevelopment::WorkspacesAgentConfig/#{workspaces_agent_config.id}",
       "projectId" => agent_project.id.to_s,
       "enabled" => true,
       "gitlabWorkspacesProxyNamespace" => "gitlab-workspaces",
@@ -144,13 +144,13 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     create(:ee_cluster_agent, project: agent_project, created_by_user: agent_admin_user, project_id: agent_project.id)
   end
 
-  # TODO: We should create the remote_development_agent_config via an API call to update the agent config
+  # TODO: We should create the workspaces_agent_config via an API call to update the agent config
   #       with the relevant fixture values in its config file to represent a remote_development enabled agent.
   #       And, as we migrate the settings from the agent config file to the settings UI, we should add
   #       simulated API calls for setting the values that way too.
-  let!(:remote_development_agent_config) do
+  let!(:workspaces_agent_config) do
     create(
-      :remote_development_agent_config,
+      :workspaces_agent_config,
       agent: agent,
       gitlab_workspaces_proxy_namespace: gitlab_workspaces_proxy_namespace,
       dns_zone: dns_zone,
@@ -190,7 +190,7 @@ RSpec.describe "Full workspaces integration request spec", :freeze_time, feature
     get_graphql(cluster_agents_query, current_user: agent_admin_user)
 
     expect(
-      graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :remoteDevelopmentAgentConfig)
+      graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :workspacesAgentConfig)
     ).to eq(expected_agent_config)
 
     graphql_data_at(:namespace, :remoteDevelopmentClusterAgents, :nodes, 0, :id)

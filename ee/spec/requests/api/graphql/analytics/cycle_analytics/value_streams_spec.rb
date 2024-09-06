@@ -34,6 +34,15 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     QUERY
   end
 
+  shared_examples 'unsupported filter examples' do
+    it 'returns error message' do
+      perform_request
+
+      message = json_response['errors'].first['message']
+      expect(message).to eq("Unsupported filter argument for Merge Request based stages: #{field}")
+    end
+  end
+
   shared_examples 'value streams query' do
     context 'when value streams are licensed' do
       let_it_be(:value_streams) do
@@ -186,6 +195,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
             context 'when requesting aggregated metrics' do
               let_it_be(:assignee) { create(:user) }
               let_it_be(:current_time) { Time.current }
+              let_it_be(:epic) { create(:epic, group: resource.root_ancestor) }
               let_it_be(:milestone) { create(:milestone, group: resource.root_ancestor) }
               let_it_be(:filter_label) { create(:group_label, group: resource.root_ancestor) }
 
@@ -201,7 +211,7 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                   labels: [filter_label],
                   milestone: milestone,
                   created_at: current_time).tap do |mr|
-                  mr.metrics.update!(merged_at: current_time + 2.hours)
+                  mr.metrics.update!(merged_at: current_time + 3.hours)
                 end
               end
 
@@ -214,12 +224,12 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
 
               let(:query) do
                 <<~QUERY
-                  query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $assigneeUsernames: [String!], $milestoneTitle: String, $labelNames: [String!]) {
+                  query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $assigneeUsernames: [String!], $milestoneTitle: String, $labelNames: [String!], $epicId: ID, $weight: Int) {
                     #{resource_type}(fullPath: $fullPath) {
                       valueStreams(id: $valueStreamId) {
                         nodes {
                           stages(id: $stageId) {
-                            metrics(timeframe: { start: $from, end: $to }, assigneeUsernames: $assigneeUsernames, milestoneTitle: $milestoneTitle, labelNames: $labelNames) {
+                            metrics(timeframe: { start: $from, end: $to }, assigneeUsernames: $assigneeUsernames, milestoneTitle: $milestoneTitle, labelNames: $labelNames, epicId: $epicId, weight: $weight) {
                               count {
                                 value
                               }
@@ -251,6 +261,43 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                 perform_request
 
                 expect(record_count).to eq(3)
+              end
+
+              context 'when requesting averageDurations series', :freeze_time do
+                let(:query) do
+                  <<~QUERY
+                    query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!) {
+                      #{resource_type}(fullPath: $fullPath) {
+                        valueStreams(id: $valueStreamId) {
+                          nodes {
+                            stages(id: $stageId) {
+                              metrics(timeframe: { start: $from, end: $to }) {
+                                series {
+                                  averageDurations {
+                                    date
+                                    value
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  QUERY
+                end
+
+                it 'returns the correct duration data' do
+                  perform_request
+
+                  duration_item = graphql_data_at(resource_type.to_sym, :value_streams, :nodes, :stages, :metrics,
+                    :series, :averageDurations, 0)
+
+                  expect(duration_item).to eq({
+                    'date' => current_time.to_date.to_s,
+                    'value' => (7200 + 7200 + 10800) / 3 # durations: 2 hours, 2 hours, 3 hours
+                  })
+                end
               end
 
               context 'when filtering for assignee' do
@@ -300,6 +347,104 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
                   expect(record_count).to eq(2)
                 end
               end
+
+              context 'when filtering by the unsupported epic id field' do
+                before do
+                  variables[:epic_id] = epic.to_gid.to_s
+                end
+
+                include_examples 'unsupported filter examples' do
+                  let(:field) { 'epic_id' }
+                end
+              end
+
+              context 'when filtering by the unsupported weight field' do
+                before do
+                  variables[:weight] = 10
+                end
+
+                include_examples 'unsupported filter examples' do
+                  let(:field) { 'weight' }
+                end
+              end
+
+              context 'when using negated filters' do
+                let(:query) do
+                  <<~QUERY
+                    query($fullPath: ID!, $valueStreamId: ID, $stageId: ID, $from: Date!, $to: Date!, $notAssigneeUsernames: [String!], $notMilestoneTitle: String, $notLabelNames: [String!], $notWeight: Int, $notEpicId: ID) {
+                      #{resource_type}(fullPath: $fullPath) {
+                        valueStreams(id: $valueStreamId) {
+                          nodes {
+                            stages(id: $stageId) {
+                              metrics(timeframe: { start: $from, end: $to }, not: { assigneeUsernames: $notAssigneeUsernames, milestoneTitle: $notMilestoneTitle, labelNames: $notLabelNames, weight: $notWeight, epicId: $notEpicId }) {
+                                count {
+                                  value
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  QUERY
+                end
+
+                context 'when filtering for assignee' do
+                  before do
+                    variables[:notAssigneeUsernames] = [assignee.username]
+                  end
+
+                  it 'returns the correct count' do
+                    perform_request
+
+                    expect(record_count).to eq(2)
+                  end
+                end
+
+                context 'when filtering for label' do
+                  before do
+                    variables[:notLabelNames] = [filter_label.name]
+                  end
+
+                  it 'returns the correct count' do
+                    perform_request
+
+                    expect(record_count).to eq(2)
+                  end
+                end
+
+                context 'when filtering for milestone title' do
+                  before do
+                    variables[:notMilestoneTitle] = milestone.title
+                  end
+
+                  it 'returns the correct count' do
+                    perform_request
+
+                    expect(record_count).to eq(1)
+                  end
+                end
+
+                context 'when filtering by the unsupported weight field' do
+                  before do
+                    variables[:notWeight] = 10
+                  end
+
+                  include_examples 'unsupported filter examples' do
+                    let(:field) { 'weight' }
+                  end
+                end
+
+                context 'when filtering by the unsupported epicId field' do
+                  before do
+                    variables[:notEpicId] = epic.to_gid.to_s
+                  end
+
+                  include_examples 'unsupported filter examples' do
+                    let(:field) { 'epic_id' }
+                  end
+                end
+              end
             end
           end
         end
@@ -316,7 +461,9 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:start_label) { create(:label, project: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:label, project: resource, title: 'End Label') }
 
-    it_behaves_like 'value streams query'
+    context 'when quarantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482804' do
+      it_behaves_like 'value streams query'
+    end
 
     context 'when using aggregated metrics' do
       before do
@@ -382,7 +529,9 @@ RSpec.describe '(Project|Group).value_streams', feature_category: :value_stream_
     let_it_be(:start_label) { create(:group_label, group: resource, title: 'Start Label') }
     let_it_be(:end_label) { create(:group_label, group: resource, title: 'End Label') }
 
-    it_behaves_like 'value streams query'
+    context 'when qurantined shared example', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482805' do
+      it_behaves_like 'value streams query'
+    end
 
     context 'when using aggregated metrics' do
       let_it_be_with_refind(:resource) { create(:group) }

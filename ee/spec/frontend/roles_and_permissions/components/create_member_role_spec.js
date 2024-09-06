@@ -1,4 +1,11 @@
-import { GlFormInput, GlFormSelect, GlLoadingIcon, GlAlert, GlForm } from '@gitlab/ui';
+import {
+  GlFormInput,
+  GlCollapsibleListbox,
+  GlLoadingIcon,
+  GlAlert,
+  GlForm,
+  GlFormGroup,
+} from '@gitlab/ui';
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
 import { createAlert } from '~/alert';
@@ -8,11 +15,11 @@ import updateMemberRoleMutation from 'ee/roles_and_permissions/graphql/update_me
 import CreateMemberRole from 'ee/roles_and_permissions/components/create_member_role.vue';
 import { mountExtended, shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import waitForPromises from 'helpers/wait_for_promises';
-import { stubComponent } from 'helpers/stub_component';
 import memberRoleQuery from 'ee/roles_and_permissions/graphql/member_role.query.graphql';
 import { visitUrl } from '~/lib/utils/url_utility';
 import PermissionsSelector from 'ee/roles_and_permissions/components/permissions_selector.vue';
 import { BASE_ROLES } from '~/access_level/constants';
+import { stubComponent } from 'helpers/stub_component';
 import { getMemberRoleQueryResponse } from '../mock_data';
 
 Vue.use(VueApollo);
@@ -24,10 +31,7 @@ jest.mock('~/alert', () => ({
   })),
 }));
 
-jest.mock('~/lib/utils/url_utility', () => ({
-  ...jest.requireActual('~/lib/utils/url_utility'),
-  visitUrl: jest.fn(),
-}));
+jest.mock('~/lib/utils/url_utility');
 
 const mutationSuccessData = { data: { memberRoleSave: { errors: [] } } };
 
@@ -40,7 +44,6 @@ describe('CreateMemberRole', () => {
 
   const createComponent = ({
     mountFn = mountExtended,
-    stubs,
     createMutationMock = createMutationSuccessHandler,
     updateMutationMock = updateMutationSuccessHandler,
     memberRoleHandler = defaultMemberRoleHandler,
@@ -50,7 +53,10 @@ describe('CreateMemberRole', () => {
   } = {}) => {
     wrapper = mountFn(CreateMemberRole, {
       propsData: { groupFullPath, embedded, listPagePath: 'http://list/page/path', roleId },
-      stubs: { PermissionsSelector: true, ...stubs },
+      stubs: {
+        PermissionsSelector: true,
+        GlFormGroup: stubComponent(GlFormGroup, { props: ['state'] }),
+      },
       apolloProvider: createMockApollo([
         [memberRoleQuery, memberRoleHandler],
         [createMemberRoleMutation, createMutationMock],
@@ -64,7 +70,8 @@ describe('CreateMemberRole', () => {
   const findButtonSubmit = () => wrapper.findByTestId('submit-button');
   const findButtonCancel = () => wrapper.findByTestId('cancel-button');
   const findNameField = () => wrapper.findAllComponents(GlFormInput).at(0);
-  const findSelect = () => wrapper.findComponent(GlFormSelect);
+  const findBaseRoleFormGroup = () => wrapper.findByTestId('base-role-form-group');
+  const findRoleDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
   const findDescriptionField = () => wrapper.findAllComponents(GlFormInput).at(1);
   const findPermissionsSelector = () => wrapper.findComponent(PermissionsSelector);
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -72,7 +79,7 @@ describe('CreateMemberRole', () => {
   const findForm = () => wrapper.findComponent(GlForm);
 
   const fillForm = () => {
-    findSelect().vm.$emit('input', 'GUEST');
+    findRoleDropdown().vm.$emit('select', 'GUEST');
     findNameField().vm.$emit('input', 'My role name');
     findDescriptionField().vm.$emit('input', 'My description');
     findPermissionsSelector().vm.$emit('change', ['A']);
@@ -81,17 +88,14 @@ describe('CreateMemberRole', () => {
   };
 
   const submitForm = (waitFn = nextTick) => {
-    // findButtonSubmit().trigger('submit');
     findForm().vm.$emit('submit', { preventDefault: () => {} });
     return waitFn();
   };
 
   it('shows the role dropdown with the expected options', () => {
-    // GlFormSelect doesn't stub the options prop properly, create a stub that does it properly.
-    const stubs = { GlFormSelect: stubComponent(GlFormSelect, { props: ['options'] }) };
-    createComponent({ stubs });
+    createComponent();
 
-    expect(findSelect().props('options')).toBe(BASE_ROLES);
+    expect(findRoleDropdown().props('items')).toBe(BASE_ROLES);
   });
 
   it('navigates back to list page when cancel button is clicked', () => {
@@ -124,11 +128,11 @@ describe('CreateMemberRole', () => {
     beforeEach(() => createComponent({ mountFn: shallowMountExtended }));
 
     it('shows a warning if no base role is selected', async () => {
-      expect(findSelect().attributes('state')).toBe('true');
+      expect(findBaseRoleFormGroup().props('state')).toBe(true);
 
       await submitForm();
 
-      expect(findSelect().attributes('state')).toBe(undefined);
+      expect(findBaseRoleFormGroup().props('state')).toBe(false);
     });
 
     it('shows a warning if name field is empty', async () => {
@@ -151,7 +155,7 @@ describe('CreateMemberRole', () => {
 
   describe('when create role form is submitted', () => {
     it('disables the submit and cancel buttons', async () => {
-      await createComponent();
+      await createComponent({ mountFn: shallowMountExtended });
       await fillForm();
       // Verify that the buttons don't start off as disabled.
       expect(findButtonSubmit().props('loading')).toBe(false);
@@ -291,14 +295,14 @@ describe('CreateMemberRole', () => {
       });
 
       it('shows the form with the expected pre-filled data', () => {
-        expect(findSelect().attributes('value')).toBe('DEVELOPER');
+        expect(findRoleDropdown().props('selected')).toBe('DEVELOPER');
         expect(findNameField().attributes('value')).toBe('Custom role');
         expect(findDescriptionField().attributes('value')).toBe('Custom role description');
         expect(findPermissionsSelector().props('permissions')).toEqual(['A', 'B']);
       });
 
       it('disables the base role selector', () => {
-        expect(findSelect().attributes('disabled')).toBe('true');
+        expect(findRoleDropdown().attributes('disabled')).toBe('true');
       });
     });
 

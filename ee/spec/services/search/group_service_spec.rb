@@ -21,6 +21,42 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     let(:service) { described_class.new(user, scope, params) }
   end
 
+  describe '#search_type' do
+    let(:search_service) { described_class.new(user, group, scope: scope) }
+
+    subject(:search_type) { search_service.search_type }
+
+    using RSpec::Parameterized::TableSyntax
+
+    where(:use_zoekt, :use_elasticsearch, :scope, :expected_type) do
+      true   | true  | 'blobs'  | 'zoekt'
+      false  | true  | 'blobs'  | 'advanced'
+      false  | false | 'blobs'  | 'basic'
+      true   | true  | 'issues' | 'advanced'
+      true   | false | 'issues' | 'basic'
+    end
+
+    with_them do
+      before do
+        allow(search_service).to receive(:scope).and_return(scope)
+        allow(search_service).to receive(:use_zoekt?).and_return(use_zoekt)
+        allow(search_service).to receive(:use_elasticsearch?).and_return(use_elasticsearch)
+      end
+
+      it { is_expected.to eq(expected_type) }
+
+      %w[basic advanced zoekt].each do |search_type|
+        context "with search_type param #{search_type}" do
+          let(:search_service) do
+            described_class.new(user, group, { scope: scope, search_type: search_type })
+          end
+
+          it { is_expected.to eq(search_type) }
+        end
+      end
+    end
+  end
+
   describe 'group search', :elastic do
     let(:term) { "RandomName" }
     let(:nested_group) { create(:group, :nested) }
@@ -106,14 +142,12 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   context 'when searching with Zoekt', :zoekt_settings_enabled do
     let(:service) do
-      described_class.new(user, group, search: 'foobar', scope: scope,
-        basic_search: basic_search, page: page, source: source)
+      described_class.new(user, group, search: 'foobar', scope: scope, page: page, source: source)
     end
 
     let(:source) { nil }
     let(:use_zoekt) { true }
     let(:scope) { 'blobs' }
-    let(:basic_search) { nil }
     let(:page) { nil }
     let(:zoekt_nodes) { create_list(:zoekt_node, 2) }
     let(:circuit_breaker) { instance_double(::Search::Zoekt::CircuitBreaker) }
@@ -147,6 +181,7 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
         it 'returns a Search::Zoekt::SearchResults' do
           expect(service.use_zoekt?).to eq(true)
+          expect(service.search_type).to eq('zoekt')
           expect(service.zoekt_searchable_scope).to eq(group)
           expect(service.execute).to be_kind_of(::Search::Zoekt::SearchResults)
         end
@@ -183,11 +218,13 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
       end
     end
 
-    context 'when basic_search is requested' do
-      let(:basic_search) { true }
+    context 'when basic search is requested' do
+      let(:service) do
+        described_class.new(user, group, search: 'foobar', scope: scope, page: page, source: source, search_type: 'basic')
+      end
 
       it 'does not search with Zoekt' do
-        expect(service.use_zoekt?).to eq(false)
+        expect(service.search_type).to eq('basic')
         expect(service.execute).not_to be_kind_of(::Search::Zoekt::SearchResults)
       end
     end
@@ -367,17 +404,26 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
     end
 
     context 'issue' do
-      let!(:issue) { create :issue, project: project }
-      let!(:issue2) { create :issue, project: project2, title: issue.title }
       let(:scope) { 'issues' }
-      let(:search) { issue.title }
 
-      where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
-        permission_table_for_guest_feature_access
-      end
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let!(:issue) { create(document_type, project: project) }
+          let!(:issue2) { create(document_type, project: project2, title: issue.title) }
+          let(:search) { issue.title }
 
-      with_them do
-        it_behaves_like 'search respects visibility'
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+          end
+
+          where(:project_level, :feature_access_level, :membership, :admin_mode, :expected_count) do
+            permission_table_for_guest_feature_access
+          end
+
+          with_them do
+            it_behaves_like 'search respects visibility'
+          end
+        end
       end
     end
 
@@ -511,25 +557,30 @@ RSpec.describe Search::GroupService, feature_category: :global_search do
 
   context 'sorting', :elastic do
     context 'issues' do
-      let(:scope) { 'issues' }
-      let_it_be(:project) { create(:project, :public, group: group) }
+      [:work_item, :issue].each do |document_type|
+        context "when we have document_type as #{document_type}" do
+          let(:scope) { 'issues' }
+          let_it_be(:project) { create(:project, :public, group: group) }
 
-      let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
-      let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
-      let!(:very_old_result) { create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago) }
+          let!(:old_result) { create(:issue, project: project, title: 'sorted old', created_at: 1.month.ago) }
+          let!(:new_result) { create(:issue, project: project, title: 'sorted recent', created_at: 1.day.ago) }
+          let!(:very_old_result) { create(:issue, project: project, title: 'sorted very old', created_at: 1.year.ago) }
 
-      let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
-      let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
-      let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
+          let!(:old_updated) { create(:issue, project: project, title: 'updated old', updated_at: 1.month.ago) }
+          let!(:new_updated) { create(:issue, project: project, title: 'updated recent', updated_at: 1.day.ago) }
+          let!(:very_old_updated) { create(:issue, project: project, title: 'updated very old', updated_at: 1.year.ago) }
 
-      let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
-      let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
+          let(:results_created) { described_class.new(nil, group, search: 'sorted', sort: sort).execute }
+          let(:results_updated) { described_class.new(nil, group, search: 'updated', sort: sort).execute }
 
-      before do
-        ensure_elasticsearch_index!
+          before do
+            stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+            ensure_elasticsearch_index!
+          end
+
+          include_examples 'search results sorted'
+        end
       end
-
-      include_examples 'search results sorted'
     end
 
     context 'merge requests' do

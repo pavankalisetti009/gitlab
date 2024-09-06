@@ -3,20 +3,29 @@ import {
   filterObjToQuery,
   filterObjToFilterToken,
   filterTokensToFilterObj,
+  metricsListQueryFromAttributes,
 } from 'ee/metrics/list/filters';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
 
-const query = 'search=foo+bar&attribute[]=foo.bar';
+const query = 'search=foo+bar&attribute[]=foo.bar&traceId[]=test-trace-id';
 const filterObj = {
   search: [{ value: 'foo bar' }],
   attribute: [{ value: 'foo.bar', operator: '=' }],
+  traceId: [{ value: 'test-trace-id', operator: '=' }],
 };
 
-const queryObj = { search: 'foo bar', attribute: ['foo.bar'], 'not[attribute]': null };
+const queryObj = {
+  search: 'foo bar',
+  attribute: ['foo.bar'],
+  'not[attribute]': null,
+  traceId: ['test-trace-id'],
+  'not[traceId]': null,
+};
 
 const filterTokens = [
   { type: FILTERED_SEARCH_TERM, value: { data: 'foo bar', operator: undefined } },
   { type: 'attribute', value: { data: 'foo.bar', operator: '=' } },
+  { type: 'trace-id', value: { data: 'test-trace-id', operator: '=' } },
 ];
 
 describe('queryToFilterObj', () => {
@@ -43,6 +52,8 @@ describe('filterObjToQuery', () => {
         unsupported: [{ value: 'foo bar' }],
       }),
     ).toEqual({
+      traceId: null,
+      'not[traceId]': null,
       attribute: null,
       'not[attribute]': null,
       'filtered-search-term': null,
@@ -70,5 +81,13 @@ describe('filterTokensToFilterObj', () => {
     expect(
       filterTokensToFilterObj([{ type: 'unsupported', value: { data: 'foo.bar', operator: '=' } }]),
     ).toEqual({});
+  });
+});
+
+describe('metricsListQueryFromAttributes', () => {
+  it('return the metrics list query object from given attributes', () => {
+    expect(metricsListQueryFromAttributes({ traceId: 'test-trace-id' })).toMatchObject({
+      traceId: ['test-trace-id'],
+    });
   });
 });

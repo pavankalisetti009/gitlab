@@ -25,7 +25,7 @@ const Template = (args, { argTypes }) => ({
 export const Default = Template.bind({});
 Default.args = {
   title: s__('ProductAnalytics|Audience'),
-  tooltip: '',
+  tooltip: null,
   loading: false,
   showAlertState: false,
   alertPopoverTitle: '',
@@ -74,4 +74,13 @@ Editing.args = {
       action: () => {},
     },
   ],
+};
+
+export const WithInformationalTooltip = Template.bind({});
+WithInformationalTooltip.args = {
+  ...Default.args,
+  tooltip: {
+    description: __('This is some information. %{linkStart}Learn more%{linkEnd}.'),
+    descriptionLink: '#',
+  },
 };

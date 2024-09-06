@@ -82,65 +82,78 @@ RSpec.describe Gitlab::Elastic::ProjectSearchResults, :elastic, feature_category
       context 'for issues' do
         let(:scope) { 'issues' }
 
-        let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
-        let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
-        let_it_be(:confidential_result) { create(:issue, :confidential, project: project, title: 'foo confidential') }
+        [:work_item, :issue].each do |document_type|
+          context "when we have document_type as #{document_type}" do
+            let_it_be(:closed_result) { create(:issue, :closed, project: project, title: 'foo closed') }
+            let_it_be(:opened_result) { create(:issue, :opened, project: project, title: 'foo opened') }
+            let_it_be(:confidential_result) { create(:issue, :confidential, project: project, title: 'foo confidential') }
 
-        before do
-          ::Elastic::ProcessInitialBookkeepingService.track!(opened_result)
-          ::Elastic::ProcessInitialBookkeepingService.track!(closed_result)
-          ::Elastic::ProcessInitialBookkeepingService.track!(confidential_result)
-          ensure_elasticsearch_index!
-        end
+            before do
+              ::Elastic::ProcessInitialBookkeepingService.track!(opened_result)
+              ::Elastic::ProcessInitialBookkeepingService.track!(closed_result)
+              ::Elastic::ProcessInitialBookkeepingService.track!(confidential_result)
+              stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+              ensure_elasticsearch_index!
+            end
 
-        context 'when advanced search query syntax is used' do
-          let(:query) { 'foo -banner' }
+            context 'when advanced search query syntax is used' do
+              let(:query) { 'foo -banner' }
 
-          include_examples 'search results filtered by state'
-          include_examples 'search results filtered by confidential'
-          include_examples 'search results filtered by labels'
-        end
+              include_examples 'search results filtered by state'
+              include_examples 'search results filtered by confidential'
+              include_examples 'search results filtered by labels'
+            end
 
-        context 'when search_uses_match_queries flag is false' do
-          before do
-            stub_feature_flags(search_uses_match_queries: false)
+            context 'when search_uses_match_queries flag is false' do
+              before do
+                stub_feature_flags(search_uses_match_queries: false)
+              end
+
+              include_examples 'search results filtered by state'
+              include_examples 'search results filtered by confidential'
+              include_examples 'search results filtered by labels'
+            end
+
+            include_examples 'search results filtered by state'
+            include_examples 'search results filtered by confidential'
+            include_examples 'search results filtered by labels'
           end
 
-          include_examples 'search results filtered by state'
-          include_examples 'search results filtered by confidential'
-          include_examples 'search results filtered by labels'
+          context 'for merge_requests' do
+            let(:scope) { 'merge_requests' }
+
+            let_it_be(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
+            let_it_be(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
+
+            before do
+              ::Elastic::ProcessInitialBookkeepingService.track!(opened_result)
+              ::Elastic::ProcessInitialBookkeepingService.track!(closed_result)
+              ensure_elasticsearch_index!
+            end
+
+            include_examples 'search results filtered by state'
+          end
+
+          context 'for blobs' do
+            it_behaves_like 'search results filtered by language'
+          end
         end
-
-        include_examples 'search results filtered by state'
-        include_examples 'search results filtered by confidential'
-        include_examples 'search results filtered by labels'
-      end
-
-      context 'for merge_requests' do
-        let(:scope) { 'merge_requests' }
-
-        let_it_be(:opened_result) { create(:merge_request, :opened, source_project: project, title: 'foo opened') }
-        let_it_be(:closed_result) { create(:merge_request, :closed, source_project: project, title: 'foo closed') }
-
-        before do
-          ::Elastic::ProcessInitialBookkeepingService.track!(opened_result)
-          ::Elastic::ProcessInitialBookkeepingService.track!(closed_result)
-          ensure_elasticsearch_index!
-        end
-
-        include_examples 'search results filtered by state'
-      end
-
-      context 'for blobs' do
-        it_behaves_like 'search results filtered by language'
       end
     end
   end
 
   describe 'confidential issues', :sidekiq_might_not_need_inline do
-    include_examples 'access restricted confidential issues' do
-      before do
-        ensure_elasticsearch_index!
+    [:work_item, :issue].each do |document_type|
+      context "when we have document_type as #{document_type}" do
+        before do
+          stub_feature_flags(search_issues_uses_work_items_index: (document_type == :work_item))
+        end
+
+        include_examples 'access restricted confidential issues' do
+          before do
+            ensure_elasticsearch_index!
+          end
+        end
       end
     end
   end

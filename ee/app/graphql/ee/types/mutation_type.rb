@@ -13,6 +13,8 @@ module EE
         mount_mutation ::Mutations::Ci::Catalog::VerifiedNamespace::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Create
         mount_mutation ::Mutations::Ci::ProjectSubscriptions::Delete
+        mount_mutation ::Mutations::Clusters::AgentUrlConfigurations::Create
+        mount_mutation ::Mutations::Clusters::AgentUrlConfigurations::Delete
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Destroy
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Update
         mount_mutation ::Mutations::ComplianceManagement::Frameworks::Create
@@ -180,6 +182,7 @@ module EE
         mount_mutation ::Mutations::Groups::SavedReplies::Create, alpha: { milestone: '16.10' }
         mount_mutation ::Mutations::Groups::SavedReplies::Update, alpha: { milestone: '16.10' }
         mount_mutation ::Mutations::Groups::SavedReplies::Destroy, alpha: { milestone: '16.10' }
+        mount_mutation ::Mutations::Members::Groups::Export, alpha: { milestone: '17.4' }
         mount_mutation ::Mutations::Projects::SavedReplies::Create, alpha: { milestone: '16.11' }
         mount_mutation ::Mutations::Projects::SavedReplies::Update, alpha: { milestone: '16.11' }
         mount_mutation ::Mutations::Projects::SavedReplies::Destroy, alpha: { milestone: '16.11' }

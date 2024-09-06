@@ -94,7 +94,7 @@ describe('EE - DastProfilesList', () => {
         expect(getAllLoadingIndicators()).toHaveLength(0);
       });
 
-      it('sets the the "load more" button into a loading state', () => {
+      it('sets the "load more" button into a loading state', () => {
         expect(getLoadMoreButton().props('loading')).toBe(true);
       });
     });

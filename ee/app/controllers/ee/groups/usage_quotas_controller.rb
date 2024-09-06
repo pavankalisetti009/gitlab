@@ -26,12 +26,12 @@ module EE
       end
 
       def subscription_history
-        history_records = group.gitlab_subscription_histories.desc
+        history_records = group.gitlab_subscription_histories
 
         respond_to do |format|
           format.csv do
             send_data(
-              GitlabSubscriptions::SeatUsageHistoryExportService.new(history_records).execute,
+              GitlabSubscriptions::SeatUsageHistoryExportService.new(history_records).csv_data,
               type: 'text/csv; charset=utf-8',
               filename: "seat-usage-history-#{group.path}-#{Date.today}.csv"
             )

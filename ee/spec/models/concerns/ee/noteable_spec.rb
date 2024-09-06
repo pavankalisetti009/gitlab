@@ -15,6 +15,12 @@ RSpec.describe EE::Noteable do
     end
   end
 
+  describe '.resolvable_types' do
+    it 'adds Epic to resolvable_types after being included' do
+      expect(klazz.resolvable_types).to include("Epic")
+    end
+  end
+
   describe '#commenters' do
     shared_examples 'commenters' do
       it 'does not automatically include the noteable author' do

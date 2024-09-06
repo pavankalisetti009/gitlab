@@ -42,9 +42,7 @@ module Security
     delegate :project, :has_security_findings?, :security_findings_partition_number, to: :pipeline, private: true
 
     def findings
-      security_findings.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478403'
-      ).map { |finding| build_vulnerability_finding(finding) }
+      security_findings.map { |finding| build_vulnerability_finding(finding) }
     end
 
     def report_finding_for(security_finding)
@@ -64,9 +62,7 @@ module Security
     end
 
     def loaded_uuids
-      security_findings.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478403'
-      ).map(&:uuid)
+      security_findings.map(&:uuid)
     end
 
     def report_findings
@@ -79,9 +75,7 @@ module Security
     end
 
     def builds
-      security_findings.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478403'
-      ).map(&:build).uniq
+      security_findings.map(&:build).uniq
     end
 
     def security_findings
@@ -143,9 +137,6 @@ module Security
         .with_issue_links
         .with_external_issue_links
         .with_merge_request_links
-        .allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478403'
-        )
         .merge(::Security::Scan.by_pipeline_ids(pipeline.id))
         .merge(::Security::Scan.latest_successful)
         .ordered(params[:sort])

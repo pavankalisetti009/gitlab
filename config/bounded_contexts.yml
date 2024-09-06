@@ -47,6 +47,11 @@ domains:
       - insider_threat
       - instance_resiliency
 
+  AppConfig:
+    description: Top-level configuration at the GitLab instance level
+    feature_categories:
+      - settings
+
   AuditEvents:
     description:
     feature_categories:
@@ -110,11 +115,6 @@ domains:
     description:
     feature_categories:
       - container_registry
-
-  DependencyManagement:
-    description:
-    feature_categories:
-      - dependency_management
 
   DependencyProxy:
     description: Dependency Proxy for container images.
@@ -250,7 +250,7 @@ domains:
   RemoteDevelopment:
     description:
     feature_categories:
-      - remote_development
+      - workspaces
 
   Repositories:
     description: Git repositories and workflow including Gitaly client
@@ -282,6 +282,7 @@ domains:
       - security_policy_management
       - software_composition_analysis
       - static_application_security_testing
+      - secret_detection
 
   ServiceDesk:
     description:

@@ -13,10 +13,7 @@ module Resolvers
 
       def resolve(**args)
         if Feature.enabled?(:finding_resolver_use_pure_finder, pipeline.project)
-          Security::PureFindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute
-            .allow_cross_joins_across_databases(
-              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478406'
-            )&.first
+          Security::PureFindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute&.first
         else
           Security::FindingsFinder.new(pipeline, params: { uuid: args[:uuid], scope: 'all' }).execute&.findings&.first
         end

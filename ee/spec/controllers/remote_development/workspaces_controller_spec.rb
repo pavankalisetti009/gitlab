@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspacesController, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspacesController, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
 
   before do
