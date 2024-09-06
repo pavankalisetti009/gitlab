@@ -24,8 +24,7 @@ module Search
         end
 
         def self.work_item_index_available?
-          ::Feature.enabled?(:elastic_index_work_items) && # rubocop:disable Gitlab/FeatureFlagWithoutActor -- We do not need an actor here
-            ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
+          ::Elastic::DataMigrationService.migration_has_finished?(:create_work_items_index)
         end
 
         override :preload_indexing_data

@@ -560,16 +560,6 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
     let_it_be(:namespace) { create(:namespace) }
     let_it_be(:work_item) { create(:work_item, namespace: namespace) }
 
-    context 'when elastic_index_work_items is disabled' do
-      before do
-        stub_feature_flags(elastic_index_work_items: false)
-      end
-
-      it 'returns false' do
-        expect(work_item.use_elasticsearch?).to be_falsey
-      end
-    end
-
     context 'when migration is not complete' do
       before do
         set_elasticsearch_migration_to :create_work_items_index, including: false
@@ -582,7 +572,6 @@ RSpec.describe WorkItem, :elastic_helpers, feature_category: :team_planning do
 
     context 'when namespace does not use elasticsearch' do
       it 'returns false' do
-        stub_feature_flags(elastic_index_work_items: false)
         set_elasticsearch_migration_to :create_work_items_index, including: true
         stub_ee_application_setting(elasticsearch_indexing: true, elasticsearch_limit_indexing: true)
 
