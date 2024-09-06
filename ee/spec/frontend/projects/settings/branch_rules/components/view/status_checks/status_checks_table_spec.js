@@ -22,6 +22,7 @@ describe('Status checks in branch rules enterprise edition', () => {
 
   const findAddButton = () => wrapper.findByTestId('add-btn');
   const findEditButton = () => wrapper.findByTestId('edit-btn');
+  const findDeleteButton = () => wrapper.findByTestId('delete-btn');
   const findCounterValue = () => wrapper.findByText(`${statusChecksRulesMock.length}`);
   const findStatusCheckEmptyState = () => wrapper.findByText('No status checks have been added.');
 
@@ -48,6 +49,12 @@ describe('Status checks in branch rules enterprise edition', () => {
     it('emits open event with status check when edit button is clicked', () => {
       findEditButton().vm.$emit('click');
       expect(wrapper.emitted('open-status-check-drawer')).toEqual([[statusChecksRulesMock[0]]]);
+    });
+    it('emits event to open delete modal when delete button is clicked', () => {
+      findDeleteButton().vm.$emit('click');
+      expect(wrapper.emitted('open-status-check-delete-modal')).toEqual([
+        [statusChecksRulesMock[0]],
+      ]);
     });
   });
 });
