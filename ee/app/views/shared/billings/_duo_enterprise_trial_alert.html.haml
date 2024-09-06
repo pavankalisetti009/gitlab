@@ -1,12 +1,10 @@
-- return if Feature.disabled?(:duo_enterprise_trials, current_user)
-
 - namespace = local_assigns.fetch(:namespace)
 
 - data = duo_enterprise_trial_alert_data(namespace)
 - primary_cta = s_('BillingPlans|Start free trial of GitLab Ultimate and GitLab Duo Enterprise')
 - ultimate_primary_cta = s_('BillingPlans|Start a free GitLab Duo Enterprise Trial')
-- primary_link = namespace.ultimate_plan? ? new_trials_duo_enterprise_path : new_trial_path
 - primary_tracking_label = namespace.ultimate_plan? ? 'duo_enterprise_trial' : 'ultimate_and_duo_enterprise_trial'
+- primary_link = namespace.ultimate_plan? ? new_trials_duo_enterprise_path(namespace_id: namespace.id) : new_trial_path(namespace_id: namespace.id)
 
 = render Pajamas::CardComponent.new(card_options: { data: { testid: 'duo-enterprise-trial-alert' },
   class: 'gl-border gl-border-blue-300 gl-bg-blue-50 gl-rounded-base gl-text-left gl-mt-6 gl-p-3' }) do |c|
@@ -27,7 +25,7 @@
         event_label: primary_tracking_label } }) do
         = namespace.ultimate_plan? ? ultimate_primary_cta : primary_cta
       - if namespace.premium_plan?
-        = render Pajamas::ButtonComponent.new(href: new_trials_duo_pro_path,
+        = render Pajamas::ButtonComponent.new(href: new_trials_duo_pro_path(namespace_id: namespace.id),
           category: 'secondary',
           variant: 'confirm',
           button_options: { class: 'gl-w-full sm:gl-w-auto',

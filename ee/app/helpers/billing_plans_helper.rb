@@ -155,16 +155,14 @@ module BillingPlansHelper
   end
 
   def show_duo_enterprise_trial_alert?(namespace)
-    if namespace.ultimate_plan?
-      add_on = GitlabSubscriptions::DuoEnterprise.any_add_on_purchase_for_namespace(namespace)
-      add_on_eligible_for_duo_enterprise_alert?(add_on)
+    return false if Feature.disabled?(:duo_enterprise_trials, current_user)
+
+    if namespace.ultimate_plan? || namespace.free_plan?
+      GitlabSubscriptions::DuoEnterprise.no_add_on_purchase_for_namespace?(namespace)
     elsif namespace.premium_plan?
-      # TODO: do not show for active/expired combined Ultimate + Duo Enterprise trial
-      add_on = GitlabSubscriptions::DuoPro.any_add_on_purchase_for_namespace(namespace)
-      add_on_eligible_for_duo_enterprise_alert?(add_on)
-    elsif namespace.free_plan?
-      # TODO: do not show for active/expired combined Ultimate + Duo Enterprise trial
-      !namespace.trial_active?
+      GitlabSubscriptions::Duo.no_add_on_purchase_for_namespace?(namespace)
+    else
+      false # All other plans, including trials
     end
   end
 
@@ -197,13 +195,6 @@ module BillingPlansHelper
   end
 
   private
-
-  def add_on_eligible_for_duo_enterprise_alert?(add_on)
-    return true if add_on.blank?
-    return false if add_on.trial?
-
-    !add_on.active?
-  end
 
   def seats_last_updated_value(namespace)
     subscription = namespace.gitlab_subscription

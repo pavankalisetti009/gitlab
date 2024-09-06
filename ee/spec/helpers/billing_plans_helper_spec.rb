@@ -530,89 +530,87 @@ RSpec.describe BillingPlansHelper, :saas, feature_category: :subscription_manage
   end
 
   describe '#show_duo_enterprise_trial_alert?' do
-    shared_examples 'purchase_add_ons' do
-      before do
-        allow(finder_class)
-          .to receive(:any_add_on_purchase_for_namespace)
-          .with(namespace)
-          .and_return(add_on)
-      end
+    let_it_be(:namespace) { build(:namespace) }
 
-      context 'when there is no add_ons' do
-        let(:add_on) { nil }
+    shared_examples 'available plan' do
+      it { is_expected.to be(true) }
 
-        it { is_expected.to be(true) }
-      end
-
-      context 'when active add_on on trial' do
-        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :active_trial) }
+      context 'when duo_enterprise_trials is disabled' do
+        before do
+          stub_feature_flags(duo_enterprise_trials: false)
+        end
 
         it { is_expected.to be(false) }
       end
 
-      context 'when expired add_on on trial' do
-        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :expired_trial) }
+      context 'when Duo Enterprise add-on purchase' do
+        before do
+          allow(finder)
+            .to receive(:no_add_on_purchase_for_namespace?)
+            .with(namespace)
+            .and_return(no_add_on)
+        end
 
-        it { is_expected.to be(false) }
-      end
+        context 'when there is add-on' do
+          let(:no_add_on) { false }
 
-      context 'when add_on is not active' do
-        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :expired) }
+          it { is_expected.to be(false) }
+        end
 
-        it { is_expected.to be(true) }
-      end
+        context 'when there is no add-on' do
+          let(:no_add_on) { true }
 
-      context 'when active add_on' do
-        let(:add_on) { build(:gitlab_subscription_add_on_purchase, :active) }
-
-        it { is_expected.to be(false) }
+          it { is_expected.to be(true) }
+        end
       end
     end
 
     subject { helper.show_duo_enterprise_trial_alert?(namespace) }
 
     context 'when ultimate plan' do
-      let(:finder_class) { GitlabSubscriptions::DuoEnterprise }
-
-      let(:namespace) do
-        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :ultimate))
+      before do
+        build(:gitlab_subscription, :ultimate, namespace: namespace)
       end
 
-      it_behaves_like 'purchase_add_ons'
+      it_behaves_like 'available plan' do
+        let(:finder) { GitlabSubscriptions::DuoEnterprise }
+      end
     end
 
     context 'when premium plan' do
-      let(:finder_class) { GitlabSubscriptions::DuoPro }
-
-      let(:namespace) do
-        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :premium))
+      before do
+        build(:gitlab_subscription, :premium, namespace: namespace)
       end
 
-      it_behaves_like 'purchase_add_ons'
+      it_behaves_like 'available plan' do
+        let(:finder) { GitlabSubscriptions::Duo }
+      end
     end
 
     context 'when free plan' do
-      let(:namespace) do
-        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :free))
+      before do
+        build(:gitlab_subscription, :free, namespace: namespace)
       end
 
-      it { is_expected.to be(true) }
+      it_behaves_like 'available plan' do
+        let(:finder) { GitlabSubscriptions::DuoEnterprise }
+      end
     end
 
     context 'when ultimate trial plan' do
-      let(:namespace) do
-        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :ultimate_trial, :active_trial))
+      before do
+        build(:gitlab_subscription, :ultimate_trial, :active_trial, namespace: namespace)
       end
 
-      it { is_expected.to be_nil }
+      it { is_expected.to be(false) }
     end
 
     context 'when gold plan' do
-      let(:namespace) do
-        build(:namespace, gitlab_subscription: build(:gitlab_subscription, :gold))
+      before do
+        build(:gitlab_subscription, :gold, namespace: namespace)
       end
 
-      it { is_expected.to be_nil }
+      it { is_expected.to be(false) }
     end
   end
 end

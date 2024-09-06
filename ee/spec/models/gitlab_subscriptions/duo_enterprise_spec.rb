@@ -3,48 +3,6 @@
 require 'spec_helper'
 
 RSpec.describe GitlabSubscriptions::DuoEnterprise, feature_category: :subscription_management do
-  describe '.any_add_on_purchase_for_namespace' do
-    let_it_be(:namespace) { create(:namespace) }
-
-    subject { described_class.any_add_on_purchase_for_namespace(namespace) }
-
-    context 'when there is an add-on purchase for the namespace' do
-      let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
-      end
-
-      it { is_expected.to eq(add_on_purchase) }
-    end
-
-    context 'when the add-on purchase is expired for the namespace' do
-      let_it_be(:add_on_purchase) do
-        create(:gitlab_subscription_add_on_purchase, :duo_enterprise, :expired, namespace: namespace)
-      end
-
-      it { is_expected.to eq(add_on_purchase) }
-    end
-
-    context 'when there is no add-on purchase for the namespace' do
-      it { is_expected.to be_nil }
-    end
-
-    context 'when namespace id is passed' do
-      subject { described_class.any_add_on_purchase_for_namespace(namespace.id) }
-
-      context 'when there is an add-on purchase for the namespace' do
-        let_it_be(:add_on_purchase) do
-          create(:gitlab_subscription_add_on_purchase, :duo_enterprise, namespace: namespace)
-        end
-
-        it { is_expected.to eq(add_on_purchase) }
-      end
-
-      context 'when there is no add-on purchase for the namespace' do
-        it { is_expected.to be_nil }
-      end
-    end
-  end
-
   describe '.no_add_on_purchase_for_namespace?' do
     let_it_be(:namespace) { create(:namespace) }
 
