@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class Profile < ApplicationRecord
+  class Profile < ::Gitlab::Database::SecApplicationRecord
     include Sanitizable
 
     self.table_name = 'dast_profiles'

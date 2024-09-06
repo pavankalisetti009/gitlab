@@ -14,15 +14,19 @@ module AppSec
 
           build_auditors!
 
-          ApplicationRecord.transaction do
-            dast_profile.update!(update_params)
+          Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification
+            .allow_cross_database_modification_within_transaction(
+              url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/483010') do
+            ApplicationRecord.transaction do
+              dast_profile.update!(update_params)
 
-            if tag_list?
-              dast_profile.profile_runner_tags.delete_all(:delete_all)
-              tags.each { |tag| dast_profile.profile_runner_tags.create!(tag: tag) }
+              if tag_list?
+                dast_profile.profile_runner_tags.delete_all(:delete_all)
+                tags.each { |tag| dast_profile.profile_runner_tags.create!(tag: tag) }
+              end
+
+              update_or_create_schedule! if schedule_input_params
             end
-
-            update_or_create_schedule! if schedule_input_params
           end
 
           execute_auditors!

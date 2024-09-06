@@ -14,7 +14,9 @@ module Dast
       relation = by_project(relation)
       relation = has_schedule?(relation)
 
-      sort(relation)
+      sort(
+        relation.allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482858')
+      )
     end
 
     private
