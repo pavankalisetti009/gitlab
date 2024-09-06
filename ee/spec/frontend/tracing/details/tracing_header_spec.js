@@ -59,7 +59,8 @@ describe('TracingHeader', () => {
       issuesTotal: 0,
       loading: false,
       error: null,
-      anchorId: '#related-issues-1',
+      anchorId: 'related-issues-1',
+      parentScrollingId: null,
     });
   });
 

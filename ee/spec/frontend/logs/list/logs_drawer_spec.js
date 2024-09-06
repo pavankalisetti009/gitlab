@@ -8,9 +8,13 @@ import setWindowLocation from 'helpers/set_window_location_helper';
 import { stubComponent } from 'helpers/stub_component';
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import { mockLogs } from '../mock_data';
 
 jest.mock('~/lib/utils/dom_utils');
+jest.mock('lodash/uniqueId', () => {
+  return jest.fn((input) => `${input}1`);
+});
 
 describe('LogsDrawer', () => {
   let wrapper;
@@ -57,6 +61,7 @@ describe('LogsDrawer', () => {
 
   const findRelatedIssues = () => wrapper.findComponent(RelatedIssue);
   const findRelatedIssuesProvider = () => wrapper.findComponent(RelatedIssuesProvider);
+  const findRelatedIssuesBadge = () => wrapper.findComponent(RelatedIssuesBadge);
 
   const getSectionLineWrapperByName = (name) =>
     wrapper
@@ -73,12 +78,23 @@ describe('LogsDrawer', () => {
     expect(wrapper.exists()).toBe(true);
     expect(findDrawer().exists()).toBe(true);
     expect(findDrawer().props('open')).toBe(true);
+    expect(findDrawer().attributes('id')).toBe('log-drawer-1');
   });
 
   it('renders the related-issue-provider', () => {
     expect(findRelatedIssuesProvider().props()).toEqual({
       projectFullPath: testProjectFullPath,
       log: mockLog,
+    });
+  });
+
+  it('renders the relate issues badge', () => {
+    expect(findRelatedIssuesBadge().props()).toStrictEqual({
+      issuesTotal: 0,
+      loading: false,
+      error: null,
+      anchorId: 'related-issues-1',
+      parentScrollingId: 'log-drawer-1',
     });
   });
 
@@ -91,6 +107,7 @@ describe('LogsDrawer', () => {
         anchor: 'create-an-issue-for-a-log',
       }),
     });
+    expect(findRelatedIssues().attributes('id')).toBe('related-issues-1');
   });
 
   it('emits close', () => {
