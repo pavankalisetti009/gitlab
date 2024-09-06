@@ -47,7 +47,7 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
     end
   end
 
-  describe '.create_tasks' do
+  describe '.create_tasks', :freeze_time do
     let(:task_type) { :index_repo }
 
     context 'when repository does not exists for a project and zoekt_index' do
@@ -55,22 +55,20 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       let_it_be(:index) { create(:zoekt_index) }
 
       it 'creates a new repository and task' do
-        freeze_time do
-          perform_at = Time.zone.now
-          expect do
-            described_class.create_tasks(project_id: project.id, zoekt_index: index, task_type: task_type,
-              perform_at: perform_at
-            )
-          end.to change { described_class.count }.by(1).and change { Search::Zoekt::Task.count }.by(1)
-          repo = Search::Zoekt::Repository.last
-          expect(repo.project).to eq project
-          expect(repo.zoekt_index).to eq index
-          task = Search::Zoekt::Task.last
-          expect(task.zoekt_repository).to eq repo
-          expect(task.project_identifier).to eq repo.project_identifier
-          expect(task).to be_index_repo
-          expect(task.perform_at).to eq perform_at
-        end
+        perform_at = Time.zone.now
+        expect do
+          described_class.create_tasks(project_id: project.id, zoekt_index: index, task_type: task_type,
+            perform_at: perform_at
+          )
+        end.to change { described_class.count }.by(1).and change { Search::Zoekt::Task.count }.by(1)
+        repo = described_class.last
+        expect(repo.project).to eq project
+        expect(repo.zoekt_index).to eq index
+        task = Search::Zoekt::Task.last
+        expect(task.zoekt_repository).to eq repo
+        expect(task.project_identifier).to eq repo.project_identifier
+        expect(task).to be_index_repo
+        expect(task.perform_at).to eq perform_at
       end
     end
 
@@ -79,19 +77,17 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
       let_it_be(:zoekt_index) { repo.zoekt_index }
 
       it 'creates task' do
-        freeze_time do
-          perform_at = Time.zone.now
-          expect do
-            described_class.create_tasks(project_id: repo.project_identifier, zoekt_index: zoekt_index,
-              task_type: task_type, perform_at: perform_at
-            )
-          end.to change { described_class.count }.by(0).and change { Search::Zoekt::Task.count }.by(1)
-          task = Search::Zoekt::Task.last
-          expect(task.zoekt_repository).to eq repo
-          expect(task.project_identifier).to eq repo.project_identifier
-          expect(task).to be_index_repo
-          expect(task.perform_at).to eq perform_at
-        end
+        perform_at = Time.zone.now
+        expect do
+          described_class.create_tasks(project_id: repo.project_identifier, zoekt_index: zoekt_index,
+            task_type: task_type, perform_at: perform_at
+          )
+        end.to change { described_class.count }.by(0).and change { Search::Zoekt::Task.count }.by(1)
+        task = Search::Zoekt::Task.last
+        expect(task.zoekt_repository).to eq repo
+        expect(task.project_identifier).to eq repo.project_identifier
+        expect(task).to be_index_repo
+        expect(task.perform_at).to eq perform_at
       end
 
       context 'when project is already deleted' do
@@ -103,19 +99,17 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
         end
 
         it 'creates task with the supplied project_id' do
-          freeze_time do
-            perform_at = Time.zone.now
-            expect do
-              described_class.create_tasks(project_id: repo_with_deleted_project2.project_identifier,
-                zoekt_index: zoekt_index, task_type: :delete_repo, perform_at: perform_at
-              )
-            end.to change { described_class.count }.by(0).and change { Search::Zoekt::Task.count }.by(1)
-            task = Search::Zoekt::Task.last
-            expect(task.zoekt_repository).to eq repo_with_deleted_project2
-            expect(task.project_identifier).to eq repo_with_deleted_project2.project_identifier
-            expect(task).to be_delete_repo
-            expect(task.perform_at).to eq perform_at
-          end
+          perform_at = Time.zone.now
+          expect do
+            described_class.create_tasks(project_id: repo_with_deleted_project2.project_identifier,
+              zoekt_index: zoekt_index, task_type: :delete_repo, perform_at: perform_at
+            )
+          end.to change { described_class.count }.by(0).and change { Search::Zoekt::Task.count }.by(1)
+          task = Search::Zoekt::Task.last
+          expect(task.zoekt_repository).to eq repo_with_deleted_project2
+          expect(task.project_identifier).to eq repo_with_deleted_project2.project_identifier
+          expect(task).to be_delete_repo
+          expect(task.perform_at).to eq perform_at
         end
       end
 
@@ -130,6 +124,42 @@ RSpec.describe Search::Zoekt::Repository, feature_category: :global_search do
               task_type: task_type, perform_at: Time.zone.now
             )
           end.not_to change { Search::Zoekt::Task.count }
+        end
+      end
+    end
+
+    context 'when repository is in failed state' do
+      let_it_be(:repo) { create(:zoekt_repository, state: :failed) }
+      let_it_be(:zoekt_index) { repo.zoekt_index }
+
+      context 'and task_type is index_repo' do
+        let(:task_type) { :index_repo }
+
+        it 'does not creates task' do
+          perform_at = Time.zone.now
+          expect do
+            described_class.create_tasks(project_id: repo.project_identifier, zoekt_index: zoekt_index,
+              task_type: task_type, perform_at: perform_at
+            )
+          end.not_to change { described_class.count }
+        end
+      end
+
+      context 'and task_type is delete_repo' do
+        let(:task_type) { :delete_repo }
+
+        it 'creates task' do
+          perform_at = Time.zone.now
+          expect do
+            described_class.create_tasks(project_id: repo.project_identifier, zoekt_index: zoekt_index,
+              task_type: task_type, perform_at: perform_at
+            )
+          end.to change { described_class.count }.by(0).and change { Search::Zoekt::Task.count }.by(1)
+          task = Search::Zoekt::Task.last
+          expect(task.zoekt_repository).to eq repo
+          expect(task.project_identifier).to eq repo.project_identifier
+          expect(task).to be_delete_repo
+          expect(task.perform_at).to eq perform_at
         end
       end
     end
