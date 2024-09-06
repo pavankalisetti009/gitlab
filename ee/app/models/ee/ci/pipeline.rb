@@ -11,7 +11,6 @@ module EE
 
         has_many :vulnerabilities_finding_pipelines, class_name: 'Vulnerabilities::FindingPipeline', inverse_of: :pipeline
         has_many :vulnerability_findings, source: :finding, through: :vulnerabilities_finding_pipelines, class_name: 'Vulnerabilities::Finding'
-        has_many :vulnerability_state_transitions, foreign_key: :state_changed_at_pipeline_id, class_name: 'Vulnerabilities::StateTransition', inverse_of: :pipeline
 
         # Subscriptions to this pipeline
         has_many :downstream_bridges, class_name: '::Ci::Bridge', foreign_key: :upstream_pipeline_id
