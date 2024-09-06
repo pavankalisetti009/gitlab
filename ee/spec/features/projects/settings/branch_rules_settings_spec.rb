@@ -158,6 +158,23 @@ RSpec.describe 'Projects > Settings > Repository > Branch rules settings', :js, 
           end
         end
       end
+
+      it 'can delete status check' do
+        within_testid('status-checks-table') do
+          click_button "Delete"
+        end
+
+        click_button "Delete status check"
+
+        wait_for_requests
+
+        within_testid('status-checks-table') do
+          within_testid('crud-body') do
+            expect(page).not_to have_content(external_status_check.name)
+            expect(page).not_to have_content(external_status_check.external_url)
+          end
+        end
+      end
     end
   end
 end

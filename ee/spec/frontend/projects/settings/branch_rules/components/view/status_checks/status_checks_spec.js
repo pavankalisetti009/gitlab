@@ -1,15 +1,17 @@
 import Vue, { nextTick } from 'vue';
 import VueApollo from 'vue-apollo';
+import StatusCheckDeleteModal from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks_delete_modal.vue';
 import StatusChecks from 'ee/projects/settings/branch_rules/components/view/status_checks/status_checks.vue';
 import createStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_create.mutation.graphql';
 import updateStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_update.mutation.graphql';
-import { createAlert } from '~/alert';
+import deleteStatusCheckMutation from 'ee/projects/settings/branch_rules/mutations/external_status_check_delete.mutation.graphql';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import createMockApollo from 'helpers/mock_apollo_helper';
 import waitForPromises from 'helpers/wait_for_promises';
 import {
   statusCheckCreateSuccessResponse,
   statusCheckUpdateSuccessResponse,
+  statusCheckDeleteSuccessResponse,
   statusCheckCreateNameTakenResponse,
   statusChecksRulesMock,
 } from '../mock_data';
@@ -21,10 +23,15 @@ describe('Status checks in branch rules enterprise edition', () => {
   let wrapper;
   let fakeApollo;
 
-  const createComponent = (propsData = {}, createStatusCheckHandler, updateStatusCheckHandler) => {
+  const createComponent = ({
+    createStatusCheckHandler,
+    updateStatusCheckHandler,
+    deleteStatusCheckHandler,
+  } = {}) => {
     fakeApollo = createMockApollo([
       [createStatusCheckMutation, createStatusCheckHandler],
       [updateStatusCheckMutation, updateStatusCheckHandler],
+      [deleteStatusCheckMutation, deleteStatusCheckHandler],
     ]);
 
     wrapper = shallowMountExtended(StatusChecks, {
@@ -32,7 +39,6 @@ describe('Status checks in branch rules enterprise edition', () => {
       propsData: {
         branchRuleId: 'gid://gitlab/Projects/BranchRule/1',
         projectPath: 'gid://gitlab/Project/1',
-        ...propsData,
       },
       mocks: {
         $toast: {
@@ -42,15 +48,13 @@ describe('Status checks in branch rules enterprise edition', () => {
     });
   };
 
-  beforeEach(() => {
-    createAlert.mockClear();
-  });
   afterEach(() => {
     fakeApollo = null;
   });
 
   const findStatusChecksTable = () => wrapper.findByTestId('status-checks-table');
   const findStatusChecksDrawer = () => wrapper.findByTestId('status-checks-drawer');
+  const findStatusCheckRemovalModal = () => wrapper.findComponent(StatusCheckDeleteModal);
 
   it('should render loading state', async () => {
     createComponent();
@@ -68,7 +72,7 @@ describe('Status checks in branch rules enterprise edition', () => {
     const createStatusCheckHandlerSuccess = jest
       .fn()
       .mockResolvedValue(statusCheckCreateSuccessResponse);
-    createComponent({}, createStatusCheckHandlerSuccess);
+    createComponent({ createStatusCheckHandler: createStatusCheckHandlerSuccess });
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
     findStatusChecksDrawer().vm.$emit(
       'save-status-check-change',
@@ -83,7 +87,7 @@ describe('Status checks in branch rules enterprise edition', () => {
     const updateStatusCheckHandlerSuccess = jest
       .fn()
       .mockResolvedValue(statusCheckUpdateSuccessResponse);
-    createComponent({}, () => {}, updateStatusCheckHandlerSuccess);
+    createComponent({ updateStatusCheckHandler: updateStatusCheckHandlerSuccess });
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
     findStatusChecksTable().vm.$emit('open-status-check-drawer', statusChecksRulesMock[0]);
     findStatusChecksDrawer().vm.$emit(
@@ -102,7 +106,7 @@ describe('Status checks in branch rules enterprise edition', () => {
     const updateStatusCheckHandlerSuccess = jest
       .fn()
       .mockResolvedValue(statusCheckUpdateSuccessResponse);
-    createComponent({}, () => {}, updateStatusCheckHandlerSuccess);
+    createComponent({ updateStatusCheckHandler: updateStatusCheckHandlerSuccess });
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
     findStatusChecksTable().vm.$emit('open-status-check-drawer', statusChecksRulesMock[0]);
     findStatusChecksDrawer().vm.$emit(
@@ -114,11 +118,20 @@ describe('Status checks in branch rules enterprise edition', () => {
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
   });
 
+  it('should delete status check successfully', () => {
+    const deleteStatusCheckHandlerSuccess = jest
+      .fn()
+      .mockResolvedValue(statusCheckDeleteSuccessResponse);
+    createComponent({ deleteStatusCheckHandler: deleteStatusCheckHandlerSuccess });
+    findStatusCheckRemovalModal().vm.$emit('delete-status-check', statusChecksRulesMock[0]);
+    expect(deleteStatusCheckHandlerSuccess).toHaveBeenCalled();
+  });
+
   it('should pass the server validation errors down', async () => {
     const createStatusCheckHandlerValidationError = jest
       .fn()
       .mockResolvedValue(statusCheckCreateNameTakenResponse);
-    createComponent({}, createStatusCheckHandlerValidationError);
+    createComponent({ createStatusCheckHandler: createStatusCheckHandlerValidationError });
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
     findStatusChecksDrawer().vm.$emit(
       'save-status-check-change',
@@ -145,7 +158,7 @@ describe('Status checks in branch rules enterprise edition', () => {
     const createStatusCheckHandlerError = jest
       .fn()
       .mockRejectedValue(new Error('Something went wrong'));
-    createComponent({}, createStatusCheckHandlerError);
+    createComponent({ createStatusCheckHandler: createStatusCheckHandlerError });
     expect(findStatusChecksDrawer().props('isOpen')).toBe(false);
     findStatusChecksDrawer().vm.$emit(
       'save-status-check-change',
@@ -154,8 +167,6 @@ describe('Status checks in branch rules enterprise edition', () => {
     );
     expect(createStatusCheckHandlerError).toHaveBeenCalled();
     await waitForPromises();
-    expect(createAlert).toHaveBeenCalledWith({
-      message: 'Unable to create status check. Please try again.',
-    });
+    expect(wrapper.vm.errorMessages).toContain('Unable to create status check. Please try again.');
   });
 });

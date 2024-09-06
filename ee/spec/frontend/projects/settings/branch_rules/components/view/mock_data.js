@@ -435,6 +435,14 @@ export const statusCheckUpdateSuccessResponse = {
   },
 };
 
+export const statusCheckDeleteSuccessResponse = {
+  data: {
+    branchRuleExternalStatusCheckDestroy: {
+      errors: [],
+    },
+  },
+};
+
 export const statusCheckCreateNameTakenResponse = {
   data: {
     branchRuleExternalStatusCheckCreate: {
