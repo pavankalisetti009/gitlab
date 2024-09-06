@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative './shared'
 
-RSpec.describe 'Query.workspaces(actual_states: [GraphQL::Types::String])', feature_category: :remote_development do
+RSpec.describe 'Query.workspaces(actual_states: [GraphQL::Types::String])', feature_category: :workspaces do
   include_context 'with actual_states argument'
   include_context 'for a Query.workspaces query'
 

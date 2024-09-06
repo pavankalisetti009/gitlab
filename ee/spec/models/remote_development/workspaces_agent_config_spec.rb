@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspacesAgentConfig, feature_category: :workspaces do
   let_it_be_with_reload(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
   let(:default_default_resources_per_workspace_container) { {} }
   let(:default_max_resources_per_workspace) { {} }

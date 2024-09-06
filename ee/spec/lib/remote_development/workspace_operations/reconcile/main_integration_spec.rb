@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- needed helpers for multiple cases
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integration", :freeze_time, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Main, "Integration", :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   shared_examples 'max_hours_before_termination handling' do

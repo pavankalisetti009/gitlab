@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative './shared'
 
-RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILABLE)', feature_category: :remote_development do
+RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: AVAILABLE)', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 

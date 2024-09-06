@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::States, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::States, feature_category: :workspaces do
   let(:object) { Object.new.extend(described_class) }
 
   describe '.valid_desired_state?' do

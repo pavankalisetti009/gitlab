@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Remove existing mapping between a cluster and a group', feature_category: :remote_development do
+RSpec.describe 'Remove existing mapping between a cluster and a group', feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 

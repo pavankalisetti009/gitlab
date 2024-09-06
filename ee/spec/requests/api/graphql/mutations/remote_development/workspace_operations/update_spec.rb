@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Updating a workspace', feature_category: :remote_development do
+RSpec.describe 'Updating a workspace', feature_category: :workspaces do
   include GraphqlHelpers
 
   let_it_be(:user) { create(:user) }

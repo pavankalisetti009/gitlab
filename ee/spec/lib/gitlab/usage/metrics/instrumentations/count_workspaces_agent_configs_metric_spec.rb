@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountWorkspacesAgentConfigsMetric, feature_category: :remote_development do
+RSpec.describe Gitlab::Usage::Metrics::Instrumentations::CountWorkspacesAgentConfigsMetric, feature_category: :workspaces do
   before do
     create_list(:workspaces_agent_config, 2)
   end

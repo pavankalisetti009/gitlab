@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature_category: :custom_models do
+RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature_category: :"self-hosted_models" do
   let(:admin) { create(:admin) }
 
   before do

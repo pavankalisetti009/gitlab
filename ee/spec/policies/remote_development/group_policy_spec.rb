@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::GroupPolicy, feature_category: :workspaces do
   include AdminModeHelper
   using RSpec::Parameterized::TableSyntax
 

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Group Workspaces Settings', :js, feature_category: :remote_development do
+RSpec.describe 'Group Workspaces Settings', :js, feature_category: :workspaces do
   include WaitForRequests
 
   let_it_be(:user) { create(:user) }

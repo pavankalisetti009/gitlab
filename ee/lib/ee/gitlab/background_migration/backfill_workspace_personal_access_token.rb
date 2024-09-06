@@ -13,7 +13,7 @@ module EE
           scope_to ->(relation) {
             relation.where(personal_access_token_id: nil)
           }
-          feature_category :remote_development
+          feature_category :workspaces
         end
 
         class PersonalAccessToken < ::ApplicationRecord

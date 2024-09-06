@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::Ai::TestingTermsAcceptance, feature_category: :custom_models do
+RSpec.describe ::Ai::TestingTermsAcceptance, feature_category: :"self-hosted_models" do
   describe 'valid?' do
     let(:user_id) { 1 }
     let(:user_email) { 'abc@gitlab.com' }

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Main, "Integration", feature_category: :workspaces do
   let(:enabled) { true }
   let(:dns_zone) { 'my-awesome-domain.me' }
 

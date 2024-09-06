@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsToInfosConverter, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::ParamsToInfosConverter, feature_category: :workspaces do
   let(:workspace_agent_info_hashes_from_params) do
     [
       {

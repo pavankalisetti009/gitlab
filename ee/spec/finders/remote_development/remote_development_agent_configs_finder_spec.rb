@@ -3,7 +3,7 @@
 require "spec_helper"
 
 # TODO: clusterAgent.remoteDevelopmentAgentConfig GraphQL is deprecated - remove in 17.10 - https://gitlab.com/gitlab-org/gitlab/-/issues/480769
-RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigsFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::RemoteDevelopmentAgentConfigsFinder, feature_category: :workspaces do
   let_it_be(:current_user) { create(:user) }
 
   let_it_be(:cluster_admin_user) { create(:user) }

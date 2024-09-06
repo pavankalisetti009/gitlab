@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::RemoteDevelopmentNamespaceClusterAgentMapping, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let_it_be_with_reload(:namespace) { create(:group) }
   let_it_be_with_reload(:agent) { create(:cluster_agent) }

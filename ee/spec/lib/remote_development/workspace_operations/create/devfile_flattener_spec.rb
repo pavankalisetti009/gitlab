@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Create::DevfileFlattener, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:devfile_yaml) { example_devfile }

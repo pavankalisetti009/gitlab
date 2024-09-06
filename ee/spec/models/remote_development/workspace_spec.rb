@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::Workspace, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Workspace, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let(:workspace_dns_zone) { agent_config.dns_zone }
   let(:agent_max_hours_before_termination_limit) { 8760 }

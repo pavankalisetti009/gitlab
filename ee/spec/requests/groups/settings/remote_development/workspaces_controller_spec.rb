@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe Groups::Settings::RemoteDevelopment::WorkspacesController,
-  feature_category: :remote_development do
+  feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let(:group) { create(:group, :private) }
 

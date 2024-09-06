@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Delete::Main, feature_category: :workspaces do
   let_it_be(:namespace_cluster_agent_mapping) do
     create(:remote_development_namespace_cluster_agent_mapping)
   end
