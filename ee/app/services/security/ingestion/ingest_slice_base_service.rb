@@ -16,16 +16,20 @@ module Security
         Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
           %w[
             vulnerabilities
+            vulnerability_reads
+            vulnerability_statistics
             vulnerability_flags
             vulnerability_finding_evidences
             vulnerability_finding_links
             vulnerability_finding_signatures
+            vulnerability_findings_remediations
             vulnerability_identifiers
             vulnerability_occurrences
             vulnerability_occurrence_identifiers
             vulnerability_occurrence_pipelines
             vulnerability_scanners
             security_findings
+            project_statistics
           ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/474635'
         ) do
           ApplicationRecord.transaction do
