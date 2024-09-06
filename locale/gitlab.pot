@@ -15607,6 +15607,9 @@ msgstr ""
 msgid "Copy issue URL to clipboard"
 msgstr ""
 
+msgid "Copy item URL"
+msgstr ""
+
 msgid "Copy key"
 msgstr ""
 
@@ -37682,9 +37685,6 @@ msgstr ""
 msgid "Open evidence JSON in new tab"
 msgstr ""
 
-msgid "Open full view"
-msgstr ""
-
 msgid "Open in Gitpod"
 msgstr ""
 
@@ -37692,6 +37692,9 @@ msgid "Open in Web IDE"
 msgstr ""
 
 msgid "Open in file view"
+msgstr ""
+
+msgid "Open in full page"
 msgstr ""
 
 msgid "Open in your IDE"
