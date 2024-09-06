@@ -71,18 +71,28 @@ describe('Edit Rule Drawer', () => {
     expect(findGroupsSelector().props('items')).toMatchObject([]);
   });
 
-  it('renders Item Selector with deploy keys', () => {
-    createComponent(allowedToPushDrawerProps);
+  describe('for push access levels', () => {
+    it('renders Item Selector with deploy keys', () => {
+      createComponent({ ...allowedToPushDrawerProps, isPushAccessLevels: true });
 
-    expect(findDeployKeysSelector().props('items')).toMatchObject([
-      {
-        id: 123123,
-        title: 'Deploy key 1',
-        user: {
-          name: 'User 1',
+      expect(findDeployKeysSelector().props('items')).toMatchObject([
+        {
+          id: 123123,
+          title: 'Deploy key 1',
+          user: {
+            name: 'User 1',
+          },
         },
-      },
-    ]);
+      ]);
+    });
+  });
+
+  describe('for merge access levels', () => {
+    it('renders Item Selector with deploy keys', () => {
+      createComponent({ ...allowedToMergeDrawerProps, isPushAccessLevels: false });
+
+      expect(findDeployKeysSelector().exists()).toBe(false);
+    });
   });
 
   it('enables the save button when users or groups are selected', async () => {
