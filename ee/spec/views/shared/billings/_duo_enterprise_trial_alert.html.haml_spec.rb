@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, feature_category: :acquisition do
-  let_it_be(:group) { build(:group) }
+  let(:group) { build(:group, id: non_existing_record_id) }
 
   before do
     allow(view).to receive(:current_user)
@@ -35,7 +35,7 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
 
       expect(rendered).to have_link(
         'Start a free GitLab Duo Enterprise Trial',
-        href: new_trials_duo_enterprise_path
+        href: new_trials_duo_enterprise_path(namespace_id: group.id)
       )
 
       expect(rendered).to have_css(
@@ -81,7 +81,7 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
 
       expect(rendered).to have_link(
         'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
-        href: new_trial_path
+        href: new_trial_path(namespace_id: group.id)
       )
 
       expect(rendered).to have_css(
@@ -94,7 +94,7 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
       render
 
       expect(rendered).to have_link(
-        'Try GitLab Duo Pro', href: new_trials_duo_pro_path
+        'Try GitLab Duo Pro', href: new_trials_duo_pro_path(namespace_id: group.id)
       )
 
       expect(rendered).to have_css(
@@ -129,7 +129,7 @@ RSpec.describe 'shared/billings/_duo_enterprise_trial_alert.html.haml', :saas, f
 
       expect(rendered).to have_link(
         'Start free trial of GitLab Ultimate and GitLab Duo Enterprise',
-        href: new_trial_path
+        href: new_trial_path(namespace_id: group.id)
       )
 
       expect(rendered).to have_css(
