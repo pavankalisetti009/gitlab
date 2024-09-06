@@ -177,4 +177,32 @@ RSpec.describe EE::MergeRequestsHelper, feature_category: :code_review_workflow 
       end
     end
   end
+
+  describe '#sticky_header_data' do
+    # rubocop:disable RSpec/FactoryBot/AvoidCreate -- Helper method accesses database
+    let_it_be(:current_user) { create(:user) }
+    let_it_be(:merge_request) { create(:merge_request, author: current_user) }
+    # rubocop:enable RSpec/FactoryBot/AvoidCreate
+    let(:reports_tab_data) do
+      ['reports', _('Reports'), reports_project_merge_request_path(merge_request.project, merge_request), 0]
+    end
+
+    before do
+      allow(helper).to receive(:current_user).and_return(current_user)
+    end
+
+    it 'includes reports tab data' do
+      expect(helper.sticky_header_data(merge_request.project, merge_request)[:tabs]).to include(reports_tab_data)
+    end
+
+    context 'when mr_reports_tab is disabled' do
+      before do
+        stub_feature_flags(mr_reports_tab: false)
+      end
+
+      it 'does not include reports tab data' do
+        expect(helper.sticky_header_data(merge_request.project, merge_request)[:tabs]).not_to include(reports_tab_data)
+      end
+    end
+  end
 end
