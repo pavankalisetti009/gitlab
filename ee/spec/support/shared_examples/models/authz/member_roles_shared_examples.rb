@@ -43,7 +43,7 @@ RSpec.shared_examples 'returns expected member role abilities' do
 
   where(:member, :expected_result) do
     ref(:kate)  | [:admin_cicd_variables]
-    ref(:joe)   | [:admin_cicd_variables]
+    ref(:joe)   | [:manage_merge_request_settings]
     ref(:mark)  | [:admin_cicd_variables]
     ref(:jake)  | []
     ref(:mary)  | []
