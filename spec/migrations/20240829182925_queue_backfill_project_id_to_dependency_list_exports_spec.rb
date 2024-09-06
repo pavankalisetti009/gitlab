@@ -15,7 +15,7 @@ RSpec.describe QueueBackfillProjectIdToDependencyListExports, feature_category: 
       migration.after -> {
         expect(batched_migration).to have_scheduled_batched_migration(
           table_name: :dependency_list_exports,
-          column_name: :pipeline_id,
+          column_name: :id,
           interval: described_class::DELAY_INTERVAL,
           batch_size: described_class::BATCH_SIZE,
           sub_batch_size: described_class::SUB_BATCH_SIZE

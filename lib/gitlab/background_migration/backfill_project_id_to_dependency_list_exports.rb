@@ -16,7 +16,7 @@ module Gitlab
       end
 
       def perform
-        distinct_each_batch do |exports|
+        each_sub_batch do |exports|
           pipelines = Pipeline.id_in(exports.map(&:pipeline_id))
 
           export_ids_missing_pipelines = []

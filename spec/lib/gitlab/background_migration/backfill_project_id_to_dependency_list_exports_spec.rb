@@ -11,13 +11,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToDependencyListExp
   let!(:pipeline) { create_ci_pipeline('pipeline-1') }
 
   let(:args) do
-    min, max = dependency_list_exports.pick('MIN(pipeline_id)', 'MAX(pipeline_id)')
+    min, max = dependency_list_exports.pick('MIN(id)', 'MAX(id)')
 
     {
       start_id: min,
       end_id: max,
       batch_table: 'dependency_list_exports',
-      batch_column: 'pipeline_id',
+      batch_column: 'id',
       sub_batch_size: 1,
       pause_ms: 0,
       connection: ApplicationRecord.connection

@@ -13,7 +13,7 @@ class QueueBackfillProjectIdToDependencyListExports < Gitlab::Database::Migratio
     queue_batched_background_migration(
       MIGRATION,
       :dependency_list_exports,
-      :pipeline_id,
+      :id,
       job_interval: DELAY_INTERVAL,
       batch_size: BATCH_SIZE,
       sub_batch_size: SUB_BATCH_SIZE
@@ -21,6 +21,6 @@ class QueueBackfillProjectIdToDependencyListExports < Gitlab::Database::Migratio
   end
 
   def down
-    delete_batched_background_migration(MIGRATION, :dependency_list_exports, :pipeline_id, [])
+    delete_batched_background_migration(MIGRATION, :dependency_list_exports, :id, [])
   end
 end
