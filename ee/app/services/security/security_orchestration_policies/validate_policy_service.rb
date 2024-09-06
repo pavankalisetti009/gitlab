@@ -10,6 +10,7 @@ module Security
 
       DEFAULT_VALIDATION_ERROR_FIELD = :base
 
+      # rubocop:disable Metrics/CyclomaticComplexity -- flat branching
       def execute
         return error_with_title(s_('SecurityOrchestration|Empty policy name')) if blank_name?
 
@@ -19,6 +20,7 @@ module Security
         return error_with_title(format(s_('SecurityOrchestration|Policy exceeds the maximum of %{limit} actions'), limit: scan_execution_policies_action_limit)) if exceeds_action_limit?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled without branch information'), field: :branches) if blank_branch_for_rule?
         return error_with_title(s_('SecurityOrchestration|Policy cannot be enabled for non-existing branches (%{branches})') % { branches: missing_branch_names.join(', ') }, field: :branches) if missing_branch_for_rule?
+        return error_with_title(s_('SecurityOrchestration|This merge request approval policy targets the default branch, but the default branch is not protected in this project. To set up this policy, the default branch must be protected.'), field: :branches) if default_branch_unprotected?
         return error_with_title(s_('SecurityOrchestration|Branch types don\'t match any existing branches.'), field: :branches) if invalid_branch_types?
         return error_with_title(s_('SecurityOrchestration|Timezone is invalid'), field: :timezone) if invalid_timezone?
         return error_with_title(s_('SecurityOrchestration|Vulnerability age requires previously existing vulnerability states (detected, confirmed, resolved, or dismissed)'), field: :vulnerability_age) if invalid_vulnerability_age?
@@ -29,6 +31,7 @@ module Security
 
         success
       end
+      # rubocop:enable Metrics/CyclomaticComplexity
 
       private
 
@@ -43,6 +46,14 @@ module Security
 
       def policy_disabled?
         !policy&.[](:enabled)
+      end
+
+      def default_branch_unprotected?
+        return false unless project_container?
+        return false unless policy_type.in?(Security::ScanResultPolicy::SCAN_RESULT_POLICY_TYPES)
+        return false unless policy[:rules]&.any? { |rule| rule[:branch_type] == "default" }
+
+        !ProtectedBranch.protected?(project, project.default_branch)
       end
 
       def invalid_policy_type?
