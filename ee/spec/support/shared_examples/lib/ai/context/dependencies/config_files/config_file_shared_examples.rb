@@ -25,6 +25,12 @@ RSpec.shared_examples 'parsing a valid dependency config file' do
       scannerVersion: described_class::SCANNER_VERSION
     })
   end
+
+  it 'does not track error' do
+    expect(Gitlab::ErrorTracking).not_to receive(:track_exception)
+
+    config_file.parse!
+  end
 end
 
 ### Optionally, the context can contain:
@@ -34,7 +40,7 @@ end
 #
 RSpec.shared_examples 'parsing an invalid dependency config file' do
   let(:config_file_content) { try(:invalid_config_file_content) || 'invalid' }
-  let(:blob) { instance_double('Gitlab::Git::Blob', path: 'path/to/configfile', data: config_file_content) }
+  let(:blob) { double(path: 'path/to/file', data: config_file_content, project: instance_double('Project', id: 123)) } # rubocop: disable RSpec/VerifiedDoubles -- Inherits from both Gitlab::Git::Blob and Blob
   let(:config_file) { (try(:config_file_class) || described_class).new(blob) }
 
   let(:expected_error_message) do
@@ -48,5 +54,16 @@ RSpec.shared_examples 'parsing an invalid dependency config file' do
     expect(config_file.error_message).to eq(
       "Error(s) while parsing file `#{blob.path}`: #{expected_error_message}")
     expect(config_file.payload).to be_nil
+  end
+
+  it 'tracks error' do
+    expect(Gitlab::ErrorTracking).to receive(:track_exception).with(
+      an_instance_of(Ai::Context::Dependencies::ConfigFiles::Base::ParsingError),
+      class: config_file.class.name,
+      file_path: blob.path,
+      project_id: 123
+    )
+
+    config_file.parse!
   end
 end

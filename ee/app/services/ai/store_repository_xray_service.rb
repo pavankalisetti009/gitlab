@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Ai
+  # This service stores the artifacts produced by the Repository X-Ray CI job
   class StoreRepositoryXrayService
     include Gitlab::Utils::Gzip
 

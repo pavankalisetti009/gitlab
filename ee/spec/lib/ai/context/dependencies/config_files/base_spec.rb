@@ -3,25 +3,29 @@
 require 'spec_helper'
 
 RSpec.describe Ai::Context::Dependencies::ConfigFiles::Base, feature_category: :code_suggestions do
-  let(:config_file_class) do
-    Class.new(described_class) do
-      def self.file_name_glob
-        'test.json'
-      end
+  let(:config_file_class) { ConfigFileClass }
 
-      def self.lang_name
-        'Go'
-      end
+  before do
+    stub_const('ConfigFileClass',
+      Class.new(described_class) do
+        def self.file_name_glob
+          'test.json'
+        end
 
-      def extract_libs
-        parsed = Gitlab::Json.parse(content)
-        libs = dig_in(parsed, 'parent_node', 'child_node')
-        libs.try(:map) { |hash| self.class::Lib.new(**hash) }
-      rescue JSON::ParserError
-        error('content is not a valid JSON')
-        nil
+        def self.lang_name
+          'Go'
+        end
+
+        def extract_libs
+          parsed = Gitlab::Json.parse(content)
+          libs = dig_in(parsed, 'parent_node', 'child_node')
+          libs.try(:map) { |hash| self.class::Lib.new(**hash) }
+        rescue JSON::ParserError
+          error('content is not a valid JSON')
+          nil
+        end
       end
-    end
+    )
   end
 
   it 'defines the expected interface for child classes' do
