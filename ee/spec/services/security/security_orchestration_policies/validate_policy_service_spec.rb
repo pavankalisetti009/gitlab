@@ -431,12 +431,22 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         }
       end
 
+      let(:error_message_default_unprotected) do
+        "This merge request approval policy targets the default branch, " \
+          "but the default branch is not protected in this project. " \
+          "To set up this policy, the default branch must be protected."
+      end
+
+      let(:error_message_non_existing) do
+        "Branch types don't match any existing branches."
+      end
+
       with_them do
         it { expect(result[:status]).to eq(status) }
 
         it 'returns a corresponding error message for error case' do
           if status == :error
-            expect(result[:details]).to eq(["Branch types don't match any existing branches."])
+            expect(result[:details]).to eq([expected_error_message])
           else
             expect(result[:details]).to be_nil
           end
@@ -662,14 +672,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks policy type'
         it_behaves_like 'checks policy name'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :error
-            :scan_execution_policy | 'protected' | :error
-            :scan_execution_policy | 'default' | :error
-            :scan_result_policy | 'protected' | :error
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :error
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'default' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'default' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'default' | :error | ref(:error_message_non_existing)
           end
         end
 
@@ -724,14 +734,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks if cadence is valid'
         it_behaves_like 'checks if vulnerability_age is valid'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :success
-            :scan_execution_policy | 'protected' | :success
-            :scan_execution_policy | 'default' | :success
-            :scan_result_policy | 'protected' | :success
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :success
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :success | nil
+            :scan_execution_policy | 'protected' | :success | nil
+            :scan_execution_policy | 'default' | :success | nil
+            :scan_result_policy | 'protected' | :success | nil
+            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
+            :approval_policy | 'protected' | :success | nil
+            :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end
         end
 
@@ -748,14 +758,14 @@ RSpec.describe Security::SecurityOrchestrationPolicies::ValidatePolicyService, f
         it_behaves_like 'checks policy type'
         it_behaves_like 'checks policy name'
         it_behaves_like 'checks if branches exist for the provided branch_type' do
-          where(:policy_type, :branch_type, :status) do
-            :scan_execution_policy | 'all' | :success
-            :scan_execution_policy | 'protected' | :error
-            :scan_execution_policy | 'default' | :success
-            :scan_result_policy | 'protected' | :error
-            :scan_result_policy | 'default' | :error
-            :approval_policy | 'protected' | :error
-            :approval_policy | 'default' | :error
+          where(:policy_type, :branch_type, :status, :expected_error_message) do
+            :scan_execution_policy | 'all' | :success | nil
+            :scan_execution_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_execution_policy | 'default' | :success | nil
+            :scan_result_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :scan_result_policy | 'default' | :error | ref(:error_message_default_unprotected)
+            :approval_policy | 'protected' | :error | ref(:error_message_non_existing)
+            :approval_policy | 'default' | :error | ref(:error_message_default_unprotected)
           end
 
           context 'with multiple rules' do
