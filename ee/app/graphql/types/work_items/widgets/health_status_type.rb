@@ -10,10 +10,6 @@ module Types
 
         implements Types::WorkItems::WidgetInterface
 
-        field :widget_definition, ::Types::WorkItems::WidgetDefinitions::HealthStatusType,
-          null: true,
-          description: 'Health status widget definition.'
-
         field :health_status,
           ::Types::HealthStatusEnum,
           null: true,
