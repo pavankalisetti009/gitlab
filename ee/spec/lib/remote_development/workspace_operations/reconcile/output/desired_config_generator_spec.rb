@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator, :freeze_time, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Output::DesiredConfigGenerator, :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   describe '#generate_desired_config' do

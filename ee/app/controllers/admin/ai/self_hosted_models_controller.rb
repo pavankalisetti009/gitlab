@@ -5,7 +5,7 @@ module Admin
     class SelfHostedModelsController < Admin::ApplicationController
       include ::GitlabSubscriptions::CodeSuggestionsHelper
 
-      feature_category :custom_models
+      feature_category :"self-hosted_models"
       urgency :low
 
       before_action :ensure_registration!

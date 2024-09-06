@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, feature_category: :remote_development do
+RSpec.describe 'Remote Development workspaces dropdown group', :api, :js, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
   include_context 'file upload requests helpers'
 

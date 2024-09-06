@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::WorkspaceVariables, feature_category: :workspaces do
   let(:name) { "name" }
   let(:dns_zone) { "example.dns.zone" }
   let(:personal_access_token_value) { "example-pat-value" }

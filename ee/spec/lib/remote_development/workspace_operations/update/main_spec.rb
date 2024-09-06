@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Update::Main, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Update::Main, feature_category: :workspaces do
   let(:context_passed_along_steps) { {} }
 
   let(:rop_steps) do

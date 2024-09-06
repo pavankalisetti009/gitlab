@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspacesFinder, feature_category: :workspaces do
   include ::RemoteDevelopment::WorkspaceOperations::States
 
   let_it_be(:current_user) { create(:user) }

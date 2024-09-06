@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, :silence_stdout, feature_category: :custom_models do
+RSpec.describe Gitlab::Duo::Administration::VerifySelfHostedSetup, :gitlab_duo, :silence_stdout, feature_category: :"self-hosted_models" do
   include RakeHelpers
 
   let_it_be(:user) { create(:user, :admin, id: 1) }

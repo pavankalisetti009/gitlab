@@ -9,7 +9,7 @@ require 'spec_helper'
 #
 #################################################################################################################
 
-RSpec.describe 'workspaces', feature_category: :remote_development do
+RSpec.describe 'workspaces', feature_category: :workspaces do
   let_it_be(:group) { create(:group, :private) }
   let(:result) { execute['data'] }
   let_it_be(:user) { create(:user) }

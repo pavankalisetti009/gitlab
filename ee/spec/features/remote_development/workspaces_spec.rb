@@ -3,7 +3,7 @@
 require 'spec_helper'
 require_relative "../../support/helpers/remote_development/integration_spec_helpers"
 
-RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :remote_development do
+RSpec.describe 'Remote Development workspaces', :api, :js, feature_category: :workspaces do
   include RemoteDevelopment::IntegrationSpecHelpers
 
   include_context 'with remote development shared fixtures'

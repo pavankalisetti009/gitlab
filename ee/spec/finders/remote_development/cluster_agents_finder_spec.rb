@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::ClusterAgentsFinder, feature_category: :workspaces do
   let_it_be(:developer) { create(:user) }
   let_it_be(:maintainer) { create(:user) }
   let_it_be(:user) { developer }

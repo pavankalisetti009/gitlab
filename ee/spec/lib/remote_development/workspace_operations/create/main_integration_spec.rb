@@ -7,7 +7,7 @@ require 'spec_helper'
 #       and any changes made to it are not reverted by let it be (even with reload). This means we also cannot use
 #       these `let` declarations in a `before` context, so any mocking of them must occur in the examples themselves.
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_time, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Main, :freeze_time, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:user) { create(:user) }

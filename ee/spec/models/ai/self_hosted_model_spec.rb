@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::SelfHostedModel, feature_category: :custom_models do
+RSpec.describe Ai::SelfHostedModel, feature_category: :"self-hosted_models" do
   describe 'validation' do
     subject(:self_hosted_model) { build(:ai_self_hosted_model) }
 

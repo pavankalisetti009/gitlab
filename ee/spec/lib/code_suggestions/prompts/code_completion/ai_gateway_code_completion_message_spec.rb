@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage, feature_category: :custom_models do
+RSpec.describe CodeSuggestions::Prompts::CodeCompletion::AiGatewayCodeCompletionMessage, feature_category: :"self-hosted_models" do
   let_it_be(:ai_self_hosted_model) { create(:ai_self_hosted_model, model: :codestral, name: 'whatever', endpoint: 'http://example.com/endpoint') }
   let_it_be(:ai_feature_setting) do
     create(

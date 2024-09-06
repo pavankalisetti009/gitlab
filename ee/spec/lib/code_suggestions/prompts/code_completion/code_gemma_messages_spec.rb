@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages, feature_category: :custom_models do
+RSpec.describe CodeSuggestions::Prompts::CodeCompletion::CodeGemmaMessages, feature_category: :"self-hosted_models" do
   let_it_be(:ai_self_hosted_model) do
     create(
       :ai_self_hosted_model,

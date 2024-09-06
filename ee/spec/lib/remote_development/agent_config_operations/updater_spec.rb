@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- Can we have less?
-RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::AgentConfigOperations::Updater, feature_category: :workspaces do
   include ResultMatchers
 
   let(:enabled) { true }

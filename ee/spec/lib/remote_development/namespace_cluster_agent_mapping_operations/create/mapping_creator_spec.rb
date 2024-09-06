@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create::MappingCreator, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::NamespaceClusterAgentMappingOperations::Create::MappingCreator, feature_category: :workspaces do
   include ResultMatchers
 
   let_it_be(:namespace) { create(:group) }

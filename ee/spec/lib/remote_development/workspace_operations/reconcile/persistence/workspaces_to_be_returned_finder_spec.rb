@@ -3,7 +3,7 @@
 require 'spec_helper'
 
 # noinspection RubyResolve - https://handbook.gitlab.com/handbook/tools-and-tips/editors-and-ides/jetbrains-ides/tracked-jetbrains-issues/#ruby-31542
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Persistence::WorkspacesToBeReturnedFinder, feature_category: :workspaces do
   let_it_be(:user) { create(:user) }
   let_it_be(:agent) { create(:ee_cluster_agent, :with_existing_workspaces_agent_config) }
 

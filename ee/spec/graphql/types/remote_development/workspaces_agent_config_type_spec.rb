@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :remote_development do
+RSpec.describe GitlabSchema.types['WorkspacesAgentConfig'], feature_category: :workspaces do
   let(:fields) do
     %i[
       id cluster_agent project_id enabled dns_zone network_policy_enabled gitlab_workspaces_proxy_namespace

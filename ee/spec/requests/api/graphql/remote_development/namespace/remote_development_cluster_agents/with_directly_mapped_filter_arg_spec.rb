@@ -4,7 +4,7 @@ require 'spec_helper'
 require_relative './shared'
 
 RSpec.describe 'Query.namespace.remote_development_cluster_agents(filter: DIRECTLY_MAPPED)',
-  feature_category: :remote_development do
+  feature_category: :workspaces do
   include GraphqlHelpers
   include StubFeatureFlags
 

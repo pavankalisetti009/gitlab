@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::Factory, feature_category: :workspaces do
   include_context 'with remote development shared fixtures'
 
   let(:agent) { instance_double("Clusters::Agent", id: 1) }

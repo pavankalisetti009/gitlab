@@ -75,7 +75,7 @@ module EE
                 end
 
                 route_setting :authentication, cluster_agent_token_allowed: true
-                post '/reconcile', urgency: :low, feature_category: :remote_development do
+                post '/reconcile', urgency: :low, feature_category: :workspaces do
                   unless ::License.feature_available?(:remote_development)
                     forbidden!('"remote_development" licensed feature is not available')
                   end

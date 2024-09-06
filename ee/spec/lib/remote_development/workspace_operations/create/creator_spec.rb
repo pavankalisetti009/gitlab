@@ -4,7 +4,7 @@ require 'spec_helper'
 
 Messages = RemoteDevelopment::Messages
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::Creator, feature_category: :workspaces do
   let(:rop_steps) do
     [
       [RemoteDevelopment::WorkspaceOperations::Create::PersonalAccessTokenCreator, :and_then],

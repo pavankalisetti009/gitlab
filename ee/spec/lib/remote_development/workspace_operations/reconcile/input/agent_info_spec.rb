@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::WorkspaceOperations::Reconcile::Input::AgentInfo, feature_category: :workspaces do
   let(:agent_info_constructor_args) do
     {
       name: 'name',

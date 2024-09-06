@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::Settings, feature_category: :remote_development do # rubocop:disable RSpec/FilePath -- This cop fails because the spec is named 'settings_integration_spec.rb' but describes ::RemoteDevelopment::Settings class. But we want it that way, because it's an integration spec, not a unit spec, but we still want to be able to use `described_class`
+RSpec.describe ::RemoteDevelopment::Settings, feature_category: :workspaces do # rubocop:disable RSpec/FilePath -- This cop fails because the spec is named 'settings_integration_spec.rb' but describes ::RemoteDevelopment::Settings class. But we want it that way, because it's an integration spec, not a unit spec, but we still want to be able to use `described_class`
   subject(:settings_module) { described_class }
 
   context "when there is no override" do

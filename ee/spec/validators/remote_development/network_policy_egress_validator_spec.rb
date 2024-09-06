@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe RemoteDevelopment::NetworkPolicyEgressValidator, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::NetworkPolicyEgressValidator, feature_category: :workspaces do
   let(:model) do
     # noinspection RubyArgCount -- Rubymine is detecting wrong class here
     Class.new do

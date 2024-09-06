@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator, feature_category: :remote_development do
+RSpec.describe ::RemoteDevelopment::WorkspaceOperations::Create::PostFlattenDevfileValidator, feature_category: :workspaces do
   include ResultMatchers
 
   include_context 'with remote development shared fixtures'

@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Sidebars::YourWork::Menus::WorkspacesMenu, feature_category: :remote_development do
+RSpec.describe Sidebars::YourWork::Menus::WorkspacesMenu, feature_category: :workspaces do
   it_behaves_like 'top-level menu item',
     is_super_sidebar: false,
     link: '/-/remote_development/workspaces',

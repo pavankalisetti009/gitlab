@@ -4,7 +4,7 @@ require "spec_helper"
 require_relative "../../support/helpers/remote_development/integration_spec_helpers"
 
 # rubocop:disable RSpec/MultipleMemoizedHelpers -- this is an integration test, it has a lot of fixtures, but only one example, so we don't need let_it_be
-RSpec.describe "Full workspaces integration request spec", :freeze_time, feature_category: :remote_development do
+RSpec.describe "Full workspaces integration request spec", :freeze_time, feature_category: :workspaces do
   include GraphqlHelpers
   include RemoteDevelopment::IntegrationSpecHelpers
   include_context "with remote development shared fixtures"

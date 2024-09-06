@@ -2,7 +2,7 @@
 
 require "fast_spec_helper"
 
-RSpec.describe RemoteDevelopment::Settings::Main, feature_category: :remote_development do
+RSpec.describe RemoteDevelopment::Settings::Main, feature_category: :workspaces do
   let(:settings) { 'some settings' }
   let(:context_passed_along_steps) { { settings: settings } }
 

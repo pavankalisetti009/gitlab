@@ -2,7 +2,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Ai::FeatureSetting, feature_category: :custom_models do
+RSpec.describe Ai::FeatureSetting, feature_category: :"self-hosted_models" do
   subject { build(:ai_feature_setting) }
 
   it { is_expected.to belong_to(:self_hosted_model) }
