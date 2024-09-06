@@ -1,6 +1,6 @@
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import ScopeProjectSelector from 'ee/security_orchestration/components/policy_editor/scope/scope_project_selector.vue';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { generateMockProjects } from 'ee_jest/security_orchestration/mocks/mock_data';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { EXCEPT_PROJECTS } from 'ee/security_orchestration/components/policy_editor/scope/constants';

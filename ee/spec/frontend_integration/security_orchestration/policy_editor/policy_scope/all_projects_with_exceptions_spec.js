@@ -1,7 +1,7 @@
 import { mountExtended } from 'helpers/vue_test_utils_helper';
 import * as urlUtils from '~/lib/utils/url_utility';
 import App from 'ee/security_orchestration/components/policy_editor/app.vue';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { EXCEPT_PROJECTS } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 import { convertToGraphQLId } from '~/graphql_shared/utils';
@@ -117,12 +117,12 @@ describe('Policy Scope With Exceptions', () => {
             ...defaultHandlers,
             sppLinkedItemsHandler: createSppLinkedItemsHandler({
               projects: [
-                { id: '1', name: 'name1' },
-                { id: '2', name: 'name2 ' },
+                { id: '1', name: 'name1', fullPath: 'fullPath1' },
+                { id: '2', name: 'name2', fullPath: 'fullPath2' },
               ],
               namespaces: [
-                { id: '1', name: 'name1' },
-                { id: '2', name: 'name2 ' },
+                { id: '1', name: 'name1', fullPath: 'fullPath1' },
+                { id: '2', name: 'name2', fullPath: 'fullPath2' },
               ],
             }),
           },

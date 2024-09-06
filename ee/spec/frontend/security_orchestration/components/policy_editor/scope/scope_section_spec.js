@@ -22,12 +22,16 @@ import {
   PROJECT_TO_GROUP_SCOPE_TYPE_LISTBOX_ITEMS,
   ALL_PROJECTS_IN_LINKED_GROUPS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
-import { mockLinkedSppItemsResponse } from 'ee_jest/security_orchestration/mocks/mock_apollo';
+import {
+  mockLinkedSppItemsResponse,
+  defaultPageInfo,
+} from 'ee_jest/security_orchestration/mocks/mock_apollo';
 
 describe('PolicyScope', () => {
   let wrapper;
   let requestHandler;
 
+  const defaultAssignedPolicyProject = { fullPath: 'path/to/policy-project', branch: 'main' };
   const createHandler = ({ projects = [], namespaces = [] } = {}) =>
     jest.fn().mockResolvedValue({
       data: {
@@ -35,9 +39,11 @@ describe('PolicyScope', () => {
           id: '1',
           securityPolicyProjectLinkedProjects: {
             nodes: projects,
+            pageInfo: { ...defaultPageInfo },
           },
           securityPolicyProjectLinkedNamespaces: {
             nodes: namespaces,
+            pageInfo: { ...defaultPageInfo },
           },
         },
       },
@@ -66,6 +72,7 @@ describe('PolicyScope', () => {
         namespaceType: NAMESPACE_TYPES.GROUP,
         namespacePath: 'gitlab-org',
         rootNamespacePath: 'gitlab-org-root',
+        assignedPolicyProject: defaultAssignedPolicyProject,
         ...provide,
       },
       stubs: {
@@ -294,12 +301,12 @@ describe('PolicyScope', () => {
           },
           handler: createHandler({
             projects: [
-              { id: '1', name: 'name1' },
-              { id: '2', name: 'name2 ' },
+              { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+              { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],
             namespaces: [
-              { id: '1', name: 'name1' },
-              { id: '2', name: 'name2 ' },
+              { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+              { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],
           }),
         });
@@ -376,7 +383,9 @@ describe('PolicyScope', () => {
         },
       });
 
-      expect(requestHandler).toHaveBeenCalledWith({ fullPath: 'gitlab-org' });
+      expect(requestHandler).toHaveBeenCalledWith({
+        fullPath: 'gitlab-org',
+      });
     });
 
     it('show text message for project without linked items', async () => {
@@ -398,12 +407,12 @@ describe('PolicyScope', () => {
         },
         handler: mockLinkedSppItemsResponse({
           projects: [
-            { id: '1', name: 'name1' },
-            { id: '2', name: 'name2 ' },
+            { id: '1', name: 'name1', fullPath: 'fullPath1' },
+            { id: '2', name: 'name2', fullPath: 'fullPath2' },
           ],
           namespaces: [
-            { id: '1', name: 'name1' },
-            { id: '2', name: 'name2 ' },
+            { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+            { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
           ],
         }),
       });
@@ -450,12 +459,12 @@ describe('PolicyScope', () => {
         },
         handler: mockLinkedSppItemsResponse({
           projects: [
-            { id: '1', name: 'name1' },
-            { id: '2', name: 'name2 ' },
+            { id: '1', name: 'name1', fullPath: 'fullPath1' },
+            { id: '2', name: 'name2', fullPath: 'fullPath2' },
           ],
           namespaces: [
-            { id: '1', name: 'name1' },
-            { id: '2', name: 'name2 ' },
+            { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+            { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
           ],
         }),
       });
@@ -492,12 +501,12 @@ describe('PolicyScope', () => {
           },
           handler: mockLinkedSppItemsResponse({
             projects: [
-              { id: '1', name: 'name1' },
-              { id: '2', name: 'name2 ' },
+              { id: '1', name: 'name1', fullPath: 'fullPath1' },
+              { id: '2', name: 'name2', fullPath: 'fullPath2' },
             ],
             namespaces: [
-              { id: '1', name: 'name1' },
-              { id: '2', name: 'name2 ' },
+              { id: '1', name: 'name1', fullPath: 'fullPath1', descendantGroups: { nodes: [] } },
+              { id: '2', name: 'name2', fullPath: 'fullPath2', descendantGroups: { nodes: [] } },
             ],
           }),
         });

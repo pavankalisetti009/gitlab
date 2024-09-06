@@ -9,7 +9,7 @@ import {
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import CodeBlockStrategySelector from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_strategy_selector.vue';
 import CodeBlockFilePath from 'ee/security_orchestration/components/policy_editor/pipeline_execution/action/code_block_file_path.vue';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import RefSelector from '~/ref/components/ref_selector.vue';
 import {
   INJECT,

@@ -7,7 +7,8 @@ import waitForPromises from 'helpers/wait_for_promises';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import BaseItemsDropdown from 'ee/security_orchestration/components/shared/base_items_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import {
   generateMockGroups,
   generateMockProjects,
@@ -99,13 +100,13 @@ describe('GroupProjectsDropdown', () => {
     });
   };
 
-  const findDropdown = () => wrapper.findComponent(GlCollapsibleListbox);
+  const findDropdown = () => wrapper.findComponent(BaseItemsDropdown);
 
   describe.each`
-    groupsOnly | items            | expectedText
-    ${false}   | ${defaultNodes}  | ${'Select projects'}
-    ${true}    | ${defaultGroups} | ${'Select groups'}
-  `('selection', ({ groupsOnly, items, expectedText }) => {
+    groupsOnly | items
+    ${false}   | ${defaultNodes}
+    ${true}    | ${defaultGroups}
+  `('selection', ({ groupsOnly, items }) => {
     beforeEach(() => {
       createComponent({
         propsData: {
@@ -131,10 +132,6 @@ describe('GroupProjectsDropdown', () => {
       findDropdown().vm.$emit('select', [id]);
       expect(wrapper.emitted('select')).toEqual([[[items[0]]]]);
     });
-
-    it('renders default text when loading', () => {
-      expect(findDropdown().props('toggleText')).toBe(expectedText);
-    });
   });
 
   it.each`
@@ -157,10 +154,10 @@ describe('GroupProjectsDropdown', () => {
   });
 
   describe.each`
-    groupsOnly | ids                | expectedText
-    ${false}   | ${defaultNodesIds} | ${'All projects'}
-    ${true}    | ${defaultGroupIds} | ${'All groups'}
-  `('selected items', ({ groupsOnly, ids, expectedText }) => {
+    groupsOnly | ids
+    ${false}   | ${defaultNodesIds}
+    ${true}    | ${defaultGroupIds}
+  `('selected items', ({ groupsOnly, ids }) => {
     const type = groupsOnly ? 'groups' : 'projects';
 
     beforeEach(() => {
@@ -176,33 +173,9 @@ describe('GroupProjectsDropdown', () => {
       await waitForPromises();
       expect(findDropdown().props('selected')).toEqual(ids);
     });
-
-    it(`renders all ${type} selected text when`, async () => {
-      await waitForPromises();
-      expect(findDropdown().props('toggleText')).toBe(expectedText);
-    });
   });
 
   describe('selected items that does not exist', () => {
-    it.each`
-      groupsOnly | expectedText
-      ${false}   | ${'Select projects'}
-      ${true}    | ${'Select groups'}
-    `(
-      'renders default placeholder when selected projects do not exist',
-      async ({ groupsOnly, expectedText }) => {
-        createComponent({
-          propsData: {
-            selected: ['one', 'two'],
-            groupsOnly,
-          },
-        });
-
-        await waitForPromises();
-        expect(findDropdown().props('toggleText')).toBe(expectedText);
-      },
-    );
-
     it('filters selected projects that does not exist', async () => {
       createComponent({
         propsData: {
@@ -268,27 +241,6 @@ describe('GroupProjectsDropdown', () => {
           expect(requestHandlers.getGroupProjects).toHaveBeenCalledTimes(0);
           expect(requestHandlers.getGroups).toHaveBeenCalledTimes(2);
         });
-
-        it.each`
-          hasNextPage | expectedText
-          ${true}     | ${'1, 2'}
-          ${false}    | ${'All groups'}
-        `(
-          'selects all groups only when all groups loaded',
-          async ({ hasNextPage, expectedText }) => {
-            createComponent({
-              propsData: {
-                selected: defaultGroupIds,
-                groupsOnly: true,
-              },
-              handlers: mockApolloHandlers([], hasNextPage, defaultGroups),
-            });
-
-            await waitForPromises();
-
-            expect(findDropdown().props('toggleText')).toBe(expectedText);
-          },
-        );
       });
 
       describe('projects', () => {
@@ -331,26 +283,6 @@ describe('GroupProjectsDropdown', () => {
             search: '',
           });
         });
-
-        it.each`
-          hasNextPage | expectedText
-          ${true}     | ${'1, 2'}
-          ${false}    | ${'All projects'}
-        `(
-          'selects all projects only when all projects loaded',
-          async ({ hasNextPage, expectedText }) => {
-            createComponent({
-              propsData: {
-                selected: defaultNodesIds,
-              },
-              handlers: mockApolloHandlers(defaultNodes, hasNextPage),
-            });
-
-            await waitForPromises();
-
-            expect(findDropdown().props('toggleText')).toBe(expectedText);
-          },
-        );
       });
 
       describe('groups ids', () => {
@@ -453,6 +385,7 @@ describe('GroupProjectsDropdown', () => {
       it(`selects all ${itemType}`, async () => {
         const groupsOnly = itemType === 'groups';
         const nodes = groupsOnly ? defaultGroups : defaultNodes;
+        const ids = groupsOnly ? defaultGroupIds : defaultNodesIds;
 
         createComponent({
           propsData: {
@@ -461,7 +394,7 @@ describe('GroupProjectsDropdown', () => {
         });
         await waitForPromises();
 
-        findDropdown().vm.$emit('select-all');
+        findDropdown().vm.$emit('select-all', ids);
 
         expect(wrapper.emitted('select')).toEqual([[nodes]]);
       });
@@ -493,6 +426,7 @@ describe('GroupProjectsDropdown', () => {
           },
           handlers: mockApolloHandlers([], false, moreNodes),
           stubs: {
+            BaseItemsDropdown,
             GlCollapsibleListbox,
           },
         });
@@ -526,6 +460,7 @@ describe('GroupProjectsDropdown', () => {
           },
           handlers: mockApolloHandlers(moreNodes),
           stubs: {
+            BaseItemsDropdown,
             GlCollapsibleListbox,
           },
         });

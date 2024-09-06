@@ -14,7 +14,7 @@ import { BV_SHOW_TOOLTIP, BV_HIDE_TOOLTIP } from '~/lib/utils/constants';
 import { getIdFromGraphQLId } from '~/graphql_shared/utils';
 import glFeatureFlagMixin from '~/vue_shared/mixins/gl_feature_flags_mixin';
 import RefSelector from '~/ref/components/ref_selector.vue';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { isGroup } from 'ee/security_orchestration/components/utils';
 import { INJECT, OVERRIDE } from '../constants';
 import { validateStrategyValues } from './utils';

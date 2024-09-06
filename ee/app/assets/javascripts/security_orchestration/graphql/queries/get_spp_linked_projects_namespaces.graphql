@@ -1,3 +1,5 @@
+#import "~/graphql_shared/fragments/page_info.fragment.graphql"
+
 query getSppLinkedProjectsNamespaces($fullPath: ID!) {
   project(fullPath: $fullPath) {
     id
@@ -5,12 +7,20 @@ query getSppLinkedProjectsNamespaces($fullPath: ID!) {
       nodes {
         id
         name
+        fullPath
+      }
+      pageInfo {
+        ...PageInfo
       }
     }
     securityPolicyProjectLinkedNamespaces {
       nodes {
         id
         name
+        fullPath
+      }
+      pageInfo {
+        ...PageInfo
       }
     }
   }
