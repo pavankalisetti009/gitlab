@@ -123,4 +123,11 @@ RSpec.describe Dast::SiteProfileSecretVariable, :dynamic_analysis,
       expect(described_class.new.variable_type).to eq(variable_type)
     end
   end
+
+  context 'with loose foreign key on dast_site_profile_secret_variables.project_id' do
+    it_behaves_like 'cleanup by a loose foreign key' do
+      let_it_be(:parent) { create(:project) }
+      let_it_be(:model) { create(:dast_site_profile_secret_variable, project_id: parent.id) }
+    end
+  end
 end
