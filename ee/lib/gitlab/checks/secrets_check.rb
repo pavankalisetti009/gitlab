@@ -124,7 +124,8 @@ module Gitlab
       end
 
       def log_audit_event(skip_method)
-        message = "#{_('Secret push protection skipped via')} #{skip_method}"
+        branch_name = changes_access.single_change_accesses.first.branch_name
+        message = "#{_('Secret push protection skipped via')} #{skip_method} on branch #{branch_name}"
 
         audit_context = {
           name: "skip_secret_push_protection",
