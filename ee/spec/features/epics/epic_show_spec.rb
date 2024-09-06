@@ -81,8 +81,8 @@ RSpec.describe 'Epic show', :js, feature_category: :portfolio_management do
         page.within('.js-epic-container') do
           expect(page).to have_selector('.related-items-tree-container')
 
-          page.within('.related-items-tree-container') do
-            expect(page.find('.issue-count-badge', text: '2')).to be_present
+          within_testid('legacy-related-items-tree') do
+            expect(find_by_testid('crud-count', text: '2')).to be_present
             expect(find('.tree-item:nth-child(1) .sortable-link')).to have_content('Child epic B')
             expect(find('.tree-item:nth-child(2) .sortable-link')).to have_content('Child epic A')
           end
@@ -90,7 +90,7 @@ RSpec.describe 'Epic show', :js, feature_category: :portfolio_management do
       end
 
       it 'toggles epic labels' do
-        within_testid('related-items-container') do
+        within_testid('legacy-related-items-tree') do
           expect(find('.tree-item:nth-child(1)')).to have_selector('.gl-label')
 
           toggle_labels = find_by_testid('show-labels-toggle')
@@ -177,7 +177,7 @@ RSpec.describe 'Epic show', :js, feature_category: :portfolio_management do
     describe 'Epic metadata' do
       it 'shows epic tab `Issues`' do
         page.within('.related-items-tree-container') do
-          expect(find('h3.gl-new-card-title')).to have_content('Issues')
+          expect(find('h2.gl-text-base')).to have_content('Issues')
         end
       end
 
@@ -190,7 +190,7 @@ RSpec.describe 'Epic show', :js, feature_category: :portfolio_management do
     describe 'Issues tab' do
       it 'shows Related items tree with child epics' do
         page.within('.related-items-tree-container') do
-          expect(page.find('.issue-count-badge', text: '1')).to be_present
+          expect(find_by_testid('crud-count', text: '1')).to be_present
         end
       end
     end

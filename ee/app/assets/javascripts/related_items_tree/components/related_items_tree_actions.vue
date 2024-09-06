@@ -26,7 +26,7 @@ export default {
 </script>
 
 <template>
-  <div class="card-header gl-flex gl-flex-col gl-border-b-0 gl-p-3 gl-pr-4 sm:gl-flex-row">
+  <div class="gl-flex gl-flex-col gl-border-b-0 gl-px-5 gl-py-3 sm:gl-flex-row">
     <div>
       <gl-button-group v-if="allowSubEpics" data-testid="buttons" class="gl-flex gl-grow">
         <gl-button

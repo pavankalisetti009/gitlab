@@ -89,7 +89,7 @@ export default {
   <component
     :is="treeRootWrapper"
     v-bind="treeRootOptions"
-    class="list-unstyled related-items-list tree-root gl-pb-0 gl-pt-0"
+    class="list-unstyled related-items-list tree-root gl-p-0"
     :move="onMove"
     data-testid="tree-root"
     @start="handleDragOnStart"
@@ -101,9 +101,10 @@ export default {
       :key="item.id"
       :parent-item="parentItem"
       :item="item"
-      class="gl-border-t-1 gl-border-t-gray-100 !gl-pt-3 gl-border-t-solid"
+      class="gl-border-t-1 gl-border-t-gray-100 !gl-pt-3 gl-pl-3 gl-pr-4 gl-border-t-solid"
+      :class="{}"
     />
-    <li v-if="hasMoreChildren" class="tree-item list-item pt-0 pb-0 justify-content-center gl-flex">
+    <li v-if="hasMoreChildren" class="tree-item list-item justify-content-center gl-flex gl-py-0">
       <gl-button
         v-if="!fetchInProgress"
         class="mb-2 gl-inline-block"
@@ -112,7 +113,7 @@ export default {
         @click="handleShowMoreClick($event)"
         >{{ __('Show more') }}</gl-button
       >
-      <gl-loading-icon v-else size="sm" class="mt-1 mb-1" />
+      <gl-loading-icon v-else size="sm" class="gl-mb-5" />
     </li>
   </component>
 </template>
