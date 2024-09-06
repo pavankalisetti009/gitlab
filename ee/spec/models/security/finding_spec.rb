@@ -101,8 +101,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
   describe '.by_state' do
     context 'when the state is `detected`' do
       subject(:findings) {
-        described_class.by_state(:detected).allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+        described_class.by_state(:detected)
       }
 
       before do
@@ -116,8 +115,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
     context 'when the state is `dismissed`' do
       subject {
-        described_class.by_state(:dismissed).allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+        described_class.by_state(:dismissed)
       }
 
       before do
@@ -129,8 +127,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
     context 'when the state is `confirmed`' do
       subject {
-        described_class.by_state(:confirmed).allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+        described_class.by_state(:confirmed)
       }
 
       before do
@@ -142,8 +139,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
 
     context 'when the state is `resolved`' do
       subject {
-        described_class.by_state(:resolved).allow_cross_joins_across_databases(
-          url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+        described_class.by_state(:resolved)
       }
 
       before do
@@ -196,8 +192,7 @@ RSpec.describe Security::Finding, feature_category: :vulnerability_management do
     let(:expected_findings) { [finding_2] }
 
     subject {
-      described_class.undismissed_by_vulnerability.allow_cross_joins_across_databases(
-        url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/478882')
+      described_class.undismissed_by_vulnerability
     }
 
     before do
