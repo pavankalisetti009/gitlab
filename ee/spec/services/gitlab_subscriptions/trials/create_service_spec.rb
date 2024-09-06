@@ -6,6 +6,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
   include TrialHelpers
 
   let_it_be(:user, reload: true) { create(:user) }
+  let_it_be(:organization) { create(:organization, users: [user]) }
   let(:step) { described_class::LEAD }
 
   describe '#execute', :saas do
@@ -31,8 +32,10 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
     context 'when in the create group flow' do
       let(:step) { described_class::TRIAL }
-      let(:extra_params) { { trial_entity: '_entity_' } }
-      let(:trial_params) { { new_group_name: 'gitlab', namespace_id: '0' }.merge(extra_params) }
+      let(:extra_params) { { trial_entity: '_entity_', organization_id: organization.id } }
+      let(:trial_params) do
+        { new_group_name: 'gitlab', namespace_id: '0' }.merge(extra_params)
+      end
 
       context 'when group is successfully created' do
         context 'when trial creation is successful' do
@@ -94,7 +97,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
 
       context 'when group creation had an error' do
         context 'when there are invalid characters used' do
-          let(:trial_params) { { new_group_name: ' _invalid_ ', namespace_id: '0' } }
+          let(:trial_params) { { new_group_name: ' _invalid_ ', namespace_id: '0', organization_id: organization.id } }
 
           it 'returns namespace_create_failed' do
             expect(apply_trial_service_class).not_to receive(:new)
@@ -108,7 +111,7 @@ RSpec.describe GitlabSubscriptions::Trials::CreateService, feature_category: :pl
         end
 
         context 'when name is entered with blank spaces' do
-          let(:trial_params) { { new_group_name: '  ', namespace_id: '0' } }
+          let(:trial_params) { { new_group_name: '  ', namespace_id: '0', organization_id: organization.id } }
 
           it 'returns namespace_create_failed' do
             expect(apply_trial_service_class).not_to receive(:new)
