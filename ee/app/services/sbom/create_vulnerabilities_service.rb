@@ -5,8 +5,6 @@ module Sbom
     include Gitlab::Utils::StrongMemoize
     include Gitlab::VulnerabilityScanning::AdvisoryUtils
 
-    BATCH_SIZE = 1000
-
     def self.execute(pipeline_id)
       new(pipeline_id).execute
     end
@@ -19,7 +17,7 @@ module Sbom
       valid_sbom_reports.each do |sbom_report|
         next unless sbom_report.source.present?
 
-        sbom_report.components.each_slice(BATCH_SIZE) do |occurrence_batch|
+        sbom_report.components.each_slice(::Security::IngestionConstants::COMPONENTS_BATCH_SIZE) do |occurrence_batch|
           affected_packages(occurrence_batch).each_batch do |affected_package_batch|
             finding_maps = affected_package_batch.filter_map do |affected_package|
               # We need to match every affected package to one occurrence

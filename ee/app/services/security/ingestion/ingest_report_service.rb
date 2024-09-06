@@ -7,7 +7,6 @@ module Security
     #
     # Returns the ingested vulnerability IDs for each batch.
     class IngestReportService
-      BATCH_SIZE = 50
       INGESTION_ERROR = {
         type: 'IngestionError',
         message: 'Ingestion failed for some vulnerabilities'
@@ -23,7 +22,7 @@ module Security
       end
 
       def execute
-        finding_map_collection.each_slice(BATCH_SIZE)
+        finding_map_collection.each_slice(Security::IngestionConstants::COMPONENTS_BATCH_SIZE)
           .flat_map { |slice| ingest_slice(slice) }
       end
 
