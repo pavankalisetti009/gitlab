@@ -363,6 +363,8 @@ RSpec.describe Users::RegistrationsIdentityVerificationController, :clean_gitlab
       mock_arkose_token_verification(success: true)
     end
 
+    it { is_expected.to have_request_urgency(:low) }
+
     describe 'before action hooks' do
       before do
         mock_send_phone_number_verification_code(success: true)
