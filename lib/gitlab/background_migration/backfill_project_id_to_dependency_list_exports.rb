@@ -16,18 +16,30 @@ module Gitlab
       end
 
       def perform
-        each_sub_batch do |exports|
-          pipelines = Pipeline.id_in(exports.pluck(:pipeline_id))
+        distinct_each_batch do |exports|
+          pipelines = Pipeline.id_in(exports.map(&:pipeline_id))
 
-          tuples_to_update = pipelines.map do |pipeline|
-            [pipeline.id, pipeline.project_id]
+          export_ids_missing_pipelines = []
+
+          tuples_to_update = exports.map do |export|
+            pipeline = pipelines.find { |pipeline| pipeline.id == export.pipeline_id }
+
+            if pipeline.blank?
+              exports_missing_pipelines.push(export.id)
+              next
+            end
+
+            [export.id, pipeline.project_id]
           end
 
+          DependencyListExport.id_in(export_ids_missing_pipelines).delete_all
           bulk_update!(tuples_to_update)
         end
       end
 
       def bulk_update!(tuples)
+        return if tuples.blank?
+
         values_sql = Arel::Nodes::ValuesList.new(tuples).to_sql
 
         sql = <<~SQL
@@ -36,9 +48,9 @@ module Gitlab
           SET
             project_id = tuples.project_id
           FROM
-            (#{values_sql}) AS tuples(pipeline_id, project_id)
+            (#{values_sql}) AS tuples(export_id, project_id)
           WHERE
-            dependency_list_exports.pipeline_id = tuples.pipeline_id;
+            dependency_list_exports.id = tuples.export_id;
         SQL
 
         DependencyListExport.connection.execute(sql)

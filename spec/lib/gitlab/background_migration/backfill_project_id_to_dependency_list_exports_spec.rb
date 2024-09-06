@@ -29,11 +29,13 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToDependencyListExp
   context 'when export is missing project_id' do
     let!(:export) { dependency_list_exports.create!(pipeline_id: pipeline.id) }
     let!(:other_pipeline) { create_ci_pipeline('pipeline-2') }
-    let!(:other_export) { dependency_list_exports.create!(pipeline_id: other_pipeline.id) }
+    let!(:export_on_same_pipeline) { dependency_list_exports.create!(pipeline_id: pipeline.id) }
+    let!(:export_on_different_pipeline) { dependency_list_exports.create!(pipeline_id: other_pipeline.id) }
 
     it 'sets the project_id to build.project_id' do
       expect { perform_migration }.to change { export.reload.project_id }.from(nil).to(pipeline.project_id)
-        .and change { other_export.reload.project_id }.from(nil).to(other_pipeline.project_id)
+        .and change { export_on_same_pipeline.reload.project_id }.from(nil).to(pipeline.project_id)
+        .and change { export_on_different_pipeline.reload.project_id }.from(nil).to(other_pipeline.project_id)
     end
   end
 
