@@ -19,7 +19,6 @@ module EE
 
       before_action do
         push_licensed_feature(:remote_development)
-        push_frontend_feature_flag(:ai_settings_vue_project, project)
       end
 
       feature_category :groups_and_projects, [:restore]
