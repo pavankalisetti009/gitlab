@@ -79,6 +79,10 @@ export default {
       required: true,
       type: String,
     },
+    tracingIndexUrl: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
@@ -88,6 +92,7 @@ export default {
       apiAbortController: null,
       loading: false,
       queryCancelled: false,
+      selectedDatapoints: [],
     };
   },
   computed: {
@@ -232,6 +237,9 @@ export default {
     getChartComponent() {
       return this.isHistogram ? MetricsHeatMap : MetricsLineChart;
     },
+    onChartSelected(datapoints) {
+      this.selectedDatapoints = datapoints;
+    },
   },
   EMPTY_CHART_SVG,
   relatedIssuesHelpPath: helpPagePath('/operations/metrics', {
@@ -302,6 +310,7 @@ export default {
             :loading="loading"
             :cancelled="queryCancelled"
             data-testid="metric-chart"
+            @selected="onChartSelected"
           />
 
           <gl-empty-state v-else :svg-path="$options.EMPTY_CHART_SVG">
@@ -323,6 +332,12 @@ export default {
               </p>
             </template>
           </gl-empty-state>
+
+          <!-- TODO add related-traces widget https://gitlab.com/gitlab-org/opstrace/opstrace/-/work_items/2943 -->
+          <!-- <related-traces
+            :metric-datapoints="selectedDatapoints"
+            :tracing-index-url="tracingIndexUrl"
+          /> -->
 
           <related-issue
             :id="$options.relatedIssuesId"

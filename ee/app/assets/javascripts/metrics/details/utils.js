@@ -1,6 +1,7 @@
 import { CUSTOM_DATE_RANGE_OPTION } from '~/observability/constants';
 import { periodToDateRange, createIssueUrlWithDetails } from '~/observability/utils';
-import { mergeUrlParams } from '~/lib/utils/url_utility';
+import { mergeUrlParams, setUrlParams, getNormalizedURL } from '~/lib/utils/url_utility';
+import { tracingListQueryFromAttributes } from 'ee/tracing/list/filter_bar/filters';
 import { filterObjToQuery } from './filters';
 
 export function createIssueUrlWithMetricDetails({
@@ -29,4 +30,23 @@ export function createIssueUrlWithMetricDetails({
   };
 
   return createIssueUrlWithDetails(createIssueUrl, metricsDetails, 'observability_metric_details');
+}
+
+export function viewTracesUrlWithMetric(tracingIndexUrl, { traceIds, timestamp }) {
+  const INTERVAL_AROUND_TIMESTAMP = 6 * 60 * 60 * 1000; // 6hrs;
+  return setUrlParams(
+    tracingListQueryFromAttributes({
+      traceIds,
+      ...(Number.isFinite(timestamp)
+        ? {
+            startTimestamp: timestamp - INTERVAL_AROUND_TIMESTAMP,
+            endTimestamp: timestamp + INTERVAL_AROUND_TIMESTAMP,
+          }
+        : {}),
+    }),
+    getNormalizedURL(tracingIndexUrl),
+    true, // clearParams
+    true, // railsArraySyntax
+    true, // decodeParams
+  );
 }

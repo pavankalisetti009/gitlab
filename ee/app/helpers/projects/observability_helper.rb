@@ -12,6 +12,7 @@ module Projects
         model[:metricType] = metric_type
         model[:metricsIndexUrl] = namespace_project_metrics_path(project.group, project)
         model[:createIssueUrl] = new_namespace_project_issue_path(project.group, project)
+        model[:tracingIndexUrl] = namespace_project_tracing_index_path(project.group, project)
       end
     end
 

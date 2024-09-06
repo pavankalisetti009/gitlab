@@ -3,6 +3,7 @@ import {
   filterObjToQuery,
   filterObjToFilterToken,
   filterTokensToFilterObj,
+  tracingListQueryFromAttributes,
 } from 'ee/tracing/list/filter_bar/filters';
 
 describe('utils', () => {
@@ -119,6 +120,23 @@ describe('utils', () => {
   describe('filterTokensToFilterObj', () => {
     it('should convert filter tokens to filter object', () => {
       expect(filterTokensToFilterObj(attributesFilterTokens)).toEqual(filterObj.attributes);
+    });
+  });
+});
+
+describe('tracingListQueryFromAttributes', () => {
+  it('returns the query object from attributes', () => {
+    expect(
+      tracingListQueryFromAttributes({
+        traceIds: ['a', 'b'],
+        startTimestamp: new Date('2024-08-04').getTime(),
+        endTimestamp: new Date('2024-08-05').getTime(),
+      }),
+    ).toMatchObject({
+      date_end: '2024-08-05T00:00:00.000Z',
+      date_start: '2024-08-04T00:00:00.000Z',
+      date_range: 'custom',
+      trace_id: ['a', 'b'],
     });
   });
 });

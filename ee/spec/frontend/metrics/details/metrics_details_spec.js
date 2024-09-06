@@ -36,6 +36,7 @@ describe('MetricsDetails', () => {
   const metricType = 'Sum';
   const metricsIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/metrics';
   const createIssueUrl = 'https://www.gitlab.com/flightjs/Flight/-/issues/new';
+  const tracingIndexUrl = 'https://www.gitlab.com/flightjs/Flight/-/tracing';
   const projectFullPath = 'test/project';
 
   const findLoadingIcon = () => wrapper.findComponent(GlLoadingIcon);
@@ -65,6 +66,7 @@ describe('MetricsDetails', () => {
     metricsIndexUrl,
     createIssueUrl,
     projectFullPath,
+    tracingIndexUrl,
   };
 
   const showToast = jest.fn();

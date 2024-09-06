@@ -4,6 +4,8 @@ import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime_utility';
 import { SHORT_DATE_TIME_FORMAT } from '~/observability/constants';
 
+const SYMBOL_SIZE_DEFAULT = 5;
+const SYMBOL_SIZE_HIGHLIGHTED = 10;
 export default {
   components: {
     GlLineChart,
@@ -44,12 +46,17 @@ export default {
           value[0] / 1e6,
           parseFloat(value[1]),
           { ...metric.attributes },
+          { traceIds: value[2] || [] },
         ]);
+        const hasTraces = (datapointData) => datapointData[3]?.traceIds?.length > 0;
+
         return {
           name: Object.entries(metric.attributes)
             .map(([k, v]) => `${k}: ${v}`)
             .join(', '),
           data,
+          // https://echarts.apache.org/en/option.html#series-line.symbolSize
+          symbolSize: (_, p) => (hasTraces(p.data) ? SYMBOL_SIZE_HIGHLIGHTED : SYMBOL_SIZE_DEFAULT),
         };
       });
     },
@@ -96,6 +103,31 @@ export default {
         };
       });
     },
+    chartItemClicked({ chart, params: { data } }) {
+      const xValue = data[0];
+      const visibleSeriesIndices = chart.getModel().getCurrentSeriesIndices();
+      const datapoints =
+        chart
+          .getModel()
+          .getSeries()
+          .filter((_, index) => visibleSeriesIndices.includes(index))
+          .map((series) => {
+            const datapoint = series.option.data.find((point) => point[0] === xValue);
+            if (datapoint) {
+              return {
+                seriesName: series.name,
+                color: series.option.itemStyle.color,
+                timestamp: datapoint[0],
+                value: datapoint[1],
+                traceIds: datapoint[3]?.traceIds || [],
+              };
+            }
+            return undefined;
+          })
+          .filter(Boolean) || [];
+
+      this.$emit('selected', datapoints);
+    },
   },
 };
 </script>
@@ -109,6 +141,7 @@ export default {
       :data="chartData"
       responsive
       :format-tooltip-text="formatTooltipText"
+      @chartItemClicked="chartItemClicked"
     >
       <template #tooltip-title>
         <div data-testid="metric-tooltip-title">{{ tooltipTitle }}</div>
