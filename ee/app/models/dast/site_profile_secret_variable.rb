@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Dast
-  class SiteProfileSecretVariable < ApplicationRecord
+  class SiteProfileSecretVariable < Gitlab::Database::SecApplicationRecord
     REQUEST_HEADERS = 'DAST_REQUEST_HEADERS_BASE64'
     API_REQUEST_HEADERS = 'DAST_API_REQUEST_HEADERS_BASE64'
     PASSWORD = 'DAST_PASSWORD_BASE64'
