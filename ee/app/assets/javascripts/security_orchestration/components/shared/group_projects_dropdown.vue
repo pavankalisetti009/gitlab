@@ -1,26 +1,22 @@
 <script>
-import { GlCollapsibleListbox, GlTruncate } from '@gitlab/ui';
 import { debounce, uniqBy, get } from 'lodash';
 import produce from 'immer';
 import { __ } from '~/locale';
-import { renderMultiSelectText } from 'ee/security_orchestration/components/policy_editor/utils';
 import getGroups from 'ee/security_orchestration/graphql/queries/get_groups_for_policies.query.graphql';
 import getGroupProjects from 'ee/security_orchestration/graphql/queries/get_group_projects.query.graphql';
 import getProjects from 'ee/security_orchestration/graphql/queries/get_projects.query.graphql';
 import { searchInItemsProperties } from '~/lib/utils/search_utils';
 import { DEFAULT_DEBOUNCE_AND_THROTTLE_MS } from '~/lib/utils/constants';
+import BaseItemsDropdown from './base_items_dropdown.vue';
 
 export default {
   i18n: {
     projectDropdownHeader: __('Select projects'),
     groupDropdownHeader: __('Select groups'),
-    selectAllLabel: __('Select all'),
-    clearAllLabel: __('Clear all'),
   },
   name: 'GroupProjectsDropdown',
   components: {
-    GlCollapsibleListbox,
-    GlTruncate,
+    BaseItemsDropdown,
   },
   apollo: {
     groups: {
@@ -147,13 +143,13 @@ export default {
     items() {
       return this.groupsOnly ? this.groups : this.filteredProjects;
     },
+    itemTypeName() {
+      return this.isGroup ? __('groups') : __('projects');
+    },
     headerText() {
       return this.groupsOnly
         ? this.$options.i18n.groupDropdownHeader
         : this.$options.i18n.projectDropdownHeader;
-    },
-    formattedSelectedIds() {
-      return this.multiple ? this.selected : [this.selected];
     },
     existingFormattedSelectedIds() {
       if (this.multiple) {
@@ -161,14 +157,6 @@ export default {
       }
 
       return this.selected;
-    },
-    dropdownPlaceholder() {
-      return renderMultiSelectText({
-        selected: this.formattedSelectedIds,
-        items: this.labelItems,
-        itemTypeName: this.groupsOnly ? __('groups') : __('projects'),
-        useAllSelected: !this.hasNextPage,
-      });
     },
     loading() {
       return this.itemsQuery.loading;
@@ -182,12 +170,6 @@ export default {
     hasNextPage() {
       return this.pageInfo.hasNextPage;
     },
-    labelItems() {
-      return this.items?.reduce((acc, { id, name }) => {
-        acc[id] = name;
-        return acc;
-      }, {});
-    },
     listBoxItems() {
       const items = this.items.map(({ id, fullPath, name }) => ({
         text: name,
@@ -198,9 +180,6 @@ export default {
     },
     itemsIds() {
       return this.items.map(({ id }) => id);
-    },
-    resetButtonLabel() {
-      return this.multiple ? this.$options.i18n.clearAllLabel : '';
     },
     category() {
       return this.state ? 'primary' : 'secondary';
@@ -262,39 +241,23 @@ export default {
 </script>
 
 <template>
-  <gl-collapsible-listbox
-    block
-    is-check-centered
-    searchable
-    fluid-width
+  <base-items-dropdown
     :category="category"
     :variant="variant"
     :disabled="disabled"
     :multiple="multiple"
     :loading="loading"
     :header-text="headerText"
+    :items="listBoxItems"
     :infinite-scroll="hasNextPage"
-    :infinite-scroll-loading="loading"
-    :reset-button-label="resetButtonLabel"
-    :show-select-all-button-label="$options.i18n.selectAllLabel"
     :searching="searching"
     :selected="existingFormattedSelectedIds"
     :placement="placement"
-    :items="listBoxItems"
-    :toggle-text="dropdownPlaceholder"
+    :item-type-name="itemTypeName"
     @bottom-reached="fetchMoreItems"
     @search="debouncedSearch"
     @reset="selectItems([])"
     @select="selectItems"
-    @select-all="selectItems(itemsIds)"
-  >
-    <template #list-item="{ item }">
-      <span :class="['gl-block', { 'gl-font-bold': item.fullPath }]">
-        <gl-truncate :text="item.text" with-tooltip />
-      </span>
-      <span v-if="item.fullPath" class="gl-mt-1 gl-block gl-text-sm gl-text-gray-700">
-        <gl-truncate position="middle" :text="item.fullPath" with-tooltip />
-      </span>
-    </template>
-  </gl-collapsible-listbox>
+    @select-all="selectItems"
+  />
 </template>

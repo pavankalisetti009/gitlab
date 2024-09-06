@@ -1,6 +1,14 @@
 import { convertToGraphQLId } from '~/graphql_shared/utils';
 import { TYPE_COMPLIANCE_FRAMEWORK } from '~/graphql_shared/constants';
 
+export const defaultPageInfo = {
+  __typename: 'PageInfo',
+  hasNextPage: false,
+  hasPreviousPage: false,
+  startCursor: null,
+  endCursor: null,
+};
+
 const mockPolicyResponse = ({ nodes = [], namespaceType, policyType }) =>
   jest.fn().mockResolvedValue({
     data: {
@@ -115,16 +123,22 @@ export const complianceFrameworksResponse = [
   },
 ];
 
-export const mockLinkedSppItemsResponse = ({ projects = [], namespaces = [] } = {}) =>
+export const mockLinkedSppItemsResponse = ({ projects = [], namespaces = [], groups = [] } = {}) =>
   jest.fn().mockResolvedValue({
     data: {
       project: {
         id: '1',
         securityPolicyProjectLinkedProjects: {
           nodes: projects,
+          pageInfo: { ...defaultPageInfo },
         },
         securityPolicyProjectLinkedNamespaces: {
           nodes: namespaces,
+          pageInfo: { ...defaultPageInfo },
+        },
+        securityPolicyProjectLinkedGroups: {
+          nodes: groups,
+          pageInfo: { ...defaultPageInfo },
         },
       },
     },

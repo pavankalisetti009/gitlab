@@ -10,7 +10,7 @@ import {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
   EXCEPTION_TYPE_TEXTS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
-import GroupProjectsDropdown from 'ee/security_orchestration/components/group_projects_dropdown.vue';
+import GroupProjectsDropdown from 'ee/security_orchestration/components/shared/group_projects_dropdown.vue';
 import { convertToGraphQLId, getIdFromGraphQLId } from '~/graphql_shared/utils';
 import { TYPENAME_PROJECT } from '~/graphql_shared/constants';
 

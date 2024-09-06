@@ -134,12 +134,12 @@ describe('ComplianceFrameworks', () => {
             ...defaultHandlers,
             sppLinkedItemsHandler: createSppLinkedItemsHandler({
               projects: [
-                { id: '1', name: 'name1' },
-                { id: '2', name: 'name2 ' },
+                { id: '1', name: 'name1', fullPath: 'fullPath1' },
+                { id: '2', name: 'name2', fullPath: 'fullPath2' },
               ],
               namespaces: [
-                { id: '1', name: 'name1' },
-                { id: '2', name: 'name2 ' },
+                { id: '1', name: 'name1', fullPath: 'fullPath1' },
+                { id: '2', name: 'name2', fullPath: 'fullPath2' },
               ],
             }),
           },

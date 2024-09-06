@@ -12,7 +12,7 @@ import {
   EXCEPTION_TYPE_LISTBOX_ITEMS,
 } from 'ee/security_orchestration/components/policy_editor/scope/constants';
 import PolicyPopover from 'ee/security_orchestration/components/policy_popover.vue';
-import GroupProjectsDropdown from '../../group_projects_dropdown.vue';
+import GroupProjectsDropdown from '../../shared/group_projects_dropdown.vue';
 
 export default {
   EXCEPTION_TYPE_LISTBOX_ITEMS,

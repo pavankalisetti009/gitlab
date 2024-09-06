@@ -72,9 +72,11 @@ export const createSppLinkedItemsHandler = ({ projects = [], namespaces = [] } =
         id: '1',
         securityPolicyProjectLinkedProjects: {
           nodes: projects,
+          pageInfo: mockPageInfo(),
         },
         securityPolicyProjectLinkedNamespaces: {
           nodes: namespaces,
+          pageInfo: mockPageInfo(),
         },
       },
     },
