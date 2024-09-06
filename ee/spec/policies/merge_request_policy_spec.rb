@@ -259,7 +259,7 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
       :owner      | false  | false
       :admin      | false  | false
       :guest      | true   | false
-      :reporter   | true   | false
+      :reporter   | true   | ref(:allowed_for_reporter)
       :developer  | true   | true
       :maintainer | true   | true
       :owner      | true   | true
@@ -280,12 +280,21 @@ RSpec.describe MergeRequestPolicy, :aggregate_failures, feature_category: :code_
 
   describe 'retry_failed_status_checks' do
     let(:policy) { :retry_failed_status_checks }
+    let(:allowed_for_reporter) { false }
+
+    it_behaves_like 'external_status_check_access'
+  end
+
+  describe 'read_external_status_check_response' do
+    let(:policy) { :read_external_status_check_response }
+    let(:allowed_for_reporter) { true }
 
     it_behaves_like 'external_status_check_access'
   end
 
   describe 'provide_status_check_response' do
     let(:policy) { :provide_status_check_response }
+    let(:allowed_for_reporter) { false }
 
     it_behaves_like 'external_status_check_access'
   end
