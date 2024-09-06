@@ -3,7 +3,10 @@ import { GlFormCheckbox } from '@gitlab/ui';
 import { shallowMountExtended } from 'helpers/vue_test_utils_helper';
 import RuleDrawer from '~/projects/settings/branch_rules/components/view/rule_drawer.vue';
 import ItemsSelector from 'ee_component/projects/settings/branch_rules/components/view/items_selector.vue';
-import { allowedToMergeDrawerProps } from 'ee_else_ce_jest/projects/settings/branch_rules/components/view/mock_data';
+import {
+  allowedToMergeDrawerProps,
+  allowedToPushDrawerProps,
+} from 'ee_else_ce_jest/projects/settings/branch_rules/components/view/mock_data';
 
 describe('Edit Rule Drawer', () => {
   let wrapper;
@@ -15,6 +18,7 @@ describe('Edit Rule Drawer', () => {
   const findNoOneCheckbox = () => findCheckboxes().at(3);
   const findUsersSelector = () => wrapper.findByTestId('users-selector');
   const findGroupsSelector = () => wrapper.findByTestId('groups-selector');
+  const findDeployKeysSelector = () => wrapper.findByTestId('deploy-keys-selector');
   const findSaveButton = () => wrapper.findByText('Save changes');
 
   const createComponent = (props = allowedToMergeDrawerProps) => {
@@ -50,7 +54,7 @@ describe('Edit Rule Drawer', () => {
     });
   });
 
-  it('Renders Item Selector with users', () => {
+  it('renders Item Selector with users', () => {
     expect(findUsersSelector().props('items')).toMatchObject([
       {
         __typename: 'UserCore',
@@ -63,8 +67,22 @@ describe('Edit Rule Drawer', () => {
     ]);
   });
 
-  it('Renders Item Selector with groups scoped to the project and without namespace dropdown', () => {
+  it('renders Item Selector with groups scoped to the project and without namespace dropdown', () => {
     expect(findGroupsSelector().props('items')).toMatchObject([]);
+  });
+
+  it('renders Item Selector with deploy keys', () => {
+    createComponent(allowedToPushDrawerProps);
+
+    expect(findDeployKeysSelector().props('items')).toMatchObject([
+      {
+        id: 123123,
+        title: 'Deploy key 1',
+        user: {
+          name: 'User 1',
+        },
+      },
+    ]);
   });
 
   it('enables the save button when users or groups are selected', async () => {
