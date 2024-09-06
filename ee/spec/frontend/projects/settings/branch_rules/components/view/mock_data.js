@@ -42,6 +42,16 @@ export const groupsMock = [{ name: 'test_group_1' }, { name: 'test_group_2' }];
 
 const accessLevelsMock = [40];
 
+const deployKeysMock = [
+  {
+    id: '123123',
+    title: 'Deploy key 1',
+    user: {
+      name: 'User 1',
+    },
+  },
+];
+
 const approvalsRequired = 3;
 
 export const approvalRulesMock = [
@@ -451,4 +461,5 @@ export const allowedToPushDrawerProps = {
   title: 'Edit allowed to merge',
   roles: accessLevelsMock,
   users: [pushAccessLevelEdges[0].node.user],
+  deployKeys: deployKeysMock,
 };
