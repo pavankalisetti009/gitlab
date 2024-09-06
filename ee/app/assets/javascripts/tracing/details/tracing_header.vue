@@ -114,7 +114,7 @@ export default {
             :issues-total="issues.length"
             :loading="fetchingIssues"
             :error="error"
-            :anchor-id="`#${relatedIssuesId}`"
+            :anchor-id="relatedIssuesId"
           />
           <gl-button :title="$options.i18n.logsButtonTitle" :href="viewLogsUrl">{{
             $options.i18n.logsButtonTitle

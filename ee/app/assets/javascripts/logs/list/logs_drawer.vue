@@ -1,5 +1,6 @@
 <script>
 import { GlDrawer, GlLink, GlButton } from '@gitlab/ui';
+import { uniqueId } from 'lodash';
 import { s__, __ } from '~/locale';
 import { DRAWER_Z_INDEX } from '~/lib/utils/constants';
 import { getContentWrapperHeight } from '~/lib/utils/dom_utils';
@@ -7,6 +8,7 @@ import { formatDate } from '~/lib/utils/datetime/date_format_utility';
 import { FULL_DATE_TIME_FORMAT } from '~/observability/constants';
 import RelatedIssue from '~/observability/components/observability_related_issues.vue';
 import { helpPagePath } from '~/helpers/help_page_helper';
+import RelatedIssuesBadge from '~/observability/components/related_issues_badge.vue';
 import { createIssueUrlWithLogDetails } from '../utils';
 import RelatedIssuesProvider from './related_issues/related_issues_provider.vue';
 
@@ -23,6 +25,7 @@ export default {
     GlButton,
     RelatedIssuesProvider,
     RelatedIssue,
+    RelatedIssuesBadge,
   },
   i18n: {
     logDetailsTitle: s__('ObservabilityLogs|Metadata'),
@@ -113,6 +116,8 @@ export default {
   relatedIssuesHelpPath: helpPagePath('/operations/logs', {
     anchor: 'create-an-issue-for-a-log',
   }),
+  relatedIssuesId: uniqueId('related-issues-'),
+  logDrawerId: uniqueId('log-drawer-'),
 };
 </script>
 
@@ -120,6 +125,7 @@ export default {
   <related-issues-provider :log="log" :project-full-path="projectFullPath">
     <template #default="{ issues, loading: fetchingIssues, error }">
       <gl-drawer
+        :id="$options.logDrawerId"
         :open="open"
         :z-index="$options.DRAWER_Z_INDEX"
         :header-height="drawerHeaderHeight"
@@ -129,9 +135,21 @@ export default {
         <template #title>
           <div data-testid="drawer-title">
             <h2 class="gl-mt-0 gl-text-size-h2">{{ title }}</h2>
-            <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
+            <gl-button
+              class="gl-mr-2"
+              category="primary"
+              variant="confirm"
+              :href="createIssueUrlWithQuery"
+            >
               {{ $options.i18n.createIssueTitle }}
             </gl-button>
+            <related-issues-badge
+              :issues-total="issues.length"
+              :loading="fetchingIssues"
+              :error="error"
+              :anchor-id="$options.relatedIssuesId"
+              :parent-scrolling-id="$options.logDrawerId"
+            />
           </div>
         </template>
 
@@ -163,6 +181,7 @@ export default {
             </div>
           </div>
           <related-issue
+            :id="$options.relatedIssuesId"
             class="!gl-pt-0"
             :issues="issues"
             :fetching-issues="fetchingIssues"

@@ -262,7 +262,7 @@ export default {
                 :issues-total="issues.length"
                 :loading="fetchingIssues"
                 :error="error"
-                :anchor-id="`#${$options.relatedIssuesId}`"
+                :anchor-id="$options.relatedIssuesId"
               />
               <gl-button category="primary" variant="confirm" :href="createIssueUrlWithQuery">
                 {{ $options.i18n.createIssueTitle }}
