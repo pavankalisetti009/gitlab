@@ -78,6 +78,11 @@ export default {
       type: Boolean,
       required: true,
     },
+    isPushAccessLevels: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -207,6 +212,7 @@ export default {
           @change="handleRuleDataUpdate('updatedGroups', $event)"
         />
         <items-selector
+          v-if="isPushAccessLevels"
           :type="$options.DEPLOY_KEYS_TYPE"
           :items="formatItemsIds(deployKeys)"
           data-testid="deploy-keys-selector"
