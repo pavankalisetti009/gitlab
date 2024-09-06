@@ -14,7 +14,8 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
       stub_licensed_features(
         external_status_checks: true,
         merge_request_approvers: true,
-        code_owner_approval_required: true
+        code_owner_approval_required: true,
+        protected_refs_for_users: true
       )
     end
 
@@ -30,6 +31,7 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
         show_status_checks: 'true',
         show_approvers: 'true',
         show_code_owners: 'true',
+        show_enterprise_access_levels: 'true',
         allow_multi_rule: 'false',
         can_edit: 'false',
         project_id: project.id,
@@ -43,7 +45,8 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
         stub_licensed_features(
           external_status_checks: false,
           merge_request_approvers: false,
-          code_owner_approval_required: false
+          code_owner_approval_required: false,
+          protected_refs_for_users: false
         )
       end
 
@@ -51,7 +54,8 @@ RSpec.describe Projects::Settings::BranchRulesHelper, feature_category: :source_
         expect(data).to include({
           show_status_checks: 'false',
           show_approvers: 'false',
-          show_code_owners: 'false'
+          show_code_owners: 'false',
+          show_enterprise_access_levels: 'false'
         })
       end
     end
