@@ -26,7 +26,7 @@ describe('MetricsHeatmap', () => {
             ],
             [
               ['1707098160000000000', '2.345'],
-              ['1707098220000000000', '4.345'],
+              ['1707098220000000000', '4.345', ['trace-1', 'trace-2']],
               ['1707098280000000000', '5.345'],
             ],
           ],
@@ -89,6 +89,29 @@ describe('MetricsHeatmap', () => {
     expect(findHeatmap().props('option')).toEqual({
       tooltip: {},
       xAxis: { axisPointer: { show: false } },
+    });
+  });
+
+  describe('chartItemClicked', () => {
+    it('emits selected with the correct params', () => {
+      const timeIndex = 1;
+      const bucketIndex = 2;
+      const value = 123;
+      findHeatmap().vm.$emit('chartItemClicked', {
+        params: { data: [timeIndex, bucketIndex, value], color: 'color-1' },
+      });
+      expect(wrapper.emitted('selected')).toHaveLength(1);
+      expect(wrapper.emitted('selected')[0]).toEqual([
+        [
+          {
+            color: 'color-1',
+            seriesName: 'B - C',
+            timestamp: 1707098220000,
+            traceIds: ['trace-1', 'trace-2'],
+            value: 123,
+          },
+        ],
+      ]);
     });
   });
 

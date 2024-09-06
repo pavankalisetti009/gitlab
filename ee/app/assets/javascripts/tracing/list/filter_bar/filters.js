@@ -5,8 +5,16 @@ import {
   processFilters,
 } from '~/vue_shared/components/filtered_search_bar/filtered_search_utils';
 import { FILTERED_SEARCH_TERM } from '~/vue_shared/components/filtered_search_bar/constants';
-import { TIME_RANGE_OPTIONS_VALUES, TIME_RANGE_OPTIONS } from '~/observability/constants';
-import { dateFilterObjToQuery, queryToDateFilterObj } from '~/observability/utils';
+import {
+  TIME_RANGE_OPTIONS_VALUES,
+  TIME_RANGE_OPTIONS,
+  CUSTOM_DATE_RANGE_OPTION,
+} from '~/observability/constants';
+import {
+  dateFilterObjToQuery,
+  queryToDateFilterObj,
+  validatedDateRangeQuery,
+} from '~/observability/utils';
 import { queryToObject } from '~/lib/utils/url_utility';
 
 export const SERVICE_NAME_FILTER_TOKEN_TYPE = 'service-name';
@@ -138,4 +146,13 @@ export function filterTokensToFilterObj(tokens) {
     search,
     status,
   };
+}
+
+export function tracingListQueryFromAttributes({ startTimestamp, endTimestamp, traceIds = [] }) {
+  return filterObjToQuery({
+    attributes: {
+      traceId: traceIds.map((traceId) => ({ value: traceId, operator: '=' })),
+    },
+    dateRange: validatedDateRangeQuery(CUSTOM_DATE_RANGE_OPTION, startTimestamp, endTimestamp),
+  });
 }

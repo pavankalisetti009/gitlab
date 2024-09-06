@@ -3,6 +3,8 @@ import { GlHeatmap } from '@gitlab/ui/dist/charts';
 import { s__ } from '~/locale';
 import { formatDate } from '~/lib/utils/datetime_utility';
 
+// Histogram buckets are in (-Inf, +Inf) interval https://opentelemetry.io/docs/specs/otel/metrics/data-model/#histogram
+const DEFAULT_MIN_BUCKET = '-Inf';
 export default {
   components: {
     GlHeatmap,
@@ -48,7 +50,7 @@ export default {
 
     xAxisLabels() {
       /**
-       * A distribution is represented as a bi-dimensional array, e.g. 
+       * A distribution is represented as a bi-dimensional array, e.g.
        * { distribution: [
             //bucket 0
             [
@@ -86,6 +88,28 @@ export default {
       };
     },
   },
+  methods: {
+    chartItemClicked({ params: { data, color } }) {
+      const [timeIndex, bucketIndex, value] = data;
+      const timestampNano = this.heatmapData.distribution[0]?.[timeIndex]?.[0] || 0;
+      const prevBucket = this.heatmapData.buckets[bucketIndex - 1] || DEFAULT_MIN_BUCKET;
+      const bucket = this.heatmapData.buckets[bucketIndex];
+
+      const datapoint =
+        this.heatmapData.distribution[bucketIndex]?.find(([ts]) => ts === timestampNano) || [];
+      const traceIds = datapoint[2] || [];
+
+      this.$emit('selected', [
+        {
+          timestamp: timestampNano / 1e6,
+          value,
+          traceIds,
+          seriesName: `${prevBucket} - ${bucket}`,
+          color,
+        },
+      ]);
+    },
+  },
 };
 </script>
 
@@ -99,6 +123,7 @@ export default {
       :option="chartOption"
       :show-tooltip="false"
       responsive
+      @chartItemClicked="chartItemClicked"
     />
     <div
       v-if="cancelled"

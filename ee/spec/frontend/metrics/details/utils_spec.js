@@ -1,4 +1,4 @@
-import { createIssueUrlWithMetricDetails } from 'ee/metrics/details/utils';
+import { createIssueUrlWithMetricDetails, viewTracesUrlWithMetric } from 'ee/metrics/details/utils';
 import setWindowLocation from 'helpers/set_window_location_helper';
 import { useFakeDate } from 'helpers/fake_date';
 
@@ -63,5 +63,35 @@ describe('createIssueUrlWithMetricDetails', () => {
         createIssueUrl,
       }),
     ).toBe(expectedUrl);
+  });
+});
+
+describe('viewTracesUrlWithMetric', () => {
+  it('returns the traces index URL with trace-ids filtering and date_range = timestamp +- 6h', () => {
+    expect(
+      viewTracesUrlWithMetric('https://example.com/traces/index', {
+        traceIds: ['test-1', 'test-2'],
+        timestamp: new Date('2024-08-01 11:00:00').getTime(),
+      }),
+    ).toBe(
+      'https://example.com/traces/index?trace_id[]=test-1&trace_id[]=test-2&date_range=custom&date_start=2024-08-01T05:00:00.000Z&date_end=2024-08-01T17:00:00.000Z',
+    );
+  });
+
+  it('handles missing timestamp', () => {
+    expect(
+      viewTracesUrlWithMetric('https://example.com/traces/index', {
+        traceIds: ['test-1', 'test-2'],
+      }),
+    ).toBe('https://example.com/traces/index?trace_id[]=test-1&trace_id[]=test-2&date_range=1h');
+  });
+
+  it('handles invalid timestamp', () => {
+    expect(
+      viewTracesUrlWithMetric('https://example.com/traces/index', {
+        traceIds: ['test-1', 'test-2'],
+        timestamp: '1234',
+      }),
+    ).toBe('https://example.com/traces/index?trace_id[]=test-1&trace_id[]=test-2&date_range=1h');
   });
 });

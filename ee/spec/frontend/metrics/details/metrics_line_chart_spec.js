@@ -11,9 +11,9 @@ describe('MetricsLineChart', () => {
       unit: 's',
       attributes: { foo: 'bar', baz: 'abc' },
       values: [
-        [`${1700118610000 * 1e6}`, '0.25595267476015443'],
-        [`${1700118660000 * 1e6}`, '0.1881374588830907'],
-        [`${1700118720000 * 1e6}`, '0.28915416028993485'],
+        [`${1700118610000 * 1e6}`, '0.25595267476015443', ['trace-1', 'trace-2']],
+        [`${1700118660000 * 1e6}`, '0.1881374588830907', null],
+        [`${1700118720000 * 1e6}`, '0.28915416028993485', []],
       ],
     },
     {
@@ -22,9 +22,9 @@ describe('MetricsLineChart', () => {
       unit: 's',
       attributes: { foo: 'bar', baz: 'def' },
       values: [
-        [`${1700119020000 * 1e6}`, '1.2658100987444416'],
-        [`${1700119080000 * 1e6}`, '3.0604918827864345'],
-        [`${1700119140000 * 1e6}`, '3.0205790879854124'],
+        [`${1700119020000 * 1e6}`, '1.2658100987444416', []],
+        [`${1700119080000 * 1e6}`, '3.0604918827864345', []],
+        [`${1700119140000 * 1e6}`, '3.0205790879854124', []],
       ],
     },
   ];
@@ -60,19 +60,23 @@ describe('MetricsLineChart', () => {
               mockData[0].values[0][0] / 1e6,
               parseFloat(mockData[0].values[0][1]),
               { ...mockData[0].attributes },
+              { traceIds: mockData[0].values[0][2] },
             ],
             [
               mockData[0].values[1][0] / 1e6,
               parseFloat(mockData[0].values[1][1]),
               { ...mockData[0].attributes },
+              { traceIds: [] },
             ],
             [
               mockData[0].values[2][0] / 1e6,
               parseFloat(mockData[0].values[2][1]),
               { ...mockData[0].attributes },
+              { traceIds: mockData[0].values[2][2] },
             ],
           ],
           name: 'foo: bar, baz: abc',
+          symbolSize: expect.any(Function),
         },
         {
           data: [
@@ -80,21 +84,32 @@ describe('MetricsLineChart', () => {
               mockData[1].values[0][0] / 1e6,
               parseFloat(mockData[1].values[0][1]),
               { ...mockData[1].attributes },
+              { traceIds: mockData[1].values[0][2] },
             ],
             [
               mockData[1].values[1][0] / 1e6,
               parseFloat(mockData[1].values[1][1]),
               { ...mockData[1].attributes },
+              { traceIds: mockData[1].values[1][2] },
             ],
             [
               mockData[1].values[2][0] / 1e6,
               parseFloat(mockData[1].values[2][1]),
               { ...mockData[1].attributes },
+              { traceIds: mockData[1].values[2][2] },
             ],
           ],
           name: 'foo: bar, baz: def',
+          symbolSize: expect.any(Function),
         },
       ]);
+    });
+
+    it('sets the symbol size depending on whethe traceIds is empty', () => {
+      const { symbolSize } = findChart().props('data')[0];
+      const mockSymbolSize = (traceIds) => symbolSize(null, { data: [0, 0, {}, { traceIds }] });
+      expect(mockSymbolSize(['a'])).toBe(10);
+      expect(mockSymbolSize([])).toBe(5);
     });
   });
 
@@ -107,6 +122,82 @@ describe('MetricsLineChart', () => {
       const data = [{ ...mockData[0], unit: '' }];
       mountComponent({ data });
       expect(findChart().props('option').yAxis.name).toBe('Value');
+    });
+  });
+
+  describe('chartItemClicked', () => {
+    const chartItemClicked = ({ series, timestamp, activeSeriesIndexes }) =>
+      findChart().vm.$emit('chartItemClicked', {
+        chart: {
+          getModel: () => ({
+            getSeries: () => series,
+            getCurrentSeriesIndices: () => activeSeriesIndexes ?? series.map((_, i) => i),
+          }),
+        },
+        params: { data: [timestamp] },
+      });
+
+    const mockSeries = (color, name, data) => ({
+      option: { data, itemStyle: { color } },
+      name,
+    });
+
+    it('emits selected event with the correct params', async () => {
+      await chartItemClicked({
+        series: [
+          mockSeries('color-1', 'series-1', [
+            [1234, 'val-1', {}, { traceIds: ['trace-1'] }],
+            [5678, 'val-2', {}, { traceIds: ['trace-2'] }],
+          ]),
+          mockSeries('color-0', 'series-0', [
+            [1234, 'val-3', {}, { traceIds: ['trace-3'] }],
+            [5678, 'val-4', {}, { traceIds: ['trace-4'] }],
+          ]),
+        ],
+        timestamp: 1234,
+      });
+      expect(wrapper.emitted('selected')).toHaveLength(1);
+      expect(wrapper.emitted('selected')[0]).toEqual([
+        [
+          {
+            color: 'color-1',
+            seriesName: 'series-1',
+            timestamp: 1234,
+            traceIds: ['trace-1'],
+            value: 'val-1',
+          },
+          {
+            color: 'color-0',
+            seriesName: 'series-0',
+            timestamp: 1234,
+            traceIds: ['trace-3'],
+            value: 'val-3',
+          },
+        ],
+      ]);
+    });
+
+    it('does not return data points from time series that are not active', async () => {
+      await chartItemClicked({
+        series: [
+          mockSeries('color-1', 'series-1', [[1234, 'val-1', {}, { traceIds: ['trace-1'] }]]),
+          mockSeries('color-0', 'series-0', [[1234, 'val-3', {}, { traceIds: ['trace-3'] }]]),
+        ],
+        timestamp: 1234,
+        activeSeriesIndexes: [0],
+      });
+      expect(wrapper.emitted('selected')).toHaveLength(1);
+      expect(wrapper.emitted('selected')[0]).toEqual([
+        [
+          {
+            color: 'color-1',
+            seriesName: 'series-1',
+            timestamp: 1234,
+            traceIds: ['trace-1'],
+            value: 'val-1',
+          },
+        ],
+      ]);
     });
   });
 
