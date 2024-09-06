@@ -39,6 +39,38 @@ RSpec.describe Gitlab::BackgroundMigration::BackfillProjectIdToDependencyListExp
     end
   end
 
+  context 'when export pipeline does not exist' do
+    let!(:export) { dependency_list_exports.create!(pipeline_id: non_existing_record_id) }
+
+    it 'deletes the export' do
+      expect { perform_migration }.to change { dependency_list_exports.count }.from(1).to(0)
+    end
+  end
+
+  context 'when export is dangling' do
+    let!(:export) { dependency_list_exports.create!(pipeline_id: pipeline.id, status: 2, updated_at: 1.month.ago) }
+
+    it 'deletes the export' do
+      expect { perform_migration }.to change { dependency_list_exports.count }.from(1).to(0)
+    end
+  end
+
+  context 'when export finished recently' do
+    let!(:export) { dependency_list_exports.create!(pipeline_id: pipeline.id, status: 2, updated_at: 5.minutes.ago) }
+
+    it 'does not delete the export' do
+      expect { perform_migration }.not_to change { dependency_list_exports.count }
+    end
+  end
+
+  context 'when export is not completed' do
+    let!(:export) { dependency_list_exports.create!(pipeline_id: pipeline.id, status: 1, updated_at: 2.hours.ago) }
+
+    it 'does not delete the export' do
+      expect { perform_migration }.not_to change { dependency_list_exports.count }
+    end
+  end
+
   def create_ci_pipeline(name)
     namespace = namespaces.create!(name: "group-#{name}", path: "group-#{name}")
     project_namespace = namespaces.create!(name: "project-#{name}", path: "project-#{name}")
