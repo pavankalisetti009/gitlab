@@ -23,7 +23,8 @@ module EE
             project_id: project.id,
             rules_path: expose_path(api_v4_projects_approval_rules_path(id: project.id)),
             can_edit: can?(current_user, :modify_approvers_rules, project).to_s,
-            allow_multi_rule: project.multiple_approval_rules_available?.to_s
+            allow_multi_rule: project.multiple_approval_rules_available?.to_s,
+            can_admin_protected_branches: can?(current_user, :admin_protected_branch, project).to_s
           }
         end
       end
