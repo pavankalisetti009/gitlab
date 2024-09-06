@@ -3,17 +3,23 @@
 module Ai
   class CodeSuggestionEvent < ApplicationRecord
     include PartitionedTable
+    include UsageEvent
 
     self.table_name = "ai_code_suggestion_events"
+    self.clickhouse_table_name = "code_suggestion_usages"
     self.primary_key = :id
 
     partitioned_by :timestamp, strategy: :monthly
 
     EVENTS = {
+      'code_suggestions_requested' => 1, # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
       'code_suggestion_shown_in_ide' => 2,
       'code_suggestion_accepted_in_ide' => 3,
-      'code_suggestion_rejected_in_ide' => 4
+      'code_suggestion_rejected_in_ide' => 4,
+      'code_suggestion_direct_access_token_refresh' => 5 # old data https://gitlab.com/gitlab-org/gitlab/-/issues/462809
     }.freeze
+
+    PAYLOAD_ATTRIBUTES = %w[language suggestion_size unique_tracking_id].freeze
 
     attribute :timestamp, :datetime, default: -> { DateTime.current }
 
@@ -25,6 +31,14 @@ module Ai
     validates :payload, json_schema: { filename: "code_suggestion_event" }
 
     before_validation :populate_organization_id
+
+    def to_clickhouse_csv_row
+      super.merge({
+        unique_tracking_id: payload['unique_tracking_id'],
+        suggestion_size: payload['suggestion_size'],
+        language: payload['language']
+      })
+    end
 
     private
 

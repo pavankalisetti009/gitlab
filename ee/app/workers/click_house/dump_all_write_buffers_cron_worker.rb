@@ -10,7 +10,7 @@ module ClickHouse
     feature_category :database
 
     TABLES = [
-      Ai::CodeSuggestionsUsage,
+      Ai::CodeSuggestionEvent,
       Ai::DuoChatEvent
     ].map(&:clickhouse_table_name).freeze
 
