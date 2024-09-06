@@ -33,7 +33,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
   let(:expected_response) { { "response" => "Response" } }
   let(:endpoint) { '/v1/test' }
-  let(:request_url) { "#{Gitlab::AiGateway.url}#{endpoint}" }
+  let(:url) { "#{::Gitlab::AiGateway.url}#{endpoint}" }
   let(:tracking_context) { { request_id: 'uuid', action: 'test' } }
   let(:response_body) { expected_response.to_json }
   let(:http_status) { 200 }
@@ -45,7 +45,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
     allow(logger).to receive(:info_or_debug)
     allow(logger).to receive(:info)
 
-    stub_request(:post, request_url)
+    stub_request(:post, url)
       .with(
         body: expected_body,
         headers: expected_request_headers
@@ -64,7 +64,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
   subject(:ai_client) { described_class.new(user, service_name: :test, tracking_context: tracking_context) }
 
   describe '#complete' do
-    subject(:complete) { ai_client.complete(endpoint: endpoint, body: expected_body) }
+    subject(:complete) { ai_client.complete(url: url, body: expected_body) }
 
     context 'when measuring request success' do
       let(:client) { :ai_gateway }
@@ -91,7 +91,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
 
       context 'when request is retried once' do
         before do
-          stub_request(:post, "#{Gitlab::AiGateway.url}#{endpoint}")
+          stub_request(:post, url)
             .to_return(status: 429, body: '', headers: response_headers)
             .then.to_return(status: 200, body: response_body, headers: response_headers)
 
@@ -116,8 +116,8 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
       complete
 
       expect(logger).to have_received(:info_or_debug)
-        .with(user, message: "Performing request to AI Gateway", body: expected_body, timeout: timeout,
-          stream: false)
+        .with(user, message: "Performing request to AI Gateway",
+          url: url, body: expected_body, timeout: timeout, stream: false)
       expect(logger).to have_received(:info_or_debug)
         .with(user, message: "Received response from AI Gateway", response: expected_response)
     end
@@ -133,28 +133,10 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         expect(complete.parsed_response).to eq(expected_response)
       end
     end
-
-    context 'when AI_GATEWAY_URL is not set' do
-      let(:request_url) { "https://cloud.gitlab.com/ai#{endpoint}" }
-
-      it 'sends requests through Cloud Connector load balancer' do
-        expect(complete.parsed_response).to eq(expected_response)
-      end
-    end
-
-    context 'when AI_GATEWAY_URL is set' do
-      let(:request_url) { "http://127.0.0.1:5000#{endpoint}" }
-
-      it 'sends requests to this host instead' do
-        stub_env('AI_GATEWAY_URL', "http://127.0.0.1:5000")
-
-        expect(complete.parsed_response).to eq(expected_response)
-      end
-    end
   end
 
   describe '#stream' do
-    subject { ai_client.stream(endpoint: endpoint, body: expected_body) }
+    subject { ai_client.stream(url: url, body: expected_body) }
 
     context 'when streaming the request' do
       let(:response_body) { expected_response }
@@ -163,7 +145,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         let(:expected_response) { 'Hello' }
 
         it 'provides parsed streamed response' do
-          expect { |b| ai_client.stream(endpoint: endpoint, body: expected_body, &b) }.to yield_with_args('Hello')
+          expect { |b| ai_client.stream(url: url, body: expected_body, &b) }.to yield_with_args('Hello')
         end
 
         it 'returns response' do
@@ -171,7 +153,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
             .with(anything, hash_including(stream_body: true, timeout: timeout))
             .and_call_original
 
-          expect(ai_client.stream(endpoint: endpoint, body: expected_body)).to eq("Hello")
+          expect(ai_client.stream(url: url, body: expected_body)).to eq("Hello")
         end
 
         context 'when setting a timeout' do
@@ -180,7 +162,15 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
               .with(anything, hash_including(stream_body: true, timeout: 50.seconds))
               .and_call_original
 
-            ai_client.stream(endpoint: endpoint, body: expected_body, timeout: 50.seconds)
+            ai_client.stream(url: url, body: expected_body, timeout: 50.seconds)
+          end
+        end
+
+        context 'when url is passed as a parameter' do
+          let(:url) { "http://127.0.0.1:5000" }
+
+          it 'sends requests to this host instead' do
+            ai_client.stream(url: url, body: expected_body)
           end
         end
       end
@@ -203,12 +193,12 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
         end
 
         it 'provides parsed streamed response' do
-          expect { |b| ai_client.stream(endpoint: endpoint, body: expected_body, &b) }
+          expect { |b| ai_client.stream(url: url, body: expected_body, &b) }
             .to yield_successive_args('Hello', ' ', 'World')
         end
 
         it 'returns response' do
-          expect(ai_client.stream(endpoint: endpoint, body: expected_body)).to eq(expected_response)
+          expect(ai_client.stream(url: url, body: expected_body)).to eq(expected_response)
         end
       end
 
@@ -237,7 +227,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
           let(:forbidden_status) { false }
 
           it 'raises error' do
-            expect { ai_client.stream(endpoint: endpoint, body: expected_body) }
+            expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::Llm::AiGateway::Client::ConnectionError)
 
             expect(logger).to have_received(:error).with(message: "Received error from AI gateway",
@@ -250,7 +240,7 @@ RSpec.describe Gitlab::Llm::AiGateway::Client, feature_category: :ai_abstraction
           let(:forbidden_status) { true }
 
           it 'raises error' do
-            expect { ai_client.stream(endpoint: endpoint, body: expected_body) }
+            expect { ai_client.stream(url: url, body: expected_body) }
               .to raise_error(Gitlab::AiGateway::ForbiddenError)
 
             expect(logger).to have_received(:error).with(message: "Received error from AI gateway",

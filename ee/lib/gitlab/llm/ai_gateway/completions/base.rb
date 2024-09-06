@@ -24,7 +24,7 @@ module Gitlab
             ai_client = ::Gitlab::Llm::AiGateway::Client.new(user, service_name: prompt_message.ai_action.to_sym,
               tracking_context: tracking_context)
             ai_client.complete(
-              endpoint: "/v1/prompts/#{prompt_message.ai_action}",
+              url: "#{::Gitlab::AiGateway.url}/v1/prompts/#{prompt_message.ai_action}",
               body: { 'inputs' => inputs }
             )
           end

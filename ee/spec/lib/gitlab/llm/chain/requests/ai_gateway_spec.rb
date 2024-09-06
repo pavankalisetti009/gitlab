@@ -48,6 +48,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     let(:logger) { instance_double(Gitlab::Llm::Logger) }
     let(:ai_client) { double }
     let(:endpoint) { described_class::ENDPOINT }
+    let(:url) { "#{::Gitlab::AiGateway.url}#{endpoint}" }
     let(:model) { nil }
     let(:expected_model) { described_class::CLAUDE_3_5_SONNET }
     let(:provider) { :anthropic }
@@ -97,14 +98,14 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     shared_examples 'performing request to the AI Gateway' do
       it 'returns the response from AI Gateway' do
-        expect(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_return(response)
+        expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
 
         expect(request).to eq(response)
       end
     end
 
     it 'logs the request and response' do
-      expect(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_return(response)
+      expect(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
       expect(logger).to receive(:info_or_debug).with(
         user,
         message: "Made request to AI Client",
@@ -117,7 +118,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
     end
 
     it 'calls the AI Gateway streaming endpoint and yields response without stripping it' do
-      expect(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_yield(response)
+      expect(ai_client).to receive(:stream).with(url: url, body: body).and_yield(response)
         .and_return(response)
 
       expect { |b| instance.request(prompt, &b) }.to yield_with_args(response)
@@ -127,7 +128,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
 
     it_behaves_like 'tracks events for AI requests', 4, 2, klass: 'Gitlab::Llm::Anthropic::Client' do
       before do
-        allow(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_return(response)
+        allow(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
       end
     end
 
@@ -164,7 +165,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       it_behaves_like 'performing request to the AI Gateway'
       it_behaves_like 'tracks events for AI requests', 4, 2, klass: 'Gitlab::Llm::VertexAi::Client' do
         before do
-          allow(ai_client).to receive(:stream).with(endpoint: endpoint, body: body).and_return(response)
+          allow(ai_client).to receive(:stream).with(url: url, body: body).and_return(response)
         end
       end
     end
@@ -173,7 +174,7 @@ RSpec.describe Gitlab::Llm::Chain::Requests::AiGateway, feature_category: :duo_c
       let(:model) { 'test' }
 
       it 'returns nothing' do
-        expect(ai_client).not_to receive(:stream).with(endpoint: endpoint, body: anything)
+        expect(ai_client).not_to receive(:stream).with(url: url, body: anything)
 
         expect(request).to eq(nil)
       end

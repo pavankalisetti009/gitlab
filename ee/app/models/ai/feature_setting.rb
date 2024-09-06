@@ -65,5 +65,11 @@ module Ai
 
       "#{title} (#{self_hosted_model.name})"
     end
+
+    def base_url
+      return Gitlab::AiGateway.url if self_hosted?
+
+      Gitlab::AiGateway.cloud_connector_url
+    end
   end
 end

@@ -26,6 +26,18 @@ RSpec.describe Gitlab::AiGateway, feature_category: :cloud_connector do
     end
   end
 
+  describe '.cloud_connector_url' do
+    context 'when AI_GATEWAY_URL environment variable is not set' do
+      let(:url) { 'http:://example.com' }
+
+      it 'returns the cloud connector url' do
+        allow(::CloudConnector::Config).to receive(:base_url).and_return(url)
+
+        expect(described_class.cloud_connector_url).to eq("#{url}/ai")
+      end
+    end
+  end
+
   describe '.push_feature_flag', :request_store do
     before do
       allow(::Feature).to receive(:enabled?).and_return(true)

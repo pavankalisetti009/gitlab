@@ -38,7 +38,7 @@ module Gitlab
             v2_chat_schema = Feature.enabled?(:v2_chat_agent_integration, user) && options.delete(:single_action_agent)
 
             response = ai_client.stream(
-              endpoint: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
+              url: endpoint(unit_primitive, v2_chat_schema, options[:use_ai_gateway_agent_prompt]),
               body: body(v2_chat_schema, prompt, options, unit_primitive: unit_primitive)
             ) do |data|
               yield data if block_given?
@@ -82,15 +82,21 @@ module Gitlab
           end
 
           def endpoint(unit_primitive, v2_chat_schema, use_ai_gateway_agent_prompt)
-            if use_ai_gateway_agent_prompt
-              "#{BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
-            elsif unit_primitive.present?
-              "#{BASE_ENDPOINT}/#{unit_primitive}"
-            elsif v2_chat_schema
-              CHAT_V2_ENDPOINT
-            else
-              ENDPOINT
-            end
+            path =
+              if use_ai_gateway_agent_prompt
+                "#{BASE_PROMPTS_CHAT_ENDPOINT}/#{unit_primitive}"
+              elsif unit_primitive.present?
+                "#{BASE_ENDPOINT}/#{unit_primitive}"
+              elsif v2_chat_schema
+                CHAT_V2_ENDPOINT
+              else
+                ENDPOINT
+              end
+
+            base_url =
+              chat_feature_setting(unit_primitive: unit_primitive)&.base_url || ::Gitlab::AiGateway.url
+
+            "#{base_url}#{path}"
           end
 
           def body(v2_chat_schema, prompt, options, unit_primitive: nil)
