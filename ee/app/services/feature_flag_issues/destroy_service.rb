@@ -11,7 +11,6 @@ module FeatureFlagIssues
       can?(current_user, :admin_feature_flag, link.feature_flag)
     end
 
-    def create_notes
-    end
+    def create_notes; end
   end
 end

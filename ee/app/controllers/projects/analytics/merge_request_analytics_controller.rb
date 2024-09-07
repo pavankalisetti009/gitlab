@@ -14,8 +14,7 @@ class Projects::Analytics::MergeRequestAnalyticsController < Projects::Applicati
   feature_category :value_stream_management
   urgency :low
 
-  def show
-  end
+  def show; end
 
   def tracking_namespace_source
     project.namespace

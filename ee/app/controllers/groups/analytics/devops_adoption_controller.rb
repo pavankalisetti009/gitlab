@@ -13,8 +13,7 @@ class Groups::Analytics::DevopsAdoptionController < Groups::Analytics::Applicati
     label: 'redis_hll_counters.analytics.analytics_total_unique_counts_monthly',
     destinations: %i[redis_hll snowplow]
 
-  def show
-  end
+  def show; end
 
   def tracking_namespace_source
     @group

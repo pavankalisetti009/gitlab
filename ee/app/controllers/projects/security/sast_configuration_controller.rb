@@ -11,8 +11,7 @@ module Projects
       feature_category :static_application_security_testing
       urgency :low
 
-      def show
-      end
+      def show; end
     end
   end
 end

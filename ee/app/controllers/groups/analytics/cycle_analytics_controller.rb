@@ -27,8 +27,7 @@ class Groups::Analytics::CycleAnalyticsController < Groups::Analytics::Applicati
     label: 'redis_hll_counters.analytics.g_analytics_valuestream_monthly',
     destinations: [:redis_hll, :snowplow]
 
-  def show
-  end
+  def show; end
 
   private
 

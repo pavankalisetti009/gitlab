@@ -8,8 +8,7 @@ class Admin::EmailsController < Admin::ApplicationController
 
   feature_category :not_owned # rubocop:todo Gitlab/AvoidFeatureCategoryNotOwned
 
-  def show
-  end
+  def show; end
 
   def create
     Admin::EmailService.new(params[:recipients], params[:subject], params[:body]).execute

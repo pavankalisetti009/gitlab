@@ -537,8 +537,7 @@ module EE
     end
 
     # we don't support project epics for epics yet, planned in the future #4019
-    def update_project_counter_caches
-    end
+    def update_project_counter_caches; end
 
     def valid_parent?(parent_epic: nil)
       self.parent = parent_epic if parent_epic

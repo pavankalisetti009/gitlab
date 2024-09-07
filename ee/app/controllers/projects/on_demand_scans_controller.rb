@@ -16,11 +16,9 @@ module Projects
     feature_category :dynamic_application_security_testing
     urgency :low
 
-    def index
-    end
+    def index; end
 
-    def new
-    end
+    def new; end
 
     def edit
       global_id = Gitlab::GlobalId.as_global_id(params[:id], model_name: 'Dast::Profile')

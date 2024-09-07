@@ -25,8 +25,7 @@ class Groups::Analytics::CiCdAnalyticsController < Groups::Analytics::Applicatio
     name: 'g_analytics_ci_cd_change_failure_rate',
     conditions: -> { should_track_visit_ci_cd_change_failure_tab? }
 
-  def show
-  end
+  def show; end
 
   def should_track_ci_cd_release_statistics?
     params[:tab].blank? || params[:tab] == 'release-statistics'

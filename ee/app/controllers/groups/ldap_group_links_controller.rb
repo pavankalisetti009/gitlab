@@ -10,8 +10,7 @@ class Groups::LdapGroupLinksController < Groups::ApplicationController
 
   feature_category :system_access
 
-  def index
-  end
+  def index; end
 
   def create
     ldap_group_link = @group.ldap_group_links.build(ldap_group_link_params)

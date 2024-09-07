@@ -8,8 +8,7 @@ module Projects
       feature_category :incident_management
       urgency :low
 
-      def index
-      end
+      def index; end
     end
   end
 end
