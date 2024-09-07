@@ -52,7 +52,9 @@ module Epics
 
     override :available_callbacks
     def available_callbacks
-      [].freeze
+      [
+        Issuable::Callbacks::Description
+      ].freeze
     end
 
     override :handle_quick_actions
