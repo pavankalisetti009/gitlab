@@ -101,17 +101,18 @@ RSpec.describe 'Update MemberApproval User Status', feature_category: :seat_cost
 
         context 'when one promotion fails' do
           before do
-            allow(Members::InviteService).to receive(:new).and_call_original
+            allow(Members::CreateService).to receive(:new).and_call_original
 
             params = member_approval.metadata.symbolize_keys
             params.merge!(
               user_id: [user.id],
               source: source,
               access_level: member_approval.new_access_level,
-              invite_source: "GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService"
+              invite_source: "GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService",
+              skip_authorization: false
             )
 
-            allow_next_instance_of(Members::InviteService, current_user, params) do |instance|
+            allow_next_instance_of(Members::CreateService, current_user, params) do |instance|
               allow(instance).to receive(:execute).and_return(status: :error)
             end
           end
