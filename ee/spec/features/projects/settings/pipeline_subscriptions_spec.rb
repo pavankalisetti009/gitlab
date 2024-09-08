@@ -82,7 +82,7 @@ RSpec.describe 'Project Subscriptions', :js, feature_category: :pipeline_composi
     expect(page).to have_content('This project path either does not exist or you do not have access.')
   end
 
-  it 'subscription is removed successfully' do
+  it 'subscription is removed successfully', quarantine: 'https://gitlab.com/gitlab-org/gitlab/-/issues/438106' do
     within '#pipeline-subscriptions' do
       click_on 'Add new'
       within 'form' do
