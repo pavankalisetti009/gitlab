@@ -5,12 +5,13 @@ module GitlabSubscriptions
     class ProcessUserBillablePromotionService < BaseService
       include GitlabSubscriptions::MemberManagement::PromotionManagementUtils
 
-      def initialize(current_user, user, status)
+      def initialize(current_user, user, status, skip_authorization = false)
         @current_user = current_user
         @user = user
         @status = status
         @failed_member_approvals = []
         @successful_promotion_count = 0
+        @skip_authorization = skip_authorization
       end
 
       def execute
@@ -32,13 +33,14 @@ module GitlabSubscriptions
 
       private
 
-      attr_reader :current_user, :user, :status
+      attr_reader :current_user, :user, :status, :skip_authorization
       attr_accessor :failed_member_approvals, :successful_promotion_count
 
       def authorized?
-        current_user.present? &&
-          promotion_management_applicable? &&
-          current_user.can_admin_all_resources?
+        return false unless promotion_management_applicable?
+
+        (current_user.present? &&
+          current_user.can_admin_all_resources?) || skip_authorization
       end
 
       def apply_member_approvals
@@ -66,7 +68,7 @@ module GitlabSubscriptions
         source = get_source_from_member_namespace(member_approval.member_namespace)
         params = member_approval_params(member_approval, source)
 
-        Members::InviteService.new(current_user, params).execute
+        Members::CreateService.new(current_user, params).execute
       end
 
       def pending_approvals
@@ -83,7 +85,8 @@ module GitlabSubscriptions
           user_id: [user.id],
           source: source,
           access_level: member_approval.new_access_level,
-          invite_source: self.class.name
+          invite_source: self.class.name,
+          skip_authorization: skip_authorization
         )
       end
 

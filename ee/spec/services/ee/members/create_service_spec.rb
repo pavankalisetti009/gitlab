@@ -498,4 +498,37 @@ RSpec.describe Members::CreateService, feature_category: :groups_and_projects do
       end
     end
   end
+
+  context 'with skip_authorization param' do
+    before do
+      params[:access_level] = Gitlab::Access::OWNER
+      params[:skip_authorization] = true
+    end
+
+    context 'with current_user' do
+      it 'ignores skip_authorization and raises AccessDeniedError' do
+        expect { execute_service }.to raise_error(::Gitlab::Access::AccessDeniedError)
+      end
+    end
+
+    context 'when current_user is nil' do
+      let(:user) { nil }
+
+      context 'when skip_authorization param is false' do
+        it 'raises AccessDeniedError' do
+          params[:skip_authorization] = false
+
+          expect { execute_service }.to raise_error(::Gitlab::Access::AccessDeniedError)
+        end
+      end
+
+      context 'when skip_authorization param is true' do
+        it 'returns success' do
+          params[:skip_authorization] = true
+
+          expect(execute_service).to eq({ status: :success })
+        end
+      end
+    end
+  end
 end

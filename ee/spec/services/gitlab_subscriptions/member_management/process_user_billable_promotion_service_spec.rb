@@ -9,13 +9,14 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
   let_it_be(:billable_member_role) { create(:member_role, :guest, namespace: nil, read_vulnerability: true) }
 
   let(:status) { :approved }
-  let(:service) { described_class.new(current_user, user, status) }
+  let(:skip_authorization) { false }
+  let(:service) { described_class.new(current_user, user, status, skip_authorization) }
   let(:group) { create(:group) }
   let(:project) { create(:project, group: group) }
   let(:another_group) { create(:group) }
   let!(:member_approval) do
     create(:member_approval, :to_owner,
-      member_namespace: group, user: user, member: nil, old_access_level: nil)
+      member_namespace: project.project_namespace, user: user, member: nil, old_access_level: nil)
   end
 
   let!(:another_member_approval) do
@@ -43,7 +44,19 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
       context 'when current_user is not present' do
         let(:current_user) { nil }
 
-        it_behaves_like 'unauthorized response'
+        context 'with skip_authorization set to false' do
+          it_behaves_like 'unauthorized response'
+        end
+
+        context 'with skip_authorization set to true' do
+          let(:skip_authorization) { true }
+
+          it 'returns an success' do
+            response = service.execute
+
+            expect(response).to be_success
+          end
+        end
       end
 
       context 'when promotion_management_applicable? returns false' do
@@ -144,7 +157,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
               let(:status) { :denied }
 
               it 'updates the approval status' do
-                expect(::Members::InviteService).not_to receive(:new)
+                expect(::Members::CreateService).not_to receive(:new)
                 response = service.execute
 
                 expect(response).to be_success
@@ -172,17 +185,18 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
 
       context 'when there are partial success while applying' do
         before do
-          allow(Members::InviteService).to receive(:new).and_call_original
+          allow(Members::CreateService).to receive(:new).and_call_original
 
           params = member_approval.metadata.symbolize_keys
           params.merge!(
             user_id: [user.id],
-            source: group,
+            source: project,
             access_level: member_approval.new_access_level,
-            invite_source: "GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService"
+            invite_source: "GitlabSubscriptions::MemberManagement::ProcessUserBillablePromotionService",
+            skip_authorization: skip_authorization
           )
 
-          allow_next_instance_of(Members::InviteService, current_user, params) do |instance|
+          allow_next_instance_of(Members::CreateService, current_user, params) do |instance|
             allow(instance).to receive(:execute).and_return(status: :error)
           end
         end
@@ -200,7 +214,7 @@ RSpec.describe GitlabSubscriptions::MemberManagement::ProcessUserBillablePromoti
 
       context 'when all promotions fail while applying' do
         before do
-          allow_next_instance_of(Members::InviteService) do |instance|
+          allow_next_instance_of(Members::CreateService) do |instance|
             allow(instance).to receive(:execute).and_return(status: :error)
           end
         end

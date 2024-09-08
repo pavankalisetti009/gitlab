@@ -25,6 +25,16 @@ module EE
         super.merge(member_role_id: params[:member_role_id])
       end
 
+      override :cannot_assign_owner_responsibilities_to_member_in_project?
+      def cannot_assign_owner_responsibilities_to_member_in_project?
+        # The purpose of this check is
+        # to allow member modification when called through an admin authorized
+        # flow, where we might not have admin's current_user object available.
+        return false if current_user.nil? && params[:skip_authorization]
+
+        super
+      end
+
       def validate_invitable!
         super
 
