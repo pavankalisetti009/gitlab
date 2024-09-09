@@ -613,6 +613,18 @@ RSpec.describe 'Query.work_item(id)', feature_category: :team_planning do
               hash_including('body' => group_work_item_note.note)
             )
           end
+
+          it 'skips check read_note ability on graphql types' do
+            expect(Ability).not_to receive(:allowed?).with(
+              current_user, :read_emoji, anything
+            )
+            allow(Ability).to receive(:allowed?).and_call_original
+            allow(Ability).to receive(:allowed?).twice.with(
+              current_user, :read_note, anything
+            ).and_call_original
+
+            post_graphql(query, current_user: current_user)
+          end
         end
 
         context 'when fetching description version diffs' do
