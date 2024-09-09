@@ -8,9 +8,17 @@ module SystemNotes
     # If no state transition is present, we assume the vulnerability
     # is newly detected.
     def change_vulnerability_state(body = nil)
-      body ||= state_change_body
+      Gitlab::Database::QueryAnalyzers::PreventCrossDatabaseModification.temporary_ignore_tables_in_transaction(
+        %w[
+          notes
+          system_note_metadata
+          vulnerability_user_mentions
+        ], url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/482743'
+      ) do
+        body ||= state_change_body
 
-      create_note(NoteSummary.new(noteable, project, author, body, action: "vulnerability_#{to_state}"))
+        create_note(NoteSummary.new(noteable, project, author, body, action: "vulnerability_#{to_state}"))
+      end
     end
 
     class << self
