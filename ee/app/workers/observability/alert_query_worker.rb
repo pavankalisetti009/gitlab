@@ -22,6 +22,7 @@ module Observability
 
         next unless Feature.enabled?(:observability_features, project.root_ancestor)
         next unless project.licensed_feature_available?(:observability)
+        next unless project.project_setting.observability_alerts_enabled
 
         ::AlertManagement::Alert.create(
           title: alert["description"],
