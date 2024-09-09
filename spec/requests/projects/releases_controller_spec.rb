@@ -92,5 +92,54 @@ RSpec.describe 'Projects::ReleasesController', feature_category: :release_orches
         end
       end
     end
+
+    context 'when user has permissions to read code' do
+      let_it_be(:release) { create(:release, project: project, tag: 'v11.9.0-rc2' ) }
+
+      before do
+        login_as(user)
+      end
+
+      it 'shows commit details in the atom feed' do
+        get(project_releases_url(project, format: :atom))
+
+        expect(response.body).to include(release.commit.message)
+      end
+    end
+
+    context 'when user doesn\'t have permissions to read code' do
+      let_it_be(:release) { create(:release, project: project, tag: 'v11.9.0-rc2' ) }
+      let_it_be(:new_user) { create(:user, guest_of: project) }
+
+      before do
+        login_as(new_user)
+      end
+
+      it 'dosn\'t show commit details in the atom feed' do
+        get(project_releases_url(project, format: :atom))
+
+        doc = Hash.from_xml(response.body)
+
+        expect(response.body).not_to include(release.commit.message)
+        expect(doc["feed"]["entry"]["summary"]).to be_nil
+      end
+    end
+
+    context 'when the project is public with private repository and user is unauthenticated' do
+      let_it_be(:public_project) do
+        create(:project, :repository, :public, repository_access_level: ProjectFeature::PRIVATE)
+      end
+
+      let_it_be(:release) { create(:release, project: public_project, tag: 'v11.9.0-rc2' ) }
+
+      it 'dosn\'t show commit details in the atom feed' do
+        get(project_releases_url(public_project, format: :atom))
+
+        doc = Hash.from_xml(response.body)
+
+        expect(response.body).not_to include(release.commit.message)
+        expect(doc["feed"]["entry"]["summary"]).to be_nil
+      end
+    end
   end
 end
