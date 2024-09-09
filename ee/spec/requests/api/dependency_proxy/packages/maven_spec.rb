@@ -256,6 +256,21 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
           include_context 'with custom headers' do
             it_behaves_like 'pulling existing files'
             it_behaves_like 'pulling non existing files', can_write_package_files: false
+
+            context 'when doing a request to an external registry' do
+              let(:allowed_uris) { ObjectStoreSettings.enabled_endpoint_uris }
+
+              it 'uses SSRF filter' do
+                allow(Gitlab::Workhorse).to receive(:send_url)
+
+                subject
+
+                expect(Gitlab::Workhorse).to have_received(:send_url).with(
+                  an_instance_of(String),
+                  a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_uris: allowed_uris)
+                )
+              end
+            end
           end
 
           include_context 'with basic auth' do
@@ -514,6 +529,22 @@ RSpec.describe API::DependencyProxy::Packages::Maven, :aggregate_failures, featu
             expect(response).to have_gitlab_http_status(:bad_request)
             expect(response.body).to include(described_class::WEB_BROWSER_ERROR_MESSAGE)
           end
+        end
+      end
+
+      context 'when doing a request to an external registry' do
+        let(:allowed_uris) { ObjectStoreSettings.enabled_endpoint_uris }
+
+        it 'uses SSRF filter' do
+          allow(Gitlab::Workhorse).to receive(:send_dependency)
+
+          api_request
+
+          expect(Gitlab::Workhorse).to have_received(:send_dependency).with(
+            an_instance_of(Hash),
+            an_instance_of(String),
+            a_hash_including(allow_localhost: true, ssrf_filter: true, allowed_uris: allowed_uris)
+          )
         end
       end
     end

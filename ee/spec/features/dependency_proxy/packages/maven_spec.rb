@@ -147,6 +147,23 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
           expect(response.code).to eq(504)
         end
       end
+
+      it_behaves_like 'returning bad gateway error when local requests are not allowed', :maven
+
+      context 'when local requests are allowed in settings' do
+        before do
+          allow(Gitlab).to receive(:dev_or_test_env?).and_return(false)
+          stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
+        end
+
+        it 'pulls the remote file without caching' do
+          expect { response }
+            .to not_change { project.packages.maven.count }
+            .and not_change { ::Packages::PackageFile.count }
+          expect(response.code).to eq(200)
+          expect(response.body).to eq(remote_file_content)
+        end
+      end
     end
 
     context 'with existing file' do
@@ -158,6 +175,21 @@ RSpec.describe 'Dependency Proxy for maven packages', :js, :aggregate_failures, 
       context 'with no etag returned' do
         include_context 'with no etag returned' do
           it_behaves_like 'returning the cached file'
+        end
+      end
+
+      context 'with a wrong etag returned' do
+        include_context 'with a wrong etag returned' do
+          it_behaves_like 'returning bad gateway error when local requests are not allowed', :maven
+        end
+
+        context 'when local requests are allowed in settings' do
+          before do
+            allow(Gitlab).to receive(:dev_or_test_env?).and_return(false)
+            stub_application_setting(allow_local_requests_from_web_hooks_and_services: true)
+          end
+
+          it_behaves_like 'proxying the remote file if the wrong etag is returned'
         end
       end
     end

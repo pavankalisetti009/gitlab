@@ -80,9 +80,12 @@ module API
                   remote_package_file_url,
                   headers: remote_url_headers,
                   response_headers: RESPONSE_HEADERS,
+                  allow_localhost: allow_localhost,
                   allow_redirects: true,
                   timeouts: TIMEOUTS,
-                  response_statuses: RESPONSE_STATUSES
+                  response_statuses: RESPONSE_STATUSES,
+                  ssrf_filter: true,
+                  allowed_uris: allowed_uris
                 )
               )
             end
@@ -113,8 +116,11 @@ module API
                 Gitlab::Workhorse.send_dependency(
                   remote_url_headers,
                   remote_package_file_url,
+                  allow_localhost: allow_localhost,
                   upload_config: upload_config,
-                  response_headers: RESPONSE_HEADERS
+                  response_headers: RESPONSE_HEADERS,
+                  ssrf_filter: true,
+                  allowed_uris: allowed_uris
                 )
               )
             end
@@ -182,6 +188,14 @@ module API
             def require_non_web_browser!
               browser = ::Browser.new(request.user_agent)
               bad_request!(WEB_BROWSER_ERROR_MESSAGE) if MAJOR_BROWSERS.any? { |b| browser.public_send(:"#{b}?") } # rubocop:disable GitlabSecurity/PublicSend -- Hardcoded list of methods.
+            end
+
+            def allow_localhost
+              Gitlab.dev_or_test_env? || Gitlab::CurrentSettings.allow_local_requests_from_web_hooks_and_services?
+            end
+
+            def allowed_uris
+              ObjectStoreSettings.enabled_endpoint_uris
             end
           end
 
