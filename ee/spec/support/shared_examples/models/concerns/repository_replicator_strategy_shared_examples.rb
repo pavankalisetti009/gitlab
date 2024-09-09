@@ -51,8 +51,8 @@ RSpec.shared_examples 'a repository replicator' do
           "replicable_name" => replicator.replicable_name, "event_name" => ::Geo::RepositoryReplicatorStrategy::EVENT_UPDATED, "payload" => { "model_record_id" => replicator.model_record.id })
       end
 
-      it 'calls #before_verifiable_update' do
-        expect(replicator).to receive(:before_verifiable_update)
+      it 'calls #after_verifiable_update' do
+        expect(replicator).to receive(:after_verifiable_update)
 
         replicator.geo_handle_after_update
       end
@@ -103,12 +103,6 @@ RSpec.shared_examples 'a repository replicator' do
             "model_record_id" => replicator.model_record.id
           }
         )
-      end
-
-      it 'does not call #before_verifiable_update' do
-        expect(replicator).not_to receive(:before_verifiable_update)
-
-        replicator.geo_handle_after_create
       end
 
       context 'when replication feature flag is disabled' do
@@ -268,33 +262,44 @@ RSpec.shared_examples 'a repository replicator' do
     end
   end
 
-  describe '#before_verifiable_update' do
+  describe '#after_verifiable_update' do
     using RSpec::Parameterized::TableSyntax
 
-    where(:primary, :verification_enabled, :checksum, :expect_verification_pending) do
-      true  | true  | 'abc123' | true
-      true  | false | 'abc123' | false
-      false | true  | 'abc123' | false
-      false | false | 'abc123' | false
+    where(:verification_enabled, :immutable, :checksum, :checksummable, :expect_verify_async) do
+      true  | true  | nil      | true  | true
+      true  | true  | nil      | false | false
+      true  | true  | 'abc123' | true  | false
+      true  | true  | 'abc123' | false | false
+      true  | false | nil      | true  | true
+      true  | false | nil      | false | false
+      true  | false | 'abc123' | true  | true
+      true  | false | 'abc123' | false | false
+      false | true  | nil      | true  | false
+      false | true  | nil      | false | false
+      false | true  | 'abc123' | true  | false
+      false | true  | 'abc123' | false | false
+      false | false | nil      | true  | false
+      false | false | nil      | false | false
+      false | false | 'abc123' | true  | false
+      false | false | 'abc123' | false | false
     end
 
     with_them do
       before do
-        if primary
-          stub_primary_node
-        else
-          stub_secondary_node
-        end
-
         allow(described_class).to receive(:verification_enabled?).and_return(verification_enabled)
-
-        model_record.verification_started!
+        allow(replicator).to receive(:immutable?).and_return(immutable)
+        allow(replicator).to receive(:primary_checksum).and_return(checksum)
+        allow(replicator).to receive(:checksummable?).and_return(checksummable)
       end
 
-      it 'marks pending verification only if needed' do
-        replicator.before_verifiable_update
+      it 'calls verify_async only if needed' do
+        if expect_verify_async
+          expect(replicator).to receive(:verify_async)
+        else
+          expect(replicator).not_to receive(:verify_async)
+        end
 
-        expect(model_record.verification_pending?).to eq(expect_verification_pending)
+        replicator.after_verifiable_update
       end
     end
   end
