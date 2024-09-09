@@ -98,7 +98,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
 ]
 `;
 
-exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_pro_usage_rate metric with null values response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_chat_usage_rate metric with null values response will call the setVisualizationOverrides callback with the correct settings 1`] = `
 [
   [
     {
@@ -114,7 +114,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
 ]
 `;
 
-exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_pro_usage_rate metric with valid response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_chat_usage_rate metric with valid response will call the setVisualizationOverrides callback with the correct settings 1`] = `
 [
   [
     {
@@ -122,8 +122,8 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
         "title": "Last 30 days",
         "titleIcon": "clock",
         "tooltip": {
-          "description": "5 out of 10 GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
-          "descriptionLink": "/help/subscriptions/subscription-add-ons#purchase-gitlab-duo-seats",
+          "description": "5 out of 10 GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.",
+          "descriptionLink": "/help/user/gitlab_duo/index#gitlab-duo-chat",
         },
       },
     },
@@ -131,7 +131,7 @@ exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callbac
 ]
 `;
 
-exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_pro_usage_rate metric with zeroes response will call the setVisualizationOverrides callback with the correct settings 1`] = `
+exports[`AI Impact Over Time Data Source fetch setVisualizationOverrides callback for duo_chat_usage_rate metric with zeroes response will call the setVisualizationOverrides callback with the correct settings 1`] = `
 [
   [
     {

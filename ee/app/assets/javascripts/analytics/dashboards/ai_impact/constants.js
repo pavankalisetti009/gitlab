@@ -32,8 +32,8 @@ export const AI_IMPACT_OVER_TIME_METRICS = {
     label: s__('AiImpactAnalytics|Code Suggestions acceptance usage'),
     units: UNITS.PERCENT,
   },
-  [AI_METRICS.DUO_PRO_USAGE_RATE]: {
-    label: s__('AiImpactAnalytics|Duo seats: Assigned and used'),
+  [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
+    label: s__('AiImpactAnalytics|Duo Chat: Unique users'),
     units: UNITS.PERCENT,
   },
 };
@@ -64,12 +64,12 @@ export const AI_IMPACT_OVER_TIME_METRICS_TOOLTIPS = {
       anchor: 'use-code-suggestions',
     }),
   },
-  [AI_METRICS.DUO_PRO_USAGE_RATE]: {
+  [AI_METRICS.DUO_CHAT_USAGE_RATE]: {
     description: s__(
-      'AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoProAssignedUsersCount} GitLab Duo assigned seats used at least one AI feature in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
+      'AiImpactAnalytics|%{duoChatContributorsCount} out of %{duoProAssignedUsersCount} GitLab Duo users interacted with Duo Chat in the last 30 days. %{linkStart}Learn more%{linkEnd}.',
     ),
-    descriptionLink: helpPagePath('subscriptions/subscription-add-ons', {
-      anchor: 'purchase-gitlab-duo-seats',
+    descriptionLink: helpPagePath('user/gitlab_duo/index', {
+      anchor: 'gitlab-duo-chat',
     }),
   },
 };
