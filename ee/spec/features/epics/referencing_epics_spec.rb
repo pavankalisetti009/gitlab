@@ -114,7 +114,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
         find('div#notes li.note div.note-text a').click
 
-        page.within('div#notes li.system-note-v2 .system-note-message') do
+        page.within('div#notes li.system-note .system-note-message') do
           expect(page).to have_content('mentioned in issue')
           expect(page.find('a')).to have_content(issue.to_reference(full: true))
         end
@@ -140,7 +140,7 @@ RSpec.describe 'Referencing Epics', :js, feature_category: :portfolio_management
 
           find('div#notes li.note div.note-text a').click
 
-          page.within('div#notes li.system-note-v2 .system-note-message') do
+          page.within('div#notes li.system-note .system-note-message') do
             expect(page).to have_content('mentioned in epic')
             expect(page.find('a')).to have_content(epic.to_reference(full: true))
           end
