@@ -157,5 +157,33 @@ RSpec.describe Dast::Profile, :dynamic_analysis,
     describe '#secret_ci_variables' do
       it { is_expected.to delegate_method(:secret_ci_variables).to(:dast_site_profile) }
     end
+
+    describe '#can_edit_scan?' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:user) { create(:user) }
+      let_it_be(:project) { create(:project, :repository) }
+
+      subject { create(:dast_profile, project: project, branch_name: 'master') }
+
+      before_all do
+        project.add_developer(user)
+      end
+
+      where(:can_push_to_branch, :result) do
+        false | false
+        true  | true
+      end
+
+      with_them do
+        it do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(can_push_to_branch)
+          end
+
+          expect(subject.can_edit_scan?(user)).to eq(result)
+        end
+      end
+    end
   end
 end

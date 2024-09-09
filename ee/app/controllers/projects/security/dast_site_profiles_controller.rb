@@ -19,6 +19,9 @@ module Projects
       def edit
         global_id = Gitlab::GlobalId.as_global_id(params[:id], model_name: 'DastSiteProfile')
 
+        site_profile = DastSiteProfile.find(params[:id])
+        return render_404 unless site_profile.can_edit_profile?(current_user)
+
         query = %(
           {
             project(fullPath: "#{project.full_path}") {

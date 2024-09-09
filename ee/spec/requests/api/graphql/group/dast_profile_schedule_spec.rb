@@ -9,11 +9,11 @@ RSpec.describe 'Query.group(fullPath).projects.dastProfiles.dastProfileSchedule'
   let_it_be(:current_user) { create(:user) }
 
   let_it_be(:project) { create(:project, :repository, group: group) }
-  let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
   let_it_be(:dast_profile_schedule) { create(:dast_profile_schedule, project: project, dast_profile: dast_profile, owner: current_user) }
 
   let_it_be(:project2) { create(:project, :repository, group: group) }
-  let_it_be(:dast_profile2) { create(:dast_profile, project: project2) }
+  let_it_be(:dast_profile2) { create(:dast_profile, project: project2, branch_name: project2.default_branch) }
   let_it_be(:dast_profile_schedule2) { create(:dast_profile_schedule, project: project2, dast_profile: dast_profile2, owner: current_user) }
 
   let(:query) do

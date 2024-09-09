@@ -6,7 +6,7 @@ RSpec.describe Projects::Security::DastSiteProfilesController, type: :request, f
   include GraphqlHelpers
 
   let(:project) { create(:project) }
-  let(:user) { create(:user) }
+  let_it_be(:user) { create(:user) }
   let(:dast_site_profile) { create(:dast_site_profile, project: project) }
 
   def with_feature_available
@@ -132,6 +132,24 @@ RSpec.describe Projects::Security::DastSiteProfilesController, type: :request, f
 
       context 'record does not exist' do
         let(:dast_site_profile) { 0 }
+
+        it 'sees a 404 error' do
+          get edit_path
+
+          expect(response).to have_gitlab_http_status(:not_found)
+        end
+      end
+
+      context 'can not edit scan' do
+        let_it_be(:project, reload: true) { create(:project, :repository) }
+        let_it_be(:protected_branch) { create(:protected_branch, authorize_user_to_push: nil, authorize_user_to_merge: nil, project: project, name: 'master') }
+        let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: protected_branch.name) }
+        let_it_be(:dast_site_profile) { dast_profile.dast_site_profile }
+
+        before_all do
+          project.add_developer(user)
+          login_as(user)
+        end
 
         it 'sees a 404 error' do
           get edit_path

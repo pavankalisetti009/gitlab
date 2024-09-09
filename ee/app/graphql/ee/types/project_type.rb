@@ -74,6 +74,7 @@ module EE
           ::Types::Dast::ProfileType,
           null: true,
           resolver: ::Resolvers::AppSec::Dast::ProfileResolver.single,
+          calls_gitaly: true,
           description: 'DAST Profile associated with the project.'
 
         field :dast_profiles,
@@ -82,6 +83,7 @@ module EE
           extras: [:lookahead],
           late_extensions: [::Gitlab::Graphql::Project::DastProfileConnectionExtension],
           resolver: ::Resolvers::AppSec::Dast::ProfileResolver,
+          calls_gitaly: true,
           description: 'DAST Profiles associated with the project.'
 
         field :dast_site_profile,

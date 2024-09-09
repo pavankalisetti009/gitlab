@@ -39,6 +39,18 @@ module Dast
       eager_load(dast_profile_schedule: [:owner])
     end
 
+    scope :by_site_profile_id, ->(site_profile_id) do
+      where(dast_site_profile_id: site_profile_id)
+    end
+
+    scope :by_scanner_profile_id, ->(scanner_profile_id) do
+      where(dast_scanner_profile_id: scanner_profile_id)
+    end
+
+    scope :with_project, -> do
+      includes(project: [:project_feature, :route, :group])
+    end
+
     delegate :secret_ci_variables, to: :dast_site_profile
 
     sanitizes! :name, :description
@@ -47,6 +59,12 @@ module Dast
       return unless project.repository.exists?
 
       Dast::Branch.new(self)
+    end
+
+    def can_edit_scan?(user)
+      access = Gitlab::UserAccess.new(user, container: project)
+
+      access.can_push_to_branch?(branch.name)
     end
 
     def tag_list

@@ -9,6 +9,7 @@ module AppSec
         def execute
           return unauthorized unless allowed?
           return error(_('Profile parameter missing')) unless dast_profile
+          return error(_('You are not authorized to update this profile')) unless can_push_to_branch?
 
           return error(_('Invalid tags')) unless valid_tags?
 
@@ -59,6 +60,12 @@ module AppSec
         def allowed?
           project.licensed_feature_available?(:security_on_demand_scans) &&
             can?(current_user, :create_on_demand_dast_scan, project)
+        end
+
+        def can_push_to_branch?
+          access = Gitlab::UserAccess.new(current_user, container: project)
+
+          access.can_push_to_branch?(dast_profile['branch_name'])
         end
 
         def update_or_create_schedule!

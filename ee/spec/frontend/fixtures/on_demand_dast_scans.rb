@@ -10,7 +10,7 @@ RSpec.describe 'On-demand DAST scans (GraphQL fixtures)', feature_category: :dyn
 
     let_it_be(:current_user) { create(:user) }
     let_it_be(:project) { create(:project, :repository, :public) }
-    let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+    let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
 
     before do
       stub_licensed_features(security_on_demand_scans: true)

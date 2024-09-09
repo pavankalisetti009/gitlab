@@ -13,6 +13,9 @@ module Dast
       relation = by_id(relation)
       relation = by_project(relation)
       relation = has_schedule?(relation)
+      relation = by_site_profile_id(relation)
+      relation = by_scanner_profile_id(relation)
+      relation = with_project(relation)
 
       sort(relation)
     end
@@ -41,6 +44,24 @@ module Dast
       return relation if params[:has_dast_profile_schedule].nil?
 
       relation.with_schedule(params[:has_dast_profile_schedule])
+    end
+
+    def by_site_profile_id(relation)
+      return relation if params[:site_profile_id].nil?
+
+      relation.by_site_profile_id(params[:site_profile_id])
+    end
+
+    def by_scanner_profile_id(relation)
+      return relation if params[:scanner_profile_id].nil?
+
+      relation.by_scanner_profile_id(params[:scanner_profile_id])
+    end
+
+    def with_project(relation)
+      return relation unless params[:with_project]
+
+      relation.with_project
     end
 
     # rubocop: disable CodeReuse/ActiveRecord

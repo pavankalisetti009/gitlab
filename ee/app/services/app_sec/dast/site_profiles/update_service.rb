@@ -14,12 +14,14 @@ module AppSec
 
         attr_reader :dast_site_profile
 
+        # rubocop:disable Metrics/AbcSize
         def execute(id:, **params)
           return ServiceResponse.error(message: _('Insufficient permissions')) unless allowed?
 
           find_dast_site_profile!(id)
 
           return ServiceResponse.error(message: _('Cannot modify %{profile_name} referenced in security policy') % { profile_name: dast_site_profile.name }) if referenced_in_security_policy?
+          return ServiceResponse.error(message: _('Cannot modify %{profile_name} referenced in scan') % { profile_name: dast_site_profile.name }) unless dast_site_profile.can_edit_profile?(current_user)
 
           ApplicationRecord.transaction do
             auditor = AppSec::Dast::SiteProfiles::Audit::UpdateService.new(project, current_user, {
@@ -52,6 +54,7 @@ module AppSec
         rescue ActiveRecord::RecordInvalid => e
           ServiceResponse.error(message: e.record.errors.full_messages)
         end
+        # rubocop:enable Metrics/AbcSize
 
         private
 

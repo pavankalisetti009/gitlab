@@ -52,6 +52,39 @@ RSpec.describe AppSec::Dast::ScannerProfiles::UpdateService, :dynamic_analysis,
       end
     end
 
+    context 'when the scanner profile is associated with a branch' do
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: 'master') }
+      let(:dast_scanner_profile_id) { dast_profile.dast_scanner_profile_id }
+      let(:new_use_ajax_spider) { false }
+      let(:new_show_debug_messages) { false }
+
+      before_all do
+        project.add_developer(user)
+      end
+
+      context 'when the user is allowed to push to the branch' do
+        it 'returns a success status' do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(true)
+          end
+
+          expect(status).to eq(:success)
+        end
+      end
+
+      context 'when the user is not allowed to push to the branch' do
+        it 'returns an error' do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(false)
+          end
+
+          expect(status).to eq(:error)
+          expect(message).to eq("Cannot modify #{DastScannerProfile.find(dast_profile.dast_scanner_profile_id).name} referenced in scan")
+        end
+      end
+    end
+
     context 'when the dast_scanner_profile exists on a different project' do
       before do
         project.add_developer(user)

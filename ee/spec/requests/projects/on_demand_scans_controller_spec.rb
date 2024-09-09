@@ -115,57 +115,83 @@ RSpec.describe Projects::OnDemandScansController,
       let(:path) { edit_path }
     end
 
-    context 'feature available and user can access page' do
+    context 'feature available' do
       before do
         stub_licensed_features(security_on_demand_scans: true)
-
-        project.add_developer(user)
-
-        login_as(user)
       end
 
-      context 'dast_profile exists in the database' do
-        it 'includes a serialized dast_profile in the response body' do
-          get edit_path
+      context 'and user can access page' do
+        before do
+          project.add_developer(user)
+          login_as(user)
+        end
 
-          json_data = {
-            **a_graphql_entity_for(dast_profile),
-            name: dast_profile.name,
-            description: dast_profile.description,
-            tagList: dast_profile.tag_list,
-            branch: { name: project.default_branch_or_main },
-            dastSiteProfile: a_graphql_entity_for(DastSiteProfile.new(id: dast_profile.dast_site_profile_id)),
-            dastScannerProfile: a_graphql_entity_for(DastScannerProfile.new(id: dast_profile.dast_scanner_profile_id)),
-            dastProfileSchedule: {
-              active: dast_profile_schedule.active,
-              cadence: {
-                duration: dast_profile_schedule.cadence[:duration],
-                unit: dast_profile_schedule.cadence[:unit]&.upcase
-              },
-              startsAt: dast_profile_schedule.starts_at.in_time_zone(dast_profile_schedule.timezone).iso8601,
-              timezone: dast_profile_schedule.timezone
-            }
-          }.to_json
+        context 'dast_profile exists in the database' do
+          it 'includes a serialized dast_profile in the response body' do
+            get edit_path
 
-          on_demand_div = Nokogiri::HTML.parse(response.body).at_css('div#js-on-demand-scans-form')
+            json_data = {
+              **a_graphql_entity_for(dast_profile),
+              name: dast_profile.name,
+              description: dast_profile.description,
+              tagList: dast_profile.tag_list,
+              branch: { name: project.default_branch_or_main },
+              dastSiteProfile: a_graphql_entity_for(DastSiteProfile.new(id: dast_profile.dast_site_profile_id)),
+              dastScannerProfile: a_graphql_entity_for(
+                DastScannerProfile.new(id: dast_profile.dast_scanner_profile_id)),
+              dastProfileSchedule: {
+                active: dast_profile_schedule.active,
+                cadence: {
+                  duration: dast_profile_schedule.cadence[:duration],
+                  unit: dast_profile_schedule.cadence[:unit]&.upcase
+                },
+                startsAt: dast_profile_schedule.starts_at.in_time_zone(dast_profile_schedule.timezone).iso8601,
+                timezone: dast_profile_schedule.timezone
+              }
+            }.to_json
 
-          expect(on_demand_div.attributes['data-dast-scan'].value).to eq json_data
+            on_demand_div = Nokogiri::HTML.parse(response.body).at_css('div#js-on-demand-scans-form')
+
+            expect(on_demand_div.attributes['data-dast-scan'].value).to eq json_data
+          end
+        end
+
+        context 'dast_profile does not exist in the database' do
+          let(:dast_profile_id) { 0 }
+
+          it 'sees a 404 error' do
+            get edit_path
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
+        end
+
+        context 'user has auditor role' do
+          let(:user) { create(:user, :auditor) }
+          let_it_be(:project) { create(:project, :repository) }
+
+          it 'sees a 404 error' do
+            get edit_path
+
+            expect(response).to have_gitlab_http_status(:not_found)
+          end
         end
       end
 
-      context 'dast_profile does not exist in the database' do
-        let(:dast_profile_id) { 0 }
-
-        it 'sees a 404 error' do
-          get edit_path
-
-          expect(response).to have_gitlab_http_status(:not_found)
+      context 'and user does not have permission to push to branch' do
+        let_it_be(:protected_branch) do
+          create(:protected_branch, project: project, name: 'master', authorize_user_to_push: nil,
+            authorize_user_to_merge: nil)
         end
-      end
 
-      context 'user has auditor role' do
-        let(:user) { create(:user, :auditor) }
-        let_it_be(:project) { create(:project, :repository) }
+        let_it_be(:dast_profile) do
+          create(:dast_profile, project: project, branch_name: protected_branch.name, tags: tags)
+        end
+
+        before do
+          project.add_developer(user)
+          login_as(user)
+        end
 
         it 'sees a 404 error' do
           get edit_path

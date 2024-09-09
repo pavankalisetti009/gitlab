@@ -8,7 +8,7 @@ RSpec.describe 'Query.project(fullPath).dastProfiles.dastProfileSchedule',
   let_it_be(:plan_limits) { create(:plan_limits, :default_plan) }
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
   let_it_be(:dast_profile_schedule) { create(:dast_profile_schedule, project: project, dast_profile: dast_profile, owner: current_user) }
 
   let(:query) do

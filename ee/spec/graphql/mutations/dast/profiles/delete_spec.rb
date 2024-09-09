@@ -7,7 +7,7 @@ RSpec.describe Mutations::Dast::Profiles::Delete do
 
   let_it_be(:project) { create(:project) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
 
   let(:dast_profile_gid) { dast_profile.to_global_id }
 
@@ -46,7 +46,7 @@ RSpec.describe Mutations::Dast::Profiles::Delete do
       end
 
       context 'when DAST profile belongs to a project the user does not have access to' do
-        let_it_be(:dast_profile) { create(:dast_profile) }
+        let_it_be(:dast_profile) { create(:dast_profile, branch_name: project.default_branch) }
 
         it 'raises an exception' do
           expect { subject }.to raise_error(Gitlab::Graphql::Errors::ResourceNotAvailable)

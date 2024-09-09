@@ -7,7 +7,7 @@ RSpec.describe DastSiteProfile, :dynamic_analysis,
   type: :model do
   let_it_be(:project) { create(:project) }
 
-  subject { create(:dast_site_profile, :with_dast_site_validation, project: project) }
+  subject { create(:dast_site_profile, :with_dast_site_validation, project: project, id: 'site-profile-id') }
 
   it_behaves_like 'sanitizable', :dast_site_profile, %i[name scan_file_path]
 
@@ -653,6 +653,46 @@ RSpec.describe DastSiteProfile, :dynamic_analysis,
             expect(subject.scan_file_path_or_dast_site_url).to eq(scan_file_path)
           end
         end
+      end
+    end
+
+    describe '#can_edit_profile?' do
+      using RSpec::Parameterized::TableSyntax
+
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:user) { create(:user, maintainer_of: project) }
+      let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: 'master') }
+
+      subject { DastSiteProfilesFinder.new(id: dast_profile.dast_site_profile_id).execute.to_a.first }
+
+      where(:can_push_to_branch, :result) do
+        false | false
+        true  | true
+      end
+
+      with_them do
+        it do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(can_push_to_branch)
+          end
+
+          expect(subject.can_edit_profile?(user)).to eq(result)
+        end
+      end
+    end
+
+    describe '#can_edit_profile? avoids N+1 queries' do
+      it do
+        project = create(:project, :repository)
+        user = create(:user, maintainer_of: project)
+        dast_profile1 = create(:dast_profile, project: project, branch_name: 'master')
+        dast_site_profile1 = dast_profile1.dast_site_profile
+
+        control = ActiveRecord::QueryRecorder.new { dast_site_profile1.can_edit_profile?(user) }
+
+        create(:dast_profile, project: project, branch_name: 'master', dast_site_profile: dast_site_profile1)
+
+        expect { dast_site_profile1.can_edit_profile?(user) }.not_to exceed_query_limit(control)
       end
     end
   end
