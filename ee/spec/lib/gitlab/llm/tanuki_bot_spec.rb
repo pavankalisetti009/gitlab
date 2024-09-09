@@ -133,4 +133,54 @@ RSpec.describe Gitlab::Llm::TanukiBot, feature_category: :duo_chat do
       end
     end
   end
+
+  describe '.resource_id' do
+    let(:issue) { build_stubbed(:issue) }
+
+    context 'with current context including resource_id' do
+      before do
+        Gitlab::ApplicationContext.push(ai_resource: issue.to_global_id)
+      end
+
+      it 'returns the ai_resource from the current context' do
+        expect(described_class.resource_id).to eq(issue.to_global_id)
+      end
+    end
+
+    context 'with current context not including resource_id' do
+      it 'returns nil when ai_resource is not present in the context' do
+        expect(described_class.resource_id).to be_nil
+      end
+    end
+  end
+
+  describe '.project_id' do
+    let_it_be(:project) { create(:project) }
+
+    context 'with current context including project_id' do
+      before do
+        ::Gitlab::ApplicationContext.push(project: project)
+      end
+
+      it 'returns the global ID of the project when found' do
+        expect(described_class.project_id).to eq(project.to_global_id)
+      end
+    end
+
+    context 'when project is not found' do
+      before do
+        ::Gitlab::ApplicationContext.push(project: 'non_existent_project')
+      end
+
+      it 'returns nil' do
+        expect(described_class.project_id).to be_nil
+      end
+    end
+
+    context 'when project is not present in the context' do
+      it 'returns nil' do
+        expect(described_class.project_id).to be_nil
+      end
+    end
+  end
 end
