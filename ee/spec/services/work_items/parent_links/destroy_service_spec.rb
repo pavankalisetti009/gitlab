@@ -19,7 +19,8 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
     let(:params) { {} }
 
     before do
-      stub_licensed_features(subepics: true)
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      stub_licensed_features(epics: true, subepics: true)
     end
 
     subject(:destroy_link) { described_class.new(parent_link, user, params).execute }
@@ -62,7 +63,7 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
       context 'when epic work item type' do
         context 'when subepics are not available' do
           before do
-            stub_licensed_features(subepics: false)
+            stub_licensed_features(epics: true, subepics: false)
           end
 
           it_behaves_like 'does not remove relationship'
@@ -231,6 +232,14 @@ RSpec.describe WorkItems::ParentLinks::DestroyService, feature_category: :team_p
           end
 
           it_behaves_like 'destroys parent link'
+
+          context 'without group level work items license' do
+            before do
+              stub_licensed_features(epics: false, subepics: true)
+            end
+
+            it_behaves_like 'does not remove relationship'
+          end
 
           context 'with existing legacy epic parent' do
             before do

@@ -23,6 +23,11 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
 
     subject(:update_work_item) { service.execute(work_item) }
 
+    before do
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      stub_licensed_features(epics: true)
+    end
+
     it_behaves_like 'work item widgetable service' do
       let(:widget_params) do
         {
@@ -47,7 +52,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         let(:widget_params) { { progress_widget: { progress: 50 } } }
 
         before do
-          stub_licensed_features(okrs: true)
+          stub_licensed_features(epics: true, okrs: true)
         end
 
         it_behaves_like 'update service that triggers GraphQL work_item_updated subscription' do
@@ -59,7 +64,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         let(:widget_params) { { weight_widget: { weight: new_weight } } }
 
         before do
-          stub_licensed_features(issue_weights: true)
+          stub_licensed_features(epics: true, issue_weights: true)
 
           work_item.update!(weight: 1)
         end
@@ -106,7 +111,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         let(:widget_params) { { iteration_widget: { iteration: new_iteration } } }
 
         before do
-          stub_licensed_features(iterations: true)
+          stub_licensed_features(epics: true, iterations: true)
 
           work_item.update!(iteration: nil)
         end
@@ -146,7 +151,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         let(:widget_params) { { health_status_widget: { health_status: new_health_status } } }
 
         before do
-          stub_licensed_features(issuable_health_status: true)
+          stub_licensed_features(epics: true, issuable_health_status: true)
 
           work_item.update!(health_status: :needs_attention)
         end
@@ -189,7 +194,7 @@ RSpec.describe WorkItems::UpdateService, feature_category: :team_planning do
         let(:new_color) { '#c91c00' }
 
         before do
-          stub_licensed_features(epic_colors: true)
+          stub_licensed_features(epics: true, epic_colors: true)
         end
 
         context 'when work item has a color' do

@@ -17,6 +17,10 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
     work_item.reload.color&.color.to_s
   end
 
+  before do
+    stub_feature_flags(enforce_check_group_level_work_items_license: true)
+  end
+
   shared_examples 'work item and color is unchanged' do
     it 'does not change work item color value' do
       expect { subject }
@@ -37,14 +41,22 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
 
   shared_examples 'when epic_colors feature is licensed' do
     before do
-      stub_licensed_features(epic_colors: true)
+      stub_licensed_features(epics: true, epic_colors: true)
     end
 
     context 'when color param is present' do
-      context 'when color param is valid' do
-        let(:params) { { color: '#454545' } }
+      let(:params) { { color: '#454545' } }
 
+      context 'when color param is valid' do
         it_behaves_like 'color is updated', '#454545'
+      end
+
+      context 'without group level work items license' do
+        before do
+          stub_licensed_features(epics: false, epic_colors: true)
+        end
+
+        it_behaves_like 'work item and color is unchanged'
       end
     end
 
@@ -86,7 +98,7 @@ RSpec.describe WorkItems::Callbacks::Color, feature_category: :team_planning do
 
   shared_examples 'when epic_colors feature is unlicensed' do
     before do
-      stub_licensed_features(epic_colors: false)
+      stub_licensed_features(epics: true, epic_colors: false)
     end
 
     it_behaves_like 'work item and color is unchanged'

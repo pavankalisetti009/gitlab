@@ -27,7 +27,8 @@ RSpec.describe WorkItems::Callbacks::HealthStatus, feature_category: :team_plann
 
     context 'when issuable_health_status feature is licensed' do
       before do
-        stub_licensed_features(issuable_health_status: true)
+        stub_feature_flags(enforce_check_group_level_work_items_license: true)
+        stub_licensed_features(epics: true, issuable_health_status: true)
       end
 
       context 'when health_status param is present' do
@@ -36,6 +37,14 @@ RSpec.describe WorkItems::Callbacks::HealthStatus, feature_category: :team_plann
 
           it 'updates work item health status value' do
             expect { after_initialize_callback }.to change { work_item.health_status }.to('needs_attention')
+          end
+
+          context 'without group level work items license' do
+            before do
+              stub_licensed_features(epics: false, issuable_health_status: true)
+            end
+
+            it_behaves_like 'work item and health status is unchanged'
           end
         end
 
@@ -74,7 +83,7 @@ RSpec.describe WorkItems::Callbacks::HealthStatus, feature_category: :team_plann
 
     context 'when issuable_health_status feature is unlicensed' do
       before do
-        stub_licensed_features(issuable_health_status: false)
+        stub_licensed_features(epics: true, issuable_health_status: false)
       end
 
       it_behaves_like 'work item and health status is unchanged'

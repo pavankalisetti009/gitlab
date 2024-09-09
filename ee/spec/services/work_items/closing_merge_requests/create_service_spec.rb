@@ -26,10 +26,30 @@ RSpec.describe WorkItems::ClosingMergeRequests::CreateService, feature_category:
       ).execute
     end
 
-    context 'when work item belongs to a project' do
-      let_it_be_with_refind(:work_item) { create(:work_item, project: project) }
+    context 'when work item belongs to a group' do
+      let_it_be_with_refind(:work_item) { create(:work_item, :group_level, namespace: group) }
 
-      it_behaves_like 'a service that adds closing merge requests'
+      before do
+        stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      end
+
+      context 'with group level work item license' do
+        before do
+          stub_licensed_features(epics: true)
+        end
+
+        it_behaves_like 'a service that adds closing merge requests'
+      end
+
+      context 'without group level work item license' do
+        before do
+          stub_licensed_features(epics: false)
+        end
+
+        it 'raises a resource not available error' do
+          expect { create_result }.to raise_error(described_class::ResourceNotAvailable)
+        end
+      end
     end
   end
 end

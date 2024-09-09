@@ -19,7 +19,8 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
     subject(:create_link) { described_class.new(parent_work_item, user, params).execute }
 
     before do
-      stub_licensed_features(subepics: true)
+      stub_feature_flags(enforce_check_group_level_work_items_license: true)
+      stub_licensed_features(epics: true, subepics: true)
     end
 
     shared_examples 'does not create parent link' do
@@ -131,7 +132,7 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
         let(:child_work_item) { work_item2 }
 
         before do
-          stub_licensed_features(subepics: false)
+          stub_licensed_features(epics: true, subepics: false)
         end
 
         it_behaves_like 'does not create parent link'
@@ -377,6 +378,14 @@ RSpec.describe WorkItems::ParentLinks::CreateService, feature_category: :portfol
               let(:link_service_class) { ::Epics::EpicLinks::CreateService }
               let(:legacy_child) { child_epic }
               let(:relationship) { :parent }
+            end
+
+            context 'without group level work items license' do
+              before do
+                stub_licensed_features(epics: false, subepics: true)
+              end
+
+              it_behaves_like 'does not create parent link'
             end
           end
         end
