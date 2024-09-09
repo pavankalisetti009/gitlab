@@ -438,7 +438,7 @@ RSpec.describe 'Group value stream analytics filters and data', :js, feature_cat
       [].concat(stages_without_data, stages_with_data).each do |stage|
         select_stage(stage[:title])
 
-        stage_name = page.find("#{path_nav_selector} .gl-path-active-item-indigo").text
+        stage_name = page.find("#{path_nav_selector} .gl-path-active-item").text
         expect(stage_name).to include(stage[:title])
         expect(stage_name).to include(stage[:time])
 
