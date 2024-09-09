@@ -34159,6 +34159,9 @@ ALTER TABLE ONLY dast_pre_scan_verifications
 ALTER TABLE p_ci_builds
     ADD CONSTRAINT fk_d3130c9a7f_p FOREIGN KEY (partition_id, commit_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE;
 
+ALTER TABLE ONLY ci_builds
+    ADD CONSTRAINT fk_d3130c9a7f_p_tmp FOREIGN KEY (partition_id, commit_id) REFERENCES p_ci_pipelines(partition_id, id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
+
 ALTER TABLE ONLY boards_epic_user_preferences
     ADD CONSTRAINT fk_d32c3d693c FOREIGN KEY (group_id) REFERENCES namespaces(id) ON DELETE CASCADE;
 
