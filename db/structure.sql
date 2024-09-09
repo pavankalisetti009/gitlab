@@ -18882,7 +18882,8 @@ CREATE TABLE todos (
     commit_id character varying,
     group_id integer,
     resolved_by_action smallint,
-    note_id bigint
+    note_id bigint,
+    snoozed_until timestamp with time zone
 );
 
 CREATE SEQUENCE todos_id_seq
