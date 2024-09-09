@@ -19,6 +19,7 @@ RSpec.describe 'registrations/groups/new', feature_category: :onboarding do
                   })
     allow(view).to receive(:current_user).and_return(user)
     allow(view).to receive(:import_sources_enabled?).and_return(false)
+    allow(view).to receive(:tracking_label).and_return('free_registration')
   end
 
   context 'when Google Tag Manager is enabled' do
