@@ -62,7 +62,7 @@ export default {
       return elements.some((element) => element === target || element?.contains(target));
     },
     routeToDashboard(e) {
-      const dropdownBtn = this.$refs.dropdown.$el;
+      const dropdownBtn = this.$refs.dropdown?.$el;
       const truncateToggleBtn = document.getElementById(TRUNCATE_BUTTON_ID);
 
       if (this.elementsTargeted(e.target, dropdownBtn, truncateToggleBtn)) return;

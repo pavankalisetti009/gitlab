@@ -4639,9 +4639,6 @@ msgstr ""
 msgid "AdminUsers|New user"
 msgstr ""
 
-msgid "AdminUsers|No users found"
-msgstr ""
-
 msgid "AdminUsers|Owned groups will be left"
 msgstr ""
 
@@ -35943,9 +35940,6 @@ msgstr ""
 msgid "No group provided"
 msgstr ""
 
-msgid "No groups found"
-msgstr ""
-
 msgid "No groups or projects found"
 msgstr ""
 
@@ -65254,7 +65248,7 @@ msgstr ""
 msgid "must contain only a discord user ID."
 msgstr ""
 
-msgid "must contain only a mastodon username."
+msgid "must contain only a mastodon handle."
 msgstr ""
 
 msgid "must have a repository"
