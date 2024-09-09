@@ -85,7 +85,7 @@ export const initialSelectedRole = (flattenDropdownItems, member) => {
   return flattenDropdownItems.find(
     ({ accessLevel, memberRoleId }) =>
       accessLevel === member.accessLevel.integerValue &&
-      memberRoleId === (member.accessLevel.memberRoleId ?? null),
+      (memberRoleId ?? null) === (member.accessLevel.memberRoleId ?? null),
   );
 };
 

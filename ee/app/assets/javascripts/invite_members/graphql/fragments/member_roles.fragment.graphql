@@ -6,13 +6,5 @@ fragment MemberRoles on MemberRoleConnection {
     id
     name
     description
-    membersCount
-    editPath
-    enabledPermissions {
-      nodes {
-        name
-        value
-      }
-    }
   }
 }

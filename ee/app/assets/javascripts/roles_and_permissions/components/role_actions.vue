@@ -1,7 +1,6 @@
 <script>
 import { GlDisclosureDropdown, GlDisclosureDropdownItem, GlTooltipDirective } from '@gitlab/ui';
 import { s__ } from '~/locale';
-import { visitUrl } from '~/lib/utils/url_utility';
 
 export default {
   i18n: {
@@ -20,17 +19,17 @@ export default {
     GlTooltip: GlTooltipDirective,
   },
   props: {
-    customRole: {
+    role: {
       type: Object,
       required: true,
     },
   },
   computed: {
     hasAssignedUsers() {
-      return this.customRole.membersCount > 0;
+      return this.role.membersCount > 0;
     },
     editRoleItem() {
-      return { text: this.$options.i18n.editRoleText };
+      return { text: this.$options.i18n.editRoleText, href: this.role.editPath };
     },
     deleteRoleItem() {
       return {
@@ -46,11 +45,6 @@ export default {
       return this.hasAssignedUsers ? this.$options.i18n.deleteDisabledTooltip : '';
     },
   },
-  methods: {
-    navigateToEditPage() {
-      visitUrl(this.customRole.editPath);
-    },
-  },
 };
 </script>
 <template>
@@ -63,7 +57,7 @@ export default {
     text-sr-only
     :toggle-text="$options.i18n.actionsText"
   >
-    <gl-disclosure-dropdown-item :item="editRoleItem" @action="navigateToEditPage" />
+    <gl-disclosure-dropdown-item :item="editRoleItem" />
     <gl-disclosure-dropdown-item
       v-gl-tooltip.left.viewport.d0="deleteTooltip"
       :item="deleteRoleItem"

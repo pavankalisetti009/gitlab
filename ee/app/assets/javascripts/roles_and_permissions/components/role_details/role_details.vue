@@ -44,7 +44,6 @@ export default {
     return {
       memberRole: null,
       roleToDelete: null,
-      errorMessage: '',
     };
   },
   apollo: {
@@ -54,11 +53,11 @@ export default {
       variables() {
         return { id: convertToGraphQLId(TYPENAME_MEMBER_ROLE, this.roleId) };
       },
-      skip() {
-        return Boolean(this.standardRole);
-      },
       error() {
         this.memberRole = null;
+      },
+      skip() {
+        return Boolean(this.standardRole);
       },
     },
   },

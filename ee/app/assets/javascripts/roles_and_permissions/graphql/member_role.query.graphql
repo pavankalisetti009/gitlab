@@ -1,19 +1,11 @@
+#import "./member_role.fragment.graphql"
+
 query memberRole($id: MemberRoleID!) {
   memberRole(id: $id) {
-    id
-    name
-    description
+    ...MemberRole
     createdAt
-    editPath
-    membersCount
     baseAccessLevel {
       stringValue
-      humanAccess
-    }
-    enabledPermissions {
-      nodes {
-        value
-      }
     }
   }
 }

@@ -1,18 +1,15 @@
 import { GlDisclosureDropdown, GlDisclosureDropdownItem } from '@gitlab/ui';
 import { mountExtended } from 'helpers/vue_test_utils_helper';
-import CustomRolesActions from 'ee/roles_and_permissions/components/custom_roles_actions.vue';
-import { visitUrl } from '~/lib/utils/url_utility';
+import RoleActions from 'ee/roles_and_permissions/components/role_actions.vue';
 
-jest.mock('~/lib/utils/url_utility');
-
-describe('CustomRolesActions', () => {
+describe('Role actions', () => {
   let wrapper;
 
   const mockCustomRole = { membersCount: 0, editPath: 'edit/path' };
 
-  const createComponent = ({ customRole = mockCustomRole } = {}) => {
-    wrapper = mountExtended(CustomRolesActions, {
-      propsData: { customRole },
+  const createComponent = ({ role = mockCustomRole } = {}) => {
+    wrapper = mountExtended(RoleActions, {
+      propsData: { role },
     });
   };
 
@@ -39,13 +36,7 @@ describe('CustomRolesActions', () => {
 
   describe('edit role', () => {
     it('renders the edit role action item', () => {
-      expect(findEditRole().props('item')).toMatchObject({ text: 'Edit role' });
-    });
-
-    it('goes to the edit page when clicked', () => {
-      findEditRole().vm.$emit('action');
-
-      expect(visitUrl).toHaveBeenCalledWith('edit/path');
+      expect(findEditRole().props('item')).toMatchObject({ text: 'Edit role', href: 'edit/path' });
     });
   });
 
@@ -65,7 +56,7 @@ describe('CustomRolesActions', () => {
 
     describe('when `membersCount` of a custom role is greater than 0', () => {
       beforeEach(() => {
-        createComponent({ customRole: { membersCount: 1 } });
+        createComponent({ role: { membersCount: 1 } });
       });
 
       it('disables the delete role action item', () => {
