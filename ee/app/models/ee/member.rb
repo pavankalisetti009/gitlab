@@ -304,11 +304,20 @@ module EE
       execute_hooks_for(:update) if saved_change_to_access_level? || saved_change_to_expires_at?
     end
 
-    override :post_create_hook
-    def post_create_hook
+    override :post_create_member_hook
+    def post_create_member_hook
       super
 
       execute_hooks_for(:create)
+    end
+
+    override :post_create_access_request_hook
+    def post_create_access_request_hook
+      super
+
+      return if ::Feature.disabled?(:group_access_request_webhooks, source)
+
+      execute_hooks_for(:request)
     end
 
     def execute_hooks_for(event)
@@ -316,7 +325,7 @@ module EE
       return unless source.licensed_feature_available?(:group_webhooks)
       return unless GroupHook.where(group_id: source.self_and_ancestors).exists?
 
-      run_after_commit do
+      run_after_commit_or_now do
         data = ::Gitlab::HookData::GroupMemberBuilder.new(self).build(event)
         source.execute_hooks(data, :member_hooks)
       end

@@ -115,10 +115,20 @@ module EE
       end
     end
 
-    def post_destroy_hook
+    override :post_destroy_member_hook
+    def post_destroy_member_hook
       super
 
       execute_hooks_for(:destroy)
+    end
+
+    override :post_destroy_access_request_hook
+    def post_destroy_access_request_hook
+      super
+
+      return if ::Feature.disabled?(:group_access_request_webhooks, source)
+
+      execute_hooks_for(:revoke)
     end
 
     override :seat_available
