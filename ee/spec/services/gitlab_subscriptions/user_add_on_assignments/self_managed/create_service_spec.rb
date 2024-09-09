@@ -37,6 +37,11 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
 
         expect { subject }.to change { Rails.cache.read(cache_key) }.from(false).to(nil)
       end
+
+      it 'sends seat assignment email' do
+        expect { subject }.to have_enqueued_mail(
+          GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email).with(user)
+      end
     end
 
     shared_examples 'error response' do |error|
@@ -54,6 +59,10 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
         expect { subject }.not_to change { add_on_purchase.assigned_users.count }
         expect(response.errors).to include(error)
       end
+
+      it 'does not enqueue the seat assignment email' do
+        expect { subject }.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
+      end
     end
 
     it_behaves_like 'success response'
@@ -66,6 +75,10 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
       it 'does not create new record' do
         expect { response }.not_to change { add_on_purchase.assigned_users.count }
         expect(response).to be_success
+      end
+
+      it 'does not enqueue the seat assignment email' do
+        expect { response }.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
       end
     end
 
@@ -132,6 +145,16 @@ RSpec.describe GitlabSubscriptions::UserAddOnAssignments::SelfManaged::CreateSer
           expect { response }.not_to raise_error
           expect(response.errors).to include('NO_SEATS_AVAILABLE')
         end
+      end
+    end
+
+    context 'when duo_seat_assignment_email_for_sm flag is off' do
+      before do
+        stub_feature_flags(duo_seat_assignment_email_for_sm: false)
+      end
+
+      it 'does not enqueue the seat assignment email' do
+        expect { response }.not_to have_enqueued_mail(GitlabSubscriptions::DuoSeatAssignmentMailer, :duo_pro_email)
       end
     end
   end
