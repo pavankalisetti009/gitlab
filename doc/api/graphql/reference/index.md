@@ -33207,7 +33207,8 @@ Representing a to-do entry.
 | <a id="todonote"></a>`note` | [`Note`](#note) | Note which created this to-do item. |
 | <a id="todoproject"></a>`project` | [`Project`](#project) | Project this to-do item is associated with. |
 | <a id="todostate"></a>`state` | [`TodoStateEnum!`](#todostateenum) | State of the to-do item. |
-| <a id="todotarget"></a>`target` | [`Todoable!`](#todoable) | Target of the to-do item. |
+| <a id="todotarget"></a>`target` **{warning-solid}** | [`Todoable!`](#todoable) | **Deprecated** in GitLab 17.4. Use `target_entity` field. |
+| <a id="todotargetentity"></a>`targetEntity` | [`Todoable`](#todoable) | Target of the to-do item. |
 | <a id="todotargettype"></a>`targetType` | [`TodoTargetEnum!`](#todotargetenum) | Target type of the to-do item. |
 | <a id="todotargeturl"></a>`targetUrl` | [`String`](#string) | URL of the to-do item target. |
 
