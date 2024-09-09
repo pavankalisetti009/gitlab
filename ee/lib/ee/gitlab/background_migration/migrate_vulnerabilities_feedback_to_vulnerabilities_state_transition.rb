@@ -118,7 +118,6 @@ module EE
             with_vulnerabilities_finding = feedbacks
                 .match_on_finding_uuid_or_security_finding_or_project_fingerprint
                 .preload(:security_finding, finding: [:vulnerability])
-                .allow_cross_joins_across_databases(url: 'https://gitlab.com/gitlab-org/gitlab/-/issues/479671')
                 .select { |feedback| !feedback.finding.nil? }
 
             without_vulnerability, with_vulnerability = with_vulnerabilities_finding.partition do |feedback|
