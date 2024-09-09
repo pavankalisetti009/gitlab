@@ -1,0 +1,9 @@
+---
+name: duo_seat_assignment_email_for_sm
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/463094
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/164104
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/issues/481830
+milestone: '17.4'
+group: group::activation
+type: beta
+default_enabled: true
