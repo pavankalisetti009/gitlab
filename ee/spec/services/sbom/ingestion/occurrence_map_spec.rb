@@ -6,7 +6,6 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
   let_it_be(:report_component) { build_stubbed(:ci_reports_sbom_component, source_package_name: 'source-package-name') }
   let_it_be(:report_source) { build_stubbed(:ci_reports_sbom_source) }
 
-  let(:vulnerability_info) { create(:sbom_vulnerabilities) }
   let(:base_data) do
     {
       component_id: nil,
@@ -24,7 +23,7 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
     }
   end
 
-  subject(:occurrence_map) { described_class.new(report_component, report_source, vulnerability_info) }
+  subject(:occurrence_map) { described_class.new(report_component, report_source) }
 
   describe '#to_h' do
     it 'returns a hash with base data without ids assigned' do
@@ -260,56 +259,6 @@ RSpec.describe Sbom::Ingestion::OccurrenceMap, feature_category: :dependency_man
   end
 
   context 'without vulnerability data' do
-    it { expect(occurrence_map.vulnerability_ids).to be_empty }
-    it { expect(occurrence_map.vulnerability_count).to be_zero }
-    it { expect(occurrence_map.highest_severity).to be_nil }
-  end
-
-  context 'with vulnerability data' do
-    let(:pipeline) { vulnerability_info.pipeline }
-    let!(:finding) do
-      create(
-        :vulnerabilities_finding,
-        :detected,
-        :with_dependency_scanning_metadata,
-        project: pipeline.project,
-        file: occurrence_map.input_file_path,
-        package: occurrence_map.name,
-        version: occurrence_map.version,
-        pipeline: pipeline
-      )
-    end
-
-    it { expect(occurrence_map.vulnerability_ids).to eq([finding.vulnerability_id]) }
-    it { expect(occurrence_map.vulnerability_count).to be 1 }
-    it { expect(occurrence_map.highest_severity).to eq 'high' }
-
-    context 'when component was found by trivy' do
-      let_it_be(:report_component_properties) do
-        build_stubbed(:ci_reports_sbom_source, type: :trivy, data: { 'PkgType' => 'alpine' })
-      end
-
-      let_it_be(:report_component) do
-        build_stubbed(:ci_reports_sbom_component, properties: report_component_properties,
-          purl_type: 'apk', namespace: 'alpine', name: 'alpine-baselayout')
-      end
-
-      let!(:finding) do
-        create(
-          :vulnerabilities_finding,
-          :detected,
-          :with_dependency_scanning_metadata,
-          project: pipeline.project,
-          file: occurrence_map.input_file_path,
-          package: report_component.purl.name,
-          version: occurrence_map.version,
-          pipeline: pipeline
-        )
-      end
-
-      it { expect(occurrence_map.vulnerability_ids).to eq([finding.vulnerability_id]) }
-      it { expect(occurrence_map.vulnerability_count).to be 1 }
-      it { expect(occurrence_map.highest_severity).to eq 'high' }
-    end
+    it { expect(occurrence_map.vulnerability_ids).to eq [] }
   end
 end

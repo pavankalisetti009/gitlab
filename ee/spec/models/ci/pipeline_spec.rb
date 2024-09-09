@@ -17,8 +17,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
     it { is_expected.to have_many(:security_scans).class_name('Security::Scan') }
     it { is_expected.to have_many(:security_findings).through(:security_scans).class_name('Security::Finding').source(:findings) }
     it { is_expected.to have_many(:downstream_bridges) }
-    it { is_expected.to have_many(:vulnerability_findings).through(:vulnerabilities_finding_pipelines).class_name('Vulnerabilities::Finding') }
-    it { is_expected.to have_many(:vulnerabilities_finding_pipelines).class_name('Vulnerabilities::FindingPipeline') }
     it { is_expected.to have_one(:dast_profiles_pipeline).class_name('Dast::ProfilesPipeline').with_foreign_key(:ci_pipeline_id) }
     it { is_expected.to have_one(:dast_profile).class_name('Dast::Profile').through(:dast_profiles_pipeline) }
   end
@@ -1072,43 +1070,6 @@ RSpec.describe Ci::Pipeline, feature_category: :continuous_integration do
       end
 
       it { is_expected.to eq(true) }
-    end
-  end
-
-  describe '#vulnerability_findings' do
-    subject(:vulnerability_findings) { pipeline.vulnerability_findings }
-
-    let_it_be(:other_pipeline) { create(:ci_pipeline) }
-    let_it_be(:initial_pipeline_finding) do
-      create(
-        :vulnerabilities_finding,
-        pipeline: pipeline,
-        latest_pipeline_id: other_pipeline.id
-      ).tap { |finding| create(:vulnerabilities_finding_pipeline, finding: finding, pipeline: other_pipeline) }
-    end
-
-    let_it_be(:latest_pipeline_finding) do
-      create(
-        :vulnerabilities_finding,
-        pipeline: other_pipeline,
-        latest_pipeline_id: pipeline.id
-      ).tap { |finding| create(:vulnerabilities_finding_pipeline, finding: finding, pipeline: pipeline) }
-    end
-
-    # When the FF is on, we simulate having dropped the table by
-    # raising an exception
-    it 'raises an exception when the FF is on' do
-      expect { vulnerability_findings }.to raise_error NotImplementedError
-    end
-
-    context 'with deprecate_vulnerability_occurrence_pipelines FF disabled' do
-      let(:expected_findings) { [initial_pipeline_finding, latest_pipeline_finding] }
-
-      before do
-        stub_feature_flags(deprecate_vulnerability_occurrence_pipelines: false)
-      end
-
-      it { is_expected.to match_array expected_findings }
     end
   end
 

@@ -505,19 +505,11 @@ module Vulnerabilities
     end
 
     def first_finding_pipeline
-      if Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-        initial_finding_pipeline
-      else
-        finding_pipelines.first&.pipeline
-      end
+      initial_finding_pipeline
     end
 
     def last_finding_pipeline
-      if Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-        latest_finding_pipeline
-      else
-        finding_pipelines.last&.pipeline
-      end
+      latest_finding_pipeline
     end
 
     def vulnerable_lines

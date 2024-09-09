@@ -33,18 +33,22 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
     end
 
     let(:occurrence_map_1) do
-      create(:sbom_occurrence_map, :for_occurrence_ingestion, :with_occurrence, vulnerabilities: vulnerability_info)
+      create(:sbom_occurrence_map, :for_occurrence_ingestion, :with_occurrence)
     end
 
     let(:occurrence_map_2) do
-      create(:sbom_occurrence_map, :for_occurrence_ingestion, :with_occurrence, vulnerabilities: vulnerability_info)
+      create(:sbom_occurrence_map, :for_occurrence_ingestion, :with_occurrence)
     end
 
     let(:occurrence_maps) { [occurrence_map_1, occurrence_map_2] }
-    let(:vulnerability_info) { create(:sbom_vulnerabilities, pipeline: pipeline) }
 
     subject(:ingest_occurrences_vulnerabilities) do
       described_class.execute(pipeline, occurrence_maps)
+    end
+
+    before do
+      occurrence_map_1.vulnerability_ids = [finding_1.vulnerability_id]
+      occurrence_map_2.vulnerability_ids = [finding_2.vulnerability_id]
     end
 
     it_behaves_like 'bulk insertable task'
@@ -83,7 +87,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
 
     context 'when there is more than one vulnerability per occurrence' do
       before do
-        create(
+        finding = create(
           :vulnerabilities_finding,
           :detected,
           :with_dependency_scanning_metadata,
@@ -93,6 +97,7 @@ RSpec.describe Sbom::Ingestion::Tasks::IngestOccurrencesVulnerabilities, feature
           version: occurrence_map_1.version,
           pipeline: pipeline
         )
+        occurrence_map_1.vulnerability_ids << finding.vulnerability_id
       end
 
       it 'creates all related occurrences_vulnerabilities' do

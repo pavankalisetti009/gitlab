@@ -33,7 +33,7 @@ module Sbom
         end
 
         def ingest_report(sbom_report)
-          IngestReportService.execute(pipeline, sbom_report, vulnerabilities_info)
+          IngestReportService.execute(pipeline, sbom_report)
         end
 
         def set_latest_ingested_sbom_pipeline_id
@@ -50,12 +50,6 @@ module Sbom
           Gitlab::EventStore.publish(
             Sbom::SbomIngestedEvent.new(data: { pipeline_id: pipeline.id })
           )
-        end
-
-        def vulnerabilities_info
-          return {} if ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-
-          @vulnerabilities_info ||= Sbom::Ingestion::Vulnerabilities.new(pipeline)
         end
       end
     end

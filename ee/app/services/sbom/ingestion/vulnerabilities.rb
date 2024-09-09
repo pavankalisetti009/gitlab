@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# TODO: This is dead code and will be removed as part of
+# https://gitlab.com/gitlab-org/gitlab/-/issues/450797
 module Sbom
   module Ingestion
     class Vulnerabilities
@@ -49,25 +51,11 @@ module Sbom
       end
 
       def vulnerability_findings
-        if ::Feature.enabled?(:deprecate_vulnerability_occurrence_pipelines, project)
-          vulnerability_findings_from_project
-        else
-          vulnerability_findings_from_pipelines
-        end
-      end
-      strong_memoize_attr :vulnerability_findings
-
-      def vulnerability_findings_from_pipelines
-        pipeline
-          .vulnerability_findings
-          .by_report_types(%i[container_scanning dependency_scanning])
-      end
-
-      def vulnerability_findings_from_project
         project
           .vulnerability_findings
           .by_report_types(%i[container_scanning dependency_scanning])
       end
+      strong_memoize_attr :vulnerability_findings
 
       def dependency_path(finding)
         return finding.file if finding.dependency_scanning?

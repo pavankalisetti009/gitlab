@@ -9,7 +9,7 @@ RSpec.describe Sbom::Ingestion::IngestReportService, feature_category: :dependen
 
   let(:sequencer) { ::Ingestion::Sequencer.new }
 
-  subject(:execute) { described_class.execute(pipeline, sbom_report, {}) }
+  subject(:execute) { described_class.execute(pipeline, sbom_report) }
 
   describe '#execute' do
     before do

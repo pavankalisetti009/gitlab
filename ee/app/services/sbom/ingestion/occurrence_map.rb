@@ -5,15 +5,15 @@ module Sbom
     class OccurrenceMap
       include Gitlab::Utils::StrongMemoize
 
-      attr_writer :vulnerability_ids
       attr_reader :report_component, :report_source, :vulnerabilities
-      attr_accessor :component_id, :component_version_id, :source_id, :occurrence_id, :source_package_id, :uuid
+      attr_accessor :component_id, :component_version_id, :source_id, :occurrence_id, :source_package_id, :uuid,
+        :vulnerability_ids
 
-      def initialize(report_component, report_source, vulnerabilities)
+      def initialize(report_component, report_source)
         @report_component = report_component
         @report_source = report_source
         @vulnerabilities = vulnerabilities
-        @vulnerability_ids = nil
+        @vulnerability_ids = []
       end
 
       def to_h
@@ -36,29 +36,6 @@ module Sbom
         version.present?
       end
 
-      def vulnerability_count
-        original_vulnerability_ids.count
-      end
-
-      def highest_severity
-        vulnerabilities_info[:highest_severity]
-      end
-
-      # This weird code is here until we remove the
-      # `deprecate_vulnerability_occurrence_pipelines` FF. When that
-      # FF is removed, the original_* code branch will be deleted and
-      # this can be rolled up into a regular attr_accesor
-      def vulnerability_ids
-        return @vulnerability_ids unless @vulnerability_ids.nil?
-
-        original_vulnerability_ids
-      end
-
-      def original_vulnerability_ids
-        vulnerabilities_info[:vulnerability_ids]
-      end
-      strong_memoize_attr :original_vulnerability_ids
-
       def purl_type
         report_component.purl&.type
       end
@@ -77,11 +54,6 @@ module Sbom
       delegate :name, :version, :source_package_name, :ancestors, to: :report_component
 
       private
-
-      def vulnerabilities_info
-        @vulnerabilities.fetch(name, version, input_file_path)
-      end
-      strong_memoize_attr :vulnerabilities_info
 
       def image_data_present?
         image_name.present? && image_tag.present?
