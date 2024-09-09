@@ -5,6 +5,42 @@ require 'spec_helper'
 RSpec.describe ProductAnalytics::Funnel, feature_category: :product_analytics_data_management do
   let_it_be(:group) { create(:group) }
   let_it_be(:project) { create(:project, :with_product_analytics_funnel, group: group) }
+  let_it_be(:project_invalid_seconds) { create(:project, :with_invalid_seconds_product_analytics_funnel, group: group) }
+
+  let_it_be(:project_invalid_step_name) do
+    create(:project, :with_invalid_step_name_product_analytics_funnel, group: group)
+  end
+
+  let_it_be(:project_invalid_step_target) do
+    create(:project, :with_invalid_step_target_product_analytics_funnel, group: group)
+  end
+
+  let(:query) do
+    <<-SQL
+        SELECT
+          (SELECT max(derived_tstamp) FROM gitlab_project_#{project.id}.snowplow_events) as x,
+          arrayJoin(range(1, 3)) AS level,
+          sumIf(c, user_level >= level) AS count
+        FROM
+          (SELECT
+             level AS user_level,
+             count(*) AS c
+           FROM (
+               SELECT
+                 user_id,
+                 windowFunnel(3600, 'strict_order')(toDateTime(derived_tstamp),
+                    page_urlpath = '/page1.html', page_urlpath = '/page2.html'
+                 ) AS level
+               FROM gitlab_project_#{project.id}.snowplow_events
+               WHERE ${FILTER_PARAMS.funnel_example_1.date.filter('derived_tstamp')}
+               GROUP BY user_id
+               )
+           GROUP BY level
+          )
+          GROUP BY level
+	        ORDER BY level ASC
+    SQL
+  end
 
   before do
     allow(Gitlab::CurrentSettings).to receive(:product_analytics_enabled?).and_return(true)
@@ -14,6 +50,24 @@ RSpec.describe ProductAnalytics::Funnel, feature_category: :product_analytics_da
   subject(:funnel) { project.product_analytics_funnels.first }
 
   it { is_expected.to validate_numericality_of(:seconds_to_convert) }
+
+  context 'when the funnel has invalid seconds' do
+    subject(:funnel) { project_invalid_seconds.product_analytics_funnels.first }
+
+    it { is_expected.to be_invalid }
+  end
+
+  context 'when the funnel has invalid step name' do
+    subject(:funnel) { project_invalid_step_name.product_analytics_funnels.first }
+
+    it { is_expected.to be_invalid }
+  end
+
+  context 'when the funnel has invalid step target' do
+    subject(:funnel) { project_invalid_step_target.product_analytics_funnels.first }
+
+    it { is_expected.to be_invalid }
+  end
 
   describe '.for_project' do
     subject(:funnels) { described_class.for_project(project) }
@@ -138,37 +192,92 @@ RSpec.describe ProductAnalytics::Funnel, feature_category: :product_analytics_da
     end
   end
 
+  describe '#to_h' do
+    subject { project.product_analytics_funnels.first.to_h }
+
+    let(:object) do
+      {
+        name: 'funnel_example_1',
+        schema: query,
+        steps: ["page_urlpath = '/page1.html'", "page_urlpath = '/page2.html'"]
+      }
+    end
+
+    it { is_expected.to eq(object) }
+
+    context 'when the funnel has invalid seconds' do
+      subject { project_invalid_seconds.product_analytics_funnels.first.to_h }
+
+      it { is_expected.to eq(nil) }
+    end
+
+    context 'when the funnel has invalid step name' do
+      subject { project_invalid_step_name.product_analytics_funnels.first.to_h }
+
+      it { is_expected.to eq(nil) }
+    end
+
+    context 'when the funnel has invalid step target' do
+      subject { project_invalid_step_target.product_analytics_funnels.first.to_h }
+
+      it { is_expected.to eq(nil) }
+    end
+  end
+
+  describe '#to_json' do
+    subject { project.product_analytics_funnels.first.to_json }
+
+    let(:object) do
+      {
+        name: 'funnel_example_1',
+        schema: query,
+        steps: ["page_urlpath = '/page1.html'", "page_urlpath = '/page2.html'"]
+      }.to_json
+    end
+
+    it { is_expected.to eq(object) }
+
+    context 'when the funnel has invalid seconds' do
+      subject { project_invalid_seconds.product_analytics_funnels.first.to_json }
+
+      it { is_expected.to eq('null') }
+    end
+
+    context 'when the funnel has invalid step name' do
+      subject { project_invalid_step_name.product_analytics_funnels.first.to_json }
+
+      it { is_expected.to eq('null') }
+    end
+
+    context 'when the funnel has invalid step target' do
+      subject { project_invalid_step_target.product_analytics_funnels.first.to_json }
+
+      it { is_expected.to eq('null') }
+    end
+  end
+
   describe '#to_sql' do
     subject { project.product_analytics_funnels.first.to_sql }
 
-    let(:query) do
-      <<-SQL
-        SELECT
-          (SELECT max(derived_tstamp) FROM gitlab_project_#{project.id}.snowplow_events) as x,
-          arrayJoin(range(1, 3)) AS level,
-          sumIf(c, user_level >= level) AS count
-        FROM
-          (SELECT
-             level AS user_level,
-             count(*) AS c
-           FROM (
-               SELECT
-                 user_id,
-                 windowFunnel(3600, 'strict_order')(toDateTime(derived_tstamp),
-                    page_urlpath = '/page1.html', page_urlpath = '/page2.html'
-                 ) AS level
-               FROM gitlab_project_#{project.id}.snowplow_events
-               WHERE ${FILTER_PARAMS.funnel_example_1.date.filter('derived_tstamp')}
-               GROUP BY user_id
-               )
-           GROUP BY level
-          )
-          GROUP BY level
-	        ORDER BY level ASC
-      SQL
+    it { is_expected.to eq(query) }
+
+    context 'when the funnel has invalid seconds' do
+      subject { project_invalid_seconds.product_analytics_funnels.first.to_sql }
+
+      it { is_expected.to eq(nil) }
     end
 
-    it { is_expected.to eq(query) }
+    context 'when the funnel has invalid step name' do
+      subject { project_invalid_step_name.product_analytics_funnels.first.to_sql }
+
+      it { is_expected.to eq(nil) }
+    end
+
+    context 'when the funnel has invalid step target' do
+      subject { project_invalid_step_target.product_analytics_funnels.first.to_sql }
+
+      it { is_expected.to eq(nil) }
+    end
   end
 
   private

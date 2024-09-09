@@ -21,11 +21,39 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
       message: 'Add funnel',
       branch_name: 'master'
     )
+    previous_custom_dashboard_project.repository.create_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_seconds.yml',
+      File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_seconds.yaml')),
+      message: 'Add invalid seconds funnel definition',
+      branch_name: 'master'
+    )
+    previous_custom_dashboard_project.repository.create_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_step.yml',
+      File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_name.yaml')),
+      message: 'Add invalid step name funnel definition',
+      branch_name: 'master'
+    )
     new_custom_dashboard_project.repository.create_file(
       project.creator,
       '.gitlab/analytics/funnels/example1.yml',
       File.read(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_changed.yaml')),
       message: 'Add funnel',
+      branch_name: 'master'
+    )
+    new_custom_dashboard_project.repository.create_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_seconds.yml',
+      File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_seconds.yaml')),
+      message: 'Add invalid seconds funnel definition',
+      branch_name: 'master'
+    )
+    new_custom_dashboard_project.repository.create_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_step.yml',
+      File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_name.yaml')),
+      message: 'Add invalid step name funnel definition',
       branch_name: 'master'
     )
   end
@@ -66,9 +94,11 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
           expect(payload).to match(
             a_hash_including(
               project_ids: ["gitlab_project_#{project.id}"],
-              funnels: [a_hash_including(
-                state: "deleted"
-              )]
+              funnels: [
+                { name: "example1", state: "deleted" },
+                { name: "funnel_example_invalid_seconds", state: "deleted" },
+                { name: "funnel_example_invalid_step", state: "deleted" }
+              ]
             )
           )
         end
@@ -90,11 +120,15 @@ RSpec.describe ProductAnalytics::MoveFunnelsWorker, feature_category: :product_a
           expect(payload).to match(
             a_hash_including(
               project_ids: ["gitlab_project_#{project.id}"],
-              funnels: [a_hash_including(
-                state: "deleted"
-              ), a_hash_including(
-                state: "created"
-              )]
+              funnels: [
+                { name: "example1", state: "deleted" },
+                { name: "funnel_example_invalid_seconds", state: "deleted" },
+                { name: "funnel_example_invalid_step", state: "deleted" },
+                a_hash_including(
+                  name: "example1",
+                  state: "created"
+                )
+              ]
             )
           )
         end

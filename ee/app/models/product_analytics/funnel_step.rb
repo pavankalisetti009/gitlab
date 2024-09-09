@@ -4,9 +4,13 @@ module ProductAnalytics
   class FunnelStep
     include ActiveModel::Validations
 
-    attr_reader :name, :target, :action
+    attr_accessor :name, :target, :action
 
-    validates! :action, inclusion: { in: %w[pageview] }
+    # This model is not used as a true ActiveRecord
+    # You must run .valid? wherever this model is used for these validations to be run
+    validates :action, inclusion: { in: %w[pageview] }
+    validates :name, format: { with: /\A[\w\-]+\z/ }
+    validates :target, format: { with: %r{\A[\w\-./]+\z} }
 
     def initialize(name:, target:, action:, funnel:)
       @name = name

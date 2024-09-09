@@ -56,6 +56,8 @@ module ProductAnalytics
       end
 
       funnels_to_create.each do |funnel|
+        next unless funnel.valid?
+
         funnels_to_send << {
           state: 'created',
           name: funnel.name,

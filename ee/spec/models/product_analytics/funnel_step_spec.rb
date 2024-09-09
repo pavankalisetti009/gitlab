@@ -13,7 +13,14 @@ RSpec.describe ProductAnalytics::FunnelStep, feature_category: :product_analytic
     )
   end
 
-  let(:funnel_step) { described_class.new(name: 'test', target: '/page1.html', action: 'pageview', funnel: funnel) }
+  subject(:funnel_step) { described_class.new(name: 'test', target: '/page1.html', action: 'pageview', funnel: funnel) }
+
+  it { is_expected.to validate_inclusion_of(:action).in_array(%w[pageview]) }
+  it { is_expected.not_to allow_value('test').for(:action) }
+  it { is_expected.to allow_value('Test_name-format01').for(:name) }
+  it { is_expected.not_to allow_value('${(test(){})}').for(:name) }
+  it { is_expected.to allow_value('section/subsection/page.html').for(:target) }
+  it { is_expected.not_to allow_value('${(test(){})}').for(:target) }
 
   describe '#initialize' do
     it 'has a name' do
@@ -26,16 +33,6 @@ RSpec.describe ProductAnalytics::FunnelStep, feature_category: :product_analytic
 
     it 'has an action' do
       expect(funnel_step.action).to eq('pageview')
-    end
-
-    context 'when action is not a valid type' do
-      let(:funnel_step) do
-        described_class.new(name: 'test', target: '/page1.html', action: 'invalid', funnel: funnel).valid?
-      end
-
-      it 'raises an error' do
-        expect { funnel_step }.to raise_error(ActiveModel::StrictValidationFailed)
-      end
     end
   end
 

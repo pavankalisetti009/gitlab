@@ -8,8 +8,11 @@ module ProductAnalytics
 
     FUNNELS_ROOT_LOCATION = '.gitlab/analytics/funnels'
 
+    # This model is not used as a true ActiveRecord
+    # You must run .valid? wherever this model is used for these validations to be run
     validates :name, presence: true
     validates :seconds_to_convert, numericality: { only_integer: true, greater_than: 0 }
+    validate :check_steps_validity
 
     def self.from_diff(diff, project:, sha: nil, commit: nil)
       config_project = project.analytics_dashboards_configuration_project || project
@@ -98,7 +101,13 @@ module ProductAnalytics
       @previous_name = previous_name
     end
 
+    def check_steps_validity
+      errors.add(:base, "Invalid steps") unless steps.all?(&:valid?)
+    end
+
     def to_h
+      return unless valid?
+
       {
         name: name,
         schema: to_sql,
@@ -126,6 +135,8 @@ module ProductAnalytics
     end
 
     def to_sql
+      return unless valid?
+
       <<-SQL
         SELECT
           (SELECT max(derived_tstamp) FROM gitlab_project_#{project.id}.snowplow_events) as x,
