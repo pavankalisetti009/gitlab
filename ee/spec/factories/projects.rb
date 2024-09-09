@@ -214,6 +214,48 @@ FactoryBot.modify do
       end
     end
 
+    trait :with_invalid_seconds_product_analytics_funnel do
+      repository
+
+      after(:create) do |project|
+        project.repository.create_file(
+          project.creator,
+          '.gitlab/analytics/funnels/funnel_example_invalid_seconds.yaml',
+          File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_seconds.yaml')).read,
+          message: 'Add invalid seconds funnel definition',
+          branch_name: 'master'
+        )
+      end
+    end
+
+    trait :with_invalid_step_name_product_analytics_funnel do
+      repository
+
+      after(:create) do |project|
+        project.repository.create_file(
+          project.creator,
+          '.gitlab/analytics/funnels/funnel_example_invalid_step_name.yaml',
+          File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_name.yaml')).read,
+          message: 'Add invalid step name funnel definition',
+          branch_name: 'master'
+        )
+      end
+    end
+
+    trait :with_invalid_step_target_product_analytics_funnel do
+      repository
+
+      after(:create) do |project|
+        project.repository.create_file(
+          project.creator,
+          '.gitlab/analytics/funnels/funnel_example_invalid_step_target.yaml',
+          File.open(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_target.yaml')).read,
+          message: 'Add invalid step target funnel definition',
+          branch_name: 'master'
+        )
+      end
+    end
+
     trait(:allow_pipeline_trigger_approve_deployment) { allow_pipeline_trigger_approve_deployment { true } }
 
     trait :verification_succeeded do

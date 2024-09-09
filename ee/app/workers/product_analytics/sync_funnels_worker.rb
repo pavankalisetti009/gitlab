@@ -39,8 +39,10 @@ module ProductAnalytics
     end
 
     def new_funnels
-      funnel_files.select(&:new_file).map do |file|
+      funnel_files.select(&:new_file).filter_map do |file|
         funnel = ProductAnalytics::Funnel.from_diff(file, project: @project)
+        next unless funnel.valid?
+
         {
           state: 'created',
           name: funnel.name,
@@ -51,8 +53,10 @@ module ProductAnalytics
 
     def updated_funnels
       # if a file is not new or deleted, but is in a diff, we assume it is changed.
-      funnel_files.select { |f| !f.new_file && !f.deleted_file }.map do |file|
+      funnel_files.select { |f| !f.new_file && !f.deleted_file }.filter_map do |file|
         funnel = ProductAnalytics::Funnel.from_diff(file, project: @project, commit: @commit)
+        next unless funnel.valid?
+
         o = {
           state: 'updated',
           name: funnel.name,

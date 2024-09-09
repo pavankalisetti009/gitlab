@@ -27,6 +27,22 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
 
         worker
       end
+
+      context 'when the new funnel is invalid' do
+        before do
+          create_invalid_funnel
+        end
+
+        after do
+          delete_funnel("funnel_example_invalid_step.yml")
+        end
+
+        it 'does not attempt to post to the API' do
+          expect(Gitlab::HTTP).not_to receive(:post)
+
+          worker
+        end
+      end
     end
 
     context 'when an updated funnel is in the commit' do
@@ -51,12 +67,29 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
 
         worker
       end
+
+      context 'when the updated funnel is invalid' do
+        before do
+          create_invalid_funnel
+          update_invalid_funnel
+        end
+
+        after do
+          delete_funnel("funnel_example_invalid_step.yml")
+        end
+
+        it 'does not attempt to post to the API' do
+          expect(Gitlab::HTTP).not_to receive(:post)
+
+          worker
+        end
+      end
     end
 
     context 'when an renamed funnel is in the commit' do
       before do
         create_valid_funnel
-        rename_funnel
+        rename_valid_funnel
       end
 
       after do
@@ -74,6 +107,23 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         end
 
         worker
+      end
+
+      context 'when the renamed funnel is invalid' do
+        before do
+          create_invalid_funnel
+          rename_invalid_funnel
+        end
+
+        after do
+          delete_funnel("funnel_example_invalid_seconds.yml")
+        end
+
+        it 'does not attempt to post to the API' do
+          expect(Gitlab::HTTP).not_to receive(:post)
+
+          worker
+        end
       end
     end
 
@@ -94,6 +144,26 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
         end
 
         worker
+      end
+
+      context 'when the deleted funnel is invalid' do
+        before do
+          create_invalid_funnel
+          delete_funnel("funnel_example_invalid_step.yml")
+        end
+
+        it 'is successful' do
+          url_to_projects_regex.each do |url, projects_regex|
+            expect(Gitlab::HTTP).to receive(:post)
+                                      .with(URI.parse(url.to_s), {
+                                        allow_local_requests: true,
+                                        body: Regexp.new(projects_regex.source + /.*\"state\":\"deleted\"/.source)
+                                      }).once
+                                      .and_return(instance_double("HTTParty::Response", body: { result: 'success' }))
+          end
+
+          worker
+        end
       end
     end
 
@@ -273,7 +343,17 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
     )
   end
 
-  def rename_funnel
+  def create_invalid_funnel
+    project.repository.create_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_step.yml',
+      File.read(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_name.yaml')),
+      message: 'Add invalid funnel',
+      branch_name: 'master'
+    )
+  end
+
+  def rename_valid_funnel
     project.repository.update_file(
       project.creator,
       '.gitlab/analytics/funnels/example2.yml',
@@ -284,12 +364,33 @@ RSpec.describe ProductAnalytics::SyncFunnelsWorker, feature_category: :product_a
     )
   end
 
+  def rename_invalid_funnel
+    project.repository.update_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_seconds.yml',
+      File.read(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_seconds.yaml')),
+      message: 'Rename invalid funnel',
+      branch_name: 'master',
+      previous_path: '.gitlab/analytics/funnels/funnel_example_invalid_step.yml'
+    )
+  end
+
   def update_funnel
     project.repository.update_file(
       project.creator,
       '.gitlab/analytics/funnels/example1.yml',
       File.read(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_changed.yaml')),
       message: 'Update funnel',
+      branch_name: 'master'
+    )
+  end
+
+  def update_invalid_funnel
+    project.repository.update_file(
+      project.creator,
+      '.gitlab/analytics/funnels/funnel_example_invalid_step.yml',
+      File.read(Rails.root.join('ee/spec/fixtures/product_analytics/funnel_example_invalid_step_name.yaml')),
+      message: 'Update invalid funnel',
       branch_name: 'master'
     )
   end
