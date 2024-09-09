@@ -62,6 +62,38 @@ RSpec.describe AppSec::Dast::SiteProfiles::UpdateService, feature_category: :dyn
       end
     end
 
+    context 'when the site profile is associated with a branch' do
+      let_it_be(:project) { create(:project, :repository) }
+      let_it_be(:dast_site_profile) { create(:dast_site_profile, project: project) }
+      let_it_be(:dast_site_profile_id) { dast_site_profile.id }
+      let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: 'master', dast_site_profile_id: dast_site_profile.id) }
+
+      before do
+        project.add_developer(user)
+      end
+
+      context 'when the user is allowed to push to the branch' do
+        it 'returns a success status' do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(true)
+          end
+
+          expect(status).to eq(:success)
+        end
+      end
+
+      context 'when the user is not allowed to push to the branch' do
+        it 'returns an error' do
+          expect_next_instance_of(Gitlab::UserAccess) do |instance|
+            expect(instance).to receive(:can_push_to_branch?).with('master').and_return(false)
+          end
+
+          expect(status).to eq(:error)
+          expect(message).to eq("Cannot modify #{dast_site_profile.name} referenced in scan")
+        end
+      end
+    end
+
     context 'when the user can run a dast scan' do
       before do
         project.add_developer(user)

@@ -63,6 +63,33 @@ RSpec.describe AppSec::Dast::Profiles::UpdateService, :dynamic_analysis,
         end
       end
 
+      context 'when the user cannot push to the branch associated with a DAST scan' do
+        let_it_be(:protected_branch) { create(:protected_branch, project: project, name: 'master', authorize_user_to_push: nil, authorize_user_to_merge: nil) }
+        let_it_be(:dast_profile, reload: true) { create(:dast_profile, project: project, branch_name: 'master', tags: old_tags) }
+
+        let(:params) do
+          {
+            name: SecureRandom.hex,
+            description: SecureRandom.hex,
+            branch_name: 'master',
+            dast_profile: dast_profile,
+            dast_site_profile_id: dast_site_profile.id,
+            dast_scanner_profile_id: dast_scanner_profile.id
+          }
+        end
+
+        before do
+          project.add_members([user, scheduler_owner], :developer)
+        end
+
+        it 'communicates failure' do
+          aggregate_failures do
+            expect(subject.status).to eq(:error)
+            expect(subject.message).to eq('You are not authorized to update this profile')
+          end
+        end
+      end
+
       context 'when the user can run a DAST scan' do
         before do
           project.add_members([user, scheduler_owner], :developer)

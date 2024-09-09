@@ -9,10 +9,10 @@ RSpec.describe Resolvers::AppSec::Dast::ProfileResolver do
     stub_licensed_features(security_on_demand_scans: true)
   end
 
-  let_it_be(:project) { create(:project) }
+  let_it_be(:project) { create(:project, :repository) }
   let_it_be(:developer) { create(:user, developer_of: project) }
-  let_it_be(:dast_profile1) { create(:dast_profile, project: project) }
-  let_it_be(:dast_profile2) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile1) { create(:dast_profile, project: project, branch_name: 'master') }
+  let_it_be(:dast_profile2) { create(:dast_profile, project: project, branch_name: 'master') }
 
   let(:current_user) { developer }
 
@@ -59,10 +59,18 @@ RSpec.describe Resolvers::AppSec::Dast::ProfileResolver do
   private
 
   def dast_profiles
-    resolve(described_class, obj: project, ctx: { current_user: current_user })
+    resolve(described_class,
+      obj: project,
+      args: { calls_gitaly: true },
+      ctx: { current_user: current_user },
+      field_opts: { calls_gitaly: true })
   end
 
   def dast_profile(id:)
-    resolve(described_class.single, obj: project, args: { id: id }, ctx: { current_user: current_user })
+    resolve(described_class.single,
+      obj: project,
+      args: { id: id, calls_gitaly: true },
+      ctx: { current_user: current_user },
+      field_opts: { calls_gitaly: true })
   end
 end

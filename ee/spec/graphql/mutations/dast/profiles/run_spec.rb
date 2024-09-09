@@ -79,7 +79,10 @@ RSpec.describe Mutations::Dast::Profiles::Run, :dynamic_analysis,
 
         context 'when scan_type=active' do
           let(:dast_scanner_profile) { create(:dast_scanner_profile, project: project, scan_type: 'active') }
-          let(:dast_profile) { create(:dast_profile, project: project, dast_scanner_profile: dast_scanner_profile) }
+          let(:dast_profile) do
+            create(:dast_profile, project: project, dast_scanner_profile: dast_scanner_profile,
+              branch_name: project.default_branch)
+          end
 
           context 'when target is not validated' do
             it 'communicates failure' do

@@ -12,6 +12,7 @@ module AppSec
           dast_scanner_profile = find_dast_scanner_profile(params[:id])
           return ServiceResponse.error(message: _('Scanner profile not found for given parameters')) unless dast_scanner_profile
           return ServiceResponse.error(message: _('Cannot modify %{profile_name} referenced in security policy') % { profile_name: dast_scanner_profile.name }) if referenced_in_security_policy?(dast_scanner_profile)
+          return ServiceResponse.error(message: _('Cannot modify %{profile_name} referenced in scan') % { profile_name: dast_scanner_profile.name }) unless dast_scanner_profile.can_edit_profile?(current_user)
 
           old_params = dast_scanner_profile.attributes.symbolize_keys
           update_params = update_params(params[:profile_name])

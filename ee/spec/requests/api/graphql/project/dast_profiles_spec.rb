@@ -7,11 +7,11 @@ RSpec.describe 'Query.project(fullPath).dastProfiles', feature_category: :dynami
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:dast_profile1) { create(:dast_profile, project: project) }
-  let_it_be(:dast_profile2) { create(:dast_profile, project: project) }
-  let_it_be(:dast_profile3) { create(:dast_profile, project: project) }
-  let_it_be(:dast_profile4) { create(:dast_profile, project: project) }
-  let_it_be(:dast_profile5) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile1) { create(:dast_profile, project: project, branch_name: project.default_branch) }
+  let_it_be(:dast_profile2) { create(:dast_profile, project: project, branch_name: project.default_branch) }
+  let_it_be(:dast_profile3) { create(:dast_profile, project: project, branch_name: project.default_branch) }
+  let_it_be(:dast_profile4) { create(:dast_profile, project: project, branch_name: project.default_branch) }
+  let_it_be(:dast_profile5) { create(:dast_profile, project: project, branch_name: project.default_branch) }
   let_it_be(:dast_profile_schedule) { create(:dast_profile_schedule, project: project, dast_profile: dast_profile5) }
 
   let(:all_records) do

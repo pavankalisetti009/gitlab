@@ -309,7 +309,7 @@ RSpec.describe 'DAST profiles (GraphQL fixtures)' do
     describe 'scheduled_dast_profiles' do
       path = 'on_demand_scans/graphql/scheduled_dast_profiles.query.graphql'
 
-      let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+      let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
 
       let_it_be(:dast_profile_schedule) do
         create(:dast_profile_schedule, project: project, dast_profile: dast_profile)
@@ -373,7 +373,7 @@ RSpec.describe 'DAST profiles (GraphQL fixtures)' do
       path = 'on_demand_scans/graphql/dast_profiles.query.graphql'
 
       let_it_be(:dast_profiles) do
-        create_list(:dast_profile, 3, project: project)
+        create_list(:dast_profile, 3, project: project, branch_name: project.default_branch)
       end
 
       before do

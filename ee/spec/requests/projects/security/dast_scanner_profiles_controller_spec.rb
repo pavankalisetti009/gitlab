@@ -103,5 +103,18 @@ RSpec.describe Projects::Security::DastScannerProfilesController, type: :request
         expect(response).to have_gitlab_http_status(:not_found)
       end
     end
+
+    context 'can not edit scan' do
+      let_it_be(:project, reload: true) { create(:project, :repository) }
+      let_it_be(:protected_branch) { create(:protected_branch, authorize_user_to_push: nil, authorize_user_to_merge: nil, project: project, name: 'master') }
+      let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: protected_branch.name) }
+      let_it_be(:dast_scanner_profile) { dast_profile.dast_scanner_profile }
+
+      it 'sees a 404 error' do
+        get edit_path
+
+        expect(response).to have_gitlab_http_status(:not_found)
+      end
+    end
   end
 end

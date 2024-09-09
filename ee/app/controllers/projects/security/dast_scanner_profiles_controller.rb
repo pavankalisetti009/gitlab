@@ -19,6 +19,8 @@ module Projects
         @scanner_profile = @project
           .dast_scanner_profiles
           .find(params[:id])
+
+        render_404 unless @scanner_profile&.can_edit_profile?(current_user)
       end
     end
   end

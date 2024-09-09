@@ -7,7 +7,7 @@ RSpec.describe 'Query.project(fullPath).dastProfile', feature_category: :dynamic
 
   let_it_be(:project) { create(:project, :repository) }
   let_it_be(:current_user) { create(:user) }
-  let_it_be(:dast_profile) { create(:dast_profile, project: project) }
+  let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: project.default_branch) }
 
   let(:query) do
     fields = all_graphql_fields_for('DastProfile')

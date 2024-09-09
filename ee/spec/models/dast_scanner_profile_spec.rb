@@ -138,6 +138,46 @@ RSpec.describe DastScannerProfile, :dynamic_analysis, feature_category: :dynamic
     end
   end
 
+  describe '#can_edit_profile?' do
+    using RSpec::Parameterized::TableSyntax
+
+    let_it_be(:user) { create(:user, maintainer_of: project) }
+    let_it_be(:project) { create(:project, :repository) }
+    let_it_be(:dast_profile) { create(:dast_profile, project: project, branch_name: 'master') }
+
+    subject { DastScannerProfilesFinder.new(id: dast_profile.dast_scanner_profile_id).execute.to_a.first }
+
+    where(:can_push_to_branch, :result) do
+      false | false
+      true  | true
+    end
+
+    with_them do
+      it do
+        expect_next_instance_of(Gitlab::UserAccess) do |instance|
+          expect(instance).to receive(:can_push_to_branch?).with('master').and_return(can_push_to_branch)
+        end
+
+        expect(subject.can_edit_profile?(user)).to eq(result)
+      end
+    end
+  end
+
+  describe '#can_edit_profile? avoids N+1 queries' do
+    it do
+      project = create(:project, :repository)
+      user = create(:user, maintainer_of: project)
+      dast_profile1 = create(:dast_profile, project: project, branch_name: 'master')
+      dast_scanner_profile1 = dast_profile1.dast_scanner_profile
+
+      control = ActiveRecord::QueryRecorder.new { dast_scanner_profile1.can_edit_profile?(user) }
+
+      create(:dast_profile, project: project, branch_name: 'master', dast_scanner_profile: dast_scanner_profile1)
+
+      expect { dast_scanner_profile1.can_edit_profile?(user) }.not_to exceed_query_limit(control)
+    end
+  end
+
   context 'with loose foreign key on dast_scanner_profiles.project_id' do
     it_behaves_like 'cleanup by a loose foreign key' do
       let_it_be(:parent) { create(:project) }

@@ -53,4 +53,16 @@ class DastScannerProfile < ::Gitlab::Database::SecApplicationRecord
       .inject(&:merge)
       .to_a
   end
+
+  def can_edit_profile?(user)
+    can_edit = true
+    ::Dast::ProfilesFinder.new(scanner_profile_id: id, with_project: true).execute.find_each do |profile|
+      unless profile.can_edit_scan?(user)
+        can_edit = false
+        break
+      end
+    end
+
+    can_edit
+  end
 end

@@ -10789,6 +10789,9 @@ msgstr ""
 msgid "Cannot merge"
 msgstr ""
 
+msgid "Cannot modify %{profile_name} referenced in scan"
+msgstr ""
+
 msgid "Cannot modify %{profile_name} referenced in security policy"
 msgstr ""
 

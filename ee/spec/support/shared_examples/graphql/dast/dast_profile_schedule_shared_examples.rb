@@ -22,7 +22,9 @@ RSpec.shared_examples 'query dastProfiles.dastProfileSchedule shared examples' d
       create(
         :dast_profile_schedule,
         project: profile_project,
-        dast_profile: create(:dast_profile, project: profile_project), owner: extra_user
+        dast_profile:
+          create(:dast_profile, project: profile_project, branch_name: profile_project.default_branch),
+        owner: extra_user
       )
     end
 
