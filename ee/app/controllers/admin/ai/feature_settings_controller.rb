@@ -41,14 +41,16 @@ module Admin
       def update
         @feature_setting = ::Ai::FeatureSetting.find(params[:id])
 
-        if @feature_setting.update(feature_settings_params)
+        result = ::Ai::FeatureSettings::UpdateService.new(
+          @feature_setting, current_user, feature_settings_params
+        ).execute
+
+        if result.success?
           redirect_to admin_ai_feature_settings_url, notice: _("Feature settings updated successfully")
         else
           render :edit
         end
       end
-
-      private
 
       def feature_settings_params
         params.require(:feature_setting).permit(
