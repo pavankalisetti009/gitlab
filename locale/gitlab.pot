@@ -27111,9 +27111,6 @@ msgstr ""
 msgid "Hide sidebar"
 msgstr ""
 
-msgid "Hide thread"
-msgstr ""
-
 msgid "Hide tooltips or popovers"
 msgstr ""
 
@@ -51190,9 +51187,6 @@ msgid "Show the Closed list"
 msgstr ""
 
 msgid "Show the Open list"
-msgstr ""
-
-msgid "Show thread"
 msgstr ""
 
 msgid "Show whitespace changes"
