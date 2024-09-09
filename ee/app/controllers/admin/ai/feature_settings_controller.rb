@@ -16,6 +16,10 @@ module Admin
         @feature_settings = ::Ai::FeatureSetting.allowed_features.keys.map do |feature|
           feature_settings_by_name[feature] || ::Ai::FeatureSetting.new(feature: feature)
         end
+
+        return unless Feature.enabled?(:custom_models_feature_settings_vue_app, current_user)
+
+        @self_hosted_models = ::Ai::SelfHostedModel.all
       end
 
       # rubocop:disable CodeReuse/ActiveRecord -- Using find_or_initialize_by is reasonable

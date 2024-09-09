@@ -50,6 +50,20 @@ RSpec.describe Admin::Ai::FeatureSettingsController, :enable_admin_mode, feature
   end
 
   describe 'GET #index' do
+    context 'when custom_models_feature_settings_vue_app feature flag is enabled' do
+      let_it_be(:model) { create(:ai_self_hosted_model) }
+
+      before do
+        stub_feature_flags(custom_models_feature_settings_vue_app: true)
+      end
+
+      it 'returns self-hosted models' do
+        get admin_ai_feature_settings_path
+
+        expect(assigns(:self_hosted_models)).to match_array([model])
+      end
+    end
+
     it 'returns `flagged_features` if ai_duo_chat_sub_features_settings is enabled' do
       # it expect to go through the ::Ai::FeatureSetting.flagged_features method
       # So it only shows the stable features
