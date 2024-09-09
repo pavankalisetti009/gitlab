@@ -517,6 +517,31 @@ RSpec.describe Ci::CreatePipelineService, feature_category: :security_policy_man
       project_test_job = test_stage.builds.find_by(name: 'project-test')
       expect(get_job_variable(project_test_job, 'POLICY_TOKEN')).to be_nil
     end
+
+    context 'when project variables could disable scanners from the included security templates' do
+      let(:project_policy_content) do
+        {
+          include: {
+            template: 'Jobs/Secret-Detection.gitlab-ci.yml'
+          },
+          variables: {
+            'SECRET_DETECTION_DISABLED' => 'false'
+          }
+        }
+      end
+
+      before do
+        create(:ci_variable, project: project, key: 'SECRET_DETECTION_DISABLED', value: 'true')
+      end
+
+      it 'enforces policy variables to prevent scanners from being disabled' do
+        stages = execute.payload.stages
+
+        test_stage = stages.find_by(name: 'test')
+
+        expect(test_stage.builds.map(&:name)).to include('secret_detection')
+      end
+    end
   end
 
   context 'when both Scan Execution Policy and Pipeline Execution Policy are applied on the project' do

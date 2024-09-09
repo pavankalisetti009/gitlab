@@ -28,5 +28,32 @@ RSpec.describe Gitlab::Ci::YamlProcessor::Result, feature_category: :pipeline_co
         expect(build.dig(:options, :identity)).to eq('google_cloud')
       end
     end
+
+    describe 'execution_policy_job' do
+      include_context 'with pipeline policy context'
+
+      let(:execution_policy_dry_run) { true }
+      let(:ci_config) do
+        Gitlab::Ci::Config.new(config_content, user: user, pipeline_policy_context: pipeline_policy_context)
+      end
+
+      let(:config_content) do
+        YAML.dump(
+          test: { stage: 'test', script: 'echo' }
+        )
+      end
+
+      it 'marks the build as `execution_policy_job` in :options' do
+        expect(build.dig(:options, :execution_policy_job)).to eq true
+      end
+
+      context 'when not running in execution_policy_mode' do
+        let(:execution_policy_dry_run) { false }
+
+        it 'does not mark the build as `execution_policy_job` via :options' do
+          expect(build.dig(:options, :execution_policy_job)).to be_nil
+        end
+      end
+    end
   end
 end

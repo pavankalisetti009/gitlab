@@ -63,9 +63,7 @@ module EE
                     declared_stages: command.yaml_processor_result.stages,
                     on_conflict: on_conflict)
                   policy.pipeline.stages.each do |stage|
-                    job_injector.inject_jobs(jobs: stage.statuses, stage: stage) do |job|
-                      job.set_execution_policy_job!
-
+                    job_injector.inject_jobs(jobs: stage.statuses, stage: stage) do |_job|
                       track_internal_event(
                         'execute_job_pipeline_execution_policy',
                         project: project,

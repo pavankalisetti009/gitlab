@@ -514,4 +514,29 @@ RSpec.describe Gitlab::Ci::YamlProcessor, feature_category: :pipeline_compositio
       end
     end
   end
+
+  describe '#builds' do
+    subject(:builds) { result.builds }
+
+    describe 'execution_policy_job option' do
+      include_context 'with pipeline policy context'
+
+      let(:opts) { { pipeline_policy_context: pipeline_policy_context } }
+      let(:config) do
+        { rspec: { script: 'rspec' } }
+      end
+
+      it 'does not set `execution_policy_job` in :options' do
+        expect(builds).to match([a_hash_including(options: { script: ['rspec'] })])
+      end
+
+      context 'when running in execution_policy_mode' do
+        let(:execution_policy_dry_run) { true }
+
+        it 'marks the build as `execution_policy_job` in :options' do
+          expect(builds).to match([a_hash_including(options: { script: ['rspec'], execution_policy_job: true })])
+        end
+      end
+    end
+  end
 end
