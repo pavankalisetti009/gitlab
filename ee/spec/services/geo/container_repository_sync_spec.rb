@@ -52,6 +52,16 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
     stub_connected(true)
   end
 
+  shared_context 'with the Gitlab API returning tags' do
+    before do
+      allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(true)
+      allow(container_repository).to receive(:each_tags_page).and_call_original
+      allow(container_repository.gitlab_api_client).to receive(:tags).and_return(
+        { response_body: ::Gitlab::Json.parse(response_body) }
+      )
+    end
+  end
+
   def stub_repository_tags_requests(repository_url, tags)
     stub_request(:get, "#{repository_url}/tags/list?n=#{::ContainerRegistry::Client::DEFAULT_TAGS_PAGE_SIZE}")
       .to_return(
@@ -103,46 +113,81 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
     subject { described_class.new(container_repository) }
 
     context 'single manifest' do
-      it 'determines list of tags to sync and to remove correctly' do
+      before do
         stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, { 'tag-to-remove' => 'sha256:2222' })
         stub_raw_manifest_request(primary_repository_url, 'tag-to-sync', manifest)
         stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
         stub_push_manifest_request(secondary_repository_url, 'tag-to-sync', manifest)
-
-        expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
-        expect(container_repository).not_to receive(:push_blob).with('sha256:4444', anything, anything)
-        expect(container_repository).not_to receive(:push_blob).with('sha256:5555', anything, anything)
-        expect(container_repository).to receive(:delete_tag).with('sha256:2222')
-
-        subject.execute
       end
 
-      context 'when primary repository has no tags' do
-        it 'removes secondary tags and does not fail' do
-          stub_repository_tags_requests(primary_repository_url, {})
-          stub_repository_tags_requests(secondary_repository_url, { 'tag-to-remove' => 'sha256:2222' })
-
+      shared_examples 'determining the list of tags to sync and to remove correctly' do
+        it 'determines list of tags to sync and to remove correctly' do
+          expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
+          expect(container_repository).not_to receive(:push_blob).with('sha256:4444', anything, anything)
+          expect(container_repository).not_to receive(:push_blob).with('sha256:5555', anything, anything)
           expect(container_repository).to receive(:delete_tag).with('sha256:2222')
 
           subject.execute
         end
       end
+
+      shared_examples 'removing secondary tags without failure when primary repository does not have tags' do
+        it 'removes secondary tags and does not fail' do
+          stub_repository_tags_requests(primary_repository_url, {})
+          expect(container_repository).to receive(:delete_tag).with('sha256:2222')
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, { 'tag-to-remove' => 'sha256:2222' })
+        end
+
+        it_behaves_like 'determining the list of tags to sync and to remove correctly'
+        it_behaves_like 'removing secondary tags without failure when primary repository does not have tags'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { [{ name: 'tag-to-remove', digest: 'sha256:2222' }].to_json }
+
+        it_behaves_like 'determining the list of tags to sync and to remove correctly'
+        it_behaves_like 'removing secondary tags without failure when primary repository does not have tags'
+      end
     end
 
     context 'manifest list' do
-      it 'pushes the correct blobs and manifests' do
-        stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, {})
-        stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', manifest_list)
-        stub_raw_manifest_request(primary_repository_url, 'sha256:6666', manifest)
-        stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
+      shared_examples 'pushing the correct blobs and manifests' do
+        it 'pushes the correct blobs and manifests' do
+          stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
+          stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', manifest_list)
+          stub_raw_manifest_request(primary_repository_url, 'sha256:6666', manifest)
+          stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
 
-        expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('sha256:6666', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
+          expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('sha256:6666', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
 
-        subject.execute
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, {})
+        end
+
+        it_behaves_like 'pushing the correct blobs and manifests'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { {} }
+
+        it_behaves_like 'pushing the correct blobs and manifests'
       end
     end
 
@@ -158,17 +203,34 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         )
       end
 
-      it 'pushes the correct blobs and manifests without failure' do
-        stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, {})
-        stub_raw_manifest_request(primary_repository_url, 'tag-to-sync', manifest_no_media_type)
-        stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true })
-        stub_push_manifest_request(secondary_repository_url, 'tag-to-sync', manifest_no_media_type)
+      shared_examples 'pushing the correct blobs and manifests without failure' do
+        it 'pushes the correct blobs and manifests without failure' do
+          stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
+          stub_raw_manifest_request(primary_repository_url, 'tag-to-sync', manifest_no_media_type)
+          stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true })
+          stub_push_manifest_request(secondary_repository_url, 'tag-to-sync', manifest_no_media_type)
 
-        expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
+          expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
 
-        subject.execute
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, {})
+        end
+
+        it_behaves_like 'pushing the correct blobs and manifests without failure'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { {} }
+
+        it_behaves_like 'pushing the correct blobs and manifests without failure'
       end
     end
 
@@ -207,18 +269,35 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         )
       end
 
-      it 'pushes the correct blobs and manifests' do
-        stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, {})
-        stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', oci_manifest_list)
-        stub_raw_manifest_request(primary_repository_url, 'sha256:6666', oci_manifest)
-        stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
+      shared_examples 'pushing the correct blobs and manifests' do
+        it 'pushes the correct blobs and manifests' do
+          stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
+          stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', oci_manifest_list)
+          stub_raw_manifest_request(primary_repository_url, 'sha256:6666', oci_manifest)
+          stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
 
-        expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('sha256:6666', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
+          expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('sha256:6666', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
 
-        subject.execute
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, {})
+        end
+
+        it_behaves_like 'pushing the correct blobs and manifests'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { {} }
+
+        it_behaves_like 'pushing the correct blobs and manifests'
       end
     end
 
@@ -248,16 +327,33 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         )
       end
 
-      it 'pushes the correct blobs and manifests' do
-        stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, {})
-        stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', buildcache_manifest_list)
-        stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
+      shared_examples 'pushing the correct blobs and manifests' do
+        it 'pushes the correct blobs and manifests' do
+          stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
+          stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', buildcache_manifest_list)
+          stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:3333' => true, 'sha256:4444' => false })
 
-        expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
+          expect(container_repository).to receive(:push_blob).with('sha256:3333', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
 
-        subject.execute
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, {})
+        end
+
+        it_behaves_like 'pushing the correct blobs and manifests'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { {} }
+
+        it_behaves_like 'pushing the correct blobs and manifests'
       end
     end
 
@@ -308,18 +404,35 @@ RSpec.describe Geo::ContainerRepositorySync, :geo, feature_category: :geo_replic
         )
       end
 
-      it 'pushes the correct blobs and manifests' do
-        stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
-        stub_repository_tags_requests(secondary_repository_url, {})
-        stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', manifest_list_with_artifacts)
-        stub_raw_manifest_request(primary_repository_url, 'sha256:6015', artifact_manifest)
-        stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:8792' => true })
+      shared_examples 'pushing the correct blobs and manifests' do
+        it 'pushes the correct blobs and manifests' do
+          stub_repository_tags_requests(primary_repository_url, { 'tag-to-sync' => 'sha256:1111' })
+          stub_raw_manifest_list_request(primary_repository_url, 'tag-to-sync', manifest_list_with_artifacts)
+          stub_raw_manifest_request(primary_repository_url, 'sha256:6015', artifact_manifest)
+          stub_missing_blobs_requests(primary_repository_url, secondary_repository_url, { 'sha256:8792' => true })
 
-        expect(container_repository).to receive(:push_blob).with('sha256:8792', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('sha256:6015', anything, anything)
-        expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
+          expect(container_repository).to receive(:push_blob).with('sha256:8792', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('sha256:6015', anything, anything)
+          expect(container_repository).to receive(:push_manifest).with('tag-to-sync', anything, anything)
 
-        subject.execute
+          subject.execute
+        end
+      end
+
+      context 'when the GitLab API is not supported' do
+        before do
+          allow(container_repository.gitlab_api_client).to receive(:supports_gitlab_api?).and_return(false)
+          stub_repository_tags_requests(secondary_repository_url, {})
+        end
+
+        it_behaves_like 'pushing the correct blobs and manifests'
+      end
+
+      context 'when the GitLab API is supported' do
+        include_context 'with the Gitlab API returning tags'
+        let(:response_body) { {} }
+
+        it_behaves_like 'pushing the correct blobs and manifests'
       end
 
       it 'raises an error with a bad connection' do

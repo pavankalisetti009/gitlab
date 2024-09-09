@@ -3,8 +3,14 @@
 require 'spec_helper'
 
 RSpec.describe Geo::ContainerRepositoryReplicator, :geo, feature_category: :geo_replication do
+  include_context 'container registry client stubs'
+
   let_it_be(:primary) { create(:geo_node, :primary) }
   let_it_be(:secondary) { create(:geo_node) }
+
+  before do
+    stub_container_registry_gitlab_api_support(supported: false)
+  end
 
   # Based on shared example 'a repository replicator'
   context 'for base replicator functionality' do
