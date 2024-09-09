@@ -19,7 +19,7 @@ module QA
 
       let(:session) { SecureRandom.hex(5) }
 
-      it 'sends subgroup events',
+      it 'sends subgroup events', :blocking,
         testcase: 'https://gitlab.com/gitlab-org/gitlab/-/quality/test_cases/383580' do
         EE::Resource::GroupWebHook.setup(session: session, subgroup: true) do |webhook, smocker|
           group = create(:group, sandbox: webhook.group)
