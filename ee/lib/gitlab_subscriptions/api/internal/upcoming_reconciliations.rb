@@ -6,6 +6,9 @@ module GitlabSubscriptions
       class UpcomingReconciliations < ::API::Base
         before do
           forbidden!('This API is gitlab.com only!') unless ::Gitlab::Saas.feature_available?(:gitlab_com_subscriptions)
+
+          @namespace = find_namespace(params[:namespace_id])
+          not_found!('Namespace') unless @namespace.present?
         end
 
         feature_category :subscription_management
@@ -24,21 +27,24 @@ module GitlabSubscriptions
                   requires :display_alert_from, type: Date
                 end
                 put '/' do
-                  upcoming_reconciliations = [
-                    {
-                      namespace_id: params[:namespace_id],
-                      next_reconciliation_date: params[:next_reconciliation_date],
-                      display_alert_from: params[:display_alert_from]
-                    }
-                  ]
-                  service = ::UpcomingReconciliations::UpdateService.new(upcoming_reconciliations)
-                  response = service.execute
+                  attributes = {
+                    next_reconciliation_date: params[:next_reconciliation_date],
+                    display_alert_from: params[:display_alert_from]
+                  }
 
-                  if response.success?
-                    status 200
+                  reconciliation = GitlabSubscriptions::UpcomingReconciliation.next(@namespace.id)
+
+                  if reconciliation
+                    reconciliation.update!(attributes)
                   else
-                    render_api_error!({ error: response.errors.first }, 500)
+                    GitlabSubscriptions::UpcomingReconciliation.create!(
+                      attributes.merge({ namespace: @namespace, organization: @namespace.organization })
+                    )
                   end
+
+                  status 200
+                rescue ActiveRecord::RecordInvalid => e
+                  render_api_error!({ error: e.record.errors.full_messages.join(', ') }, 500)
                 end
 
                 desc 'Destroy upcoming reconciliation record'

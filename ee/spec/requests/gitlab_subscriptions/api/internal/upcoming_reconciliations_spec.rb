@@ -30,22 +30,45 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
         stub_internal_api_authentication
       end
 
-      context 'when supplied valid params' do
-        it 'updates the upcoming reconciliation' do
-          params = {
-            next_reconciliation_date: Date.today + 5.days,
-            display_alert_from: Date.today - 2.days
-          }
+      context 'when supplied with valid params' do
+        context 'when upcoming reconciliation does not exist for namespace' do
+          it 'creates new upcoming reconciliation' do
+            params = {
+              next_reconciliation_date: Date.today + 5.days,
+              display_alert_from: Date.today - 2.days
+            }
 
-          expect { put upcoming_reconciliations_path(namespace.id), headers: internal_api_headers, params: params }
-            .to change { namespace.reload.upcoming_reconciliation }
-            .to be_present
+            expect { put upcoming_reconciliations_path(namespace.id), headers: internal_api_headers, params: params }
+              .to change { namespace.reload.upcoming_reconciliation }.from(nil).to be_present
 
-          expect(response).to have_gitlab_http_status(:ok)
+            expect(response).to have_gitlab_http_status(:ok)
+          end
+        end
+
+        context 'when upcoming reconciliation exists for namespace' do
+          it 'updates the existing upcoming reconciliation' do
+            create(:upcoming_reconciliation, :saas, namespace: namespace)
+
+            expected_next_reconciliation_date = Date.today + 5.days
+            expected_display_alert_from_date = Date.today + 2.days
+
+            params = {
+              next_reconciliation_date: expected_next_reconciliation_date,
+              display_alert_from: expected_display_alert_from_date
+            }
+
+            expect { put upcoming_reconciliations_path(namespace.id), headers: internal_api_headers, params: params }
+              .not_to change { namespace.reload.upcoming_reconciliation }
+
+            expect(namespace.upcoming_reconciliation.next_reconciliation_date).to eq(expected_next_reconciliation_date)
+            expect(namespace.upcoming_reconciliation.display_alert_from).to eq(expected_display_alert_from_date)
+
+            expect(response).to have_gitlab_http_status(:ok)
+          end
         end
       end
 
-      context 'when supplied invalid params' do
+      context 'when supplied with invalid params' do
         it 'returns an error' do
           params = {
             next_reconciliation_date: nil,
@@ -56,6 +79,20 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
 
           expect(response).to have_gitlab_http_status(:internal_server_error)
           expect(json_response['message']['error']).to include "Next reconciliation date can't be blank"
+        end
+
+        context 'when namespace does not exist' do
+          it 'returns namespace not found error' do
+            params = {
+              next_reconciliation_date: Date.today + 5.days,
+              display_alert_from: Date.today - 2.days
+            }
+
+            put upcoming_reconciliations_path(-1), headers: internal_api_headers, params: params
+
+            expect(response).to have_gitlab_http_status(:not_found)
+            expect(json_response['message']).to eq('404 Namespace Not Found')
+          end
         end
       end
     end
@@ -107,19 +144,18 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
         end
 
         context 'when update service failed' do
-          let(:error_message) { 'update_service_error' }
-
-          before do
-            allow_next_instance_of(::UpcomingReconciliations::UpdateService) do |service|
-              allow(service).to receive(:execute).and_return(ServiceResponse.error(message: error_message))
-            end
+          let(:params) do
+            {
+              next_reconciliation_date: nil,
+              display_alert_from: Date.today - 2.days
+            }
           end
 
           it 'returns error' do
             put_upcoming_reconciliations
 
             expect(response).to have_gitlab_http_status(:internal_server_error)
-            expect(json_response.dig('message', 'error')).to eq(error_message)
+            expect(json_response['message']['error']).to include "Next reconciliation date can't be blank"
           end
         end
 
@@ -168,6 +204,15 @@ RSpec.describe GitlabSubscriptions::API::Internal::UpcomingReconciliations, :agg
             .by(-1)
 
           expect(response).to have_gitlab_http_status(:no_content)
+        end
+      end
+
+      context 'when namespace does not exist' do
+        it 'returns namespace not found error' do
+          delete upcoming_reconciliations_path(-1), headers: internal_api_headers
+
+          expect(response).to have_gitlab_http_status(:not_found)
+          expect(json_response['message']).to eq('404 Namespace Not Found')
         end
       end
 
