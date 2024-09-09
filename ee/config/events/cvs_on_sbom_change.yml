@@ -1,0 +1,16 @@
+---
+description: CVS is triggered by a change to the Software Bill of Materials (SBOM)
+internal_events: true
+action: cvs_on_sbom_change
+additional_properties:
+  label:
+    description: pipeline_info - source of SBOM components
+  property:
+    description: pipeline id
+product_group: composition_analysis
+milestone: '17.4'
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/163935
+distributions:
+  - ee
+tiers:
+  - ultimate

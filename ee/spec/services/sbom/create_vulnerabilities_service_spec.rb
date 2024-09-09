@@ -7,11 +7,13 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
     let_it_be(:user) { create(:user) }
     let_it_be(:pipeline) { create(:ee_ci_pipeline, :with_cyclonedx_report, user: user) }
     let(:occurrences_count) { 5 }
+    let(:sbom_reports) { pipeline.sbom_reports.reports.select(&:source) }
+    let(:pipeline_components) { sbom_reports.flat_map(&:components) }
     let(:occurrences) do
-      components = pipeline.sbom_reports.reports.last.components
+      components = sbom_reports.last.components
       Array.new(occurrences_count) do |i|
         { purl_type: components[i].purl.type, name: components[i].name, version: components[i].version,
-          input_file_path: pipeline.sbom_reports.reports.last.source.input_file_path }
+          input_file_path: sbom_reports.last.source.input_file_path }
       end
     end
 
@@ -97,6 +99,20 @@ RSpec.describe Sbom::CreateVulnerabilitiesService, feature_category: :software_c
             finding_description: affected_packages[4].advisory.description,
             solution: affected_packages[4].solution)
         ])
+      end
+
+      it 'calls track cvs service with the right parameters', :freeze_time do
+        expect { result }.to trigger_internal_events('cvs_on_sbom_change')
+          .with(additional_properties:
+                {
+                  label: 'pipeline_info',
+                  property: pipeline.id.to_s,
+                  start_time: Time.current.iso8601,
+                  end_time: Time.current.iso8601,
+                  possibly_affected_sbom_occurrences: pipeline_components.count,
+                  known_affected_sbom_occurrences: occurrences.count
+                }
+               )
       end
 
       context 'with multiple affected packages with different advisories associated with a single occurrence' do
