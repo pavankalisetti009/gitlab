@@ -272,6 +272,52 @@ RSpec.describe GroupMember, feature_category: :groups_and_projects do
       end
     end
 
+    context 'when user requested access' do
+      it 'executes user_access_request_to_group event webhook when group member is created' do
+        WebMock.stub_request(:post, group_hook.url)
+
+        group_member = create(:group_member, group: group, requested_at: Time.current.utc)
+
+        expect(WebMock).to have_requested(:post, group_hook.url).with(
+          webhook_data(group_member, 'user_access_request_to_group')
+        )
+      end
+
+      it 'executes user_access_request_revoked_for_group event webhook when access request is revoked' do
+        WebMock.stub_request(:post, group_hook.url)
+        group_member = create(:group_member, group: group, requested_at: Time.current.utc)
+
+        group_member.destroy!
+
+        expect(WebMock).to have_requested(:post, group_hook.url).with(
+          webhook_data(group_member, 'user_access_request_revoked_for_group')
+        )
+      end
+
+      context 'when feature flag is disabled' do
+        before do
+          stub_feature_flags(group_access_request_webhooks: false)
+        end
+
+        it 'does not execute webhook for access requests' do
+          WebMock.stub_request(:post, group_hook.url)
+
+          create(:group_member, group: group, requested_at: Time.current.utc)
+
+          expect(WebMock).not_to have_requested(:post, group_hook.url)
+        end
+
+        it 'does not execute webhook when access request is denied' do
+          WebMock.stub_request(:post, group_hook.url)
+          group_member = create(:group_member, group: group, requested_at: Time.current.utc)
+
+          group_member.destroy!
+
+          expect(WebMock).not_to have_requested(:post, group_hook.url)
+        end
+      end
+    end
+
     context 'does not execute webhook' do
       before do
         WebMock.stub_request(:post, group_hook.url)
