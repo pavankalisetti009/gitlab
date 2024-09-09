@@ -36,7 +36,10 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
     end
 
     context 'for epic work items' do
-      let_it_be_with_reload(:work_item) { create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group) }
+      let_it_be(:label) { create(:group_label, group: group) }
+      let_it_be_with_reload(:work_item) do
+        create(:work_item, :epic_with_legacy_epic, :group_level, namespace: group, labels: [label])
+      end
 
       context 'on the work item route' do
         before do
@@ -69,6 +72,12 @@ RSpec.describe 'Work item', :js, feature_category: :team_planning do
             expect(page).to have_link('Epics', href: "#{group_epics_path(group)}/")
             expect(find('nav:last-of-type li:last-of-type')).to have_link(work_item.to_reference,
               href: group_epic_path(group, work_item.iid))
+          end
+        end
+
+        it 'shows work item labels pointing to filtered epics list' do
+          within_testid('work-item-labels') do
+            expect(page).to have_link(label.title, href: "#{group_epics_path(group)}?label_name[]=#{label.title}")
           end
         end
 
