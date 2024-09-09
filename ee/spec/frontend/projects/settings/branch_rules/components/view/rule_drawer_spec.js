@@ -12,10 +12,11 @@ describe('Edit Rule Drawer', () => {
   let wrapper;
 
   const findCheckboxes = () => wrapper.findAllComponents(GlFormCheckbox);
-  const findAdministratorsCheckbox = () => findCheckboxes().at(0);
-  const findMaintainersCheckbox = () => findCheckboxes().at(1);
-  const findDevelopersAndMaintainersCheckbox = () => findCheckboxes().at(2);
-  const findNoOneCheckbox = () => findCheckboxes().at(3);
+  const findAdministratorsCheckbox = () => wrapper.findByTestId('admins-role-checkbox');
+  const findMaintainersCheckbox = () => wrapper.findByTestId('maintainers-role-checkbox');
+  const findDevelopersAndMaintainersCheckbox = () =>
+    wrapper.findByTestId('developers-role-checkbox');
+  const findNoOneCheckbox = () => wrapper.findByTestId('no-one-role-checkbox');
   const findUsersSelector = () => wrapper.findByTestId('users-selector');
   const findGroupsSelector = () => wrapper.findByTestId('groups-selector');
   const findDeployKeysSelector = () => wrapper.findByTestId('deploy-keys-selector');
